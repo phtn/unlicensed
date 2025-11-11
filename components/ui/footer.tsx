@@ -12,7 +12,7 @@ export const Footer = () => (
         </div>
 
         <p className='text-sm text-color-muted'>
-          Experiencing the greatest feeling of illegal marijuana.
+          Redefining euphoria of true illegal marijuana.
         </p>
       </div>
       <div className='flex flex-wrap items-center gap-3 text-color-muted'>
