@@ -114,7 +114,7 @@ export const Lens: React.FC<LensProps> = ({
                 <div
                   className='absolute inset-0'
                   style={{
-                    transform: `scale(${zoom ? zoomFactor + 1.25 : zoomFactor})`,
+                    transform: `scale(${zoom ? zoomFactor + 1 : zoomFactor})`,
                     transformOrigin: `${mousePosition.x}px ${mousePosition.y}px`,
                   }}>
                   {children}
