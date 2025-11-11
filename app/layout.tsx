@@ -38,7 +38,7 @@ const fugaz = Fugaz_One({
 })
 
 export const metadata: Metadata = {
-  title: 'Hyfe Goods | Modern THC Marketplace',
+  title: 'Unlicensed | Guaranteed Illegal',
   description:
     'Discover elevated THC flower, edibles, concentrates, and drinks curated for modern rituals.',
   keywords: [
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   ],
   creator: 'Hyfe Studios',
   openGraph: {
-    title: 'Hyfe Goods | Modern THC Marketplace',
+    title: 'Unlicensed | Guaranteed Illegal',
     description:
       'Modern cannabis commerce with curated drops, immersive product storytelling, and delightful UX.',
     type: 'website',
