@@ -28,11 +28,11 @@ export const Nav = ({children}: NavProps) => {
             className='text-sm text-gray-100 hover:text-secondary transition-colors'>
             Shop
           </Link>
-          <Link
+          {/*<Link
             href={'#'}
             className='text-sm text-gray-100 hover:text-secondary transition-colors'>
             Library
-          </Link>
+          </Link>*/}
         </nav>
         <div className='flex items-center gap-1 md:gap-4'>
           <ThemeToggle />
