@@ -31,10 +31,10 @@ export async function generateMetadata({
   }
 }
 
-type ProductDetailPageProps = {
+type PageProps = {
   params: Promise<{slug: string}>
 }
-const Page = async ({params}: ProductDetailPageProps) => {
+const Page = async ({params}: PageProps) => {
   const slug = (await params).slug
   const detail = await getProductDetail(slug)
   return <ProductDetailContent detail={detail} />

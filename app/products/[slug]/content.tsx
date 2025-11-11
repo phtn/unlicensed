@@ -2,8 +2,14 @@
 
 import type {StoreProduct, StoreProductDetail} from '@/app/types'
 import {ProductCard} from '@/components/store/product-card'
-import {BreadcrumbItem, Breadcrumbs, Button, Chip, Divider} from '@heroui/react'
-import Image from 'next/image'
+import {
+  BreadcrumbItem,
+  Breadcrumbs,
+  Button,
+  Chip,
+  Divider,
+  Image,
+} from '@heroui/react'
 import NextLink from 'next/link'
 import {notFound} from 'next/navigation'
 
@@ -55,14 +61,11 @@ const CompositionStat = ({
 
 const Gallery = ({product}: {product: StoreProduct}) => (
   <div className='flex flex-col gap-4'>
-    <div className='relative aspect-[4/5] w-full overflow-hidden rounded-[32px] border border-color-border/40 bg-background/60'>
+    <div className='relative aspect-4/5 w-full overflow-hidden rounded-4xl border border-foreground/20 bg-background/60'>
       <Image
         src={product.image}
         alt={product.name}
-        fill
-        className='object-cover'
-        priority
-        sizes='(min-width: 1024px) 640px, 100vw'
+        className='object-cover size-220 aspect-auto'
       />
       <div className='absolute inset-x-6 top-6 flex items-center justify-between rounded-full bg-black/35 px-5 py-2 text-xs uppercase tracking-[0.45em] text-emerald-100 backdrop-blur-md'>
         <span>{product.categorySlug}</span>
@@ -73,13 +76,11 @@ const Gallery = ({product}: {product: StoreProduct}) => (
       {product.gallery.map((src) => (
         <div
           key={src}
-          className='relative aspect-[4/5] overflow-hidden rounded-2xl border border-color-border/30'>
+          className='relative aspect-4/5 overflow-hidden rounded-4xl border border-foreground/10'>
           <Image
             src={src}
             alt={`${product.name} gallery`}
-            fill
-            className='object-cover'
-            sizes='(min-width: 1024px) 200px, 33vw'
+            className='object-cover aspect-auto size-64'
           />
         </div>
       ))}
@@ -91,9 +92,7 @@ interface ProductDetailContentProps {
   detail: StoreProductDetail | null
 }
 
-export async function ProductDetailContent({
-  detail,
-}: ProductDetailContentProps) {
+export const ProductDetailContent = ({detail}: ProductDetailContentProps) => {
   if (!detail) {
     notFound()
   }
@@ -102,7 +101,7 @@ export async function ProductDetailContent({
 
   return (
     <div className='space-y-20 pb-24'>
-      <section className='mx-auto w-full max-w-6xl px-4 pt-12 sm:px-6 lg:px-8'>
+      <section className='mx-auto w-full max-w-7xl px-4 pt-12 sm:px-6 lg:px-8'>
         <Breadcrumbs
           aria-label='Product breadcrumb'
           className='text-sm text-color-muted'
@@ -118,7 +117,7 @@ export async function ProductDetailContent({
         </Breadcrumbs>
         <div className='mt-10 grid gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
           <Gallery product={product} />
-          <div className='space-y-10 rounded-[32px] border border-color-border/30 bg-background/60 p-6 backdrop-blur-xl sm:p-8'>
+          <div className='space-y-10 rounded-4xl border border-foreground/30 bg-accent p-6 backdrop-blur-xl sm:p-8'>
             <div className='flex flex-col gap-5'>
               <Chip
                 size='sm'
@@ -152,7 +151,7 @@ export async function ProductDetailContent({
                   size='lg'
                   color='success'
                   variant='shadow'
-                  className='bg-gradient-to-br from-emerald-400 via-emerald-500 to-sky-400 text-background shadow-[0_18px_60px_-24px_rgba(34,197,94,0.75)]'>
+                  className='bg-linear-to-br from-emerald-400 via-emerald-500 to-sky-400 text-background shadow-[0_18px_60px_-24px_rgba(34,197,94,0.75)]'>
                   Reserve for pickup
                 </Button>
                 <Button

@@ -1,8 +1,8 @@
 'use client'
 import type {StoreCategory, StoreProduct} from '@/app/types'
+import {NewHome} from '@/components/base44/home'
 import {ProductCard} from '@/components/store/product-card'
 import {Button, Chip} from '@heroui/react'
-import Image from 'next/image'
 import NextLink from 'next/link'
 
 interface StorefrontPageProps {
@@ -44,8 +44,9 @@ export const Content = ({categories, products}: StorefrontPageProps) => {
   const sections = buildCategorySections(categories, products)
 
   return (
-    <div className='space-y-24 pb-28'>
-      <section className='mx-auto w-full max-w-6xl px-4 pt-14 sm:px-6 lg:px-8'>
+    <div className='space-y-24 pb-28 bg-accent'>
+      <NewHome />
+      {/*<section className='mx-auto w-full max-w-6xl px-4 pt-14 sm:px-6 lg:px-8'>
         <div className='relative overflow-hidden rounded-[44px] surface-hero p-8 transition-colors sm:p-12 lg:p-16'>
           <div
             className='pointer-events-none absolute -left-24 top-[-40%] h-[520px] w-[520px] rounded-full opacity-70'
@@ -94,7 +95,7 @@ export const Content = ({categories, products}: StorefrontPageProps) => {
                   radius='full'
                   size='lg'
                   variant='flat'
-                  className='border border-[var(--surface-outline)] bg-[var(--surface-highlight)] px-8 py-6 text-lg font-semibold text-foreground shadow-[0_20px_60px_-30px_rgba(8,12,26,0.55)] transition hover:bg-[var(--surface-muted)]'>
+                  className='border border-(--surface-outline) bg-(--surface-highlight) px-8 py-6 text-lg font-semibold text-foreground shadow-[0_20px_60px_-30px_rgba(8,12,26,0.55)] transition hover:bg-[var(--surface-muted)]'>
                   Launch Strain Finder
                 </Button>
               </div>
@@ -116,7 +117,7 @@ export const Content = ({categories, products}: StorefrontPageProps) => {
             {heroProduct ? (
               <div className='relative flex flex-col gap-6'>
                 <div className='relative overflow-hidden rounded-[34px] surface-card-strong p-4 transition-colors'>
-                  <div className='absolute inset-x-8 top-6 z-20 flex items-center justify-between rounded-full bg-[var(--surface-highlight)] px-5 py-2 text-[10px] font-semibold uppercase tracking-[0.45em] text-color-muted backdrop-blur'>
+                  <div className='absolute inset-x-8 top-6 z-20 flex items-center justify-between rounded-full bg-(--surface-highlight) px-5 py-2 text-[10px] font-semibold uppercase tracking-[0.45em] text-color-muted backdrop-blur'>
                     <span>Featured Drop</span>
                     <span>{heroProduct.thcPercentage.toFixed(1)}% THC</span>
                   </div>
@@ -125,8 +126,7 @@ export const Content = ({categories, products}: StorefrontPageProps) => {
                     alt={heroProduct.name}
                     width={640}
                     height={720}
-                    priority
-                    className='h-[420px] w-full rounded-[24px] object-cover'
+                    className='h-[420px] w-full rounded-3xl object-cover'
                   />
                   <div className='mt-6 space-y-3 px-2 pb-2'>
                     <div className='flex items-center justify-between text-xs uppercase tracking-[0.4em] text-color-muted'>
@@ -158,11 +158,11 @@ export const Content = ({categories, products}: StorefrontPageProps) => {
             ) : null}
           </div>
         </div>
-      </section>
+      </section>*/}
 
       <section
         id='menu'
-        className='mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8'>
+        className='mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 bg-accent'>
         <div className='flex flex-col gap-6'>
           <div className='flex flex-wrap items-center justify-between gap-4'>
             <div>
@@ -178,7 +178,7 @@ export const Content = ({categories, products}: StorefrontPageProps) => {
               href='#finder'
               radius='full'
               variant='flat'
-              className='border border-[var(--surface-outline)] bg-[var(--surface-highlight)] text-sm font-semibold text-foreground transition hover:bg-[var(--surface-muted)]'>
+              className='border border-(--surface-outline) bg-(--surface-highlight) text-sm font-semibold text-foreground transition hover:bg-[var(--surface-muted)]'>
               Personalize with Strain Finder
             </Button>
           </div>
@@ -234,7 +234,7 @@ export const Content = ({categories, products}: StorefrontPageProps) => {
               {categories.slice(0, 4).map((category) => (
                 <div
                   key={category.slug}
-                  className='group relative overflow-hidden rounded-2xl border border-[var(--surface-outline)] bg-[var(--surface-highlight)] p-6 transition hover:-translate-y-1 hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)]'>
+                  className='group relative overflow-hidden rounded-2xl border border-(--surface-outline) bg-(--surface-highlight) p-6 transition hover:-translate-y-1 hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)]'>
                   <div className='flex flex-col gap-3'>
                     <span className='text-xs uppercase tracking-[0.4em] text-color-muted'>
                       {category.slug}
@@ -261,7 +261,7 @@ export const Content = ({categories, products}: StorefrontPageProps) => {
           key={category.slug}
           id={`category-${category.slug}`}
           className='mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8'>
-          <div className='flex flex-col gap-8 rounded-[32px] surface-card-strong p-8 transition-colors sm:p-10'>
+          <div className='flex flex-col gap-8 rounded-3xl surface-card-strong p-8 transition-colors sm:p-10'>
             <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
               <div>
                 <h3 className='text-2xl font-semibold text-foreground sm:text-3xl'>
@@ -273,7 +273,7 @@ export const Content = ({categories, products}: StorefrontPageProps) => {
               </div>
               <div className='flex items-center gap-3 text-xs uppercase tracking-[0.35em] text-color-muted'>
                 <span>Curated selection</span>
-                <span className='h-[1px] w-10 bg-foreground/30' />
+                <span className='h-px w-10 bg-foreground/30' />
                 <span>{categoryProducts.length} picks</span>
               </div>
             </div>

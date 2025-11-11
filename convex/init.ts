@@ -93,7 +93,7 @@ export const categoriesSeed: CategorySeed[] = [
 export const productsSeed: ProductSeed[] = [
   {
     name: 'Sunrise Sativa Flower',
-    slug: 'sunrise-sativa-flower',
+    slug: 'rainbow-runtz',
     categorySlug: 'flower',
     shortDescription:
       'Citrus-forward sativa with energetic clarity and a crisp finish.',
@@ -110,10 +110,10 @@ export const productsSeed: ProductSeed[] = [
     stock: 42,
     rating: 4.7,
     image:
-      'https://images.unsplash.com/photo-1503262028195-93c528f03218?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1771',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/DarkRainbow_transparent.png?v=1759172600&width=1488',
     gallery: [
-      'https://images.unsplash.com/photo-1597354674911-453bc2c00e4a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1151',
-      'https://images.unsplash.com/photo-1681310375919-dfe1275373a7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1772',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/SuperLemonHaze_transparent.png?v=1759171126&width=1488',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/GeniusGlow_transparent.png?v=1759170612&width=1488',
     ],
     consumption:
       'Grind loosely and enjoy in a clean glass piece or hand-rolled joint. Start with a small inhale to gauge potency.',

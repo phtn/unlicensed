@@ -1,12 +1,12 @@
-import type {ReactNode} from 'react'
 import {Link} from '@heroui/react'
+import type {ReactNode} from 'react'
 
 type StoreLayoutProps = {
   children: ReactNode
 }
 
 const Footer = () => (
-  <footer className='border-t border-[var(--surface-outline)] bg-[var(--nav-background)] backdrop-blur-2xl transition-colors'>
+  <footer className='border-t border-(--surface-outline) bg-background backdrop-blur-2xl transition-colors'>
     <div className='mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 transition-colors sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8'>
       <div className='flex flex-col gap-2'>
         <span className='text-[11px] font-semibold uppercase tracking-[0.45em] text-color-muted'>
@@ -17,16 +17,24 @@ const Footer = () => (
         </p>
       </div>
       <div className='flex flex-wrap items-center gap-3 text-sm text-color-muted'>
-        <Link href='/#menu' className='text-color-muted hover:text-foreground/80'>
+        <Link
+          href='/#menu'
+          className='text-color-muted hover:text-foreground/80'>
           Menu
         </Link>
-        <Link href='/#finder' className='text-color-muted hover:text-foreground/80'>
+        <Link
+          href='/#finder'
+          className='text-color-muted hover:text-foreground/80'>
           Strain Finder
         </Link>
-        <Link href='/privacy' className='text-color-muted hover:text-foreground/80'>
+        <Link
+          href='/privacy'
+          className='text-color-muted hover:text-foreground/80'>
           Privacy
         </Link>
-        <Link href='/contact' className='text-color-muted hover:text-foreground/80'>
+        <Link
+          href='/contact'
+          className='text-color-muted hover:text-foreground/80'>
           Contact
         </Link>
       </div>
@@ -44,4 +52,3 @@ const StoreLayout = ({children}: StoreLayoutProps) => {
 }
 
 export default StoreLayout
-

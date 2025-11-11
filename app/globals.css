@@ -8,7 +8,12 @@
   --background: #05070f;
   --foreground: #f4f6fb;
   --muted: rgba(203, 213, 225, 0.76);
-  --accent: #f5c468;
+
+  --accent: oklch(0.3 0.04 167.17);
+  /*--accent: oklch(0.243 0.04 167.17);*/
+  /*--accent: oklch(0.243 0.027 220.39);*/
+  --secondary: oklch(0.7 0.141 49.39);
+  --secondary-foreground: oklch(0.3 0.04 167.17);
   --border: rgba(99, 102, 241, 0.14);
   --pill-bg: rgba(255, 255, 255, 0.04);
   --pill-border: rgba(255, 255, 255, 0.12);
@@ -88,10 +93,12 @@
 
 :root.light {
   color-scheme: light;
-  --background: #102329;
-  --foreground: #fff8f1;
+  --background: #efefef;
+  --foreground: #102329;
   --muted: rgba(255, 242, 233, 0.78);
-  --accent: #ff845f;
+  --accent: oklch(0.96 0.007 67.74);
+  --secondary: oklch(0.985 0 0);
+  --secondary-foreground: oklch(0.7 0.142 49.39);
   --border: rgba(255, 255, 255, 0.22);
   --pill-bg: rgba(255, 255, 255, 0.16);
   --pill-border: rgba(255, 255, 255, 0.32);
@@ -112,15 +119,15 @@
     rgba(20, 46, 58, 0.68),
     rgba(96, 34, 37, 0.58)
   );
-  --surface-highlight: rgba(255, 255, 255, 0.18);
+  --surface-highlight: oklch(1 0 0 / 18%);
   --surface-muted: rgba(255, 255, 255, 0.26);
   --nav-border: rgba(255, 255, 255, 0.22);
   --nav-background: rgba(20, 39, 47, 0.58);
   --surface-card: rgba(20, 39, 47, 0.54);
   --surface-card-strong: linear-gradient(
     160deg,
-    rgba(20, 39, 47, 0.82),
-    rgba(96, 34, 37, 0.74)
+    oklch(0.26 0.029 226.86 / 82%),
+    oklch(0.346 0.09 20.27 / 74%)
   );
   --surface-hero: linear-gradient(
     140deg,
@@ -182,11 +189,15 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-space: var(--font-space);
+  --font-fugaz: var(--font-fugaz);
+  --font-sans: var(--font-sans);
 }
 
 @layer base {
@@ -224,6 +235,9 @@
       'Segoe UI',
       sans-serif;
     text-rendering: optimizeLegibility;
+    ::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   :root.light body {

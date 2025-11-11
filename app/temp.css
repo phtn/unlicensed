@@ -1,0 +1,91 @@
+:root.light {
+  color-scheme: light;
+  --background: #102329;
+  --foreground: #fff8f1;
+  --muted: rgba(255, 242, 233, 0.78);
+  --accent: #ff845f;
+  --border: rgba(255, 255, 255, 0.22);
+  --pill-bg: rgba(255, 255, 255, 0.16);
+  --pill-border: rgba(255, 255, 255, 0.32);
+  --hero-gradient: linear-gradient(
+    140deg,
+    rgba(103, 184, 196, 0.45),
+    rgba(255, 120, 84, 0.75)
+  );
+  --cta-gradient: linear-gradient(
+    135deg,
+    #ffe8c5 0%,
+    #ffb792 32%,
+    #ff7055 72%,
+    #ffe8c5 100%
+  );
+  --panel-gradient: linear-gradient(
+    150deg,
+    rgba(20, 46, 58, 0.68),
+    rgba(96, 34, 37, 0.58)
+  );
+  --surface-highlight: rgba(255, 255, 255, 0.18);
+  --surface-muted: rgba(255, 255, 255, 0.26);
+  --nav-border: rgba(255, 255, 255, 0.22);
+  --nav-background: rgba(20, 39, 47, 0.58);
+  --surface-card: rgba(20, 39, 47, 0.54);
+  --surface-card-strong: linear-gradient(
+    160deg,
+    rgba(20, 39, 47, 0.82),
+    rgba(96, 34, 37, 0.74)
+  );
+  --surface-hero: linear-gradient(
+    140deg,
+    rgba(20, 39, 47, 0.86),
+    rgba(152, 48, 46, 0.74)
+  );
+  --surface-hero-glow-left: radial-gradient(
+    circle,
+    rgba(96, 178, 195, 0.4) 0%,
+    transparent 70%
+  );
+  --surface-hero-glow-right: radial-gradient(
+    circle,
+    rgba(255, 114, 84, 0.55) 0%,
+    transparent 68%
+  );
+  --surface-hero-bottom: linear-gradient(
+    180deg,
+    rgba(20, 39, 47, 0) 0%,
+    rgba(20, 39, 47, 0.8) 75%
+  );
+  --surface-outline: rgba(255, 255, 255, 0.22);
+  --border-strong: rgba(255, 255, 255, 0.32);
+  --shadow-card: 0 40px 120px -60px rgba(198, 64, 53, 0.58);
+  --shadow-card-hover: 0 52px 140px -62px rgba(198, 64, 53, 0.66);
+  --shadow-soft: 0 32px 90px -54px rgba(198, 64, 53, 0.5);
+  --chip-surface: rgba(20, 39, 47, 0.38);
+  --backdrop-primary:
+    radial-gradient(
+      circle at 22% 20%,
+      rgba(96, 178, 195, 0.45),
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 86% -5%,
+      rgba(255, 118, 86, 0.52),
+      transparent 65%
+    ),
+    linear-gradient(
+      200deg,
+      rgba(16, 32, 37, 0.7) 0%,
+      rgba(196, 63, 53, 0.82) 55%,
+      rgba(255, 111, 79, 0.88) 100%
+    );
+  --backdrop-secondary:
+    radial-gradient(
+      circle at 52% 112%,
+      rgba(196, 63, 53, 0.54),
+      transparent 74%
+    ),
+    radial-gradient(
+      circle at 10% 44%,
+      rgba(96, 178, 195, 0.24),
+      transparent 62%
+    );
+}

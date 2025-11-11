@@ -1,8 +1,19 @@
 import {ProvidersCtxProvider} from '@/ctx'
 import type {Metadata} from 'next'
-import {Geist, Geist_Mono, Space_Grotesk} from 'next/font/google'
+import {
+  Figtree,
+  Fugaz_One,
+  Geist,
+  Geist_Mono,
+  Space_Grotesk,
+} from 'next/font/google'
 import './globals.css'
 
+const figtree = Figtree({
+  variable: '--font-sans',
+  subsets: ['latin'],
+  display: 'swap',
+})
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -15,8 +26,13 @@ const geistMono = Geist_Mono({
   display: 'swap',
 })
 const space = Space_Grotesk({
-  variable: '--font-geist-mono',
+  variable: '--font-space',
   subsets: ['latin'],
+  display: 'swap',
+})
+const fugaz = Fugaz_One({
+  variable: '--font-fugaz',
+  weight: ['400'],
   display: 'swap',
 })
 
@@ -58,14 +74,14 @@ export default function RootLayout({
   return (
     <html lang='en' className='dark' data-theme='dark' suppressHydrationWarning>
       <body
-        className={`${space.variable} ${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased`}>
+        className={`${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased font-sans`}>
         <ProvidersCtxProvider>
           <div className='relative flex min-h-screen flex-col overflow-x-hidden bg-background'>
             <div className='pointer-events-none absolute inset-0 -z-20 backdrop-primary' />
             <div className='pointer-events-none absolute inset-0 -z-10 backdrop-secondary' />
             <div className='relative z-10 flex min-h-screen flex-col'>
               {navbar}
-              <div className='relative flex-1'>{children}</div>
+              <div className='relative flex-1 mt-12'>{children}</div>
             </div>
           </div>
         </ProvidersCtxProvider>
