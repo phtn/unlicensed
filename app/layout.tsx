@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     'dispensary',
     'Hyfe',
   ],
-  creator: 'Hyfe Studios',
+  creator: 're-up.ph',
   openGraph: {
     title: 'Unlicensed | Guaranteed Illegal',
     description:
@@ -59,10 +59,17 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hyfe Goods',
+    title: 'Unlicensed | Guaranteed Illegal',
     description:
       'Discover elevated THC flower, edibles, concentrates, and drinks curated for modern rituals.',
   },
+  icons: [
+    {
+      rel: 'icon',
+      url: '/svg/logo.svg',
+      sizes: 'any',
+    },
+  ],
 }
 
 export default function RootLayout({
