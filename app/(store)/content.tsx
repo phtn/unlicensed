@@ -3,6 +3,8 @@ import type {StoreCategory, StoreProduct} from '@/app/types'
 import {NewHome} from '@/components/base44/home'
 import {QuickScroll} from '@/components/base44/quick-scroll'
 import {ProductCard} from '@/components/store/product-card'
+import {useMobile} from '@/hooks/use-mobile'
+import {Brands} from './brands'
 import {FeaturedProducts} from './featured'
 import {StrainFinderMini} from './strain-finder'
 
@@ -25,6 +27,7 @@ const buildCategorySections = (
     .filter((section) => section.products.length > 0)
 
 export const Content = ({categories, products}: StorefrontPageProps) => {
+  const isMobile = useMobile()
   const featuredProducts = products.filter((item) => item.featured).slice(0, 4)
   // const heroProduct = featuredProducts[0] ?? products[0] ?? null
   const sections = buildCategorySections(categories, products)
@@ -152,6 +155,9 @@ export const Content = ({categories, products}: StorefrontPageProps) => {
 
       <StrainFinderMini categories={categories.slice(0, 4)} />
 
+      <Brands columnCount={isMobile ? 4 : 5} />
+
+      <QuickScroll className='bg-foreground/10' href='#footer' />
       {sections.map(({category, products: categoryProducts}) => (
         <section
           key={category.slug}

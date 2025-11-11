@@ -10,7 +10,7 @@ interface QuickScrollProps {
 
 export const QuickScroll = ({href, className}: QuickScrollProps) => {
   return (
-    <div className={cn('flex justify-end px-6 bg-tertiary py-2', className)}>
+    <div className={cn('flex justify-end px-6 bg-tertiary py-2.5', className)}>
       <div className='max-w-7xl w-full flex justify-end'>
         <Button
           isIconOnly

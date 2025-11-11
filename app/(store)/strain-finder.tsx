@@ -10,7 +10,7 @@ export const StrainFinderMini = ({categories}: Props) => {
   return (
     <section
       id='finder'
-      className='mx-auto w-full max-w-7xl pt-32 px-4 sm:px-6 lg:px-8'>
+      className='mx-auto w-full max-w-7xl pt-36 px-4 sm:px-6 lg:px-8'>
       <div className='rounded-[36px] bg-background border border-foreground/20 sm:px-12 sm:py-16 transition-colors p-12'>
         <div className='grid gap-12 lg:grid-cols-5 lg:items-center'>
           <div className='space-y-10 lg:col-span-3'>

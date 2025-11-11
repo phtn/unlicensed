@@ -5,7 +5,9 @@ import {ProductCard} from '@/components/store/product-card'
 import {Lens} from '@/components/ui/lens'
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {
+  Badge,
   BreadcrumbItem,
   Breadcrumbs,
   Button,
@@ -15,11 +17,11 @@ import {
 } from '@heroui/react'
 import NextLink from 'next/link'
 import {notFound} from 'next/navigation'
-import {useEffect} from 'react'
+import {useEffect, useState} from 'react'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
-  return dollars % 1 === 0 ? `$${dollars.toFixed(0)}` : `$${dollars.toFixed(2)}`
+  return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
 }
 
 const DetailList = ({label, items}: {label: string; items: string[]}) => (
@@ -108,6 +110,12 @@ export const ProductDetailContent = ({detail}: ProductDetailContentProps) => {
 
   const {product, category, related} = detail
 
+  const [selectedDenomination, setSelectedDenomination] = useState<number>(0)
+
+  const handleDenominationChange = (denomination: number) => () => {
+    setSelectedDenomination(denomination)
+  }
+
   useEffect(() => {
     if (product) {
       console.log(product)
@@ -147,7 +155,7 @@ export const ProductDetailContent = ({detail}: ProductDetailContentProps) => {
                 </span>
               </div>
 
-              <div className='space-y-2'>
+              <div className='space-y-4'>
                 <h1 className='text-4xl capitalize font-semibold text-foreground sm:text-5xl'>
                   {product.name.split('-').join(' ')}
                 </h1>
@@ -155,46 +163,68 @@ export const ProductDetailContent = ({detail}: ProductDetailContentProps) => {
                   {product.description}
                 </p>
               </div>
-              <div className='flex flex-wrap items-center gap-4'>
-                <span className='text-2xl font-semibold text-foreground'>
-                  {formatPrice(product.priceCents)}
+              <div className='flex flex-wrap items-center gap-4 py-4'>
+                <span className='font-space w-20 text-2xl font-semibold text-foreground'>
+                  <span className='font-light opacity-80'>$</span>
+                  {formatPrice(
+                    product.availableDenominations[selectedDenomination] *
+                      product.priceCents,
+                  )}
                 </span>
                 {product.availableDenominations &&
-                  product.availableDenominations.map((denomination) => (
-                    <div key={denomination}>
-                      <span className='rounded-full border border-color-border/50 px-3 py-1 text-xs font-semibold tracking-widest'>
-                        {denomination}/{product.unit}
-                      </span>
-                      {denomination === product.popularDenomination && (
-                        <span className='rounded-full border border-color-border/50 px-3 py-1 text-xs font-semibold tracking-widest text-color-muted'>
-                          Popular
+                  product.availableDenominations.map((denomination, i) => (
+                    <button
+                      onClick={handleDenominationChange(i)}
+                      className='cursor-pointer rounded-full ring-offset-1 ring-teal-400 outline-teal-400'
+                      key={denomination}>
+                      <Badge
+                        isOneChar
+                        size='lg'
+                        content={
+                          denomination === product.popularDenomination ? (
+                            <Icon
+                              name='lightning'
+                              className='text-orange-300 size-5 rotate-12'
+                            />
+                          ) : null
+                        }
+                        placement='top-right'
+                        shape='circle'
+                        // {denomination === product.popularDenomination }
+                        className={
+                          denomination === product.popularDenomination
+                            ? 'bg-foreground'
+                            : 'hidden'
+                        }>
+                        <span
+                          className={cn(
+                            'relative font-space rounded-full border border-foreground px-3 py-1 text-xs font-semibold tracking-widest',
+                            {
+                              'bg-foreground text-background':
+                                selectedDenomination === i,
+                            },
+                          )}>
+                          {denomination}
+                          {product.unit}
                         </span>
-                      )}
-                    </div>
+                      </Badge>
+                    </button>
                   ))}
               </div>
-              <div className='flex flex-wrap gap-3'>
+              <div className='flex gap-3'>
                 <Button
-                  radius='full'
                   size='lg'
                   color='success'
                   variant='shadow'
-                  className='font-space bg-linear-to-br from-emerald-300 via-emerald-400 to-sky-400 text-white shadow-[0_18px_60px_-24px_rgba(34,197,94,0.75)]'>
+                  className='w-full font-space font-semibold bg-linear-to-br from-emerald-300 via-emerald-400 to-sky-400 text-white'>
                   Add to Cart
                 </Button>
                 <Button
                   size='lg'
-                  radius='full'
-                  className='font-space border border-color-border/60 bg-foreground text-background/80 backdrop-blur-md hover:border-foreground/30'>
-                  Checkout
-                </Button>
-                <Button
-                  size='lg'
-                  radius='full'
-                  variant='bordered'
-                  className='font-space bg-secondary hover:border-foreground/30'>
-                  <span>Share</span>
-                  <Icon name='share' className='size-7' />
+                  variant='solid'
+                  className='w-full font-space font-semibold border border-foreground bg-foreground text-background hover:border-foreground'>
+                  <span>Checkout</span>
+                  <Icon name='arrow-down' className='ml-2 size-8 -rotate-90' />
                 </Button>
               </div>
             </div>
