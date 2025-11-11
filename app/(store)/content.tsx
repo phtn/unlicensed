@@ -1,9 +1,10 @@
 'use client'
 import type {StoreCategory, StoreProduct} from '@/app/types'
 import {NewHome} from '@/components/base44/home'
+import {QuickScroll} from '@/components/base44/quick-scroll'
 import {ProductCard} from '@/components/store/product-card'
-import {Button, Chip} from '@heroui/react'
-import NextLink from 'next/link'
+import {FeaturedProducts} from './featured'
+import {StrainFinderMini} from './strain-finder'
 
 interface StorefrontPageProps {
   categories: StoreCategory[]
@@ -23,24 +24,9 @@ const buildCategorySections = (
     }))
     .filter((section) => section.products.length > 0)
 
-const metrics = [
-  {
-    label: 'Small-batch SKUs',
-    value: '24',
-  },
-  {
-    label: 'Cultivars tasted this season',
-    value: '56',
-  },
-  {
-    label: 'Delivery radius (mi)',
-    value: '12',
-  },
-]
-
 export const Content = ({categories, products}: StorefrontPageProps) => {
   const featuredProducts = products.filter((item) => item.featured).slice(0, 4)
-  const heroProduct = featuredProducts[0] ?? products[0] ?? null
+  // const heroProduct = featuredProducts[0] ?? products[0] ?? null
   const sections = buildCategorySections(categories, products)
 
   return (
@@ -160,108 +146,18 @@ export const Content = ({categories, products}: StorefrontPageProps) => {
         </div>
       </section>*/}
 
-      <section
-        id='menu'
-        className='mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 bg-accent'>
-        <div className='flex flex-col gap-6'>
-          <div className='flex flex-wrap items-center justify-between gap-4'>
-            <div>
-              <h2 className='text-2xl font-semibold text-foreground sm:text-3xl'>
-                Featured Drops
-              </h2>
-              <p className='text-sm text-color-muted'>
-                Small-batch releases handpicked by our cultivation team.
-              </p>
-            </div>
-            <Button
-              as={NextLink}
-              href='#finder'
-              radius='full'
-              variant='flat'
-              className='border border-(--surface-outline) bg-(--surface-highlight) text-sm font-semibold text-foreground transition hover:bg-[var(--surface-muted)]'>
-              Personalize with Strain Finder
-            </Button>
-          </div>
-          <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.slug} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
+      <FeaturedProducts featuredProducts={featuredProducts} />
 
-      <section
-        id='finder'
-        className='mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8'>
-        <div className='rounded-[36px] surface-card-strong p-8 transition-colors sm:p-12'>
-          <div className='grid gap-12 lg:grid-cols-2 lg:items-center'>
-            <div className='space-y-6'>
-              <Chip
-                variant='flat'
-                radius='sm'
-                className='chip-surface w-fit rounded-full px-4 py-1 text-[11px] font-medium uppercase tracking-[0.4em] text-color-muted'>
-                Strain Finder
-              </Chip>
-              <h2 className='text-3xl font-semibold text-foreground sm:text-4xl'>
-                Tell us how you want to feel. We’ll build your tasting flight.
-              </h2>
-              <p className='text-base text-color-muted'>
-                Dial in your desired experience, preferred flavor notes, and
-                potency level. Our guided strain finder crafts a trio of
-                recommendations matched to your vibe.
-              </p>
-              <div className='flex flex-wrap gap-3 text-sm text-color-muted'>
-                <span className='pill-surface rounded-full px-4 py-2'>
-                  Mood-based curation
-                </span>
-                <span className='pill-surface rounded-full px-4 py-2'>
-                  Terpene-forward suggestions
-                </span>
-                <span className='pill-surface rounded-full px-4 py-2'>
-                  Supports micro & macro dosing
-                </span>
-              </div>
-              <Button
-                as={NextLink}
-                href='/quiz'
-                radius='full'
-                variant='solid'
-                className='cta-button w-fit px-8 py-5 text-sm font-semibold uppercase tracking-[0.35em] hover:brightness-110'>
-                Start the Finder
-              </Button>
-            </div>
-            <div className='grid gap-4 sm:grid-cols-2'>
-              {categories.slice(0, 4).map((category) => (
-                <div
-                  key={category.slug}
-                  className='group relative overflow-hidden rounded-2xl border border-(--surface-outline) bg-(--surface-highlight) p-6 transition hover:-translate-y-1 hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)]'>
-                  <div className='flex flex-col gap-3'>
-                    <span className='text-xs uppercase tracking-[0.4em] text-color-muted'>
-                      {category.slug}
-                    </span>
-                    <h3 className='text-lg font-semibold text-foreground'>
-                      {category.name}
-                    </h3>
-                    <p className='text-sm text-color-muted'>
-                      {category.description}
-                    </p>
-                  </div>
-                  <span className='absolute right-4 top-4 text-xs font-semibold text-color-muted transition group-hover:text-foreground'>
-                    Explore →
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <QuickScroll className='bg-foreground/10' href='#finder' />
+
+      <StrainFinderMini categories={categories.slice(0, 4)} />
 
       {sections.map(({category, products: categoryProducts}) => (
         <section
           key={category.slug}
           id={`category-${category.slug}`}
-          className='mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8'>
-          <div className='flex flex-col gap-8 rounded-3xl surface-card-strong p-8 transition-colors sm:p-10'>
+          className='mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8'>
+          <div className='flex flex-col gap-8 rounded-3xl p-6 transition-colors sm:p-8'>
             <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
               <div>
                 <h3 className='text-2xl font-semibold text-foreground sm:text-3xl'>

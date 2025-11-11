@@ -108,6 +108,7 @@ export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
       ref={containerRef}
       className={cn(
         'relative max-w-7xl mx-auto pt-10 md:pt-24 h-[80lvh] md:h-[64lvh]',
+        'cursor-grab active:cursor-grabbing',
         className,
       )}
       role='region'
@@ -178,11 +179,11 @@ const Slide = ({
   title,
   description,
   imageUrl,
-  imageAlt,
+  // imageAlt,
   ctaHref,
   ctaText,
-  product,
-  variantOptions,
+  // product,
+  // variantOptions,
 }: Highlight) => {
   return (
     <div className=' relative min-w-full flex-[0_0_100%] px-6 md:snap-start md:snap-always'>
@@ -199,7 +200,7 @@ const Slide = ({
               <Button
                 as='a'
                 href={ctaHref}
-                className='bg-foreground hover:bg-secondary-foreground text-white font-medium px-6 py-3'>
+                className='bg-primary hover:bg-primary-foreground text-white font-medium px-6 py-3'>
                 {ctaText}
               </Button>
               <Button variant='faded' className='flex items-center gap-2'>

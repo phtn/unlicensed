@@ -19,6 +19,8 @@ export default defineSchema({
     description: v.string(),
     priceCents: v.number(),
     unit: v.string(),
+    availableDenominations: v.optional(v.array(v.number())),
+    popularDenomination: v.optional(v.number()),
     thcPercentage: v.number(),
     cbdPercentage: v.optional(v.number()),
     effects: v.array(v.string()),
@@ -41,4 +43,3 @@ export default defineSchema({
       filterFields: ['categorySlug'],
     }),
 })
-

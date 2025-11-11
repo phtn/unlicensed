@@ -1,7 +1,7 @@
-import {ConvexHttpClient} from 'convex/browser'
-import {api} from '@/convex/_generated/api'
 import type {StoreCategory, StoreProduct, StoreProductDetail} from '@/app/types'
+import {api} from '@/convex/_generated/api'
 import {categoriesSeed, productsSeed} from '@/convex/init'
+import {ConvexHttpClient} from 'convex/browser'
 
 type RawCategory = {
   slug: string
@@ -20,6 +20,8 @@ type RawProduct = {
   description: string
   priceCents: number
   unit: string
+  availableDenominations: number[]
+  popularDenomination: number
   thcPercentage: number
   cbdPercentage?: number
   effects: string[]
@@ -78,6 +80,8 @@ const adaptProduct = (product: RawProduct): StoreProduct => ({
   description: product.description,
   priceCents: product.priceCents,
   unit: product.unit,
+  availableDenominations: product.availableDenominations,
+  popularDenomination: product.popularDenomination,
   thcPercentage: product.thcPercentage,
   cbdPercentage: product.cbdPercentage,
   effects: product.effects,
@@ -121,7 +125,8 @@ const fallbackProductDetail = (slug: string): StoreProductDetail | null => {
   }
   const related = productsSeed
     .filter(
-      (item) => item.categorySlug === product.categorySlug && item.slug !== slug,
+      (item) =>
+        item.categorySlug === product.categorySlug && item.slug !== slug,
     )
     .map((item, index) =>
       adaptProduct({
@@ -210,4 +215,3 @@ export const fetchProductDetail = async (
     return fallbackProductDetail(slug)
   }
 }
-

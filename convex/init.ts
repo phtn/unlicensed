@@ -21,6 +21,8 @@ type ProductSeed = {
   description: string
   priceCents: number
   unit: string
+  availableDenominations: number[]
+  popularDenomination: number
   thcPercentage: number
   cbdPercentage?: number
   effects: string[]
@@ -46,7 +48,7 @@ export const categoriesSeed: CategorySeed[] = [
     highlight: 'Grown in living soil with regenerative farming practices.',
     benefits: ['Full-spectrum cannabinoid expression', 'Rich terpene bouquet'],
     heroImage:
-      'https://images.unsplash.com/photo-1542996966-2e31c00bae30?auto=format&fit=crop&w=1400&q=80',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Slurricane_transparent.png?v=1759173573&width=1488',
   },
   {
     name: 'Edibles',
@@ -56,7 +58,7 @@ export const categoriesSeed: CategorySeed[] = [
     highlight: 'Low-and-slow onset for a smooth, extended experience.',
     benefits: ['Precisely dosed servings', 'Vegan and gluten-free options'],
     heroImage:
-      'https://images.unsplash.com/photo-1528838068211-1f49906c754b?auto=format&fit=crop&w=1400&q=80',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Chillout_25mg_d8.png?v=1723894235&width=600',
   },
   {
     name: 'Concentrates',
@@ -65,8 +67,7 @@ export const categoriesSeed: CategorySeed[] = [
       'High-potency extracts showcasing the pure essence of each cultivar.',
     highlight: 'Cold-cured and single-source for maximum expression.',
     benefits: ['Potent cannabinoid content', 'Preserves native terpenes'],
-    heroImage:
-      'https://images.unsplash.com/photo-1611242320536-72cfa7b0db18?auto=format&fit=crop&w=1400&q=80',
+    heroImage: `https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Thca_diamond.png?v=1734635477&width=600`,
   },
   {
     name: 'Drinks',
@@ -75,8 +76,7 @@ export const categoriesSeed: CategorySeed[] = [
       'Sparkling beverages infused with nano-emulsified THC for fast onset.',
     highlight: 'Zero sugar, uplifting botanicals, and vibrant flavors.',
     benefits: ['15-minute onset window', 'Balanced cannabinoid ratios'],
-    heroImage:
-      'https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=1400&q=80',
+    heroImage: `https://cdn.shopify.com/s/files/1/0693/8119/3966/files/SleepytimeHotCocoaAdvanced_PLP_JuanStock_18092025.png?v=1758209621&width=600`,
   },
   {
     name: 'Pre-rolls',
@@ -86,13 +86,13 @@ export const categoriesSeed: CategorySeed[] = [
     highlight: 'Hand-finished cones with slow, even burn.',
     benefits: ['Convenient format', 'Curated terpene experiences'],
     heroImage:
-      'https://images.unsplash.com/photo-1511912919394-65ba03fdaab4?auto=format&fit=crop&w=1400&q=80',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Strawberries_Bananas.png?v=1734635190&width=600',
   },
 ]
 
 export const productsSeed: ProductSeed[] = [
   {
-    name: 'Sunrise Sativa Flower',
+    name: 'rainbow-runtz',
     slug: 'rainbow-runtz',
     categorySlug: 'flower',
     shortDescription:
@@ -100,7 +100,9 @@ export const productsSeed: ProductSeed[] = [
     description:
       'Sunrise Sativa is grown in living soil under full-spectrum LEDs to preserve delicate terpenes. Expect an uplifting, creative experience with clean energy that fades into a gentle focus.',
     priceCents: 4200,
-    unit: '3.5g jar',
+    unit: 'g',
+    availableDenominations: [1, 3.5, 7, 14, 28],
+    popularDenomination: 3.5,
     thcPercentage: 24.1,
     cbdPercentage: 0.2,
     effects: ['Energetic', 'Creative', 'Focused'],
@@ -130,7 +132,9 @@ export const productsSeed: ProductSeed[] = [
     description:
       'Moonlit Indica is an evening cultivar dialed in for restorative rest. Purple buds release lavender and berry aromatics, settling the body with a cozy, weighted calm.',
     priceCents: 4400,
-    unit: '3.5g jar',
+    unit: 'g',
+    availableDenominations: [1, 3.5, 7, 14, 28],
+    popularDenomination: 3.5,
     thcPercentage: 26.3,
     effects: ['Relaxed', 'Sedated', 'Comforted'],
     terpenes: ['Linalool', 'Myrcene', 'Caryophyllene'],
@@ -139,10 +143,10 @@ export const productsSeed: ProductSeed[] = [
     stock: 34,
     rating: 4.8,
     image:
-      'https://images.unsplash.com/photo-1693074713415-ee591ea0af99?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=654',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/DantesInferno_transparent.png?v=1759173638&width=1488',
     gallery: [
-      'https://images.unsplash.com/photo-1608889175123-8c2267a5133c?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1200&q=80',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/SuperGoof_transparent.png?v=1759173080&width=1488',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/TrapCherries_transparent.png?v=1759171852&width=1488',
     ],
     consumption:
       'Pack loosely in a small bowl or vape at low temps to preserve linalool. Sip water between draws.',
@@ -160,6 +164,8 @@ export const productsSeed: ProductSeed[] = [
       'A chef-led recipe using cold-pressed citrus and nano-emulsified THC for a crisp, uplifting edible. Balanced with guava nectar for a lush finish.',
     priceCents: 2800,
     unit: '10-pack (5mg each)',
+    availableDenominations: [1, 3.5, 7, 14, 28],
+    popularDenomination: 3.5,
     thcPercentage: 5,
     effects: ['Social', 'Bright', 'Balanced'],
     terpenes: ['Valencene', 'Limonene'],
@@ -168,10 +174,10 @@ export const productsSeed: ProductSeed[] = [
     stock: 88,
     rating: 4.6,
     image:
-      'https://images.unsplash.com/photo-1617627191898-1408bf607b4d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1751',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Chillout_25mg_d8.png?v=1723894235&width=600',
     gallery: [
-      'https://images.unsplash.com/photo-1604908176997-12518821c8ef?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Morning_D9.png?v=1734634997&width=600',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/50mgDelta8Gummies_PLP_StephRenders_15082025.png?v=1755527514&width=600',
     ],
     consumption:
       'Start with one gummy, wait 60-90 minutes before considering another serving.',
@@ -188,6 +194,8 @@ export const productsSeed: ProductSeed[] = [
       'Crafted with 72% Dominican cacao, these ganache bites melt into a slow-building body warmth perfect for deep relaxation.',
     priceCents: 3200,
     unit: '6-piece box (10mg each)',
+    availableDenominations: [1, 3.5, 7, 14, 28],
+    popularDenomination: 3.5,
     thcPercentage: 10,
     effects: ['Relaxing', 'Body high', 'Sleepy'],
     terpenes: ['Myrcene', 'Humulene'],
@@ -196,10 +204,10 @@ export const productsSeed: ProductSeed[] = [
     stock: 53,
     rating: 4.9,
     image:
-      'https://images.unsplash.com/photo-1618427105274-f3a4f72f8104?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1770',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/MindfulBrownieBites_PLP_ScottPhotos_13052025.png?v=1750093452&width=600',
     gallery: [
-      'https://images.unsplash.com/photo-1526081347589-6b2507040a40?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=1200&q=80',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Brownie_bites.png?v=1734645873&width=600',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Chocolate_chip_cookie.png?v=1734639004&width=600',
     ],
     consumption:
       'Enjoy after dinner. Allow chocolate to melt slowly for best terpene expression.',
@@ -215,6 +223,8 @@ export const productsSeed: ProductSeed[] = [
       'Fresh frozen whole flower processed within hours of harvest to capture peak terpene fidelity. Expect a euphoric, immersive ride.',
     priceCents: 6000,
     unit: '1g jar',
+    availableDenominations: [1, 3.5, 7, 14, 28],
+    popularDenomination: 3.5,
     thcPercentage: 76.4,
     cbdPercentage: 1.1,
     effects: ['Euphoric', 'Expansive', 'Creative'],
@@ -224,10 +234,10 @@ export const productsSeed: ProductSeed[] = [
     stock: 27,
     rating: 4.8,
     image:
-      'https://images.unsplash.com/photo-1711748975720-c778c8b4c65c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1180',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/D8_thc_moonrocks.png?v=1723894390&width=600',
     gallery: [
-      'https://images.unsplash.com/photo-1608889639994-5ac1b57f62c4?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1580158004218-66b1daee88a8?auto=format&fit=crop&w=1200&q=80',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/CosmicMoonrocks_PLP_AdrianRenders_31072025.png?v=1755191711&width=600',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Thca_moonrocks.png?v=1723897457&width=600',
     ],
     consumption:
       'Best enjoyed at low temperatures (480-520°F). Allow terpenes to vaporize before inhaling deeply.',
@@ -244,6 +254,8 @@ export const productsSeed: ProductSeed[] = [
       'Solventless rosin pressed from hand-washed fresh frozen material. A decadent treat for enthusiasts chasing boutique terpene profiles.',
     priceCents: 7200,
     unit: '1g jar',
+    availableDenominations: [1, 3.5, 7, 14, 28],
+    popularDenomination: 3.5,
     thcPercentage: 78.9,
     effects: ['Blissful', 'Heavy', 'Dreamy'],
     terpenes: ['Myrcene', 'Limonene', 'Linalool'],
@@ -252,10 +264,10 @@ export const productsSeed: ProductSeed[] = [
     stock: 18,
     rating: 4.9,
     image:
-      'https://images.unsplash.com/photo-1711748975715-e9aea2bc9db1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1180',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/ClassicHash_PLP_AdrianRenders_20012025.png?v=1748959476&width=600',
     gallery: [
-      'https://images.unsplash.com/photo-1608889641257-9eae0492a1dc?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1200&q=80',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/THCaIceQueenDabBadder_PLP_AdrianRenders_20012025.png?v=1748958382&width=600',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Caribbean_dream_hash.png?v=1734634566&width=600',
     ],
     consumption:
       'Use a cold-start dab or dynamic induction heater to savor the delicate top notes.',
@@ -272,6 +284,8 @@ export const productsSeed: ProductSeed[] = [
       'Golden Hour pairs juicy mango with calming chamomile and jasmine green tea for a sunset-ready sip.',
     priceCents: 1800,
     unit: '12oz can',
+    availableDenominations: [1, 3.5, 7, 14, 28],
+    popularDenomination: 3.5,
     thcPercentage: 5,
     effects: ['Balanced', 'Chatty', 'Warm'],
     terpenes: ['Limonene', 'Bisabolol'],
@@ -280,10 +294,10 @@ export const productsSeed: ProductSeed[] = [
     stock: 64,
     rating: 4.5,
     image:
-      'https://images.unsplash.com/photo-1610740654896-e23a29ae43c6?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1770',
+      'https://a-us.storyblok.com/f/1021976/1080x1080/4815ffe35b/beverages.jpg/m/',
     gallery: [
-      'https://images.unsplash.com/photo-1509223197845-458d87318791?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1558642084-fd07fae5282c?auto=format&fit=crop&w=1200&q=80',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/BoostPreWorkout_PLP_StephRender_31012025.png?v=1755286332&width=600',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/SleepytimeHotCocoaAdvanced_PLP_JuanStock_18092025.png?v=1758209621&width=600',
     ],
     consumption:
       'Serve chilled over ice. Expect onset in 15-20 minutes thanks to nano-emulsification.',
@@ -300,6 +314,8 @@ export const productsSeed: ProductSeed[] = [
       'Trailhead features a curated blend of uplifting cultivars rolled into slow-burning mini cones for easy pacing.',
     priceCents: 3600,
     unit: '7-pack (0.5g each)',
+    availableDenominations: [1, 3.5, 7, 14, 28],
+    popularDenomination: 3.5,
     thcPercentage: 22.5,
     effects: ['Uplifted', 'Social', 'Creative'],
     terpenes: ['Pinene', 'Terpinolene', 'Limonene'],
@@ -308,10 +324,10 @@ export const productsSeed: ProductSeed[] = [
     stock: 51,
     rating: 4.6,
     image:
-      'https://images.unsplash.com/photo-1695326463324-9a45f1e343f7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1770',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Boogie_woogie.png?v=1734634533&width=600',
     gallery: [
-      'https://images.unsplash.com/photo-1619606323485-4570a1c2c763?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1542996966-2e31c00bae30?auto=format&fit=crop&w=1200&q=80',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Wedding_cake.png?v=1734635536&width=600',
+      'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Jeffrey_PLP_AdrianRenders_07042025.png?v=1744872691&width=600',
     ],
     consumption:
       'Spark a micro pre-roll for a steady 3-4 hit session. Ideal for group hikes and quick breaks.',

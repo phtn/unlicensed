@@ -1,3 +1,4 @@
+import {Footer} from '@/components/ui/footer'
 import {ProvidersCtxProvider} from '@/ctx'
 import type {Metadata} from 'next'
 import {
@@ -82,6 +83,7 @@ export default function RootLayout({
             <div className='relative z-10 flex min-h-screen flex-col'>
               {navbar}
               <div className='relative flex-1 mt-12'>{children}</div>
+              <Footer />
             </div>
           </div>
         </ProvidersCtxProvider>

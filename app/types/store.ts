@@ -15,6 +15,8 @@ export interface StoreProduct {
   description: string
   priceCents: number
   unit: string
+  availableDenominations: number[]
+  popularDenomination: number
   thcPercentage: number
   cbdPercentage?: number
   effects: string[]
@@ -38,4 +40,3 @@ export interface StoreProductDetail {
   category?: StoreCategory | null
   related: StoreProduct[]
 }
-

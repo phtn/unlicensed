@@ -82,7 +82,7 @@ const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
         onPress={handleToggle}
         radius='full'
         variant='flat'
-        className='w-full border border-(--nav-border) bg(--surface-highlight) px-4 py-3 text-base font-medium text-foreground hover:bg-[var(--surface-muted)]'>
+        className='w-full border border-(--nav-border) bg(--surface-highlight) px-4 py-3 text-base font-medium text-foreground hover:bg-(--surface-muted)'>
         {label}
       </Button>
     )
@@ -95,7 +95,7 @@ const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
       radius='full'
       variant='flat'
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-      className='border border-[var(--nav-border)] bg-[var(--surface-highlight)] text-foreground transition duration-200 hover:bg-[var(--surface-muted)]'>
+      className='border border-(--nav-border) bg-(--surface-highlight) text-foreground transition duration-200 hover:bg-(--surface-muted)'>
       {isDark ? <SunIcon /> : <MoonIcon />}
     </Button>
   )
@@ -118,7 +118,7 @@ export const Nav = () => {
       isBlurred={false}
       shouldHideOnScroll
       onMenuOpenChange={setIsMenuOpen}
-      className='sticky top-0 z-50 border-b border-[var(--nav-border)] bg-[var(--nav-background)] backdrop-blur-2xl transition-colors duration-300'
+      className='sticky top-0 z-50 border-b border-(--nav-border) bg-(--nav-background) backdrop-blur-2xl transition-colors duration-300'
       classNames={{
         wrapper: 'px-4 lg:px-8',
         item: 'data-[active=true]:text-foreground data-[active=true]:font-medium',
@@ -129,7 +129,7 @@ export const Nav = () => {
           className='sm:hidden'
         />
         <NavbarBrand className='items-center gap-3'>
-          <div className='flex h-11 w-11 font-extrabold text-xl items-center justify-center rounded-2xl border border-[var(--nav-border)] bg-[var(--surface-highlight)] shadow-[0_18px_40px_-28px_rgba(5,9,21,0.35)] backdrop-blur-xl transition-colors duration-300'>
+          <div className='flex h-11 w-11 font-extrabold text-xl items-center justify-center rounded-2xl border border-(--nav-border) bg-(--surface-highlight) shadow-[0_18px_40px_-28px_rgba(5,9,21,0.35) backdrop-blur-xl transition-colors duration-300'>
             U
           </div>
           <div className='flex flex-col leading-tight'>
@@ -163,7 +163,7 @@ export const Nav = () => {
               {link.label}
             </Link>
             {activeHref === link.href ? (
-              <span className='absolute -bottom-2 left-1/2 h-[2px] w-6 -translate-x-1/2 bg-gradient-to-r from-[#5f3df7] via-[#c86dd7] to-[#f6a44d]' />
+              <span className='absolute -bottom-2 left-1/2 h-0.5 w-6 -translate-x-1/2 bg-linear-to-r from-[#5f3df7] via-[#c86dd7] to-[#f6a44d]' />
             ) : null}
           </NavbarItem>
         ))}
@@ -176,7 +176,7 @@ export const Nav = () => {
           href='/#menu'
           radius='full'
           variant='flat'
-          className='border border-[var(--nav-border)] bg-[var(--surface-highlight)] px-5 py-2 text-sm font-medium text-foreground shadow-[0_14px_40px_-28px_rgba(12,20,45,0.38)] transition duration-200 hover:bg-[var(--surface-muted)]'>
+          className='border border-(--nav-border) bg-(--surface-highlight) px-5 py-2 text-sm font-medium text-foreground shadow-[0_14px_40px_-28px_rgba(12,20,45,0.38) transition duration-200 hover:bg-(--surface-muted)'>
           Browse Menu
         </Button>
         <Button
@@ -215,7 +215,7 @@ export const Nav = () => {
             href='/#menu'
             radius='full'
             variant='flat'
-            className='border border-[var(--nav-border)] bg-[var(--surface-highlight)] text-sm font-semibold text-foreground shadow-[0_14px_40px_-28px_rgba(12,20,45,0.38)] transition duration-200 hover:bg-[var(--surface-muted)]'
+            className='border border-(--nav-border) bg-(--surface-highlight) text-sm font-semibold text-foreground shadow-[0_14px_40px_-28px_rgba(12,20,45,0.38) transition duration-200 hover:bg-(--surface-muted)'
             onPress={() => setIsMenuOpen(false)}>
             Browse Menu
           </Button>

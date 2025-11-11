@@ -1,7 +1,6 @@
 import type {StoreProduct} from '@/app/types'
 import {cn} from '@/lib/utils'
-import {Card, CardBody, CardFooter, Chip} from '@heroui/react'
-import Image from 'next/image'
+import {Card, CardBody, CardFooter, Chip, Image} from '@heroui/react'
 import NextLink from 'next/link'
 
 type ProductCardProps = {
@@ -11,7 +10,7 @@ type ProductCardProps = {
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
-  return dollars % 1 === 0 ? `$${dollars.toFixed(0)}` : `$${dollars.toFixed(2)}`
+  return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
 }
 
 export const ProductCard = ({product, className}: ProductCardProps) => {
@@ -24,19 +23,17 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
       isPressable
       shadow='sm'
       className={cn(
-        'group h-full surface-card-strong transition-all duration-300 hover:-translate-y-1.5 hover-elevated',
+        'group h-full transition-all duration-300 hover:-translate-y-1.5 hover-elevated',
+        'rounded-4xl',
         className,
       )}>
-      <CardBody className='flex flex-col gap-5 p-5'>
-        <div className='relative overflow-hidden rounded-2xl border border-[var(--surface-outline)] bg-[var(--surface-highlight)]'>
-          <div className='absolute inset-0 z-10 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
+      <CardBody className='flex flex-col'>
+        <div className='relative overflow-hidden rounded-3xl'>
+          <div className='absolute size-96 overflow-hidden inset-0 z-10 bg-linear-to-t from-foreground/10 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
           <Image
             src={product.image}
             alt={product.name}
-            width={640}
-            height={640}
-            className='h-64 w-full rounded-2xl object-cover transition duration-300 group-hover:scale-[1.03]'
-            priority={product.featured}
+            className='h-96 w-full rounded-2xl object-contain aspect-auto transition duration-300 group-hover:scale-[1.03]'
           />
           <div className='absolute left-4 top-4 z-20 flex flex-col gap-2'>
             {product.featured ? (
@@ -46,42 +43,35 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
                 Featured
               </Chip>
             ) : null}
-            <Chip
-              color='default'
-              variant='flat'
-              className='chip-surface rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.45em] text-color-muted'>
-              {product.unit}
-            </Chip>
           </div>
         </div>
 
-        <div className='flex flex-col gap-3'>
-          <div className='flex items-start justify-between gap-3'>
-            <div>
-              <h3 className='text-lg font-semibold text-foreground'>
+        <div className='flex flex-col gap-4 p-4'>
+          <div className='flex items-start justify-between'>
+            <div className='space-y-2'>
+              <h3 className='text-lg font-semibold font-space'>
                 {product.name}
               </h3>
-              <p className='text-sm text-color-muted'>
-                {product.shortDescription}
-              </p>
             </div>
-            <span className='whitespace-nowrap text-sm font-semibold text-foreground'>
+            <span className='whitespace-nowrap text-lg font-space text-foreground'>
+              <span className='font-thin opacity-70'>$</span>
               {formatPrice(product.priceCents)}
             </span>
           </div>
+          <p className='text-xs opacity-70 font-normal whitespace-nowrap max-w-[44ch] truncate text-ellipsis'>
+            {product.shortDescription}
+          </p>
           <div className='flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide text-color-muted'>
-            <span className='pill-surface rounded-full px-3 py-1 text-[11px] font-medium text-foreground/80'>
-              {product.thcPercentage.toFixed(1)}% THC
-            </span>
-            {typeof product.cbdPercentage === 'number' ? (
-              <span className='pill-surface rounded-full px-3 py-1 text-[11px] font-medium text-foreground/70'>
-                {product.cbdPercentage.toFixed(1)}% CBD
+            <span className='pill-surface rounded-full px-3 py-1 text-xs text-foreground/80'>
+              <span className=' font-bold mr-1 opacity-70'>THC</span>
+              <span className='font-space'>
+                {product.thcPercentage.toFixed(1)}%
               </span>
-            ) : null}
+            </span>
             {topEffects.map((effect) => (
               <span
                 key={effect}
-                className='rounded-full border border-color-border/60 px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-color-muted'>
+                className='rounded-full pill-surface px-3 py-1 text-xs capitalize tracking-tight opacity-80 font-space'>
                 {effect}
               </span>
             ))}
@@ -89,10 +79,8 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
         </div>
       </CardBody>
       <CardFooter className='flex items-center justify-between px-5 pb-5'>
-        <div className='flex items-center gap-2 text-xs uppercase tracking-[0.45em] text-color-muted'>
-          <span className='rounded-full border border-[var(--surface-outline)] bg-[var(--surface-highlight)] px-3 py-1 font-semibold text-foreground/80'>
-            {product.categorySlug}
-          </span>
+        <div className='flex items-center gap-2 text-xs tracking-wide text-color-muted'>
+          <span className='opacity-60'>(1245 reviews)</span>
           <span>{product.rating.toFixed(1)} ★</span>
         </div>
         <span className='text-xs font-semibold text-foreground/70'>

@@ -1,6 +1,7 @@
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Image} from '@heroui/react'
+import {Lens} from '../ui/lens'
 import {Nav} from './nav'
 import {Tag} from './tag'
 import {Title} from './title'
@@ -157,11 +158,13 @@ export const CategoryContent = ({slug}: CategoryContentProps) => {
               <div key={product.id} className='group cursor-pointer'>
                 {/* Product Image */}
                 <div className='relative flex items-center border-t border-x border-foreground/10 bg-transparent p-4 justify-center rounded-t-3xl overflow-hidden h-96'>
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    className='size-100 aspect-auto object-contain'
-                  />
+                  <Lens lensSize={150}>
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      className='size-100 aspect-auto object-contain'
+                    />
+                  </Lens>
                   <div
                     className={`absolute inset-0 bg-linear-to-br group-hover:opacity-70 transition-opacity duration-300`}></div>
 

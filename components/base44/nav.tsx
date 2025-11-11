@@ -18,7 +18,7 @@ export const Nav = ({children}: NavProps) => {
             name='unlicensed'
             className='size-6 text-teal-300 rounded-full'
           />
-          <div className='tracking-tighter lg:tracking-wide font-medium font-sans'>
+          <div className='uppercase tracking-tighter lg:tracking-normal font-medium font-sans text-sm'>
             {children ?? 'unlicensed'}
           </div>
         </Link>
@@ -38,7 +38,7 @@ export const Nav = ({children}: NavProps) => {
           <ThemeToggle />
 
           <ExternalLink className='capitalize bg-black' isIconOnly>
-            <Icon name='bag-light' className='size-6' />
+            <Icon name='bag-light' className='size-6 text-teal-400' />
           </ExternalLink>
         </div>
       </div>

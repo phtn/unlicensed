@@ -7,9 +7,10 @@ const getProductDetail = cache(fetchProductDetail)
 export async function generateMetadata({
   params,
 }: {
-  params: {slug: string}
+  params: Promise<{slug: string}>
 }): Promise<Metadata> {
-  const detail = await getProductDetail(params.slug)
+  const slug = (await params).slug
+  const detail = await getProductDetail(slug)
 
   if (!detail) {
     return {
@@ -20,10 +21,10 @@ export async function generateMetadata({
   const {product} = detail
 
   return {
-    title: `${product.name} | Hyfe Goods`,
+    title: `${product.name} | Unlicensed Goods`,
     description: product.shortDescription,
     openGraph: {
-      title: `${product.name} | Hyfe Goods`,
+      title: `${product.name} | Unlicensed Goods`,
       description: product.description,
       images:
         product.gallery.length > 0 ? [product.gallery[0]] : [product.image],

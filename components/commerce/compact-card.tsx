@@ -13,16 +13,16 @@ interface CompactProductCardProps extends StoreProduct {
 }
 
 export const CompactProductCard = ({
-  flavorNotes,
+  // flavorNotes,
   slug,
   name,
   image,
-  priceCents,
+  // priceCents,
   className,
   priority = false,
   selectedVariant,
   variantOptions,
-  loading = 'lazy',
+  // loading = 'lazy',
 }: CompactProductCardProps) => {
   const variantPrice = selectedVariant?.priceCents
 

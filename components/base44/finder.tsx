@@ -11,12 +11,12 @@ export const ShopFinder = () => {
   )
 
   return (
-    <section className='pb-20 px-6 h-fit bg-foreground/10'>
+    <section className='pb-20 px-6 h-fit bg-tertiary border-b-6 border-foreground/40'>
       <div className='relative max-w-7xl mx-auto'>
         <div className='grid lg:grid-cols-2 gap-12 mb-8'>
           <h2 className='text-2xl tracking-tight lg:text-3xl font-fugaz leading-tight'>
             <span className='mr-2'>Shop by</span>
-            <span className='text-secondary-foreground font-space font-semibold capitalize'>
+            <span className='text-tertiary-foreground font-space font-semibold capitalize'>
               {selectedFilter}.
             </span>
           </h2>
@@ -25,15 +25,15 @@ export const ShopFinder = () => {
             <ButtonGroup variant='solid'>
               <Button
                 onPress={handleFilterChange('category')}
-                className={cn('bg-foreground text-white', {
-                  'bg-foreground/70': selectedFilter === 'category',
+                className={cn('bg-tertiary-foreground text-white', {
+                  'bg-tertiary-foreground/70': selectedFilter === 'category',
                 })}>
                 Category
               </Button>
               <Button
                 onPress={handleFilterChange('mood')}
-                className={cn('bg-foreground text-white', {
-                  'bg-foreground/70': selectedFilter === 'mood',
+                className={cn('bg-tertiary-foreground text-white', {
+                  'bg-tertiary-foreground/70': selectedFilter === 'mood',
                 })}>
                 Mood
               </Button>
@@ -43,7 +43,7 @@ export const ShopFinder = () => {
 
         <div className='absolute rounded-4xl h-40 w-full scale-125 blur-3xl opacity-20 bg-linear-to-br from-yellow-300/60 via-orange-300/60 to-teal-400 p-8 lg:p-4'></div>
         {/* Stats Cards */}
-        <div className='relative rounded-3xl overflow-hidden bg-linear-to-br from-teal-400 via-teal-500 to-teal-600 p-8 lg:p-4'>
+        <div className='relative rounded-3xl overflow-hidden bg-linear-to-br  from-panel via-panel/70 to-panel/80 p-8 lg:p-4'>
           {/* Decorative gradient blobs */}
           <div className='absolute top-20 right-1/3 w-64 h-64 bg-orange-400 rounded-full filter blur-3xl opacity-40'></div>
           <div className='absolute bottom-20 left-1/4 w-48 h-48 bg-yellow-300 rounded-full filter blur-3xl opacity-30'></div>
