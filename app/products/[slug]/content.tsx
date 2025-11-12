@@ -151,7 +151,9 @@ export const ProductDetailContent = ({
             item: 'text-color-muted hover:text-foreground',
             separator: 'text-color-muted',
           }}>
-          <BreadcrumbItem href='/'>Home</BreadcrumbItem>
+          <BreadcrumbItem href='/'>
+            <Icon name='hut' />
+          </BreadcrumbItem>
           <BreadcrumbItem href={`/#category-${product.categorySlug}`}>
             {category?.name ?? product.categorySlug}
           </BreadcrumbItem>
