@@ -21,6 +21,7 @@ export const Icon: FC<IconProps & {motionprops?: MotionProps}> = ({
   return (
     <motion.div {...props.motionprops}>
       <svg
+        suppressHydrationWarning
         xmlns='http://www.w3.org/2000/svg'
         viewBox={icon.viewBox ?? '0 0 24 24'}
         width={size}

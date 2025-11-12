@@ -1,3 +1,4 @@
+import {StoreProduct} from '@/app/types'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Image} from '@heroui/react'
@@ -8,54 +9,63 @@ import {Title} from './title'
 
 interface CategoryContentProps {
   slug: string
+  products: StoreProduct[]
 }
-export const CategoryContent = ({slug}: CategoryContentProps) => {
-  const products = [
-    {
-      id: 1,
-      name: 'rainbow-runtz',
-      thc: '19.73',
-      priceCents: 1300,
-      potency: 'medium',
-      description:
-        'Experience pure relaxation. This THCa flower converts to regular Delta-9 THC when it&apos;s heated or smoked, and leads to total chill.',
-      image:
-        'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/RainbowRuntz_transparent.png?v=1759172011&width=1488',
-    },
-    {
-      id: 2,
-      name: 'Slurricane',
-      thc: '16.53',
-      priceCents: 1700,
-      potency: 'high',
-      description:
-        'Feels like a forest stroll. Chill out with this THCa flower that converts to regular Delta-9 THC when it&apos;s heated or smoked.',
-      image:
-        'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Slurricane_transparent.png?v=1759173573&width=1488',
-    },
-    {
-      id: 3,
-      name: 'Tangie',
-      thc: '28.89',
-      priceCents: 1700,
-      potency: 'high',
-      description:
-        'Sweet tangerine bursts deliver waves of social energy, sparking lively conversation.',
-      image:
-        'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Tangie_PLP_transparent.png?v=1759171330&width=1488',
-    },
-    {
-      id: 4,
-      name: 'Pluto',
-      thc: '24.43',
-      priceCents: 1700,
-      potency: 'high',
-      description:
-        'Cerebral stimulation with deep relaxation for a focused, creative mind and calm body.',
-      image:
-        'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Pluto_transparent.png?v=1759173347&width=1488',
-    },
-  ]
+export const CategoryContent = ({products, slug}: CategoryContentProps) => {
+  if (products.length === 0) {
+    return (
+      <div className='min-h-screen flex flex-col items-center justify-center gap-4 px-6 py-24 text-center'>
+        <Tag text={slug} />
+        <Title title='Nothing here yet' subtitle='Check back soon' />
+      </div>
+    )
+  }
+  // const products = [
+  //   {
+  //     id: 1,
+  //     name: 'rainbow-runtz',
+  //     thc: '19.73',
+  //     priceCents: 1300,
+  //     potency: 'medium',
+  //     description:
+  //       'Experience pure relaxation. This THCa flower converts to regular Delta-9 THC when it&apos;s heated or smoked, and leads to total chill.',
+  //     image:
+  //       'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/RainbowRuntz_transparent.png?v=1759172011&width=1488',
+  //   },
+  //   {
+  //     id: 2,
+  //     name: 'Slurricane',
+  //     thc: '16.53',
+  //     priceCents: 1700,
+  //     potency: 'high',
+  //     description:
+  //       'Feels like a forest stroll. Chill out with this THCa flower that converts to regular Delta-9 THC when it&apos;s heated or smoked.',
+  //     image:
+  //       'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Slurricane_transparent.png?v=1759173573&width=1488',
+  //   },
+  //   {
+  //     id: 3,
+  //     name: 'Tangie',
+  //     thc: '28.89',
+  //     priceCents: 1700,
+  //     potency: 'high',
+  //     description:
+  //       'Sweet tangerine bursts deliver waves of social energy, sparking lively conversation.',
+  //     image:
+  //       'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Tangie_PLP_transparent.png?v=1759171330&width=1488',
+  //   },
+  //   {
+  //     id: 4,
+  //     name: 'Pluto',
+  //     thc: '24.43',
+  //     priceCents: 1700,
+  //     potency: 'high',
+  //     description:
+  //       'Cerebral stimulation with deep relaxation for a focused, creative mind and calm body.',
+  //     image:
+  //       'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Pluto_transparent.png?v=1759173347&width=1488',
+  //   },
+  // ]
 
   return (
     <div className='min-h-screen'>
@@ -69,7 +79,7 @@ export const CategoryContent = ({slug}: CategoryContentProps) => {
           <div className='grid lg:grid-cols-2 gap-12 items-center'>
             <div>
               <Tag text={slug} />
-              <Title title='Flower' subtitle='Extremely Flavorful' />
+              <Title title={slug} subtitle='Extremely Flavorful' />
               <p className='hidden lg:flex text-lg text-gray-500 mb-10 max-w-lg leading-relaxed'>
                 {/*TODO: Add content here*/}
                 Enjoy the beauty of nature with our exquisite flower collection.
@@ -80,8 +90,8 @@ export const CategoryContent = ({slug}: CategoryContentProps) => {
                 <Button
                   as='a'
                   href={'#'}
-                  className='bg-foreground hover:bg-secondary-foreground text-white font-medium px-6 py-3'>
-                  New Flowers
+                  className='capitalize bg-foreground hover:bg-secondary-foreground text-white font-medium px-6 py-3'>
+                  New {slug}
                 </Button>
                 <Button variant='faded' className='flex items-center gap-2'>
                   <span>Strain Finder</span>
@@ -92,22 +102,10 @@ export const CategoryContent = ({slug}: CategoryContentProps) => {
 
             <div className='relative flex justify-end max-h-[50lvh] overflow-hidden'>
               <Image
-                src='https://cdn.shopify.com/s/files/1/0693/8119/3966/files/IceCreamCake_transparent.png?v=1759173178&width=1488'
-                alt='Beautiful flower'
+                src={products[0].image}
+                alt={slug}
                 className='w-full aspect-auto'
               />
-            </div>
-            <div className='lg:hidden flex items-center justify-center gap-4 lg:gap-5 relative z-50'>
-              <Button
-                as='a'
-                href={'#'}
-                className='bg-foreground hover:bg-secondary-foreground text-white font-medium px-6 py-3'>
-                New Flowers
-              </Button>
-              <Button variant='faded' className='flex items-center gap-2'>
-                <span>Strain Finder</span>
-                <Icon name='search' className='w-4 h-4' />
-              </Button>
             </div>
           </div>
         </div>
@@ -155,7 +153,9 @@ export const CategoryContent = ({slug}: CategoryContentProps) => {
           </h2>
           <div className='grid md:grid-cols-2 gap-8'>
             {products.map((product) => (
-              <div key={product.id} className='group cursor-pointer'>
+              <div
+                key={product._id?.substring(-8)}
+                className='group cursor-pointer'>
                 {/* Product Image */}
                 <div className='relative flex items-center border-t border-x border-foreground/10 bg-transparent p-4 justify-center rounded-t-3xl overflow-hidden h-96'>
                   <Lens lensSize={150}>
@@ -171,18 +171,24 @@ export const CategoryContent = ({slug}: CategoryContentProps) => {
                   {/* Metric Badge */}
                   <div className='flex items-center gap-2 absolute top-6 right-6'>
                     <span className='bg-foreground/10 backdrop-blur-sm text-xs px-3 py-2 rounded-full'>
-                      <span className='font-extrabold opacity-70'>THC</span>
+                      <span className='font-extrabold opacity-70 font-fugaz tracking-wide'>
+                        THC
+                      </span>
                       <span className='font-space font-medium ml-1'>
-                        {product.thc}%
+                        {product.thcPercentage}%
                       </span>
                     </span>
                     <span className='bg-foreground/5 text-xs px-1.5 py-1.5 rounded-full'>
                       <Icon
-                        name='strength'
-                        className={cn('size-6', {
-                          'text-green-600': product.potency === 'medium',
-                          'text-red-400 -scale-x-100':
-                            product.potency === 'high',
+                        name={
+                          product.potencyLevel === 'medium'
+                            ? 'strength-medium'
+                            : 'strength-high'
+                        }
+                        className={cn('size-7 -scale-x-100 text-sky-500', {
+                          'text-teal-500': product.potencyLevel === 'medium',
+                          'text-red-400 scale-x-100':
+                            product.potencyLevel === 'high',
                         })}
                       />
                     </span>
@@ -201,12 +207,12 @@ export const CategoryContent = ({slug}: CategoryContentProps) => {
                       </span>
                     </h4>
                     <p className='text-sm opacity-80 leading-relaxed'>
-                      {product.description}
+                      {product.shortDescription}
                     </p>
                   </div>
                   <Button
                     as='a'
-                    href={`/products/${product.name}`}
+                    href={`/products/${product.slug}`}
                     isIconOnly
                     className='rounded-full text-background bg-foreground/80 flex items-center justify-center shrink-0 mt-1'>
                     <Icon name='chevron-right' className='w-4 h-4' />

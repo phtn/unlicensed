@@ -1,3 +1,5 @@
+import {PotencyLevel} from '@/convex/products/d'
+
 export interface StoreCategory {
   slug: string
   name: string
@@ -29,6 +31,7 @@ export interface StoreProduct {
   gallery: string[]
   consumption: string
   flavorNotes: string[]
+  potencyLevel: PotencyLevel
   potencyProfile?: string
   weightGrams?: number
   _id?: string

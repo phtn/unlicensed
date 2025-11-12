@@ -19,7 +19,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
   return (
     <Card
       as={NextLink}
-      href={`/products/${product.slug}`}
+      href={`/products/${product.slug.toLocaleLowerCase()}`}
       isPressable
       shadow='sm'
       className={cn(
@@ -50,7 +50,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
           <div className='flex items-start justify-between'>
             <div className='space-y-2'>
               <h3 className='text-lg font-semibold font-space'>
-                {product.name}
+                {product.slug}
               </h3>
             </div>
             <span className='whitespace-nowrap text-lg font-space text-foreground'>

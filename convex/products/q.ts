@@ -1,24 +1,5 @@
 import {v} from 'convex/values'
-import {query} from './_generated/server'
-
-const sortProducts = <T extends {featured: boolean; name: string}>(
-  items: T[],
-) => {
-  return [...items].sort((a, b) => {
-    if (a.featured === b.featured) {
-      return a.name.localeCompare(b.name)
-    }
-    return a.featured ? -1 : 1
-  })
-}
-
-export const listCategories = query({
-  args: {},
-  handler: async (ctx) => {
-    const categories = await ctx.db.query('categories').collect()
-    return categories.sort((a, b) => a.name.localeCompare(b.name))
-  },
-})
+import {query} from '../_generated/server'
 
 export const listProducts = query({
   args: {
@@ -73,3 +54,14 @@ export const getProductBySlug = query({
     }
   },
 })
+
+const sortProducts = <T extends {featured: boolean; name: string}>(
+  items: T[],
+) => {
+  return [...items].sort((a, b) => {
+    if (a.featured === b.featured) {
+      return a.name.localeCompare(b.name)
+    }
+    return a.featured ? -1 : 1
+  })
+}

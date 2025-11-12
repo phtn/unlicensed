@@ -1,6 +1,7 @@
 'use client'
 
 import {HeroUIProvider} from '@heroui/react'
+import {ConvexProvider} from 'convex/react'
 import {
   createContext,
   useCallback,
@@ -9,6 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import {getConvexReactClient} from '@/lib/convexReactClient'
 
 type Theme = 'light' | 'dark'
 
@@ -49,6 +51,7 @@ const getPreferredTheme = (): Theme => {
 const ProvidersCtx = createContext<ProvidersCtxValue | null>(null)
 
 const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
+  const convexClient = useMemo(() => getConvexReactClient(), [])
   const [theme, setThemeState] = useState<Theme>(() => {
     const preferredTheme = getPreferredTheme()
     applyTheme(preferredTheme)
@@ -85,11 +88,15 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
     [isThemeReady, setTheme, theme, toggleTheme],
   )
 
+  const content = (
+    <HeroUIProvider locale='en-US' className='min-h-screen'>
+      {children}
+    </HeroUIProvider>
+  )
+
   return (
     <ProvidersCtx.Provider value={contextValue}>
-      <HeroUIProvider locale='en-US' className='min-h-screen'>
-        {children}
-      </HeroUIProvider>
+      <ConvexProvider client={convexClient}>{content}</ConvexProvider>
     </ProvidersCtx.Provider>
   )
 }

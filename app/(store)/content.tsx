@@ -4,13 +4,17 @@ import {NewHome} from '@/components/base44/home'
 import {QuickScroll} from '@/components/base44/quick-scroll'
 import {ProductCard} from '@/components/store/product-card'
 import {useMobile} from '@/hooks/use-mobile'
+import {api} from '@/convex/_generated/api'
+import {adaptCategory, adaptProduct} from '@/lib/convexClient'
+import {useQuery} from 'convex/react'
+import {useMemo} from 'react'
 import {Brands} from './brands'
 import {FeaturedProducts} from './featured'
 import {StrainFinderMini} from './strain-finder'
 
 interface StorefrontPageProps {
-  categories: StoreCategory[]
-  products: StoreProduct[]
+  initialCategories: StoreCategory[]
+  initialProducts: StoreProduct[]
 }
 
 const buildCategorySections = (
@@ -26,11 +30,32 @@ const buildCategorySections = (
     }))
     .filter((section) => section.products.length > 0)
 
-export const Content = ({categories, products}: StorefrontPageProps) => {
+export const Content = ({
+  initialCategories,
+  initialProducts,
+}: StorefrontPageProps) => {
+  const categoriesQuery = useQuery(api.categories.q.listCategories, {})
+  const productsQuery = useQuery(api.products.q.listProducts, {})
+  const categories = useMemo(
+    () =>
+      categoriesQuery?.map(adaptCategory) ?? initialCategories,
+    [categoriesQuery, initialCategories],
+  )
+  const products = useMemo(
+    () =>
+      productsQuery?.map(adaptProduct) ?? initialProducts,
+    [productsQuery, initialProducts],
+  )
   const isMobile = useMobile()
-  const featuredProducts = products.filter((item) => item.featured).slice(0, 4)
+  const featuredProducts = useMemo(
+    () => products.filter((item) => item.featured).slice(0, 4),
+    [products],
+  )
   // const heroProduct = featuredProducts[0] ?? products[0] ?? null
-  const sections = buildCategorySections(categories, products)
+  const sections = useMemo(
+    () => buildCategorySections(categories, products),
+    [categories, products],
+  )
 
   return (
     <div className='space-y-24 pb-28 bg-accent'>

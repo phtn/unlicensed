@@ -126,7 +126,7 @@ export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
 
       {slides.length > 1 && (
         <>
-          <div className='absolute bg-foreground/5 rounded-xl inset-x-0 bottom-8 hidden lg:block'>
+          <div className='absolute bg-linear-to-r from-foreground/5 via-foreground/1 to-foreground/5 rounded-xl inset-x-0 bottom-8 hidden lg:block'>
             <div className='container mx-auto pl-4'>
               <div className='flex items-center justify-between'>
                 <div className='flex gap-2' role='tablist'>

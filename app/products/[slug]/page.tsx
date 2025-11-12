@@ -37,7 +37,7 @@ type PageProps = {
 }
 const Page = async ({params}: PageProps) => {
   const slug = (await params).slug
-  const detail = await getProductDetail(slug)
-  return <ProductDetailContent detail={detail} />
+  const initialDetail = await getProductDetail(slug)
+  return <ProductDetailContent initialDetail={initialDetail} slug={slug} />
 }
 export default Page

@@ -3,7 +3,9 @@
 import type {StoreProduct, StoreProductDetail} from '@/app/types'
 import {ProductCard} from '@/components/store/product-card'
 import {Lens} from '@/components/ui/lens'
+import {api} from '@/convex/_generated/api'
 import {useToggle} from '@/hooks/use-toggle'
+import {adaptProductDetail} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
@@ -15,9 +17,10 @@ import {
   Divider,
   Image,
 } from '@heroui/react'
+import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {notFound} from 'next/navigation'
-import {useEffect, useState} from 'react'
+import {useMemo, useState} from 'react'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -100,27 +103,43 @@ const Gallery = ({product}: {product: StoreProduct}) => {
 }
 
 interface ProductDetailContentProps {
-  detail: StoreProductDetail | null
+  initialDetail: StoreProductDetail | null
+  slug: string
 }
 
-export const ProductDetailContent = ({detail}: ProductDetailContentProps) => {
-  if (!detail) {
+export const ProductDetailContent = ({
+  initialDetail,
+  slug,
+}: ProductDetailContentProps) => {
+  const [selectedDenomination, setSelectedDenomination] = useState<number>(0)
+
+  const detailQuery = useQuery(api.products.q.getProductBySlug, {slug})
+
+  const detail = useMemo<StoreProductDetail | null | undefined>(() => {
+    if (detailQuery === undefined) {
+      return initialDetail
+    }
+    if (!detailQuery) {
+      return null
+    }
+    return detailQuery ? adaptProductDetail(detailQuery) : null
+  }, [detailQuery, initialDetail])
+
+  if (detail === null) {
     notFound()
   }
 
-  const {product, category, related} = detail
+  if (!detail) {
+    return null
+  }
 
-  const [selectedDenomination, setSelectedDenomination] = useState<number>(0)
+  const product = detail.product
+  const category = detail.category
+  const related = detail.related
 
   const handleDenominationChange = (denomination: number) => () => {
     setSelectedDenomination(denomination)
   }
-
-  useEffect(() => {
-    if (product) {
-      console.log(product)
-    }
-  }, [product])
 
   return (
     <div className='space-y-20 pb-24'>
