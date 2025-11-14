@@ -11,6 +11,10 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
+// Google OAuth Client ID for One Tap (get from Firebase Console > Authentication > Settings > Authorized domains)
+// Or from Google Cloud Console > APIs & Services > Credentials > OAuth 2.0 Client IDs
+export const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
+
 let app: FirebaseApp | undefined
 let auth: Auth | undefined
 let firestore: Firestore | undefined

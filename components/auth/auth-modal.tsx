@@ -5,6 +5,7 @@ import {
   loginWithGoogle,
   signupWithEmail,
 } from '@/lib/firebase/auth'
+import {cancelGoogleOneTap} from '@/components/auth/google-one-tap'
 import {Icon} from '@/lib/icons'
 import {
   Button,
@@ -59,6 +60,9 @@ export const AuthModal = ({
   const handleGoogleLogin = async () => {
     setError(null)
     setLoading(true)
+
+    // Cancel One Tap to prevent conflicts with popup
+    cancelGoogleOneTap()
 
     try {
       await loginWithGoogle()
@@ -143,6 +147,7 @@ export const AuthModal = ({
     </Modal>
   )
 }
+
 
 
 

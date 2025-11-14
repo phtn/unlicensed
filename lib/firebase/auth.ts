@@ -6,6 +6,8 @@ import {
   type User,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithCredential,
+  type OAuthCredential,
 } from 'firebase/auth'
 import {auth, firestore} from './config'
 import {createOrUpdateUserInFirestore} from './users'
@@ -40,6 +42,18 @@ export const loginWithGoogle = async () => {
   
   const provider = new GoogleAuthProvider()
   const userCredential = await signInWithPopup(auth, provider)
+  
+  // Create or update user document in Firestore
+  await createOrUpdateUserInFirestore(firestore, userCredential.user)
+  
+  return userCredential
+}
+
+export const loginWithGoogleCredential = async (credential: OAuthCredential) => {
+  if (!auth) throw new Error('Firebase auth not initialized')
+  if (!firestore) throw new Error('Firestore not initialized')
+  
+  const userCredential = await signInWithCredential(auth, credential)
   
   // Create or update user document in Firestore
   await createOrUpdateUserInFirestore(firestore, userCredential.user)

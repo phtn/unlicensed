@@ -1,5 +1,6 @@
 'use client'
 
+import {getConvexReactClient} from '@/lib/convexReactClient'
 import {HeroUIProvider} from '@heroui/react'
 import {ConvexProvider} from 'convex/react'
 import {
@@ -10,8 +11,9 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import {getConvexReactClient} from '@/lib/convexReactClient'
 import {CartAnimationProvider} from './cart-animation'
+// import {GoogleOneTap} from '@/components/auth/google-one-tap'
+// import {googleClientId} from '@/lib/firebase/config'
 
 type Theme = 'light' | 'dark'
 
@@ -45,7 +47,9 @@ const getPreferredTheme = (): Theme => {
     return stored
   }
 
-  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches
+  const prefersLight = window.matchMedia(
+    '(prefers-color-scheme: light)',
+  ).matches
   return prefersLight ? 'light' : 'dark'
 }
 
@@ -98,7 +102,21 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
   return (
     <ProvidersCtx.Provider value={contextValue}>
       <ConvexProvider client={convexClient}>
-        <CartAnimationProvider>{content}</CartAnimationProvider>
+        <CartAnimationProvider>
+          {content}
+          {/*{googleClientId && (
+            <GoogleOneTap
+              clientId={googleClientId}
+              onSuccess={() => {
+                // One Tap login successful - user will be automatically signed in
+                console.log('Google One Tap sign-in successful')
+              }}
+              onError={(error) => {
+                console.error('Google One Tap error:', error)
+              }}
+            />
+          )}*/}
+        </CartAnimationProvider>
       </ConvexProvider>
     </ProvidersCtx.Provider>
   )

@@ -63,7 +63,9 @@ const CompositionStat = ({
       {title}
     </p>
     <div className='flex items-baseline gap-2'>
-      <span className='text-xl sm:text-2xl font-semibold text-foreground'>{value}</span>
+      <span className='text-xl sm:text-2xl font-semibold text-foreground'>
+        {value}
+      </span>
       {accent ? (
         <span className='hidden text-xs font-medium uppercase tracking-widest text-color-muted'>
           {accent}
@@ -97,7 +99,9 @@ const Gallery = ({
         </Lens>
         <div className='absolute inset-x-4 sm:inset-x-6 top-4 sm:top-6 flex items-center justify-between gap-2 rounded-full bg-black/35 px-3 sm:px-5 py-1.5 sm:py-2 text-[10px] sm:text-xs uppercase tracking-[0.35em] sm:tracking-[0.45em] text-emerald-100 backdrop-blur-md'>
           <span className='truncate'>{product.categorySlug}</span>
-          <span className='whitespace-nowrap'>{product.thcPercentage.toFixed(1)}% THC</span>
+          <span className='whitespace-nowrap'>
+            {product.thcPercentage.toFixed(1)}% THC
+          </span>
         </div>
       </div>
       {product.gallery.length > 0 && (
@@ -131,7 +135,7 @@ export const ProductDetailContent = ({
   slug,
 }: ProductDetailContentProps) => {
   const [selectedDenomination, setSelectedDenomination] = useState<number>(0)
-  const {isOpen, onOpen, onClose} = useDisclosure()
+  const {isOpen, onClose} = useDisclosure()
   const {addItem, isAuthenticated} = useCart()
   const [isAdding, setIsAdding] = useState(false)
   const {triggerAnimation} = useCartAnimation()
@@ -345,7 +349,10 @@ export const ProductDetailContent = ({
                   onPress={purge}
                   className='w-full sm:flex-1 font-space font-semibold text-sm sm:text-base border border-foreground bg-foreground text-background hover:border-foreground'>
                   <span>Checkout</span>
-                  <Icon name='arrow-down' className='ml-2 size-6 sm:size-8 -rotate-90' />
+                  <Icon
+                    name='arrow-down'
+                    className='ml-2 size-6 sm:size-8 -rotate-90'
+                  />
                 </Button>
               </div>
               <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />
@@ -378,7 +385,9 @@ export const ProductDetailContent = ({
               <h3 className='text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-color-muted'>
                 Dosage
               </h3>
-              <p className='text-xs sm:text-sm text-color-muted leading-relaxed'>{product.consumption}</p>
+              <p className='text-xs sm:text-sm text-color-muted leading-relaxed'>
+                {product.consumption}
+              </p>
             </div>
           </div>
         </div>
