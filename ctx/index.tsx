@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react'
 import {getConvexReactClient} from '@/lib/convexReactClient'
+import {CartAnimationProvider} from './cart-animation'
 
 type Theme = 'light' | 'dark'
 
@@ -96,7 +97,9 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
 
   return (
     <ProvidersCtx.Provider value={contextValue}>
-      <ConvexProvider client={convexClient}>{content}</ConvexProvider>
+      <ConvexProvider client={convexClient}>
+        <CartAnimationProvider>{content}</CartAnimationProvider>
+      </ConvexProvider>
     </ProvidersCtx.Provider>
   )
 }

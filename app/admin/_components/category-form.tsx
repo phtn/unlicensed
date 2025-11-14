@@ -45,7 +45,7 @@ type CategoryFormProps = {
 }
 
 export const CategoryForm = ({onCreated}: CategoryFormProps) => {
-  const createCategory = useMutation(api.categories.m.createCategory)
+  const createCategory = useMutation(api.categories.m.create)
   const {uploadFile, isUploading} = useStorageUpload()
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')

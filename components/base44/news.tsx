@@ -2,7 +2,7 @@ import {Icon} from '@/lib/icons'
 import {Button} from '@heroui/react'
 import {Nav} from './nav'
 
-export default function News() {
+export const Shop = () => {
   return (
     <div className='min-h-screen bg-[#F5F1ED]'>
       {/* Header */}

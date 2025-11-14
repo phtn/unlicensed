@@ -8,6 +8,9 @@
  * @module
  */
 
+import type * as cart_d from "../cart/d.js";
+import type * as cart_m from "../cart/m.js";
+import type * as cart_q from "../cart/q.js";
 import type * as categories_d from "../categories/d.js";
 import type * as categories_m from "../categories/m.js";
 import type * as categories_q from "../categories/q.js";
@@ -16,6 +19,9 @@ import type * as products_d from "../products/d.js";
 import type * as products_m from "../products/m.js";
 import type * as products_q from "../products/q.js";
 import type * as uploads from "../uploads.js";
+import type * as users_d from "../users/d.js";
+import type * as users_m from "../users/m.js";
+import type * as users_q from "../users/q.js";
 
 import type {
   ApiFromModules,
@@ -24,6 +30,9 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "cart/d": typeof cart_d;
+  "cart/m": typeof cart_m;
+  "cart/q": typeof cart_q;
   "categories/d": typeof categories_d;
   "categories/m": typeof categories_m;
   "categories/q": typeof categories_q;
@@ -32,6 +41,9 @@ declare const fullApi: ApiFromModules<{
   "products/m": typeof products_m;
   "products/q": typeof products_q;
   uploads: typeof uploads;
+  "users/d": typeof users_d;
+  "users/m": typeof users_m;
+  "users/q": typeof users_q;
 }>;
 
 /**

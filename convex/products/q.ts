@@ -21,6 +21,28 @@ export const listProducts = query({
   },
 })
 
+export const getProductById = query({
+  args: {
+    productId: v.id('products'),
+  },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.productId)
+    return product
+  },
+})
+
+export const getProductsByIds = query({
+  args: {
+    productIds: v.array(v.id('products')),
+  },
+  handler: async (ctx, args) => {
+    const products = await Promise.all(
+      args.productIds.map((id) => ctx.db.get(id)),
+    )
+    return products.filter((p): p is NonNullable<typeof p> => p !== null)
+  },
+})
+
 export const getProductBySlug = query({
   args: {
     slug: v.string(),

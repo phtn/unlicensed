@@ -1,7 +1,6 @@
 import {Highlight, Highlights} from '@/app/(store)/hero'
 import {useMemo} from 'react'
 import {ShopFinder} from './finder'
-import {Nav} from './nav'
 import {QuickScroll} from './quick-scroll'
 import {Title} from './title'
 
@@ -60,7 +59,6 @@ export const NewHome = () => {
   )
   return (
     <div className='min-h-screen bg-accent'>
-      <Nav />
       <Highlights slides={slides} />
       <QuickScroll href='#featured' />
       <ShopFinder />

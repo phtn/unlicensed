@@ -1,8 +1,8 @@
-import {mutation} from '../_generated/server'
 import {v} from 'convex/values'
 import {ensureSlug} from '../../lib/slug'
+import {mutation} from '../_generated/server'
 
-export const createCategory = mutation({
+export const create = mutation({
   args: {
     name: v.string(),
     slug: v.optional(v.string()),

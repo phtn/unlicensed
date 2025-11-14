@@ -1,6 +1,6 @@
-import {mutation} from '../_generated/server'
 import {v} from 'convex/values'
 import {ensureSlug} from '../../lib/slug'
+import {mutation} from '../_generated/server'
 
 export const createProduct = mutation({
   args: {
@@ -55,9 +55,7 @@ export const createProduct = mutation({
     }
 
     const sanitizeArray = (values: string[]) =>
-      values
-        .map((value) => value.trim())
-        .filter((value) => value.length > 0)
+      values.map((value) => value.trim()).filter((value) => value.length > 0)
 
     const numericArray = (values?: number[]) =>
       values?.filter((value) => Number.isFinite(value)) ?? undefined
@@ -71,7 +69,9 @@ export const createProduct = mutation({
       description: args.description.trim(),
       priceCents: args.priceCents,
       unit: args.unit.trim(),
-      availableDenominations: numericArray(args.availableDenominations ?? undefined),
+      availableDenominations: numericArray(
+        args.availableDenominations ?? undefined,
+      ),
       popularDenomination: args.popularDenomination ?? undefined,
       thcPercentage: args.thcPercentage,
       cbdPercentage: args.cbdPercentage ?? undefined,
@@ -94,3 +94,15 @@ export const createProduct = mutation({
   },
 })
 
+export const purgeTestProducts = mutation({
+  handler: async ({db}) => {
+    const allItems = await db.query('products').collect()
+    const itemsToDelete = allItems.filter((item) =>
+      item.categorySlug.startsWith('test'),
+    )
+    for (const item of itemsToDelete) {
+      await db.delete(item._id)
+    }
+    return itemsToDelete.length
+  },
+})
