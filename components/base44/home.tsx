@@ -58,9 +58,12 @@ export const NewHome = () => {
     [],
   )
   return (
-    <div className='min-h-screen bg-accent'>
+    <div className='bg-accent'>
       <Highlights slides={slides} />
-      <QuickScroll href='#featured' />
+      <QuickScroll
+        className='border-t-[0.33px] border-foreground/40'
+        href='#featured'
+      />
       <ShopFinder />
     </div>
   )

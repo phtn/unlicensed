@@ -10,8 +10,8 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
   return (
     <section
       id='featured'
-      className='mx-auto w-full max-w-7xl pt-36 px-4 sm:px-6 lg:px-8 bg-accent'>
-      <div className='flex flex-col gap-16'>
+      className='mx-auto w-full max-w-7xl pt-24 px-4 sm:px-6 lg:px-8 bg-accent'>
+      <div className='flex flex-col gap-10'>
         <div className='flex flex-wrap items-center justify-between gap-4'>
           <div className='space-y-1'>
             <h2 className='text-3xl font-fugaz tracking-tight sm:text-4xl'>

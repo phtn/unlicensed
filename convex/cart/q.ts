@@ -12,17 +12,12 @@ export const getCart = query({
     if (args.cartId) {
       // Get cart by ID (for anonymous users)
       cart = await ctx.db.get(args.cartId)
-    } else if (args.userId !== undefined) {
+    } else if (args.userId !== undefined && args.userId !== null) {
       // Get cart by userId (for authenticated users)
-      // Handle both null and actual userId
-      if (args.userId === null) {
-        // For null userId, we'd need a different index or query
-        // For now, cartId should be used for anonymous carts
-        return null
-      }
+      const userId = args.userId
       cart = await ctx.db
         .query('carts')
-        .withIndex('by_user', (q) => q.eq('userId', null))
+        .withIndex('by_user', (q) => q.eq('userId', userId))
         .unique()
     }
 
@@ -69,9 +64,10 @@ export const getCartItemCount = query({
       cart = await ctx.db.get(args.cartId)
     } else if (args.userId !== undefined && args.userId !== null) {
       // Get cart by userId (for authenticated users)
+      const userId = args.userId
       cart = await ctx.db
         .query('carts')
-        .withIndex('by_user', (q) => q.eq('userId', null))
+        .withIndex('by_user', (q) => q.eq('userId', userId))
         .unique()
     }
 

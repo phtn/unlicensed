@@ -43,6 +43,7 @@ export const cancelGoogleOneTap = () => {
     try {
       window.google.accounts.id.cancel()
     } catch (error) {
+      console.error(error)
       // Silently handle - One Tap might not be initialized
     }
   }

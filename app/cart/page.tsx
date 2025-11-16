@@ -1,14 +1,20 @@
 'use client'
 
-import {useCart} from '@/hooks/use-cart'
-import {useAuth} from '@/hooks/use-auth'
-import {Button, Card, CardBody, Image, Divider, Input} from '@heroui/react'
-import {Icon} from '@/lib/icons'
 import {AuthModal} from '@/components/auth/auth-modal'
-import {useDisclosure} from '@heroui/react'
-import NextLink from 'next/link'
-import {useState, useEffect, useMemo} from 'react'
 import {Id} from '@/convex/_generated/dataModel'
+import {useCart} from '@/hooks/use-cart'
+import {Icon} from '@/lib/icons'
+import {
+  Button,
+  Card,
+  CardBody,
+  Divider,
+  Image,
+  Input,
+  useDisclosure,
+} from '@heroui/react'
+import NextLink from 'next/link'
+import {useMemo, useState} from 'react'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -28,16 +34,16 @@ interface CartItemProps {
     denomination?: number
   }
   itemPrice: number
-  onUpdate: (productId: Id<'products'>, quantity: number, denomination?: number) => Promise<void>
+  onUpdate: (
+    productId: Id<'products'>,
+    quantity: number,
+    denomination?: number,
+  ) => Promise<void>
   onRemove: (productId: Id<'products'>, denomination?: number) => Promise<void>
 }
 
 const CartItem = ({item, itemPrice, onUpdate, onRemove}: CartItemProps) => {
   const [quantity, setQuantity] = useState(item.quantity)
-
-  useEffect(() => {
-    setQuantity(item.quantity)
-  }, [item.quantity])
 
   const handleQuantityChange = async (newQuantity: number) => {
     if (newQuantity < 1) {
@@ -52,7 +58,7 @@ const CartItem = ({item, itemPrice, onUpdate, onRemove}: CartItemProps) => {
     <Card>
       <CardBody>
         <div className='flex gap-4'>
-          <div className='relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden'>
+          <div className='relative w-24 h-24 shrink-0 rounded-lg overflow-hidden'>
             <Image
               src={item.product.image}
               alt={item.product.name}
@@ -116,14 +122,13 @@ const CartItem = ({item, itemPrice, onUpdate, onRemove}: CartItemProps) => {
 }
 
 export default function CartPage() {
-  const {user} = useAuth()
   const {cart, updateItem, removeItem, isLoading, isAuthenticated} = useCart()
   const {isOpen, onOpen, onClose} = useDisclosure()
 
   // Build cart items from server cart
   const cartItems = useMemo(() => {
     if (cart && cart.items) {
-      return cart.items.map(item => ({
+      return cart.items.map((item) => ({
         product: item.product,
         quantity: item.quantity,
         denomination: item.denomination,
@@ -141,7 +146,6 @@ export default function CartPage() {
       </div>
     )
   }
-
 
   if (!hasItems) {
     return (
@@ -168,10 +172,10 @@ export default function CartPage() {
   const total = subtotal + tax + shipping
 
   return (
-    <div className='min-h-screen py-24 px-4 sm:px-6 lg:px-8'>
+    <div className='min-h-screen lg:pt-24 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
         <div className='flex items-center justify-between mb-8'>
-          <h1 className='text-3xl font-semibold'>Shopping Cart</h1>
+          <h1 className='text-3xl font-fugaz font-light'>My Cart</h1>
         </div>
 
         <div className='grid gap-8 lg:grid-cols-[1fr_400px]'>
@@ -197,10 +201,10 @@ export default function CartPage() {
           {/* Order Summary */}
           <div className='lg:sticky lg:top-24 h-fit'>
             <Card>
-              <CardBody className='space-y-4'>
+              <CardBody className='space-y-4 p-8'>
                 <h2 className='text-xl font-semibold'>Order Summary</h2>
                 <Divider />
-                <div className='space-y-2'>
+                <div className='space-y-2 font-space'>
                   <div className='flex justify-between text-sm'>
                     <span className='text-color-muted'>Subtotal</span>
                     <span>${formatPrice(subtotal)}</span>
@@ -221,7 +225,7 @@ export default function CartPage() {
                   </div>
                 </div>
                 <Divider />
-                <div className='flex justify-between text-lg font-semibold'>
+                <div className='flex justify-between text-lg font-semibold font-space'>
                   <span>Total</span>
                   <span>${formatPrice(total)}</span>
                 </div>
@@ -233,14 +237,11 @@ export default function CartPage() {
                   </div>
                 )}
                 <Button
-                  color='primary'
                   size='lg'
-                  className='w-full font-semibold'
-                  as={NextLink}
-                  href={isAuthenticated ? '/checkout' : '#'}
+                  className='w-full font-semibold text-white bg-blue-400'
                   onPress={!isAuthenticated ? onOpen : undefined}
                   isDisabled={!isAuthenticated}>
-                  Proceed to Checkout
+                  Place Order
                 </Button>
                 <Button
                   variant='flat'
@@ -258,4 +259,3 @@ export default function CartPage() {
     </div>
   )
 }
-

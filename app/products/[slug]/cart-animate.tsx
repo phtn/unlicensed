@@ -125,7 +125,7 @@ export const FlyingCart = () => {
     const duration = 1000
 
     const easeInOutCubic = (t: number, control: number): number => {
-      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+      return t < control ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
     }
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime

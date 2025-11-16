@@ -1,5 +1,5 @@
-import {doc, setDoc, getDoc, type Firestore} from 'firebase/firestore'
 import type {User} from 'firebase/auth'
+import {doc, getDoc, setDoc, type Firestore} from 'firebase/firestore'
 
 export interface UserData {
   email: string
@@ -24,7 +24,7 @@ export const createOrUpdateUserInFirestore = async (
   // Path: unlicensed/u/{uid}
   // This creates: unlicensed collection -> u document -> u subcollection -> {uid} document
   // Using collection/document/subcollection/document pattern
-  const userRef = doc(firestore, 'unlicensed', 'u', 'u', user.uid)
+  const userRef = doc(firestore, 'unlicensed', 'u', 'users', user.uid)
   const userSnap = await getDoc(userRef)
 
   const userData: UserData = {
@@ -59,4 +59,3 @@ export const getUserFromFirestore = async (
 
   return userSnap.data() as UserData
 }
-

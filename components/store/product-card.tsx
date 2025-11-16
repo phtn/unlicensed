@@ -28,21 +28,20 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
         className,
       )}>
       <CardBody className='flex flex-col p-0'>
-        <div className='relative overflow-hidden rounded-2xl sm:rounded-3xl'>
-          <div className='absolute size-96 overflow-hidden inset-0 z-10 bg-linear-to-t from-foreground/10 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
+        <div className='relative overflow-hidden sm:rounded-t-3xl'>
+          <div className='absolute size-full overflow-hidden inset-0 z-10 bg-linear-to-t from-foreground/10 via-transparent to-transparent opacity-0 border-b-[0.33px] border-transparent group-hover:border-foreground/40 transition-opacity duration-300 group-hover:opacity-100' />
           <Image
             src={product.image}
             alt={product.name}
-            className='h-64 sm:h-80 lg:h-96 w-full rounded-2xl object-contain aspect-auto transition duration-300 group-hover:scale-[1.03]'
+            className='h-64 sm:h-80 lg:h-80 w-full rounded-t-2xl object-contain aspect-auto transition duration-300 group-hover:scale-[1.03]'
             loading='lazy'
-            sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
           />
           <div className='absolute left-3 sm:left-4 top-3 sm:top-4 z-20 flex flex-col gap-2'>
             {product.featured ? (
               <Chip
-                variant='flat'
+                variant='shadow'
                 size='sm'
-                className='rounded-full bg-[#f5c468]/90 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-[#1a1f2a] shadow-[0_12px_30px_-18px_rgba(245,196,104,0.6)]'>
+                className='rounded-full bg-teal-200/40 px-2 font-space sm:px-2 text-[9px] sm:text-xs uppercase tracking-widest'>
                 Featured
               </Chip>
             ) : null}
@@ -52,8 +51,8 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
         <div className='flex flex-col gap-3 sm:gap-4 p-3 sm:p-4'>
           <div className='flex items-start justify-between gap-2'>
             <div className='space-y-1 sm:space-y-2 flex-1 min-w-0'>
-              <h3 className='text-base sm:text-lg font-semibold font-space truncate'>
-                {product.slug}
+              <h3 className='text-base sm:text-xl font-semibold tracking-tight opacity-80 truncate capitalize'>
+                {product.slug.split('-').join(' ')}
               </h3>
             </div>
             <span className='whitespace-nowrap text-base sm:text-lg font-space text-foreground shrink-0'>
@@ -61,10 +60,8 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
               {formatPrice(product.priceCents)}
             </span>
           </div>
-          <p className='text-xs opacity-70 font-normal line-clamp-2 sm:line-clamp-3 text-color-muted leading-relaxed'>
-            {product.shortDescription}
-          </p>
-          <div className='flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs uppercase tracking-wide text-color-muted'>
+
+          <div className='hidden _flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs uppercase tracking-wide text-color-muted'>
             <span className='pill-surface rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs text-foreground/80'>
               <span className='font-bold mr-1 opacity-70'>THC</span>
               <span className='font-space'>
@@ -74,14 +71,17 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
             {topEffects.map((effect) => (
               <span
                 key={effect}
-                className='rounded-full pill-surface px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs capitalize tracking-tight opacity-80 font-space'>
+                className='rounded-full bg-[#21A179] _pill-surface px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs capitalize tracking-tight opacity-80 font-space'>
                 {effect}
               </span>
             ))}
           </div>
+          {/*<p className='hidden text-xs opacity-70 font-normal line-clamp-2 sm:line-clamp-3 text-color-muted leading-relaxed'>
+            {product.shortDescription}
+          </p>*/}
         </div>
       </CardBody>
-      <CardFooter className='flex items-center justify-between px-3 sm:px-5 pb-3 sm:pb-5 pt-0'>
+      <CardFooter className='hidden _flex items-center justify-between px-3 sm:px-5 pb-3 sm:pb-5 pt-0'>
         <div className='flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs tracking-wide text-color-muted'>
           <span className='opacity-60 hidden sm:inline'>(1245 reviews)</span>
           <span className='sm:hidden opacity-60'>(1245)</span>

@@ -49,15 +49,27 @@ export const Brands = ({columnCount = 2}: {columnCount?: number}) => {
 
   // Render the logo columns
   return (
-    <div className='flex justify-between max-w-6xl mx-auto w-full'>
-      {logoSets.map((logos, index) => (
-        <LogoColumn
-          key={index}
-          logos={logos}
-          index={index}
-          currentTime={currentTime}
-        />
-      ))}
+    <div className='w-full pb-20 px-6 bg-foreground border-y-[0.33px] border-foreground/40'>
+      <div className='h-64 max-w-6xl mx-auto'>
+        <div className='h-24 flex flex-col justify-center'>
+          <h3 className='text-2xl font-fugaz text-background sm:text-3xl'>
+            Our Trusted Brands
+          </h3>
+          <p className='max-w-2xl text-sm text-color-muted'>
+            {/*{category.description}*/}
+          </p>
+        </div>
+        <div className='items-center flex justify-between w-full h-full'>
+          {logoSets.map((logos, index) => (
+            <LogoColumn
+              key={index}
+              logos={logos}
+              index={index}
+              currentTime={currentTime}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
@@ -121,7 +133,7 @@ const LogoColumn: React.FC<LogoColumnProps> = memo(
     return (
       // Framer Motion component for the column container
       <motion.div
-        className='w-24 h-14 md:w-24 md:h-24 overflow-hidden relative'
+        className='w-24 md:w-24 md:h-24 overflow-hidden relative'
         initial={{opacity: 0, y: 50}} // Start invisible and below final position
         animate={{opacity: 1, y: 0}} // Animate to full opacity and final position
         transition={{
@@ -163,7 +175,10 @@ const LogoColumn: React.FC<LogoColumnProps> = memo(
               },
             }}>
             {/*<CurrentLogo className='size-14 max-w-[80%] max-h-[80%] object-contain' />*/}
-            <Icon name={currenLogo} className='size-7 md:size-12 opacity-60' />
+            <Icon
+              name={currenLogo}
+              className='size-7 md:size-12 opacity-60 text-background'
+            />
           </motion.div>
         </AnimatePresence>
       </motion.div>

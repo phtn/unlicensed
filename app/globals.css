@@ -2,6 +2,8 @@
 @plugin '../hero.ts';
 @source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root,
 :root.dark {
   color-scheme: dark;
@@ -17,6 +19,7 @@
   --tertiary-foreground: oklch(0.243 0.027 220.39);
   --panel: oklch(0.13 0.019 269.8);
   --border: rgba(99, 102, 241, 0.14);
+  --hue: oklch(0.13 0.019 269.8);
   --pill-bg: rgba(255, 255, 255, 0.04);
   --pill-border: rgba(255, 255, 255, 0.12);
   --hero-gradient: linear-gradient(
@@ -107,6 +110,7 @@
   --tertiary-foreground: oklch(0.243 0.027 220.39);
   --panel: oklch(0.785 0.133 181.91);
   --border: rgba(255, 255, 255, 0.22);
+  --hue: oklch(0.96 0.007 67.74);
   --pill-bg: rgba(255, 255, 255, 0.16);
   --pill-border: rgba(255, 255, 255, 0.32);
   --hero-gradient: linear-gradient(
@@ -205,11 +209,16 @@
   --color-panel: var(--panel);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-hue: var(--hue);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-space: var(--font-space);
   --font-fugaz: var(--font-fugaz);
   --font-sans: var(--font-sans);
+  /* Effects, Flavors, Terpenes */
+  --color-flavors: oklch(0.783 0.168 66.2);
+  --color-terpenes: oklch(0.633 0.123 166.24);
+  --color-effects: oklch(0.584 0.233 280.76);
 }
 
 @layer base {
@@ -220,6 +229,9 @@
   }
 
   body {
+    ::-webkit-scrollbar {
+      display: none;
+    }
     min-height: 100vh;
     background-color: var(--background);
     background-image:
@@ -247,9 +259,6 @@
       'Segoe UI',
       sans-serif;
     text-rendering: optimizeLegibility;
-    ::-webkit-scrollbar {
-      display: none;
-    }
   }
 
   :root.light body {

@@ -23,7 +23,7 @@ export const addToCart = mutation({
       // Get cart by userId (for authenticated users)
       cart = await ctx.db
         .query('carts')
-        .withIndex('by_user', (q) => q.eq('userId', null))
+        .withIndex('by_user', (q) => q.eq('userId', args.userId ?? null))
         .unique()
     }
 
@@ -154,7 +154,7 @@ export const updateCartItem = mutation({
     } else if (args.userId !== undefined && args.userId !== null) {
       cart = await ctx.db
         .query('carts')
-        .withIndex('by_user', (q) => q.eq('userId', null))
+        .withIndex('by_user', (q) => q.eq('userId', args.userId ?? null))
         .unique()
     }
 
@@ -208,7 +208,7 @@ export const removeFromCart = mutation({
     } else if (args.userId !== undefined && args.userId !== null) {
       cart = await ctx.db
         .query('carts')
-        .withIndex('by_user', (q) => q.eq('userId', null))
+        .withIndex('by_user', (q) => q.eq('userId', args.userId ?? null))
         .unique()
     }
 
@@ -246,7 +246,7 @@ export const clearCart = mutation({
     } else if (args.userId !== undefined && args.userId !== null) {
       cart = await ctx.db
         .query('carts')
-        .withIndex('by_user', (q) => q.eq('userId', null))
+        .withIndex('by_user', (q) => q.eq('userId', args.userId ?? null))
         .unique()
     }
 

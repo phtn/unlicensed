@@ -2,6 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {ProductType} from '@/convex/products/d'
 import {deleteCartCookie, getCartCookie, setCartCookie} from '@/lib/cookies'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
@@ -20,7 +21,46 @@ import {useAuth} from './use-auth'
  *   subscribe and update when cart mutations (addToCart, removeFromCart, etc.) complete.
  * - Convex's reactive subscription system ensures queries update in real-time without manual refresh.
  */
-export const useCart = () => {
+type CartItemWithProduct = {
+  productId: Id<'products'>
+  quantity: number
+  denomination?: number
+  product: ProductType & {
+    _id: Id<'products'>
+    _creationTime: number
+  }
+}
+
+type CartWithProducts = {
+  _id: Id<'carts'>
+  userId: Id<'users'> | null
+  updatedAt: number
+  items: CartItemWithProduct[]
+}
+
+interface UseCartResult {
+  cart: CartWithProducts | null
+  cartItemCount: number
+  addItem: (
+    productId: Id<'products'>,
+    quantity?: number,
+    denomination?: number,
+  ) => Promise<Id<'carts'>>
+  removeItem: (
+    productId: Id<'products'>,
+    denomination?: number,
+  ) => Promise<void>
+  updateItem: (
+    productId: Id<'products'>,
+    quantity: number,
+    denomination?: number,
+  ) => Promise<void>
+  clear: () => Promise<void>
+  isLoading: boolean
+  isAuthenticated: boolean
+}
+
+export const useCart = (): UseCartResult => {
   const {user} = useAuth()
   // Lazy initialization: read from cookie on first render
   const [anonymousCartId, setAnonymousCartId] = useState<Id<'carts'> | null>(
@@ -241,7 +281,7 @@ export const useCart = () => {
   }, [serverCartItemCount, userId, anonymousCartId, isAuthenticated])
 
   return {
-    cart: serverCart,
+    cart: serverCart ?? null,
     cartItemCount,
     addItem,
     updateItem,

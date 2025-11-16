@@ -1,5 +1,6 @@
 import {useProvidersCtx} from '@/ctx'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import {useCallback, useMemo} from 'react'
 
@@ -51,7 +52,12 @@ export const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
         variant='solid'
         aria-label='theme'
         className='border-none bg-transparent hover:bg-accent/20 text-white transition duration-200'>
-        <Icon name={isDark ? 'sun' : 'moon'} className='size-4' />
+        <Icon
+          name={'toggle-theme'}
+          className={cn('rotate-0 transition-all duration-300 ease-in-out', {
+            'rotate-180': isDark,
+          })}
+        />
       </Button>
     )
   )

@@ -11,7 +11,7 @@ export const ShopFinder = () => {
   )
 
   return (
-    <section className='pb-20 px-6 h-fit bg-tertiary border-b-6 border-foreground/40'>
+    <section className='pb-20 px-6 bg-tertiary border-b-[0.33px] border-foreground/40'>
       <div className='relative max-w-7xl mx-auto'>
         <div className='grid lg:grid-cols-2 gap-12 mb-8'>
           <h2 className='text-2xl tracking-tight lg:text-3xl font-fugaz leading-tight'>

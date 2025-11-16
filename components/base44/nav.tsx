@@ -59,8 +59,8 @@ export const Nav = ({children}: NavProps) => {
 
   return (
     <>
-      <header className='fixed top-0 left-0 right-0 z-100 bg-black backdrop-blur-sm'>
-        <div className='max-w-7xl mx-auto px-6 py-3 flex items-center justify-between'>
+      <header className='fixed top-0 left-0 right-0 z-40 bg-black backdrop-blur-sm'>
+        <div className='max-w-7xl mx-auto px-6 md:px-0 py-3 flex items-center justify-between'>
           <Link
             href={'/'}
             className='w-72 flex items-center gap-1 text-sm md:text-base font-space text-gray-200'>
@@ -106,21 +106,23 @@ export const Nav = ({children}: NavProps) => {
             */}
             <Badge
               size='sm'
-              variant='faded'
+              variant='shadow'
               key={`cart-badge-${cartItemCount}`}
               content={
                 cartItemCount > 0 ? (
-                  <div className='leading-none flex items-center justify-center font-space font-medium tracking-tighter rounded-full py-0.5 px-0.5 md:mx-0 text-sm text-white'>
-                    <span className=' leading-none'>{cartItemCount}</span>
+                  <div className='flex items-center justify-center rounded-full py-0.5 px-0.5 md:mx-0 size-5 aspect-square'>
+                    <span className='font-space font-semibold text-base text-white leading-none'>
+                      {cartItemCount}
+                    </span>
                   </div>
                 ) : undefined
               }
               isInvisible={cartItemCount === 0}
-              className='border border-teal-300 px-1 bg-[#19191c]'
+              className='border border-teal-500 px-0.5 bg-teal-600 translate-x-4.5 -translate-y-1.5'
               classNames={{
-                base: 'aspect-square border-none size-8 text-xl rounded-full flex items-center justify-center',
+                base: 'aspect-square border-none size-8 text-xl rounded-xs flex items-center justify-center',
               }}
-              shape='circle'>
+              shape='rectangle'>
               <Button
                 isIconOnly
                 data-cart-icon
@@ -138,35 +140,40 @@ export const Nav = ({children}: NavProps) => {
                       <Avatar
                         size='sm'
                         className='cursor-pointer'
-                        src={user.photoURL || undefined}
-                        name={user.displayName || user.email || 'U'}
+                        src={user.photoURL ?? undefined}
+                        name={user.displayName ?? user.email ?? 'U'}
                       />
                     </DropdownTrigger>
-                    <DropdownMenu aria-label='User menu'>
-                      <DropdownItem key='profile' textValue='Profile'>
+                    <DropdownMenu
+                      aria-label='user-menu'
+                      className='p-2 bg-transparent'>
+                      <DropdownItem
+                        key='profile'
+                        textValue='Profile'
+                        variant='flat'
+                        classNames={{
+                          title: 'text-foreground/90',
+                          base: 'hover:bg-transparent',
+                        }}>
                         <div className='flex flex-col'>
-                          <p className='font-semibold'>
+                          <p className='text-base font-normal font-fugaz'>
                             {user.displayName || 'User'}
                           </p>
-                          <p className='text-xs text-color-muted'>
+                          <p className='text-xs opacity-100 font-normal font-space text-teal-600'>
                             {user.email}
                           </p>
                         </div>
                       </DropdownItem>
                       <DropdownItem
                         key='logout'
-                        color='danger'
-                        onPress={handleLogout}>
-                        Logout
-                      </DropdownItem>
+                        onPress={handleLogout}
+                        title='Logout'
+                        classNames={{wrapper: 'bg-pink-500'}}
+                        className='bg-black/1o hover:bg-black hover:text-white'></DropdownItem>
                     </DropdownMenu>
                   </Dropdown>
                 ) : (
-                  <Icon
-                    name='re-up.ph'
-                    onClick={onOpen}
-                    className='size-4 text-white'
-                  />
+                  <Icon name='user' onClick={onOpen} className='text-white' />
                   // <Button
                   //   size='sm'
                   //   variant='flat'
