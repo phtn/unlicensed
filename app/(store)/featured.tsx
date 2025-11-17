@@ -18,7 +18,7 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
               Featured Drops
             </h2>
             <p className='text-sm opacity-80'>
-              Small-batch releases handpicked by our cultivation team.
+              Small-batch, handpicked fine releases by our team.
             </p>
           </div>
           <Button

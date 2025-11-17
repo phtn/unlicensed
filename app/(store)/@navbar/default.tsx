@@ -2,11 +2,13 @@
 
 import {Nav} from '@/components/base44/nav'
 
+// import {Nav} from '@/components/ui/navbar'
+
 /**
- * Navbar Slot Component (Root Level)
+ * Navbar Slot Component
  * 
- * This is a Next.js parallel route slot (@navbar) at the root level.
- * Parallel routes allow you to render multiple pages simultaneously in the same layout.
+ * This is a Next.js parallel route slot (@navbar). Parallel routes allow you to
+ * render multiple pages simultaneously in the same layout.
  * 
  * IMPORTANT: This slot is rendered within the same ConvexProvider as the main
  * content (see app/layout.tsx). This means:
@@ -29,4 +31,7 @@ const NavbarSlot = () => {
 }
 
 export default NavbarSlot
+
+
+
 

@@ -102,21 +102,7 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
   return (
     <ProvidersCtx.Provider value={contextValue}>
       <ConvexProvider client={convexClient}>
-        <CartAnimationProvider>
-          {content}
-          {/*{googleClientId && (
-            <GoogleOneTap
-              clientId={googleClientId}
-              onSuccess={() => {
-                // One Tap login successful - user will be automatically signed in
-                console.log('Google One Tap sign-in successful')
-              }}
-              onError={(error) => {
-                console.error('Google One Tap error:', error)
-              }}
-            />
-          )}*/}
-        </CartAnimationProvider>
+        <CartAnimationProvider>{content}</CartAnimationProvider>
       </ConvexProvider>
     </ProvidersCtx.Provider>
   )

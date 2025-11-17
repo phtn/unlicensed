@@ -38,3 +38,15 @@ export const create = mutation({
   },
 })
 
+export const purgeTestCategories = mutation({
+  handler: async ({db}) => {
+    const allItems = await db.query('categories').collect()
+    const itemsToDelete = allItems.filter((item) =>
+      item.slug.startsWith('test'),
+    )
+    for (const item of itemsToDelete) {
+      await db.delete(item._id)
+    }
+    return itemsToDelete.length
+  },
+})

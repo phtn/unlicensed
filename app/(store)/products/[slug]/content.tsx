@@ -276,8 +276,9 @@ export const ProductDetailContent = ({
                 </span>
                 {product.availableDenominations &&
                   product.availableDenominations.map((denomination, i) => (
-                    <button
-                      onClick={handleDenominationChange(i)}
+                    <Button
+                      size='sm'
+                      onPress={handleDenominationChange(i)}
                       className='cursor-pointer rounded-full ring-offset-1 ring-teal-400 outline-teal-400'
                       key={denomination}>
                       <Badge
@@ -294,25 +295,22 @@ export const ProductDetailContent = ({
                         placement='top-right'
                         shape='circle'
                         // {denomination === product.popularDenomination }
-                        className={
-                          denomination === product.popularDenomination
-                            ? 'bg-foreground'
-                            : 'hidden'
-                        }>
+                        className={cn('hidden', {
+                          'bg-foreground text-background':
+                            selectedDenomination === i,
+                          'bg-foreground':
+                            denomination === product.popularDenomination,
+                        })}>
                         <span
                           className={cn(
-                            'relative font-space rounded-full border border-foreground px-2.5 sm:px-3 py-1 text-[10px] sm:text-xs font-semibold tracking-wide sm:tracking-widest whitespace-nowrap',
-                            {
-                              'bg-foreground text-background':
-                                selectedDenomination === i,
-                            },
+                            'relative font-space text-[10px] sm:text-xs font-semibold tracking-wide sm:tracking-widest whitespace-nowrap',
                           )}>
                           {' '}
                           {denomination}
                           {product.unit}
                         </span>
                       </Badge>
-                    </button>
+                    </Button>
                   ))}
               </div>
               <div className='flex flex-col sm:flex-row gap-3'>

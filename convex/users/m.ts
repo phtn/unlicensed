@@ -1,5 +1,5 @@
-import {mutation} from '../_generated/server'
 import {v} from 'convex/values'
+import {mutation} from '../_generated/server'
 
 export const createOrUpdateUser = mutation({
   args: {
@@ -51,8 +51,15 @@ export const getUserByFirebaseId = mutation({
   },
 })
 
-
-
-
-
-
+export const purgeTestUsers = mutation({
+  handler: async ({db}) => {
+    const allItems = await db.query('users').collect()
+    const itemsToDelete = allItems.filter((item) =>
+      item.email.startsWith('test'),
+    )
+    for (const item of itemsToDelete) {
+      await db.delete(item._id)
+    }
+    return itemsToDelete.length
+  },
+})

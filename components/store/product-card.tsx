@@ -28,12 +28,12 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
         className,
       )}>
       <CardBody className='flex flex-col p-0'>
-        <div className='relative overflow-hidden sm:rounded-t-3xl'>
+        <div className='flex justify-center items-center relative overflow-hidden sm:rounded-t-3xl'>
           <div className='absolute size-full overflow-hidden inset-0 z-10 bg-linear-to-t from-foreground/10 via-transparent to-transparent opacity-0 border-b-[0.33px] border-transparent group-hover:border-foreground/40 transition-opacity duration-300 group-hover:opacity-100' />
           <Image
             src={product.image}
             alt={product.name}
-            className='h-64 sm:h-80 lg:h-80 w-full rounded-t-2xl object-contain aspect-auto transition duration-300 group-hover:scale-[1.03]'
+            className='h-48 sm:h-80 lg:h-72 w-full rounded-t-2xl object-contain aspect-auto transition duration-300 group-hover:scale-[1.03]'
             loading='lazy'
           />
           <div className='absolute left-3 sm:left-4 top-3 sm:top-4 z-20 flex flex-col gap-2'>
@@ -48,8 +48,8 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
           </div>
         </div>
 
-        <div className='flex flex-col gap-3 sm:gap-4 p-3 sm:p-4'>
-          <div className='flex items-start justify-between gap-2'>
+        <div className='flex flex-col gap-3 sm:gap-4 p-3 sm:px-6 h-16'>
+          <div className='flex items-start justify-between gap-2 h-full'>
             <div className='space-y-1 sm:space-y-2 flex-1 min-w-0'>
               <h3 className='text-base sm:text-xl font-semibold tracking-tight opacity-80 truncate capitalize'>
                 {product.slug.split('-').join(' ')}

@@ -1,6 +1,7 @@
 import {cn} from '@/lib/utils'
 import {Button, ButtonGroup} from '@heroui/react'
 import {useCallback, useState} from 'react'
+import {CategoryList} from '../store/category-list'
 
 export const ShopFinder = () => {
   const [selectedFilter, setSelectedFilter] = useState<string>('category')
@@ -11,9 +12,9 @@ export const ShopFinder = () => {
   )
 
   return (
-    <section className='pb-20 px-6 bg-tertiary border-b-[0.33px] border-foreground/40'>
+    <section className='pb-20 px-6 bg-tertiary border-b-[0.33px] border-foreground/40 overflow-hidden'>
       <div className='relative max-w-7xl mx-auto'>
-        <div className='grid lg:grid-cols-2 gap-12 mb-8'>
+        <div className='grid lg:grid-cols-2 gap-12 mb-4'>
           <h2 className='text-2xl tracking-tight lg:text-3xl font-fugaz leading-tight'>
             <span className='mr-2'>Shop by</span>
             <span className='text-tertiary-foreground font-space font-semibold capitalize'>
@@ -41,37 +42,36 @@ export const ShopFinder = () => {
           </div>
         </div>
 
-        <div className='absolute rounded-4xl h-40 w-full scale-125 blur-3xl opacity-20 bg-linear-to-br from-yellow-300/60 via-orange-300/60 to-teal-400 p-8 lg:p-4'></div>
         {/* Stats Cards */}
-        <div className='relative rounded-3xl overflow-hidden bg-linear-to-br  from-panel via-panel/70 to-panel/80 p-8 lg:p-4'>
+        <div className='absolute rounded-4xl h-40 w-full scale-125 blur-3xl opacity-20 bg-linear-to-br from-yellow-300/60 via-orange-300/60 to-teal-400 p-8 lg:p-4'></div>
+        <div className='relative rounded-3xl overflow-hidden bg-linear-to-br from-panel via-panel/70 to-panel/80 p-8 lg:p-4'>
           {/* Decorative gradient blobs */}
           <div className='absolute top-20 right-1/3 w-64 h-64 bg-orange-400 rounded-full filter blur-3xl opacity-40'></div>
           <div className='absolute bottom-20 left-1/4 w-48 h-48 bg-yellow-300 rounded-full filter blur-3xl opacity-30'></div>
 
-          <div className='relative grid md:grid-cols-3 gap-6'>
+          <CategoryList />
+          <div className='hidden relative _grid md:grid-cols-3 gap-6'>
             {/* Card 1 */}
-            <div className='bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center'>
-              <h3 className='text-4xl lg:text-5xl font-space text-white mb-2'>
+            <div className='bg-white/20 backdrop-blur-sm rounded-2xl p-3 text-center'>
+              <h3 className='text-2xl lg:text-3xl font-space text-white mb-1'>
                 500
               </h3>
               <p className='text-white text-xl font-space'>Relaxing</p>
             </div>
 
-            {/* Card 2 */}
-            <div className='bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center'>
-              <h3 className='text-4xl lg:text-5xl font-space text-white mb-4'>
+            {/*<div className='bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center'>
+              <h3 className='text-4xl lg:text-5xl font-space text-white mb-1'>
                 35
               </h3>
               <p className='text-white text-xl'>Elevating</p>
             </div>
 
-            {/* Card 3 */}
             <div className='bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center'>
               <h3 className='text-4xl lg:text-5xl font-space text-white mb-4'>
                 45
               </h3>
               <p className='text-white text-xl'>Focused</p>
-            </div>
+            </div>*/}
           </div>
         </div>
       </div>

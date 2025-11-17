@@ -60,18 +60,18 @@ export const Nav = ({children}: NavProps) => {
   return (
     <>
       <header className='fixed top-0 left-0 right-0 z-40 bg-black backdrop-blur-sm'>
-        <div className='max-w-7xl mx-auto px-6 md:px-0 py-3 flex items-center justify-between'>
+        <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 py-3 flex items-center justify-between'>
           <Link
             href={'/'}
-            className='w-72 flex items-center gap-1 text-sm md:text-base font-space text-gray-200'>
+            className='hidden md:w-72 md:flex items-center gap-1 text-sm md:text-base font-space text-gray-200'>
             <span id='unlicensed-logo' className='text-teal-300 text-3xl'>
               ●
             </span>
-            <div className='hidden lg:flex tracking-tighter lg:tracking-tight font-fugaz text-lg'>
+            <div className='lg:flex tracking-tighter lg:tracking-tight font-fugaz text-lg'>
               {children ?? 'unlicensed'}
             </div>
           </Link>
-          <nav className='flex items-center justify-center w-full'>
+          <nav className='flex items-center justify-center md:w-full'>
             <Link
               href={'/'}
               className='text-sm lg:text-lg text-gray-100 hover:text-secondary font-fugaz'>
@@ -83,7 +83,7 @@ export const Nav = ({children}: NavProps) => {
               Library
             </Link>*/}
           </nav>
-          <div className='flex w-72 items-center justify-between'>
+          <div className='flex w-fit gap-5 md:w-72 items-center justify-between'>
             <ThemeToggle />
 
             {/* Cart badge - automatically updates via Convex reactivity */}
