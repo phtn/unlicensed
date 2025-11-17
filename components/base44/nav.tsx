@@ -148,15 +148,16 @@ export const Nav = ({children}: NavProps) => {
                       aria-label='user-menu'
                       className='p-2 bg-transparent'>
                       <DropdownItem
+                        as={Link}
+                        href='/account'
                         key='profile'
-                        textValue='Profile'
                         variant='flat'
                         classNames={{
                           title: 'text-foreground/90',
                           base: 'hover:bg-transparent',
                         }}>
                         <div className='flex flex-col'>
-                          <p className='text-base font-normal font-fugaz'>
+                          <p className='text-base font-normal font-space'>
                             {user.displayName || 'User'}
                           </p>
                           <p className='text-xs opacity-100 font-normal font-space text-teal-600'>
@@ -164,6 +165,26 @@ export const Nav = ({children}: NavProps) => {
                           </p>
                         </div>
                       </DropdownItem>
+                      <DropdownItem
+                        key='admin'
+                        as={Link}
+                        href={
+                          user.email === 'phtn458@gmail.com'
+                            ? '/admin'
+                            : '#nope'
+                        }
+                        variant='flat'
+                        classNames={{
+                          title: 'text-foreground/90',
+                          base: 'hover:bg-transparent',
+                        }}>
+                        <div className='flex flex-col'>
+                          <p className='text-base font-normal font-fugaz'>
+                            Secret Place
+                          </p>
+                        </div>
+                      </DropdownItem>
+
                       <DropdownItem
                         key='logout'
                         onPress={handleLogout}

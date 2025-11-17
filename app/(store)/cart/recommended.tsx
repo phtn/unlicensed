@@ -1,0 +1,120 @@
+'use client'
+
+import type {StoreProduct} from '@/app/types'
+import {api} from '@/convex/_generated/api'
+import {Id} from '@/convex/_generated/dataModel'
+import {useCart} from '@/hooks/use-cart'
+import {adaptProduct} from '@/lib/convexClient'
+import {Icon} from '@/lib/icons'
+import {formatPrice} from '@/utils/formatPrice'
+import {Button, Card, CardBody, Image} from '@heroui/react'
+import {useQuery} from 'convex/react'
+import {useMemo} from 'react'
+
+type ProductWithId = StoreProduct & {
+  _id: Id<'products'>
+}
+
+export const RecommendedProducts = () => {
+  const {cart, addItem} = useCart()
+  const productsQuery = useQuery(api.products.q.listProducts, {
+    limit: 20,
+  })
+
+  // Get product IDs already in cart
+  const cartProductIds = useMemo(() => {
+    if (!cart?.items) return new Set<Id<'products'>>()
+    return new Set(cart.items.map((item) => item.product._id))
+  }, [cart])
+
+  // Filter and adapt products
+  const recommendedProducts = useMemo(() => {
+    if (!productsQuery) return []
+
+    const adapted = productsQuery
+      .map((rawProduct) => ({
+        rawId: rawProduct._id,
+        product: adaptProduct(rawProduct),
+      }))
+      .filter(({rawId, product}) => {
+        // Filter out products already in cart and ensure product has required fields
+        return !cartProductIds.has(rawId) && product.available && product.image
+      })
+      .map(({rawId, product}) => ({
+        ...product,
+        _id: rawId,
+      }))
+      .slice(0, 1) as ProductWithId[] // Show up to 3 recommended products
+
+    return adapted
+  }, [productsQuery, cartProductIds])
+
+  if (recommendedProducts.length === 0) {
+    return null
+  }
+
+  const handleAddToCart = async (product: ProductWithId) => {
+    try {
+      await addItem(
+        product._id,
+        1,
+        product.popularDenomination || product.availableDenominations?.[0] || 1,
+      )
+    } catch (error) {
+      console.error('Failed to add product to cart:', error)
+    }
+  }
+
+  return (
+    <div className='mb-2 mt-4'>
+      <h2 className='text-xl font-medium tracking-tighter opacity-80 mb-4'>
+        Recommended for you
+      </h2>
+      <div className='space-y-3'>
+        {recommendedProducts.map((product) => (
+          <Card
+            key={product._id}
+            className='rounded-xl bg-neutral-400/10 dark:bg-teal-600 border border-neutral-300 dark:border-card'
+            shadow='none'>
+            <CardBody className='p-6'>
+              <div className='flex gap-4 items-center'>
+                <div className='relative w-24 h-24 shrink-0 rounded-lg overflow-hidden bg-secondary/10'>
+                  {product.image ? (
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      className='w-full h-full object-cover'
+                    />
+                  ) : (
+                    <div className='w-full h-full flex items-center justify-center text-color-muted text-xs'>
+                      Image
+                    </div>
+                  )}
+                </div>
+                <div className='flex-1 min-w-0'>
+                  <h3 className='font-semibold text-xl truncate'>
+                    {product.name}
+                  </h3>
+                  <p className='text-xs text-muted-foreground dark:text-white'>
+                    {product.unit}
+                  </p>
+                  <p className='text-base mt-1 font-space'>
+                    ${formatPrice(product.priceCents)}
+                  </p>
+                </div>
+                <Button
+                  size='sm'
+                  variant='flat'
+                  className='font-medium shrink-0'
+                  startContent={<Icon name='plus' className='size-4' />}
+                  onPress={() => handleAddToCart(product)}>
+                  Add to your order
+                </Button>
+              </div>
+            </CardBody>
+          </Card>
+        ))}
+      </div>
+    </div>
+  )
+}

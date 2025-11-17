@@ -7,6 +7,7 @@ import {
   Geist_Mono,
   Space_Grotesk,
 } from 'next/font/google'
+import {ConditionalNavbar} from './_components/conditional-navbar'
 import './globals.css'
 
 const figtree = Figtree({
@@ -112,7 +113,7 @@ export default function RootLayout({
             <div className='pointer-events-none absolute inset-0 -z-10 backdrop-secondary' />
             <div className='relative z-10 flex min-h-screen flex-col'>*/}
           {/* Navbar slot - shares Convex context with children */}
-          {navbar}
+          <ConditionalNavbar navbar={navbar} />
           {/* Main content - shares Convex context with navbar */}
           <div className='relative bg-background'>{children}</div>
           {/*<Footer />*/}
