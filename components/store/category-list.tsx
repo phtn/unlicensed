@@ -1,35 +1,16 @@
+import {api} from '@/convex/_generated/api'
 import {Card, CardBody, CardFooter, Image, Link} from '@heroui/react'
+import {useQuery} from 'convex/react'
 
 export const CategoryList = () => {
-  const category = [
-    {
-      title: 'flower',
-      img: 'https://www.heroui.com/images/fruit-1.jpeg',
-    },
-    {
-      title: 'edibles',
-      img: 'https://www.heroui.com/images/fruit-2.jpeg',
-    },
-    {
-      title: 'Concentrates',
-      img: 'https://www.heroui.com/images/fruit-3.jpeg',
-    },
-    {
-      title: 'pre-rolls',
-      img: 'https://www.heroui.com/images/fruit-4.jpeg',
-    },
-    {
-      title: 'beverages',
-      img: 'https://www.heroui.com/images/fruit-5.jpeg',
-    },
-  ]
+  const cat = useQuery(api.categories.q.listCategories)
 
   return (
     <div className='gap-4 grid grid-cols-2 sm:grid-cols-5'>
-      {category.map((item, index) => (
+      {cat?.map((item, index) => (
         <Card
           as={Link}
-          href={`/category/${item.title}`}
+          href={`/category/${item.name}`}
           key={index}
           radius='sm'
           className='border-none'
@@ -38,16 +19,16 @@ export const CategoryList = () => {
           onPress={() => console.log('item pressed')}>
           <CardBody className='overflow-visible p-0'>
             <Image
-              alt={item.title}
+              alt={item.name}
               radius='none'
               className='w-full object-cover h-28'
-              src={item.img}
+              src={item.heroImage}
               shadow='sm'
               width='100%'
             />
           </CardBody>
           <CardFooter className='text-xl h-10 font-space font-bold justify-between'>
-            <p className='capitalize'>{item.title}</p>
+            <p className='capitalize'>{item.name}</p>
             {/*<p className='text-default-500'>{item.href}</p>*/}
           </CardFooter>
         </Card>

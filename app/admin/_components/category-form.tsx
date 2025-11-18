@@ -140,7 +140,7 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
                   }
                 }}
                 onBlur={field.handleBlur}
-                className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm  outline-none ring-0 focus:border-emerald-500'
+                className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none ring-0 focus:border-emerald-500'
                 placeholder='Premium Flower'
               />
               {field.state.meta.isTouched &&
