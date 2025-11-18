@@ -50,7 +50,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                     key={item.title}>
                     <SidebarMenuButton
                       asChild
-                      className='group/menu-button h-8 data-[active=true]:hover:bg-background data-[active=true]:bg-gradient-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/70 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto'
+                      className='group/menu-button h-8 data-[active=true]:hover:bg-background data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/70 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto'
                       isActive={item.isActive}>
                       <MenuContent {...item} />
                     </SidebarMenuButton>
@@ -58,7 +58,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 ))}
               <a
                 data-active='true'
-                className='relative flex flex-row items-center tracking-tight gap-2 rounded-lg p-2 ps-4 text-start [overflow-wrap:anywhere] [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary/10 text-fd-primary'
+                className='relative flex flex-row items-center tracking-tight gap-2 rounded-lg p-2 ps-4 text-start wrap:anywhere [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary/10 text-fd-primary'
                 href='/docs/components/action-search-bar'>
                 <svg
                   xmlns='http://www.w3.org/2000/svg'
@@ -116,7 +116,7 @@ const MenuContent = (item: NavItem) => {
     <a
       href={item.url}
       suppressHydrationWarning
-      className=' font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center px-4 h-[2.5rem]'>
+      className=' font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center px-4 h-10'>
       <span className='group-hover/menu-content:text-foreground tracking-tighter text-sm font-medium text-foreground/80'>
         {item.title}
       </span>

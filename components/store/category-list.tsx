@@ -64,7 +64,7 @@ export const CategoryList = () => {
   )
 }
 
-const fruits = [
+export const fruits = [
   {
     title: 'Orange',
     img: 'https://www.heroui.com/images/fruit-1.jpeg',

@@ -13,18 +13,22 @@ export const orderItemSchema = v.object({
   totalPriceCents: v.number(), // Total price for this line item
 })
 
+const paymentMethodSchema = v.union(
+  v.literal('credit_card'),
+  v.literal('debit_card'),
+  v.literal('paypal'),
+  v.literal('apple_pay'),
+  v.literal('google_pay'),
+  v.literal('bank_transfer'),
+  v.literal('cash'),
+  v.literal('other'),
+)
+
+export type PaymentMethod = Infer<typeof paymentMethodSchema>
+
 // Payment information schema
 export const paymentSchema = v.object({
-  method: v.union(
-    v.literal('credit_card'),
-    v.literal('debit_card'),
-    v.literal('paypal'),
-    v.literal('apple_pay'),
-    v.literal('google_pay'),
-    v.literal('bank_transfer'),
-    v.literal('cash'),
-    v.literal('other'),
-  ),
+  method: paymentMethodSchema,
   status: v.union(
     v.literal('pending'),
     v.literal('processing'),
@@ -116,4 +120,3 @@ export type OrderType = Infer<typeof orderSchema>
 export type OrderItemType = Infer<typeof orderItemSchema>
 export type PaymentType = Infer<typeof paymentSchema>
 export type ShippingType = Infer<typeof shippingSchema>
-

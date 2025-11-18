@@ -8,14 +8,14 @@ import {
   Button,
   Card,
   CardBody,
+  Chip,
+  ChipProps,
   Divider,
   Image,
-  Chip,
-  Link,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
-import {useParams, useRouter} from 'next/navigation'
+import {useParams} from 'next/navigation'
 import {useMemo} from 'react'
 
 function getStatusColor(status: string) {
@@ -63,7 +63,6 @@ function formatDate(timestamp: number) {
 
 export default function OrderDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const {user: firebaseUser} = useAuth()
   const orderId = params['order-id'] as Id<'orders'>
 
@@ -101,7 +100,8 @@ export default function OrderDetailPage() {
         <div className='text-center space-y-4'>
           <h1 className='text-2xl font-semibold'>Order Not Found</h1>
           <p className='text-color-muted'>
-            This order doesn't exist or you don't have permission to view it.
+            This order doesn&apos;t exist or you don&apos;t have permission to
+            view it.
           </p>
           <Button as={NextLink} href='/account' color='primary'>
             Back to Account
@@ -134,7 +134,7 @@ export default function OrderDetailPage() {
             </h1>
           </div>
           <Chip
-            color={getStatusColor(order.orderStatus) as any}
+            color={getStatusColor(order.orderStatus) as ChipProps['color']}
             variant='flat'
             size='lg'>
             {formatStatus(order.orderStatus)}
@@ -330,7 +330,9 @@ export default function OrderDetailPage() {
             {order.billingAddress && (
               <Card>
                 <CardBody className='p-6'>
-                  <h2 className='text-xl font-semibold mb-4'>Billing Address</h2>
+                  <h2 className='text-xl font-semibold mb-4'>
+                    Billing Address
+                  </h2>
                   <div className='space-y-1 text-sm'>
                     {order.billingAddress.firstName &&
                       order.billingAddress.lastName && (
@@ -389,10 +391,7 @@ export default function OrderDetailPage() {
 
           {/* Actions */}
           <div className='flex gap-4 justify-end'>
-            <Button
-              variant='flat'
-              as={NextLink}
-              href='/account'>
+            <Button variant='flat' as={NextLink} href='/account'>
               Back to Account
             </Button>
             {order.orderStatus !== 'cancelled' &&
@@ -414,4 +413,3 @@ export default function OrderDetailPage() {
     </div>
   )
 }
-

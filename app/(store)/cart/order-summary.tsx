@@ -1,28 +1,28 @@
 'use client'
 
+import {Id} from '@/convex/_generated/dataModel'
+import {PaymentMethod} from '@/convex/orders/d'
 import {AddressType} from '@/convex/users/d'
-import {formatPrice} from '@/utils/formatPrice'
 import {PlaceOrderParams} from '@/hooks/use-place-order'
+import {formatPrice} from '@/utils/formatPrice'
 import {
   Button,
   Card,
   CardBody,
   Divider,
+  Input,
   Link,
   Modal,
-  ModalContent,
-  ModalHeader,
   ModalBody,
+  ModalContent,
   ModalFooter,
-  Input,
-  Textarea,
+  ModalHeader,
   Select,
   SelectItem,
-  useDisclosure,
+  Textarea,
 } from '@heroui/react'
-import {useState, useEffect, useMemo} from 'react'
-import {Id} from '@/convex/_generated/dataModel'
 import {useRouter} from 'next/navigation'
+import {useEffect, useMemo, useState} from 'react'
 
 interface OrderSummaryProps {
   subtotal: number
@@ -62,7 +62,7 @@ export const OrderSummary = ({
   onClearCart,
 }: OrderSummaryProps) => {
   const router = useRouter()
-  
+
   // Check if we have all required info to auto-place order
   const hasAllRequiredInfo = useMemo(() => {
     return !!(
@@ -77,19 +77,19 @@ export const OrderSummary = ({
   }, [userEmail, userPhone, defaultAddress])
 
   const [formData, setFormData] = useState({
-    contactEmail: userEmail || '',
-    contactPhone: userPhone || defaultAddress?.phone || '',
-    paymentMethod: 'credit_card' as const,
+    contactEmail: userEmail ?? '',
+    contactPhone: userPhone ?? defaultAddress?.phone ?? '',
+    paymentMethod: 'credit_card' as PaymentMethod,
     customerNotes: '',
     // Shipping address
-    firstName: defaultAddress?.firstName || '',
-    lastName: defaultAddress?.lastName || '',
-    addressLine1: defaultAddress?.addressLine1 || '',
-    addressLine2: defaultAddress?.addressLine2 || '',
-    city: defaultAddress?.city || '',
-    state: defaultAddress?.state || '',
-    zipCode: defaultAddress?.zipCode || '',
-    country: defaultAddress?.country || 'US',
+    firstName: defaultAddress?.firstName ?? '',
+    lastName: defaultAddress?.lastName ?? '',
+    addressLine1: defaultAddress?.addressLine1 ?? '',
+    addressLine2: defaultAddress?.addressLine2 ?? '',
+    city: defaultAddress?.city ?? '',
+    state: defaultAddress?.state ?? '',
+    zipCode: defaultAddress?.zipCode ?? '',
+    country: defaultAddress?.country ?? 'US',
     // Billing address (optional)
     useSameBilling: true,
     billingFirstName: '',
@@ -103,25 +103,25 @@ export const OrderSummary = ({
   })
 
   // Update form when user email or default address changes
-  useEffect(() => {
-    if (userEmail) {
-      setFormData((prev) => ({...prev, contactEmail: userEmail}))
-    }
-    if (defaultAddress) {
-      setFormData((prev) => ({
-        ...prev,
-        firstName: defaultAddress.firstName || '',
-        lastName: defaultAddress.lastName || '',
-        addressLine1: defaultAddress.addressLine1 || '',
-        addressLine2: defaultAddress.addressLine2 || '',
-        city: defaultAddress.city || '',
-        state: defaultAddress.state || '',
-        zipCode: defaultAddress.zipCode || '',
-        country: defaultAddress.country || 'US',
-        contactPhone: userPhone || defaultAddress.phone || '',
-      }))
-    }
-  }, [userEmail, userPhone, defaultAddress])
+  // useEffect(() => {
+  //   if (userEmail) {
+  //   }
+  //   if (defaultAddress) {
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       email: userEmail ?? '',
+  //       firstName: defaultAddress.firstName ?? '',
+  //       lastName: defaultAddress.lastName ?? '',
+  //       addressLine1: defaultAddress.addressLine1 ?? '',
+  //       addressLine2: defaultAddress.addressLine2 ?? '',
+  //       city: defaultAddress.city ?? '',
+  //       state: defaultAddress.state ?? '',
+  //       zipCode: defaultAddress.zipCode ?? '',
+  //       country: defaultAddress.country ?? 'US',
+  //       contactPhone: userPhone ?? defaultAddress.phone ?? '',
+  //     }))
+  //   }
+  // }, [userEmail, userPhone, defaultAddress, setEmail])
 
   // Handle successful order
   useEffect(() => {
@@ -137,14 +137,14 @@ export const OrderSummary = ({
           console.error('[OrderSummary] Failed to clear cart:', error)
           // Continue with redirect even if cart clearing fails
         }
-        
+
         // Redirect to order detail page
         setTimeout(() => {
           router.push(`/account/orders/${orderId}`)
           onCheckoutClose()
         }, 1500)
       }
-      
+
       clearCartAndRedirect()
     }
   }, [orderId, router, onCheckoutClose, onClearCart])
@@ -155,7 +155,7 @@ export const OrderSummary = ({
       // Auto-place order with saved info
       const shippingAddress: AddressType = {
         ...defaultAddress,
-        id: defaultAddress.id || `shipping-${Date.now()}`,
+        id: defaultAddress.id ?? `shipping-${Date.now()}`,
         type: 'shipping',
       }
 
@@ -184,7 +184,12 @@ export const OrderSummary = ({
       alert('Please enter your full name')
       return
     }
-    if (!formData.addressLine1 || !formData.city || !formData.state || !formData.zipCode) {
+    if (
+      !formData.addressLine1 ||
+      !formData.city ||
+      !formData.state ||
+      !formData.zipCode
+    ) {
       alert('Please complete your shipping address')
       return
     }
@@ -195,12 +200,12 @@ export const OrderSummary = ({
       firstName: formData.firstName,
       lastName: formData.lastName,
       addressLine1: formData.addressLine1,
-      addressLine2: formData.addressLine2 || undefined,
+      addressLine2: formData.addressLine2 ?? undefined,
       city: formData.city,
       state: formData.state,
       zipCode: formData.zipCode,
       country: formData.country,
-      phone: formData.contactPhone || undefined,
+      phone: formData.contactPhone ?? undefined,
     }
 
     const billingAddress: AddressType | undefined = formData.useSameBilling
@@ -304,7 +309,8 @@ export const OrderSummary = ({
                 {orderError && (
                   <div className='p-3 bg-danger/10 border border-danger/20 rounded-lg'>
                     <p className='text-sm text-danger'>
-                      {orderError.message || 'Failed to place order. Please try again.'}
+                      {orderError.message ||
+                        'Failed to place order. Please try again.'}
                     </p>
                   </div>
                 )}
@@ -320,14 +326,19 @@ export const OrderSummary = ({
                 <div className='space-y-6'>
                   {/* Contact Information */}
                   <div>
-                    <h3 className='text-lg font-semibold mb-4'>Contact Information</h3>
+                    <h3 className='text-lg font-semibold mb-4'>
+                      Contact Information
+                    </h3>
                     <div className='space-y-4'>
                       <Input
                         label='Email'
                         type='email'
                         value={formData.contactEmail}
                         onChange={(e) =>
-                          setFormData((prev) => ({...prev, contactEmail: e.target.value}))
+                          setFormData((prev) => ({
+                            ...prev,
+                            contactEmail: e.target.value,
+                          }))
                         }
                         isRequired
                       />
@@ -336,7 +347,10 @@ export const OrderSummary = ({
                         type='tel'
                         value={formData.contactPhone}
                         onChange={(e) =>
-                          setFormData((prev) => ({...prev, contactPhone: e.target.value}))
+                          setFormData((prev) => ({
+                            ...prev,
+                            contactPhone: e.target.value,
+                          }))
                         }
                       />
                     </div>
@@ -346,13 +360,18 @@ export const OrderSummary = ({
 
                   {/* Shipping Address */}
                   <div>
-                    <h3 className='text-lg font-semibold mb-4'>Shipping Address</h3>
+                    <h3 className='text-lg font-semibold mb-4'>
+                      Shipping Address
+                    </h3>
                     <div className='grid grid-cols-2 gap-4'>
                       <Input
                         label='First Name'
                         value={formData.firstName}
                         onChange={(e) =>
-                          setFormData((prev) => ({...prev, firstName: e.target.value}))
+                          setFormData((prev) => ({
+                            ...prev,
+                            firstName: e.target.value,
+                          }))
                         }
                         isRequired
                       />
@@ -360,7 +379,10 @@ export const OrderSummary = ({
                         label='Last Name'
                         value={formData.lastName}
                         onChange={(e) =>
-                          setFormData((prev) => ({...prev, lastName: e.target.value}))
+                          setFormData((prev) => ({
+                            ...prev,
+                            lastName: e.target.value,
+                          }))
                         }
                         isRequired
                       />
@@ -370,7 +392,10 @@ export const OrderSummary = ({
                         label='Address Line 1'
                         value={formData.addressLine1}
                         onChange={(e) =>
-                          setFormData((prev) => ({...prev, addressLine1: e.target.value}))
+                          setFormData((prev) => ({
+                            ...prev,
+                            addressLine1: e.target.value,
+                          }))
                         }
                         isRequired
                       />
@@ -378,7 +403,10 @@ export const OrderSummary = ({
                         label='Address Line 2 (Optional)'
                         value={formData.addressLine2}
                         onChange={(e) =>
-                          setFormData((prev) => ({...prev, addressLine2: e.target.value}))
+                          setFormData((prev) => ({
+                            ...prev,
+                            addressLine2: e.target.value,
+                          }))
                         }
                       />
                       <div className='grid grid-cols-3 gap-4'>
@@ -386,7 +414,10 @@ export const OrderSummary = ({
                           label='City'
                           value={formData.city}
                           onChange={(e) =>
-                            setFormData((prev) => ({...prev, city: e.target.value}))
+                            setFormData((prev) => ({
+                              ...prev,
+                              city: e.target.value,
+                            }))
                           }
                           isRequired
                         />
@@ -394,7 +425,10 @@ export const OrderSummary = ({
                           label='State'
                           value={formData.state}
                           onChange={(e) =>
-                            setFormData((prev) => ({...prev, state: e.target.value}))
+                            setFormData((prev) => ({
+                              ...prev,
+                              state: e.target.value,
+                            }))
                           }
                           isRequired
                         />
@@ -402,7 +436,10 @@ export const OrderSummary = ({
                           label='ZIP Code'
                           value={formData.zipCode}
                           onChange={(e) =>
-                            setFormData((prev) => ({...prev, zipCode: e.target.value}))
+                            setFormData((prev) => ({
+                              ...prev,
+                              zipCode: e.target.value,
+                            }))
                           }
                           isRequired
                         />
@@ -411,7 +448,10 @@ export const OrderSummary = ({
                         label='Country'
                         value={formData.country}
                         onChange={(e) =>
-                          setFormData((prev) => ({...prev, country: e.target.value}))
+                          setFormData((prev) => ({
+                            ...prev,
+                            country: e.target.value,
+                          }))
                         }
                         isRequired
                       />
@@ -422,7 +462,9 @@ export const OrderSummary = ({
 
                   {/* Payment Method */}
                   <div>
-                    <h3 className='text-lg font-semibold mb-4'>Payment Method</h3>
+                    <h3 className='text-lg font-semibold mb-4'>
+                      Payment Method
+                    </h3>
                     <Select
                       label='Payment Method'
                       selectedKeys={[formData.paymentMethod]}
@@ -430,49 +472,43 @@ export const OrderSummary = ({
                         const selected = Array.from(keys)[0] as string
                         setFormData((prev) => ({
                           ...prev,
-                          paymentMethod: selected as any,
+                          paymentMethod: selected as PaymentMethod,
                         }))
                       }}>
-                      <SelectItem key='credit_card'>
-                        Credit Card
-                      </SelectItem>
-                      <SelectItem key='debit_card'>
-                        Debit Card
-                      </SelectItem>
-                      <SelectItem key='paypal'>
-                        PayPal
-                      </SelectItem>
-                      <SelectItem key='apple_pay'>
-                        Apple Pay
-                      </SelectItem>
-                      <SelectItem key='google_pay'>
-                        Google Pay
-                      </SelectItem>
-                      <SelectItem key='bank_transfer'>
-                        Bank Transfer
-                      </SelectItem>
-                      <SelectItem key='cash'>
-                        Cash on Delivery
-                      </SelectItem>
+                      <SelectItem key='credit_card'>Credit Card</SelectItem>
+                      <SelectItem key='debit_card'>Debit Card</SelectItem>
+                      <SelectItem key='paypal'>PayPal</SelectItem>
+                      <SelectItem key='apple_pay'>Apple Pay</SelectItem>
+                      <SelectItem key='google_pay'>Google Pay</SelectItem>
+                      <SelectItem key='bank_transfer'>Bank Transfer</SelectItem>
+                      <SelectItem key='cash'>Cash on Delivery</SelectItem>
                     </Select>
                   </div>
 
                   {/* Customer Notes */}
                   <div>
-                    <h3 className='text-lg font-semibold mb-4'>Additional Notes (Optional)</h3>
+                    <h3 className='text-lg font-semibold mb-4'>
+                      Additional Notes (Optional)
+                    </h3>
                     <Textarea
                       label='Special Instructions'
                       placeholder='Any special delivery instructions or notes...'
                       value={formData.customerNotes}
                       onChange={(e) =>
-                        setFormData((prev) => ({...prev, customerNotes: e.target.value}))
+                        setFormData((prev) => ({
+                          ...prev,
+                          customerNotes: e.target.value,
+                        }))
                       }
                     />
                   </div>
                 </div>
               </ModalBody>
               <ModalFooter>
-                <Button variant='light' onPress={onClose} isDisabled={isLoading}>
+                <Button
+                  variant='light'
+                  onPress={onClose}
+                  isDisabled={isLoading}>
                   Cancel
                 </Button>
                 <Button

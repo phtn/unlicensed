@@ -109,7 +109,7 @@ function SidebarProvider({
         _setOpen(cookieState)
       }
     }
-  }, [])
+  }, [open, openProp])
 
   const toggleSidebar = React.useCallback(() => {
     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
@@ -487,7 +487,6 @@ function SidebarMenuButton({
   tooltip?: string | React.ComponentProps<typeof Tooltip>
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
   const Comp = asChild ? Slot : 'button'
-  const {isMobile, state} = useSidebar()
 
   const button = (
     <Comp

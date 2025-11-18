@@ -88,14 +88,3 @@ export default function AccountPage() {
     </div>
   )
 }
-
-function DetailRow({label, value}: {label: string; value: string}) {
-  return (
-    <div className='flex flex-col sm:flex-row gap-2'>
-      <span className='text-sm text-foreground/60 font-normal min-w-[240px] sm:min-w-[280px]'>
-        {label}:
-      </span>
-      <span className='text-sm text-foreground font-normal'>{value}</span>
-    </div>
-  )
-}

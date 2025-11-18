@@ -338,7 +338,7 @@ export const assignTierToUser = mutation({
     }
     
     // Get or create user rewards
-    let userRewards = await ctx.db
+    const userRewards = await ctx.db
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
@@ -385,7 +385,7 @@ export const addPoints = mutation({
     reason: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    let userRewards = await ctx.db
+    const userRewards = await ctx.db
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
@@ -468,7 +468,7 @@ export const setVIPStatus = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    let userRewards = await ctx.db
+    const userRewards = await ctx.db
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
@@ -516,7 +516,7 @@ export const setFreeShippingOverride = mutation({
     freeShipping: v.boolean(),
   },
   handler: async (ctx, args) => {
-    let userRewards = await ctx.db
+    const userRewards = await ctx.db
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
