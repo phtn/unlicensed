@@ -15,9 +15,15 @@ import {
 import type {NavGroup, NavItem} from './ui/types'
 // import {useAppTheme} from '@/hooks/use-theme'
 import {ThemeToggle} from '@/components/ui/theme-toggle'
+import {api} from '@/convex/_generated/api'
 import {cn} from '@/lib/utils'
+import {useQuery} from 'convex/react'
+import Link from 'next/link'
+import {usePathname} from 'next/navigation'
 
 export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname()
+
   return (
     <Sidebar {...props} className='border-none!' suppressHydrationWarning>
       <SidebarHeader className=''>
@@ -44,38 +50,46 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent className='py-2'>
             <SidebarMenu>
               {data.navMain[0] &&
-                data.navMain[0]?.items?.map((item) => (
+                data.navMain[0]?.items?.map((item) => {
+                  const isActive = pathname === item.url
+                  return (
+                    <SidebarMenuItem
+                      className='text-xs tracking-tighter'
+                      key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        className='group/menu-button h-8 data-[active=true]:hover:bg-background data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/70 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto'
+                        isActive={isActive}>
+                        <MenuContent {...item} />
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel className='pl-4 text-xs tracking-widest uppercase text-sidebar-foreground/50'>
+            {data.navMain[1]?.title}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {data.navMain[1]?.items?.map((item) => {
+                const isActive = pathname === item.url
+                return (
                   <SidebarMenuItem
-                    className='text-xs tracking-tighter'
+                    className='text-xs tracking-tight font-extrabold'
                     key={item.title}>
                     <SidebarMenuButton
                       asChild
-                      className='group/menu-button h-8 data-[active=true]:hover:bg-background data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/70 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto'
-                      isActive={item.isActive}>
+                      size='lg'
+                      className='group/menu-button font-medium h-8 [&>svg]:size-auto'
+                      isActive={isActive}>
                       <MenuContent {...item} />
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                ))}
-              <a
-                data-active='true'
-                className='relative flex flex-row items-center tracking-tight gap-2 rounded-lg p-2 ps-4 text-start wrap:anywhere [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary/10 text-fd-primary'
-                href='/docs/components/action-search-bar'>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  height={8}
-                  width={8}
-                  stroke='currentColor'
-                  strokeWidth='1'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  className='lucide lucide-command'
-                  aria-hidden='true'>
-                  <path d='M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3'></path>
-                </svg>
-                Action Search Bar
-              </a>
+                )
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -84,24 +98,26 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         {/* Secondary Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel className='pl-4 text-xs tracking-widest uppercase text-sidebar-foreground/50'>
-            {data.navMain[1]?.title}
+            {data.navMain[2]?.title}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {data.navMain[1]?.items?.map((item) => (
-                <SidebarMenuItem
-                  className='text-xs tracking-tight font-extrabold'
-                  key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    size='lg'
-                    className='group/menu-button font-medium h-8 [&>svg]:size-auto'
-                    isActive={item.isActive}>
-                    <MenuContent {...item} />
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-
+              {data.navMain[2]?.items?.map((item) => {
+                const isActive = pathname === item.url
+                return (
+                  <SidebarMenuItem
+                    className='text-xs tracking-tight font-extrabold'
+                    key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      size='lg'
+                      className='group/menu-button font-medium h-8 [&>svg]:size-auto'
+                      isActive={isActive}>
+                      <MenuContent {...item} />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
               <ThemeToggle />
             </SidebarMenu>
           </SidebarGroupContent>
@@ -112,24 +128,34 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
 }
 
 const MenuContent = (item: NavItem) => {
+  const adminStats = useQuery(api.orders.q.getAdminStats)
+  const pendingOrdersCount = adminStats?.pendingOrdersCount ?? 0
+  const showBadge = item.url === '/admin/orders' && pendingOrdersCount > 0
+
   return (
-    <a
+    <Link
       href={item.url}
+      prefetch={true}
       suppressHydrationWarning
-      className=' font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center px-4 h-10'>
+      className=' font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center justify-between px-4 h-10 relative'>
       <span className='group-hover/menu-content:text-foreground tracking-tighter text-sm font-medium text-foreground/80'>
         {item.title}
       </span>
-    </a>
+      {showBadge && (
+        <span className='flex h-5 min-w-5 items-center justify-center rounded-md bg-orange-500 px-1.5 text-xs font-medium tabular-nums text-white'>
+          {pendingOrdersCount}
+        </span>
+      )}
+    </Link>
   )
 }
 
 const data: Record<string, NavGroup[]> = {
   teams: [
     {
-      name: 'BestDeal',
-      logo: 'https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/exp2/logo-01_upxvqe.png',
-      url: '/x',
+      name: '',
+      logo: '',
+      url: '/admin',
     },
   ],
   navMain: [
@@ -139,42 +165,58 @@ const data: Record<string, NavGroup[]> = {
       items: [
         {
           title: 'Overview',
-          url: '/x',
+          url: '/admin',
           icon: 'linalool',
-          isActive: true,
         },
         {
-          title: 'Affiliates',
-          url: '/x/affiliates',
+          title: 'Sales',
+          url: '/admin/sales',
+          icon: 'linalool',
+        },
+        {
+          title: 'Orders',
+          url: '/admin/orders',
           icon: 'chevron-right',
         },
         {
-          title: 'Leads',
-          url: '/x',
-          icon: 'linalool',
-          isActive: true,
-        },
-
-        {
-          title: 'Scans',
-          url: '/x',
+          title: 'Deliveries',
+          url: '/admin/deliveries',
           icon: 'linalool',
         },
-
         {
-          title: 'Master',
+          title: 'Inventory',
+          url: '/admin/inventory',
+          icon: 'linalool',
+        },
+        {
+          title: 'Personnel',
+          url: '/admin/personnel',
+          icon: 'linalool',
+        },
+        {
+          title: '',
           url: '/x',
           icon: 'linalool',
         },
       ],
     },
     {
-      title: 'Preferences',
-      url: '/x',
+      title: 'Create',
+      items: [
+        {
+          title: 'Category',
+          url: '/admin/category/create',
+          icon: 'linalool',
+        },
+      ],
+    },
+    {
+      title: 'Settings',
+      url: '/admin/settings',
       items: [
         {
           title: 'Settings',
-          url: '/x/settings',
+          url: '/admin/settings',
           icon: 'linalool',
         },
       ],

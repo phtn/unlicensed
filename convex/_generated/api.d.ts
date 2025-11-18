@@ -8,6 +8,12 @@
  * @module
  */
 
+import type * as activities_d from "../activities/d.js";
+import type * as activities_m from "../activities/m.js";
+import type * as activities_q from "../activities/q.js";
+import type * as activityViews_d from "../activityViews/d.js";
+import type * as activityViews_m from "../activityViews/m.js";
+import type * as activityViews_q from "../activityViews/q.js";
 import type * as cart_d from "../cart/d.js";
 import type * as cart_m from "../cart/m.js";
 import type * as cart_q from "../cart/q.js";
@@ -36,6 +42,12 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "activities/d": typeof activities_d;
+  "activities/m": typeof activities_m;
+  "activities/q": typeof activities_q;
+  "activityViews/d": typeof activityViews_d;
+  "activityViews/m": typeof activityViews_m;
+  "activityViews/q": typeof activityViews_q;
   "cart/d": typeof cart_d;
   "cart/m": typeof cart_m;
   "cart/q": typeof cart_q;

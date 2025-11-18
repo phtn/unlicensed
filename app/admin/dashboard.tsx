@@ -18,10 +18,8 @@ export const AdminDashboard = () => {
   return (
     <div className='mx-auto flex w-full max-w-6xl flex-col gap-8 py-10'>
       <header className='space-y-3'>
-        <h1 className='text-2xl font-semibold text-neutral-100'>
-          Admin Catalog Manager
-        </h1>
-        <p className='max-w-3xl text-sm text-neutral-400'>
+        <h1 className='text-2xl font-semibold '>Admin Catalog Manager</h1>
+        <p className='max-w-3xl text-sm'>
           Create categories, enrich product details, and manage media assets
           using the TanStack React Form powered workflow below. New entries sync
           directly with Convex.
@@ -38,9 +36,7 @@ export const AdminDashboard = () => {
       <ProductForm categories={categories ?? []} />
 
       <section className='rounded-xl border border-neutral-800 bg-neutral-950/60 p-6 shadow-lg shadow-black/30'>
-        <h3 className='text-base font-semibold text-neutral-100'>
-          Current Categories
-        </h3>
+        <h3 className='text-base font-semibold '>Current Categories</h3>
         {categories?.length === 0 ? (
           <p className='mt-3 text-sm text-neutral-500'>
             No categories yet. Create one above to get started.
@@ -51,9 +47,7 @@ export const AdminDashboard = () => {
               <li
                 key={category._id}
                 className='rounded-lg border border-neutral-800 bg-neutral-900/40 p-4'>
-                <h4 className='text-sm font-semibold text-neutral-100'>
-                  {category.name}
-                </h4>
+                <h4 className='text-sm font-semibold '>{category.name}</h4>
                 <p className='text-xs text-neutral-500'>{category.slug}</p>
                 <p className='mt-2 line-clamp-3 text-sm text-neutral-300'>
                   {category.description}

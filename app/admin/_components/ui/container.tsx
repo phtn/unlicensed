@@ -1,12 +1,5 @@
 'use client'
 
-export const Container = ({children}: {children: ReactNode}) => (
-  <div className='relative bg-sidebar w-full min-w-0 md:p-5 flex h-screen'>
-    {/*<div className='absolute top-1 hidden _flex items-center px-1 rounded-sm left-4 bg-amber-100/10 h-3 space-x-4 text-xs'></div>*/}
-    {children}
-  </div>
-)
-
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
@@ -22,7 +15,11 @@ interface WrappedContentProps {
 
 export const WrappedContent = ({children, toolbar}: WrappedContentProps) => {
   const {state, togglePanel} = useSettingsPanel()
-  const endpoint = usePathname().split('/').pop()
+  const pathname = usePathname()
+  const endpoint = useMemo(
+    () => pathname.split('/').pop() || 'admin',
+    [pathname],
+  )
   const isExpanded = useMemo(() => state === 'expanded', [state])
   return (
     <Wrapper isPanelExpanded={isExpanded}>
@@ -59,7 +56,7 @@ export const Wrapper = ({children, isPanelExpanded}: WrapperProps) => {
   return (
     <div
       className={cn(
-        'flex-1 min-w-0 [&>div>div]:h-full w-full border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-greyed',
+        'flex-1 min-w-0 [&>div>div]:h-full w-full border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-neutral-800',
         'overflow-hidden drop-shadow-xl',
         'md:rounded-xl ',
         {'': isPanelExpanded},
@@ -68,3 +65,10 @@ export const Wrapper = ({children, isPanelExpanded}: WrapperProps) => {
     </div>
   )
 }
+
+export const Container = ({children}: {children: ReactNode}) => (
+  <div className='relative bg-sidebar w-full min-w-0 md:p-5 flex min-h-screen'>
+    {/*<div className='absolute top-1 hidden _flex items-center px-1 rounded-sm left-4 bg-amber-100/10 h-3 space-x-4 text-xs'></div>*/}
+    {children}
+  </div>
+)

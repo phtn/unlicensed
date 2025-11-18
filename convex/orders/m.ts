@@ -1,11 +1,12 @@
 import {v} from 'convex/values'
-import {mutation} from '../_generated/server'
+import {mutation, internalMutation} from '../_generated/server'
 import {
   orderStatusSchema,
   paymentSchema,
   shippingSchema,
 } from './d'
 import {addressSchema} from '../users/d'
+import {internal} from '../_generated/api'
 
 /**
  * Generate a unique order number
@@ -125,6 +126,11 @@ export const createOrder = mutation({
       updatedAt: Date.now(),
     })
 
+    // Log order created activity
+    await ctx.scheduler.runAfter(0, internal.activities.m.logOrderCreated, {
+      orderId,
+    })
+
     return orderId
   },
 })
@@ -164,6 +170,18 @@ export const updateOrderStatus = mutation({
 
     await ctx.db.patch(args.orderId, updates)
 
+    // Log order status change activity
+    await ctx.scheduler.runAfter(
+      0,
+      internal.activities.m.logOrderStatusChange,
+      {
+        orderId: args.orderId,
+        previousStatus: order.orderStatus,
+        newStatus: args.status,
+        notes: args.internalNotes,
+      },
+    )
+
     return args.orderId
   },
 })
@@ -196,6 +214,18 @@ export const updatePayment = mutation({
       orderStatus,
       updatedAt: Date.now(),
     })
+
+    // Log payment status change activity
+    await ctx.scheduler.runAfter(
+      0,
+      internal.activities.m.logPaymentStatusChange,
+      {
+        orderId: args.orderId,
+        previousStatus: order.payment.status,
+        newStatus: args.payment.status,
+        transactionId: args.payment.transactionId,
+      },
+    )
 
     return args.orderId
   },
@@ -230,6 +260,14 @@ export const updateShipping = mutation({
       shipping: args.shipping,
       orderStatus,
       updatedAt: Date.now(),
+    })
+
+    // Log shipping update activity
+    await ctx.scheduler.runAfter(0, internal.activities.m.logShippingUpdate, {
+      orderId: args.orderId,
+      trackingNumber: args.shipping.trackingNumber,
+      carrier: args.shipping.carrier,
+      shippingMethod: args.shipping.method,
     })
 
     return args.orderId

@@ -1,4 +1,4 @@
-import {Button, Chip} from '@heroui/react'
+import {Button, Chip, Link} from '@heroui/react'
 import NextLink from 'next/link'
 import {StoreCategory} from '../types'
 
@@ -44,7 +44,7 @@ export const StrainFinderMini = ({categories}: Props) => {
             </div>
             <Button
               as={NextLink}
-              href='/quiz'
+              href='#'
               radius='full'
               variant='solid'
               className='cta-button w-fit px-8 py-5 text-sm font-semibold uppercase tracking-[0.35em] hover:brightness-110'>
@@ -53,7 +53,8 @@ export const StrainFinderMini = ({categories}: Props) => {
           </div>
           <div className='grid gap-4 sm:grid-cols-2 lg:col-span-2'>
             {categories.map((category) => (
-              <div
+              <Link
+                href={`/category/${category.slug}`}
                 key={category.slug}
                 className='group relative overflow-hidden rounded-3xl border border-foreground/10 bg-(--surface-highlight) p-5 transition hover:-translate-y-1 hover:bg-panel/60'>
                 <div className='flex flex-col gap-3'>
@@ -68,7 +69,7 @@ export const StrainFinderMini = ({categories}: Props) => {
                 <span className='absolute right-4 top-4 text-xs font-semibold text-color-muted transition group-hover:text-foreground'>
                   →
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

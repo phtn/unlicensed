@@ -305,7 +305,6 @@ export const ProductDetailContent = ({
                           className={cn(
                             'relative font-space text-[10px] sm:text-xs font-semibold tracking-wide sm:tracking-widest whitespace-nowrap',
                           )}>
-                          {' '}
                           {denomination}
                           {product.unit}
                         </span>
@@ -328,10 +327,10 @@ export const ProductDetailContent = ({
                   </Button>
                 </div>
                 <Button
+                  as={NextLink}
                   size='lg'
                   variant='solid'
-                  // as={NextLink}
-                  // href='/cart'
+                  href='/cart'
                   onPress={purge}
                   className='w-full sm:flex-1 font-space font-semibold text-sm sm:text-base bg-foreground/95 text-background'>
                   <span>Checkout</span>

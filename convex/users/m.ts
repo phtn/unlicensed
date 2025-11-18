@@ -1,6 +1,7 @@
 import {v} from 'convex/values'
 import {mutation} from '../_generated/server'
 import {addressSchema, contactSchema, socialMediaSchema, preferencesSchema} from './d'
+import {internal} from '../_generated/api'
 
 export const createOrUpdateUser = mutation({
   args: {
@@ -56,6 +57,13 @@ export const createOrUpdateUser = mutation({
       preferences: args.preferences,
       createdAt: now,
       updatedAt: now,
+    })
+
+    // Log user signup activity
+    await ctx.scheduler.runAfter(0, internal.activities.m.logUserSignup, {
+      userId,
+      userName: args.name,
+      userEmail: args.email,
     })
 
     return userId

@@ -4,7 +4,7 @@ import {Button} from '@heroui/react'
 import {useMutation} from 'convex/react'
 import {useCallback, useState} from 'react'
 
-export const AdminSettings = () => {
+export const PurgeActions = () => {
   const [purgingUsers, setIsPurgingUsers] = useState(false)
   const [purgingProducts, setIsPurgingProducts] = useState(false)
   const [purgingCategories, setIsPurgingCategories] = useState(false)
@@ -34,20 +34,30 @@ export const AdminSettings = () => {
   }, [purgeCategories])
 
   return (
-    <div className='flex flex-col gap-4 border border-lime-100/20 px-4 py-8 rounded-lg'>
-      <h2 className='text-xl font-bold'>Settings</h2>
+    <div className='flex flex-col gap-4 px-4 py-4 border-t'>
       <div className='flex items-center gap-6'>
-        <Button onPress={handlePurgeUsers}>
+        <Button
+          radius='sm'
+          size='sm'
+          variant='solid'
+          color='danger'
+          onPress={handlePurgeUsers}>
           <span>Purge Test Users</span>
           <Icon name={purgingUsers ? 'spinners-ring' : 'x'} />
         </Button>
-        <Button onPress={handlePurgeProducts}>
+        <Button variant='solid' radius='sm' onPress={handlePurgeProducts}>
           <span>Purge Test Products</span>
-          <Icon name={purgingProducts ? 'spinners-ring' : 'x'} />
+          <Icon
+            className='text-danger'
+            name={purgingProducts ? 'spinners-ring' : 'x'}
+          />
         </Button>
-        <Button onPress={handlePurgeCategories}>
+        <Button variant='solid' radius='sm' onPress={handlePurgeCategories}>
           <span>Purge Test Categories</span>
-          <Icon name={purgingCategories ? 'spinners-ring' : 'x'} />
+          <Icon
+            className='text-danger'
+            name={purgingCategories ? 'spinners-ring' : 'x'}
+          />
         </Button>
       </div>
     </div>

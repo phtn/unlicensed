@@ -1,6 +1,7 @@
 import {v} from 'convex/values'
 import {ensureSlug} from '../../lib/slug'
 import {mutation} from '../_generated/server'
+import {internal} from '../_generated/api'
 
 export const createProduct = mutation({
   args: {
@@ -88,6 +89,14 @@ export const createProduct = mutation({
       potencyLevel: args.potencyLevel,
       potencyProfile: args.potencyProfile?.trim() || undefined,
       weightGrams: args.weightGrams ?? undefined,
+    })
+
+    // Log product created activity
+    await ctx.scheduler.runAfter(0, internal.activities.m.logProductActivity, {
+      type: 'product_created',
+      productId,
+      productName: args.name.trim(),
+      productSlug: slug,
     })
 
     return productId

@@ -1,43 +1,35 @@
-import {Card, CardBody, CardFooter, Image} from '@heroui/react'
+import {Card, CardBody, CardFooter, Image, Link} from '@heroui/react'
 
 export const CategoryList = () => {
   const category = [
     {
-      title: 'Flower',
+      title: 'flower',
       img: 'https://www.heroui.com/images/fruit-1.jpeg',
-      price: '$5.50',
     },
     {
-      title: 'Edibles',
+      title: 'edibles',
       img: 'https://www.heroui.com/images/fruit-2.jpeg',
-      price: '$3.00',
     },
     {
       title: 'Concentrates',
       img: 'https://www.heroui.com/images/fruit-3.jpeg',
-      price: '$10.00',
     },
     {
-      title: 'Pre-rolls',
+      title: 'pre-rolls',
       img: 'https://www.heroui.com/images/fruit-4.jpeg',
-      price: '$5.30',
     },
     {
-      title: 'Beverages',
+      title: 'beverages',
       img: 'https://www.heroui.com/images/fruit-5.jpeg',
-      price: '$15.70',
-    },
-    {
-      title: 'Vapes',
-      img: 'https://www.heroui.com/images/fruit-6.jpeg',
-      price: '$8.00',
     },
   ]
 
   return (
-    <div className='gap-4 grid grid-cols-2 sm:grid-cols-6'>
+    <div className='gap-4 grid grid-cols-2 sm:grid-cols-5'>
       {category.map((item, index) => (
         <Card
+          as={Link}
+          href={`/category/${item.title}`}
           key={index}
           radius='sm'
           className='border-none'
@@ -55,8 +47,8 @@ export const CategoryList = () => {
             />
           </CardBody>
           <CardFooter className='text-xl h-10 font-space font-bold justify-between'>
-            <p>{item.title}</p>
-            {/*<p className='text-default-500'>{item.price}</p>*/}
+            <p className='capitalize'>{item.title}</p>
+            {/*<p className='text-default-500'>{item.href}</p>*/}
           </CardFooter>
         </Card>
       ))}
@@ -68,7 +60,7 @@ export const fruits = [
   {
     title: 'Orange',
     img: 'https://www.heroui.com/images/fruit-1.jpeg',
-    price: '$5.50',
+    href: '$5.50',
   },
   {
     title: 'Tangerine',
