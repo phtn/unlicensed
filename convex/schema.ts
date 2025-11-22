@@ -7,6 +7,7 @@ import {orderSchema} from './orders/d'
 import {rewardTierSchema, userRewardsSchema} from './rewards/d'
 import {activitySchema} from './activities/d'
 import {activityViewSchema} from './activityViews/d'
+import {adminSettingsSchema} from './admin/d'
 
 export default defineSchema({
   categories: defineTable(categorySchema).index('by_slug', ['slug']),
@@ -33,4 +34,5 @@ export default defineSchema({
   activityViews: defineTable(activityViewSchema)
     .index('by_activity', ['activityId'])
     .index('by_activity_user', ['activityId', 'userId']),
+  adminSettings: defineTable(adminSettingsSchema),
 })

@@ -51,10 +51,15 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               {data.navMain[0] &&
                 data.navMain[0]?.items?.map((item) => {
-                  const isActive = pathname === item.url
+                  const isActive = pathname
+                    .split('/')
+                    .splice(2)
+                    .includes(item.url.split('/').pop()!)
                   return (
                     <SidebarMenuItem
-                      className='text-xs tracking-tighter'
+                      className={cn('text-xs tracking-tighter', {
+                        'bg-sidebar-accent rounded-lg': isActive,
+                      })}
                       key={item.title}>
                       <SidebarMenuButton
                         asChild
@@ -78,12 +83,16 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 const isActive = pathname === item.url
                 return (
                   <SidebarMenuItem
-                    className='text-xs tracking-tight font-extrabold'
+                    className={cn('text-xs tracking-tight font-extrabold', {
+                      'bg-sidebar-accent': isActive,
+                    })}
                     key={item.title}>
                     <SidebarMenuButton
                       asChild
                       size='lg'
-                      className='group/menu-button font-medium h-8 [&>svg]:size-auto'
+                      className={cn(
+                        'group/menu-button font-medium h-8 [&>svg]:size-auto',
+                      )}
                       isActive={isActive}>
                       <MenuContent {...item} />
                     </SidebarMenuButton>
@@ -118,7 +127,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                   </SidebarMenuItem>
                 )
               })}
-              <ThemeToggle />
+              <ThemeToggle variant='menu' />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -142,7 +151,7 @@ const MenuContent = (item: NavItem) => {
         {item.title}
       </span>
       {showBadge && (
-        <span className='flex h-5 min-w-5 items-center justify-center rounded-md bg-orange-500 px-1.5 text-xs font-medium tabular-nums text-white'>
+        <span className='flex h-5 w-5 aspect-square items-center justify-center rounded-sm bg-orange-400/80 px-1.5 text-sm font-medium tabular-nums text-white font-space'>
           {pendingOrdersCount}
         </span>
       )}

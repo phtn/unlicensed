@@ -36,10 +36,16 @@ export const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
   if (variant === 'menu') {
     return (
       <Button
-        onPress={handleToggle}
-        radius='full'
+        radius='sm'
         variant='flat'
-        className='w-full border border-(--nav-border) bg(--surface-highlight) px-4 py-3 text-base font-medium text-background hover:bg-(--surface-muted)'></Button>
+        onPress={handleToggle}
+        className='w-40 flex items-center justify-start space-x-3 border py-3 text-sm text-foreground hover:bg-(--surface-muted)'>
+        <Icon
+          name='toggle-theme'
+          className={cn('transition-all', {'rotate-180': isDark})}
+        />
+        <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+      </Button>
     )
   }
 

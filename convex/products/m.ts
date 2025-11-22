@@ -103,6 +103,43 @@ export const createProduct = mutation({
   },
 })
 
+export const updateProduct = mutation({
+  args: {
+    productId: v.id('products'),
+    name: v.optional(v.string()),
+    priceCents: v.optional(v.number()),
+    stock: v.optional(v.number()),
+    available: v.optional(v.boolean()),
+    featured: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.productId)
+    if (!product) {
+      throw new Error(`Product with id "${args.productId}" not found.`)
+    }
+
+    const updates: Partial<typeof product> = {}
+    if (args.name !== undefined) {
+      updates.name = args.name.trim()
+    }
+    if (args.priceCents !== undefined) {
+      updates.priceCents = args.priceCents
+    }
+    if (args.stock !== undefined) {
+      updates.stock = args.stock
+    }
+    if (args.available !== undefined) {
+      updates.available = args.available
+    }
+    if (args.featured !== undefined) {
+      updates.featured = args.featured
+    }
+
+    await ctx.db.patch(args.productId, updates)
+    return {success: true}
+  },
+})
+
 export const purgeTestProducts = mutation({
   handler: async ({db}) => {
     const allItems = await db.query('products').collect()

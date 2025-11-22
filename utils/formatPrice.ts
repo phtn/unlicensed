@@ -1,4 +1,4 @@
-export const formatPrice = (priceCents: number) => {
+export const formatPrice = (priceCents: number, decimals = 2) => {
   const dollars = priceCents / 100
-  return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
+  return `${dollars.toFixed(decimals)}`
 }

@@ -4,18 +4,24 @@ import {ScrollArea} from '@/components/ui/scroll-area'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {formatDate} from '@/utils/date'
 import {Button, Drawer, DrawerContent, DrawerHeader} from '@heroui/react'
-import {motion} from 'motion/react'
+import {usePathname} from 'next/navigation'
 import {
   type ComponentProps,
   createContext,
   CSSProperties,
+  ReactNode,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from 'react'
+import {useOrderDetailsSafe} from '../order-details-context'
+import {OrderDetailsForm} from '../order-details-form'
+import {useProductDetailsSafe} from '../product-details-context'
+import {ProductDetailsForm} from '../product-details-form'
 // import { MODELS as CHAT_MODELS, useChatSettings } from "@/ctx/chat/store";
 // import { useVoiceSettings } from "@/ctx/voice/store";
 // import { Checkbox } from "@/components/ui/checkbox";
@@ -42,7 +48,7 @@ type SettingsPanelContext = {
 
 const SETTINGS_COOKIE_NAME = 'settings:state'
 const SETTINGS_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SETTINGS_WIDTH = '286px'
+const SETTINGS_WIDTH = '400px'
 const SETTINGS_WIDTH_MOBILE = '18rem'
 const SETTINGS_WIDTH_ICON = '0rem'
 const SETTINGS_KEYBOARD_SHORTCUT = 'p'
@@ -57,6 +63,12 @@ function useSettingsPanel() {
     )
   }
   return context
+}
+
+// Safe hook that returns null if context is not available
+function useSettingsPanelSafe() {
+  const context = useContext(SettingsPanelContext)
+  return context || null
 }
 
 const SettingsPanelProvider = ({
@@ -185,18 +197,19 @@ const SettingsPanel = ({
   }
 
   return (
-    <ScrollArea className=''>
+    <ScrollArea className='scrollbar-hide h-fit'>
       <div
         data-state={state}
         data-collapsible={state === 'collapsed' ? collapsible : ''}
         data-side={side}
         className={cn(
-          'bg-sidebar group peer relative hidden md:block text-sidebar-foreground transition-[width] duration-200 ease-in-out',
+          'bg-linear-to-r from-transparent from-10% via-sidebar to-sidebar group peer relative hidden md:block text-sidebar-foreground transition-[width] duration-200 ease-in-out',
+          'border-b-4 border-teal-300',
           state === 'expanded' ? 'w-(--settings-width)' : 'w-0',
         )}>
         <div
           className={cn(
-            'ml-4 relative h-svh bg-transparent transition-transform duration-400 ease-in-out',
+            'ml-4 relative h-svh overflow-hidden bg-transparent transition-transform duration-400 ease-in-out',
             'w-(--settings-width) px-2 md:pr-4',
             state === 'collapsed' &&
               (side === 'right' ? 'translate-x-full' : '-translate-x-full'),
@@ -210,30 +223,88 @@ const SettingsPanel = ({
 SettingsPanel.displayName = 'SettingsPanel'
 
 const SettingsPanelContent = () => {
+  // Use order details context if available (for orders page)
+  const orderDetailsContext = useOrderDetailsSafe()
+  const route = usePathname().split('/').pop()
+
+  // Use product details context if available (for inventory page)
+  const productDetailsContext = useProductDetailsSafe()
+
+  const selectedEntity = useMemo(() => {
+    const selectedOrder = orderDetailsContext?.selectedOrder ?? null
+    const selectedProduct = productDetailsContext?.selectedProduct ?? null
+    switch (route) {
+      case 'orders':
+        return {
+          title: 'Order Details',
+          subtext: selectedOrder ? formatDate(selectedOrder.updatedAt) : '',
+          form: selectedOrder ? (
+            <OrderDetailsForm order={selectedOrder} />
+          ) : null,
+        }
+      case 'inventory':
+        return {
+          title: 'Product Details',
+          subtext: selectedProduct?.categorySlug,
+          form: selectedProduct ? (
+            <ProductDetailsForm product={selectedProduct} />
+          ) : null,
+        }
+      default:
+        return {
+          title: 'Settings',
+          data: null,
+        }
+    }
+  }, [route, orderDetailsContext, productDetailsContext])
+
   return (
-    <>
-      {/* Sidebar header */}
+    <Panel title={selectedEntity.title} subtext={selectedEntity.subtext}>
+      {selectedEntity.form}
+    </Panel>
+  )
+}
+SettingsPanelContent.displayName = 'SettingsPanelContent'
+
+interface PanelProps {
+  title: string
+  subtext?: string
+  children?: ReactNode
+}
+
+const Panel = ({title, subtext, children}: PanelProps) => {
+  return (
+    <div className='h-full flex flex-col pt-4'>
       <div
-        className={cn('h-14 flex items-center justify-between relative')}
+        className={cn('h-14 flex items-center justify-between relative mb-2')}
         style={
           {
             '--settings-width': SETTINGS_WIDTH,
             '--settings-width-icon': SETTINGS_WIDTH_ICON,
           } as CSSProperties
         }>
-        <div className='flex items-center gap-4'>
-          <h2 className='text-base font-medium tracking-tighter'>Settings</h2>
-        </div>
+        <PanelHeader title={title} subtext={subtext} />
       </div>
-
-      {/* Sidebar content */}
-      <motion.div className='-mt-px whitespace-nowrap'>
-        {/* QR Code Viewer */}
-      </motion.div>
-    </>
+      <div className='px-0'>{children}</div>
+    </div>
   )
 }
-SettingsPanelContent.displayName = 'SettingsPanelContent'
+
+interface PanelHeaderProps {
+  title: string
+  subtext?: string
+}
+
+const PanelHeader = ({title, subtext}: PanelHeaderProps) => {
+  return (
+    <div className='w-full flex items-center justify-between'>
+      <h2 className='text-base font-medium tracking-tighter'>{title}</h2>
+      {subtext && (
+        <span className='font-space text-sm opacity-70'>{subtext}</span>
+      )}
+    </div>
+  )
+}
 
 const SettingsPanelTrigger = () => {
   const {isMobile, state, togglePanel} = useSettingsPanel()
@@ -262,4 +333,5 @@ export {
   SettingsPanelProvider,
   SettingsPanelTrigger,
   useSettingsPanel,
+  useSettingsPanelSafe,
 }

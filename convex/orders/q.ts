@@ -145,8 +145,24 @@ export const getAdminStats = query({
     startOfToday.setHours(0, 0, 0, 0)
     const startOfTodayTimestamp = startOfToday.getTime()
 
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
+    startOfWeek.setHours(0, 0, 0, 0)
+    const startOfWeekTimestamp = startOfWeek.getTime()
+
+    const startOfMonth = new Date(now)
+    startOfMonth.setDate(1)
+    startOfMonth.setHours(0, 0, 0, 0)
+    const startOfMonthTimestamp = startOfMonth.getTime()
+
     // Get all orders
     const allOrders = await ctx.db.query('orders').collect()
+
+    // Get all users
+    const allUsers = await ctx.db.query('users').collect()
+
+    // Get all products
+    const allProducts = await ctx.db.query('products').collect()
 
     // Calculate sales today (only delivered or confirmed orders)
     const salesToday = allOrders
@@ -159,9 +175,46 @@ export const getAdminStats = query({
       )
       .reduce((sum, order) => sum + order.totalCents, 0)
 
+    // Calculate sales this week
+    const salesThisWeek = allOrders
+      .filter(
+        (order) =>
+          order.createdAt >= startOfWeekTimestamp &&
+          (order.orderStatus === 'delivered' ||
+            order.orderStatus === 'confirmed' ||
+            order.orderStatus === 'shipped'),
+      )
+      .reduce((sum, order) => sum + order.totalCents, 0)
+
+    // Calculate sales this month
+    const salesThisMonth = allOrders
+      .filter(
+        (order) =>
+          order.createdAt >= startOfMonthTimestamp &&
+          (order.orderStatus === 'delivered' ||
+            order.orderStatus === 'confirmed' ||
+            order.orderStatus === 'shipped'),
+      )
+      .reduce((sum, order) => sum + order.totalCents, 0)
+
+    // Calculate total revenue (all completed orders)
+    const totalRevenue = allOrders
+      .filter(
+        (order) =>
+          order.orderStatus === 'delivered' ||
+          order.orderStatus === 'confirmed' ||
+          order.orderStatus === 'shipped',
+      )
+      .reduce((sum, order) => sum + order.totalCents, 0)
+
     // Count pending orders
     const pendingOrdersCount = allOrders.filter(
       (order) => order.orderStatus === 'pending',
+    ).length
+
+    // Count cancelled orders
+    const cancelledOrdersCount = allOrders.filter(
+      (order) => order.orderStatus === 'cancelled',
     ).length
 
     // Count ongoing deliveries (shipped or processing)
@@ -178,12 +231,34 @@ export const getAdminStats = query({
     // Total orders count
     const totalOrdersCount = allOrders.length
 
+    // Calculate average order value (include all orders except cancelled/refunded)
+    const ordersForAOV = allOrders.filter(
+      (order) =>
+        order.orderStatus !== 'cancelled' &&
+        order.orderStatus !== 'refunded',
+    )
+    const totalRevenueForAOV = ordersForAOV.reduce(
+      (sum, order) => sum + order.totalCents,
+      0,
+    )
+    const averageOrderValue =
+      ordersForAOV.length > 0
+        ? Math.round(totalRevenueForAOV / ordersForAOV.length)
+        : 0
+
     return {
       salesTodayCents: salesToday,
+      salesThisWeekCents: salesThisWeek,
+      salesThisMonthCents: salesThisMonth,
+      totalRevenueCents: totalRevenue,
       pendingOrdersCount,
+      cancelledOrdersCount,
       ongoingDeliveriesCount,
       deliveredOrdersCount,
       totalOrdersCount,
+      totalUsersCount: allUsers.length,
+      totalProductsCount: allProducts.length,
+      averageOrderValueCents: averageOrderValue,
     }
   },
 })
@@ -206,6 +281,7 @@ export const getAdminChartData = query({
     const salesData: Array<{value: number}> = []
     const ordersData: Array<{value: number}> = []
     const deliveriesData: Array<{value: number}> = []
+    const aovData: Array<{value: number}> = []
 
     // For each of the last 20 days
     for (let i = days - 1; i >= 0; i--) {
@@ -224,14 +300,32 @@ export const getAdminChartData = query({
       )
 
       // Calculate sales for this day (only delivered, confirmed, or shipped)
-      const daySales = dayOrders
-        .filter(
-          (order) =>
-            order.orderStatus === 'delivered' ||
-            order.orderStatus === 'confirmed' ||
-            order.orderStatus === 'shipped',
-        )
-        .reduce((sum, order) => sum + order.totalCents, 0)
+      const completedDayOrders = dayOrders.filter(
+        (order) =>
+          order.orderStatus === 'delivered' ||
+          order.orderStatus === 'confirmed' ||
+          order.orderStatus === 'shipped',
+      )
+
+      const daySales = completedDayOrders.reduce(
+        (sum, order) => sum + order.totalCents,
+        0,
+      )
+
+      // Calculate average order value for this day (include all orders except cancelled/refunded)
+      const dayOrdersForAOV = dayOrders.filter(
+        (order) =>
+          order.orderStatus !== 'cancelled' &&
+          order.orderStatus !== 'refunded',
+      )
+      const dayTotalForAOV = dayOrdersForAOV.reduce(
+        (sum, order) => sum + order.totalCents,
+        0,
+      )
+      const dayAOV =
+        dayOrdersForAOV.length > 0
+          ? dayTotalForAOV / dayOrdersForAOV.length
+          : 0
 
       // Count orders for this day
       const dayOrdersCount = dayOrders.length
@@ -245,12 +339,14 @@ export const getAdminChartData = query({
       salesData.push({value: daySales / 100}) // Convert cents to dollars
       ordersData.push({value: dayOrdersCount})
       deliveriesData.push({value: dayDeliveriesCount})
+      aovData.push({value: dayAOV / 100}) // Convert cents to dollars for display
     }
 
     return {
       salesData,
       ordersData,
       deliveriesData,
+      aovData,
     }
   },
 })

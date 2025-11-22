@@ -120,3 +120,4 @@ export type OrderType = Infer<typeof orderSchema>
 export type OrderItemType = Infer<typeof orderItemSchema>
 export type PaymentType = Infer<typeof paymentSchema>
 export type ShippingType = Infer<typeof shippingSchema>
+

@@ -78,6 +78,27 @@ export const getDefaultAddress = query({
   },
 })
 
+/**
+ * Get all users (for admin personnel management)
+ */
+export const getAllUsers = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 100
+    const users = await ctx.db.query('users').collect()
+    // Sort by createdAt descending if available, otherwise by name
+    const sorted = users.sort((a, b) => {
+      if (a.createdAt && b.createdAt) {
+        return b.createdAt - a.createdAt
+      }
+      return a.name.localeCompare(b.name)
+    })
+    return sorted.slice(0, limit)
+  },
+})
+
 
 
 

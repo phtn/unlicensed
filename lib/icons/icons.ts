@@ -217,6 +217,16 @@ export const icons = {
     viewBox: '0 0 20 20',
     set: 'claude',
   },
+  info: {
+    symbol: `<g fill="none"><circle cx="12" cy="12" r="9.25" stroke="currentColor" stroke-width="1.5"></circle><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M12 11.813v5"></path><circle cx="12" cy="8.438" r="1.25" fill="currentColor"></circle></g>`,
+    viewBox: `0 0 24 24`,
+    set: 'proicons',
+  },
+  details: {
+    symbol: `<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M7.75 5.25h13.5M2.75 12h18.5m-10 6.75h10"></path>`,
+    viewBox: `0 0 24 24`,
+    set: 'proicons',
+  },
   //
   // TERPENES
   //

@@ -25,7 +25,7 @@ export const WrappedContent = ({children, toolbar}: WrappedContentProps) => {
     <Wrapper isPanelExpanded={isExpanded}>
       <div className='px-2 sm:px-3 py-3.5 flex items-center justify-between min-w-0'>
         <SidebarTrigger className='' />
-        <div className='flex w-full min-w-0 capitalize text-lg tracking-tighter font-semibold px-1 md:px-2 lg:px-4'>
+        <div className='flex flex-1 w-full capitalize text-lg tracking-tighter font-semibold px-1 md:px-2 lg:px-4'>
           {endpoint}
         </div>
         {toolbar}
@@ -56,9 +56,9 @@ export const Wrapper = ({children, isPanelExpanded}: WrapperProps) => {
   return (
     <div
       className={cn(
-        'flex-1 min-w-0 [&>div>div]:h-full w-full border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-neutral-800',
-        'overflow-hidden drop-shadow-xl',
-        'md:rounded-xl ',
+        'flex-1 min-w-0 w-full border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-neutral-800',
+        'drop-shadow-xl max-h-[calc(100lvh-30px)] overflow-scroll',
+        'md:rounded-xl whitespace-nowrap',
         {'': isPanelExpanded},
       )}>
       {children}
@@ -67,7 +67,7 @@ export const Wrapper = ({children, isPanelExpanded}: WrapperProps) => {
 }
 
 export const Container = ({children}: {children: ReactNode}) => (
-  <div className='relative bg-sidebar w-full min-w-0 md:p-5 flex min-h-screen'>
+  <div className='relative bg-sidebar w-full min-w-0 md:p-5 flex h-screen overflow-clip'>
     {/*<div className='absolute top-1 hidden _flex items-center px-1 rounded-sm left-4 bg-amber-100/10 h-3 space-x-4 text-xs'></div>*/}
     {children}
   </div>

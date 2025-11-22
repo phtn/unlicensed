@@ -4,6 +4,7 @@ import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
+import {formatTimestamp} from '@/utils/date'
 import {formatPrice} from '@/utils/formatPrice'
 import {
   Card,
@@ -100,27 +101,6 @@ const getActivityTypeLabel = (type: Activity['type']) => {
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
-}
-
-const formatTimestamp = (timestamp: number) => {
-  const now = Date.now()
-  const diff = now - timestamp
-  const seconds = Math.floor(diff / 1000)
-  const minutes = Math.floor(seconds / 60)
-  const hours = Math.floor(minutes / 60)
-  const days = Math.floor(hours / 24)
-
-  if (seconds < 60) return 'Just now'
-  if (minutes < 60) return `${minutes}m ago`
-  if (hours < 24) return `${hours}h ago`
-  if (days < 7) return `${days}d ago`
-
-  return new Date(timestamp).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 export const RecentActivities = () => {
@@ -269,7 +249,7 @@ export const RecentActivities = () => {
                   key={viewer.userId}
                   className='shrink-0'
                   title={`${viewer.name} (${viewer.email})`}>
-                  <div className='flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-default-100 ring-2 ring-white'>
+                  <div className='flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-default-100 ring-1 ring-white'>
                     {viewer.photoUrl ? (
                       <Image
                         src={viewer.photoUrl}
@@ -361,7 +341,7 @@ export const RecentActivities = () => {
         </TableHeader>
         <TableBody emptyContent={'No activities found'} items={activities}>
           {(activity) => (
-            <TableRow key={activity._id}>
+            <TableRow key={activity._id} className='h-16'>
               {(columnKey) => (
                 <TableCell>
                   {renderCell(activity, columnKey) as ReactNode}
