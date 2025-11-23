@@ -1,7 +1,8 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
-import type {Doc} from '@/convex/_generated/dataModel'
+import type {Doc, Id} from '@/convex/_generated/dataModel'
+import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Chip, Image, Input, Switch, Textarea} from '@heroui/react'
 import {useMutation} from 'convex/react'
@@ -24,6 +25,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
   const [name, setName] = useState(product.name)
   const [priceCents, setPriceCents] = useState(product.priceCents)
   const [stock, setStock] = useState(product.stock ?? 0)
+  const [unit, setUnit] = useState(product.unit)
   const [available, setAvailable] = useState(product.available)
   const [featured, setFeatured] = useState(product.featured)
   const [isSaving, setIsSaving] = useState(false)
@@ -33,6 +35,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
     setName(product.name)
     setPriceCents(product.priceCents)
     setStock(product.stock ?? 0)
+    setUnit(product.unit)
     setAvailable(product.available)
     setFeatured(product.featured)
   }, [
@@ -40,6 +43,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
     product.name,
     product.priceCents,
     product.stock,
+    product.unit,
     product.available,
     product.featured,
   ])
@@ -75,6 +79,50 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
       console.error('Failed to update featured status:', error)
       // Revert on error
       setFeatured(!newValue)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleSaveAllChanges = async () => {
+    setIsSaving(true)
+    try {
+      // Build update object with only changed fields
+      const updates: {
+        productId: Id<'products'>
+        name?: string
+        priceCents?: number
+        stock?: number
+        unit?: string
+      } = {
+        productId: product._id,
+      }
+
+      // Only include fields that have changed
+      if (name !== product.name) {
+        updates.name = name
+      }
+      if (priceCents !== product.priceCents) {
+        updates.priceCents = priceCents
+      }
+      if (stock !== (product.stock ?? 0)) {
+        updates.stock = stock
+      }
+      if (unit !== product.unit) {
+        updates.unit = unit
+      }
+
+      // Only call update if there are changes
+      if (Object.keys(updates).length > 1) {
+        await updateProduct(updates)
+      }
+    } catch (error) {
+      console.error('Failed to save changes:', error)
+      // Revert form state on error
+      setName(product.name)
+      setPriceCents(product.priceCents)
+      setStock(product.stock ?? 0)
+      setUnit(product.unit)
     } finally {
       setIsSaving(false)
     }
@@ -165,6 +213,23 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
           </p>
         </div>
       </div>
+      <div>
+        <div className='w-full'>
+          <label className='text-xs font-medium text-foreground/60 mb-1 block'>
+            Unit
+          </label>
+          <Input
+            size='md'
+            value={unit}
+            onValueChange={(value) => setUnit(value)}
+            placeholder='Unit'
+          />
+          <p className='text-xs opacity-60 mt-1'>
+            <span className='mr-2'>Unit:</span>
+            <span className='font-space font-medium'>{product.unit}</span>
+          </p>
+        </div>
+      </div>
 
       {/* Status */}
       <div className='flex flex-col gap-3'>
@@ -221,12 +286,19 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
 
       {/* Actions */}
       <div className='flex gap-2 pt-2'>
+        <Button size='lg' className='flex-1' onPress={handleCancel}>
+          Cancel
+        </Button>
         <Button
           size='lg'
           color='primary'
           className='flex-1'
-          onPress={handleCancel}>
-          Close
+          isLoading={isSaving}
+          spinnerPlacement='end'
+          disableRipple
+          spinner={<Icon name='spinners-ring' className='size-5' />}
+          onPress={handleSaveAllChanges}>
+          Save Changes
         </Button>
       </div>
     </div>

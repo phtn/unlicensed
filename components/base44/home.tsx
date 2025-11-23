@@ -58,7 +58,7 @@ export const NewHome = () => {
     [],
   )
   return (
-    <div className='bg-accent'>
+    <div className='bg-background'>
       <Highlights slides={slides} />
       <QuickScroll
         className='border-t-[0.33px] border-foreground/40'

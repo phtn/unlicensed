@@ -49,10 +49,10 @@ export const Brands = ({columnCount = 2}: {columnCount?: number}) => {
 
   // Render the logo columns
   return (
-    <div className='w-full pb-20 px-6 bg-foreground border-y-[0.33px] border-foreground/40'>
+    <div className='w-full pb-20 px-6 bg-slate-300/80 border-y-[0.33px] border-foreground/40'>
       <div className='h-64 max-w-6xl mx-auto'>
         <div className='h-24 flex flex-col justify-center'>
-          <h3 className='text-2xl font-fugaz text-background sm:text-3xl'>
+          <h3 className='text-2xl font-fugaz text-foreground sm:text-3xl'>
             Our Trusted Brands
           </h3>
           <p className='max-w-2xl text-sm text-color-muted'>
@@ -177,7 +177,7 @@ const LogoColumn: React.FC<LogoColumnProps> = memo(
             {/*<CurrentLogo className='size-14 max-w-[80%] max-h-[80%] object-contain' />*/}
             <Icon
               name={currenLogo}
-              className='size-7 md:size-12 opacity-60 text-background'
+              className='size-7 md:size-12 opacity-60 text-foreground/80'
             />
           </motion.div>
         </AnimatePresence>

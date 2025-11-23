@@ -22,7 +22,7 @@ import {
   Image,
   useDisclosure,
 } from '@heroui/react'
-import {useMutation, useQuery} from 'convex/react'
+import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {notFound} from 'next/navigation'
 import {
@@ -113,13 +113,6 @@ export const ProductDetailContent = ({
   )
 
   const detailQuery = useQuery(api.products.q.getProductBySlug, {slug})
-  //
-  const purgeTestProduts = useMutation(api.products.m.purgeTestProducts)
-
-  const purge = useCallback(async () => {
-    await purgeTestProduts()
-  }, [purgeTestProduts])
-
   const detail = useMemo<StoreProductDetail | null | undefined>(() => {
     if (detailQuery === undefined) {
       return initialDetail
@@ -216,7 +209,7 @@ export const ProductDetailContent = ({
 
   return (
     <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-10 sm:py-8 lg:py-12 overflow-x-hidden'>
-      <section className='mx-auto w-full max-w-7xl px-4 pt-6 sm:pt-8 lg:pt-10 sm:px-6 lg:px-8'>
+      <section className='mx-auto w-full max-w-7xl px-4 pt-6 sm:pt-8 lg:pt-10 sm:px-6 lg:px-4'>
         <Breadcrumbs
           aria-label='Product breadcrumb'
           className='text-xs sm:text-sm text-color-muted'
@@ -234,7 +227,7 @@ export const ProductDetailContent = ({
         </Breadcrumbs>
         <div className='mt-6 sm:mt-8 lg:mt-6 grid gap-6 sm:gap-8 lg:gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
           <Gallery product={product} imageRef={galleryImageRef} />
-          <div className='space-y-6 sm:space-y-8 lg:space-y-10 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue p-4 sm:p-6 lg:p-8 backdrop-blur-xl'>
+          <div className='space-y-6 sm:space-y-8 lg:space-y-10 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue dark:bg-pink-100/10 p-4 sm:p-6 lg:p-8 backdrop-blur-xl'>
             <div className='flex flex-col gap-4 sm:gap-5'>
               <div className='flex items-center justify-between gap-2'>
                 <StatChip
@@ -279,7 +272,14 @@ export const ProductDetailContent = ({
                     <Button
                       size='sm'
                       onPress={handleDenominationChange(i)}
-                      className='cursor-pointer rounded-full ring-offset-1 ring-teal-400 outline-teal-400'
+                      // selectedDenomination
+                      className={cn(
+                        'cursor-pointer rounded-full border border-foreground/40',
+                        {
+                          'bg-foreground/95 dark:bg-foreground/70 text-brand dark:text-background hover:bg-foreground hover:text-background':
+                            selectedDenomination === i,
+                        },
+                      )}
                       key={denomination}>
                       <Badge
                         isOneChar
@@ -303,7 +303,7 @@ export const ProductDetailContent = ({
                         })}>
                         <span
                           className={cn(
-                            'relative font-space text-[10px] sm:text-xs font-semibold tracking-wide sm:tracking-widest whitespace-nowrap',
+                            'relative font-space text-[10px] sm:text-sm font-medium whitespace-nowrap',
                           )}>
                           {denomination}
                           {product.unit}
@@ -318,7 +318,7 @@ export const ProductDetailContent = ({
                     size='lg'
                     color='success'
                     variant='solid'
-                    className='w-full font-space font-medium text-sm sm:text-base _lg:text-lg bg-linear-to-br from-teal-500 via-emerald-400 to-teal-400 dark:text-white'
+                    className='w-full font-space font-medium text-sm sm:text-base _lg:text-lg bg-linear-to-r from-brand via-brand to-pink-200 dark:text-white'
                     onPress={handleAddToCart}
                     isLoading={isAdding}
                     isDisabled={isPending}>
@@ -331,7 +331,6 @@ export const ProductDetailContent = ({
                   size='lg'
                   variant='solid'
                   href='/cart'
-                  onPress={purge}
                   className='w-full sm:flex-1 font-space font-semibold text-sm sm:text-base bg-foreground/95 text-background'>
                   <span>Checkout</span>
                   <Icon
@@ -382,10 +381,10 @@ export const ProductDetailContent = ({
       {related.length > 0 ? (
         <section
           id='related-selections'
-          className='mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8'>
+          className='mx-auto w-full max-w-6xl px-4 md:px-0'>
           <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4'>
             <div>
-              <h2 className='text-xl sm:text-2xl lg:text-3xl font-semibold text-foreground'>
+              <h2 className='text-2xl font-semibold text-foreground sm:text-3xl'>
                 Related selections
               </h2>
               <p className='text-xs sm:text-sm text-color-muted mt-1'>

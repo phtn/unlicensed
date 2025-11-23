@@ -11,6 +11,7 @@
   --foreground: oklch(0.973 0.007 268.55);
   --muted: rgba(203, 213, 225, 0.76);
   --accent: oklch(0.3 0.04 167.17);
+  --brand: oklch(0.784 0.21 326.75);
   /*--primary: oklch(0.7 0.141 49.39);*/
   /*--primary: oklch(0.784 0.21 326.75);*/
   --primary: oklch(0.71 0.14 255);
@@ -104,6 +105,7 @@
   --foreground: oklch(0.243 0.027 220.39);
   --muted: rgba(255, 242, 233, 0.78);
   --accent: oklch(0.96 0.007 67.74);
+  --brand: oklch(0.784 0.21 326.75);
   --primary: oklch(0.243 0.027 220.39);
   --primary-foreground: oklch(0.71 0.14 255);
   /*--primary-foreground: oklch(0.784 0.21 326.75);*/
@@ -131,7 +133,7 @@
     135deg,
     #ffe8c5 0%,
     #ffb792 32%,
-    #ff7055 72%,
+    oklch(0.85 0.13 165) 72%,
     #ffe8c5 100%
   );
   --panel-gradient: linear-gradient(
@@ -210,6 +212,7 @@
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
   --color-primary: var(--primary);
+  --color-brand: var(--brand);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -219,7 +222,7 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-hue: var(--hue);
-  --font-sans: var(--font-geist-sans);
+  --font-geist-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-space: var(--font-space);
   --font-fugaz: var(--font-fugaz);

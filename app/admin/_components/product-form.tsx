@@ -4,7 +4,7 @@ import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
 import {ensureSlug} from '@/lib/slug'
-import {Image} from '@heroui/react'
+import {Button, Image, Input, Select, SelectItem, Textarea} from '@heroui/react'
 import {useForm} from '@tanstack/react-form'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
@@ -76,7 +76,7 @@ type ProductFormValues = z.infer<typeof productSchema>
 type CategoryDoc = Doc<'categories'>
 
 type ProductFormProps = {
-  categories: CategoryDoc[]
+  categories: CategoryDoc[] | undefined
 }
 
 export const ProductForm = ({categories}: ProductFormProps) => {
@@ -199,14 +199,29 @@ export const ProductForm = ({categories}: ProductFormProps) => {
   }, [imagePreviewMap, imageValue])
 
   const availableCategories = useMemo(() => {
-    return categories.sort((a, b) => a.name.localeCompare(b.name))
+    return categories?.sort((a, b) => a.name.localeCompare(b.name))
   }, [categories])
 
+  const selectCategories = useMemo(
+    () => availableCategories?.map((c) => ({key: c._id, label: c.name})),
+    [availableCategories],
+  )
+
   return (
-    <section className='rounded-xl border border-neutral-800 bg-neutral-950/60 p-6 shadow-lg shadow-black/30'>
+    <section className='rounded-xl border border-neutral-800 p-6 shadow-lg'>
       <header className='mb-6 space-y-1'>
-        <h2 className='text-lg font-semibold text-neutral-100'>Add Product</h2>
-        <p className='text-sm text-neutral-400'>
+        <div className='flex items-center justify-between'>
+          <h2 className='text-lg font-semibold tracking-tight'>Add Product</h2>
+          <div className='flex items-center gap-4 rounded-lg bg-sidebar-accent/20 px-4 py-3 text-base'>
+            <span className='font-semibold text-xl text-emerald-500'>
+              {categories?.length}
+            </span>
+            <span className='opacity-70'>
+              categories available for product assignment.
+            </span>
+          </div>
+        </div>
+        <p className='text-sm'>
           Create a new product, assign it to a category, and manage media
           assets.
         </p>
@@ -221,11 +236,11 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='name'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
-                  Name
-                </label>
-                <input
+                <label className='block text-sm font-medium '>Name</label>
+                <Input
                   type='text'
+                  radius='sm'
+                  size='lg'
                   value={field.state.value}
                   onChange={(event) => {
                     const nextName = event.target.value
@@ -234,8 +249,11 @@ export const ProductForm = ({categories}: ProductFormProps) => {
                       form.setFieldValue('slug', ensureSlug('', nextName))
                     }
                   }}
+                  classNames={{
+                    inputWrapper:
+                      'dark:bg-neutral-900 border border-sidebar focus-visible:border-blue-500 dark:border-neutral-700',
+                  }}
                   onBlur={field.handleBlur}
-                  className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 outline-none ring-0 focus:border-emerald-500'
                   placeholder='Sunrise Sativa Flower'
                 />
                 {field.state.meta.isTouched &&
@@ -251,21 +269,24 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='slug'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
-                  Slug
-                </label>
-                <input
+                <label className='block text-sm font-medium '>Slug</label>
+                <Input
                   type='text'
+                  radius='sm'
+                  size='lg'
                   value={field.state.value}
                   onChange={(event) => {
                     setSlugManuallyEdited(true)
                     field.handleChange(event.target.value)
                   }}
+                  classNames={{
+                    inputWrapper:
+                      'dark:bg-neutral-900 border border-sidebar focus-visible:border-blue-500 dark:border-neutral-700',
+                  }}
                   onBlur={field.handleBlur}
-                  className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 outline-none ring-0 focus:border-emerald-500'
                   placeholder='sunrise-sativa-flower'
                 />
-                <p className='text-xs text-neutral-500'>
+                <p className='text-xs text-primary'>
                   Auto-generated from name. Customize as needed.
                 </p>
               </div>
@@ -275,25 +296,23 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='categorySlug'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
-                  Category
-                </label>
-                <select
+                <label className='block text-sm font-medium '>Category</label>
+                <Select
                   value={field.state.value}
                   onChange={(event) =>
                     field.handleChange(
                       event.target.value as typeof field.state.value,
                     )
                   }
+                  defaultSelectedKeys={[]}
                   onBlur={field.handleBlur}
-                  className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 outline-none focus:border-emerald-500'>
-                  <option value=''>Select a category</option>
-                  {availableCategories.map((category) => (
-                    <option key={category._id} value={category.slug}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                  className='w-full rounded-lg border border-neutral-700 px-3 py-2 text-sm outline-none'>
+                  {selectCategories
+                    ? selectCategories.map(({key, label}) => (
+                        <SelectItem key={key}>{label}</SelectItem>
+                      ))
+                    : []}
+                </Select>
                 {field.state.meta.isTouched &&
                 formatError(field.state.meta.errors) ? (
                   <p className='text-sm text-rose-400'>
@@ -307,10 +326,10 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='shortDescription'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
+                <label className='block text-sm font-medium '>
                   Short Description
                 </label>
-                <textarea
+                <Textarea
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}
                   onBlur={field.handleBlur}
@@ -330,14 +349,14 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='description'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
+                <label className='block text-sm font-medium '>
                   Description
                 </label>
-                <textarea
+                <Textarea
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}
                   onBlur={field.handleBlur}
-                  className='h-36 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 outline-none ring-0 focus:border-emerald-500'
+                  className='h-36'
                   placeholder='Tell the story, cultivation details, and experience.'
                 />
                 {field.state.meta.isTouched &&
@@ -354,12 +373,12 @@ export const ProductForm = ({categories}: ProductFormProps) => {
             <form.Field name='priceCents'>
               {(field) => (
                 <div className='space-y-2'>
-                  <label className='block text-sm font-medium text-neutral-200'>
+                  <label className='block text-sm font-medium '>
                     Price (in cents)
                   </label>
-                  <input
+                  <Input
                     type='number'
-                    value={field.state.value}
+                    value={field.state.value.toString() ?? ''}
                     onChange={(event) =>
                       field.handleChange(Number(event.target.value))
                     }
@@ -380,12 +399,10 @@ export const ProductForm = ({categories}: ProductFormProps) => {
             <form.Field name='unit'>
               {(field) => (
                 <div className='space-y-2'>
-                  <label className='block text-sm font-medium text-neutral-200'>
-                    Unit
-                  </label>
-                  <input
+                  <label className='block text-sm font-medium '>Unit</label>
+                  <Input
                     type='text'
-                    value={field.state.value}
+                    value={field.state.value ?? ''}
                     onChange={(event) => field.handleChange(event.target.value)}
                     onBlur={field.handleBlur}
                     className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 outline-none ring-0 focus:border-emerald-500'
@@ -405,11 +422,11 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='availableDenominationsRaw'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
+                <label className='block text-sm font-medium '>
                   Available Denominations{' '}
                   <span className='text-neutral-500'>(comma separated)</span>
                 </label>
-                <input
+                <Input
                   type='text'
                   value={field.state.value ?? ''}
                   onChange={(event) => field.handleChange(event.target.value)}
@@ -424,10 +441,10 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='popularDenomination'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
+                <label className='block text-sm font-medium '>
                   Popular Denomination
                 </label>
-                <input
+                <Input
                   type='number'
                   value={field.state.value ?? ''}
                   onChange={(event) => field.handleChange(event.target.value)}
@@ -444,12 +461,10 @@ export const ProductForm = ({categories}: ProductFormProps) => {
             <form.Field name='thcPercentage'>
               {(field) => (
                 <div className='space-y-2'>
-                  <label className='block text-sm font-medium text-neutral-200'>
-                    THC %
-                  </label>
-                  <input
+                  <label className='block text-sm font-medium '>THC %</label>
+                  <Input
                     type='number'
-                    value={field.state.value}
+                    value={field.state.value.toString() ?? ''}
                     onChange={(event) =>
                       field.handleChange(Number(event.target.value))
                     }
@@ -471,12 +486,12 @@ export const ProductForm = ({categories}: ProductFormProps) => {
             <form.Field name='cbdPercentage'>
               {(field) => (
                 <div className='space-y-2'>
-                  <label className='block text-sm font-medium text-neutral-200'>
+                  <label className='block text-sm font-medium '>
                     CBD % <span className='text-neutral-500'>(optional)</span>
                   </label>
-                  <input
+                  <Input
                     type='number'
-                    value={field.state.value ?? ''}
+                    value={field.state.value?.toString()}
                     onChange={(event) => field.handleChange(event.target.value)}
                     onBlur={field.handleBlur}
                     min={0}
@@ -492,12 +507,10 @@ export const ProductForm = ({categories}: ProductFormProps) => {
             <form.Field name='stock'>
               {(field) => (
                 <div className='space-y-2'>
-                  <label className='block text-sm font-medium text-neutral-200'>
-                    Stock
-                  </label>
-                  <input
+                  <label className='block text-sm font-medium '>Stock</label>
+                  <Input
                     type='number'
-                    value={field.state.value}
+                    value={field.state.value.toString()}
                     onChange={(event) =>
                       field.handleChange(Number(event.target.value))
                     }
@@ -518,12 +531,10 @@ export const ProductForm = ({categories}: ProductFormProps) => {
             <form.Field name='rating'>
               {(field) => (
                 <div className='space-y-2'>
-                  <label className='block text-sm font-medium text-neutral-200'>
-                    Rating
-                  </label>
-                  <input
+                  <label className='block text-sm font-medium '>Rating</label>
+                  <Input
                     type='number'
-                    value={field.state.value}
+                    value={field.state.value.toString()}
                     onChange={(event) =>
                       field.handleChange(Number(event.target.value))
                     }
@@ -547,8 +558,8 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <div className='grid grid-cols-2 gap-4'>
             <form.Field name='featured'>
               {(field) => (
-                <label className='flex items-center gap-2 text-sm text-neutral-200'>
-                  <input
+                <label className='flex items-center gap-2 text-sm '>
+                  <Input
                     type='checkbox'
                     checked={field.state.value}
                     onChange={(event) =>
@@ -564,8 +575,8 @@ export const ProductForm = ({categories}: ProductFormProps) => {
 
             <form.Field name='available'>
               {(field) => (
-                <label className='flex items-center gap-2 text-sm text-neutral-200'>
-                  <input
+                <label className='flex items-center gap-2 text-sm '>
+                  <Input
                     type='checkbox'
                     checked={field.state.value}
                     onChange={(event) =>
@@ -583,11 +594,11 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='effectsRaw'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
+                <label className='block text-sm font-medium '>
                   Effects{' '}
                   <span className='text-neutral-500'>(one per line)</span>
                 </label>
-                <textarea
+                <Textarea
                   value={field.state.value ?? ''}
                   onChange={(event) => field.handleChange(event.target.value)}
                   onBlur={field.handleBlur}
@@ -601,11 +612,11 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='terpenesRaw'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
+                <label className='block text-sm font-medium '>
                   Terpenes{' '}
                   <span className='text-neutral-500'>(one per line)</span>
                 </label>
-                <textarea
+                <Textarea
                   value={field.state.value ?? ''}
                   onChange={(event) => field.handleChange(event.target.value)}
                   onBlur={field.handleBlur}
@@ -619,11 +630,11 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='flavorNotesRaw'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
+                <label className='block text-sm font-medium '>
                   Flavor Notes{' '}
                   <span className='text-neutral-500'>(one per line)</span>
                 </label>
-                <textarea
+                <Textarea
                   value={field.state.value ?? ''}
                   onChange={(event) => field.handleChange(event.target.value)}
                   onBlur={field.handleBlur}
@@ -640,12 +651,10 @@ export const ProductForm = ({categories}: ProductFormProps) => {
             {(field) => (
               <div className='space-y-3 rounded-lg border border-neutral-800 bg-neutral-900/40 p-4'>
                 <div className='flex items-center justify-between gap-3'>
-                  <label className='text-sm font-medium text-neutral-200'>
-                    Primary Image
-                  </label>
-                  <button
+                  <label className='text-sm font-medium '>Primary Image</label>
+                  <Button
                     type='button'
-                    onClick={() => {
+                    onPress={() => {
                       const input = document.createElement('input')
                       input.type = 'file'
                       input.accept = 'image/*'
@@ -673,9 +682,9 @@ export const ProductForm = ({categories}: ProductFormProps) => {
                     className='rounded-md border border-emerald-500 px-3 py-1 text-xs font-semibold text-emerald-400 transition hover:bg-emerald-500/10'
                     disabled={isUploading}>
                     {isUploading ? 'Uploading...' : 'Upload'}
-                  </button>
+                  </Button>
                 </div>
-                <input
+                <Input
                   type='text'
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}
@@ -704,12 +713,10 @@ export const ProductForm = ({categories}: ProductFormProps) => {
             {(field) => (
               <div className='space-y-4 rounded-lg border border-neutral-800 bg-neutral-900/40 p-4'>
                 <div className='flex items-center justify-between gap-3'>
-                  <label className='text-sm font-medium text-neutral-200'>
-                    Gallery Images
-                  </label>
-                  <button
+                  <label className='text-sm font-medium '>Gallery Images</label>
+                  <Button
                     type='button'
-                    onClick={() => {
+                    onPress={() => {
                       const input = document.createElement('input')
                       input.type = 'file'
                       input.accept = 'image/*'
@@ -754,7 +761,7 @@ export const ProductForm = ({categories}: ProductFormProps) => {
                     className='rounded-md border border-emerald-500 px-3 py-1 text-xs font-semibold text-emerald-400 transition hover:bg-emerald-500/10'
                     disabled={isUploading}>
                     {isUploading ? 'Uploading...' : 'Upload'}
-                  </button>
+                  </Button>
                 </div>
                 <p className='text-xs text-neutral-500'>
                   Upload one or more images or paste existing storage IDs below.
@@ -797,7 +804,7 @@ export const ProductForm = ({categories}: ProductFormProps) => {
                               Pending
                             </div>
                           )}
-                          <input
+                          <Input
                             type='text'
                             value={storageId}
                             onChange={(event) => {
@@ -810,9 +817,9 @@ export const ProductForm = ({categories}: ProductFormProps) => {
                             }}
                             className='flex-1 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 outline-none focus:border-emerald-500'
                           />
-                          <button
+                          <Button
                             type='button'
-                            onClick={() => {
+                            onPress={() => {
                               field.setValue(
                                 field.state.value.filter(
                                   (value) => value !== storageId,
@@ -826,7 +833,7 @@ export const ProductForm = ({categories}: ProductFormProps) => {
                             }}
                             className='rounded-md bg-neutral-800 px-2 py-1 text-xs font-semibold text-neutral-300 transition hover:bg-neutral-700'>
                             Remove
-                          </button>
+                          </Button>
                         </div>
                       )
                     })
@@ -839,10 +846,10 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='consumption'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
+                <label className='block text-sm font-medium '>
                   Consumption Guidance
                 </label>
-                <textarea
+                <Textarea
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}
                   onBlur={field.handleBlur}
@@ -862,10 +869,10 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='potencyLevel'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
+                <label className='block text-sm font-medium '>
                   Potency Level
                 </label>
-                <select
+                <Select
                   value={field.state.value}
                   onChange={(event) =>
                     field.handleChange(
@@ -874,10 +881,14 @@ export const ProductForm = ({categories}: ProductFormProps) => {
                   }
                   onBlur={field.handleBlur}
                   className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 outline-none focus:border-emerald-500'>
-                  <option value='mild'>Mild</option>
-                  <option value='medium'>Medium</option>
-                  <option value='high'>High</option>
-                </select>
+                  {[
+                    {key: 'mild', label: 'Mild'},
+                    {key: 'medium', label: 'Medium'},
+                    {key: 'high', label: 'High'},
+                  ].map(({key, label}) => (
+                    <SelectItem key={key}>{label}</SelectItem>
+                  ))}
+                </Select>
               </div>
             )}
           </form.Field>
@@ -885,11 +896,11 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='potencyProfile'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
+                <label className='block text-sm font-medium '>
                   Potency Profile{' '}
                   <span className='text-neutral-500'>(optional)</span>
                 </label>
-                <textarea
+                <Textarea
                   value={field.state.value ?? ''}
                   onChange={(event) => field.handleChange(event.target.value)}
                   onBlur={field.handleBlur}
@@ -903,11 +914,11 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           <form.Field name='weightGrams'>
             {(field) => (
               <div className='space-y-2'>
-                <label className='block text-sm font-medium text-neutral-200'>
+                <label className='block text-sm font-medium '>
                   Weight (grams){' '}
                   <span className='text-neutral-500'>(optional)</span>
                 </label>
-                <input
+                <Input
                   type='number'
                   value={field.state.value ?? ''}
                   onChange={(event) => field.handleChange(event.target.value)}
@@ -922,14 +933,14 @@ export const ProductForm = ({categories}: ProductFormProps) => {
         </div>
 
         <div className='col-span-full flex items-center gap-3'>
-          <button
+          <Button
             type='submit'
             className='rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400'
             disabled={
               isSubmitting || isUploading || galleryValues.length === 0
             }>
             {isSubmitting ? 'Saving...' : 'Create Product'}
-          </button>
+          </Button>
           {status === 'success' ? (
             <span className='text-sm text-emerald-400'>
               Product saved successfully.

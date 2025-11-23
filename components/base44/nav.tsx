@@ -16,6 +16,7 @@ import {
   DropdownTrigger,
   useDisclosure,
 } from '@heroui/react'
+import {motion} from 'motion/react'
 import Link from 'next/link'
 import {useCallback, useEffect} from 'react'
 import {ThemeToggle} from '../ui/theme-toggle'
@@ -63,25 +64,38 @@ export const Nav = ({children}: NavProps) => {
         <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 py-3 flex items-center justify-between'>
           <Link
             href={'/'}
-            className='hidden md:w-72 md:flex items-center gap-1 text-sm md:text-base font-space text-gray-200'>
-            <span id='unlicensed-logo' className='text-teal-300 text-3xl'>
-              ●
-            </span>
-            <div className='lg:flex tracking-tighter lg:tracking-tight font-fugaz text-lg'>
-              {children ?? 'unlicensed'}
-            </div>
+            className='hidden md:w-72 h-12 overflow-hidden pl-1 md:flex items-center justify-start relative'>
+            <motion.div
+              className='h-[22px] w-[135.33px] mask-[url("/svg/rapid-fire.svg")] mask-contain'
+              animate={{
+                background: [
+                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 20%, rgb(255, 250, 250))',
+                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 40%, rgb(255, 250, 250))',
+                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 60%, rgb(255, 250, 250))',
+                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 80%, rgb(255, 250, 250))',
+                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 90%, rgb(255, 250, 250))',
+                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 100%, rgb(255, 250, 250))',
+                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 90%, rgb(255, 250, 250))',
+                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 80%, rgb(255, 250, 250))',
+                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 60%, rgb(255, 250, 250))',
+                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 40%, rgb(255, 250, 250))',
+                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 20%, rgb(255, 250, 250))',
+                ],
+              }}
+              transition={{
+                duration: 4,
+                repeat: 3,
+                ease: 'easeInOut',
+              }}
+            />
           </Link>
           <nav className='flex items-center justify-center md:w-full'>
             <Link
               href={'/'}
-              className='text-sm lg:text-lg text-gray-100 hover:text-secondary font-fugaz'>
+              className='text-sm lg:text-lg text-gray-100 hover:text-brand font-fugaz'>
               Shop
             </Link>
-            {/*<Link
-              href={'#'}
-              className='text-sm text-gray-100 hover:text-secondary transition-colors'>
-              Library
-            </Link>*/}
+            {children}
           </nav>
           <div className='flex w-fit gap-5 md:w-72 items-center justify-between'>
             <ThemeToggle />
@@ -118,7 +132,7 @@ export const Nav = ({children}: NavProps) => {
                 ) : undefined
               }
               isInvisible={cartItemCount === 0}
-              className='border border-teal-500 px-0.5 bg-teal-600 translate-x-4.5 -translate-y-1.5'
+              className='border border-brand px-0.5 bg-brand translate-x-4.5 -translate-y-1.5'
               classNames={{
                 base: 'aspect-square border-none size-8 text-xl rounded-xs flex items-center justify-center',
               }}
@@ -128,7 +142,7 @@ export const Nav = ({children}: NavProps) => {
                 data-cart-icon
                 className='capitalize bg-black'
                 onPress={onCartDrawerOpen}>
-                <Icon name='bag-light' className='size-8 text-white' />
+                <Icon name='bag-solid' className='size-6 text-white' />
               </Button>
             </Badge>
 

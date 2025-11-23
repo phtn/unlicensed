@@ -39,7 +39,7 @@ export const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
         radius='sm'
         variant='flat'
         onPress={handleToggle}
-        className='w-40 flex items-center justify-start space-x-3 border py-3 text-sm text-foreground hover:bg-(--surface-muted)'>
+        className='w-40 flex items-center justify-start space-x-2 border py-3 text-sm text-foreground hover:bg-(--surface-muted)'>
         <Icon
           name='toggle-theme'
           className={cn('transition-all', {'rotate-180': isDark})}

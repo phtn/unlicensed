@@ -29,7 +29,7 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
   return (
     <section
       id='collection'
-      className='mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 bg-accent'>
+      className='mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 bg-background'>
       <div className='flex flex-col gap-20'>
         <div className='flex flex-wrap items-center justify-between gap-4'>
           <div className='space-y-1'>

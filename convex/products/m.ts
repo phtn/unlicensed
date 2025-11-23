@@ -1,7 +1,7 @@
 import {v} from 'convex/values'
 import {ensureSlug} from '../../lib/slug'
-import {mutation} from '../_generated/server'
 import {internal} from '../_generated/api'
+import {mutation} from '../_generated/server'
 
 export const createProduct = mutation({
   args: {
@@ -111,6 +111,7 @@ export const updateProduct = mutation({
     stock: v.optional(v.number()),
     available: v.optional(v.boolean()),
     featured: v.optional(v.boolean()),
+    unit: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const product = await ctx.db.get(args.productId)
@@ -134,6 +135,9 @@ export const updateProduct = mutation({
     if (args.featured !== undefined) {
       updates.featured = args.featured
     }
+    if (args.unit !== undefined) {
+      updates.unit = args.unit.trim()
+    }
 
     await ctx.db.patch(args.productId, updates)
     return {success: true}
@@ -152,5 +156,3 @@ export const purgeTestProducts = mutation({
     return itemsToDelete.length
   },
 })
-
-

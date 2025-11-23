@@ -16,6 +16,7 @@ import type {NavGroup, NavItem} from './ui/types'
 // import {useAppTheme} from '@/hooks/use-theme'
 import {ThemeToggle} from '@/components/ui/theme-toggle'
 import {api} from '@/convex/_generated/api'
+import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
@@ -27,10 +28,13 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props} className='border-none!' suppressHydrationWarning>
       <SidebarHeader className=''>
-        <div className='h-14.5 flex items-end justify-between px-4'>
-          <h3 className='text-base h-8 font-figtree font-semibold tracking-tight'>
-            Unlicensed
-          </h3>
+        <div className='h-18 flex items-center justify-between'>
+          <div className='h-12 flex w-full items-center _justify-center dark:bg-sidebar bg-linear-to-r from-foreground/90 via-foreground/90 to-transparent dark:from-brand dark:via-foreground px-4 rounded-lg'>
+            <Icon
+              name='rapid-fire'
+              className='text-base text-brand dark:text-sidebar w-40 h-auto font-figtree font-semibold tracking-tight'
+            />
+          </div>
         </div>
         <div
           className={cn(
@@ -42,10 +46,8 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         {/* We only show the first parent group */}
         <SidebarGroup>
-          <SidebarGroupLabel className='pl-3 h-10'>
-            <h3 className='text-lg tracking-tight font-medium text-gray-900 dark:text-gray-100'>
-              {data.navMain[0]?.title}
-            </h3>
+          <SidebarGroupLabel className='pl-4 text-xs tracking-widest uppercase text-sidebar-foreground/50'>
+            {data.navMain[0]?.title}
           </SidebarGroupLabel>
           <SidebarGroupContent className='py-2'>
             <SidebarMenu>
@@ -63,7 +65,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                       key={item.title}>
                       <SidebarMenuButton
                         asChild
-                        className='group/menu-button h-8 data-[active=true]:hover:bg-background data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/70 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto'
+                        className='capitalize group/menu-button h-8 data-[active=true]:hover:bg-background data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/70 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto'
                         isActive={isActive}>
                         <MenuContent {...item} />
                       </SidebarMenuButton>
@@ -83,8 +85,8 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 const isActive = pathname === item.url
                 return (
                   <SidebarMenuItem
-                    className={cn('text-xs tracking-tight font-extrabold', {
-                      'bg-sidebar-accent': isActive,
+                    className={cn('text-xs tracking-tighter', {
+                      'bg-sidebar-accent rounded-lg': isActive,
                     })}
                     key={item.title}>
                     <SidebarMenuButton
@@ -115,7 +117,9 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 const isActive = pathname === item.url
                 return (
                   <SidebarMenuItem
-                    className='text-xs tracking-tight font-extrabold'
+                    className={cn('text-xs tracking-tighter', {
+                      'bg-sidebar-accent rounded-lg': isActive,
+                    })}
                     key={item.title}>
                     <SidebarMenuButton
                       asChild
@@ -147,11 +151,11 @@ const MenuContent = (item: NavItem) => {
       prefetch={true}
       suppressHydrationWarning
       className=' font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center justify-between px-4 h-10 relative'>
-      <span className='group-hover/menu-content:text-foreground tracking-tighter text-sm font-medium text-foreground/80'>
+      <span className='group-hover/menu-content:text-foreground tracking-tighter text-sm font-medium text-foreground/80 capitalize'>
         {item.title}
       </span>
       {showBadge && (
-        <span className='flex h-5 w-5 aspect-square items-center justify-center rounded-sm bg-orange-400/80 px-1.5 text-sm font-medium tabular-nums text-white font-space'>
+        <span className='flex h-5 w-5 aspect-square items-center justify-center rounded-sm bg-foreground/90 px-1.5 text-base font-semibold tabular-nums text-background dark:text-sidebar font-space'>
           {pendingOrdersCount}
         </span>
       )}
@@ -169,11 +173,11 @@ const data: Record<string, NavGroup[]> = {
   ],
   navMain: [
     {
-      title: '',
+      title: 'Operations',
       url: '#',
       items: [
         {
-          title: 'Overview',
+          title: 'stats',
           url: '/admin',
           icon: 'linalool',
         },
@@ -214,18 +218,28 @@ const data: Record<string, NavGroup[]> = {
       items: [
         {
           title: 'Category',
-          url: '/admin/category/create',
+          url: '/admin/category',
+          icon: 'linalool',
+        },
+        {
+          title: 'Product',
+          url: '/admin/product',
           icon: 'linalool',
         },
       ],
     },
     {
-      title: 'Settings',
-      url: '/admin/settings',
+      title: 'settings',
+      url: '#',
       items: [
         {
-          title: 'Settings',
+          title: 'Advanced',
           url: '/admin/settings',
+          icon: 'linalool',
+        },
+        {
+          title: 'Store',
+          url: '/',
           icon: 'linalool',
         },
       ],

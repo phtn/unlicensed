@@ -73,7 +73,7 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
       </Nav>*/}
 
       {/* Hero Section */}
-      <section className='pt-6 sm:pt-8 lg:pt-20 xl:pt-28 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 bg-accent'>
+      <section className='pt-6 sm:pt-8 lg:pt-20 xl:pt-28 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 bg-background'>
         <div className='max-w-7xl mx-auto'>
           <div className='grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center'>
             <div>
@@ -93,7 +93,10 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
                   className='capitalize bg-foreground hover:bg-secondary-foreground text-white font-medium px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm'>
                   New {slug}
                 </Button>
-                <Button variant='faded' size='sm' className='flex items-center gap-2 text-xs sm:text-sm'>
+                <Button
+                  variant='faded'
+                  size='sm'
+                  className='flex items-center gap-2 text-xs sm:text-sm'>
                   <span>Strain Finder</span>
                   <Icon name='search' className='w-3 h-3 sm:w-4 sm:h-4' />
                 </Button>
@@ -112,7 +115,7 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
           </div>
         </div>
       </section>
-      <div className='flex justify-end px-4 sm:px-6 pb-8 sm:pb-10 lg:pb-12 bg-accent shadow'>
+      <div className='flex justify-end px-4 sm:px-6 pb-8 sm:pb-10 lg:pb-12 bg-background shadow'>
         <div className='max-w-7xl mx-auto w-full overflow-x-auto h-11 sm:h-14 lg:h-20 bg-foreground/10 lg:rounded-4xl rounded-xl sm:rounded-2xl flex items-center lg:justify-center gap-2 sm:gap-3 lg:gap-4 px-3 lg:px-0 scrollbar-hide'>
           {[
             'Indica',
@@ -189,11 +192,14 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
                             ? 'strength-medium'
                             : 'strength-high'
                         }
-                        className={cn('size-5 sm:size-6 lg:size-7 -scale-x-100 text-sky-500', {
-                          'text-teal-500': product.potencyLevel === 'medium',
-                          'text-red-400 scale-x-100':
-                            product.potencyLevel === 'high',
-                        })}
+                        className={cn(
+                          'size-5 sm:size-6 lg:size-7 -scale-x-100 text-sky-500',
+                          {
+                            'text-teal-500': product.potencyLevel === 'medium',
+                            'text-red-400 scale-x-100':
+                              product.potencyLevel === 'high',
+                          },
+                        )}
                       />
                     </span>
                   </div>
@@ -220,7 +226,10 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
                     isIconOnly
                     size='sm'
                     className='rounded-full text-background bg-foreground/80 flex items-center justify-center shrink-0 mt-1'>
-                    <Icon name='chevron-right' className='w-3 h-3 sm:w-4 sm:h-4' />
+                    <Icon
+                      name='chevron-right'
+                      className='w-3 h-3 sm:w-4 sm:h-4'
+                    />
                   </Button>
                 </div>
               </div>

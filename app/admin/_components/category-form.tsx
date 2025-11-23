@@ -2,8 +2,9 @@
 
 import {api} from '@/convex/_generated/api'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
+import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
-import {Image} from '@heroui/react'
+import {Button, Image, Input, Textarea} from '@heroui/react'
 import {useForm} from '@tanstack/react-form'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
@@ -114,7 +115,9 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
   return (
     <section className='rounded-xl border border-neutral-800 p-6 shadow-lg shadow-black/30'>
       <header className='mb-6 space-y-1'>
-        <h2 className='text-lg font-semibold'>Create Category</h2>
+        <h2 className='text-lg font-semibold tracking-tight'>
+          Create Category
+        </h2>
         <p className='text-sm'>
           Define a new collection with description, highlight, and benefits.
         </p>
@@ -129,7 +132,7 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
           {(field) => (
             <div className='space-y-2'>
               <label className='block text-sm font-medium '>Name</label>
-              <input
+              <Input
                 type='text'
                 value={field.state.value}
                 onChange={(event) => {
@@ -140,7 +143,6 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
                   }
                 }}
                 onBlur={field.handleBlur}
-                className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none ring-0 focus:border-emerald-500'
                 placeholder='Premium Flower'
               />
               {field.state.meta.isTouched &&
@@ -157,7 +159,7 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
           {(field) => (
             <div className='space-y-2'>
               <label className='block text-sm font-medium '>Slug</label>
-              <input
+              <Input
                 type='text'
                 value={field.state.value}
                 onChange={(event) => {
@@ -165,7 +167,6 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
                   field.handleChange(event.target.value)
                 }}
                 onBlur={field.handleBlur}
-                className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm  outline-none ring-0 focus:border-emerald-500'
                 placeholder='premium-flower'
               />
               <p className='text-xs text-neutral-500'>
@@ -179,11 +180,11 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
           {(field) => (
             <div className='space-y-2'>
               <label className='block text-sm font-medium '>Description</label>
-              <textarea
+              <Textarea
                 value={field.state.value}
                 onChange={(event) => field.handleChange(event.target.value)}
                 onBlur={field.handleBlur}
-                className='h-28 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm  outline-none ring-0 focus:border-emerald-500'
+                className='h-28 '
                 placeholder='Describe the category experience...'
               />
               {field.state.meta.isTouched &&
@@ -202,12 +203,11 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
               <label className='block text-sm font-medium '>
                 Highlight <span className='text-neutral-500'>(optional)</span>
               </label>
-              <input
+              <Input
                 type='text'
                 value={field.state.value ?? ''}
                 onChange={(event) => field.handleChange(event.target.value)}
                 onBlur={field.handleBlur}
-                className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm  outline-none ring-0 focus:border-emerald-500'
                 placeholder='Hand-trimmed buds with rich terpene expression.'
               />
             </div>
@@ -220,11 +220,11 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
               <label className='block text-sm font-medium '>
                 Benefits <span className='text-neutral-500'>(optional)</span>
               </label>
-              <textarea
+              <Textarea
                 value={field.state.value ?? ''}
                 onChange={(event) => field.handleChange(event.target.value)}
                 onBlur={field.handleBlur}
-                className='h-24 w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm  outline-none ring-0 focus:border-emerald-500'
+                className='h-24'
                 placeholder={
                   'Enter one benefit per line\ne.g.\nFull-spectrum cannabinoids'
                 }
@@ -238,9 +238,11 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
             <div className='space-y-3'>
               <div className='flex items-center justify-between gap-3'>
                 <label className='text-sm font-medium '>Hero Image</label>
-                <button
+                <Button
                   type='button'
-                  onClick={() => {
+                  variant='flat'
+                  size='sm'
+                  onPress={() => {
                     const input = document.createElement('input')
                     input.type = 'file'
                     input.accept = 'image/*'
@@ -265,17 +267,19 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
                     }
                     input.click()
                   }}
-                  className='rounded-md border border-emerald-500 px-3 py-1 text-xs font-semibold text-emerald-400 transition hover:bg-emerald-500/10'
+                  className='px-3 py-1 text-xs font-semibold'
                   disabled={isUploading}>
-                  {isUploading ? 'Uploading...' : 'Upload'}
-                </button>
+                  <span className='tracking-tight'>
+                    {isUploading ? 'Uploading...' : 'Browse file'}
+                  </span>
+                  <Icon name='open-folder' className='size-4' />
+                </Button>
               </div>
-              <input
+              <Input
                 type='text'
                 value={field.state.value}
                 onChange={(event) => field.handleChange(event.target.value)}
                 onBlur={field.handleBlur}
-                className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm  outline-none ring-0 focus:border-emerald-500'
                 placeholder='Paste storage ID or image URL'
               />
               <p className='text-xs text-neutral-500'>
@@ -300,16 +304,16 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
         </form.Field>
 
         <div className='flex items-center gap-3'>
-          <button
+          <Button
             type='submit'
-            className='rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400'
+            color='primary'
+            variant='shadow'
+            className='rounded-lg px-8 py-2 text-sm font-semibold tracking-tight transition disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400'
             disabled={isSubmitting || isUploading}>
             {isSubmitting ? 'Saving...' : 'Create Category'}
-          </button>
+          </Button>
           {status === 'success' ? (
-            <span className='text-sm text-emerald-400'>
-              Category saved successfully.
-            </span>
+            <span className='text-sm'>Category saved successfully.</span>
           ) : null}
           {status === 'error' && errorMessage ? (
             <span className='text-sm text-rose-400'>{errorMessage}</span>

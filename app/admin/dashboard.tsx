@@ -4,7 +4,6 @@ import {api} from '@/convex/_generated/api'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 import {CategoryForm} from './_components/category-form'
-import {ProductForm} from './_components/product-form'
 
 export const AdminDashboard = () => {
   const categories = useQuery(api.categories.q.listCategories)
@@ -33,7 +32,6 @@ export const AdminDashboard = () => {
       </header>
 
       <CategoryForm />
-      <ProductForm categories={categories ?? []} />
 
       <section className='rounded-xl border border-neutral-800 bg-neutral-950/60 p-6 shadow-lg shadow-black/30'>
         <h3 className='text-base font-semibold '>Current Categories</h3>

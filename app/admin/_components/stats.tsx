@@ -1,10 +1,10 @@
+import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, Progress, Switch} from '@heroui/react'
-import MiniChart from './mini-chart'
-import {useMutation, useQuery} from 'convex/react'
-import {api} from '@/convex/_generated/api'
+import {Button, Card, Progress} from '@heroui/react'
+import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
+import MiniChart from './mini-chart'
 
 const generateData = () =>
   Array.from({length: 20}, () => ({
@@ -49,7 +49,9 @@ type StatCardProps = {
 }
 
 const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
-  const getStatValue = (statId: string): {value: string | number; subtitle?: string} => {
+  const getStatValue = (
+    statId: string,
+  ): {value: string | number; subtitle?: string} => {
     switch (statId) {
       case 'salesToday':
         return {value: `$${formatPrice(stats.salesTodayCents)}`}
@@ -101,7 +103,9 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
     if (statId === 'deliveries') {
       const deliveryProgress =
         stats.totalOrdersCount > 0
-          ? Math.round((stats.deliveredOrdersCount / stats.totalOrdersCount) * 100)
+          ? Math.round(
+              (stats.deliveredOrdersCount / stats.totalOrdersCount) * 100,
+            )
           : 0
       return (
         <div className='mt-8 h-1 rounded-full overflow-hidden'>
@@ -120,7 +124,10 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
     <Card shadow='sm' className='p-3 sm:p-4 md:p-5 min-w-0'>
       <div className='flex items-start justify-between mb-3'>
         <div className='flex items-center space-x-2 p-1 rounded-lg'>
-          <div className='w-1 h-5 rounded-full' style={{backgroundColor: color}} />
+          <div
+            className='w-1 h-5 rounded-full'
+            style={{backgroundColor: color}}
+          />
           <p className='text-base font-medium font-space'>{config.label}</p>
         </div>
         {config.id === 'deliveries' ? (
@@ -136,7 +143,9 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
       </div>
       <div className='space-y-1'>
         <div className='flex items-baseline gap-2'>
-          <span className='text-4xl font-semibold font-space'>{statValue.value}</span>
+          <span className='text-4xl font-semibold tracking-tight font-geist-sans'>
+            {statValue.value}
+          </span>
           {statValue.subtitle && (
             <span className='text-sm text-gray-400'>{statValue.subtitle}</span>
           )}
@@ -168,9 +177,15 @@ const STAT_COLORS: Record<string, string> = {
   averageOrderValue: '#ec4899',
 }
 
-export const Stats = ({stats, salesData, ordersData, deliveriesData, aovData}: StatsProps) => {
+export const Stats = ({
+  stats,
+  salesData,
+  ordersData,
+  deliveriesData,
+  aovData,
+}: StatsProps) => {
   const adminSettings = useQuery(api.admin.q.getAdminSettings)
-  const updateStatVisibility = useMutation(api.admin.m.updateStatVisibility)
+  // const updateStatVisibility = useMutation(api.admin.m.updateStatVisibility)
 
   const visibleStats = useMemo(() => {
     if (!adminSettings) return []
@@ -179,9 +194,9 @@ export const Stats = ({stats, salesData, ordersData, deliveriesData, aovData}: S
       .sort((a, b) => a.order - b.order)
   }, [adminSettings])
 
-  const handleToggleVisibility = async (statId: string, visible: boolean) => {
-    await updateStatVisibility({statId, visible})
-  }
+  // const handleToggleVisibility = async (statId: string, visible: boolean) => {
+  //   await updateStatVisibility({statId, visible})
+  // }
 
   if (!adminSettings) {
     return <div>Loading stats configuration...</div>
@@ -194,9 +209,17 @@ export const Stats = ({stats, salesData, ordersData, deliveriesData, aovData}: S
           let chartData: Array<{value: number}> | undefined
           if (config.id === 'averageOrderValue') {
             chartData = aovData
-          } else if (config.id === 'salesToday' || config.id === 'salesThisWeek' || config.id === 'salesThisMonth' || config.id === 'totalRevenue') {
+          } else if (
+            config.id === 'salesToday' ||
+            config.id === 'salesThisWeek' ||
+            config.id === 'salesThisMonth' ||
+            config.id === 'totalRevenue'
+          ) {
             chartData = salesData
-          } else if (config.id === 'pendingOrders' || config.id === 'cancelledOrders') {
+          } else if (
+            config.id === 'pendingOrders' ||
+            config.id === 'cancelledOrders'
+          ) {
             chartData = ordersData
           } else if (config.id === 'deliveries') {
             chartData = deliveriesData

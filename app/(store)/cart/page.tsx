@@ -15,18 +15,32 @@ import {OrderSummary} from './order-summary'
 import {RecommendedProducts} from './recommended'
 
 export default function CartPage() {
-  const {cart, updateItem, removeItem, clear, isLoading, isAuthenticated} = useCart()
+  const {cart, updateItem, removeItem, clear, isLoading, isAuthenticated} =
+    useCart()
   const {user: firebaseUser} = useAuth()
-  const {placeOrder, isLoading: isPlacingOrder, error: orderError, orderId} = usePlaceOrder()
-  const {isOpen: isAuthOpen, onOpen: onAuthOpen, onClose: onAuthClose} = useDisclosure()
-  const {isOpen: isCheckoutOpen, onOpen: onCheckoutOpen, onClose: onCheckoutClose} = useDisclosure()
+  const {
+    placeOrder,
+    isLoading: isPlacingOrder,
+    error: orderError,
+    orderId,
+  } = usePlaceOrder()
+  const {
+    isOpen: isAuthOpen,
+    onOpen: onAuthOpen,
+    onClose: onAuthClose,
+  } = useDisclosure()
+  const {
+    isOpen: isCheckoutOpen,
+    onOpen: onCheckoutOpen,
+    onClose: onCheckoutClose,
+  } = useDisclosure()
 
   // Get user info for checkout
   const convexUser = useQuery(
     api.users.q.getCurrentUser,
     firebaseUser ? {firebaseId: firebaseUser.uid} : 'skip',
   )
-  
+
   const defaultAddress = useQuery(
     api.users.q.getDefaultAddress,
     firebaseUser ? {firebaseId: firebaseUser.uid, type: 'shipping'} : 'skip',
@@ -90,8 +104,9 @@ export default function CartPage() {
     <div className='min-h-screen lg:pt-24 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
         <div className='flex items-center justify-between mb-8'>
-          <h1 className='text-base font-space space-x-3'>
-            <span className='opacity-70 font-light'>Shopping Cart /</span>
+          <h1 className='text-base font-space space-x-1'>
+            <span className='opacity-70 font-light'>Shopping Cart</span>
+            <span className='text-brand'>/</span>
             <span className='font-medium'>Checkout</span>
           </h1>
         </div>

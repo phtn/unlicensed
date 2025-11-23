@@ -1,3 +1,4 @@
+import {Footer} from '@/components/ui/footer'
 import type {ReactNode} from 'react'
 
 type StoreLayoutProps = {
@@ -10,7 +11,8 @@ const StoreLayout = ({children, navbar}: StoreLayoutProps) => {
     <div className='flex min-h-screen flex-col overflow-y-auto'>
       {navbar}
       <main className='relative flex-1'>{children}</main>
-      <div className='h-96 w-full bg-accent'></div>
+      <div className='h-96 w-full bg-background'></div>
+      <Footer />
     </div>
   )
 }

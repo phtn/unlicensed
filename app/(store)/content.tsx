@@ -39,7 +39,7 @@ export const Content = ({
   )
 
   return (
-    <div className='space-y-24 bg-accent'>
+    <div className='space-y-24 bg-background'>
       <NewHome />
       {/*<section className='mx-auto w-full max-w-6xl px-4 pt-14 sm:px-6 lg:px-8'>
         <div className='relative overflow-hidden rounded-[44px] surface-hero p-8 transition-colors sm:p-12 lg:p-16'>

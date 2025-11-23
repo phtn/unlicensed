@@ -3,23 +3,19 @@ import {Icon} from '@/lib/icons'
 import {Link} from '@heroui/react'
 
 export const Footer = () => (
-  <footer className='border-t border-foreground/20 bg-background/80 transition-colors '>
+  <footer className='border-t border-foreground/20 bg-slate-300/30 transition-colors '>
     <div className='mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 transition-colors sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8'>
       <div className='flex flex-col gap-2'>
-        <div className='flex items-center gap-x-2'>
-          <div
-            id='unlicensed-logo'
-            className='flex items-center justify-center rounded-full leading-none border-[0.33px] aspect-square size-2'>
-            <span className='text-teal-400 text-lg drop-shadow-xs'>●</span>
-          </div>
-          <span className='text-sm font-normal font-fugaz opacity-80'>
-            unlicensed
-          </span>
+        <div className='h-10 flex items-center gap-x-2'>
+          <Icon
+            name='rapid-fire'
+            className='h-28 w-auto aspect-auto text-brand'
+          />
         </div>
 
-        <div className='flex items-center space-x-2 opacity-60 text-sm text-color-muted'>
-          <Icon name='mushrooms' className='size-3' />
-          <span className='font-thin mr-2'>
+        <div className='flex items-center space-x-1 opacity-60 text-sm text-color-muted leading-none'>
+          <span className='text-xl opacity-50'>●</span>
+          <span className='font-thin'>
             Redefining euphoria of true illegal marijuana.
           </span>
         </div>

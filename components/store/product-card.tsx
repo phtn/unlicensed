@@ -41,7 +41,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
               <Chip
                 variant='shadow'
                 size='sm'
-                className='rounded-full bg-teal-200/40 px-2 font-space sm:px-2 text-[9px] sm:text-xs uppercase tracking-widest'>
+                className='rounded-full bg-brand/40 px-2 font-space sm:px-2 text-[9px] sm:text-xs uppercase tracking-widest'>
                 Featured
               </Chip>
             ) : null}
