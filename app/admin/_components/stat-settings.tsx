@@ -3,14 +3,6 @@
 import {useMutation, useQuery} from 'convex/react'
 import {api} from '@/convex/_generated/api'
 import {Card, Switch} from '@heroui/react'
-import {formatPrice} from '@/utils/formatPrice'
-import MiniChart from './mini-chart'
-import {useMemo} from 'react'
-
-const generateData = () =>
-  Array.from({length: 20}, () => ({
-    value: 0,
-  }))
 
 const STAT_COLORS: Record<string, string> = {
   salesToday: '#06b6d4',
@@ -47,60 +39,6 @@ type AdminStats = {
   averageOrderValueCents: number
 }
 
-const getStatValue = (statId: string, stats: AdminStats): {value: string | number; subtitle?: string} => {
-  switch (statId) {
-    case 'salesToday':
-      return {value: `$${formatPrice(stats.salesTodayCents)}`}
-    case 'salesThisWeek':
-      return {value: `$${formatPrice(stats.salesThisWeekCents)}`}
-    case 'salesThisMonth':
-      return {value: `$${formatPrice(stats.salesThisMonthCents)}`}
-    case 'totalRevenue':
-      return {value: `$${formatPrice(stats.totalRevenueCents)}`}
-    case 'pendingOrders':
-      return {value: stats.pendingOrdersCount}
-    case 'cancelledOrders':
-      return {value: stats.cancelledOrdersCount}
-    case 'deliveries':
-      return {
-        value: stats.deliveredOrdersCount,
-        subtitle: `/ ${stats.totalOrdersCount}`,
-      }
-    case 'totalUsers':
-      return {value: stats.totalUsersCount}
-    case 'totalProducts':
-      return {value: stats.totalProductsCount}
-    case 'averageOrderValue':
-      return {value: `$${formatPrice(stats.averageOrderValueCents)}`}
-    default:
-      return {value: 0}
-  }
-}
-
-const getChartData = (statId: string, chartData: {
-  salesData?: Array<{value: number}>
-  ordersData?: Array<{value: number}>
-  deliveriesData?: Array<{value: number}>
-  aovData?: Array<{value: number}>
-}): Array<{value: number}> => {
-  switch (statId) {
-    case 'averageOrderValue':
-      return chartData.aovData || generateData()
-    case 'salesToday':
-    case 'salesThisWeek':
-    case 'salesThisMonth':
-    case 'totalRevenue':
-      return chartData.salesData || generateData()
-    case 'pendingOrders':
-    case 'cancelledOrders':
-      return chartData.ordersData || generateData()
-    case 'deliveries':
-      return chartData.deliveriesData || generateData()
-    default:
-      return generateData()
-  }
-}
-
 type MiniStatCardProps = {
   config: StatConfig
   stats: AdminStats
@@ -113,7 +51,7 @@ type MiniStatCardProps = {
   onToggle: (statId: string, visible: boolean) => void
 }
 
-const MiniStatCard = ({config, stats, chartData, onToggle}: MiniStatCardProps) => {
+const MiniStatCard = ({config, onToggle}: MiniStatCardProps) => {
   const color = STAT_COLORS[config.id] || '#6b7280'
 
   return (

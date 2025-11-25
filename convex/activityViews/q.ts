@@ -1,5 +1,6 @@
 import {query} from '../_generated/server'
 import {v} from 'convex/values'
+import type {Id} from '../_generated/dataModel'
 
 /**
  * Get users who viewed a specific activity
@@ -59,20 +60,19 @@ export const getActivitiesWithViewers = query({
     })
 
     // Fetch user data for each viewer
-    const result = new Map<
-      string,
-      Array<{
-        userId: string
-        name: string
-        email: string
-        photoUrl?: string
-        viewedAt: number
-      }>
-    >()
+    type Viewer = {
+      userId: Id<'users'>
+      name: string
+      email: string
+      photoUrl?: string
+      viewedAt: number
+    }
+    
+    const result = new Map<string, Viewer[]>()
 
     for (const [activityId, activityViews] of viewsByActivity.entries()) {
       const viewers = await Promise.all(
-        activityViews.map(async (view) => {
+        activityViews.map(async (view): Promise<Viewer | null> => {
           const user = await ctx.db.get(view.userId)
           if (!user) return null
           return {
@@ -84,7 +84,10 @@ export const getActivitiesWithViewers = query({
           }
         }),
       )
-      result.set(activityId, viewers.filter((v) => v !== null) as any)
+      const filteredViewers = viewers.filter(
+        (v): v is Viewer => v !== null,
+      )
+      result.set(activityId, filteredViewers)
     }
 
     return result

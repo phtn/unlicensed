@@ -21,3 +21,5 @@ export default async function OrderDetailsPage({
   const orderNumber = (await params).orderNumber
   return <Content orderNumber={orderNumber} />
 }
+
+

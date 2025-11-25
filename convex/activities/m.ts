@@ -1,6 +1,6 @@
 import {v} from 'convex/values'
 import {mutation, internalMutation} from '../_generated/server'
-import {activityTypeSchema, activityMetadataSchema} from './d'
+import {activityTypeSchema, activityMetadataSchema, type ActivityType} from './d'
 
 /**
  * Create a new activity log entry
@@ -120,11 +120,11 @@ export const logOrderStatusChange = internalMutation({
       refunded: 'order_refunded',
     }
 
-    const activityType =
-      (statusToActivityType[args.newStatus] as any) || 'order_created'
+    const activityType: ActivityType =
+      (statusToActivityType[args.newStatus] as ActivityType) || 'order_created'
 
     return await ctx.db.insert('activities', {
-      type: activityType as any,
+      type: activityType,
       title: `Order ${order.orderNumber} status changed: ${args.previousStatus} → ${args.newStatus}`,
       description: args.notes || `Order status updated from ${args.previousStatus} to ${args.newStatus}`,
       userId: order.userId ?? undefined,
@@ -168,11 +168,11 @@ export const logPaymentStatusChange = internalMutation({
       partially_refunded: 'payment_refunded',
     }
 
-    const activityType =
-      (statusToActivityType[args.newStatus] as any) || 'payment_pending'
+    const activityType: ActivityType =
+      (statusToActivityType[args.newStatus] as ActivityType) || 'payment_pending'
 
     return await ctx.db.insert('activities', {
-      type: activityType as any,
+      type: activityType,
       title: `Payment ${args.newStatus} for order ${order.orderNumber}`,
       description: `Payment status changed from ${args.previousStatus} to ${args.newStatus}`,
       userId: order.userId ?? undefined,

@@ -6,7 +6,7 @@ import {query} from '../_generated/server'
 export const getAdminSettings = query({
   args: {},
   handler: async (ctx) => {
-    let settings = await ctx.db.query('adminSettings').first()
+    const settings = await ctx.db.query('adminSettings').first()
 
     if (!settings) {
       // Return default configs if no settings exist yet

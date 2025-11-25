@@ -1,22 +1,18 @@
 'use client'
 
 import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader} from '@heroui/react'
-import {useEffect, useState} from 'react'
+import {useState} from 'react'
 
 const STORAGE_KEY = 'age-confirmed'
 
 export function AgeConfirmationModal() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-    // Check if user has already confirmed their age
+  // Initialize state based on localStorage check
+  const [isOpen, setIsOpen] = useState(() => {
+    if (typeof window === 'undefined') return false
     const confirmed = localStorage.getItem(STORAGE_KEY)
-    if (!confirmed) {
-      setIsOpen(true)
-    }
-  }, [])
+    return !confirmed
+  })
+  const [isMounted] = useState(() => typeof window !== 'undefined')
 
   const handleConfirm = () => {
     localStorage.setItem(STORAGE_KEY, 'true')
