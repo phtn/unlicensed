@@ -29,10 +29,10 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
     <Sidebar {...props} className='border-none!' suppressHydrationWarning>
       <SidebarHeader className=''>
         <div className='h-18 flex items-center justify-between'>
-          <div className='h-12 flex w-full items-center _justify-center dark:bg-sidebar bg-linear-to-r from-foreground/90 via-foreground/90 to-transparent dark:from-brand dark:via-foreground px-4 rounded-lg'>
+          <div className='h-12 flex w-full items-center _justify-center dark:bg-sidebar bg-linear-to-r from-foreground/90 via-foreground/90 to-transparent dark:from-brand dark:via-foreground px-4 rounded-s-xl'>
             <Icon
               name='rapid-fire'
-              className='text-base text-brand dark:text-sidebar w-40 h-auto font-figtree font-semibold tracking-tight'
+              className='text-base text-white dark:text-sidebar w-40 h-auto font-figtree font-semibold tracking-tight'
             />
           </div>
         </div>
@@ -60,7 +60,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                   return (
                     <SidebarMenuItem
                       className={cn('text-xs tracking-tighter', {
-                        'bg-sidebar-accent rounded-lg': isActive,
+                        'bg-light-gray rounded-lg': isActive,
                       })}
                       key={item.title}>
                       <SidebarMenuButton
@@ -86,7 +86,8 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 return (
                   <SidebarMenuItem
                     className={cn('text-xs tracking-tighter', {
-                      'bg-sidebar-accent rounded-lg': isActive,
+                      'dark:bg-sidebar-accent bg-sidebar-foreground/10 rounded-lg':
+                        isActive,
                     })}
                     key={item.title}>
                     <SidebarMenuButton
@@ -118,7 +119,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 return (
                   <SidebarMenuItem
                     className={cn('text-xs tracking-tighter', {
-                      'bg-sidebar-accent rounded-lg': isActive,
+                      'rounded-lg': isActive,
                     })}
                     key={item.title}>
                     <SidebarMenuButton

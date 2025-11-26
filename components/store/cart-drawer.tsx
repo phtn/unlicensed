@@ -101,7 +101,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     <Drawer.Root open={open} onOpenChange={onOpenChange} direction='right'>
       <Drawer.Portal>
         <Drawer.Overlay className='fixed inset-0 bg-slate-800/60 backdrop-blur-1 z-50' />
-        <Drawer.Content className='z–200 border-l-[0.33px] border-foreground/20 bg-background flex flex-col h-full w-[400px] fixed bottom-0 right-0 z-50'>
+        <Drawer.Content className='z–200 border-l-[0.33px] border-foreground/20 bg-background flex flex-col h-full w-[400px] fixed bottom-0 right-0 z-70'>
           <div className='p-4 bg-background flex-1 overflow-auto'>
             <div className='flex items-center justify-end space-x-6'>
               <Button isIconOnly variant='solid'>

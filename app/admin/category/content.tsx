@@ -10,24 +10,27 @@ import {CategoryForm} from '../_components/category-form'
 export const Content = () => {
   const categories = useQuery(api.categories.q.listCategories)
   return (
-    <div className='flex w-full flex-col gap-4 px-10'>
+    <div className='flex w-full flex-col gap-4 px-10 py-4 border-t-[0.33px] border-light-gray'>
       <div className='relative'>
-        <h3 className='absolute left-4 top-3 text-xl tracking-tighter font-semibold'>
-          Admin Catalog Manager
-        </h3>
+        <div className='absolute left-4 top-3 text-xl tracking-tighter font-semibold flex items-center space-x-2'>
+          <div className='size-4 aspect-square rounded-full bg-emerald-400'></div>
+          <h3>Product Category Manager</h3>
+        </div>
         <Tabs
           size='lg'
-          color='primary'
           variant='solid'
           content='Admin Catalog Manager'
           classNames={{
-            tabList: '',
+            tabList: 'bg-sidebar mr-4',
+            tabContent: '',
+            tab: '',
             base: 'flex flex-1 justify-end',
           }}
           isVertical={false}
           radius='md'>
           <Tab
             key='view'
+            className='p-4'
             title={
               <div className='flex items-center space-x-1'>
                 <span className='tracking-tighter font-semibold'>
@@ -40,6 +43,7 @@ export const Content = () => {
           </Tab>
           <Tab
             key='create'
+            className='p-4'
             title={
               <div className='flex items-center space-x-1'>
                 <Icon name='plus' />
@@ -62,8 +66,8 @@ interface CurrentCategoriesProps {
 
 const CurrentCategories = ({categories}: CurrentCategoriesProps) => {
   return (
-    <section className='rounded-xl border border-neutral-800 p-6 shadow-lg shadow-black/30'>
-      <h3 className='text-base font-semibold '>Current Categories</h3>
+    <section className='rounded-3xl border dark:border-light-gray border-dark-gray px-6 py-8 shadow-xs shadow-black/30'>
+      <h3 className='text-base font-semibold '>Active Categories</h3>
       {categories?.length === 0 ? (
         <p className='mt-3 text-sm text-neutral-500'>
           No categories yet. Create one above to get started.

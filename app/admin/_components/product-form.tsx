@@ -8,7 +8,7 @@ import {Button, Image, Input, Select, SelectItem, Textarea} from '@heroui/react'
 import {useForm} from '@tanstack/react-form'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
-import {useMemo, useState, useEffect} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import {z} from 'zod'
 
 const formatError = (error: unknown) => {
@@ -203,7 +203,10 @@ export const ProductForm = ({categories}: ProductFormProps) => {
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
   const imageValue = useStore(form.store, (state) => state.values.image)
   const galleryValues = useStore(form.store, (state) => state.values.gallery)
-  const categorySlug = useStore(form.store, (state) => state.values.categorySlug)
+  const categorySlug = useStore(
+    form.store,
+    (state) => state.values.categorySlug,
+  )
 
   useEffect(() => {
     const category = categories?.find((c) => c.slug === categorySlug)
@@ -243,10 +246,9 @@ export const ProductForm = ({categories}: ProductFormProps) => {
   )
 
   return (
-    <section className='rounded-xl border border-neutral-800 p-6 shadow-lg'>
+    <section className='rounded-xl border border-neutral-800 p-6 bg-sidebar/80'>
       <header className='mb-6 space-y-1'>
         <div className='flex items-center justify-between'>
-          <h2 className='text-lg font-semibold tracking-tight'>Add Product</h2>
           <div className='flex items-center gap-4 rounded-lg bg-sidebar-accent/20 px-4 py-3 text-base'>
             <span className='font-semibold text-xl text-emerald-500'>
               {categories?.length}
@@ -256,10 +258,6 @@ export const ProductForm = ({categories}: ProductFormProps) => {
             </span>
           </div>
         </div>
-        <p className='text-sm'>
-          Create a new product, assign it to a category, and manage media
-          assets.
-        </p>
       </header>
       <form
         onSubmit={(event) => {

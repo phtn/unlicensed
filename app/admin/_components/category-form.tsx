@@ -113,7 +113,7 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
       : imagePreviewMap[heroImageValue]
 
   return (
-    <section className='rounded-xl border border-neutral-800 p-6 shadow-lg shadow-black/30'>
+    <section className='rounded-3xl border border-sidebar p-6 shadow-lg shadow-black/30'>
       <header className='mb-6 space-y-1'>
         <h2 className='text-lg font-semibold tracking-tight'>
           Create Category

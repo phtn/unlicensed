@@ -10,24 +10,25 @@ import {ProductForm} from '../_components/product-form'
 export const Content = () => {
   const categories = useQuery(api.categories.q.listCategories)
   return (
-    <div className='flex w-full flex-col gap-4 px-10'>
+    <div className='flex w-full flex-col gap-4 px-10 border-t-[0.33px] border-light-gray'>
       <div className='relative'>
-        <h3 className='absolute left-4 top-3 text-xl tracking-tighter font-semibold'>
-          Product Catalog
-        </h3>
+        <div className='absolute left-4 top-3 text-xl tracking-tighter font-semibold flex items-center space-x-2'>
+          <div className='size-4 aspect-square rounded-full bg-blue-400'></div>
+          <h3>Product Manager</h3>
+        </div>
         <Tabs
           size='lg'
-          color='primary'
           variant='solid'
           content='Product Catalog Manager'
           classNames={{
-            tabList: '',
+            tabList: 'bg-sidebar mr-4',
             base: 'flex flex-1 justify-end',
           }}
           isVertical={false}
           radius='md'>
           <Tab
-            key='photos'
+            key='create'
+            className='p-4'
             title={
               <div className='flex items-center space-x-1'>
                 <Icon name='plus' />
@@ -42,10 +43,7 @@ export const Content = () => {
             key='music'
             title={
               <div className='flex items-center space-x-1'>
-                <Icon name='eye' />
-                <span className='tracking-tighter font-semibold'>
-                  View Categories
-                </span>
+                <span className='tracking-tighter font-semibold'>Products</span>
                 <span className='px-2 font-space'>{categories?.length}</span>
               </div>
             }>

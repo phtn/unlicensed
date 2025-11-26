@@ -200,7 +200,7 @@ const Slide = ({
               <Button
                 as='a'
                 href={ctaHref}
-                className='bg-primary dark:bg-brand hover:bg-primary-foreground text-white font-medium px-6 py-3'>
+                className='bg-dark-gray dark:bg-brand dark:hover:text-background hover:bg-brand/80 hover:text-foreground text-white font-medium px-6 py-3'>
                 {ctaText}
               </Button>
               <Button
@@ -262,79 +262,3 @@ const SliderControls = ({controls}: {controls: SlideButtonProps[]}) => {
     </div>
   )
 }
-
-/*
-<div
-              key={control.id}
-              className='relative min-w-full flex-[0_0_100%] @container md:snap-start md:snap-always'
-              role='group'
-              aria-roledescription='slide'
-              aria-label={`Slide ${index + 1} of ${slides.length}`}>
-              <div className='container mx-auto'>
-                <div className='relative min-h-[500px] px-4 py-12 sm:min-h-[550px] sm:py-16 lg:grid lg:min-h-0 lg:grid-cols-2 lg:items-center lg:gap-12 lg:py-16 xl:gap-16'>
-                  <div className='absolute inset-0 -z-10 lg:hidden'>
-                    <div className='absolute inset-0 bg-linear-to-b from-background/90 via-background/75 to-background/90' />
-                    <Image
-                      src={slide.imageUrl}
-                      alt=''
-                      width={768}
-                      height={500}
-                      className='size-full object-cover object-center opacity-25'
-                      priority={index === 0}
-                      quality={30}
-                      sizes='(max-width: 768px) 50vw, 100vw'
-                    />
-                  </div>
-
-                  <div className='relative flex flex-col justify-center space-y-6 text-center lg:px-4 lg:text-left'>
-                    <div className='space-y-4'>
-                      <h2 className='text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl xl:text-6xl'>
-                        {slide.title}
-                      </h2>
-                      <p className='mx-auto max-w-md text-balance text-base text-muted-foreground sm:text-lg lg:mx-0 lg:text-xl'>
-                        {slide.subtitle}
-                      </p>
-                    </div>
-
-                    <div className='flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start'>
-                      <Button className='w-full sm:w-auto lg:px-8 lg:py-6 lg:text-lg'>
-                        <Link href={slide.ctaHref}>{slide.ctaText}</Link>
-                      </Button>
-                      <Button
-                        variant='bordered'
-                        className='w-full sm:w-auto lg:px-8 lg:py-6 lg:text-lg'>
-                        <Link href='/search'>Browse All Categories</Link>
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className='relative hidden lg:block lg:px-4'>
-                    <div className='relative h-[400px] w-full overflow-hidden rounded-lg bg-white lg:h-[500px] xl:h-[600px]'>
-                      <Image
-                        src={slide.imageUrl}
-                        alt={slide.imageAlt}
-                        width={600}
-                        height={600}
-                        className='size-full object-contain'
-                        priority={index === 0}
-                        quality={85}
-                        sizes='(min-width: 1024px) 50vw, 0vw'
-                      />
-
-                      {slide.product && (
-                        <div className='absolute bottom-4 right-4 hidden w-[200px] md:block lg:bottom-8 lg:right-8 lg:w-[240px]'>
-                          <CompactProductCard
-                            {...slide.product}
-                            selectedVariant={slide.product}
-                            variantOptions={slide.variantOptions}
-                            priority={index === 0}
-                            className='bg-background/95 shadow-xl backdrop-blur-sm'
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-*/

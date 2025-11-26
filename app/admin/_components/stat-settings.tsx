@@ -1,8 +1,8 @@
 'use client'
 
-import {useMutation, useQuery} from 'convex/react'
 import {api} from '@/convex/_generated/api'
 import {Card, Switch} from '@heroui/react'
+import {useMutation, useQuery} from 'convex/react'
 
 const STAT_COLORS: Record<string, string> = {
   salesToday: '#06b6d4',
@@ -58,20 +58,24 @@ const MiniStatCard = ({config, onToggle}: MiniStatCardProps) => {
     <Card
       shadow='sm'
       isPressable
+      disableRipple
       onPress={() => onToggle(config.id, !config.visible)}
-      className={`relative p-4 min-w-0 transition-all cursor-pointer hover:bg-neutral-900/60 ${
+      className={`relative p-4 min-w-0 transition-all cursor-pointer hover:bg-sidebar/60 ${
         config.visible
-          ? 'opacity-100 border-2 border-transparent'
-          : 'opacity-50 border-2 border-neutral-700'
+          ? 'opacity-100 border-2 border-neutral-700'
+          : 'opacity-50 border-2 border-transparent'
       }`}>
       {/* Toggle overlay */}
-      <div className='absolute top-3 right-3 z-10' onClick={(e) => e.stopPropagation()}>
+      <div
+        className='absolute top-4 right-3 z-10'
+        onClick={(e) => e.stopPropagation()}>
         <Switch
+          size='md'
           isSelected={config.visible}
           onValueChange={(value) => onToggle(config.id, value)}
-          size='sm'
           classNames={{
             base: 'bg-transparent',
+            wrapper: 'bg-light-gray',
           }}
         />
       </div>
@@ -83,9 +87,7 @@ const MiniStatCard = ({config, onToggle}: MiniStatCardProps) => {
             className='w-1 h-6 rounded-full'
             style={{backgroundColor: color}}
           />
-          <p className='text-lg font-semibold font-space'>
-            {config.label}
-          </p>
+          <p className='text-lg font-semibold font-space'>{config.label}</p>
         </div>
       </div>
     </Card>
@@ -134,7 +136,7 @@ export const StatSettings = () => {
   )
 
   return (
-    <Card className='p-4 sm:p-6'>
+    <Card shadow='sm' className='p-4 sm:p-6 border-sidebar'>
       <div className='space-y-4'>
         <div>
           <h3 className='text-lg font-semibold font-space'>Dashboard Stats</h3>
@@ -143,7 +145,7 @@ export const StatSettings = () => {
           </p>
         </div>
 
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'>
           {sortedConfigs.map((config) => (
             <MiniStatCard
               key={config.id}
