@@ -27,14 +27,19 @@ export const Footer = () => (
           Strain Finder
         </Link>
         <Link
-          href='/#finder'
+          href='/legal/terms-of-use'
           className='text-color-muted hover:text-foreground/80 text-xs'>
           Terms of Use
         </Link>
         <Link
-          href='/privacy'
+          href='/legal/privacy-policy'
           className='text-color-muted hover:text-foreground/80 text-xs'>
-          Privacy
+          Privacy Policy
+        </Link>
+        <Link
+          href='/legal/purchase-agreement'
+          className='text-color-muted hover:text-foreground/80 text-xs'>
+          Purchase Agreement
         </Link>
       </div>
     </div>

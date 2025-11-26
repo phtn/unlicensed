@@ -227,6 +227,7 @@
   --font-space: var(--font-space);
   --font-fugaz: var(--font-fugaz);
   --font-sans: var(--font-sans);
+  --font-bone: var(--font-bone);
   /* Effects, Flavors, Terpenes */
   --color-flavors: oklch(0.783 0.168 66.2);
   --color-terpenes: oklch(0.633 0.123 166.24);

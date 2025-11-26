@@ -1,6 +1,7 @@
 import {ProvidersCtxProvider} from '@/ctx'
 import type {Metadata} from 'next'
 import {
+  Bakbak_One as BakbakOne,
   Figtree,
   Fugaz_One,
   Geist,
@@ -36,6 +37,12 @@ const fugaz = Fugaz_One({
   variable: '--font-fugaz',
   weight: ['400'],
   display: 'swap',
+})
+
+const bone = BakbakOne({
+  variable: '--font-bone',
+  weight: ['400'],
+  subsets: ['latin'],
 })
 
 export const metadata: Metadata = {
@@ -103,7 +110,7 @@ export default function RootLayout({
   return (
     <html lang='en' className='dark' data-theme='dark' suppressHydrationWarning>
       <body
-        className={`${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased font-sans`}>
+        className={`${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased font-sans`}>
         {/*
           ProvidersCtxProvider wraps ConvexProvider, which enables reactivity
           across all parallel route slots (navbar, children, etc.)

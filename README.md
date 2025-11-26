@@ -5,12 +5,6 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
 bun dev
 ```
 
@@ -18,7 +12,31 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Changelog
+
+This project uses [Changesets](https://github.com/changesets/changesets) for automatic changelog generation.
+
+### Creating a Changeset
+
+When you make changes that should be documented:
+
+```bash
+bun run changeset
+```
+
+This will prompt you to select the change type (major/minor/patch) and write a summary.
+
+### Versioning
+
+When ready to release:
+
+```bash
+bun run version
+```
+
+This updates the version in `package.json` and generates/updates `CHANGELOG.md`.
+
+See [docs/CHANGESETS.md](./docs/CHANGESETS.md) for detailed documentation.
 
 ## Learn More
 
