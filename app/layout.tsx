@@ -63,13 +63,13 @@ export const metadata: Metadata = {
   ],
   authors: [{name: 'xpriori'}, {name: 'quimpoi'}],
   creator: 're-up.ph',
-  publisher: 'rapidfire.com',
+  publisher: 're-up.ph',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://rapidfire.com'),
+  metadataBase: new URL('https://rapid-fire-online.vercel.app'),
   alternates: {
     canonical: '/',
   },
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     description:
       'Modern cannabis commerce with curated drops, immersive product storytelling, and delightful UX.',
     type: 'website',
-    url: 'https://rapidfire.com',
+    url: 'https://rapid-fire-online.vercel.app',
     siteName: 'Rapid Fire',
     images: [
       {
