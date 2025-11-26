@@ -8,7 +8,7 @@ import {Button, Image, Input, Select, SelectItem, Textarea} from '@heroui/react'
 import {useForm} from '@tanstack/react-form'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
-import {useMemo, useState} from 'react'
+import {useMemo, useState, useEffect} from 'react'
 import {z} from 'zod'
 
 const formatError = (error: unknown) => {
@@ -69,6 +69,14 @@ const productSchema = z.object({
   potencyLevel: z.enum(['mild', 'medium', 'high']),
   potencyProfile: z.string().optional(),
   weightGrams: z.string().optional(),
+  variants: z
+    .array(
+      z.object({
+        label: z.string(),
+        price: z.number(),
+      }),
+    )
+    .optional(),
 })
 
 type ProductFormValues = z.infer<typeof productSchema>
@@ -117,6 +125,7 @@ export const ProductForm = ({categories}: ProductFormProps) => {
     potencyLevel: 'medium',
     potencyProfile: '',
     weightGrams: '',
+    variants: [],
   }
 
   const form = useForm({
@@ -142,7 +151,7 @@ export const ProductForm = ({categories}: ProductFormProps) => {
           categorySlug: data.categorySlug,
           shortDescription: data.shortDescription.trim(),
           description: data.description.trim(),
-          priceCents: Math.round(data.priceCents),
+          priceCents: Math.round(data.priceCents * 100),
           unit: data.unit.trim(),
           availableDenominations: parseNumbers(data.availableDenominationsRaw),
           popularDenomination:
@@ -170,6 +179,10 @@ export const ProductForm = ({categories}: ProductFormProps) => {
             data.weightGrams && data.weightGrams.length > 0
               ? Number(data.weightGrams)
               : undefined,
+          variants: data.variants?.map((v) => ({
+            ...v,
+            price: Math.round(v.price * 100),
+          })),
         }
 
         await createProduct(payload)
@@ -190,6 +203,28 @@ export const ProductForm = ({categories}: ProductFormProps) => {
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
   const imageValue = useStore(form.store, (state) => state.values.image)
   const galleryValues = useStore(form.store, (state) => state.values.gallery)
+  const categorySlug = useStore(form.store, (state) => state.values.categorySlug)
+
+  useEffect(() => {
+    const category = categories?.find((c) => c.slug === categorySlug)
+    const isFlower =
+      category?.name.toLowerCase().includes('flower') ||
+      category?.slug.toLowerCase().includes('flower')
+
+    if (isFlower) {
+      const currentVariants = form.getFieldValue('variants')
+      if (!currentVariants || currentVariants.length === 0) {
+        form.setFieldValue('variants', [
+          {label: '1/8', price: 35},
+          {label: '1/4', price: 60},
+          {label: '1/2', price: 100},
+          {label: 'Oz', price: 175},
+          {label: 'Bulk', price: 5},
+        ])
+      }
+    }
+  }, [categorySlug, categories, form])
+
   const heroImagePreview = useMemo(() => {
     if (!imageValue) return null
     if (imageValue.startsWith('http') || imageValue.startsWith('data:')) {
@@ -374,7 +409,7 @@ export const ProductForm = ({categories}: ProductFormProps) => {
               {(field) => (
                 <div className='space-y-2'>
                   <label className='block text-sm font-medium '>
-                    Price (in cents)
+                    Base Price ($)
                   </label>
                   <Input
                     type='number'
@@ -384,6 +419,7 @@ export const ProductForm = ({categories}: ProductFormProps) => {
                     }
                     onBlur={field.handleBlur}
                     min={0}
+                    startContent={<span className='text-neutral-500'>$</span>}
                     className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 outline-none ring-0 focus:border-emerald-500'
                   />
                   {field.state.meta.isTouched &&
@@ -418,6 +454,51 @@ export const ProductForm = ({categories}: ProductFormProps) => {
               )}
             </form.Field>
           </div>
+
+          <form.Field name='variants'>
+            {(field) => {
+              const variants = field.state.value
+              if (!variants || variants.length === 0) return null
+
+              return (
+                <div className='col-span-full space-y-3 rounded-lg border border-neutral-800 bg-neutral-900/40 p-4'>
+                  <div className='flex items-center justify-between'>
+                    <label className='text-sm font-medium '>
+                      Pricing Variants
+                    </label>
+                    <span className='text-xs text-neutral-500'>
+                      Set prices for specific denominations
+                    </span>
+                  </div>
+                  <div className='grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5'>
+                    {variants.map((variant, index) => (
+                      <div key={index} className='space-y-1'>
+                        <span className='text-xs text-neutral-400'>
+                          {variant.label}
+                        </span>
+                        <Input
+                          type='number'
+                          value={variant.price.toString()}
+                          onChange={(event) => {
+                            const newVariants = [...variants]
+                            newVariants[index] = {
+                              ...newVariants[index],
+                              price: Number(event.target.value),
+                            }
+                            field.handleChange(newVariants)
+                          }}
+                          startContent={
+                            <span className='text-neutral-500'>$</span>
+                          }
+                          className='w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 outline-none ring-0 focus:border-emerald-500'
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            }}
+          </form.Field>
 
           <form.Field name='availableDenominationsRaw'>
             {(field) => (

@@ -33,6 +33,14 @@ export const createProduct = mutation({
     ),
     potencyProfile: v.optional(v.string()),
     weightGrams: v.optional(v.number()),
+    variants: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          price: v.number(),
+        }),
+      ),
+    ),
   },
   handler: async (ctx, args) => {
     const slug = ensureSlug(args.slug ?? '', args.name)
@@ -89,6 +97,7 @@ export const createProduct = mutation({
       potencyLevel: args.potencyLevel,
       potencyProfile: args.potencyProfile?.trim() || undefined,
       weightGrams: args.weightGrams ?? undefined,
+      variants: args.variants,
     })
 
     // Log product created activity
@@ -112,6 +121,14 @@ export const updateProduct = mutation({
     available: v.optional(v.boolean()),
     featured: v.optional(v.boolean()),
     unit: v.optional(v.string()),
+    variants: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          price: v.number(),
+        }),
+      ),
+    ),
   },
   handler: async (ctx, args) => {
     const product = await ctx.db.get(args.productId)
@@ -137,6 +154,9 @@ export const updateProduct = mutation({
     }
     if (args.unit !== undefined) {
       updates.unit = args.unit.trim()
+    }
+    if (args.variants !== undefined) {
+      updates.variants = args.variants
     }
 
     await ctx.db.patch(args.productId, updates)

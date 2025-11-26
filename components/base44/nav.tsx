@@ -60,7 +60,7 @@ export const Nav = ({children}: NavProps) => {
 
   return (
     <>
-      <header className='fixed top-0 left-0 right-0 z-40 bg-black backdrop-blur-sm'>
+      <header className='fixed top-0 left-0 right-0 z-60 bg-black backdrop-blur-sm'>
         <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 py-3 flex items-center justify-between'>
           <Link
             href={'/'}

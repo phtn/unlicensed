@@ -248,7 +248,24 @@ export const icons = {
     viewBox: `0 0 512 512`,
     set: `game-icons`,
   },
-
+  'check-fill': {
+    symbol:
+      '<path fill="currentColor" fill-rule="evenodd" d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18m-.232-5.36l5-6l-1.536-1.28l-4.3 5.159l-2.225-2.226l-1.414 1.414l3 3l.774.774z" clip-rule="evenodd"/>',
+    viewBox: '0 0 24 24',
+    set: 'lets-icons',
+  },
+  'check-ring-light': {
+    symbol:
+      '<g fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="m8 12l3 3l5-6"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lets-icons',
+  },
+  'circle-in': {
+    symbol:
+      '<g fill="none"><path stroke="currentColor" stroke-width="2" d="M4.929 19.071a10 10 0 1 0 0-14.142"/><path fill="currentColor" d="m15 12l.78-.625l.5.625l-.5.625zM3 13a1 1 0 1 1 0-2zm8.78-6.625l4 5l-1.56 1.25l-4-5zm4 6.25l-4 5l-1.56-1.25l4-5zM15 13H3v-2h12z"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lets-icons',
+  },
   //
   // TERPENES
   //

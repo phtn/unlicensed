@@ -34,6 +34,14 @@ export const productSchema = v.object({
   potencyLevel: potencyLevel,
   potencyProfile: v.optional(v.string()),
   weightGrams: v.optional(v.number()),
+  variants: v.optional(
+    v.array(
+      v.object({
+        label: v.string(),
+        price: v.number(),
+      }),
+    ),
+  ),
 })
 
 export type ProductType = Infer<typeof productSchema>
