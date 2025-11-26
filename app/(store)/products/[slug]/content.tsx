@@ -412,9 +412,3 @@ export const ProductDetailContent = ({
     </div>
   )
 }
-
-// <div className='space-y-8 hidden'>
-//               <DetailList label='Effects' items={product.effects} />
-//               <DetailList label='Flavor Notes' items={product.flavorNotes} />
-//               <DetailList label='Terpene Profile' items={product.terpenes} />
-//             </div>

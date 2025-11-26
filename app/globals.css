@@ -7,8 +7,8 @@
 :root,
 :root.dark {
   color-scheme: dark;
-  /*--background: oklch(0.13 0.019 269.8);*/
-  --background: oklch(0.314 0.001 17.23);
+  --background: oklch(0.13 0.019 269.8);
+  /*--background: oklch(0.314 0.001 17.23);*/
   --foreground: oklch(0.973 0.007 268.55);
   --muted: rgba(203, 213, 225, 0.76);
   --accent: oklch(0.3 0.04 167.17);
@@ -102,7 +102,7 @@
 
 :root.light {
   color-scheme: light;
-  --background: #efefef;
+  --background: #fefefe;
   --foreground: oklch(0.243 0.027 220.39);
   --muted: rgba(255, 242, 233, 0.78);
   --accent: oklch(0.96 0.007 67.74);

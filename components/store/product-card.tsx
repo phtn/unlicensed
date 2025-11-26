@@ -23,7 +23,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
       isPressable
       shadow='sm'
       className={cn(
-        'group h-full transition-all duration-300 hover:-translate-y-1.5 hover-elevated',
+        'group h-full transition-all duration-300 hover:-translate-y-1.5',
         'rounded-4xl',
         className,
       )}>

@@ -203,7 +203,9 @@ const Slide = ({
                 className='bg-primary dark:bg-brand hover:bg-primary-foreground text-white font-medium px-6 py-3'>
                 {ctaText}
               </Button>
-              <Button variant='flat' className='flex items-center gap-2'>
+              <Button
+                variant='flat'
+                className='hidden md:flex items-center gap-2'>
                 <span>Strain Finder</span>
                 <Icon name='search' className='w-4 h-4' />
               </Button>

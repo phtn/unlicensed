@@ -9,7 +9,7 @@ export const Footer = () => (
         <div className='h-10 flex items-center gap-x-2'>
           <Icon
             name='rapid-fire'
-            className='h-28 w-auto aspect-auto text-brand'
+            className='h-14 md:h-32 w-auto aspect-auto dark:text-light-gray text-dark-gray'
           />
         </div>
 
@@ -21,21 +21,24 @@ export const Footer = () => (
         </div>
       </div>
       <div className='flex flex-wrap items-center gap-3 text-color-muted'>
-        <Link
+        {/*<Link
           href='/#menu'
           className='text-color-muted hover:text-foreground/80 text-xs'>
           Strain Finder
-        </Link>
+        </Link>*/}
+
         <Link
           href='/legal/terms-of-use'
           className='text-color-muted hover:text-foreground/80 text-xs'>
           Terms of Use
         </Link>
+        <span className='opacity-20'>●</span>
         <Link
           href='/legal/privacy-policy'
           className='text-color-muted hover:text-foreground/80 text-xs'>
           Privacy Policy
         </Link>
+        <span className='opacity-20'>●</span>
         <Link
           href='/legal/purchase-agreement'
           className='text-color-muted hover:text-foreground/80 text-xs'>

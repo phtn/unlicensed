@@ -3,6 +3,8 @@
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {AddressType} from '@/convex/users/d'
+import {getLocalStorageCartItems} from '@/lib/localStorageCart'
+import {clearLocalStorageCart} from '@/lib/localStorageCart'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
 import {useAuth} from './use-auth'
@@ -72,6 +74,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
   const addAddressMutation = useMutation(api.users.m.addAddress)
   const updateContactMutation = useMutation(api.users.m.updateContact)
   const createOrUpdateUserMutation = useMutation(api.users.m.createOrUpdateUser)
+  const addToCartMutation = useMutation(api.cart.m.addToCart)
 
   // Get Convex user ID if authenticated (same pattern as use-cart)
   const convexUser = useQuery(
@@ -118,35 +121,88 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
       setOrderId(null)
 
       try {
+        let cartIdToUse: Id<'carts'> | undefined
+        let userIdToUse: Id<'users'> | undefined
+
+        // If user is not authenticated and has local storage items, sync them to Convex
+        if (!isAuthenticated) {
+          const localStorageItems = getLocalStorageCartItems()
+          if (localStorageItems.length > 0) {
+            // Create a temporary cart in Convex with local storage items
+            let tempCartId: Id<'carts'> | null = null
+            for (const item of localStorageItems) {
+              if (!tempCartId) {
+                // Create cart with first item
+                tempCartId = await addToCartMutation({
+                  userId: null,
+                  productId: item.productId,
+                  quantity: item.quantity,
+                  denomination: item.denomination,
+                })
+              } else {
+                // Add remaining items to the cart
+                await addToCartMutation({
+                  cartId: tempCartId,
+                  productId: item.productId,
+                  quantity: item.quantity,
+                  denomination: item.denomination,
+                })
+              }
+            }
+            if (tempCartId) {
+              cartIdToUse = tempCartId
+              // Clear local storage after successful sync
+              clearLocalStorageCart()
+              if (process.env.NODE_ENV === 'development') {
+                console.log(
+                  '[usePlaceOrder] Local storage cart synced to Convex before checkout:',
+                  {
+                    itemsCount: localStorageItems.length,
+                    cartId: tempCartId,
+                  },
+                )
+              }
+            } else {
+              throw new Error('Failed to create cart from local storage items')
+            }
+          } else {
+            // This shouldn't happen as cart validation should catch empty carts
+            throw new Error('No items in local storage cart')
+          }
+        } else if (isAuthenticated && userId) {
+          userIdToUse = userId
+        }
+
         // Use userId from Convex if authenticated, otherwise use cartId
         // The createOrder mutation accepts either userId or cartId
-        const orderArgs = isAuthenticated && userId
-          ? {
-              userId,
-              shippingAddress: params.shippingAddress,
-              billingAddress: params.billingAddress,
-              contactEmail: params.contactEmail,
-              contactPhone: params.contactPhone,
-              paymentMethod: params.paymentMethod,
-              customerNotes: params.customerNotes,
-              subtotalCents: params.subtotalCents,
-              taxCents: params.taxCents,
-              shippingCents: params.shippingCents,
-              discountCents: params.discountCents,
-            }
-          : {
-              cartId: cart._id as Id<'carts'>,
-              shippingAddress: params.shippingAddress,
-              billingAddress: params.billingAddress,
-              contactEmail: params.contactEmail,
-              contactPhone: params.contactPhone,
-              paymentMethod: params.paymentMethod,
-              customerNotes: params.customerNotes,
-              subtotalCents: params.subtotalCents,
-              taxCents: params.taxCents,
-              shippingCents: params.shippingCents,
-              discountCents: params.discountCents,
-            }
+        const orderArgs =
+          userIdToUse !== undefined
+            ? {
+                userId: userIdToUse,
+                shippingAddress: params.shippingAddress,
+                billingAddress: params.billingAddress,
+                contactEmail: params.contactEmail,
+                contactPhone: params.contactPhone,
+                paymentMethod: params.paymentMethod,
+                customerNotes: params.customerNotes,
+                subtotalCents: params.subtotalCents,
+                taxCents: params.taxCents,
+                shippingCents: params.shippingCents,
+                discountCents: params.discountCents,
+              }
+            : {
+                cartId: cartIdToUse!,
+                shippingAddress: params.shippingAddress,
+                billingAddress: params.billingAddress,
+                contactEmail: params.contactEmail,
+                contactPhone: params.contactPhone,
+                paymentMethod: params.paymentMethod,
+                customerNotes: params.customerNotes,
+                subtotalCents: params.subtotalCents,
+                taxCents: params.taxCents,
+                shippingCents: params.shippingCents,
+                discountCents: params.discountCents,
+              }
 
         // Create order
         const newOrderId = await createOrderMutation(orderArgs)
@@ -286,6 +342,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
       addAddressMutation,
       updateContactMutation,
       createOrUpdateUserMutation,
+      addToCartMutation,
     ],
   )
 

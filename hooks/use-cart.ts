@@ -3,23 +3,29 @@
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {ProductType} from '@/convex/products/d'
-import {deleteCartCookie, getCartCookie, setCartCookie} from '@/lib/cookies'
+import {
+  addToLocalStorageCart,
+  clearLocalStorageCart,
+  getLocalStorageCartItemCount,
+  getLocalStorageCartItems,
+  removeFromLocalStorageCart,
+  updateLocalStorageCartItem,
+} from '@/lib/localStorageCart'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {useAuth} from './use-auth'
 
 /**
- * Cart hook that uses Convex for all cart operations.
+ * Cart hook that uses different storage based on authentication:
  *
- * Supports both authenticated and anonymous users:
- * - Authenticated users: Cart is linked to userId
- * - Anonymous users: Cart ID is stored in secure cookie
- * - When user authenticates: Anonymous cart is merged with user cart and cookie is deleted
+ * - Authenticated users: Cart is stored in Convex, linked to userId
+ * - Unauthenticated users: Cart is stored in local storage
+ * - When user authenticates: Local storage items are merged into Convex cart
+ * - When user checks out: Local storage items are synced to Convex before order creation
  *
  * Reactivity Flow:
- * - Uses Convex queries (serverCart, serverCartItemCount) which automatically
- *   subscribe and update when cart mutations (addToCart, removeFromCart, etc.) complete.
- * - Convex's reactive subscription system ensures queries update in real-time without manual refresh.
+ * - Authenticated: Uses Convex queries which automatically subscribe and update
+ * - Unauthenticated: Uses local storage with manual state updates
  */
 type CartItemWithProduct = {
   productId: Id<'products'>
@@ -62,16 +68,11 @@ interface UseCartResult {
 
 export const useCart = (): UseCartResult => {
   const {user} = useAuth()
-  // Lazy initialization: read from cookie on first render
-  const [anonymousCartId, setAnonymousCartId] = useState<Id<'carts'> | null>(
-    () => {
-      if (typeof window === 'undefined') return null
-      const cartId = getCartCookie()
-      return cartId ? (cartId as Id<'carts'>) : null
-    },
-  )
   const hasMergedRef = useRef(false)
   const prevAuthenticatedRef = useRef<boolean | undefined>(undefined)
+  const [localStorageCartItems, setLocalStorageCartItems] = useState(() =>
+    typeof window !== 'undefined' ? getLocalStorageCartItems() : [],
+  )
 
   // Get user ID from Convex - this query automatically subscribes and updates
   const convexUser = useQuery(
@@ -83,7 +84,80 @@ export const useCart = (): UseCartResult => {
   const userId = useMemo(() => convexUser?._id, [convexUser?._id])
   const isAuthenticated = !!user && !!userId
 
-  // Sync anonymous cart ID with authentication state
+  // Get product IDs from local storage cart
+  const localStorageProductIds = useMemo(() => {
+    return localStorageCartItems.map((item) => item.productId)
+  }, [localStorageCartItems])
+
+  // Fetch products for local storage cart items
+  const localStorageProducts = useQuery(
+    api.products.q.getProductsByIds,
+    !isAuthenticated && localStorageProductIds.length > 0
+      ? {productIds: localStorageProductIds}
+      : 'skip',
+  )
+
+  // Build cart from local storage items with product data
+  const localStorageCart = useMemo<CartWithProducts | null>(() => {
+    if (isAuthenticated || !localStorageCartItems.length) return null
+    if (localStorageProducts === undefined) return null // Still loading
+
+    // Create a map of productId -> product for quick lookup
+    const productMap = new Map(
+      localStorageProducts.map((p) => [p._id, p]),
+    )
+
+    // Build cart items with product data
+    const items: CartItemWithProduct[] = localStorageCartItems
+      .map((item) => {
+        const product = productMap.get(item.productId)
+        if (!product) return null
+        return {
+          ...item,
+          product: {
+            ...product,
+            _id: product._id,
+            _creationTime: product._creationTime,
+          },
+        }
+      })
+      .filter((item): item is CartItemWithProduct => item !== null)
+
+    return {
+      _id: 'local-storage' as Id<'carts'>,
+      userId: null,
+      updatedAt: 0,
+      items,
+    }
+  }, [isAuthenticated, localStorageCartItems, localStorageProducts])
+
+  // Determine which cart identifier to use (only for authenticated users)
+  const cartIdentifier = useMemo(() => {
+    if (isAuthenticated && userId) {
+      return {userId}
+    }
+    return null
+  }, [isAuthenticated, userId])
+
+  // Server cart queries - only for authenticated users
+  const serverCart = useQuery(
+    api.cart.q.getCart,
+    cartIdentifier ? cartIdentifier : 'skip',
+  )
+
+  // Separate query for cart item count - only for authenticated users
+  const serverCartItemCount = useQuery(
+    api.cart.q.getCartItemCount,
+    cartIdentifier ? cartIdentifier : 'skip',
+  )
+
+  // Mutations (only used for authenticated users)
+  const addToCartMutation = useMutation(api.cart.m.addToCart)
+  const updateCartItemMutation = useMutation(api.cart.m.updateCartItem)
+  const removeFromCartMutation = useMutation(api.cart.m.removeFromCart)
+  const clearCartMutation = useMutation(api.cart.m.clearCart)
+
+  // When user authenticates, merge local storage cart into Convex cart
   useEffect(() => {
     const wasAuthenticated = prevAuthenticatedRef.current
     prevAuthenticatedRef.current = isAuthenticated
@@ -91,119 +165,80 @@ export const useCart = (): UseCartResult => {
     if (!isAuthenticated) {
       // Reset merge flag when user logs out
       hasMergedRef.current = false
-    } else if (wasAuthenticated === false) {
-      // Clear anonymous cart ID when transitioning from unauthenticated to authenticated
-      // Defer state update to avoid lint error
-      queueMicrotask(() => {
-        setAnonymousCartId(null)
-        deleteCartCookie()
-      })
-    }
-  }, [isAuthenticated])
-
-  // Determine which cart identifier to use
-  const cartIdentifier = useMemo(() => {
-    if (isAuthenticated && userId) {
-      return {userId}
-    } else if (anonymousCartId) {
-      return {cartId: anonymousCartId}
-    }
-    return null
-  }, [isAuthenticated, userId, anonymousCartId])
-
-  // Server cart queries - automatically subscribe when cart identifier is available
-  const serverCart = useQuery(
-    api.cart.q.getCart,
-    cartIdentifier ? cartIdentifier : 'skip',
-  )
-
-  // Separate query for cart item count
-  const serverCartItemCount = useQuery(
-    api.cart.q.getCartItemCount,
-    cartIdentifier ? cartIdentifier : 'skip',
-  )
-
-  // Mutations
-  const addToCartMutation = useMutation(api.cart.m.addToCart)
-  const updateCartItemMutation = useMutation(api.cart.m.updateCartItem)
-  const removeFromCartMutation = useMutation(api.cart.m.removeFromCart)
-  const clearCartMutation = useMutation(api.cart.m.clearCart)
-  const updateCartUserIdMutation = useMutation(api.cart.m.updateCartUserId)
-
-  // When user authenticates, merge anonymous cart with user cart
-  // This effect runs when user logs in and has an anonymous cart
-  useEffect(() => {
-    if (isAuthenticated && userId && anonymousCartId && !hasMergedRef.current) {
+    } else if (
+      wasAuthenticated === false &&
+      isAuthenticated &&
+      userId &&
+      localStorageCartItems.length > 0 &&
+      !hasMergedRef.current
+    ) {
+      // Merge local storage cart into Convex when user authenticates
       hasMergedRef.current = true
-      // Merge cart when user authenticates
-      // We don't wait for serverCart to load because the merge will update it
       const mergeCart = async () => {
         try {
-          const mergedCartId = await updateCartUserIdMutation({
-            cartId: anonymousCartId,
-            userId,
-          })
-          // Clear anonymous cart ID after merge
-          setAnonymousCartId(null)
+          // Add each local storage item to Convex cart
+          for (const item of localStorageCartItems) {
+            await addToCartMutation({
+              userId,
+              productId: item.productId,
+              quantity: item.quantity,
+              denomination: item.denomination,
+            })
+          }
+          // Clear local storage after successful merge
+          clearLocalStorageCart()
+          setLocalStorageCartItems([])
 
           if (process.env.NODE_ENV === 'development') {
-            console.log('[useCart] Cart merged on authentication:', {
-              anonymousCartId,
-              mergedCartId,
+            console.log('[useCart] Local storage cart merged on authentication:', {
+              itemsCount: localStorageCartItems.length,
               userId,
             })
           }
         } catch (error) {
-          console.error('Failed to merge cart:', error)
+          console.error('Failed to merge local storage cart:', error)
           // Reset merge flag on error so we can retry
           hasMergedRef.current = false
         }
       }
       mergeCart()
     }
-  }, [isAuthenticated, userId, anonymousCartId, updateCartUserIdMutation])
+  }, [
+    isAuthenticated,
+    userId,
+    localStorageCartItems,
+    addToCartMutation,
+  ])
 
-  // Add item to cart - works for both authenticated and anonymous users
+  // Add item to cart - uses local storage for unauthenticated users
   const addItem = useCallback(
     async (
       productId: Id<'products'>,
       quantity: number = 1,
       denomination?: number,
     ) => {
-      let cartId: Id<'carts'>
-
       if (isAuthenticated && userId) {
-        cartId = await addToCartMutation({
+        // Use Convex for authenticated users
+        const cartId = await addToCartMutation({
           userId,
           productId,
           quantity,
           denomination,
         })
+        return cartId
       } else {
-        // For anonymous users, create cart if it doesn't exist
-        if (!anonymousCartId) {
-          cartId = await addToCartMutation({
-            userId: null,
-            productId,
-            quantity,
-            denomination,
-          })
-          // Store cart ID in cookie
-          setCartCookie(cartId)
-          setAnonymousCartId(cartId)
-        } else {
-          cartId = await addToCartMutation({
-            cartId: anonymousCartId,
-            productId,
-            quantity,
-            denomination,
-          })
-        }
+        // Use local storage for unauthenticated users
+        const newItems = addToLocalStorageCart(
+          productId,
+          quantity,
+          denomination,
+        )
+        setLocalStorageCartItems(newItems)
+        // Return a dummy cart ID for unauthenticated users
+        return 'local-storage' as Id<'carts'>
       }
-
-      return cartId
     },
-    [isAuthenticated, userId, anonymousCartId, addToCartMutation],
+    [isAuthenticated, userId, addToCartMutation],
   )
 
   // Update item in cart
@@ -213,81 +248,95 @@ export const useCart = (): UseCartResult => {
       quantity: number,
       denomination?: number,
     ) => {
-      const args = cartIdentifier
-        ? {
-            ...cartIdentifier,
-            productId,
-            quantity,
-            denomination,
-          }
-        : null
-
-      if (!args) {
-        throw new Error('Cart not available')
+      if (isAuthenticated && userId) {
+        // Use Convex for authenticated users
+        await updateCartItemMutation({
+          userId,
+          productId,
+          quantity,
+          denomination,
+        })
+      } else {
+        // Use local storage for unauthenticated users
+        const newItems = updateLocalStorageCartItem(
+          productId,
+          quantity,
+          denomination,
+        )
+        setLocalStorageCartItems(newItems)
       }
-
-      await updateCartItemMutation(args)
     },
-    [cartIdentifier, updateCartItemMutation],
+    [isAuthenticated, userId, updateCartItemMutation],
   )
 
   // Remove item from cart
   const removeItem = useCallback(
     async (productId: Id<'products'>, denomination?: number) => {
-      const args = cartIdentifier
-        ? {
-            ...cartIdentifier,
-            productId,
-            denomination,
-          }
-        : null
-
-      if (!args) {
-        throw new Error('Cart not available')
+      if (isAuthenticated && userId) {
+        // Use Convex for authenticated users
+        await removeFromCartMutation({
+          userId,
+          productId,
+          denomination,
+        })
+      } else {
+        // Use local storage for unauthenticated users
+        const newItems = removeFromLocalStorageCart(productId, denomination)
+        setLocalStorageCartItems(newItems)
       }
-
-      await removeFromCartMutation(args)
     },
-    [cartIdentifier, removeFromCartMutation],
+    [isAuthenticated, userId, removeFromCartMutation],
   )
 
   // Clear cart
   const clear = useCallback(async () => {
-    const args = cartIdentifier || null
-
-    if (!args) {
-      throw new Error('Cart not available')
-    }
-
-    await clearCartMutation(args)
-  }, [cartIdentifier, clearCartMutation])
+      if (isAuthenticated && userId) {
+        // Use Convex for authenticated users
+        await clearCartMutation({userId})
+      } else {
+        // Use local storage for unauthenticated users
+        clearLocalStorageCart()
+        setLocalStorageCartItems([])
+      }
+    },
+    [isAuthenticated, userId, clearCartMutation],
+  )
 
   // Calculate cart item count
   const cartItemCount = useMemo(() => {
-    const count = serverCartItemCount ?? 0
-
-    // Debug: Log query updates to verify reactivity
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[useCart] serverCartItemCount updated:', {
-        count,
-        serverCartItemCount,
-        userId,
-        anonymousCartId,
-        isAuthenticated,
-      })
+    if (isAuthenticated) {
+      return serverCartItemCount ?? 0
+    } else {
+      return getLocalStorageCartItemCount()
     }
+  }, [isAuthenticated, serverCartItemCount])
 
-    return count
-  }, [serverCartItemCount, userId, anonymousCartId, isAuthenticated])
+  // Determine which cart to return
+  const cart = useMemo(() => {
+    if (isAuthenticated) {
+      return serverCart ?? null
+    } else {
+      return localStorageCart
+    }
+  }, [isAuthenticated, serverCart, localStorageCart])
+
+  // Determine loading state
+  const isLoading = useMemo(() => {
+    if (isAuthenticated) {
+      return serverCart === undefined
+    } else {
+      return localStorageProducts === undefined && localStorageCartItems.length > 0
+    }
+  }, [isAuthenticated, serverCart, localStorageProducts, localStorageCartItems])
 
   return {
-    cart: serverCart ?? null,
+    cart,
     cartItemCount,
     addItem,
     updateItem,
     removeItem,
     clear,
-    isLoading: cartIdentifier ? serverCart === undefined : false,
+    isLoading,
     isAuthenticated,
   }
 }

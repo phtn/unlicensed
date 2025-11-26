@@ -1,4 +1,5 @@
 import {Icon, IconName} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {AnimatePresence, motion} from 'motion/react'
 import {memo, useCallback, useEffect, useMemo, useState} from 'react'
 interface Logo {
@@ -15,16 +16,14 @@ export const Brands = ({columnCount = 2}: {columnCount?: number}) => {
   const allLogos = useMemo(
     () =>
       [
-        {name: 'Apple', id: 1, icon: 're-up.ph'},
-        {name: 'CEO Supabase', id: 2, icon: 'unlicensed'},
-        {name: 'Vercel', id: 3, icon: 're-up.ph'},
-        {name: 'Lowes', id: 4, icon: 'unlicensed'},
-        {name: 'Ally', id: 5, icon: 're-up.ph'},
-        {name: 'BMW', id: 7, icon: 'unlicensed'},
-        {name: 'Claude', id: 8, icon: 're-up.ph'},
-        {name: 'Nextjs', id: 9, icon: 'unlicensed'},
-        {name: 'Typescript', id: 12, icon: 're-up.ph'},
-        {name: 'OpenAI', id: 14, icon: 'unlicensed'},
+        {name: 'logo', id: 1, icon: 'rapid-fire-logo'},
+        // {name: 're-up.ph', id: 2, icon: 're-up.ph'},
+        // {name: 'logo-2', id: 3, icon: 'rapid-fire-logo-2'},
+        {name: 'logomark-2', id: 4, icon: 'rapid-fire-2'},
+        {name: 'logo', id: 5, icon: 'rapid-fire-logo'},
+        // {name: 're-up.ph', id: 6, icon: 're-up.ph'},
+        // {name: 'logo-2', id: 7, icon: 'rapid-fire-logo-2'},
+        {name: 'logomark-2', id: 8, icon: 'rapid-fire-2'},
       ] as Logo[],
     [],
   )
@@ -49,15 +48,15 @@ export const Brands = ({columnCount = 2}: {columnCount?: number}) => {
 
   // Render the logo columns
   return (
-    <div className='w-full pb-20 px-6 bg-slate-300/80 border-y-[0.33px] border-foreground/40'>
-      <div className='h-64 max-w-6xl mx-auto'>
-        <div className='h-24 flex flex-col justify-center'>
-          <h3 className='text-2xl font-fugaz text-foreground sm:text-3xl'>
+    <div className='w-full pb-20 px-6 dark:bg-slate-400/80 bg-light-gray/50 border-y-[0.33px] border-foreground/40'>
+      <div className='h-54 max-w-6xl mx-auto'>
+        <div className='h-24 flex flex-col justify-end'>
+          <h3 className='text-lg font-fugaz text-dark-gray sm:text-3xl'>
             Our Trusted Brands
           </h3>
-          <p className='max-w-2xl text-sm text-color-muted'>
-            {/*{category.description}*/}
-          </p>
+          {/*<p className='max-w-2xl text-sm text-color-muted'>*/}
+          {/*{category.description}*/}
+          {/*</p>*/}
         </div>
         <div className='items-center flex justify-between w-full h-full'>
           {logoSets.map((logos, index) => (
@@ -177,7 +176,12 @@ const LogoColumn: React.FC<LogoColumnProps> = memo(
             {/*<CurrentLogo className='size-14 max-w-[80%] max-h-[80%] object-contain' />*/}
             <Icon
               name={currenLogo}
-              className='size-7 md:size-12 opacity-60 text-foreground/80'
+              className={cn(
+                'size-7 md:size-16 opacity-60 dark:opacity-100 text-dark-gray dark:text-white',
+                {
+                  'md:w-24 h-auto': currenLogo === 'rapid-fire-2',
+                },
+              )}
             />
           </motion.div>
         </AnimatePresence>

@@ -58,7 +58,7 @@ export const StrainFinderMini = ({categories}: Props) => {
                 key={category.slug}
                 className='group relative overflow-hidden rounded-3xl border border-foreground/10 dark:bg-(--surface-highlight) bg-slate-500/15 p-5 transition hover:-translate-y-1 hover:bg-panel/60'>
                 <div className='flex flex-col gap-3'>
-                  <span className='text-xs uppercase font-fugaz font-semibold opacity-60'>
+                  <span className='text-xs uppercase font-fugaz font-semibold opacity-60 dark:text-light-gray'>
                     {category.slug}
                   </span>
 
@@ -66,7 +66,7 @@ export const StrainFinderMini = ({categories}: Props) => {
                     {category.description}
                   </p>
                 </div>
-                <span className='absolute right-4 top-4 text-xs font-semibold text-color-muted transition group-hover:text-foreground'>
+                <span className='absolute right-4 top-4 text-xs font-semibold text-color-muted transition group-hover:text-foreground dark:text-brand'>
                   →
                 </span>
               </Link>

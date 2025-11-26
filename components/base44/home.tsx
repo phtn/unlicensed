@@ -61,7 +61,7 @@ export const NewHome = () => {
     <div className='bg-background'>
       <Highlights slides={slides} />
       <QuickScroll
-        className='border-t-[0.33px] border-foreground/40'
+        className='border-t-[0.33px] border-foreground/40 bg-light-gray'
         href='#featured'
       />
       <ShopFinder />

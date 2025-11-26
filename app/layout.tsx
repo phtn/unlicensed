@@ -46,7 +46,10 @@ const bone = BakbakOne({
 })
 
 export const metadata: Metadata = {
-  title: 'Rapid Fire',
+  title: {
+    default: 'Rapid Fire',
+    template: '%s | Rapid Fire',
+  },
   description:
     'Discover elevated THC flower, edibles, concentrates, and drinks curated for modern rituals.',
   keywords: [
@@ -58,23 +61,52 @@ export const metadata: Metadata = {
     'dispensary',
     'Hyfe',
   ],
+  authors: [{name: 'xpriori'}, {name: 'quimpoi'}],
   creator: 're-up.ph',
+  publisher: 'rapidfire.com',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://rapidfire.com'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: 'Rapid Fire',
     description:
       'Modern cannabis commerce with curated drops, immersive product storytelling, and delightful UX.',
     type: 'website',
+    url: 'https://rapidfire.com',
+    siteName: 'Rapid Fire',
+    images: [
+      {
+        url: '/images/rf-og.png',
+        width: 2304,
+        height: 1328,
+        alt: 'Rapid Fire',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Rapid Fire',
     description:
       'Discover elevated THC flower, edibles, concentrates, and drinks curated for modern rituals.',
+    images: [
+      {
+        url: '/images/rf-x.png',
+        width: 2272,
+        height: 1392,
+        alt: 'Rapid Fire',
+      },
+    ],
   },
   icons: [
     {
       rel: 'icon',
-      url: '/svg/rf-icon.svg',
+      url: '/svg/rf-icon-hot-pink.svg',
       sizes: 'any',
     },
   ],
