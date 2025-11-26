@@ -39,10 +39,13 @@ export const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
         radius='sm'
         variant='flat'
         onPress={handleToggle}
-        className='w-40 flex items-center justify-start space-x-2 border py-3 text-sm text-foreground hover:bg-(--surface-muted)'>
+        className='group w-40 flex items-center justify-start space-x-2 border py-3 text-sm text-foreground hover:bg-(--surface-muted) dark:hover:bg-(--surface-muted)'>
         <Icon
           name='toggle-theme'
-          className={cn('transition-all', {'rotate-180': isDark})}
+          className={cn(
+            ' group:active:scale-90 transition-transform duration-200 ease-out',
+            {'rotate-180': isDark},
+          )}
         />
         <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
       </Button>
@@ -57,12 +60,15 @@ export const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
         radius='full'
         variant='solid'
         aria-label='theme'
-        className='border-none bg-transparent hover:bg-accent/20 text-white transition duration-200'>
+        className='group active:scale-95 border-none bg-transparent hover:bg-accent/20 text-white transition duration-200'>
         <Icon
           name={'toggle-theme'}
-          className={cn('rotate-0 transition-all duration-300 ease-in-out', {
-            'rotate-180': isDark,
-          })}
+          className={cn(
+            'rotate-0 group-active:scale-85 transition-all duration-200 ease-out',
+            {
+              'rotate-180': isDark,
+            },
+          )}
         />
       </Button>
     )

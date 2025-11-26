@@ -90,7 +90,7 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
                   as='a'
                   href={'#'}
                   size='sm'
-                  className='capitalize bg-foreground hover:bg-secondary-foreground text-white font-medium px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm'>
+                  className='capitalize bg-foreground hover:bg-secondary-foreground dark:bg-brand text-white font-medium px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm'>
                   New {slug}
                 </Button>
                 <Button
@@ -103,7 +103,7 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
               </div>
             </div>
 
-            <div className='relative flex justify-center lg:justify-end max-h-[40vh] sm:max-h-[45vh] lg:max-h-[50lvh] overflow-hidden'>
+            <div className='relative flex justify-center lg:justify-end max-h-[40vh] sm:max-h-[45vh] lg:max-h-[50lvh] overflow-visible'>
               <Image
                 src={products[0].image}
                 alt={slug}

@@ -285,7 +285,12 @@ export const OrderSummary = ({
               isLoading={isLoading}>
               {orderId ? 'Order Placed!' : 'Place Order'}
             </Button>
-            <Button variant='flat' className='w-full' as={Link} href='/'>
+            <Button
+              radius='sm'
+              variant='flat'
+              className='w-full'
+              as={Link}
+              href='/'>
               Continue Shopping
             </Button>
           </CardBody>

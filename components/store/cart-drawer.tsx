@@ -323,15 +323,8 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
             )}
           </div>
           <div className='h-10 w-full border-t border-foreground/5 flex items-center justify-center bg-black'>
-            <span
-              id='unlicensed-logo'
-              className='text-teal-300 text-lg leading-none'>
-              ●
-            </span>
+            <Icon name='rapid-fire' className='mr-2 w-20 text-white' />
             <span className='text-white text-sm'>
-              <span className='font-fugaz font-light tracking-wide mr-2'>
-                unlicensed
-              </span>
               <span className='font-space font-light tracking-tight'>
                 &copy;{new Date().getFullYear()}
               </span>

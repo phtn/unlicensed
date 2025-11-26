@@ -132,7 +132,7 @@ export const Nav = ({children}: NavProps) => {
                 ) : undefined
               }
               isInvisible={cartItemCount === 0}
-              className='border border-brand px-0.5 bg-brand translate-x-4.5 -translate-y-1.5'
+              className='border-[1.5px] border-black px-0.5 bg-brand translate-x-3.5 -translate-y-1.5'
               classNames={{
                 base: 'aspect-square border-none size-8 text-xl rounded-xs flex items-center justify-center',
               }}
@@ -153,7 +153,7 @@ export const Nav = ({children}: NavProps) => {
                     <DropdownTrigger>
                       <Avatar
                         size='sm'
-                        className='cursor-pointer'
+                        className='cursor-pointer border-2 border-neutral-100 hover:border-white dark:hover:border-white shadow-inner'
                         src={user.photoURL ?? undefined}
                         name={user.displayName ?? user.email ?? 'U'}
                       />

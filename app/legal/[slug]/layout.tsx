@@ -88,10 +88,10 @@ export default function LegalDocumentLayout({
           {children}
         </main>
 
-        <aside className='absolute left-0 hidden w-96 md:h-screen overflow-y-scroll border-r border-slate-300 dark:border-slate-700 bg-white/60 dark:bg-background/60 p-6 lg:block print:hidden'>
+        <aside className='absolute left-0 hidden w-96 md:h-screen overflow-y-scroll border-r border-light-gray dark:border-light-gray/40 border-dotted bg-white/60 dark:bg-background/60 p-6 lg:block print:hidden'>
           <SpaceX />
           <div className='sticky top-8 font-figtree'>
-            <div className='mb-8 opacity-70 underline-offset-4 underline-[0.33px] decoration-dotted dark:decoration-slate-400/60 px-2'>
+            <div className='mb-8 text-xs uppercase tracking-widest opacity-70 px-2'>
               Resources
             </div>
 
@@ -99,7 +99,7 @@ export default function LegalDocumentLayout({
               <Link
                 key={doc.slug}
                 href={`/legal/${doc.slug}`}
-                className='w-fit group flex items-center justify-between hover:bg-muted/20 px-2 rounded-md transition-all mb-2 md:mb-3'>
+                className='w-fit group flex items-center justify-between dark:hover:bg-muted/20 hover:bg-light-gray/25 px-2 rounded-md transition-all mb-2 md:mb-3'>
                 <div>
                   <p className='font-semibold text-foreground'>{doc.title}</p>
                 </div>
@@ -111,10 +111,12 @@ export default function LegalDocumentLayout({
         </aside>
 
         {/* Desktop TOC Sidebar */}
-        <aside className='absolute right-0 hidden w-96 md:h-screen overflow-y-scroll border-l border-slate-300 dark:border-slate-700 bg-white/60 dark:bg-background/60 lg:block print:hidden p-6'>
+        <aside className='absolute right-0 hidden w-96 md:h-screen overflow-y-scroll border-l border-light-gray dark:border-light-gray/40 border-dotted bg-white/60 dark:bg-background/60 lg:block print:hidden p-6'>
           <SpaceX />
           <div className='sticky top-8 font-figtree'>
-            <div className='mb-8 opacity-70'>Table of Contents</div>
+            <div className='mb-8 text-xs uppercase tracking-widest opacity-70 px-2'>
+              Table of Contents
+            </div>
 
             <nav className='space-y-3 text-sm'>
               {headings.map((heading) => (
@@ -128,7 +130,7 @@ export default function LegalDocumentLayout({
                       element.scrollIntoView({behavior: 'smooth'})
                     }
                   }}
-                  className={`block truncate hover:bg-muted/20 px-2 rounded-md w-fit font-figtree tracking-tight py-1 hover:text-foreground text-muted-foreground transition-colors ${
+                  className={`block truncate  dark:hover:bg-muted/20 hover:bg-light-gray/25 px-2 rounded-md w-fit font-figtree tracking-tight py-1 hover:text-foreground text-muted-foreground transition-colors ${
                     heading.level === 2
                       ? 'font-medium'
                       : heading.level === 3

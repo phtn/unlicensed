@@ -104,10 +104,10 @@ export default function CartPage() {
     <div className='min-h-screen lg:pt-24 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
         <div className='flex items-center justify-between mb-8'>
-          <h1 className='text-base font-space space-x-1'>
-            <span className='opacity-70 font-light'>Shopping Cart</span>
-            <span className='text-brand'>/</span>
-            <span className='font-medium'>Checkout</span>
+          <h1 className='text-base font-medium font-space space-x-1.5'>
+            <span className='opacity-60'>Shopping Cart</span>
+            <span className='font-light'>/</span>
+            <span>Checkout</span>
           </h1>
         </div>
 
