@@ -76,15 +76,15 @@ export function LegalDocumentPage({document}: LegalDocumentPageProps) {
         />
 
         {/* Main content */}
-        <main className='flex-1'>
+        <main className='flex-1 bg-white'>
           <div className='mx-auto max-w-4xl px-4 sm:px-6 lg:px-8'>
-            <nav className='fixed bottom-0 left-0 w-screen  backdrop-blur supports-backdrop-filter:bg-origin/40 border-t border-border py-4 print:hidden'>
+            <nav className='fixed bottom-0 left-0 w-screen backdrop-blur border-t border-border py-4 print:hidden'>
               <div className='flex items-center justify-center space-x-4 '>
                 {otherDocuments.map((doc) => (
                   <Link
                     key={doc.slug}
                     href={`/legal/${doc.slug}`}
-                    className='min-w-lg group flex items-center justify-between rounded-3xl border border-origin bg-background p-4 transition-all hover:border-primary-hover hover:bg-muted/60'>
+                    className='min-w-lg group flex items-center justify-between rounded-3xl border p-4 hover:bg-muted/60'>
                     <div>
                       <p className='text-sm text-muted-foreground'>
                         {doc.slug}

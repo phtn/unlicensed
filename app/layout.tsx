@@ -46,7 +46,7 @@ const bone = BakbakOne({
 })
 
 export const metadata: Metadata = {
-  title: 'Unlicensed | Guaranteed Illegal',
+  title: 'Rapid Fire',
   description:
     'Discover elevated THC flower, edibles, concentrates, and drinks curated for modern rituals.',
   keywords: [
@@ -60,21 +60,21 @@ export const metadata: Metadata = {
   ],
   creator: 're-up.ph',
   openGraph: {
-    title: 'Unlicensed | Guaranteed Illegal',
+    title: 'Rapid Fire',
     description:
       'Modern cannabis commerce with curated drops, immersive product storytelling, and delightful UX.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Unlicensed | Guaranteed Illegal',
+    title: 'Rapid Fire',
     description:
       'Discover elevated THC flower, edibles, concentrates, and drinks curated for modern rituals.',
   },
   icons: [
     {
       rel: 'icon',
-      url: '/svg/logo.svg',
+      url: '/svg/rf-icon.svg',
       sizes: 'any',
     },
   ],
