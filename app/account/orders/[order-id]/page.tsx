@@ -118,19 +118,19 @@ export default function OrderDetailPage() {
         <div className='flex items-center justify-between mb-8'>
           <div>
             <h1 className='text-base font-space space-x-3'>
-              <span className='opacity-70 font-light'>
+              <span className='opacity-70 font-medium'>
                 <Button
                   variant='light'
-                  size='sm'
                   as={NextLink}
                   href='/account'
-                  className='-ml-2'>
+                  className=''>
                   Account
                 </Button>
-                {' / '}
-                Orders /{' '}
+                <span>
+                  /<span className='px-2.5'>Orders</span>/
+                </span>
               </span>
-              <span className='font-medium'>{order.orderNumber}</span>
+              <span>{order.orderNumber}</span>
             </h1>
           </div>
           <Chip
