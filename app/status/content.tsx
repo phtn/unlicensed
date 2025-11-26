@@ -6,6 +6,7 @@ import {Circle} from 'lucide-react'
 
 import {Icon} from '@/lib/icons'
 import {motion} from 'motion/react'
+import {ProtectedModal} from '../_components/protected-modal'
 
 interface TaskItemProps {
   title: string
@@ -248,6 +249,7 @@ export function Content() {
 
   return (
     <div className='relative w-full bg-white dark:bg-neutral-950'>
+      <ProtectedModal storageKey='project-status' accessCode='069420' />
       <Timeline data={data} />
     </div>
   )
