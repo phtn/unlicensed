@@ -12,7 +12,7 @@ export const ShopFinder = () => {
   )
 
   return (
-    <section className='pb-20 px-6 _bg-slate-300/80 bg-light-gray border-b-[0.33px] border-foreground/40 overflow-hidden'>
+    <section className='pb-20 px-6 bg-light-gray border-b-[0.33px] border-foreground/40 overflow-hidden'>
       <div className='relative max-w-7xl mx-auto'>
         <div className='grid lg:grid-cols-2 gap-12 mb-4'>
           <h2 className='text-2xl tracking-tight lg:text-3xl font-fugaz leading-tight'>

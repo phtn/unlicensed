@@ -303,7 +303,7 @@ export const RecentActivities = () => {
 
   if (activities === undefined) {
     return (
-      <Card shadow='sm' className='p-4'>
+      <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
         <div className='flex items-center justify-center py-8'>
           <p className='text-sm text-gray-400'>Loading activities...</p>
         </div>
@@ -313,8 +313,8 @@ export const RecentActivities = () => {
 
   if (activities.length === 0) {
     return (
-      <Card shadow='sm' className='p-4'>
-        <h2 className='text-lg font-semibold font-space mb-4'>
+      <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
+        <h2 className='text-lg font-semibold font-space mb-4 px-4'>
           Recent Activity
         </h2>
         <div className='flex items-center justify-center py-8'>
@@ -325,8 +325,10 @@ export const RecentActivities = () => {
   }
 
   return (
-    <Card shadow='sm' className='p-4'>
-      <h2 className='text-lg font-semibold font-space mb-4'>Recent Activity</h2>
+    <Card shadow='sm' className='p-0 dark:bg-dark-table/60'>
+      <h2 className='text-sm font-medium font-space px-4 pt-3'>
+        Recent Activity
+      </h2>
       <Table
         isCompact
         removeWrapper
@@ -334,7 +336,10 @@ export const RecentActivities = () => {
         classNames={classNames}>
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn key={column.uid} align='start'>
+            <TableColumn
+              key={column.uid}
+              align='start'
+              className='tracking-wider text-xs font-normal'>
               {column.name}
             </TableColumn>
           )}

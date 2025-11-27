@@ -10,7 +10,7 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
   return (
     <section
       id='featured'
-      className='mx-auto w-full max-w-7xl pt-24 px-4 sm:px-6 lg:px-8 bg-background'>
+      className='mx-auto w-full max-w-7xl md:pt-16 lg:pt-24 px-4 sm:px-6 lg:px-8 bg-background'>
       <div className='flex flex-col gap-10'>
         <div className='flex flex-wrap items-center justify-between gap-4'>
           <div className='space-y-1'>
@@ -26,7 +26,7 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
             href='#finder'
             radius='full'
             variant='flat'
-            className='border border-(--surface-outline) bg-(--surface-highlight) text-sm font-semibold text-foreground transition hover:bg-(--surface-muted)'>
+            className='hidden lg:flex border border-(--surface-outline) bg-(--surface-highlight) text-sm font-semibold text-foreground transition hover:bg-(--surface-muted)'>
             Personalize with Strain Finder
           </Button>
         </div>

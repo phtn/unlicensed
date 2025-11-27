@@ -257,6 +257,9 @@
   --color-card: var(--card);
   --color-light-gray: oklch(0.802 0 0);
   --color-dark-gray: oklch(0.314 0.001 17.23);
+  --color-origin: oklch(0.215 0.006 285.9);
+  --color-vim: oklch(0.196 0.021 271.47);
+  --color-dark-table: oklch(0.348 0.021 277.79);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

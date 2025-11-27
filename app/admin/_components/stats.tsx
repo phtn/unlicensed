@@ -121,11 +121,13 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
   const extraContent = getExtraContent(config.id)
 
   return (
-    <Card shadow='sm' className='p-3 sm:p-4 md:p-5 min-w-0'>
+    <Card
+      shadow='sm'
+      className='p-3 sm:p-4 md:p-5 min-w-0 dark:bg-dark-table/20'>
       <div className='flex items-start justify-between mb-3'>
         <div className='flex items-center space-x-2 p-1 rounded-lg'>
           <div
-            className='w-1 h-5 rounded-full'
+            className='w-1 h-4 rounded-full'
             style={{backgroundColor: color}}
           />
           <p className='text-base font-medium font-space'>{config.label}</p>
