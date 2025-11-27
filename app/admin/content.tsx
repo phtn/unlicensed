@@ -1,6 +1,7 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
+import {useToggle} from '@/hooks/use-toggle'
 import {useQuery} from 'convex/react'
 import {RecentActivities} from './_components/recent-activities'
 import {Stats} from './_components/stats'
@@ -24,17 +25,23 @@ export const Content = () => {
     averageOrderValueCents: 0,
   }
 
+  const {on: fullTable, toggle: toggleFullTable} = useToggle()
+
   return (
     <main className='px-4'>
-      <div className='space-y-6 '>
+      <div className='space-y-4'>
         <Stats
           stats={adminStats ?? defaultStats}
           salesData={chartData?.salesData}
           ordersData={chartData?.ordersData}
           deliveriesData={chartData?.deliveriesData}
           aovData={chartData?.aovData}
+          fullTable={fullTable}
         />
-        <RecentActivities />
+        <RecentActivities
+          fullTable={fullTable}
+          toggleFullTable={toggleFullTable}
+        />
       </div>
     </main>
   )

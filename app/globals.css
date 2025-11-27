@@ -260,6 +260,7 @@
   --color-origin: oklch(0.215 0.006 285.9);
   --color-vim: oklch(0.196 0.021 271.47);
   --color-dark-table: oklch(0.348 0.021 277.79);
+  --color-light-table: oklch(0.881 0.01 286.2);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

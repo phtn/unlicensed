@@ -1,7 +1,7 @@
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, Progress} from '@heroui/react'
+import {Button, Card, cn, Progress} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 import MiniChart from './mini-chart'
@@ -39,6 +39,7 @@ type StatsProps = {
   ordersData?: Array<{value: number}>
   deliveriesData?: Array<{value: number}>
   aovData?: Array<{value: number}>
+  fullTable: boolean
 }
 
 type StatCardProps = {
@@ -130,7 +131,7 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
             className='w-1 h-4 rounded-full'
             style={{backgroundColor: color}}
           />
-          <p className='text-base font-medium font-space'>{config.label}</p>
+          <p className='text-base font-medium'>{config.label}</p>
         </div>
         {config.id === 'deliveries' ? (
           <div className='font-space text-sm space-x-2'>
@@ -139,13 +140,16 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
           </div>
         ) : (
           <Button isIconOnly variant='light' size='sm'>
-            <Icon name='chevron-right' className='opacity-80' />
+            <Icon
+              name='chevron-right'
+              className='size-5 opacity-60 hover:opacity-100'
+            />
           </Button>
         )}
       </div>
       <div className='space-y-1'>
         <div className='flex items-baseline gap-2'>
-          <span className='text-4xl font-semibold tracking-tight font-geist-sans'>
+          <span className='md:text-3xl font-bold tracking-tight font-geist-sans'>
             {statValue.value}
           </span>
           {statValue.subtitle && (
@@ -153,12 +157,12 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
           )}
         </div>
         {config.id === 'deliveries' && (
-          <p className='text-sm text-gray-400'>Delivered</p>
+          <p className='text-sm text-gray-400'></p>
         )}
       </div>
       {extraContent && extraContent}
       {!extraContent && (
-        <div className='mt-4 h-12'>
+        <div className='mt-0 h-12'>
           <MiniChart data={cardChartData} color={color} />
         </div>
       )}
@@ -185,6 +189,7 @@ export const Stats = ({
   ordersData,
   deliveriesData,
   aovData,
+  fullTable,
 }: StatsProps) => {
   const adminSettings = useQuery(api.admin.q.getAdminSettings)
   // const updateStatVisibility = useMutation(api.admin.m.updateStatVisibility)
@@ -205,7 +210,10 @@ export const Stats = ({
   }
 
   return (
-    <div className='space-y-6'>
+    <div
+      className={cn('space-y-6 transition-transform-opacity duration-300', {
+        'opacity-0': fullTable,
+      })}>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-w-0'>
         {visibleStats.map((config) => {
           let chartData: Array<{value: number}> | undefined

@@ -4,6 +4,7 @@ import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
 import {formatPrice} from '@/utils/formatPrice'
 import {
@@ -103,7 +104,15 @@ const getActivityTypeLabel = (type: Activity['type']) => {
     .join(' ')
 }
 
-export const RecentActivities = () => {
+interface RecentActivitiesProps {
+  fullTable: boolean
+  toggleFullTable: VoidFunction
+}
+
+export const RecentActivities = ({
+  fullTable,
+  toggleFullTable,
+}: RecentActivitiesProps) => {
   const {user: firebaseUser} = useAuth()
   const convexUser = useQuery(
     api.users.q.getCurrentUser,
@@ -288,8 +297,8 @@ export const RecentActivities = () => {
 
   const classNames = React.useMemo(
     () => ({
-      wrapper: ['max-h-[382px]', 'max-w-full'],
-      th: ['bg-transparent', 'text-default-500', 'border-b', 'border-divider'],
+      // wrapper: ['h-[calc(100vh-240px)] overflow-scroll', 'max-w-full'],
+      // th: ['bg-transparent', 'text-default-500', 'border-b', 'border-divider'],
       td: [
         'first:group-data-[first=true]/tr:before:rounded-none',
         'last:group-data-[first=true]/tr:before:rounded-none',
@@ -297,6 +306,7 @@ export const RecentActivities = () => {
         'first:group-data-[last=true]/tr:before:rounded-none',
         'last:group-data-[last=true]/tr:before:rounded-none',
       ],
+      tbody: '',
     }),
     [],
   )
@@ -325,37 +335,64 @@ export const RecentActivities = () => {
   }
 
   return (
-    <Card shadow='sm' className='p-0 dark:bg-dark-table/60'>
-      <h2 className='text-sm font-medium font-space px-4 pt-3'>
-        Recent Activity
-      </h2>
-      <Table
-        isCompact
-        removeWrapper
-        aria-label='Recent activities table'
-        classNames={classNames}>
-        <TableHeader columns={columns}>
-          {(column) => (
-            <TableColumn
-              key={column.uid}
-              align='start'
-              className='tracking-wider text-xs font-normal'>
-              {column.name}
-            </TableColumn>
-          )}
-        </TableHeader>
-        <TableBody emptyContent={'No activities found'} items={activities}>
-          {(activity) => (
-            <TableRow key={activity._id} className='h-16'>
-              {(columnKey) => (
-                <TableCell>
-                  {renderCell(activity, columnKey) as ReactNode}
-                </TableCell>
-              )}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+    <Card
+      shadow='sm'
+      radius='none'
+      className={cn(
+        'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden rounded-t-2xl',
+        'transition-transform duration-300',
+        {'-translate-y-46 h-full': fullTable},
+      )}>
+      <div
+        className={cn(
+          'md:h-[calc(100lvh-220px)] overflow-scroll transition-transform duration-300',
+          {
+            'md:h-[calc(100lvh-82px)]': fullTable,
+          },
+        )}>
+        <div className='flex items-end justify-between text-sm font-medium px-3 py-2'>
+          <span>Recent Activity</span>
+          <Icon
+            name='fullscreen'
+            className='size-4.5 opacity-60 hover:opacity-100'
+            onClick={toggleFullTable}
+          />
+        </div>
+        <Table
+          removeWrapper
+          radius='none'
+          classNames={{
+            ...classNames,
+            tbody: 'overflow-hidden rounded-3xl',
+            thead: '',
+            th: 'sticky first:rounded-tl-[12.5px] last:rounded-tr-[12.5px] top-0 bg-white/60 dark:bg-dark-table/5 z-10 backdrop-blur-xl h-8 border-b border-gray-200 dark:border-dark-table',
+          }}
+          aria-label='Recent activities table'>
+          <TableHeader columns={columns}>
+            {(column) => (
+              <TableColumn
+                key={column.uid}
+                align='start'
+                className='tracking-wider text-xs font-medium'>
+                <div className='drop-shadow-sm'>{column.name}</div>
+              </TableColumn>
+            )}
+          </TableHeader>
+          <TableBody emptyContent={'No activities found'} items={activities}>
+            {(activity) => (
+              <TableRow
+                key={activity._id}
+                className='h-16 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] last:border-b-0'>
+                {(columnKey) => (
+                  <TableCell>
+                    {renderCell(activity, columnKey) as ReactNode}
+                  </TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </Card>
   )
 }
