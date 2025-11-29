@@ -6,11 +6,12 @@ import {Icon} from '@/lib/icons'
 import {Tab, Tabs} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {ProductForm} from '../_components/product-form'
+import {BadgeList} from './badges'
 
 export const Content = () => {
   const categories = useQuery(api.categories.q.listCategories)
   return (
-    <div className='flex w-full flex-col gap-4 px-10 border-t-[0.33px] border-light-gray'>
+    <div className='flex w-full flex-col gap-4 px-10 border-t-[0.33px] border-light-gray dark:border-dark-gray'>
       <div className='relative'>
         <div className='absolute left-4 top-3 text-xl tracking-tighter font-semibold flex items-center space-x-2'>
           <div className='size-4 aspect-square rounded-full bg-blue-400'></div>
@@ -40,7 +41,7 @@ export const Content = () => {
             <ProductForm categories={categories} />
           </Tab>
           <Tab
-            key='music'
+            key='categories'
             title={
               <div className='flex items-center space-x-1'>
                 <span className='tracking-tighter font-semibold'>Products</span>
@@ -48,6 +49,16 @@ export const Content = () => {
               </div>
             }>
             <CurrentCategories categories={categories} />
+          </Tab>
+          <Tab
+            key='badges'
+            title={
+              <div className='flex items-center space-x-1'>
+                <span className='tracking-tighter font-semibold'>Badges</span>
+                <span className='px-2 font-space'>{4}</span>
+              </div>
+            }>
+            <BadgeList />
           </Tab>
         </Tabs>
       </div>

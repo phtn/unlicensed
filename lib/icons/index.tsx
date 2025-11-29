@@ -20,6 +20,7 @@ export const Icon: FC<IconProps & {motionprops?: MotionProps}> = ({
 
   return (
     <motion.div
+      suppressHydrationWarning
       {...props.motionprops}
       className={cn(
         props.onClick &&

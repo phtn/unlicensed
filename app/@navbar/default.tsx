@@ -1,13 +1,13 @@
 'use client'
 
-import {Nav} from '@/components/base44/nav'
+import {Nav} from '@/components/main/nav'
 
 /**
  * Navbar Slot Component (Root Level)
- * 
+ *
  * This is a Next.js parallel route slot (@navbar) at the root level.
  * Parallel routes allow you to render multiple pages simultaneously in the same layout.
- * 
+ *
  * IMPORTANT: This slot is rendered within the same ConvexProvider as the main
  * content (see app/layout.tsx). This means:
  * - The Nav component shares the same Convex client instance
@@ -15,7 +15,7 @@ import {Nav} from '@/components/base44/nav'
  *   happen in other parts of the app (e.g., when items are added to cart)
  * - The cart badge will automatically update when cart items change, even
  *   though this is in a separate parallel route slot
- * 
+ *
  * Reactivity Flow:
  * 1. User clicks "Add to Cart" on product page (in main content slot)
  * 2. Mutation runs via Convex (addToCart)
@@ -29,5 +29,3 @@ const NavbarSlot = () => {
 }
 
 export default NavbarSlot
-
-

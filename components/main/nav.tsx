@@ -16,7 +16,6 @@ import {
   DropdownTrigger,
   useDisclosure,
 } from '@heroui/react'
-import {motion} from 'motion/react'
 import Link from 'next/link'
 import {useCallback, useEffect} from 'react'
 import {ThemeToggle} from '../ui/theme-toggle'
@@ -64,35 +63,13 @@ export const Nav = ({children}: NavProps) => {
         <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 py-3 flex items-center justify-between'>
           <Link
             href={'/'}
-            className='hidden md:w-72 h-12 overflow-hidden pl-1 md:flex items-center justify-start relative'>
-            <motion.div
-              className='h-[22px] w-[135.33px] mask-[url("/svg/rapid-fire.svg")] mask-contain'
-              animate={{
-                background: [
-                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 20%, rgb(255, 250, 250))',
-                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 40%, rgb(255, 250, 250))',
-                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 60%, rgb(255, 250, 250))',
-                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 80%, rgb(255, 250, 250))',
-                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 90%, rgb(255, 250, 250))',
-                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 100%, rgb(255, 250, 250))',
-                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 90%, rgb(255, 250, 250))',
-                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 80%, rgb(255, 250, 250))',
-                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 60%, rgb(255, 250, 250))',
-                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 40%, rgb(255, 250, 250))',
-                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 20%, rgb(255, 250, 250))',
-                ],
-              }}
-              transition={{
-                duration: 4,
-                repeat: 3,
-                ease: 'easeInOut',
-              }}
-            />
+            className='md:w-72 h-12 overflow-hidden pl-1 flex items-center justify-start relative'>
+            <Icon name='rapid-fire' className='h-40 w-auto text-brand' />
           </Link>
           <nav className='flex items-center justify-center md:w-full'>
             <Link
               href={'/'}
-              className='text-sm lg:text-lg text-gray-100 hover:text-brand font-fugaz'>
+              className='hidden text-sm lg:text-lg text-gray-100 hover:text-brand md:flex font-fugaz'>
               Shop
             </Link>
             {children}
@@ -236,3 +213,29 @@ export const Nav = ({children}: NavProps) => {
     </>
   )
 }
+
+/*
+<motion.div
+              className='h-[22px] w-[135.33px] mask-[url("/svg/rapid-fire.svg")] mask-contain'
+              animate={{
+                background: [
+                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 20%, rgb(255, 250, 250))',
+                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 40%, rgb(255, 250, 250))',
+                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 60%, rgb(255, 250, 250))',
+                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 80%, rgb(255, 250, 250))',
+                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 90%, rgb(255, 250, 250))',
+                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 100%, rgb(255, 250, 250))',
+                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 90%, rgb(255, 250, 250))',
+                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 80%, rgb(255, 250, 250))',
+                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 60%, rgb(255, 250, 250))',
+                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 40%, rgb(255, 250, 250))',
+                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 20%, rgb(255, 250, 250))',
+                ],
+              }}
+              transition={{
+                duration: 4,
+                repeat: 3,
+                ease: 'easeInOut',
+              }}
+            />
+*/

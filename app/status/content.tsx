@@ -250,7 +250,13 @@ export function Content() {
   return (
     <div className='relative w-full bg-white dark:bg-neutral-950'>
       <ProtectedModal storageKey='project-status' accessCode='069420' />
-      <Timeline data={data} />
+      <Timeline
+        data={data}
+        completion={82}
+        title='Overall Project Status'
+        description='Tracking the development progress from initial design to production
+                launch.'
+      />
     </div>
   )
 }

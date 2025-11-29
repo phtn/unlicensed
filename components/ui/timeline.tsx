@@ -7,7 +7,19 @@ interface TimelineEntry {
   content: React.ReactNode
 }
 
-export const Timeline = ({data}: {data: TimelineEntry[]}) => {
+interface TimelineProps {
+  data: TimelineEntry[]
+  title?: string
+  description?: string
+  completion?: number
+}
+
+export const Timeline = ({
+  data,
+  title,
+  description,
+  completion,
+}: TimelineProps) => {
   const ref = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [height, setHeight] = useState(0)
@@ -33,14 +45,14 @@ export const Timeline = ({data}: {data: TimelineEntry[]}) => {
       ref={containerRef}>
       <div className='max-w-7xl mx-auto pt-40 pb-8 px-4 md:px-8 lg:px-10'>
         <h2 className='text-2xl md:text-4xl mb-4 text-black dark:text-white max-w-4xl font-bold tracking-tighter'>
-          Project Status{' '}
+          {title ?? 'Project Status'}
           <span className='font-space text-2xl md:text-4xl px-4 font-semibold text-indigo-500'>
-            82<span className='text-3xl'>%</span>
+            {completion ?? '0'}
+            <span className='text-3xl'>%</span>
           </span>
         </h2>
         <p className='text-neutral-700 dark:text-neutral-300 text-sm md:text-lg max-w-2xl leading-relaxed'>
-          Tracking the development progress from initial design to production
-          launch.
+          {description ?? 'Project has not started yet.'}
         </p>
       </div>
 

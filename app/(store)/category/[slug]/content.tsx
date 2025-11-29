@@ -1,7 +1,7 @@
 'use client'
 
+import {CategoryContent} from '@/app/(store)/category/[slug]/category'
 import {StoreProduct} from '@/app/types'
-import {CategoryContent} from '@/components/base44/category'
 import {api} from '@/convex/_generated/api'
 import {adaptProduct} from '@/lib/convexClient'
 import {useQuery} from 'convex/react'

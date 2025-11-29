@@ -290,20 +290,9 @@ export const icons = {
     viewBox: '0 0 24 24',
     set: 'lets-icons',
   },
-  //
-  // TERPENES
-  //
 }
 
 /*
-
-
-
-
-
-
-
-
 
 
 

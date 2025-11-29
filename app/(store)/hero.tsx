@@ -107,7 +107,7 @@ export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
     <div
       ref={containerRef}
       className={cn(
-        'relative max-w-7xl mx-auto pt-10 md:pt-24 h-[80lvh] md:h-[72lvh]',
+        'relative max-w-7xl mx-auto pt-10 md:pt-24 h-[80lvh] md:h-[70lvh]',
         'cursor-grab active:cursor-grabbing',
         className,
       )}
@@ -146,7 +146,6 @@ export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
                     />
                   ))}
                 </div>
-
                 <SliderControls controls={controls} />
               </div>
             </div>
@@ -200,7 +199,7 @@ const Slide = ({
               <Button
                 as='a'
                 href={ctaHref}
-                className='bg-dark-gray dark:bg-brand dark:hover:text-background hover:bg-brand/80 hover:text-foreground text-white font-medium px-6 py-3'>
+                className='bg-dark-gray dark:bg-white dark:hover:text-background hover:bg-brand/80 hover:text-foreground text-white dark:text-brand font-medium px-6 py-3'>
                 {ctaText}
               </Button>
               <Button

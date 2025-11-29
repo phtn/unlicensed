@@ -1,7 +1,7 @@
 import {Highlight, Highlights} from '@/app/(store)/hero'
-import {useMemo} from 'react'
-import {ShopFinder} from './finder'
-import {QuickScroll} from './quick-scroll'
+import {Suspense, useMemo} from 'react'
+import Grass2 from '../gl/grass'
+import {SceneWrapper} from '../gl/scene'
 import {Title} from './title'
 
 export const NewHome = () => {
@@ -60,8 +60,14 @@ export const NewHome = () => {
   return (
     <div className='bg-background'>
       <Highlights slides={slides} />
-      <QuickScroll className='bg-light-gray' href='#featured' />
-      <ShopFinder />
+      <SceneWrapper>
+        <Suspense fallback='null'>
+          <Grass2 />
+        </Suspense>
+      </SceneWrapper>
+      <div className='h-16 bg-linear-to-b from-emerald-800/30 via-emerald-900/40 to-transparent  w-full'></div>
+      {/*<QuickScroll className='bg-light-gray' href='#featured' />*/}
+      {/*<ShopFinder />*/}
     </div>
   )
 }

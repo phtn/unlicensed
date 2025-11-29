@@ -1,7 +1,9 @@
 import type {StoreProduct} from '@/app/types'
 import {cn} from '@/lib/utils'
-import {Card, CardBody, CardFooter, Chip, Image} from '@heroui/react'
+import {Card, CardBody, CardFooter, Image} from '@heroui/react'
 import NextLink from 'next/link'
+import {HyperActivity} from '../expermtl/activity'
+import {HyperBadge} from '../main/badge'
 
 type ProductCardProps = {
   product: StoreProduct
@@ -37,14 +39,9 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
             loading='lazy'
           />
           <div className='absolute left-3 sm:left-4 top-3 sm:top-4 z-20 flex flex-col gap-2'>
-            {product.featured ? (
-              <Chip
-                variant='shadow'
-                size='sm'
-                className='rounded-full bg-brand/40 px-2 font-space sm:px-2 text-[9px] sm:text-xs uppercase tracking-widest'>
-                Featured
-              </Chip>
-            ) : null}
+            <HyperActivity c={product.featured}>
+              <HyperBadge variant='limited' size='sm' />
+            </HyperActivity>
           </div>
         </div>
 

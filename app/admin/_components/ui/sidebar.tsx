@@ -269,23 +269,19 @@ function SidebarTrigger({
   const {toggleSidebar, open} = useSidebar()
 
   return (
-    <Button
-      size='sm'
-      isIconOnly
-      variant='ghost'
-      data-sidebar='trigger'
+    <button
       {...props}
       className={cn(
         'border-none text-foreground/80 hover:text-foreground',
         className,
       )}
-      onPress={toggleSidebar}>
+      onClick={toggleSidebar}>
       <Icon
         name='sidebar'
         className={cn('size-5 rotate-180', {' rotate-0': open})}
       />
       <span className='sr-only'>Toggle Sidebar</span>
-    </Button>
+    </button>
   )
 }
 
@@ -327,15 +323,10 @@ function SidebarInset({className, ...props}: React.ComponentProps<'div'>) {
   )
 }
 
-function SidebarInput({
-  className,
-  ...props
-}: React.ComponentProps<typeof Input>) {
+function SidebarInput({className}: React.ComponentProps<typeof Input>) {
   return (
     <Input
-      data-sidebar='input'
       className={cn('bg-sidebar-to-br from-accent/60 to-accent', className)}
-      {...props}
     />
   )
 }
@@ -360,17 +351,8 @@ function SidebarFooter({className, ...props}: React.ComponentProps<'div'>) {
   )
 }
 
-function SidebarSeparator({
-  className,
-  ...props
-}: React.ComponentProps<typeof Divider>) {
-  return (
-    <Divider
-      data-sidebar='separator'
-      className={cn('mx-2 w-auto bg-sidebar-border', className)}
-      {...props}
-    />
-  )
+function SidebarSeparator({className}: React.ComponentProps<typeof Divider>) {
+  return <Divider className={cn('mx-2 w-auto bg-sidebar-border', className)} />
 }
 
 function SidebarContent({
