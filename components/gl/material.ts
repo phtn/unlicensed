@@ -143,7 +143,7 @@ export const GrassMaterial2 = shaderMaterial(
     float secondarySway = snoise(windCoord * 4.0 + vec2(timeScale * 1.3, timeScale * 0.8)) * 0.1;
     float secondaryAngle = secondarySway * windInfluence * frc;
     vec4 secondaryRotation = vec4(
-      -windAxis.z * sin(secondaryAngle * 0.5),
+      -windAxis.z * sin(secondaryAngle * 0.66),
       0.0,
       windAxis.x * sin(secondaryAngle * 0.33),
       cos(secondaryAngle * 0.5)
@@ -192,7 +192,7 @@ export const GrassMaterial2 = shaderMaterial(
     // Subsurface scattering approximation
     // Grass is more translucent at tips
     float subsurface = frc * 0.23;
-    vec3 subsurfaceColor = tipColor * 1.5;
+    vec3 subsurfaceColor = tipColor * 1.15;
     col.rgb = mix(col.rgb, subsurfaceColor, subsurface * vWindEffect);
 
     // Add slight rim lighting effect at edges

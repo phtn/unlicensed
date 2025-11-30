@@ -11,20 +11,21 @@ interface SceneWrapperProps {
 
 export function SceneWrapper({children}: SceneWrapperProps) {
   return (
-    <div className='h-full w-full relative pointer-events-none min-h-96'>
+    <div className='w-full relative pointer-events-none md:h-74 h-48'>
       <Leva hidden />
       <Canvas
-        camera={{position: [40, 27, 28], fov: 18}}
+        camera={{position: [40, 26, 24], fov: 18}}
         gl={{antialias: true}}
         dpr={[1, 8]}>
         <OrbitControls
+          getAzimuthalAngle={(angle: number) => console.log(angle)}
           minDistance={40}
           maxDistance={40}
           maxAzimuthAngle={6}
           minAzimuthAngle={-6}
-          autoRotateSpeed={0.002}
-          minPolarAngle={-10}
-          maxPolarAngle={10}
+          autoRotateSpeed={0.005}
+          minPolarAngle={-5}
+          maxPolarAngle={5}
           enableRotate={false}
           enablePan={false}
           enableZoom={false}

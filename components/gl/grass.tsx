@@ -13,7 +13,7 @@ const noise2D = createNoise2D(Math.random)
 
 function getYPosition(x: number, z: number) {
   // Smoother terrain with broader curves
-  return 3.0 * noise2D(x / 100, z / 120) + 1.5 * noise2D(x / 50, z / 380)
+  return 3.0 * noise2D(x / 60, z / 150) + 1.5 * noise2D(x / 50, z / 200)
 }
 
 function multiplyQuaternions(q1: THREE.Vector4, q2: THREE.Vector4) {
@@ -24,7 +24,12 @@ function multiplyQuaternions(q1: THREE.Vector4, q2: THREE.Vector4) {
   return new THREE.Vector4(x, y, z, w)
 }
 
-function getAttributeData(instances: number, width: number) {
+function getAttributeData(
+  instances: number,
+  width: number,
+  bladeHeight: number,
+  horizonHeight: number,
+) {
   const offsets = []
   const orientations = []
   const stretches = []
@@ -53,7 +58,7 @@ function getAttributeData(instances: number, width: number) {
     halfRootAngleCos.push(Math.cos(0.5 * angle))
 
     let RotationAxis = new THREE.Vector3(0, 1, 0)
-    let x = RotationAxis.x * Math.sin(angle / 2.0)
+    let x = RotationAxis.x * Math.sin(angle / 6.0)
     let y = RotationAxis.y * Math.sin(angle / 2.0)
     let z = RotationAxis.z * Math.sin(angle / 2.0)
     let w = Math.cos(angle / 2.0)
@@ -90,12 +95,18 @@ function getAttributeData(instances: number, width: number) {
       quaternion_0.w,
     )
 
-    //Define variety in height
-    if (i < instances / 3) {
-      stretches.push(Math.random() * 1.8)
-    } else {
-      stretches.push(Math.random())
+    //Define variety in height, clamped to horizon
+    let maxStretch = 1.8
+    if (i >= instances / 3) {
+      maxStretch = 1.0
     }
+
+    // Calculate maximum allowed stretch to not exceed horizon
+    const maxAllowedStretch =
+      (horizonHeight - offsetY) / bladeHeight
+    const clampedMaxStretch = Math.min(maxStretch, Math.max(0, maxAllowedStretch))
+
+    stretches.push(Math.random() * clampedMaxStretch)
   }
 
   return {
@@ -221,9 +232,11 @@ export default function Grass2() {
     bladeAlpha,
   ])
 
+  const horizonHeight = camera.position.y
+
   const attributeData = useMemo(
-    () => getAttributeData(instances, width),
-    [instances, width],
+    () => getAttributeData(instances, width, bH, horizonHeight),
+    [instances, width, bH, horizonHeight],
   )
 
   const baseGeom = useMemo(
@@ -263,7 +276,7 @@ export default function Grass2() {
   return (
     <group>
       <primitive object={fog} attach='fog' />
-      <ambientLight intensity={0.1} />
+      <ambientLight intensity={0.01} />
       <directionalLight position={[10, 8, 5]} intensity={0.01} castShadow />
       <mesh>
         <instancedBufferGeometry
