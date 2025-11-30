@@ -64,17 +64,17 @@ const getActivityIcon = (type: Activity['type']) => {
 
 const getActivityIconColor = (type: Activity['type']) => {
   if (type.startsWith('order_')) {
-    if (type.includes('delivered')) return 'text-green-500'
+    if (type.includes('delivered')) return 'text-limited'
     if (type.includes('cancelled') || type.includes('refunded'))
       return 'text-red-500'
-    return 'text-blue-500'
+    return 'text-featured'
   }
   if (type.startsWith('payment_')) {
-    if (type.includes('completed')) return 'text-green-500'
+    if (type.includes('completed')) return 'text-deal'
     if (type.includes('failed')) return 'text-red-500'
     return 'text-yellow-500'
   }
-  if (type.startsWith('user_')) return 'text-purple-500'
+  if (type.startsWith('user_')) return 'text-brand'
   if (type.startsWith('product_')) return 'text-cyan-500'
   if (type.startsWith('category_')) return 'text-orange-500'
   return 'text-gray-500'

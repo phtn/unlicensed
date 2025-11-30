@@ -11,7 +11,7 @@ import {BadgeList} from './badges'
 export const Content = () => {
   const categories = useQuery(api.categories.q.listCategories)
   return (
-    <div className='flex w-full flex-col gap-4 px-10 border-t-[0.33px] border-light-gray dark:border-dark-gray'>
+    <div className='flex w-full flex-col gap-4 px-10'>
       <div className='relative'>
         <div className='absolute left-4 top-3 text-xl tracking-tighter font-semibold flex items-center space-x-2'>
           <div className='size-4 aspect-square rounded-full bg-blue-400'></div>

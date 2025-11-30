@@ -141,7 +141,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
               </div>
             ) : (
               <>
-                <div className='space-y-4 mb-6 rounded-3xl border border-indigo-300/80 dark:border-indigo-300/60 bg-indigo-400/5'>
+                <div className='max-h-[60lvh] overflow-scroll space-y-4 mb-6 rounded-3xl border border-pink-300/80 dark:border-pink-300/60 bg-indigo-400/5'>
                   {cartItems.map((item) => {
                     const product = item.product
                     const denomination = item.denomination || 1
@@ -303,7 +303,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   <Button
                     size='lg'
                     variant='shadow'
-                    className='w-full h-14 font-semibold mb-2 bg-indigo-500'
+                    className='w-full h-14 font-semibold mb-2 bg-featured'
                     onPress={() => {
                       onOpenChange(false)
                       router.push('/cart')

@@ -32,6 +32,8 @@ import {
   useRef,
   useState,
   useTransition,
+  startTransition,
+  ViewTransition,
 } from 'react'
 
 const formatPrice = (priceCents: number) => {
@@ -50,7 +52,9 @@ const Gallery = ({
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const handleSelectImage = useCallback(
     (src: string) => () => {
-      setSelectedImage(src)
+      startTransition(() => {
+        setSelectedImage(src)
+      })
     },
     [],
   )
@@ -59,14 +63,16 @@ const Gallery = ({
       <div
         ref={imageRef}
         className='relative aspect-auto w-full overflow-hidden bg-background/60'>
-        <Lens hovering={on} setHovering={setOn}>
-          <Image
-            src={selectedImage ?? product.image}
-            alt={product.name}
-            className='object-cover w-full h-full aspect-auto select-none'
-            loading='eager'
-          />
-        </Lens>
+        <ViewTransition>
+          <Lens hovering={on} setHovering={setOn}>
+            <Image
+              src={selectedImage ?? product.image}
+              alt={product.name}
+              className='object-cover w-full h-full aspect-auto select-none'
+              loading='eager'
+            />
+          </Lens>
+        </ViewTransition>
         {product.gallery.length > 0 && (
           <div className='grid grid-cols-4 gap-2 sm:gap-3'>
             {product.gallery.map((src) => (
@@ -227,13 +233,10 @@ export const ProductDetailContent = ({
         </Breadcrumbs>
         <div className='mt-6 sm:mt-8 lg:mt-6 grid gap-6 sm:gap-8 lg:gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
           <Gallery product={product} imageRef={galleryImageRef} />
-          <div className='space-y-6 sm:space-y-8 lg:space-y-10 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue dark:bg-pink-100/10 p-4 sm:p-6 lg:p-8 backdrop-blur-xl'>
+          <div className='space-y-6 sm:space-y-8 lg:space-y-10 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue dark:bg-pink-100/10 p-4 sm:p-5 lg:p-6 backdrop-blur-xl'>
             <div className='flex flex-col gap-4 sm:gap-5'>
-              <div className='flex items-center justify-between gap-2'>
-                <StatChip
-                  name='mushrooms'
-                  value={category?.name ?? product.categorySlug}
-                />
+              <div className='flex items-center justify-between gap-2 pb-4'>
+                <StatChip value={category?.name ?? product.categorySlug} />
                 <div className='flex items-center space-x-4'>
                   <StatChip label='THC' value={product.thcPercentage + '%'} />
                   <StatChip
@@ -274,9 +277,9 @@ export const ProductDetailContent = ({
                       onPress={handleDenominationChange(i)}
                       // selectedDenomination
                       className={cn(
-                        'cursor-pointer rounded-full border border-foreground/40',
+                        'cursor-pointer rounded-full border-[0.5px] border-foreground/40',
                         {
-                          'bg-foreground/95 dark:bg-foreground/70 text-brand dark:text-background hover:bg-foreground hover:text-background':
+                          'bg-dark-gray dark:bg-foreground/70 text-featured dark:text-background hover:bg-foreground hover:text-background':
                             selectedDenomination === i,
                         },
                       )}
@@ -318,7 +321,7 @@ export const ProductDetailContent = ({
                     size='lg'
                     color='success'
                     variant='solid'
-                    className='w-full font-space font-medium text-sm sm:text-base _lg:text-lg bg-linear-to-r from-brand via-brand to-pink-200 dark:text-white'
+                    className='w-full font-space font-medium text-sm sm:text-base _lg:text-lg bg-linear-to-r from-featured via-featured to-featured dark:text-white'
                     onPress={handleAddToCart}
                     isLoading={isAdding}
                     isDisabled={isPending}>
@@ -333,10 +336,6 @@ export const ProductDetailContent = ({
                   href='/cart'
                   className='w-full sm:flex-1 font-space font-semibold text-sm sm:text-base bg-foreground/95 text-background'>
                   <span>Checkout</span>
-                  <Icon
-                    name='arrow-down'
-                    className='ml-2 size-6 sm:size-8 -rotate-90'
-                  />
                 </Button>
               </div>
               <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />

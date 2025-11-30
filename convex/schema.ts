@@ -8,9 +8,13 @@ import {rewardTierSchema, userRewardsSchema} from './rewards/d'
 import {activitySchema} from './activities/d'
 import {activityViewSchema} from './activityViews/d'
 import {adminSettingsSchema} from './admin/d'
+import {blogSchema} from './blogs/d'
 
 export default defineSchema({
   categories: defineTable(categorySchema).index('by_slug', ['slug']),
+  blogs: defineTable(blogSchema)
+    .index('by_slug', ['slug'])
+    .index('by_status', ['status']),
   products: defineTable(productSchema)
     .index('by_slug', ['slug'])
     .index('by_category', ['categorySlug'])

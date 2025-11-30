@@ -9,30 +9,24 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        new: 'bg-brand text-dark-gray border-transparent shadow-lg shadow-white/20 hover:shadow-brand/60',
-        features:
-          'bg-[#00BFFF] text-dark-gray border-transparent shadow-lg shadow-[#00BFFF]/40 hover:shadow-[#00BFFF]/60',
+        new: 'bg-brand text-dark-gray border-transparent shadow-md shadow-pink-400/20 hover:shadow-brand/60',
+        feature:
+          'bg-featured text-dark-gray border-transparent shadow-lg shadow-featured/40 hover:shadow-featured/60',
         sale: 'bg-[#bebebe] text-dark-gray border-transparent shadow-lg shadow-[#cdcdcd]/40 hover:shadow-[#dedede]/60',
         limited:
-          'bg-[#CDFF00] text-dark-gray border-dark-gray/50 shadow-lg shadow-[#CDFF00]/40 hover:shadow-[#CDFF00]/60',
-        default:
-          'border-transparent bg-primary text-dark-gray [a&]:hover:bg-primary/90',
+          'bg-limited text-dark-gray border-dark-gray/50 shadow-lg shadow-limited/40 hover:shadow-limited/60',
+        deal: 'border-[0.5px] border-white bg-deal text-white shadow-lg shadow-deal/40 [a&]:hover:bg-deal/90 focus-visible:ring-deal/20 dark:focus-visible:ring-deal/40 dark:bg-deal/60',
         secondary:
           'border-transparent bg-secondary text-dark-gray [a&]:hover:bg-secondary/90',
-        destructive:
-          'border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+        rare: 'border-transparent bg-rare dark:bg-rare shadow-lg shadow-rare/40 text-white [a&]:hover:bg-rare/90 focus-visible:ring-rare/20 dark:focus-visible:ring-rare/40 dark:bg-rare/60',
         outline:
           'text-dark-gray text-light-gray [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
       },
       size: {
-        sm: 'px-3 py-1.5 text-xs',
+        sm: 'px-3 py-1 text-xs max-h-8 tracking-wider',
         md: 'px-6 py-3 text-sm',
         lg: 'px-8 py-4 text-base',
       },
-    },
-    defaultVariants: {
-      variant: 'default',
-      size: 'md',
     },
   },
 )
@@ -74,7 +68,7 @@ const HyperBadge = ({
         className,
       )}
       {...props}>
-      {variant}
+      {props.children ?? variant}
     </Comp>
   )
 }

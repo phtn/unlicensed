@@ -147,6 +147,12 @@ export const icons = {
     viewBox: '0 0 24 24',
     set: 'proicons',
   },
+  'eye-slash': {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M3.182 12.808C4.233 14.613 7.195 18.81 12 18.81c4.813 0 7.77-4.199 8.82-6.002a1.6 1.6 0 0 0-.001-1.615C19.769 9.389 16.809 5.19 12 5.19s-7.768 4.197-8.818 6.001a1.6 1.6 0 0 0 0 1.617Z"/><path d="M12 14.625a2.625 2.625 0 1 0 0-5.25a2.625 2.625 0 0 0 0 5.25ZM2 2l20 20"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'proicons',
+  },
   fullscreen: {
     symbol: `<path fill="currentColor" d="M4 20h-.5v.5H4zm5.354-4.646a.5.5 0 0 0-.708-.708zM3.5 14v6h1v-6zm.5 6.5h6v-1H4zm.354-.146l5-5l-.708-.708l-5 5zM20 4h.5v-.5H20zm-5.354 4.646a.5.5 0 0 0 .708.708zM20.5 10V4h-1v6zM20 3.5h-6v1h6zm-.354.146l-5 5l.708.708l5-5z"></path>`,
     viewBox: `0 0 24 24`,
@@ -289,6 +295,36 @@ export const icons = {
       '<g fill="none"><path fill="currentColor" fill-opacity=".25" d="m12 20l-7.32-9.15c-.333-.416-.5-.624-.544-.874s.04-.503.208-1.008l.744-2.233c.44-1.32.66-1.98 1.184-2.357S7.492 4 8.883 4h6.234c1.391 0 2.087 0 2.61.378c.525.377.745 1.037 1.185 2.357l.744 2.233c.168.505.252.757.208 1.008c-.045.25-.211.458-.544.874z"/><path stroke="currentColor" stroke-linecap="round" stroke-width="1.4" d="m12 20l-7.32-9.15c-.333-.416-.5-.624-.544-.874s.04-.503.208-1.008l.744-2.233c.44-1.32.66-1.98 1.184-2.357S7.492 4 8.883 4h6.234c1.391 0 2.087 0 2.61.378c.525.377.745 1.037 1.185 2.357l.744 2.233c.168.505.252.757.208 1.008c-.045.25-.211.458-.544.874zm0 0l3.5-11M12 20L8.5 9m11 1l-4-1m0 0L14 5m1.5 4h-7M10 5L8.5 9m0 0l-4 1"/></g>',
     viewBox: '0 0 24 24',
     set: 'lets-icons',
+  },
+  image: {
+    symbol: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2" /><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" /><polyline points="21 15 16 10 5 21" fill="none" stroke="currentColor" stroke-width="2" />',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
+  },
+  images: {
+    symbol: '<path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="9" r="2" fill="currentColor"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" fill="none" stroke="currentColor" stroke-width="2"/>',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
+  },
+  file: {
+    symbol: '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="13 2 13 9 20 9" fill="none" stroke="currentColor" stroke-width="2"/>',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
+  },
+  box: {
+    symbol: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="3.27 6.96 12 12.01 20.73 6.96" fill="none" stroke="currentColor" stroke-width="2"/><line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" stroke-width="2"/>',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
+  },
+  sliders: {
+    symbol: '<line x1="4" y1="21" x2="4" y2="14" stroke="currentColor" stroke-width="2"/><line x1="4" y1="10" x2="4" y2="3" stroke="currentColor" stroke-width="2"/><line x1="12" y1="21" x2="12" y2="12" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="3" stroke="currentColor" stroke-width="2"/><line x1="20" y1="21" x2="20" y2="16" stroke="currentColor" stroke-width="2"/><line x1="20" y1="12" x2="20" y2="3" stroke="currentColor" stroke-width="2"/><line x1="1" y1="14" x2="7" y2="14" stroke="currentColor" stroke-width="2"/><line x1="9" y1="8" x2="15" y2="8" stroke="currentColor" stroke-width="2"/><line x1="17" y1="16" x2="23" y2="16" stroke="currentColor" stroke-width="2"/>',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
+  },
+  'align-left': {
+    symbol: '<line x1="17" y1="10" x2="3" y2="10" stroke="currentColor" stroke-width="2"/><line x1="21" y1="6" x2="3" y2="6" stroke="currentColor" stroke-width="2"/><line x1="21" y1="14" x2="3" y2="14" stroke="currentColor" stroke-width="2"/><line x1="17" y1="18" x2="3" y2="18" stroke="currentColor" stroke-width="2"/>',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
   },
 }
 

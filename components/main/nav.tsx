@@ -64,7 +64,7 @@ export const Nav = ({children}: NavProps) => {
           <Link
             href={'/'}
             className='md:w-72 h-12 overflow-hidden pl-1 flex items-center justify-start relative'>
-            <Icon name='rapid-fire' className='h-40 w-auto text-brand' />
+            <Icon name='rapid-fire' className='h-44 w-auto text-brand' />
           </Link>
           <nav className='flex items-center justify-center md:w-full'>
             <Link

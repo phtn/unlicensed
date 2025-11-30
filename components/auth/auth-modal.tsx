@@ -77,8 +77,8 @@ export const AuthModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} placement='center' size='md'>
-      <ModalContent className='rounded-4xl dark:border border-brand/80'>
-        <div className='absolute h-160 w-160 aspect-auto -top-24 -left-10 flex items-center'>
+      <ModalContent className='rounded-4xl dark:border border-light-gray/80 w-96'>
+        <div className='absolute h-160 w-160 aspect-auto -top-28 -left-10 flex items-center'>
           <ImageDither image={'/svg/rf-logo-hot-pink-2.svg'} />
           <DitherPhoto />
         </div>

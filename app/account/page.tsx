@@ -1,8 +1,10 @@
 'use client'
 
+import {Loader} from '@/components/expermtl/loader'
 import {TextureCardStyled} from '@/components/ui/texture-card'
 import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
+import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {
@@ -11,18 +13,26 @@ import {
   CardBody,
   Chip,
   ChipProps,
-  CircularProgress,
   Image,
   Progress,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
-import {Award, Box, ChevronRight, Package, Percent, Truck} from 'lucide-react'
+import {
+  Award,
+  Box,
+  ChevronRight,
+  ChevronUp,
+  Package,
+  Percent,
+  Truck,
+} from 'lucide-react'
 import NextLink from 'next/link'
-import {useMemo} from 'react'
+import {startTransition, useMemo, useState, ViewTransition} from 'react'
 import {UserStatsCard} from './_components/user-stats-card'
 
 export default function AccountPage() {
   const {user: firebaseUser} = useAuth()
+  const [showAllOrders, setShowAllOrders] = useState(false)
 
   // 1. Get Current User
   const convexUser = useQuery(
@@ -45,7 +55,7 @@ export default function AccountPage() {
 
   const recentOrders = useQuery(
     api.orders.q.getUserOrders,
-    userId ? {userId, limit: 5} : 'skip',
+    userId ? {userId, limit: showAllOrders ? 20 : 5} : 'skip',
   )
 
   const tierBenefits = useQuery(
@@ -53,8 +63,8 @@ export default function AccountPage() {
     userId ? {userId} : 'skip',
   )
 
-  // Loading State
-  const isLoading = !convexUser //|| !orderStats || !userRewards || !recentOrders || !tierBenefits
+  // Loading State (Initial page load only)
+  const isLoading = !convexUser
 
   // Calculate Progress to Next Tier
   const nextTierProgress = useMemo(() => {
@@ -92,24 +102,24 @@ export default function AccountPage() {
     }
   }
 
-  if (isLoading && firebaseUser) {
-    return (
-      <div className='min-h-screen flex items-center justify-center'>
-        <CircularProgress label='Loading profile...' />
-      </div>
-    )
+  const toggleShowAllOrders = () => {
+    startTransition(() => {
+      setShowAllOrders((prev) => !prev)
+    })
   }
 
-  if (!firebaseUser) {
+  const {on: visibleSpent, toggle: toggleVisibleSpent} = useToggle()
+
+  const handleToggleVisibleSpent = () => {
+    startTransition(() => {
+      toggleVisibleSpent()
+    })
+  }
+
+  if (isLoading && firebaseUser && true) {
     return (
-      <div className='min-h-screen flex flex-col items-center justify-center space-y-4'>
-        <h1 className='text-2xl font-bold'>Please Log In</h1>
-        <p className='text-default-500'>
-          You need to be logged in to view your profile.
-        </p>
-        <Button as={NextLink} href='/' color='primary'>
-          Go Home
-        </Button>
+      <div className='min-h-screen flex items-center justify-center'>
+        <Loader />
       </div>
     )
   }
@@ -143,7 +153,7 @@ export default function AccountPage() {
           {/* Left Column: Profile & Loyalty (1/3 width) */}
           <div className='space-y-8 lg:col-span-1'>
             {/* Profile Card */}
-            <TextureCardStyled className='p-6 h-120'>
+            <TextureCardStyled className='p-6 h-120 bg-transparent rounded-[3rem]'>
               <div className='flex h-full flex-col items-center text-center space-y-4'>
                 <div className='relative h-64 flex flex-col justify-center'>
                   <div className='size-24 rounded-full p-1 bg-linear-to-tl from-brand/40 to-pink-500'>
@@ -178,26 +188,38 @@ export default function AccountPage() {
 
                 <div>
                   <h2 className='text-lg font-bold'>
-                    {convexUser?.name || firebaseUser?.displayName}
+                    {convexUser?.name ?? firebaseUser?.displayName}
                   </h2>
                   <p className='text-sm text-blue-500'>
-                    {convexUser?.email || firebaseUser?.email}
+                    {convexUser?.email ?? firebaseUser?.email}
                   </p>
                 </div>
 
                 <div className='w-full pt-4 border-t border-default-200/50 grid grid-cols-2 gap-4'>
-                  <div className='text-center p-2 rounded-3xl'>
+                  <div className='text-center p-4 rounded-3xl'>
                     <p className='text-xs uppercase tracking-wider'>Orders</p>
                     <p className='text-xl font-bold'>
-                      {orderStats?.totalOrders || 0}
+                      {orderStats?.totalOrders ?? 0}
                     </p>
                   </div>
-                  <div className='text-center p-2 rounded-3xl'>
+                  <div className='text-right p-4 space-y-1 rounded-3xl'>
                     <p className='text-xs uppercase tracking-wider'>Spent</p>
-                    <p className='text-xl font-medium font-geist-sans'>
-                      <span className='opacity-80'>$</span>
-                      {formatPrice(orderStats?.totalSpent || 0)}
-                    </p>
+                    <div className=' flex items-center space-x-2 text-xl text-foreground font-medium font-geist-sans'>
+                      <span>
+                        <Icon
+                          onClick={handleToggleVisibleSpent}
+                          name={visibleSpent ? 'eye' : 'eye-slash'}
+                          className='opacity-80 size-5 cursor-pointer'
+                        />
+                      </span>
+                      <ViewTransition>
+                        <span>
+                          {visibleSpent
+                            ? formatPrice(orderStats?.totalSpent ?? 0)
+                            : '****'}
+                        </span>
+                      </ViewTransition>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -327,94 +349,109 @@ export default function AccountPage() {
             {/* Recent Orders Section */}
             <div>
               <div className='flex items-center justify-between mb-4'>
-                <h2 className='text-xl font-bold'>Recent Orders</h2>
+                <h2 className='text-xl font-bold'>
+                  {showAllOrders ? 'All Orders' : 'Recent Orders'}
+                </h2>
                 <Button
                   variant='light'
-                  endContent={<ChevronRight size={16} />}
+                  onPress={toggleShowAllOrders}
+                  endContent={
+                    showAllOrders ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )
+                  }
                   className='text-default-500 hover:text-foreground'>
-                  View All
+                  {showAllOrders ? 'Show Less' : 'View All'}
                 </Button>
               </div>
 
-              <div className='space-y-4'>
-                {recentOrders?.length === 0 ? (
-                  <Card className='border-dashed border-2 border-default-200 bg-transparent'>
-                    <CardBody className='py-12 flex flex-col items-center justify-center text-center'>
-                      <div className='w-16 h-16 bg-default-100 rounded-full flex items-center justify-center mb-4 text-default-400'>
-                        <Package size={32} />
-                      </div>
-                      <h3 className='text-lg font-medium text-foreground'>
-                        No orders yet
-                      </h3>
-                      <p className='text-default-500 max-w-xs mt-2'>
-                        Start shopping to see your orders and earn rewards!
-                      </p>
-                      <Button
-                        as={NextLink}
-                        href='/products'
-                        color='primary'
-                        className='mt-6'>
-                        Browse Products
-                      </Button>
-                    </CardBody>
-                  </Card>
-                ) : (
-                  recentOrders?.map((order) => (
-                    <Card
-                      key={order._id}
-                      as={NextLink}
-                      href={`/account/orders/${order._id}`}
-                      isPressable
-                      className='w-full hover:scale-[1.01] transition-transform'>
-                      <CardBody className='p-4 sm:p-6'>
-                        <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
-                          <div className='flex items-start gap-4'>
-                            <div className='p-3 bg-default-100 rounded-xl hidden sm:block'>
-                              <Box size={24} className='text-default-500' />
-                            </div>
-                            <div>
-                              <div className='flex items-center gap-2'>
-                                <h3 className='font-bold text-lg'>
-                                  {order.orderNumber}
-                                </h3>
-                                <Chip
-                                  size='sm'
-                                  color={getStatusColor(order.orderStatus)}
-                                  variant='flat'>
-                                  {order.orderStatus.toUpperCase()}
-                                </Chip>
-                              </div>
-                              <p className='text-sm text-default-500 mt-1'>
-                                {new Date(order.createdAt).toLocaleDateString(
-                                  'en-US',
-                                  {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric',
-                                  },
-                                )}{' '}
-                                • {order.items.length} Items
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className='flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-none pt-4 sm:pt-0'>
-                            <div className='text-left sm:text-right'>
-                              <p className='text-xs text-default-500 uppercase tracking-wider'>
-                                Total
-                              </p>
-                              <p className='text-lg font-bold text-primary'>
-                                ${formatPrice(order.totalCents)}
-                              </p>
-                            </div>
-                            <ChevronRight className='text-default-300' />
-                          </div>
+              <ViewTransition>
+                <div className='space-y-4 min-h-[100px]'>
+                  {recentOrders === undefined ? (
+                    <div className='w-full flex justify-center items-center py-12'>
+                      <Loader />
+                    </div>
+                  ) : recentOrders.length === 0 ? (
+                    <Card className='border-dashed border-2 border-default-200 bg-transparent'>
+                      <CardBody className='py-12 flex flex-col items-center justify-center text-center'>
+                        <div className='w-16 h-16 bg-default-100 rounded-full flex items-center justify-center mb-4 text-default-400'>
+                          <Package size={32} />
                         </div>
+                        <h3 className='text-lg font-medium text-foreground'>
+                          No orders yet
+                        </h3>
+                        <p className='text-default-500 max-w-xs mt-2'>
+                          Start shopping to see your orders and earn rewards!
+                        </p>
+                        <Button
+                          as={NextLink}
+                          href='/products'
+                          color='primary'
+                          className='mt-6'>
+                          Browse Products
+                        </Button>
                       </CardBody>
                     </Card>
-                  ))
-                )}
-              </div>
+                  ) : (
+                    recentOrders.map((order) => (
+                      <Card
+                        key={order._id}
+                        as={NextLink}
+                        href={`/account/orders/${order._id}`}
+                        isPressable
+                        className='w-full hover:scale-[1.01] transition-transform'>
+                        <CardBody className='p-2'>
+                          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+                            <div className='flex items-start gap-4'>
+                              <div className='p-3 bg-default-100 rounded-xl hidden sm:block'>
+                                <Box size={24} className='text-default-500' />
+                              </div>
+                              <div>
+                                <div className='flex items-center gap-4'>
+                                  <h3 className='font-semibold text-base'>
+                                    {order.orderNumber}
+                                  </h3>
+                                  <Chip
+                                    size='sm'
+                                    color={getStatusColor(order.orderStatus)}
+                                    variant='flat'>
+                                    {order.orderStatus.toUpperCase()}
+                                  </Chip>
+                                </div>
+                                <p className='font-space text-sm opacity-60 mt-1'>
+                                  {new Date(order.createdAt).toLocaleDateString(
+                                    'en-US',
+                                    {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric',
+                                    },
+                                  )}{' '}
+                                  • {order.items.length} Items
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className='flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-none pt-4 sm:pt-0'>
+                              <div className='text-left sm:text-right'>
+                                <p className='text-xs text-default-500 uppercase tracking-wider'>
+                                  Total
+                                </p>
+                                <p className='text-lg font-bold text-primary'>
+                                  ${formatPrice(order.totalCents)}
+                                </p>
+                              </div>
+                              <ChevronRight className='text-default-300' />
+                            </div>
+                          </div>
+                        </CardBody>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </ViewTransition>
             </div>
           </div>
         </div>

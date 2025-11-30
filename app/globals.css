@@ -265,6 +265,10 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --color-featured: oklch(0.755 0.153 231.64);
+  --color-limited: oklch(0.931 0.228 122.86);
+  --color-rare: oklch(0.585 0.204 277.12);
+  --color-deal: oklch(0.704 0.123 182.5);
 }
 
 @layer base {
@@ -337,6 +341,11 @@
   ::selection {
     background: rgba(245, 196, 104, 0.45);
     color: var(--foreground);
+  }
+
+  /* Default View Transition Animation */
+  ::view-transition-group(root) {
+    animation-duration: 0.4s;
   }
 }
 

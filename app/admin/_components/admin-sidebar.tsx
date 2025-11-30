@@ -60,7 +60,8 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                   return (
                     <SidebarMenuItem
                       className={cn('text-xs tracking-tighter', {
-                        'bg-light-gray rounded-lg': isActive,
+                        'bg-light-gray dark:bg-blue-100/10 rounded-lg':
+                          isActive,
                       })}
                       key={item.title}>
                       <SidebarMenuButton
@@ -225,6 +226,11 @@ const data: Record<string, NavGroup[]> = {
         {
           title: 'Product',
           url: '/admin/product',
+          icon: 'linalool',
+        },
+        {
+          title: 'Blog',
+          url: '/admin/blog',
           icon: 'linalool',
         },
       ],

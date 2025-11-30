@@ -10,15 +10,15 @@ export function DitherPhoto() {
   return (
     <Dithering
       colorBack='#00000000'
-      colorFront='#f0f0f0'
-      speed={1}
+      colorFront='#be6ebe'
+      speed={0.5}
       shape='simplex'
       type='4x4'
-      size={2.0}
+      size={1}
       fit='cover'
       scale={0.33}
-      frame={249792.6859999941}
-      className='size-full absolute rounded-xl rotate-6 scale-125'
+      frame={24979}
+      className='size-full opacity-20 absolute rounded-xl rotate-6 scale-125'
     />
   )
 }
@@ -36,13 +36,13 @@ interface ImageDitherProps {
 export function ImageDither({image}: ImageDitherProps) {
   return (
     <ImageDithering
-      colorBack='#00000000'
+      colorBack='#FC81FE'
       colorFront='#EEEEEE'
-      colorHighlight='#EEEEEE'
+      colorHighlight='#FC81FE'
       originalColors
       type='2x2'
-      size={2.4}
-      colorSteps={2}
+      size={1.4}
+      colorSteps={4}
       image={image}
       scale={1}
       fit='cover'

@@ -65,7 +65,7 @@ export const NewHome = () => {
           <Grass2 />
         </Suspense>
       </SceneWrapper>
-      <div className='h-16 bg-linear-to-b from-emerald-800/30 via-emerald-900/40 to-transparent  w-full'></div>
+      <div className='h-16 bg-linear-to-b from-emerald-800/30 via-emerald-600/10 to-transparent  w-full'></div>
       {/*<QuickScroll className='bg-light-gray' href='#featured' />*/}
       {/*<ShopFinder />*/}
     </div>
