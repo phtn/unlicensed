@@ -23,10 +23,7 @@ export const dateCell = (value: number) => {
 export const moneyCell = (value: number) => {
   return (
     <div className='w-fit flex flex-col items-end'>
-      <p className='font-semibold text-sm font-space'>
-        <span className='font-light opacity-80'>$</span>
-        {formatPrice(value)}
-      </p>
+      <p className='font-semibold text-sm font-space'>{formatPrice(value)}</p>
     </div>
   )
 }

@@ -121,7 +121,6 @@ export const SalesTable = () => {
       <div className='flex items-center justify-between mb-4'>
         <div>
           <h2 className='text-xl font-semibold font-space'>
-            <span className='font-thin'>$</span>
             {formatPrice(totalRevenue)}
           </h2>
         </div>

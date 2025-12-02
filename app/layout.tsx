@@ -106,7 +106,7 @@ export const metadata: Metadata = {
   icons: [
     {
       rel: 'icon',
-      url: '/svg/rf-icon-hot-pink.svg',
+      url: '/svg/rf-icon-2.svg',
       sizes: 'any',
     },
   ],

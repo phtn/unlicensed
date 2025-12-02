@@ -64,7 +64,7 @@ const getActivityIcon = (type: Activity['type']) => {
 
 const getActivityIconColor = (type: Activity['type']) => {
   if (type.startsWith('order_')) {
-    if (type.includes('delivered')) return 'text-limited'
+    if (type.includes('delivered')) return 'text-dark-gray dark:text-limited '
     if (type.includes('cancelled') || type.includes('refunded'))
       return 'text-red-500'
     return 'text-featured'

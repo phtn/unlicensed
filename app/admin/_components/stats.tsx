@@ -55,13 +55,13 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
   ): {value: string | number; subtitle?: string} => {
     switch (statId) {
       case 'salesToday':
-        return {value: `$${formatPrice(stats.salesTodayCents)}`}
+        return {value: `${formatPrice(stats.salesTodayCents)}`}
       case 'salesThisWeek':
-        return {value: `$${formatPrice(stats.salesThisWeekCents)}`}
+        return {value: `${formatPrice(stats.salesThisWeekCents)}`}
       case 'salesThisMonth':
-        return {value: `$${formatPrice(stats.salesThisMonthCents)}`}
+        return {value: `${formatPrice(stats.salesThisMonthCents)}`}
       case 'totalRevenue':
-        return {value: `$${formatPrice(stats.totalRevenueCents)}`}
+        return {value: `${formatPrice(stats.totalRevenueCents)}`}
       case 'pendingOrders':
         return {value: stats.pendingOrdersCount}
       case 'cancelledOrders':
@@ -76,7 +76,7 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
       case 'totalProducts':
         return {value: stats.totalProductsCount}
       case 'averageOrderValue':
-        return {value: `$${formatPrice(stats.averageOrderValueCents)}`}
+        return {value: `${formatPrice(stats.averageOrderValueCents)}`}
       default:
         return {value: 0}
     }
