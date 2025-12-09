@@ -89,14 +89,14 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
                   <Image
                     src={product.image}
                     alt={product.name}
-                    className='size-50 aspect-auto object-contain'
+                    className='size-50 py-4 shrink-0 aspect-auto object-contain'
                     loading='lazy'
                   />
                   <div
                     className={`absolute inset-0 bg-linear-to-br group-hover:opacity-70 transition-opacity duration-300`}></div>
 
                   {/* Metric Badge */}
-                  <div className='flex items-center gap-1.5 sm:gap-2 absolute top-3 sm:top-4 lg:top-6 right-3 sm:right-4 lg:right-6'>
+                  <div className='flex items-center gap-1.5 sm:gap-2 absolute top-3 sm:top-4 lg:top-0 right-3 sm:right-4 lg:right-6'>
                     <span className='bg-foreground/10 backdrop-blur-sm text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-2 rounded-full'>
                       <span className='font-extrabold opacity-70 font-fugaz tracking-wide'>
                         THC

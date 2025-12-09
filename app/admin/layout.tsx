@@ -18,7 +18,6 @@ const AdminLayout = ({children, toolbar}: AdminLayoutProps) => {
         <OrderDetailsProvider>
           <ProductDetailsProvider>
             <SidebarInset className='group/sidebar-inset'>
-              {/*<Navbar />*/}
               <Container>
                 <WrappedContent toolbar={toolbar}>{children}</WrappedContent>
                 <SettingsPanel />

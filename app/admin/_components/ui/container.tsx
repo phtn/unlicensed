@@ -3,7 +3,6 @@
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
-import {usePathname} from 'next/navigation'
 import {ReactNode, useMemo} from 'react'
 import {useSettingsPanel} from './settings'
 import {SidebarTrigger} from './sidebar'
@@ -15,19 +14,11 @@ interface WrappedContentProps {
 
 export const WrappedContent = ({children, toolbar}: WrappedContentProps) => {
   const {state, togglePanel} = useSettingsPanel()
-  const pathname = usePathname()
-  const endpoint = useMemo(
-    () => pathname.split('/').pop() || 'admin',
-    [pathname],
-  )
   const isExpanded = useMemo(() => state === 'expanded', [state])
   return (
     <Wrapper isPanelExpanded={isExpanded}>
-      <div className='px-2 sm:px-3 py-3.5 flex items-center justify-between min-w-0'>
-        <SidebarTrigger className='' />
-        <div className='flex flex-1 w-full capitalize text-lg tracking-tighter font-semibold px-1 md:px-2 lg:px-4'>
-          {endpoint}
-        </div>
+      <div className='px-2 sm:px-3 py-2 flex items-center justify-between min-w-0'>
+        <SidebarTrigger />
         {toolbar}
         <Button
           isIconOnly

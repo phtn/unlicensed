@@ -102,9 +102,11 @@ function getAttributeData(
     }
 
     // Calculate maximum allowed stretch to not exceed horizon
-    const maxAllowedStretch =
-      (horizonHeight - offsetY) / bladeHeight
-    const clampedMaxStretch = Math.min(maxStretch, Math.max(0, maxAllowedStretch))
+    const maxAllowedStretch = (horizonHeight - offsetY) / bladeHeight
+    const clampedMaxStretch = Math.min(
+      maxStretch,
+      Math.max(0, maxAllowedStretch),
+    )
 
     stretches.push(Math.random() * clampedMaxStretch)
   }

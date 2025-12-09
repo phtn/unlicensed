@@ -1,8 +1,13 @@
 import {Highlight, Highlights} from '@/app/(store)/hero'
-import {useMemo} from 'react'
+import {useMobile} from '@/hooks/use-mobile'
+import {Activity, Suspense, useMemo} from 'react'
+import Grass2 from '../gl/grass'
+import {SceneWrapper} from '../gl/scene'
+import {ShopFinder} from './finder'
 import {Title} from './title'
 
 export const NewHome = () => {
+  const isMobile = useMobile()
   const slides = useMemo(
     () =>
       [
@@ -31,8 +36,8 @@ export const NewHome = () => {
           ctaHref: '/category/edibles',
         },
         {
-          id: 'concentrates',
-          tag: 'Concentrates',
+          id: 'extracts',
+          tag: 'Extracts',
           imageUrl: `https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Thca_diamond.png?v=1734635477&width=600`,
           imageAlt: 'Diamond Image',
           title: <Title title='Diamond' subtitle='Rich THCa.' />,
@@ -42,9 +47,9 @@ export const NewHome = () => {
           ctaHref: '/category/concentrates',
         },
         {
-          id: 'beverages',
-          tag: 'beverages',
-          imageUrl: `https://cdn.shopify.com/s/files/1/0693/8119/3966/files/SleepytimeHotCocoaAdvanced_PLP_JuanStock_18092025.png?v=1758209621&width=600`,
+          id: 'vapes',
+          tag: 'Vapes',
+          imageUrl: `https://www.itshyfe.com/wp-content/uploads/2023/03/kite-rosin-carts.jpg`,
           imageAlt: 'Hot Choco Image',
           title: <Title title='Hibernate' subtitle='Into Sound Slumber.' />,
           description:
@@ -58,14 +63,16 @@ export const NewHome = () => {
   return (
     <div className='bg-background'>
       <Highlights slides={slides} />
-      {/*<SceneWrapper>
+      <Activity mode={isMobile ? 'hidden' : 'visible'}>
         <Suspense fallback='null'>
-          <Grass2 />
+          <SceneWrapper>
+            <Grass2 />
+          </SceneWrapper>
         </Suspense>
-      </SceneWrapper>*/}
-      <div className='h-16 bg-linear-to-b from-emerald-800/30 via-emerald-600/10 to-transparent  w-full'></div>
+      </Activity>
       {/*<QuickScroll className='bg-light-gray' href='#featured' />*/}
-      {/*<ShopFinder />*/}
+      <ShopFinder />
+      <div className='h-16 bg-linear-to-b from-emerald-800/30 via-emerald-600/10 to-transparent  w-full'></div>
     </div>
   )
 }

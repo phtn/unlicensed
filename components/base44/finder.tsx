@@ -12,10 +12,10 @@ export const ShopFinder = () => {
   )
 
   return (
-    <section className='pb-20 px-6 bg-light-gray border-b-[0.33px] border-foreground/40 overflow-hidden'>
+    <section className='pb-20 px-6 border-b-[0.33px] border-foreground/40 overflow-hidden'>
       <div className='relative max-w-7xl mx-auto'>
         <div className='grid lg:grid-cols-2 gap-12 mb-4'>
-          <h2 className='text-2xl tracking-tight lg:text-3xl font-fugaz leading-tight'>
+          <h2 className='text-xl tracking-tight lg:text-3xl font-fugaz leading-tight'>
             <span className='mr-2 text-dark-gray'>
               Shop by {selectedFilter}.
             </span>
@@ -45,12 +45,12 @@ export const ShopFinder = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className='absolute rounded-4xl h-40 w-full scale-125 blur-3xl opacity-20 bg-linear-to-br from-brand/60 via-brand-300/60 to-teal-400 p-8 lg:p-4'></div>
-        <div className='relative rounded-3xl overflow-hidden bg-linear-to-br from-dark-gray/80 via-brand/10 to-foreground dark:from-panel dark:via-panel/70 dark:to-panel/80 p-8 lg:p-8'>
+        {/*<div className='absolute rounded-4xl h-40 w-full scale-125 blur-3xl opacity-20 bg-linear-to-br from-brand/60 via-brand-300/60 to-teal-400'></div>*/}
+        <div className='relative rounded-3xl overflow-hidden'>
           <CategoryList />
           <div className='hidden relative _grid md:grid-cols-3 gap-6'>
             {/* Card 1 */}
-            <div className='bg-white/20 backdrop-blur-sm rounded-2xl p-3 text-center'>
+            <div className='bg-white/0 backdrop-blur-sm rounded-2xl p-3 text-center'>
               <h3 className='text-2xl lg:text-3xl font-space text-white mb-1'>
                 500
               </h3>

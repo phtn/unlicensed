@@ -10,7 +10,7 @@ const badgeVariants = cva(
     variants: {
       variant: {
         new: 'bg-brand text-dark-gray border-transparent shadow-md shadow-pink-400/20 hover:shadow-brand/60',
-        feature:
+        featured:
           'bg-featured text-dark-gray border-transparent shadow-lg shadow-featured/40 hover:shadow-featured/60',
         sale: 'bg-[#bebebe] text-dark-gray border-transparent shadow-lg shadow-[#cdcdcd]/40 hover:shadow-[#dedede]/60',
         limited:
@@ -23,6 +23,7 @@ const badgeVariants = cva(
           'text-dark-gray text-light-gray [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
       },
       size: {
+        xs: 'px-2 py-1 text-[8px] max-h-6 tracking-wide',
         sm: 'px-3 py-1 text-xs max-h-8 tracking-wider',
         md: 'px-6 py-3 text-sm',
         lg: 'px-8 py-4 text-base',

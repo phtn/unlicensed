@@ -1,23 +1,21 @@
 'use client'
 
-import {
-  TextureCard,
-  TextureCardContent,
-  TextureCardHeader,
-  TextureCardTitle,
-} from '@/components/ui/texture-card'
 import {Doc} from '@/convex/_generated/dataModel'
 import {ensureSlug} from '@/lib/slug'
-import {Input, Select, SelectItem} from '@heroui/react'
+import {Input} from '@heroui/react'
 import {useMemo, useState} from 'react'
-import {ProductFormApi} from '../product-schema'
+import {ProductFormValues} from '../product-schema'
+import {commonInputClassNames, FormInput, renderFields} from '../ui/fields'
+import {useAppForm} from '../ui/form-context'
+import {FormSection, Header} from './components'
 
 interface BasicInfoProps {
-  form: ProductFormApi
   categories: Doc<'categories'>[] | undefined
+  form: ReturnType<typeof useAppForm>
+  fields: Array<FormInput<ProductFormValues>>
 }
 
-export const BasicInfo = ({form, categories}: BasicInfoProps) => {
+export const BasicInfo = ({categories, form, fields}: BasicInfoProps) => {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
   const availableCategories = useMemo(() => {
@@ -25,102 +23,83 @@ export const BasicInfo = ({form, categories}: BasicInfoProps) => {
   }, [categories])
 
   const selectCategories = useMemo(
-    () => availableCategories?.map((c) => ({key: c.slug, label: c.name})),
+    () => availableCategories?.map((c) => ({value: c.slug, label: c.name})),
     [availableCategories],
   )
 
+  // Separate name and slug fields from other fields
+  const nameField = fields.find((field) => field.name === 'name')
+  const slugField = fields.find((field) => field.name === 'slug')
+  const otherFields = fields.filter(
+    (field) => field.name !== 'name' && field.name !== 'slug',
+  )
+
   return (
-    <TextureCard id='basic-info'>
-      <TextureCardHeader>
-        <TextureCardTitle>Basic Information</TextureCardTitle>
-      </TextureCardHeader>
-      <TextureCardContent className='grid gap-6'>
-        <form.Field name='name'>
-          {(field) => (
-            <div className='space-y-2'>
-              <label className='text-sm font-medium text-neutral-300'>
-                Name
-              </label>
-              <Input
-                value={field.state.value}
-                onChange={(e) => {
-                  const nextName = e.target.value
-                  field.handleChange(nextName)
-                  if (!slugManuallyEdited) {
-                    form.setFieldValue('slug', ensureSlug('', nextName))
-                  }
-                }}
-                onBlur={field.handleBlur}
-                placeholder='Product Name'
-                variant='bordered'
-                // classNames={{
-                //   inputWrapper: 'bg-neutral-900 border-neutral-800 data-[hover=true]:border-neutral-700 group-data-[focus=true]:border-emerald-500',
-                // }}
-              />
-              {field.state.meta.isTouched &&
-                field.state.meta.errors.length > 0 && (
-                  <p className='text-xs text-rose-400'>
-                    {field.state.meta.errors.join(', ')}
-                  </p>
-                )}
-            </div>
+    <FormSection id='basic-info' position='top'>
+      <Header label='Basic Information' />
+      <div className='grid gap-6 w-full'>
+        <div className='flex w-full space-x-2'>
+          {nameField && (
+            <form.AppField name='name'>
+              {(input) => (
+                <div className='space-y-2 w-full'>
+                  <Input
+                    size='lg'
+                    label={nameField.label}
+                    value={String(input.state.value ?? '')}
+                    onChange={(e) => {
+                      const nextName = e.target.value
+                      input.handleChange(nextName)
+                      if (!slugManuallyEdited) {
+                        form.setFieldValue('slug', ensureSlug('', nextName))
+                      }
+                    }}
+                    onBlur={input.handleBlur}
+                    placeholder={nameField.placeholder}
+                    variant='bordered'
+                    classNames={commonInputClassNames}
+                  />
+                  {input.state.meta.isTouched &&
+                    input.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {input.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                </div>
+              )}
+            </form.AppField>
           )}
-        </form.Field>
-
-        <form.Field name='slug'>
-          {(field) => (
-            <div className='space-y-2'>
-              <label className='text-sm font-medium text-neutral-300'>
-                Slug
-              </label>
-              <Input
-                value={field.state.value}
-                onChange={(e) => {
-                  setSlugManuallyEdited(true)
-                  field.handleChange(e.target.value)
-                }}
-                onBlur={field.handleBlur}
-                placeholder='product-slug'
-                variant='bordered'
-                // classNames={{
-                //   inputWrapper:
-                //     'bg-neutral-900 border-neutral-800 data-[hover=true]:border-neutral-700 group-data-[focus=true]:border-emerald-500',
-                // }}
-              />
-              <p className='text-xs text-neutral-500'>
-                URL-friendly version of the name.
-              </p>
-            </div>
+          {slugField && (
+            <form.AppField name='slug'>
+              {(input) => (
+                <div className='space-y-2 w-full'>
+                  <Input
+                    size='lg'
+                    label={slugField.label}
+                    value={String(input.state.value ?? '')}
+                    onChange={(e) => {
+                      input.handleChange(e.target.value)
+                      setSlugManuallyEdited(true)
+                    }}
+                    onBlur={input.handleBlur}
+                    placeholder={slugField.placeholder}
+                    classNames={commonInputClassNames}
+                    variant='bordered'
+                  />
+                  {input.state.meta.isTouched &&
+                    input.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {input.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                </div>
+              )}
+            </form.AppField>
           )}
-        </form.Field>
-
-        <form.Field name='categorySlug'>
-          {(field) => (
-            <div className='space-y-2'>
-              <label className='text-sm font-medium text-neutral-300'>
-                Category
-              </label>
-              <Select
-                selectedKeys={field.state.value ? [field.state.value] : []}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-                placeholder='Select a category'>
-                {(selectCategories || []).map((c) => (
-                  <SelectItem key={c.key} textValue={c.label}>
-                    {c.label}
-                  </SelectItem>
-                ))}
-              </Select>
-              {field.state.meta.isTouched &&
-                field.state.meta.errors.length > 0 && (
-                  <p className='text-xs text-rose-400'>
-                    {field.state.meta.errors.join(', ')}
-                  </p>
-                )}
-            </div>
-          )}
-        </form.Field>
-      </TextureCardContent>
-    </TextureCard>
+        </div>
+        {otherFields.length > 0 &&
+          renderFields(form, otherFields, selectCategories)}
+      </div>
+    </FormSection>
   )
 }

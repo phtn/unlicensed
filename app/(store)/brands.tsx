@@ -1,11 +1,11 @@
-import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {Image} from '@heroui/react'
 import {AnimatePresence, motion} from 'motion/react'
 import {memo, useCallback, useEffect, useMemo, useState} from 'react'
 interface Logo {
   name: string
   id: number
-  icon: IconName
+  icon: string
 }
 // Main LogoCarousel component
 export const Brands = ({columnCount = 2}: {columnCount?: number}) => {
@@ -16,14 +16,14 @@ export const Brands = ({columnCount = 2}: {columnCount?: number}) => {
   const allLogos = useMemo(
     () =>
       [
-        {name: 'logo', id: 1, icon: 'rapid-fire-logo'},
-        // {name: 're-up.ph', id: 2, icon: 're-up.ph'},
-        // {name: 'logo-2', id: 3, icon: 'rapid-fire-logo-2'},
-        {name: 'logomark-2', id: 4, icon: 'rapid-fire-2'},
-        {name: 'logo', id: 5, icon: 'rapid-fire-logo'},
-        // {name: 're-up.ph', id: 6, icon: 're-up.ph'},
-        // {name: 'logo-2', id: 7, icon: 'rapid-fire-logo-2'},
-        {name: 'logomark-2', id: 8, icon: 'rapid-fire-2'},
+        {name: 'cbx', id: 1, icon: '/svg/cbx.svg'},
+        {name: 'wizard-trees', id: 2, icon: '/svg/wizard-trees.svg'},
+        {name: 'jungle-boys', id: 3, icon: '/svg/jungle-boys.svg'},
+        {name: 'heirbloom', id: 4, icon: '/svg/heirbloom.svg'},
+        {name: 'cbx', id: 5, icon: '/svg/cbx.svg'},
+        {name: 'wizard-trees', id: 6, icon: '/svg/wizard-trees.svg'},
+        {name: 'jungle-boys', id: 7, icon: '/svg/jungle-boys.svg'},
+        {name: 'heirbloom', id: 8, icon: '/svg/heirbloom.svg'},
       ] as Logo[],
     [],
   )
@@ -47,16 +47,14 @@ export const Brands = ({columnCount = 2}: {columnCount?: number}) => {
   }, [updateTime])
 
   // Render the logo columns
+
   return (
-    <div className='w-full pb-20 px-6 dark:bg-slate-400/80 bg-light-gray/50 border-y-[0.33px] border-foreground/40'>
+    <div className='w-full pb-20 px-6 bg-dark-gray dark:bg-foreground/8 border-y-[0.33px] dark:border-dark-gray/50'>
       <div className='h-54 max-w-6xl mx-auto'>
         <div className='h-24 flex flex-col justify-end'>
-          <h3 className='text-lg font-fugaz text-dark-gray sm:text-3xl'>
+          <h3 className='text-lg font-fugaz text-featured sm:text-3xl'>
             Our Trusted Brands
           </h3>
-          {/*<p className='max-w-2xl text-sm text-color-muted'>*/}
-          {/*{category.description}*/}
-          {/*</p>*/}
         </div>
         <div className='items-center flex justify-between w-full h-full'>
           {logoSets.map((logos, index) => (
@@ -124,7 +122,7 @@ const LogoColumn: React.FC<LogoColumnProps> = memo(
     const currentIndex = Math.floor(adjustedTime / cycleInterval)
 
     // Memoize the current logo to prevent unnecessary re-renders
-    const currenLogo = useMemo(
+    const currentLogo = useMemo(
       () => logos[currentIndex].icon,
       [logos, currentIndex],
     )
@@ -174,13 +172,11 @@ const LogoColumn: React.FC<LogoColumnProps> = memo(
               },
             }}>
             {/*<CurrentLogo className='size-14 max-w-[80%] max-h-[80%] object-contain' />*/}
-            <Icon
-              name={currenLogo}
+            <Image
+              src={currentLogo}
+              alt={currentLogo}
               className={cn(
-                'size-7 md:size-16 opacity-60 dark:opacity-100 text-dark-gray dark:text-white',
-                {
-                  'md:w-24 h-auto': currenLogo === 'rapid-fire-2',
-                },
+                'size-7 md:size-24 opacity-60 dark:opacity-100 text-foreground dark:text-white',
               )}
             />
           </motion.div>

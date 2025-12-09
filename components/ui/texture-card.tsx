@@ -8,16 +8,16 @@ const TextureCardStyled = forwardRef<
   <div
     ref={ref}
     className={cn(
-      'rounded-4xl border border-white/60 dark:border-stone-950/60',
-      'bg-linear-to-b dark:from-neutral-800 dark:to-neutral-900 from-neutral-100 to-white/70',
+      'rounded-3xl border border-white dark:border-dark-gray/50',
+      'bg-linear-to-b dark:from-dark-gray/40 dark:to-dark-gray/20 from-neutral-100 to-white/70',
       className,
     )}
     {...props}>
-    <div className='rounded-[23px] border  dark:border-neutral-900/80 border-black/10 '>
-      <div className='rounded-[22px] border  dark:border-neutral-950 border-white/50'>
-        <div className='rounded-[21px] border  dark:border-neutral-900/70  border-neutral-950/20'>
+    <div className='rounded-[23px] border  dark:border-dark-gray/75 border-light-gray/20'>
+      <div className='rounded-[22px] border  dark:border-dark-gray/70 border-light-gray/25'>
+        <div className='rounded-[21px] border  dark:border-dark-gray/40  border-light-gray/32'>
           {/* Inner content wrapper */}
-          <div className=' w-full border border-white/50 dark:border-neutral-700/50 rounded-[20px] text-neutral-500 '>
+          <div className=' w-full border border-light-gray/40 dark:border-dark-gray/10 rounded-[20px] text-neutral-500 overflow-hidden'>
             {children}
           </div>
         </div>
@@ -63,7 +63,7 @@ const TextureCardHeader = forwardRef<
   <div
     ref={ref}
     className={cn(
-      'first:pt-6 last:pb-6 ', // Adjust padding for first and last child
+      'first:pt-4 first:pl-4 last:pb-4 ', // Adjust padding for first and last child
       className,
     )}
     {...props}

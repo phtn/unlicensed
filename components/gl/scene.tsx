@@ -11,7 +11,7 @@ interface SceneWrapperProps {
 
 export function SceneWrapper({children}: SceneWrapperProps) {
   return (
-    <div className='w-full relative pointer-events-none md:h-74 h-48'>
+    <div className='w-full hidden dark:flex relative pointer-events-none md:h-74 h-48'>
       <Leva hidden />
       <Canvas
         camera={{position: [40, 26, 24], fov: 18}}

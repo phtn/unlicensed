@@ -145,24 +145,10 @@ export default function RootLayout({
     <html lang='en' className='dark' data-theme='dark' suppressHydrationWarning>
       <body
         className={`${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased font-sans`}>
-        {/*
-          ProvidersCtxProvider wraps ConvexProvider, which enables reactivity
-          across all parallel route slots (navbar, children, etc.)
-        */}
         <ProvidersCtxProvider>
-          {/*<div className='relative flex min-h-screen flex-col overflow-x-hidden bg-background'>
-            <div className='pointer-events-none absolute inset-0 -z-20 backdrop-primary' />
-            <div className='pointer-events-none absolute inset-0 -z-10 backdrop-secondary' />
-            <div className='relative z-10 flex min-h-screen flex-col'>*/}
-          {/* Age confirmation modal - appears on first visit */}
           <AgeConfirmationModal />
-          {/* Navbar slot - shares Convex context with children */}
           <ConditionalNavbar navbar={navbar} />
-          {/* Main content - shares Convex context with navbar */}
           <div className='relative bg-background'>{children}</div>
-          {/*<Footer />*/}
-          {/*</div>
-          </div>*/}
         </ProvidersCtxProvider>
       </body>
     </html>

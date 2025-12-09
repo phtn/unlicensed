@@ -15,7 +15,7 @@ export const BadgeList = () => {
         <div className='grid grid-cols-1 md:grid-cols-6 place-items-center'>
           <HyperBadge variant='new' />
           <HyperBadge variant='sale' />
-          <HyperBadge variant='feature' />
+          <HyperBadge variant='featured' />
           <HyperBadge variant='limited' />
           <HyperBadge variant='rare' />
           <HyperBadge variant='deal' />
@@ -23,7 +23,7 @@ export const BadgeList = () => {
         <div className='grid grid-cols-1 md:grid-cols-6 py-10 place-items-center w-full'>
           <HyperBadge variant='new' size='sm' />
           <HyperBadge variant='sale' size='sm' />
-          <HyperBadge variant='feature' size='sm' />
+          <HyperBadge variant='featured' size='sm' />
           <HyperBadge variant='limited' size='sm' />
           <HyperBadge variant='rare' size='sm' />
           <HyperBadge variant='deal' size='sm' />

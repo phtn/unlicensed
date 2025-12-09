@@ -1,13 +1,9 @@
 'use client'
 
-import {
-  TextureCard,
-  TextureCardContent,
-  TextureCardHeader,
-  TextureCardTitle,
-} from '@/components/ui/texture-card'
 import {Input} from '@heroui/react'
 import {ProductFormApi} from '../product-schema'
+import {commonInputClassNames} from '../ui/fields'
+import {FormSection, Header} from './components'
 
 interface PricingProps {
   form: ProductFormApi
@@ -15,13 +11,12 @@ interface PricingProps {
 
 export const Pricing = ({form}: PricingProps) => {
   return (
-    <TextureCard id='pricing'>
-      <TextureCardHeader>
-        <TextureCardTitle>Pricing</TextureCardTitle>
-      </TextureCardHeader>
-      <TextureCardContent className='grid gap-6'>
+    <FormSection id='pricing'>
+      <Header label='Pricing' />
+      <div className='grid gap-6'>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          <form.Field name='priceCents'>
+          {/*{renderFields(form, fields, flowerDenominations)}*/}
+          <form.AppField name='priceCents'>
             {(field) => (
               <div className='space-y-2'>
                 <label className='text-sm font-medium text-neutral-300'>
@@ -29,7 +24,7 @@ export const Pricing = ({form}: PricingProps) => {
                 </label>
                 <Input
                   type='number'
-                  value={field.state.value.toString()}
+                  value={String(field.state.value ?? '')}
                   onChange={(e) => field.handleChange(Number(e.target.value))}
                   onBlur={field.handleBlur}
                   startContent={
@@ -37,9 +32,7 @@ export const Pricing = ({form}: PricingProps) => {
                   }
                   placeholder='0.00'
                   variant='bordered'
-                  // classNames={{
-                  //   inputWrapper: 'bg-neutral-900 border-neutral-800 data-[hover=true]:border-neutral-700 group-data-[focus=true]:border-emerald-500',
-                  // }}
+                  classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
@@ -49,32 +42,42 @@ export const Pricing = ({form}: PricingProps) => {
                   )}
               </div>
             )}
-          </form.Field>
+          </form.AppField>
 
-          <form.Field name='unit'>
-            {(field) => (
-              <div className='space-y-2'>
-                <label className='text-sm font-medium text-neutral-300'>
-                  Unit
-                </label>
-                <Input
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder='e.g. 3.5g, each'
-                  variant='bordered'
-                  // classNames={{
-                  //   inputWrapper: 'bg-neutral-900 border-neutral-800 data-[hover=true]:border-neutral-700 group-data-[focus=true]:border-emerald-500',
-                  // }}
-                />
-              </div>
-            )}
-          </form.Field>
+          <form.AppField name='unit'>
+            {(field) => {
+              const unitValue = (field.state.value as string) ?? ''
+              return (
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium text-neutral-300'>
+                    Unit of Measurement
+                  </label>
+                  <Input
+                    value={unitValue}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder='e.g. 3.5g, each'
+                    variant='bordered'
+                    classNames={commonInputClassNames}
+                  />
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {field.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                </div>
+              )
+            }}
+          </form.AppField>
         </div>
 
         <form.Field name='variants'>
           {(field) => {
-            const variants = field.state.value || []
+            const variants =
+              (field.state.value as
+                | Array<{label: string; price: number}>
+                | undefined) || []
             return (
               <div className='space-y-3 rounded-xl border border-neutral-800 bg-neutral-900/30 p-4'>
                 <div className='flex items-center justify-between'>
@@ -95,12 +98,12 @@ export const Pricing = ({form}: PricingProps) => {
                         </span>
                         <Input
                           type='number'
-                          value={variant.price.toString()}
+                          value={String(variant.price ?? '')}
                           onChange={(e) => {
                             const newVariants = [...variants]
                             newVariants[index] = {
                               ...variant,
-                              price: Number(e.target.value),
+                              price: Number(e.target.value) || 0,
                             }
                             field.handleChange(newVariants)
                           }}
@@ -109,9 +112,7 @@ export const Pricing = ({form}: PricingProps) => {
                           }
                           size='sm'
                           variant='bordered'
-                          // classNames={{
-                          //   inputWrapper: 'bg-neutral-900 border-neutral-800',
-                          // }}
+                          classNames={commonInputClassNames}
                         />
                       </div>
                     ))}
@@ -126,7 +127,7 @@ export const Pricing = ({form}: PricingProps) => {
             )
           }}
         </form.Field>
-      </TextureCardContent>
-    </TextureCard>
+      </div>
+    </FormSection>
   )
 }

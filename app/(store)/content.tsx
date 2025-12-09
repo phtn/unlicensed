@@ -39,7 +39,7 @@ export const Content = ({
   )
 
   return (
-    <div className='space-y-24 bg-background'>
+    <div className='space-y-40 bg-background'>
       <NewHome />
       <FeaturedProducts featuredProducts={featuredProducts} />
 

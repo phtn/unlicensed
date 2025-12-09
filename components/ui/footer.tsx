@@ -9,7 +9,7 @@ export const Footer = () => (
         <div className='h-10 flex items-center gap-x-2'>
           <Icon
             name='rapid-fire'
-            className='h-40 md:h-32 w-auto aspect-auto dark:text-light-gray text-brand'
+            className='h-40 md:h-32 w-auto aspect-auto dark:text-light-gray text-dark-gray'
           />
         </div>
 
