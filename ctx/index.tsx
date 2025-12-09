@@ -1,12 +1,15 @@
 'use client'
 
+import {ThemeProvider} from '@/components/ui/theme-provider'
 import {getConvexReactClient} from '@/lib/convexReactClient'
 import {HeroUIProvider} from '@heroui/react'
 import {ConvexProvider} from 'convex/react'
+import {useTheme} from 'next-themes'
 import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -28,60 +31,47 @@ interface ProvidersProviderProps {
   children: ReactNode
 }
 
-const STORAGE_KEY = 'hyfe-theme-preference'
-
-const applyTheme = (theme: Theme) => {
-  if (typeof document === 'undefined') return
-  const root = document.documentElement
-  root.dataset.theme = theme
-  root.classList.toggle('dark', theme === 'dark')
-  root.classList.toggle('light', theme === 'light')
-  root.style.colorScheme = theme
-}
-
-const getPreferredTheme = (): Theme => {
-  if (typeof window === 'undefined') return 'dark'
-
-  const stored = window.localStorage.getItem(STORAGE_KEY)
-  if (stored === 'light' || stored === 'dark') {
-    return stored
-  }
-
-  const prefersLight = window.matchMedia(
-    '(prefers-color-scheme: light)',
-  ).matches
-  return prefersLight ? 'light' : 'dark'
-}
-
 const ProvidersCtx = createContext<ProvidersCtxValue | null>(null)
 
-const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
-  const convexClient = useMemo(() => getConvexReactClient(), [])
-  const [theme, setThemeState] = useState<Theme>(() => {
-    const preferredTheme = getPreferredTheme()
-    applyTheme(preferredTheme)
-    return preferredTheme
-  })
-  const [isThemeReady] = useState(true)
+const ThemeContextProvider = ({children}: ProvidersProviderProps) => {
+  const {
+    theme: nextThemeValue,
+    setTheme: setNextTheme,
+    resolvedTheme,
+    systemTheme,
+  } = useTheme()
 
-  const setTheme = useCallback((nextTheme: Theme) => {
-    setThemeState(nextTheme)
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(STORAGE_KEY, nextTheme)
-    }
-    applyTheme(nextTheme)
+  // Use mounted state to determine if theme is ready
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
   }, [])
+
+  const isThemeReady = mounted && resolvedTheme !== undefined
+
+  const theme = useMemo<Theme>(() => {
+    if (!mounted) return 'dark' // Default during SSR
+    // If theme is explicitly set to 'light' or 'dark', use it
+    // Otherwise use resolvedTheme or systemTheme
+    if (nextThemeValue === 'light' || nextThemeValue === 'dark') {
+      return nextThemeValue
+    }
+    return (resolvedTheme ?? systemTheme ?? 'dark') as Theme
+  }, [mounted, nextThemeValue, resolvedTheme, systemTheme])
+
+  const setTheme = useCallback(
+    (newTheme: Theme) => {
+      setNextTheme(newTheme)
+    },
+    [setNextTheme],
+  )
 
   const toggleTheme = useCallback(() => {
-    setThemeState((current) => {
-      const nextTheme = current === 'dark' ? 'light' : 'dark'
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(STORAGE_KEY, nextTheme)
-      }
-      applyTheme(nextTheme)
-      return nextTheme
-    })
-  }, [])
+    // Get the actual resolved theme (not 'system')
+    const currentResolvedTheme = (resolvedTheme ?? systemTheme ?? 'dark') as Theme
+    setNextTheme(currentResolvedTheme === 'dark' ? 'light' : 'dark')
+  }, [resolvedTheme, systemTheme, setNextTheme])
 
   const contextValue = useMemo<ProvidersCtxValue>(
     () => ({
@@ -93,18 +83,34 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
     [isThemeReady, setTheme, theme, toggleTheme],
   )
 
+  return (
+    <ProvidersCtx.Provider value={contextValue}>
+      {children}
+    </ProvidersCtx.Provider>
+  )
+}
+
+const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
+  const convexClient = useMemo(() => getConvexReactClient(), [])
+
   const content = (
     <HeroUIProvider locale='en-US' className='min-h-screen'>
-      {children}
+      <ThemeProvider
+        attribute='class'
+        defaultTheme='system'
+        enableSystem
+        enableColorScheme
+        disableTransitionOnChange
+        storageKey='hyfe-theme-preference'>
+        <ThemeContextProvider>{children}</ThemeContextProvider>
+      </ThemeProvider>
     </HeroUIProvider>
   )
 
   return (
-    <ProvidersCtx.Provider value={contextValue}>
-      <ConvexProvider client={convexClient}>
-        <CartAnimationProvider>{content}</CartAnimationProvider>
-      </ConvexProvider>
-    </ProvidersCtx.Provider>
+    <ConvexProvider client={convexClient}>
+      <CartAnimationProvider>{content}</CartAnimationProvider>
+    </ConvexProvider>
   )
 }
 

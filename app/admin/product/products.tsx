@@ -7,17 +7,17 @@ import {Button, Card, CardFooter, CardHeader, Image} from '@heroui/react'
 export const ProductItem = ({product}: {product: Doc<'products'>}) => (
   <Card
     isFooterBlurred
-    className='rounded-xs w-full h-[200px] col-span-12 sm:col-span-7 bg-linear-to-b from-dark-gray/50 from-10% via-transparent to-transparent border-t-[0.33px] border-dark-gray/60 dark:border-dark-gray/80'>
+    className='rounded-xs w-full h-[200px] col-span-12 sm:col-span-7 bg-linear-to-b from-dark-gray/50 from-10% via-transparent to-transparent dark:border-dark-gray/80'>
     <CardHeader className='absolute z-10 top-0 flex-col items-start p-1'>
-      <h4 className='text-white/90 font-medium text-lg tracking-tight'>
-        {product.name}
-      </h4>
       <div className='flex items-center justify-between w-full'>
-        <p className='text-tiny opacity-70 uppercase font-bold'>
+        <p className='text-tiny uppercase font-medium text-white'>
           {product.categorySlug}
         </p>
         {product.featured && <HyperBadge variant='featured' size='xs' />}
       </div>
+      <h4 className='text-white/90 font-medium text-lg tracking-tight'>
+        {product.name}
+      </h4>
     </CardHeader>
     <Image
       removeWrapper
@@ -67,7 +67,7 @@ interface CurrentProductsProps {
 
 export const CurrentProducts = ({products}: CurrentProductsProps) => {
   return (
-    <section className='px-2 h-[83lvh] overflow-auto'>
+    <section className='h-[91lvh] overflow-auto'>
       {products?.length === 0 ? (
         <p className='text-sm text-neutral-500'>
           No products yet. Create one above to get started.

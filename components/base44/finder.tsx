@@ -14,9 +14,9 @@ export const ShopFinder = () => {
   return (
     <section className='pb-20 px-6 border-b-[0.33px] border-foreground/40 overflow-hidden'>
       <div className='relative max-w-7xl mx-auto'>
-        <div className='grid lg:grid-cols-2 gap-12 mb-4'>
+        <div className='grid lg:grid-cols-2 gap-12 my-2'>
           <h2 className='text-xl tracking-tight lg:text-3xl font-fugaz leading-tight'>
-            <span className='mr-2 text-dark-gray'>
+            <span className='mr-2 dark:text-white '>
               Shop by {selectedFilter}.
             </span>
             <span className='text-tertiary-foreground font-space font-semibold capitalize'>
@@ -46,7 +46,7 @@ export const ShopFinder = () => {
 
         {/* Stats Cards */}
         {/*<div className='absolute rounded-4xl h-40 w-full scale-125 blur-3xl opacity-20 bg-linear-to-br from-brand/60 via-brand-300/60 to-teal-400'></div>*/}
-        <div className='relative rounded-3xl overflow-hidden'>
+        <div className='relativeddoverflow-hidden py-0.5 px-0.5'>
           <CategoryList />
           <div className='hidden relative _grid md:grid-cols-3 gap-6'>
             {/* Card 1 */}

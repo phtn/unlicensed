@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./public/workers",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": false,
+    "lib": ["ES2022", "WebWorker"],
+    "types": [],
+    "checkJs": true
+  },
+  "include": ["./public/workers/**/*.ts", "./public/workers/**/*.js"],
+  "exclude": ["node_modules"]
+}

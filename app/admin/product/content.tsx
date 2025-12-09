@@ -9,7 +9,7 @@ import {ProductForm} from '../_components/product-form'
 import {BadgeList} from './badges'
 import {CurrentProducts} from './products'
 
-export const Content = () => {
+export const ProductsList = () => {
   const products = useQuery(api.products.q.listProducts, {limit: 100})
   const categories = useQuery(api.categories.q.listCategories)
   const [selectedTab, setSelectedTab] = useState<Key>('products')

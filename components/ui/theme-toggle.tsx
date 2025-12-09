@@ -1,8 +1,10 @@
-import {useProvidersCtx} from '@/ctx'
+'use client'
+
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
-import {useCallback, useMemo} from 'react'
+import {useTheme} from 'next-themes'
+import {useCallback, useEffect, useMemo, useState} from 'react'
 
 type ThemeToggleProps = {
   variant?: 'icon' | 'menu'
@@ -10,14 +12,25 @@ type ThemeToggleProps = {
 }
 
 export const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
-  const {theme, toggleTheme, isThemeReady} = useProvidersCtx()
+  const {theme, setTheme, resolvedTheme} = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleToggle = useCallback(() => {
-    toggleTheme()
+    const currentTheme = resolvedTheme ?? 'dark'
+    setTheme(currentTheme === 'dark' ? 'light' : 'dark')
     onAction?.()
-  }, [toggleTheme, onAction])
+  }, [resolvedTheme, setTheme, onAction])
 
-  const isDark = useMemo(() => theme === 'dark', [theme])
+  const isDark = useMemo(() => {
+    if (!mounted) return false
+    return resolvedTheme === 'dark'
+  }, [mounted, resolvedTheme])
+
+  const isThemeReady = mounted && resolvedTheme !== undefined
 
   if (!isThemeReady && variant === 'icon') {
     return (

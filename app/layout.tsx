@@ -142,13 +142,13 @@ export default function RootLayout({
   navbar?: React.ReactNode
 }>) {
   return (
-    <html lang='en' className='dark' data-theme='dark' suppressHydrationWarning>
+    <html lang='en' suppressHydrationWarning>
       <body
         className={`${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased font-sans`}>
         <ProvidersCtxProvider>
           <AgeConfirmationModal />
           <ConditionalNavbar navbar={navbar} />
-          <div className='relative bg-background'>{children}</div>
+          {children}
         </ProvidersCtxProvider>
       </body>
     </html>

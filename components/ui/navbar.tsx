@@ -1,6 +1,5 @@
 'use client'
 
-import {useProvidersCtx} from '@/ctx'
 import {cn} from '@/lib/utils'
 import {
   Button,
@@ -13,8 +12,9 @@ import {
   NavbarMenuItem,
   NavbarMenuToggle,
 } from '@heroui/react'
+import {useTheme} from 'next-themes'
 import {usePathname} from 'next/navigation'
-import {useMemo, useState} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 
 type NavLink = {
   label: string
@@ -52,12 +52,22 @@ type ThemeToggleProps = {
 }
 
 const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
-  const {theme, toggleTheme, isThemeReady} = useProvidersCtx()
+  const {setTheme, resolvedTheme} = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleToggle = () => {
-    toggleTheme()
+    const currentTheme = resolvedTheme ?? 'dark'
+    setTheme(currentTheme === 'dark' ? 'light' : 'dark')
     onAction?.()
   }
+
+  const isThemeReady = mounted && resolvedTheme !== undefined
+  const isDark = resolvedTheme === 'dark'
+  const label = isDark ? 'Light mode' : 'Dark mode'
 
   if (!isThemeReady && variant === 'icon') {
     return (
@@ -72,9 +82,6 @@ const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
       </Button>
     )
   }
-
-  const isDark = theme === 'dark'
-  const label = isDark ? 'Light mode' : 'Dark mode'
 
   if (variant === 'menu') {
     return (

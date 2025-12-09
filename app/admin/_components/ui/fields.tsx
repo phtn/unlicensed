@@ -263,7 +263,6 @@ export function SelectField<T>(props?: SelectFieldProps<T>) {
             const props = {
               color: categoryColor,
               variant: 'faded' as const,
-              key: option.value,
               textValue: option.label,
             } as React.ComponentProps<typeof CategorySelectItem>
 
@@ -276,7 +275,6 @@ export function SelectField<T>(props?: SelectFieldProps<T>) {
 
           return (
             <CategorySelectItem
-              {...props}
               key={option.value}
               textValue={option.label}
               // className={cn({'text-indigo-400': option.value === 'extracts'})}
