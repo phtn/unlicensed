@@ -48,6 +48,7 @@ interface HeroImageFieldProps {
     originalSize: number
     compressionRatio: number
   }>
+  validateImageFile: (file: File) => Promise<string | null>
 }
 
 const HeroImageField = ({
@@ -63,6 +64,7 @@ const HeroImageField = ({
   uploadFile,
   isUploading,
   convert,
+  validateImageFile,
 }: HeroImageFieldProps) => {
   const imageValue = (field.state.value as string) ?? ''
 
@@ -107,38 +109,6 @@ const HeroImageField = ({
   const preview = pendingPrimaryImage
     ? pendingPrimaryImage.preview
     : getPreview(imageValue)
-
-  const validateImageFile = async (file: File): Promise<string | null> => {
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      return 'File must be an image. Please select a valid image file.'
-    }
-
-    // Validate file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024 // 10MB in bytes
-    if (file.size > maxSize) {
-      return `Image is too large. Maximum size is 10MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`
-    }
-
-    // Validate that the file can be processed by the converter
-    try {
-      const blob = new Blob([file], {type: file.type})
-      const imageBitmap = await createImageBitmap(blob)
-
-      // Check minimum dimensions (optional - you can remove this if not needed)
-      if (imageBitmap.width < 1 || imageBitmap.height < 1) {
-        imageBitmap.close()
-        return 'Image dimensions are invalid.'
-      }
-
-      imageBitmap.close()
-      return null
-    } catch (error) {
-      return error instanceof Error
-        ? error.message
-        : '' + ' Valid image formats: jpeg, png, webp, avif,'
-    }
-  }
 
   const handleFileSelect = async () => {
     const input = document.createElement('input')
@@ -298,7 +268,10 @@ const HeroImageField = ({
       </div>
 
       {validationError && (
-        <p className='text-xs text-rose-400'>{validationError}</p>
+        <div className='text-xs text-rose-500 flex space-x-1 bg-rose-50 w-fit py-1 px-2 rounded-lg'>
+          <Icon name='alert-rhombus' className='size-4' />
+          <span>{validationError}</span>
+        </div>
       )}
       {field.state.meta.isTouched &&
         field.state.meta.errors.filter(Boolean).length > 0 && (
@@ -312,7 +285,7 @@ const HeroImageField = ({
 
 export const Media = ({form}: MediaProps) => {
   const {uploadFile, isUploading} = useStorageUpload()
-  const {convert} = useImageConverter()
+  const {convert, validateImageFile} = useImageConverter()
   const [imagePreviewMap, setImagePreviewMap] = useState<
     Record<string, string>
   >({})
@@ -342,6 +315,7 @@ export const Media = ({form}: MediaProps) => {
               uploadFile={uploadFile}
               isUploading={isUploading}
               convert={convert}
+              validateImageFile={validateImageFile}
             />
           )}
         </form.AppField>

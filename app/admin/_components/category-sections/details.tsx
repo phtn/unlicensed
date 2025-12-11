@@ -77,6 +77,7 @@ export const Details = ({form}: DetailsProps) => {
                   value={highlightValue}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
+                  variant='bordered'
                   placeholder='Hand-trimmed buds with rich terpene expression.'
                   classNames={commonInputClassNames}
                 />

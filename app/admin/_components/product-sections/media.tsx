@@ -24,7 +24,7 @@ interface FormStoreState {
 
 export const Media = ({form, fields}: MediaProps) => {
   const {uploadFile, isUploading} = useStorageUpload()
-  const {convert} = useImageConverter()
+  const {convert, validateImageFile} = useImageConverter()
   const [imagePreviewMap, setImagePreviewMap] = useState<
     Record<string, string>
   >({})
@@ -40,6 +40,10 @@ export const Media = ({form, fields}: MediaProps) => {
   >([])
   const [isConverting, setIsConverting] = useState(false)
   const [isConvertingGallery, setIsConvertingGallery] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const [galleryValidationErrors, setGalleryValidationErrors] = useState<
+    Record<number, string | null>
+  >({})
 
   // Get primary image value to include in gallery display (reactively)
   const primaryImageValue = useStore(
@@ -69,13 +73,23 @@ export const Media = ({form, fields}: MediaProps) => {
                 ? pendingPrimaryImage.preview
                 : getPreview(imageValue, imagePreviewMap)
 
-              const handleFileSelect = () => {
+              const handleFileSelect = async () => {
                 const input = document.createElement('input')
                 input.type = 'file'
                 input.accept = 'image/*'
-                input.onchange = () => {
+                input.onchange = async () => {
                   const file = input.files?.[0]
                   if (!file) return
+
+                  // Clear previous validation error
+                  setValidationError(null)
+
+                  // Validate the file
+                  const error = await validateImageFile(file)
+                  if (error) {
+                    setValidationError(error)
+                    return
+                  }
 
                   // Create preview
                   const previewUrl = URL.createObjectURL(file)
@@ -87,8 +101,21 @@ export const Media = ({form, fields}: MediaProps) => {
               const handleSave = async () => {
                 if (!pendingPrimaryImage) return
 
+                // Clear any previous validation errors
+                setValidationError(null)
+
                 setIsConverting(true)
                 try {
+                  // Validate again before converting (in case file was modified)
+                  const error = await validateImageFile(
+                    pendingPrimaryImage.file,
+                  )
+                  if (error) {
+                    setValidationError(error)
+                    setIsConverting(false)
+                    return
+                  }
+
                   // Convert to webp
                   const converted = await convert(pendingPrimaryImage.file, {
                     format: 'webp',
@@ -117,7 +144,13 @@ export const Media = ({form, fields}: MediaProps) => {
                   // Clean up pending state
                   URL.revokeObjectURL(pendingPrimaryImage.preview)
                   setPendingPrimaryImage(null)
+                  setValidationError(null)
                 } catch (error) {
+                  const errorMessage =
+                    error instanceof Error
+                      ? error.message
+                      : 'Failed to convert and upload image. Please try again.'
+                  setValidationError(errorMessage)
                   console.error('Failed to convert and upload', error)
                 } finally {
                   setIsConverting(false)
@@ -129,6 +162,7 @@ export const Media = ({form, fields}: MediaProps) => {
                   URL.revokeObjectURL(pendingPrimaryImage.preview)
                   setPendingPrimaryImage(null)
                 }
+                setValidationError(null)
               }
 
               return (
@@ -193,6 +227,12 @@ export const Media = ({form, fields}: MediaProps) => {
                       </div>
                     )}
                   </div>
+                  {validationError && (
+                    <div className='text-xs text-rose-500 flex space-x-1 bg-rose-50 w-fit py-1 px-2 rounded-lg'>
+                      <Icon name='alert-rhombus' className='size-4' />
+                      <span>{validationError}</span>
+                    </div>
+                  )}
                 </div>
               )
             }}
@@ -210,24 +250,42 @@ export const Media = ({form, fields}: MediaProps) => {
                   ]
                 : galleryValue
 
-              const handleGalleryFileSelect = () => {
+              const handleGalleryFileSelect = async () => {
                 const input = document.createElement('input')
                 input.type = 'file'
                 input.accept = 'image/*'
                 input.multiple = true
-                input.onchange = () => {
+                input.onchange = async () => {
                   const files = input.files
                   if (!files?.length) return
 
-                  // Create previews for all selected files
-                  const newPendingImages = Array.from(files).map((file) => ({
-                    file,
-                    preview: URL.createObjectURL(file),
-                  }))
-                  setPendingGalleryImages((prev) => [
-                    ...prev,
-                    ...newPendingImages,
-                  ])
+                  // Clear previous validation errors
+                  setGalleryValidationErrors({})
+
+                  // Validate all files
+                  const validFiles: Array<{file: File; preview: string}> = []
+                  const errors: Record<number, string | null> = {}
+
+                  for (let i = 0; i < files.length; i++) {
+                    const file = files[i]
+                    const error = await validateImageFile(file)
+                    if (error) {
+                      errors[validFiles.length + i] = error
+                    } else {
+                      validFiles.push({
+                        file,
+                        preview: URL.createObjectURL(file),
+                      })
+                    }
+                  }
+
+                  if (Object.keys(errors).length > 0) {
+                    setGalleryValidationErrors(errors)
+                  }
+
+                  if (validFiles.length > 0) {
+                    setPendingGalleryImages((prev) => [...prev, ...validFiles])
+                  }
                 }
                 input.click()
               }
@@ -235,12 +293,26 @@ export const Media = ({form, fields}: MediaProps) => {
               const handleSaveGallery = async () => {
                 if (pendingGalleryImages.length === 0) return
 
+                // Clear any previous validation errors
+                setGalleryValidationErrors({})
+
                 setIsConvertingGallery(true)
                 try {
                   const uploads: string[] = []
                   const newMap = {...galleryPreviewMap}
 
                   for (const pendingImage of pendingGalleryImages) {
+                    // Validate again before converting (in case file was modified)
+                    const error = await validateImageFile(pendingImage.file)
+                    if (error) {
+                      setGalleryValidationErrors((prev) => ({
+                        ...prev,
+                        [pendingGalleryImages.indexOf(pendingImage)]: error,
+                      }))
+                      setIsConvertingGallery(false)
+                      return
+                    }
+
                     // Convert to webp
                     const converted = await convert(pendingImage.file, {
                       format: 'webp',
@@ -266,8 +338,16 @@ export const Media = ({form, fields}: MediaProps) => {
                   field.handleChange([...galleryValue, ...uploads])
                   setGalleryPreviewMap(newMap)
                   setPendingGalleryImages([])
+                  setGalleryValidationErrors({})
                 } catch (error) {
+                  const errorMessage =
+                    error instanceof Error
+                      ? error.message
+                      : 'Failed to convert and upload gallery images. Please try again.'
                   console.error('Failed to convert and upload gallery', error)
+                  setGalleryValidationErrors({
+                    [-1]: errorMessage,
+                  })
                 } finally {
                   setIsConvertingGallery(false)
                 }
@@ -279,6 +359,7 @@ export const Media = ({form, fields}: MediaProps) => {
                   URL.revokeObjectURL(img.preview)
                 })
                 setPendingGalleryImages([])
+                setGalleryValidationErrors({})
               }
 
               const handleRemovePending = (index: number) => {
@@ -401,6 +482,11 @@ export const Media = ({form, fields}: MediaProps) => {
                           className='absolute top-1 right-1 p-1 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500'>
                           <Icon name='x' size={12} />
                         </button>
+                        {galleryValidationErrors[index] && (
+                          <div className='absolute bottom-0 left-0 right-0 bg-red-500/90 text-white text-xs p-1'>
+                            {galleryValidationErrors[index]}
+                          </div>
+                        )}
                       </div>
                     ))}
 
@@ -428,6 +514,19 @@ export const Media = ({form, fields}: MediaProps) => {
                         </div>
                       )}
                   </div>
+
+                  {Object.keys(galleryValidationErrors).length > 0 && (
+                    <div className='space-y-1'>
+                      {Object.entries(galleryValidationErrors).map(
+                        ([index, error]) =>
+                          error && (
+                            <p key={index} className='text-xs text-rose-400'>
+                              {error}
+                            </p>
+                          ),
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             }}
