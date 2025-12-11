@@ -4,11 +4,12 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Card, CardFooter, CardHeader, Image} from '@heroui/react'
 
-export const ProductItem = ({product}: {product: Doc<'products'>}) => (
+const ProductItem = ({product}: {product: Doc<'products'>}) => (
   <Card
+    radius='none'
     isFooterBlurred
-    className='rounded-xs w-full h-[200px] col-span-12 sm:col-span-7 bg-linear-to-b from-dark-gray/50 from-10% via-transparent to-transparent dark:border-dark-gray/80'>
-    <CardHeader className='absolute z-10 top-0 flex-col items-start p-1'>
+    className='w-full h-[200px] col-span-12 sm:col-span-7 bg-linear-to-b from-dark-gray/50 from-10% via-transparent to-transparent dark:border-dark-gray/80'>
+    <CardHeader className='absolute z-10 top-0 flex-col items-start p-1 bg-background/20 backdrop-blur-2xl'>
       <div className='flex items-center justify-between w-full'>
         <p className='text-tiny uppercase font-medium text-white'>
           {product.categorySlug}
@@ -20,6 +21,7 @@ export const ProductItem = ({product}: {product: Doc<'products'>}) => (
       </h4>
     </CardHeader>
     <Image
+      radius='none'
       removeWrapper
       alt={product.name}
       className='z-0 w-full h-full object-cover rounded-xs'
@@ -28,23 +30,19 @@ export const ProductItem = ({product}: {product: Doc<'products'>}) => (
     <CardFooter className='p-1.5 absolute bg-black/80 bottom-0 z-10 border border-dark-gray/20 dark:border-dark-gray/80 rounded-b-xs'>
       <div className='flex grow gap-2 items-center'>
         <div className='flex flex-col'>
+          <p className='text-xs text-white'>
+            <span
+              className={cn('text-emerald-400 font-medium tracking-tight', {
+                'text-orange-300': !product.available,
+              })}>
+              {product.available ? 'Available' : 'Not Available'}
+            </span>
+          </p>
           <p className='text-tiny text-white'>
             Stock:{' '}
             <span className='text-blue-400 text-sm font-medium tracking-tight'>
               {product.stock}
-              {product.unit}
-            </span>
-          </p>
-          <p className='text-tiny text-white'>
-            Status:{' '}
-            <span
-              className={cn(
-                'text-emerald-400 text-sm font-medium tracking-tight',
-                {
-                  'text-orange-300': !product.available,
-                },
-              )}>
-              {product.available ? 'Available' : 'Not Available'}
+              <span className='px-1'>{product.unit}</span>
             </span>
           </p>
         </div>
@@ -61,11 +59,11 @@ export const ProductItem = ({product}: {product: Doc<'products'>}) => (
   </Card>
 )
 
-interface CurrentProductsProps {
+interface ProductListProps {
   products: Doc<'products'>[] | undefined
 }
 
-export const CurrentProducts = ({products}: CurrentProductsProps) => {
+export const ProductList = ({products}: ProductListProps) => {
   return (
     <section className='h-[91lvh] overflow-auto'>
       {products?.length === 0 ? (

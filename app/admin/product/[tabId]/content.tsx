@@ -1,8 +1,8 @@
 'use client'
 
 import {BadgeList} from '../badges'
-import {ProductsList} from '../content'
-import {NewProduct} from '../new'
+import {ProductsContent} from '../content'
+import {NewProduct} from '../new-product'
 
 export const Content = ({tabId}: {tabId: string}) => {
   switch (tabId) {
@@ -11,6 +11,6 @@ export const Content = ({tabId}: {tabId: string}) => {
     case 'new':
       return <NewProduct />
     default:
-      return <ProductsList />
+      return <ProductsContent />
   }
 }

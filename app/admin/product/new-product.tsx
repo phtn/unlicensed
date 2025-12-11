@@ -1,6 +1,6 @@
 'use client'
 
-import {ProductForm} from '@/app/admin/_components/product-form'
+import {ProductForm} from '@/app/admin/product/product-form'
 import {api} from '@/convex/_generated/api'
 import {useQuery} from 'convex/react'
 import {Suspense} from 'react'

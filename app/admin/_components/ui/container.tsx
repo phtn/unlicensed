@@ -2,7 +2,6 @@
 
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
 import {ReactNode, useMemo} from 'react'
 import {useSettingsPanel} from './settings'
 import {SidebarTrigger} from './sidebar'
@@ -20,19 +19,21 @@ export const WrappedContent = ({children, toolbar}: WrappedContentProps) => {
       <div className='px-2 sm:px-3 py-2 flex items-center justify-between min-w-0'>
         <SidebarTrigger />
         {toolbar}
-        <Button
-          isIconOnly
-          size='sm'
-          variant='ghost'
-          data-sidebar='trigger'
-          className={cn('border-none text-foreground/80 hover:text-foreground')}
-          onPress={togglePanel}>
+        <button
+          className={cn(
+            'p-1.5 rounded-md border-none hover:bg-light-gray/15 text-foreground hover:text-foreground',
+            {'rotate-180': isExpanded},
+          )}
+          onClick={togglePanel}>
           <Icon
             name='sidebar'
-            className={cn('size-5', isExpanded && 'rotate-180')}
+            className={cn(
+              'size-4 rotate-180 opacity-80 group-hover:opacity-100',
+              {'rotate-0': isExpanded},
+            )}
           />
           <span className='sr-only'>Toggle Sidebar</span>
-        </Button>
+        </button>
       </div>
       {children}
     </Wrapper>

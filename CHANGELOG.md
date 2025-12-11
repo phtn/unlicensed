@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1
+
+### Patch Changes
+
+- 1acc336: product media section uses image-converter
+- toolbar components
+
 ## 0.2.0
 
 ### Minor Changes

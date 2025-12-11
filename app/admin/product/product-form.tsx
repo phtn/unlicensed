@@ -14,14 +14,14 @@ import {
   productFields,
   ProductFormApi,
   productSchema,
-} from './product-schema'
-import {Attributes} from './product-sections/attributes'
-import {BasicInfo} from './product-sections/basic-info'
-import {Details} from './product-sections/details'
-import {Inventory} from './product-sections/inventory'
-import {Media} from './product-sections/media'
-import {Pricing} from './product-sections/pricing'
-import {useAppForm} from './ui/form-context'
+} from '../_components/product-schema'
+import {Attributes} from '../_components/product-sections/attributes'
+import {BasicInfo} from '../_components/product-sections/basic-info'
+import {Details} from '../_components/product-sections/details'
+import {Inventory} from '../_components/product-sections/inventory'
+import {Media} from '../_components/product-sections/media'
+import {Pricing} from '../_components/product-sections/pricing'
+import {useAppForm} from '../_components/ui/form-context'
 
 type CategoryDoc = Doc<'categories'>
 
@@ -165,8 +165,11 @@ export const ProductForm = ({categories}: ProductFormProps) => {
   return (
     <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 lg:p-0 items-start h-[calc(100vh-6rem)]'>
       {/* Left Sidebar Navigation */}
-      <aside className='hidden lg:block col-span-2 h-full overflow-y-auto pr-2 pt-8 space-y-6'>
+      <aside className='hidden lg:block col-span-2 h-full overflow-y-auto pr-2 space-y-6'>
         <nav className='flex flex-col gap-1'>
+          <h1 className='tracking-tighter font-semibold py-4'>
+            Create New Product
+          </h1>
           {SECTIONS.map((section) => (
             <Button
               size='md'

@@ -26,7 +26,8 @@ import React, {ReactNode, useEffect} from 'react'
 type Activity = Doc<'activities'>
 
 const columns = [
-  {name: 'USER', uid: 'user'},
+  {name: 'CUSTOMER', uid: 'user'},
+  {name: 'AMOUNT', uid: 'amount'},
   {name: 'ACTIVITY', uid: 'activity'},
   {name: 'TYPE', uid: 'type'},
   {name: 'DETAILS', uid: 'details'},
@@ -166,7 +167,7 @@ export const RecentActivities = ({
                 classNames={{
                   description: 'text-default-500',
                 }}
-                description={activity.user.email}
+                // description={activity.user.email}
                 name={activity.user.name}>
                 {activity.user.email}
               </User>
@@ -180,6 +181,16 @@ export const RecentActivities = ({
               <div className='flex flex-col'>
                 <p className='text-bold text-small text-default-400'>System</p>
               </div>
+            </div>
+          )
+        case 'amount':
+          return (
+            <div className='capitalize border-none gap-1 text-default-600'>
+              {activity.metadata?.orderTotalCents && (
+                <p className='font-bold text-tiny font-space'>
+                  {formatPrice(activity.metadata.orderTotalCents)}
+                </p>
+              )}
             </div>
           )
         case 'activity':
@@ -196,11 +207,11 @@ export const RecentActivities = ({
                 <p className='text-bold text-small text-foreground'>
                   {activity.title}
                 </p>
-                {activity.description && (
+                {/*{activity.description && (
                   <p className='hidden text-bold text-tiny text-default-500'>
                     {activity.description}
                   </p>
-                )}
+                )}*/}
               </div>
             </div>
           )
@@ -220,11 +231,6 @@ export const RecentActivities = ({
               {activity.metadata?.orderNumber && (
                 <p className='text-bold text-small capitalize'>
                   Order: {activity.metadata.orderNumber}
-                </p>
-              )}
-              {activity.metadata?.orderTotalCents && (
-                <p className='text-bold text-tiny capitalize text-default-500'>
-                  ${formatPrice(activity.metadata.orderTotalCents)}
                 </p>
               )}
               {activity.metadata?.productName && (
@@ -382,7 +388,7 @@ export const RecentActivities = ({
             {(activity) => (
               <TableRow
                 key={activity._id}
-                className='h-16 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] last:border-b-0'>
+                className='h-8 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] border-b-light-table last:border-b-0 dark:border-b-dark-table'>
                 {(columnKey) => (
                   <TableCell>
                     {renderCell(activity, columnKey) as ReactNode}

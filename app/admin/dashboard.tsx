@@ -3,7 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
-import {CategoryForm} from './_components/category-form'
+import {CategoryForm} from './category/category-form'
 
 export const AdminDashboard = () => {
   const categories = useQuery(api.categories.q.listCategories)

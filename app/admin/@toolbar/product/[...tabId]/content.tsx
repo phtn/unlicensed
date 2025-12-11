@@ -1,9 +1,11 @@
 'use client'
 
+import {
+  PrimaryTab,
+  SecondaryTab,
+} from '@/app/admin/_components/toolbar-components'
 import {api} from '@/convex/_generated/api'
-import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
@@ -17,48 +19,35 @@ export const Content = () => {
         href='/admin/product'
         prefetch
         className='flex items-center space-x-1.5 group'>
-        <span className=' group-hover:underline underline-offset-4 decoration-dashed decoration-[0.5px] tracking-tighter font-semibold'>
+        <span
+          className={cn(
+            'group-hover:underline underline-offset-4 decoration-dashed decoration-[0.5px] tracking-tighter font-semibold',
+            {'text-blue-500': route === 'product'},
+          )}>
           Products
         </span>
-        <span className='px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space'>
+        <span
+          className={cn(
+            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
+            {'bg-blue-500 text-white': route === 'product'},
+          )}>
           {products?.length}
         </span>
       </Link>
       <div className='flex items-center space-x-1 md:space-x-4 px-4 text-base'>
-        <Button
-          as={Link}
+        <SecondaryTab
+          id='badges'
           href='/admin/product/badges'
-          prefetch
-          disableRipple
-          disableAnimation
-          size='sm'
-          className={cn(
-            'dark:border-origin border-white bg-white dark:bg-transparent hover:bg-light-gray/15',
-            {
-              'text-blue-500 dark:text-blue-500 border-b border-blue-500 rounded-none border-x-0 border-t-0 bg-transparent hover:bg-white dark:hover:bg-transparent':
-                route === 'badges',
-            },
-          )}>
-          Badges
-        </Button>
-        <Button
-          as={Link}
+          route={route}
+          label='Badges'
+        />
+        <PrimaryTab
+          id='new'
           href='/admin/product/new'
-          prefetch
-          size='sm'
-          disableRipple
-          disableAnimation
-          variant='bordered'
-          className={cn(
-            'flex items-center px-0 dark:border-origin border-white dark:bg-zinc-700 bg-dark-gray/10 dark:hover:bg-blue-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight -space-x-1 shrink-0',
-            {
-              'px-0 border-b border-emerald-500 border-t-0 border-x-0 text-emerald-600 rounded-none bg-transparent':
-                route === 'new',
-            },
-          )}>
-          <Icon name='plus' className='size-4' />
-          <span>New</span>
-        </Button>
+          route={route}
+          icon='plus'
+          label='New'
+        />
       </div>
     </div>
   )
