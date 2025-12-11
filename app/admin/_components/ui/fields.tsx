@@ -324,13 +324,13 @@ export function SwitchField<T>(props?: CheckboxFieldProps<T>) {
   )
 }
 
-export const renderFields = (
+export const renderFields = <T extends Record<string, unknown>>(
   form: ReturnType<typeof useAppForm>,
-  fields: FormInput<ProductFormValues>[],
+  fields: FormInput<T>[],
   options?: Array<SelectOption>,
 ) =>
   fields.map((field) => (
-    <form.AppField key={field.name} name={field.name}>
+    <form.AppField key={String(field.name)} name={field.name as string}>
       {(input) => {
         switch (field.type) {
           case 'checkbox':
@@ -338,7 +338,7 @@ export const renderFields = (
               <input.SwitchField
                 {...input}
                 type={field.type}
-                name={field.name as keyof ProductFormValues}
+                name={field.name as keyof T}
                 label={field.label}
                 placeholder={field.placeholder}
               />
@@ -348,7 +348,7 @@ export const renderFields = (
               <input.SelectField
                 {...input}
                 type={field.type}
-                name={field.name as keyof ProductFormValues}
+                name={field.name as keyof T}
                 mode={field.mode}
                 label={field.label}
                 placeholder={field.placeholder}
@@ -367,7 +367,7 @@ export const renderFields = (
               <input.TextField
                 {...input}
                 type={field.type}
-                name={field.name as keyof ProductFormValues}
+                name={field.name as keyof T}
                 label={field.label}
                 placeholder={field.placeholder}
               />
@@ -377,16 +377,20 @@ export const renderFields = (
     </form.AppField>
   ))
 
-interface FieldGroupProps {
+interface FieldGroupProps<T extends Record<string, unknown>> {
   form: ReturnType<typeof useAppForm>
-  fields: Array<FormInput<ProductFormValues>>
+  fields: Array<FormInput<T>>
   options?: Array<SelectOption>
   children?: ReactNode
 }
 
-export const FieldGroup = ({form, fields, options}: FieldGroupProps) =>
+export const FieldGroup = <T extends Record<string, unknown>>({
+  form,
+  fields,
+  options,
+}: FieldGroupProps<T>) =>
   fields.map((field) => (
-    <form.AppField key={field.name} name={field.name}>
+    <form.AppField key={String(field.name)} name={field.name as string}>
       {(input) => {
         switch (field.type) {
           case 'checkbox':
@@ -394,7 +398,7 @@ export const FieldGroup = ({form, fields, options}: FieldGroupProps) =>
               <input.SwitchField
                 {...input}
                 type={field.type}
-                name={field.name as keyof ProductFormValues}
+                name={field.name as keyof T}
                 label={field.label}
                 placeholder={field.placeholder}
               />
@@ -404,7 +408,7 @@ export const FieldGroup = ({form, fields, options}: FieldGroupProps) =>
               <input.SelectField
                 {...input}
                 type={field.type}
-                name={field.name as keyof ProductFormValues}
+                name={field.name as keyof T}
                 mode={field.mode}
                 label={field.label}
                 placeholder={field.placeholder}
@@ -417,7 +421,7 @@ export const FieldGroup = ({form, fields, options}: FieldGroupProps) =>
               <input.TextField
                 {...input}
                 type={field.type}
-                name={field.name as keyof ProductFormValues}
+                name={field.name as keyof T}
                 label={field.label}
                 placeholder={field.placeholder}
               />

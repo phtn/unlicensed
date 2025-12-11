@@ -16,7 +16,7 @@ const ProductItem = ({product}: {product: Doc<'products'>}) => (
         </p>
         {product.featured && <HyperBadge variant='featured' size='xs' />}
       </div>
-      <h4 className='text-white/90 font-medium text-lg tracking-tight'>
+      <h4 className='capitalize text-white/90 font-medium text-lg tracking-tight'>
         {product.name}
       </h4>
     </CardHeader>

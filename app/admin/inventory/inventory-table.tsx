@@ -6,6 +6,7 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
   Button,
+  ButtonGroup,
   Card,
   Chip,
   Dropdown,
@@ -22,11 +23,11 @@ import {
   TableHeader,
   TableRow,
 } from '@heroui/react'
-import {useQuery} from 'convex/react'
+import {useMutation, useQuery} from 'convex/react'
 import {Key, useCallback, useMemo, useState} from 'react'
-import {useProductDetails} from './product-details-context'
-import {actionsCell, moneyCell, textCell} from './ui/cells'
-import {useSettingsPanel} from './ui/settings'
+import {useProductDetails} from '../_components/product-details-context'
+import {actionsCell, moneyCell, textCell} from '../_components/ui/cells'
+import {useSettingsPanel} from '../_components/ui/settings'
 
 type Product = Doc<'products'>
 
@@ -39,6 +40,8 @@ const columns = [
   {name: 'STATUS', uid: 'status'},
   {name: 'ACTIONS', uid: 'actions'},
 ]
+
+const getKey = (product: Product) => String(product._id)
 
 export const statusOptions = [
   {name: 'Active', uid: 'active'},
@@ -53,9 +56,13 @@ export const InventoryTable = () => {
   const {selectedProduct, setSelectedProduct} = useProductDetails()
   const {open, setOpen} = useSettingsPanel()
   const selectedProductId = selectedProduct?._id
+  const bulkUpdatePrices = useMutation(api.products.m.bulkUpdatePrices)
 
   const [filterValue, setFilterValue] = useState('')
   const [selectedRow, setSelectedRow] = useState<Id<'products'> | null>(null)
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
+  const [isChangingPrice, setIsChangingPrice] = useState(false)
+  const [priceInput, setPriceInput] = useState('')
   const [visibleColumns, setVisibleColumns] = useState<Set<string> | 'all'>(
     new Set(columns.map((col) => col.uid)),
   )
@@ -183,6 +190,19 @@ export const InventoryTable = () => {
     }
   }, [])
 
+  const onSelectionChange = useCallback(
+    (keys: SharedSelection) => {
+      if (keys === 'all') {
+        const allKeys = new Set(filteredItems?.map((p) => getKey(p)) ?? [])
+        setSelectedRows(allKeys)
+      } else {
+        const keySet = new Set(Array.from(keys).map((k) => String(k)))
+        setSelectedRows(keySet)
+      }
+    },
+    [filteredItems],
+  )
+
   const handleViewProduct = (product: Product) => () => {
     if (product) {
       setSelectedProduct(product)
@@ -277,6 +297,40 @@ export const InventoryTable = () => {
     [],
   )
 
+  const handleChangePrice = useCallback(() => {
+    setIsChangingPrice(true)
+    setPriceInput('')
+  }, [])
+
+  const handleCancelPriceChange = useCallback(() => {
+    setIsChangingPrice(false)
+    setPriceInput('')
+  }, [])
+
+  const handleSubmitPriceChange = useCallback(async () => {
+    const priceValue = parseFloat(priceInput)
+    if (isNaN(priceValue) || priceValue < 0) {
+      return
+    }
+
+    const selectedProductIds = Array.from(selectedRows).map(
+      (id) => id as Id<'products'>,
+    )
+    const priceCents = Math.round(priceValue * 100)
+
+    try {
+      await bulkUpdatePrices({
+        productIds: selectedProductIds,
+        priceCents,
+      })
+      setIsChangingPrice(false)
+      setPriceInput('')
+      setSelectedRows(new Set())
+    } catch (error) {
+      console.error('Failed to update prices:', error)
+    }
+  }, [priceInput, selectedRows, bulkUpdatePrices])
+
   const topContent = useMemo(() => {
     return (
       <div className='flex flex-col gap-4'>
@@ -293,13 +347,78 @@ export const InventoryTable = () => {
             onClear={onClear}
             onValueChange={onSearchChange}
           />
-          <div className='flex gap-3'>
+          {selectedRows.size > 0 && (
+            <div className='flex items-center gap-2'>
+              <span className='text-sm text-default-500'>
+                {selectedRows.size} selected
+              </span>
+              {isChangingPrice ? (
+                <div className='flex items-center gap-2'>
+                  <Input
+                    type='number'
+                    placeholder='Enter new price'
+                    value={priceInput}
+                    onValueChange={setPriceInput}
+                    startContent={<Icon name='dollar' className='size-4' />}
+                    classNames={{
+                      inputWrapper: 'border-gray-400 dark:bg-neutral-600/20 w-40',
+                    }}
+                    min='0'
+                    step='0.01'
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSubmitPriceChange()
+                      } else if (e.key === 'Escape') {
+                        handleCancelPriceChange()
+                      }
+                    }}
+                  />
+                  <Button
+                    size='sm'
+                    color='primary'
+                    onPress={handleSubmitPriceChange}
+                    isDisabled={!priceInput || isNaN(parseFloat(priceInput))}>
+                    Save
+                  </Button>
+                  <Button
+                    size='sm'
+                    variant='light'
+                    onPress={handleCancelPriceChange}>
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <Dropdown>
+                  <DropdownTrigger>
+                    <Button
+                      variant='flat'
+                      className='text-blue-400'
+                      endContent={<Icon name='arrow-down' className='size-4' />}>
+                      Actions
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu
+                    aria-label='Bulk Actions'
+                    onAction={(key) => {
+                      if (key === 'change-price') {
+                        handleChangePrice()
+                      }
+                    }}>
+                    <DropdownItem
+                      key='change-price'
+                      startContent={<Icon name='dollar' className='size-5' />}>
+                      Change Price
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              )}
+            </div>
+          )}
+          <ButtonGroup variant='flat'>
             <Dropdown>
               <DropdownTrigger className='hidden sm:flex'>
                 <Button
-                  endContent={
-                    <Icon name='chevron-right' className='rotate-90' />
-                  }
+                  endContent={<Icon name='3d-box-light' className='size-4' />}
                   variant='flat'>
                   Category
                 </Button>
@@ -331,7 +450,9 @@ export const InventoryTable = () => {
               <DropdownTrigger className='hidden sm:flex'>
                 <Button
                   endContent={
-                    <Icon name='chevron-right' className='rotate-90' />
+                    <div className='-scale-x-100'>
+                      <Icon name='tag-light' className='size-4' />
+                    </div>
                   }
                   variant='flat'>
                   Status
@@ -355,7 +476,7 @@ export const InventoryTable = () => {
               <DropdownTrigger className='hidden sm:flex'>
                 <Button
                   endContent={
-                    <Icon name='chevron-right' className='rotate-90' />
+                    <Icon name='arrow-down-long-light' className='size-4' />
                   }
                   variant='flat'>
                   Columns
@@ -375,7 +496,7 @@ export const InventoryTable = () => {
                 ))}
               </DropdownMenu>
             </Dropdown>
-          </div>
+          </ButtonGroup>
         </div>
         <div className='hidden _flex justify-between items-center'>
           <span className='text-default-400 text-small'>
@@ -407,6 +528,12 @@ export const InventoryTable = () => {
     filterValue,
     onClear,
     categories,
+    selectedRows.size,
+    isChangingPrice,
+    priceInput,
+    handleChangePrice,
+    handleCancelPriceChange,
+    handleSubmitPriceChange,
   ])
 
   if (!products) {
@@ -426,7 +553,10 @@ export const InventoryTable = () => {
           isCompact
           removeWrapper
           aria-label='Inventory table'
-          classNames={classNames}>
+          classNames={classNames}
+          selectionMode='multiple'
+          selectedKeys={selectedRows}
+          onSelectionChange={onSelectionChange}>
           <TableHeader columns={columns}>
             {(column) => (
               <TableColumn key={column.uid} align='start'>
@@ -438,13 +568,13 @@ export const InventoryTable = () => {
             {(product) => {
               const isSelected = Boolean(
                 selectedProductId &&
-                  product._id &&
-                  String(selectedProductId) === String(product._id) &&
-                  open,
+                product._id &&
+                String(selectedProductId) === String(product._id) &&
+                open,
               )
               return (
                 <TableRow
-                  key={`${product._id}-${isSelected}`}
+                  key={getKey(product)}
                   data-product-selected={isSelected ? 'true' : 'false'}
                   className={cn(
                     'h-16 border-b-[0.5px] last:border-b-0 border-neutral-500/20 hover:bg-emerald-400/10 transition-colors duration-75',

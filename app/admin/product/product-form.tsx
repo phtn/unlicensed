@@ -27,6 +27,7 @@ type CategoryDoc = Doc<'categories'>
 
 type ProductFormProps = {
   categories: CategoryDoc[] | undefined
+  initialCategorySlug?: string
 }
 
 const SECTIONS = [
@@ -38,7 +39,10 @@ const SECTIONS = [
   {id: 'details', label: 'Details', icon: 'align-left'},
 ] as const
 
-export const ProductForm = ({categories}: ProductFormProps) => {
+export const ProductForm = ({
+  categories,
+  initialCategorySlug,
+}: ProductFormProps) => {
   const createProduct = useMutation(api.products.m.createProduct)
   const [activeSection, setActiveSection] = useState<string>('basic-info')
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -134,6 +138,21 @@ export const ProductForm = ({categories}: ProductFormProps) => {
     (state) => state.values.categorySlug,
   )
 
+  // Auto-populate category from search params
+  useEffect(() => {
+    if (initialCategorySlug && categories) {
+      const categoryExists = categories.some(
+        (c) => c.slug === initialCategorySlug,
+      )
+      if (categoryExists) {
+        const currentCategorySlug = form.getFieldValue('categorySlug')
+        if (!currentCategorySlug) {
+          form.setFieldValue('categorySlug', initialCategorySlug)
+        }
+      }
+    }
+  }, [initialCategorySlug, categories, form])
+
   // Auto-populate variants for Flower
   useEffect(() => {
     const category = categories?.find((c) => c.slug === categorySlug)
@@ -167,8 +186,12 @@ export const ProductForm = ({categories}: ProductFormProps) => {
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block col-span-2 h-full overflow-y-auto pr-2 space-y-6'>
         <nav className='flex flex-col gap-1'>
-          <h1 className='tracking-tighter font-semibold py-4'>
-            Create New Product
+          <h1 className='flex items-center space-x-2 tracking-tighter font-semibold py-4'>
+            <div
+              aria-hidden
+              className='size-4 select-none aspect-square rounded-full bg-blue-500'
+            />
+            <span>Create New Product</span>
           </h1>
           {SECTIONS.map((section) => (
             <Button

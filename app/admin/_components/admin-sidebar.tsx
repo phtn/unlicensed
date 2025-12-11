@@ -59,14 +59,16 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                     .includes(item.url.split('/').pop()!)
                   return (
                     <SidebarMenuItem
-                      className={cn('text-xs tracking-tighter', {
-                        'bg-light-gray dark:bg-blue-100/10 rounded-lg':
-                          isActive,
-                      })}
+                      className={cn(
+                        'text-xs tracking-tighter hover:bg-light-gray/15 dark:hover:bg-blue-100/5 rounded-lg',
+                        {
+                          'bg-light-gray/20 dark:bg-dark-gray/60': isActive,
+                        },
+                      )}
                       key={item.title}>
                       <SidebarMenuButton
                         asChild
-                        className='capitalize group/menu-button h-8 data-[active=true]:hover:bg-background data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/70 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto'
+                        className='capitalize group/menu-button h-8 data-[active=true]:hover:bg-background data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/50 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto'
                         isActive={isActive}>
                         <MenuContent {...item} />
                       </SidebarMenuButton>
@@ -86,10 +88,12 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 const isActive = pathname === item.url
                 return (
                   <SidebarMenuItem
-                    className={cn('text-xs tracking-tighter', {
-                      'dark:bg-sidebar-accent bg-sidebar-foreground/10 rounded-lg':
-                        isActive,
-                    })}
+                    className={cn(
+                      'text-xs tracking-tighter rounded-lg hover:bg-light-gray/20 dark:hover:bg-dark-gray/20',
+                      {
+                        'dark:bg-dark-gray/60 bg-light-gray/20': isActive,
+                      },
+                    )}
                     key={item.title}>
                     <SidebarMenuButton
                       asChild
@@ -119,8 +123,8 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 const isActive = pathname === item.url
                 return (
                   <SidebarMenuItem
-                    className={cn('text-xs tracking-tighter', {
-                      'rounded-lg': isActive,
+                    className={cn('text-xs tracking-tighter rounded-lg', {
+                      'dark:bg-dark-gray/60 bg-light-gray/20': isActive,
                     })}
                     key={item.title}>
                     <SidebarMenuButton

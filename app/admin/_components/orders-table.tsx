@@ -81,20 +81,20 @@ export const OrdersTable = () => {
             <p className='tracking-tight font-medium text-sm'>
               {order.contactEmail}
             </p>
-            {order.userId && (
+            {/*{order.userId && (
               <p className='text-xs opacity-40 font-mono'>
                 {order.userId.substring(0, 12)}
               </p>
-            )}
+            )}*/}
           </div>
         )
       case 'status':
         return (
           <Chip
-            className='capitalize'
-            color={statusColorMap[order.orderStatus] || 'default'}
             size='sm'
-            variant='flat'>
+            variant='flat'
+            className='capitalize'
+            color={statusColorMap[order.orderStatus] || 'default'}>
             {order.orderStatus}
           </Chip>
         )
@@ -151,9 +151,9 @@ export const OrdersTable = () => {
           {(order) => {
             const isSelected = Boolean(
               selectedOrderId &&
-                order._id &&
-                String(selectedOrderId) === String(order._id) &&
-                open,
+              order._id &&
+              String(selectedOrderId) === String(order._id) &&
+              open,
             )
             return (
               <TableRow
@@ -161,7 +161,7 @@ export const OrdersTable = () => {
                 data-order-selected={isSelected ? 'true' : 'false'}
                 className={cn(
                   'hover:bg-sky-400/10',
-                  'border-dotted border-neutral-300 dark:border-teal-200/10 h-16 transition-colors',
+                  'border-dotted border-neutral-300 dark:border-teal-200/10 h-8 transition-colors',
                   selectedRow === order._id && isSelected
                     ? 'bg-neutral-500/15 dark:border-teal-200/40 -border-dotted border-y-1'
                     : 'first:border-t border-b',

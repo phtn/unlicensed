@@ -164,6 +164,28 @@ export const updateProduct = mutation({
   },
 })
 
+export const bulkUpdatePrices = mutation({
+  args: {
+    productIds: v.array(v.id('products')),
+    priceCents: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const results = []
+    for (const productId of args.productIds) {
+      const product = await ctx.db.get(productId)
+      if (product) {
+        await ctx.db.patch(productId, {
+          priceCents: args.priceCents,
+        })
+        results.push({productId, success: true})
+      } else {
+        results.push({productId, success: false, error: 'Product not found'})
+      }
+    }
+    return {updated: results.filter((r) => r.success).length, results}
+  },
+})
+
 export const purgeTestProducts = mutation({
   handler: async ({db}) => {
     const allItems = await db.query('products').collect()

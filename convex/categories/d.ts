@@ -7,6 +7,7 @@ export const categorySchema = {
   heroImage: v.string(),
   highlight: v.optional(v.string()),
   benefits: v.optional(v.array(v.string())),
+  denominations: v.optional(v.array(v.number())),
 }
 export const category = v.object({
   ...categorySchema,

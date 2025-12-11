@@ -79,7 +79,7 @@ export const Pricing = ({form}: PricingProps) => {
                 | Array<{label: string; price: number}>
                 | undefined) || []
             return (
-              <div className='space-y-3 rounded-xl border border-neutral-800 bg-neutral-900/30 p-4'>
+              <div className='space-y-3 rounded-xl border border-neutral-800 bg-light-gray/30 p-4'>
                 <div className='flex items-center justify-between'>
                   <label className='text-sm font-medium text-neutral-300'>
                     Variants & Pricing

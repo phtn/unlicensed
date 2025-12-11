@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2
+
+### Patch Changes
+
+- select products update price
+
 ## 0.2.1
 
 ### Patch Changes
