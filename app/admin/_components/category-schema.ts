@@ -11,6 +11,8 @@ export const categorySchema = z.object({
     .min(1, 'Please upload a hero image or provide an image URL/storage ID.'),
   highlight: z.string().optional(),
   benefitsRaw: z.string().optional(),
+  unitsRaw: z.string().optional(),
+  denominationsRaw: z.string().optional(),
 })
 
 export type CategoryFormValues = z.infer<typeof categorySchema>
@@ -24,7 +26,20 @@ const parseList = (value?: string) =>
     .map((item) => item.trim())
     .filter((item) => item.length > 0)
 
-export {parseList}
+const parseNumbers = (value?: string): number[] | undefined => {
+  if (!value) return undefined
+  const numbers = value
+    .split(/[,\n]/)
+    .map((item) => {
+      const trimmed = item.trim()
+      const num = Number.parseFloat(trimmed)
+      return Number.isNaN(num) ? null : num
+    })
+    .filter((num): num is number => num !== null)
+  return numbers.length > 0 ? numbers : undefined
+}
+
+export {parseList, parseNumbers}
 
 export const categoryFields: FormInput<CategoryFormValues>[] = [
   {
@@ -32,7 +47,7 @@ export const categoryFields: FormInput<CategoryFormValues>[] = [
     type: 'text',
     label: 'Name',
     required: true,
-    placeholder: 'Premium Flower',
+    placeholder: 'Category Name',
     defaultValue: '',
   },
   {
@@ -40,7 +55,7 @@ export const categoryFields: FormInput<CategoryFormValues>[] = [
     type: 'text',
     label: 'Slug',
     required: false,
-    placeholder: 'premium-flower (auto-generated if empty)',
+    placeholder: 'designer-flower (auto-generated if empty)',
     defaultValue: '',
   },
   {
@@ -73,6 +88,22 @@ export const categoryFields: FormInput<CategoryFormValues>[] = [
     required: false,
     type: 'textarea',
     placeholder: 'Enter one benefit per line\ne.g.\nFull-spectrum cannabinoids',
+    defaultValue: '',
+  },
+  {
+    name: 'unitsRaw',
+    label: 'Units',
+    required: false,
+    type: 'text',
+    placeholder: 'e.g., g, oz, ml, kg, lb, each',
+    defaultValue: '',
+  },
+  {
+    name: 'denominationsRaw',
+    label: 'Denominations',
+    required: false,
+    type: 'textarea',
+    placeholder: 'Enter denominations separated by commas or newlines\ne.g.\n1, 3.5, 7, 14, 28',
     defaultValue: '',
   },
 ]

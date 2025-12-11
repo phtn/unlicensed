@@ -56,20 +56,6 @@ export const ShopFinder = () => {
               </h3>
               <p className='text-white text-xl font-space'>Relaxing</p>
             </div>
-
-            {/*<div className='bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center'>
-              <h3 className='text-4xl lg:text-5xl font-space text-white mb-1'>
-                35
-              </h3>
-              <p className='text-white text-xl'>Elevating</p>
-            </div>
-
-            <div className='bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center'>
-              <h3 className='text-4xl lg:text-5xl font-space text-white mb-4'>
-                45
-              </h3>
-              <p className='text-white text-xl'>Focused</p>
-            </div>*/}
           </div>
         </div>
       </div>

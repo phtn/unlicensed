@@ -2,6 +2,7 @@
 
 import {Textarea} from '@heroui/react'
 import {ProductFormApi} from '../product-schema'
+import {commonInputClassNames} from '../ui/fields'
 import {FormSection, Header} from './components'
 
 interface DetailsProps {
@@ -18,19 +19,15 @@ export const Details = ({form}: DetailsProps) => {
             const shortDescValue = (field.state.value as string) ?? ''
             return (
               <div className='space-y-2'>
-                <label className='text-sm font-medium text-neutral-300'>
-                  Short Description
-                </label>
                 <Textarea
+                  label='Short Description'
                   value={shortDescValue}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='Brief summary for cards and listings...'
                   minRows={2}
                   variant='bordered'
-                  // classNames={{
-                  //   inputWrapper: 'bg-neutral-900 border-neutral-800 data-[hover=true]:border-neutral-700 group-data-[focus=true]:border-emerald-500',
-                  // }}
+                  classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
@@ -48,19 +45,15 @@ export const Details = ({form}: DetailsProps) => {
             const descValue = (field.state.value as string) ?? ''
             return (
               <div className='space-y-2'>
-                <label className='text-sm font-medium text-neutral-300'>
-                  Full Description (Markdown)
-                </label>
                 <Textarea
+                  label='Full Description (Markdown)'
                   value={descValue}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='Detailed product story, lineage, and effects...'
                   minRows={6}
                   variant='bordered'
-                  // classNames={{
-                  //   inputWrapper: 'bg-neutral-900 border-neutral-800 data-[hover=true]:border-neutral-700 group-data-[focus=true]:border-emerald-500',
-                  // }}
+                  classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
@@ -78,19 +71,15 @@ export const Details = ({form}: DetailsProps) => {
             const consumptionValue = (field.state.value as string) ?? ''
             return (
               <div className='space-y-2'>
-                <label className='text-sm font-medium text-neutral-300'>
-                  Consumption Guidance
-                </label>
                 <Textarea
+                  label='Consumption Guidance'
                   value={consumptionValue}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='Tips for consumption...'
                   minRows={3}
                   variant='bordered'
-                  // classNames={{
-                  //   inputWrapper: 'bg-neutral-900 border-neutral-800 data-[hover=true]:border-neutral-700 group-data-[focus=true]:border-emerald-500',
-                  // }}
+                  classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (

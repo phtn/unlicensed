@@ -1,63 +1,44 @@
 'use client'
 
+import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import {useTheme} from 'next-themes'
-import {useCallback, useEffect, useMemo, useState} from 'react'
+import {useCallback, useMemo} from 'react'
 
 type ThemeToggleProps = {
   variant?: 'icon' | 'menu'
   onAction?: () => void
 }
 
-export const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
-  const {theme, setTheme, resolvedTheme} = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const handleToggle = useCallback(() => {
-    const currentTheme = resolvedTheme ?? 'dark'
-    setTheme(currentTheme === 'dark' ? 'light' : 'dark')
-    onAction?.()
-  }, [resolvedTheme, setTheme, onAction])
+export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
+  const {theme, setTheme} = useTheme()
+  const {on, toggle} = useToggle()
 
   const isDark = useMemo(() => {
-    if (!mounted) return false
-    return resolvedTheme === 'dark'
-  }, [mounted, resolvedTheme])
+    return theme === 'dark'
+  }, [theme])
 
-  const isThemeReady = mounted && resolvedTheme !== undefined
+  const handleToggle = useCallback(() => {
+    setTheme(isDark ? 'light' : 'dark')
+    toggle()
+  }, [setTheme, isDark, toggle])
 
-  if (!isThemeReady && variant === 'icon') {
-    return (
-      <Button
-        isIconOnly
-        radius='full'
-        variant='flat'
-        aria-label='Loading theme preference'
-        className='border border-(--nav-border) bg-(--surface-highlight)'
-        isDisabled>
-        <span className='h-4 w-4 animate-pulse rounded-full' />
-      </Button>
-    )
-  }
-
-  if (variant === 'menu') {
+  if (variant !== 'icon') {
     return (
       <Button
         radius='sm'
+        isIconOnly
         variant='flat'
         onPress={handleToggle}
-        className='group w-40 flex items-center justify-start space-x-2 border py-3 text-sm text-foreground hover:bg-(--surface-muted) dark:hover:bg-(--surface-muted)'>
+        className={cn(
+          'group w-40 flex items-center justify-start space-x-2 border py-3 text-sm text-foreground hover:bg-(--surface-muted) dark:hover:bg-(--surface-muted)',
+        )}>
         <Icon
           name='toggle-theme'
           className={cn(
             ' group:active:scale-90 transition-transform duration-200 ease-out',
-            {'rotate-180': isDark},
           )}
         />
         <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
@@ -66,24 +47,22 @@ export const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
   }
 
   return (
-    isThemeReady && (
-      <Button
-        isIconOnly
-        onPress={handleToggle}
-        radius='full'
-        variant='solid'
-        aria-label='theme'
-        className='group active:scale-95 border-none bg-transparent hover:bg-accent/20 text-white transition duration-200'>
-        <Icon
-          name={'toggle-theme'}
-          className={cn(
-            'rotate-0 group-active:scale-85 transition-all duration-200 ease-out',
-            {
-              'rotate-180': isDark,
-            },
-          )}
-        />
-      </Button>
-    )
+    <Button
+      isIconOnly
+      onPress={handleToggle}
+      radius='full'
+      variant='solid'
+      aria-label='theme'
+      className={cn(
+        'group active:scale-95 border-none bg-transparent hover:bg-accent/20 text-white transition-all duration-200',
+      )}>
+      <div
+        suppressHydrationWarning
+        className={cn('rotate-45 transition-transform duration-700', {
+          '-rotate-180': on,
+        })}>
+        <Icon name={'toggle-theme'} />
+      </div>
+    </Button>
   )
 }

@@ -1,6 +1,5 @@
 import {Chip, Input, Select, Switch, Textarea} from '@heroui/react'
 import React, {ReactNode} from 'react'
-import {ProductFormValues} from '../product-schema'
 import {
   CategorySelectItem,
   getCategoryChipProps,
@@ -23,6 +22,7 @@ type BaseFieldProps<T> = {
   required?: boolean
   placeholder?: string
   defaultValue?: string | number | boolean
+  step?: string
   minRows?: number
 }
 
@@ -84,6 +84,7 @@ export function NumberField<T>(props?: FormInput<T>) {
       <Input
         label={props?.label}
         type='number'
+        step={props?.step}
         value={String(numValue)}
         onChange={(e) => {
           const numValue = Number(e.target.value)

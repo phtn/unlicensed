@@ -39,11 +39,21 @@ export const CategoryProductsContent = ({
             as={Link}
             prefetch
             size='sm'
+            variant='faded'
+            href={`/admin/category/${categorySlug}/edit`}
+            className='-space-x-1 text-indigo-500 dark:text-indigo-400 border-white dark:border-transparent bg-indigo-100/50 dark:bg-indigo-100/10'>
+            <Icon name='pencil-single-solid' className='size-4' />
+            <span className='text-sm'>Edit Category</span>
+          </Button>
+          <Button
+            as={Link}
+            prefetch
+            size='sm'
             variant='bordered'
             href={`/admin/product/new?category=${categorySlug}`}
-            className='-space-x-2 text-blue-500 dark:text-blue-400 border-white dark:border-transparent'>
+            className='-space-x-2 text-blue-500 dark:text-blue-400 border-white dark:border-transparent bg-blue-100/50 dark:bg-blue-100/10'>
             <Icon name='plus' className='size-4' />
-            <span className='text-sm'>New {category?.name}</span>
+            <span className='text-sm'>Add {category?.name}</span>
           </Button>
         </div>
 

@@ -64,7 +64,10 @@ export const Nav = ({children}: NavProps) => {
           <Link
             href={'/'}
             className='md:w-72 h-12 overflow-hidden pl-1 flex items-center justify-start relative'>
-            <Icon name='rapid-fire' className='h-44 w-auto text-brand' />
+            <Icon
+              name='rapid-fire'
+              className='h-44 w-auto dark:text-brand text-featured'
+            />
           </Link>
           <nav className='flex items-center justify-center md:w-full'>
             <Link
@@ -75,7 +78,7 @@ export const Nav = ({children}: NavProps) => {
             {children}
           </nav>
           <div className='flex w-fit gap-5 md:w-72 items-center justify-between'>
-            <ThemeToggle />
+            <ThemeToggle variant='icon' />
 
             {/* Cart badge - automatically updates via Convex reactivity */}
             {/*

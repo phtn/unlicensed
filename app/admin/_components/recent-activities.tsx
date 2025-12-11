@@ -380,7 +380,7 @@ export const RecentActivities = ({
                 key={column.uid}
                 align='start'
                 className='tracking-wider text-xs font-medium'>
-                <div className='drop-shadow-sm'>{column.name}</div>
+                <div className='drop-shadow-xs'>{column.name}</div>
               </TableColumn>
             )}
           </TableHeader>

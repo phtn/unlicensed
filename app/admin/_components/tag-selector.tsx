@@ -3,6 +3,7 @@
 import {ITEMS} from '@/components/ui/terpene'
 import {Chip, Select, SelectItem, SelectedItems} from '@heroui/react'
 import {useMemo} from 'react'
+import {commonInputClassNames} from './ui/fields'
 
 interface TagSelectorProps {
   selectedKeys: string[]
@@ -39,11 +40,13 @@ export const TagSelector = ({
       selectionMode='multiple'
       selectedKeys={new Set(selectedKeys)}
       onSelectionChange={handleSelectionChange}
-      // classNames={{
-      //   trigger: 'bg-neutral-900 border border-neutral-800 data-[hover=true]:bg-neutral-800 data-[open=true]:border-emerald-500 min-h-12 h-auto py-2',
-      //   popoverContent: 'bg-neutral-900 border border-neutral-800',
-      // }}
+      variant='bordered'
       isMultiline={true}
+      classNames={{
+        ...commonInputClassNames,
+        trigger:
+          'border h-18 border-light-gray/10 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
+      }}
       renderValue={(items: SelectedItems<object>) => {
         return (
           <div className='flex flex-wrap gap-2'>
@@ -53,8 +56,8 @@ export const TagSelector = ({
                   key={item.key}
                   variant='flat'
                   classNames={{
-                    base: 'bg-neutral-800 border border-neutral-700 h-7',
-                    content: 'text-xs text-neutral-300 flex items-center gap-1',
+                    base: 'border border-light-gray dark:border-light-gray/30 h-7',
+                    content: 'text-xs flex items-center gap-1',
                   }}>
                   <span className='capitalize'>{item.textValue}</span>
                 </Chip>
@@ -67,12 +70,8 @@ export const TagSelector = ({
         <SelectItem key={item.id} textValue={item.name}>
           <div className='flex items-center gap-2'>
             <div className='flex flex-col'>
-              <span className='text-sm font-medium text-neutral-200'>
-                {item.name}
-              </span>
-              <span className='text-xs text-neutral-500'>
-                {item.description}
-              </span>
+              <span className='text-sm font-medium'>{item.name}</span>
+              <span className='text-xs'>{item.description}</span>
             </div>
           </div>
         </SelectItem>

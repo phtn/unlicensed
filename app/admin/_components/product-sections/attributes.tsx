@@ -1,9 +1,10 @@
 'use client'
 
-import {Input, Select, SelectItem} from '@heroui/react'
+import {Input} from '@heroui/react'
+import {ChangeEvent} from 'react'
 import {ProductFormApi} from '../product-schema'
 import {TagSelector} from '../tag-selector'
-import {NumberField, SelectField} from '../ui/fields'
+import {commonInputClassNames, NumberField, SelectField} from '../ui/fields'
 import {FormSection, Header} from './components'
 
 interface AttributesProps {
@@ -15,7 +16,7 @@ export const Attributes = ({form}: AttributesProps) => {
     <FormSection id='attributes'>
       <Header label='Attributes & Profile' />
       <div className='grid gap-6'>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 items-center'>
           <form.AppField name='potencyLevel'>
             {(field) => (
               <SelectField
@@ -50,52 +51,65 @@ export const Attributes = ({form}: AttributesProps) => {
               const cbdValue = (field.state.value as string) ?? ''
               return (
                 <div className='space-y-2'>
-                  <label className='text-sm font-medium text-neutral-300'>
-                    CBD %
-                  </label>
                   <Input
+                    label='CBD %'
                     type='number'
                     step='0.1'
                     value={cbdValue}
-                    onChange={(e) => field.handleChange(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      field.handleChange(e.target.value)
+                    }
+                    onBlur={field.handleBlur}
+                    placeholder='0.0'
                     variant='bordered'
-                    // classNames={{
-                    //   inputWrapper: 'bg-neutral-900 border-neutral-800',
-                    // }}
+                    size='lg'
+                    classNames={commonInputClassNames}
                   />
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {field.state.meta.errors.join(', ')}
+                      </p>
+                    )}
                 </div>
               )
             }}
           </form.Field>
         </div>
 
-        <form.Field name='terpenes'>
-          {(field) => (
-            <div className='space-y-2'>
-              <TagSelector
-                label='Terpenes'
-                type='terpene'
-                placeholder='Select terpenes...'
-                selectedKeys={Array.isArray(field.state.value) ? field.state.value : []}
-                onSelectionChange={(keys) => field.handleChange(keys)}
-              />
-            </div>
-          )}
-        </form.Field>
+        <div className='flex w-full items-center space-x-6'>
+          <form.Field name='terpenes'>
+            {(field) => (
+              <div className='space-y-2 w-full'>
+                <TagSelector
+                  label='Terpenes'
+                  type='terpene'
+                  placeholder='Select terpenes...'
+                  selectedKeys={
+                    Array.isArray(field.state.value) ? field.state.value : []
+                  }
+                  onSelectionChange={(keys) => field.handleChange(keys)}
+                />
+              </div>
+            )}
+          </form.Field>
 
-        <form.Field name='flavors'>
-          {(field) => (
-            <div className='space-y-2'>
-              <TagSelector
-                label='Flavors'
-                type='flavor'
-                placeholder='Select flavors...'
-                selectedKeys={Array.isArray(field.state.value) ? field.state.value : []}
-                onSelectionChange={(keys) => field.handleChange(keys)}
-              />
-            </div>
-          )}
-        </form.Field>
+          <form.Field name='flavors'>
+            {(field) => (
+              <div className='space-y-2 w-full'>
+                <TagSelector
+                  label='Flavors'
+                  type='flavor'
+                  placeholder='Select flavors...'
+                  selectedKeys={
+                    Array.isArray(field.state.value) ? field.state.value : []
+                  }
+                  onSelectionChange={(keys) => field.handleChange(keys)}
+                />
+              </div>
+            )}
+          </form.Field>
+        </div>
       </div>
     </FormSection>
   )

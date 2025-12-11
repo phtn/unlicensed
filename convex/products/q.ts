@@ -77,6 +77,17 @@ export const getProductBySlug = query({
   },
 })
 
+export const getProductByName = query({
+  args: {
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const products = await ctx.db.query('products').collect()
+    const product = products.find((p) => p.name === args.name)
+    return product ?? null
+  },
+})
+
 const sortProducts = <T extends {featured: boolean; name: string}>(
   items: T[],
 ) => {

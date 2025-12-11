@@ -1,7 +1,8 @@
 'use client'
 
-import {Textarea, Input} from '@heroui/react'
+import {Input, Textarea} from '@heroui/react'
 import {CategoryFormApi} from '../category-schema'
+import {commonInputClassNames} from '../ui/fields'
 import {FormSection, Header} from './components'
 
 interface DetailsProps {
@@ -13,74 +14,71 @@ export const Details = ({form}: DetailsProps) => {
     <FormSection id='details' position='bottom'>
       <Header label='Additional Details' />
       <div className='grid gap-6'>
-        <form.AppField name='description'>
-          {(field) => {
-            const descValue = (field.state.value as string) ?? ''
-            return (
-              <div className='space-y-2'>
-                <label className='text-sm font-medium text-neutral-300'>
-                  Description
-                </label>
-                <Textarea
-                  value={descValue}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder='Describe the category experience...'
-                  minRows={6}
-                  variant='bordered'
-                />
-                {field.state.meta.isTouched &&
-                  field.state.meta.errors.length > 0 && (
-                    <p className='text-xs text-rose-400'>
-                      {field.state.meta.errors.join(', ')}
-                    </p>
-                  )}
-              </div>
-            )
-          }}
-        </form.AppField>
-
+        <div className='flex items-center space-x-6 w-full'>
+          <form.AppField name='description'>
+            {(field) => {
+              const descValue = (field.state.value as string) ?? ''
+              return (
+                <div className='space-y-2 w-full'>
+                  <Textarea
+                    value={descValue}
+                    label='Description'
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder='Describe the category experience...'
+                    classNames={commonInputClassNames}
+                    minRows={4}
+                    variant='bordered'
+                  />
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {field.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                </div>
+              )
+            }}
+          </form.AppField>
+          <form.AppField name='benefitsRaw'>
+            {(field) => {
+              const benefitsValue = (field.state.value as string) ?? ''
+              return (
+                <div className='space-y-2 w-full'>
+                  <Textarea
+                    label='Benefits'
+                    value={benefitsValue}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder='Enter one benefit per line e.g. Full-spectrum cannabinoids'
+                    minRows={4}
+                    variant='bordered'
+                    classNames={commonInputClassNames}
+                  />
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {field.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                </div>
+              )
+            }}
+          </form.AppField>
+        </div>
         <form.AppField name='highlight'>
           {(field) => {
             const highlightValue = (field.state.value as string) ?? ''
             return (
-              <div className='space-y-2'>
-                <label className='text-sm font-medium text-neutral-300'>
-                  Highlight <span className='text-neutral-500'>(optional)</span>
-                </label>
+              <div className=''>
                 <Input
+                  size='lg'
+                  label='Highlight'
                   value={highlightValue}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='Hand-trimmed buds with rich terpene expression.'
-                  variant='bordered'
-                />
-                {field.state.meta.isTouched &&
-                  field.state.meta.errors.length > 0 && (
-                    <p className='text-xs text-rose-400'>
-                      {field.state.meta.errors.join(', ')}
-                    </p>
-                  )}
-              </div>
-            )
-          }}
-        </form.AppField>
-
-        <form.AppField name='benefitsRaw'>
-          {(field) => {
-            const benefitsValue = (field.state.value as string) ?? ''
-            return (
-              <div className='space-y-2'>
-                <label className='text-sm font-medium text-neutral-300'>
-                  Benefits <span className='text-neutral-500'>(optional)</span>
-                </label>
-                <Textarea
-                  value={benefitsValue}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder='Enter one benefit per line\ne.g.\nFull-spectrum cannabinoids'
-                  minRows={4}
-                  variant='bordered'
+                  classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (

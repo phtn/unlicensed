@@ -1,7 +1,7 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
-import {Doc} from '@/convex/_generated/dataModel'
+import {Doc, Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
 import {cn} from '@/lib/utils'
@@ -13,6 +13,7 @@ import {
   defaultValues,
   productFields,
   ProductFormApi,
+  ProductFormValues,
   productSchema,
 } from '../_components/product-schema'
 import {Attributes} from '../_components/product-sections/attributes'
@@ -28,6 +29,10 @@ type CategoryDoc = Doc<'categories'>
 type ProductFormProps = {
   categories: CategoryDoc[] | undefined
   initialCategorySlug?: string
+  productId?: Id<'products'>
+  initialValues?: ProductFormValues
+  onCreated?: VoidFunction
+  onUpdated?: VoidFunction
 }
 
 const SECTIONS = [
@@ -42,14 +47,22 @@ const SECTIONS = [
 export const ProductForm = ({
   categories,
   initialCategorySlug,
+  productId,
+  initialValues,
+  onCreated,
+  onUpdated,
 }: ProductFormProps) => {
+  const isEditMode = !!productId
   const createProduct = useMutation(api.products.m.createProduct)
+  const updateProduct = useMutation(api.products.m.updateProduct)
   const [activeSection, setActiveSection] = useState<string>('basic-info')
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  const formValues = initialValues ?? defaultValues
+
   const form = useAppForm({
-    defaultValues,
+    defaultValues: formValues,
     onSubmit: async ({value, formApi}) => {
       setStatus('idle')
       setErrorMessage(null)
@@ -116,16 +129,30 @@ export const ProductForm = ({
           })),
         }
 
-        await createProduct(payload)
-        formApi.reset()
-        setStatus('success')
-        // Reset scroll
-        document
-          .getElementById('basic-info')
-          ?.scrollIntoView({behavior: 'smooth'})
+        if (isEditMode && productId) {
+          await updateProduct({
+            productId,
+            ...payload,
+          })
+          setStatus('success')
+          onUpdated?.()
+        } else {
+          await createProduct(payload)
+          formApi.reset()
+          setStatus('success')
+          // Reset scroll
+          document
+            .getElementById('basic-info')
+            ?.scrollIntoView({behavior: 'smooth'})
+          onCreated?.()
+        }
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : 'Failed to create product.'
+          error instanceof Error
+            ? error.message
+            : isEditMode
+              ? 'Failed to update product.'
+              : 'Failed to create product.'
         setErrorMessage(message)
         setStatus('error')
       }
@@ -133,10 +160,6 @@ export const ProductForm = ({
   })
 
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
-  const categorySlug = useStore(
-    form.store,
-    (state) => state.values.categorySlug,
-  )
 
   // Auto-populate category from search params
   useEffect(() => {
@@ -152,26 +175,6 @@ export const ProductForm = ({
       }
     }
   }, [initialCategorySlug, categories, form])
-
-  // Auto-populate variants for Flower
-  useEffect(() => {
-    const category = categories?.find((c) => c.slug === categorySlug)
-    const isFlower =
-      category?.name.toLowerCase().includes('flower') ||
-      category?.slug.toLowerCase().includes('flower')
-
-    if (isFlower) {
-      const currentVariants = form.getFieldValue('variants')
-      if (!currentVariants || currentVariants.length === 0) {
-        form.setFieldValue('variants', [
-          {label: '1/8', price: 35},
-          {label: '1/4', price: 60},
-          {label: '1/2', price: 100},
-          {label: 'Oz', price: 175},
-        ])
-      }
-    }
-  }, [categorySlug, categories, form])
 
   const scrollToSection = (id: string) => {
     setActiveSection(id)
@@ -191,7 +194,7 @@ export const ProductForm = ({
               aria-hidden
               className='size-4 select-none aspect-square rounded-full bg-blue-500'
             />
-            <span>Create New Product</span>
+            <span>{isEditMode ? 'Edit Product' : 'Create New Product'}</span>
           </h1>
           {SECTIONS.map((section) => (
             <Button
@@ -219,16 +222,20 @@ export const ProductForm = ({
             type='submit'
             className='w-full rounded-xl font-medium tracking-tight bg-blue-500 text-white'
             isLoading={isSubmitting}
-            onPress={(e) => {
-              // @ts-expect-error - Event type mismatch in HeroUI vs React
-              e.preventDefault()
-              void form.handleSubmit()
-            }}>
-            {isSubmitting ? 'Creating...' : 'Create Product'}
+            onPress={form.handleSubmit}>
+            {isSubmitting
+              ? isEditMode
+                ? 'Updating...'
+                : 'Creating...'
+              : isEditMode
+                ? 'Update Product'
+                : 'Create Product'}
           </Button>
           {status === 'success' && (
             <p className='mt-2 text-sm text-center text-emerald-500'>
-              Product created successfully!
+              {isEditMode
+                ? 'Product updated successfully!'
+                : 'Product created successfully!'}
             </p>
           )}
           {status === 'error' && errorMessage && (
@@ -260,7 +267,7 @@ export const ProductForm = ({
               fields={productFields.slice(3, 4)}></Media>
           </div>
           <div id='pricing' className='scroll-mt-4'>
-            <Pricing form={form as ProductFormApi} />
+            <Pricing form={form as ProductFormApi} categories={categories} />
           </div>
 
           <div id='inventory' className='scroll-mt-4'>
@@ -282,7 +289,13 @@ export const ProductForm = ({
               color='success'
               className='w-full font-semibold'
               isLoading={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Product'}
+              {isSubmitting
+                ? isEditMode
+                  ? 'Updating...'
+                  : 'Creating...'
+                : isEditMode
+                  ? 'Update Product'
+                  : 'Create Product'}
             </Button>
           </div>
         </form>

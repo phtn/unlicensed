@@ -116,11 +116,31 @@ export const updateProduct = mutation({
   args: {
     productId: v.id('products'),
     name: v.optional(v.string()),
+    slug: v.optional(v.string()),
+    categorySlug: v.optional(v.string()),
+    shortDescription: v.optional(v.string()),
+    description: v.optional(v.string()),
     priceCents: v.optional(v.number()),
-    stock: v.optional(v.number()),
-    available: v.optional(v.boolean()),
-    featured: v.optional(v.boolean()),
     unit: v.optional(v.string()),
+    availableDenominations: v.optional(v.array(v.number())),
+    popularDenomination: v.optional(v.number()),
+    thcPercentage: v.optional(v.number()),
+    cbdPercentage: v.optional(v.number()),
+    effects: v.optional(v.array(v.string())),
+    terpenes: v.optional(v.array(v.string())),
+    featured: v.optional(v.boolean()),
+    available: v.optional(v.boolean()),
+    stock: v.optional(v.number()),
+    rating: v.optional(v.number()),
+    image: v.optional(v.string()),
+    gallery: v.optional(v.array(v.string())),
+    consumption: v.optional(v.string()),
+    flavorNotes: v.optional(v.array(v.string())),
+    potencyLevel: v.optional(
+      v.union(v.literal('mild'), v.literal('medium'), v.literal('high')),
+    ),
+    potencyProfile: v.optional(v.string()),
+    weightGrams: v.optional(v.number()),
     variants: v.optional(
       v.array(
         v.object({
@@ -136,24 +156,105 @@ export const updateProduct = mutation({
       throw new Error(`Product with id "${args.productId}" not found.`)
     }
 
+    const sanitizeArray = (values?: string[]) =>
+      values
+        ? values.map((value) => value.trim()).filter((value) => value.length > 0)
+        : undefined
+
+    const numericArray = (values?: number[]) =>
+      values?.filter((value) => Number.isFinite(value)) ?? undefined
+
     const updates: Partial<typeof product> = {}
     if (args.name !== undefined) {
       updates.name = args.name.trim()
     }
+    if (args.slug !== undefined) {
+      const newSlug = ensureSlug(args.slug, args.name ?? product.name)
+      // Check if slug is being changed and if it conflicts with another product
+      if (newSlug !== product.slug) {
+        const existing = await ctx.db
+          .query('products')
+          .withIndex('by_slug', (q) => q.eq('slug', newSlug))
+          .unique()
+        if (existing && existing._id !== args.productId) {
+          throw new Error(`Product with slug "${newSlug}" already exists.`)
+        }
+      }
+      updates.slug = newSlug
+    }
+    if (args.categorySlug !== undefined) {
+      const category = await ctx.db
+        .query('categories')
+        .withIndex('by_slug', (q) => q.eq('slug', args.categorySlug!))
+        .unique()
+      if (!category) {
+        throw new Error(`Category "${args.categorySlug}" not found.`)
+      }
+      updates.categoryId = category._id
+      updates.categorySlug = category.slug
+    }
+    if (args.shortDescription !== undefined) {
+      updates.shortDescription = args.shortDescription.trim()
+    }
+    if (args.description !== undefined) {
+      updates.description = args.description.trim()
+    }
     if (args.priceCents !== undefined) {
       updates.priceCents = args.priceCents
     }
-    if (args.stock !== undefined) {
-      updates.stock = args.stock
+    if (args.unit !== undefined) {
+      updates.unit = args.unit.trim()
     }
-    if (args.available !== undefined) {
-      updates.available = args.available
+    if (args.availableDenominations !== undefined) {
+      updates.availableDenominations = numericArray(args.availableDenominations)
+    }
+    if (args.popularDenomination !== undefined) {
+      updates.popularDenomination = args.popularDenomination
+    }
+    if (args.thcPercentage !== undefined) {
+      updates.thcPercentage = args.thcPercentage
+    }
+    if (args.cbdPercentage !== undefined) {
+      updates.cbdPercentage = args.cbdPercentage
+    }
+    if (args.effects !== undefined) {
+      updates.effects = sanitizeArray(args.effects) ?? []
+    }
+    if (args.terpenes !== undefined) {
+      updates.terpenes = sanitizeArray(args.terpenes) ?? []
     }
     if (args.featured !== undefined) {
       updates.featured = args.featured
     }
-    if (args.unit !== undefined) {
-      updates.unit = args.unit.trim()
+    if (args.available !== undefined) {
+      updates.available = args.available
+    }
+    if (args.stock !== undefined) {
+      updates.stock = args.stock
+    }
+    if (args.rating !== undefined) {
+      updates.rating = args.rating
+    }
+    if (args.image !== undefined) {
+      updates.image = args.image
+    }
+    if (args.gallery !== undefined) {
+      updates.gallery = args.gallery.filter((value) => value.trim().length > 0)
+    }
+    if (args.consumption !== undefined) {
+      updates.consumption = args.consumption.trim()
+    }
+    if (args.flavorNotes !== undefined) {
+      updates.flavorNotes = sanitizeArray(args.flavorNotes) ?? []
+    }
+    if (args.potencyLevel !== undefined) {
+      updates.potencyLevel = args.potencyLevel
+    }
+    if (args.potencyProfile !== undefined) {
+      updates.potencyProfile = args.potencyProfile.trim() || undefined
+    }
+    if (args.weightGrams !== undefined) {
+      updates.weightGrams = args.weightGrams
     }
     if (args.variants !== undefined) {
       updates.variants = args.variants

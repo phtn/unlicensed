@@ -1,43 +1,60 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
+import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {
   categoryFields,
   CategoryFormApi,
+  CategoryFormValues,
   categorySchema,
   defaultValues,
   parseList,
+  parseNumbers,
 } from '../_components/category-schema'
 import {BasicInfo} from '../_components/category-sections/basic-info'
 import {Details} from '../_components/category-sections/details'
 import {Media} from '../_components/category-sections/media'
+import {Packaging} from '../_components/category-sections/packaging'
 import {useAppForm} from '../_components/ui/form-context'
 
 type CategoryFormProps = {
+  categoryId?: Id<'categories'>
+  initialValues?: CategoryFormValues
   onCreated?: VoidFunction
+  onUpdated?: VoidFunction
 }
 
 const SECTIONS = [
   {id: 'basic-info', label: 'Basic Info', icon: 'file'},
   {id: 'media', label: 'Media', icon: 'image'},
+  {id: 'packaging', label: 'Packaging', icon: 'box'},
   {id: 'details', label: 'Details', icon: 'align-left'},
 ] as const
 
-export const CategoryForm = ({onCreated}: CategoryFormProps) => {
+export const CategoryForm = ({
+  categoryId,
+  initialValues,
+  onCreated,
+  onUpdated,
+}: CategoryFormProps) => {
+  const isEditMode = !!categoryId
   const createCategory = useMutation(api.categories.m.create)
+  const updateCategory = useMutation(api.categories.m.update)
   const [activeSection, setActiveSection] = useState<string>('basic-info')
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  const formValues = initialValues ?? defaultValues
+
   const form = useAppForm({
-    defaultValues,
+    defaultValues: formValues,
     onSubmit: async ({value, formApi}) => {
       setStatus('idle')
       setErrorMessage(null)
@@ -60,24 +77,58 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
           heroImage: data.heroImage,
           highlight: data.highlight?.trim() || undefined,
           benefits: parseList(data.benefitsRaw),
+          units: data.unitsRaw
+            ? data.unitsRaw
+                .split(',')
+                .map((u) => u.trim())
+                .filter((u) => u.length > 0)
+            : undefined,
+          denominations: parseNumbers(data.denominationsRaw),
         }
 
-        await createCategory(payload)
-        formApi.reset()
-        setStatus('success')
-        // Reset scroll
-        document
-          .getElementById('basic-info')
-          ?.scrollIntoView({behavior: 'smooth'})
-        onCreated?.()
+        if (isEditMode && categoryId) {
+          await updateCategory({
+            categoryId,
+            ...payload,
+          })
+          setStatus('success')
+          onUpdated?.()
+        } else {
+          await createCategory(payload)
+          formApi.reset()
+          setStatus('success')
+          // Reset scroll
+          document
+            .getElementById('basic-info')
+            ?.scrollIntoView({behavior: 'smooth'})
+          onCreated?.()
+        }
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : 'Failed to create category.'
+          error instanceof Error
+            ? error.message
+            : isEditMode
+              ? 'Failed to update category.'
+              : 'Failed to create category.'
         setErrorMessage(message)
         setStatus('error')
       }
     },
   })
+
+  // Populate form when initialValues change
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldValue('name', initialValues.name)
+      form.setFieldValue('slug', initialValues.slug ?? '')
+      form.setFieldValue('description', initialValues.description)
+      form.setFieldValue('heroImage', initialValues.heroImage)
+      form.setFieldValue('highlight', initialValues.highlight ?? '')
+      form.setFieldValue('benefitsRaw', initialValues.benefitsRaw ?? '')
+      form.setFieldValue('unitsRaw', initialValues.unitsRaw ?? '')
+      form.setFieldValue('denominationsRaw', initialValues.denominationsRaw ?? '')
+    }
+  }, [initialValues, form])
 
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
 
@@ -94,12 +145,12 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block col-span-2 h-full overflow-y-auto pr-2 space-y-6'>
         <nav className='flex flex-col gap-1'>
-          <h1 className='flex items-center space-x-2 tracking-tighter font-semibold py-4'>
+          <h1 className='text-lg flex items-center space-x-2 tracking-tighter font-semibold py-4 text-dark-gray dark:text-foreground'>
             <div
               aria-hidden
               className='size-4 select-none aspect-square rounded-full bg-emerald-500'
             />
-            <span>Create New Category</span>
+            <span>{isEditMode ? 'Edit Category' : 'Create New Category'}</span>
           </h1>
           {SECTIONS.map((section) => (
             <Button
@@ -127,16 +178,20 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
             type='submit'
             className='w-full rounded-xl font-medium tracking-tight bg-emerald-500 text-white'
             isLoading={isSubmitting}
-            onPress={(e) => {
-              // @ts-expect-error - Event type mismatch in HeroUI vs React
-              e.preventDefault()
-              void form.handleSubmit()
-            }}>
-            {isSubmitting ? 'Creating...' : 'Create Category'}
+            onPress={form.handleSubmit}>
+            {isSubmitting
+              ? isEditMode
+                ? 'Updating...'
+                : 'Creating...'
+              : isEditMode
+                ? 'Update Category'
+                : 'Create Category'}
           </Button>
           {status === 'success' && (
             <p className='mt-2 text-sm text-center text-emerald-500'>
-              Category created successfully!
+              {isEditMode
+                ? 'Category updated successfully!'
+                : 'Category created successfully!'}
             </p>
           )}
           {status === 'error' && errorMessage && (
@@ -166,6 +221,10 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
             <Media form={form as CategoryFormApi} />
           </div>
 
+          <div id='packaging' className='scroll-mt-4'>
+            <Packaging form={form as CategoryFormApi} />
+          </div>
+
           <div id='details' className='scroll-mt-4'>
             <Details form={form as CategoryFormApi} />
           </div>
@@ -177,7 +236,13 @@ export const CategoryForm = ({onCreated}: CategoryFormProps) => {
               color='success'
               className='w-full font-semibold'
               isLoading={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Category'}
+              {isSubmitting
+                ? isEditMode
+                  ? 'Updating...'
+                  : 'Creating...'
+                : isEditMode
+                  ? 'Update Category'
+                  : 'Create Category'}
             </Button>
           </div>
         </form>

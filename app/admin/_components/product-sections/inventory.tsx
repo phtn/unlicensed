@@ -2,6 +2,7 @@
 
 import {Input, Switch} from '@heroui/react'
 import {ProductFormApi} from '../product-schema'
+import {commonInputClassNames} from '../ui/fields'
 import {FormSection, Header} from './components'
 
 interface InventoryProps {
@@ -19,19 +20,16 @@ export const Inventory = ({form}: InventoryProps) => {
               const stockValue = (field.state.value as number) ?? 0
               return (
                 <div className='space-y-2'>
-                  <label className='text-sm font-medium text-neutral-300'>
-                    Stock Quantity
-                  </label>
+                  <label className='text-sm font-medium text-neutral-300'></label>
                   <Input
+                    label='Stock Quantity'
                     type='number'
                     value={String(stockValue ?? 0)}
                     onChange={(e) => field.handleChange(Number(e.target.value))}
                     onBlur={field.handleBlur}
                     min={0}
                     variant='bordered'
-                    // classNames={{
-                    //   inputWrapper: 'bg-neutral-900 border-neutral-800 data-[hover=true]:border-neutral-700 group-data-[focus=true]:border-emerald-500',
-                    // }}
+                    classNames={commonInputClassNames}
                   />
                 </div>
               )
@@ -43,28 +41,22 @@ export const Inventory = ({form}: InventoryProps) => {
               const denominationsValue = (field.state.value as string) ?? ''
               return (
                 <div className='space-y-2'>
-                  <label className='text-sm font-medium text-neutral-300'>
-                    Available Denominations
-                  </label>
                   <Input
+                    label='Available Denominations'
                     value={denominationsValue}
                     onChange={(e) => field.handleChange(e.target.value)}
                     placeholder='e.g. 1, 3.5, 7, 14'
                     variant='bordered'
-                    // classNames={{
-                    //   inputWrapper: 'bg-neutral-900 border-neutral-800 data-[hover=true]:border-neutral-700 group-data-[focus=true]:border-emerald-500',
-                    // }}
+                    classNames={commonInputClassNames}
                   />
-                  <p className='text-xs text-neutral-500'>
-                    Comma separated values
-                  </p>
+                  <p className='text-xs'>Comma separated values</p>
                 </div>
               )
             }}
           </form.Field>
         </div>
 
-        <div className='flex items-center gap-8 py-2'>
+        <div className='grid grid-cols-4 items-center gap-8 py-2'>
           <form.Field name='available'>
             {(field) => {
               const availableValue = (field.state.value as boolean) ?? false
@@ -75,11 +67,11 @@ export const Inventory = ({form}: InventoryProps) => {
                   classNames={{
                     wrapper: 'group-data-[selected=true]:bg-emerald-500',
                   }}>
-                  <div className='flex flex-col gap-0.5'>
-                    <span className='text-sm font-medium text-neutral-200'>
+                  <div className='flex flex-col gap-px'>
+                    <span className='text-base font-semibold'>
                       Available for Sale
                     </span>
-                    <span className='text-xs text-neutral-500'>
+                    <span className='text-xs opacity-70'>
                       Product is visible in store
                     </span>
                   </div>
@@ -98,11 +90,9 @@ export const Inventory = ({form}: InventoryProps) => {
                   classNames={{
                     wrapper: 'group-data-[selected=true]:bg-amber-500',
                   }}>
-                  <div className='flex flex-col gap-0.5'>
-                    <span className='text-sm font-medium text-neutral-200'>
-                      Featured
-                    </span>
-                    <span className='text-xs text-neutral-500'>
+                  <div className='flex flex-col gap-px'>
+                    <span className='text-base font-semibold'>Featured</span>
+                    <span className='text-xs opacity-70'>
                       Highlight in featured sections
                     </span>
                   </div>

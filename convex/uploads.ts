@@ -20,3 +20,22 @@ export const getStorageUrl = query({
   },
 })
 
+export const getStorageUrls = query({
+  args: {
+    storageIds: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const urls = await Promise.all(
+      args.storageIds.map(async (storageId) => {
+        try {
+          const url = await ctx.storage.getUrl(storageId as Id<'_storage'>)
+          return {storageId, url}
+        } catch {
+          return {storageId, url: null}
+        }
+      }),
+    )
+    return urls
+  },
+})
+

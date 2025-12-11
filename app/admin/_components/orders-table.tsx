@@ -140,7 +140,7 @@ export const OrdersTable = () => {
         removeWrapper
         aria-label='Orders table'
         classNames={classNames}>
-        <TableHeader columns={columns} className=''>
+        <TableHeader columns={columns} className='font-medium drop-shadow-xs'>
           {(column) => (
             <TableColumn
               key={column.uid}
