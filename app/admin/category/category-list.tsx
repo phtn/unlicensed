@@ -35,7 +35,7 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
                       src={resolveUrl(category.heroImage)}
                       className='size-12 shrink-0 aspect-square'
                     />
-                    <div className='flex items-center justify-between w-full'>
+                    <div className='flex items-start justify-between w-full h-12'>
                       <h4 className='tracking-tight font-semibold '>
                         {category.name}
                       </h4>

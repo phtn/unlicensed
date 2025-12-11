@@ -86,7 +86,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         {/* We only show the first parent group */}
         <SidebarGroup>
-          <SidebarGroupLabel className='pl-4 text-xs tracking-widest uppercase text-sidebar-foreground/50'>
+          <SidebarGroupLabel className='pl-4 text-xs tracking-widest uppercase font-bold opacity-40'>
             {data.navMain[0]?.title}
           </SidebarGroupLabel>
           <SidebarGroupContent className='py-2'>
@@ -108,7 +108,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                       key={item.title}>
                       <SidebarMenuButton
                         asChild
-                        className='capitalize group/menu-button h-8 data-[active=true]:hover:bg-background data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/50 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto'
+                        className='capitalize group/menu-button data-[active=true]:hover:bg-background data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/50 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto'
                         isActive={isActive}>
                         <MenuContent {...item} />
                       </SidebarMenuButton>
@@ -119,7 +119,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel className='pl-4 text-xs tracking-widest uppercase text-sidebar-foreground/50'>
+          <SidebarGroupLabel className='pl-4 text-xs tracking-widest uppercase font-bold opacity-40'>
             {data.navMain[1]?.title}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -217,7 +217,7 @@ const MenuContent = (item: NavItem) => {
       prefetch={true}
       onMouseEnter={handleMouseEnter}
       onClick={handleClick}
-      className='font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center justify-between px-4 h-10 relative w-full'>
+      className='font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center justify-between px-4 h-8 relative w-full'>
       <span className='group-hover/menu-content:text-foreground tracking-tighter text-sm font-medium text-foreground/80 capitalize'>
         {item.title}
       </span>
@@ -244,7 +244,7 @@ const data: Record<string, NavGroup[]> = {
       url: '#',
       items: [
         {
-          title: 'stats',
+          title: 'Overview',
           url: '/admin',
           icon: 'linalool',
         },
@@ -269,13 +269,13 @@ const data: Record<string, NavGroup[]> = {
           icon: 'linalool',
         },
         {
-          title: 'Personnel',
+          title: 'Customers',
           url: '/admin/personnel',
           icon: 'linalool',
         },
         {
-          title: '',
-          url: '/x',
+          title: 'Personnel',
+          url: '/admin/personnel',
           icon: 'linalool',
         },
       ],

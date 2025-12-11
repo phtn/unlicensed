@@ -33,7 +33,7 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
         variant='flat'
         onPress={handleToggle}
         className={cn(
-          'group w-40 flex items-center justify-start space-x-2 border py-3 text-sm text-foreground hover:bg-(--surface-muted) dark:hover:bg-(--surface-muted)',
+          'group w-40 flex items-center justify-start space-x-2 border py-3 text-sm ps-2 text-foreground hover:bg-(--surface-muted) dark:hover:bg-(--surface-muted)',
         )}>
         <Icon
           name='toggle-theme'

@@ -26,7 +26,7 @@ import React, {ReactNode, useEffect} from 'react'
 type Activity = Doc<'activities'>
 
 const columns = [
-  {name: 'CUSTOMER', uid: 'user'},
+  {name: 'USER', uid: 'user'},
   {name: 'AMOUNT', uid: 'amount'},
   {name: 'ACTIVITY', uid: 'activity'},
   {name: 'TYPE', uid: 'type'},
