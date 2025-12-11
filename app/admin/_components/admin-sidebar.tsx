@@ -20,10 +20,50 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
-import {usePathname} from 'next/navigation'
+import {usePathname, useRouter} from 'next/navigation'
+import {startTransition, useCallback, useEffect, useMemo} from 'react'
+
+// Global Set to track prefetched routes across all instances
+const prefetchedRoutes = new Set<string>()
 
 export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  // Collect all routes from navMain data
+  const allRoutes = useMemo(() => {
+    const routes: string[] = []
+    data.navMain.forEach((group) => {
+      group.items?.forEach((item) => {
+        if (item.url && item.url !== '#' && item.url !== '/x') {
+          routes.push(item.url)
+        }
+      })
+    })
+    return routes
+  }, [])
+
+  // Prefetch all routes when sidebar mounts
+  useEffect(() => {
+    const prefetchAllRoutes = () => {
+      allRoutes.forEach((route) => {
+        if (!prefetchedRoutes.has(route)) {
+          router.prefetch(route)
+          prefetchedRoutes.add(route)
+        }
+      })
+    }
+
+    // Prefetch immediately
+    prefetchAllRoutes()
+
+    // Also prefetch after a short delay to avoid blocking initial render
+    const timeoutId = setTimeout(prefetchAllRoutes, 100)
+
+    return () => {
+      clearTimeout(timeoutId)
+    }
+  }, [allRoutes, router])
 
   return (
     <Sidebar {...props} className='border-none!' suppressHydrationWarning>
@@ -150,13 +190,34 @@ const MenuContent = (item: NavItem) => {
   const adminStats = useQuery(api.orders.q.getAdminStats)
   const pendingOrdersCount = adminStats?.pendingOrdersCount ?? 0
   const showBadge = item.url === '/admin/orders' && pendingOrdersCount > 0
+  const router = useRouter()
+
+  // Prefetch on hover as a fallback (in case it wasn't prefetched yet)
+  const handleMouseEnter = useCallback(() => {
+    if (!prefetchedRoutes.has(item.url)) {
+      router.prefetch(item.url)
+      prefetchedRoutes.add(item.url)
+    }
+  }, [item.url, router])
+
+  // Handle navigation with transition
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault()
+      startTransition(() => {
+        router.push(item.url)
+      })
+    },
+    [item.url, router],
+  )
 
   return (
     <Link
       href={item.url}
       prefetch={true}
-      suppressHydrationWarning
-      className=' font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center justify-between px-4 h-10 relative'>
+      onMouseEnter={handleMouseEnter}
+      onClick={handleClick}
+      className='font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center justify-between px-4 h-10 relative w-full'>
       <span className='group-hover/menu-content:text-foreground tracking-tighter text-sm font-medium text-foreground/80 capitalize'>
         {item.title}
       </span>

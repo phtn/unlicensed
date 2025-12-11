@@ -14,7 +14,7 @@ import {
 } from '@heroui/react'
 import {useTheme} from 'next-themes'
 import {usePathname} from 'next/navigation'
-import {useEffect, useMemo, useState} from 'react'
+import {useMemo, useState} from 'react'
 
 type NavLink = {
   label: string
@@ -53,11 +53,7 @@ type ThemeToggleProps = {
 
 const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
   const {setTheme, resolvedTheme} = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const [mounted] = useState(() => true)
 
   const handleToggle = () => {
     const currentTheme = resolvedTheme ?? 'dark'

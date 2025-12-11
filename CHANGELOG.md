@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3
+
+### Patch Changes
+
+- table-column-width adjustable
+
 ## 0.2.2
 
 ### Patch Changes

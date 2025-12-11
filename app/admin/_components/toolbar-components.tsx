@@ -21,23 +21,23 @@ export const PrimaryTab = ({
     <Button
       id={id ?? label}
       as={Link}
-      href={href}
-      variant='bordered'
+      size='sm'
       prefetch
+      href={href}
       disableRipple
       disableAnimation
-      size='sm'
+      variant='bordered'
       className={cn(
-        'flex items-center px-0 dark:border-origin border-white dark:bg-zinc-700 bg-light-gray/15 dark:hover:bg-blue-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight -space-x-1.5 shrink-0',
+        'flex items-center px-1.5 dark:border-origin border-white dark:bg-zinc-700 bg-light-gray/15 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight -space-x-1.5 shrink-0',
         {
-          'text-blue-500 dark:text-blue-100 rounded-none bg-transparent dark:bg-transparent dark:hover:bg-transparent px-0':
+          'text-indigo-500 dark:text-indigo-100 rounded-none bg-transparent dark:bg-transparent dark:hover:bg-transparent px-0':
             route === 'new',
         },
       )}>
       <span
         className={cn(
           'capitalize underline underline-offset-4 decoration-transparent flex',
-          {'decoration-blue-500': route === id},
+          {'decoration-indigo-500': route === id},
         )}>
         {icon && <Icon name={icon} className='size-4' />}
         <span>{label}</span>

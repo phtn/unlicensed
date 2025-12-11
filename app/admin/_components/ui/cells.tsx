@@ -7,7 +7,7 @@ import {Button} from '@heroui/react'
 export const textCell = (value: string) => {
   return (
     <div className='flex flex-col'>
-      <p className='text-bold text-sm'>{value}</p>
+      <p className='text-bold text-sm whitespace-nowrap'>{value}</p>
     </div>
   )
 }
@@ -22,15 +22,17 @@ export const dateCell = (value: number) => {
 
 export const moneyCell = (value: number) => {
   return (
-    <div className='w-fit flex flex-col items-end'>
-      <p className='font-semibold text-sm font-space'>{formatPrice(value)}</p>
+    <div className='w-16 flex flex-col items-end pr-3'>
+      <p className='whitespace-nowrap font-semibold text-sm font-space text-right'>
+        {formatPrice(value)}
+      </p>
     </div>
   )
 }
 
 export const actionsCell = (selected: boolean, fn: VoidFunction) => {
   return (
-    <div className='relative w-fit flex items-center justify-center'>
+    <div className='relative flex items-center justify-center'>
       <Button
         size='sm'
         isIconOnly

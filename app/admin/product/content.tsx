@@ -9,6 +9,9 @@ export const ProductsContent = () => {
   const products = useQuery(api.products.q.listProducts, {limit: 100})
   return (
     <Suspense fallback={<div>Loading...</div>}>
+      <h3 className='text-2xl tracking-tighter font-semibold px-2 mb-2'>
+        Products List
+      </h3>
       <ProductList products={products} />
     </Suspense>
   )

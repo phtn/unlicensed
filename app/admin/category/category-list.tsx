@@ -9,7 +9,7 @@ interface CurrentCategoriesProps {
 export const CategoryList = ({categories}: CurrentCategoriesProps) => {
   return (
     <section className=''>
-      <h3 className='tracking-tighter font-semibold px-2 text-emerald-500'>
+      <h3 className='text-2xl tracking-tighter font-semibold px-2'>
         Active Categories
       </h3>
       {categories?.length === 0 ? (

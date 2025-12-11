@@ -142,7 +142,10 @@ export const OrdersTable = () => {
         classNames={classNames}>
         <TableHeader columns={columns} className=''>
           {(column) => (
-            <TableColumn key={column.uid} align='start' className='border-b-0'>
+            <TableColumn
+              key={column.uid}
+              align={column.uid === 'actions' ? 'center' : 'start'}
+              className={cn('border-b-0', {'w-14': column.uid === 'actions'})}>
               {column.name}
             </TableColumn>
           )}

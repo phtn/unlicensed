@@ -2,6 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import {Id, type Doc} from '@/convex/_generated/dataModel'
+import {useResizableColumns} from '@/hooks/use-resizable-columns'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
@@ -24,7 +25,7 @@ import {
   TableRow,
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {Key, useCallback, useMemo, useState} from 'react'
+import {Key, useCallback, useEffect, useMemo, useState} from 'react'
 import {useProductDetails} from '../_components/product-details-context'
 import {actionsCell, moneyCell, textCell} from '../_components/ui/cells'
 import {useSettingsPanel} from '../_components/ui/settings'
@@ -32,13 +33,13 @@ import {useSettingsPanel} from '../_components/ui/settings'
 type Product = Doc<'products'>
 
 const columns = [
-  {name: 'PRODUCT', uid: 'product'},
-  {name: 'CATEGORY', uid: 'category'},
-  {name: 'PRICE', uid: 'price'},
-  {name: 'UNIT', uid: 'unit'},
-  {name: 'STOCK', uid: 'stock'},
-  {name: 'STATUS', uid: 'status'},
-  {name: 'ACTIONS', uid: 'actions'},
+  {name: 'PRODUCT', uid: 'product', minWidth: 200},
+  {name: 'CATEGORY', uid: 'category', minWidth: 100},
+  {name: 'PRICE', uid: 'price', minWidth: 80},
+  {name: 'UNIT', uid: 'unit', minWidth: 80},
+  {name: 'STOCK', uid: 'stock', minWidth: 80},
+  {name: 'STATUS', uid: 'status', minWidth: 100},
+  {name: 'ACTIONS', uid: 'actions', minWidth: 56},
 ]
 
 const getKey = (product: Product) => String(product._id)
@@ -57,6 +58,94 @@ export const InventoryTable = () => {
   const {open, setOpen} = useSettingsPanel()
   const selectedProductId = selectedProduct?._id
   const bulkUpdatePrices = useMutation(api.products.m.bulkUpdatePrices)
+
+  const {
+    columnWidths,
+    resizingColumn,
+    tableRef,
+    handleMouseDown,
+    getColumnWidth,
+  } = useResizableColumns('inventory-table', columns)
+
+  const [hoveredColumn, setHoveredColumn] = useState<string | null>(null)
+
+  // Debug logging
+  // console.log('[InventoryTable] columnWidths:', columnWidths)
+  // console.log('[InventoryTable] resizingColumn:', resizingColumn)
+  // console.log('[InventoryTable] hoveredColumn:', hoveredColumn)
+
+  // Apply widths directly to DOM elements
+  useEffect(() => {
+    if (tableRef.current) {
+      const table = tableRef.current.querySelector('table')
+      if (table) {
+        // Limit checkbox column width to w-14 (3.5rem = 56px)
+        const headerCells = table.querySelectorAll('thead th')
+        const bodyRows = table.querySelectorAll('tbody tr')
+
+        // First column is the checkbox column
+        if (headerCells[0]) {
+          const checkboxHeader = headerCells[0] as HTMLElement
+          checkboxHeader.style.width = '56px'
+          checkboxHeader.style.minWidth = '56px'
+          checkboxHeader.style.maxWidth = '56px'
+        }
+
+        bodyRows.forEach((row) => {
+          const cells = row.querySelectorAll('td')
+          if (cells[0]) {
+            const checkboxCell = cells[0] as HTMLElement
+            checkboxCell.style.width = '56px'
+            checkboxCell.style.minWidth = '56px'
+            checkboxCell.style.maxWidth = '56px'
+          }
+        })
+
+        // Apply custom column widths if they exist
+        if (Object.keys(columnWidths).length > 0) {
+          // console.log('[InventoryTable] Applying widths to DOM', {
+          //   headerCells: headerCells.length,
+          //   bodyRows: bodyRows.length,
+          //   columnWidths,
+          // })
+
+          // Skip first column (checkbox) and apply widths starting from index 1
+          headerCells.forEach((cell, index) => {
+            if (index === 0) return // Skip checkbox column
+            const uid = columns[index - 1]?.uid // Adjust index for checkbox column
+            const width = getColumnWidth(uid)
+            if (width && uid) {
+              const htmlCell = cell as HTMLElement
+              htmlCell.style.width = `${width}px`
+              htmlCell.style.minWidth = `${width}px`
+              htmlCell.style.maxWidth = `${width}px`
+              console.log('[InventoryTable] Applied width to header cell', {
+                index,
+                uid,
+                width,
+                actualWidth: htmlCell.offsetWidth,
+              })
+            }
+          })
+
+          bodyRows.forEach((row) => {
+            const cells = row.querySelectorAll('td')
+            cells.forEach((cell, index) => {
+              if (index === 0) return // Skip checkbox column
+              const uid = columns[index - 1]?.uid // Adjust index for checkbox column
+              const width = getColumnWidth(uid)
+              if (width && uid) {
+                const htmlCell = cell as HTMLElement
+                htmlCell.style.width = `${width}px`
+                htmlCell.style.minWidth = `${width}px`
+                htmlCell.style.maxWidth = `${width}px`
+              }
+            })
+          })
+        }
+      }
+    }
+  }, [columnWidths, getColumnWidth, hoveredColumn, columns])
 
   const [filterValue, setFilterValue] = useState('')
   const [selectedRow, setSelectedRow] = useState<Id<'products'> | null>(null)
@@ -219,11 +308,13 @@ export const InventoryTable = () => {
             <Image
               src={product.image}
               alt={product.name}
-              className='w-12 h-12 object-cover rounded'
+              className='w-12 h-auto aspect-square object-cover rounded shrink-0'
             />
             <div className='flex flex-col'>
-              <p className='text-bold text-sm'>{product.name}</p>
-              <p className='text-xs opacity-60'>{product.slug}</p>
+              <p className='text-bold text-sm whitespace-nowrap'>
+                {product.name}
+              </p>
+              <p className='text-xs italic opacity-60'>{product.slug}</p>
             </div>
           </div>
         )
@@ -241,7 +332,7 @@ export const InventoryTable = () => {
         return textCell(product.unit)
       case 'stock':
         return (
-          <div className='flex flex-col'>
+          <div className='flex flex-col items-center'>
             <p className='text-bold text-sm'>
               {product.stock !== undefined ? product.stock : 'N/A'}
             </p>
@@ -285,13 +376,25 @@ export const InventoryTable = () => {
   const classNames = useMemo(
     () => ({
       wrapper: ['max-h-[382px]', 'max-w-3xl'],
-      th: ['bg-transparent', 'text-gray-400', 'border-b', 'border-divider'],
+      table: ['table-fixed', 'w-full', '!table-fixed'],
+      th: [
+        'bg-transparent',
+        'text-gray-400',
+        'border-b',
+        'border-divider',
+        '[&:first-child]:w-14',
+        '[&:first-child]:min-w-14',
+        '[&:first-child]:max-w-14',
+      ],
       td: [
         'group-data-[first=true]:first:before:rounded-none',
         'group-data-[first=true]:last:before:rounded-none',
         'group-data-[middle=true]:before:rounded-none',
         'group-data-[last=true]:first:before:rounded-none',
         'group-data-[last=true]:last:before:rounded-none',
+        '[&:first-child]:w-14',
+        '[&:first-child]:min-w-14',
+        '[&:first-child]:max-w-14',
       ],
     }),
     [],
@@ -361,7 +464,8 @@ export const InventoryTable = () => {
                     onValueChange={setPriceInput}
                     startContent={<Icon name='dollar' className='size-4' />}
                     classNames={{
-                      inputWrapper: 'border-gray-400 dark:bg-neutral-600/20 w-40',
+                      inputWrapper:
+                        'border-gray-400 dark:bg-neutral-600/20 w-40',
                     }}
                     min='0'
                     step='0.01'
@@ -393,7 +497,9 @@ export const InventoryTable = () => {
                     <Button
                       variant='flat'
                       className='text-blue-400'
-                      endContent={<Icon name='arrow-down' className='size-4' />}>
+                      endContent={
+                        <Icon name='arrow-down' className='size-4' />
+                      }>
                       Actions
                     </Button>
                   </DropdownTrigger>
@@ -548,48 +654,196 @@ export const InventoryTable = () => {
     <>
       {topContent}
       <Card shadow='sm' className='p-4'>
-        <Table
-          key={`table-${selectedProductId || 'none'}-${open}`}
-          isCompact
-          removeWrapper
-          aria-label='Inventory table'
-          classNames={classNames}
-          selectionMode='multiple'
-          selectedKeys={selectedRows}
-          onSelectionChange={onSelectionChange}>
-          <TableHeader columns={columns}>
-            {(column) => (
-              <TableColumn key={column.uid} align='start'>
-                {column.name}
-              </TableColumn>
-            )}
-          </TableHeader>
-          <TableBody emptyContent={'No products found'} items={filteredItems}>
-            {(product) => {
-              const isSelected = Boolean(
-                selectedProductId &&
-                product._id &&
-                String(selectedProductId) === String(product._id) &&
-                open,
-              )
-              return (
-                <TableRow
-                  key={getKey(product)}
-                  data-product-selected={isSelected ? 'true' : 'false'}
-                  className={cn(
-                    'h-16 border-b-[0.5px] last:border-b-0 border-neutral-500/20 hover:bg-emerald-400/10 transition-colors duration-75',
-                    selectedRow === product._id && isSelected
-                      ? 'bg-emerald-400/15 border-emerald-400/30'
-                      : '',
-                  )}>
-                  {(columnKey) => (
-                    <TableCell>{renderCell(product, columnKey)}</TableCell>
-                  )}
-                </TableRow>
-              )
-            }}
-          </TableBody>
-        </Table>
+        <div ref={tableRef} className='relative'>
+          <Table
+            key={`table-${selectedProductId || 'none'}-${open}`}
+            isCompact
+            removeWrapper
+            aria-label='Inventory table'
+            classNames={classNames}
+            selectionMode='multiple'
+            selectedKeys={selectedRows}
+            onSelectionChange={onSelectionChange}>
+            <TableHeader columns={columns}>
+              {(column) => {
+                const width = getColumnWidth(column.uid)
+                // const isResizing = resizingColumn === column.uid
+                const isHovered = hoveredColumn === column.uid
+                const columnIndex = columns.findIndex(
+                  (col) => col.uid === column.uid,
+                )
+                const isLastColumn = columnIndex === columns.length - 1
+
+                const columnStyle = width
+                  ? {
+                      width: `${width}px`,
+                      minWidth: `${width}px`,
+                      maxWidth: `${width}px`,
+                    }
+                  : undefined
+
+                // console.log('[InventoryTable] Rendering TableColumn', {
+                //   columnUid: column.uid,
+                //   width,
+                //   columnStyle,
+                //   isResizing,
+                // })
+
+                return (
+                  <TableColumn
+                    key={column.uid}
+                    className={cn('text-start relative group/column h-fit', {
+                      'w-16': column.uid === 'actions' && !width,
+                      'text-center w-18': column.uid === 'price' && !width,
+                      'text-center w-16': column.uid === 'stock' && !width,
+                      'text-center w-64': column.uid === 'product' && !width,
+                    })}
+                    style={columnStyle}
+                    align={column.uid === 'actions' ? 'center' : 'start'}>
+                    <div
+                      className='relative w-full'
+                      onMouseEnter={() => {
+                        console.log(
+                          '[InventoryTable] Column hover enter',
+                          column.uid,
+                        )
+                        setHoveredColumn(column.uid)
+                      }}
+                      onMouseLeave={() => {
+                        console.log(
+                          '[InventoryTable] Column hover leave',
+                          column.uid,
+                        )
+                        setHoveredColumn(null)
+                      }}>
+                      {isHovered && (
+                        <div className='absolute inset-0 bg-primary/20 pointer-events-none z-0' />
+                      )}
+                      <div className='flex items-center justify-between w-full relative z-10'>
+                        <span className='flex items-center'>
+                          {column.name.toLowerCase() === 'price' && (
+                            <Icon name='dollar' className='size-5' />
+                          )}
+                          {column.name}
+                        </span>
+                      </div>
+                    </div>
+                    {!isLastColumn && (
+                      <>
+                        <div
+                          className={cn(
+                            'absolute right-0 top-1/4 bottom-0 cursor-col-resize z-30 size-4 aspect-square',
+                          )}
+                          style={{
+                            right: '3px',
+                            width: '6px',
+                            marginRight: '3px',
+                          }}
+                          onMouseDown={(e) => {
+                            console.log(
+                              '[InventoryTable] Resize handle clicked',
+                              {
+                                columnUid: column.uid,
+                                columnName: column.name,
+                                event: e,
+                              },
+                            )
+                            handleMouseDown(column.uid, e)
+                          }}
+                          role='separator'
+                          aria-label={`Resize ${column.name} column`}>
+                          <Icon
+                            name='width-rounded'
+                            className='size-4 hidden group-hover/column:flex'
+                          />
+                        </div>
+                      </>
+                    )}
+                  </TableColumn>
+                )
+              }}
+            </TableHeader>
+            <TableBody emptyContent={'No products found'} items={filteredItems}>
+              {(product) => {
+                const isSelected = Boolean(
+                  selectedProductId &&
+                  product._id &&
+                  String(selectedProductId) === String(product._id) &&
+                  open,
+                )
+                return (
+                  <TableRow
+                    key={getKey(product)}
+                    data-product-selected={isSelected ? 'true' : 'false'}
+                    className={cn(
+                      'h-16 border-b-[0.5px] last:border-b-0 border-neutral-500/20 hover:bg-emerald-400/10 transition-colors duration-75 relative',
+                      selectedRow === product._id && isSelected
+                        ? 'bg-emerald-400/15 border-emerald-400/30'
+                        : '',
+                    )}>
+                    {(columnKey) => {
+                      const width = getColumnWidth(String(columnKey))
+                      const columnIndex = columns.findIndex(
+                        (col) => col.uid === String(columnKey),
+                      )
+                      const isLastColumn = columnIndex === columns.length - 1
+                      const isResizing = resizingColumn === String(columnKey)
+                      const isHovered = hoveredColumn === String(columnKey)
+
+                      const cellStyle = width
+                        ? {
+                            width: `${width}px`,
+                            minWidth: `${width}px`,
+                            maxWidth: `${width}px`,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }
+                        : undefined
+
+                      if (width) {
+                        console.log('[InventoryTable] Rendering TableCell', {
+                          columnKey,
+                          width,
+                          cellStyle,
+                        })
+                      }
+
+                      return (
+                        <TableCell
+                          className='relative'
+                          style={cellStyle}
+                          onMouseEnter={() =>
+                            setHoveredColumn(String(columnKey))
+                          }
+                          onMouseLeave={() => setHoveredColumn(null)}>
+                          {isHovered && (
+                            <div className='absolute inset-0 bg-primary/15 pointer-events-none z-0' />
+                          )}
+                          <div className='relative z-10'>
+                            {renderCell(product, columnKey)}
+                          </div>
+                          {!isLastColumn && (
+                            <div
+                              className={cn(
+                                'absolute right-0 top-0 bottom-0 pointer-events-none z-20',
+                                isResizing && 'bg-primary',
+                              )}
+                              style={{
+                                right: '0px',
+                                width: '1px',
+                                height: '100%',
+                              }}
+                            />
+                          )}
+                        </TableCell>
+                      )
+                    }}
+                  </TableRow>
+                )
+              }}
+            </TableBody>
+          </Table>
+        </div>
       </Card>
     </>
   )

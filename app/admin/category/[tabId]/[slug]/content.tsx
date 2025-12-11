@@ -1,6 +1,7 @@
 'use client'
 
 import {ProductList} from '@/app/admin/product/product-list'
+import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {Button} from '@heroui/react'
@@ -31,8 +32,8 @@ export const CategoryProductsContent = ({
           <h2 className=' tracking-tighter'>
             {category?.name || 'Category'} Products
           </h2>
-          <span className='ml-2 text-base text-emerald-500 font-space bg-light-gray/10 w-7 rounded-full text-center'>
-            {products?.length}
+          <span className='ml-2 text-base text-white font-space bg-blue-500 w-6 rounded-md text-center'>
+            <AnimatedNumber value={products?.length ?? 0} />
           </span>
           <Button
             as={Link}
