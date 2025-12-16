@@ -1,12 +1,8 @@
 import {v} from 'convex/values'
-import {mutation} from '../_generated/server'
-import {
-  orderStatusSchema,
-  paymentSchema,
-  shippingSchema,
-} from './d'
-import {addressSchema} from '../users/d'
 import {internal} from '../_generated/api'
+import {mutation} from '../_generated/server'
+import {addressSchema} from '../users/d'
+import {orderStatusSchema, paymentSchema, shippingSchema} from './d'
 
 /**
  * Generate a unique order number
@@ -30,13 +26,8 @@ export const createOrder = mutation({
     contactPhone: v.optional(v.string()),
     paymentMethod: v.union(
       v.literal('credit_card'),
-      v.literal('debit_card'),
-      v.literal('paypal'),
-      v.literal('apple_pay'),
-      v.literal('google_pay'),
-      v.literal('bank_transfer'),
-      v.literal('cash'),
-      v.literal('other'),
+      v.literal('crypto'),
+      v.literal('cashapp'),
     ),
     customerNotes: v.optional(v.string()),
     // Optional: override calculated totals
@@ -71,7 +62,8 @@ export const createOrder = mutation({
 
         const denomination = cartItem.denomination || 1
         const unitPriceCents = product.priceCents
-        const totalPriceCents = unitPriceCents * denomination * cartItem.quantity
+        const totalPriceCents =
+          unitPriceCents * denomination * cartItem.quantity
 
         return {
           productId: cartItem.productId,
@@ -92,9 +84,7 @@ export const createOrder = mutation({
       orderItems.reduce((sum, item) => sum + item.totalPriceCents, 0)
 
     const taxCents = args.taxCents ?? Math.round(subtotalCents * 0.1) // 10% tax
-    const shippingCents =
-      args.shippingCents ??
-      (subtotalCents > 5000 ? 0 : 500) // Free shipping over $50
+    const shippingCents = args.shippingCents ?? (subtotalCents > 5000 ? 0 : 500) // Free shipping over $50
     const discountCents = args.discountCents ?? 0
 
     const totalCents = subtotalCents + taxCents + shippingCents - discountCents
@@ -151,7 +141,14 @@ export const updateOrderStatus = mutation({
     }
 
     const updates: {
-      orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
+      orderStatus:
+        | 'pending'
+        | 'confirmed'
+        | 'processing'
+        | 'shipped'
+        | 'delivered'
+        | 'cancelled'
+        | 'refunded'
       updatedAt: number
       cancelledAt?: number
       internalNotes?: string
@@ -169,6 +166,23 @@ export const updateOrderStatus = mutation({
     }
 
     await ctx.db.patch(args.orderId, updates)
+
+    // Deduct points when order status changes to refunded
+    const wasRefunded =
+      args.status === 'refunded' &&
+      order.orderStatus !== 'refunded' &&
+      order.userId &&
+      order.pointsEarned
+
+    if (wasRefunded) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.rewards.m.deductPointsFromRefund,
+        {
+          orderId: args.orderId,
+        },
+      )
+    }
 
     // Log order status change activity
     await ctx.scheduler.runAfter(
@@ -202,18 +216,52 @@ export const updatePayment = mutation({
 
     // If payment is completed, update order status to confirmed
     let orderStatus = order.orderStatus
-    if (
+    const wasPaymentCompleted =
       args.payment.status === 'completed' &&
-      order.orderStatus === 'pending'
-    ) {
+      order.payment.status !== 'completed'
+
+    if (wasPaymentCompleted && order.orderStatus === 'pending') {
       orderStatus = 'confirmed'
     }
 
+    // Update payment with paidAt timestamp if completing
+    const paymentUpdate = {
+      ...args.payment,
+      paidAt:
+        wasPaymentCompleted && !args.payment.paidAt
+          ? Date.now()
+          : args.payment.paidAt,
+    }
+
     await ctx.db.patch(args.orderId, {
-      payment: args.payment,
+      payment: paymentUpdate,
       orderStatus,
       updatedAt: Date.now(),
     })
+
+    // Award points when payment is completed (only if it wasn't already completed)
+    if (wasPaymentCompleted && order.userId) {
+      await ctx.scheduler.runAfter(0, internal.rewards.m.awardPointsFromOrder, {
+        orderId: args.orderId,
+      })
+    }
+
+    // Deduct points when payment is refunded
+    const wasRefunded =
+      (args.payment.status === 'refunded' ||
+        args.payment.status === 'partially_refunded') &&
+      order.payment.status !== 'refunded' &&
+      order.payment.status !== 'partially_refunded'
+
+    if (wasRefunded && order.userId && order.pointsEarned) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.rewards.m.deductPointsFromRefund,
+        {
+          orderId: args.orderId,
+        },
+      )
+    }
 
     // Log payment status change activity
     await ctx.scheduler.runAfter(
@@ -249,10 +297,7 @@ export const updateShipping = mutation({
     let orderStatus = order.orderStatus
     if (args.shipping.shippedAt && order.orderStatus !== 'shipped') {
       orderStatus = 'shipped'
-    } else if (
-      args.shipping.deliveredAt &&
-      order.orderStatus !== 'delivered'
-    ) {
+    } else if (args.shipping.deliveredAt && order.orderStatus !== 'delivered') {
       orderStatus = 'delivered'
     }
 
@@ -324,9 +369,7 @@ export const cancelOrder = mutation({
       throw new Error('Cannot cancel a delivered order')
     }
 
-    const notes = args.reason
-      ? `Cancelled: ${args.reason}`
-      : 'Order cancelled'
+    const notes = args.reason ? `Cancelled: ${args.reason}` : 'Order cancelled'
     const existingNotes = order.internalNotes || ''
     const updatedNotes = existingNotes
       ? `${existingNotes}\n\n${new Date().toISOString()}: ${notes}`
@@ -342,4 +385,3 @@ export const cancelOrder = mutation({
     return args.orderId
   },
 })
-

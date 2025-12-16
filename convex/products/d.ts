@@ -42,6 +42,7 @@ export const productSchema = v.object({
       }),
     ),
   ),
+  eligibleForRewards: v.optional(v.boolean()), // Whether this product is eligible for rewards points
 })
 
 export type ProductType = Infer<typeof productSchema>

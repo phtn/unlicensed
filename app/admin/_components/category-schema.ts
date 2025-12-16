@@ -13,6 +13,7 @@ export const categorySchema = z.object({
   benefitsRaw: z.string().optional(),
   unitsRaw: z.string().optional(),
   denominationsRaw: z.string().optional(),
+  visible: z.boolean().default(false),
 })
 
 export type CategoryFormValues = z.infer<typeof categorySchema>
@@ -59,6 +60,14 @@ export const categoryFields: FormInput<CategoryFormValues>[] = [
     defaultValue: '',
   },
   {
+    name: 'visible',
+    label: 'Active',
+    required: false,
+    type: 'checkbox',
+    placeholder: 'Toggle visibility',
+    defaultValue: true,
+  },
+  {
     name: 'description',
     label: 'Description',
     required: true,
@@ -103,7 +112,8 @@ export const categoryFields: FormInput<CategoryFormValues>[] = [
     label: 'Denominations',
     required: false,
     type: 'textarea',
-    placeholder: 'Enter denominations separated by commas or newlines\ne.g.\n1, 3.5, 7, 14, 28',
+    placeholder:
+      'Enter denominations separated by commas or newlines\ne.g.\n1, 3.5, 7, 14, 28',
     defaultValue: '',
   },
 ]

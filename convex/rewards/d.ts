@@ -60,6 +60,9 @@ export const userRewardsSchema = v.object({
   vipNotes: v.optional(v.string()), // Admin notes about VIP status
   freeShippingOverride: v.optional(v.boolean()), // Manual free shipping override (admin set)
   
+  // Points tracking
+  lastPaymentDate: v.optional(v.number()), // Timestamp of most recent payment completion
+  
   // Timestamps
   createdAt: v.number(),
   updatedAt: v.number(),

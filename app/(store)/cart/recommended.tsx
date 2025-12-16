@@ -66,15 +66,15 @@ export const RecommendedProducts = () => {
   }
 
   return (
-    <div className='mb-2 mt-4'>
-      <h2 className='text-xl font-medium tracking-tighter opacity-80 mb-4'>
+    <div className='mt-4'>
+      <h2 className='text-xl px-4 font-medium tracking-tighter opacity-80 mb-4'>
         Recommended for you
       </h2>
       <div className='space-y-3'>
         {recommendedProducts.map((product) => (
           <Card
             key={product._id}
-            className='rounded-xl bg-neutral-400/10 dark:bg-teal-600 border border-neutral-300 dark:border-card'
+            className='rounded-xl bg-light-gray/15 dark:bg-teal-600 border border-dark-gray/50 dark:border-light-gray'
             shadow='none'>
             <CardBody className='p-6'>
               <div className='flex gap-4 items-center'>

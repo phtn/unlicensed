@@ -296,24 +296,19 @@ export function SelectField<T>(props?: SelectFieldProps<T>) {
 
 export function SwitchField<T>(props?: CheckboxFieldProps<T>) {
   const field = useFieldContext<boolean>()
+  const value = field.state.value ?? false
   return (
     <div className='space-y-2'>
       <Switch
-        isSelected={field.state.value}
-        onValueChange={field.handleChange}
+        isSelected={value}
+        onValueChange={(value) => field.handleChange(value)}
+        onBlur={field.handleBlur}
         classNames={{
-          ...commonInputClassNames,
-          wrapper: 'group-data-[selected=true]:bg-emerald-500',
+          wrapper: 'group-data-[selected=true]:bg-amber-500',
         }}>
-        <div className='flex flex-col gap-0.5'>
-          <span className='mb-5 pl-0.5 opacity-60 font-semibold tracking-wide uppercase text-xs'>
-            {props?.label}
-          </span>
-          {props?.description && (
-            <span className='text-xs text-neutral-500'>
-              {props.description}
-            </span>
-          )}
+        <div className='flex flex-col gap-px'>
+          <span className='text-base font-semibold'>{props?.label}</span>
+          <span className='text-xs opacity-70'>{props?.description}</span>
         </div>
       </Switch>
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (

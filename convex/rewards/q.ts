@@ -1,5 +1,9 @@
 import {query} from '../_generated/server'
 import {v} from 'convex/values'
+import {
+  calculateRecencyMultiplier,
+  getDaysSinceLastPayment,
+} from './utils'
 
 /**
  * Get all reward tiers (active only by default)
@@ -335,4 +339,126 @@ export const getUsersWithFreeShippingOverride = query({
     return users
   },
 })
+
+/**
+ * Get user's points history (orders with points earned)
+ */
+export const getUserPointsHistory = query({
+  args: {
+    userId: v.id('users'),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 20
+
+    // Get user's orders ordered by creation date (most recent first)
+    const orders = await ctx.db
+      .query('orders')
+      .withIndex('by_user', (q) => q.eq('userId', args.userId))
+      .order('desc')
+      .take(limit)
+
+    // Filter to only orders with points earned
+    const ordersWithPoints = orders.filter(
+      (order) => order.pointsEarned !== undefined && order.pointsEarned > 0,
+    )
+
+    return ordersWithPoints.map((order) => ({
+      orderId: order._id,
+      orderNumber: order.orderNumber,
+      pointsEarned: order.pointsEarned ?? 0,
+      pointsMultiplier: order.pointsMultiplier ?? 1.0,
+      orderDate: order.createdAt,
+      orderStatus: order.orderStatus,
+      totalCents: order.totalCents,
+    }))
+  },
+})
+
+/**
+ * Get user's current points balance
+ */
+export const getUserPointsBalance = query({
+  args: {
+    userId: v.id('users'),
+  },
+  handler: async (ctx, args) => {
+    const userRewards = await ctx.db
+      .query('userRewards')
+      .withIndex('by_user', (q) => q.eq('userId', args.userId))
+      .unique()
+
+    if (!userRewards) {
+      return {
+        availablePoints: 0,
+        totalPoints: 0,
+        redeemedPoints: 0,
+        lastPaymentDate: undefined,
+      }
+    }
+
+    return {
+      availablePoints: userRewards.availablePoints ?? 0,
+      totalPoints: userRewards.totalPoints ?? 0,
+      redeemedPoints: userRewards.redeemedPoints ?? 0,
+      lastPaymentDate: userRewards.lastPaymentDate,
+    }
+  },
+})
+
+/**
+ * Get the multiplier the user will receive on their next order
+ */
+export const getNextVisitMultiplier = query({
+  args: {
+    userId: v.id('users'),
+  },
+  handler: async (ctx, args) => {
+    const userRewards = await ctx.db
+      .query('userRewards')
+      .withIndex('by_user', (q) => q.eq('userId', args.userId))
+      .unique()
+
+    const daysSinceLastPayment = getDaysSinceLastPayment(
+      userRewards?.lastPaymentDate,
+    )
+    const multiplier = calculateRecencyMultiplier(daysSinceLastPayment)
+
+    return {
+      multiplier,
+      daysSinceLastPayment: daysSinceLastPayment ?? null,
+      message: getMultiplierMessage(daysSinceLastPayment, multiplier),
+    }
+  },
+})
+
+/**
+ * Helper function to generate a user-friendly message about the multiplier
+ */
+function getMultiplierMessage(
+  daysSinceLastPayment: number | undefined | null,
+  multiplier: number,
+): string {
+  if (daysSinceLastPayment === undefined || daysSinceLastPayment === null) {
+    return 'Complete your first order to start earning points!'
+  }
+
+  if (multiplier === 3.0) {
+    return 'Earning 3x points! Return within 2 weeks to keep this bonus.'
+  }
+
+  if (multiplier === 2.0) {
+    return 'Earning 2x points! Return within 2 weeks for 3x points.'
+  }
+
+  if (multiplier === 1.75) {
+    return 'Earning 1.75x points! Return within 2 weeks for 3x points.'
+  }
+
+  if (multiplier === 1.5) {
+    return 'Earning 1.5x points! Return within 2 weeks for 3x points.'
+  }
+
+  return 'Earning standard points. Return within 2 weeks for 3x points!'
+}
 

@@ -4,7 +4,10 @@ import {query} from '../_generated/server'
 export const listCategories = query({
   args: {},
   handler: async (ctx) => {
-    const categories = await ctx.db.query('categories').collect()
+    const categories = await ctx.db
+      .query('categories')
+      .filter((f) => f.neq(f.field('visible'), false))
+      .collect()
     return categories.sort((a, b) => a.name.localeCompare(b.name))
   },
 })

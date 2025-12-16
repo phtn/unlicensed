@@ -15,13 +15,8 @@ export const orderItemSchema = v.object({
 
 const paymentMethodSchema = v.union(
   v.literal('credit_card'),
-  v.literal('debit_card'),
-  v.literal('paypal'),
-  v.literal('apple_pay'),
-  v.literal('google_pay'),
-  v.literal('bank_transfer'),
-  v.literal('cash'),
-  v.literal('other'),
+  v.literal('crypto'),
+  v.literal('cashapp'),
 )
 
 export type PaymentMethod = Infer<typeof paymentMethodSchema>
@@ -42,6 +37,10 @@ export const paymentSchema = v.object({
   paidAt: v.optional(v.number()), // Timestamp when payment was completed
   refundedAt: v.optional(v.number()), // Timestamp when refund was issued
   refundAmountCents: v.optional(v.number()), // Amount refunded in cents
+  // PayGate-specific fields
+  paygateSessionId: v.optional(v.string()), // PayGate session ID
+  paygatePaymentUrl: v.optional(v.string()), // PayGate payment URL for redirect
+  paygateTransactionId: v.optional(v.string()), // PayGate transaction ID
 })
 
 // Order status enum
@@ -109,7 +108,11 @@ export const orderSchema = v.object({
   // Additional notes
   customerNotes: v.optional(v.string()), // Notes from customer
   internalNotes: v.optional(v.string()), // Internal admin notes
-
+  
+  // Rewards points
+  pointsEarned: v.optional(v.number()), // Points awarded for this order
+  pointsMultiplier: v.optional(v.number()), // Multiplier used when awarding points
+  
   // Timestamps
   createdAt: v.number(),
   updatedAt: v.number(),
@@ -120,4 +123,3 @@ export type OrderType = Infer<typeof orderSchema>
 export type OrderItemType = Infer<typeof orderItemSchema>
 export type PaymentType = Infer<typeof paymentSchema>
 export type ShippingType = Infer<typeof shippingSchema>
-

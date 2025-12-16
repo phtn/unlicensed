@@ -1,11 +1,12 @@
 import {query} from '../_generated/server'
+import type {AdminSettings} from './d'
 
 /**
  * Get admin settings
  */
 export const getAdminSettings = query({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<AdminSettings | null> => {
     const settings = await ctx.db.query('adminSettings').first()
 
     if (!settings) {
@@ -43,6 +44,7 @@ export const getAdminSettings = query({
             order: 9,
           },
         ],
+        paygate: undefined,
         updatedAt: Date.now(),
       }
     }

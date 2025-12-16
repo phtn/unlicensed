@@ -1,3 +1,4 @@
+import {Beams} from '@/components/main/beams'
 import {cn} from '@/lib/utils'
 import {Image} from '@heroui/react'
 import {AnimatePresence, motion} from 'motion/react'
@@ -51,12 +52,15 @@ export const Brands = ({columnCount = 2}: {columnCount?: number}) => {
   return (
     <div className='w-full pb-20 px-6 bg-dark-gray dark:bg-foreground/8 border-y-[0.33px] dark:border-dark-gray/50'>
       <div className='h-54 max-w-6xl mx-auto'>
-        <div className='h-24 flex flex-col justify-end'>
+        <div className='relative h-24 flex flex-col justify-end'>
           <h3 className='text-lg font-fugaz text-featured sm:text-3xl'>
             Our Trusted Brands
           </h3>
         </div>
-        <div className='items-center flex justify-between w-full h-full'>
+        <div className='absolute left-1/2 -translate-x-1/2 w-full translate-y-10'>
+          <Beams />
+        </div>
+        <div className='relative items-center flex justify-between w-full h-full'>
           {logoSets.map((logos, index) => (
             <LogoColumn
               key={index}

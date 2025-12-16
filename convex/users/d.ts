@@ -4,8 +4,8 @@ import {Infer, v} from 'convex/values'
 export const addressSchema = v.object({
   id: v.string(), // Unique identifier for the address
   type: v.union(v.literal('shipping'), v.literal('billing'), v.literal('both')),
-  firstName: v.optional(v.string()),
-  lastName: v.optional(v.string()),
+  firstName: v.string(), // Required for order processing
+  lastName: v.string(), // Required for order processing
   company: v.optional(v.string()),
   addressLine1: v.string(),
   addressLine2: v.optional(v.string()),
@@ -39,6 +39,18 @@ export const socialMediaSchema = v.object({
   website: v.optional(v.string()),
 })
 
+// Payment method schema (matching orders schema)
+const paymentMethodSchema = v.union(
+  v.literal('credit_card'),
+  v.literal('debit_card'),
+  v.literal('paypal'),
+  v.literal('apple_pay'),
+  v.literal('google_pay'),
+  v.literal('bank_transfer'),
+  v.literal('cash'),
+  v.literal('other'),
+)
+
 // Customer preferences schema
 export const preferencesSchema = v.object({
   newsletter: v.optional(v.boolean()),
@@ -46,6 +58,7 @@ export const preferencesSchema = v.object({
   smsNotifications: v.optional(v.boolean()),
   preferredLanguage: v.optional(v.string()),
   currency: v.optional(v.string()),
+  defaultPaymentMethod: v.optional(paymentMethodSchema), // Default payment method preference
 })
 
 export const userSchema = v.object({
@@ -60,6 +73,10 @@ export const userSchema = v.object({
 
   // Addresses (array to support multiple addresses)
   addresses: v.optional(v.array(addressSchema)),
+  
+  // Default address references (for quick checkout)
+  defaultShippingAddressId: v.optional(v.string()), // ID of default shipping address
+  defaultBillingAddressId: v.optional(v.string()), // ID of default billing address
 
   // Social media links
   socialMedia: v.optional(socialMediaSchema),

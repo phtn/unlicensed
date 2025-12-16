@@ -1,17 +1,19 @@
 import {defineSchema, defineTable} from 'convex/server'
-import {categorySchema} from './categories/d'
-import {productSchema} from './products/d'
-import {userSchema} from './users/d'
-import {cartSchema} from './cart/d'
-import {orderSchema} from './orders/d'
-import {rewardTierSchema, userRewardsSchema} from './rewards/d'
 import {activitySchema} from './activities/d'
 import {activityViewSchema} from './activityViews/d'
 import {adminSettingsSchema} from './admin/d'
 import {blogSchema} from './blogs/d'
+import {cartSchema} from './cart/d'
+import {categorySchema} from './categories/d'
+import {orderSchema} from './orders/d'
+import {productSchema} from './products/d'
+import {rewardTierSchema, userRewardsSchema} from './rewards/d'
+import {userSchema} from './users/d'
 
 export default defineSchema({
-  categories: defineTable(categorySchema).index('by_slug', ['slug']),
+  categories: defineTable(categorySchema)
+    .index('by_slug', ['slug'])
+    .index('by_visible', ['visible']),
   blogs: defineTable(blogSchema)
     .index('by_slug', ['slug'])
     .index('by_status', ['status']),

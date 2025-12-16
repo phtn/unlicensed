@@ -46,6 +46,7 @@ export const Content = ({
       <Brands columnCount={isMobile ? 4 : 5} />
 
       <FullCollection products={products} categories={categories} />
+
       <QuickScroll
         className='bg-transparent border-b-[0.33px] border-dashed border-foreground/40'
         href='#finder'

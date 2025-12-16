@@ -13,11 +13,11 @@ const TextureCardStyled = forwardRef<
       className,
     )}
     {...props}>
-    <div className='rounded-[23px] border  dark:border-dark-gray/75 border-light-gray/20'>
-      <div className='rounded-[22px] border  dark:border-dark-gray/70 border-light-gray/25'>
-        <div className='rounded-[21px] border  dark:border-dark-gray/40  border-light-gray/32'>
+    <div className='h-full rounded-[23px] border  dark:border-dark-gray/75 border-light-gray/20'>
+      <div className='h-full rounded-[22px] border  dark:border-dark-gray/70 border-light-gray/25'>
+        <div className='h-full rounded-[21px] border  dark:border-dark-gray/40  border-light-gray/32'>
           {/* Inner content wrapper */}
-          <div className=' w-full border border-light-gray/40 dark:border-dark-gray/10 rounded-[20px] text-neutral-500 overflow-hidden'>
+          <div className='h-full w-full border border-light-gray/40 dark:border-dark-gray/10 rounded-[20px] text-neutral-500 overflow-hidden'>
             {children}
           </div>
         </div>

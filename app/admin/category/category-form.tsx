@@ -5,7 +5,7 @@ import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
 import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
+import {Button, Switch} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useEffect, useState} from 'react'
@@ -75,6 +75,7 @@ export const CategoryForm = ({
           slug: ensureSlug(data.slug ?? '', data.name),
           description: data.description.trim(),
           heroImage: data.heroImage,
+          visible: data.visible ?? false,
           highlight: data.highlight?.trim() || undefined,
           benefits: parseList(data.benefitsRaw),
           units: data.unitsRaw
@@ -121,12 +122,16 @@ export const CategoryForm = ({
     if (initialValues) {
       form.setFieldValue('name', initialValues.name)
       form.setFieldValue('slug', initialValues.slug ?? '')
+      form.setFieldValue('visible', initialValues.visible ?? false)
       form.setFieldValue('description', initialValues.description)
       form.setFieldValue('heroImage', initialValues.heroImage)
       form.setFieldValue('highlight', initialValues.highlight ?? '')
       form.setFieldValue('benefitsRaw', initialValues.benefitsRaw ?? '')
       form.setFieldValue('unitsRaw', initialValues.unitsRaw ?? '')
-      form.setFieldValue('denominationsRaw', initialValues.denominationsRaw ?? '')
+      form.setFieldValue(
+        'denominationsRaw',
+        initialValues.denominationsRaw ?? '',
+      )
     }
   }, [initialValues, form])
 
@@ -203,14 +208,45 @@ export const CategoryForm = ({
       </aside>
 
       {/* Main Content Area */}
-      <main className='col-span-1 lg:col-span-10 h-full overflow-y-auto space-y-0 pb-24 scroll-smooth px-1'>
+      <main className='col-span-1 lg:col-span-10 h-full overflow-y-auto space-y-0 pb-24 scroll-smooth px-1 relative pt-2'>
+        {/* Visibility Switch - Top Right */}
+        <div className='absolute top-4 right-2 z-30 flex justify-end pr-4 pt-2 pb-2'>
+          <form.Field name='visible'>
+            {(field) => {
+              const visible = (field.state.value as boolean) ?? false
+              return (
+                <div className='flex items-center gap-3 px-4 py-1 rounded-lg bg-slate-500/20 dark:bg-black/60 backdrop-blur-sm border border-light-gray/10 dark:border-black/20 shadow-sm'>
+                  <div className='flex flex-col gap-0.5'>
+                    <span className='text-sm font-semibold tracking-tight text-dark-gray dark:text-foreground'>
+                      Toggle Category Visibility
+                    </span>
+                    <span className='text-xs text-dark-gray/80 dark:text-light-gray/80'>
+                      {visible
+                        ? 'Visible to customers'
+                        : 'Currently Hidden from customers'}
+                    </span>
+                  </div>
+                  <Switch
+                    isSelected={visible}
+                    onValueChange={(value) => field.handleChange(value)}
+                    onBlur={field.handleBlur}
+                    classNames={{
+                      wrapper: 'group-data-[selected=true]:bg-emerald-500',
+                    }}
+                  />
+                </div>
+              )
+            }}
+          </form.Field>
+        </div>
+
         <form
           onSubmit={(e) => {
             e.preventDefault()
             e.stopPropagation()
             void form.handleSubmit()
           }}
-          className='space-y-0 pt-2'>
+          className='space-y-0 pt-2 relative'>
           <div id='basic-info' className='scroll-mt-4'>
             <BasicInfo
               form={form as CategoryFormApi}

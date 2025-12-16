@@ -4,7 +4,7 @@ import {ensureSlug} from '@/lib/slug'
 import {Input} from '@heroui/react'
 import {useState} from 'react'
 import {CategoryFormValues} from '../category-schema'
-import {commonInputClassNames, FormInput, renderFields} from '../ui/fields'
+import {commonInputClassNames, FormInput} from '../ui/fields'
 import {useAppForm} from '../ui/form-context'
 import {FormSection, Header} from './components'
 
@@ -16,12 +16,9 @@ interface BasicInfoProps {
 export const BasicInfo = ({form, fields}: BasicInfoProps) => {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
-  // Separate name and slug fields from other fields
+  // Separate name and slug fields
   const nameField = fields.find((field) => field.name === 'name')
   const slugField = fields.find((field) => field.name === 'slug')
-  const otherFields = fields.filter(
-    (field) => field.name !== 'name' && field.name !== 'slug',
-  )
 
   return (
     <FormSection id='basic-info' position='top'>
@@ -86,7 +83,6 @@ export const BasicInfo = ({form, fields}: BasicInfoProps) => {
             </form.AppField>
           )}
         </div>
-        {otherFields.length > 0 && renderFields(form, otherFields)}
       </div>
     </FormSection>
   )

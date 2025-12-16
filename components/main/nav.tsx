@@ -17,7 +17,7 @@ import {
   useDisclosure,
 } from '@heroui/react'
 import Link from 'next/link'
-import {useCallback, useEffect} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 import {ThemeToggle} from '../ui/theme-toggle'
 
 interface NavProps {
@@ -26,6 +26,7 @@ interface NavProps {
 
 export const Nav = ({children}: NavProps) => {
   const {user, loading: authLoading} = useAuth()
+  const [admins, setAdmins] = useState('')
   // cartItemCount automatically updates via Convex reactivity when items are added/removed
   // No manual refresh needed - Convex queries subscribe and update in real-time
   const {cartItemCount, isAuthenticated} = useCart()
@@ -57,10 +58,22 @@ export const Nav = ({children}: NavProps) => {
     }
   }, [onClose])
 
+  const onLoad = useCallback(async () => {
+    const res = await fetch('/api/admin')
+    if (res.ok) {
+      setAdmins(JSON.stringify(await res.json()))
+      console.log(res)
+    }
+  }, [])
+
+  useEffect(() => {
+    onLoad().catch(console.error)
+  }, [onLoad])
+
   return (
     <>
-      <header className='fixed top-0 left-0 right-0 z-60 bg-black backdrop-blur-sm'>
-        <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 py-3 flex items-center justify-between'>
+      <header className='fixed top-0 left-0 right-0 z-60 bg-black backdrop-blur-sm h-12 lg:h-16 xl:h-20 2xl:h-24'>
+        <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 flex items-center justify-between h-full'>
           <Link
             href={'/'}
             className='md:w-72 h-12 overflow-hidden pl-1 flex items-center justify-start relative'>
@@ -163,7 +176,7 @@ export const Nav = ({children}: NavProps) => {
                         key='admin'
                         as={Link}
                         href={
-                          user.email === 'phtn458@gmail.com'
+                          user.email && admins.split(',').includes(user.email)
                             ? '/admin'
                             : '#nope'
                         }

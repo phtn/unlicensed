@@ -1,5 +1,10 @@
 import {v} from 'convex/values'
-import {mutation} from '../_generated/server'
+import {mutation, internalMutation} from '../_generated/server'
+import {
+  calculateRecencyMultiplier,
+  calculatePointsEarned,
+  getDaysSinceLastPayment,
+} from './utils'
 
 /**
  * Create a new reward tier (admin only)
@@ -549,6 +554,211 @@ export const setFreeShippingOverride = mutation({
     })
     
     return userRewards._id
+  },
+})
+
+/**
+ * Award points from an order when payment is completed
+ * Calculates points based on eligible products and recency multiplier
+ */
+export const awardPointsFromOrder = internalMutation({
+  args: {
+    orderId: v.id('orders'),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId)
+    if (!order) {
+      throw new Error('Order not found')
+    }
+
+    // Skip if guest order (no userId)
+    if (!order.userId) {
+      return { pointsEarned: 0, multiplier: 1.0 }
+    }
+
+    // Get or initialize user rewards
+    let userRewards = await ctx.db
+      .query('userRewards')
+      .withIndex('by_user', (q) => q.eq('userId', order.userId!))
+      .unique()
+
+    if (!userRewards) {
+      // Initialize user rewards if doesn't exist
+      const defaultTier = await ctx.db
+        .query('rewardTiers')
+        .filter((q) => q.eq(q.field('isDefault'), true))
+        .filter((q) => q.eq(q.field('active'), true))
+        .first()
+
+      const now = Date.now()
+      const rewardsId = await ctx.db.insert('userRewards', {
+        userId: order.userId,
+        currentTierId: defaultTier?._id,
+        lifetimeSpendingCents: 0,
+        totalOrders: 0,
+        totalPoints: 0,
+        availablePoints: 0,
+        tierJoinedAt: defaultTier ? now : undefined,
+        createdAt: now,
+        updatedAt: now,
+      })
+      userRewards = await ctx.db.get(rewardsId)
+      if (!userRewards) throw new Error('Failed to create user rewards')
+    }
+
+    // Filter order items to only include eligible products
+    const eligibleItems = await Promise.all(
+      order.items.map(async (item) => {
+        const product = await ctx.db.get(item.productId)
+        // Product is eligible if eligibleForRewards is not explicitly false
+        const isEligible = product?.eligibleForRewards !== false
+        return { item, isEligible }
+      }),
+    )
+
+    // Calculate eligible spending (sum of eligible items)
+    const eligibleSpendingCents = eligibleItems.reduce((sum, { item, isEligible }) => {
+      return isEligible ? sum + item.totalPriceCents : sum
+    }, 0)
+
+    // If no eligible spending, return 0 points
+    if (eligibleSpendingCents === 0) {
+      await ctx.db.patch(args.orderId, {
+        pointsEarned: 0,
+        pointsMultiplier: 1.0,
+        updatedAt: Date.now(),
+      })
+      return { pointsEarned: 0, multiplier: 1.0 }
+    }
+
+    // Get days since last payment
+    const daysSinceLastPayment = getDaysSinceLastPayment(
+      userRewards.lastPaymentDate,
+    )
+
+    // Calculate multiplier
+    const multiplier = calculateRecencyMultiplier(daysSinceLastPayment)
+
+    // Calculate points earned
+    const pointsEarned = calculatePointsEarned(eligibleSpendingCents, multiplier)
+
+    // Update user rewards
+    const paymentDate = order.payment.paidAt ?? Date.now()
+    const newTotalPoints = (userRewards.totalPoints ?? 0) + pointsEarned
+    const newAvailablePoints = (userRewards.availablePoints ?? 0) + pointsEarned
+
+    await ctx.db.patch(userRewards._id, {
+      totalPoints: newTotalPoints,
+      availablePoints: newAvailablePoints,
+      lastPaymentDate: paymentDate,
+      updatedAt: Date.now(),
+    })
+
+    // Update order with points information
+    await ctx.db.patch(args.orderId, {
+      pointsEarned,
+      pointsMultiplier: multiplier,
+      updatedAt: Date.now(),
+    })
+
+    // Check if points qualify for tier upgrade
+    const allTiers = await ctx.db
+      .query('rewardTiers')
+      .filter((q) => q.eq(q.field('active'), true))
+      .collect()
+
+    const sortedTiers = allTiers.sort((a, b) => b.level - a.level)
+
+    let newTierId = userRewards.currentTierId
+    for (const tier of sortedTiers) {
+      const meetsSpending =
+        !tier.minimumSpendingCents ||
+        userRewards.lifetimeSpendingCents >= tier.minimumSpendingCents
+      const meetsOrders =
+        !tier.minimumOrders || userRewards.totalOrders >= tier.minimumOrders
+      const meetsPoints =
+        !tier.minimumPoints || newTotalPoints >= tier.minimumPoints
+
+      if (meetsSpending && meetsOrders && meetsPoints) {
+        newTierId = tier._id
+        break
+      }
+    }
+
+    // If tier changed, update it
+    if (newTierId && newTierId !== userRewards.currentTierId) {
+      await ctx.db.patch(userRewards._id, {
+        currentTierId: newTierId,
+        tierUpgradedAt: Date.now(),
+        updatedAt: Date.now(),
+      })
+    }
+
+    return { pointsEarned, multiplier }
+  },
+})
+
+/**
+ * Deduct points when an order is refunded
+ * Calculates points to deduct proportionally for partial refunds
+ */
+export const deductPointsFromRefund = internalMutation({
+  args: {
+    orderId: v.id('orders'),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId)
+    if (!order) {
+      throw new Error('Order not found')
+    }
+
+    // Skip if guest order or no points were earned
+    if (!order.userId || !order.pointsEarned || order.pointsEarned === 0) {
+      return { pointsDeducted: 0 }
+    }
+
+    // Get user rewards
+    const userRewards = await ctx.db
+      .query('userRewards')
+      .withIndex('by_user', (q) => q.eq('userId', order.userId!))
+      .unique()
+
+    if (!userRewards) {
+      return { pointsDeducted: 0 }
+    }
+
+    // Calculate points to deduct
+    // For partial refunds, deduct proportionally based on refund amount
+    let pointsToDeduct = order.pointsEarned
+
+    if (
+      order.payment.status === 'partially_refunded' &&
+      order.payment.refundAmountCents
+    ) {
+      // Calculate proportional deduction
+      const refundRatio = order.payment.refundAmountCents / order.totalCents
+      pointsToDeduct = Math.round(order.pointsEarned * refundRatio)
+    }
+
+    // Ensure we don't deduct more than available points
+    const availablePoints = userRewards.availablePoints ?? 0
+    const actualDeduction = Math.min(pointsToDeduct, availablePoints)
+
+    if (actualDeduction === 0) {
+      return { pointsDeducted: 0 }
+    }
+
+    // Update user rewards
+    const newAvailablePoints = availablePoints - actualDeduction
+    // Note: We don't reduce totalPoints as it represents lifetime earned
+    // We only reduce availablePoints which can be redeemed
+
+    await ctx.db.patch(userRewards._id, {
+      availablePoints: Math.max(0, newAvailablePoints),
+      updatedAt: Date.now(),
+    })
+
+    return { pointsDeducted: actualDeduction }
   },
 })
 

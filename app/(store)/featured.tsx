@@ -1,3 +1,4 @@
+import {Beams} from '@/components/main/beams'
 import {ProductCard} from '@/components/store/product-card'
 import {Button} from '@heroui/react'
 import {StoreProduct} from '../types'
@@ -12,7 +13,7 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
       id='featured'
       className='mx-auto w-full max-w-7xl md:pt-16 lg:pt-24 px-4 sm:px-6 lg:px-8 bg-background'>
       <div className='flex flex-col gap-10'>
-        <div className='flex flex-wrap items-center justify-between gap-4'>
+        <div className='flex flex-wrap items-center justify-between gap-4 relative'>
           <div className='space-y-1'>
             <h2 className='text-3xl font-fugaz tracking-tight sm:text-4xl'>
               Featured Drops
@@ -21,6 +22,7 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
               Small-batch, handpicked fine releases by our team.
             </p>
           </div>
+
           <Button
             as='a'
             href='#finder'
@@ -30,10 +32,15 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
             Personalize with Strain Finder
           </Button>
         </div>
-        <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+        <div className='relative grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
           {featuredProducts.map((product) => (
             <ProductCard key={product.slug} product={product} />
           ))}
+          <div
+            key={'beam'}
+            className='absolute left-1/2 -translate-x-1/2 w-full top-16'>
+            <Beams />
+          </div>
         </div>
       </div>
     </section>

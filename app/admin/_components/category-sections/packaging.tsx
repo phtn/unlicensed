@@ -1,5 +1,6 @@
 'use client'
 
+import {cn} from '@/lib/utils'
 import {Chip, Input, Select, SelectItem, Textarea} from '@heroui/react'
 import {CategoryFormApi} from '../category-schema'
 import {commonInputClassNames} from '../ui/fields'
@@ -77,7 +78,7 @@ export const Packaging = ({form}: PackagingProps) => {
                           {items.map((item) => (
                             <span
                               key={item.key}
-                              className='text-sm bg-blue-50 text-blue-500 dark:text-blue-400 px-2 py-1 rounded tracking-tight font-medium'>
+                              className='text-sm bg-blue-50 dark:bg-blue-100/10 text-blue-500 dark:text-blue-400 px-2 py-1 rounded tracking-tight font-medium'>
                               {item.textValue}
                             </span>
                           ))}
@@ -88,7 +89,7 @@ export const Packaging = ({form}: PackagingProps) => {
                       <SelectItem key={unit.key}>{unit.label}</SelectItem>
                     ))}
                   </Select>
-                  <p className='text-xs text-neutral-500'>
+                  <p className='text-xs opacity-80'>
                     Select multiple units from the suggestions. You can also
                     type custom units separated by commas in the input below.
                   </p>
@@ -182,7 +183,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   />
                   {selectedUnits.length > 0 && suggestions.length > 0 && (
                     <div className='space-y-1 h-full'>
-                      <p className='text-sm text-neutral-500'>
+                      <p className='text-sm opacity-80'>
                         Click on suggested denominations for{' '}
                         <span className='font-semibold'>
                           {selectedUnits.map((u) => `"${u}"`).join(', ')}
@@ -197,9 +198,11 @@ export const Packaging = ({form}: PackagingProps) => {
                             <Chip
                               key={suggestion}
                               size='sm'
-                              variant={isSelected ? 'solid' : 'flat'}
-                              color={isSelected ? 'primary' : 'default'}
-                              className='cursor-pointer transition-all'
+                              variant={isSelected ? 'light' : 'solid'}
+                              className={cn(
+                                'cursor-pointer transition-all text-white',
+                                {'': isSelected},
+                              )}
                               onClick={() => handleSuggestionClick(suggestion)}>
                               {suggestion}
                             </Chip>
@@ -213,7 +216,7 @@ export const Packaging = ({form}: PackagingProps) => {
                     </div>
                   )}
                   {selectedUnits.length === 0 && (
-                    <p className='text-sm text-neutral-500'>
+                    <p className='text-sm opacity-50'>
                       Select units above to see denomination suggestions, or
                       enter numeric values separated by commas or newlines
                       (e.g., 1, 3.5, 7, 14, 28)

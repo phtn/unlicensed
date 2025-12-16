@@ -9,6 +9,7 @@ export const categorySchema = {
   benefits: v.optional(v.array(v.string())),
   denominations: v.optional(v.array(v.number())),
   units: v.optional(v.array(v.string())),
+  visible: v.optional(v.boolean()),
 }
 export const category = v.object({
   ...categorySchema,

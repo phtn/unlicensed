@@ -70,56 +70,8 @@
   --color-deal: oklch(0.704 0.123 182.5);
 }
 
-@layer base {
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-  }
-
-  /* Hide scrollbars globally */
-  * {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-
-  *::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-  }
-
-  body {
-    min-height: 100vh;
-    font-family:
-      var(--font-geist-sans),
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      'Segoe UI',
-      sans-serif;
-    text-rendering: optimizeLegibility;
-  }
-
-  ::selection {
-    background: rgba(245, 196, 104, 0.45);
-    color: var(--foreground);
-  }
-
-  /* Default View Transition Animation */
-  ::view-transition-group(root) {
-    animation-duration: 0.4s;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
-.dark {
+:root,
+:root.dark {
   --background: oklch(0.13 0.019 269.8);
   --foreground: oklch(0.973 0.007 268.55);
   --muted: rgba(203, 213, 225, 0.76);
@@ -211,7 +163,8 @@
       transparent 60%
     );
 }
-:root :root {
+
+:root.light {
   --background: oklch(0.99 0 0);
   --foreground: oklch(0.243 0.027 220.39);
   --muted: rgba(255, 242, 233, 0.78);
@@ -315,4 +268,53 @@
       rgba(96, 178, 195, 0.24),
       transparent 62%
     );
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  /* Hide scrollbars globally */
+  * {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  *::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  body {
+    min-height: 100vh;
+    font-family:
+      var(--font-geist-sans),
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      sans-serif;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgba(245, 196, 104, 0.45);
+    color: var(--foreground);
+  }
+
+  /* Default View Transition Animation */
+  ::view-transition-group(root) {
+    animation-duration: 0.4s;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

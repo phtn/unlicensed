@@ -40,6 +40,7 @@ export const EditCategoryContent = ({
     slug: category.slug,
     description: category.description,
     heroImage: category.heroImage,
+    visible: category.visible ?? false,
     highlight: category.highlight ?? '',
     benefitsRaw: category.benefits?.join('\n') ?? '',
     unitsRaw: category.units?.join(', ') ?? '',

@@ -13,11 +13,19 @@ export const UserStatsCard = ({label, value, icon}: UserStatsCardProps) => {
       <CardBody className='p-0 bg-sidebar border-sidebar'>
         <div className='p-4 flex items-start justify-between size-full'>
           <div>
-            <p className='text-sm capitalize tracking-tight'>{label}</p>
+            <p className='text-[14px] capitalize tracking-tight -space-y-1 [word-spacing:100vw]'>
+              {label.split(' ').map((word) => (
+                <div
+                  className='first:opacity-60 last:font-bold last:text-xl'
+                  key={word}>
+                  {word}
+                </div>
+              ))}
+            </p>
           </div>
 
-          <div className='text-primary'>
-            <Icon name={icon} className='size-6 opacity-80' />
+          <div className='text-brand'>
+            <Icon name={icon} className='size-8 opacity-80' />
           </div>
         </div>
         <div className='size-full flex flex-1 justify-end p-4'>

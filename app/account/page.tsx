@@ -4,7 +4,6 @@ import {Loader} from '@/components/expermtl/loader'
 import {TextureCardStyled} from '@/components/ui/texture-card'
 import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
-import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {
@@ -24,11 +23,12 @@ import {
   ChevronUp,
   Package,
   Percent,
+  Sparkles,
   Truck,
 } from 'lucide-react'
 import NextLink from 'next/link'
 import {startTransition, useMemo, useState, ViewTransition} from 'react'
-import {UserStatsCard} from './_components/user-stats-card'
+import {UserStatsCard} from '../account/_components/user-stats-card'
 
 export default function AccountPage() {
   const {user: firebaseUser} = useAuth()
@@ -60,6 +60,16 @@ export default function AccountPage() {
 
   const tierBenefits = useQuery(
     api.rewards.q.getUserTierBenefits,
+    userId ? {userId} : 'skip',
+  )
+
+  const pointsBalance = useQuery(
+    api.rewards.q.getUserPointsBalance,
+    userId ? {userId} : 'skip',
+  )
+
+  const nextVisitMultiplier = useQuery(
+    api.rewards.q.getNextVisitMultiplier,
     userId ? {userId} : 'skip',
   )
 
@@ -108,14 +118,6 @@ export default function AccountPage() {
     })
   }
 
-  const {on: visibleSpent, toggle: toggleVisibleSpent} = useToggle()
-
-  const handleToggleVisibleSpent = () => {
-    startTransition(() => {
-      toggleVisibleSpent()
-    })
-  }
-
   if (isLoading && firebaseUser && true) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
@@ -155,7 +157,7 @@ export default function AccountPage() {
             {/* Profile Card */}
             <TextureCardStyled className='p-6 h-120 bg-transparent rounded-[3rem]'>
               <div className='flex h-full flex-col items-center text-center space-y-4'>
-                <div className='relative h-64 flex flex-col justify-center'>
+                <div className='relative h-full flex flex-col justify-center'>
                   <div className='size-24 rounded-full p-1 bg-linear-to-tl from-brand/40 to-pink-500'>
                     <div className='w-full h-full rounded-full overflow-hidden border-4 border-background bg-background'>
                       {convexUser?.photoUrl || firebaseUser?.photoURL ? (
@@ -203,27 +205,69 @@ export default function AccountPage() {
                     </p>
                   </div>
                   <div className='text-right p-4 space-y-1 rounded-3xl'>
-                    <p className='text-xs uppercase tracking-wider'>Spent</p>
+                    {/*<p className='text-xs uppercase tracking-wider'>Spent</p>*/}
                     <div className=' flex items-center space-x-2 text-xl text-foreground font-medium font-geist-sans'>
-                      <span>
+                      {/*<span>
                         <Icon
                           onClick={handleToggleVisibleSpent}
                           name={visibleSpent ? 'eye' : 'eye-slash'}
                           className='opacity-80 size-5 cursor-pointer'
                         />
-                      </span>
-                      <ViewTransition>
+                      </span>*/}
+                      {/*<ViewTransition>
                         <span>
                           {visibleSpent
                             ? formatPrice(orderStats?.totalSpent ?? 0)
                             : '****'}
                         </span>
-                      </ViewTransition>
+                      </ViewTransition>*/}
                     </div>
                   </div>
                 </div>
               </div>
             </TextureCardStyled>
+
+            {/* Points Balance Card */}
+            {pointsBalance && (
+              <Card className='border-none shadow-md bg-linear-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-md'>
+                <CardBody className='p-6 space-y-4'>
+                  <div className='flex items-center justify-between'>
+                    <h3 className='font-semibold flex items-center gap-2'>
+                      <Sparkles className='size-4 text-purple-500' />
+                      Reward Points
+                    </h3>
+                  </div>
+
+                  <div className='space-y-3'>
+                    <div className='flex items-baseline gap-2'>
+                      <span className='text-3xl font-bold text-purple-600 dark:text-purple-400'>
+                        {pointsBalance.availablePoints.toLocaleString()}
+                      </span>
+                      <span className='text-sm text-default-500'>points</span>
+                    </div>
+                    {nextVisitMultiplier && (
+                      <div className='pt-2 border-t border-default-200/50'>
+                        <div className='flex items-center justify-between text-sm mb-1'>
+                          <span className='text-default-500'>
+                            Next Visit Multiplier
+                          </span>
+                          <span className='font-semibold text-purple-600 dark:text-purple-400'>
+                            {nextVisitMultiplier.multiplier}x
+                          </span>
+                        </div>
+                        <p className='text-xs text-default-500'>
+                          {nextVisitMultiplier.message}
+                        </p>
+                      </div>
+                    )}
+                    <div className='text-xs text-default-500 pt-1'>
+                      Lifetime: {pointsBalance.totalPoints.toLocaleString()}{' '}
+                      points
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+            )}
 
             {/* Loyalty Progress Card */}
             {userRewards?.nextTier && (
@@ -270,12 +314,12 @@ export default function AccountPage() {
             {/* Benefits Summary */}
             <Card className='border-none shadow-sm'>
               <CardBody className='p-0'>
-                <div className='p-4 border-b border-default-100 font-semibold text-sm'>
+                <div className='px-4 py-3 border-b border-default-100 font-semibold text-sm'>
                   Your Member Benefits
                 </div>
                 <div className='p-2'>
                   {tierBenefits?.discountPercentage ? (
-                    <div className='flex items-center gap-3 p-3 hover:bg-default-50 rounded-lg transition-colors'>
+                    <div className='flex items-center gap-3 p-4 hover:bg-default-50 rounded-lg transition-colors'>
                       <div className='p-2 rounded-full bg-green-100 text-green-600'>
                         <Percent size={16} />
                       </div>
@@ -291,7 +335,7 @@ export default function AccountPage() {
                   ) : null}
 
                   {tierBenefits?.freeShipping && (
-                    <div className='flex items-center gap-3 p-3 hover:bg-default-50 rounded-lg transition-colors'>
+                    <div className='flex items-center gap-3 p-4 hover:bg-default-50 rounded-lg transition-colors'>
                       <div className='p-2 rounded-full bg-blue-100 text-blue-600'>
                         <Truck size={16} />
                       </div>
@@ -304,12 +348,12 @@ export default function AccountPage() {
                     </div>
                   )}
 
-                  <div className='flex items-center gap-3 p-3 hover:bg-default-50 rounded-lg transition-colors'>
+                  <div className='flex items-center gap-3 p-4 hover:bg-default-50 rounded-lg transition-colors'>
                     <div className='p-2 rounded-full bg-brand/40 dark:bg-brand/60 text-dark-gray dark:text-white'>
                       <Icon name='user' size={16} />
                     </div>
                     <div>
-                      <p className='text-sm font-medium'>Member Access</p>
+                      <p className='text-[15px] font-medium'>Member Access</p>
                       <p className='text-xs text-default-500'>
                         Exclusive drops & events
                       </p>

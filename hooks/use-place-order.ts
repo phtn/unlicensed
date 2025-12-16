@@ -2,23 +2,16 @@
 
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {PaymentMethod} from '@/convex/orders/d'
 import {AddressType} from '@/convex/users/d'
-import {getLocalStorageCartItems} from '@/lib/localStorageCart'
-import {clearLocalStorageCart} from '@/lib/localStorageCart'
+import {
+  clearLocalStorageCart,
+  getLocalStorageCartItems,
+} from '@/lib/localStorageCart'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
 import {useAuth} from './use-auth'
 import {useCart} from './use-cart'
-
-export type PaymentMethod =
-  | 'credit_card'
-  | 'debit_card'
-  | 'paypal'
-  | 'apple_pay'
-  | 'google_pay'
-  | 'bank_transfer'
-  | 'cash'
-  | 'other'
 
 export interface PlaceOrderParams {
   shippingAddress: AddressType
@@ -208,6 +201,9 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
         const newOrderId = await createOrderMutation(orderArgs)
         setOrderId(newOrderId)
 
+        // For PayGate payments (credit_card or crypto), redirect to payment page
+        // Note: We'll handle the redirect in the checkout component after order is created
+
         // Update user info if authenticated (save contact info and address)
         if (isAuthenticated && user && userId && convexUser) {
           try {
@@ -235,7 +231,9 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
               })
 
               if (process.env.NODE_ENV === 'development') {
-                console.log('[usePlaceOrder] Shipping address saved to user profile')
+                console.log(
+                  '[usePlaceOrder] Shipping address saved to user profile',
+                )
               }
             }
 
@@ -265,7 +263,9 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 })
 
                 if (process.env.NODE_ENV === 'development') {
-                  console.log('[usePlaceOrder] Billing address saved to user profile')
+                  console.log(
+                    '[usePlaceOrder] Billing address saved to user profile',
+                  )
                 }
               }
             }
@@ -286,13 +286,18 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 })
 
                 if (process.env.NODE_ENV === 'development') {
-                  console.log('[usePlaceOrder] Contact phone updated in user profile')
+                  console.log(
+                    '[usePlaceOrder] Contact phone updated in user profile',
+                  )
                 }
               }
             }
 
             // Update email if different from current
-            if (params.contactEmail && convexUser.email !== params.contactEmail) {
+            if (
+              params.contactEmail &&
+              convexUser.email !== params.contactEmail
+            ) {
               await createOrUpdateUserMutation({
                 email: params.contactEmail,
                 name: convexUser.name,
@@ -324,7 +329,8 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
 
         return newOrderId
       } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to place order')
+        const error =
+          err instanceof Error ? err : new Error('Failed to place order')
         setError(error)
         console.error('[usePlaceOrder] Error placing order:', error)
         return null
@@ -360,4 +366,3 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
     reset,
   }
 }
-

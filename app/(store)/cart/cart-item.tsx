@@ -1,6 +1,8 @@
+import {ClassName} from '@/app/types'
+import {AnimatedNumber} from '@/components/ui/animated-number'
 import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {formatPrice} from '@/utils/formatPrice'
+import {cn} from '@/lib/utils'
 import {Button, Card, CardBody, Image} from '@heroui/react'
 import {useState} from 'react'
 
@@ -23,6 +25,7 @@ interface CartItemProps {
     denomination?: number,
   ) => Promise<void>
   onRemove: (productId: Id<'products'>, denomination?: number) => Promise<void>
+  className?: ClassName
 }
 
 export const CartItem = ({
@@ -30,6 +33,7 @@ export const CartItem = ({
   itemPrice,
   onUpdate,
   onRemove,
+  className,
 }: CartItemProps) => {
   const [quantity, setQuantity] = useState(item.quantity)
 
@@ -46,7 +50,10 @@ export const CartItem = ({
     <Card
       shadow='none'
       radius='none'
-      className='border border-neutral-200 dark:border-neutral-700 border-dashed first:rounded-t-lg last:rounded-b-lg first:border-b-0'>
+      className={cn(
+        'border border-neutral-200 light:bg-white dark:border-neutral-700 border-dashed first:rounded-t-xl last:rounded-b-lg',
+        className,
+      )}>
       <CardBody>
         <div className='flex gap-4'>
           <div className='relative w-28 h-28 shrink-0 rounded-lg overflow-hidden'>
@@ -85,7 +92,9 @@ export const CartItem = ({
                   <Icon name='minus' className='size-4' />
                 </Button>
 
-                <p className='font-space px-4'>{quantity.toString()}</p>
+                <p className='font-space px-4'>
+                  <AnimatedNumber value={quantity} />
+                </p>
 
                 <Button
                   isIconOnly
@@ -96,7 +105,12 @@ export const CartItem = ({
                 </Button>
               </div>
               <p className='font-medium text-xl font-space'>
-                ${formatPrice(itemPrice * quantity)}
+                $
+                <AnimatedNumber
+                  mass={1.2}
+                  stiffness={60}
+                  value={(itemPrice * quantity) / 100}
+                />
               </p>
             </div>
           </div>
@@ -104,16 +118,4 @@ export const CartItem = ({
       </CardBody>
     </Card>
   )
-}
-{
-  /*<Input
-                  type='number'
-                  value={quantity.toString()}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value) || 1
-                    handleQuantityChange(val)
-                  }}
-                  className='w-16 text-center'
-                  min={1}
-                />*/
 }

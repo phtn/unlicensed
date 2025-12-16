@@ -11,6 +11,7 @@ import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useMemo} from 'react'
 import {CartItem} from './cart-item'
+import {Checkout} from './checkout'
 import {OrderSummary} from './order-summary'
 import {RecommendedProducts} from './recommended'
 
@@ -44,6 +45,11 @@ export default function CartPage() {
   const defaultAddress = useQuery(
     api.users.q.getDefaultAddress,
     firebaseUser ? {firebaseId: firebaseUser.uid, type: 'shipping'} : 'skip',
+  )
+
+  const defaultBillingAddress = useQuery(
+    api.users.q.getDefaultAddress,
+    firebaseUser ? {firebaseId: firebaseUser.uid, type: 'billing'} : 'skip',
   )
 
   const userEmail = useMemo(() => {
@@ -101,19 +107,19 @@ export default function CartPage() {
   const total = subtotal + tax + shipping
 
   return (
-    <div className='min-h-screen lg:pt-24 px-4 sm:px-6 lg:px-8'>
+    <div className='min-h-screen lg:pt-28 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
         <div className='flex items-center justify-between mb-8'>
-          <h1 className='text-base font-medium font-space space-x-1.5'>
+          <h1 className='text-base font-medium font-space space-x-2 tracking-tight'>
             <span className='opacity-60'>Shopping Cart</span>
-            <span className='font-light'>/</span>
+            <span className='font-light text-sm'>/</span>
             <span>Checkout</span>
           </h1>
         </div>
 
         <div className='grid gap-8 lg:grid-cols-[1fr_400px]'>
           {/* Cart Items */}
-          <div className='h-[70lvh] bg-white dark:bg-white/10 rounded-2xl overflow-hidden p-4 flex flex-col'>
+          <div className='h-[70lvh] dark:bg-white/10 rounded-2xl overflow-hidden flex flex-col'>
             <div className='flex-1 overflow-y-auto'>
               {cartItems.map((item) => {
                 const product = item.product
@@ -127,6 +133,11 @@ export default function CartPage() {
                     itemPrice={itemPrice}
                     onUpdate={updateItem}
                     onRemove={removeItem}
+                    className={
+                      cartItems.length === 1
+                        ? 'first:border-b'
+                        : ' first:border-b-0'
+                    }
                   />
                 )
               })}
@@ -134,25 +145,37 @@ export default function CartPage() {
             <RecommendedProducts />
           </div>
 
-          {/* Order Summary */}
-          <OrderSummary
-            tax={tax}
-            total={total}
-            onOpen={isAuthenticated ? onCheckoutOpen : onAuthOpen}
-            subtotal={subtotal}
-            shipping={shipping}
-            isAuthenticated={isAuthenticated}
-            isLoading={isPlacingOrder}
-            onPlaceOrder={placeOrder}
-            userEmail={userEmail}
-            defaultAddress={defaultAddress || undefined}
-            userPhone={userPhone}
-            orderError={orderError}
-            orderId={orderId}
-            onCheckoutClose={onCheckoutClose}
-            isCheckoutOpen={isCheckoutOpen}
-            onClearCart={clear}
-          />
+          <div className='space-y-6'>
+            {/* Order Summary - Read-only review */}
+            <OrderSummary
+              subtotal={subtotal}
+              tax={tax}
+              shipping={shipping}
+              total={total}
+            />
+
+            {/* Checkout - Payment method and place order */}
+            <Checkout
+              tax={tax}
+              total={total}
+              onOpen={isAuthenticated ? onCheckoutOpen : onAuthOpen}
+              subtotal={subtotal}
+              shipping={shipping}
+              isAuthenticated={isAuthenticated}
+              isLoading={isPlacingOrder}
+              onPlaceOrder={placeOrder}
+              userEmail={userEmail}
+              defaultAddress={defaultAddress || undefined}
+              defaultBillingAddress={defaultBillingAddress || undefined}
+              userPhone={userPhone}
+              convexUser={convexUser || undefined}
+              orderError={orderError}
+              orderId={orderId}
+              onCheckoutClose={onCheckoutClose}
+              isCheckoutOpen={isCheckoutOpen}
+              onClearCart={clear}
+            />
+          </div>
         </div>
       </div>
       <AuthModal isOpen={isAuthOpen} onClose={onAuthClose} mode='login' />

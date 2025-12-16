@@ -1,6 +1,6 @@
 import {mutation} from '../_generated/server'
 import {v} from 'convex/values'
-import {statConfigSchema} from './d'
+import {statConfigSchema, paygateSettingsSchema} from './d'
 
 const DEFAULT_STAT_CONFIGS = [
   {id: 'salesToday', label: 'Sales Today', visible: true, order: 0},
@@ -97,6 +97,34 @@ export const updateStatOrder = mutation({
       statConfigs: args.statConfigs,
       updatedAt: Date.now(),
     })
+
+    return {success: true}
+  },
+})
+
+/**
+ * Update PayGate settings
+ */
+export const updatePayGateSettings = mutation({
+  args: {
+    paygate: paygateSettingsSchema,
+  },
+  handler: async (ctx, args) => {
+    let settings = await ctx.db.query('adminSettings').first()
+
+    if (!settings) {
+      const settingsId = await ctx.db.insert('adminSettings', {
+        statConfigs: DEFAULT_STAT_CONFIGS,
+        paygate: args.paygate,
+        updatedAt: Date.now(),
+      })
+      settings = await ctx.db.get(settingsId)
+    } else {
+      await ctx.db.patch(settings._id, {
+        paygate: args.paygate,
+        updatedAt: Date.now(),
+      })
+    }
 
     return {success: true}
   },

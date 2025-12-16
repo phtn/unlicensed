@@ -256,6 +256,26 @@ export default function OrderDetailPage() {
                       </span>
                     </div>
                   )}
+                  {order.payment.paygateTransactionId && (
+                    <div className='flex justify-between'>
+                      <span className='text-color-muted'>PayGate Transaction ID</span>
+                      <span className='text-sm font-mono'>
+                        {order.payment.paygateTransactionId}
+                      </span>
+                    </div>
+                  )}
+                  {order.payment.paygatePaymentUrl &&
+                    order.payment.status === 'pending' && (
+                      <div className='mt-4 pt-4 border-t border-divider'>
+                        <Button
+                          as={NextLink}
+                          href={`/order/${order._id}/payment`}
+                          color='primary'
+                          className='w-full'>
+                          Complete Payment
+                        </Button>
+                      </div>
+                    )}
                   {order.payment.paidAt && (
                     <div className='flex justify-between'>
                       <span className='text-color-muted'>Paid At</span>
