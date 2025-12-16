@@ -1,28 +1,25 @@
 
-`![Rapid Fire Neon Mural](public/rapid-fire-neon.webp)``
+![Rapid Fire Mural](../../public/rapid-fire-neon.webp)
+
+---
+<!--![Rapid Fire Neon](public/rapid-fire.webp)-->
 
 # PayGate Self-Hosted Proxy Server
 
 Self-hosted alternative to Cloudflare Workers for PayGate white-label integration.
 
-## Features
+## Goal
 
-- ✅ Proxy PayGate API requests through your own domain
-- ✅ Automatically inject USDC wallet address
-- ✅ Support affiliate commission tracking
-- ✅ Replace checkout domain in responses
-- ✅ CORS support
-- ✅ Built with Bun (fast and lightweight)
+-  Proxy PayGate API requests through your own domain
+-  Automatically inject USDC wallet address
+-  Support affiliate commission tracking
+-  Replace checkout domain in responses
+-  CORS support
+-  Built with Bun (fast and lightweight)
 
-## Quick Start
+## Init
 
-### 1. Install Dependencies
-
-```bash
-cd server/paygate-proxy
-bun install
-```
-
+### 1. Install Deps
 ### 2. Configure Environment Variables
 
 Create a `.env` file:
@@ -36,12 +33,9 @@ CUSTOM_CHECKOUT_DOMAIN=checkout.yourdomain.com   # Optional
 
 ### 3. Run the Server
 
-```bash
-# Development mode (with auto-reload)
-bun run dev
-
-# Production mode
-bun run start
+```zsh
+# Prod
+buns
 ```
 
 ### 4. Set Up DNS
@@ -49,8 +43,8 @@ bun run start
 Point your domains to your server:
 
 ```
-api.yourdomain.com     → Your server IP
-checkout.yourdomain.com → Your server IP
+api.yourdomain.com      → Our server IP
+checkout.yourdomain.com → Our server IP
 ```
 
 ### 5. Configure Nginx (Recommended)
@@ -65,11 +59,8 @@ See `nginx.conf` for Nginx reverse proxy configuration.
 
 ### 6. Run with PM2 (Production)
 
-```bash
-# Install PM2 globally
+```zsh
 npm install -g pm2
-
-# Start with PM2
 bun run pm2:start
 
 # View logs
@@ -81,7 +72,7 @@ bun run pm2:stop
 
 ## Architecture
 
-```
+```zsh
 Client Request
     ↓
 api.yourdomain.com (DNS → Your Server IP)
@@ -99,7 +90,7 @@ Client
 
 ## Configuration Options
 
-### Environment Variables
+### Envs
 
 - `PORT` - Server port (default: 3001)
 - `PAYGATE_USDC_WALLET` - Your USDC Polygon wallet address (required)
@@ -119,11 +110,11 @@ The `nginx.conf` file includes:
 
 Test the proxy:
 
-```bash
-# Test API endpoint
+```zsh
+# endpoint tests
 curl https://api.yourdomain.com/info.php
 
-# Test payment creation (replace with actual values)
+# payment tests
 curl "https://api.yourdomain.com/create.php?amount=10&order_id=TEST123&return_url=https://yoursite.com"
 ```
 
@@ -137,7 +128,7 @@ pm2 logs paygate-proxy
 pm2 monit
 ```
 
-### Systemd Service (Alternative)
+### Systemd Service (Alternative)(Ask Serdar)
 
 Create `/etc/systemd/system/paygate-proxy.service`:
 
@@ -210,23 +201,25 @@ sudo systemctl status paygate-proxy
 
 ## Comparison: Self-Hosted vs Cloudflare Workers
 
-| Feature | Self-Hosted | Cloudflare Workers |
-|---------|-------------|-------------------|
-| Setup Complexity | Medium | Low |
-| Cost | Server costs | Free tier available |
-| Control | Full control | Limited |
-| Performance | Depends on server | Global CDN |
-| Maintenance | You manage | Cloudflare manages |
-| Customization | Full | Limited by Workers API |
+| Feature           |   Self-Hosted      |  Cloudflare Workers     |
+|-------------------|--------------------|-------------------------|
+| Setup Complexity  |  Medium            | Low                     |
+| Cost              |  Server costs      | Free Tier available     |
+| Control           |  Full control      | Limited                 |
+| Performance       |  Depends on server | Global CDN              |
+| Maintenance       |  You manage        | Cloudflare manages      |
+| Customization     |  Full              | Limited by Workers API  |
+|-------------------|--------------------|-------------------------|
 
-Choose self-hosted if:
-- You already have a dedicated server
-- You need full control
-- You want to avoid vendor lock-in
-- You have specific requirements
+We will try self-hosted since we have our own web-server:
+- We already have a dedicated server
+- We need full control
+- We want to avoid vendor lock-in
+- We have specific requirements
+- We can customize configs 
 
-Choose Cloudflare Workers if:
+<!--Choose Cloudflare Workers if:
 - You want zero server management
 - You want global edge performance
 - You prefer serverless architecture
-- Free tier is sufficient
+- Free tier is sufficient-->
