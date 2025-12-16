@@ -1,3 +1,6 @@
+
+`![Rapid Fire Neon Mural](public/rapid-fire-neon.webp)``
+
 # PayGate Self-Hosted Proxy Server
 
 Self-hosted alternative to Cloudflare Workers for PayGate white-label integration.
