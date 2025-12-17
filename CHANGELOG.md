@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2
+
+### Patch Changes
+
+- removed log files from tmux
+
 ## 0.3.1
 
 ### Patch Changes
