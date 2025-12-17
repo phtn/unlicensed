@@ -7,7 +7,7 @@ export const productSchema = z.object({
   slug: z.string().optional(),
   categorySlug: z.string().min(1, 'Select a category.'),
   shortDescription: z.string().min(10, 'Short description is required.'),
-  description: z.string().min(20, 'Description is required.'),
+  description: z.string().min(20, 'Description must be at least 20 characters.'),
   priceCents: z.number().min(0, 'Price must be positive.'),
   unit: z.string().min(1, 'Unit is required.'),
   availableDenominationsRaw: z.string().optional(),
@@ -115,7 +115,7 @@ export const productFields: FormInput<ProductFormValues>[] = [
     required: true,
     type: 'textarea',
     placeholder: 'Image URLs separated by commas or newlines',
-    defaultValue: '',
+    defaultValue: [],
   },
   {
     name: 'priceCents',
@@ -123,7 +123,7 @@ export const productFields: FormInput<ProductFormValues>[] = [
     required: true,
     type: 'number',
     placeholder: '0.00',
-    defaultValue: '',
+    defaultValue: 0,
   },
   {
     name: 'unit',
@@ -176,7 +176,7 @@ export const productFields: FormInput<ProductFormValues>[] = [
     required: true,
     type: 'number',
     placeholder: '0.00',
-    defaultValue: '',
+    defaultValue: 0,
   },
   {
     name: 'cbdPercentage',
@@ -279,12 +279,11 @@ export const productFields: FormInput<ProductFormValues>[] = [
   },
 ]
 
-export const defaultValues = productFields
-  .map((f) => ({
-    [f.name]: f.defaultValue,
-  }))
-  .entries()
-  .map(([key, value]) => [key, value]) as unknown as ProductFormValues
+export const defaultValues = productFields.reduce((acc, field) => {
+  // @ts-ignore
+  acc[field.name] = field.defaultValue
+  return acc
+}, {} as ProductFormValues)
 
 export const flowerDenominations: Array<SelectOption> = [
   {value: '1/8', label: '1/8'},

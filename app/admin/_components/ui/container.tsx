@@ -49,7 +49,7 @@ export const Wrapper = ({children, isPanelExpanded}: WrapperProps) => {
     <div
       className={cn(
         'flex-1 min-w-0 w-full border border-zinc-300 dark:border-dark-table/40 bg-white dark:bg-origin',
-        'drop-shadow-xl _max-h-[calc(100lvh-30px)] _overflow-scroll',
+        'drop-shadow-xl _max-h-[calc(100lvh-30px)] md:overflow-hidden',
         'md:rounded-xl whitespace-nowrap',
         {'': isPanelExpanded},
       )}>

@@ -12,8 +12,8 @@ import NextLink from 'next/link'
 import {useMemo} from 'react'
 import {CartItem} from './cart-item'
 import {Checkout} from './checkout'
-import {OrderSummary} from './order-summary'
 import {RecommendedProducts} from './recommended'
+import {RewardsSummary} from './rewards-summary'
 
 export default function CartPage() {
   const {cart, updateItem, removeItem, clear, isLoading, isAuthenticated} =
@@ -147,7 +147,7 @@ export default function CartPage() {
 
           <div className='space-y-6'>
             {/* Order Summary - Read-only review */}
-            <OrderSummary
+            <RewardsSummary
               subtotal={subtotal}
               tax={tax}
               shipping={shipping}

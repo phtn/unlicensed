@@ -79,7 +79,7 @@ export const Nav = ({children}: NavProps) => {
             className='md:w-72 h-12 overflow-hidden pl-1 flex items-center justify-start relative'>
             <Icon
               name='rapid-fire'
-              className='h-44 w-auto dark:text-brand text-featured'
+              className='h-44 w-auto dark:text-brand text-brand'
             />
           </Link>
           <nav className='flex items-center justify-center md:w-full'>

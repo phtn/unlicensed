@@ -244,7 +244,7 @@ const SettingsPanelContent = () => {
         }
       case 'inventory':
         return {
-          title: 'Product Details',
+          title: selectedProduct?.name,
           subtext: selectedProduct?.categorySlug,
           form: selectedProduct ? (
             <ProductDetailsForm product={selectedProduct} />
@@ -267,14 +267,14 @@ const SettingsPanelContent = () => {
 SettingsPanelContent.displayName = 'SettingsPanelContent'
 
 interface PanelProps {
-  title: string
+  title?: string
   subtext?: string
   children?: ReactNode
 }
 
 const Panel = ({title, subtext, children}: PanelProps) => {
   return (
-    <div className='h-full flex flex-col pt-4'>
+    <div className='h-full flex flex-col pt-0'>
       <div
         className={cn('h-14 flex items-center justify-between relative mb-2')}
         style={
@@ -291,16 +291,21 @@ const Panel = ({title, subtext, children}: PanelProps) => {
 }
 
 interface PanelHeaderProps {
-  title: string
+  title?: string
   subtext?: string
 }
 
 const PanelHeader = ({title, subtext}: PanelHeaderProps) => {
   return (
-    <div className='w-full flex items-center justify-between'>
-      <h2 className='text-base font-medium tracking-tighter'>{title}</h2>
+    <div className='w-full h-10 border flex items-center justify-between'>
+      <input
+        className='text-xl font-medium w-full tracking-tighter bg-transparent border-none shadow-none outline-none focus-within:ring-0 focus-visible:ring-0'
+        defaultValue={title}
+      />
       {subtext && (
-        <span className='font-space text-sm opacity-70'>{subtext}</span>
+        <span className='flex-1 font-space text-sm opacity-70 whitespace-nowrap'>
+          {subtext}
+        </span>
       )}
     </div>
   )

@@ -4,6 +4,7 @@ import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Image} from '@heroui/react'
+import Link from 'next/link'
 import {Activity} from 'react'
 import {Tag} from '../../../../components/base44/tag'
 import {Title} from '../../../../components/base44/title'
@@ -55,7 +56,7 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
               </div>
             </div>
 
-            <div className='relative flex justify-center lg:justify-end max-h-[40vh] sm:max-h-[45vh] lg:max-h-[50lvh] overflow-visible'>
+            <div className='relative flex items-center justify-center lg:justify-end max-h-[40vh] sm:max-h-[45vh] lg:max-h-[50lvh] overflow-visible'>
               <Activity mode={on ? 'hidden' : 'visible'}>
                 <Loader />
               </Activity>
@@ -76,14 +77,16 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
       {/* Case Studies Grid */}
       <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
         <div className='max-w-7xl mx-auto'>
-          <h2 className='text-2xl sm:text-3xl font-extrabold tracking-tight mb-6 sm:mb-8'>
+          <h2 className='text-2xl sm:text-2xl font-medium font-bone text-limited tracking-tight mb-6 sm:mb-8'>
             Bestsellers
           </h2>
-          <div className='grid md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8'>
+          <div className='grid md:grid-cols-4 gap-4 sm:gap-6 lg:gap-0 w-full'>
             {products.map((product) => (
-              <div
+              <Link
                 key={product._id?.substring(-8)}
-                className='group cursor-pointer border '>
+                href={`/products/${product.slug}`}
+                prefetch={true}
+                className='group/item cursor-pointer w-full'>
                 {/* Product Image */}
                 <div className='relative flex items-center justify-center bg-transparent rounded-t-2xl sm:rounded-t-3xl overflow-hidden h-40 sm:h-64 lg:h-54'>
                   <Image
@@ -97,7 +100,7 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
 
                   {/* Metric Badge */}
                   <div className='flex items-center gap-1.5 sm:gap-2 absolute top-3 sm:top-4 lg:top-0 right-3 sm:right-4 lg:right-6'>
-                    <span className='bg-foreground/10 backdrop-blur-sm text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-2 rounded-full'>
+                    <span className='hidden group-hover/item:flex bg-foreground/10 backdrop-blur-sm text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-2 rounded-full'>
                       <span className='font-extrabold opacity-70 font-fugaz tracking-wide'>
                         THC
                       </span>
@@ -126,31 +129,17 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
                 </div>
 
                 {/* Card Content */}
-                <div className='flex items-start justify-between p-3 sm:p-4 gap-3 sm:gap-4 bg-foreground/20 border-foreground/30 border rounded-b-2xl sm:rounded-b-3xl'>
+                <div className='w-full p-3 sm:p-4 _rounded-b-2xl _sm:rounded-b-3xl border-b border-transparent group-hover/item:border-foreground/30'>
                   <div className='flex-1 min-w-0'>
-                    <h4 className='flex flex-col sm:flex-row sm:items-center sm:gap-3 lg:gap-4 text-lg sm:text-base lg:text-lg font-space font-bold tracking-tight mb-1 sm:mb-2'>
+                    <h4 className='flex items-center justify-center text-lg sm:text-base lg:text-lg font-sans font-semibold tracking-tight mb-1'>
                       <span className='capitalize truncate'>
                         {product.name.split('-').join(' ')}
                       </span>
                       <span className='font-light text-base sm:text-lg lg:text-xl whitespace-nowrap'></span>
                     </h4>
-                    {/*<p className='text-xs sm:text-sm opacity-80 leading-relaxed line-clamp-2'>
-                      {product.shortDescription}
-                    </p>*/}
                   </div>
-                  <Button
-                    as='a'
-                    href={`/products/${product.slug}`}
-                    isIconOnly
-                    size='sm'
-                    className='rounded-full text-background bg-foreground/80 flex items-center justify-center shrink-0 mt-1'>
-                    <Icon
-                      name='chevron-right'
-                      className='w-3 h-3 sm:w-4 sm:h-4'
-                    />
-                  </Button>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

@@ -351,9 +351,9 @@ export const RecentActivities = ({
       )}>
       <div
         className={cn(
-          'md:h-[calc(100lvh-220px)] overflow-scroll transition-transform duration-300',
+          'md:h-[calc(100lvh-203px)] overflow-scroll transition-transform duration-300',
           {
-            'md:h-[calc(100lvh-82px)]': fullTable,
+            'md:h-[calc(100lvh-66px)]': fullTable,
           },
         )}>
         <div className='flex items-end justify-between text-sm font-medium px-3 py-2'>

@@ -24,15 +24,15 @@ import {
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
-import {notFound} from 'next/navigation'
+import {notFound, useRouter} from 'next/navigation'
 import {
+  startTransition,
   useCallback,
   useMemo,
   useOptimistic,
   useRef,
   useState,
   useTransition,
-  startTransition,
   ViewTransition,
 } from 'react'
 
@@ -111,6 +111,11 @@ export const ProductDetailContent = ({
   const {triggerAnimation} = useCartAnimation()
   const addToCartButtonRef = useRef<HTMLDivElement>(null)
   const galleryImageRef = useRef<HTMLDivElement>(null)
+
+  const router = useRouter()
+  const prefetch = useCallback(() => {
+    router.prefetch(`/category-${initialDetail?.category?.slug}`)
+  }, [router, initialDetail?.category?.slug])
 
   // Optimistic state for add-to-cart operations
   const [optimisticAdding, setOptimisticAdding] = useOptimistic(
@@ -214,8 +219,8 @@ export const ProductDetailContent = ({
   const isAdding = optimisticAdding || isPending
 
   return (
-    <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-10 sm:py-8 lg:py-12 overflow-x-hidden'>
-      <section className='mx-auto w-full max-w-7xl px-4 pt-6 sm:pt-8 lg:pt-10 sm:px-6 lg:px-4'>
+    <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-10 sm:py-8 lg:py-20 overflow-x-hidden'>
+      <section className='mx-auto w-full max-w-7xl px-4 pt-6 sm:pt-8 lg:pt-10 sm:px-6 lg:px-0'>
         <Breadcrumbs
           aria-label='Product breadcrumb'
           className='text-xs sm:text-sm text-color-muted'
@@ -224,7 +229,7 @@ export const ProductDetailContent = ({
             separator: 'opacity-80',
           }}>
           <BreadcrumbItem href='/'>
-            <Icon name='mushrooms' className='size-3 sm:size-4 opacity-60' />
+            <Icon name='grid' className='size-3 sm:size-4 opacity-60' />
           </BreadcrumbItem>
           <BreadcrumbItem href={`/#category-${product.categorySlug}`}>
             {category?.name ?? product.categorySlug}
@@ -379,6 +384,7 @@ export const ProductDetailContent = ({
 
       {related.length > 0 ? (
         <section
+          onMouseEnter={prefetch}
           id='related-selections'
           className='mx-auto w-full max-w-6xl px-4 md:px-0'>
           <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4'>

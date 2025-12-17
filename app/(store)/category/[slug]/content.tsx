@@ -3,6 +3,7 @@
 import {CategoryContent} from '@/app/(store)/category/[slug]/category'
 import {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
@@ -26,5 +27,22 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     return initialProducts
   }, [initialProducts, productsQuery])
 
-  return <CategoryContent products={products} slug={slug} />
+  // Get all image IDs from products
+  const imageIds = useMemo(
+    () => products.map((p) => p.image).filter((img) => !img.startsWith('http')),
+    [products],
+  )
+
+  // Resolve URLs for all images
+  const resolveUrl = useStorageUrls(imageIds)
+
+  // Update products with resolved image URLs
+  const productsWithImages = useMemo(() => {
+    return products.map((product) => ({
+      ...product,
+      image: resolveUrl(product.image),
+    }))
+  }, [products, resolveUrl])
+
+  return <CategoryContent products={productsWithImages} slug={slug} />
 }

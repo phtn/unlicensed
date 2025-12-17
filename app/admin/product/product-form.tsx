@@ -74,6 +74,7 @@ export const ProductForm = ({
             'Please review the product form for validation errors.'
           setErrorMessage(message)
           setStatus('error')
+
           return
         }
 
@@ -238,11 +239,13 @@ export const ProductForm = ({
                 : 'Product created successfully!'}
             </p>
           )}
-          {status === 'error' && errorMessage && (
-            <p className='mt-2 text-sm text-center text-rose-500'>
-              {errorMessage}
-            </p>
-          )}
+          <div className='wrap-break-word'>
+            {status === 'error' && errorMessage && (
+              <p className='mt-2 text-sm text-center text-rose-500'>
+                {errorMessage}
+              </p>
+            )}
+          </div>
         </div>
       </aside>
 
@@ -252,7 +255,8 @@ export const ProductForm = ({
           onSubmit={(e) => {
             e.preventDefault()
             e.stopPropagation()
-            void form.handleSubmit()
+            form.handleSubmit()
+            console.log('yooo')
           }}
           className='space-y-0 pt-2'>
           <div id='basic-info' className='scroll-mt-4'>

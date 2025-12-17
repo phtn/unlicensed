@@ -3,8 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import type {Doc, Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {formatPrice} from '@/utils/formatPrice'
-import {Button, Chip, Image, Input, Switch, Textarea} from '@heroui/react'
+import {Button, Image, Input, Switch, Textarea} from '@heroui/react'
 import {useMutation} from 'convex/react'
 import {useEffect, useState} from 'react'
 import {useProductDetailsSafe} from './product-details-context'
@@ -136,7 +135,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
   }
 
   return (
-    <div className='flex flex-col min-h-0 gap-4'>
+    <div className='flex flex-col min-h-0 gap-x-4 gap-y-8'>
       {/* Product Image */}
       <div className='flex justify-center'>
         <Image
@@ -147,7 +146,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
       </div>
 
       {/* Product Name */}
-      <div>
+      {/*<div>
         <label className='text-xs font-medium text-foreground/60 mb-1 block'>
           Product Name
         </label>
@@ -157,142 +156,102 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
           onValueChange={setName}
           placeholder='Product name'
         />
-      </div>
+      </div>*/}
       {/* Description */}
       {product.description && (
         <div>
-          <label className='text-xs font-medium text-foreground/60 mb-1 block'>
-            Description
-          </label>
           <Textarea
             value={product.description}
             readOnly
             size='sm'
             minRows={3}
-            className='text-xs'
+            className='text-xs bg-transparent! dark:bg-transparent!'
           />
         </div>
       )}
       {/* Price */}
 
-      <div className='flex items-center space-x-4'>
+      <div className='grid grid-cols-3 items-center gap-x-4'>
         <div className='w-full'>
-          <label className='text-xs font-medium text-foreground/60 mb-1 block'>
-            Price (cents)
-          </label>
           <Input
+            label='Price'
             size='md'
             type='number'
             value={String(priceCents)}
             onValueChange={(value) => setPriceCents(Number(value))}
             placeholder='Price in cents'
-            startContent={<span className='text-xs opacity-60'></span>}
           />
-          <p className='text-xs opacity-60 mt-1'>
-            <span className='mr-2'>Display:</span>
-            <span className='font-space font-medium'>
-              <span className='font-thin'>$</span>
-              {formatPrice(priceCents, 2)}
-            </span>
-          </p>
+        </div>
+        <div>
+          <div className='w-full'>
+            <Input
+              label='Unit'
+              size='md'
+              value={unit}
+              onValueChange={(value) => setUnit(value)}
+              placeholder='Unit'
+            />
+          </div>
         </div>
         <div className='w-full'>
-          <label className='text-xs font-medium text-foreground/60 mb-1 block'>
-            In-Stock
-          </label>
           <Input
+            label='Qty in stock'
             size='md'
             type='number'
             value={String(stock)}
             onValueChange={(value) => setStock(Number(value))}
             placeholder='Stock quantity'
           />
-          <p className='text-xs opacity-60 mt-1'>
-            <span className='mr-2'>Unit:</span>
-            <span className='font-space font-medium'>{product.unit}</span>
-          </p>
-        </div>
-      </div>
-      <div>
-        <div className='w-full'>
-          <label className='text-xs font-medium text-foreground/60 mb-1 block'>
-            Unit
-          </label>
-          <Input
-            size='md'
-            value={unit}
-            onValueChange={(value) => setUnit(value)}
-            placeholder='Unit'
-          />
-          <p className='text-xs opacity-60 mt-1'>
-            <span className='mr-2'>Unit:</span>
-            <span className='font-space font-medium'>{product.unit}</span>
-          </p>
         </div>
       </div>
 
       {/* Status */}
-      <div className='flex flex-col gap-3'>
-        <div>
-          <label className='text-xs font-medium text-foreground/60 mb-1 block'>
-            Status
-          </label>
-          <div className='flex flex-col gap-3'>
-            <div className='flex items-center justify-between'>
-              <div className='flex flex-col'>
-                <span className='text-sm font-medium'>Available</span>
-                <span className='text-xs text-foreground/60'>
-                  {available
-                    ? 'Product is available for purchase'
-                    : 'Product is unavailable'}
-                </span>
-              </div>
-              <Switch
-                isSelected={available}
-                onValueChange={handleToggleAvailable}
-                isDisabled={isSaving}
-                color='success'
-                size='sm'
-              />
+      <div className='flex gap-3'>
+        <div className='flex justify-between w-full gap-5'>
+          <div className='flex items-center justify-between w-full border border-emerald-400 bg-emerald-200/5 rounded p-3'>
+            <div className='flex flex-col'>
+              <span className='text-sm font-medium'>Available</span>
+              <span className='text-xs text-foreground/60'>
+                {available
+                  ? 'Product is available for purchase'
+                  : 'Product is unavailable'}
+              </span>
             </div>
-            <div className='flex items-center justify-between'>
-              <div className='flex flex-col'>
-                <span className='text-sm font-medium'>Featured</span>
-                <span className='text-xs text-foreground/60'>
-                  {featured ? 'Product is featured' : 'Product is not featured'}
-                </span>
-              </div>
-              <Switch
-                isSelected={featured}
-                onValueChange={handleToggleFeatured}
-                isDisabled={isSaving}
-                color='primary'
-                size='sm'
-              />
+            <Switch
+              isSelected={available}
+              onValueChange={handleToggleAvailable}
+              isDisabled={isSaving}
+              color='success'
+              size='sm'
+            />
+          </div>
+          <div className='flex items-center justify-between w-full border border-featured bg-featured/5 rounded p-3'>
+            <div className='flex flex-col'>
+              <span className='text-sm font-medium'>Featured</span>
+              <span className='text-xs text-foreground/60'>
+                {featured ? 'Product is featured' : 'Product is not featured'}
+              </span>
             </div>
+            <Switch
+              isSelected={featured}
+              onValueChange={handleToggleFeatured}
+              isDisabled={isSaving}
+              classNames={{wrapper: 'bg-featured'}}
+              className=''
+              size='sm'
+            />
           </div>
         </div>
       </div>
 
-      {/* Category */}
-      <div>
-        <label className='text-xs font-medium text-foreground/60 mb-1 block'>
-          Category
-        </label>
-        <Chip size='sm' variant='flat' className='capitalize'>
-          {product.categorySlug ?? 'Uncategorized'}
-        </Chip>
-      </div>
-
       {/* Actions */}
-      <div className='flex gap-2 pt-2'>
+      <div className='flex gap-4 pt-2'>
         <Button size='lg' className='flex-1' onPress={handleCancel}>
           Cancel
         </Button>
         <Button
           size='lg'
-          color='primary'
-          className='flex-1'
+          className='flex-1 bg-featured'
           isLoading={isSaving}
           spinnerPlacement='end'
           disableRipple

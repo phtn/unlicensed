@@ -57,7 +57,7 @@ export const Brands = ({columnCount = 2}: {columnCount?: number}) => {
             Our Trusted Brands
           </h3>
         </div>
-        <div className='absolute left-1/2 -translate-x-1/2 w-full translate-y-10'>
+        <div className='absolute left-1/2 -translate-x-1/2 w-full -translate-y-8'>
           <Beams />
         </div>
         <div className='relative items-center flex justify-between w-full h-full'>

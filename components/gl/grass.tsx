@@ -143,7 +143,7 @@ export default function Grass2() {
     bH: {value: 1.5, min: 0.1, max: 5, step: 0.1, label: 'Blade Height'},
     joints: {value: 5, min: 2, max: 10, step: 1},
     width: {value: 80, min: 10, max: 500, step: 10},
-    instances: {value: 50000, min: 1000, max: 100000, step: 1000},
+    instances: {value: 50000, min: 1000, max: 30000, step: 1000},
     soilColor: {value: '#86440d', label: 'Soil Color'},
     windStrength: {
       value: 0.3,

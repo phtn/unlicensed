@@ -1,10 +1,15 @@
+'use client'
+
 import {api} from '@/convex/_generated/api'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {Card, CardBody, CardFooter, Image, Link} from '@heroui/react'
+import {Card, CardBody, CardFooter, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
+import Link from 'next/link'
+import {useRouter} from 'next/navigation'
 import {useMemo} from 'react'
 
 export const CategoryList = () => {
+  const router = useRouter()
   const cat = useQuery(api.categories.q.listCategories)
 
   // Get all heroImage values for URL resolution
@@ -21,14 +26,19 @@ export const CategoryList = () => {
       {cat?.map((item, index) => (
         <Card
           as={Link}
-          href={`/category/${item.name.toLowerCase()}`}
           key={index}
+          href={`/category/${item.name.toLowerCase()}`}
+          prefetch
           radius='sm'
           className='border-none'
           isFooterBlurred
           isPressable
           shadow='sm'
-          onPress={() => console.log('item pressed')}>
+          onPress={() => console.log('item pressed')}
+          onMouseEnter={() => {
+            console.log('prefetching', `/category/${item.name.toLowerCase()}`)
+            router.prefetch(`/category/${item.name.toLowerCase()}`)
+          }}>
           <CardBody className='overflow-visible p-0'>
             <Image
               alt={item.name}

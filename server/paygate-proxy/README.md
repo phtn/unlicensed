@@ -223,3 +223,5 @@ We will try self-hosted since we have our own web-server:
 - You want global edge performance
 - You prefer serverless architecture
 - Free tier is sufficient-->
+
+

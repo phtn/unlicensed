@@ -8,6 +8,7 @@ import {categorySchema} from './categories/d'
 import {orderSchema} from './orders/d'
 import {productSchema} from './products/d'
 import {rewardTierSchema, userRewardsSchema} from './rewards/d'
+import {staffSchema} from './staff/d'
 import {userSchema} from './users/d'
 
 export default defineSchema({
@@ -24,6 +25,7 @@ export default defineSchema({
       searchField: 'name',
       filterFields: ['categorySlug'],
     }),
+  staff: defineTable(staffSchema).index('by_email', ['email']),
   users: defineTable(userSchema).index('by_firebase_id', ['firebaseId']),
   carts: defineTable(cartSchema).index('by_user', ['userId']),
   orders: defineTable(orderSchema)

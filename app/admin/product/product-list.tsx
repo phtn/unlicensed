@@ -1,11 +1,21 @@
+'use client'
+
 import {HyperBadge} from '@/components/main/badge'
 import {Doc} from '@/convex/_generated/dataModel'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Card, CardFooter, CardHeader, Image} from '@heroui/react'
 import Link from 'next/link'
+import {useMemo} from 'react'
 
-const ProductItem = ({product}: {product: Doc<'products'>}) => (
+const ProductItem = ({
+  product,
+  imageUrl,
+}: {
+  product: Doc<'products'>
+  imageUrl: string
+}) => (
   <Card
     radius='none'
     isFooterBlurred
@@ -30,7 +40,7 @@ const ProductItem = ({product}: {product: Doc<'products'>}) => (
       removeWrapper
       alt={product.name}
       className='z-0 w-full h-full object-cover rounded-xs'
-      src={product.image}
+      src={imageUrl}
     />
     <CardFooter className='p-1.5 absolute bg-black/80 bottom-0 z-10 border border-dark-gray/20 dark:border-dark-gray/80 rounded-b-xs'>
       <div className='flex grow gap-2 items-center'>
@@ -72,6 +82,12 @@ interface ProductListProps {
 }
 
 export const ProductList = ({products}: ProductListProps) => {
+  const imageIds = useMemo(
+    () => products?.map((p) => p.image).filter(Boolean) ?? [],
+    [products],
+  )
+  const resolveUrl = useStorageUrls(imageIds as string[])
+
   return (
     <section className='h-[91lvh] overflow-auto'>
       {products?.length === 0 ? (
@@ -82,7 +98,10 @@ export const ProductList = ({products}: ProductListProps) => {
         <ul className='grid gap-0.5 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6'>
           {products?.map((product) => (
             <li key={product._id}>
-              <ProductItem product={product} />
+              <ProductItem
+                product={product}
+                imageUrl={resolveUrl(product.image)}
+              />
             </li>
           ))}
         </ul>

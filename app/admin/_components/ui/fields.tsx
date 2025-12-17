@@ -21,7 +21,7 @@ type BaseFieldProps<T> = {
   label: string
   required?: boolean
   placeholder?: string
-  defaultValue?: string | number | boolean
+  defaultValue?: any
   step?: string
   minRows?: number
 }

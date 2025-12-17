@@ -15,6 +15,7 @@ import './globals.css'
 const figtree = Figtree({
   variable: '--font-sans',
   subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
   display: 'swap',
 })
 const geistSans = Geist({
@@ -38,13 +39,11 @@ const fugaz = Fugaz_One({
   weight: ['400'],
   display: 'swap',
 })
-
 const bone = BakbakOne({
   variable: '--font-bone',
   weight: ['400'],
   subsets: ['latin'],
 })
-
 export const metadata: Metadata = {
   title: {
     default: 'Rapid Fire',

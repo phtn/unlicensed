@@ -20,9 +20,13 @@ export const Details = ({form}: DetailsProps) => {
             return (
               <div className='space-y-2'>
                 <Textarea
+                  name='shortDescription'
                   label='Short Description'
                   value={shortDescValue}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  onChange={(e) => {
+                    e.preventDefault()
+                    field.handleChange(e.target.value)
+                  }}
                   onBlur={field.handleBlur}
                   placeholder='Brief summary for cards and listings...'
                   minRows={2}
@@ -47,8 +51,12 @@ export const Details = ({form}: DetailsProps) => {
               <div className='space-y-2'>
                 <Textarea
                   label='Full Description (Markdown)'
-                  value={descValue}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  name='fullDescription'
+                  defaultValue={descValue}
+                  onChange={(e) => {
+                    e.preventDefault()
+                    field.handleChange(e.target.value)
+                  }}
                   onBlur={field.handleBlur}
                   placeholder='Detailed product story, lineage, and effects...'
                   minRows={6}

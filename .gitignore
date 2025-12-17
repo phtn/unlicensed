@@ -42,3 +42,6 @@ next-env.d.ts
 
 sk.json
 notes.md
+
+tmux-server-2500.log
+tmux-client-2498.log

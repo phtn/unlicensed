@@ -68,28 +68,22 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props} className='border-none!' suppressHydrationWarning>
       <SidebarHeader className=''>
-        <div className='h-18 flex items-center justify-between'>
-          <div className='h-12 flex w-full items-center _justify-center dark:bg-sidebar bg-linear-to-r from-foreground/90 via-foreground/90 to-transparent dark:from-brand dark:via-foreground px-4 rounded-s-3xl'>
+        <div className='h-15 flex items-end justify-between'>
+          <div className='h-12 flex w-full items-center _justify-center dark:bg-sidebar bg-linear-to-r from-foreground/90 via-foreground/90 to-transparent dark:from-featured/20 dark:via-foreground/10 px-4 rounded-s-3xl'>
             <Icon
               name='rapid-fire'
-              className='text-base text-brand dark:text-zinc-900 w-32 h-auto font-figtree font-semibold tracking-tight'
+              className='text-base text-brand w-32 h-auto font-figtree font-semibold tracking-tight'
             />
           </div>
         </div>
-        <div
-          className={cn(
-            'relative transition-all duration-300 ease-in-out',
-            'after:absolute after:inset-x-0 after:top-0 after:h-[0.5px] after:bg-linear-to-r after:from-foreground/10 after:via-foreground/15 before:to-foreground/10',
-          )}
-        />
       </SidebarHeader>
       <SidebarContent>
         {/* We only show the first parent group */}
-        <SidebarGroup>
-          <SidebarGroupLabel className='pl-4 text-xs tracking-widest uppercase font-bold opacity-40'>
+        <SidebarGroup key={'operations'}>
+          <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-medium opacity-70'>
             {data.navMain[0]?.title}
           </SidebarGroupLabel>
-          <SidebarGroupContent className='py-2'>
+          <SidebarGroupContent>
             <SidebarMenu>
               {data.navMain[0] &&
                 data.navMain[0]?.items?.map((item) => {
@@ -118,48 +112,51 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel className='pl-4 text-xs tracking-widest uppercase font-bold opacity-40'>
-            {data.navMain[1]?.title}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {data.navMain[1]?.items?.map((item) => {
-                const isActive = pathname === item.url
-                return (
-                  <SidebarMenuItem
-                    className={cn(
-                      'text-xs tracking-tighter rounded-lg hover:bg-light-gray/20 dark:hover:bg-dark-gray/20',
-                      {
-                        'dark:bg-dark-gray/60 bg-light-gray/20': isActive,
-                      },
-                    )}
-                    key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      size='lg'
+
+        {data.navMain.slice(1, 3).map((section, i) => (
+          <SidebarGroup key={`${section.title}` + i}>
+            <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-medium opacity-70'>
+              {section.title}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items?.map((item, x) => {
+                  const isActive = pathname === item.url
+                  return (
+                    <SidebarMenuItem
                       className={cn(
-                        'group/menu-button font-medium h-8 [&>svg]:size-auto',
+                        'text-sm font-semibold tracking-tight rounded-lg hover:bg-light-gray/20 dark:hover:bg-dark-gray/20',
+                        {
+                          'dark:bg-dark-gray/60 bg-light-gray/20': isActive,
+                        },
                       )}
-                      isActive={isActive}>
-                      <MenuContent {...item} />
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                      key={item.title + x}>
+                      <SidebarMenuButton
+                        asChild
+                        size='lg'
+                        className={cn(
+                          'group/menu-button font-medium h-8 [&>svg]:size-auto',
+                        )}
+                        isActive={isActive}>
+                        <MenuContent {...item} />
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarFooter>
         {/* Secondary Navigation */}
-        <SidebarGroup>
-          <SidebarGroupLabel className='pl-4 text-xs tracking-widest uppercase text-sidebar-foreground/50'>
-            {data.navMain[2]?.title}
+        <SidebarGroup key='settings'>
+          <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-medium opacity-70'>
+            {data.navMain[3]?.title}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {data.navMain[2]?.items?.map((item) => {
+              {data.navMain[3]?.items?.map((item) => {
                 const isActive = pathname === item.url
                 return (
                   <SidebarMenuItem
@@ -170,7 +167,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuButton
                       asChild
                       size='lg'
-                      className='group/menu-button font-medium h-8 [&>svg]:size-auto'
+                      className='group/menu-button h-8 [&>svg]:size-auto'
                       isActive={isActive}>
                       <MenuContent {...item} />
                     </SidebarMenuButton>
@@ -217,8 +214,8 @@ const MenuContent = (item: NavItem) => {
       prefetch={true}
       onMouseEnter={handleMouseEnter}
       onClick={handleClick}
-      className='font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center justify-between px-4 h-8 relative w-full'>
-      <span className='group-hover/menu-content:text-foreground tracking-tighter text-sm font-medium text-foreground/80 capitalize'>
+      className='font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center justify-between px-3 h-8 relative w-full'>
+      <span className='group-hover/menu-content:text-foreground font-semibold tracking-tight text-sm md:text-base text-foreground/80 capitalize dark:text-white/90'>
         {item.title}
       </span>
       {showBadge && (
@@ -244,15 +241,11 @@ const data: Record<string, NavGroup[]> = {
       url: '#',
       items: [
         {
-          title: 'Overview',
+          title: 'Activity',
           url: '/admin',
           icon: 'linalool',
         },
-        {
-          title: 'Sales',
-          url: '/admin/sales',
-          icon: 'linalool',
-        },
+
         {
           title: 'Orders',
           url: '/admin/orders',
@@ -263,26 +256,22 @@ const data: Record<string, NavGroup[]> = {
           url: '/admin/deliveries',
           icon: 'linalool',
         },
+
         {
-          title: 'Inventory',
-          url: '/admin/inventory',
-          icon: 'linalool',
-        },
-        {
-          title: 'Customers',
-          url: '/admin/personnel',
-          icon: 'linalool',
-        },
-        {
-          title: 'Personnel',
-          url: '/admin/personnel',
+          title: 'Staff',
+          url: '/admin/staff',
           icon: 'linalool',
         },
       ],
     },
     {
-      title: 'Create',
+      title: 'Inventory',
       items: [
+        {
+          title: 'Overview',
+          url: '/admin/inventory',
+          icon: 'linalool',
+        },
         {
           title: 'Category',
           url: '/admin/category',
@@ -296,6 +285,17 @@ const data: Record<string, NavGroup[]> = {
         {
           title: 'Blog',
           url: '/admin/blog',
+          icon: 'linalool',
+        },
+      ],
+    },
+    {
+      title: 'reports',
+      url: '#',
+      items: [
+        {
+          title: 'Sales',
+          url: '/admin/sales',
           icon: 'linalool',
         },
       ],

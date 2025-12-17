@@ -35,7 +35,7 @@ export function Beams() {
 
   return (
     <div
-      className='relative flex h-64 w-full items-center justify-center overflow-hidden p-10'
+      className='relative flex h-64 w-full items-center justify-center overflow-hidden p-0'
       ref={containerRef}>
       <div className='flex w-full h-fit flex-col justify-between'>
         <div className='flex items-center justify-center gap-x-8 w-full'>

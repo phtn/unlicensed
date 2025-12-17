@@ -314,7 +314,7 @@ export const InventoryTable = () => {
               <p className='text-bold text-sm whitespace-nowrap'>
                 {product.name}
               </p>
-              <p className='text-xs italic opacity-60'>{product.slug}</p>
+              {/*<p className='text-xs italic opacity-60'>{product.slug}</p>*/}
             </div>
           </div>
         )
@@ -557,7 +557,7 @@ export const InventoryTable = () => {
                 <Button
                   endContent={
                     <div className='-scale-x-100'>
-                      <Icon name='tag-light' className='size-4' />
+                      <Icon name='arrow-swap' className='size-4 rotate-30' />
                     </div>
                   }
                   variant='flat'>
@@ -664,7 +664,7 @@ export const InventoryTable = () => {
             selectionMode='multiple'
             selectedKeys={selectedRows}
             onSelectionChange={onSelectionChange}>
-            <TableHeader columns={columns}>
+            <TableHeader columns={columns} className='select-none'>
               {(column) => {
                 const width = getColumnWidth(column.uid)
                 // const isResizing = resizingColumn === column.uid
@@ -701,7 +701,7 @@ export const InventoryTable = () => {
                     style={columnStyle}
                     align={column.uid === 'actions' ? 'center' : 'start'}>
                     <div
-                      className='relative w-full'
+                      className='relative w-full select-none'
                       onMouseEnter={() => {
                         console.log(
                           '[InventoryTable] Column hover enter',
@@ -722,7 +722,7 @@ export const InventoryTable = () => {
                       <div className='flex items-center justify-between w-full relative z-10'>
                         <span className='flex items-center'>
                           {column.name.toLowerCase() === 'price' && (
-                            <Icon name='dollar' className='size-5' />
+                            <Icon name='dollar' className='size-3.5' />
                           )}
                           {column.name}
                         </span>

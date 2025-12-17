@@ -3,11 +3,12 @@
 import {Id} from '@/convex/_generated/dataModel'
 import {useImageConverter} from '@/hooks/use-image-converter'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Image} from '@heroui/react'
 import {Derived, useStore} from '@tanstack/react-store'
-import {useState} from 'react'
+import {useMemo, useState} from 'react'
 import {ProductFormValues} from '../product-schema'
 import {FormInput, renderFields} from '../ui/fields'
 import {useAppForm} from '../ui/form-context'
@@ -51,13 +52,29 @@ export const Media = ({form, fields}: MediaProps) => {
     (state: FormStoreState) => (state.values.image as Id<'_storage'>) ?? '',
   )
 
+  const galleryValue = useStore(
+    form.store as unknown as Derived<FormStoreState, never>,
+    (state: FormStoreState) => (state.values.gallery as string[]) ?? [],
+  )
+
+  const allImageIds = useMemo(() => {
+    const ids = [primaryImageValue, ...galleryValue].filter(Boolean)
+    return [...new Set(ids)]
+  }, [primaryImageValue, galleryValue])
+
+  const resolveUrl = useStorageUrls(allImageIds)
+
   // Helper to get preview URL
   const getPreview = (storageId: string, map: Record<string, string>) => {
     if (!storageId) return null
     if (storageId.startsWith('http') || storageId.startsWith('data:')) {
       return storageId
     }
-    return map[storageId] ?? null
+    // Check local preview map first (for newly uploaded files)
+    if (map[storageId]) return map[storageId]
+
+    // Then check resolved URLs from server
+    return resolveUrl(storageId) || null
   }
 
   return (
@@ -175,17 +192,16 @@ export const Media = ({form, fields}: MediaProps) => {
                       <div className='flex gap-1'>
                         <Button
                           size='sm'
-                          color='primary'
                           onPress={handleSave}
-                          className='text-blue-500'
+                          className='dark:bg-blue-500 dark:text-white'
                           isLoading={isConverting || isUploading}>
                           Save Image
                         </Button>
                         <Button
                           size='sm'
-                          variant='flat'
+                          variant='light'
                           onPress={handleCancel}
-                          className='bg-light-gray/10'
+                          className='bg-light-gray/10 dark:bg-transparent'
                           isDisabled={isConverting || isUploading}>
                           Cancel
                         </Button>
@@ -194,7 +210,7 @@ export const Media = ({form, fields}: MediaProps) => {
                       <Button
                         size='sm'
                         variant='flat'
-                        className='dark:bg-black/15'
+                        className='dark:bg-blue-500 dark:text-white'
                         onPress={handleFileSelect}>
                         Select Image
                       </Button>
@@ -382,7 +398,7 @@ export const Media = ({form, fields}: MediaProps) => {
                           size='sm'
                           color='primary'
                           onPress={handleSaveGallery}
-                          className='text-blue-500'
+                          className='dark:bg-blue-500 dark:text-white'
                           isLoading={isConvertingGallery || isUploading}>
                           Save Images
                         </Button>
