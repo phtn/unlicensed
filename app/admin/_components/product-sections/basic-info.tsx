@@ -23,7 +23,10 @@ export const BasicInfo = ({categories, form, fields}: BasicInfoProps) => {
   }, [categories])
 
   const selectCategories = useMemo(
-    () => availableCategories?.map((c) => ({value: c.slug, label: c.name})),
+    () =>
+      availableCategories
+        ?.filter((c) => c.slug)
+        .map((c) => ({value: c.slug!, label: c.name})),
     [availableCategories],
   )
 

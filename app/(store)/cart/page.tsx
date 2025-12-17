@@ -97,9 +97,9 @@ export default function CartPage() {
   }
 
   const subtotal = cartItems.reduce((total, item) => {
-    const price = item.product.priceCents
+    const price = item.product.priceCents ?? 0
     const denomination = item.denomination || 1
-    return total + price * denomination * item.quantity
+    return total + (price * denomination * item.quantity)
   }, 0)
 
   const tax = subtotal * 0.1 // 10% tax
@@ -124,7 +124,7 @@ export default function CartPage() {
               {cartItems.map((item) => {
                 const product = item.product
                 const denomination = item.denomination || 1
-                const itemPrice = product.priceCents * denomination
+                const itemPrice = (product.priceCents ?? 0) * denomination
 
                 return (
                   <CartItem

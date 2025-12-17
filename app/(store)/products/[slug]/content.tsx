@@ -44,12 +44,30 @@ const formatPrice = (priceCents: number) => {
 const Gallery = ({
   product,
   imageRef,
+  productId,
 }: {
   product: StoreProduct
   imageRef?: React.RefObject<HTMLDivElement | null>
+  productId?: Id<'products'>
 }) => {
   const {on, setOn} = useToggle()
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+
+  // Get primary image URL
+  const primaryImageUrl = useQuery(
+    api.products.q.getPrimaryImage,
+    productId ? {id: productId} : 'skip',
+  )
+
+  // Get gallery images
+  const galleryUrls = useQuery(
+    api.products.q.listGallery,
+    productId ? {id: productId} : 'skip',
+  )
+
+  const displayImage = selectedImage ?? primaryImageUrl ?? product.image ?? ''
+  const galleryImages = galleryUrls ?? product.gallery ?? []
+
   const handleSelectImage = useCallback(
     (src: string) => () => {
       startTransition(() => {
@@ -66,22 +84,22 @@ const Gallery = ({
         <ViewTransition>
           <Lens hovering={on} setHovering={setOn}>
             <Image
-              src={selectedImage ?? product.image}
+              src={displayImage}
               alt={product.name}
               className='object-cover w-full h-full aspect-auto select-none'
               loading='eager'
             />
           </Lens>
         </ViewTransition>
-        {product.gallery.length > 0 && (
+        {galleryImages.length > 0 && (
           <div className='grid grid-cols-4 gap-2 sm:gap-3'>
-            {product.gallery.map((src) => (
+            {galleryImages.map((src, index) => (
               <div
-                key={src}
-                onClick={handleSelectImage(src)}
+                key={src ?? index}
+                onClick={() => src && handleSelectImage(src)()}
                 className='cursor-pointer select-none relative aspect-square overflow-hidden'>
                 <Image
-                  src={src}
+                  src={src ?? '/default-product-image.svg'}
                   alt={`${product.name} gallery`}
                   className='object-contain w-full h-full aspect-auto'
                   loading='lazy'
@@ -124,6 +142,19 @@ export const ProductDetailContent = ({
   )
 
   const detailQuery = useQuery(api.products.q.getProductBySlug, {slug})
+
+  // Get primary image URL for the product
+  const primaryImageUrl = useQuery(
+    api.products.q.getPrimaryImage,
+    detailQuery?.product?._id ? {id: detailQuery.product._id} : 'skip',
+  )
+
+  // Get gallery images
+  const galleryUrls = useQuery(
+    api.products.q.listGallery,
+    detailQuery?.product?._id ? {id: detailQuery.product._id} : 'skip',
+  )
+
   const detail = useMemo<StoreProductDetail | null | undefined>(() => {
     if (detailQuery === undefined) {
       return initialDetail
@@ -131,8 +162,18 @@ export const ProductDetailContent = ({
     if (!detailQuery) {
       return null
     }
-    return detailQuery ? adaptProductDetail(detailQuery) : null
-  }, [detailQuery, initialDetail])
+    const adapted = adaptProductDetail(detailQuery)
+    // Override image URLs with resolved URLs if available
+    if (primaryImageUrl) {
+      adapted.product.image = primaryImageUrl
+    }
+    if (galleryUrls) {
+      adapted.product.gallery = galleryUrls.filter(
+        (url): url is string => !!url,
+      )
+    }
+    return adapted
+  }, [detailQuery, initialDetail, primaryImageUrl, galleryUrls])
 
   if (detail === null) {
     notFound()
@@ -190,21 +231,22 @@ export const ProductDetailContent = ({
         }
 
         // Trigger animation from gallery image
-        if (galleryImageRef.current && product.image) {
+        const imageUrl = primaryImageUrl ?? product.image
+        if (galleryImageRef.current && imageUrl) {
           const imageRect = galleryImageRef.current.getBoundingClientRect()
           const startX = imageRect.left + imageRect.width / 2
           const startY = imageRect.top + imageRect.height / 2
           console.log('Triggering animation', {
-            image: product.image,
+            image: imageUrl,
             startX,
             startY,
             imageRect,
           })
-          triggerAnimation(product.image, {x: startX, y: startY})
+          triggerAnimation(imageUrl, {x: startX, y: startY})
         } else {
           console.warn('Cannot trigger animation', {
             hasRef: !!galleryImageRef.current,
-            hasImage: !!product.image,
+            hasImage: !!imageUrl,
           })
         }
       } catch (error) {
@@ -237,7 +279,11 @@ export const ProductDetailContent = ({
           <BreadcrumbItem>{product.name}</BreadcrumbItem>
         </Breadcrumbs>
         <div className='mt-6 sm:mt-8 lg:mt-6 grid gap-6 sm:gap-8 lg:gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
-          <Gallery product={product} imageRef={galleryImageRef} />
+          <Gallery
+            product={product}
+            imageRef={galleryImageRef}
+            productId={detailQuery?.product?._id ?? product._id}
+          />
           <div className='space-y-6 sm:space-y-8 lg:space-y-10 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue dark:bg-pink-100/10 p-4 sm:p-5 lg:p-6 backdrop-blur-xl'>
             <div className='flex flex-col gap-4 sm:gap-5'>
               <div className='flex items-center justify-between gap-2 pb-4'>

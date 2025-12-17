@@ -3,6 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import {Id, type Doc} from '@/convex/_generated/dataModel'
 import {useResizableColumns} from '@/hooks/use-resizable-columns'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
@@ -58,6 +59,15 @@ export const InventoryTable = () => {
   const {open, setOpen} = useSettingsPanel()
   const selectedProductId = selectedProduct?._id
   const bulkUpdatePrices = useMutation(api.products.m.bulkUpdatePrices)
+
+  // Get all product image IDs for URL resolution
+  const productImageIds = useMemo(
+    () => products?.map((p) => p.image).filter(Boolean) ?? [],
+    [products],
+  )
+
+  // Resolve storage IDs to URLs
+  const resolveUrl = useStorageUrls(productImageIds)
 
   const {
     columnWidths,
@@ -170,7 +180,7 @@ export const InventoryTable = () => {
     if (hasSearchFilter) {
       filteredProducts =
         filteredProducts?.filter((product) =>
-          product.name.toLowerCase().includes(filterValue.toLowerCase()),
+          product.name?.toLowerCase().includes(filterValue.toLowerCase()),
         ) ?? []
     }
 
@@ -306,7 +316,9 @@ export const InventoryTable = () => {
         return (
           <div className='flex items-center gap-3'>
             <Image
-              src={product.image}
+              src={
+                resolveUrl(product.image ?? '') || '/default-product-image.svg'
+              }
               alt={product.name}
               className='w-12 h-auto aspect-square object-cover rounded shrink-0'
             />
@@ -327,9 +339,9 @@ export const InventoryTable = () => {
           </div>
         )
       case 'price':
-        return moneyCell(product.priceCents)
+        return moneyCell(product.priceCents ?? 0)
       case 'unit':
-        return textCell(product.unit)
+        return textCell(product.unit ?? '')
       case 'stock':
         return (
           <div className='flex flex-col items-center'>
@@ -539,8 +551,10 @@ export const InventoryTable = () => {
                   <DropdownItem key='all' className='capitalize'>
                     All Categories
                   </DropdownItem>
-                  {categories.map((category) => (
-                    <DropdownItem key={category.slug} className='capitalize'>
+                  {categories.map((category, i) => (
+                    <DropdownItem
+                      key={category.slug ?? i}
+                      className='capitalize'>
                       {category.name}
                     </DropdownItem>
                   ))}

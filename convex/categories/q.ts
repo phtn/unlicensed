@@ -24,3 +24,15 @@ export const getCategoryBySlug = query({
     return category ?? null
   },
 })
+
+export const getHeroImage = query({
+  args: {id: v.id('categories')},
+  handler: async (ctx, {id}) => {
+    const category = await ctx.db.get(id)
+    if (!category || !category.heroImage) {
+      return null
+    }
+    const primaryImage = await ctx.storage.getUrl(category.heroImage)
+    return primaryImage
+  },
+})

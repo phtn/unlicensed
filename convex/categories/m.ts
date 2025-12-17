@@ -1,20 +1,11 @@
 import {v} from 'convex/values'
 import {ensureSlug} from '../../lib/slug'
-import {mutation} from '../_generated/server'
 import {internal} from '../_generated/api'
+import {mutation} from '../_generated/server'
+import {categorySchema} from './d'
 
 export const create = mutation({
-  args: {
-    name: v.string(),
-    slug: v.optional(v.string()),
-    description: v.string(),
-    heroImage: v.string(),
-    visible: v.optional(v.boolean()),
-    highlight: v.optional(v.string()),
-    benefits: v.optional(v.array(v.string())),
-    units: v.optional(v.array(v.string())),
-    denominations: v.optional(v.array(v.number())),
-  },
+  args: categorySchema,
   handler: async (ctx, args) => {
     const slug = ensureSlug(args.slug ?? '', args.name)
 
@@ -32,18 +23,9 @@ export const create = mutation({
       .filter((benefit) => benefit.length > 0)
 
     const categoryId = await ctx.db.insert('categories', {
-      name: args.name.trim(),
+      ...args,
       slug,
-      description: args.description.trim(),
-      heroImage: args.heroImage,
-      visible: args.visible ?? false,
-      highlight: args.highlight?.trim() || undefined,
-      benefits: benefits.length > 0 ? benefits : undefined,
-      units: args.units && args.units.length > 0 ? args.units : undefined,
-      denominations:
-        args.denominations && args.denominations.length > 0
-          ? args.denominations
-          : undefined,
+      benefits,
     })
 
     // Log category created activity
@@ -60,16 +42,8 @@ export const create = mutation({
 
 export const update = mutation({
   args: {
+    ...categorySchema,
     categoryId: v.id('categories'),
-    name: v.string(),
-    slug: v.optional(v.string()),
-    description: v.string(),
-    heroImage: v.string(),
-    visible: v.optional(v.boolean()),
-    highlight: v.optional(v.string()),
-    benefits: v.optional(v.array(v.string())),
-    units: v.optional(v.array(v.string())),
-    denominations: v.optional(v.array(v.number())),
   },
   handler: async (ctx, args) => {
     const category = await ctx.db.get(args.categoryId)
@@ -96,18 +70,9 @@ export const update = mutation({
       .filter((benefit) => benefit.length > 0)
 
     await ctx.db.patch(args.categoryId, {
-      name: args.name.trim(),
+      ...args,
+      benefits,
       slug,
-      description: args.description.trim(),
-      heroImage: args.heroImage,
-      visible: args.visible ?? false,
-      highlight: args.highlight?.trim() || undefined,
-      benefits: benefits.length > 0 ? benefits : undefined,
-      units: args.units && args.units.length > 0 ? args.units : undefined,
-      denominations:
-        args.denominations && args.denominations.length > 0
-          ? args.denominations
-          : undefined,
     })
 
     // Log category updated activity
@@ -119,18 +84,5 @@ export const update = mutation({
     })
 
     return args.categoryId
-  },
-})
-
-export const purgeTestCategories = mutation({
-  handler: async ({db}) => {
-    const allItems = await db.query('categories').collect()
-    const itemsToDelete = allItems.filter((item) =>
-      item.slug.startsWith('test'),
-    )
-    for (const item of itemsToDelete) {
-      await db.delete(item._id)
-    }
-    return itemsToDelete.length
   },
 })

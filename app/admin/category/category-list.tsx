@@ -32,7 +32,7 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
                   <div className='flex items-center w-full space-x-4'>
                     <Image
                       alt={category.name + '-image'}
-                      src={resolveUrl(category.heroImage)}
+                      src={category.heroImage ? resolveUrl(category.heroImage) : '/default-category-image.svg'}
                       className='size-12 shrink-0 aspect-square'
                     />
                     <div className='flex items-start justify-between w-full h-12'>

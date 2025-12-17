@@ -6,11 +6,7 @@ import {useCallback, useState} from 'react'
 
 export const PurgeActions = () => {
   const [purgingUsers, setIsPurgingUsers] = useState(false)
-  const [purgingProducts, setIsPurgingProducts] = useState(false)
-  const [purgingCategories, setIsPurgingCategories] = useState(false)
   const purgeUsers = useMutation(api.users.m.purgeTestUsers)
-  const purgeProducts = useMutation(api.products.m.purgeTestProducts)
-  const purgeCategories = useMutation(api.categories.m.purgeTestCategories)
 
   const handlePurgeUsers = useCallback(async () => {
     setIsPurgingUsers(true)
@@ -18,20 +14,6 @@ export const PurgeActions = () => {
       .catch(console.error)
       .finally(() => setIsPurgingUsers(false))
   }, [purgeUsers])
-
-  const handlePurgeProducts = useCallback(async () => {
-    setIsPurgingProducts(true)
-    await purgeProducts()
-      .catch(console.error)
-      .finally(() => setIsPurgingProducts(false))
-  }, [purgeProducts])
-
-  const handlePurgeCategories = useCallback(async () => {
-    setIsPurgingCategories(true)
-    await purgeCategories()
-      .catch(console.error)
-      .finally(() => setIsPurgingCategories(false))
-  }, [purgeCategories])
 
   return (
     <div className='flex flex-col gap-4 px-4 py-4 border-t'>
@@ -44,20 +26,6 @@ export const PurgeActions = () => {
           onPress={handlePurgeUsers}>
           <span>Purge Test Users</span>
           <Icon name={purgingUsers ? 'spinners-ring' : 'x'} />
-        </Button>
-        <Button variant='solid' radius='sm' onPress={handlePurgeProducts}>
-          <span>Purge Test Products</span>
-          <Icon
-            className='text-danger'
-            name={purgingProducts ? 'spinners-ring' : 'x'}
-          />
-        </Button>
-        <Button variant='solid' radius='sm' onPress={handlePurgeCategories}>
-          <span>Purge Test Categories</span>
-          <Icon
-            className='text-danger'
-            name={purgingCategories ? 'spinners-ring' : 'x'}
-          />
         </Button>
       </div>
     </div>

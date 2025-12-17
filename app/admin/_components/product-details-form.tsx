@@ -1,10 +1,10 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
-import type {Doc, Id} from '@/convex/_generated/dataModel'
+import type {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {Button, Image, Input, Switch, Textarea} from '@heroui/react'
-import {useMutation} from 'convex/react'
+import {useMutation, useQuery} from 'convex/react'
 import {useEffect, useState} from 'react'
 import {useProductDetailsSafe} from './product-details-context'
 import {useSettingsPanelSafe} from './ui/settings'
@@ -20,6 +20,10 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
   const productDetailsContext = useProductDetailsSafe()
   const settingsPanelContext = useSettingsPanelSafe()
   const updateProduct = useMutation(api.products.m.updateProduct)
+  const productImageUrl = useQuery(
+    api.products.q.getPrimaryImage,
+    product.image ? {id: product._id} : 'skip',
+  )
 
   const [name, setName] = useState(product.name)
   const [priceCents, setPriceCents] = useState(product.priceCents)
@@ -53,8 +57,8 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
     setIsSaving(true)
     try {
       await updateProduct({
-        productId: product._id,
-        available: newValue,
+        id: product._id,
+        fields: {available: newValue},
       })
     } catch (error) {
       console.error('Failed to update availability:', error)
@@ -71,8 +75,8 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
     setIsSaving(true)
     try {
       await updateProduct({
-        productId: product._id,
-        featured: newValue,
+        id: product._id,
+        fields: {featured: newValue},
       })
     } catch (error) {
       console.error('Failed to update featured status:', error)
@@ -87,33 +91,33 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
     setIsSaving(true)
     try {
       // Build update object with only changed fields
-      const updates: {
-        productId: Id<'products'>
+      const fields: {
         name?: string
         priceCents?: number
         stock?: number
         unit?: string
-      } = {
-        productId: product._id,
-      }
+      } = {}
 
       // Only include fields that have changed
       if (name !== product.name) {
-        updates.name = name
+        fields.name = name
       }
       if (priceCents !== product.priceCents) {
-        updates.priceCents = priceCents
+        fields.priceCents = priceCents
       }
       if (stock !== (product.stock ?? 0)) {
-        updates.stock = stock
+        fields.stock = stock
       }
       if (unit !== product.unit) {
-        updates.unit = unit
+        fields.unit = unit
       }
 
       // Only call update if there are changes
-      if (Object.keys(updates).length > 1) {
-        await updateProduct(updates)
+      if (Object.keys(fields).length > 0) {
+        await updateProduct({
+          id: product._id,
+          fields,
+        })
       }
     } catch (error) {
       console.error('Failed to save changes:', error)
@@ -139,7 +143,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
       {/* Product Image */}
       <div className='flex justify-center'>
         <Image
-          src={product.image}
+          src={productImageUrl ?? '/default-product-image.svg'}
           alt={product.name}
           className='w-32 h-32 object-cover rounded-lg'
         />

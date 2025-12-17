@@ -1,19 +1,17 @@
 import {ClassName} from '@/app/types'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {Id} from '@/convex/_generated/dataModel'
+import {ProductType} from '@/convex/products/d'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Card, CardBody, Image} from '@heroui/react'
-import {useState} from 'react'
+import {useMemo, useState} from 'react'
 
 interface CartItemProps {
   item: {
-    product: {
+    product: ProductType & {
       _id: Id<'products'>
-      name: string
-      image: string
-      unit: string
-      priceCents: number
     }
     quantity: number
     denomination?: number
@@ -36,6 +34,15 @@ export const CartItem = ({
   className,
 }: CartItemProps) => {
   const [quantity, setQuantity] = useState(item.quantity)
+  
+  // Resolve product image URL
+  const resolveUrl = useStorageUrls(
+    item.product.image ? [item.product.image] : [],
+  )
+  const productImageUrl = useMemo(
+    () => (item.product.image ? resolveUrl(item.product.image) : ''),
+    [resolveUrl, item.product.image],
+  )
 
   const handleQuantityChange = async (newQuantity: number) => {
     if (newQuantity < 1) {
@@ -58,7 +65,7 @@ export const CartItem = ({
         <div className='flex gap-4'>
           <div className='relative w-28 h-28 shrink-0 rounded-lg overflow-hidden'>
             <Image
-              src={item.product.image}
+              src={productImageUrl || '/default-product-image.svg'}
               alt={item.product.name}
               className='w-full h-full object-cover'
             />
@@ -70,7 +77,7 @@ export const CartItem = ({
                 {item.denomination && (
                   <p className='text-xs text-muted-foreground'>
                     {item.denomination}
-                    {item.product.unit}
+                    {item.product.unit ?? ''}
                   </p>
                 )}
               </div>

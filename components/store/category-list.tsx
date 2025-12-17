@@ -10,12 +10,12 @@ import {useMemo} from 'react'
 
 export const CategoryList = () => {
   const router = useRouter()
-  const cat = useQuery(api.categories.q.listCategories)
+  const categories = useQuery(api.categories.q.listCategories)
 
-  // Get all heroImage values for URL resolution
+  // Get all heroImage storage IDs for URL resolution
   const heroImages = useMemo(
-    () => cat?.map((item) => item.heroImage) ?? [],
-    [cat],
+    () => categories?.map((item) => item.heroImage).filter(Boolean) ?? [],
+    [categories],
   )
 
   // Resolve storageIds to URLs
@@ -23,7 +23,7 @@ export const CategoryList = () => {
 
   return (
     <div className='gap-8 grid grid-cols-2 sm:grid-cols-5'>
-      {cat?.map((item, index) => (
+      {categories?.map((item, index) => (
         <Card
           as={Link}
           key={index}
@@ -44,7 +44,7 @@ export const CategoryList = () => {
               alt={item.name}
               radius='none'
               className='w-full object-cover'
-              src={resolveUrl(item.heroImage)}
+              src={resolveUrl(item.heroImage ?? '') || '/default-category-image.svg'}
               shadow='sm'
               width='100%'
             />

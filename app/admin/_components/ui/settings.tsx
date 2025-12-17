@@ -237,7 +237,7 @@ const SettingsPanelContent = () => {
       case 'orders':
         return {
           title: 'Order Details',
-          subtext: selectedOrder ? formatDate(selectedOrder.updatedAt) : '',
+          subtext: selectedOrder && selectedOrder.updatedAt ? formatDate(selectedOrder.updatedAt) : '',
           form: selectedOrder ? (
             <OrderDetailsForm order={selectedOrder} />
           ) : null,

@@ -1,3 +1,4 @@
+import {Id} from '@/convex/_generated/dataModel'
 import {PotencyLevel} from '@/convex/products/d'
 
 export interface StoreCategory {
@@ -34,7 +35,7 @@ export interface StoreProduct {
   potencyLevel: PotencyLevel
   potencyProfile?: string
   weightGrams?: number
-  _id?: string
+  _id?: Id<'products'>
   _creationTime?: number
 }
 

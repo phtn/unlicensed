@@ -99,9 +99,9 @@ export const OrdersTable = () => {
           </Chip>
         )
       case 'total':
-        return moneyCell(order.totalCents)
+        return moneyCell(order.totalCents ?? 0)
       case 'date':
-        return dateCell(order.createdAt)
+        return dateCell(order.createdAt ?? Date.now())
       case 'actions':
         return actionsCell(selectedRow === order._id, handleViewOrder(order))
       default:

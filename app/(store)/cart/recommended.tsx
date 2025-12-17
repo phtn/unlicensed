@@ -2,8 +2,9 @@
 
 import type {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
-import {Id} from '@/convex/_generated/dataModel'
+import {Doc, Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
@@ -19,7 +20,7 @@ export const RecommendedProducts = () => {
   const {cart, addItem} = useCart()
   const productsQuery = useQuery(api.products.q.listProducts, {
     limit: 20,
-  })
+  }) as Doc<'products'>[] | undefined
 
   // Get product IDs already in cart
   const cartProductIds = useMemo(() => {
@@ -32,10 +33,13 @@ export const RecommendedProducts = () => {
     if (!productsQuery) return []
 
     const adapted = productsQuery
-      .map((rawProduct) => ({
-        rawId: rawProduct._id,
-        product: adaptProduct(rawProduct),
-      }))
+      .map((rawProduct) => {
+        const productId = rawProduct._id
+        return {
+          rawId: productId,
+          product: adaptProduct(rawProduct as any),
+        }
+      })
       .filter(({rawId, product}) => {
         // Filter out products already in cart and ensure product has required fields
         return !cartProductIds.has(rawId) && product.available && product.image
@@ -48,6 +52,15 @@ export const RecommendedProducts = () => {
 
     return adapted
   }, [productsQuery, cartProductIds])
+
+  // Get all product image IDs for URL resolution
+  const productImageIds = useMemo(
+    () => recommendedProducts.map((p) => p.image).filter(Boolean),
+    [recommendedProducts],
+  )
+
+  // Resolve storage IDs to URLs
+  const resolveUrl = useStorageUrls(productImageIds)
 
   if (recommendedProducts.length === 0) {
     return null
@@ -81,7 +94,7 @@ export const RecommendedProducts = () => {
                 <div className='relative w-24 h-24 shrink-0 rounded-lg overflow-hidden bg-secondary/10'>
                   {product.image ? (
                     <Image
-                      src={product.image}
+                      src={resolveUrl(product.image) || '/default-product-image.svg'}
                       alt={product.name}
                       className='w-full h-full object-cover'
                     />

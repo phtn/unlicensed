@@ -74,7 +74,7 @@ export const CategoryForm = ({
           name: data.name.trim(),
           slug: ensureSlug(data.slug ?? '', data.name),
           description: data.description.trim(),
-          heroImage: data.heroImage,
+          heroImage: data.heroImage ? (data.heroImage as Id<'_storage'>) : undefined,
           visible: data.visible ?? false,
           highlight: data.highlight?.trim() || undefined,
           benefits: parseList(data.benefitsRaw),

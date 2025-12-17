@@ -81,9 +81,9 @@ export const SalesTable = () => {
           </div>
         )
       case 'revenue':
-        return moneyCell(order.totalCents)
+        return moneyCell(order.totalCents ?? 0)
       case 'date':
-        return dateCell(order.createdAt)
+        return dateCell(order.createdAt ?? Date.now())
       default:
         return null
     }

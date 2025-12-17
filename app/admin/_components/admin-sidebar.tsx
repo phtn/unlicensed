@@ -238,7 +238,7 @@ const data: Record<string, NavGroup[]> = {
   navMain: [
     {
       title: 'Operations',
-      url: '#',
+      url: '/admin',
       items: [
         {
           title: 'Activity',
@@ -266,6 +266,7 @@ const data: Record<string, NavGroup[]> = {
     },
     {
       title: 'Inventory',
+      url: '/admin/inventory',
       items: [
         {
           title: 'Overview',
@@ -291,7 +292,7 @@ const data: Record<string, NavGroup[]> = {
     },
     {
       title: 'reports',
-      url: '#',
+      url: '/admin/reports',
       items: [
         {
           title: 'Sales',

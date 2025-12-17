@@ -36,10 +36,10 @@ export const EditCategoryContent = ({
 
   // Convert category data to form values
   const initialValues: CategoryFormValues = {
-    name: category.name,
-    slug: category.slug,
-    description: category.description,
-    heroImage: category.heroImage,
+    name: category.name ?? '',
+    slug: category.slug ?? '',
+    description: category.description ?? '',
+    heroImage: category.heroImage ?? '',
     visible: category.visible ?? false,
     highlight: category.highlight ?? '',
     benefitsRaw: category.benefits?.join('\n') ?? '',

@@ -42,7 +42,7 @@ export async function createTestCategory(
   const categoryId = await client.mutation(api.categories.m.create, {
     name: 'Test Category',
     description: 'Test category description',
-    heroImage: 'https://example.com/image.jpg',
+    heroImage: undefined,
     slug: categorySlug,
   })
 
@@ -76,8 +76,8 @@ export async function createTestProduct(
     available: true,
     stock: 100,
     rating: 4.5,
-    image: 'https://example.com/product.jpg',
-    gallery: ['https://example.com/product1.jpg'],
+    image: undefined,
+    gallery: undefined,
     consumption: 'Smoke or vape',
     flavorNotes: ['earthy', 'pine'],
     potencyLevel: 'medium',

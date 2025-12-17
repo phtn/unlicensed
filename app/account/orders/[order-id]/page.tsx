@@ -191,19 +191,19 @@ export default function OrderDetailPage() {
                 <div className='space-y-2 font-space'>
                   <div className='flex justify-between text-sm'>
                     <span className='text-color-muted'>Subtotal</span>
-                    <span>${formatPrice(order.subtotalCents)}</span>
+                    <span>${formatPrice(order.subtotalCents ?? 0)}</span>
                   </div>
                   {order.discountCents && order.discountCents > 0 && (
                     <div className='flex justify-between text-sm'>
                       <span className='text-color-muted'>Discount</span>
                       <span className='text-success'>
-                        -${formatPrice(order.discountCents)}
+                        -${formatPrice(order.discountCents ?? 0)}
                       </span>
                     </div>
                   )}
                   <div className='flex justify-between text-sm'>
                     <span className='text-color-muted'>Tax</span>
-                    <span>${formatPrice(order.taxCents)}</span>
+                    <span>${formatPrice(order.taxCents ?? 0)}</span>
                   </div>
                   <div className='flex justify-between text-sm'>
                     <span className='text-color-muted'>Shipping</span>
@@ -211,14 +211,14 @@ export default function OrderDetailPage() {
                       {order.shippingCents === 0 ? (
                         <span className='text-teal-500'>Free</span>
                       ) : (
-                        `$${formatPrice(order.shippingCents)}`
+                        `$${formatPrice(order.shippingCents ?? 0)}`
                       )}
                     </span>
                   </div>
                   <Divider className='my-2' />
                   <div className='flex justify-between text-lg font-semibold'>
                     <span>Total</span>
-                    <span>${formatPrice(order.totalCents)}</span>
+                    <span>${formatPrice(order.totalCents ?? 0)}</span>
                   </div>
                 </div>
               </CardBody>
@@ -280,7 +280,7 @@ export default function OrderDetailPage() {
                     <div className='flex justify-between'>
                       <span className='text-color-muted'>Paid At</span>
                       <span className='text-sm'>
-                        {formatDate(order.payment.paidAt)}
+                        {order.payment.paidAt ? formatDate(order.payment.paidAt) : 'N/A'}
                       </span>
                     </div>
                   )}
@@ -334,12 +334,12 @@ export default function OrderDetailPage() {
                     )}
                     {order.shipping.shippedAt && (
                       <p className='text-sm text-color-muted mt-2'>
-                        Shipped: {formatDate(order.shipping.shippedAt)}
+                        Shipped: {order.shipping.shippedAt ? formatDate(order.shipping.shippedAt) : 'N/A'}
                       </p>
                     )}
                     {order.shipping.deliveredAt && (
                       <p className='text-sm text-color-muted'>
-                        Delivered: {formatDate(order.shipping.deliveredAt)}
+                        Delivered: {order.shipping.deliveredAt ? formatDate(order.shipping.deliveredAt) : 'N/A'}
                       </p>
                     )}
                   </div>
@@ -387,7 +387,7 @@ export default function OrderDetailPage() {
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-color-muted'>Placed On</span>
-                  <span>{formatDate(order.createdAt)}</span>
+                  <span>{formatDate(order.createdAt ?? Date.now())}</span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-color-muted'>Contact Email</span>

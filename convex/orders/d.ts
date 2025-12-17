@@ -108,14 +108,14 @@ export const orderSchema = v.object({
   // Additional notes
   customerNotes: v.optional(v.string()), // Notes from customer
   internalNotes: v.optional(v.string()), // Internal admin notes
-  
+
   // Rewards points
   pointsEarned: v.optional(v.number()), // Points awarded for this order
   pointsMultiplier: v.optional(v.number()), // Multiplier used when awarding points
-  
+
   // Timestamps
-  createdAt: v.number(),
-  updatedAt: v.number(),
+  createdAt: v.optional(v.number()),
+  updatedAt: v.optional(v.number()),
   cancelledAt: v.optional(v.number()),
 })
 

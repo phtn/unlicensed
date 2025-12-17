@@ -465,14 +465,16 @@ export default function AccountPage() {
                                   </Chip>
                                 </div>
                                 <p className='font-space text-sm opacity-60 mt-1'>
-                                  {new Date(order.createdAt).toLocaleDateString(
-                                    'en-US',
-                                    {
-                                      year: 'numeric',
-                                      month: 'short',
-                                      day: 'numeric',
-                                    },
-                                  )}{' '}
+                                  {order.createdAt
+                                    ? new Date(order.createdAt).toLocaleDateString(
+                                        'en-US',
+                                        {
+                                          year: 'numeric',
+                                          month: 'short',
+                                          day: 'numeric',
+                                        },
+                                      )
+                                    : 'N/A'}{' '}
                                   • {order.items.length} Items
                                 </p>
                               </div>

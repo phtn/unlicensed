@@ -1,22 +1,23 @@
 import type {StoreCategory, StoreProduct, StoreProductDetail} from '@/app/types'
 import {api} from '@/convex/_generated/api'
+import {Id} from '@/convex/_generated/dataModel'
 import {categoriesSeed, productsSeed} from '@/convex/init'
 import {PotencyLevel} from '@/convex/products/d'
 import {ConvexHttpClient} from 'convex/browser'
 
 export type RawCategory = {
-  slug: string
+  slug?: string
   name: string
-  description: string
-  heroImage: string
+  description?: string
+  heroImage?: string
   highlight?: string | null
   benefits?: string[] | null
 }
 
 export type RawProduct = {
-  slug: string
-  name: string
-  categorySlug: string
+  slug?: string
+  name?: string
+  categorySlug?: string
   shortDescription?: string
   description?: string
   priceCents?: number
@@ -38,7 +39,7 @@ export type RawProduct = {
   potencyLevel?: PotencyLevel
   potencyProfile?: string
   weightGrams?: number
-  _id?: string
+  _id?: Id<'products'>
   _creationTime?: number
 }
 
@@ -66,18 +67,18 @@ const getClient = () => {
 }
 
 export const adaptCategory = (category: RawCategory): StoreCategory => ({
-  slug: category.slug,
-  name: category.name,
-  description: category.description,
-  heroImage: category.heroImage,
+  slug: category.slug ?? '',
+  name: category.name ?? '',
+  description: category.description ?? '',
+  heroImage: category.heroImage ?? '',
   highlight: category.highlight ?? undefined,
   benefits: category.benefits ?? undefined,
 })
 
 export const adaptProduct = (product: RawProduct): StoreProduct => ({
-  slug: product.slug,
-  name: product.name,
-  categorySlug: product.categorySlug,
+  slug: product.slug ?? '',
+  name: product.name ?? '',
+  categorySlug: product.categorySlug ?? '',
   shortDescription: product.shortDescription ?? '',
   description: product.description ?? '',
   priceCents: product.priceCents ?? 0,
@@ -127,7 +128,7 @@ export const fallbackProducts = (categorySlug?: string): StoreProduct[] => {
   return filtered.map((product, index) =>
     adaptProduct({
       ...product,
-      _id: `seed_${product.slug}`,
+      // _id: `seed_${product.slug}`,
       _creationTime: Date.now() - index * 1000,
     }),
   )
@@ -143,7 +144,7 @@ export const fallbackProductDetail = (
 
   const rawProduct: RawProduct = {
     ...product,
-    _id: `seed_${product.slug}`,
+    // _id: `seed_${product.slug}`,
     _creationTime: Date.now(),
   }
   const related = productsSeed
@@ -154,7 +155,7 @@ export const fallbackProductDetail = (
     .map(
       (item, index): RawProduct => ({
         ...item,
-        _id: `seed_${item.slug}`,
+        // _id: `seed_${item.slug}`,
         _creationTime: Date.now() - index * 1000,
       }),
     )

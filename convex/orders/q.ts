@@ -120,7 +120,7 @@ export const getUserOrderStats = query({
 
     const stats = {
       totalOrders: orders.length,
-      totalSpent: orders.reduce((sum, order) => sum + order.totalCents, 0),
+      totalSpent: orders.reduce((sum, order) => sum + (order.totalCents ?? 0), 0),
       pendingOrders: orders.filter((o) => o.orderStatus === 'pending').length,
       completedOrders: orders.filter(
         (o) => o.orderStatus === 'delivered',
@@ -168,34 +168,34 @@ export const getAdminStats = query({
     const salesToday = allOrders
       .filter(
         (order) =>
-          order.createdAt >= startOfTodayTimestamp &&
+          (order.createdAt ?? 0) >= startOfTodayTimestamp &&
           (order.orderStatus === 'delivered' ||
             order.orderStatus === 'confirmed' ||
             order.orderStatus === 'shipped'),
       )
-      .reduce((sum, order) => sum + order.totalCents, 0)
+      .reduce((sum, order) => sum + (order.totalCents ?? 0), 0)
 
     // Calculate sales this week
     const salesThisWeek = allOrders
       .filter(
         (order) =>
-          order.createdAt >= startOfWeekTimestamp &&
+          (order.createdAt ?? 0) >= startOfWeekTimestamp &&
           (order.orderStatus === 'delivered' ||
             order.orderStatus === 'confirmed' ||
             order.orderStatus === 'shipped'),
       )
-      .reduce((sum, order) => sum + order.totalCents, 0)
+      .reduce((sum, order) => sum + (order.totalCents ?? 0), 0)
 
     // Calculate sales this month
     const salesThisMonth = allOrders
       .filter(
         (order) =>
-          order.createdAt >= startOfMonthTimestamp &&
+          (order.createdAt ?? 0) >= startOfMonthTimestamp &&
           (order.orderStatus === 'delivered' ||
             order.orderStatus === 'confirmed' ||
             order.orderStatus === 'shipped'),
       )
-      .reduce((sum, order) => sum + order.totalCents, 0)
+      .reduce((sum, order) => sum + (order.totalCents ?? 0), 0)
 
     // Calculate total revenue (all completed orders)
     const totalRevenue = allOrders
@@ -205,7 +205,7 @@ export const getAdminStats = query({
           order.orderStatus === 'confirmed' ||
           order.orderStatus === 'shipped',
       )
-      .reduce((sum, order) => sum + order.totalCents, 0)
+      .reduce((sum, order) => sum + (order.totalCents ?? 0), 0)
 
     // Count pending orders
     const pendingOrdersCount = allOrders.filter(
@@ -238,7 +238,7 @@ export const getAdminStats = query({
         order.orderStatus !== 'refunded',
     )
     const totalRevenueForAOV = ordersForAOV.reduce(
-      (sum, order) => sum + order.totalCents,
+      (sum, order) => sum + (order.totalCents ?? 0),
       0,
     )
     const averageOrderValue =
@@ -295,8 +295,8 @@ export const getAdminChartData = query({
       // Filter orders for this day
       const dayOrders = allOrders.filter(
         (order) =>
-          order.createdAt >= dayStartTimestamp &&
-          order.createdAt < dayEndTimestamp,
+          (order.createdAt ?? 0) >= dayStartTimestamp &&
+          (order.createdAt ?? 0) < dayEndTimestamp,
       )
 
       // Calculate sales for this day (only delivered, confirmed, or shipped)
@@ -308,7 +308,7 @@ export const getAdminChartData = query({
       )
 
       const daySales = completedDayOrders.reduce(
-        (sum, order) => sum + order.totalCents,
+        (sum, order) => sum + (order.totalCents ?? 0),
         0,
       )
 
@@ -319,7 +319,7 @@ export const getAdminChartData = query({
           order.orderStatus !== 'refunded',
       )
       const dayTotalForAOV = dayOrdersForAOV.reduce(
-        (sum, order) => sum + order.totalCents,
+        (sum, order) => sum + (order.totalCents ?? 0),
         0,
       )
       const dayAOV =

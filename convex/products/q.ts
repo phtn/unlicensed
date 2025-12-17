@@ -53,7 +53,7 @@ export const getProductBySlug = query({
       .withIndex('by_slug', (q) => q.eq('slug', args.slug))
       .unique()
 
-    if (!product) {
+    if (!product || !product.categoryId) {
       return null
     }
 
@@ -61,7 +61,7 @@ export const getProductBySlug = query({
     const related = await ctx.db
       .query('products')
       .withIndex('by_category', (q) =>
-        q.eq('categorySlug', product.categorySlug),
+        q.eq('categorySlug', product.categorySlug ?? ''),
       )
       .collect()
 
@@ -88,13 +88,53 @@ export const getProductByName = query({
   },
 })
 
-const sortProducts = <T extends {featured: boolean; name: string}>(
+const sortProducts = <T extends {featured?: boolean; name?: string}>(
   items: T[],
 ) => {
   return [...items].sort((a, b) => {
-    if (a.featured === b.featured) {
-      return a.name.localeCompare(b.name)
+    const aFeatured = a.featured ?? false
+    const bFeatured = b.featured ?? false
+    if (aFeatured === bFeatured) {
+      const aName = a.name ?? ''
+      const bName = b.name ?? ''
+      return aName.localeCompare(bName)
     }
-    return a.featured ? -1 : 1
+    return aFeatured ? -1 : 1
   })
 }
+
+export const listGallery = query({
+  args: {id: v.id('products')},
+  handler: async (ctx, {id}) => {
+    const product = await ctx.db.get('products', id)
+    if (!product) {
+      return null
+    }
+    const galleryItems = product.gallery ?? []
+    const gallery: Array<string | null> = []
+
+    for (const item of galleryItems) {
+      if (typeof item === 'string') {
+        // Already a URL string
+        gallery.push(item)
+      } else {
+        // Storage ID - convert to URL
+        const image = await ctx.storage.getUrl(item)
+        gallery.push(image)
+      }
+    }
+    return gallery
+  },
+})
+
+export const getPrimaryImage = query({
+  args: {id: v.id('products')},
+  handler: async (ctx, {id}) => {
+    const product = await ctx.db.get('products', id)
+    if (!product || !product.image) {
+      return null
+    }
+    const primaryImage = await ctx.storage.getUrl(product.image)
+    return primaryImage
+  },
+})

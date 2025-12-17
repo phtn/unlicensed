@@ -20,14 +20,22 @@ export async function generateMetadata({
 
   const {product} = detail
 
+  // For metadata, we can't resolve storage IDs server-side
+  // Use empty array if images are storage IDs (they start with storage ID format)
+  const imageUrl =
+    product.image && product.image.startsWith('http')
+      ? product.image
+      : product.gallery && product.gallery.length > 0 && product.gallery[0]?.startsWith('http')
+        ? product.gallery[0]
+        : undefined
+
   return {
     title: `${product.name} | Unlicensed Goods`,
     description: product.shortDescription,
     openGraph: {
       title: `${product.name} | Unlicensed Goods`,
       description: product.description,
-      images:
-        product.gallery.length > 0 ? [product.gallery[0]] : [product.image],
+      images: imageUrl ? [imageUrl] : [],
     },
   }
 }

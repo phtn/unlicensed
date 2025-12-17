@@ -61,15 +61,21 @@ export const createOrder = mutation({
         }
 
         const denomination = cartItem.denomination || 1
-        const unitPriceCents = product.priceCents
+        const unitPriceCents = product.priceCents ?? 0
         const totalPriceCents =
           unitPriceCents * denomination * cartItem.quantity
 
+        // Convert storage ID to URL if needed
+        let productImageUrl = ''
+        if (product.image) {
+          productImageUrl = (await ctx.storage.getUrl(product.image)) ?? ''
+        }
+
         return {
           productId: cartItem.productId,
-          productName: product.name,
-          productSlug: product.slug,
-          productImage: product.image,
+          productName: product.name ?? '',
+          productSlug: product.slug ?? '',
+          productImage: productImageUrl,
           quantity: cartItem.quantity,
           denomination: cartItem.denomination,
           unitPriceCents,

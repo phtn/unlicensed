@@ -100,7 +100,7 @@ export const ProductList = ({products}: ProductListProps) => {
             <li key={product._id}>
               <ProductItem
                 product={product}
-                imageUrl={resolveUrl(product.image)}
+                imageUrl={product.image ? resolveUrl(product.image) : '/default-product-image.svg'}
               />
             </li>
           ))}

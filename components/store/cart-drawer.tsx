@@ -2,6 +2,7 @@
 
 import {Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {Button, Image} from '@heroui/react'
 import {useRouter} from 'next/navigation'
@@ -43,6 +44,15 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     }
     return []
   }, [cart])
+
+  // Get all product image IDs for URL resolution
+  const productImageIds = useMemo(
+    () => serverCartItems.map((item) => item.product.image).filter(Boolean),
+    [serverCartItems],
+  )
+
+  // Resolve storage IDs to URLs
+  const resolveUrl = useStorageUrls(productImageIds)
 
   // Optimistic cart state
   const [optimisticCartItems, setOptimisticCartItems] = useOptimistic(
@@ -86,7 +96,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
 
   const subtotal = useMemo(() => {
     return cartItems.reduce((total, item) => {
-      const price = item.product.priceCents
+      const price = item.product.priceCents ?? 0
       const denomination = item.denomination || 1
       return total + price * denomination * item.quantity
     }, 0)
@@ -145,8 +155,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   {cartItems.map((item) => {
                     const product = item.product
                     const denomination = item.denomination || 1
-                    const itemPrice = product.priceCents * denomination
+                    const itemPrice = ((product.priceCents ?? 0) * denomination)
                     const totalPrice = itemPrice * item.quantity
+                    const productImageUrl = resolveUrl(product.image ?? '')
 
                     return (
                       <div
@@ -154,7 +165,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                         className='flex gap-4 p-3 bg-surface-highlight border-b border-foreground/25 border-dashed last:border-b-0 pb-6'>
                         <div className='relative w-20 h-20 shrink-0 rounded-lg overflow-hidden'>
                           <Image
-                            src={product.image}
+                            src={productImageUrl || '/default-product-image.svg'}
                             alt={product.name}
                             className='w-full h-full object-cover'
                           />

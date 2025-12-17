@@ -1,7 +1,9 @@
 import type {StoreProduct} from '@/app/types'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {cn} from '@/lib/utils'
 import {Card, CardBody, CardFooter, Image} from '@heroui/react'
 import NextLink from 'next/link'
+import {useMemo} from 'react'
 import {HyperActivity} from '../expermtl/activity'
 import {HyperBadge} from '../main/badge'
 
@@ -17,6 +19,13 @@ const formatPrice = (priceCents: number) => {
 
 export const ProductCard = ({product, className}: ProductCardProps) => {
   const topEffects = product.effects.slice(0, 2)
+  
+  // Resolve product image URL
+  const resolveUrl = useStorageUrls([product.image].filter(Boolean))
+  const productImageUrl = useMemo(
+    () => resolveUrl(product.image),
+    [resolveUrl, product.image],
+  )
 
   return (
     <Card
@@ -33,7 +42,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
         <div className='flex justify-center items-center relative overflow-hidden sm:rounded-t-3xl'>
           <div className='absolute size-full overflow-hidden inset-0 z-10 bg-linear-to-t from-foreground/10 via-transparent to-transparent opacity-0 border-b-[0.33px] border-transparent group-hover:border-foreground/40 transition-opacity duration-300 group-hover:opacity-100' />
           <Image
-            src={product.image}
+            src={productImageUrl || '/default-product-image.svg'}
             alt={product.name}
             className='h-48 sm:h-80 lg:h-72 w-full rounded-t-2xl object-contain aspect-auto transition duration-300 group-hover:scale-[1.03]'
             loading='lazy'

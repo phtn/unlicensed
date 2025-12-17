@@ -2,9 +2,9 @@ import {Infer, v} from 'convex/values'
 
 export const categorySchema = {
   name: v.string(),
-  slug: v.string(),
-  description: v.string(),
-  heroImage: v.string(),
+  slug: v.optional(v.string()),
+  description: v.optional(v.string()),
+  heroImage: v.optional(v.id('_storage')),
   highlight: v.optional(v.string()),
   benefits: v.optional(v.array(v.string())),
   denominations: v.optional(v.array(v.number())),

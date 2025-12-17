@@ -114,8 +114,8 @@ export const ProductForm = ({
           available: data.available,
           stock: Math.round(data.stock),
           rating: data.rating,
-          image: data.image,
-          gallery: data.gallery,
+          image: data.image as Id<'_storage'>,
+          gallery: data.gallery as Array<Id<'_storage'>>,
           consumption: data.consumption.trim(),
           flavorNotes: data.flavors || [],
           potencyLevel: data.potencyLevel,
@@ -132,8 +132,8 @@ export const ProductForm = ({
 
         if (isEditMode && productId) {
           await updateProduct({
-            productId,
-            ...payload,
+            id: productId,
+            fields: payload,
           })
           setStatus('success')
           onUpdated?.()
