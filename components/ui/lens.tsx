@@ -79,14 +79,20 @@ export const Lens: React.FC<LensProps> = ({
               }px ${position.y}px, black 100%, transparent 100%)`,
               transformOrigin: `${position.x}px ${position.y}px`,
             }}>
-            <div
+            <motion.div
               className='absolute inset-0'
+              animate={{
+                scale: zoom ? zoomFactor + 1 : zoomFactor,
+              }}
+              transition={{
+                duration: 0.3,
+                ease: [0.4, 0, 0.2, 1],
+              }}
               style={{
-                transform: `scale(${zoomFactor})`,
                 transformOrigin: `${position.x}px ${position.y}px`,
               }}>
               {children}
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       ) : (
@@ -111,14 +117,20 @@ export const Lens: React.FC<LensProps> = ({
                   transformOrigin: `${mousePosition.x}px ${mousePosition.y}px`,
                   zIndex: 50,
                 }}>
-                <div
+                <motion.div
                   className='absolute inset-0'
+                  animate={{
+                    scale: zoom ? zoomFactor + 1.5 : zoomFactor,
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    ease: [0.4, 0, 0.2, 1],
+                  }}
                   style={{
-                    transform: `scale(${zoom ? zoomFactor + 1 : zoomFactor})`,
                     transformOrigin: `${mousePosition.x}px ${mousePosition.y}px`,
                   }}>
                   {children}
-                </div>
+                </motion.div>
               </motion.div>
             </div>
           )}

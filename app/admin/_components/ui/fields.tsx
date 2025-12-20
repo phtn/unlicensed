@@ -12,7 +12,7 @@ export const commonInputClassNames = {
   input:
     'text-blue-500 dark:text-white text-base font-semibold placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
-    'border shadow-none border-light-gray/10 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-lg p-2 outline-none min-h-16',
+    'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-lg p-2 outline-none min-h-16',
   innerWrapper: 'px-0.5',
 }
 
@@ -197,7 +197,7 @@ export function SelectField<T>(props?: SelectFieldProps<T>) {
           ...commonInputClassNames,
           value: 'placeholder:text-slate-400/80 py-4 mt-2',
           trigger:
-            'border h-18 border-light-gray/10 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
+            'border h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
           mainWrapper: 'py-4',
         }}
         renderValue={

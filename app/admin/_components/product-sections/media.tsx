@@ -347,14 +347,16 @@ export const Media = ({form, fields}: MediaProps) => {
                     uploads.push(storageId)
                     newMap[storageId] = url ?? pendingImage.preview
 
-                    // Clean up preview URL
-                    URL.revokeObjectURL(pendingImage.preview)
-                  }
+                  // Clean up preview URL
+                  URL.revokeObjectURL(pendingImage.preview)
+                }
 
-                  field.handleChange([...galleryValue, ...uploads])
-                  setGalleryPreviewMap(newMap)
-                  setPendingGalleryImages([])
-                  setGalleryValidationErrors({})
+                // Read current gallery value from form state to avoid stale closures
+                const currentGallery = (field.state.value as string[]) ?? []
+                field.handleChange([...currentGallery, ...uploads])
+                setGalleryPreviewMap(newMap)
+                setPendingGalleryImages([])
+                setGalleryValidationErrors({})
                 } catch (error) {
                   const errorMessage =
                     error instanceof Error
@@ -439,17 +441,19 @@ export const Media = ({form, fields}: MediaProps) => {
                           className={`relative w-32 h-32 rounded-xl overflow-hidden group ${
                             isPrimary
                               ? 'border-2 border-blue-500'
-                              : 'border bg-neutral-900'
+                              : 'border-2 border-foreground/20 bg-background'
                           }`}>
                           {preview ? (
                             <Image
                               src={preview}
                               radius='none'
                               alt={isPrimary ? 'Primary image' : 'Gallery item'}
-                              className='w-full h-full object-cover'
+                              className={cn(
+                                'w-full h-full object-cover rounded-xl',
+                              )}
                             />
                           ) : (
-                            <div className='w-full h-full flex items-center justify-center text-neutral-700'>
+                            <div className='w-full h-full flex items-center justify-center text-dark-gray/50 rounded-xl'>
                               <Icon name='image-open-light' />
                             </div>
                           )}
@@ -462,14 +466,14 @@ export const Media = ({form, fields}: MediaProps) => {
                             <button
                               type='button'
                               onClick={() => {
-                                const newVal = [...galleryValue]
-                                const galleryIndex = newVal.indexOf(storageId)
-                                if (galleryIndex !== -1) {
-                                  newVal.splice(galleryIndex, 1)
-                                  field.handleChange(newVal)
-                                }
+                                const currentGallery =
+                                  (field.state.value as string[]) ?? []
+                                const newVal = currentGallery.filter(
+                                  (id) => id !== storageId,
+                                )
+                                field.handleChange(newVal)
                               }}
-                              className='absolute top-1 right-1 p-1 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500'>
+                              className='absolute z-20 top-1 right-1 p-1 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500'>
                               <Icon name='x' size={12} />
                             </button>
                           )}
@@ -481,7 +485,7 @@ export const Media = ({form, fields}: MediaProps) => {
                     {pendingGalleryImages.map((pendingImage, index) => (
                       <div
                         key={`pending-${index}`}
-                        className='relative w-32 h-32 rounded-lg border-2 border-dashed border-blue-500 bg-neutral-900 overflow-hidden group'>
+                        className='relative w-32 h-32 rounded-xl border-2 border-dashed border-blue-500 bg-neutral-900 overflow-hidden group'>
                         <Image
                           src={pendingImage.preview}
                           alt='Pending gallery item'

@@ -1,4 +1,5 @@
 import {v} from 'convex/values'
+import {Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
 
 export const listProducts = query({
@@ -108,21 +109,87 @@ export const listGallery = query({
   handler: async (ctx, {id}) => {
     const product = await ctx.db.get('products', id)
     if (!product) {
-      return null
+      console.warn(`[listGallery] Product not found: ${id}`)
+      return []
     }
     const galleryItems = product.gallery ?? []
+    if (galleryItems.length === 0) {
+      console.log(`[listGallery] Product ${id} has no gallery items`)
+      return []
+    }
+
+    console.log(
+      `[listGallery] Processing ${galleryItems.length} gallery items for product ${id}`,
+    )
     const gallery: Array<string | null> = []
 
     for (const item of galleryItems) {
       if (typeof item === 'string') {
-        // Already a URL string
-        gallery.push(item)
+        // Check if it's already a URL or a storage ID string
+        if (item.startsWith('http') || item.startsWith('data:')) {
+          // Already a URL string
+          console.log(
+            `[listGallery] Item is already a URL: ${item.substring(0, 50)}...`,
+          )
+          gallery.push(item)
+        } else {
+          // Storage ID as string - convert to URL
+          try {
+            console.log(
+              `[listGallery] Converting storage ID (string) to URL: ${item}`,
+            )
+            const image = await ctx.storage.getUrl(item as Id<'_storage'>)
+            // getUrl can return null if storage ID is invalid
+            if (image) {
+              console.log(
+                `[listGallery] Successfully got URL for storage ID: ${item}`,
+              )
+            } else {
+              console.warn(
+                `[listGallery] getUrl returned null for storage ID: ${item}`,
+              )
+            }
+            gallery.push(image ?? null)
+          } catch (error) {
+            console.error(
+              `[listGallery] Failed to get URL for storage ID: ${item}`,
+              error,
+            )
+            gallery.push(null)
+          }
+        }
       } else {
-        // Storage ID - convert to URL
-        const image = await ctx.storage.getUrl(item)
-        gallery.push(image)
+        // Storage ID (Id<'_storage'>) - convert to URL
+        try {
+          console.log(
+            `[listGallery] Converting storage ID (Id) to URL: ${item}`,
+          )
+          const image = await ctx.storage.getUrl(item)
+          // getUrl can return null if storage ID is invalid
+          if (image) {
+            console.log(
+              `[listGallery] Successfully got URL for storage ID: ${item}`,
+            )
+          } else {
+            console.warn(
+              `[listGallery] getUrl returned null for storage ID: ${item}`,
+            )
+          }
+          gallery.push(image ?? null)
+        } catch (error) {
+          console.error(
+            `[listGallery] Failed to get URL for storage ID: ${item}`,
+            error,
+          )
+          gallery.push(null)
+        }
       }
     }
+
+    const validUrls = gallery.filter((url): url is string => !!url)
+    console.log(
+      `[listGallery] Returning ${validUrls.length} valid URLs out of ${gallery.length} total items`,
+    )
     return gallery
   },
 })

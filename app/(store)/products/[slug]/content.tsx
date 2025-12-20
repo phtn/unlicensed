@@ -1,5 +1,6 @@
 'use client'
 
+import {mapFractions} from '@/app/admin/_components/product-schema'
 import type {StoreProduct, StoreProductDetail} from '@/app/types'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {QuickScroll} from '@/components/base44/quick-scroll'
@@ -33,7 +34,6 @@ import {
   useRef,
   useState,
   useTransition,
-  ViewTransition,
 } from 'react'
 
 const formatPrice = (priceCents: number) => {
@@ -59,15 +59,13 @@ const Gallery = ({
     productId ? {id: productId} : 'skip',
   )
 
-  // Get gallery images
+  // Get gallery images - only query if we have a valid productId
   const galleryUrls = useQuery(
     api.products.q.listGallery,
     productId ? {id: productId} : 'skip',
   )
 
   const displayImage = selectedImage ?? primaryImageUrl ?? product.image ?? ''
-  const galleryImages = galleryUrls ?? product.gallery ?? []
-
   const handleSelectImage = useCallback(
     (src: string) => () => {
       startTransition(() => {
@@ -76,38 +74,43 @@ const Gallery = ({
     },
     [],
   )
+
   return (
-    <div className='flex flex-col gap-3 sm:gap-4'>
+    <div className='flex flex-col gap-3 sm:gap-0'>
       <div
         ref={imageRef}
-        className='relative aspect-auto w-full overflow-hidden bg-background/60'>
-        <ViewTransition>
-          <Lens hovering={on} setHovering={setOn}>
-            <Image
-              src={displayImage}
-              alt={product.name}
-              className='object-cover w-full h-full aspect-auto select-none'
-              loading='eager'
-            />
-          </Lens>
-        </ViewTransition>
-        {galleryImages.length > 0 && (
-          <div className='grid grid-cols-4 gap-2 sm:gap-3'>
-            {galleryImages.map((src, index) => (
-              <div
-                key={src ?? index}
-                onClick={() => src && handleSelectImage(src)()}
-                className='cursor-pointer select-none relative aspect-square overflow-hidden'>
-                <Image
-                  src={src ?? '/default-product-image.svg'}
-                  alt={`${product.name} gallery`}
-                  className='object-contain w-full h-full aspect-auto'
-                  loading='lazy'
-                />
-              </div>
-            ))}
+        className='relative aspect-auto w-full overflow-hidden bg-background/60 min-h-168'>
+        <Lens hovering={on} setHovering={setOn}>
+          <Image
+            radius='none'
+            src={displayImage}
+            alt={product.name}
+            className='object-cover w-full h-full aspect-auto select-none'
+            loading='eager'
+          />
+        </Lens>
+      </div>
+      <div className='grid grid-cols-5 gap-1'>
+        {[primaryImageUrl, ...(galleryUrls ?? [])].map((src, index) => (
+          <div
+            key={`${src}-${index}`}
+            onClick={() => src && handleSelectImage(src)()}
+            className={cn(
+              'cursor-pointer select-none relative aspect-square overflow-hidden rounded-md transition-colors size-32',
+              selectedImage === src
+                ? 'border-foreground/50 ring-2 ring-foreground/20'
+                : 'border-foreground/10 hover:border-foreground/30',
+            )}>
+            {src && (
+              <Image
+                src={src}
+                alt={`${product.name} gallery ${index + 1}`}
+                className='object-cover size-32 aspect-auto'
+                loading='lazy'
+              />
+            )}
           </div>
-        )}
+        ))}
       </div>
     </div>
   )
@@ -267,7 +270,7 @@ export const ProductDetailContent = ({
           aria-label='Product breadcrumb'
           className='text-xs sm:text-sm text-color-muted'
           itemClasses={{
-            item: 'text-foreground/85',
+            item: 'text-foreground/85 capitalize',
             separator: 'opacity-80',
           }}>
           <BreadcrumbItem href='/'>
@@ -313,7 +316,7 @@ export const ProductDetailContent = ({
                   {product.description}
                 </p>
               </div>
-              <div className='flex flex-wrap items-center gap-3 sm:gap-4 py-3 sm:py-4'>
+              <div className='flex flex-wrap items-center gap-3 sm:gap-2 py-3 sm:py-4'>
                 <span className='font-space text-xl sm:text-4xl font-semibold text-foreground w-28'>
                   <span className='font-light opacity-80'>$</span>
                   {formatPrice(
@@ -328,9 +331,9 @@ export const ProductDetailContent = ({
                       onPress={handleDenominationChange(i)}
                       // selectedDenomination
                       className={cn(
-                        'cursor-pointer rounded-full border-[0.5px] border-foreground/40',
+                        'cursor-pointer rounded-full border border-foreground/20',
                         {
-                          'bg-dark-gray dark:bg-foreground/70 text-featured dark:text-background hover:bg-foreground hover:text-background':
+                          'bg-dark-gray dark:bg-brand dark:border-foreground text-featured dark:text-background hover:bg-foreground hover:text-background':
                             selectedDenomination === i,
                         },
                       )}
@@ -350,7 +353,7 @@ export const ProductDetailContent = ({
                         shape='circle'
                         // {denomination === product.popularDenomination }
                         className={cn('hidden', {
-                          'bg-foreground text-background':
+                          'bg-brand text-background':
                             selectedDenomination === i,
                           'bg-foreground':
                             denomination === product.popularDenomination,
@@ -359,8 +362,9 @@ export const ProductDetailContent = ({
                           className={cn(
                             'relative font-space text-[10px] sm:text-sm font-medium whitespace-nowrap',
                           )}>
-                          {denomination}
-                          {product.unit}
+                          {product.unit === 'oz'
+                            ? mapFractions[denomination + product.unit]
+                            : denomination + product.unit}
                         </span>
                       </Badge>
                     </Button>
@@ -372,12 +376,15 @@ export const ProductDetailContent = ({
                     size='lg'
                     color='success'
                     variant='solid'
-                    className='w-full font-space font-medium text-sm sm:text-base _lg:text-lg bg-linear-to-r from-featured via-featured to-featured dark:text-white'
+                    disableRipple
+                    className='w-full font-semibold text-sm sm:text-base _lg:text-lg bg-linear-to-r from-featured via-featured to-featured dark:text-black font-sans'
                     onPress={handleAddToCart}
-                    isLoading={isAdding}
                     isDisabled={isPending}>
                     <span>Add to Cart</span>
-                    <Icon name='bag-solid' className='ml-2 size-6 sm:size-6' />
+                    <Icon
+                      name={isAdding ? 'spinners-ring' : 'bag-solid'}
+                      className='ml-2 size-6 sm:size-6'
+                    />
                   </Button>
                 </div>
                 <Button
@@ -402,8 +409,8 @@ export const ProductDetailContent = ({
               <ProfilePill name='Bright' group='effects' />
               <ProfilePill name='Humulene' group='terpenes' />
             </div>
-            <h3 className='font-space'>
-              <span className='font-fugaz font-thin opacity-80 mr-2'>
+            <h3>
+              <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
                 Experience:
               </span>
               <span className='text-xs sm:text-sm opacity-70 text-color-muted leading-relaxed'>
@@ -411,9 +418,9 @@ export const ProductDetailContent = ({
               </span>
             </h3>
 
-            <h3 className='font-space'>
-              <span className='font-fugaz font-thin opacity-80 mr-2'>
-                Dosage:
+            <h3>
+              <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
+                Consumption:
               </span>
               <span className='text-xs sm:text-sm opacity-70 text-color-muted leading-relaxed'>
                 {product.consumption}

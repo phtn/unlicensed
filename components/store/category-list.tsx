@@ -52,7 +52,7 @@ export const CategoryList = () => {
               width='100%'
             />
           </CardBody>
-          <CardFooter className='absolute z-30 bottom-0 text-xl h-10 font-fugaz font-light text-foreground/80 justify-between'>
+          <CardFooter className='absolute z-30 bottom-0 text-xl h-10 font-fugaz font-light justify-between text-white'>
             <p className='capitalize'>{item.name}</p>
             {/*<p className='text-default-500'>{item.href}</p>*/}
           </CardFooter>

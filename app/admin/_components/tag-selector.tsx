@@ -8,7 +8,7 @@ import {commonInputClassNames} from './ui/fields'
 interface TagSelectorProps {
   selectedKeys: string[]
   onSelectionChange: (keys: string[]) => void
-  type: 'terpene' | 'flavor'
+  type: 'terpene' | 'flavor' | 'denomination'
   label: string
   placeholder?: string
 }
@@ -45,7 +45,9 @@ export const TagSelector = ({
       classNames={{
         ...commonInputClassNames,
         trigger:
-          'border h-18 border-light-gray/10 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
+          'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
+        label:
+          'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
       }}
       renderValue={(items: SelectedItems<object>) => {
         return (

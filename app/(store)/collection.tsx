@@ -58,12 +58,9 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
             <div className='flex flex-col gap-8 rounded-3xl transition-colors'>
               <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
                 <div>
-                  <h3 className='text-2xl font-semibold text-foreground sm:text-3xl'>
+                  <h3 className='capitalize text-2xl font-semibold text-foreground sm:text-3xl'>
                     {category.name}
                   </h3>
-                  <p className='max-w-2xl text-sm text-color-muted'>
-                    {category.description}
-                  </p>
                 </div>
                 <div className='flex items-center gap-3 text-xs uppercase tracking-[0.35em] text-color-muted'>
                   <span>Curated selection</span>
