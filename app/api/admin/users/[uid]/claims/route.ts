@@ -13,10 +13,10 @@ import {getAdminAuth} from '@/lib/firebase/admin'
  */
 export async function POST(
   request: NextRequest,
-  {params}: {params: {uid: string}},
+  {params}: {params: Promise<{uid: string}>},
 ) {
   try {
-    const {uid} = params
+    const {uid} = await params
     const body = await request.json()
     const {claims} = body
 
@@ -72,10 +72,10 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  {params}: {params: {uid: string}},
+  {params}: {params: Promise<{uid: string}>},
 ) {
   try {
-    const {uid} = params
+    const {uid} = await params
 
     if (!uid) {
       return NextResponse.json({error: 'User ID is required'}, {status: 400})
@@ -108,10 +108,10 @@ export async function GET(
  */
 export async function DELETE(
   request: NextRequest,
-  {params}: {params: {uid: string}},
+  {params}: {params: Promise<{uid: string}>},
 ) {
   try {
-    const {uid} = params
+    const {uid} = await params
 
     if (!uid) {
       return NextResponse.json({error: 'User ID is required'}, {status: 400})
