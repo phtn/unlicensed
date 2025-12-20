@@ -1,4 +1,3 @@
-import {Beams} from '@/components/main/beams'
 import {ProductCard} from '@/components/store/product-card'
 import {Button} from '@heroui/react'
 import {StoreProduct} from '../types'
@@ -36,11 +35,11 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
           {featuredProducts.map((product) => (
             <ProductCard key={product.slug} product={product} />
           ))}
-          <div
+          {/*<div
             key={'beam'}
             className='absolute left-1/2 -translate-x-1/2 w-full top-16'>
             <Beams />
-          </div>
+          </div>*/}
         </div>
       </div>
     </section>

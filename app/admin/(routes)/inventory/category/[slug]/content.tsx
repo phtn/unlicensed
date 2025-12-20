@@ -47,7 +47,7 @@ const CategoryProductsContentInner = ({
   }, [categorySlug])
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-4 pt-2'>
       <div className='flex items-center justify-between'>
         <div className='text-xl font-semibold tracking-tight flex items-center space-x-2'>
           <Button
@@ -68,7 +68,7 @@ const CategoryProductsContentInner = ({
             size='sm'
             variant='faded'
             onPress={handleEdit}
-            className='-space-x-1 text-indigo-500 dark:text-indigo-400 border-white dark:border-transparent bg-indigo-100/50 dark:bg-indigo-100/10'>
+            className='-space-x-1 text-indigo-500 dark:text-indigo-400 border-white dark:border-transparent bg-indigo-100/50 dark:bg-indigo-200/5'>
             <Icon name='pencil-single-solid' className='size-4' />
             <span className='text-sm'>Edit Category</span>
           </Button>
@@ -78,7 +78,7 @@ const CategoryProductsContentInner = ({
             size='sm'
             variant='bordered'
             href={`/admin/inventory/product?tabId=new&category=${categorySlug}`}
-            className='-space-x-2 text-blue-500 dark:text-blue-400 border-white dark:border-transparent bg-blue-100/50 dark:bg-blue-100/10'>
+            className='-space-x-2 text-blue-500 dark:text-blue-400 border-white dark:border-transparent bg-blue-100/50 dark:bg-blue-200/5'>
             <Icon name='plus' className='size-4' />
             <span className='text-sm capitalize'>Add {category?.name}</span>
           </Button>
@@ -98,7 +98,9 @@ const CategoryProductsContentInner = ({
   )
 }
 
-export const CategoryProductsContent = (props: CategoryProductsContentProps) => {
+export const CategoryProductsContent = (
+  props: CategoryProductsContentProps,
+) => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <CategoryProductsContentInner {...props} />

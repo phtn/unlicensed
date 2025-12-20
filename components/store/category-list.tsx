@@ -44,12 +44,15 @@ export const CategoryList = () => {
               alt={item.name}
               radius='none'
               className='w-full object-cover'
-              src={resolveUrl(item.heroImage ?? '') || '/default-category-image.svg'}
+              src={
+                resolveUrl(item.heroImage ?? '') ||
+                '/default-category-image.svg'
+              }
               shadow='sm'
               width='100%'
             />
           </CardBody>
-          <CardFooter className='absolute bottom-0 text-xl h-10 font-fugaz font-light text-foreground/80 justify-between'>
+          <CardFooter className='absolute z-30 bottom-0 text-xl h-10 font-fugaz font-light text-foreground/80 justify-between'>
             <p className='capitalize'>{item.name}</p>
             {/*<p className='text-default-500'>{item.href}</p>*/}
           </CardFooter>

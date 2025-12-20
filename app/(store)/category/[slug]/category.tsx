@@ -1,9 +1,10 @@
 import {StoreProduct} from '@/app/types'
 import {Loader} from '@/components/expermtl/loader'
-import {useToggle} from '@/hooks/use-toggle'
+import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Image} from '@heroui/react'
+import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {Activity} from 'react'
 import {Tag} from '../../../../components/base44/tag'
@@ -14,21 +15,27 @@ interface CategoryContentProps {
   products: StoreProduct[]
 }
 export const CategoryContent = ({products, slug}: CategoryContentProps) => {
-  const {on, toggle} = useToggle()
+  const category = useQuery(api.categories.q.getCategoryBySlug, {slug})
+  const heroImage = useQuery(
+    api.categories.q.getHeroImage,
+    category ? {id: category._id} : 'skip',
+  )
 
   return (
     <div className='min-h-screen overflow-x-hidden'>
       <Activity mode={products.length === 0 ? 'visible' : 'hidden'}>
-        <div className='min-h-screen flex flex-col items-center justify-center gap-4 px-6 py-24 text-center'>
+        <div className='max-w-7xl h-screen mx-auto pt-28'>
           <Tag text={slug} />
-          <Title title='Nothing here yet' subtitle='Check back soon' />
+          <div className=' flex flex-col items-center justify-center gap-4 px-6 py-24 text-center'>
+            <Title title='Nothing here yet' subtitle='Check back soon' />
+          </div>
         </div>
       </Activity>
       {/* Hero Section */}
-      <section className='pt-6 sm:pt-8 lg:pt-20 xl:pt-28 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 bg-background'>
-        <div className='max-w-7xl mx-auto'>
+      <section className='pt-6 sm:pt-8 md:pt-10 lg:pt-14 xl:pt-24 2xl:pt-28 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 bg-background'>
+        <div className='max-w-7xl mx-auto overflow-hidden'>
           <div className='grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center'>
-            <div>
+            <div className=''>
               <Tag text={slug} />
               <Title title={slug} subtitle='Extremely Flavorful' />
               <p className='hidden sm:flex text-sm sm:text-base lg:text-lg text-gray-500 mb-6 sm:mb-8 lg:mb-10 max-w-lg leading-relaxed'>
@@ -48,7 +55,6 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
                 <Button
                   variant='faded'
                   size='lg'
-                  onPress={toggle}
                   className='hidden sm:flex items-center gap-2 text-xs sm:text-sm'>
                   <span>Strain Finder</span>
                   <Icon name='search' className='w-3 h-3 sm:w-4 sm:h-4' />
@@ -57,18 +63,15 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
             </div>
 
             <div className='relative flex items-center justify-center lg:justify-end max-h-[40vh] sm:max-h-[45vh] lg:max-h-[50lvh] overflow-visible'>
-              <Activity mode={on ? 'hidden' : 'visible'}>
-                <Loader />
-              </Activity>
-              <Activity mode={on ? 'visible' : 'hidden'}>
-                <Image
-                  src={products[0].image}
-                  alt={slug}
-                  className='w-full aspect-auto object-contain'
-                  loading='eager'
-                  // sizes='(max-width: 1024px) 100vw, 50vw'
+              {heroImage ? (
+                <div
+                  id='hero-image'
+                  className='h-120 w-full mask-[url("/svg/chevs.svg")] mask-cover bg-cover bg-center bg-no-repeat'
+                  style={{backgroundImage: `url(${heroImage})`}}
                 />
-              </Activity>
+              ) : (
+                <Loader />
+              )}
             </div>
           </div>
         </div>
@@ -76,8 +79,8 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
 
       {/* Case Studies Grid */}
       <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
-        <div className='max-w-7xl mx-auto'>
-          <h2 className='text-2xl sm:text-2xl font-medium font-bone text-limited tracking-tight mb-6 sm:mb-8'>
+        <div className='max-w-7xl mx-auto rounded-4xl py-4 px-6 bg-sidebar'>
+          <h2 className='text-2xl sm:text-2xl font-medium font-bone dark:text-featured text-featured tracking-tight mb-6 sm:mb-8'>
             Bestsellers
           </h2>
           <div className='grid md:grid-cols-4 gap-4 sm:gap-6 lg:gap-0 w-full'>
@@ -92,7 +95,7 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
                   <Image
                     src={product.image}
                     alt={product.name}
-                    className='size-50 py-4 shrink-0 aspect-auto object-contain'
+                    className='mask mask-parallelogram size-50 py-4 shrink-0 aspect-auto object-contain'
                     loading='lazy'
                   />
                   <div
@@ -147,6 +150,8 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
     </div>
   )
 }
+
+// <img class="mask mask-parallelogram size-25" src="https://cdn.flyonui.com/fy-assets/components/radio/image-1.png" alt="mask image" />
 
 /* Scroll Indicator */
 /*

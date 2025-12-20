@@ -5,6 +5,7 @@ import {adminSettingsSchema} from './admin/d'
 import {blogSchema} from './blogs/d'
 import {cartSchema} from './cart/d'
 import {categorySchema} from './categories/d'
+import {courierSchema} from './couriers/d'
 import {orderSchema} from './orders/d'
 import {productSchema} from './products/d'
 import {rewardTierSchema, userRewardsSchema} from './rewards/d'
@@ -43,4 +44,7 @@ export default defineSchema({
     .index('by_activity', ['activityId'])
     .index('by_activity_user', ['activityId', 'userId']),
   adminSettings: defineTable(adminSettingsSchema),
+  couriers: defineTable(courierSchema)
+    .index('by_code', ['code'])
+    .index('by_active', ['active']),
 })

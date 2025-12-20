@@ -7,7 +7,7 @@ import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {Suspense} from 'react'
-import {PrimaryTab, SecondaryTab} from '../components'
+import {PrimaryTab, SecondaryTab, ToolbarWrapper} from '../components'
 
 const ToolbarTabs = () => {
   return (
@@ -37,7 +37,7 @@ export const Content = () => {
   const isOpsRoute = route === 'ops' || pathname === '/admin/ops'
 
   return (
-    <div className='flex text-base items-center justify-between w-full px-2'>
+    <ToolbarWrapper>
       <Link
         href='/admin/ops'
         prefetch
@@ -56,9 +56,12 @@ export const Content = () => {
           <AnimatedNumber value={orders?.length ?? 0} />
         </span>
       </Link>
-      <Suspense fallback={<div className='flex items-center space-x-1 md:space-x-4 px-4 text-base' />}>
+      <Suspense
+        fallback={
+          <div className='flex items-center space-x-1 md:space-x-4 px-4 text-base' />
+        }>
         <ToolbarTabs />
       </Suspense>
-    </div>
+    </ToolbarWrapper>
   )
 }
