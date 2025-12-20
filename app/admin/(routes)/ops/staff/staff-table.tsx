@@ -10,50 +10,66 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  User,
+  Chip,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 import {dateCell} from '../../../_components/ui/cells'
 
-type UserDoc = Doc<'users'>
+type StaffDoc = Doc<'staff'>
 
 const columns = [
-  {name: 'USER', uid: 'user'},
+  {name: 'NAME', uid: 'name'},
   {name: 'EMAIL', uid: 'email'},
-  {name: 'JOINED', uid: 'joined'},
+  {name: 'POSITION', uid: 'position'},
+  {name: 'ROLES', uid: 'roles'},
+  {name: 'CREATED', uid: 'created'},
   {name: 'STATUS', uid: 'status'},
 ]
 
 export const StaffTable = () => {
-  const users = useQuery(api.users.q.getAllUsers, {limit: 100})
+  const staff = useQuery(api.staff.q.getStaff)
 
-  const renderCell = (user: UserDoc, columnKey: React.Key) => {
+  const renderCell = (member: StaffDoc, columnKey: React.Key) => {
     switch (columnKey) {
-      case 'user':
+      case 'name':
         return (
-          <User
-            name={user.name}
-            description={user.email}
-            avatarProps={{
-              src: user.photoUrl,
-              size: 'sm',
-            }}
-          />
+          <div className='flex flex-col'>
+            <p className='text-bold text-sm'>{member.name || 'N/A'}</p>
+          </div>
         )
       case 'email':
         return (
           <div className='flex flex-col'>
-            <p className='text-bold text-sm'>{user.email}</p>
+            <p className='text-bold text-sm'>{member.email}</p>
           </div>
         )
-      case 'joined':
-        return dateCell(user._creationTime)
-      case 'status':
+      case 'position':
         return (
           <div className='flex flex-col'>
-            <p className='text-bold text-sm'>Active</p>
+            <p className='text-bold text-sm'>{member.position}</p>
           </div>
+        )
+      case 'roles':
+        return (
+          <div className='flex flex-wrap gap-1'>
+            {member.accessRoles.map((role) => (
+              <Chip key={role} size='sm' variant='flat'>
+                {role}
+              </Chip>
+            ))}
+          </div>
+        )
+      case 'created':
+        return dateCell(member.createdAt)
+      case 'status':
+        return (
+          <Chip
+            size='sm'
+            color={member.active ? 'success' : 'default'}
+            variant='flat'>
+            {member.active ? 'Active' : 'Inactive'}
+          </Chip>
         )
       default:
         return null
@@ -84,7 +100,7 @@ export const StaffTable = () => {
       <Table
         isCompact
         removeWrapper
-        aria-label='Personnel table'
+        aria-label='Staff table'
         classNames={classNames}>
         <TableHeader columns={columns}>
           {(column) => (
@@ -93,11 +109,11 @@ export const StaffTable = () => {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={'No users found'} items={users ?? []}>
-          {(user) => (
-            <TableRow key={user._id} className='h-16'>
+        <TableBody emptyContent={'No staff members found'} items={staff ?? []}>
+          {(member) => (
+            <TableRow key={member._id} className='h-16'>
               {(columnKey) => (
-                <TableCell>{renderCell(user, columnKey)}</TableCell>
+                <TableCell>{renderCell(member, columnKey)}</TableCell>
               )}
             </TableRow>
           )}

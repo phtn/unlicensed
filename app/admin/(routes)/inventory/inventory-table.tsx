@@ -53,6 +53,7 @@ export const statusOptions = [
 
 export const InventoryTable = () => {
   const products = useQuery(api.products.q.listProducts, {limit: 100})
+  // const productImage = useQuery(api.products.q.getPrimaryImage, 'skip')
   const categoriesData = useQuery(api.categories.q.listCategories)
   const categories = useMemo(() => categoriesData ?? [], [categoriesData])
   const {selectedProduct, setSelectedProduct} = useProductDetails()
@@ -66,8 +67,10 @@ export const InventoryTable = () => {
     [products],
   )
 
-  // Resolve storage IDs to URLs
-  const resolveUrl = useStorageUrls(productImageIds)
+  const productImages = useQuery(api.uploads.getStorageUrls, {
+    storageIds: productImageIds as Array<Id<'_storage'>>,
+  })
+
 
   const {
     columnWidths,
@@ -300,7 +303,8 @@ export const InventoryTable = () => {
           <div className='flex items-center gap-3'>
             <Image
               src={
-                resolveUrl(product.image ?? '') || '/default-product-image.svg'
+                productImages?.filter((p) => p.storageId === product.image)?.[0]
+                  ?.url || '/default-product-image.svg'
               }
               alt={product.name}
               className='w-12 h-auto aspect-square object-cover rounded shrink-0'

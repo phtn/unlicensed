@@ -78,7 +78,7 @@ export const CourierList = ({couriers}: CourierListProps) => {
         return (
           <div className='flex flex-col'>
             {courier.trackingUrlTemplate ? (
-              <p className='text-bold text-sm text-gray-400 truncate max-w-xs'>
+              <p className='text-bold text-sm text-gray-400 truncate max-w-lg'>
                 {courier.trackingUrlTemplate}
               </p>
             ) : (

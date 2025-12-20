@@ -1,7 +1,6 @@
 'use client'
 
 import {PrimaryTab, ToolbarButtonWrapper} from '@/app/admin/@toolbar/components'
-import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {cn} from '@/lib/utils'
@@ -9,35 +8,33 @@ import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {Suspense} from 'react'
 
-const CourierInner = () => {
-  const products = useQuery(api.products.q.listProducts, {limit: 100})
-  const [tabId] = useAdminTabId()
-  const isProductRoute = tabId !== 'badges' && tabId !== 'new'
+const StaffInner = () => {
+  const staff = useQuery(api.staff.q.getStaff)
+  // const [tabId] = useAdminTabId()
 
   return (
     <>
       <Link
-        href='/admin/inventory/product'
+        href='/admin/ops/staff'
         prefetch
         className='flex items-center space-x-4 group'>
         <span
           className={cn(
             'group-hover:underline underline-offset-4 decoration-dashed decoration-[0.5px] tracking-tighter font-medium',
           )}>
-          Products
+          Staff
         </span>
         <span
           className={cn(
-            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
-            {'bg-blue-500 dark:bg-blue-500 text-white': isProductRoute},
+            'px-1 h-6 w-6 text-center bg-pink-500 dark:bg-pink-500 text-white rounded-md font-space font-semibold',
           )}>
-          <AnimatedNumber value={products?.length ?? 0} />
+          <AnimatedNumber value={staff?.length ?? 0} />
         </span>
       </Link>
       <ToolbarButtonWrapper>
         <PrimaryTab
           id='new'
-          href='/admin/inventory/product?tabId=new'
+          href='/admin/ops/staff?tabId=new'
           icon='plus'
           label='New'
         />
@@ -46,13 +43,13 @@ const CourierInner = () => {
   )
 }
 
-export const CourierTab = () => {
+export const StaffTab = () => {
   return (
     <Suspense
       fallback={
         <div className='flex text-base items-center justify-between w-full px-2' />
       }>
-      <CourierInner />
+      <StaffInner />
     </Suspense>
   )
 }

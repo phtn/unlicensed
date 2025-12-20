@@ -160,10 +160,10 @@ export const CourierForm = ({
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block cols-span-3 2xl:col-span-2 col-span-3 h-full overflow-y-auto pr-2 space-y-6'>
         <nav className='flex flex-col gap-1'>
-          <h1 className='text-lg flex items-center space-x-2 tracking-tighter font-semibold py-4 text-dark-gray dark:text-foreground'>
+          <h1 className='text-lg flex items-center space-x-2 pl-2 tracking-tighter font-semibold py-4 text-dark-gray dark:text-foreground'>
             <div
               aria-hidden
-              className='size-4 select-none aspect-square rounded-full bg-emerald-500'
+              className='size-4 select-none aspect-square rounded-full bg-yellow-500'
             />
             <span>{isEditMode ? 'Edit Courier' : 'Create New Courier'}</span>
           </h1>
@@ -179,8 +179,8 @@ export const CourierForm = ({
               className={cn(
                 'flex justify-start items-center gap-3 px-4 text-base font-medium tracking-tight rounded-xl transition-all text-left',
                 activeSection === section.id
-                  ? 'dark:bg-zinc-700 dark:text-emerald-300 bg-dark-gray/5 text-emerald-500'
-                  : 'text-dark-gray/60 dark:text-light-gray/80 dark:hover:text-emerald-100  hover:bg-dark-gray/5 hover:text-dark-gray/90',
+                  ? 'dark:bg-zinc-700 dark:text-yellow-300 bg-dark-gray/5 text-yellow-500'
+                  : 'text-dark-gray/60 dark:text-light-gray/80 dark:hover:text-yellow-100  hover:bg-dark-gray/5 hover:text-dark-gray/90',
               )}>
               <Icon name={section.icon} className='size-4' />
               <span>{section.label}</span>
@@ -193,7 +193,7 @@ export const CourierForm = ({
             size='lg'
             type='submit'
             fullWidth
-            className='w-full rounded-xl font-medium tracking-tight bg-emerald-500 text-white'
+            className='w-full rounded-xl font-medium tracking-tight bg-yellow-500 text-white'
             isLoading={isSubmitting}
             onPress={form.handleSubmit}>
             {isSubmitting
@@ -205,7 +205,7 @@ export const CourierForm = ({
                 : 'Create Courier'}
           </Button>
           {status === 'success' && (
-            <p className='mt-2 text-sm text-center text-emerald-500'>
+            <p className='mt-2 text-sm text-center text-yellow-500'>
               {isEditMode
                 ? 'Courier updated successfully!'
                 : 'Courier created successfully!'}
@@ -243,7 +243,7 @@ export const CourierForm = ({
                     onValueChange={(value) => field.handleChange(value)}
                     onBlur={field.handleBlur}
                     classNames={{
-                      wrapper: 'group-data-[selected=true]:bg-emerald-500',
+                      wrapper: 'group-data-[selected=true]:bg-yellow-500',
                     }}
                   />
                 </div>

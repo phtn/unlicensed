@@ -7,9 +7,15 @@ import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {Suspense} from 'react'
-import {PrimaryTab, SecondaryTab, ToolbarWrapper} from '../components'
+import {SecondaryTab, ToolbarWrapper} from '../components'
 
 const ToolbarTabs = () => {
+  // const pathname = usePathname()
+  // const isStaffRoute = pathname?.includes('/staff')
+  // const newHref = isStaffRoute
+  //   ? '/admin/ops/staff?tabId=new'
+  //   : '/admin/ops?tabId=new'
+
   return (
     <div className='flex items-center space-x-1 md:space-x-4 px-4 text-base'>
       <SecondaryTab
@@ -18,17 +24,12 @@ const ToolbarTabs = () => {
         label='Stats'
         icon='toggle-off-sm'
       />
-      <PrimaryTab
-        id='new'
-        href='/admin/ops?tabId=new'
-        icon='plus'
-        label='New'
-      />
+      {/*<PrimaryTab id='new' href={newHref} icon='plus' label='New' />*/}
     </div>
   )
 }
 
-export const Content = () => {
+export const OpsContent = () => {
   const orders = useQuery(api.orders.q.getRecentOrders, {limit: 50})
   const pathname = usePathname()
   const route = pathname.split('/').pop()
