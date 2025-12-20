@@ -88,12 +88,34 @@ export const Inventory = ({form}: InventoryProps) => {
                   isSelected={featuredValue}
                   onValueChange={field.handleChange}
                   classNames={{
-                    wrapper: 'group-data-[selected=true]:bg-amber-500',
+                    wrapper: 'group-data-[selected=true]:bg-featured',
                   }}>
                   <div className='flex flex-col gap-px'>
                     <span className='text-base font-semibold'>Featured</span>
                     <span className='text-xs opacity-70'>
                       Highlight in featured sections
+                    </span>
+                  </div>
+                </Switch>
+              )
+            }}
+          </form.Field>
+          <form.Field name='eligibleForRewards'>
+            {(field) => {
+              const eligibleValue = (field.state.value as boolean) ?? false
+              return (
+                <Switch
+                  isSelected={eligibleValue}
+                  onValueChange={field.handleChange}
+                  classNames={{
+                    wrapper: 'group-data-[selected=true]:bg-amber-400',
+                  }}>
+                  <div className='flex flex-col gap-px'>
+                    <span className='text-base font-semibold'>
+                      Eligible for Rewards
+                    </span>
+                    <span className='text-xs opacity-70'>
+                      Customers can earn rewards for purchasing this product.
                     </span>
                   </div>
                 </Switch>

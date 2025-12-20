@@ -7,7 +7,9 @@ export const productSchema = z.object({
   slug: z.string().optional(),
   categorySlug: z.string().min(1, 'Select a category.'),
   shortDescription: z.string().min(10, 'Short description is required.'),
-  description: z.string().min(20, 'Description must be at least 20 characters.'),
+  description: z
+    .string()
+    .min(20, 'Description must be at least 20 characters.'),
   priceCents: z.number().min(0, 'Price must be positive.'),
   unit: z.string().min(1, 'Unit is required.'),
   availableDenominationsRaw: z.string().optional(),
@@ -22,6 +24,7 @@ export const productSchema = z.object({
   flavorNotesRaw: z.string().optional(), // Keep for backward compatibility
   featured: z.boolean(),
   available: z.boolean(),
+  eligibleForRewards: z.boolean(),
   stock: z.number().min(0, 'Stock must be positive.'),
   rating: z
     .number()
@@ -225,6 +228,13 @@ export const productFields: FormInput<ProductFormValues>[] = [
     defaultValue: true,
   },
   {
+    name: 'eligibleForRewards',
+    label: 'Eligible for Rewards',
+    required: true,
+    type: 'checkbox',
+    defaultValue: true,
+  },
+  {
     name: 'stock',
     label: 'Stock',
     required: true,
@@ -279,11 +289,15 @@ export const productFields: FormInput<ProductFormValues>[] = [
   },
 ]
 
-export const defaultValues = productFields.reduce((acc, field) => {
-  // @ts-ignore
-  acc[field.name] = field.defaultValue
-  return acc
-}, {} as ProductFormValues)
+export const defaultValues: ProductFormValues = productFields.reduce(
+  (acc, field) => {
+    const key = field.name as keyof ProductFormValues
+    // Type assertion is safe because field definitions match ProductFormValues structure
+    ;(acc as Record<string, unknown>)[key] = field.defaultValue
+    return acc
+  },
+  {} as Record<string, unknown>,
+) as ProductFormValues
 
 export const flowerDenominations: Array<SelectOption> = [
   {value: '1/8', label: '1/8'},
@@ -293,3 +307,13 @@ export const flowerDenominations: Array<SelectOption> = [
   {value: '4', label: '4'},
   {value: 'Custom', label: 'custom'},
 ]
+
+export const mapFractions: Record<string, string> = {
+  '0.125oz': '1/8 oz',
+  '0.25oz': '1/4 oz',
+  '0.5oz': '1/2 oz',
+  '1oz': '1 oz',
+  '2oz': '2 oz',
+  '4oz': '4 oz',
+  '8oz': '8 oz',
+}

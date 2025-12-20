@@ -1,3 +1,3 @@
-import {Content} from './content'
-const Page = async () => <Content />
+import {InventoryContent} from './content'
+const Page = async () => <InventoryContent />
 export default Page

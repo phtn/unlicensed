@@ -5,7 +5,7 @@ import {Icon} from '@/lib/icons'
 import {Input} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useEffect, useMemo} from 'react'
-import {ProductFormApi} from '../product-schema'
+import {mapFractions, ProductFormApi} from '../product-schema'
 import {commonInputClassNames} from '../ui/fields'
 import {FormSection, Header} from './components'
 
@@ -120,7 +120,7 @@ export const Pricing = ({form, categories}: PricingProps) => {
                 | Array<{label: string; price: number}>
                 | undefined) || []
             return (
-              <div className='space-y-3 rounded-xl border border-light-gray dark:border-dark-gray p-4'>
+              <div className='space-y-3 p-4'>
                 <div className='flex items-center justify-between'>
                   <label className='text-sm font-medium'>
                     Variants & Pricing
@@ -131,27 +131,32 @@ export const Pricing = ({form, categories}: PricingProps) => {
                 {variants.length > 0 ? (
                   <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4'>
                     {variants.map((variant, index) => (
-                      <div key={index} className='space-y-1.5'>
-                        <span className='text-xs ml-1'>{variant.label}</span>
-                        <Input
-                          type='number'
-                          value={String(variant.price ?? '')}
-                          onChange={(e) => {
-                            const newVariants = [...variants]
-                            newVariants[index] = {
-                              ...variant,
-                              price: Number(e.target.value) || 0,
-                            }
-                            field.handleChange(newVariants)
-                          }}
-                          startContent={
-                            <Icon name='dollar' className='size-5' />
+                      <Input
+                        key={variant.label}
+                        type='number'
+                        label={mapFractions[variant.label] ?? variant.label}
+                        value={String(variant.price ?? '')}
+                        onChange={(e) => {
+                          const newVariants = [...variants]
+                          newVariants[index] = {
+                            ...variant,
+                            price: Number(e.target.value) || 0,
                           }
-                          size='sm'
-                          variant='bordered'
-                          classNames={commonInputClassNames}
-                        />
-                      </div>
+                          field.handleChange(newVariants)
+                        }}
+                        startContent={
+                          <Icon
+                            name='dollar'
+                            className='size-4 opacity-80 mb-1 -mr-2'
+                          />
+                        }
+                        size='sm'
+                        variant='bordered'
+                        classNames={{
+                          ...commonInputClassNames,
+                          label: 'mb-4 ml-1',
+                        }}
+                      />
                     ))}
                   </div>
                 ) : (

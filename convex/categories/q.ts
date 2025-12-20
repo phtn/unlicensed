@@ -12,6 +12,16 @@ export const listCategories = query({
   },
 })
 
+export const getCategoryById = query({
+  args: {
+    id: v.id('categories'),
+  },
+  handler: async (ctx, {id}) => {
+    const category = await ctx.db.get('categories', id)
+    return category ?? null
+  },
+})
+
 export const getCategoryBySlug = query({
   args: {
     slug: v.string(),

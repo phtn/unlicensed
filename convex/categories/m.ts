@@ -69,8 +69,9 @@ export const update = mutation({
       .map((benefit) => benefit.trim())
       .filter((benefit) => benefit.length > 0)
 
-    await ctx.db.patch(args.categoryId, {
-      ...args,
+    const {categoryId, ...updateData} = args
+    await ctx.db.patch(categoryId, {
+      ...updateData,
       benefits,
       slug,
     })

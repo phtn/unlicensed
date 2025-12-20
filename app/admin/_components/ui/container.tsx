@@ -9,31 +9,24 @@ import {SidebarTrigger} from './sidebar'
 interface WrappedContentProps {
   children: ReactNode
   toolbar?: ReactNode
+  withPanel?: boolean
 }
 
-export const WrappedContent = ({children, toolbar}: WrappedContentProps) => {
+export const WrappedContent = ({
+  children,
+  toolbar,
+  withPanel,
+}: WrappedContentProps) => {
   const {state, togglePanel} = useSettingsPanel()
   const isExpanded = useMemo(() => state === 'expanded', [state])
   return (
     <Wrapper isPanelExpanded={isExpanded}>
-      <div className='px-2 sm:px-3 py-2 flex items-center justify-between min-w-0'>
+      <div className='px-2 sm:px-3 space-x-2 flex items-center justify-between min-w-0'>
         <SidebarTrigger />
         {toolbar}
-        <button
-          className={cn(
-            'p-1.5 rounded-md border-none hover:bg-light-gray/15 text-foreground hover:text-foreground',
-            {'rotate-180': isExpanded},
-          )}
-          onClick={togglePanel}>
-          <Icon
-            name='sidebar'
-            className={cn(
-              'size-4 rotate-180 opacity-80 group-hover:opacity-100',
-              {'rotate-0': isExpanded},
-            )}
-          />
-          <span className='sr-only'>Toggle Sidebar</span>
-        </button>
+        {withPanel && (
+          <SettingsPanelTrigger state={state} toggleFn={togglePanel} />
+        )}
       </div>
       {children}
     </Wrapper>
@@ -64,3 +57,25 @@ export const Container = ({children}: {children: ReactNode}) => (
     {children}
   </div>
 )
+
+interface SettingsPanelTriggerProps {
+  state: 'expanded' | 'collapsed'
+  toggleFn: VoidFunction
+}
+const SettingsPanelTrigger = ({state, toggleFn}: SettingsPanelTriggerProps) => {
+  const isExpanded = useMemo(() => state === 'expanded', [state])
+  return (
+    <button
+      className={cn(
+        'p-1.5 rounded-md border-none hover:bg-light-gray/15 text-foreground hover:text-foreground',
+        {'rotate-180': isExpanded},
+      )}
+      onClick={toggleFn}>
+      <Icon
+        name='sidebar'
+        className={cn('size-5 opacity-80 group-hover:opacity-100')}
+      />
+      <span className='sr-only'>Toggle Sidebar</span>
+    </button>
+  )
+}

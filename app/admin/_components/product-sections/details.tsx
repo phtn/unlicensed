@@ -80,7 +80,7 @@ export const Details = ({form}: DetailsProps) => {
             return (
               <div className='space-y-2'>
                 <Textarea
-                  label='Consumption Guidance'
+                  label='Consumption Guide'
                   value={consumptionValue}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}

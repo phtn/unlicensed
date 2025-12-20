@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0
+
+### Minor Changes
+
+- integrated nuqs
+
 ## 0.4.0
 
 ### Minor Changes

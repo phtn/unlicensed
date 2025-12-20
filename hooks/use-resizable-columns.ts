@@ -11,20 +11,15 @@ export const useResizableColumns = (
 ) => {
   const storageKey = `${STORAGE_KEY_PREFIX}${tableId}`
   const [columnWidths, setColumnWidths] = useState<ColumnWidths>(() => {
-    console.log('[Resize] Initializing columnWidths state', {storageKey, tableId, columns})
     if (typeof window === 'undefined') {
-      console.log('[Resize] No window, using defaultWidths')
       return defaultWidths ?? {}
     }
     try {
       const saved = localStorage.getItem(storageKey)
-      console.log('[Resize] localStorage.getItem result:', saved)
       if (saved) {
         const parsed = JSON.parse(saved) as ColumnWidths
-        console.log('[Resize] Parsed localStorage:', parsed)
         // Validate that all columns have widths
         const allColumnsHaveWidths = columns.every((col) => col.uid in parsed)
-        console.log('[Resize] All columns have widths:', allColumnsHaveWidths)
         if (allColumnsHaveWidths) {
           return parsed
         }
@@ -32,7 +27,6 @@ export const useResizableColumns = (
     } catch (error) {
       console.error('[Resize] Error loading from localStorage:', error)
     }
-    console.log('[Resize] Using defaultWidths:', defaultWidths)
     return defaultWidths ?? {}
   })
 
@@ -44,8 +38,13 @@ export const useResizableColumns = (
   // Save to localStorage whenever widths change
   useEffect(() => {
     console.log('[Resize] columnWidths changed:', columnWidths)
-    if (typeof window === 'undefined' || Object.keys(columnWidths).length === 0) {
-      console.log('[Resize] Skipping localStorage save - no window or empty widths')
+    if (
+      typeof window === 'undefined' ||
+      Object.keys(columnWidths).length === 0
+    ) {
+      console.log(
+        '[Resize] Skipping localStorage save - no window or empty widths',
+      )
       return
     }
     try {
@@ -58,15 +57,23 @@ export const useResizableColumns = (
 
   const handleMouseDown = useCallback(
     (columnUid: string, event: React.MouseEvent) => {
-      console.log('[Resize] handleMouseDown called', {columnUid, clientX: event.clientX})
+      console.log('[Resize] handleMouseDown called', {
+        columnUid,
+        clientX: event.clientX,
+      })
       event.preventDefault()
       event.stopPropagation()
-      
+
       const wrapper = tableRef.current
       console.log('[Resize] tableRef.current:', wrapper)
       let currentWidth = columnWidths[columnUid] ?? 150
-      console.log('[Resize] initial width from state:', columnWidths[columnUid], 'fallback:', currentWidth)
-      
+      console.log(
+        '[Resize] initial width from state:',
+        columnWidths[columnUid],
+        'fallback:',
+        currentWidth,
+      )
+
       if (wrapper) {
         const table = wrapper.querySelector('table')
         console.log('[Resize] table element:', table)
@@ -79,12 +86,21 @@ export const useResizableColumns = (
             const cell = headerCells[columnIndex] as HTMLElement
             const rect = cell.getBoundingClientRect()
             currentWidth = rect.width
-            console.log('[Resize] calculated width from DOM:', currentWidth, 'rect:', rect)
+            console.log(
+              '[Resize] calculated width from DOM:',
+              currentWidth,
+              'rect:',
+              rect,
+            )
           }
         }
       }
-      
-      console.log('[Resize] Setting state:', {columnUid, startX: event.clientX, startWidth: currentWidth})
+
+      console.log('[Resize] Setting state:', {
+        columnUid,
+        startX: event.clientX,
+        startWidth: currentWidth,
+      })
       setResizingColumn(columnUid)
       setStartX(event.clientX)
       setStartWidth(currentWidth)

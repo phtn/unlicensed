@@ -20,7 +20,7 @@ const UNIT_SUGGESTIONS = [
 
 // Map units to common denomination suggestions
 const DENOMINATION_SUGGESTIONS: Record<string, number[]> = {
-  g: [1, 3.5, 7, 14, 28, 56], // Common cannabis flower weights in grams
+  g: [0.5, 1, 1.5, 2, 3, 4, 8], // Common cannabis flower weights in grams
   oz: [0.125, 0.25, 0.5, 1, 2, 4, 8], // Eighth, quarter, half, full ounce, etc.
   ml: [0.5, 1, 2, 5, 10, 30, 60, 100], // Common liquid volumes
   kg: [0.5, 1, 2, 5], // Kilogram weights

@@ -5,6 +5,7 @@ import {getConvexReactClient} from '@/lib/convexReactClient'
 import {HeroUIProvider} from '@heroui/react'
 import {ConvexProvider} from 'convex/react'
 import {createContext, useContext, useMemo, type ReactNode} from 'react'
+import {AuthCtxProvider} from './auth'
 import {CartAnimationProvider} from './cart-animation'
 
 interface ProvidersProviderProps {
@@ -24,7 +25,7 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
         enableColorScheme
         defaultTheme='system'
         disableTransitionOnChange>
-        {children}
+        <AuthCtxProvider>{children}</AuthCtxProvider>
       </ThemeProvider>
     </HeroUIProvider>
   )

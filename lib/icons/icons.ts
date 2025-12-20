@@ -391,6 +391,18 @@ export const icons = {
     viewBox: '0 0 24 24',
     set: 'proicons',
   },
+  'toggle-off-sm': {
+    symbol:
+      '<path fill="currentColor" d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3s3-1.34 3-3s-1.34-3-3-3"/>',
+    viewBox: '0 0 24 24',
+    set: 'mdi',
+  },
+  'chevron-double-left': {
+    symbol:
+      '<g fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"><path d="M17.591 16.53a.75.75 0 0 1-1.06 0L12 12l4.53-4.53a.75.75 0 0 1 1.06 1.06L14.121 12l3.47 3.47a.75.75 0 0 1 0 1.06"/><path d="M11.78 16.53a.75.75 0 0 1-1.06 0L6.19 12l4.53-4.53a.75.75 0 1 1 1.06 1.06L8.31 12l3.47 3.47a.75.75 0 0 1 0 1.06"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'stash',
+  },
 }
 
 /*

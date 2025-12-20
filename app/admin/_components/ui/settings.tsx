@@ -18,8 +18,8 @@ import {
   useMemo,
   useState,
 } from 'react'
-import {useOrderDetailsSafe} from '../order-details-context'
-import {OrderDetailsForm} from '../order-details-form'
+import {useOrderDetailsSafe} from '../../(routes)/ops/orders/order-details-context'
+import {OrderDetailsForm} from '../../(routes)/ops/orders/order-details-form'
 import {useProductDetailsSafe} from '../product-details-context'
 import {ProductDetailsForm} from '../product-details-form'
 // import { MODELS as CHAT_MODELS, useChatSettings } from "@/ctx/chat/store";
@@ -237,7 +237,10 @@ const SettingsPanelContent = () => {
       case 'orders':
         return {
           title: 'Order Details',
-          subtext: selectedOrder && selectedOrder.updatedAt ? formatDate(selectedOrder.updatedAt) : '',
+          subtext:
+            selectedOrder && selectedOrder.updatedAt
+              ? formatDate(selectedOrder.updatedAt)
+              : '',
           form: selectedOrder ? (
             <OrderDetailsForm order={selectedOrder} />
           ) : null,
@@ -297,7 +300,7 @@ interface PanelHeaderProps {
 
 const PanelHeader = ({title, subtext}: PanelHeaderProps) => {
   return (
-    <div className='w-full h-10 border flex items-center justify-between'>
+    <div className='w-full h-10 flex items-center justify-between'>
       <input
         className='text-xl font-medium w-full tracking-tighter bg-transparent border-none shadow-none outline-none focus-within:ring-0 focus-visible:ring-0'
         defaultValue={title}

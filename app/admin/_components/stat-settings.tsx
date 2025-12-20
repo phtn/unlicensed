@@ -136,7 +136,10 @@ export const StatSettings = () => {
   )
 
   return (
-    <Card shadow='sm' className='p-4 sm:p-6 border-sidebar'>
+    <Card
+      radius='none'
+      shadow='none'
+      className='p-4 sm:p-6 border-t border-sidebar'>
       <div className='space-y-4'>
         <div>
           <h3 className='text-lg font-semibold font-space'>Dashboard Stats</h3>

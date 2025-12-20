@@ -272,7 +272,7 @@ function SidebarTrigger({
     <button
       {...props}
       className={cn(
-        'p-1.5 rounded-md rotate-180 border-none text-foreground/80 hover:text-foreground group hover:bg-light-gray/15 ',
+        'rounded-lg rotate-180 border-none text-foreground/80 hover:text-foreground group hover:bg-light-gray/15 size-7 flex items-center justify-center',
         className,
         {
           'rotate-0': open,
@@ -280,8 +280,8 @@ function SidebarTrigger({
       )}
       onClick={toggleSidebar}>
       <Icon
-        name='sidebar'
-        className={cn('size-4 opacity-80 group-hover:opacity-100')}
+        name='chevron-double-left'
+        className={cn('size-7 opacity-70 group-hover:opacity-100')}
       />
       <span className='sr-only'>Toggle Sidebar</span>
     </button>

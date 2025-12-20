@@ -113,7 +113,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {data.navMain.slice(1, 3).map((section, i) => (
+        {data.navMain.slice(1, 5).map((section, i) => (
           <SidebarGroup key={`${section.title}` + i}>
             <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-medium opacity-70'>
               {section.title}
@@ -152,11 +152,11 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         {/* Secondary Navigation */}
         <SidebarGroup key='settings'>
           <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-medium opacity-70'>
-            {data.navMain[3]?.title}
+            {data.navMain[5]?.title}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {data.navMain[3]?.items?.map((item) => {
+              {data.navMain[5]?.items?.map((item) => {
                 const isActive = pathname === item.url
                 return (
                   <SidebarMenuItem
@@ -228,38 +228,31 @@ const MenuContent = (item: NavItem) => {
 }
 
 const data: Record<string, NavGroup[]> = {
-  teams: [
-    {
-      name: '',
-      logo: '',
-      url: '/admin',
-    },
-  ],
   navMain: [
     {
       title: 'Operations',
-      url: '/admin',
+      url: '/admin/ops',
       items: [
         {
           title: 'Activity',
-          url: '/admin',
+          url: '/admin/ops',
           icon: 'linalool',
         },
 
         {
           title: 'Orders',
-          url: '/admin/orders',
+          url: '/admin/ops/orders',
           icon: 'chevron-right',
         },
         {
           title: 'Deliveries',
-          url: '/admin/deliveries',
+          url: '/admin/ops/deliveries',
           icon: 'linalool',
         },
 
         {
           title: 'Staff',
-          url: '/admin/staff',
+          url: '/admin/ops/staff',
           icon: 'linalool',
         },
       ],
@@ -275,17 +268,34 @@ const data: Record<string, NavGroup[]> = {
         },
         {
           title: 'Category',
-          url: '/admin/category',
+          url: '/admin/inventory/category',
           icon: 'linalool',
         },
         {
           title: 'Product',
-          url: '/admin/product',
+          url: '/admin/inventory/product',
           icon: 'linalool',
         },
+      ],
+    },
+    {
+      title: 'suppliers',
+      url: '/admin/suppliers',
+      items: [
         {
-          title: 'Blog',
-          url: '/admin/blog',
+          title: 'Logistics',
+          url: '/admin/suppliers/logistics',
+          icon: 'linalool',
+        },
+      ],
+    },
+    {
+      title: 'Content',
+      url: '/admin/cms',
+      items: [
+        {
+          title: 'Blogposts',
+          url: '/admin/cms/blog',
           icon: 'linalool',
         },
       ],
@@ -296,7 +306,7 @@ const data: Record<string, NavGroup[]> = {
       items: [
         {
           title: 'Sales',
-          url: '/admin/sales',
+          url: '/admin/reports/sales',
           icon: 'linalool',
         },
       ],
@@ -306,7 +316,7 @@ const data: Record<string, NavGroup[]> = {
       url: '#',
       items: [
         {
-          title: 'Advanced',
+          title: 'Settings',
           url: '/admin/settings',
           icon: 'linalool',
         },
