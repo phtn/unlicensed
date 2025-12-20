@@ -1,5 +1,18 @@
 'use client'
 
+import {
+  FormSection,
+  Header,
+} from '@/app/admin/_components/category-sections/components'
+import {
+  courierFields,
+  CourierFormApi,
+  CourierFormValues,
+  courierSchema,
+  defaultValues,
+} from '@/app/admin/_components/courier-schema'
+import {renderFields} from '@/app/admin/_components/ui/fields'
+import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
@@ -8,16 +21,6 @@ import {Button, Switch} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useCallback, useEffect, useRef, useState} from 'react'
-import {
-  courierFields,
-  CourierFormApi,
-  CourierFormValues,
-  courierSchema,
-  defaultValues,
-} from '@/app/admin/_components/courier-schema'
-import {FormSection, Header} from '@/app/admin/_components/category-sections/components'
-import {useAppForm} from '@/app/admin/_components/ui/form-context'
-import {renderFields} from '@/app/admin/_components/ui/fields'
 
 type CourierFormProps = {
   courierId?: Id<'couriers'>
@@ -118,7 +121,10 @@ export const CourierForm = ({
       form.setFieldValue('name', initialValues.name)
       form.setFieldValue('code', initialValues.code)
       form.setFieldValue('active', initialValues.active ?? true)
-      form.setFieldValue('trackingUrlTemplate', initialValues.trackingUrlTemplate ?? '')
+      form.setFieldValue(
+        'trackingUrlTemplate',
+        initialValues.trackingUrlTemplate ?? '',
+      )
     }
   }, [initialValues, form])
 
@@ -150,7 +156,7 @@ export const CourierForm = ({
   )
 
   return (
-    <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 lg:p-0 items-start h-[calc(100vh-6rem)]'>
+    <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 lg:p-0 items-start h-[calc(100lvh-6rem)]'>
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block cols-span-3 2xl:col-span-2 col-span-3 h-full overflow-y-auto pr-2 space-y-6'>
         <nav className='flex flex-col gap-1'>
@@ -216,7 +222,7 @@ export const CourierForm = ({
       {/* Main Content Area */}
       <main
         ref={mainScrollRef}
-        className='col-span-1 lg:col-span-8 xl:col-span-9 2xl:col-span-10 h-full overflow-y-auto space-y-0 pb-24 scroll-smooth px-1 relative pt-2'>
+        className='col-span-1 lg:col-span-8 xl:col-span-9 2xl:col-span-10 h-full overflow-y-auto space-y-0 pb-24 scroll-smooth px-1 relative pt-0'>
         {/* Active Switch - Top Right */}
         <div className='absolute top-4 right-2 z-30 flex justify-end pr-4 pt-2 pb-2'>
           <form.Field name='active'>
@@ -229,9 +235,7 @@ export const CourierForm = ({
                       Toggle Courier Status
                     </span>
                     <span className='text-xs text-dark-gray/80 dark:text-light-gray/80'>
-                      {active
-                        ? 'Active and available'
-                        : 'Currently inactive'}
+                      {active ? 'Active and available' : 'Currently inactive'}
                     </span>
                   </div>
                   <Switch
@@ -256,10 +260,13 @@ export const CourierForm = ({
           }}
           className='space-y-0 pt-2 relative'>
           <div id='basic-info' className=''>
-            <FormSection id='basic-info' position='top'>
+            <FormSection id='basic-info' position='bottom'>
               <Header label='Courier Information' />
               <div className='grid gap-6 w-full mt-4'>
-                {renderFields(form as CourierFormApi, courierFields.filter(f => f.name !== 'active'))}
+                {renderFields(
+                  form as CourierFormApi,
+                  courierFields.filter((f) => f.name !== 'active'),
+                )}
               </div>
             </FormSection>
           </div>
@@ -285,4 +292,3 @@ export const CourierForm = ({
     </div>
   )
 }
-

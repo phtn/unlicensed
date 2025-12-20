@@ -1,11 +1,11 @@
 'use client'
 
-import {CourierForm} from '@/app/admin/(routes)/supplier/logistics/courier-form'
 import {CourierFormValues} from '@/app/admin/_components/courier-schema'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
+import {CourierForm} from './courier-form'
 
 interface EditCourierContentProps {
   id: Id<'couriers'>
@@ -13,10 +13,7 @@ interface EditCourierContentProps {
 
 export const EditCourier = ({id}: EditCourierContentProps) => {
   const router = useRouter()
-  const courier = useQuery(
-    api.couriers.q.getCourierById,
-    id ? {id} : 'skip',
-  )
+  const courier = useQuery(api.couriers.q.getCourierById, id ? {id} : 'skip')
 
   if (courier === undefined) {
     return (
@@ -44,7 +41,7 @@ export const EditCourier = ({id}: EditCourierContentProps) => {
 
   const handleUpdated = () => {
     // Navigate back to the courier list after successful update
-    router.push('/admin/supplier/logistics')
+    router.push('/admin/suppliers/logistics')
   }
 
   return (
@@ -56,4 +53,3 @@ export const EditCourier = ({id}: EditCourierContentProps) => {
     />
   )
 }
-

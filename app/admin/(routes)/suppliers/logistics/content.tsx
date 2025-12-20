@@ -1,5 +1,6 @@
 'use client'
 
+import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
@@ -37,7 +38,9 @@ const LogisticsContentInner = () => {
 export const Content = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <LogisticsContentInner />
+      <MainWrapper>
+        <LogisticsContentInner />
+      </MainWrapper>
     </Suspense>
   )
 }

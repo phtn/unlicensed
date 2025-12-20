@@ -48,7 +48,7 @@ export const CourierList = ({couriers}: CourierListProps) => {
         return (
           <div className='flex flex-col'>
             <Link
-              href={`/admin/supplier/logistics?tabId=edit&id=${courier._id}`}
+              href={`/admin/suppliers/logistics?tabId=edit&id=${courier._id}`}
               className='text-bold text-sm hover:underline'>
               {courier.name}
             </Link>
@@ -66,7 +66,9 @@ export const CourierList = ({couriers}: CourierListProps) => {
         return (
           <Chip
             className='capitalize'
-            color={courier.active ? statusColorMap.active : statusColorMap.inactive}
+            color={
+              courier.active ? statusColorMap.active : statusColorMap.inactive
+            }
             size='sm'
             variant='flat'>
             {courier.active ? 'Active' : 'Inactive'}
@@ -119,12 +121,10 @@ export const CourierList = ({couriers}: CourierListProps) => {
   }
 
   return (
-    <section className='pt-2'>
-      <h3 className='text-2xl tracking-tighter font-semibold px-2 mb-4'>
-        Couriers
-      </h3>
+    <section className=''>
+      <h3 className='text-2xl tracking-tighter font-semibold py-2'>Couriers</h3>
       {couriers.length === 0 ? (
-        <p className='mt-3 text-sm text-neutral-500'>
+        <p className='text-sm text-neutral-500'>
           No couriers yet. Create one above to get started.
         </p>
       ) : (
@@ -156,4 +156,3 @@ export const CourierList = ({couriers}: CourierListProps) => {
     </section>
   )
 }
-

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0
+
+### Minor Changes
+
+- added courier
+
 ## 0.6.1
 
 ### Patch Changes

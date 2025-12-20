@@ -6,31 +6,36 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
-import {ToolbarButtonWrapper, ToolbarWrapper} from '../components'
+import {PrimaryTab, ToolbarButtonWrapper, ToolbarWrapper} from '../components'
 
-export const InventoryContent = () => {
-  const products = useQuery(api.products.q.listProducts, {limit: 100})
+export const SuppliersContent = () => {
+  const couriers = useQuery(api.couriers.q.listCouriers)
   return (
     <ToolbarWrapper>
       <Link
-        href='/admin/inventory'
+        href='/admin/suppliers/logistics'
         className='flex items-center w-full space-x-4'>
         <h1
           className={cn(
             'group-hover:underline underline-offset-4 decoration-dotted decoration-[0.5px] decoration-foreground/60 tracking-tighter font-medium text-base',
           )}>
-          Inventory
+          Suppliers / Couriers
         </h1>
-        {products ? (
+        {couriers ? (
           <div className='w-6 flex items-center justify-center aspect-square bg-neutral-200/40 rounded-md font-space'>
-            <AnimatedNumber value={products?.length} />
+            <AnimatedNumber value={couriers?.length} />
           </div>
         ) : (
           <Icon name='spinners-ring' className='size-4' />
         )}
       </Link>
       <ToolbarButtonWrapper>
-        <div className='flex' />
+        <PrimaryTab
+          id='new'
+          href='/admin/suppliers/logistics?tabId=new'
+          icon='plus'
+          label='New'
+        />
       </ToolbarButtonWrapper>
     </ToolbarWrapper>
   )
