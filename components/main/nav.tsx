@@ -17,7 +17,7 @@ import {
   useDisclosure,
 } from '@heroui/react'
 import Link from 'next/link'
-import {useCallback, useEffect, useState} from 'react'
+import {useCallback, useEffect} from 'react'
 import {ThemeToggle} from '../ui/theme-toggle'
 
 interface NavProps {
@@ -26,9 +26,6 @@ interface NavProps {
 
 export const Nav = ({children}: NavProps) => {
   const {user, loading: authLoading} = useAuth()
-  const [admins, setAdmins] = useState('')
-  // cartItemCount automatically updates via Convex reactivity when items are added/removed
-  // No manual refresh needed - Convex queries subscribe and update in real-time
   const {cartItemCount, isAuthenticated} = useCart()
   const {isOpen, onOpen, onClose} = useDisclosure()
   const {
@@ -57,18 +54,6 @@ export const Nav = ({children}: NavProps) => {
       onClose()
     }
   }, [onClose])
-
-  const onLoad = useCallback(async () => {
-    const res = await fetch('/api/admin')
-    if (res.ok) {
-      setAdmins(JSON.stringify(await res.json()))
-      console.log(res)
-    }
-  }, [])
-
-  useEffect(() => {
-    onLoad().catch(console.error)
-  }, [onLoad])
 
   return (
     <>
@@ -175,11 +160,7 @@ export const Nav = ({children}: NavProps) => {
                       <DropdownItem
                         key='admin'
                         as={Link}
-                        href={
-                          user.email && admins.split(',').includes(user.email)
-                            ? '/admin'
-                            : '#nope'
-                        }
+                        href={'#nope'}
                         variant='flat'
                         classNames={{
                           title: 'text-foreground/90',

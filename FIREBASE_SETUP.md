@@ -130,6 +130,69 @@ Google One Tap provides a seamless sign-in experience:
 
 The authentication state is automatically synced with Convex, so user data is available in your backend.
 
+## 7. Firebase Admin SDK Setup (for Custom Claims)
+
+To use Firebase Admin SDK for setting custom claims (e.g., admin roles, permissions), you need to set up a service account:
+
+### Option 1: Service Account Key (Recommended for Development)
+
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Select your project
+3. Click the gear icon ⚙️ next to "Project Overview"
+4. Select **Project settings**
+5. Go to the **Service accounts** tab
+6. Click **Generate new private key**
+7. Download the JSON file
+8. Add the entire JSON content as a single-line string to your `.env.local`:
+
+```env
+FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account","project_id":"your-project-id",...}'
+```
+
+**Important**: The JSON must be a single-line string. You can use a tool to minify it, or escape it properly.
+
+### Option 2: Application Default Credentials (Recommended for Production)
+
+If deploying to Google Cloud (Cloud Run, App Engine, etc.), you can use Application Default Credentials. The SDK will automatically detect and use them - no environment variable needed.
+
+### Using Custom Claims
+
+Once set up, you can use the API endpoint to set custom claims:
+
+**Set custom claims:**
+```bash
+POST /api/admin/users/{uid}/claims
+Content-Type: application/json
+
+{
+  "claims": {
+    "role": "admin",
+    "admin": true,
+    "permissions": ["read", "write"]
+  }
+}
+```
+
+**Get custom claims:**
+```bash
+GET /api/admin/users/{uid}/claims
+```
+
+**Remove custom claims:**
+```bash
+DELETE /api/admin/users/{uid}/claims
+```
+
+**Important Security Note**: The API routes currently have TODO comments for authorization checks. You **must** add proper authentication/authorization before using in production. Verify that the requester has admin privileges before allowing them to set custom claims.
+
+### Accessing Custom Claims in Client
+
+After setting custom claims, users need to:
+1. Sign out and sign back in, OR
+2. Get a fresh ID token
+
+The custom claims will be available in the ID token's `customClaims` property.
+
 
 
 
