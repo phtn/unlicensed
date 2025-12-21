@@ -21,9 +21,6 @@ const StaffContentInner = () => {
       if (!id) {
         return (
           <div className='py-4'>
-            <h3 className='text-2xl tracking-tighter font-semibold px-2 mb-2'>
-              Staff List
-            </h3>
             <Suspense fallback={<div>Loading...</div>}>
               <StaffList staff={staff} />
             </Suspense>
@@ -48,7 +45,8 @@ export const Content = () => {
           <header className='hidden space-y-3'>
             <h1 className='text-2xl font-semibold'>Personnel</h1>
             <p className='max-w-3xl text-sm text-muted-foreground'>
-              Manage staff members, roles, permissions, and personnel information.
+              Manage staff members, roles, permissions, and personnel
+              information.
             </p>
           </header>
           <StaffContentInner />

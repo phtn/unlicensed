@@ -16,7 +16,9 @@ export function ContactForm({
 }: ContactFormProps) {
   return (
     <div>
-      <h3 className='text-lg font-semibold mb-4'>Contact Information</h3>
+      <h3 className='text-lg font-semibold mb-4 tracking-tight'>
+        Contact Information
+      </h3>
       <div className='space-y-4'>
         <Input
           label='Email'
@@ -37,4 +39,3 @@ export function ContactForm({
     </div>
   )
 }
-

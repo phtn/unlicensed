@@ -19,9 +19,9 @@ export const FormSection = ({
       radius='none'
       shadow='none'
       className={cn(
-        'dark:bg-zinc-600 p-4 border-x border-t border-gray-300 dark:border-origin',
+        'dark:bg-dark-table/40 p-4 border-x border-t border-gray-300 dark:border-origin',
         {
-          'rounded-t-2xl': position === 'top',
+          'rounded-none border-t-0': position === 'top',
           'border-b rounded-b-2xl': position === 'bottom',
         },
       )}>
@@ -32,7 +32,7 @@ export const FormSection = ({
 
 export const Header = ({label}: {label: string}) => {
   return (
-    <CardHeader className='tracking-tight px-0 font-semibold dark:bg-zinc-600'>
+    <CardHeader className='tracking-tight px-0 font-semibold'>
       <h2>{label}</h2>
     </CardHeader>
   )

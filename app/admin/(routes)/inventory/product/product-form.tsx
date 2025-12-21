@@ -190,37 +190,34 @@ export const ProductForm = ({
     }
   }, [initialCategorySlug, categories, form])
 
-  const scrollToSection = useCallback(
-    (sectionId: string) => {
-      setActiveSection(sectionId)
-      const element = document.getElementById(sectionId)
-      const scrollContainer = mainScrollRef.current
+  const scrollToSection = useCallback((sectionId: string) => {
+    setActiveSection(sectionId)
+    const element = document.getElementById(sectionId)
+    const scrollContainer = mainScrollRef.current
 
-      if (element && scrollContainer) {
-        // Calculate the position relative to the scrollable container
-        const containerRect = scrollContainer.getBoundingClientRect()
-        const elementRect = element.getBoundingClientRect()
-        const scrollTop =
-          scrollContainer.scrollTop + elementRect.top - containerRect.top
+    if (element && scrollContainer) {
+      // Calculate the position relative to the scrollable container
+      const containerRect = scrollContainer.getBoundingClientRect()
+      const elementRect = element.getBoundingClientRect()
+      const scrollTop =
+        scrollContainer.scrollTop + elementRect.top - containerRect.top
 
-        scrollContainer.scrollTo({
-          top: scrollTop + 16, // Account for spacing
-          behavior: 'smooth',
-        })
-      } else if (element) {
-        // Fallback to default behavior if ref is not available
-        element.scrollIntoView({behavior: 'smooth', block: 'start'})
-      }
-    },
-    [],
-  )
+      scrollContainer.scrollTo({
+        top: scrollTop + 16, // Account for spacing
+        behavior: 'smooth',
+      })
+    } else if (element) {
+      // Fallback to default behavior if ref is not available
+      element.scrollIntoView({behavior: 'smooth', block: 'start'})
+    }
+  }, [])
 
   return (
     <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 lg:p-0 items-start h-[calc(100vh-6rem)]'>
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block col-span-2 h-full overflow-y-auto pr-2 space-y-6'>
         <nav className='flex flex-col gap-1'>
-          <h1 className='flex items-center space-x-2 tracking-tighter font-semibold py-4'>
+          <h1 className='flex items-center space-x-2 tracking-tighter font-semibold p-4'>
             <div
               aria-hidden
               className='size-4 select-none aspect-square rounded-full bg-blue-500'
@@ -236,7 +233,7 @@ export const ProductForm = ({
               key={section.id}
               onPress={() => scrollToSection(section.id)}
               className={cn(
-                'flex justify-start items-center gap-3 px-4 text-base font-medium tracking-tight rounded-xl transition-all text-left',
+                'flex justify-start items-center gap-3 px-4 text-base font-medium tracking-tight rounded-lg transition-all text-left',
                 activeSection === section.id
                   ? 'dark:bg-zinc-700 dark:text-blue-300 bg-dark-gray/5 text-blue-500'
                   : 'text-dark-gray/60 dark:text-light-gray/80 dark:hover:text-blue-100  hover:bg-dark-gray/5 hover:text-dark-gray/90',
@@ -282,14 +279,14 @@ export const ProductForm = ({
       {/* Main Content Area */}
       <main
         ref={mainScrollRef}
-        className='col-span-1 lg:col-span-10 h-full overflow-y-auto space-y-0 pb-24 scroll-smooth px-1'>
+        className='col-span-1 lg:col-span-10 h-full overflow-y-auto space-y-0 mb-24 scroll-smooth px-1 dark:bg-dark-table/40'>
         <form
           onSubmit={(e) => {
             e.preventDefault()
             e.stopPropagation()
             void form.handleSubmit()
           }}
-          className='space-y-0 pt-2'>
+          className='space-y-0 pt-1'>
           <div id='basic-info' className='scroll-mt-4'>
             <BasicInfo
               form={form as ProductFormApi}

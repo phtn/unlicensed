@@ -2,12 +2,12 @@
 
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {formatPrice} from '@/utils/formatPrice'
+import {Button, Card, CardBody, Spinner} from '@heroui/react'
 import {useAction, useQuery} from 'convex/react'
+import NextLink from 'next/link'
 import {useParams, useRouter} from 'next/navigation'
 import {useEffect, useState, useTransition} from 'react'
-import {Button, Card, CardBody, Spinner} from '@heroui/react'
-import NextLink from 'next/link'
-import {formatPrice} from '@/utils/formatPrice'
 
 export default function PaymentPage() {
   const params = useParams()
@@ -50,7 +50,8 @@ export default function PaymentPage() {
     // Initiate PayGate payment
     const initPayment = async () => {
       try {
-        const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+        const baseUrl =
+          typeof window !== 'undefined' ? window.location.origin : ''
         const result = await initiatePayment({
           orderId,
           returnUrl: `${baseUrl}/account/orders/${orderId}?payment=success`,
@@ -118,7 +119,10 @@ export default function PaymentPage() {
   }
 
   // Check URL params for payment status
-  const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+  const urlParams =
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search)
+      : null
   const paymentStatus = urlParams?.get('payment')
 
   if (paymentStatus === 'success' && order.payment.status === 'completed') {
@@ -165,7 +169,7 @@ export default function PaymentPage() {
                 View Order
               </Button>
               <Button
-                onClick={handlePayNow}
+                onPress={handlePayNow}
                 color='primary'
                 className='flex-1'
                 isDisabled={!paymentUrl}>
@@ -195,7 +199,7 @@ export default function PaymentPage() {
                 View Order
               </Button>
               <Button
-                onClick={() => window.location.reload()}
+                onPress={() => window.location.reload()}
                 color='primary'
                 className='flex-1'>
                 Retry
@@ -214,9 +218,7 @@ export default function PaymentPage() {
           <CardBody className='p-8 space-y-6'>
             <div>
               <h1 className='text-2xl font-semibold mb-2'>Complete Payment</h1>
-              <p className='text-color-muted'>
-                Order #{order.orderNumber}
-              </p>
+              <p className='text-color-muted'>Order #{order.orderNumber}</p>
             </div>
 
             <div className='space-y-2'>

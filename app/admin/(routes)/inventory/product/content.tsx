@@ -21,10 +21,7 @@ const ProductsContentInner = () => {
     case 'edit':
       if (!id) {
         return (
-          <div className='py-4'>
-            <h3 className='text-2xl tracking-tighter font-semibold px-2 mb-2'>
-              Products List
-            </h3>
+          <div className=''>
             <Suspense fallback={<div>Loading...</div>}>
               <ProductList products={products} />
             </Suspense>
@@ -35,9 +32,6 @@ const ProductsContentInner = () => {
     default:
       return (
         <div className=''>
-          <h3 className='text-2xl tracking-tighter font-semibold p-2 mb-2'>
-            Products List
-          </h3>
           <Suspense fallback={<div>Loading...</div>}>
             <ProductList products={products} />
           </Suspense>

@@ -21,7 +21,7 @@ export const WrappedContent = ({
   const isExpanded = useMemo(() => state === 'expanded', [state])
   return (
     <Wrapper isPanelExpanded={isExpanded}>
-      <div className='px-2 sm:px-3 space-x-2 flex items-center justify-between min-w-0'>
+      <div className='px-3 sm:px-4 space-x-4 flex items-center justify-between min-w-0'>
         <SidebarTrigger />
         {toolbar}
         {withPanel && (

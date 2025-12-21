@@ -116,6 +116,13 @@ export const initiatePayGatePayment = action({
       paygateSettings?.checkoutUrl || 'https://checkout.paygate.to'
     const usdcWallet: string = paygateSettings?.usdcWallet || ''
 
+    // Validate PayGate configuration
+    if (!usdcWallet || usdcWallet.trim() === '') {
+      throw new Error(
+        'PayGate USDC wallet address is required. Please configure it in admin settings.',
+      )
+    }
+
     // Determine payment method for PayGate
     // Map our payment methods to PayGate's expected format
     let paygatePaymentMethod: 'credit_card' | 'crypto' | undefined
@@ -146,7 +153,7 @@ export const initiatePayGatePayment = action({
         name: `${order.shippingAddress.firstName} ${order.shippingAddress.lastName || ''}`.trim(),
       }),
       ...(paygatePaymentMethod && {payment_method: paygatePaymentMethod}),
-      ...(usdcWallet && {wallet: usdcWallet}),
+      wallet: usdcWallet, // Always include wallet since it's required
     })
 
     // PayGate uses different endpoints for credit card vs crypto
@@ -155,20 +162,55 @@ export const initiatePayGatePayment = action({
         ? `${apiUrl}/crypto/create.php`
         : `${apiUrl}/create.php`
 
-    // Create payment session via PayGate API
-    const response: Response = await fetch(`${endpoint}?${params.toString()}`, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
-    })
+    // Build full URL for logging/debugging
+    const fullUrl: string = `${endpoint}?${params.toString()}`
 
-    if (!response.ok) {
-      const errorText: string = await response.text()
-      throw new Error(`PayGate API error: ${response.status} ${errorText}`)
+    // Create payment session via PayGate API
+    let response: Response
+    try {
+      response = await fetch(fullUrl, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      })
+    } catch (error) {
+      throw new Error(
+        `Unable to reach PayGate API. Check network connection. Error: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+      )
     }
 
-    const data: {
+    // Handle non-OK responses with better error messages
+    if (!response.ok) {
+      const contentType: string | null = response.headers.get('content-type')
+      let errorText: string
+
+      try {
+        errorText = await response.text()
+      } catch {
+        errorText = 'Unable to read error response'
+      }
+
+      // Provide specific error messages based on status code
+      if (response.status === 404) {
+        throw new Error(
+          `PayGate endpoint not found. Please verify the API URL configuration. Attempted URL: ${endpoint}`,
+        )
+      } else if (response.status === 400) {
+        throw new Error(
+          `Invalid PayGate request. Check required parameters (wallet, amount, order_id, etc.). Error: ${errorText.substring(0, 200)}`,
+        )
+      } else {
+        throw new Error(
+          `PayGate API error (${response.status}): ${errorText.substring(0, 500)}`,
+        )
+      }
+    }
+
+    // Parse JSON response with error handling
+    let data: {
       success?: boolean
       error?: string
       payment_url?: string
@@ -178,7 +220,18 @@ export const initiatePayGatePayment = action({
       transaction_id?: string
       transactionId?: string
       qr_code?: string
-    } = await response.json()
+    }
+
+    try {
+      data = await response.json()
+    } catch (error) {
+      // Response was not valid JSON (might be HTML error page)
+      throw new Error(
+        `PayGate API returned invalid response. Expected JSON but received: ${
+          response.headers.get('content-type') || 'unknown content type'
+        }`,
+      )
+    }
 
     // Handle different response formats
     if (data.success === false || data.error) {

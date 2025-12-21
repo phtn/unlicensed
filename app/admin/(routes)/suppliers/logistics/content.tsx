@@ -38,7 +38,7 @@ const LogisticsContentInner = () => {
 export const Content = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <MainWrapper>
+      <MainWrapper className='border-t-0'>
         <LogisticsContentInner />
       </MainWrapper>
     </Suspense>

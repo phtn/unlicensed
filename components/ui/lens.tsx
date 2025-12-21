@@ -175,11 +175,12 @@ const ZoomEffect = ({mousePosition, lensSize, zoom}: ZoomEffectProps) => (
       <circle
         cx={(lensSize - (zoom ? 2 : 0)) / 2}
         cy={(lensSize - (zoom ? 2 : 0)) / 2}
-        r={lensSize - (zoom ? 2 : 0)}
+        r={lensSize - (zoom ? 2.5 : 0)}
         fill='none'
-        stroke='rgba(255, 255, 255, 0.8)'
+        stroke='rgba(55, 55, 55, 0.8)'
         strokeWidth={zoom ? '6' : '4'}
       />
+
       <motion.circle
         animate={{
           rotate: zoom ? 15 : 0,

@@ -1,7 +1,6 @@
 'use client'
 
 import {Loader} from '@/components/expermtl/loader'
-import {TextureCardStyled} from '@/components/ui/texture-card'
 import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
@@ -23,12 +22,10 @@ import {
   ChevronUp,
   Package,
   Percent,
-  Sparkles,
   Truck,
 } from 'lucide-react'
 import NextLink from 'next/link'
 import {startTransition, useMemo, useState, ViewTransition} from 'react'
-import {UserStatsCard} from '../account/_components/user-stats-card'
 
 export default function AccountPage() {
   const {user: firebaseUser} = useAuth()
@@ -127,142 +124,143 @@ export default function AccountPage() {
   }
 
   return (
-    <div className='min-h-screen bg-background px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16'>
-      <div className='max-w-7xl mx-auto space-y-8'>
+    <div className='min-h-screen bg-background'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 mt-20'>
         {/* Header Section */}
-        <div className='pt-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-4'>
-          <div>
-            <p className='text-dark-gray dark:text-light-gray font-fugaz'>
-              Welcome back, {convexUser?.name?.split(' ')[0] || 'User'}
-            </p>
+        <div className='mb-8'>
+          <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
+            <div>
+              <h1 className='text-2xl sm:text-3xl font-bold tracking-tight'>
+                Welcome back, {convexUser?.name?.split(' ')[0] || 'User'}
+              </h1>
+            </div>
+            {userRewards?.currentTier && (
+              <Chip
+                variant='shadow'
+                classNames={{
+                  base: 'bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 border-small border-white/50 shadow-lg shadow-pink-500/20',
+                  content:
+                    'drop-shadow shadow-black text-white font-semibold tracking-wider px-3',
+                }}
+                size='lg'
+                startContent={<Award size={16} className='text-white' />}>
+                {userRewards.currentTier.name.toUpperCase()} MEMBER
+              </Chip>
+            )}
           </div>
-          {userRewards?.currentTier && (
-            <Chip
-              variant='shadow'
-              classNames={{
-                base: 'bg-gradient-to-br from-indigo-500 to-pink-500 border-small border-white/50 shadow-pink-500/30',
-                content:
-                  'drop-shadow shadow-black text-white font-semibold tracking-wider',
-              }}
-              size='lg'
-              startContent={<Award size={18} className='text-white' />}>
-              {userRewards.currentTier.name.toUpperCase()} MEMBER
-            </Chip>
-          )}
         </div>
 
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-          {/* Left Column: Profile & Loyalty (1/3 width) */}
-          <div className='space-y-8 lg:col-span-1'>
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+          {/* Left Column: Profile & Rewards (1/3 width) */}
+          <div className='space-y-6 lg:col-span-1'>
             {/* Profile Card */}
-            <TextureCardStyled className='p-6 h-120 bg-transparent rounded-[3rem]'>
-              <div className='flex h-full flex-col items-center text-center space-y-4'>
-                <div className='relative h-full flex flex-col justify-center'>
-                  <div className='size-24 rounded-full p-1 bg-linear-to-tl from-brand/40 to-pink-500'>
-                    <div className='w-full h-full rounded-full overflow-hidden border-4 border-background bg-background'>
-                      {convexUser?.photoUrl || firebaseUser?.photoURL ? (
-                        <Image
-                          src={
-                            convexUser?.photoUrl || firebaseUser?.photoURL || ''
-                          }
-                          alt='Profile'
-                          className='w-full h-full object-cover'
-                        />
-                      ) : (
-                        <div className='w-full h-full flex items-center justify-center bg-default-100 text-4xl font-bold text-default-500'>
-                          {(
-                            convexUser?.name ||
-                            firebaseUser?.displayName ||
-                            'U'
-                          )
-                            .charAt(0)
-                            .toUpperCase()}
-                        </div>
-                      )}
+            <Card className='border-none shadow-md bg-content1/50 backdrop-blur-sm dark:bg-dark-table/40'>
+              <CardBody className='p-6'>
+                <div className='flex flex-col items-center text-center space-y-5 justify-center'>
+                  <div className='relative'>
+                    <div className='size-28 rounded-full p-0.5 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500'>
+                      <div className='w-full h-full rounded-full overflow-hidden border-4 border-background bg-background'>
+                        {convexUser?.photoUrl || firebaseUser?.photoURL ? (
+                          <Image
+                            src={
+                              convexUser?.photoUrl ||
+                              firebaseUser?.photoURL ||
+                              ''
+                            }
+                            alt='Profile'
+                            className='w-full h-full object-cover'
+                          />
+                        ) : (
+                          <div className='w-full h-full flex items-center justify-center bg-linear-to-br from-indigo-100 to-pink-100 dark:from-indigo-900/30 dark:to-pink-900/30 text-4xl font-bold text-indigo-600 dark:text-indigo-400'>
+                            {(
+                              convexUser?.name ||
+                              firebaseUser?.displayName ||
+                              'U'
+                            )
+                              .charAt(0)
+                              .toUpperCase()}
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    {userRewards?.isVIP && (
+                      <div className='absolute -bottom-1 -right-1 bg-linear-to-br from-yellow-400 to-yellow-600 text-black text-xs font-bold px-2.5 py-1 rounded-full shadow-lg border-2 border-background'>
+                        VIP
+                      </div>
+                    )}
                   </div>
-                  {userRewards?.isVIP && (
-                    <div className='absolute -bottom-2 -right-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-full shadow-lg border-2 border-background'>
-                      VIP
-                    </div>
-                  )}
-                </div>
 
-                <div>
-                  <h2 className='text-lg font-bold'>
-                    {convexUser?.name ?? firebaseUser?.displayName}
-                  </h2>
-                  <p className='text-sm text-blue-500'>
-                    {convexUser?.email ?? firebaseUser?.email}
-                  </p>
-                </div>
-
-                <div className='w-full pt-4 border-t border-default-200/50 grid grid-cols-2 gap-4'>
-                  <div className='text-center p-4 rounded-3xl'>
-                    <p className='text-xs uppercase tracking-wider'>Orders</p>
-                    <p className='text-xl font-bold'>
-                      {orderStats?.totalOrders ?? 0}
+                  <div className='space-y-1'>
+                    <h2 className='text-xl font-bold tracking-tight'>
+                      {convexUser?.name ?? firebaseUser?.displayName}
+                    </h2>
+                    <p className='hidden text-sm text-default-500'>
+                      {convexUser?.email ?? firebaseUser?.email}
                     </p>
                   </div>
-                  <div className='text-right p-4 space-y-1 rounded-3xl'>
-                    {/*<p className='text-xs uppercase tracking-wider'>Spent</p>*/}
-                    <div className=' flex items-center space-x-2 text-xl text-foreground font-medium font-geist-sans'>
-                      {/*<span>
-                        <Icon
-                          onClick={handleToggleVisibleSpent}
-                          name={visibleSpent ? 'eye' : 'eye-slash'}
-                          className='opacity-80 size-5 cursor-pointer'
-                        />
-                      </span>*/}
-                      {/*<ViewTransition>
-                        <span>
-                          {visibleSpent
-                            ? formatPrice(orderStats?.totalSpent ?? 0)
-                            : '****'}
-                        </span>
-                      </ViewTransition>*/}
+
+                  <div className='hidden w-full pt-4 border-t border-default-200/50'>
+                    <div className='flex items-center justify-center gap-6'>
+                      <div className='text-center'>
+                        <p className='text-xs uppercase tracking-wider text-default-500 mb-1'>
+                          Orders
+                        </p>
+                        <p className='text-2xl font-bold'>
+                          {orderStats?.totalOrders ?? 0}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </TextureCardStyled>
+              </CardBody>
+            </Card>
 
             {/* Points Balance Card */}
             {pointsBalance && (
-              <Card className='border-none shadow-md bg-linear-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-md'>
-                <CardBody className='p-6 space-y-4'>
+              <Card className='border-none shadow-md bg-linear-to-br from-purple-500/10 via-pink-500/10 to-indigo-500/10 backdrop-blur-sm dark:bg-dark-table/20'>
+                <CardBody className='p-6 space-y-5'>
                   <div className='flex items-center justify-between'>
-                    <h3 className='font-semibold flex items-center gap-2'>
-                      <Sparkles className='size-4 text-purple-500' />
+                    <h3 className='font-semibold text-2xl tracking-tight'>
                       Reward Points
                     </h3>
+                    <div className=''>
+                      <Icon
+                        name='coins'
+                        className='size-9 text-purple-600 dark:text-purple-100'
+                      />
+                    </div>
                   </div>
 
-                  <div className='space-y-3'>
+                  <div className='space-y-4'>
                     <div className='flex items-baseline gap-2'>
-                      <span className='text-3xl font-bold text-purple-600 dark:text-purple-400'>
+                      <span className='text-4xl font-medium font-space bg-linear-to-br from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent'>
                         {pointsBalance.availablePoints.toLocaleString()}
                       </span>
-                      <span className='text-sm text-default-500'>points</span>
+                      <span className='text-base font-medium'>pts</span>
                     </div>
                     {nextVisitMultiplier && (
-                      <div className='pt-2 border-t border-default-200/50'>
-                        <div className='flex items-center justify-between text-sm mb-1'>
-                          <span className='text-default-500'>
+                      <div className='pt-3 border-t border-default-200/50 space-y-2'>
+                        <div className='flex items-center justify-between'>
+                          <span className='text-sm text-default-600 dark:text-default-400 font-medium'>
                             Next Visit Multiplier
                           </span>
-                          <span className='font-semibold text-purple-600 dark:text-purple-400'>
+                          <Chip
+                            size='sm'
+                            variant='flat'
+                            className='bg-purple-500/20 text-purple-700 dark:text-purple-300 font-semibold'>
                             {nextVisitMultiplier.multiplier}x
-                          </span>
+                          </Chip>
                         </div>
-                        <p className='text-xs text-default-500'>
+                        <p className='text-xs text-default-500 leading-relaxed'>
                           {nextVisitMultiplier.message}
                         </p>
                       </div>
                     )}
-                    <div className='text-xs text-default-500 pt-1'>
-                      Lifetime: {pointsBalance.totalPoints.toLocaleString()}{' '}
-                      points
+                    <div className='text-xs text-default-500 pt-2'>
+                      Lifetime:{' '}
+                      <span className='font-semibold text-default-700 dark:text-default-300'>
+                        {pointsBalance.totalPoints.toLocaleString()} points
+                      </span>
                     </div>
                   </div>
                 </CardBody>
@@ -271,40 +269,53 @@ export default function AccountPage() {
 
             {/* Loyalty Progress Card */}
             {userRewards?.nextTier && (
-              <Card className='border-none shadow-md bg-content1/50 backdrop-blur-md'>
-                <CardBody className='p-6 space-y-4'>
+              <Card className='border-none shadow-md bg-content1/50 backdrop-blur-sm'>
+                <CardBody className='p-6 space-y-5'>
                   <div className='flex items-center justify-between'>
-                    <h3 className='font-semibold flex items-center gap-2'>
-                      <Award className='size-4 text-primary' />
-                      Next Reward Tier
-                    </h3>
-                    <span className='text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full'>
+                    <div className='flex items-center gap-2.5'>
+                      <div className='p-2 rounded-xl bg-primary/20'>
+                        <Award className='size-5 text-primary' />
+                      </div>
+                      <h3 className='font-semibold text-base tracking-tight'>
+                        Next Reward Tier
+                      </h3>
+                    </div>
+                    <Chip
+                      size='sm'
+                      variant='flat'
+                      className='bg-primary/20 text-primary font-semibold'>
                       {userRewards.nextTier.name}
-                    </span>
+                    </Chip>
                   </div>
 
-                  <div className='space-y-2'>
-                    <div className='flex justify-between text-sm'>
-                      <span className='text-default-500'>Progress</span>
-                      <span className='font-medium'>
+                  <div className='space-y-3'>
+                    <div className='flex justify-between items-center text-sm'>
+                      <span className='text-default-600 dark:text-default-400 font-medium'>
+                        Progress
+                      </span>
+                      <span className='font-bold text-primary'>
                         {Math.round(nextTierProgress)}%
                       </span>
                     </div>
                     <Progress
                       value={nextTierProgress}
                       color='secondary'
-                      className='h-2'
+                      className='h-2.5'
                       classNames={{
                         indicator:
-                          'bg-gradient-to-r from-indigo-500 to-pink-500',
+                          'bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500',
                       }}
                     />
-                    <p className='text-xs text-default-500 text-center'>
+                    <p className='text-xs text-default-500 text-center leading-relaxed pt-1'>
                       Spend{' '}
                       <span className='font-bold text-foreground'>
                         ${formatPrice(spendToNextTier)}
                       </span>{' '}
-                      more to reach {userRewards.nextTier.name} status
+                      more to reach{' '}
+                      <span className='font-semibold text-primary'>
+                        {userRewards.nextTier.name}
+                      </span>{' '}
+                      status
                     </p>
                   </div>
                 </CardBody>
@@ -312,22 +323,24 @@ export default function AccountPage() {
             )}
 
             {/* Benefits Summary */}
-            <Card className='border-none shadow-sm'>
+            <Card className='border-none shadow-md bg-content1/50 backdrop-blur-sm'>
               <CardBody className='p-0'>
-                <div className='px-4 py-3 border-b border-default-100 font-semibold text-sm'>
-                  Your Member Benefits
+                <div className='px-6 py-4'>
+                  <h3 className='font-semibold text-base tracking-tight'>
+                    Member Benefits
+                  </h3>
                 </div>
-                <div className='p-2'>
+                <div className='p-4 space-y-2'>
                   {tierBenefits?.discountPercentage ? (
-                    <div className='flex items-center gap-3 p-4 hover:bg-default-50 rounded-lg transition-colors'>
-                      <div className='p-2 rounded-full bg-green-100 text-green-600'>
-                        <Percent size={16} />
+                    <div className='flex items-center gap-3 p-4 rounded-xl bg-green-50/50 dark:bg-green-900/10 border border-green-200/50 dark:border-green-800/30 transition-all hover:bg-green-50 dark:hover:bg-green-900/20'>
+                      <div className='p-2.5 rounded-xl bg-green-500/20 text-green-600 dark:text-green-400'>
+                        <Percent size={18} />
                       </div>
-                      <div>
-                        <p className='text-sm font-medium'>
+                      <div className='flex-1'>
+                        <p className='text-sm font-semibold text-green-700 dark:text-green-400'>
                           {tierBenefits.discountPercentage}% OFF
                         </p>
-                        <p className='text-xs text-default-500'>
+                        <p className='text-xs text-default-500 mt-0.5'>
                           On all orders
                         </p>
                       </div>
@@ -335,26 +348,28 @@ export default function AccountPage() {
                   ) : null}
 
                   {tierBenefits?.freeShipping && (
-                    <div className='flex items-center gap-3 p-4 hover:bg-default-50 rounded-lg transition-colors'>
-                      <div className='p-2 rounded-full bg-blue-100 text-blue-600'>
-                        <Truck size={16} />
+                    <div className='flex items-center gap-3 p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/30 transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20'>
+                      <div className='p-2.5 rounded-xl bg-blue-500/20 text-blue-600 dark:text-blue-400'>
+                        <Truck size={18} />
                       </div>
-                      <div>
-                        <p className='text-sm font-medium'>Free Shipping</p>
-                        <p className='text-xs text-default-500'>
+                      <div className='flex-1'>
+                        <p className='text-sm font-semibold text-blue-700 dark:text-blue-400'>
+                          Free Shipping
+                        </p>
+                        <p className='text-xs text-default-500 mt-0.5'>
                           On all eligible orders
                         </p>
                       </div>
                     </div>
                   )}
 
-                  <div className='flex items-center gap-3 p-4 hover:bg-default-50 rounded-lg transition-colors'>
-                    <div className='p-2 rounded-full bg-brand/40 dark:bg-brand/60 text-dark-gray dark:text-white'>
-                      <Icon name='user' size={16} />
+                  <div className='flex items-center gap-3 p-4 rounded-xl bg-default-100/50  border border-default-200/50 transition-all hover:bg-default-100 dark:bg-dark-table/40'>
+                    <div className='p-2.5 rounded-xl bg-primary/20 text-primary'>
+                      <Icon name='user' size={18} />
                     </div>
-                    <div>
-                      <p className='text-[15px] font-medium'>Member Access</p>
-                      <p className='text-xs text-default-500'>
+                    <div className='flex-1'>
+                      <p className='text-sm font-semibold'>Member Access</p>
+                      <p className='text-xs text-default-500 mt-0.5'>
                         Exclusive drops & events
                       </p>
                     </div>
@@ -364,76 +379,55 @@ export default function AccountPage() {
             </Card>
           </div>
 
-          {/* Right Column: Stats & Orders (2/3 width) */}
-          <div className='lg:col-span-2 space-y-8'>
-            {/* Quick Stats Grid */}
-            <div className='grid grid-cols-2 sm:grid-cols-4 gap-4'>
-              <UserStatsCard
-                label='total orders'
-                value={orderStats?.totalOrders || 0}
-                icon='bag-solid'
-              />
-              <UserStatsCard
-                label='total spent'
-                value={'$' + formatPrice(orderStats?.totalSpent || 0)}
-                icon='money-duotone'
-              />
-              <UserStatsCard
-                label='total rewards'
-                value={formatPrice(userRewards?.totalPoints || 0)}
-                icon='diamond-duotone'
-              />
-              <UserStatsCard
-                label='current rewards'
-                value={(tierBenefits?.discountPercentage ?? 0) + '%'}
-                icon='money-duotone'
-              />
-            </div>
-
+          {/* Right Column: Orders (2/3 width) */}
+          <div className='lg:col-span-2'>
             {/* Recent Orders Section */}
             <div>
-              <div className='flex items-center justify-between mb-4'>
-                <h2 className='text-xl font-bold'>
-                  {showAllOrders ? 'All Orders' : 'Recent Orders'}
-                </h2>
-                <Button
-                  variant='light'
-                  onPress={toggleShowAllOrders}
-                  endContent={
-                    showAllOrders ? (
-                      <ChevronUp size={16} />
-                    ) : (
-                      <ChevronRight size={16} />
-                    )
-                  }
-                  className='text-default-500 hover:text-foreground'>
-                  {showAllOrders ? 'Show Less' : 'View All'}
-                </Button>
+              <div className='flex items-center justify-between mb-2'>
+                <div>
+                  <p className='text-sm text-default-500 px-2'>Active Orders</p>
+                </div>
+                {recentOrders && recentOrders.length > 5 && (
+                  <Button
+                    variant='light'
+                    onPress={toggleShowAllOrders}
+                    endContent={
+                      showAllOrders ? (
+                        <ChevronUp size={16} />
+                      ) : (
+                        <ChevronRight size={16} />
+                      )
+                    }
+                    className='text-default-600 dark:text-default-400 hover:text-foreground font-medium'>
+                    {showAllOrders ? 'Show Less' : 'View All'}
+                  </Button>
+                )}
               </div>
 
               <ViewTransition>
-                <div className='space-y-4 min-h-[100px]'>
+                <div className='space-y-3 min-h-[100px]'>
                   {recentOrders === undefined ? (
-                    <div className='w-full flex justify-center items-center py-12'>
+                    <div className='w-full flex justify-center items-center py-16'>
                       <Loader />
                     </div>
                   ) : recentOrders.length === 0 ? (
-                    <Card className='border-dashed border-2 border-default-200 bg-transparent'>
-                      <CardBody className='py-12 flex flex-col items-center justify-center text-center'>
-                        <div className='w-16 h-16 bg-default-100 rounded-full flex items-center justify-center mb-4 text-default-400'>
-                          <Package size={32} />
+                    <Card className='border-2 border-dashed border-default-200 dark:border-default-100/20 bg-default-50/50 dark:bg-default-50/5'>
+                      <CardBody className='py-16 flex flex-col items-center justify-center text-center'>
+                        <div className='w-20 h-20 rounded-full bg-default-100 dark:bg-default-50/10 flex items-center justify-center mb-5'>
+                          <Package size={36} className='text-default-400' />
                         </div>
-                        <h3 className='text-lg font-medium text-foreground'>
+                        <h3 className='text-xl font-semibold text-foreground mb-2'>
                           No orders yet
                         </h3>
-                        <p className='text-default-500 max-w-xs mt-2'>
+                        <p className='text-default-500 max-w-sm mb-6 leading-relaxed'>
                           Start shopping to see your orders and earn rewards!
                         </p>
                         <Button
                           as={NextLink}
                           href='/products'
                           color='primary'
-                          className='mt-6'>
+                          size='lg'
+                          className='font-semibold'>
                           Browse Products
                         </Button>
                       </CardBody>
@@ -445,51 +439,63 @@ export default function AccountPage() {
                         as={NextLink}
                         href={`/account/orders/${order._id}`}
                         isPressable
-                        className='w-full hover:scale-[1.01] transition-transform'>
-                        <CardBody className='p-2'>
+                        className='w-full border-none shadow-sm bg-content1/50 backdrop-blur-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5'>
+                        <CardBody className='p-5'>
                           <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
-                            <div className='flex items-start gap-4'>
-                              <div className='p-3 bg-default-100 rounded-xl hidden sm:block'>
-                                <Box size={24} className='text-default-500' />
+                            <div className='flex items-start gap-4 flex-1 min-w-0'>
+                              <div className='p-3 rounded-xl bg-linear-to-br from-indigo-500/10 to-pink-500/10 hidden sm:flex shrink-0'>
+                                <Box
+                                  size={22}
+                                  className='text-indigo-600 dark:text-indigo-400'
+                                />
                               </div>
-                              <div>
-                                <div className='flex items-center gap-4'>
-                                  <h3 className='font-semibold text-base'>
+                              <div className='flex-1 min-w-0'>
+                                <div className='flex items-center gap-3 flex-wrap mb-2'>
+                                  <h3 className='font-semibold text-base tracking-tight truncate'>
                                     {order.orderNumber}
                                   </h3>
                                   <Chip
                                     size='sm'
                                     color={getStatusColor(order.orderStatus)}
-                                    variant='flat'>
+                                    variant='flat'
+                                    className='font-medium'>
                                     {order.orderStatus.toUpperCase()}
                                   </Chip>
                                 </div>
-                                <p className='font-space text-sm opacity-60 mt-1'>
-                                  {order.createdAt
-                                    ? new Date(order.createdAt).toLocaleDateString(
-                                        'en-US',
-                                        {
+                                <div className='flex items-center gap-2 text-sm text-default-500 flex-wrap'>
+                                  <span>
+                                    {order.createdAt
+                                      ? new Date(
+                                          order.createdAt,
+                                        ).toLocaleDateString('en-US', {
                                           year: 'numeric',
                                           month: 'short',
                                           day: 'numeric',
-                                        },
-                                      )
-                                    : 'N/A'}{' '}
-                                  • {order.items.length} Items
-                                </p>
+                                        })
+                                      : 'N/A'}
+                                  </span>
+                                  <span>•</span>
+                                  <span>
+                                    {order.items.length} item
+                                    {order.items.length !== 1 ? 's' : ''}
+                                  </span>
+                                </div>
                               </div>
                             </div>
 
-                            <div className='flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-none pt-4 sm:pt-0'>
+                            <div className='flex items-center justify-between sm:justify-end gap-4 sm:gap-6 border-t sm:border-none pt-4 sm:pt-0'>
                               <div className='text-left sm:text-right'>
-                                <p className='text-xs text-default-500 uppercase tracking-wider'>
+                                <p className='text-xs text-default-500 uppercase tracking-wider mb-1'>
                                   Total
                                 </p>
-                                <p className='text-lg font-bold text-primary'>
+                                <p className='text-xl font-bold bg-linear-to-br from-indigo-600 to-pink-600 dark:from-indigo-400 dark:to-pink-400 bg-clip-text text-transparent'>
                                   ${formatPrice(order.totalCents)}
                                 </p>
                               </div>
-                              <ChevronRight className='text-default-300' />
+                              <ChevronRight
+                                size={20}
+                                className='text-default-400 shrink-0'
+                              />
                             </div>
                           </div>
                         </CardBody>

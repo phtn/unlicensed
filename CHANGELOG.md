@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.1
+
+### Patch Changes
+
+- update:account-profile
+
 ## 0.9.0
 
 ### Minor Changes

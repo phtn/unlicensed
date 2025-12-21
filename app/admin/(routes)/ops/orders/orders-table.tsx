@@ -133,7 +133,7 @@ export const OrdersTable = () => {
   }
 
   return (
-    <Card shadow='sm' className='p-4'>
+    <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
       <Table
         key={`table-${selectedOrderId || 'none'}-${open}`}
         isCompact

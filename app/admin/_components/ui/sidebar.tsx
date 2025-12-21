@@ -272,7 +272,7 @@ function SidebarTrigger({
     <button
       {...props}
       className={cn(
-        'rounded-lg rotate-180 border-none text-foreground hover:text-foreground group hover:bg-light-gray/30 bg-light-gray/5 dark:bg-light-gray/5 size-7 flex items-center justify-center',
+        'rounded-lg rotate-180 border-none text-foreground hover:text-foreground group hover:bg-light-gray/30 bg-light-table/20 dark:bg-light-table/5 size-7 flex items-center justify-center px-2',
         className,
         {
           'rotate-0': open,

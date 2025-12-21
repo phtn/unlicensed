@@ -9,12 +9,15 @@ export const blogSchema = v.object({
   tags: v.array(v.string()),
   // Vercel flags - storing keys of flags that need to be active
   flags: v.optional(v.array(v.string())),
-  status: v.union(v.literal('draft'), v.literal('published'), v.literal('archived')),
+  status: v.union(
+    v.literal('draft'),
+    v.literal('published'),
+    v.literal('archived'),
+  ),
   publishedAt: v.optional(v.number()),
   authorId: v.optional(v.id('users')),
   updatedAt: v.optional(v.number()),
   createdAt: v.number(),
 })
 
-export type BlogType = Infer<typeof blogSchema>
-
+export type Blogpost = Infer<typeof blogSchema>

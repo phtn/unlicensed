@@ -150,7 +150,7 @@ export const DeliveriesTable = () => {
   }
 
   return (
-    <Card shadow='sm' className='p-4'>
+    <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
       {/*<div className='flex items-center justify-between mb-4'>
         <h2 className='text-lg font-semibold font-space'>Deliveries</h2>
         <p className='text-sm text-gray-400'>{deliveries.length} active</p>

@@ -122,13 +122,13 @@ export const CourierList = ({couriers}: CourierListProps) => {
 
   return (
     <section className=''>
-      <h3 className='text-2xl tracking-tighter font-semibold py-2'>Couriers</h3>
+      {/*<h3 className='text-2xl tracking-tighter font-semibold py-2'>Couriers</h3>*/}
       {couriers.length === 0 ? (
         <p className='text-sm text-neutral-500'>
           No couriers yet. Create one above to get started.
         </p>
       ) : (
-        <Card shadow='sm' className='p-4'>
+        <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
           <Table
             isCompact
             removeWrapper

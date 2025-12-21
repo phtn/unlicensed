@@ -47,11 +47,11 @@ export function CheckoutModal({
       size='2xl'
       scrollBehavior='inside'
       placement='center'>
-      <ModalContent>
+      <ModalContent className='overflow-hidden'>
         {(onClose) => (
           <>
-            <ModalHeader className='flex flex-col gap-1'>
-              Complete Your Order
+            <ModalHeader className='flex flex-col gap-1 text-xl font-bold tracking-tight bg-foreground text-background'>
+              Customer Shipping and Billing
             </ModalHeader>
             <ModalBody>
               <OrderStatusMessages

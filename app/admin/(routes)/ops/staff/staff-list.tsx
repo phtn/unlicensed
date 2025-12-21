@@ -12,13 +12,18 @@ interface StaffListProps {
 
 const StaffItem = ({member}: {member: Doc<'staff'>}) => (
   <Card
-    className='p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors'
-    radius='sm'>
+    className='p-4 hover:bg-neutral-50 transition-colors dark:hover:bg-dark-table/30 dark:bg-dark-table/40'
+    radius='none'
+    shadow='none'>
     <div className='flex items-start justify-between'>
       <div className='flex'>
         <div className='flex-1 w-64'>
           <User
             avatarProps={{src: member.avatarUrl}}
+            classNames={{
+              name: 'mb-1',
+              description: 'text-xs opacity-80 text-foreground',
+            }}
             name={
               <div className='flex items-center gap-2'>
                 <h4 className='font-semibold tracking-tight text-base'>
@@ -27,7 +32,8 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => (
                 <Chip
                   size='sm'
                   color={member.active ? 'success' : 'default'}
-                  variant='flat'>
+                  variant='flat'
+                  className='bg-emerald-500/10 h-5'>
                   {member.active ? 'Active' : 'Inactive'}
                 </Chip>
               </div>
@@ -35,21 +41,26 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => (
             description={member.email}
           />
         </div>
-        <div>
+        <div className='space-y-1'>
           <div className='flex items-center gap-2'>
             <h4 className='font-semibold tracking-tight text-base text-indigo-500'>
               {member.position}
             </h4>
-            <span className='text-neutral-400'>•</span>
+            <span className='opacity-30'>●</span>
             <div className='flex flex-wrap gap-1'>
               {member.accessRoles.map((role) => (
-                <Chip key={role} size='sm' variant='flat' color='primary'>
+                <Chip
+                  key={role}
+                  size='sm'
+                  variant='flat'
+                  color='primary'
+                  className='h-5 bg-sky-500/10'>
                   {role}
                 </Chip>
               ))}
             </div>
           </div>
-          <p className='text-xs text-neutral-500'>
+          <p className='text-xs opacity-80'>
             created {formatDistanceToNow(member.createdAt, {addSuffix: true})}
           </p>
         </div>
@@ -73,9 +84,6 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => (
 export const StaffList = ({staff}: StaffListProps) => {
   return (
     <section>
-      <h3 className='text-2xl tracking-tighter font-semibold py-2'>
-        Staff Members
-      </h3>
       {staff?.length === 0 ? (
         <p className='mt-3 text-sm text-neutral-500 px-2'>
           No staff members yet. Create one to get started.

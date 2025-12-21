@@ -22,6 +22,7 @@ export function PayGateSettings() {
   const [enabled, setEnabled] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   // Load settings when available
   useEffect(() => {
@@ -39,6 +40,13 @@ export function PayGateSettings() {
   }, [adminSettings])
 
   const handleSave = async () => {
+    // Validate wallet is provided when PayGate is enabled
+    if (enabled && (!usdcWallet || usdcWallet.trim() === '')) {
+      setValidationError('USDC wallet address is required when PayGate is enabled')
+      return
+    }
+
+    setValidationError(null)
     setIsSaving(true)
     setSaveStatus('idle')
 
@@ -61,6 +69,15 @@ export function PayGateSettings() {
       setIsSaving(false)
     }
   }
+
+  // Validate wallet when enabled state changes
+  useEffect(() => {
+    if (enabled && (!usdcWallet || usdcWallet.trim() === '')) {
+      setValidationError('USDC wallet address is required when PayGate is enabled')
+    } else {
+      setValidationError(null)
+    }
+  }, [enabled, usdcWallet])
 
   return (
     <Card>
@@ -109,7 +126,9 @@ export function PayGateSettings() {
             onValueChange={setUsdcWallet}
             description='Your USDC (Polygon) wallet address to receive payments'
             isDisabled={!enabled}
-            isRequired
+            isRequired={enabled}
+            errorMessage={validationError && enabled ? validationError : undefined}
+            isInvalid={enabled && (!usdcWallet || usdcWallet.trim() === '')}
           />
 
           <div className='bg-default-100 p-4 rounded-lg space-y-2 text-sm'>
@@ -146,7 +165,10 @@ export function PayGateSettings() {
             onClick={handleSave}
             color='primary'
             isLoading={isSaving}
-            isDisabled={!enabled && !usdcWallet}>
+            isDisabled={
+              (enabled && (!usdcWallet || usdcWallet.trim() === '')) ||
+              (!enabled && !usdcWallet)
+            }>
             Save Settings
           </Button>
         </div>

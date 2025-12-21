@@ -53,7 +53,6 @@ export const statusOptions = [
 
 export const InventoryTable = () => {
   const products = useQuery(api.products.q.listProducts, {limit: 100})
-  // const productImage = useQuery(api.products.q.getPrimaryImage, 'skip')
   const categoriesData = useQuery(api.categories.q.listCategories)
   const categories = useMemo(() => categoriesData ?? [], [categoriesData])
   const {selectedProduct, setSelectedProduct} = useProductDetails()
@@ -67,10 +66,8 @@ export const InventoryTable = () => {
     [products],
   )
 
-  const productImages = useQuery(api.uploads.getStorageUrls, {
-    storageIds: productImageIds as Array<Id<'_storage'>>,
-  })
-
+  // Use the useStorageUrls hook for efficient image URL resolution
+  const resolveImageUrl = useStorageUrls(productImageIds)
 
   const {
     columnWidths,
@@ -303,8 +300,9 @@ export const InventoryTable = () => {
           <div className='flex items-center gap-3'>
             <Image
               src={
-                productImages?.filter((p) => p.storageId === product.image)?.[0]
-                  ?.url || '/default-product-image.svg'
+                product.image
+                  ? resolveImageUrl(product.image) || '/default-product-image.svg'
+                  : '/default-product-image.svg'
               }
               alt={product.name}
               className='w-12 h-auto aspect-square object-cover rounded shrink-0'
@@ -654,7 +652,7 @@ export const InventoryTable = () => {
   return (
     <>
       {topContent}
-      <Card shadow='sm' className='p-4'>
+      <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
         <div ref={tableRef} className='relative'>
           <Table
             key={`table-${selectedProductId || 'none'}-${open}`}

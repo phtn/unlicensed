@@ -1,5 +1,16 @@
-import {type PropsWithChildren} from 'react'
+import {ClassName} from '@/app/types'
+import {cn} from '@/lib/utils'
+import {ReactNode, type PropsWithChildren} from 'react'
 
-export const MainWrapper = ({children}: PropsWithChildren) => {
-  return <div className='px-4 border-t-[0.33px] border-sidebar'>{children}</div>
+interface MainWrapperProps extends PropsWithChildren {
+  children?: ReactNode
+  className?: ClassName
+}
+
+export const MainWrapper = ({children, className}: MainWrapperProps) => {
+  return (
+    <div className={cn('px-4 border-t-[0.33px] border-sidebar', className)}>
+      {children}
+    </div>
+  )
 }
