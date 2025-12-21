@@ -1,8 +1,6 @@
 'use client'
 
-import {Id} from '@/convex/_generated/dataModel'
 import {AddressType} from '@/convex/users/d'
-import {PlaceOrderParams} from '@/hooks/use-place-order'
 import {useRouter} from 'next/navigation'
 import {useCallback, useEffect, useMemo, useTransition} from 'react'
 import {CheckoutModal} from './components/checkout-modal'
@@ -37,7 +35,6 @@ export function OrderSummary({
     formData,
     formErrors,
     isPending: isFormPending,
-    startTransition: startFormTransition,
     handleInputChange,
     validate,
   } = useOrderForm({
@@ -240,4 +237,3 @@ export function OrderSummary({
     </>
   )
 }
-

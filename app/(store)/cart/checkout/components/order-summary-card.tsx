@@ -1,21 +1,12 @@
 'use client'
 
-import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {formatPrice} from '@/utils/formatPrice'
-import {
-  Button,
-  Card,
-  CardBody,
-  Divider,
-  Link,
-  Select,
-  SelectItem,
-} from '@heroui/react'
-import {useQuery} from 'convex/react'
-import {Sparkles} from 'lucide-react'
-import {useMemo, ViewTransition} from 'react'
+import {Button, Card, CardBody, Divider} from '@heroui/react'
+import {ViewTransition} from 'react'
+import {PointsBalance} from '../../rewards-summary'
 import {FormData} from '../types'
+import {PaymentMethod} from './payment-method'
 
 // This component is part of the checkout flow, showing payment method and order button
 
@@ -32,6 +23,7 @@ interface OrderSummaryCardProps {
   onPaymentMethodChange: (value: FormData['paymentMethod']) => void
   onPlaceOrderClick: () => void
   userId?: Id<'users'>
+  pointsBalance: PointsBalance | undefined
 }
 
 export function OrderSummaryCard({
@@ -43,50 +35,34 @@ export function OrderSummaryCard({
   isLoading,
   isPending,
   orderId,
-  paymentMethod,
+  // paymentMethod,
   onPaymentMethodChange,
   onPlaceOrderClick,
-  userId,
+  pointsBalance,
 }: OrderSummaryCardProps) {
-  // Get user's points balance and next visit multiplier
-  const pointsBalance = useQuery(
-    api.rewards.q.getUserPointsBalance,
-    userId ? {userId} : 'skip',
-  )
+  const handleOnChange = (value: FormData['paymentMethod']) => {
+    onPaymentMethodChange(value)
+  }
 
-  const nextVisitMultiplier = useQuery(
-    api.rewards.q.getNextVisitMultiplier,
-    userId ? {userId} : 'skip',
-  )
-
-  // Calculate estimated points (assuming all products are eligible)
-  // In reality, we'd need to check each product, but for UI purposes we'll estimate
-  const estimatedPoints = useMemo(() => {
-    if (!nextVisitMultiplier || !isAuthenticated) return null
-    // Convert subtotal from cents to dollars, then multiply by multiplier
-    // Points = (subtotal in dollars) × multiplier, rounded to nearest integer
-    const points = Math.round((subtotal / 100) * nextVisitMultiplier.multiplier)
-    return points
-  }, [subtotal, nextVisitMultiplier, isAuthenticated])
   return (
     <div className='lg:sticky lg:top-24 h-fit'>
       <Card>
         <CardBody className='space-y-4 p-8'>
-          <h2 className='text-xl font-semibold'>Order Summary</h2>
+          <h2 className='text-2xl font-normal font-bone'>Order Summary</h2>
           <Divider />
           <ViewTransition>
-            <div className='space-y-2 font-space'>
+            <div className='space-y-2 font-sans'>
               <div className='flex justify-between text-sm'>
                 <span className='text-color-muted'>Subtotal</span>
-                <span>${formatPrice(subtotal)}</span>
+                <span className='font-space'>${formatPrice(subtotal)}</span>
               </div>
               <div className='flex justify-between text-sm'>
                 <span className='text-color-muted'>Tax</span>
-                <span>${formatPrice(tax)}</span>
+                <span className='font-space'>${formatPrice(tax)}</span>
               </div>
               <div className='flex justify-between text-sm'>
                 <span className='text-color-muted'>Shipping</span>
-                <span>
+                <span className='font-space'>
                   {shipping === 0 ? (
                     <span className='text-teal-500'>Free</span>
                   ) : (
@@ -94,54 +70,29 @@ export function OrderSummaryCard({
                   )}
                 </span>
               </div>
+              <div className='flex justify-between text-sm dark:purple-300/10 p-1 rounded-md'>
+                <span className='text-foreground font-semibold'>
+                  Reward Points
+                </span>
+                <span className='font-space'>
+                  ${pointsBalance?.availablePoints ?? 0}
+                </span>
+              </div>
             </div>
           </ViewTransition>
           <Divider />
           <div className='flex justify-between text-lg font-semibold font-space'>
             <span>Total</span>
-            <span>${formatPrice(total)}</span>
+            <span className='font-space'>${formatPrice(total)}</span>
           </div>
-
-          <div className='flex justify-between text-lg font-semibold font-space'>
-            <span>Points Balance</span>
-            <span>{pointsBalance?.availablePoints}</span>
-          </div>
-          {/* Estimated Points */}
-          {isAuthenticated &&
-            estimatedPoints !== null &&
-            nextVisitMultiplier && (
-              <>
-                <Divider />
-                <div className='flex items-center justify-between text-sm p-3 bg-purple-500/10 dark:bg-purple-500/20 rounded-lg border border-purple-500/20'>
-                  <div className='flex items-center gap-2'>
-                    <Sparkles className='size-4 text-purple-600 dark:text-purple-400' />
-                    <span className='text-default-600 dark:text-default-400'>
-                      Estimated Points
-                    </span>
-                  </div>
-                  <div className='flex items-center gap-2'>
-                    <span className='font-semibold text-purple-600 dark:text-purple-400'>
-                      {estimatedPoints.toLocaleString()}
-                    </span>
-                    <span className='text-xs text-default-500'>
-                      ({nextVisitMultiplier.multiplier}x)
-                    </span>
-                  </div>
-                </div>
-                {nextVisitMultiplier.message && (
-                  <p className='text-xs text-default-500 text-center'>
-                    {nextVisitMultiplier.message}
-                  </p>
-                )}
-              </>
-            )}
 
           {/* Payment Method Selection */}
           {isAuthenticated && (
             <>
               <Divider />
-              <div>
-                <Select
+              <div className='py-4'>
+                <PaymentMethod onChange={handleOnChange} />
+                {/*<Select
                   label='Payment Method'
                   selectedKeys={[paymentMethod]}
                   onSelectionChange={(keys) => {
@@ -152,7 +103,7 @@ export function OrderSummaryCard({
                   <SelectItem key='credit_card'>Credit Card</SelectItem>
                   <SelectItem key='crypto'>Cryptocurrency</SelectItem>
                   <SelectItem key='cashapp'>CashApp</SelectItem>
-                </Select>
+                </Select>*/}
               </div>
             </>
           )}
@@ -166,21 +117,13 @@ export function OrderSummaryCard({
           )}
           <Button
             size='lg'
-            radius='sm'
+            radius='md'
             variant='solid'
-            className='w-full font-semibold bg-foreground text-background'
+            className='w-full font-semibold bg-foreground dark:bg-featured text-background h-14'
             onPress={onPlaceOrderClick}
             isDisabled={!isAuthenticated || isLoading || isPending}
             isLoading={isLoading || isPending}>
             {orderId ? 'Order Placed!' : 'Place Order'}
-          </Button>
-          <Button
-            radius='sm'
-            variant='flat'
-            className='w-full'
-            as={Link}
-            href='/'>
-            Continue Shopping
           </Button>
         </CardBody>
       </Card>

@@ -27,6 +27,7 @@ export function Checkout({
   onCheckoutClose,
   isCheckoutOpen,
   onClearCart,
+  pointsBalance,
 }: CheckoutProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -221,6 +222,7 @@ export function Checkout({
         onPaymentMethodChange={handlePaymentMethodChange}
         onPlaceOrderClick={handlePlaceOrderClick}
         userId={convexUser?._id}
+        pointsBalance={pointsBalance}
       />
 
       <CheckoutModal

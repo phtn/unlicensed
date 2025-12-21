@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.0
+
+### Minor Changes
+
+- added payment method select
+
 ## 0.8.0
 
 ### Minor Changes

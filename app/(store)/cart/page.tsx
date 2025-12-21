@@ -74,6 +74,37 @@ export default function CartPage() {
 
   const hasItems = cartItems.length > 0
 
+  const subtotal = cartItems.reduce((total, item) => {
+    const price = item.product.priceCents ?? 0
+    const denomination = item.denomination || 1
+    return total + price * denomination * item.quantity
+  }, 0)
+
+  const tax = subtotal * 0.1 // 10% tax
+  const shipping = subtotal > 5000 ? 0 : 500 // Free shipping over $50
+  const total = subtotal + tax + shipping
+
+  // Get user's points balance and next visit multiplier
+  const pointsBalance = useQuery(
+    api.rewards.q.getUserPointsBalance,
+    convexUser && convexUser._id ? {userId: convexUser._id} : 'skip',
+  )
+
+  const nextVisitMultiplier = useQuery(
+    api.rewards.q.getNextVisitMultiplier,
+    convexUser && convexUser._id ? {userId: convexUser._id} : 'skip',
+  )
+
+  // Calculate estimated points (assuming all products are eligible)
+  // In reality, we'd need to check each product, but for UI purposes we'll estimate
+  const estimatedPoints = useMemo(() => {
+    if (!nextVisitMultiplier || !isAuthenticated) return null
+    // Convert subtotal from cents to dollars, then multiply by multiplier
+    // Points = (subtotal in dollars) × multiplier, rounded to nearest integer
+    const points = Math.round((subtotal / 100) * nextVisitMultiplier.multiplier)
+    return points
+  }, [subtotal, nextVisitMultiplier, isAuthenticated])
+
   if (isLoading) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
@@ -95,16 +126,6 @@ export default function CartPage() {
       </div>
     )
   }
-
-  const subtotal = cartItems.reduce((total, item) => {
-    const price = item.product.priceCents ?? 0
-    const denomination = item.denomination || 1
-    return total + (price * denomination * item.quantity)
-  }, 0)
-
-  const tax = subtotal * 0.1 // 10% tax
-  const shipping = subtotal > 5000 ? 0 : 500 // Free shipping over $50
-  const total = subtotal + tax + shipping
 
   return (
     <div className='min-h-screen lg:pt-28 px-4 sm:px-6 lg:px-8'>
@@ -148,10 +169,10 @@ export default function CartPage() {
           <div className='space-y-6'>
             {/* Order Summary - Read-only review */}
             <RewardsSummary
-              subtotal={subtotal}
-              tax={tax}
-              shipping={shipping}
-              total={total}
+              nextVisitMultiplier={nextVisitMultiplier}
+              pointsBalance={pointsBalance}
+              estimatedPoints={estimatedPoints}
+              isAuthenticated={firebaseUser !== null}
             />
 
             {/* Checkout - Payment method and place order */}
@@ -174,6 +195,7 @@ export default function CartPage() {
               onCheckoutClose={onCheckoutClose}
               isCheckoutOpen={isCheckoutOpen}
               onClearCart={clear}
+              pointsBalance={pointsBalance}
             />
           </div>
         </div>

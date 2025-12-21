@@ -2,6 +2,7 @@ import {Doc, Id} from '@/convex/_generated/dataModel'
 import {PaymentMethod} from '@/convex/orders/d'
 import {AddressType} from '@/convex/users/d'
 import {PlaceOrderParams} from '@/hooks/use-place-order'
+import {PointsBalance} from '../rewards-summary'
 
 export interface CheckoutProps {
   subtotal: number
@@ -22,6 +23,7 @@ export interface CheckoutProps {
   onCheckoutClose: VoidFunction
   isCheckoutOpen: boolean
   onClearCart: () => Promise<void>
+  pointsBalance: PointsBalance | undefined
 }
 
 export interface FormData {
