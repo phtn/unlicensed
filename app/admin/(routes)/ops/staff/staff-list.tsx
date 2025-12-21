@@ -2,7 +2,7 @@
 
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {Button, Card, Chip} from '@heroui/react'
+import {Button, Card, Chip, User} from '@heroui/react'
 import {formatDistanceToNow} from 'date-fns'
 import Link from 'next/link'
 
@@ -15,36 +15,46 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => (
     className='p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors'
     radius='sm'>
     <div className='flex items-start justify-between'>
-      <div className='flex-1 space-y-2'>
-        <div className='flex items-center gap-2'>
-          <h4 className='font-semibold text-base'>
-            {member.name || 'Unnamed Staff'}
-          </h4>
-          <Chip
-            size='sm'
-            color={member.active ? 'success' : 'default'}
-            variant='flat'>
-            {member.active ? 'Active' : 'Inactive'}
-          </Chip>
+      <div className='flex'>
+        <div className='flex-1 w-64'>
+          <User
+            avatarProps={{src: member.avatarUrl}}
+            name={
+              <div className='flex items-center gap-2'>
+                <h4 className='font-semibold tracking-tight text-base'>
+                  {member.name || 'Unnamed Staff'}
+                </h4>
+                <Chip
+                  size='sm'
+                  color={member.active ? 'success' : 'default'}
+                  variant='flat'>
+                  {member.active ? 'Active' : 'Inactive'}
+                </Chip>
+              </div>
+            }
+            description={member.email}
+          />
         </div>
-        <p className='text-sm text-neutral-600 dark:text-neutral-400'>
-          {member.email}
-        </p>
-        <div className='flex items-center gap-2'>
-          <p className='text-sm font-medium'>{member.position}</p>
-          <span className='text-neutral-400'>•</span>
-          <div className='flex flex-wrap gap-1'>
-            {member.accessRoles.map((role) => (
-              <Chip key={role} size='sm' variant='flat' color='primary'>
-                {role}
-              </Chip>
-            ))}
+        <div>
+          <div className='flex items-center gap-2'>
+            <h4 className='font-semibold tracking-tight text-base text-indigo-500'>
+              {member.position}
+            </h4>
+            <span className='text-neutral-400'>•</span>
+            <div className='flex flex-wrap gap-1'>
+              {member.accessRoles.map((role) => (
+                <Chip key={role} size='sm' variant='flat' color='primary'>
+                  {role}
+                </Chip>
+              ))}
+            </div>
           </div>
+          <p className='text-xs text-neutral-500'>
+            created {formatDistanceToNow(member.createdAt, {addSuffix: true})}
+          </p>
         </div>
-        <p className='text-xs text-neutral-500'>
-          Created {formatDistanceToNow(member.createdAt, {addSuffix: true})}
-        </p>
       </div>
+
       <Button
         size='sm'
         as={Link}
@@ -62,8 +72,8 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => (
 
 export const StaffList = ({staff}: StaffListProps) => {
   return (
-    <section className='pt-2'>
-      <h3 className='text-2xl tracking-tighter font-semibold px-2 mb-4'>
+    <section>
+      <h3 className='text-2xl tracking-tighter font-semibold py-2'>
         Staff Members
       </h3>
       {staff?.length === 0 ? (

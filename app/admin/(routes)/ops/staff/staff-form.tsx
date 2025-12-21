@@ -2,12 +2,13 @@
 
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
-import {useMutation} from 'convex/react'
-import {useCallback, useEffect, useRef, useState} from 'react'
+import {useMutation, useQuery} from 'convex/react'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {
   SelectField,
   SelectOption,
@@ -19,24 +20,32 @@ import {useAppForm} from '../../../_components/ui/form-context'
 export type StaffFormValues = {
   email: string
   name: string
+  division: string
   position: string
   accessRoles: string[]
   active: boolean
+  avatarUrl: string
 }
 
 const defaultValues: StaffFormValues = {
   email: '',
   name: '',
+  division: '',
   position: '',
   accessRoles: [],
   active: true,
+  avatarUrl: '',
 }
 
 const ROLE_OPTIONS = [
   {value: 'admin', label: 'Admin'},
-  {value: 'editor', label: 'Editor'},
-  {value: 'viewer', label: 'Viewer'},
   {value: 'manager', label: 'Manager'},
+  {value: 'supervisor', label: 'Supervisor'},
+  {value: 'developer', label: 'Developer'},
+  {value: 'sysadmin', label: 'SysAdmin'},
+  {value: 'courier', label: 'Courier'},
+  {value: 'staff', label: 'Staff'},
+  {value: 'viewer', label: 'Viewer'},
 ] as SelectOption[]
 
 type StaffFormProps = {
@@ -53,6 +62,7 @@ export const StaffForm = ({
   onUpdated,
 }: StaffFormProps) => {
   const isEditMode = !!staffId
+  const {user: firebaseUser} = useAuth()
   const createStaff = useMutation(api.staff.m.createStaff)
   const updateStaff = useMutation(api.staff.m.updateStaff)
   const [activeSection, setActiveSection] = useState<string>('basic-info')
@@ -60,7 +70,65 @@ export const StaffForm = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const mainScrollRef = useRef<HTMLElement>(null)
 
-  const formValues = initialValues ?? defaultValues
+  // Get current user for authorization
+  const convexUser = useQuery(
+    api.users.q.getCurrentUser,
+    firebaseUser ? {firebaseId: firebaseUser.uid} : 'skip',
+  )
+
+  // Get current user's staff record for authorization check
+  const currentUserStaff = useQuery(
+    api.staff.q.getStaffByEmail,
+    convexUser?.email ? {email: convexUser.email} : 'skip',
+  )
+
+  // Check if current user is authorized (admin or manager) to create staff
+  const isAuthorizedToCreate = useMemo(() => {
+    if (!currentUserStaff || !currentUserStaff.active) return false
+    return (
+      currentUserStaff.accessRoles.includes('admin') ||
+      currentUserStaff.accessRoles.includes('manager')
+    )
+  }, [currentUserStaff])
+
+  // Fetch all users for email selection
+  const users = useQuery(api.users.q.getAllUsers, {limit: 1000})
+
+  // Transform users to SelectOption format
+  const userEmailOptions = useMemo<SelectOption[]>(() => {
+    if (!users) return []
+    return users.map((user) => ({
+      value: user.email,
+      label: user.name ? `${user.name} (${user.email})` : user.email,
+    }))
+  }, [users])
+
+  // Create a map of email to user for quick lookup
+  const emailToUserMap = useMemo(() => {
+    if (!users)
+      return new Map<
+        string,
+        {email: string; name: string; photoUrl: string | undefined}
+      >()
+    const map = new Map<
+      string,
+      {email: string; name: string; photoUrl: string | undefined}
+    >()
+    users.forEach((user) => {
+      map.set(user.email, {
+        email: user.email,
+        name: user.name,
+        photoUrl: user.photoUrl,
+      })
+    })
+    return map
+  }, [users])
+
+  // Memoize formValues to ensure stable reference
+  const formValues = useMemo(
+    () => initialValues ?? defaultValues,
+    [initialValues],
+  )
 
   const form = useAppForm({
     defaultValues: formValues,
@@ -93,23 +161,38 @@ export const StaffForm = ({
           return
         }
 
-        const payload = {
-          email: value.email.trim(),
-          name: value.name.trim() || undefined,
-          position: value.position.trim(),
-          accessRoles: value.accessRoles,
-          active: value.active ?? true,
-        }
-
         if (isEditMode && staffId) {
+          // For updates, don't include email (it shouldn't be changed)
           await updateStaff({
             id: staffId,
-            ...payload,
+            name: value.name.trim() || undefined,
+            position: value.position.trim(),
+            division: value.division.trim() || undefined,
+            accessRoles: value.accessRoles,
+            active: value.active ?? true,
+            avatarUrl: value.avatarUrl.trim() || undefined,
           })
           setStatus('success')
           onUpdated?.()
         } else {
-          await createStaff(payload)
+          // For creation, include email and current user email for authorization
+          if (!convexUser?.email) {
+            setErrorMessage('You must be signed in to create staff members')
+            setStatus('error')
+            return
+          }
+
+          const createPayload = {
+            email: value.email.trim(),
+            name: value.name.trim() || undefined,
+            position: value.position.trim(),
+            division: value.division.trim() || undefined,
+            accessRoles: value.accessRoles,
+            active: value.active ?? true,
+            avatarUrl: value.avatarUrl.trim() || undefined,
+            currentUserEmail: convexUser.email,
+          }
+          await createStaff(createPayload)
           formApi.reset()
           setStatus('success')
           const scrollContainer = mainScrollRef.current
@@ -142,16 +225,63 @@ export const StaffForm = ({
     },
   })
 
-  // Populate form when initialValues change
+  // Subscribe to email field value changes
+  const emailValue = useStore(
+    form.store,
+    (state) => state.values.email as string | undefined,
+  )
+  const nameValue = useStore(
+    form.store,
+    (state) => state.values.name as string | undefined,
+  )
+
+  // Track previous email to detect changes
+  const previousEmailRef = useRef<string>('')
+
+  // Handle email selection change to auto-populate name and avatarUrl
   useEffect(() => {
-    if (initialValues) {
-      form.setFieldValue('email', initialValues.email)
+    if (
+      emailValue &&
+      typeof emailValue === 'string' &&
+      emailValue !== previousEmailRef.current &&
+      emailToUserMap.size > 0 // Ensure users are loaded
+    ) {
+      const user = emailToUserMap.get(emailValue)
+      if (user) {
+        // Auto-populate name when email is selected
+        // Only overwrite if name is empty or if we're in create mode (not edit mode)
+        const currentName = nameValue
+        if (!currentName?.trim() || !isEditMode) {
+          form.setFieldValue('name', user.name)
+        }
+        // Auto-populate avatarUrl from user's photoUrl
+        if (user.photoUrl) {
+          form.setFieldValue('avatarUrl', user.photoUrl)
+        }
+      }
+      previousEmailRef.current = emailValue
+    }
+  }, [emailValue, nameValue, emailToUserMap, form, isEditMode])
+
+  // Track if we've populated initial values to avoid re-running unnecessarily
+  const hasPopulatedInitialValues = useRef(false)
+
+  // Populate form when initialValues change (for edit mode)
+  useEffect(() => {
+    if (initialValues && isEditMode) {
+      // Set all field values, ensuring division is explicitly set even if empty
+      form.setFieldValue('email', initialValues.email ?? '')
       form.setFieldValue('name', initialValues.name ?? '')
-      form.setFieldValue('position', initialValues.position)
+      form.setFieldValue('division', initialValues.division ?? '')
+      form.setFieldValue('position', initialValues.position ?? '')
       form.setFieldValue('accessRoles', initialValues.accessRoles ?? [])
       form.setFieldValue('active', initialValues.active ?? true)
+      form.setFieldValue('avatarUrl', initialValues.avatarUrl ?? '')
+      // Reset previousEmailRef when initialValues change to prevent auto-populate on initial load
+      previousEmailRef.current = initialValues.email ?? ''
+      hasPopulatedInitialValues.current = true
     }
-  }, [initialValues, form])
+  }, [initialValues, isEditMode, form])
 
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
 
@@ -215,6 +345,7 @@ export const StaffForm = ({
             fullWidth
             className='w-full rounded-xl font-medium tracking-tight bg-pink-500 text-white'
             isLoading={isSubmitting}
+            isDisabled={!isEditMode && !isAuthorizedToCreate}
             onPress={form.handleSubmit}>
             {isSubmitting
               ? isEditMode
@@ -224,6 +355,11 @@ export const StaffForm = ({
                 ? 'Update Staff'
                 : 'Create Staff'}
           </Button>
+          {!isEditMode && !isAuthorizedToCreate && (
+            <p className='mt-2 text-sm text-center text-rose-500'>
+              Only admin or manager roles can create staff members
+            </p>
+          )}
           {status === 'success' && (
             <p className='mt-2 text-sm text-center text-pink-500'>
               {isEditMode
@@ -259,12 +395,13 @@ export const StaffForm = ({
                 {/* Email */}
                 <form.AppField name='email'>
                   {(field) => (
-                    <TextField
+                    <SelectField
                       {...field}
-                      type='text'
+                      type='select'
                       name='email'
                       label='Email'
-                      placeholder='staff@example.com'
+                      placeholder='Search and select user email...'
+                      options={userEmailOptions}
                     />
                   )}
                 </form.AppField>
@@ -282,19 +419,31 @@ export const StaffForm = ({
                   )}
                 </form.AppField>
 
-                {/* Position */}
-                <form.AppField name='position'>
-                  {(field) => (
-                    <TextField
-                      {...field}
-                      type='text'
-                      name='position'
-                      label='Position'
-                      placeholder='e.g., Store Manager, Sales Associate'
-                    />
-                  )}
-                </form.AppField>
-
+                <div className='w-full flex items-cenzer space-x-4'>
+                  {/* Sector */}
+                  <form.AppField name='division'>
+                    {(field) => (
+                      <TextField
+                        {...field}
+                        type='text'
+                        name='division'
+                        label='division'
+                        placeholder='e.g., Sales, Marketing, Fulfillment, Shipping'
+                      />
+                    )}
+                  </form.AppField>
+                  <form.AppField name='position'>
+                    {(field) => (
+                      <TextField
+                        {...field}
+                        type='text'
+                        name='position'
+                        label='Position'
+                        placeholder='e.g., Store Manager, Sales Associate'
+                      />
+                    )}
+                  </form.AppField>
+                </div>
                 {/* Access Roles */}
                 <form.AppField name='accessRoles'>
                   {(field) => (
@@ -332,7 +481,8 @@ export const StaffForm = ({
               type='submit'
               color='success'
               className='w-full font-semibold'
-              isLoading={isSubmitting}>
+              isLoading={isSubmitting}
+              isDisabled={!isEditMode && !isAuthorizedToCreate}>
               {isSubmitting
                 ? isEditMode
                   ? 'Updating...'
@@ -341,6 +491,11 @@ export const StaffForm = ({
                   ? 'Update Staff'
                   : 'Create Staff'}
             </Button>
+            {!isEditMode && !isAuthorizedToCreate && (
+              <p className='mt-2 text-sm text-center text-rose-500'>
+                Only admin or manager roles can create staff members
+              </p>
+            )}
           </div>
         </form>
       </main>

@@ -2,6 +2,7 @@
 
 import {AuthModal} from '@/components/auth/auth-modal'
 import {CartDrawer} from '@/components/store/cart-drawer'
+import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {logout} from '@/lib/firebase/auth'
@@ -16,6 +17,7 @@ import {
   DropdownTrigger,
   useDisclosure,
 } from '@heroui/react'
+import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useCallback, useEffect} from 'react'
 import {ThemeToggle} from '../ui/theme-toggle'
@@ -54,6 +56,14 @@ export const Nav = ({children}: NavProps) => {
       onClose()
     }
   }, [onClose])
+
+  const staff = useQuery(
+    api.staff.q.getStaffByEmail,
+    user?.email ? {email: user.email} : 'skip',
+  )
+  const isAdmin =
+    staff?.accessRoles.includes('admin') ||
+    staff?.accessRoles.includes('manager')
 
   return (
     <>
@@ -157,28 +167,32 @@ export const Nav = ({children}: NavProps) => {
                           </p>
                         </div>
                       </DropdownItem>
-                      <DropdownItem
-                        key='admin'
-                        as={Link}
-                        href={'#nope'}
-                        variant='flat'
-                        classNames={{
-                          title: 'text-foreground/90',
-                          base: 'hover:bg-transparent',
-                        }}>
-                        <div className='flex flex-col'>
-                          <p className='text-base font-normal font-fugaz'>
-                            Secret Place
-                          </p>
-                        </div>
-                      </DropdownItem>
+
+                      {isAdmin ? (
+                        <DropdownItem
+                          key='admin'
+                          as={Link}
+                          href={'/admin'}
+                          variant='flat'
+                          classNames={{
+                            title: 'text-foreground/90',
+                            base: 'hover:bg-transparent dark:bg-slate-800',
+                          }}>
+                          <div className='flex items-center space-x-2'>
+                            <Icon name='certificate' className='size-8' />
+                            <p className='text-lg font-sans font-bold tracking-tight dark:text-limited'>
+                              Admin
+                            </p>
+                          </div>
+                        </DropdownItem>
+                      ) : null}
 
                       <DropdownItem
                         key='logout'
                         onPress={handleLogout}
                         title='Logout'
-                        classNames={{wrapper: 'bg-pink-500'}}
-                        className='bg-black/1o hover:bg-black hover:text-white'></DropdownItem>
+                        className=''
+                      />
                     </DropdownMenu>
                   </Dropdown>
                 ) : (

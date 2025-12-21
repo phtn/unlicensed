@@ -61,7 +61,7 @@ export type FormInput<T> =
 export function TextField<T>(props?: FormInput<T>) {
   const field = useFieldContext<string>()
   return (
-    <div className='space-y-2'>
+    <div className='space-y-2 w-full'>
       <Input
         size='lg'
         label={props?.label}
@@ -225,11 +225,13 @@ export function SelectField<T>(props?: SelectFieldProps<T>) {
 
                       return (
                         <Chip
-                          variant='faded'
+                          variant='bordered'
                           {...chipProps}
                           key={item.key}
                           size='sm'>
-                          {item.textValue}
+                          <span className='text-foreground'>
+                            {item.textValue}
+                          </span>
                         </Chip>
                       )
                     })}

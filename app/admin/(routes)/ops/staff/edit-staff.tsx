@@ -34,9 +34,11 @@ export const EditStaff = ({id}: EditStaffProps) => {
   const initialValues: StaffFormValues = {
     email: staff.email ?? '',
     name: staff.name ?? '',
+    division: staff.division ?? '',
     position: staff.position ?? '',
     accessRoles: staff.accessRoles ?? [],
     active: staff.active ?? true,
+    avatarUrl: staff.avatarUrl ?? '',
   }
 
   const handleUpdated = () => {

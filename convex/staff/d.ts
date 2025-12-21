@@ -1,9 +1,11 @@
 import {Infer, v} from 'convex/values'
 
 export const staffSchema = v.object({
-  email: v.string(),
+  email: v.optional(v.string()),
+  avatarUrl: v.optional(v.string()),
   name: v.optional(v.string()),
   position: v.string(),
+  division: v.optional(v.string()),
   accessRoles: v.array(v.string()), // e.g., ['admin', 'editor', 'viewer']
   active: v.boolean(),
   userId: v.optional(v.id('users')), // Optional link to a user account
