@@ -18,7 +18,7 @@ export const productSchema = v.object({
   priceCents: v.optional(v.number()),
   unit: v.optional(v.string()),
   availableDenominations: v.optional(v.array(v.number())),
-  popularDenomination: v.optional(v.number()),
+  popularDenomination: v.optional(v.array(v.number())),
   thcPercentage: v.optional(v.number()),
   cbdPercentage: v.optional(v.optional(v.number())),
   effects: v.optional(v.array(v.string())),

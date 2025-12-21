@@ -102,7 +102,7 @@ export const ProductForm = ({
           availableDenominations: parseNumbers(data.availableDenominationsRaw),
           popularDenomination:
             data.popularDenomination && data.popularDenomination.length > 0
-              ? Number(data.popularDenomination)
+              ? data.popularDenomination
               : undefined,
           thcPercentage: data.thcPercentage,
           cbdPercentage:

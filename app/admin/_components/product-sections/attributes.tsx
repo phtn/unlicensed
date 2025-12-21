@@ -83,7 +83,7 @@ export const Attributes = ({form}: AttributesProps) => {
               <div className='space-y-2 w-full'>
                 <TagSelector
                   label='Terpenes'
-                  type='terpene'
+                  type='terpenes'
                   placeholder='Select terpenes...'
                   selectedKeys={
                     Array.isArray(field.state.value) ? field.state.value : []
@@ -99,8 +99,23 @@ export const Attributes = ({form}: AttributesProps) => {
               <div className='space-y-2 w-full'>
                 <TagSelector
                   label='Flavors'
-                  type='flavor'
+                  type='flavors'
                   placeholder='Select flavors...'
+                  selectedKeys={
+                    Array.isArray(field.state.value) ? field.state.value : []
+                  }
+                  onSelectionChange={(keys) => field.handleChange(keys)}
+                />
+              </div>
+            )}
+          </form.Field>
+          <form.Field name='effects'>
+            {(field) => (
+              <div className='space-y-2 w-full'>
+                <TagSelector
+                  label='Effects'
+                  type='effects'
+                  placeholder='Select Effects...'
                   selectedKeys={
                     Array.isArray(field.state.value) ? field.state.value : []
                   }

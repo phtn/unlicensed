@@ -1,125 +1,95 @@
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Chip} from '@heroui/react'
-import {useId} from 'react'
+import {useId, useMemo} from 'react'
+import {profileIcons} from './product-profile-icons'
 
-interface TerpeneChipProps {
-  id: string
-  name: IconName
-  label?: string
-  ghost?: boolean
-}
+/**
+ * ProductProfile Component
+ *
+ * Displays a product profile pill with an icon and name.
+ * Automatically looks up the appropriate icon from profileIcons based on the name.
+ * Falls back to a generic group icon (e, f, t) if no specific icon is found.
+ *
+ * @example
+ * ```tsx
+ * // Terpene example
+ * <ProductProfile group="terpenes" name="Limonene" />
+ *
+ * // Flavor example
+ * <ProductProfile group="flavors" name="Citrus" />
+ *
+ * // Effect example
+ * <ProductProfile group="effects" name="Energetic" />
+ *
+ * // Works with various name formats (normalized automatically)
+ * <ProductProfile group="terpenes" name="Alpha Pinene" /> // normalized to 'alpha_pinene'
+ * <ProductProfile group="effects" name="Body High" /> // normalized to 'body_high'
+ * ```
+ */
 
-export const TerpeneChip = ({
-  id,
-  name,
-  label,
-  ghost = false,
-}: TerpeneChipProps) => {
-  return (
-    <Chip
-      id={id}
-      radius='md'
-      startContent={
-        <Icon name={name} className='text-slate-100 size-8 aspect-square' />
-      }
-      classNames={{
-        base: `flex justify-between px-0 h-10 bg-background/80 shadow-pink-100/30 ${ghost ? 'bg-transparent' : ' border-small border-white'}`,
-        content: 'drop-shadow-xs shadow-black text-foreground capitalize',
-      }}>
-      {label}
-    </Chip>
-  )
-}
-
-export const TerpeneGray = ({id, name, ghost = false}: TerpeneChipProps) => {
-  return (
-    <Chip
-      id={id}
-      radius='md'
-      startContent={
-        <Icon
-          name={name}
-          className='text-[#FF9F1C] dark:text-[#FF9F1C] size-7 aspect-square'
-        />
-      }
-      classNames={{
-        base: `flex justify-between px-0 h-7 grow-0 bg-linear-to-r from-transparent via-transparent to-slate-600/2 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`,
-        content: 'font-light text-foreground capitalize text-sm',
-      }}
-      variant='flat'>
-      {name}
-    </Chip>
-  )
-}
-
-interface IProfilePill {
+interface IProductProfile {
   group: 'effects' | 'flavors' | 'terpenes'
   name: string
   label?: string
 }
 
-export const ProfilePill = ({group, name}: IProfilePill) => {
+/**
+ * Normalize name for icon lookup (lowercase, handle special cases)
+ */
+function normalizeIconName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-z0-9_]/g, '')
+}
+
+/**
+ * Get profile icon by name, with fallback
+ */
+function getProfileIcon(
+  name: string,
+): (typeof profileIcons)[keyof typeof profileIcons] | null {
+  const normalized = normalizeIconName(name)
+  return normalized in profileIcons
+    ? profileIcons[normalized as keyof typeof profileIcons]
+    : null
+}
+
+export const ProductProfile = ({group, name}: IProductProfile) => {
   const id = useId()
+  const iconData = useMemo(() => getProfileIcon(name), [name])
+  const fallbackIcon = group[0] as IconName
+
   return (
     <div
       id={id}
-      className={`flex items-center justify-between pl-0 pr-2 gap-1 rounded-full h-7 grow-0  bg-background/80 overflow-hidden`}>
-      <Icon
-        name={group[0] as IconName}
-        className={cn('shrink-0 size-5 aspect-square', {
-          'text-effects': group === 'effects',
-          'text-flavors': group === 'flavors',
-          'text-terpenes': group === 'terpenes',
-        })}
-      />
-      <span className='text-sm font-light'>{name}</span>
-    </div>
-  )
-}
-
-interface StatChipProps {
-  label?: string
-  name?: IconName
-  value?: string | number | boolean
-  ghost?: boolean
-}
-
-export const StatChip = ({
-  label,
-  name,
-  value,
-  ghost = false,
-}: StatChipProps) => {
-  return (
-    <Chip
-      radius='md'
-      startContent={
-        name ? (
-          <Icon
-            name={name}
-            className={cn('size-6!', {
-              'text-red-500 dark:text-red-400': value === 'high',
-              'text-blue-500 dark:text-blue-400': value === 'medium',
-            })}
-          />
-        ) : (
-          <span className='text-sm font-space text-slate-600 dark:text-limited'>
-            {label}
-          </span>
-        )
-      }
-      className=' border-[0.33px] border-foreground/15'
-      classNames={{
-        base: `ps-2 h-7 grow-0 bg-linear-to-r from-transparent via-transparent to-slate-300/5 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`,
-        content:
-          'flex items-center justify-center text-foreground uppercase font-semibold text-xs',
-      }}
-      variant='flat'>
-      <span className={cn(`${name && 'ml-1.5 font-geist-sans opacity-100'}`)}>
-        {value}
+      className={`flex items-center justify-between pl-1 pr-2 gap-0 rounded-full h-7 grow-0  bg-background/80 overflow-hidden`}>
+      {iconData ? (
+        <svg
+          className={cn('shrink-0 size-7 aspect-square', {
+            'text-effects': group === 'effects',
+            'text-flavors': group === 'flavors',
+            'text-terpenes': group === 'terpenes',
+          })}
+          viewBox={iconData.viewBox}
+          fill='currentColor'
+          xmlns='http://www.w3.org/2000/svg'
+          dangerouslySetInnerHTML={{__html: iconData.symbol}}
+        />
+      ) : (
+        <Icon
+          name={fallbackIcon}
+          className={cn('shrink-0 size-5 aspect-square', {
+            'text-effects': group === 'effects',
+            'text-flavors': group === 'flavors',
+            'text-terpenes': group === 'terpenes',
+          })}
+        />
+      )}
+      <span className='text-sm font-light capitalize'>
+        {name.split('_').join(' ')}
       </span>
-    </Chip>
+    </div>
   )
 }
 
@@ -173,7 +143,30 @@ export const FLAVOR_ICON_MAP = {
   evergreen: 30,
 } as const
 
-// Combined dataset, flattened arrays, and TypeScript types for terpenes & flavors.
+export const EFFECTS_ICON_MAP = {
+  energetic: 13, // citrus - bright and energizing
+  creative: 2, // floral - inspiring
+  focused: 8, // mint - clear and sharp
+  relaxed: 21, // lavender - calming
+  sedated: 16, // woody - heavy and grounding
+  comforted: 4, // sweet_floral - warm and comforting
+  social: 3, // tropical - friendly and inviting
+  bright: 13, // citrus - light and uplifting
+  balanced: 15, // balanced_leaf - equilibrium
+  relaxing: 5, // chamomile - soothing
+  body_high: 16, // woody - physical sensation
+  sleepy: 5, // chamomile - restful
+  euphoric: 25, // sweet_flower - uplifting joy
+  expansive: 2, // floral - open and wide
+  blissful: 25, // sweet_flower - happy and content
+  heavy: 16, // woody - weighty
+  dreamy: 21, // lavender - ethereal
+  chatty: 1, // berry - social and fun
+  warm: 4, // sweet_floral - cozy
+  uplifted: 13, // citrus - elevated mood
+} as const
+
+// Combined dataset, flattened arrays, and TypeScript types for terpenes, flavors & effects.
 // Icons are referenced by index (1..30) from your sprite/image.
 
 /* ---------------------------
@@ -182,14 +175,15 @@ export const FLAVOR_ICON_MAP = {
 
 export type TerpeneName = keyof typeof TERPENE_ICON_MAP
 export type FlavorName = keyof typeof FLAVOR_ICON_MAP
-export type ItemCategory = 'terpene' | 'flavor'
+export type EffectName = keyof typeof EFFECTS_ICON_MAP
+export type ItemCategory = 'terpene' | 'flavor' | 'effect'
 
 export type Item = {
   /** machine key */
   id: string
   /** human-friendly display name */
   name: string
-  /** 'terpene' | 'flavor' */
+  /** 'terpene' | 'flavor' | 'effect' */
   category: ItemCategory
   /** icon index in your sprite (1..30) */
   iconIndex: number
@@ -203,6 +197,7 @@ export type Item = {
 
 export const TERPENES = Object.keys(TERPENE_ICON_MAP) as TerpeneName[]
 export const FLAVORS = Object.keys(FLAVOR_ICON_MAP) as FlavorName[]
+export const EFFECTS = Object.keys(EFFECTS_ICON_MAP) as EffectName[]
 
 /* ---------------------------
    Combined dataset (array)
@@ -508,6 +503,148 @@ export const ITEMS: Item[] = [
     iconIndex: FLAVOR_ICON_MAP.evergreen,
     description: 'Evergreen / resinous forest.',
   },
+
+  // EFFECTS (20)
+  {
+    id: 'energetic',
+    name: 'Energetic',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.energetic,
+    description: 'Uplifting energy and vitality.',
+  },
+  {
+    id: 'creative',
+    name: 'Creative',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.creative,
+    description: 'Inspires imagination and artistic flow.',
+  },
+  {
+    id: 'focused',
+    name: 'Focused',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.focused,
+    description: 'Sharp mental clarity and concentration.',
+  },
+  {
+    id: 'relaxed',
+    name: 'Relaxed',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.relaxed,
+    description: 'Calm and peaceful state.',
+  },
+  {
+    id: 'sedated',
+    name: 'Sedated',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.sedated,
+    description: 'Deeply calming and tranquil.',
+  },
+  {
+    id: 'comforted',
+    name: 'Comforted',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.comforted,
+    description: 'Warm and soothing comfort.',
+  },
+  {
+    id: 'social',
+    name: 'Social',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.social,
+    description: 'Enhances sociability and connection.',
+  },
+  {
+    id: 'bright',
+    name: 'Bright',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.bright,
+    description: 'Light and uplifting mood.',
+  },
+  {
+    id: 'balanced',
+    name: 'Balanced',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.balanced,
+    description: 'Harmonious equilibrium.',
+  },
+  {
+    id: 'relaxing',
+    name: 'Relaxing',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.relaxing,
+    description: 'Soothing and stress-relieving.',
+  },
+  {
+    id: 'body_high',
+    name: 'Body High',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.body_high,
+    description: 'Physical sensation and body relaxation.',
+  },
+  {
+    id: 'sleepy',
+    name: 'Sleepy',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.sleepy,
+    description: 'Promotes rest and sleep.',
+  },
+  {
+    id: 'euphoric',
+    name: 'Euphoric',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.euphoric,
+    description: 'Intense joy and happiness.',
+  },
+  {
+    id: 'expansive',
+    name: 'Expansive',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.expansive,
+    description: 'Open and wide-reaching awareness.',
+  },
+  {
+    id: 'blissful',
+    name: 'Blissful',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.blissful,
+    description: 'Deep contentment and peace.',
+  },
+  {
+    id: 'heavy',
+    name: 'Heavy',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.heavy,
+    description: 'Weighty and grounding sensation.',
+  },
+  {
+    id: 'dreamy',
+    name: 'Dreamy',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.dreamy,
+    description: 'Ethereal and floaty feeling.',
+  },
+  {
+    id: 'chatty',
+    name: 'Chatty',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.chatty,
+    description: 'Enhances conversation and communication.',
+  },
+  {
+    id: 'warm',
+    name: 'Warm',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.warm,
+    description: 'Cozy and comforting warmth.',
+  },
+  {
+    id: 'uplifted',
+    name: 'Uplifted',
+    category: 'effect',
+    iconIndex: EFFECTS_ICON_MAP.uplifted,
+    description: 'Elevated mood and spirits.',
+  },
 ]
 
 /* ---------------------------
@@ -533,6 +670,8 @@ export function getItem(id: string): Item | undefined {
   return ITEM_BY_ID[id]
 }
 
+// profileIcons are imported from './product-profile-icons'
+
 /* ---------------------------
    Example usage
    --------------------------- */
@@ -544,9 +683,11 @@ export function getItem(id: string): Item | undefined {
 export default {
   TERPENES,
   FLAVORS,
+  EFFECTS,
   ITEMS,
   getIconFor,
   getItem,
   TERPENE_ICON_MAP,
   FLAVOR_ICON_MAP,
+  EFFECTS_ICON_MAP,
 } as const

@@ -180,7 +180,7 @@ export const Nav = ({children}: NavProps) => {
                           }}>
                           <div className='flex items-center space-x-2'>
                             <Icon name='certificate' className='size-8' />
-                            <p className='text-lg font-sans font-bold tracking-tight dark:text-limited'>
+                            <p className='text-base font-space font-semibold tracking-tighter dark:text-limited'>
                               Admin
                             </p>
                           </div>

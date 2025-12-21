@@ -107,122 +107,264 @@ export const Inventory = ({form}: InventoryProps) => {
   return (
     <FormSection id='inventory'>
       <Header label='Inventory & Status' />
-      <div className='grid gap-6'>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          <form.Field name='stock'>
-            {(field) => {
-              const stockValue = (field.state.value as number) ?? 0
-              return (
-                <div className='space-y-2'>
-                  <label className='text-sm font-medium text-neutral-300'></label>
-                  <Input
-                    label='Stock Quantity'
-                    type='number'
-                    value={String(stockValue ?? 0)}
-                    onChange={(e) => field.handleChange(Number(e.target.value))}
-                    onBlur={field.handleBlur}
-                    min={0}
-                    variant='bordered'
-                    classNames={commonInputClassNames}
-                  />
-                </div>
-              )
-            }}
-          </form.Field>
-          <form.Field name='availableDenominationsRaw'>
-            {(field) => {
-              const selectedKeys = new Set(
-                variantOptions
-                  .filter((opt) => currentDenominations.has(opt.key))
-                  .map((opt) => opt.key),
-              )
+      <div className='w-full space-y-8'>
+        <div className='grid grid-cols-1 md:grid-cols-6 gap-6 w-full'>
+          <div className='w-full col-span-1'>
+            <form.Field name='stock'>
+              {(field) => {
+                const stockValue = (field.state.value as number) ?? 0
+                return (
+                  <div className='space-y-2 w-full'>
+                    <label className='text-sm font-medium text-neutral-300'></label>
+                    <Input
+                      label='Stock Quantity'
+                      type='number'
+                      value={String(stockValue ?? 0)}
+                      onChange={(e) =>
+                        field.handleChange(Number(e.target.value))
+                      }
+                      onBlur={field.handleBlur}
+                      min={0}
+                      variant='bordered'
+                      classNames={commonInputClassNames}
+                    />
+                  </div>
+                )
+              }}
+            </form.Field>
+          </div>
 
-              return (
-                <div className='space-y-1 w-full'>
-                  <Select
-                    label='Available Denominations'
-                    placeholder={
-                      variantOptions.length === 0
-                        ? 'No variants available. Configure variants in Pricing section.'
-                        : 'Select denominations...'
-                    }
-                    selectionMode='multiple'
-                    selectedKeys={selectedKeys}
-                    onSelectionChange={(keys) =>
-                      handleSelectionChange(field, keys)
-                    }
-                    variant='bordered'
-                    isMultiline={true}
-                    isDisabled={variantOptions.length === 0}
-                    classNames={{
-                      ...commonInputClassNames,
-                      trigger:
-                        'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-                      label:
-                        'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
-                    }}
-                    renderValue={(items: SelectedItems<object>) => {
-                      return (
-                        <div className='flex flex-wrap gap-2'>
-                          {items.map((item) => {
-                            const variant = variantOptions.find(
-                              (opt) => opt.key === item.key,
-                            )
-                            return (
-                              <Chip
-                                key={item.key}
-                                variant='flat'
-                                classNames={{
-                                  base: 'border border-light-gray dark:border-light-gray/30 h-7',
-                                  content: 'text-xs flex items-center gap-1',
-                                }}>
-                                <span className='capitalize'>
-                                  {variant?.displayLabel ?? item.textValue}
+          <div className='w-full col-span-3'>
+            <form.Field name='availableDenominationsRaw'>
+              {(field) => {
+                const selectedKeys = new Set(
+                  variantOptions
+                    .filter((opt) => currentDenominations.has(opt.key))
+                    .map((opt) => opt.key),
+                )
+
+                return (
+                  <div className='space-y-1 w-full'>
+                    <Select
+                      label='Available Denominations'
+                      placeholder={
+                        variantOptions.length === 0
+                          ? 'No variants available. Configure variants in Pricing section.'
+                          : 'Select denominations...'
+                      }
+                      selectionMode='multiple'
+                      selectedKeys={selectedKeys}
+                      onSelectionChange={(keys) =>
+                        handleSelectionChange(field, keys)
+                      }
+                      variant='bordered'
+                      isMultiline={true}
+                      isDisabled={variantOptions.length === 0}
+                      classNames={{
+                        ...commonInputClassNames,
+                        trigger:
+                          'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
+                        label:
+                          'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
+                      }}
+                      renderValue={(items: SelectedItems<object>) => {
+                        return (
+                          <div className='flex flex-wrap gap-2'>
+                            {items.map((item) => {
+                              const variant = variantOptions.find(
+                                (opt) => opt.key === item.key,
+                              )
+                              return (
+                                <Chip
+                                  key={item.key}
+                                  variant='flat'
+                                  classNames={{
+                                    base: 'border border-light-gray dark:border-light-gray/30 h-7',
+                                    content: 'text-xs flex items-center gap-1',
+                                  }}>
+                                  <span className='capitalize'>
+                                    {variant?.displayLabel ?? item.textValue}
+                                  </span>
+                                </Chip>
+                              )
+                            })}
+                          </div>
+                        )
+                      }}>
+                      {variantOptions.map((option) => {
+                        const priceDisplay = option.price
+                          ? formatPrice(Math.round(option.price * 100))
+                          : 'No price'
+                        return (
+                          <SelectItem
+                            key={option.key}
+                            textValue={option.displayLabel}>
+                            <div className='flex items-center justify-between w-full'>
+                              <div className='flex flex-col'>
+                                <span className='text-sm font-medium'>
+                                  {option.displayLabel}
                                 </span>
-                              </Chip>
-                            )
-                          })}
-                        </div>
-                      )
-                    }}>
-                    {variantOptions.map((option) => {
-                      const priceDisplay = option.price
-                        ? formatPrice(Math.round(option.price * 100))
-                        : 'No price'
-                      return (
-                        <SelectItem
-                          key={option.key}
-                          textValue={option.displayLabel}>
-                          <div className='flex items-center justify-between w-full'>
-                            <div className='flex flex-col'>
-                              <span className='text-sm font-medium'>
-                                {option.displayLabel}
-                              </span>
-                              <span className='text-xs opacity-70'>
-                                {option.label}
+                                <span className='text-xs opacity-70'>
+                                  {option.label}
+                                </span>
+                              </div>
+                              <span className='text-sm font-semibold text-blue-400 ml-4'>
+                                ${priceDisplay}
                               </span>
                             </div>
-                            <span className='text-sm font-semibold text-blue-400 ml-4'>
-                              ${priceDisplay}
-                            </span>
+                          </SelectItem>
+                        )
+                      })}
+                    </Select>
+                    {variantOptions.length === 0 && (
+                      <p className='text-xs text-color-muted mt-1'>
+                        Configure variants with prices in the Pricing section to
+                        enable denomination selection.
+                      </p>
+                    )}
+                  </div>
+                )
+              }}
+            </form.Field>
+          </div>
+
+          <div className='w-full col-span-2'>
+            <form.Field name='popularDenomination'>
+              {(field) => {
+                const popularDenominationValue =
+                  (field.state.value as number[] | undefined) ?? []
+
+                // Find variant options that match the numeric values in the array
+                const selectedKeys = (() => {
+                  if (
+                    !popularDenominationValue ||
+                    popularDenominationValue.length === 0
+                  ) {
+                    return new Set<string>()
+                  }
+
+                  // Find variant options that match these numeric values
+                  const matchingKeys = variantOptions
+                    .filter((opt) =>
+                      popularDenominationValue.some(
+                        (num) =>
+                          opt.denomination !== null &&
+                          Math.abs(opt.denomination - num) < 0.0001,
+                      ),
+                    )
+                    .map((opt) => opt.key)
+
+                  return new Set(matchingKeys)
+                })()
+
+                const handleSelectionChange = (
+                  keys: Set<React.Key> | 'all',
+                ) => {
+                  if (keys === 'all') {
+                    const allDenominations = variantOptions
+                      .map((opt) => opt.denomination)
+                      .filter((num): num is number => num !== null)
+                    field.handleChange(allDenominations)
+                  } else {
+                    // Convert selected keys to their numeric denomination values
+                    const selectedDenominations = Array.from(keys)
+                      .map((key) => {
+                        const option = variantOptions.find(
+                          (opt) => opt.key === key,
+                        )
+                        return option?.denomination ?? null
+                      })
+                      .filter((num): num is number => num !== null)
+                    field.handleChange(selectedDenominations)
+                  }
+                }
+
+                return (
+                  <div className='space-y-1 w-full'>
+                    <Select
+                      label='Popular Denomination'
+                      placeholder={
+                        variantOptions.length === 0
+                          ? 'No variants available. Configure variants in Pricing section.'
+                          : 'Select popular denominations...'
+                      }
+                      selectionMode='multiple'
+                      selectedKeys={selectedKeys}
+                      onSelectionChange={handleSelectionChange}
+                      variant='bordered'
+                      isMultiline={true}
+                      isDisabled={variantOptions.length === 0}
+                      classNames={{
+                        ...commonInputClassNames,
+                        trigger:
+                          'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
+                        label:
+                          'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
+                      }}
+                      renderValue={(items: SelectedItems<object>) => {
+                        return (
+                          <div className='flex flex-wrap gap-2'>
+                            {items.map((item) => {
+                              const variant = variantOptions.find(
+                                (opt) => opt.key === item.key,
+                              )
+                              return (
+                                <Chip
+                                  key={item.key}
+                                  variant='bordered'
+                                  className='border border-blue-500'
+                                  classNames={{
+                                    base: 'border border-dark-gray bg-background dark:border-yellow-500 h-7',
+                                    content: 'text-xs flex items-center gap-1',
+                                  }}>
+                                  <span className='capitalize'>
+                                    {variant?.displayLabel ?? item.textValue}
+                                  </span>
+                                </Chip>
+                              )
+                            })}
                           </div>
-                        </SelectItem>
-                      )
-                    })}
-                  </Select>
-                  {variantOptions.length === 0 && (
-                    <p className='text-xs text-color-muted mt-1'>
-                      Configure variants with prices in the Pricing section to
-                      enable denomination selection.
-                    </p>
-                  )}
-                </div>
-              )
-            }}
-          </form.Field>
+                        )
+                      }}>
+                      {variantOptions.map((option) => {
+                        const priceDisplay = option.price
+                          ? formatPrice(Math.round(option.price * 100))
+                          : 'No price'
+                        return (
+                          <SelectItem
+                            key={option.key}
+                            textValue={option.displayLabel}>
+                            <div className='flex items-center justify-between w-full'>
+                              <div className='flex flex-col'>
+                                <span className='text-sm font-medium'>
+                                  {option.displayLabel}
+                                </span>
+                                <span className='text-xs opacity-70'>
+                                  {option.label}
+                                </span>
+                              </div>
+                              <span className='text-sm font-semibold text-blue-400 ml-4'>
+                                ${priceDisplay}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        )
+                      })}
+                    </Select>
+                    {variantOptions.length === 0 && (
+                      <p className='text-xs text-color-muted mt-1'>
+                        Configure variants with prices in the Pricing section to
+                        enable denomination selection.
+                      </p>
+                    )}
+                  </div>
+                )
+              }}
+            </form.Field>
+          </div>
         </div>
 
-        <div className='grid grid-cols-4 items-center gap-8 py-2'>
+        <div className='grid grid-cols-4 items-center gap-8 py-4'>
           <form.Field name='available'>
             {(field) => {
               const availableValue = (field.state.value as boolean) ?? false

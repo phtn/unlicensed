@@ -1,6 +1,7 @@
 'use client'
 
-import {ITEMS} from '@/components/ui/terpene'
+import {ITEMS} from '@/components/ui/product-profile'
+import {cn} from '@/lib/utils'
 import {Chip, Select, SelectItem, SelectedItems} from '@heroui/react'
 import {useMemo} from 'react'
 import {commonInputClassNames} from './ui/fields'
@@ -8,9 +9,10 @@ import {commonInputClassNames} from './ui/fields'
 interface TagSelectorProps {
   selectedKeys: string[]
   onSelectionChange: (keys: string[]) => void
-  type: 'terpene' | 'flavor' | 'denomination'
+  type: 'terpenes' | 'flavors' | 'effects'
   label: string
   placeholder?: string
+  multiple?: boolean
 }
 
 export const TagSelector = ({
@@ -19,11 +21,21 @@ export const TagSelector = ({
   type,
   label,
   placeholder,
+  multiple = true,
 }: TagSelectorProps) => {
-  const items = useMemo(
-    () => ITEMS.filter((item) => item.category === type),
-    [type],
-  )
+  const items = useMemo(() => {
+    // Normalize plural type to singular category
+    const categoryMap: Record<
+      'terpenes' | 'flavors' | 'effects',
+      'terpene' | 'flavor' | 'effect'
+    > = {
+      terpenes: 'terpene',
+      flavors: 'flavor',
+      effects: 'effect',
+    }
+    const category = categoryMap[type]
+    return ITEMS.filter((item) => item.category === category)
+  }, [type])
 
   const handleSelectionChange = (keys: Set<React.Key> | 'all') => {
     if (keys === 'all') {
@@ -37,7 +49,7 @@ export const TagSelector = ({
     <Select
       label={label}
       placeholder={placeholder}
-      selectionMode='multiple'
+      selectionMode={multiple ? 'multiple' : 'single'}
       selectedKeys={new Set(selectedKeys)}
       onSelectionChange={handleSelectionChange}
       variant='bordered'
@@ -56,12 +68,24 @@ export const TagSelector = ({
               return (
                 <Chip
                   key={item.key}
-                  variant='flat'
+                  variant='bordered'
+                  className={cn('border border-blue-500 bg-background', {
+                    'text-terpenes border-terpenes/50': type === 'terpenes',
+                    'text-flavors border-flavors/50': type === 'flavors',
+                    'text-effects border-effects/50': type === 'effects',
+                  })}
                   classNames={{
-                    base: 'border border-light-gray dark:border-light-gray/30 h-7',
+                    base: cn('border bg-background h-7', {
+                      'border-terpenes dark:border-terpenes':
+                        type === 'terpenes',
+                      'border-flavors dark:border-flavors': type === 'flavors',
+                    }),
+
                     content: 'text-xs flex items-center gap-1',
                   }}>
-                  <span className='capitalize'>{item.textValue}</span>
+                  <span className='capitalize font-medium'>
+                    {item.textValue}
+                  </span>
                 </Chip>
               )
             })}

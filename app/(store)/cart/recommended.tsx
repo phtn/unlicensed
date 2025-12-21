@@ -71,7 +71,7 @@ export const RecommendedProducts = () => {
       await addItem(
         product._id,
         1,
-        product.popularDenomination || product.availableDenominations?.[0] || 1,
+        product.popularDenomination?.[0] || product.availableDenominations?.[0] || 1,
       )
     } catch (error) {
       console.error('Failed to add product to cart:', error)

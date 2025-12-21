@@ -22,7 +22,7 @@ type ProductSeed = {
   priceCents: number
   unit: string
   availableDenominations: number[]
-  popularDenomination: number
+  popularDenomination: number[]
   thcPercentage: number
   cbdPercentage?: number
   effects: string[]
@@ -102,7 +102,7 @@ export const productsSeed: ProductSeed[] = [
     priceCents: 4200,
     unit: 'g',
     availableDenominations: [1, 3.5, 7, 14, 28],
-    popularDenomination: 3.5,
+    popularDenomination: [3.5],
     thcPercentage: 24.1,
     cbdPercentage: 0.2,
     effects: ['Energetic', 'Creative', 'Focused'],
@@ -134,7 +134,7 @@ export const productsSeed: ProductSeed[] = [
     priceCents: 4400,
     unit: 'g',
     availableDenominations: [1, 3.5, 7, 14, 28],
-    popularDenomination: 3.5,
+    popularDenomination: [3.5],
     thcPercentage: 26.3,
     effects: ['Relaxed', 'Sedated', 'Comforted'],
     terpenes: ['Linalool', 'Myrcene', 'Caryophyllene'],
@@ -165,7 +165,7 @@ export const productsSeed: ProductSeed[] = [
     priceCents: 2800,
     unit: '10-pack (5mg each)',
     availableDenominations: [1, 3.5, 7, 14, 28],
-    popularDenomination: 3.5,
+    popularDenomination: [3.5],
     thcPercentage: 5,
     effects: ['Social', 'Bright', 'Balanced'],
     terpenes: ['Valencene', 'Limonene'],
@@ -195,7 +195,7 @@ export const productsSeed: ProductSeed[] = [
     priceCents: 3200,
     unit: '6-piece box (10mg each)',
     availableDenominations: [1, 3.5, 7, 14, 28],
-    popularDenomination: 3.5,
+    popularDenomination: [3.5],
     thcPercentage: 10,
     effects: ['Relaxing', 'Body high', 'Sleepy'],
     terpenes: ['Myrcene', 'Humulene'],
@@ -224,7 +224,7 @@ export const productsSeed: ProductSeed[] = [
     priceCents: 6000,
     unit: '1g jar',
     availableDenominations: [1, 3.5, 7, 14, 28],
-    popularDenomination: 3.5,
+    popularDenomination: [3.5],
     thcPercentage: 76.4,
     cbdPercentage: 1.1,
     effects: ['Euphoric', 'Expansive', 'Creative'],
@@ -255,7 +255,7 @@ export const productsSeed: ProductSeed[] = [
     priceCents: 7200,
     unit: '1g jar',
     availableDenominations: [1, 3.5, 7, 14, 28],
-    popularDenomination: 3.5,
+    popularDenomination: [3.5],
     thcPercentage: 78.9,
     effects: ['Blissful', 'Heavy', 'Dreamy'],
     terpenes: ['Myrcene', 'Limonene', 'Linalool'],
@@ -285,7 +285,7 @@ export const productsSeed: ProductSeed[] = [
     priceCents: 1800,
     unit: '12oz can',
     availableDenominations: [1, 3.5, 7, 14, 28],
-    popularDenomination: 3.5,
+    popularDenomination: [3.5],
     thcPercentage: 5,
     effects: ['Balanced', 'Chatty', 'Warm'],
     terpenes: ['Limonene', 'Bisabolol'],
@@ -315,7 +315,7 @@ export const productsSeed: ProductSeed[] = [
     priceCents: 3600,
     unit: '7-pack (0.5g each)',
     availableDenominations: [1, 3.5, 7, 14, 28],
-    popularDenomination: 3.5,
+    popularDenomination: [3.5],
     thcPercentage: 22.5,
     effects: ['Uplifted', 'Social', 'Creative'],
     terpenes: ['Pinene', 'Terpinolene', 'Limonene'],

@@ -13,7 +13,7 @@ export const productSchema = z.object({
   priceCents: z.number().min(0, 'Price must be positive.'),
   unit: z.string().min(1, 'Unit is required.'),
   availableDenominationsRaw: z.string().optional(),
-  popularDenomination: z.string().optional(),
+  popularDenomination: z.array(z.number()).optional(),
   thcPercentage: z.number().min(0, 'THC percentage must be positive.'),
   cbdPercentage: z.string().optional(),
   effectsRaw: z.string().optional(), // Keep for backward compatibility or parse elsewhere

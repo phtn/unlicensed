@@ -30,8 +30,8 @@
 
   /* Effects, Flavors, Terpenes */
   --color-flavors: oklch(0.783 0.168 66.2);
-  --color-terpenes: oklch(0.633 0.123 166.24);
-  --color-effects: oklch(0.584 0.233 280.76);
+  --color-terpenes: var(--terpenes);
+  --color-effects: var(--effects);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -91,6 +91,10 @@
   --hue: oklch(0.13 0.019 269.8);
   --pill-bg: rgba(255, 255, 255, 0.04);
   --pill-border: rgba(255, 255, 255, 0.12);
+
+  --effects: oklch(0.673 0.182 276.935);
+  --terpenes: oklch(0.6143 0.123 166.24);
+
   --hero-gradient: linear-gradient(
     140deg,
     rgba(99, 102, 241, 0.9),
@@ -188,6 +192,9 @@
   --hue: oklch(0.96 0.007 67.74);
   --pill-bg: rgba(255, 255, 255, 0.16);
   --pill-border: rgba(255, 255, 255, 0.32);
+  --effects: oklch(0.584 0.233 280.76);
+  --terpenes: oklch(0.633 0.123 166.24);
+
   --hero-gradient: linear-gradient(
     140deg,
     rgba(103, 184, 196, 0.45),

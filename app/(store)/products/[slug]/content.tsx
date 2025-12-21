@@ -6,13 +6,14 @@ import {AuthModal} from '@/components/auth/auth-modal'
 import {QuickScroll} from '@/components/base44/quick-scroll'
 import {ProductCard} from '@/components/store/product-card'
 import {Lens} from '@/components/ui/lens'
-import {ProfilePill, StatChip, TerpeneGray} from '@/components/ui/terpene'
+import {ProductProfile} from '@/components/ui/product-profile'
+import {StatChip} from '@/components/ui/terpene'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCartAnimation} from '@/ctx/cart-animation'
 import {useCart} from '@/hooks/use-cart'
 import {useToggle} from '@/hooks/use-toggle'
-import {adaptProductDetail} from '@/lib/convexClient'
+import {adaptProductDetail, type RawProductDetail} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
@@ -66,7 +67,7 @@ const Gallery = ({
   )
 
   const displayImage = useMemo(
-    () => selectedImage ?? primaryImageUrl ?? '',
+    () => selectedImage ?? primaryImageUrl ?? undefined,
     [selectedImage, primaryImageUrl],
   )
   const handleSelectImage = useCallback(
@@ -168,7 +169,7 @@ export const ProductDetailContent = ({
     if (!detailQuery) {
       return null
     }
-    const adapted = adaptProductDetail(detailQuery)
+    const adapted = adaptProductDetail(detailQuery as RawProductDetail)
     // Override image URLs with resolved URLs if available
     if (primaryImageUrl) {
       adapted.product.image = primaryImageUrl
@@ -290,7 +291,7 @@ export const ProductDetailContent = ({
             imageRef={galleryImageRef}
             productId={detailQuery?.product?._id ?? product._id}
           />
-          <div className='space-y-6 sm:space-y-8 lg:space-y-10 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue dark:bg-pink-100/10 p-4 sm:p-5 lg:p-6 backdrop-blur-xl'>
+          <div className='space-y-6 sm:space-y-8 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue dark:bg-pink-100/10 p-4 sm:p-5 lg:p-6 backdrop-blur-xl'>
             <div className='flex flex-col gap-4 sm:gap-5'>
               <div className='flex items-center justify-between gap-2 pb-4'>
                 <StatChip value={category?.name ?? product.categorySlug} />
@@ -329,38 +330,41 @@ export const ProductDetailContent = ({
                 </span>
                 {product.availableDenominations &&
                   product.availableDenominations.map((denomination, i) => (
-                    <Button
-                      size='sm'
-                      onPress={handleDenominationChange(i)}
-                      // selectedDenomination
+                    <Badge
+                      key={denomination}
+                      isOneChar
+                      size='md'
+                      content={
+                        product.popularDenomination?.includes(denomination) ? (
+                          <Icon name='star-fill' className='size-4 rotate-12' />
+                        ) : null
+                      }
+                      placement='top-right'
+                      shape='circle'
                       className={cn(
-                        'cursor-pointer rounded-full border border-foreground/20',
+                        'top-0 border-none border-hue dark:border-foreground/20',
                         {
-                          'bg-dark-gray dark:bg-brand dark:border-foreground text-featured dark:text-background hover:bg-foreground hover:text-background':
-                            selectedDenomination === i,
-                        },
-                      )}
-                      key={denomination}>
-                      <Badge
-                        isOneChar
-                        size='lg'
-                        content={
-                          denomination === product.popularDenomination ? (
-                            <Icon
-                              name='lightning'
-                              className='text-orange-300 size-5 rotate-12'
-                            />
-                          ) : null
-                        }
-                        placement='top-right'
-                        shape='circle'
-                        // {denomination === product.popularDenomination }
-                        className={cn('hidden', {
+                          hidden:
+                            !product.popularDenomination?.includes(
+                              denomination,
+                            ),
                           'bg-brand text-background':
                             selectedDenomination === i,
-                          'bg-foreground':
-                            denomination === product.popularDenomination,
-                        })}>
+                          'bg-hue dark:pink-100/10 text-brand':
+                            product.popularDenomination?.includes(denomination),
+                        },
+                      )}>
+                      <Button
+                        size='sm'
+                        onPress={handleDenominationChange(i)}
+                        // selectedDenomination
+                        className={cn(
+                          'cursor-pointer rounded-full border border-foreground/20',
+                          {
+                            'bg-dark-gray dark:bg-white dark:border-foreground text-featured dark:text-background hover:bg-foreground hover:text-background':
+                              selectedDenomination === i,
+                          },
+                        )}>
                         <span
                           className={cn(
                             'relative font-space text-[10px] sm:text-sm font-medium whitespace-nowrap',
@@ -369,8 +373,8 @@ export const ProductDetailContent = ({
                             ? mapFractions[denomination + product.unit]
                             : denomination + product.unit}
                         </span>
-                      </Badge>
-                    </Button>
+                      </Button>
+                    </Badge>
                   ))}
               </div>
               <div className='flex flex-col sm:flex-row gap-3'>
@@ -401,16 +405,36 @@ export const ProductDetailContent = ({
               </div>
               <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />
             </div>
-            {/*<Divider className='border-color-border/40' />*/}
 
-            <div className='flex flex-wrap items-center gap-4 py-2 md:py-6 lg:py-8'>
-              <TerpeneGray name='pinene' id='pine' />
-              <TerpeneGray name='hops' id='hops' />
-              <TerpeneGray name='humulene' id='humulene' />
-              <TerpeneGray name='linalool' id='linalool' />
-              <ProfilePill name='Guava' group='flavors' />
-              <ProfilePill name='Bright' group='effects' />
-              <ProfilePill name='Humulene' group='terpenes' />
+            <div className='gap-4 py-2 md:py-4 space-y-4'>
+              <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
+                Terpenes
+              </span>
+              <div className='flex flex-wrap items-center gap-2 py-2'>
+                {product.terpenes.map((terpene) => (
+                  <ProductProfile
+                    key={terpene}
+                    name={terpene}
+                    group='terpenes'
+                  />
+                ))}
+              </div>
+              <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
+                Flavor Notes
+              </span>
+              <div className='flex flex-wrap items-center gap-2 py-2'>
+                {product.flavorNotes.map((flavor) => (
+                  <ProductProfile key={flavor} name={flavor} group='flavors' />
+                ))}
+              </div>
+              <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
+                Effects
+              </span>
+              <div className='flex flex-wrap items-center gap-2 py-2'>
+                {product.effects.map((effect) => (
+                  <ProductProfile key={effect} name={effect} group='effects' />
+                ))}
+              </div>
             </div>
             <h3>
               <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>

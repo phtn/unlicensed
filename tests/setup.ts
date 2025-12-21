@@ -67,7 +67,7 @@ export async function createTestProduct(
     priceCents: 1000, // $10.00
     unit: 'g',
     availableDenominations: [1, 3.5, 7],
-    popularDenomination: 3.5,
+    popularDenomination: [3.5],
     thcPercentage: 20,
     cbdPercentage: 1,
     effects: ['relaxed', 'happy'],

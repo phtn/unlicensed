@@ -23,7 +23,7 @@ export type RawProduct = {
   priceCents?: number
   unit?: string
   availableDenominations?: number[]
-  popularDenomination?: number
+  popularDenomination?: number[]
   thcPercentage?: number
   cbdPercentage?: number
   effects?: string[]
@@ -87,8 +87,8 @@ export const adaptProduct = (product: RawProduct): StoreProduct => ({
   popularDenomination:
     product.popularDenomination ??
     (product.availableDenominations && product.availableDenominations.length > 0
-      ? product.availableDenominations[0]
-      : 1),
+      ? [product.availableDenominations[0]]
+      : [1]),
   thcPercentage: product.thcPercentage ?? 0,
   cbdPercentage: product.cbdPercentage,
   effects: product.effects ?? [],
