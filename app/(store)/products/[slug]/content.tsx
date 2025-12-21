@@ -65,7 +65,10 @@ const Gallery = ({
     productId ? {id: productId} : 'skip',
   )
 
-  const displayImage = selectedImage ?? primaryImageUrl ?? product.image ?? ''
+  const displayImage = useMemo(
+    () => selectedImage ?? primaryImageUrl ?? '',
+    [selectedImage, primaryImageUrl],
+  )
   const handleSelectImage = useCallback(
     (src: string) => () => {
       startTransition(() => {

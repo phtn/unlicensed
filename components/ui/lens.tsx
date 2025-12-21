@@ -20,13 +20,14 @@ interface LensProps {
 export const Lens: React.FC<LensProps> = ({
   children,
   zoomFactor = 1.75,
-  lensSize = 280,
+  lensSize = 240,
   isStatic = false,
   position = {x: 180, y: 150},
   hovering,
   setHovering,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
+  const lensRef = useRef<HTMLDivElement>(null)
 
   const [localIsHovering, setLocalIsHovering] = useState(false)
   const [zoom, setZoom] = useState(false)
@@ -53,7 +54,7 @@ export const Lens: React.FC<LensProps> = ({
   return (
     <div
       ref={containerRef}
-      className='relative overflow-hidden rounded-lg z-20 cursor-crosshair'
+      className='relative overflow-hidden z-20 hover:cursor-none'
       onMouseEnter={() => {
         setIsHovering(true)
       }}
@@ -63,8 +64,10 @@ export const Lens: React.FC<LensProps> = ({
       {children}
 
       {isStatic ? (
-        <div>
+        <div className='flex items-center justify-center'>
           <motion.div
+            ref={lensRef}
+            id='lens'
             initial={{opacity: 0, scale: 0.58}}
             animate={{opacity: 1, scale: 1}}
             exit={{opacity: 0, scale: 0.8}}
@@ -98,13 +101,14 @@ export const Lens: React.FC<LensProps> = ({
       ) : (
         <AnimatePresence>
           {isHovering && (
-            <div>
+            <div className='flex items-center justify-center hover:cursor-none'>
               <motion.div
+                id='lens'
                 initial={{opacity: 0, scale: 0.58}}
                 animate={{opacity: 1, scale: 1}}
                 exit={{opacity: 0, scale: 0.8}}
-                transition={{duration: 0.3, ease: 'easeOut'}}
-                className='absolute inset-0 overflow-hidden'
+                transition={{duration: 0.5, ease: 'easeOut'}}
+                className='absolute inset-0 overflow-hidden hover:cursor-none'
                 style={{
                   maskImage: `radial-gradient(circle ${lensSize / 2}px at ${
                     mousePosition.x
@@ -116,14 +120,15 @@ export const Lens: React.FC<LensProps> = ({
                   }px, black 100%, transparent 100%)`,
                   transformOrigin: `${mousePosition.x}px ${mousePosition.y}px`,
                   zIndex: 50,
+                  cursor: 'none',
                 }}>
                 <motion.div
-                  className='absolute inset-0'
+                  className='absolute inset-0 hover:cursor-none'
                   animate={{
                     scale: zoom ? zoomFactor + 1.5 : zoomFactor,
                   }}
                   transition={{
-                    duration: 0.3,
+                    duration: 0.5,
                     ease: [0.4, 0, 0.2, 1],
                   }}
                   style={{
@@ -132,6 +137,11 @@ export const Lens: React.FC<LensProps> = ({
                   {children}
                 </motion.div>
               </motion.div>
+              <ZoomEffect
+                mousePosition={mousePosition}
+                lensSize={lensSize}
+                zoom={zoom}
+              />
             </div>
           )}
         </AnimatePresence>
@@ -139,3 +149,76 @@ export const Lens: React.FC<LensProps> = ({
     </div>
   )
 }
+
+interface ZoomEffectProps {
+  mousePosition: {x: number; y: number}
+  lensSize: number
+  zoom: boolean
+}
+
+const ZoomEffect = ({mousePosition, lensSize, zoom}: ZoomEffectProps) => (
+  <motion.div
+    initial={{opacity: 0, scale: 0.8}}
+    animate={{opacity: 1, scale: 1}}
+    exit={{opacity: 0, scale: 0.8}}
+    transition={{duration: 0.4, ease: 'easeOut'}}
+    className='absolute pointer-events-none hover:cursor-none flex items-center justify-center p-1'
+    style={{
+      left: `${mousePosition.x - lensSize / 2}px`,
+      top: `${mousePosition.y - lensSize / 2}px`,
+      width: `${lensSize}px`,
+      height: `${lensSize}px`,
+      transform: 'translate(-50%, -50%)',
+      zIndex: 60,
+    }}>
+    <motion.svg width={lensSize} height={lensSize} className='absolute inset-0'>
+      <circle
+        cx={(lensSize - (zoom ? 2 : 0)) / 2}
+        cy={(lensSize - (zoom ? 2 : 0)) / 2}
+        r={lensSize - (zoom ? 2 : 0)}
+        fill='none'
+        stroke='rgba(255, 255, 255, 0.8)'
+        strokeWidth={zoom ? '6' : '4'}
+      />
+      <motion.circle
+        animate={{
+          rotate: zoom ? 15 : 0,
+        }}
+        transition={{
+          type: 'spring',
+          visualDuration: 0.5,
+          bounce: 0.2,
+          ease: 'easeInOut',
+        }}
+        style={{
+          transformOrigin: 'center',
+        }}
+        cx={lensSize / 2}
+        cy={lensSize / 2}
+        r={lensSize / 2 - 2}
+        fill='none'
+        stroke='white'
+        strokeWidth='4'
+        strokeDasharray={zoom ? '1 6' : '1 4'}
+      />
+      <line
+        x1={lensSize / 2}
+        y1={lensSize / 2}
+        x2={lensSize / 2}
+        y2={lensSize / 2 + 6}
+        stroke='pink'
+        strokeWidth='1'
+        strokeLinecap='round'
+      />
+      <line
+        x1={lensSize / 2 - 8}
+        y1={lensSize / 2}
+        x2={lensSize / 2 + 8}
+        y2={lensSize / 2}
+        stroke='rgba(255, 255, 255, 0.6)'
+        strokeWidth='1'
+        strokeLinecap='round'
+      />
+    </motion.svg>
+  </motion.div>
+)
