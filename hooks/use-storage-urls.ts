@@ -6,25 +6,23 @@ import {useMemo} from 'react'
 
 /**
  * Custom hook to resolve storageIds to URLs.
- * Handles both URLs (already resolved) and storageIds (needs resolution).
  *
- * @param values - Array of strings that could be URLs or storageIds
- * @returns A function that resolves any value (URL or storageId) to a URL string
+ * @param values - Array of storageIds (strings)
+ * @returns A function that resolves a storageId to a URL string, or null if not found
  *
  * @example
  * ```tsx
- * const resolveUrl = useStorageUrls(['http://example.com/image.jpg', 'storageId123'])
- * const url1 = resolveUrl('http://example.com/image.jpg') // Returns as-is
- * const url2 = resolveUrl('storageId123') // Returns resolved URL or empty string
+ * const resolveUrl = useStorageUrls(['storageId123', 'storageId456'])
+ * const url = resolveUrl('storageId123') // Returns resolved URL or null
  * ```
  */
 export const useStorageUrls = (
   values: (string | undefined | null)[],
-): ((value: string) => string) => {
-  // Extract storageIds that need URL resolution (not already URLs)
+): ((value: string) => string | null) => {
+  // Extract unique storageIds (filter out null/undefined and duplicates)
   const storageIdsToResolve = useMemo(() => {
     return values
-      .filter((value): value is string => !!value && !value.startsWith('http'))
+      .filter((value): value is string => !!value)
       .filter((value, index, self) => self.indexOf(value) === index) // Remove duplicates
   }, [values])
 
@@ -44,12 +42,9 @@ export const useStorageUrls = (
 
   // Return a resolver function
   return useMemo(() => {
-    return (value: string): string => {
-      if (!value) return ''
-      if (value.startsWith('http')) {
-        return value
-      }
-      return (urlMap.get(value) as string) ?? null
+    return (value: string): string | null => {
+      if (!value) return null
+      return urlMap.get(value) ?? null
     }
   }, [urlMap])
 }

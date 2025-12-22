@@ -1,6 +1,7 @@
 'use client'
 
 import {AuthModal} from '@/components/auth/auth-modal'
+import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
@@ -9,7 +10,7 @@ import {Icon} from '@/lib/icons'
 import {Button, useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
-import {useMemo} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {CartItem} from './cart-item'
 import {Checkout} from './checkout'
 import {RecommendedProducts} from './recommended'
@@ -35,6 +36,12 @@ export default function CartPage() {
     onOpen: onCheckoutOpen,
     onClose: onCheckoutClose,
   } = useDisclosure()
+  const [showEmptyCartLoader, setShowEmptyCartLoader] = useState(false)
+  const loaderTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const previousStateRef = useRef<{isLoading: boolean; hasItems: boolean}>({
+    isLoading: true,
+    hasItems: false,
+  })
 
   // Get user info for checkout
   const convexUser = useQuery(
@@ -73,6 +80,53 @@ export default function CartPage() {
   }, [cart])
 
   const hasItems = cartItems.length > 0
+
+  // Show loader for 3 seconds when cart is empty (after initial load completes)
+  useEffect(() => {
+    const prevState = previousStateRef.current
+    const stateChanged =
+      prevState.isLoading !== isLoading || prevState.hasItems !== hasItems
+
+    // Only proceed if state actually changed
+    if (!stateChanged) {
+      return
+    }
+
+    // Update previous state
+    previousStateRef.current = {isLoading, hasItems}
+
+    // Clear any existing timer
+    if (loaderTimerRef.current) {
+      clearTimeout(loaderTimerRef.current)
+      loaderTimerRef.current = null
+    }
+
+    // Schedule state updates asynchronously to avoid cascading renders
+    if (!isLoading && !hasItems) {
+      // Schedule the loader to show
+      queueMicrotask(() => {
+        setShowEmptyCartLoader(true)
+      })
+
+      // Schedule it to hide after 3 seconds
+      loaderTimerRef.current = setTimeout(() => {
+        setShowEmptyCartLoader(false)
+        loaderTimerRef.current = null
+      }, 3000)
+    } else if (hasItems) {
+      // If cart has items, hide loader immediately
+      queueMicrotask(() => {
+        setShowEmptyCartLoader(false)
+      })
+    }
+
+    return () => {
+      if (loaderTimerRef.current) {
+        clearTimeout(loaderTimerRef.current)
+        loaderTimerRef.current = null
+      }
+    }
+  }, [isLoading, hasItems])
 
   const subtotal = cartItems.reduce((total, item) => {
     const price = item.product.priceCents ?? 0
@@ -114,6 +168,13 @@ export default function CartPage() {
   }
 
   if (!hasItems) {
+    if (showEmptyCartLoader) {
+      return (
+        <div className='min-h-screen flex items-center justify-center'>
+          <Loader />
+        </div>
+      )
+    }
     return (
       <div className='min-h-screen flex items-center justify-center'>
         <div className='text-center space-y-4'>

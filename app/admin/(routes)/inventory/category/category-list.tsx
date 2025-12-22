@@ -49,9 +49,9 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
                   <Image
                     alt={category.name + '-image'}
                     src={
-                      category.heroImage
-                        ? resolveUrl(category.heroImage)
-                        : '/default-category-image.svg'
+                      (category.heroImage &&
+                        resolveUrl(category.heroImage)) ??
+                      '/default-category-image.svg'
                     }
                     className='w-24 h-auto shrink-0 aspect-square'
                   />

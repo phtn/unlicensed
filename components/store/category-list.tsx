@@ -44,10 +44,7 @@ export const CategoryList = () => {
               alt={item.name}
               radius='none'
               className='w-full object-cover'
-              src={
-                resolveUrl(item.heroImage ?? '') ||
-                '/default-category-image.svg'
-              }
+              src={resolveUrl(item.heroImage ?? '') ?? undefined}
               shadow='sm'
               width='100%'
             />

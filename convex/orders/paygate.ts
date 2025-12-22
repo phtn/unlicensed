@@ -139,28 +139,41 @@ export const initiatePayGatePayment = action({
     // Convert cents to dollars for PayGate API
     const amountInDollars: number = order.totalCents / 100
 
-    // Build request parameters
-    const params: URLSearchParams = new URLSearchParams({
-      amount: amountInDollars.toString(),
-      currency: 'USD',
-      order_id: order.orderNumber,
-      return_url: args.returnUrl,
-      ...(args.cancelUrl && {cancel_url: args.cancelUrl}),
-      ...(args.webhookUrl && {webhook_url: args.webhookUrl}),
-      ...(order.contactEmail && {email: order.contactEmail}),
-      ...(order.contactPhone && {phone: order.contactPhone}),
-      ...(order.shippingAddress.firstName && {
-        name: `${order.shippingAddress.firstName} ${order.shippingAddress.lastName || ''}`.trim(),
-      }),
-      ...(paygatePaymentMethod && {payment_method: paygatePaymentMethod}),
-      wallet: usdcWallet, // Always include wallet since it's required
-    })
-
     // PayGate uses different endpoints for credit card vs crypto
-    const endpoint: string =
-      paygatePaymentMethod === 'crypto'
-        ? `${apiUrl}/crypto/create.php`
-        : `${apiUrl}/create.php`
+    // For credit card: use hosted payment endpoint (checkout.paygate.to/pay.php)
+    // For crypto: use crypto endpoint (api.paygate.to/crypto/create.php)
+    let endpoint: string
+    const params: URLSearchParams = new URLSearchParams()
+
+    if (paygatePaymentMethod === 'crypto') {
+      // Crypto payments use the crypto endpoint
+      endpoint = `${apiUrl}/crypto/create.php`
+      params.append('amount', amountInDollars.toString())
+      params.append('currency', 'USD')
+      params.append('order_id', order.orderNumber)
+      params.append('return_url', args.returnUrl)
+      if (args.cancelUrl) params.append('cancel_url', args.cancelUrl)
+      if (args.webhookUrl) params.append('webhook_url', args.webhookUrl)
+      if (order.contactEmail) params.append('email', order.contactEmail)
+      if (order.contactPhone) params.append('phone', order.contactPhone)
+      if (order.shippingAddress.firstName) {
+        params.append(
+          'name',
+          `${order.shippingAddress.firstName} ${order.shippingAddress.lastName || ''}`.trim(),
+        )
+      }
+      params.append('wallet', usdcWallet)
+    } else {
+      // Credit card payments use the hosted payment endpoint
+      endpoint = `${checkoutUrl}/pay.php`
+      params.append('address', usdcWallet) // Use 'address' parameter for hosted payments
+      params.append('amount', amountInDollars.toString())
+      params.append('provider', 'hosted') // Required for hosted payment endpoint
+      params.append('currency', 'USD')
+      if (order.contactEmail) params.append('email', order.contactEmail)
+      // Note: hosted payment endpoint may not support return_url, cancel_url, webhook_url
+      // These are typically handled via PayGate's callback system
+    }
 
     // Build full URL for logging/debugging
     const fullUrl: string = `${endpoint}?${params.toString()}`
@@ -182,9 +195,13 @@ export const initiatePayGatePayment = action({
       )
     }
 
+    // Get content type before reading response body
+    const contentType: string | null = response.headers.get('content-type') || ''
+    const isJson: boolean = contentType.includes('application/json')
+    const isHtml: boolean = contentType.includes('text/html')
+
     // Handle non-OK responses with better error messages
     if (!response.ok) {
-      const contentType: string | null = response.headers.get('content-type')
       let errorText: string
 
       try {
@@ -200,7 +217,7 @@ export const initiatePayGatePayment = action({
         )
       } else if (response.status === 400) {
         throw new Error(
-          `Invalid PayGate request. Check required parameters (wallet, amount, order_id, etc.). Error: ${errorText.substring(0, 200)}`,
+          `Invalid PayGate request. Check required parameters (address/wallet, amount, etc.). Error: ${errorText.substring(0, 200)}`,
         )
       } else {
         throw new Error(
@@ -209,7 +226,7 @@ export const initiatePayGatePayment = action({
       }
     }
 
-    // Parse JSON response with error handling
+    // Parse response - hosted payment endpoint may return HTML or JSON
     let data: {
       success?: boolean
       error?: string
@@ -220,16 +237,48 @@ export const initiatePayGatePayment = action({
       transaction_id?: string
       transactionId?: string
       qr_code?: string
-    }
+      url?: string
+    } = {}
 
-    try {
-      data = await response.json()
-    } catch (error) {
-      // Response was not valid JSON (might be HTML error page)
+    if (isJson) {
+      try {
+        data = await response.json()
+      } catch (error) {
+        throw new Error(
+          `PayGate API returned invalid JSON response: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
+        )
+      }
+    } else if (isHtml && paygatePaymentMethod !== 'crypto') {
+      // Hosted payment endpoint may return HTML with redirect
+      // For hosted payments, we'll construct the payment URL from the endpoint
+      // The actual redirect happens client-side
+      const responseText: string = await response.text()
+      
+      // Try to extract URL from HTML meta refresh or script redirect
+      const metaRefreshMatch = responseText.match(
+        /<meta[^>]*http-equiv=["']refresh["'][^>]*content=["'][^"']*url=([^"'>\s]+)["']/i,
+      )
+      const scriptRedirectMatch = responseText.match(
+        /window\.location\.(href|replace)\s*=\s*["']([^"']+)["']/i,
+      )
+      
+      if (metaRefreshMatch && metaRefreshMatch[1]) {
+        data.payment_url = decodeURIComponent(metaRefreshMatch[1].trim())
+      } else if (scriptRedirectMatch && scriptRedirectMatch[2]) {
+        data.payment_url = scriptRedirectMatch[2]
+      } else {
+        // If no redirect found, use the endpoint URL itself as payment URL
+        // The hosted payment page will handle the payment flow
+        data.payment_url = fullUrl
+      }
+      
+      // Generate a session ID from order ID for tracking
+      data.session_id = `session_${args.orderId}`
+    } else if (!isJson && !isHtml) {
       throw new Error(
-        `PayGate API returned invalid response. Expected JSON but received: ${
-          response.headers.get('content-type') || 'unknown content type'
-        }`,
+        `PayGate API returned unexpected content type: ${contentType}. Expected JSON or HTML.`,
       )
     }
 
@@ -242,6 +291,7 @@ export const initiatePayGatePayment = action({
     const paymentUrl: string =
       data.payment_url ||
       data.checkout_url ||
+      data.url ||
       (paygatePaymentMethod === 'credit_card'
         ? `${checkoutUrl}?session=${data.session_id || data.sessionId || ''}`
         : data.qr_code || '')
@@ -249,9 +299,22 @@ export const initiatePayGatePayment = action({
     const transactionId: string | undefined =
       data.transaction_id || data.transactionId
 
-    if (!paymentUrl || !sessionId) {
+    if (!paymentUrl) {
       throw new Error(
-        'Invalid PayGate response: missing payment URL or session ID',
+        'Invalid PayGate response: missing payment URL',
+      )
+    }
+
+    // For hosted payments, session ID might not be in response, generate one
+    // For crypto payments, session ID should be in the response
+    const finalSessionId: string | undefined =
+      sessionId ||
+      (paygatePaymentMethod !== 'crypto' ? `session_${args.orderId}` : undefined)
+
+    // Validate session ID for crypto payments (required)
+    if (paygatePaymentMethod === 'crypto' && !finalSessionId) {
+      throw new Error(
+        'Invalid PayGate response: missing session ID for crypto payment',
       )
     }
 
@@ -263,7 +326,7 @@ export const initiatePayGatePayment = action({
         orderId: args.orderId,
         payment: {
           ...order.payment,
-          paygateSessionId: sessionId,
+          paygateSessionId: finalSessionId,
           paygatePaymentUrl: paymentUrl,
           paygateTransactionId: transactionId,
           status: 'processing', // Mark as processing while payment is in progress
@@ -274,7 +337,7 @@ export const initiatePayGatePayment = action({
     return {
       success: true,
       paymentUrl,
-      sessionId,
+      sessionId: finalSessionId,
       transactionId,
     }
   },

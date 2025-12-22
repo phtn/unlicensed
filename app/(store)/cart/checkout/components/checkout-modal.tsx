@@ -1,8 +1,8 @@
 'use client'
 
+import {Icon} from '@/lib/icons'
 import {
   Button,
-  Divider,
   Modal,
   ModalBody,
   ModalContent,
@@ -45,12 +45,15 @@ export function CheckoutModal({
       isOpen={isOpen}
       onClose={onClose}
       size='2xl'
+      radius='sm'
       scrollBehavior='inside'
-      placement='center'>
-      <ModalContent className='overflow-hidden'>
+      className=''
+      classNames={{wrapper: 'mt-16'}}
+      placement='top'>
+      <ModalContent className='overflow-hidden dark:bg-dark-table'>
         {(onClose) => (
           <>
-            <ModalHeader className='flex flex-col gap-1 text-xl font-bold tracking-tight bg-foreground text-background'>
+            <ModalHeader className='flex flex-col justify-center gap-1 text-lg font-semibold tracking-tight bg-foreground dark:bg-foreground/60 text-background h-12 mb-1'>
               Customer Shipping and Billing
             </ModalHeader>
             <ModalBody>
@@ -60,22 +63,18 @@ export function CheckoutModal({
                 orderId={orderId}
               />
 
-              <div className='space-y-6'>
+              <div className='space-y-8'>
                 <ContactForm
                   formData={formData}
                   formErrors={formErrors}
                   onInputChange={onInputChange}
                 />
 
-                <Divider />
-
                 <ShippingForm
                   formData={formData}
                   formErrors={formErrors}
                   onInputChange={onInputChange}
                 />
-
-                <Divider />
 
                 <BillingForm
                   formData={formData}
@@ -86,19 +85,23 @@ export function CheckoutModal({
             </ModalBody>
             <ModalFooter>
               <Button
-                variant='light'
                 size='lg'
+                variant='light'
                 onPress={onClose}
+                className='px-8'
                 isDisabled={isLoading || isPending}>
                 Cancel
               </Button>
               <Button
                 color='primary'
-                size='lg'
+                className='bg-featured font-medium dark:text-background tracking-tighter text-base'
                 onPress={onPlaceOrder}
                 isLoading={isLoading || isPending}
+                endContent={
+                  <Icon name='arrow-down' className='-rotate-45 size-8' />
+                }
                 isDisabled={!!orderId}>
-                {orderId ? 'Order Placed!' : 'Place Order'}
+                {orderId ? 'Order Placed!' : 'Proceed to Payment'}
               </Button>
             </ModalFooter>
           </>

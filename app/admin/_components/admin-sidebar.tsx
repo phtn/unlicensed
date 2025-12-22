@@ -72,7 +72,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
           <div className='h-12 flex w-full items-center _justify-center dark:bg-sidebar bg-linear-to-r from-foreground/90 via-foreground/90 to-transparent dark:from-featured/20 dark:via-foreground/10 px-4 rounded-s-3xl'>
             <Icon
               name='rapid-fire'
-              className='text-base text-brand w-32 h-auto font-figtree font-semibold tracking-tight'
+              className='text-base text-sidebar dark:text-light-table w-32 h-auto font-figtree font-semibold tracking-tight'
             />
           </div>
         </div>

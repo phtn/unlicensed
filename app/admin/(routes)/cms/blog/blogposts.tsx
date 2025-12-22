@@ -81,7 +81,7 @@ export const Blogposts = ({blogs, deleteFn, isDeleting}: BlogpostsProps) => {
       case 'actions':
         return (
           <div className='flex items-center gap-2'>
-            <Link href={`/admin/blog/${blog.slug}`}>
+            <Link href={`/admin/cms/blog?tabId=edit&id=${blog._id}`}>
               <Button variant='ghost' size='sm'>
                 <Icon name='pencil-single-solid' className='w-4 h-4' />
               </Button>

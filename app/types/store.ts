@@ -28,7 +28,7 @@ export interface StoreProduct {
   available: boolean
   stock: number
   rating: number
-  image: string
+  image: string | null
   gallery: string[]
   consumption: string
   flavorNotes: string[]

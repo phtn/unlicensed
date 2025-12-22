@@ -1,5 +1,6 @@
 'use client'
 
+import {Icon} from '@/lib/icons'
 import {Input} from '@heroui/react'
 import {FormData, FormErrors} from '../types'
 
@@ -16,13 +17,16 @@ export function ContactForm({
 }: ContactFormProps) {
   return (
     <div>
-      <h3 className='text-lg font-semibold mb-4 tracking-tight'>
-        Contact Information
+      <h3 className='flex items-center space-x-1.5 text-lg font-semibold my-3 tracking-tighter'>
+        <Icon name='email' className='size-6 opacity-80' />
+        <span>Contact Information</span>
       </h3>
-      <div className='space-y-4'>
+      <div className='space-y-1'>
         <Input
           label='Email'
           type='email'
+          radius='sm'
+          classNames={{label: 'opacity-80'}}
           value={formData.contactEmail}
           onChange={(e) => onInputChange('contactEmail', e.target.value)}
           isRequired
@@ -31,6 +35,7 @@ export function ContactForm({
         />
         <Input
           label='Phone'
+          radius='sm'
           type='tel'
           value={formData.contactPhone}
           onChange={(e) => onInputChange('contactPhone', e.target.value)}

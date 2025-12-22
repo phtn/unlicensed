@@ -44,7 +44,7 @@ export function useOrderForm({
       zipCode: defaultAddress?.zipCode ?? '',
       country: defaultAddress?.country ?? 'US',
       // Billing address (optional) - prefer billing address name, fallback to user's name
-      useSameBilling: !defaultBillingAddress,
+      useSameBilling: true, // Default to checked - user can uncheck to enter different billing address
       billingFirstName: defaultBillingAddress?.firstName ?? userNameFirst ?? '',
       billingLastName: defaultBillingAddress?.lastName ?? userNameLast ?? '',
       billingAddressLine1: defaultBillingAddress?.addressLine1 ?? '',
@@ -131,9 +131,9 @@ export function useOrderForm({
           }
         }
 
-        // Populate billing address if available and different from shipping
-        if (defaultBillingAddress) {
-          updates.useSameBilling = false
+        // Populate billing address fields if available and useSameBilling is false
+        // Only populate if user has unchecked "use same billing" or if no billing fields are filled
+        if (defaultBillingAddress && !prev.useSameBilling) {
           if (!prev.billingFirstName.trim()) {
             if (defaultBillingAddress.firstName) {
               updates.billingFirstName = defaultBillingAddress.firstName
@@ -192,6 +192,7 @@ export function useOrderForm({
     convexUser?.preferences?.defaultPaymentMethod,
     userNameFirst,
     userNameLast,
+    formData.useSameBilling, // React to useSameBilling changes to auto-populate billing when unchecked
   ])
 
   const handleInputChange = useCallback(

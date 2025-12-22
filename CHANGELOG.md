@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.0
+
+### Minor Changes
+
+- accomplished paygate checkout
+
 ## 0.9.1
 
 ### Patch Changes

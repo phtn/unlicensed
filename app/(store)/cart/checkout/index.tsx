@@ -93,7 +93,7 @@ export function Checkout({
             // For credit_card or crypto, redirect to payment page
             const paymentMethod = formData.paymentMethod
             if (paymentMethod === 'credit_card' || paymentMethod === 'crypto') {
-              router.push(`/order/${orderId}/payment`)
+              router.push(`/order/${orderId}/pay`)
             } else {
               router.push(`/account/orders/${orderId}`)
             }

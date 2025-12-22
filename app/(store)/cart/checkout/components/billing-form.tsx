@@ -1,6 +1,6 @@
 'use client'
 
-import {Checkbox, Input} from '@heroui/react'
+import {Input} from '@heroui/react'
 import {FormData, FormErrors} from '../types'
 
 interface BillingFormProps {
@@ -16,16 +16,6 @@ export function BillingForm({
 }: BillingFormProps) {
   return (
     <>
-      <div>
-        <label className='flex items-center gap-2 cursor-pointer'>
-          <Checkbox
-            type='checkbox'
-            checked={formData.useSameBilling}
-            onChange={(e) => onInputChange('useSameBilling', e.target.checked)}
-          />
-          <span className='text-sm'>Use same address for billing</span>
-        </label>
-      </div>
       {!formData.useSameBilling && (
         <div>
           <h3 className='text-lg font-semibold mb-4'>Billing Address</h3>

@@ -258,7 +258,9 @@ export default function OrderDetailPage() {
                   )}
                   {order.payment.paygateTransactionId && (
                     <div className='flex justify-between'>
-                      <span className='text-color-muted'>PayGate Transaction ID</span>
+                      <span className='text-color-muted'>
+                        PayGate Transaction ID
+                      </span>
                       <span className='text-sm font-mono'>
                         {order.payment.paygateTransactionId}
                       </span>
@@ -269,7 +271,7 @@ export default function OrderDetailPage() {
                       <div className='mt-4 pt-4 border-t border-divider'>
                         <Button
                           as={NextLink}
-                          href={`/order/${order._id}/payment`}
+                          href={`/order/${order._id}/pay`}
                           color='primary'
                           className='w-full'>
                           Complete Payment
@@ -280,7 +282,9 @@ export default function OrderDetailPage() {
                     <div className='flex justify-between'>
                       <span className='text-color-muted'>Paid At</span>
                       <span className='text-sm'>
-                        {order.payment.paidAt ? formatDate(order.payment.paidAt) : 'N/A'}
+                        {order.payment.paidAt
+                          ? formatDate(order.payment.paidAt)
+                          : 'N/A'}
                       </span>
                     </div>
                   )}
@@ -334,12 +338,18 @@ export default function OrderDetailPage() {
                     )}
                     {order.shipping.shippedAt && (
                       <p className='text-sm text-color-muted mt-2'>
-                        Shipped: {order.shipping.shippedAt ? formatDate(order.shipping.shippedAt) : 'N/A'}
+                        Shipped:{' '}
+                        {order.shipping.shippedAt
+                          ? formatDate(order.shipping.shippedAt)
+                          : 'N/A'}
                       </p>
                     )}
                     {order.shipping.deliveredAt && (
                       <p className='text-sm text-color-muted'>
-                        Delivered: {order.shipping.deliveredAt ? formatDate(order.shipping.deliveredAt) : 'N/A'}
+                        Delivered:{' '}
+                        {order.shipping.deliveredAt
+                          ? formatDate(order.shipping.deliveredAt)
+                          : 'N/A'}
                       </p>
                     )}
                   </div>
@@ -387,7 +397,7 @@ export default function OrderDetailPage() {
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-color-muted'>Placed On</span>
-                  <span>{formatDate(order.createdAt ?? Date.now())}</span>
+                  <span>{formatDate(order.createdAt ?? 0)}</span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-color-muted'>Contact Email</span>

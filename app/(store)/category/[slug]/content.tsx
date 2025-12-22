@@ -27,9 +27,12 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     return initialProducts
   }, [initialProducts, productsQuery])
 
-  // Get all image IDs from products
+  // Get all image IDs from products (only storageIds, not URLs or null)
   const imageIds = useMemo(
-    () => products.map((p) => p.image).filter((img) => !img.startsWith('http')),
+    () =>
+      products
+        .map((p) => p.image)
+        .filter((img): img is string => !!img && !img.startsWith('http')),
     [products],
   )
 
@@ -38,10 +41,18 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
 
   // Update products with resolved image URLs
   const productsWithImages = useMemo(() => {
-    return products.map((product) => ({
-      ...product,
-      image: resolveUrl(product.image),
-    }))
+    return products.map((product) => {
+      // If image is null or already a URL, keep it as-is
+      if (!product.image || product.image.startsWith('http')) {
+        return product
+      }
+      // Otherwise, resolve the storageId to a URL
+      const resolvedUrl = resolveUrl(product.image)
+      return {
+        ...product,
+        image: resolvedUrl,
+      }
+    })
   }, [products, resolveUrl])
 
   return <CategoryContent products={productsWithImages} slug={slug} />

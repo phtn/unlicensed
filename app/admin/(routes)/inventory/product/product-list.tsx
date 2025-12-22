@@ -88,9 +88,8 @@ export const ProductList = ({products}: ProductListProps) => {
               <ProductItem
                 product={product}
                 imageUrl={
-                  product.image
-                    ? resolveUrl(product.image)
-                    : '/default-product-image.svg'
+                  (product.image && resolveUrl(product.image)) ??
+                  '/default-product-image.svg'
                 }
               />
             </li>

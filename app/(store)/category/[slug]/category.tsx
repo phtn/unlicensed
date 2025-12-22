@@ -93,7 +93,7 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
                 {/* Product Image */}
                 <div className='relative flex items-center justify-center bg-transparent rounded-t-2xl sm:rounded-t-3xl overflow-hidden h-40 sm:h-64 lg:h-54'>
                   <Image
-                    src={product.image}
+                    src={product.image ?? undefined}
                     alt={product.name}
                     className='mask mask-parallelogram size-50 py-4 shrink-0 aspect-auto object-contain'
                     loading='lazy'

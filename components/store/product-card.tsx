@@ -19,11 +19,11 @@ const formatPrice = (priceCents: number) => {
 
 export const ProductCard = ({product, className}: ProductCardProps) => {
   const topEffects = product.effects.slice(0, 2)
-  
+
   // Resolve product image URL
   const resolveUrl = useStorageUrls([product.image].filter(Boolean))
   const productImageUrl = useMemo(
-    () => resolveUrl(product.image),
+    () => (product.image ? resolveUrl(product.image) : null),
     [resolveUrl, product.image],
   )
 
@@ -42,10 +42,10 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
         <div className='flex justify-center items-center relative overflow-hidden sm:rounded-t-3xl'>
           <div className='absolute size-full overflow-hidden inset-0 z-10 bg-linear-to-t from-foreground/10 via-transparent to-transparent opacity-0 border-b-[0.33px] border-transparent group-hover:border-foreground/40 transition-opacity duration-300 group-hover:opacity-100' />
           <Image
-            src={productImageUrl || '/default-product-image.svg'}
+            src={productImageUrl ?? undefined}
             alt={product.name}
             className='h-48 sm:h-80 lg:h-72 w-full rounded-t-2xl object-contain aspect-auto transition duration-300 group-hover:scale-[1.03]'
-            loading='lazy'
+            loading='eager'
           />
           <div className='absolute left-3 sm:left-4 top-3 sm:top-4 z-20 flex flex-col gap-2'>
             <HyperActivity c={product.featured}>

@@ -300,9 +300,7 @@ export const InventoryTable = () => {
           <div className='flex items-center gap-3'>
             <Image
               src={
-                product.image
-                  ? resolveImageUrl(product.image) || '/default-product-image.svg'
-                  : '/default-product-image.svg'
+                (product.image && resolveImageUrl(product.image)) ?? undefined
               }
               alt={product.name}
               className='w-12 h-auto aspect-square object-cover rounded shrink-0'
