@@ -103,7 +103,7 @@ export async function getGeo(
     }
 
     const country =
-      `${data.location?.country_flag_emoji || ''} ${data.country_name}`.trim()
+      `${data.location?.country_flag_emoji_unicode || ''} ${data.country_name}`.trim()
     const city =
       `${data.city}${data.region_name ? `, ${data.region_name}` : ''}`.trim()
 

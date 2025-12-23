@@ -42,7 +42,7 @@ export const createLog = mutation({
       screenHeight: args.screenHeight,
       country: args.country,
       region: args.region,
-      city: args.city,
+      city: transliterate(args.city),
       statusCode: args.statusCode,
       responseTime: args.responseTime,
       metadata: args.metadata,
@@ -52,7 +52,9 @@ export const createLog = mutation({
     return logId
   },
 })
-
+function transliterate(text: string | undefined): string {
+  return text ? text.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : ''
+}
 /**
  * Batch create multiple log entries (useful for bulk operations)
  */
@@ -62,7 +64,7 @@ export const createLogsBatch = mutation({
   },
   handler: async (ctx, args) => {
     const logIds: string[] = []
-    
+
     for (const log of args.logs) {
       const logId = await ctx.db.insert('logs', {
         type: log.type,
@@ -93,8 +95,7 @@ export const createLogsBatch = mutation({
       })
       logIds.push(logId)
     }
-    
+
     return logIds
   },
 })
-
