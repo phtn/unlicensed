@@ -109,7 +109,9 @@ export function toEmoji(text: string): string {
     /U\+([0-9A-Fa-f]+)/g,
     (match: string, hex: string): string => {
       const codePoint: number = parseInt(hex, 16)
-      return String.fromCodePoint(codePoint)
+      const flag = String.fromCodePoint(codePoint).substring(0, 15)
+      const country = String.fromCodePoint(codePoint).split(' ').pop()
+      return flag + ' ' + country
     },
   )
 }

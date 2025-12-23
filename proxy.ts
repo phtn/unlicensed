@@ -117,7 +117,15 @@ export async function proxy(request: NextRequest) {
     path.toLowerCase().endsWith(ext),
   )
   const shouldSkipPath = skipPaths.some((skipPath) => path.startsWith(skipPath))
-  const shouldSkip = shouldSkipPath || isStaticAsset
+  
+  // Skip prefetch requests (Next.js router prefetching)
+  // Prefetch requests have either 'next-router-prefetch' header or 'purpose: prefetch' header
+  const isPrefetch =
+    request.headers.get('next-router-prefetch') === '1' ||
+    request.headers.get('purpose') === 'prefetch' ||
+    request.headers.get('Purpose') === 'prefetch'
+  
+  const shouldSkip = shouldSkipPath || isStaticAsset || isPrefetch
 
   if (!shouldSkip) {
     // Log visit asynchronously (fire and forget)
