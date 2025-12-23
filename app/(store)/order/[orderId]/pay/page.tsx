@@ -161,7 +161,7 @@ export default function PayPage() {
 
   // Check if wallet address is configured
   const walletAddress =
-    adminSettings.paygate?.usdcWallet ||
+    adminSettings.value?.paygate?.usdcWallet ||
     process.env.NEXT_PUBLIC_PAYGATE_USDC_WALLET ||
     ''
 

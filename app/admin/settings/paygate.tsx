@@ -1,16 +1,9 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
+import {Button, Card, CardBody, Divider, Input, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {useState, useEffect} from 'react'
-import {
-  Button,
-  Card,
-  CardBody,
-  Input,
-  Switch,
-  Divider,
-} from '@heroui/react'
+import {useEffect, useState} from 'react'
 
 export function PayGateSettings() {
   const adminSettings = useQuery(api.admin.q.getAdminSettings)
@@ -21,16 +14,18 @@ export function PayGateSettings() {
   const [usdcWallet, setUsdcWallet] = useState('')
   const [enabled, setEnabled] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>(
+    'idle',
+  )
   const [validationError, setValidationError] = useState<string | null>(null)
 
   // Load settings when available
   useEffect(() => {
-    if (adminSettings?.paygate) {
-      setApiUrl(adminSettings.paygate.apiUrl || '')
-      setCheckoutUrl(adminSettings.paygate.checkoutUrl || '')
-      setUsdcWallet(adminSettings.paygate.usdcWallet || '')
-      setEnabled(adminSettings.paygate.enabled !== false)
+    if (adminSettings?.value?.paygate) {
+      setApiUrl(adminSettings.value.paygate.apiUrl || '')
+      setCheckoutUrl(adminSettings.value.paygate.checkoutUrl || '')
+      setUsdcWallet(adminSettings.value.paygate.usdcWallet || '')
+      setEnabled(adminSettings.value.paygate.enabled !== false)
     } else {
       // Set defaults from environment or PayGate defaults
       setApiUrl('https://api.paygate.to')
@@ -42,7 +37,9 @@ export function PayGateSettings() {
   const handleSave = async () => {
     // Validate wallet is provided when PayGate is enabled
     if (enabled && (!usdcWallet || usdcWallet.trim() === '')) {
-      setValidationError('USDC wallet address is required when PayGate is enabled')
+      setValidationError(
+        'USDC wallet address is required when PayGate is enabled',
+      )
       return
     }
 
@@ -73,7 +70,9 @@ export function PayGateSettings() {
   // Validate wallet when enabled state changes
   useEffect(() => {
     if (enabled && (!usdcWallet || usdcWallet.trim() === '')) {
-      setValidationError('USDC wallet address is required when PayGate is enabled')
+      setValidationError(
+        'USDC wallet address is required when PayGate is enabled',
+      )
     } else {
       setValidationError(null)
     }
@@ -83,7 +82,9 @@ export function PayGateSettings() {
     <Card>
       <CardBody className='p-6 space-y-6'>
         <div>
-          <h2 className='text-xl font-semibold mb-2'>PayGate Payment Gateway</h2>
+          <h2 className='text-xl font-semibold mb-2'>
+            PayGate Payment Gateway
+          </h2>
           <p className='text-sm text-color-muted'>
             Configure PayGate.to integration for credit card and cryptocurrency
             payments. No API keys required - just set your USDC Polygon wallet
@@ -94,10 +95,7 @@ export function PayGateSettings() {
         <Divider />
 
         <div className='space-y-4'>
-          <Switch
-            isSelected={enabled}
-            onValueChange={setEnabled}
-            size='sm'>
+          <Switch isSelected={enabled} onValueChange={setEnabled} size='sm'>
             Enable PayGate Integration
           </Switch>
 
@@ -127,7 +125,9 @@ export function PayGateSettings() {
             description='Your USDC (Polygon) wallet address to receive payments'
             isDisabled={!enabled}
             isRequired={enabled}
-            errorMessage={validationError && enabled ? validationError : undefined}
+            errorMessage={
+              validationError && enabled ? validationError : undefined
+            }
             isInvalid={enabled && (!usdcWallet || usdcWallet.trim() === '')}
           />
 

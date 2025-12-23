@@ -43,12 +43,12 @@ export const Timeline = ({
     <div
       className='w-full bg-neutral-50 dark:bg-neutral-950 font-sans md:px-10'
       ref={containerRef}>
-      <div className='max-w-7xl mx-auto pt-40 pb-8 px-4 md:px-8 lg:px-10'>
+      <div className='max-w-7xl mx-auto pt-20 pb-8 px-4 md:px-8 lg:px-10'>
         <h2 className='text-2xl md:text-4xl mb-4 text-black dark:text-white max-w-4xl font-bold tracking-tighter'>
           {title ?? 'Project Status'}
-          <span className='font-space text-2xl md:text-4xl px-4 font-semibold text-indigo-500'>
+          <span className='font-space text-2xl md:text-4xl px-4 font-bold text-indigo-500'>
             {completion ?? '0'}
-            <span className='text-3xl'>%</span>
+            <span className='md:text-3xl text-base'>%</span>
           </span>
         </h2>
         <p className='text-neutral-700 dark:text-neutral-300 text-sm md:text-lg max-w-2xl leading-relaxed'>

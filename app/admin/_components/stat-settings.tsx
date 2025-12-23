@@ -95,7 +95,9 @@ const MiniStatCard = ({config, onToggle}: MiniStatCardProps) => {
 }
 
 export const StatSettings = () => {
-  const adminSettings = useQuery(api.admin.q.getAdminSettings)
+  const statConfigs = useQuery(api.admin.q.getAdminByIdentifier, {
+    identifier: 'statConfigs',
+  })
   const adminStats = useQuery(api.orders.q.getAdminStats)
   const chartData = useQuery(api.orders.q.getAdminChartData)
   const updateStatVisibility = useMutation(api.admin.m.updateStatVisibility)
@@ -127,11 +129,11 @@ export const StatSettings = () => {
     aovData: chartData?.aovData,
   }
 
-  if (!adminSettings) {
+  if (!statConfigs) {
     return <div className='text-sm text-gray-400'>Loading settings...</div>
   }
 
-  const sortedConfigs = [...adminSettings.statConfigs].sort(
+  const sortedConfigs = [...(statConfigs.value as Array<StatConfig>)].sort(
     (a, b) => a.order - b.order,
   )
 

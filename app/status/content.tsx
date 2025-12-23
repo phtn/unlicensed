@@ -4,8 +4,13 @@ import {Timeline} from '@/components/ui/timeline'
 import {cn} from '@/lib/utils'
 import {Circle} from 'lucide-react'
 
+import {api} from '@/convex/_generated/api'
+import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
+import {useQuery} from 'convex/react'
 import {motion} from 'motion/react'
+import {usePathname} from 'next/navigation'
+import {Activity} from 'react'
 import {ProtectedModal} from '../_components/protected-modal'
 
 interface TaskItemProps {
@@ -79,6 +84,7 @@ function TaskItem({title, description, status, index}: TaskItemProps) {
 }
 
 export function Content() {
+  const route = usePathname().split('/').pop()
   const data = [
     {
       title: 'Phase 0',
@@ -247,16 +253,28 @@ export function Content() {
     },
   ]
 
+  const access = useToggle(false)
+  const settings = useQuery(
+    api.admin.q.getAdminByIdentifier,
+    route ? {identifier: route} : 'skip',
+  )
+
   return (
     <div className='relative w-full bg-white dark:bg-neutral-950'>
-      <ProtectedModal storageKey='project-status' accessCode='069420' />
-      <Timeline
-        data={data}
-        completion={82}
-        title='Overall Project Status'
-        description='Tracking the development progress from initial design to production
-                launch.'
+      <ProtectedModal
+        storageKey='project-status'
+        accessCode={settings?.value?.code}
+        access={access}
       />
+      <Activity mode={access.on ? 'visible' : 'hidden'}>
+        <Timeline
+          data={data}
+          completion={92}
+          title='Overall Project Status'
+          description='Tracking the development progress from initial design to production
+                launch.'
+        />
+      </Activity>
     </div>
   )
 }

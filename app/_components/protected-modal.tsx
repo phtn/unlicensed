@@ -1,5 +1,6 @@
 'use client'
 
+import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {
   InputOtp,
@@ -15,9 +16,14 @@ import {useState} from 'react'
 interface ProtectedModalProps {
   accessCode: string
   storageKey: string
+  access: ReturnType<typeof useToggle>
 }
 
-export function ProtectedModal({accessCode, storageKey}: ProtectedModalProps) {
+export function ProtectedModal({
+  accessCode,
+  storageKey,
+  access,
+}: ProtectedModalProps) {
   // Initialize state based on localStorage check
   const [isOpen, setIsOpen] = useState(() => {
     if (typeof window === 'undefined') return false
@@ -43,6 +49,7 @@ export function ProtectedModal({accessCode, storageKey}: ProtectedModalProps) {
     if (v === accessCode) {
       handleConfirm(v)
       setIsOpen(false)
+      access.toggle()
     }
   }
 
@@ -58,12 +65,14 @@ export function ProtectedModal({accessCode, storageKey}: ProtectedModalProps) {
       hideCloseButton
       isDismissable={false}
       isKeyboardDismissDisabled={true}
-      placement='center'
+      placement='top-center'
       size='md'
       classNames={{
-        backdrop: 'bg-black/98 backdrop-opacity-80',
+        backdrop: 'bg-black backdrop-opacity-80',
+        body: 'border-0 border-white',
+        wrapper: 'flex items-start!',
       }}>
-      <ModalContent className='age-verification-modal w-full max-w-md rounded-none border-0 bg-linear-to-b from-indigo-300/35 from-35% via-slate-800/60 to-slate-950/60 py-8 px-6 shadow-2xl relative'>
+      <ModalContent className='age-verification-modal mt-20 w-full max-w-md rounded-none border-0 bg-linear-to-b from-indigo-300/35 from-35% via-slate-800/60 to-slate-950/60 py-8 px-6 shadow-2xl relative'>
         <div className='absolute -bottom-84 left-1/2 -translate-x-1/2 size-160 aspect-square rounded-t-[14rem] bg-linear-to-t from-slate-950 via-slate-800 to-slate-950/80 blur-sm' />
         <div className='absolute -bottom-12 -right-18 w-50 h-32 rounded-full bg-linear-to-r from-slate-200/80 to-slate-200 blur-3xl rotate-45' />
         <ModalHeader className='pb-32 pt-10 flex items-start justify-between'>
@@ -100,11 +109,6 @@ export function ProtectedModal({accessCode, storageKey}: ProtectedModalProps) {
             />
           </div>
           <div className='space-y-4 pt-4'>
-            {/*<Button
-              onPress={handleConfirm}
-              className='w-full text-white rounded-full bg-brand py-6 text-xl font-space font-extrabold drop-shadow-sm hover:opacity-95'>
-              I&apos;m 18 and older
-            </Button>*/}
             <button
               onClick={handleDecline}
               className='relative z-100 w-full text-sm font-semibold text-white hover:text-white'>

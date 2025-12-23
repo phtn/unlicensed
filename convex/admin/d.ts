@@ -15,13 +15,18 @@ export const paygateSettingsSchema = v.object({
 })
 
 export const adminSettingsSchema = v.object({
-  statConfigs: v.array(statConfigSchema),
-  paygate: v.optional(paygateSettingsSchema),
+  id: v.optional(v.string()),
+  label: v.optional(v.string()),
+  name: v.optional(v.string()),
+  identifier: v.optional(v.string()),
+  value: v.optional(v.record(v.string(), v.any())),
+  // statConfigs: v.array(statConfigSchema),
+  // paygate: v.optional(paygateSettingsSchema),
   updatedAt: v.number(),
+  createdAt: v.optional(v.number()),
+  createdBy: v.optional(v.string()),
 })
 
 export type StatConfig = Infer<typeof statConfigSchema>
 export type PaygateSettings = Infer<typeof paygateSettingsSchema>
 export type AdminSettings = Infer<typeof adminSettingsSchema>
-
-

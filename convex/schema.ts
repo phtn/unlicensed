@@ -43,7 +43,9 @@ export default defineSchema({
   activityViews: defineTable(activityViewSchema)
     .index('by_activity', ['activityId'])
     .index('by_activity_user', ['activityId', 'userId']),
-  adminSettings: defineTable(adminSettingsSchema),
+  adminSettings: defineTable(adminSettingsSchema).index('by_identifier', [
+    'identifier',
+  ]),
   couriers: defineTable(courierSchema)
     .index('by_code', ['code'])
     .index('by_active', ['active']),

@@ -1,4 +1,5 @@
 import {api} from '@/convex/_generated/api'
+import {StatConfig} from '@/convex/admin/d'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, cn, Progress} from '@heroui/react'
@@ -10,13 +11,6 @@ const generateData = () =>
   Array.from({length: 20}, () => ({
     value: 0,
   }))
-
-type StatConfig = {
-  id: string
-  label: string
-  visible: boolean
-  order: number
-}
 
 type AdminStats = {
   salesTodayCents: number
@@ -191,21 +185,21 @@ export const Stats = ({
   aovData,
   fullTable,
 }: StatsProps) => {
-  const adminSettings = useQuery(api.admin.q.getAdminSettings)
+  const statConfigs = useQuery(api.admin.q.getAdminByIdentifier, {
+    identifier: 'statConfigs',
+  })
   // const updateStatVisibility = useMutation(api.admin.m.updateStatVisibility)
 
   const visibleStats = useMemo(() => {
-    if (!adminSettings) return []
-    return adminSettings.statConfigs
-      .filter((config) => config.visible)
-      .sort((a, b) => a.order - b.order)
-  }, [adminSettings])
+    if (!statConfigs) return []
+    return statConfigs.value?.filter((config: StatConfig) => config.visible)
+  }, [statConfigs])
 
   // const handleToggleVisibility = async (statId: string, visible: boolean) => {
   //   await updateStatVisibility({statId, visible})
   // }
 
-  if (!adminSettings) {
+  if (!statConfigs) {
     return <div>Loading stats configuration...</div>
   }
 
@@ -215,7 +209,7 @@ export const Stats = ({
         'opacity-0': fullTable,
       })}>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-w-0'>
-        {visibleStats.map((config) => {
+        {visibleStats.map((config: StatConfig) => {
           let chartData: Array<{value: number}> | undefined
           if (config.id === 'averageOrderValue') {
             chartData = aovData

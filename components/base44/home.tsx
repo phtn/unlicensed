@@ -70,9 +70,8 @@ export const NewHome = () => {
           </SceneWrapper>
         </Suspense>
       </Activity>
-      {/*<QuickScroll className='bg-light-gray' href='#featured' />*/}
       <ShopFinder />
-      <div className='h-16 bg-linear-to-b from-emerald-800/30 via-emerald-600/10 to-transparent  w-full'></div>
+      <div className='h-16 bg-linear-to-b from-emerald-800/30 via-emerald-600/10 to-transparent w-full'></div>
     </div>
   )
 }

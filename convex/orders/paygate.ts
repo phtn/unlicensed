@@ -108,7 +108,7 @@ export const initiatePayGatePayment = action({
         ?.getAdminSettings as unknown as FunctionReference<'query'>,
       {},
     )
-    const paygateSettings = adminSettings?.paygate
+    const paygateSettings = adminSettings?.value?.paygate
 
     // Get PayGate configuration (admin settings override env vars)
     const apiUrl: string = paygateSettings?.apiUrl || 'https://api.paygate.to'
@@ -196,7 +196,8 @@ export const initiatePayGatePayment = action({
     }
 
     // Get content type before reading response body
-    const contentType: string | null = response.headers.get('content-type') || ''
+    const contentType: string | null =
+      response.headers.get('content-type') || ''
     const isJson: boolean = contentType.includes('application/json')
     const isHtml: boolean = contentType.includes('text/html')
 
@@ -255,7 +256,7 @@ export const initiatePayGatePayment = action({
       // For hosted payments, we'll construct the payment URL from the endpoint
       // The actual redirect happens client-side
       const responseText: string = await response.text()
-      
+
       // Try to extract URL from HTML meta refresh or script redirect
       const metaRefreshMatch = responseText.match(
         /<meta[^>]*http-equiv=["']refresh["'][^>]*content=["'][^"']*url=([^"'>\s]+)["']/i,
@@ -263,7 +264,7 @@ export const initiatePayGatePayment = action({
       const scriptRedirectMatch = responseText.match(
         /window\.location\.(href|replace)\s*=\s*["']([^"']+)["']/i,
       )
-      
+
       if (metaRefreshMatch && metaRefreshMatch[1]) {
         data.payment_url = decodeURIComponent(metaRefreshMatch[1].trim())
       } else if (scriptRedirectMatch && scriptRedirectMatch[2]) {
@@ -273,7 +274,7 @@ export const initiatePayGatePayment = action({
         // The hosted payment page will handle the payment flow
         data.payment_url = fullUrl
       }
-      
+
       // Generate a session ID from order ID for tracking
       data.session_id = `session_${args.orderId}`
     } else if (!isJson && !isHtml) {
@@ -300,16 +301,16 @@ export const initiatePayGatePayment = action({
       data.transaction_id || data.transactionId
 
     if (!paymentUrl) {
-      throw new Error(
-        'Invalid PayGate response: missing payment URL',
-      )
+      throw new Error('Invalid PayGate response: missing payment URL')
     }
 
     // For hosted payments, session ID might not be in response, generate one
     // For crypto payments, session ID should be in the response
     const finalSessionId: string | undefined =
       sessionId ||
-      (paygatePaymentMethod !== 'crypto' ? `session_${args.orderId}` : undefined)
+      (paygatePaymentMethod !== 'crypto'
+        ? `session_${args.orderId}`
+        : undefined)
 
     // Validate session ID for crypto payments (required)
     if (paygatePaymentMethod === 'crypto' && !finalSessionId) {
@@ -381,7 +382,7 @@ export const checkPayGatePaymentStatus = action({
         ?.getAdminSettings as unknown as FunctionReference<'query'>,
       {},
     )
-    const paygateSettings = adminSettings?.paygate
+    const paygateSettings = adminSettings?.value?.paygate
 
     // Get PayGate API URL
     const apiUrl: string = paygateSettings?.apiUrl || 'https://api.paygate.to'
