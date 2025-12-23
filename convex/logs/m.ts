@@ -3,6 +3,19 @@ import {mutation} from '../_generated/server'
 import {logSchema} from './d'
 
 /**
+ * Clean IP address by removing IPv4-mapped IPv6 prefix if present
+ * @param ip - IP address to clean
+ * @returns Cleaned IP address
+ */
+function cleanIpAddress(ip: string): string {
+  // Remove IPv4-mapped IPv6 prefix if present
+  if (ip.startsWith('::ffff:')) {
+    return ip.substring(7) // Remove '::ffff:' (7 characters)
+  }
+  return ip
+}
+
+/**
  * Create a log entry for site visits or other events
  */
 export const createLog = mutation({
@@ -16,7 +29,7 @@ export const createLog = mutation({
       queryParams: args.queryParams,
       userId: args.userId ?? null,
       sessionId: args.sessionId,
-      ipAddress: args.ipAddress,
+      ipAddress: cleanIpAddress(args.ipAddress),
       userAgent: args.userAgent,
       referrer: args.referrer,
       origin: args.origin,
@@ -59,7 +72,7 @@ export const createLogsBatch = mutation({
         queryParams: log.queryParams,
         userId: log.userId ?? null,
         sessionId: log.sessionId,
-        ipAddress: log.ipAddress,
+        ipAddress: cleanIpAddress(log.ipAddress),
         userAgent: log.userAgent,
         referrer: log.referrer,
         origin: log.origin,

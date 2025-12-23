@@ -1,3 +1,16 @@
+/**
+ * Clean IP address by removing IPv4-mapped IPv6 prefix if present
+ * @param ip - IP address to clean
+ * @returns Cleaned IP address
+ */
+export function cleanIpAddress(ip: string): string {
+  // Remove IPv4-mapped IPv6 prefix if present
+  if (ip.startsWith('::ffff:')) {
+    return ip.substring(7) // Remove '::ffff:' (7 characters)
+  }
+  return ip
+}
+
 export function getClientIp(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for')
   const realIp = request.headers.get('x-real-ip')
@@ -7,19 +20,10 @@ export function getClientIp(request: Request): string {
   }
 
   if (realIp) {
-    const cleanIP = extractIP(realIp)
-    return cleanIP
+    return realIp
   }
 
   return 'unknown'
-}
-
-function extractIP(rawIP: string): string {
-  // Remove IPv4-mapped IPv6 prefix if present
-  if (rawIP.startsWith('::ffff:')) {
-    return rawIP.substring(7) // Remove '::ffff:' (7 characters)
-  }
-  return rawIP
 }
 
 export function getUserAgent(request: Request): string {

@@ -1,6 +1,7 @@
 import {api} from '@/convex/_generated/api'
 import {getGeo} from '@/lib/ipapi'
 import {
+  cleanIpAddress,
   getClientIp,
   getScreenHeight,
   getScreenWidth,
@@ -127,7 +128,9 @@ async function logVisit(request: NextRequest, startTime: number) {
     }
 
     const url = request.nextUrl
-    const ipAddress = getClientIp(request)
+    const rawIpAddress = getClientIp(request)
+    // Clean IP address before using it for geo lookup and storage
+    const ipAddress = cleanIpAddress(rawIpAddress)
     const userAgent = getUserAgent(request)
     const parsedUA = parseUserAgent(userAgent)
 
@@ -153,6 +156,7 @@ async function logVisit(request: NextRequest, startTime: number) {
 
     // Get geo information (country and city) for the IP address
     // This will check cache, then Convex, then IPAPI
+    // Note: IP is already cleaned before this call
     const checkConvexGeo = async (ip: string) => {
       try {
         const result = await client.query(api.logs.q.getGeoByIp, {

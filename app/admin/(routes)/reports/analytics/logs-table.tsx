@@ -7,7 +7,6 @@ import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
 import {
   Card,
-  ChipProps,
   Table,
   TableBody,
   TableCell,
@@ -50,35 +49,35 @@ const getDeviceIcon = (deviceType?: string): IconName => {
   }
 }
 
-const getDeviceChipColor = (
-  deviceType?: string,
-): ChipProps['color'] | undefined => {
-  switch (deviceType) {
-    case 'mobile':
-      return 'primary'
-    case 'tablet':
-      return 'secondary'
-    case 'desktop':
-      return 'success'
-    default:
-      return 'default'
-  }
-}
+// const getDeviceChipColor = (
+//   deviceType?: string,
+// ): ChipProps['color'] | undefined => {
+//   switch (deviceType) {
+//     case 'mobile':
+//       return 'primary'
+//     case 'tablet':
+//       return 'secondary'
+//     case 'desktop':
+//       return 'success'
+//     default:
+//       return 'default'
+//   }
+// }
 
-const getLogTypeChipColor = (type: Log['type']): ChipProps['color'] => {
-  switch (type) {
-    case 'page_visit':
-      return 'primary'
-    case 'api_request':
-      return 'secondary'
-    case 'error':
-      return 'danger'
-    case 'action':
-      return 'warning'
-    default:
-      return 'default'
-  }
-}
+// const getLogTypeChipColor = (type: Log['type']): ChipProps['color'] => {
+//   switch (type) {
+//     case 'page_visit':
+//       return 'primary'
+//     case 'api_request':
+//       return 'secondary'
+//     case 'error':
+//       return 'danger'
+//     case 'action':
+//       return 'warning'
+//     default:
+//       return 'default'
+//   }
+// }
 
 interface LogsTableProps {
   fullTable: boolean
