@@ -192,7 +192,8 @@ export const Stats = ({
 
   const visibleStats = useMemo(() => {
     if (!statConfigs) return []
-    return statConfigs.value?.filter((config: StatConfig) => config.visible)
+    const configs = (statConfigs.value?.statConfigs as StatConfig[] | undefined) ?? []
+    return configs.filter((config: StatConfig) => config.visible)
   }, [statConfigs])
 
   // const handleToggleVisibility = async (statId: string, visible: boolean) => {

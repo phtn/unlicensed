@@ -3,6 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import {Card, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
+import {useEffect, useRef} from 'react'
 
 const STAT_COLORS: Record<string, string> = {
   salesToday: '#06b6d4',
@@ -101,6 +102,9 @@ export const StatSettings = () => {
   const adminStats = useQuery(api.orders.q.getAdminStats)
   const chartData = useQuery(api.orders.q.getAdminChartData)
   const updateStatVisibility = useMutation(api.admin.m.updateStatVisibility)
+  const ensureStatConfigsSeeded = useMutation(
+    api.admin.m.ensureStatConfigsSeeded,
+  )
 
   const handleToggleVisibility = async (statId: string, visible: boolean) => {
     await updateStatVisibility({statId, visible})
@@ -129,13 +133,39 @@ export const StatSettings = () => {
     aovData: chartData?.aovData,
   }
 
+  // Auto-seed statConfigs if they don't exist in the database
+  // The query returns defaults if nothing exists, but we need to persist them
+  const hasSeededRef = useRef(false)
+  useEffect(() => {
+    // Check if statConfigs are in-memory defaults (createdBy === 'dev-admin')
+    // This indicates they're not persisted in the database yet
+    const needsSeeding =
+      statConfigs !== undefined &&
+      statConfigs !== null &&
+      statConfigs.createdBy === 'dev-admin'
+
+    if (needsSeeding && !hasSeededRef.current) {
+      hasSeededRef.current = true
+      ensureStatConfigsSeeded()
+        .then(() => {
+          // Reset after a delay to allow query to update
+          setTimeout(() => {
+            hasSeededRef.current = false
+          }, 2000)
+        })
+        .catch((error) => {
+          console.error('Failed to seed statConfigs:', error)
+          hasSeededRef.current = false // Reset on error so we can retry
+        })
+    }
+  }, [statConfigs, ensureStatConfigsSeeded])
+
   if (!statConfigs) {
     return <div className='text-sm text-gray-400'>Loading settings...</div>
   }
 
-  const sortedConfigs = [...(statConfigs.value as Array<StatConfig>)].sort(
-    (a, b) => a.order - b.order,
-  )
+  const configs = (statConfigs.value?.statConfigs as Array<StatConfig>) ?? []
+  const sortedConfigs = [...configs].sort((a, b) => a.order - b.order)
 
   return (
     <Card

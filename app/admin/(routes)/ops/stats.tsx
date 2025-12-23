@@ -2,8 +2,8 @@ import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, cn, Progress} from '@heroui/react'
-import {useQuery} from 'convex/react'
-import {useMemo} from 'react'
+import {useMutation, useQuery} from 'convex/react'
+import {useEffect, useMemo, useRef} from 'react'
 import MiniChart from './mini-chart'
 
 const generateData = () =>
@@ -194,11 +194,43 @@ export const Stats = ({
   const statConfigs = useQuery(api.admin.q.getAdminByIdentifier, {
     identifier: 'statConfigs',
   })
+  const ensureStatConfigsSeeded = useMutation(
+    api.admin.m.ensureStatConfigsSeeded,
+  )
+
   // const updateStatVisibility = useMutation(api.admin.m.updateStatVisibility)
+
+  // Auto-seed statConfigs if they don't exist in the database
+  const hasSeededRef = useRef(false)
+  useEffect(() => {
+    // Check if statConfigs are in-memory defaults (createdBy === 'dev-admin')
+    // This indicates they're not persisted in the database yet
+    const needsSeeding =
+      statConfigs !== undefined &&
+      statConfigs !== null &&
+      statConfigs.createdBy === 'dev-admin'
+
+    if (needsSeeding && !hasSeededRef.current) {
+      hasSeededRef.current = true
+      ensureStatConfigsSeeded()
+        .then(() => {
+          // Reset after a delay to allow query to update
+          setTimeout(() => {
+            hasSeededRef.current = false
+          }, 2000)
+        })
+        .catch((error) => {
+          console.error('Failed to seed statConfigs:', error)
+          hasSeededRef.current = false // Reset on error so we can retry
+        })
+    }
+  }, [statConfigs, ensureStatConfigsSeeded])
 
   const visibleStats = useMemo(() => {
     if (!statConfigs) return []
-    return statConfigs.value?.filter((config: StatConfig) => config.visible)
+
+    const configs = (statConfigs.value?.statConfigs as StatConfig[]) ?? []
+    return configs.filter((config: StatConfig) => config.visible) ?? []
   }, [statConfigs])
 
   // const handleToggleVisibility = async (statId: string, visible: boolean) => {
@@ -207,6 +239,15 @@ export const Stats = ({
 
   if (!statConfigs) {
     return <div>Loading stats configuration...</div>
+  }
+
+  // If no visible stats, show a message (this shouldn't happen with defaults)
+  if (visibleStats.length === 0) {
+    return (
+      <div className='text-sm text-gray-400'>
+        No stats configured. Please configure stats in the Stats settings page.
+      </div>
+    )
   }
 
   return (

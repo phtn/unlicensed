@@ -336,7 +336,53 @@ export const productsSeed: ProductSeed[] = [
   },
 ]
 
+const DEFAULT_STAT_CONFIGS = [
+  {id: 'salesToday', label: 'Sales Today', visible: true, order: 0},
+  {id: 'pendingOrders', label: 'Pending Orders', visible: true, order: 1},
+  {id: 'deliveries', label: 'Deliveries', visible: true, order: 2},
+  {id: 'totalRevenue', label: 'Total Revenue', visible: true, order: 3},
+  {id: 'totalUsers', label: 'Total Users', visible: true, order: 4},
+  {id: 'totalProducts', label: 'Total Products', visible: true, order: 5},
+  {
+    id: 'averageOrderValue',
+    label: 'Average Order Value',
+    visible: true,
+    order: 6,
+  },
+  {id: 'cancelledOrders', label: 'Cancelled Orders', visible: true, order: 7},
+  {id: 'salesThisWeek', label: 'Sales This Week', visible: false, order: 8},
+  {id: 'salesThisMonth', label: 'Sales This Month', visible: false, order: 9},
+]
+
 export default async function init(ctx: SetupContext) {
+  // Seed admin settings with statConfigs (always check, independent of categories)
+  const allAdminSettings = await ctx.db.query('adminSettings').collect()
+  const existingAdminSettings = allAdminSettings.find(
+    (s) => s.identifier === 'statConfigs',
+  )
+
+  if (!existingAdminSettings) {
+    // Check if there's an existing adminSettings without identifier (legacy)
+    const legacySettings = allAdminSettings[0]
+
+    if (legacySettings) {
+      // Update existing settings to add identifier
+      await ctx.db.patch(legacySettings._id, {
+        identifier: 'statConfigs',
+      })
+    } else {
+      // Create new admin settings
+      await ctx.db.insert('adminSettings', {
+        identifier: 'statConfigs',
+        value: {statConfigs: DEFAULT_STAT_CONFIGS},
+        updatedAt: Date.now(),
+        createdAt: Date.now(),
+        createdBy: 'init-script',
+      })
+    }
+  }
+
+  // Seed categories and products (only if they don't exist)
   const existing = await ctx.db.query('categories').take(1)
   if (existing.length > 0) {
     return
