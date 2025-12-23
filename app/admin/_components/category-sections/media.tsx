@@ -240,7 +240,7 @@ const HeroImageField = ({
 
       <div
         className={cn(
-          'rounded-xl size-100 relative overflow-hidden border border-dashed border-light-gray dark:border-dark-gray dark:bg-black/60',
+          'rounded-xl size-full md:size-100 relative overflow-hidden border border-dashed border-light-gray dark:border-dark-gray dark:bg-black/60',
           {
             'border-2 border-solid border-blue-500 dark:border-blue-500':
               imageValue.trim(),

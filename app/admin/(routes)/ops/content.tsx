@@ -1,6 +1,7 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
+import {useMobile} from '@/hooks/use-mobile'
 import {useToggle} from '@/hooks/use-toggle'
 import {useQuery} from 'convex/react'
 import {Suspense} from 'react'
@@ -8,6 +9,7 @@ import {RecentActivities} from './recent-activities'
 import {Stats} from './stats'
 
 export const Content = () => {
+  const isMobile = useMobile()
   const adminStats = useQuery(api.orders.q.getAdminStats)
   const chartData = useQuery(api.orders.q.getAdminChartData)
 
@@ -30,7 +32,7 @@ export const Content = () => {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <main className='px-4'>
+      <main className='md:px-4'>
         <div className='space-y-4'>
           <Stats
             stats={adminStats ?? defaultStats}
@@ -43,6 +45,7 @@ export const Content = () => {
           <RecentActivities
             fullTable={fullTable}
             toggleFullTable={toggleFullTable}
+            isMobile={isMobile}
           />
         </div>
       </main>

@@ -15,7 +15,7 @@ export const textCell = (value: string) => {
 export const dateCell = (value: number) => {
   return (
     <div className='flex flex-col'>
-      <p className='text-bold text-sm'>{formatDate(value)}</p>
+      <p className='text-bold text-sm whitespace-nowrap'>{formatDate(value)}</p>
     </div>
   )
 }

@@ -178,7 +178,7 @@ export const CategoryForm = ({
   )
 
   return (
-    <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 lg:p-0 items-start h-[calc(100vh-6rem)]'>
+    <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 md:p-4 lg:p-0 items-start md:h-[calc(100vh-6rem)] h-[calc(100lvh)]'>
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block cols-span-3 2xl:col-span-2 col-span-3 h-full overflow-y-auto pr-2 space-y-6'>
         <nav className='flex flex-col gap-1'>
@@ -210,7 +210,7 @@ export const CategoryForm = ({
           ))}
         </nav>
 
-        <div className='px-0 xl:px-4'>
+        <div className='px-0 xl:px-4 portrait:fixed portrait:bottom-0'>
           <Button
             size='lg'
             type='submit'
@@ -244,22 +244,17 @@ export const CategoryForm = ({
       {/* Main Content Area */}
       <main
         ref={mainScrollRef}
-        className='col-span-1 lg:col-span-8 xl:col-span-9 2xl:col-span-10 h-full overflow-y-auto space-y-0 pb-24 scroll-smooth px-1 relative pt-2'>
+        className='col-span-1 lg:col-span-8 xl:col-span-9 2xl:col-span-10 h-full overflow-y-auto space-y-0 pb-24 scroll-smooth px-1 relative md:pt-2'>
         {/* Visibility Switch - Top Right */}
         <div className='absolute top-4 right-2 z-30 flex justify-end pr-4 pt-2 pb-2'>
           <form.Field name='visible'>
             {(field) => {
               const visible = (field.state.value as boolean) ?? false
               return (
-                <div className='flex items-center gap-3 px-4 py-1 rounded-lg bg-slate-500/20 dark:bg-black/60 backdrop-blur-sm border border-light-gray/10 dark:border-black/20 shadow-sm'>
+                <div className='flex items-center gap-3 px-1 md:px-4 py-1 rounded-2xl bg-slate-500/20 dark:bg-black/60 backdrop-blur-sm border border-light-gray/10 dark:border-black/20 shadow-sm'>
                   <div className='flex flex-col gap-0.5'>
-                    <span className='text-sm font-semibold tracking-tight text-dark-gray dark:text-foreground'>
-                      Toggle Category Visibility
-                    </span>
-                    <span className='text-xs text-dark-gray/80 dark:text-light-gray/80'>
-                      {visible
-                        ? 'Visible to customers'
-                        : 'Currently Hidden from customers'}
+                    <span className='text-sm font-semibold px-2 tracking-tight text-dark-gray dark:text-foreground'>
+                      Active Category
                     </span>
                   </div>
                   <Switch

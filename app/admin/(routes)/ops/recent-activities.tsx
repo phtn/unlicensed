@@ -106,11 +106,13 @@ const getActivityTypeLabel = (type: Activity['type']) => {
 interface RecentActivitiesProps {
   fullTable: boolean
   toggleFullTable: VoidFunction
+  isMobile: boolean
 }
 
 export const RecentActivities = ({
   fullTable,
   toggleFullTable,
+  isMobile,
 }: RecentActivitiesProps) => {
   const {user: firebaseUser} = useAuth()
   const convexUser = useQuery(
@@ -166,7 +168,11 @@ export const RecentActivities = ({
                   description: 'text-default-500',
                 }}
                 // description={activity.user.email}
-                name={activity.user.name}>
+                name={
+                  isMobile
+                    ? activity.user.name.split(' ').shift()
+                    : activity.user.name
+                }>
                 {activity.user.email}
               </User>
             )
@@ -202,7 +208,7 @@ export const RecentActivities = ({
                 />
               </div>
               <div className='flex flex-col'>
-                <p className='text-bold text-small text-foreground'>
+                <p className='text-bold text-small text-foreground whitespace-nowrap'>
                   {activity.title}
                 </p>
                 {/*{activity.description && (
@@ -296,7 +302,7 @@ export const RecentActivities = ({
           return cellValue
       }
     },
-    [],
+    [isMobile],
   )
 
   const classNames = React.useMemo(
@@ -343,13 +349,13 @@ export const RecentActivities = ({
       shadow='sm'
       radius='none'
       className={cn(
-        'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden rounded-t-2xl',
+        'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden rounded-t-2xl md:w-full w-screen overflow-x-scroll',
         'transition-transform duration-300',
-        {'-translate-y-46 h-full': fullTable},
+        {'md:-translate-y-46 -translate-y-42 h-full': fullTable},
       )}>
       <div
         className={cn(
-          'md:h-[calc(100lvh-203px)] overflow-scroll transition-transform duration-300',
+          'h-lvh md:h-[calc(100lvh-203px)] overflow-scroll transition-transform duration-300',
           {
             'md:h-[calc(100lvh-66px)]': fullTable,
           },

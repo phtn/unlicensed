@@ -17,7 +17,7 @@ const ToolbarTabs = () => {
   //   : '/admin/ops?tabId=new'
 
   return (
-    <div className='flex items-center space-x-1 md:space-x-4 px-4 text-base'>
+    <div className='flex items-center space-x-1 md:space-x-4 text-base'>
       <SecondaryTab
         id='stats'
         href='/admin/ops/stats'

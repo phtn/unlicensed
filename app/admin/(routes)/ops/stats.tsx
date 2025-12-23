@@ -109,7 +109,7 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
             )
           : 0
       return (
-        <div className='mt-8 h-1 rounded-full overflow-hidden'>
+        <div className='h-0.5 md:h-1 rounded-full overflow-hidden'>
           <Progress value={deliveryProgress} />
         </div>
       )
@@ -124,45 +124,71 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
   return (
     <Card
       shadow='sm'
-      className='p-3 sm:p-4 md:p-5 min-w-0 dark:bg-dark-table/20'>
-      <div className='flex items-start justify-between mb-3'>
-        <div className='flex items-center space-x-2 p-1 rounded-lg'>
+      radius='sm'
+      className='p-2 sm:p-3 md:p-4 lg:p-5 min-w-0 dark:bg-dark-table/20'>
+      {/* Mobile: Label left, Value right */}
+      <div className='flex items-center justify-between md:hidden'>
+        <div className='flex items-center space-x-1.5 p-0.5 md:rounded-lg'>
           <div
-            className='w-1 h-4 rounded-full'
+            className='w-0.5 h-3 rounded-full'
             style={{backgroundColor: color}}
           />
-          <p className='text-base font-medium'>{config.label}</p>
+          <p className='text-xs font-medium'>{config.label}</p>
         </div>
-        {config.id === 'deliveries' ? (
-          <div className='font-space text-sm space-x-2'>
-            <span className='opacity-60'>Ongoing</span>
-            <span>{stats.ongoingDeliveriesCount}</span>
-          </div>
-        ) : (
-          <Button isIconOnly variant='light' size='sm'>
-            <Icon
-              name='chevron-right'
-              className='size-5 opacity-60 hover:opacity-100'
-            />
-          </Button>
-        )}
-      </div>
-      <div className='space-y-1'>
-        <div className='flex items-baseline gap-2'>
-          <span className='md:text-3xl font-bold tracking-tight font-geist-sans'>
+        <div className='flex items-baseline gap-1'>
+          <span className='text-lg font-bold tracking-tight font-geist-sans'>
             {statValue.value}
           </span>
           {statValue.subtitle && (
-            <span className='text-sm text-gray-400'>{statValue.subtitle}</span>
+            <span className='text-xs text-gray-400'>{statValue.subtitle}</span>
           )}
         </div>
-        {config.id === 'deliveries' && (
-          <p className='text-sm text-gray-400'></p>
-        )}
       </div>
-      {extraContent && extraContent}
+
+      {/* Desktop: Label on top, Value below */}
+      <div className='hidden md:block'>
+        <div className='flex items-start justify-between mb-3'>
+          <div className='flex items-center space-x-2 p-1 rounded-lg'>
+            <div
+              className='w-1 h-4 rounded-full'
+              style={{backgroundColor: color}}
+            />
+            <p className='text-sm lg:text-base font-medium'>{config.label}</p>
+          </div>
+          {config.id === 'deliveries' ? (
+            <div className='font-space text-sm space-x-2'>
+              <span className='opacity-60'>Ongoing</span>
+              <span>{stats.ongoingDeliveriesCount}</span>
+            </div>
+          ) : (
+            <Button isIconOnly variant='light' size='sm'>
+              <Icon
+                name='chevron-right'
+                className='size-5 opacity-60 hover:opacity-100'
+              />
+            </Button>
+          )}
+        </div>
+        <div className='space-y-1'>
+          <div className='flex items-baseline gap-2'>
+            <span className='text-2xl lg:text-3xl font-bold tracking-tight font-geist-sans'>
+              {statValue.value}
+            </span>
+            {statValue.subtitle && (
+              <span className='text-sm text-gray-400'>
+                {statValue.subtitle}
+              </span>
+            )}
+          </div>
+          {config.id === 'deliveries' && (
+            <p className='text-sm text-gray-400'></p>
+          )}
+        </div>
+      </div>
+
+      {extraContent && <div className='mt-4 md:mt-8'>{extraContent}</div>}
       {!extraContent && (
-        <div className='mt-0 h-12'>
+        <div className='mt-0 h-0 md:h-8 lg:h-12 hidden md:block'>
           <MiniChart data={cardChartData} color={color} />
         </div>
       )}
@@ -252,10 +278,13 @@ export const Stats = ({
 
   return (
     <div
-      className={cn('space-y-6 transition-transform-opacity duration-300', {
-        'opacity-0': fullTable,
-      })}>
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-w-0'>
+      className={cn(
+        'portrait:mx-4 space-y-2 md:space-y-4 lg:space-y-6 transition-transform-opacity duration-300',
+        {
+          'opacity-0': fullTable,
+        },
+      )}>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3 lg:gap-4 min-w-0'>
         {visibleStats.map((config: StatConfig) => {
           let chartData: Array<{value: number}> | undefined
           if (config.id === 'averageOrderValue') {

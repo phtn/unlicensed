@@ -79,13 +79,16 @@ export function PayGateSettings() {
   }, [enabled, usdcWallet])
 
   return (
-    <Card>
+    <Card
+      shadow='none'
+      radius='none'
+      className='md:rounded-lg md:w-full w-screen overflow-auto md:p-6 space-y-6'>
       <CardBody className='p-6 space-y-6'>
         <div>
           <h2 className='text-xl font-semibold mb-2'>
             PayGate Payment Gateway
           </h2>
-          <p className='text-sm text-color-muted'>
+          <p className='text-sm text-color-muted whitespace-normal line-clamp-3'>
             Configure PayGate.to integration for credit card and cryptocurrency
             payments. No API keys required - just set your USDC Polygon wallet
             address.
@@ -133,7 +136,7 @@ export function PayGateSettings() {
 
           <div className='bg-default-100 p-4 rounded-lg space-y-2 text-sm'>
             <p className='font-semibold'>Configuration Notes:</p>
-            <ul className='list-disc list-inside space-y-1 text-color-muted'>
+            <ul className='list-disc list-inside space-y-1 text-color-muted whitespace-normal line-clamp-8'>
               <li>
                 Leave API URL and Checkout URL empty to use PayGate defaults
               </li>

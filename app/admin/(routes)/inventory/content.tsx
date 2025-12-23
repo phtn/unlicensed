@@ -15,7 +15,7 @@ export const Content = () => {
   }, [showDescription])
 
   return (
-    <main className='min-h-screen px-4 pb-16'>
+    <main className='min-h-screen md:px-4 pb-16'>
       <div className='space-y-6'>
         <Activity mode={showDescription ? 'visible' : 'hidden'}>
           <header className='hidden rounded-lg bg-blue-100/20 p-2 _flex items-center justify-between transition-all duration-300 ease-in-out'>

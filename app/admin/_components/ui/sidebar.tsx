@@ -24,7 +24,6 @@ import {
   Divider,
   Drawer,
   DrawerContent,
-  DrawerHeader,
   Input,
   Skeleton,
   Tooltip,
@@ -200,14 +199,14 @@ function Sidebar({
     return (
       <Drawer
         placement={side}
-        defaultOpen={openMobile}
+        isOpen={openMobile}
         onOpenChange={setOpenMobile}
         {...props}>
         <DrawerContent
           data-sidebar='sidebar'
           data-mobile='true'
           className={cn(
-            'w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden',
+            'w-(--sidebar-width) bg-linear-to-l from-sidebar via-background to-background p-0 text-sidebar-foreground [&>button]:hidden',
             className,
           )}
           style={
@@ -215,7 +214,7 @@ function Sidebar({
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
             } as React.CSSProperties
           }>
-          <DrawerHeader>Menu</DrawerHeader>
+          {/*<DrawerHeader>Menu</DrawerHeader>*/}
           <div className='flex h-full w-full flex-col'>{children}</div>
         </DrawerContent>
       </Drawer>
@@ -266,7 +265,8 @@ function SidebarTrigger({
   className,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const {toggleSidebar, open} = useSidebar()
+  const {toggleSidebar, open, openMobile, isMobile} = useSidebar()
+  const isOpen = isMobile ? openMobile : open
 
   return (
     <button
@@ -275,7 +275,7 @@ function SidebarTrigger({
         'rounded-lg rotate-180 border-none text-foreground hover:text-foreground group hover:bg-light-gray/30 bg-light-table/20 dark:bg-light-table/5 size-7 flex items-center justify-center px-2',
         className,
         {
-          'rotate-0': open,
+          'rotate-0': isOpen,
         },
       )}
       onClick={toggleSidebar}>

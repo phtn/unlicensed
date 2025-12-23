@@ -117,7 +117,10 @@ export const SalesTable = () => {
   }
 
   return (
-    <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+    <Card
+      shadow='none'
+      radius='none'
+      className='md:rounded-lg md:w-full w-screen overflow-auto p-4 dark:bg-dark-table/40'>
       <div className='flex items-center justify-between mb-4'>
         <div>
           <h2 className='text-xl font-semibold font-space'>

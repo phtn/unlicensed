@@ -4,7 +4,7 @@ import {PayGateSettings} from './paygate'
 
 export const Content = () => {
   return (
-    <main className='px-4 space-y-6 py-2'>
+    <main className='md:px-4 space-y-6 md:py-2'>
       <PayGateSettings />
     </main>
   )

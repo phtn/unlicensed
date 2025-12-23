@@ -297,13 +297,13 @@ export const InventoryTable = () => {
     switch (columnKey) {
       case 'product':
         return (
-          <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-3 w-fit'>
             <Image
               src={
                 (product.image && resolveImageUrl(product.image)) ?? undefined
               }
               alt={product.name}
-              className='w-12 h-auto aspect-square object-cover rounded shrink-0'
+              className='size-12 aspect-square object-cover rounded shrink-0'
             />
             <div className='flex flex-col'>
               <p className='text-bold text-sm whitespace-nowrap'>
@@ -316,7 +316,7 @@ export const InventoryTable = () => {
       case 'category':
         return (
           <div className='flex flex-col'>
-            <p className='text-bold text-sm capitalize'>
+            <p className='text-bold text-sm capitalize portrait:w-24'>
               {product.categorySlug ?? 'Uncategorized'}
             </p>
           </div>
@@ -431,8 +431,8 @@ export const InventoryTable = () => {
 
   const topContent = useMemo(() => {
     return (
-      <div className='flex flex-col gap-4'>
-        <div className='flex justify-between gap-3 items-end'>
+      <div className='flex flex-col w-full portrait:w-screen gap-4'>
+        <div className='flex justify-between gap-3 items-end mx-4'>
           <Input
             isClearable
             className='w-full sm:max-w-[24%]'
@@ -650,7 +650,10 @@ export const InventoryTable = () => {
   return (
     <>
       {topContent}
-      <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+      <Card
+        shadow='none'
+        radius='none'
+        className='md:rounded-lg md:w-full w-screen overflow-auto p-4 dark:bg-dark-table/40'>
         <div ref={tableRef} className='relative'>
           <Table
             key={`table-${selectedProductId || 'none'}-${open}`}
@@ -682,16 +685,22 @@ export const InventoryTable = () => {
                 return (
                   <TableColumn
                     key={column.uid}
-                    className={cn('text-start relative group/column h-fit', {
-                      'w-16': column.uid === 'actions' && !width,
-                      'text-center w-18': column.uid === 'price' && !width,
-                      'text-center w-16': column.uid === 'stock' && !width,
-                      'text-center w-64': column.uid === 'product' && !width,
-                    })}
+                    className={cn(
+                      'text-start relative group/column w-fit h-fit',
+                      {
+                        'md:w-16': column.uid === 'actions' && !width,
+                        'md:text-center md:w-18':
+                          column.uid === 'price' && !width,
+                        'md:text-center md:w-16':
+                          column.uid === 'stock' && !width,
+                        'md:text-center md:w-64':
+                          column.uid === 'product' && !width,
+                      },
+                    )}
                     style={columnStyle}
                     align={column.uid === 'actions' ? 'center' : 'start'}>
                     <div
-                      className='relative w-full select-none'
+                      className='relative md:w-full w-fit select-none'
                       onMouseEnter={() => {
                         setHoveredColumn(column.uid)
                       }}

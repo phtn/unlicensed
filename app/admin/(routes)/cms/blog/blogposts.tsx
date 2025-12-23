@@ -117,7 +117,10 @@ export const Blogposts = ({blogs, deleteFn, isDeleting}: BlogpostsProps) => {
 
   if (blogs.length === 0) {
     return (
-      <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+      <Card
+        shadow='none'
+        radius='none'
+        className='md:rounded-lg md:p-4 dark:bg-dark-table/40'>
         <div className='flex items-center justify-center py-8'>
           <p className='text-sm text-gray-400'>No blog posts found.</p>
         </div>

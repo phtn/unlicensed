@@ -364,7 +364,7 @@ export const Inventory = ({form}: InventoryProps) => {
           </div>
         </div>
 
-        <div className='grid grid-cols-4 items-center gap-8 py-4'>
+        <div className='grid md:grid-cols-4 items-center gap-8 py-4'>
           <form.Field name='available'>
             {(field) => {
               const availableValue = (field.state.value as boolean) ?? false
@@ -375,7 +375,7 @@ export const Inventory = ({form}: InventoryProps) => {
                   classNames={{
                     wrapper: 'group-data-[selected=true]:bg-emerald-500',
                   }}>
-                  <div className='flex flex-col gap-px'>
+                  <div className='flex flex-col gap-px portrait:pl-4'>
                     <span className='text-base font-semibold'>
                       Available for Sale
                     </span>
@@ -398,7 +398,7 @@ export const Inventory = ({form}: InventoryProps) => {
                   classNames={{
                     wrapper: 'group-data-[selected=true]:bg-featured',
                   }}>
-                  <div className='flex flex-col gap-px'>
+                  <div className='flex flex-col gap-px portrait:pl-4'>
                     <span className='text-base font-semibold'>Featured</span>
                     <span className='text-xs opacity-70'>
                       Highlight in featured sections
@@ -418,7 +418,7 @@ export const Inventory = ({form}: InventoryProps) => {
                   classNames={{
                     wrapper: 'group-data-[selected=true]:bg-amber-400',
                   }}>
-                  <div className='flex flex-col gap-px'>
+                  <div className='flex flex-col gap-px portrait:pl-4'>
                     <span className='text-base font-semibold'>
                       Eligible for Rewards
                     </span>

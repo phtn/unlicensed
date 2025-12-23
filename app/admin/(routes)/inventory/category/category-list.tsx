@@ -29,7 +29,7 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
 
   return (
     <section>
-      <h3 className='text-2xl tracking-tighter font-semibold py-2'>
+      <h3 className='text-2xl tracking-tighter font-semibold py-2 hidden'>
         Active Categories
       </h3>
       {categories?.length === 0 ? (
@@ -37,7 +37,7 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
           No categories yet. Create one above to get started.
         </p>
       ) : (
-        <ul className='grid gap-3 md:grid-cols-3'>
+        <ul className='grid gap-3 grid-cols-2 md:grid-cols-3'>
           {categories?.map((category) => (
             <li key={category._id} className=''>
               <Card
@@ -49,17 +49,16 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
                   <Image
                     alt={category.name + '-image'}
                     src={
-                      (category.heroImage &&
-                        resolveUrl(category.heroImage)) ??
+                      (category.heroImage && resolveUrl(category.heroImage)) ??
                       '/default-category-image.svg'
                     }
-                    className='w-24 h-auto shrink-0 aspect-square'
+                    className='portrait:w-28 portrait:aspect-square w-24 h-auto shrink-0 aspect-square!'
                   />
-                  <div className='flex items-start justify-between w-full h-12'>
+                  <div className='flex items-start justify-between md:w-full h-12'>
                     <h4 className='capitalize tracking-tight font-semibold '>
                       {category.name}
                     </h4>
-                    <p className='text-xs italic text-neutral-500'>
+                    <p className='portrait:hidden text-xs italic text-neutral-500'>
                       {category.slug}
                     </p>
                   </div>

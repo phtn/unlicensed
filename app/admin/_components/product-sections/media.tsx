@@ -219,7 +219,7 @@ export const Media = ({form, fields}: MediaProps) => {
 
                   <div
                     className={cn(
-                      'rounded-xl size-100 relative overflow-hidden border border-dashed border-light-gray dark:border-dark-gray dark:bg-black/60',
+                      'rounded-xl size-72 md:size-100 relative overflow-hidden border border-dashed border-light-gray dark:border-dark-gray dark:bg-black/60',
                       {
                         'border-2 border-solid border-blue-500 dark:border-blue-500':
                           primaryImageValue.trim(),
@@ -347,16 +347,16 @@ export const Media = ({form, fields}: MediaProps) => {
                     uploads.push(storageId)
                     newMap[storageId] = url ?? pendingImage.preview
 
-                  // Clean up preview URL
-                  URL.revokeObjectURL(pendingImage.preview)
-                }
+                    // Clean up preview URL
+                    URL.revokeObjectURL(pendingImage.preview)
+                  }
 
-                // Read current gallery value from form state to avoid stale closures
-                const currentGallery = (field.state.value as string[]) ?? []
-                field.handleChange([...currentGallery, ...uploads])
-                setGalleryPreviewMap(newMap)
-                setPendingGalleryImages([])
-                setGalleryValidationErrors({})
+                  // Read current gallery value from form state to avoid stale closures
+                  const currentGallery = (field.state.value as string[]) ?? []
+                  field.handleChange([...currentGallery, ...uploads])
+                  setGalleryPreviewMap(newMap)
+                  setPendingGalleryImages([])
+                  setGalleryValidationErrors({})
                 } catch (error) {
                   const errorMessage =
                     error instanceof Error

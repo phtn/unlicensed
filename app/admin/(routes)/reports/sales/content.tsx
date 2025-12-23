@@ -7,7 +7,7 @@ import {SalesTable} from './sales-table'
 
 const ReportsContentInner = () => {
   // const sales = useQuery(api.orders.q.getOrdersByStatus, {status: 'delivered'})
-  const [tabId, , id] = useAdminTabId()
+  const [tabId] = useAdminTabId()
 
   switch (tabId) {
     default:

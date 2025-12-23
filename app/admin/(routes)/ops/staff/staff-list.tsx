@@ -38,10 +38,10 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => (
                 </Chip>
               </div>
             }
-            description={member.email}
+            description={member.position}
           />
         </div>
-        <div className='space-y-1'>
+        <div className='portrait:hidden space-y-1'>
           <div className='flex items-center gap-2'>
             <h4 className='font-semibold tracking-tight text-base text-indigo-500'>
               {member.position}

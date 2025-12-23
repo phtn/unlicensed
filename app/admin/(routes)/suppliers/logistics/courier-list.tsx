@@ -128,7 +128,10 @@ export const CourierList = ({couriers}: CourierListProps) => {
           No couriers yet. Create one above to get started.
         </p>
       ) : (
-        <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+        <Card
+          shadow='none'
+          radius='none'
+          className='md:p-4 md:w-full w-screen overflow-auto dark:bg-dark-table/40'>
           <Table
             isCompact
             removeWrapper
