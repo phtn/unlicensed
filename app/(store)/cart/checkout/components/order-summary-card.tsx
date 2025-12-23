@@ -46,7 +46,9 @@ export function OrderSummaryCard({
 
   return (
     <div className='lg:sticky lg:top-24 h-fit'>
-      <Card>
+      <Card
+        shadow='none'
+        className='dark:bg-dark-table/40 border border-foreground/40'>
         <CardBody className='space-y-4 p-8'>
           <h2 className='text-2xl font-normal font-bone'>Order Summary</h2>
           <Divider />
@@ -92,18 +94,6 @@ export function OrderSummaryCard({
               <Divider />
               <div className='py-4'>
                 <PaymentMethod onChange={handleOnChange} />
-                {/*<Select
-                  label='Payment Method'
-                  selectedKeys={[paymentMethod]}
-                  onSelectionChange={(keys) => {
-                    const selected = Array.from(keys)[0] as string
-                    onPaymentMethodChange(selected as FormData['paymentMethod'])
-                  }}
-                  isDisabled={isLoading || isPending || !!orderId}>
-                  <SelectItem key='credit_card'>Credit Card</SelectItem>
-                  <SelectItem key='crypto'>Cryptocurrency</SelectItem>
-                  <SelectItem key='cashapp'>CashApp</SelectItem>
-                </Select>*/}
               </div>
             </>
           )}

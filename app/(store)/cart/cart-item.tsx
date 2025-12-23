@@ -34,7 +34,7 @@ export const CartItem = ({
   className,
 }: CartItemProps) => {
   const [quantity, setQuantity] = useState(item.quantity)
-  
+
   // Resolve product image URL
   const resolveUrl = useStorageUrls(
     item.product.image ? [item.product.image] : [],
@@ -58,14 +58,14 @@ export const CartItem = ({
       shadow='none'
       radius='none'
       className={cn(
-        'border border-neutral-200 light:bg-white dark:border-neutral-700 border-dashed first:rounded-t-xl last:rounded-b-lg',
+        'border border-foreground/70 bg-white dark:bg-background dark:border-foreground/50 border-dashed first:rounded-t-xl last:rounded-b-xl',
         className,
       )}>
       <CardBody>
         <div className='flex gap-4'>
           <div className='relative w-28 h-28 shrink-0 rounded-lg overflow-hidden'>
             <Image
-              src={productImageUrl || '/default-product-image.svg'}
+              src={productImageUrl ?? undefined}
               alt={item.product.name}
               className='w-full h-full object-cover'
             />

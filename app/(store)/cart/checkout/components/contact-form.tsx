@@ -16,10 +16,10 @@ export function ContactForm({
   onInputChange,
 }: ContactFormProps) {
   return (
-    <div>
+    <div className='space-y-2'>
       <h3 className='flex items-center space-x-1.5 text-lg font-semibold my-3 tracking-tighter'>
         <Icon name='email' className='size-6 opacity-80' />
-        <span>Contact Information</span>
+        <span className='whitespace-nowrap'>Contact Information</span>
       </h3>
       <div className='space-y-1'>
         <Input

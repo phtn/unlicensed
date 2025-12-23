@@ -32,8 +32,8 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
     },
     {
       id: 'crypto',
-      name: 'Cryptocurrency',
-      label: 'Cryptocurrency',
+      name: 'Crypto',
+      label: 'Crypto',
       icon: 'ethereum',
       iconStyle: 'text-[#16ee37]',
       description: 'Bitcoin, Ethereum, Multichain, every coin.',
@@ -53,9 +53,12 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
   ]
 
   // Map method IDs to expected payment method values
-  const idToPaymentMethod: Record<string, 'credit_card' | 'crypto' | 'cashapp'> = {
+  const idToPaymentMethod: Record<
+    string,
+    'credit_card' | 'crypto' | 'cashapp'
+  > = {
     'credit-card': 'credit_card',
-    'crypto': 'crypto',
+    crypto: 'crypto',
     'cash-app': 'cashapp',
   }
 
@@ -74,8 +77,9 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
     <Select
       classNames={{
         base: 'w-full',
+        label: 'font-semibold tracking-tight',
         trigger:
-          'min-h-12 py-2 bg-sky-100 dark:bg-sky-500/10 border border-foreground/20 placeholder:text-foreground',
+          'min-h-14 py-2 bg-sky-100 dark:bg-sky-500/10 border border-foreground/40 placeholder:text-foreground',
         listboxWrapper: 'border dark:border-foreground rounded-2xl',
         listbox: 'border-b',
       }}
@@ -101,23 +105,32 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
       selectionMode='single'
       variant='flat'>
       {(method) => (
-        <SelectItem key={method.id} textValue={method.name} className=''>
-          <div className='flex gap-6 items-center p-2'>
-            <Icon name={method.icon} className='size-10' />
-            <div className='flex flex-col w-full space-y-0.5'>
+        <SelectItem
+          key={method.id}
+          textValue={method.name}
+          // className=' hover:bg-light-gray/20'
+          classNames={{
+            wrapper: '',
+            base: 'hover:bg-light-gray/20! data-[selected=true]:bg-sky-500/20!',
+          }}>
+          <div className='flex gap-3 md:gap-6 items-center px-1 py-2 md:p-2'>
+            <Icon name={method.icon} className='size-7 md:size-10' />
+            <div className='flex flex-col w-full md:space-y-0.5'>
               <div className='flex items-center justify-between w-full'>
-                <div className='text-lg tracking-tight font-medium '>
+                <div className='whitespace-nowrap text-base md:text-lg tracking-tight font-medium '>
                   {method.name}
                 </div>
                 <div
                   className={cn(
-                    'text-xs font-light tracking-tight whitespace-nowrap w-fit border border-orange-300/60 rounded-sm px-1',
+                    'text-[8px] md:text-xs font-light tracking-tight whitespace-nowrap w-fit border border-orange-300/60 rounded-sm px-px py-0 md:px-1 leading-3 md:leading-normal bg-background',
                     {'border-sky-400/70 ': method.id === 'credit-card'},
                   )}>
                   {method.tag}
                 </div>
               </div>
-              <span className='text-tiny opacity-70'>{method.description}</span>
+              <span className='text-tiny opacity-70 line-clamp-1'>
+                {method.description}
+              </span>
             </div>
           </div>
         </SelectItem>

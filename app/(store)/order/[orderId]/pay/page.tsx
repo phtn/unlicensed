@@ -1,10 +1,12 @@
 'use client'
 
+import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {usePaygate} from '@/hooks/use-paygate'
+import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, CardBody, Spinner} from '@heroui/react'
+import {Button, Card, CardBody} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useParams, useRouter} from 'next/navigation'
@@ -152,7 +154,7 @@ export default function PayPage() {
   if (!order || !adminSettings) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
-        <Spinner size='lg' />
+        <Loader />
       </div>
     )
   }
@@ -166,7 +168,9 @@ export default function PayPage() {
   if (!walletAddress) {
     return (
       <div className='min-h-screen flex items-center justify-center px-4'>
-        <Card className='max-w-md w-full'>
+        <Card
+          shadow='none'
+          className='max-w-md w-full border border-foreground/50 dark:bg-dark-table/40'>
           <CardBody className='p-8 text-center space-y-4'>
             <div className='text-6xl mb-4'>⚠️</div>
             <h1 className='text-2xl font-semibold'>Configuration Error</h1>
@@ -195,10 +199,15 @@ export default function PayPage() {
 
   if (paymentStatus === 'success' && order.payment.status === 'completed') {
     return (
-      <div className='min-h-screen flex items-center justify-center px-4'>
-        <Card className='max-w-md w-full'>
+      <div className='min-h-screen pt-16 md:pt-28 flex items-center justify-center px-4'>
+        <Card
+          shadow='none'
+          className='max-w-md w-full border border-foreground/50 dark:bg-dark-table/40'>
           <CardBody className='p-8 text-center space-y-4'>
-            <div className='text-6xl mb-4'>✅</div>
+            <Icon
+              name='check-fill'
+              className='text-6xl mb-4 text-emerald-500'
+            />
             <h1 className='text-2xl font-semibold'>Payment Successful!</h1>
             <p className='text-color-muted'>
               Your payment has been processed successfully.
@@ -220,7 +229,9 @@ export default function PayPage() {
   if (response?.error) {
     return (
       <div className='min-h-screen flex items-center justify-center px-4'>
-        <Card className='max-w-md w-full'>
+        <Card
+          shadow='none'
+          className='max-w-md w-full border border-foreground/50 dark:bg-dark-table/40'>
           <CardBody className='p-8 text-center space-y-4'>
             <div className='text-6xl mb-4'>❌</div>
             <h1 className='text-2xl font-semibold'>Payment Error</h1>
@@ -234,7 +245,7 @@ export default function PayPage() {
                 View Order
               </Button>
               <Button
-                onClick={() => window.location.reload()}
+                onPress={() => window.location.reload()}
                 color='primary'
                 className='flex-1'>
                 Retry
@@ -247,9 +258,11 @@ export default function PayPage() {
   }
 
   return (
-    <div className='min-h-screen lg:pt-24 px-4 sm:px-6 lg:px-8 py-8'>
+    <div className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
       <div className='max-w-2xl mx-auto'>
-        <Card>
+        <Card
+          shadow='none'
+          className='w-full border border-dashed border-foreground/50 dark:bg-dark-table/40'>
           <CardBody className='p-8 space-y-6'>
             <div>
               <h1 className='text-2xl font-semibold mb-2'>
@@ -275,7 +288,7 @@ export default function PayPage() {
 
             {loading ? (
               <div className='flex flex-col items-center justify-center py-8 space-y-4'>
-                <Spinner size='lg' />
+                <Icon name='spinners-ring' className='text-orange-400' />
                 <p className='text-sm text-color-muted'>
                   Initializing payment...
                 </p>
@@ -287,7 +300,7 @@ export default function PayPage() {
                 </p>
                 {response && (
                   <div className='flex items-center justify-center gap-2 text-sm text-color-muted'>
-                    <Spinner size='sm' />
+                    <Icon name='spinners-ring' className='text-featured' />
                     <span>Redirecting to payment page...</span>
                   </div>
                 )}

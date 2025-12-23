@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.0
+
+### Minor Changes
+
+- mobile-ui optimized
+
 ## 0.10.0
 
 ### Minor Changes

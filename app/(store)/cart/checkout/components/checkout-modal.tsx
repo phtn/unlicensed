@@ -96,9 +96,13 @@ export function CheckoutModal({
                 color='primary'
                 className='bg-featured font-medium dark:text-background tracking-tighter text-base'
                 onPress={onPlaceOrder}
-                isLoading={isLoading || isPending}
                 endContent={
-                  <Icon name='arrow-down' className='-rotate-45 size-8' />
+                  <Icon
+                    name={
+                      isLoading || isPending ? 'spinners-ring' : 'arrow-down'
+                    }
+                    className='-rotate-45 size-6 md:size-8'
+                  />
                 }
                 isDisabled={!!orderId}>
                 {orderId ? 'Order Placed!' : 'Proceed to Payment'}

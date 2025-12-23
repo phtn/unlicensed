@@ -1,11 +1,10 @@
-'use client'
-
 import {Tag} from '@/components/base44/tag'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Image} from '@heroui/react'
 import type {EmblaCarouselType} from 'embla-carousel'
 import useEmblaCarousel from 'embla-carousel-react'
+import Link from 'next/link'
 import {
   ReactNode,
   useCallback,
@@ -107,7 +106,7 @@ export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
     <div
       ref={containerRef}
       className={cn(
-        'relative max-w-7xl mx-auto pt-10 md:pt-24 h-[80lvh] md:h-[70lvh]',
+        'relative max-w-7xl mx-auto pt-16 md:pt-24 h-[80lvh] md:h-[70lvh]',
         'cursor-grab active:cursor-grabbing',
         className,
       )}
@@ -190,7 +189,7 @@ const Slide = ({
         <div className='grid lg:grid-cols-2 gap-12 items-center'>
           <div>
             <Tag text={tag} />
-            {title}
+            <span>{title}</span>
             <p className='hidden md:flex text-lg opacity-70 mb-10 max-w-[38ch] leading-relaxed'>
               {description}
             </p>
@@ -199,7 +198,7 @@ const Slide = ({
               <Button
                 as='a'
                 href={ctaHref}
-                className='bg-dark-gray dark:bg-white dark:hover:text-background hover:bg-brand/80 hover:text-foreground text-white dark:text-brand font-medium px-6 py-3'>
+                className='hidden md:flex bg-dark-gray dark:bg-white dark:hover:text-background hover:bg-brand/80 hover:text-foreground text-white dark:text-brand font-medium px-6 py-3'>
                 {ctaText}
               </Button>
               <Button
@@ -211,13 +210,16 @@ const Slide = ({
             </div>
           </div>
 
-          <div className='relative flex justify-end max-h-[50lvh] overflow-hidden'>
+          <Link
+            href={ctaHref}
+            prefetch
+            className='relative flex justify-end max-h-[50lvh] overflow-hidden'>
             <Image
               src={imageUrl}
               alt='Beautiful flower'
               className='w-full aspect-auto select-none'
             />
-          </div>
+          </Link>
         </div>
       </div>
     </div>

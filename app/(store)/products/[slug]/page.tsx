@@ -25,7 +25,9 @@ export async function generateMetadata({
   const imageUrl =
     product.image && product.image.startsWith('http')
       ? product.image
-      : product.gallery && product.gallery.length > 0 && product.gallery[0]?.startsWith('http')
+      : product.gallery &&
+          product.gallery.length > 0 &&
+          product.gallery[0]?.startsWith('http')
         ? product.gallery[0]
         : undefined
 
@@ -48,7 +50,6 @@ const Page = async ({params}: PageProps) => {
   const initialDetail = await getProductDetail(slug)
   return (
     <div>
-      {/*<FlyingCart />*/}
       <ProductDetailContent initialDetail={initialDetail} slug={slug} />
     </div>
   )

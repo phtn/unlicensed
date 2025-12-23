@@ -159,10 +159,15 @@ export default function CartPage() {
     return points
   }, [subtotal, nextVisitMultiplier, isAuthenticated])
 
-  if (isLoading) {
+  if (!isLoading) {
     return (
-      <div className='min-h-screen flex items-center justify-center'>
-        <p>Loading cart...</p>
+      <div className='min-h-screen pt-20 lg:pt-28 flex items-start justify-center'>
+        <div className='flex items-center space-x-1.5'>
+          <span className='text-lg tracking-tight opacity-70'>
+            Loading Cart items
+          </span>
+          <Icon name='spinners-ring' className='size-5 animate-bounce' />
+        </div>
       </div>
     )
   }
@@ -170,8 +175,10 @@ export default function CartPage() {
   if (!hasItems) {
     if (showEmptyCartLoader) {
       return (
-        <div className='min-h-screen flex items-center justify-center'>
-          <Loader />
+        <div className='min-h-screen pt-20 lg:pt-28 flex items-start justify-center'>
+          <div className='size-96 aspect-square'>
+            <Loader />
+          </div>
         </div>
       )
     }
@@ -189,11 +196,11 @@ export default function CartPage() {
   }
 
   return (
-    <div className='min-h-screen lg:pt-28 px-4 sm:px-6 lg:px-8'>
+    <div className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
-        <div className='flex items-center justify-between mb-8'>
+        <div className='flex items-center justify-between mb-4'>
           <h1 className='text-base font-medium font-space space-x-2 tracking-tight'>
-            <span className='opacity-60'>Shopping Cart</span>
+            <span className='opacity-60'>Cart</span>
             <span className='font-light text-sm'>/</span>
             <span>Checkout</span>
           </h1>
@@ -201,7 +208,7 @@ export default function CartPage() {
 
         <div className='grid gap-8 lg:grid-cols-[1fr_400px]'>
           {/* Cart Items */}
-          <div className='h-[70lvh] dark:bg-white/10 rounded-2xl overflow-hidden flex flex-col'>
+          <div className='md:h-[70lvh] h-fit bg-linear-to-b dark:from-dark-table/40 via-transparent to-transparent rounded-2xl overflow-hidden flex flex-col'>
             <div className='flex-1 overflow-y-auto'>
               {cartItems.map((item) => {
                 const product = item.product

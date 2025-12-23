@@ -16,15 +16,15 @@ export function ShippingForm({
   onInputChange,
 }: ShippingFormProps) {
   return (
-    <div>
+    <div className='space-y-2'>
       <div className='flex items-center justify-between'>
         <h3 className='flex items-center space-x-1.5 text-lg font-semibold my-3 tracking-tighter'>
           <Icon name='pin' className='size-6 opacity-80' />
-          <span>Shipping Address</span>
+          <span className='whitespace-nowrap'>Shipping Address</span>
         </h3>
         <div>
           <label className='flex items-center gap-2 cursor-pointer'>
-            <span className='text-sm'>Same address for billing</span>
+            <span className='text-sm whitespace-nowrap'>Same for billing</span>
             <Checkbox
               type='checkbox'
               radius='sm'

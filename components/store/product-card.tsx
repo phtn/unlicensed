@@ -44,7 +44,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
           <Image
             src={productImageUrl ?? undefined}
             alt={product.name}
-            className='h-48 sm:h-80 lg:h-72 w-full rounded-t-2xl object-contain aspect-auto transition duration-300 group-hover:scale-[1.03]'
+            className='h-80 w-full rounded-t-2xl object-contain aspect-auto transition duration-300 group-hover:scale-[1.03]'
             loading='eager'
           />
           <div className='absolute left-3 sm:left-4 top-3 sm:top-4 z-20 flex flex-col gap-2'>

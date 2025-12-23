@@ -12,6 +12,7 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCartAnimation} from '@/ctx/cart-animation'
 import {useCart} from '@/hooks/use-cart'
+import {useMobile} from '@/hooks/use-mobile'
 import {useToggle} from '@/hooks/use-toggle'
 import {adaptProductDetail, type RawProductDetail} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
@@ -46,10 +47,12 @@ const Gallery = ({
   product,
   imageRef,
   productId,
+  isMobile,
 }: {
   product: StoreProduct
   imageRef?: React.RefObject<HTMLDivElement | null>
   productId?: Id<'products'>
+  isMobile: boolean
 }) => {
   const {on, setOn} = useToggle()
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -83,33 +86,33 @@ const Gallery = ({
     <div className='flex flex-col gap-3 sm:gap-0'>
       <div
         ref={imageRef}
-        className='relative aspect-auto w-full overflow-hidden bg-background/60 min-h-168'>
-        <Lens hovering={on} setHovering={setOn}>
+        className='relative aspect-auto w-full overflow-hidden bg-background/60 lg:min-h-168'>
+        <Lens hovering={isMobile ? false : on} setHovering={setOn}>
           <Image
             radius='none'
             src={displayImage}
             alt={product.name}
-            className='object-cover w-full h-full aspect-auto select-none'
+            className='object-cover portrait:aspect-square portrait:size-[360px] w-full h-full aspect-auto select-none'
             loading='eager'
           />
         </Lens>
       </div>
-      <div className='grid grid-cols-5 gap-1'>
+      <div className='flex items-center w-full lg:w-full overflow-y-scroll gap-1'>
         {[primaryImageUrl, ...(galleryUrls ?? [])].map((src, index) => (
           <div
             key={`${src}-${index}`}
             onClick={() => src && handleSelectImage(src)()}
             className={cn(
-              'cursor-pointer select-none relative aspect-square overflow-hidden rounded-md transition-colors size-32',
+              'cursor-pointer select-none relative aspect-square overflow-hidden rounded-md size-20 md:size-32 m-1',
               selectedImage === src
-                ? 'border-foreground/50 ring-2 ring-foreground/20'
+                ? 'border-foreground/50 ring-2 ring-limited'
                 : 'border-foreground/10 hover:border-foreground/30',
             )}>
             {src && (
               <Image
                 src={src}
                 alt={`${product.name} gallery ${index + 1}`}
-                className='object-cover size-32 aspect-auto'
+                className='object-cover size-20 portrait:aspect-square lg:size-32 aspect-auto'
                 loading='lazy'
               />
             )}
@@ -136,6 +139,8 @@ export const ProductDetailContent = ({
   const {triggerAnimation} = useCartAnimation()
   const addToCartButtonRef = useRef<HTMLDivElement>(null)
   const galleryImageRef = useRef<HTMLDivElement>(null)
+
+  const isMobile = useMobile()
 
   const router = useRouter()
   const prefetch = useCallback(() => {
@@ -268,8 +273,8 @@ export const ProductDetailContent = ({
   const isAdding = optimisticAdding || isPending
 
   return (
-    <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-10 sm:py-8 lg:py-20 overflow-x-hidden'>
-      <section className='mx-auto w-full max-w-7xl px-4 pt-6 sm:pt-8 lg:pt-10 sm:px-6 lg:px-0'>
+    <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-10 sm:py-8 lg:py-20 overflow-x-hidden w-full'>
+      <section className='md:mx-auto lg:max-w-7xl max-w-screen px-4 pt-6 sm:pt-8 lg:pt-10 sm:px-6 lg:px-0'>
         <Breadcrumbs
           aria-label='Product breadcrumb'
           className='text-xs sm:text-sm text-color-muted'
@@ -285,15 +290,16 @@ export const ProductDetailContent = ({
           </BreadcrumbItem>
           <BreadcrumbItem>{product.name}</BreadcrumbItem>
         </Breadcrumbs>
-        <div className='mt-6 sm:mt-8 lg:mt-6 grid gap-6 sm:gap-8 lg:gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
+        <div className='mt-0 sm:mt-8 lg:mt-6 grid gap-6 sm:gap-8 lg:gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
           <Gallery
             product={product}
             imageRef={galleryImageRef}
             productId={detailQuery?.product?._id ?? product._id}
+            isMobile={isMobile}
           />
-          <div className='space-y-6 sm:space-y-8 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue dark:bg-pink-100/10 p-4 sm:p-5 lg:p-6 backdrop-blur-xl'>
+          <div className='space-y-6 sm:space-y-8 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue dark:bg-pink-100/10 p-4 sm:p-5 lg:p-6 backdrop-blur-xl w-full'>
             <div className='flex flex-col gap-4 sm:gap-5'>
-              <div className='flex items-center justify-between gap-2 pb-4'>
+              <div className='flex items-center justify-between gap-2 pb-4 md:w-full'>
                 <StatChip value={category?.name ?? product.categorySlug} />
                 <div className='flex items-center space-x-4'>
                   <StatChip label='THC' value={product.thcPercentage + '%'} />
@@ -313,70 +319,80 @@ export const ProductDetailContent = ({
               </div>
 
               <div className='space-y-3 sm:space-y-4'>
-                <h1 className='text-2xl sm:text-3xl lg:text-4xl xl:text-5xl capitalize font-fugaz font-light text-foreground leading-tight tracking-tight'>
+                <h1 className='text-3xl lg:text-4xl xl:text-5xl capitalize font-bone font-light text-foreground leading-tight tracking-tight'>
                   {product.name.split('-').join(' ')}
                 </h1>
                 <p className='text-sm opacity-70 leading-relaxed'>
                   {product.description}
                 </p>
               </div>
-              <div className='flex flex-wrap items-center gap-3 sm:gap-2 py-3 sm:py-4'>
-                <span className='font-space text-xl sm:text-4xl font-semibold text-foreground w-28'>
-                  <span className='font-light opacity-80'>$</span>
+              <div className='flex items-start justify-between py-3 sm:py-4'>
+                <span className='font-space text-3xl sm:text-4xl font-semibold text-foreground w-40 md:w-28'>
+                  <span className='font-light opacity-80 scale-90'>$</span>
                   {formatPrice(
                     product.availableDenominations[selectedDenomination] *
                       product.priceCents,
                   )}
                 </span>
-                {product.availableDenominations &&
-                  product.availableDenominations.map((denomination, i) => (
-                    <Badge
-                      key={denomination}
-                      isOneChar
-                      size='md'
-                      content={
-                        product.popularDenomination?.includes(denomination) ? (
-                          <Icon name='star-fill' className='size-4 rotate-12' />
-                        ) : null
-                      }
-                      placement='top-right'
-                      shape='circle'
-                      className={cn(
-                        'top-0 border-none border-hue dark:border-foreground/20',
-                        {
-                          hidden:
-                            !product.popularDenomination?.includes(
-                              denomination,
-                            ),
-                          'bg-brand text-background':
-                            selectedDenomination === i,
-                          'bg-hue dark:pink-100/10 text-brand':
-                            product.popularDenomination?.includes(denomination),
-                        },
-                      )}>
-                      <Button
-                        size='sm'
-                        onPress={handleDenominationChange(i)}
-                        // selectedDenomination
+                <div className='flex flex-wrap items-start gap-3'>
+                  {product.availableDenominations &&
+                    product.availableDenominations.map((denomination, i) => (
+                      <Badge
+                        key={denomination}
+                        isOneChar
+                        size={isMobile ? 'sm' : 'md'}
+                        content={
+                          product.popularDenomination?.includes(
+                            denomination,
+                          ) ? (
+                            <Icon
+                              name='star-fill'
+                              className='size-4 rotate-12'
+                            />
+                          ) : null
+                        }
+                        placement='top-right'
+                        shape='circle'
                         className={cn(
-                          'cursor-pointer rounded-full border border-foreground/20',
+                          'top-0 border-none border-hue dark:border-foreground/20',
                           {
-                            'bg-dark-gray dark:bg-white dark:border-foreground text-featured dark:text-background hover:bg-foreground hover:text-background':
+                            hidden:
+                              !product.popularDenomination?.includes(
+                                denomination,
+                              ),
+                            'bg-brand text-background':
                               selectedDenomination === i,
+                            'bg-hue dark:pink-100/10 text-brand':
+                              product.popularDenomination?.includes(
+                                denomination,
+                              ),
                           },
                         )}>
-                        <span
+                        <Button
+                          size='sm'
+                          onPress={handleDenominationChange(i)}
+                          // selectedDenomination
                           className={cn(
-                            'relative font-space text-[10px] sm:text-sm font-medium whitespace-nowrap',
+                            'cursor-pointer rounded-full border border-foreground/20 portrait:px-px',
+                            {
+                              'bg-dark-gray dark:bg-white dark:border-foreground text-featured dark:text-background hover:bg-foreground hover:text-background':
+                                selectedDenomination === i,
+                            },
                           )}>
-                          {product.unit === 'oz'
-                            ? mapFractions[denomination + product.unit]
-                            : denomination + product.unit}
-                        </span>
-                      </Button>
-                    </Badge>
-                  ))}
+                          <span
+                            className={cn(
+                              'relative font-space text-sm font-medium whitespace-nowrap portrait:px-px',
+                            )}>
+                            {product.unit === 'oz'
+                              ? mapFractions[denomination + product.unit]
+                              : denomination + product.unit}
+                          </span>
+                        </Button>
+                      </Badge>
+                    ))}
+                </div>
               </div>
+
               <div className='flex flex-col sm:flex-row gap-3'>
                 <div ref={addToCartButtonRef} className='w-full sm:flex-1'>
                   <Button
@@ -384,7 +400,7 @@ export const ProductDetailContent = ({
                     color='success'
                     variant='solid'
                     disableRipple
-                    className='w-full font-semibold text-sm sm:text-base _lg:text-lg bg-linear-to-r from-featured via-featured to-featured dark:text-black font-sans'
+                    className='w-full font-semibold text-lg h-14 bg-linear-to-r from-featured via-featured to-featured dark:text-black font-sans'
                     onPress={handleAddToCart}
                     isDisabled={isPending}>
                     <span>Add to Cart</span>
@@ -399,7 +415,7 @@ export const ProductDetailContent = ({
                   size='lg'
                   variant='solid'
                   href='/cart'
-                  className='w-full sm:flex-1 font-space font-semibold text-sm sm:text-base bg-foreground/95 text-background'>
+                  className='w-full sm:flex-1 h-14 font-space font-semibold text-lg bg-foreground/95 text-background'>
                   <span>Checkout</span>
                 </Button>
               </div>

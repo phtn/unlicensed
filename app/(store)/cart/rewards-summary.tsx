@@ -30,7 +30,9 @@ export function RewardsSummary({
 }: RewardsSummaryProps) {
   return (
     <div className='lg:sticky lg:top-24 h-fit'>
-      <Card>
+      <Card
+        shadow='none'
+        className='dark:bg-dark-table/40 border border-foreground/40'>
         <CardBody className='space-y-4 px-8 py-5'>
           <div className='flex items-center justify-between'>
             <h2 className='text-2xl font-normal font-bone'>
@@ -56,7 +58,7 @@ export function RewardsSummary({
               </div>
               <div className='flex items-center gap-1'>
                 <span className='font-bold tracking-tight font-geist-sans text-purple-700 dark:text-purple-400 text-lg'>
-                  {estimatedPoints.toLocaleString()}
+                  {(estimatedPoints / 33).toFixed(0)}
                 </span>
                 <span className='text-sm text-foreground font-semibold'>
                   pts
