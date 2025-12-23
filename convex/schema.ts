@@ -6,6 +6,7 @@ import {blogSchema} from './blogs/d'
 import {cartSchema} from './cart/d'
 import {categorySchema} from './categories/d'
 import {courierSchema} from './couriers/d'
+import {logSchema} from './logs/d'
 import {orderSchema} from './orders/d'
 import {productSchema} from './products/d'
 import {rewardTierSchema, userRewardsSchema} from './rewards/d'
@@ -49,4 +50,9 @@ export default defineSchema({
   couriers: defineTable(courierSchema)
     .index('by_code', ['code'])
     .index('by_active', ['active']),
+  logs: defineTable(logSchema)
+    .index('by_type', ['type'])
+    .index('by_user', ['userId'])
+    .index('by_path', ['path'])
+    .index('by_created_at', ['createdAt']),
 })

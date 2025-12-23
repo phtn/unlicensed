@@ -184,7 +184,7 @@ const Slide = ({
   // variantOptions,
 }: Highlight) => {
   return (
-    <div className=' relative min-w-full flex-[0_0_100%] px-6 md:snap-start md:snap-always'>
+    <div className='relative min-w-full flex-[0_0_100%] px-6 md:snap-start md:snap-always'>
       <div className=''>
         <div className='grid lg:grid-cols-2 gap-12 items-center'>
           <div>

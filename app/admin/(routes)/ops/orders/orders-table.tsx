@@ -38,6 +38,7 @@ const columns = [
   {name: 'CUSTOMER', uid: 'customer'},
   {name: 'STATUS', uid: 'status'},
   {name: 'TOTAL', uid: 'total'},
+  {name: 'COURIER', uid: 'courier'},
   {name: 'DATE', uid: 'date'},
   {name: 'ACTIONS', uid: 'actions'},
 ]
@@ -100,6 +101,16 @@ export const OrdersTable = () => {
         )
       case 'total':
         return moneyCell(order.totalCents ?? 0)
+      case 'courier':
+        return (
+          <Chip
+            size='sm'
+            variant='flat'
+            className='capitalize'
+            color={'default'}>
+            {order.courier}
+          </Chip>
+        )
       case 'date':
         return dateCell(order.createdAt ?? 0)
       case 'actions':

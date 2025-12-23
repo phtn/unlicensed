@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.0
+
+### Minor Changes
+
+- logs and visitor analytics
+
 ## 0.11.1
 
 ### Patch Changes

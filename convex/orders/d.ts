@@ -117,6 +117,7 @@ export const orderSchema = v.object({
   createdAt: v.optional(v.number()),
   updatedAt: v.optional(v.number()),
   cancelledAt: v.optional(v.number()),
+  courier: v.optional(v.id('couriers')),
 })
 
 export type OrderType = Infer<typeof orderSchema>

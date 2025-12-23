@@ -1,0 +1,331 @@
+'use client'
+
+import {api} from '@/convex/_generated/api'
+import type {Doc} from '@/convex/_generated/dataModel'
+import {Icon, IconName} from '@/lib/icons'
+import {cn} from '@/lib/utils'
+import {formatTimestamp} from '@/utils/date'
+import {
+  Card,
+  Chip,
+  ChipProps,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  User,
+} from '@heroui/react'
+import {useQuery} from 'convex/react'
+import React, {ReactNode} from 'react'
+
+type Log = Doc<'logs'> & {
+  user?: {name: string; email: string; photoUrl?: string} | null
+}
+
+const columns = [
+  {name: 'PATH', uid: 'path'},
+  {name: 'USER', uid: 'user'},
+  {name: 'DEVICE', uid: 'device'},
+  {name: 'BROWSER', uid: 'browser'},
+  {name: 'IP ADDRESS', uid: 'ipAddress'},
+  {name: 'REFERRER', uid: 'referrer'},
+  {name: 'TIME', uid: 'time'},
+]
+
+const getDeviceIcon = (deviceType?: string) => {
+  // Use eye icon for all device types since specific device icons don't exist
+  return 'eye' as IconName
+}
+
+const getDeviceChipColor = (
+  deviceType?: string,
+): ChipProps['color'] | undefined => {
+  switch (deviceType) {
+    case 'mobile':
+      return 'primary'
+    case 'tablet':
+      return 'secondary'
+    case 'desktop':
+      return 'success'
+    default:
+      return 'default'
+  }
+}
+
+const getLogTypeChipColor = (type: Log['type']): ChipProps['color'] => {
+  switch (type) {
+    case 'page_visit':
+      return 'primary'
+    case 'api_request':
+      return 'secondary'
+    case 'error':
+      return 'danger'
+    case 'action':
+      return 'warning'
+    default:
+      return 'default'
+  }
+}
+
+interface LogsTableProps {
+  fullTable: boolean
+  toggleFullTable: VoidFunction
+  isMobile: boolean
+}
+
+export const LogsTable = ({
+  fullTable,
+  toggleFullTable,
+  isMobile,
+}: LogsTableProps) => {
+  const logs = useQuery(api.logs.q.getLogs, {
+    limit: 100,
+    type: 'page_visit',
+  })
+
+  const renderCell = (log: Log, columnKey: React.Key) => {
+    switch (columnKey) {
+      case 'path':
+        return (
+          <div className='flex items-center gap-2'>
+            <Icon name='eye' className='w-4 h-4 text-default-400 shrink-0' />
+            <div className='flex flex-col min-w-0'>
+              <p className='text-bold text-small text-foreground truncate'>
+                {log.path}
+              </p>
+              {log.method && (
+                <p className='text-bold text-tiny text-default-500'>
+                  {log.method}
+                </p>
+              )}
+            </div>
+          </div>
+        )
+      case 'user':
+        if (log.userId && 'user' in log && log.user) {
+          const user = log.user as {
+            name: string
+            email: string
+            photoUrl?: string
+          }
+          return (
+            <User
+              avatarProps={{
+                radius: 'full',
+                size: 'sm',
+                src: user.photoUrl,
+              }}
+              classNames={{
+                description: 'text-default-500',
+              }}
+              name={isMobile ? user.name.split(' ').shift() : user.name}>
+              {user.email}
+            </User>
+          )
+        }
+        return (
+          <div className='flex items-center gap-2'>
+            <div className='flex h-8 w-8 items-center justify-center rounded-full bg-default-100'>
+              <Icon name='eye' className='w-4 h-4 text-default-400' />
+            </div>
+            <div className='flex flex-col'>
+              <p className='text-bold text-small text-default-400'>Guest</p>
+            </div>
+          </div>
+        )
+      case 'device':
+        return (
+          <div className='flex items-center gap-2'>
+            <Icon
+              name={getDeviceIcon(log.deviceType)}
+              className={cn(
+                'w-4 h-4 shrink-0',
+                log.deviceType === 'mobile'
+                  ? 'text-primary'
+                  : log.deviceType === 'tablet'
+                    ? 'text-secondary'
+                    : log.deviceType === 'desktop'
+                      ? 'text-success'
+                      : 'text-default-400',
+              )}
+            />
+            <Chip
+              className='capitalize border-none gap-1 text-default-600'
+              color={getDeviceChipColor(log.deviceType)}
+              size='sm'
+              variant='dot'>
+              {log.deviceType || 'unknown'}
+            </Chip>
+          </div>
+        )
+      case 'browser':
+        return (
+          <div className='flex flex-col'>
+            {log.browser ? (
+              <>
+                <p className='text-bold text-small capitalize'>{log.browser}</p>
+                {log.browserVersion && (
+                  <p className='text-bold text-tiny text-default-500'>
+                    v{log.browserVersion}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className='text-bold text-tiny text-default-500'>—</p>
+            )}
+            {log.os && (
+              <p className='text-bold text-tiny text-default-400'>
+                {log.os}
+                {log.osVersion && ` ${log.osVersion}`}
+              </p>
+            )}
+          </div>
+        )
+      case 'ipAddress':
+        return (
+          <div className='flex flex-col'>
+            <p className='text-bold text-small font-mono text-default-600'>
+              {log.ipAddress}
+            </p>
+            {log.country && (
+              <p className='text-bold text-tiny text-default-500'>
+                {log.country}
+                {log.city && `, ${log.city}`}
+              </p>
+            )}
+          </div>
+        )
+      case 'referrer':
+        if (log.referrer) {
+          try {
+            const referrerUrl = new URL(log.referrer)
+            const domain = referrerUrl.hostname
+            return (
+              <div className='flex flex-col min-w-0'>
+                <p className='text-bold text-small text-default-600 truncate'>
+                  {domain}
+                </p>
+                <p className='text-bold text-tiny text-default-400 truncate'>
+                  {referrerUrl.pathname}
+                </p>
+              </div>
+            )
+          } catch {
+            return (
+              <p className='text-bold text-small text-default-600 truncate'>
+                {log.referrer}
+              </p>
+            )
+          }
+        }
+        return <p className='text-bold text-tiny text-default-400'>Direct</p>
+      case 'time':
+        return (
+          <div className='flex flex-col'>
+            <p className='text-bold text-small text-default-500 whitespace-nowrap'>
+              {formatTimestamp(log.createdAt)}
+            </p>
+            {log.responseTime && (
+              <p className='text-bold text-tiny text-default-400'>
+                {log.responseTime}ms
+              </p>
+            )}
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+  const classNames = React.useMemo(
+    () => ({
+      td: [
+        'first:group-data-[first=true]/tr:before:rounded-none',
+        'last:group-data-[first=true]/tr:before:rounded-none',
+        'group-data-[middle=true]/tr:before:rounded-none',
+        'first:group-data-[last=true]/tr:before:rounded-none',
+        'last:group-data-[last=true]/tr:before:rounded-none',
+      ],
+      tbody: '',
+    }),
+    [],
+  )
+
+  if (logs === undefined) {
+    return (
+      <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
+        <div className='flex items-center justify-center py-8'>
+          <p className='text-sm text-gray-400'>Loading logs...</p>
+        </div>
+      </Card>
+    )
+  }
+
+  if (logs.logs.length === 0) {
+    return (
+      <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
+        <h2 className='text-lg font-semibold font-space mb-4 px-4'>
+          Visit Logs
+        </h2>
+        <div className='flex items-center justify-center py-8'>
+          <p className='text-sm text-gray-400'>No logs yet</p>
+        </div>
+      </Card>
+    )
+  }
+
+  return (
+    <Card
+      shadow='none'
+      radius='none'
+      className={cn(
+        'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden md:rounded-t-2xl md:w-full w-screen overflow-x-scroll',
+        'transition-transform duration-300',
+        {'md:-translate-y-46 -translate-y-42 h-full': fullTable},
+      )}>
+      <div
+        className={cn(
+          'h-lvh md:h-[calc(100lvh-203px)] overflow-scroll transition-transform duration-300',
+        )}>
+        <div className='flex items-end justify-between text-sm font-medium px-3 py-2'>
+          <span>Visit Logs</span>
+        </div>
+        <Table
+          removeWrapper
+          radius='none'
+          classNames={{
+            ...classNames,
+            tbody: 'overflow-hidden rounded-3xl',
+            thead: '',
+            th: 'sticky first:rounded-tl-[12.5px] last:rounded-tr-[12.5px] top-0 bg-white/60 dark:bg-dark-table/5 z-10 backdrop-blur-xl h-8 border-b border-gray-200 dark:border-dark-table',
+          }}
+          aria-label='Visit logs table'>
+          <TableHeader columns={columns}>
+            {(column) => (
+              <TableColumn
+                key={column.uid}
+                align='start'
+                className='tracking-wider text-xs font-medium'>
+                <div className='drop-shadow-xs'>{column.name}</div>
+              </TableColumn>
+            )}
+          </TableHeader>
+          <TableBody emptyContent={'No logs found'} items={logs.logs}>
+            {(log) => (
+              <TableRow
+                key={log._id}
+                className='h-8 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] border-b-light-table last:border-b-0 dark:border-b-dark-table'>
+                {(columnKey) => (
+                  <TableCell>
+                    {renderCell(log, columnKey) as ReactNode}
+                  </TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </Card>
+  )
+}

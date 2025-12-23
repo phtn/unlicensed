@@ -309,6 +309,11 @@ const data: Record<string, NavGroup[]> = {
           url: '/admin/reports/sales',
           icon: 'linalool',
         },
+        {
+          title: 'Analytics',
+          url: '/admin/reports/analytics',
+          icon: 'linalool',
+        },
       ],
     },
     {

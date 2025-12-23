@@ -37,7 +37,7 @@ const PrimaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
       disableAnimation
       variant='bordered'
       className={cn(
-        'text-sm flex items-center p-2 dark:border-origin border-white dark:bg-sidebar bg-light-gray/15 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight -space-x-1.5 shrink-0',
+        'text-sm flex items-center p-2 dark:border-origin border-white dark:bg-sidebar bg-light-gray/15 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight space-x-1.5 shrink-0',
         {
           'text-indigo-500 dark:text-indigo-100 rounded-none bg-transparent dark:bg-transparent dark:hover:bg-transparent px-0':
             tabId === 'new',
@@ -48,7 +48,7 @@ const PrimaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
           'capitalize underline underline-offset-4 decoration-transparent flex',
           {'decoration-indigo-500': isActive},
         )}>
-        {icon && <Icon name={icon} className='size-4.5' />}
+        {icon && <Icon name={icon} className='size-5 mr-1 opacity-80' />}
         <span>{label}</span>
       </span>
     </Button>
