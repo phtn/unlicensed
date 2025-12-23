@@ -1,9 +1,10 @@
 import {api} from '@/convex/_generated/api'
+import {getGeo} from '@/lib/ipapi'
 import {
   getClientIp,
-  getUserAgent,
-  getScreenWidth,
   getScreenHeight,
+  getScreenWidth,
+  getUserAgent,
 } from '@/utils/fingerprint'
 import {parseUserAgent} from '@/utils/user-agent'
 import {ConvexHttpClient} from 'convex/browser'
@@ -150,6 +151,35 @@ async function logVisit(request: NextRequest, startTime: number) {
     // For now, we'll leave it as optional and can be set later via client-side tracking
     const userId = undefined
 
+    // Get geo information (country and city) for the IP address
+    // This will check cache, then Convex, then IPAPI
+    const checkConvexGeo = async (ip: string) => {
+      try {
+        const result = await client.query(api.logs.q.getGeoByIp, {
+          ipAddress: ip,
+        })
+        if (result && result.country && result.city) {
+          return {
+            country: result.country,
+            city: result.city,
+          }
+        }
+        return null
+      } catch (error) {
+        console.warn(`Failed to check Convex for geo data for IP ${ip}:`, error)
+        return null
+      }
+    }
+
+    const geo = await getGeo(ipAddress, checkConvexGeo)
+    
+    // Log if geo lookup failed for debugging
+    if (!geo && ipAddress && ipAddress !== 'unknown') {
+      console.warn(
+        `Failed to get geo data for IP: ${ipAddress}. Check IPAPI configuration.`,
+      )
+    }
+
     // Log the visit
     await client.mutation(api.logs.m.createLog, {
       type: 'page_visit',
@@ -171,6 +201,8 @@ async function logVisit(request: NextRequest, startTime: number) {
       browserVersion: parsedUA.browserVersion,
       os: parsedUA.os,
       osVersion: parsedUA.osVersion,
+      country: geo?.country,
+      city: geo?.city,
       statusCode: 200, // Will be updated if we can capture actual status
       responseTime: responseTime,
       createdAt: Date.now(),

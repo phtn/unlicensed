@@ -201,3 +201,38 @@ export const getVisitStats = query({
   },
 })
 
+/**
+ * Get geo information (country, city) for an IP address from existing logs
+ * Returns the most recent log entry with geo data for the given IP
+ */
+export const getGeoByIp = query({
+  args: {
+    ipAddress: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Query all logs and filter by IP address
+    // Since we don't have an index on ipAddress, we'll scan recent logs
+    const logs = await ctx.db
+      .query('logs')
+      .withIndex('by_created_at')
+      .order('desc')
+      .take(100) // Check last 100 logs for performance
+
+    // Find the most recent log with this IP that has geo data
+    const logWithGeo = logs.find(
+      (log) =>
+        log.ipAddress === args.ipAddress &&
+        (log.country || log.city),
+    )
+
+    if (logWithGeo) {
+      return {
+        country: logWithGeo.country ?? null,
+        city: logWithGeo.city ?? null,
+      }
+    }
+
+    return null
+  },
+})
+

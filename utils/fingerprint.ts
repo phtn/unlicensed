@@ -7,10 +7,19 @@ export function getClientIp(request: Request): string {
   }
 
   if (realIp) {
-    return realIp
+    const cleanIP = extractIP(realIp)
+    return cleanIP
   }
 
   return 'unknown'
+}
+
+function extractIP(rawIP: string): string {
+  // Remove IPv4-mapped IPv6 prefix if present
+  if (rawIP.startsWith('::ffff:')) {
+    return rawIP.substring(7) // Remove '::ffff:' (7 characters)
+  }
+  return rawIP
 }
 
 export function getUserAgent(request: Request): string {
@@ -24,7 +33,9 @@ export function getUserAgent(request: Request): string {
  * @returns Screen width in pixels, or undefined if not available
  */
 export function getScreenWidth(
-  request: Request | {cookies: {get: (name: string) => {value: string} | undefined}},
+  request:
+    | Request
+    | {cookies: {get: (name: string) => {value: string} | undefined}},
 ): number | undefined {
   // Try to get from cookies (NextRequest)
   if ('cookies' in request && request.cookies) {
@@ -58,7 +69,9 @@ export function getScreenWidth(
  * @returns Screen height in pixels, or undefined if not available
  */
 export function getScreenHeight(
-  request: Request | {cookies: {get: (name: string) => {value: string} | undefined}},
+  request:
+    | Request
+    | {cookies: {get: (name: string) => {value: string} | undefined}},
 ): number | undefined {
   // Try to get from cookies (NextRequest)
   if ('cookies' in request && request.cookies) {

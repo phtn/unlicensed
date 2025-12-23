@@ -462,6 +462,30 @@ export const icons = {
     viewBox: '0 0 24 24',
     set: 'lets-icons',
   },
+  phone: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><rect width="12.5" height="18.5" x="5.75" y="2.75" rx="3"/><path d="M11 17.75h2"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'proicons',
+  },
+  tablet: {
+    symbol:
+      '<g fill="none" stroke="currentColor"><rect width="15" height="19" x="4.5" y="2.5" rx="2.5"/><path d="M15 18H9"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lets-icons',
+  },
+  mac: {
+    symbol:
+      '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.75 6.25a3.5 3.5 0 0 1 3.5-3.5h11.5a3.5 3.5 0 0 1 3.5 3.5v8.031a3.5 3.5 0 0 1-3.5 3.5H6.25a3.5 3.5 0 0 1-3.5-3.5zm0 7.75h18.5M9.11 17.781v1.469a2 2 0 0 1-2 2h-.6m8.38-3.469v1.469a2 2 0 0 0 2 2h.6m-10.982 0h10.984"/>',
+    viewBox: '0 0 24 24',
+    set: 'proicons',
+  },
+  pc: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><rect width="18.5" height="15.031" x="2.75" y="2.75" rx="3.5"/><path d="M9.11 17.781v3.469m5.78-3.469v3.469m-8.382 0h10.984"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'proicons',
+  },
 }
 
 /*

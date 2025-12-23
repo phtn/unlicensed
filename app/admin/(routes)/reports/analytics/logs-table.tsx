@@ -7,7 +7,6 @@ import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
 import {
   Card,
-  Chip,
   ChipProps,
   Table,
   TableBody,
@@ -25,19 +24,30 @@ type Log = Doc<'logs'> & {
 }
 
 const columns = [
-  {name: 'PATH', uid: 'path'},
   {name: 'USER', uid: 'user'},
   {name: 'DEVICE', uid: 'device'},
+  {name: 'OS', uid: 'os'},
   {name: 'BROWSER', uid: 'browser'},
-  {name: 'SCREEN', uid: 'screen'},
   {name: 'IP ADDRESS', uid: 'ipAddress'},
+  {name: 'CITY', uid: 'city'},
+  {name: 'COUNTRY', uid: 'country'},
+  {name: 'PATH', uid: 'path'},
   {name: 'REFERRER', uid: 'referrer'},
   {name: 'TIME', uid: 'time'},
 ]
 
-const getDeviceIcon = (deviceType?: string) => {
+const getDeviceIcon = (deviceType?: string): IconName => {
   // Use eye icon for all device types since specific device icons don't exist
-  return 'eye' as IconName
+  switch (deviceType) {
+    case 'mobile':
+      return 'phone'
+    case 'tablet':
+      return 'tablet'
+    case 'desktop':
+      return 'mac'
+    default:
+      return 'pc'
+  }
 }
 
 const getDeviceChipColor = (
@@ -76,11 +86,7 @@ interface LogsTableProps {
   isMobile: boolean
 }
 
-export const LogsTable = ({
-  fullTable,
-  toggleFullTable,
-  isMobile,
-}: LogsTableProps) => {
+export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
   const logs = useQuery(api.logs.q.getLogs, {
     limit: 100,
     type: 'page_visit',
@@ -88,22 +94,6 @@ export const LogsTable = ({
 
   const renderCell = (log: Log, columnKey: React.Key) => {
     switch (columnKey) {
-      case 'path':
-        return (
-          <div className='flex items-center gap-2'>
-            <Icon name='eye' className='w-4 h-4 text-default-400 shrink-0' />
-            <div className='flex flex-col min-w-0'>
-              <p className='text-bold text-small text-foreground truncate'>
-                {log.path}
-              </p>
-              {log.method && (
-                <p className='text-bold text-tiny text-default-500'>
-                  {log.method}
-                </p>
-              )}
-            </div>
-          </div>
-        )
       case 'user':
         if (log.userId && 'user' in log && log.user) {
           const user = log.user as {
@@ -128,21 +118,18 @@ export const LogsTable = ({
         }
         return (
           <div className='flex items-center gap-2'>
-            <div className='flex h-8 w-8 items-center justify-center rounded-full bg-default-100'>
-              <Icon name='eye' className='w-4 h-4 text-default-400' />
-            </div>
             <div className='flex flex-col'>
-              <p className='text-bold text-small text-default-400'>Guest</p>
+              <p className='text-sm opacity-80'>Guest</p>
             </div>
           </div>
         )
       case 'device':
         return (
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center space-x-2'>
             <Icon
               name={getDeviceIcon(log.deviceType)}
               className={cn(
-                'w-4 h-4 shrink-0',
+                'size-6 shrink-0',
                 log.deviceType === 'mobile'
                   ? 'text-primary'
                   : log.deviceType === 'tablet'
@@ -152,13 +139,33 @@ export const LogsTable = ({
                       : 'text-default-400',
               )}
             />
-            <Chip
-              className='capitalize border-none gap-1 text-default-600'
-              color={getDeviceChipColor(log.deviceType)}
-              size='sm'
-              variant='dot'>
-              {log.deviceType || 'unknown'}
-            </Chip>
+            <div className=''>
+              <p className='text-sm capitalize'>
+                {log.deviceType || 'unknown'}
+              </p>
+              {log.screenWidth && log.screenHeight && (
+                <p className='text-xs opacity-50 font-space'>
+                  {log.screenWidth}
+                  <span className='text-xs px-px'>x</span>
+                  {log.screenHeight}
+                </p>
+              )}
+            </div>
+          </div>
+        )
+      case 'os':
+        return (
+          <div className='flex flex-col'>
+            {log.os && (
+              <>
+                <p className='text-sm capitalize'>{log.os}</p>
+                {log.osVersion && (
+                  <p className='text-xs opacity-50 font-space'>
+                    {log.osVersion}
+                  </p>
+                )}
+              </>
+            )}
           </div>
         )
       case 'browser':
@@ -166,9 +173,9 @@ export const LogsTable = ({
           <div className='flex flex-col'>
             {log.browser ? (
               <>
-                <p className='text-bold text-small capitalize'>{log.browser}</p>
+                <p className='text-sm capitalize'>{log.browser}</p>
                 {log.browserVersion && (
-                  <p className='text-bold text-tiny text-default-500'>
+                  <p className='text-xs opacity-50 font-space'>
                     v{log.browserVersion}
                   </p>
                 )}
@@ -178,34 +185,39 @@ export const LogsTable = ({
             )}
           </div>
         )
-      case 'screen':
-        return (
-          <div className='flex flex-col'>
-            {log.os && (
-              <p className='text-tiny'>
-                {log.os}
-                {log.osVersion && ` ${log.osVersion}`}
-              </p>
-            )}
-            <p className='text-sm font-mono opacity-50'>
-              {log.screenWidth}
-              <span className='text-sm px-px'>x</span>
-              {log.screenHeight}
-            </p>
-          </div>
-        )
       case 'ipAddress':
         return (
           <div className='flex flex-col'>
-            <p className='text-bold text-small font-mono text-default-600'>
-              {log.ipAddress}
-            </p>
-            {log.country && (
-              <p className='text-bold text-tiny text-default-500'>
-                {log.country}
-                {log.city && `, ${log.city}`}
-              </p>
+            <p className='text-sm font-space opacity-80'>{log.ipAddress}</p>
+          </div>
+        )
+      case 'city':
+        return (
+          <div className='flex flex-col'>
+            {log.city && log.city !== 'null, null' && (
+              <p className='text-tiny'>{log.city}</p>
             )}
+          </div>
+        )
+      case 'country':
+        return (
+          <div className='flex flex-col'>
+            {log.country && log.country !== 'null null' && (
+              <p className='text-tiny'>{log.country}</p>
+            )}
+          </div>
+        )
+      case 'path':
+        return (
+          <div className='flex items-center gap-2'>
+            <div className='flex flex-col min-w-0'>
+              {log.method && (
+                <p className='font-bold text-tiny'>{log.method}</p>
+              )}
+              <p className='text-bold text-tiny text-default-400 truncate'>
+                {log.path}
+              </p>
+            </div>
           </div>
         )
       case 'referrer':
@@ -234,14 +246,12 @@ export const LogsTable = ({
         return <p className='text-bold text-tiny text-default-400'>Direct</p>
       case 'time':
         return (
-          <div className='flex flex-col'>
-            <p className='text-bold text-small text-default-500 whitespace-nowrap'>
+          <div className='flex flex-col font-space'>
+            <p className='text-sm opacity-80 whitespace-nowrap'>
               {formatTimestamp(log.createdAt)}
             </p>
             {log.responseTime && (
-              <p className='text-bold text-tiny text-default-400'>
-                {log.responseTime}ms
-              </p>
+              <p className='text-xs opacity-50'>{log.responseTime}ms</p>
             )}
           </div>
         )
