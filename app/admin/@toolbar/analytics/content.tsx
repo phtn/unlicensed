@@ -10,7 +10,7 @@ import {PrimaryTab, ToolbarButtonWrapper, ToolbarWrapper} from '../components'
 
 export const AnalyticsTabContent = () => {
   const stats = useQuery(api.logs.q.getVisitStats, {})
-  
+
   return (
     <ToolbarWrapper>
       <Link
@@ -23,7 +23,7 @@ export const AnalyticsTabContent = () => {
           Analytics
         </h1>
         {stats ? (
-          <div className='w-6 flex items-center justify-center aspect-square bg-neutral-200/40 rounded-md font-space'>
+          <div className='w-10 flex items-center justify-center aspect-square bg-neutral-200/40 rounded-md font-space'>
             <AnimatedNumber value={stats?.totalVisits ?? 0} />
           </div>
         ) : (
@@ -47,4 +47,3 @@ export const AnalyticsTabContent = () => {
     </ToolbarWrapper>
   )
 }
-

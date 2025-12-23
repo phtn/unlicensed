@@ -4,7 +4,6 @@ import {PrimaryTab, ToolbarButtonWrapper} from '@/app/admin/@toolbar/components'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
-import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
@@ -32,7 +31,7 @@ const LogsInner = () => {
         </span>
         <span
           className={cn(
-            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
+            'px-1 h-6 w-10 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
             {'bg-blue-500 dark:bg-blue-500 text-white': isLogsRoute},
           )}>
           <AnimatedNumber value={logs?.logs.length ?? 0} />
@@ -66,4 +65,3 @@ export const LogsTab = () => {
     </Suspense>
   )
 }
-

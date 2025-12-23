@@ -29,6 +29,7 @@ const columns = [
   {name: 'USER', uid: 'user'},
   {name: 'DEVICE', uid: 'device'},
   {name: 'BROWSER', uid: 'browser'},
+  {name: 'SCREEN', uid: 'screen'},
   {name: 'IP ADDRESS', uid: 'ipAddress'},
   {name: 'REFERRER', uid: 'referrer'},
   {name: 'TIME', uid: 'time'},
@@ -175,12 +176,22 @@ export const LogsTable = ({
             ) : (
               <p className='text-bold text-tiny text-default-500'>—</p>
             )}
+          </div>
+        )
+      case 'screen':
+        return (
+          <div className='flex flex-col'>
             {log.os && (
-              <p className='text-bold text-tiny text-default-400'>
+              <p className='text-tiny'>
                 {log.os}
                 {log.osVersion && ` ${log.osVersion}`}
               </p>
             )}
+            <p className='text-sm font-mono opacity-50'>
+              {log.screenWidth}
+              <span className='text-sm px-px'>x</span>
+              {log.screenHeight}
+            </p>
           </div>
         )
       case 'ipAddress':
@@ -286,7 +297,7 @@ export const LogsTable = ({
       )}>
       <div
         className={cn(
-          'h-lvh md:h-[calc(100lvh-203px)] overflow-scroll transition-transform duration-300',
+          'h-lvh md:h-[calc(100lvh-64px)] overflow-scroll transition-transform duration-300',
         )}>
         <div className='flex items-end justify-between text-sm font-medium px-3 py-2'>
           <span>Visit Logs</span>

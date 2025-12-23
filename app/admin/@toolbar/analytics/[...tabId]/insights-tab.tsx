@@ -26,7 +26,7 @@ const InsightsInner = () => {
         </span>
         <span
           className={cn(
-            'px-1 h-6 w-6 text-center dark:bg-dark-gray/40 bg-dark-gray/10 rounded-md font-space font-semibold text-white',
+            'px-1 h-6 w-10 text-center dark:bg-dark-gray/40 bg-dark-gray/10 rounded-md font-space font-semibold text-white',
           )}>
           <AnimatedNumber value={uniqueVisitors} />
         </span>

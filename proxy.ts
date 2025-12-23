@@ -1,5 +1,10 @@
 import {api} from '@/convex/_generated/api'
-import {getClientIp, getUserAgent} from '@/utils/fingerprint'
+import {
+  getClientIp,
+  getUserAgent,
+  getScreenWidth,
+  getScreenHeight,
+} from '@/utils/fingerprint'
 import {parseUserAgent} from '@/utils/user-agent'
 import {ConvexHttpClient} from 'convex/browser'
 import {NextRequest, NextResponse} from 'next/server'
@@ -159,6 +164,8 @@ async function logVisit(request: NextRequest, startTime: number) {
       userAgent: userAgent,
       referrer: referrer,
       origin: origin,
+      screenWidth: getScreenWidth(request),
+      screenHeight: getScreenHeight(request),
       deviceType: parsedUA.deviceType,
       browser: parsedUA.browser,
       browserVersion: parsedUA.browserVersion,

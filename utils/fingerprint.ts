@@ -17,19 +17,70 @@ export function getUserAgent(request: Request): string {
   return request.headers.get('user-agent') ?? 'unknown'
 }
 
-// export async function validateActivationToken(
-//   token: string,
-// ): Promise<ValidationResult> {
-// 1. Decode & verify signature
-// const decoded = jwt.verify(token, secret) as ActivationToken
+/**
+ * Extracts screen width from cookies
+ * Screen dimensions are set by client-side ScreenDimensionsTracker component
+ * @param request - The request object (NextRequest for cookies, or Request for headers)
+ * @returns Screen width in pixels, or undefined if not available
+ */
+export function getScreenWidth(
+  request: Request | {cookies: {get: (name: string) => {value: string} | undefined}},
+): number | undefined {
+  // Try to get from cookies (NextRequest)
+  if ('cookies' in request && request.cookies) {
+    const screenWidth = request.cookies.get('x-screen-width')?.value
+    if (screenWidth) {
+      const parsed = Number.parseInt(screenWidth, 10)
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed
+      }
+    }
+  }
 
-// 2. Check replay (Redis for speed)
-// const isUsed = await redis.get(`activation:${decoded.jti}`)
-// if (isUsed) throw new Error('Token already used')
+  // Fallback: try to get from headers (for compatibility)
+  if ('headers' in request) {
+    const screenWidth = request.headers.get('x-screen-width')
+    if (screenWidth) {
+      const parsed = Number.parseInt(screenWidth, 10)
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed
+      }
+    }
+  }
 
-// 3. Check subscription state
-// const sub = await db.subscriptions.findUnique({where: {id: decoded.sub}})
-// if (sub.state === 'activated') throw new Error('Already activated')
+  return undefined
+}
 
-// return {valid: true, decoded, subscription: sub}
-// }
+/**
+ * Extracts screen height from cookies
+ * Screen dimensions are set by client-side ScreenDimensionsTracker component
+ * @param request - The request object (NextRequest for cookies, or Request for headers)
+ * @returns Screen height in pixels, or undefined if not available
+ */
+export function getScreenHeight(
+  request: Request | {cookies: {get: (name: string) => {value: string} | undefined}},
+): number | undefined {
+  // Try to get from cookies (NextRequest)
+  if ('cookies' in request && request.cookies) {
+    const screenHeight = request.cookies.get('x-screen-height')?.value
+    if (screenHeight) {
+      const parsed = Number.parseInt(screenHeight, 10)
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed
+      }
+    }
+  }
+
+  // Fallback: try to get from headers (for compatibility)
+  if ('headers' in request) {
+    const screenHeight = request.headers.get('x-screen-height')
+    if (screenHeight) {
+      const parsed = Number.parseInt(screenHeight, 10)
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed
+      }
+    }
+  }
+
+  return undefined
+}
