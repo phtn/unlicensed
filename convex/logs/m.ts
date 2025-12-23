@@ -11,6 +11,8 @@ function cleanIpAddress(ip: string): string {
   // Remove IPv4-mapped IPv6 prefix if present
   if (ip.startsWith('::ffff:')) {
     return ip.substring(7) // Remove '::ffff:' (7 characters)
+  } else if (ip.startsWith('::')) {
+    return ip.substring(2) // Remove '::' (2 characters)
   }
   return ip
 }
@@ -40,7 +42,7 @@ export const createLog = mutation({
       osVersion: args.osVersion,
       screenWidth: args.screenWidth,
       screenHeight: args.screenHeight,
-      country: args.country,
+      country: transliterate(args.country),
       region: args.region,
       city: transliterate(args.city),
       statusCode: args.statusCode,

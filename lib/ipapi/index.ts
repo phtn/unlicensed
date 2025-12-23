@@ -31,7 +31,7 @@ export async function getGeo(
   }
 
   // Check in-memory cache first
-  const cached = geoCache.get(ip)
+  const cached = ip === '1' ? geoCache.get('161.185.160.93') : geoCache.get(ip)
   if (cached) {
     return cached
   }

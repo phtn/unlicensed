@@ -176,7 +176,7 @@ async function logVisit(request: NextRequest, startTime: number) {
     }
 
     const geo = await getGeo(ipAddress, checkConvexGeo)
-    
+
     // Log if geo lookup failed for debugging
     if (!geo && ipAddress && ipAddress !== 'unknown') {
       console.warn(
