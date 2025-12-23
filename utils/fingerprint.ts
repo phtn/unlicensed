@@ -104,3 +104,12 @@ export function getScreenHeight(
 export function transliterate(text: string): string {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
+export function toEmoji(text: string): string {
+  return text.replace(
+    /U\+([0-9A-Fa-f]+)/g,
+    (match: string, hex: string): string => {
+      const codePoint: number = parseInt(hex, 16)
+      return String.fromCodePoint(codePoint)
+    },
+  )
+}

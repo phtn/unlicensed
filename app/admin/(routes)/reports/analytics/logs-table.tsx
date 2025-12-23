@@ -5,7 +5,7 @@ import type {Doc} from '@/convex/_generated/dataModel'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
-import {transliterate} from '@/utils/fingerprint'
+import {toEmoji} from '@/utils/fingerprint'
 import {
   Card,
   Table,
@@ -203,7 +203,7 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
         return (
           <div className='flex flex-col'>
             {log.country && log.country !== 'null null' && (
-              <p className='text-xs'>{transliterate(log.country)}</p>
+              <p className='text-xs'>{toEmoji(log.country)}</p>
             )}
           </div>
         )

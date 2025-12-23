@@ -86,8 +86,9 @@ export async function proxy(request: NextRequest) {
     '/sitemap.xml',
   ]
 
-  // Skip image and SVG file extensions
-  const imageExtensions = [
+  // Skip static asset file extensions
+  const staticAssetExtensions = [
+    // Images
     '.svg',
     '.png',
     '.jpg',
@@ -100,13 +101,23 @@ export async function proxy(request: NextRequest) {
     '.avif',
     '.heic',
     '.heif',
+    // Fonts
+    '.woff',
+    '.woff2',
+    '.ttf',
+    '.otf',
+    '.eot',
+    // Other assets
+    '.css',
+    '.js',
+    '.map',
   ]
 
-  const isImageAsset = imageExtensions.some((ext) =>
+  const isStaticAsset = staticAssetExtensions.some((ext) =>
     path.toLowerCase().endsWith(ext),
   )
   const shouldSkipPath = skipPaths.some((skipPath) => path.startsWith(skipPath))
-  const shouldSkip = shouldSkipPath || isImageAsset
+  const shouldSkip = shouldSkipPath || isStaticAsset
 
   if (!shouldSkip) {
     // Log visit asynchronously (fire and forget)
@@ -218,15 +229,14 @@ async function logVisit(request: NextRequest, startTime: number) {
 }
 
 export const config = {
-  // Match all request paths except static files and API routes that handle their own logging
+  // Match all request paths except static files, API routes, and Next.js internal requests
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
      * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
+     * - _next (all Next.js internal requests including static, data, image, etc.)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next|favicon.ico).*)',
   ],
 }
