@@ -159,7 +159,7 @@ export default function CartPage() {
     return points
   }, [subtotal, nextVisitMultiplier, isAuthenticated])
 
-  if (!isLoading) {
+  if (isLoading) {
     return (
       <div className='min-h-screen pt-20 lg:pt-28 flex items-start justify-center'>
         <div className='flex items-center space-x-1.5'>

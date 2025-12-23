@@ -1,12 +1,10 @@
 'use client'
 
 import {cancelGoogleOneTap} from '@/components/auth/google-one-tap'
-import {
-  loginWithEmail,
-  loginWithGoogle,
-  signupWithEmail,
-} from '@/lib/firebase/auth'
+import {useToggle} from '@/hooks/use-toggle'
+import {loginWithEmailLink, loginWithGoogle} from '@/lib/firebase/auth'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {
   Button,
   Divider,
@@ -17,7 +15,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@heroui/react'
-import {ChangeEvent, InputHTMLAttributes, useState} from 'react'
+import {ChangeEvent, FormEvent, InputHTMLAttributes, useState} from 'react'
 import {DitherPhoto, ImageDither} from '../paper/dithering'
 
 interface AuthModalProps {
@@ -33,24 +31,26 @@ export const AuthModal = ({
 }: AuthModalProps) => {
   const [isLogin] = useState(mode === 'login')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [emailSent, setEmailSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [, setError] = useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e: FormEvent) => {
+    console.log(e)
+    console.log(email, isLogin)
     setError(null)
     setLoading(true)
 
     try {
       if (isLogin) {
-        await loginWithEmail(email, password)
-      } else {
-        await signupWithEmail(email, password)
+        const link = await loginWithEmailLink(email, window.location.href)
+        console.log('[email link triggered]', email)
+        if (link) {
+          setEmailSent(true)
+        }
       }
       onClose()
       setEmail('')
-      setPassword('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -75,6 +75,8 @@ export const AuthModal = ({
     }
   }
 
+  const {on: isEmail, toggle: toggleEmail} = useToggle()
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} placement='center' size='md'>
       <ModalContent className='rounded-4xl dark:border border-light-gray/80 w-96'>
@@ -89,25 +91,91 @@ export const AuthModal = ({
         </ModalHeader>
         <form onSubmit={handleSubmit}>
           <ModalBody>
-            <div className='flex items-center h-80 justify-center'></div>
+            <div
+              onClick={toggleEmail}
+              className='flex items-center h-80 justify-center'></div>
           </ModalBody>
           <ModalFooter>
-            <div className='flex items-center justify-end w-full py-2'>
-              <Button
-                size='lg'
-                type='button'
-                variant='solid'
-                className='bg-black/80 backdrop-blur-2xl w-fit text-white'
-                onPress={handleGoogleLogin}
-                startContent={
+            {isEmail ? (
+              <div className='flex items-start justify-between space-x-2 w-full py-2'>
+                <Input
+                  size='lg'
+                  fullWidth
+                  type='email'
+                  inputMode='email'
+                  onChange={(e) => {
+                    e.preventDefault()
+                    setEmail(e.target.value)
+                  }}
+                  className='placeholder:text-white text-white! dark:text-white! flex w-full'
+                  classNames={{
+                    inputWrapper:
+                      'bg-black/80! dark:bg-black/80 backdrop-blur-2xl w-full text-white!',
+                    input:
+                      'bg-black/80 selection:bg-featured focus-within:bg-black/80 placeholder:text-white text-white! dark:text-white! w-full text-xl',
+                    errorMessage:
+                      'p-2 bg-red-500/10 max-w-[25ch] rounded trucate text-foreground',
+                  }}
+                  startContent={
+                    <Icon
+                      onClick={toggleEmail}
+                      name={email === '' ? 'x' : 'email'}
+                      className='size-6'
+                    />
+                  }
+                />
+                <Button
+                  size='lg'
+                  isIconOnly
+                  type='submit'
+                  variant='solid'
+                  disabled={email === ''}
+                  className={cn(
+                    'bg-black/80 backdrop-blur-2xl flex-1 text-white',
+                    {'bg-black/50': email === ''},
+                  )}>
                   <Icon
-                    name={loading ? 'spinners-ring' : 'google'}
-                    className='size-5'
+                    name={
+                      loading
+                        ? 'spinners-ring'
+                        : emailSent
+                          ? 'check-fill'
+                          : 'chevron-right'
+                    }
+                    className={cn('size-5', {
+                      'text-orange-400': loading,
+                      'text-emerald-500': emailSent,
+                    })}
                   />
-                }>
-                Continue with Google
-              </Button>
-            </div>
+                </Button>
+              </div>
+            ) : (
+              <div className='flex items-center justify-between space-x-2 w-full py-2'>
+                <Button
+                  size='lg'
+                  type='button'
+                  variant='flat'
+                  onPress={toggleEmail}
+                  startContent={<Icon name='email' className='size-5' />}
+                  className='bg-black/80 backdrop-blur-2xl w-fit text-white'>
+                  Email
+                </Button>
+                <Button
+                  size='lg'
+                  type='button'
+                  variant='solid'
+                  className='bg-black/80 backdrop-blur-2xl w-fit text-white'
+                  onPress={handleGoogleLogin}
+                  startContent={
+                    <Icon
+                      name={loading ? 'spinners-ring' : 'google'}
+                      className='size-5'
+                    />
+                  }>
+                  Continue with Google
+                </Button>
+              </div>
+            )}
           </ModalFooter>
         </form>
       </ModalContent>

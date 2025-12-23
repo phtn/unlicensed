@@ -274,7 +274,7 @@ export const ProductDetailContent = ({
 
   return (
     <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-10 sm:py-8 lg:py-20 overflow-x-hidden w-full'>
-      <section className='md:mx-auto lg:max-w-7xl max-w-screen px-4 pt-6 sm:pt-8 lg:pt-10 sm:px-6 lg:px-0'>
+      <section className='md:mx-auto lg:max-w-7xl max-w-screen p-4 sm:pt-8 lg:pt-10 sm:px-6 lg:px-0'>
         <Breadcrumbs
           aria-label='Product breadcrumb'
           className='text-xs sm:text-sm text-color-muted'
@@ -290,7 +290,7 @@ export const ProductDetailContent = ({
           </BreadcrumbItem>
           <BreadcrumbItem>{product.name}</BreadcrumbItem>
         </Breadcrumbs>
-        <div className='mt-0 sm:mt-8 lg:mt-6 grid gap-6 sm:gap-8 lg:gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
+        <div className='mt-2 sm:mt-8 lg:mt-6 grid gap-6 sm:gap-8 lg:gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
           <Gallery
             product={product}
             imageRef={galleryImageRef}

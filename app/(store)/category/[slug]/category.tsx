@@ -79,8 +79,8 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
 
       {/* Case Studies Grid */}
       <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
-        <div className='max-w-7xl mx-auto rounded-4xl py-4 px-6 bg-sidebar'>
-          <h2 className='text-2xl sm:text-2xl font-medium font-bone dark:text-featured text-featured tracking-tight mb-6 sm:mb-8'>
+        <div className='max-w-7xl mx-auto rounded-4xl py-4 px-6 bg-sidebar/40 dark:bg-sidebar'>
+          <h2 className='text-2xl sm:text-2xl font-medium font-bone dark:text-featured tracking-tight mb-6 sm:mb-8'>
             Bestsellers
           </h2>
           <div className='grid md:grid-cols-4 gap-4 sm:gap-6 lg:gap-0 w-full'>
@@ -91,11 +91,11 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
                 prefetch={true}
                 className='group/item cursor-pointer w-full'>
                 {/* Product Image */}
-                <div className='relative flex items-center justify-center bg-transparent rounded-t-2xl sm:rounded-t-3xl overflow-hidden h-40 sm:h-64 lg:h-54'>
+                <div className='relative flex items-center justify-center bg-transparent rounded-t-2xl sm:rounded-t-3xl overflow-hidden h-50 sm:h-64 lg:h-54'>
                   <Image
                     src={product.image ?? undefined}
                     alt={product.name}
-                    className='mask mask-parallelogram size-50 py-4 shrink-0 aspect-auto object-contain'
+                    className='mask mask-parallelogram size-50 aspect-square shrink-0 object-cover'
                     loading='lazy'
                   />
                   <div
