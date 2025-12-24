@@ -5,7 +5,7 @@ import {api} from '@/convex/_generated/api'
 import {Doc, Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {adaptProduct} from '@/lib/convexClient'
+import {adaptProduct, RawProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody, Image} from '@heroui/react'
@@ -37,7 +37,7 @@ export const RecommendedProducts = () => {
         const productId = rawProduct._id
         return {
           rawId: productId,
-          product: adaptProduct(rawProduct as any),
+          product: adaptProduct(rawProduct as RawProduct),
         }
       })
       .filter(({rawId, product}) => {
@@ -71,7 +71,9 @@ export const RecommendedProducts = () => {
       await addItem(
         product._id,
         1,
-        product.popularDenomination?.[0] || product.availableDenominations?.[0] || 1,
+        product.popularDenomination?.[0] ||
+          product.availableDenominations?.[0] ||
+          1,
       )
     } catch (error) {
       console.error('Failed to add product to cart:', error)
@@ -89,12 +91,15 @@ export const RecommendedProducts = () => {
             key={product._id}
             className='rounded-xl bg-light-gray/15 dark:bg-teal-600 border border-dark-gray/50 dark:border-light-gray'
             shadow='none'>
-            <CardBody className='p-6'>
+            <CardBody className='p-2 md:p-6'>
               <div className='flex gap-4 items-center'>
                 <div className='relative w-24 h-24 shrink-0 rounded-lg overflow-hidden bg-secondary/10'>
                   {product.image ? (
                     <Image
-                      src={resolveUrl(product.image) || '/default-product-image.svg'}
+                      src={
+                        resolveUrl(product.image) ||
+                        '/default-product-image.svg'
+                      }
                       alt={product.name}
                       className='w-full h-full object-cover'
                     />
@@ -108,21 +113,22 @@ export const RecommendedProducts = () => {
                   <h3 className='font-semibold text-xl truncate'>
                     {product.name}
                   </h3>
-                  <p className='text-xs text-muted-foreground dark:text-white'>
-                    {product.unit}
-                  </p>
-                  <p className='text-base mt-1 font-space'>
-                    ${formatPrice(product.priceCents)}
-                  </p>
+
+                  <div className='flex items-center justify-between'>
+                    <p className='text-base mt-1 font-space'>
+                      ${formatPrice(product.priceCents)}
+                    </p>
+
+                    <Button
+                      size='sm'
+                      variant='flat'
+                      className='font-medium shrink-0'
+                      startContent={<Icon name='plus' className='size-4' />}
+                      onPress={() => handleAddToCart(product)}>
+                      Add<span className='md:flex hidden'> to your order</span>
+                    </Button>
+                  </div>
                 </div>
-                <Button
-                  size='sm'
-                  variant='flat'
-                  className='font-medium shrink-0'
-                  startContent={<Icon name='plus' className='size-4' />}
-                  onPress={() => handleAddToCart(product)}>
-                  Add to your order
-                </Button>
               </div>
             </CardBody>
           </Card>

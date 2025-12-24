@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.0
+
+### Minor Changes
+
+- strain-finder
+
 ## 0.12.1
 
 ### Patch Changes

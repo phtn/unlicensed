@@ -19,11 +19,13 @@ const geoCache = new Map<string, Geo>()
  * First checks in-memory cache, then Convex database, and finally IPAPI
  * @param ip - IP address to query
  * @param checkConvex - Optional function to check Convex for existing geo data
+ * @param enabled - Whether IPAPI geolocation is enabled (defaults to true for backward compatibility)
  * @returns Geo information (country and city) or null if not found
  */
 export async function getGeo(
   ip: string,
   checkConvex?: (ip: string) => Promise<Geo | null>,
+  enabled: boolean = true,
 ): Promise<Geo | null> {
   // Skip if IP is invalid
   if (!ip || ip === 'unknown') {
@@ -49,6 +51,11 @@ export async function getGeo(
       // Silently fail and continue to IPAPI
       console.warn('Failed to check Convex for geo data:', error)
     }
+  }
+
+  // If IPAPI geolocation is disabled, return null without calling the API
+  if (!enabled) {
+    return null
   }
 
   // Fetch from IPAPI

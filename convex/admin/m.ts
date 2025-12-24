@@ -240,3 +240,70 @@ export const updatePayGateSettings = mutation({
     return {success: true}
   },
 })
+
+/**
+ * Seed IPAPI geolocation setting (idempotent - safe to call multiple times)
+ * Creates the setting with enabled: false if it doesn't exist
+ */
+export const ensureIpapiGeolocationSeeded = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Check if ipapiGeolocation setting already exists
+    const existing = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'ipapiGeolocation'))
+      .unique()
+
+    if (existing) {
+      return {success: true, message: 'ipapiGeolocation setting already exists'}
+    }
+
+    // Create new setting with enabled: false
+    await ctx.db.insert('adminSettings', {
+      identifier: 'ipapiGeolocation',
+      value: {enabled: false},
+      updatedAt: Date.now(),
+      createdAt: Date.now(),
+      createdBy: 'ensureIpapiGeolocationSeeded',
+    })
+
+    return {success: true, message: 'Created new ipapiGeolocation setting'}
+  },
+})
+
+/**
+ * Update IPAPI geolocation enabled status
+ */
+export const updateIpapiGeolocationEnabled = mutation({
+  args: {
+    enabled: v.boolean(),
+  },
+  handler: async (ctx, {enabled}) => {
+    let settings = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'ipapiGeolocation'))
+      .unique()
+
+    if (!settings) {
+      // Create new setting if it doesn't exist
+      await ctx.db.insert('adminSettings', {
+        identifier: 'ipapiGeolocation',
+        value: {enabled},
+        updatedAt: Date.now(),
+        createdAt: Date.now(),
+        createdBy: 'updateIpapiGeolocationEnabled',
+      })
+    } else {
+      // Update existing setting
+      await ctx.db.patch(settings._id, {
+        value: {
+          ...(settings.value ?? {}),
+          enabled,
+        },
+        updatedAt: Date.now(),
+      })
+    }
+
+    return {success: true}
+  },
+})

@@ -283,8 +283,8 @@ const data: Record<string, NavGroup[]> = {
       url: '/admin/suppliers',
       items: [
         {
-          title: 'Logistics',
-          url: '/admin/suppliers/logistics',
+          title: 'Couriers',
+          url: '/admin/suppliers/couriers',
           icon: 'linalool',
         },
       ],

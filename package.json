@@ -1,6 +1,6 @@
 {
   "name": "hyfe",
-  "version": "0.12.1",
+  "version": "0.13.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -37,6 +37,7 @@
     "embla-carousel-react": "^8.6.0",
     "firebase": "^12.6.0",
     "firebase-admin": "^13.6.0",
+    "flags": "^4.0.2",
     "leva": "^0.10.1",
     "lucide-react": "^0.553.0",
     "motion": "^12.23.26",

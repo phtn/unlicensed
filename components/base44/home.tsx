@@ -71,7 +71,7 @@ export const NewHome = () => {
         </Suspense>
       </Activity>
       <ShopFinder />
-      <div className='h-16 bg-linear-to-b from-emerald-800/30 via-emerald-600/10 to-transparent w-full'></div>
+      <div className='h-16 bg-linear-to-b dark:from-emerald-800/30 dark:via-emerald-600/10 dark:to-transparent w-full'></div>
     </div>
   )
 }

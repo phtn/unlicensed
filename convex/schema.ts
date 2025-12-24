@@ -6,6 +6,7 @@ import {blogSchema} from './blogs/d'
 import {cartSchema} from './cart/d'
 import {categorySchema} from './categories/d'
 import {courierSchema} from './couriers/d'
+import {emailSettingsSchema} from './emailSettings/d'
 import {logSchema} from './logs/d'
 import {orderSchema} from './orders/d'
 import {productSchema} from './products/d'
@@ -55,4 +56,8 @@ export default defineSchema({
     .index('by_user', ['userId'])
     .index('by_path', ['path'])
     .index('by_created_at', ['createdAt']),
+  emailSettings: defineTable(emailSettingsSchema)
+    .index('by_title', ['title'])
+    .index('by_intent', ['intent'])
+    .index('by_group', ['group']),
 })

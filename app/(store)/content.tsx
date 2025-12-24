@@ -16,11 +16,13 @@ import {StrainFinderMini} from './strain-finder'
 interface StorefrontPageProps {
   initialCategories: StoreCategory[]
   initialProducts: StoreProduct[]
+  delay?: number
 }
 
 export const Content = ({
   initialCategories,
   initialProducts,
+  delay,
 }: StorefrontPageProps) => {
   const categoriesQuery = useQuery(api.categories.q.listCategories, {})
   const productsQuery = useQuery(api.products.q.listProducts, {})
@@ -39,7 +41,12 @@ export const Content = ({
   )
 
   return (
-    <div className='space-y-40 bg-background'>
+    <div className='space-y-40  flex-1'>
+      {delay !== undefined && delay > 0 && (
+        <div className='fixed bottom-4 right-4 z-50 rounded-lg bg-blue-500/90 text-white px-4 py-2 text-sm font-medium shadow-lg backdrop-blur-sm'>
+          ⏱️ Delay: {delay}ms
+        </div>
+      )}
       <NewHome />
       <FeaturedProducts featuredProducts={featuredProducts} />
 

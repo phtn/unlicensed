@@ -173,8 +173,18 @@ async function logVisit(request: NextRequest, startTime: number) {
     // For now, we'll leave it as optional and can be set later via client-side tracking
     const userId = undefined
 
+    // Check if IPAPI geolocation is enabled
+    let ipapiEnabled = false
+    try {
+      ipapiEnabled = await client.query(api.admin.q.getIpapiGeolocationEnabled, {})
+    } catch (error) {
+      // If query fails, default to false (disabled) to be safe
+      console.warn('Failed to check IPAPI geolocation setting, defaulting to disabled:', error)
+      ipapiEnabled = false
+    }
+
     // Get geo information (country and city) for the IP address
-    // This will check cache, then Convex, then IPAPI
+    // This will check cache, then Convex, then IPAPI (if enabled)
     // Note: IP is already cleaned before this call
     const checkConvexGeo = async (ip: string) => {
       try {
@@ -194,7 +204,7 @@ async function logVisit(request: NextRequest, startTime: number) {
       }
     }
 
-    const geo = await getGeo(ipAddress, checkConvexGeo)
+    const geo = await getGeo(ipAddress, checkConvexGeo, ipapiEnabled)
 
     // Log if geo lookup failed for debugging
     if (!geo && ipAddress && ipAddress !== 'unknown') {

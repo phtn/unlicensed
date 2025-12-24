@@ -5,6 +5,28 @@
 @custom-variant dark (&:where(.dark, .dark *));
 /*@custom-variant dark (&:is(.dark *));*/
 
+@font-face {
+  font-family: 'PolySans';
+  src: url('/fonts/PolySansTrial-BulkyWide.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'PolySans';
+  src: url('/fonts/PolySansTrial-NeutralWide.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'PolySans';
+  src: url('/fonts/PolySansTrial-Slim.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme inline {
   --radius: 0.625rem;
   --color-background: var(--background);
@@ -27,6 +49,7 @@
   --font-fugaz: var(--font-fugaz);
   --font-sans: var(--font-sans);
   --font-bone: var(--font-bone);
+  --font-polysans: 'PolySans', Arial, Helvetica, sans-serif;
 
   /* Effects, Flavors, Terpenes */
   --color-flavors: oklch(0.783 0.168 66.2);
@@ -83,7 +106,7 @@
   --secondary-foreground: oklch(0.3 0.04 167.17);
   --tertiary: oklch(0.7 0.141 49.39);
   --tertiary-foreground: oklch(0.243 0.027 220.39);
-  --sidebar: oklch(0.28 0.003 286.35);
+  --sidebar: oklch(0.348 0.021 277.79 / 0.6);
   /*--fade: oklch(0.205 0 0);*/
   --sidebar-foreground: oklch(0.985 0 0);
   --panel: oklch(0.13 0.019 269.8);

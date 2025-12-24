@@ -382,6 +382,21 @@ export default async function init(ctx: SetupContext) {
     }
   }
 
+  // Seed IPAPI geolocation setting (enabled: false by default)
+  const existingIpapiSetting = allAdminSettings.find(
+    (s) => s.identifier === 'ipapiGeolocation',
+  )
+
+  if (!existingIpapiSetting) {
+    await ctx.db.insert('adminSettings', {
+      identifier: 'ipapiGeolocation',
+      value: {enabled: false},
+      updatedAt: Date.now(),
+      createdAt: Date.now(),
+      createdBy: 'init-script',
+    })
+  }
+
   // Seed categories and products (only if they don't exist)
   const existing = await ctx.db.query('categories').take(1)
   if (existing.length > 0) {

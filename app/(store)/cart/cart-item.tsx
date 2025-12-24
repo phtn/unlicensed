@@ -62,8 +62,8 @@ export const CartItem = ({
         className,
       )}>
       <CardBody>
-        <div className='flex gap-4'>
-          <div className='relative w-28 h-28 shrink-0 rounded-lg overflow-hidden'>
+        <div className='flex md:gap-4'>
+          <div className='relative size-24 md:w-28 md:h-28 shrink-0 rounded-lg overflow-hidden'>
             <Image
               src={productImageUrl ?? undefined}
               alt={item.product.name}

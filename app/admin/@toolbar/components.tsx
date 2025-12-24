@@ -37,7 +37,7 @@ const PrimaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
       disableAnimation
       variant='bordered'
       className={cn(
-        'text-sm flex items-center p-2 dark:border-origin border-white dark:bg-sidebar bg-light-gray/15 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight space-x-1.5 shrink-0',
+        'text-sm flex items-center p-2 dark:border-origin border-white dark:bg-sidebar bg-light-gray/25 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight space-x-1.5 shrink-0',
         {
           'text-indigo-500 dark:text-indigo-100 rounded-none bg-transparent dark:bg-transparent dark:hover:bg-transparent px-0':
             tabId === 'new',
@@ -78,7 +78,7 @@ const SecondaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
       disableAnimation
       size='sm'
       className={cn(
-        'text-sm dark:border-origin border-white bg-white dark:bg-transparent hover:bg-light-gray/15 -space-x-1.5',
+        'text-sm dark:border-origin border-white bg-white dark:bg-transparent hover:bg-foreground/25 -space-x-1.5',
         {
           'text-blue-500 dark:text-blue-100 rounded-none bg-transparent hover:bg-white dark:hover:bg-transparent -space-x-1.5':
             tabId === 'badges',

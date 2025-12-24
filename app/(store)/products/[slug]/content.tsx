@@ -297,7 +297,7 @@ export const ProductDetailContent = ({
             productId={detailQuery?.product?._id ?? product._id}
             isMobile={isMobile}
           />
-          <div className='space-y-6 sm:space-y-8 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue dark:bg-pink-100/10 p-4 sm:p-5 lg:p-6 backdrop-blur-xl w-full'>
+          <div className='space-y-6 sm:space-y-8 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue dark:bg-dark-table/50 p-4 sm:p-5 lg:p-6 backdrop-blur-xl w-full'>
             <div className='flex flex-col gap-4 sm:gap-5'>
               <div className='flex items-center justify-between gap-2 pb-4 md:w-full'>
                 <StatChip value={category?.name ?? product.categorySlug} />
@@ -375,7 +375,7 @@ export const ProductDetailContent = ({
                           className={cn(
                             'cursor-pointer rounded-full border border-foreground/20 portrait:px-px',
                             {
-                              'bg-dark-gray dark:bg-white dark:border-foreground text-featured dark:text-background hover:bg-foreground hover:text-background':
+                              'bg-dark-gray dark:bg-white dark:border-foreground text-white dark:text-dark-gray hover:bg-black dark:hover:bg-featured dark:hover:text-black hover:text-featured':
                                 selectedDenomination === i,
                             },
                           )}>
@@ -400,7 +400,7 @@ export const ProductDetailContent = ({
                     color='success'
                     variant='solid'
                     disableRipple
-                    className='w-full font-semibold text-lg h-14 bg-linear-to-r from-featured via-featured to-featured dark:text-black font-sans'
+                    className='w-full font-polysans font-normal text-base md:text-lg h-14 bg-linear-to-r from-featured via-featured to-featured dark:text-black'
                     onPress={handleAddToCart}
                     isDisabled={isPending}>
                     <span>Add to Cart</span>
@@ -415,7 +415,7 @@ export const ProductDetailContent = ({
                   size='lg'
                   variant='solid'
                   href='/cart'
-                  className='w-full sm:flex-1 h-14 font-space font-semibold text-lg bg-foreground/95 text-background'>
+                  className='w-full sm:flex-1 h-14 font-polysans font-normal text-base md:text-lg bg-foreground/95 text-white dark:text-dark-gray'>
                   <span>Checkout</span>
                 </Button>
               </div>

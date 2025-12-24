@@ -442,7 +442,7 @@ export const Media = ({form, fields}: MediaProps) => {
                             isPrimary
                               ? 'border-2 border-blue-500'
                               : 'border-2 border-foreground/20 bg-background'
-                          }`}>
+                          } ${primaryImageValue ? 'flex' : 'hidden'}`}>
                           {preview ? (
                             <Image
                               src={preview}

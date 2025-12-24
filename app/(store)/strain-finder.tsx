@@ -11,7 +11,7 @@ export const StrainFinderMini = ({categories}: Props) => {
     <section
       id='finder'
       className='mx-auto w-full max-w-7xl pt-20 px-4 sm:px-6 lg:px-8'>
-      <div className='rounded-[36px] bg-slate-200 dark:bg-pink-100/10 border border-foreground/20 sm:px-12 sm:py-16 transition-colors p-12'>
+      <div className='rounded-[36px] bg-slate-200 dark:bg-dark-table/50 border border-foreground/20 sm:px-12 sm:py-16 transition-colors p-12'>
         <div className='grid gap-12 lg:grid-cols-5 lg:items-center'>
           <div className='space-y-10 lg:col-span-3'>
             <Chip
@@ -29,7 +29,7 @@ export const StrainFinderMini = ({categories}: Props) => {
               potency level. Our guided strain finder crafts a trio of
               recommendations matched to your vibe.
             </p>
-            <div className='flex flex-wrap gap-3 text-sm'>
+            <div className='hidden _flex flex-wrap gap-3 text-sm'>
               {[
                 'Mood-based curation',
                 'Terpene-forward suggestions',
@@ -44,7 +44,7 @@ export const StrainFinderMini = ({categories}: Props) => {
             </div>
             <Button
               as={NextLink}
-              href='#'
+              href='/strain-finder'
               radius='full'
               variant='solid'
               className='cta-button w-fit px-8 py-5 text-sm font-semibold uppercase tracking-[0.35em]'>

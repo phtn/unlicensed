@@ -1,4 +1,5 @@
 import {Tag} from '@/components/base44/tag'
+import {useToggle} from '@/hooks/use-toggle'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Image} from '@heroui/react'
@@ -183,29 +184,38 @@ const Slide = ({
   // product,
   // variantOptions,
 }: Highlight) => {
+  const {on: navigating, toggle} = useToggle()
   return (
     <div className='relative min-w-full flex-[0_0_100%] px-6 md:snap-start md:snap-always'>
       <div className=''>
         <div className='grid lg:grid-cols-2 gap-12 items-center'>
           <div>
             <Tag text={tag} />
-            <span>{title}</span>
-            <p className='hidden md:flex text-lg opacity-70 mb-10 max-w-[38ch] leading-relaxed'>
+            {title}
+            <p className='hidden md:flex text-base opacity-70 mb-12 max-w-[38ch] leading-relaxed'>
               {description}
             </p>
-
             <div className='flex items-center md:gap-4 lg:gap-5 relative z-100'>
               <Button
-                as='a'
+                as={Link}
                 href={ctaHref}
-                className='hidden md:flex bg-dark-gray dark:bg-white dark:hover:text-background hover:bg-brand/80 hover:text-foreground text-white dark:text-brand font-medium px-6 py-3'>
+                variant='solid'
+                className='hidden md:flex dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-brand hover:text-white text-white font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                 {ctaText}
               </Button>
               <Button
-                variant='flat'
-                className='hidden md:flex items-center gap-2'>
-                <span>Strain Finder</span>
-                <Icon name='search' className='w-4 h-4' />
+                size='lg'
+                as={Link}
+                href={'/strain-finder'}
+                prefetch
+                onPress={toggle}
+                variant='light'
+                className='hidden border dark:border-dark-gray sm:flex items-center gap-2 dark:text-brand font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
+                <span className='tracking-tight'>Strain Finder</span>
+                <Icon
+                  name={navigating ? 'spinners-ring' : 'search-magic'}
+                  className='w-3 h-3 sm:w-4 sm:h-4 dark:text-white'
+                />
               </Button>
             </div>
           </div>

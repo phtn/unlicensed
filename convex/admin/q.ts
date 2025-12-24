@@ -158,3 +158,24 @@ export const getAdminByIdentifier = query({
     return null
   },
 })
+
+/**
+ * Get IPAPI geolocation setting
+ * Returns whether IPAPI geolocation is enabled (defaults to false if not set)
+ */
+export const getIpapiGeolocationEnabled = query({
+  args: {},
+  handler: async ({db}): Promise<boolean> => {
+    const setting = await db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'ipapiGeolocation'))
+      .unique()
+
+    if (setting?.value && typeof setting.value === 'object' && 'enabled' in setting.value) {
+      return Boolean(setting.value.enabled)
+    }
+
+    // Default to false if not set
+    return false
+  },
+})

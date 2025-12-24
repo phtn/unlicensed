@@ -19,6 +19,7 @@ import {
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
+import {usePathname} from 'next/navigation'
 import {useCallback, useEffect} from 'react'
 import {ThemeToggle} from '../ui/theme-toggle'
 
@@ -30,6 +31,7 @@ export const Nav = ({children}: NavProps) => {
   const {user, loading: authLoading} = useAuth()
   const {cartItemCount, isAuthenticated} = useCart()
   const {isOpen, onOpen, onClose} = useDisclosure()
+  const route = usePathname().split('/').pop()
   const {
     isOpen: isCartDrawerOpen,
     onOpen: onCartDrawerOpen,
@@ -77,12 +79,18 @@ export const Nav = ({children}: NavProps) => {
               className='h-44 w-auto dark:text-brand text-brand'
             />
           </Link>
-          <nav className='flex items-center justify-center md:w-full'>
-            <Link
-              href={'/'}
-              className='hidden text-sm lg:text-lg text-gray-100 hover:text-brand md:flex font-fugaz'>
-              Shop
-            </Link>
+          <nav className='flex items-center justify-center w-fit'>
+            {route === 'strain-finder' ? (
+              <div className='hidden md:flex font-polysans font-normal bg-white text-base text-black px-4 py-0.5 rounded-full'>
+                Strain Finder
+              </div>
+            ) : (
+              <Link
+                href={'/'}
+                className='hidden text-sm lg:text-lg text-gray-100 hover:text-brand md:flex font-fugaz'>
+                Shop
+              </Link>
+            )}
             {children}
           </nav>
           <div className='flex w-fit gap-5 md:w-72 items-center justify-between'>
@@ -112,7 +120,9 @@ export const Nav = ({children}: NavProps) => {
               key={`cart-badge-${cartItemCount}`}
               content={
                 cartItemCount > 0 ? (
-                  <div className='flex items-center justify-center rounded-full py-0.5 px-0.5 md:mx-0 size-5 aspect-square'>
+                  <div
+                    suppressHydrationWarning
+                    className='flex items-center justify-center rounded-full py-0.5 px-0.5 md:mx-0 size-5 aspect-square'>
                     <span className='font-space font-semibold text-base text-white leading-none'>
                       {cartItemCount}
                     </span>

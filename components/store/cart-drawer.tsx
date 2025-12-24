@@ -111,9 +111,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     <Drawer.Root open={open} onOpenChange={onOpenChange} direction='right'>
       <Drawer.Portal>
         <Drawer.Overlay className='fixed inset-0 bg-slate-800/60 backdrop-blur-1 z-50' />
-        <Drawer.Content className='z–200 border-l-[0.33px] border-foreground/20 bg-background flex flex-col h-full w-[400px] fixed bottom-0 right-0 z-70'>
+        <Drawer.Content className='z–200 border-l-[0.33px] border-foreground/20 bg-background flex flex-col h-full md:w-[400px] w-full fixed bottom-0 right-0 z-70'>
           <div className='p-4 bg-background flex-1 overflow-auto'>
-            <div className='flex items-center justify-end space-x-6'>
+            <div className='hidden _flex items-center justify-end space-x-6'>
               <Button isIconOnly variant='solid'>
                 <Icon
                   name='fullscreen'
@@ -155,7 +155,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   {cartItems.map((item) => {
                     const product = item.product
                     const denomination = item.denomination || 1
-                    const itemPrice = ((product.priceCents ?? 0) * denomination)
+                    const itemPrice = (product.priceCents ?? 0) * denomination
                     const totalPrice = itemPrice * item.quantity
                     const productImageUrl = resolveUrl(product.image ?? '')
 
@@ -165,7 +165,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                         className='flex gap-4 p-3 bg-surface-highlight border-b border-foreground/25 border-dashed last:border-b-0 pb-6'>
                         <div className='relative w-20 h-20 shrink-0 rounded-lg overflow-hidden'>
                           <Image
-                            src={productImageUrl || '/default-product-image.svg'}
+                            src={
+                              productImageUrl || '/default-product-image.svg'
+                            }
                             alt={product.name}
                             className='w-full h-full object-cover'
                           />
@@ -310,16 +312,15 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   </div>
                 </div>
 
-                <div className='mx-auto mb-2 px-4'>
+                <div className='mx-auto mb-3 px-4'>
                   <Button
                     size='lg'
-                    variant='shadow'
-                    className='w-full h-14 font-semibold mb-2 bg-featured'
+                    className='w-full sm:flex-1 h-15 font-polysans font-normal text-lg bg-foreground/95 text-white dark:text-dark-gray'
                     onPress={() => {
                       onOpenChange(false)
                       router.push('/cart')
                     }}>
-                    <span className='text-white font-bold font-space text-lg'>
+                    <span className='font-bold font-space text-lg'>
                       Checkout
                     </span>
                   </Button>
