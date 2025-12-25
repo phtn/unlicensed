@@ -1,6 +1,7 @@
 'use client'
 
 import {PrimaryTab, ToolbarButtonWrapper} from '@/app/admin/@toolbar/components'
+import {PageTitle} from '@/app/admin/_components/ui/page-title'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
@@ -20,12 +21,7 @@ const CategoryContentInner = () => {
         href='/admin/inventory/category'
         prefetch
         className='flex items-center space-x-4 group'>
-        <span
-          className={cn(
-            'group-hover:underline underline-offset-4 decoration-dotted decoration-[0.5px] decoration-foreground/60 tracking-tighter font-medium text-base',
-          )}>
-          Categories
-        </span>
+        <PageTitle>Categories</PageTitle>
         <span
           className={cn(
             'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
@@ -50,7 +46,10 @@ const CategoryContentInner = () => {
 
 export const CategoryContent = () => {
   return (
-    <Suspense fallback={<div className='flex text-base items-center justify-between w-full px-2' />}>
+    <Suspense
+      fallback={
+        <div className='flex text-base items-center justify-between w-full px-2' />
+      }>
       <CategoryContentInner />
     </Suspense>
   )

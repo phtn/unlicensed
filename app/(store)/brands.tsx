@@ -50,14 +50,14 @@ export const Brands = ({columnCount = 2}: {columnCount?: number}) => {
   // Render the logo columns
 
   return (
-    <div className='w-full pb-20 px-6 bg-dark-gray dark:bg-foreground/8 border-y-[0.33px] dark:border-dark-gray/50'>
-      <div className='h-54 max-w-6xl mx-auto'>
+    <div className='w-full pb-20 px-6 bg-dark-gray dark:bg-foreground/8 border-y-[0.33px] dark:border-dark-gray/50 overflow-x-hidden'>
+      <div className='h-54 max-w-6xl mx-auto relative'>
         <div className='relative h-24 flex flex-col justify-end'>
           <h3 className='text-lg font-fugaz text-featured sm:text-3xl'>
             Our Trusted Brands
           </h3>
         </div>
-        <div className='absolute left-1/2 -translate-x-1/2 w-full -translate-y-8'>
+        <div className='absolute left-1/2 -translate-x-1/2 w-full max-w-6xl -translate-y-8'>
           <Beams />
         </div>
         <div className='relative items-center flex justify-between w-full h-full'>

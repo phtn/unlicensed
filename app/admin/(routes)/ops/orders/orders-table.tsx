@@ -5,8 +5,6 @@ import {Id, type Doc} from '@/convex/_generated/dataModel'
 import {cn} from '@/lib/utils'
 import {
   Card,
-  Chip,
-  ChipProps,
   Table,
   TableBody,
   TableCell,
@@ -17,27 +15,22 @@ import {
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useMemo, useState} from 'react'
-import {actionsCell, dateCell, moneyCell} from '../../../_components/ui/cells'
+import {
+  actionsCell,
+  dateCell,
+  moneyCell,
+  statusCell,
+} from '../../../_components/ui/cells'
 import {useSettingsPanel} from '../../../_components/ui/settings'
 import {useOrderDetails} from './order-details-context'
 
 type Order = Doc<'orders'>
 
-const statusColorMap: Record<string, ChipProps['color']> = {
-  pending: 'warning',
-  confirmed: 'primary',
-  processing: 'secondary',
-  shipped: 'success',
-  delivered: 'success',
-  cancelled: 'danger',
-  refunded: 'default',
-}
-
 const columns = [
   {name: 'STATUS', uid: 'status'},
   {name: 'TOTAL', uid: 'total'},
   {name: 'COURIER', uid: 'courier'},
-  {name: 'ORDER NUMBER', uid: 'orderNumber'},
+  {name: 'ORDER#', uid: 'orderNumber'},
   {name: 'CUSTOMER', uid: 'customer'},
   {name: 'DATE', uid: 'date'},
   {name: 'ACTIONS', uid: 'actions'},
@@ -65,6 +58,17 @@ export const OrdersTable = () => {
 
   const renderCell = (order: Order, columnKey: React.Key) => {
     switch (columnKey) {
+      case 'status':
+        return statusCell(order.orderStatus)
+      case 'total':
+        return moneyCell(order.totalCents ?? 0)
+
+      case 'courier':
+        return (
+          <div className='capitalize text-blue-500 flex items-center justify-center'>
+            {order.courier ?? 'Assign'}
+          </div>
+        )
       case 'orderNumber':
         return (
           <div className='flex flex-col w-fit'>
@@ -84,31 +88,6 @@ export const OrdersTable = () => {
             </p>
           </div>
         )
-      case 'status':
-        return (
-          <div className='flex items-center justify-center border border-white'>
-            <Chip
-              size='sm'
-              variant='flat'
-              className='capitalize'
-              classNames={{base: ''}}
-              color={statusColorMap[order.orderStatus] || 'default'}>
-              {order.orderStatus}
-            </Chip>
-          </div>
-        )
-      case 'total':
-        return moneyCell(order.totalCents ?? 0)
-      case 'courier':
-        return (
-          <Chip
-            size='sm'
-            variant='flat'
-            className='capitalize'
-            color={'default'}>
-            {order.courier ?? 'Assign Courier'}
-          </Chip>
-        )
       case 'date':
         return dateCell(order.createdAt ?? 0)
       case 'actions':
@@ -121,7 +100,12 @@ export const OrdersTable = () => {
   const classNames = useMemo(
     () => ({
       wrapper: ['max-h-[382px]', 'max-w-3xl'],
-      th: ['bg-transparent', 'text-gray-400', 'border-b', 'border-divider'],
+      th: [
+        'bg-transparent',
+        'text-foreground/80 capitalize font-nito tracking-wide',
+        'border-b',
+        'border-divider',
+      ],
       td: [
         'group-data-[first=true]:first:before:rounded-none',
         'group-data-[first=true]:last:before:rounded-none',
@@ -152,7 +136,9 @@ export const OrdersTable = () => {
         removeWrapper
         aria-label='Orders table'
         classNames={classNames}>
-        <TableHeader columns={columns} className='font-medium drop-shadow-xs'>
+        <TableHeader
+          columns={columns}
+          className='font-medium drop-shadow-xs text-foreground'>
           {(column) => (
             <TableColumn
               key={column.uid}
@@ -175,10 +161,10 @@ export const OrdersTable = () => {
                 key={`${order._id}-${isSelected}`}
                 data-order-selected={isSelected ? 'true' : 'false'}
                 className={cn(
-                  'hover:bg-sky-400/10',
+                  'hover:bg-sidebar/65 dark:hover:bg-sidebar/80',
                   'border-dotted border-neutral-300 dark:border-teal-200/10 h-8 transition-colors',
                   selectedRow === order._id && isSelected
-                    ? 'bg-neutral-500/15 dark:border-teal-200/40 -border-dotted border-y-1'
+                    ? 'bg-sidebar/40 shadow-inner dark:border-teal-200/40 -border-dotted border-y-1'
                     : 'first:border-t border-b',
                 )}>
                 {(columnKey) => (

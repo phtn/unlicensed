@@ -398,9 +398,9 @@ export const ProductDetailContent = ({
                   <Button
                     size='lg'
                     color='success'
-                    variant='solid'
+                    variant='flat'
                     disableRipple
-                    className='w-full font-polysans font-normal text-base md:text-lg h-14 bg-linear-to-r from-featured via-featured to-featured dark:text-black'
+                    className='w-full text-black font-polysans font-normal text-base md:text-lg h-14 bg-linear-to-r from-featured via-featured to-featured dark:text-black'
                     onPress={handleAddToCart}
                     isDisabled={isPending}>
                     <span>Add to Cart</span>
@@ -415,7 +415,7 @@ export const ProductDetailContent = ({
                   size='lg'
                   variant='solid'
                   href='/cart'
-                  className='w-full sm:flex-1 h-14 font-polysans font-normal text-base md:text-lg bg-foreground/95 text-white dark:text-dark-gray'>
+                  className='w-full sm:flex-1 h-14 font-polysans font-normal text-base md:text-lg bg-dark-gray text-white dark:text-dark-gray'>
                   <span>Checkout</span>
                 </Button>
               </div>

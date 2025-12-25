@@ -49,28 +49,6 @@ export const ProvidersList = ({data, loading, error}: ProvidersListProps) => {
   return (
     <div className='flex flex-col gap-2'>
       <ListboxWrapper>
-        {/*<Listbox
-          aria-label='PayGate payment providers'
-          selectedKeys={selectedKeys as Set<string>}
-          selectionMode='multiple'
-          variant='flat'
-          onSelectionChange={(keys) => {
-            if (keys instanceof Set) {
-              setSelectedKeys(keys)
-            } else if (keys === 'all') {
-              setSelectedKeys(new Set(data.map((p) => p.id)))
-            } else {
-              setSelectedKeys(new Set())
-            }
-          }}>
-          {data.map((provider: Provider) => (
-            <ListboxItem
-              key={provider.id}
-              description={`Min: ${provider.minimum_amount} ${provider.minimum_currency} • Status: ${provider.status}`}>
-              {provider.provider_name}
-            </ListboxItem>
-          ))}
-        </Listbox>*/}
         <HyperList
           data={data}
           component={ProviderItem}
@@ -79,7 +57,7 @@ export const ProvidersList = ({data, loading, error}: ProvidersListProps) => {
         />
       </ListboxWrapper>
       {selectedKeys.size > 0 && (
-        <p className='text-small text-default-500'>Selected: {selectedValue}</p>
+        <p className='text-small'>Selected: {selectedValue}</p>
       )}
     </div>
   )
@@ -88,23 +66,23 @@ export const ProvidersList = ({data, loading, error}: ProvidersListProps) => {
 const ProviderItem = (item: Provider) => (
   <Card shadow='none' className='border border-sidebar sm:w-84 w-full'>
     <CardHeader className='flex items-center justify-between px-4 w-full'>
-      <div className='flex items-center w-full'>
+      <div className='flex items-center flex-1'>
         <span className='font-medium'>{item.provider_name}</span>
       </div>
-      <div className={cn('flex flex-1')}>
+      <div className={cn('flex justify-end')}>
         <div className='font-space font-foreground! px-6'>
           {item.minimum_amount} {item.minimum_currency}
         </div>
         <div
           className={cn(
-            'font-space w-28 flex items-center justify-end space-x-2',
+            'font-space w-28 md:w-full flex items-center justify-end space-x-2',
             {
               'text-emerald-500': item.status === 'active',
               'text-flavors': item.status === 'redirected',
               'text-danger': item.status === 'unstable',
             },
           )}>
-          <span>{item.status}</span>
+          <span className='md:hidden'>{item.status}</span>
           <span>⬤</span>
         </div>
       </div>

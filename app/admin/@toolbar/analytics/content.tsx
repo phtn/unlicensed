@@ -3,9 +3,9 @@
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
-import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
+import {PageTitle} from '../../_components/ui/page-title'
 import {PrimaryTab, ToolbarButtonWrapper, ToolbarWrapper} from '../components'
 
 export const AnalyticsTabContent = () => {
@@ -16,12 +16,7 @@ export const AnalyticsTabContent = () => {
       <Link
         href='/admin/reports/analytics'
         className='flex items-center w-full space-x-4'>
-        <h1
-          className={cn(
-            'group-hover:underline underline-offset-4 decoration-dotted decoration-[0.5px] decoration-foreground/60 tracking-tighter font-medium text-base',
-          )}>
-          Analytics
-        </h1>
+        <PageTitle>Analytics</PageTitle>
         {stats ? (
           <div className='w-10 flex items-center justify-center aspect-square bg-neutral-200/40 rounded-md font-space'>
             <AnimatedNumber value={stats?.totalVisits ?? 0} />

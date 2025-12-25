@@ -42,15 +42,21 @@ const paygateAccountSchema = z.object({
 
 type PaygateAccountFormValues = z.infer<typeof paygateAccountSchema>
 
-const defaultValues: PaygateAccountFormValues = {
+const getDefaultValues = (): PaygateAccountFormValues => ({
   hexAddress: '',
   addressIn: '',
-  callbackUrl: process.env.NEXT_PUBLIC_PAYGATE_CALLBACK_URL ?? '',
+  callbackUrl:
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/api/paygate/webhook`
+      : process.env.NEXT_PUBLIC_PAYGATE_CALLBACK_URL ??
+        (process.env.NEXT_PUBLIC_APP_URL
+          ? `${process.env.NEXT_PUBLIC_APP_URL}/api/paygate/webhook`
+          : ''),
   label: '',
   description: '',
   isDefault: false,
   enabled: true,
-}
+})
 
 type PaygateAccountFormProps = {
   accountId?: Doc<'paygateAccounts'>['_id']
@@ -86,7 +92,7 @@ export const PaygateAccountForm = ({
     }
   }, [handleApiCall, response])
 
-  const formValues = initialValues ?? defaultValues
+  const formValues = initialValues ?? getDefaultValues()
 
   const form = useAppForm({
     defaultValues: formValues,
@@ -342,7 +348,7 @@ export const PaygateAccountForm = ({
             </form>
           </div>
 
-          <div className='dark:text-white dark:bg-background rounded-lg'>
+          <div className='dark:text-white rounded-lg'>
             <h3 className='text-lg sm:text-xl font-semibold tracking-tight mb-4'>
               Provider Status
             </h3>

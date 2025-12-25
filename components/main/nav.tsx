@@ -7,6 +7,7 @@ import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {logout} from '@/lib/firebase/auth'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {
   Avatar,
   Badge,
@@ -76,10 +77,10 @@ export const Nav = ({children}: NavProps) => {
             className='md:w-72 h-12 overflow-hidden pl-1 flex items-center justify-start relative'>
             <Icon
               name='rapid-fire'
-              className='h-44 w-auto dark:text-brand text-brand'
+              className='h-36 w-auto dark:text-brand text-brand'
             />
           </Link>
-          <nav className='flex items-center justify-center w-fit'>
+          <nav className={cn('flex items-center justify-center w-fit')}>
             {route === 'strain-finder' ? (
               <div className='hidden md:flex font-polysans font-normal bg-white text-base text-black px-4 py-0.5 rounded-full'>
                 Strain Finder

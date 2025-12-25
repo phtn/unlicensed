@@ -1,6 +1,7 @@
 'use client'
 
 import {PrimaryTab, ToolbarButtonWrapper} from '@/app/admin/@toolbar/components'
+import {PageTitle} from '@/app/admin/_components/ui/page-title'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {cn} from '@/lib/utils'
@@ -17,12 +18,7 @@ const BlogpostInner = () => {
         href='/admin/cms/blog'
         prefetch
         className='flex items-center space-x-4 group'>
-        <span
-          className={cn(
-            'group-hover:underline underline-offset-4 decoration-dashed decoration-[0.5px] tracking-tighter font-medium',
-          )}>
-          Blogpost
-        </span>
+        <PageTitle>Blogpost</PageTitle>
         <span
           className={cn(
             'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',

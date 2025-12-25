@@ -10,6 +10,7 @@ import {
   Button,
   ButtonGroup,
   Card,
+  Checkbox,
   Chip,
   Dropdown,
   DropdownItem,
@@ -78,6 +79,7 @@ export const InventoryTable = () => {
   } = useResizableColumns('inventory-table', columns)
 
   const [hoveredColumn, setHoveredColumn] = useState<string | null>(null)
+  const [showCheckboxes, setShowCheckboxes] = useState(true)
 
   // Apply widths directly to DOM elements
   useEffect(() => {
@@ -88,57 +90,62 @@ export const InventoryTable = () => {
         const headerCells = table.querySelectorAll('thead th')
         const bodyRows = table.querySelectorAll('tbody tr')
 
-        // First column is the checkbox column
-        if (headerCells[0]) {
+        // First column is the checkbox column (only if checkboxes are visible)
+        if (showCheckboxes && headerCells[0]) {
           const checkboxHeader = headerCells[0] as HTMLElement
           checkboxHeader.style.width = '56px'
           checkboxHeader.style.minWidth = '56px'
           checkboxHeader.style.maxWidth = '56px'
         }
 
-        bodyRows.forEach((row) => {
-          const cells = row.querySelectorAll('td')
-          if (cells[0]) {
-            const checkboxCell = cells[0] as HTMLElement
-            checkboxCell.style.width = '56px'
-            checkboxCell.style.minWidth = '56px'
-            checkboxCell.style.maxWidth = '56px'
-          }
-        })
+        if (showCheckboxes) {
+          bodyRows.forEach((row) => {
+            const cells = row.querySelectorAll('td')
+            if (cells[0]) {
+              const checkboxCell = cells[0] as HTMLElement
+              checkboxCell.style.width = '56px'
+              checkboxCell.style.minWidth = '56px'
+              checkboxCell.style.maxWidth = '56px'
+            }
+          })
+        }
 
-        // Apply custom column widths if they exist
+        // Apply custom column widths if they exist (only on desktop)
         if (Object.keys(columnWidths).length > 0) {
-          // Skip first column (checkbox) and apply widths starting from index 1
+          const checkboxOffset = showCheckboxes ? 1 : 0
+          // Skip first column (checkbox) if visible and apply widths starting from index checkboxOffset
           headerCells.forEach((cell, index) => {
-            if (index === 0) return // Skip checkbox column
-            const uid = columns[index - 1]?.uid // Adjust index for checkbox column
+            if (showCheckboxes && index === 0) return // Skip checkbox column
+            const uid = columns[index - checkboxOffset]?.uid
             const width = getColumnWidth(uid)
             if (width && uid) {
               const htmlCell = cell as HTMLElement
-              htmlCell.style.width = `${width}px`
+              // Apply min-width for mobile flexibility
               htmlCell.style.minWidth = `${width}px`
-              htmlCell.style.maxWidth = `${width}px`
+              // Fixed widths are applied via CSS classes on desktop (md:table-fixed handles this)
+              // On mobile (table-auto), columns will size naturally with min-width constraint
             }
           })
 
           bodyRows.forEach((row) => {
             const cells = row.querySelectorAll('td')
             cells.forEach((cell, index) => {
-              if (index === 0) return // Skip checkbox column
-              const uid = columns[index - 1]?.uid // Adjust index for checkbox column
+              if (showCheckboxes && index === 0) return // Skip checkbox column
+              const uid = columns[index - checkboxOffset]?.uid
               const width = getColumnWidth(uid)
               if (width && uid) {
                 const htmlCell = cell as HTMLElement
-                htmlCell.style.width = `${width}px`
+                // Apply min-width for mobile flexibility
                 htmlCell.style.minWidth = `${width}px`
-                htmlCell.style.maxWidth = `${width}px`
+                // Fixed widths are applied via CSS classes on desktop (md:table-fixed handles this)
+                // On mobile (table-auto), columns will size naturally with min-width constraint
               }
             })
           })
         }
       }
     }
-  }, [columnWidths, getColumnWidth, hoveredColumn, columns])
+  }, [columnWidths, getColumnWidth, hoveredColumn, columns, showCheckboxes])
 
   const [filterValue, setFilterValue] = useState('')
   const [selectedRow, setSelectedRow] = useState<Id<'products'> | null>(null)
@@ -371,28 +378,34 @@ export const InventoryTable = () => {
   const classNames = useMemo(
     () => ({
       wrapper: ['max-h-[382px]', 'max-w-3xl'],
-      table: ['table-fixed', 'w-full', '!table-fixed'],
+      table: [
+        'md:table-fixed',
+        'w-full',
+        'md:!table-fixed',
+        'table-auto',
+        'min-w-full',
+      ],
       th: [
         'bg-transparent',
         'text-gray-400',
         'border-b',
         'border-divider',
-        '[&:first-child]:w-14',
-        '[&:first-child]:min-w-14',
-        '[&:first-child]:max-w-14',
-      ],
+        showCheckboxes && '[&:first-child]:w-14',
+        showCheckboxes && '[&:first-child]:min-w-14',
+        showCheckboxes && '[&:first-child]:max-w-14',
+      ].filter(Boolean),
       td: [
         'group-data-[first=true]:first:before:rounded-none',
         'group-data-[first=true]:last:before:rounded-none',
         'group-data-[middle=true]:before:rounded-none',
         'group-data-[last=true]:first:before:rounded-none',
         'group-data-[last=true]:last:before:rounded-none',
-        '[&:first-child]:w-14',
-        '[&:first-child]:min-w-14',
-        '[&:first-child]:max-w-14',
-      ],
+        showCheckboxes && '[&:first-child]:w-14',
+        showCheckboxes && '[&:first-child]:min-w-14',
+        showCheckboxes && '[&:first-child]:max-w-14',
+      ].filter(Boolean),
     }),
-    [],
+    [showCheckboxes],
   )
 
   const handleChangePrice = useCallback(() => {
@@ -432,19 +445,27 @@ export const InventoryTable = () => {
   const topContent = useMemo(() => {
     return (
       <div className='flex flex-col w-full portrait:w-screen gap-4'>
-        <div className='flex justify-between gap-3 items-end mx-4'>
-          <Input
-            isClearable
-            className='w-full sm:max-w-[24%]'
-            classNames={{
-              inputWrapper: 'border-gray-400 dark:bg-neutral-600/20',
-            }}
-            placeholder='Search by name...'
-            startContent={<Icon name='search' />}
-            value={filterValue}
-            onClear={onClear}
-            onValueChange={onSearchChange}
-          />
+        <div className='flex justify-between items-center gap-3 px-4'>
+          <div className='flex items-center gap-3 flex-1'>
+            <Checkbox
+              type='checkbox'
+              radius='sm'
+              checked={showCheckboxes}
+              onChange={(e) => setShowCheckboxes(e.target.checked)}
+            />
+            <Input
+              isClearable
+              className='w-full sm:max-w-[44%]'
+              classNames={{
+                inputWrapper: 'border-gray-400 dark:bg-neutral-600/20',
+              }}
+              placeholder='Search by name...'
+              startContent={<Icon name='search' />}
+              value={filterValue}
+              onClear={onClear}
+              onValueChange={onSearchChange}
+            />
+          </div>
           {selectedRows.size > 0 && (
             <div className='flex items-center gap-2'>
               <span className='text-sm text-default-500'>
@@ -637,6 +658,7 @@ export const InventoryTable = () => {
     handleChangePrice,
     handleCancelPriceChange,
     handleSubmitPriceChange,
+    showCheckboxes,
   ])
 
   if (!products) {
@@ -653,17 +675,17 @@ export const InventoryTable = () => {
       <Card
         shadow='none'
         radius='none'
-        className='md:rounded-lg md:w-full w-screen overflow-auto p-4 dark:bg-dark-table/40'>
-        <div ref={tableRef} className='relative'>
+        className='md:rounded-xl md:w-full w-screen overflow-x-auto overflow-y-visible p-4 bg-sidebar/30 dark:bg-dark-table/40'>
+        <div ref={tableRef} className='relative min-w-full'>
           <Table
-            key={`table-${selectedProductId || 'none'}-${open}`}
+            key={`table-${selectedProductId || 'none'}-${open}-${showCheckboxes}`}
             isCompact
             removeWrapper
             aria-label='Inventory table'
             classNames={classNames}
-            selectionMode='multiple'
-            selectedKeys={selectedRows}
-            onSelectionChange={onSelectionChange}>
+            selectionMode={showCheckboxes ? 'multiple' : 'none'}
+            selectedKeys={showCheckboxes ? selectedRows : undefined}
+            onSelectionChange={showCheckboxes ? onSelectionChange : undefined}>
             <TableHeader columns={columns} className='select-none'>
               {(column) => {
                 const width = getColumnWidth(column.uid)
@@ -685,18 +707,18 @@ export const InventoryTable = () => {
                 return (
                   <TableColumn
                     key={column.uid}
-                    className={cn(
-                      'text-start relative group/column w-fit h-fit',
-                      {
-                        'md:w-16': column.uid === 'actions' && !width,
-                        'md:text-center md:w-18':
-                          column.uid === 'price' && !width,
-                        'md:text-center md:w-16':
-                          column.uid === 'stock' && !width,
-                        'md:text-center md:w-64':
-                          column.uid === 'product' && !width,
-                      },
-                    )}
+                    className={cn('text-start relative group/column h-fit', {
+                      'md:w-16 w-16': column.uid === 'actions' && !width,
+                      'md:text-center md:w-18 w-20':
+                        column.uid === 'price' && !width,
+                      'md:text-center md:w-16 w-16':
+                        column.uid === 'stock' && !width,
+                      'md:text-center md:w-64 w-48':
+                        column.uid === 'product' && !width,
+                      'w-24': column.uid === 'category' && !width,
+                      'w-20': column.uid === 'unit' && !width,
+                      'w-28': column.uid === 'status' && !width,
+                    })}
                     style={columnStyle}
                     align={column.uid === 'actions' ? 'center' : 'start'}>
                     <div

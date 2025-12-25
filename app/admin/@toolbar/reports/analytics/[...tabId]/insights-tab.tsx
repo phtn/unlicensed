@@ -1,13 +1,13 @@
 'use client'
 
-import {PrimaryTab, ToolbarButtonWrapper} from '../../../components'
+import {PageTitle} from '@/app/admin/_components/ui/page-title'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
-import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {Suspense} from 'react'
+import {PrimaryTab, ToolbarButtonWrapper} from '../../../components'
 
 const InsightsInner = () => {
   const stats = useQuery(api.logs.q.getVisitStats, {})
@@ -19,15 +19,10 @@ const InsightsInner = () => {
         href='/admin/reports/analytics?tabId=insights'
         prefetch
         className='flex items-center space-x-4 group'>
+        <PageTitle>Insights</PageTitle>
         <span
           className={cn(
-            'group-hover:underline underline-offset-4 decoration-dashed decoration-[0.5px] tracking-tighter font-medium',
-          )}>
-          Insights
-        </span>
-        <span
-          className={cn(
-            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold bg-blue-500 dark:bg-blue-500 text-white',
+            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold text-white',
           )}>
           <AnimatedNumber value={uniqueVisitors} />
         </span>
@@ -60,4 +55,3 @@ export const InsightsTab = () => {
     </Suspense>
   )
 }
-

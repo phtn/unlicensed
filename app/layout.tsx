@@ -6,6 +6,7 @@ import {
   Fugaz_One,
   Geist,
   Geist_Mono,
+  Nunito_Sans as NunitoSans,
   Space_Grotesk,
 } from 'next/font/google'
 import {AgeConfirmationModal} from './_components/age-confirmation-modal'
@@ -43,6 +44,12 @@ const fugaz = Fugaz_One({
 })
 const bone = BakbakOne({
   variable: '--font-bone',
+  weight: ['400'],
+  subsets: ['latin'],
+})
+
+const nito = NunitoSans({
+  variable: '--font-nito',
   weight: ['400'],
   subsets: ['latin'],
 })
@@ -145,7 +152,7 @@ export default function RootLayout({
   return (
     <html lang='en' suppressHydrationWarning>
       <body
-        className={`${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased font-sans`}>
+        className={`${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased font-sans`}>
         <ProvidersCtxProvider>
           <EmailLinkHandler />
           <ScreenDimensionsTracker />

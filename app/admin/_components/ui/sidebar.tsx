@@ -280,7 +280,7 @@ function SidebarTrigger({
       )}
       onClick={toggleSidebar}>
       <Icon
-        name='toggle-left-right'
+        name='chevron-left'
         className={cn(
           'size-4.5 opacity-90 dark:opacity-70 group-hover:opacity-100',
         )}

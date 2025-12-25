@@ -20,7 +20,7 @@ export const StrainFinderMini = ({categories}: Props) => {
               className='w-fit rounded-full px-2 py-1.5 text-sm font-medium uppercase tracking-wider bg-foreground text-accent'>
               Strain Finder
             </Chip>
-            <h2 className='text-3xl font-bold text-foreground tracking-tight sm:text-4xl max-w-[24ch] font-polysans py-12 sm:py-1'>
+            <h2 className='text-4xl font-medium text-foreground tracking-tight sm:text-4xl max-w-[24ch] font-polysans py-12 sm:py-1'>
               Describe the <span className='text-effects'>feeling</span> you’re
               after. We&apos;ll design your tasting flight.
             </h2>
@@ -49,10 +49,10 @@ export const StrainFinderMini = ({categories}: Props) => {
               radius='full'
               variant='solid'
               disableRipple
-              className='bg-transparent text-sm font-semibold uppercase tracking-[0.35em]'>
+              className='bg-transparent text-sm font-semibold border border-black dark:border-light-gray uppercase tracking-[0.35em]'>
               <div className='flex items-center justify-start space-x-10'>
-                <div className='w-12 h-12 mr-2 border border-black rounded-full flex items-center justify-between'></div>
-                <span className='px-4 text-lg font-light font-polysans'>
+                {/*<div className='w-12 h-12 mr-2 border border-black rounded-full flex items-center justify-start'></div>*/}
+                <span className='px-4 text-base md:text-lg font-light font-polysans'>
                   Start the Finder
                 </span>
               </div>

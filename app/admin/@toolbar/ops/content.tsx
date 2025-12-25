@@ -7,6 +7,7 @@ import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {Suspense} from 'react'
+import {PageTitle} from '../../_components/ui/page-title'
 import {SecondaryTab, ToolbarWrapper} from '../components'
 
 const ToolbarTabs = () => {
@@ -43,12 +44,7 @@ export const OpsContent = () => {
         href='/admin/ops'
         prefetch
         className='flex items-center space-x-4 group'>
-        <span
-          className={cn(
-            'capitalize group-hover:underline underline-offset-4 decoration-dashed decoration-[0.5px] tracking-tighter font-medium',
-          )}>
-          {route === 'ops' ? 'Activity' : route}
-        </span>
+        <PageTitle>{route === 'ops' ? 'Activity' : route}</PageTitle>
         <span
           className={cn(
             'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',

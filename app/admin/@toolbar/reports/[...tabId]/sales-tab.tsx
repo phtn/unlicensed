@@ -1,6 +1,7 @@
 'use client'
 
 import {PrimaryTab, ToolbarButtonWrapper} from '@/app/admin/@toolbar/components'
+import {PageTitle} from '@/app/admin/_components/ui/page-title'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
@@ -20,12 +21,7 @@ const SalesInner = () => {
         href='/admin/inventory/product'
         prefetch
         className='flex items-center space-x-4 group'>
-        <span
-          className={cn(
-            'group-hover:underline underline-offset-4 decoration-dashed decoration-[0.5px] tracking-tighter font-medium',
-          )}>
-          Sales
-        </span>
+        <PageTitle>Sales Report</PageTitle>
         <span
           className={cn(
             'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',

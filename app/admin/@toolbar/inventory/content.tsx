@@ -3,9 +3,9 @@
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
-import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
+import {PageTitle} from '../../_components/ui/page-title'
 import {ToolbarButtonWrapper, ToolbarWrapper} from '../components'
 
 export const InventoryContent = () => {
@@ -15,12 +15,7 @@ export const InventoryContent = () => {
       <Link
         href='/admin/inventory'
         className='flex items-center w-full space-x-4'>
-        <h1
-          className={cn(
-            'group-hover:underline underline-offset-4 decoration-dotted decoration-[0.5px] decoration-foreground/60 tracking-tighter font-medium text-base',
-          )}>
-          Inventory
-        </h1>
+        <PageTitle>Inventory</PageTitle>
         {products ? (
           <div className='w-6 flex items-center justify-center aspect-square bg-neutral-200/40 rounded-md font-space'>
             <AnimatedNumber value={products?.length} />

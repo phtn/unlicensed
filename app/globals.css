@@ -14,15 +14,23 @@
 }
 @font-face {
   font-family: 'PolySans';
-  src: url('/fonts/PolySansTrial-NeutralWide.otf') format('opentype');
-  font-weight: 500;
+  src: url('/fonts/PolySansTrial-Neutral.otf') format('opentype');
+  font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'PolySans';
-  src: url('/fonts/PolySansTrial-Slim.otf') format('opentype');
-  font-weight: 300;
+  src: url('/fonts/PolySansTrial-Median.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NeuSans';
+  src: url('/fonts/NeuSansTrial-Regular.otf') format('opentype');
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
@@ -49,7 +57,9 @@
   --font-fugaz: var(--font-fugaz);
   --font-sans: var(--font-sans);
   --font-bone: var(--font-bone);
+  --font-nito: var(--font-nito);
   --font-polysans: 'PolySans', Arial, Helvetica, sans-serif;
+  --font-neusans: 'NeuSans', Arial, Helvetica, sans-serif;
 
   /* Effects, Flavors, Terpenes */
   --color-flavors: oklch(0.783 0.168 66.2);

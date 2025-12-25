@@ -14,7 +14,7 @@ import {
 } from '@/app/admin/_components/ui/sidebar'
 import {ThemeToggle} from '@/components/ui/theme-toggle'
 import {api} from '@/convex/_generated/api'
-import {Icon} from '@/lib/icons'
+import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
@@ -213,8 +213,12 @@ const MenuContent = (item: NavItem) => {
       prefetch={true}
       onMouseEnter={handleMouseEnter}
       onClick={handleClick}
-      className='font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center justify-between px-3 h-8 relative w-full'>
-      <span className='group-hover/menu-content:text-foreground font-semibold tracking-tight text-sm md:text-base text-foreground/80 capitalize dark:text-white/90'>
+      className='font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center px-3 h-8 relative w-full'>
+      <Icon
+        name={item.icon as IconName}
+        className='text-foreground/60 mr-2.5 size-5'
+      />
+      <span className='group-hover/menu-content:text-foreground text-dark-gray font-polysans font-normal tracking-normal text-sm md:text-base capitalize dark:text-white/90'>
         {item.title}
       </span>
       {showBadge && (
@@ -235,24 +239,24 @@ const data: Record<string, NavGroup[]> = {
         {
           title: 'Activity',
           url: '/admin/ops',
-          icon: 'linalool',
+          icon: 'arrow-trending',
         },
 
         {
           title: 'Orders',
           url: '/admin/ops/orders',
-          icon: 'chevron-right',
+          icon: 'badge',
         },
         {
           title: 'Deliveries',
           url: '/admin/ops/deliveries',
-          icon: 'linalool',
+          icon: 'package',
         },
 
         {
           title: 'Staff',
           url: '/admin/ops/staff',
-          icon: 'linalool',
+          icon: 'user',
         },
       ],
     },
@@ -263,17 +267,17 @@ const data: Record<string, NavGroup[]> = {
         {
           title: 'Overview',
           url: '/admin/inventory',
-          icon: 'linalool',
+          icon: 'document',
         },
         {
           title: 'Category',
           url: '/admin/inventory/category',
-          icon: 'linalool',
+          icon: 'book',
         },
         {
           title: 'Product',
           url: '/admin/inventory/product',
-          icon: 'linalool',
+          icon: 'candy',
         },
       ],
     },
@@ -284,7 +288,7 @@ const data: Record<string, NavGroup[]> = {
         {
           title: 'Couriers',
           url: '/admin/suppliers/couriers',
-          icon: 'linalool',
+          icon: 'airplane-takeoff',
         },
       ],
     },
@@ -295,7 +299,7 @@ const data: Record<string, NavGroup[]> = {
         {
           title: 'Blogposts',
           url: '/admin/cms/blog',
-          icon: 'linalool',
+          icon: 'draw-text',
         },
       ],
     },
@@ -306,12 +310,12 @@ const data: Record<string, NavGroup[]> = {
         {
           title: 'Sales',
           url: '/admin/reports/sales',
-          icon: 'linalool',
+          icon: 'tag-light',
         },
         {
           title: 'Analytics',
           url: '/admin/reports/analytics',
-          icon: 'linalool',
+          icon: 'chart-sparkle',
         },
       ],
     },
@@ -322,17 +326,17 @@ const data: Record<string, NavGroup[]> = {
         {
           title: 'Payments',
           url: '/admin/payments',
-          icon: 'linalool',
+          icon: 'file-sync',
         },
         {
           title: 'Admin',
           url: '/admin/settings',
-          icon: 'linalool',
+          icon: 'wrench',
         },
         {
           title: 'Store',
           url: '/',
-          icon: 'linalool',
+          icon: 'window',
         },
       ],
     },

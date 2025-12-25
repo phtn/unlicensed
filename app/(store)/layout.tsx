@@ -8,7 +8,7 @@ type StoreLayoutProps = {
 
 const StoreLayout = ({children, navbar}: StoreLayoutProps) => {
   return (
-    <div className='flex min-h-screen flex-col overflow-y-auto'>
+    <div className='flex min-h-screen flex-col'>
       {navbar}
       <main className='relative'>{children}</main>
       <div className='h-96 w-full bg-background'></div>

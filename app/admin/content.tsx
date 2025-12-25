@@ -8,26 +8,6 @@ import {useRouter} from 'next/navigation'
 import {useEffect} from 'react'
 
 export const Content = () => {
-  // const adminStats = useQuery(api.orders.q.getAdminStats)
-  // const chartData = useQuery(api.orders.q.getAdminChartData)
-
-  // const defaultStats = {
-  //   salesTodayCents: 0,
-  //   salesThisWeekCents: 0,
-  //   salesThisMonthCents: 0,
-  //   totalRevenueCents: 0,
-  //   pendingOrdersCount: 0,
-  //   cancelledOrdersCount: 0,
-  //   ongoingDeliveriesCount: 0,
-  //   deliveredOrdersCount: 0,
-  //   totalOrdersCount: 0,
-  //   totalUsersCount: 0,
-  //   totalProductsCount: 0,
-  //   averageOrderValueCents: 0,
-  // }
-
-  // const {on: fullTable, toggle: toggleFullTable} = useToggle()
-  //
   const router = useRouter()
   const {user} = useAuthCtx()
 
