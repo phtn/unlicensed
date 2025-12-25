@@ -17,10 +17,11 @@ export const commonInputClassNames = {
 }
 
 type BaseFieldProps<T> = {
-  name: keyof T
+  name: keyof T // Required for FormInput type, but can be omitted when used inside AppField
   label: string
   required?: boolean
   placeholder?: string
+  description?: string
   defaultValue?:
     | string
     | number
@@ -28,7 +29,14 @@ type BaseFieldProps<T> = {
     | undefined
     | Array<string | number | boolean | undefined>
   step?: string
+  min?: string | number
+  max?: string | number
   minRows?: number
+}
+
+// Partial type for when name comes from AppField context
+export type PartialFormInput<T> = Omit<FormInput<T>, 'name'> & {
+  name?: keyof T
 }
 
 type TextFieldProps<T> = BaseFieldProps<T> & {
@@ -58,7 +66,7 @@ export type FormInput<T> =
   | SelectFieldProps<T>
   | CheckboxFieldProps<T>
 
-export function TextField<T>(props?: FormInput<T>) {
+export function TextField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const field = useFieldContext<string>()
   return (
     <div className='space-y-2 w-full'>
@@ -69,6 +77,7 @@ export function TextField<T>(props?: FormInput<T>) {
         onChange={(e) => field.handleChange(e.target.value)}
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
+        description={props?.description}
         classNames={commonInputClassNames}
         variant='bordered'
       />
@@ -81,7 +90,7 @@ export function TextField<T>(props?: FormInput<T>) {
   )
 }
 
-export function NumberField<T>(props?: FormInput<T>) {
+export function NumberField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const field = useFieldContext<number>()
   const numValue = field.state.value ?? 0
   return (
@@ -90,6 +99,8 @@ export function NumberField<T>(props?: FormInput<T>) {
         label={props?.label}
         type='number'
         step={props?.step}
+        min={props?.min}
+        max={props?.max}
         value={String(numValue)}
         onChange={(e) => {
           const numValue = Number(e.target.value)
@@ -97,6 +108,7 @@ export function NumberField<T>(props?: FormInput<T>) {
         }}
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
+        description={props?.description}
         size='lg'
         variant='bordered'
         classNames={commonInputClassNames}
@@ -110,7 +122,7 @@ export function NumberField<T>(props?: FormInput<T>) {
   )
 }
 
-export function TextAreaField<T>(props?: FormInput<T>) {
+export function TextAreaField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const field = useFieldContext<string>()
   return (
     <div className='space-y-2'>
@@ -301,7 +313,7 @@ export function SelectField<T>(props?: SelectFieldProps<T>) {
   )
 }
 
-export function SwitchField<T>(props?: CheckboxFieldProps<T>) {
+export function SwitchField<T>(props?: PartialFormInput<T> | CheckboxFieldProps<T>) {
   const field = useFieldContext<boolean>()
   const value = field.state.value ?? false
   return (

@@ -371,14 +371,41 @@ sudo systemctl enable paygate-proxy
 sudo systemctl start paygate-proxy
 ```
 
-### Step 5: Configure in Admin Panel
+### Step 5: Configure Application
+
+**Option A: Environment Variables (Recommended)**
+
+Add to your `.env.local` file:
+
+```env
+# Server-side configuration - YOUR subdomains (NOT PayGate's domains)
+# These point to your proxy server, which routes to PayGate internally
+PAYGATE_API_URL=https://api.yourdomain.com
+PAYGATE_CHECKOUT_URL=https://checkout.yourdomain.com
+
+# Client-side configuration (required for browser access) - same YOUR subdomains
+NEXT_PUBLIC_PAYGATE_API_URL=https://api.yourdomain.com
+NEXT_PUBLIC_PAYGATE_CHECKOUT_URL=https://checkout.yourdomain.com
+
+# Wallet address (not needed if configured in proxy server .env file)
+# PAYGATE_USDC_WALLET=0xYourUSDCWalletAddress
+```
+
+**Important**: Use YOUR subdomains (`api.yourdomain.com`, `checkout.yourdomain.com`), NOT PayGate's domains (`api.paygate.to`, `checkout.paygate.to`). Your proxy server handles routing to PayGate.
+
+**Option B: Admin Panel**
 
 1. Go to `/admin/settings` in your application
 2. Set:
-   - **API URL**: `https://api.yourdomain.com`
-   - **Checkout URL**: `https://checkout.yourdomain.com`
-   - **USDC Wallet**: Your wallet address
+   - **API URL**: `https://api.yourdomain.com` (YOUR subdomain, not PayGate's)
+   - **Checkout URL**: `https://checkout.yourdomain.com` (YOUR subdomain, not PayGate's)
+   - **USDC Wallet**: Your wallet address (optional - usually configured in proxy server .env)
 3. Click "Save Settings"
+
+Note: 
+- Use YOUR subdomains that point to your proxy server, NOT PayGate's domains
+- Admin settings override environment variables
+- For client-side access, you still need `NEXT_PUBLIC_*` environment variables set to YOUR subdomains
 
 ### Step 6: Test the Integration
 

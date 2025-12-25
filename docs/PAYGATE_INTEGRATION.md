@@ -17,11 +17,22 @@ PayGate.to is a payment gateway that supports:
 Add these to your `.env.local` file:
 
 ```env
-# PayGate API Configuration (optional - defaults to PayGate.to)
-PAYGATE_API_URL=https://api.paygate.to
-PAYGATE_CHECKOUT_URL=https://checkout.paygate.to
+# PayGate API Configuration
+# For self-hosted proxy server with white-label subdomains (recommended):
+# Configure YOUR subdomains that point to your proxy server (NOT PayGate's domains)
+PAYGATE_API_URL=https://api.yourdomain.com  # YOUR subdomain
+PAYGATE_CHECKOUT_URL=https://checkout.yourdomain.com  # YOUR subdomain
 
-# USDC Polygon Wallet Address (required)
+# For client-side access (required when using proxy):
+NEXT_PUBLIC_PAYGATE_API_URL=https://api.yourdomain.com  # YOUR subdomain
+NEXT_PUBLIC_PAYGATE_CHECKOUT_URL=https://checkout.yourdomain.com  # YOUR subdomain
+
+# Direct PayGate API (if NOT using proxy - only for testing):
+# PAYGATE_API_URL=https://api.paygate.to
+# PAYGATE_CHECKOUT_URL=https://checkout.paygate.to
+
+# USDC Polygon Wallet Address
+# Note: When using proxy server, wallet is typically configured in proxy server env vars
 PAYGATE_USDC_WALLET=0x...
 
 # Webhook Secret (optional, for webhook verification)
@@ -30,6 +41,14 @@ PAYGATE_WEBHOOK_SECRET=your_secret_here
 # Enable/Disable PayGate (default: enabled)
 PAYGATE_ENABLED=true
 ```
+
+**Using Self-Hosted Proxy Server (White-Label)**:
+- Configure YOUR subdomains (e.g., `api.yourdomain.com`, `checkout.yourdomain.com`) in `PAYGATE_API_URL` and `PAYGATE_CHECKOUT_URL`
+- These subdomains point to YOUR proxy server, NOT PayGate's domains
+- Set `NEXT_PUBLIC_PAYGATE_API_URL` and `NEXT_PUBLIC_PAYGATE_CHECKOUT_URL` to the same YOUR subdomains for client-side access
+- The proxy server handles routing to PayGate API internally - your app never directly contacts PayGate
+- Wallet address is configured in the proxy server's environment variables (not needed in app config)
+- See [PAYGATE_WHITELABEL_SETUP.md](./PAYGATE_WHITELABEL_SETUP.md) for proxy server setup
 
 ### Admin Panel Configuration
 
@@ -115,7 +134,32 @@ To use your own custom domain with PayGate, see the comprehensive guide:
 
 📖 **[Complete White-Label Setup Guide](./PAYGATE_WHITELABEL_SETUP.md)**
 
-Quick overview:
+### Self-Hosted Proxy Server (Recommended)
+
+We use a self-hosted proxy server for full control and customization:
+
+1. **Set up Proxy Server**:
+   - Proxy server is located at `server/paygate-proxy/index.ts`
+   - Configure environment variables (PORT, PAYGATE_USDC_WALLET, etc.)
+   - Run with: `bun run server/paygate-proxy/index.ts`
+   - See `server/paygate-proxy/README.md` for detailed setup
+
+2. **Configure DNS**:
+   - Point `api.yourdomain.com` → Your server IP
+   - Point `checkout.yourdomain.com` → Your server IP
+
+3. **Set Up Nginx** (Recommended):
+   - Use reverse proxy configuration from `server/paygate-proxy/nginx.conf`
+   - Set up SSL certificates (Let's Encrypt)
+
+4. **Update Application Configuration**:
+   - Set `PAYGATE_API_URL` to YOUR subdomain (e.g., `https://api.yourdomain.com`) - NOT PayGate's domain
+   - Set `PAYGATE_CHECKOUT_URL` to YOUR subdomain (e.g., `https://checkout.yourdomain.com`) - NOT PayGate's domain
+   - Set `NEXT_PUBLIC_PAYGATE_API_URL` and `NEXT_PUBLIC_PAYGATE_CHECKOUT_URL` to the same YOUR subdomains for client-side access
+   - The proxy server routes these requests to PayGate API internally
+   - Or configure via admin panel at `/admin/settings` (use YOUR subdomains, not PayGate's)
+
+### Cloudflare Workers (Alternative)
 
 1. **Set up Cloudflare DNS**:
    - Add your domain to Cloudflare

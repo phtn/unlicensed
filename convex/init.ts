@@ -395,6 +395,15 @@ export default async function init(ctx: SetupContext) {
       createdAt: Date.now(),
       createdBy: 'init-script',
     })
+  } else {
+    // Ensure it's set to disabled if it exists
+    const currentValue = existingIpapiSetting.value as {enabled?: boolean} | undefined
+    if (currentValue?.enabled !== false) {
+      await ctx.db.patch(existingIpapiSetting._id, {
+        value: {enabled: false},
+        updatedAt: Date.now(),
+      })
+    }
   }
 
   // Seed categories and products (only if they don't exist)

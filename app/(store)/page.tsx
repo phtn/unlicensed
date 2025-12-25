@@ -1,11 +1,14 @@
 import {fetchCategories, fetchProducts} from '@/lib/convexClient'
-import {delayFlag} from '@/lib/flags'
+import {buildTypeFlag, delayFlag} from '@/lib/flags'
 
 import {Content} from './content'
 
 export default async function StorefrontPage() {
-  // Evaluate the delay flag
-  const delay = await delayFlag()
+  // Evaluate flags
+  const [delay, buildType] = await Promise.all([
+    delayFlag(),
+    buildTypeFlag(),
+  ])
 
   // Apply delay if configured (for debugging/demo purposes)
   if (delay > 0) {
@@ -22,6 +25,7 @@ export default async function StorefrontPage() {
       initialCategories={initialCategories}
       initialProducts={initialProducts}
       delay={delay}
+      buildType={buildType}
     />
   )
 }

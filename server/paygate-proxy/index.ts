@@ -1,14 +1,14 @@
 /**
  * PayGate White-Label Proxy Server
- * 
+ *
  * Self-hosted alternative to Cloudflare Workers for PayGate white-labeling.
  * Run this on your dedicated web server to proxy PayGate API requests.
- * 
+ *
  * Usage:
  *   bun run server/paygate-proxy/index.ts
  *   or
  *   node --loader tsx server/paygate-proxy/index.ts
- * 
+ *
  * Environment Variables:
  *   PORT=3001 (default)
  *   PAYGATE_USDC_WALLET=0x... (your USDC Polygon wallet)
@@ -26,11 +26,7 @@ const CUSTOM_CHECKOUT_DOMAIN = process.env.CUSTOM_CHECKOUT_DOMAIN || ''
 
 // PayGate API base URLs (DO NOT CHANGE)
 const PAYGATE_API_URL = 'https://api.paygate.to'
-const PAYGATE_CHECKOUT_URL = 'https://checkout.paygate.to'
-
-interface ProxyRequest {
-  request: Request
-}
+// const PAYGATE_CHECKOUT_URL = 'https://checkout.paygate.to'
 
 async function handleRequest(request: Request): Promise<Response> {
   const url = new URL(request.url)
@@ -77,15 +73,24 @@ async function handleRequest(request: Request): Promise<Response> {
     const response = await fetch(targetUrl, {
       method: request.method,
       headers,
-      body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : undefined,
+      body:
+        request.method !== 'GET' && request.method !== 'HEAD'
+          ? request.body
+          : undefined,
     })
 
     // Get response text
     let responseText = await response.text()
 
     // Replace checkout domain in response if custom domain is configured
-    if (CUSTOM_CHECKOUT_DOMAIN && responseText.includes('checkout.paygate.to')) {
-      responseText = responseText.replace(/checkout\.paygate\.to/g, CUSTOM_CHECKOUT_DOMAIN)
+    if (
+      CUSTOM_CHECKOUT_DOMAIN &&
+      responseText.includes('checkout.paygate.to')
+    ) {
+      responseText = responseText.replace(
+        /checkout\.paygate\.to/g,
+        CUSTOM_CHECKOUT_DOMAIN,
+      )
     }
 
     // Return response with CORS headers
@@ -93,7 +98,8 @@ async function handleRequest(request: Request): Promise<Response> {
       status: response.status,
       statusText: response.statusText,
       headers: {
-        'Content-Type': response.headers.get('Content-Type') || 'application/json',
+        'Content-Type':
+          response.headers.get('Content-Type') || 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
@@ -136,7 +142,9 @@ function handleOptions(): Response {
 console.log(`🚀 PayGate Proxy Server starting on port ${PORT}`)
 console.log(`📝 USDC Wallet: ${USDC_WALLET || 'Not configured'}`)
 console.log(`💰 Affiliate Wallet: ${AFFILIATE_WALLET || 'Not configured'}`)
-console.log(`🌐 Custom Checkout Domain: ${CUSTOM_CHECKOUT_DOMAIN || 'Not configured'}`)
+console.log(
+  `🌐 Custom Checkout Domain: ${CUSTOM_CHECKOUT_DOMAIN || 'Not configured'}`,
+)
 
 serve({
   port: PORT,
@@ -152,12 +160,3 @@ serve({
 
 console.log(`✅ PayGate Proxy Server running at http://localhost:${PORT}`)
 console.log(`📡 Ready to proxy requests to PayGate API`)
-
-
-
-
-
-
-
-
-

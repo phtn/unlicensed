@@ -9,6 +9,8 @@ import {courierSchema} from './couriers/d'
 import {emailSettingsSchema} from './emailSettings/d'
 import {logSchema} from './logs/d'
 import {orderSchema} from './orders/d'
+import {affiliateAccountSchema} from './affiliateAccounts/d'
+import {paygateAccountSchema} from './paygateAccounts/d'
 import {productSchema} from './products/d'
 import {rewardTierSchema, userRewardsSchema} from './rewards/d'
 import {staffSchema} from './staff/d'
@@ -60,4 +62,9 @@ export default defineSchema({
     .index('by_title', ['title'])
     .index('by_intent', ['intent'])
     .index('by_group', ['group']),
+  paygateAccounts: defineTable(paygateAccountSchema)
+    .index('by_address_in', ['addressIn'])
+    .index('by_default', ['isDefault']),
+  affiliateAccounts: defineTable(affiliateAccountSchema)
+    .index('by_wallet_address', ['walletAddress']),
 })

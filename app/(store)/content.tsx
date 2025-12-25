@@ -1,5 +1,6 @@
 'use client'
 import type {StoreCategory, StoreProduct} from '@/app/types'
+import type {BuildType} from '@/lib/flags'
 import {NewHome} from '@/components/base44/home'
 import {QuickScroll} from '@/components/base44/quick-scroll'
 import {Footer} from '@/components/ui/footer'
@@ -17,12 +18,14 @@ interface StorefrontPageProps {
   initialCategories: StoreCategory[]
   initialProducts: StoreProduct[]
   delay?: number
+  buildType?: BuildType
 }
 
 export const Content = ({
   initialCategories,
   initialProducts,
   delay,
+  buildType,
 }: StorefrontPageProps) => {
   const categoriesQuery = useQuery(api.categories.q.listCategories, {})
   const productsQuery = useQuery(api.products.q.listProducts, {})
@@ -40,13 +43,30 @@ export const Content = ({
     [products],
   )
 
+  const buildTypeColors: Record<BuildType, string> = {
+    testing: 'bg-yellow-500/90',
+    debug: 'bg-purple-500/90',
+    staging: 'bg-orange-500/90',
+    production: 'bg-green-500/90',
+  }
+
   return (
     <div className='space-y-40  flex-1'>
-      {delay !== undefined && delay > 0 && (
-        <div className='fixed bottom-4 right-4 z-50 rounded-lg bg-blue-500/90 text-white px-4 py-2 text-sm font-medium shadow-lg backdrop-blur-sm'>
-          ⏱️ Delay: {delay}ms
+      {(delay !== undefined && delay > 0) || buildType !== 'production' ? (
+        <div className='fixed bottom-4 right-4 z-50 flex flex-col gap-2'>
+          {delay !== undefined && delay > 0 && (
+            <div className='rounded-lg bg-blue-500/90 text-white px-4 py-2 text-sm font-medium shadow-lg backdrop-blur-sm'>
+              ⏱️ Delay: {delay}ms
+            </div>
+          )}
+          {buildType && buildType !== 'production' && (
+            <div
+              className={`rounded-lg ${buildTypeColors[buildType]} text-white px-4 py-2 text-sm font-medium shadow-lg backdrop-blur-sm uppercase tracking-wider`}>
+              {buildType}
+            </div>
+          )}
         </div>
-      )}
+      ) : null}
       <NewHome />
       <FeaturedProducts featuredProducts={featuredProducts} />
 

@@ -1,3 +1,5 @@
+import {paygatePublicConfig} from '@/lib/paygate/config'
+import type {ApiResponse} from '@/lib/paygate/types'
 import {decodeAddressIfNeeded} from '@/utils/url-decoder'
 import {useApiCall} from './use-api-call'
 import {useProviders} from './use-paygate-providers'
@@ -6,10 +8,61 @@ export const usePaygate = () => {
   const {providers, loading: loadingProviders} = useProviders()
   const {loading, response, handleApiCall} = useApiCall()
 
+  // Get API URLs from config (supports proxy server via NEXT_PUBLIC env vars)
+  const apiUrl = paygatePublicConfig.apiUrl
+  const checkoutUrl = paygatePublicConfig.checkoutUrl
+
+  // Promise-based wallet creation (returns promise for awaiting)
+  const createWallet = async (
+    address: string,
+    callback: string,
+  ): Promise<ApiResponse> => {
+    const encodedCallback = encodeURIComponent(encodeURIComponent(callback))
+    const url = `${apiUrl}/control/wallet.php?address=${address}&callback=${encodedCallback}`
+    
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json, text/html, */*',
+        },
+      })
+
+      const contentType = response.headers.get('content-type') || ''
+      let data: unknown
+
+      if (contentType.includes('application/json')) {
+        data = await response.json()
+      } else if (contentType.includes('text/html')) {
+        const html = await response.text()
+        data = {
+          type: 'html',
+          content: html,
+          message:
+            'This endpoint returns an HTML checkout page. Open the URL in a new tab to view it.',
+        }
+      } else {
+        data = await response.text()
+      }
+
+      return {
+        success: response.ok,
+        data,
+        url,
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        url,
+      }
+    }
+  }
+
   // Handlers for each form
   const handleWalletSubmit = (address: string, callback: string) => {
     const encodedCallback = encodeURIComponent(encodeURIComponent(callback))
-    const url = `https://api.paygate.to/control/wallet.php?address=${address}&callback=${encodedCallback}`
+    const url = `${apiUrl}/control/wallet.php?address=${address}&callback=${encodedCallback}`
     handleApiCall(url)
   }
 
@@ -27,7 +80,7 @@ export const usePaygate = () => {
     params.append('provider', provider)
     params.append('email', email)
     params.append('currency', currency)
-    const url = `https://checkout.paygate.to/process-payment.php?${params.toString()}`
+    const url = `${checkoutUrl}/process-payment.php?${params.toString()}`
     handleApiCall(url)
   }
 
@@ -65,7 +118,7 @@ export const usePaygate = () => {
         params.append('button', encodeURIComponent(whiteLabel.button))
     }
 
-    const url = `https://checkout.paygate.to/pay.php?${params.toString()}`
+    const url = `${checkoutUrl}/pay.php?${params.toString()}`
     handleApiCall(url)
   }
 
@@ -74,7 +127,7 @@ export const usePaygate = () => {
     const params = new URLSearchParams()
     params.append('address_in', addressToUse)
     params.append('transaction_id', transactionId)
-    const url = `https://api.paygate.to/status.php?${params.toString()}`
+    const url = `${apiUrl}/status.php?${params.toString()}`
     handleApiCall(url)
   }
 
@@ -92,7 +145,7 @@ export const usePaygate = () => {
     params.append('provider', provider)
     params.append('email', email)
     params.append('currency', currency)
-    const url = `https://api.paygate.to/create.php?${params.toString()}`
+    const url = `${apiUrl}/create.php?${params.toString()}`
     handleApiCall(url)
   }
 
@@ -109,7 +162,7 @@ export const usePaygate = () => {
     if (affiliateWallet) {
       params.append('affiliate', affiliateWallet)
     }
-    const url = `https://api.paygate.to/control/affiliate.php?${params.toString()}`
+    const url = `${apiUrl}/control/affiliate.php?${params.toString()}`
     handleApiCall(url)
   }
 
@@ -126,6 +179,7 @@ export const usePaygate = () => {
     handleCallbackSimulatorSubmit,
     handleHostedPaymentSubmit,
     handleProcessPaymentSubmit,
+    createWallet,
     loadingProviders,
     loading,
     response,

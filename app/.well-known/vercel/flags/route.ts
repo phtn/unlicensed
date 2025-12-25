@@ -1,9 +1,10 @@
 import {createFlagsDiscoveryEndpoint, getProviderData} from 'flags/next'
-import {delayFlag} from '@/lib/flags'
+import {buildTypeFlag, delayFlag} from '@/lib/flags'
 import {NextRequest} from 'next/server'
 
 const flags = {
   delay: delayFlag,
+  buildType: buildTypeFlag,
 }
 
 const getApiData = async (_request: NextRequest) => {

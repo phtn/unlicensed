@@ -1,0 +1,334 @@
+'use client'
+
+import {api} from '@/convex/_generated/api'
+import type {Doc} from '@/convex/_generated/dataModel'
+import {useApiCall} from '@/hooks/use-api-call'
+import {usePaygate} from '@/hooks/use-paygate'
+import type {ProviderStatusResponse} from '@/lib/paygate/types'
+import {Button, Card, CardBody} from '@heroui/react'
+import {useStore} from '@tanstack/react-store'
+import {useAction, useMutation} from 'convex/react'
+import {FunctionReference} from 'convex/server'
+import {useCallback, useEffect, useState} from 'react'
+import {z} from 'zod'
+import {useAppForm} from '../../../_components/ui/form-context'
+import {ProvidersList} from './providers-list'
+
+// Type guard for ProviderStatusResponse
+function isProviderStatusResponse(
+  data: unknown,
+): data is ProviderStatusResponse {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'providers' in data &&
+    Array.isArray((data as ProviderStatusResponse).providers)
+  )
+}
+
+const paygateAccountSchema = z.object({
+  addressIn: z
+    .string()
+    .min(1, 'Wallet address is required')
+    .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address (0x...)'),
+  label: z.string().optional(),
+  description: z.string().optional(),
+  isDefault: z.boolean().optional(),
+  enabled: z.boolean().optional(),
+  callbackUrl: z.url().optional(),
+})
+
+type PaygateAccountFormValues = z.infer<typeof paygateAccountSchema>
+
+const defaultValues: PaygateAccountFormValues = {
+  addressIn: '',
+  callbackUrl: '',
+  label: '',
+  description: '',
+  isDefault: false,
+  enabled: true,
+}
+
+type PaygateAccountFormProps = {
+  accountId?: Doc<'paygateAccounts'>['_id']
+  initialValues?: PaygateAccountFormValues
+  onCreated?: VoidFunction
+  onUpdated?: VoidFunction
+  onCancel?: VoidFunction
+}
+
+export const PaygateAccountForm = ({
+  accountId,
+  initialValues,
+  onCreated,
+  onUpdated,
+  onCancel,
+}: PaygateAccountFormProps) => {
+  const isEditMode = !!accountId
+  const createAccount = useMutation(api.paygateAccounts.m.createAccount)
+  const updateAccount = useMutation(api.paygateAccounts.m.updateAccount)
+  const syncAccount = useAction(
+    api.paygateAccounts.a
+      .syncAccountFromPayGate as unknown as FunctionReference<'action'>,
+  )
+  const {createWallet} = usePaygate()
+  const {handleApiCall, response} = useApiCall()
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isSyncing, setIsSyncing] = useState(false)
+
+  useEffect(() => {
+    if (!response) {
+      handleApiCall('https://api.paygate.to/control/provider-status/')
+    }
+  }, [handleApiCall, response])
+
+  const formValues = initialValues ?? defaultValues
+
+  const form = useAppForm({
+    defaultValues: formValues,
+    onSubmit: async ({value}) => {
+      setStatus('idle')
+      setErrorMessage(null)
+      try {
+        const parsed = paygateAccountSchema.safeParse(value)
+        if (!parsed.success) {
+          const message =
+            parsed.error.issues[0]?.message ??
+            'Please review the form for validation errors.'
+          setErrorMessage(message)
+          setStatus('error')
+          return
+        }
+
+        const data = parsed.data
+
+        if (isEditMode && accountId) {
+          await updateAccount({
+            id: accountId,
+            label: data.label,
+            description: data.description,
+            isDefault: data.isDefault,
+            enabled: data.enabled,
+          })
+          setStatus('success')
+          onUpdated?.()
+        } else {
+          // Create wallet in PayGate first
+          const callbackUrl =
+            typeof window !== 'undefined'
+              ? `${window.location.origin}/api/paygate/webhook`
+              : `${process.env.NEXT_PUBLIC_APP_URL || 'https://localhost:3000'}/api/paygate/webhook`
+          const paygateResponse = await createWallet(
+            data.addressIn,
+            callbackUrl,
+          )
+
+          if (!paygateResponse.success) {
+            const errorMsg =
+              typeof paygateResponse.error === 'string'
+                ? paygateResponse.error
+                : 'Failed to create wallet in PayGate. Please check the wallet address and try again.'
+            setErrorMessage(errorMsg)
+            setStatus('error')
+            return
+          }
+
+          // If PayGate API call succeeded, save to Convex
+          await createAccount({
+            addressIn: data.addressIn,
+            label: data.label,
+            description: data.description,
+            isDefault: data.isDefault,
+            enabled: data.enabled,
+          })
+          form.reset()
+          setStatus('success')
+          onCreated?.()
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : isEditMode
+              ? 'Failed to update account.'
+              : 'Failed to create account.'
+        setErrorMessage(message)
+        setStatus('error')
+      }
+    },
+  })
+
+  const handleSync = useCallback(async () => {
+    if (!accountId) return
+
+    setIsSyncing(true)
+    try {
+      const result = await syncAccount({accountId})
+      if (result.success) {
+        setStatus('success')
+      } else {
+        setErrorMessage(result.error || 'Failed to sync account data')
+        setStatus('error')
+      }
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Failed to sync account data',
+      )
+      setStatus('error')
+    } finally {
+      setIsSyncing(false)
+    }
+  }, [accountId, syncAccount])
+
+  return (
+    <Card
+      shadow='none'
+      radius='none'
+      className='md:rounded-lg dark:bg-dark-table/40 w-full py-4'>
+      <CardBody className='space-y-6'>
+        <div>
+          <h3 className='text-lg font-semibold'>
+            <span className='tracking-tight'>
+              {isEditMode ? 'Edit Wallet' : 'Create Wallet'}{' '}
+            </span>
+            <span className='ml-2 font-light text-base text-foreground/60'>
+              {isEditMode
+                ? 'Update account settings or sync data from PayGate API.'
+                : 'Enter your Polygon USDC wallet address to create a new PayGate account.'}
+            </span>
+          </h3>
+        </div>
+
+        <div className='grid grid-cols-2'>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              form.handleSubmit()
+            }}
+            className='space-y-8 max-w-2xl'>
+            <form.AppField name='addressIn'>
+              {(input) => (
+                <input.TextField
+                  type='text'
+                  label='Polygon Wallet Address'
+                  placeholder='0x611F3143b76a994214d751d762b52D081d8DC4de'
+                />
+              )}
+            </form.AppField>
+
+            <form.AppField name='callbackUrl'>
+              {(input) => (
+                <input.TextField
+                  type='text'
+                  label='Callback URL'
+                  placeholder='https://example.com/callback'
+                />
+              )}
+            </form.AppField>
+
+            <div className='flex items-center space-x-4'>
+              <form.AppField name='label'>
+                {(input) => (
+                  <input.TextField
+                    type='text'
+                    label='Label (Optional)'
+                    placeholder='e.g., Main Account, Staging Account'
+                  />
+                )}
+              </form.AppField>
+
+              <form.AppField name='description'>
+                {(input) => (
+                  <input.TextField
+                    type='text'
+                    label='Description (Optional)'
+                    placeholder='Account description or notes'
+                  />
+                )}
+              </form.AppField>
+            </div>
+
+            <div className='flex items-center justify-between'>
+              <div className='py-8 space-y-8'>
+                <form.AppField name='isDefault'>
+                  {(input) => (
+                    <input.SwitchField
+                      type='checkbox'
+                      label='Set as default'
+                      // description='Used by default for payments'
+                    />
+                  )}
+                </form.AppField>
+
+                <form.AppField name='enabled'>
+                  {(input) => (
+                    <input.SwitchField
+                      type='checkbox'
+                      label='Enabled for payment'
+                      // description='Enabled'
+                    />
+                  )}
+                </form.AppField>
+              </div>
+              {errorMessage && (
+                <div className='rounded-lg bg-danger/10 border border-danger/20 p-3 text-sm text-danger'>
+                  {errorMessage}
+                </div>
+              )}
+
+              {status === 'success' && (
+                <div className='rounded-lg bg-success/10 border border-success/20 p-3 text-sm text-success'>
+                  {isEditMode
+                    ? 'Account updated successfully!'
+                    : 'Account created successfully!'}
+                </div>
+              )}
+
+              <div className='flex items-center gap-3'>
+                <Button
+                  type='submit'
+                  color='default'
+                  className='min-w-32'
+                  isLoading={useStore(
+                    form.store,
+                    (state) => state.isSubmitting,
+                  )}>
+                  {isEditMode ? 'Update Account' : 'Create Account'}
+                </Button>
+
+                {isEditMode && accountId && (
+                  <Button
+                    type='button'
+                    variant='bordered'
+                    onPress={handleSync}
+                    isLoading={isSyncing}>
+                    Sync from PayGate
+                  </Button>
+                )}
+
+                {onCancel && (
+                  <Button type='button' variant='light' onPress={onCancel}>
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </div>
+          </form>
+
+          <div className='dark:text-white dark:bg-background p-2 rounded-lg h-170 overflow-scroll w-full -translate-y-10'>
+            <ProvidersList
+              data={
+                response?.data && isProviderStatusResponse(response.data)
+                  ? response.data.providers
+                  : []
+              }
+              loading={!response}
+              error={response?.error ? new Error(response.error) : null}
+            />
+          </div>
+        </div>
+      </CardBody>
+    </Card>
+  )
+}

@@ -12,8 +12,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/app/admin/_components/ui/sidebar'
-import type {NavGroup, NavItem} from './ui/types'
-// import {useAppTheme} from '@/hooks/use-theme'
 import {ThemeToggle} from '@/components/ui/theme-toggle'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
@@ -22,6 +20,7 @@ import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {usePathname, useRouter} from 'next/navigation'
 import {startTransition, useCallback, useEffect, useMemo} from 'react'
+import type {NavGroup, NavItem} from './ui/types'
 
 // Global Set to track prefetched routes across all instances
 const prefetchedRoutes = new Set<string>()
@@ -321,7 +320,12 @@ const data: Record<string, NavGroup[]> = {
       url: '#',
       items: [
         {
-          title: 'Settings',
+          title: 'Payments',
+          url: '/admin/payments',
+          icon: 'linalool',
+        },
+        {
+          title: 'Admin',
           url: '/admin/settings',
           icon: 'linalool',
         },

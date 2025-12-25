@@ -6,6 +6,6 @@ export const metadata: Metadata = {
   description: 'View and analyze site visit logs and analytics.',
 }
 
-export default function AnalyticsPage() {
+export default function PaymentsPage() {
   return <Content />
 }

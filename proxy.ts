@@ -117,14 +117,14 @@ export async function proxy(request: NextRequest) {
     path.toLowerCase().endsWith(ext),
   )
   const shouldSkipPath = skipPaths.some((skipPath) => path.startsWith(skipPath))
-  
+
   // Skip prefetch requests (Next.js router prefetching)
   // Prefetch requests have either 'next-router-prefetch' header or 'purpose: prefetch' header
   const isPrefetch =
     request.headers.get('next-router-prefetch') === '1' ||
     request.headers.get('purpose') === 'prefetch' ||
     request.headers.get('Purpose') === 'prefetch'
-  
+
   const shouldSkip = shouldSkipPath || isStaticAsset || isPrefetch
 
   if (!shouldSkip) {
@@ -176,10 +176,17 @@ async function logVisit(request: NextRequest, startTime: number) {
     // Check if IPAPI geolocation is enabled
     let ipapiEnabled = false
     try {
-      ipapiEnabled = await client.query(api.admin.q.getIpapiGeolocationEnabled, {})
+      ipapiEnabled = await client.query(
+        api.admin.q.getIpapiGeolocationEnabled,
+        {},
+      )
+      return false
     } catch (error) {
       // If query fails, default to false (disabled) to be safe
-      console.warn('Failed to check IPAPI geolocation setting, defaulting to disabled:', error)
+      console.warn(
+        'Failed to check IPAPI geolocation setting, defaulting to disabled:',
+        error,
+      )
       ipapiEnabled = false
     }
 

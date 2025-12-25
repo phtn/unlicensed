@@ -4,6 +4,7 @@ import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {usePaygate} from '@/hooks/use-paygate'
+import {paygatePublicConfig} from '@/lib/paygate/config'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody} from '@heroui/react'
@@ -25,7 +26,7 @@ export default function PayPage() {
   const adminSettings = useQuery(api.admin.q.getAdminSettings)
 
   // Use PayGate hook
-  const {handleHostedPaymentSubmit, loading, response} = usePaygate()
+  const {handleProcessPaymentSubmit, loading, response} = usePaygate()
 
   // Initialize payment when order and settings are loaded
   useEffect(() => {
@@ -52,13 +53,14 @@ export default function PayPage() {
 
     // Initiate hosted payment
     hasInitiated.current = true
-    handleHostedPaymentSubmit(
+    handleProcessPaymentSubmit(
       walletAddress,
       amountInDollars,
+      'moonpay',
       order.contactEmail,
       'USD',
     )
-  }, [order, adminSettings, handleHostedPaymentSubmit, router, orderId])
+  }, [order, adminSettings, handleProcessPaymentSubmit, router, orderId])
 
   // Handle HTML response - extract URL and redirect
   useEffect(() => {
@@ -100,10 +102,11 @@ export default function PayPage() {
       const formActionMatch = html.match(/<form[^>]*action=["']([^"']+)["']/i)
       if (formActionMatch && formActionMatch[1]) {
         const formUrl = formActionMatch[1].trim()
-        // If it's a relative URL, make it absolute
+        // If it's a relative URL, make it absolute using checkout URL from config
+        const checkoutUrl = paygatePublicConfig.checkoutUrl
         const redirectUrl = formUrl.startsWith('http')
           ? formUrl
-          : `https://checkout.paygate.to${formUrl}`
+          : `${checkoutUrl}${formUrl}`
         window.location.href = redirectUrl
         return
       }
@@ -114,9 +117,10 @@ export default function PayPage() {
       )
       if (anchorMatch && anchorMatch[1]) {
         const anchorUrl = anchorMatch[1].trim()
+        const checkoutUrl = paygatePublicConfig.checkoutUrl
         const redirectUrl = anchorUrl.startsWith('http')
           ? anchorUrl
-          : `https://checkout.paygate.to${anchorUrl}`
+          : `${checkoutUrl}${anchorUrl}`
         window.location.href = redirectUrl
         return
       }

@@ -165,7 +165,7 @@ export function PayGateSettings() {
             <span className='text-sm text-danger'>Failed to save settings</span>
           )}
           <Button
-            onClick={handleSave}
+            onPress={handleSave}
             color='primary'
             isLoading={isSaving}
             isDisabled={
