@@ -1,13 +1,14 @@
 import {v} from 'convex/values'
 import {mutation} from '../_generated/server'
-import {paygateAccountSchema} from './d'
 
 /**
  * Create a new PayGate account
  */
 export const createAccount = mutation({
   args: {
+    hexAddress: v.string(),
     addressIn: v.string(),
+    callbackUrl: v.optional(v.string()),
     label: v.optional(v.string()),
     description: v.optional(v.string()),
     isDefault: v.optional(v.boolean()),
@@ -16,14 +17,18 @@ export const createAccount = mutation({
   handler: async (ctx, args) => {
     // Validate wallet address format (basic Ethereum address format)
     const addressRegex = /^0x[a-fA-F0-9]{40}$/
-    if (!addressRegex.test(args.addressIn)) {
-      throw new Error('Invalid wallet address format. Must be a valid Ethereum address (0x...).')
+    if (!addressRegex.test(args.hexAddress!)) {
+      throw new Error(
+        'Invalid wallet address format. Must be a valid Ethereum address (0x...).',
+      )
     }
 
     // Check if account with this address already exists
     const existing = await ctx.db
       .query('paygateAccounts')
-      .withIndex('by_address_in', (q) => q.eq('addressIn', args.addressIn.toLowerCase()))
+      .withIndex('by_hexAddress', (q) =>
+        q.eq('hexAddress', args.hexAddress.toLowerCase()),
+      )
       .unique()
 
     if (existing) {
@@ -36,7 +41,7 @@ export const createAccount = mutation({
         .query('paygateAccounts')
         .withIndex('by_default', (q) => q.eq('isDefault', true))
         .collect()
-      
+
       for (const account of currentDefaults) {
         await ctx.db.patch(account._id, {isDefault: false})
       }
@@ -44,7 +49,8 @@ export const createAccount = mutation({
 
     const now = Date.now()
     const accountId = await ctx.db.insert('paygateAccounts', {
-      addressIn: args.addressIn.toLowerCase(), // Normalize to lowercase
+      hexAddress: args.hexAddress.toLowerCase(), // Normalize to lowercase
+      addressIn: args.addressIn,
       label: args.label,
       description: args.description,
       isDefault: args.isDefault ?? false,
@@ -63,6 +69,8 @@ export const createAccount = mutation({
 export const updateAccount = mutation({
   args: {
     id: v.id('paygateAccounts'),
+    hexAddress: v.optional(v.string()),
+    callbackUrl: v.optional(v.string()),
     label: v.optional(v.string()),
     description: v.optional(v.string()),
     isDefault: v.optional(v.boolean()),
@@ -80,7 +88,7 @@ export const updateAccount = mutation({
         .query('paygateAccounts')
         .withIndex('by_default', (q) => q.eq('isDefault', true))
         .collect()
-      
+
       for (const defaultAccount of currentDefaults) {
         if (defaultAccount._id !== args.id) {
           await ctx.db.patch(defaultAccount._id, {isDefault: false})
@@ -180,4 +188,3 @@ export const updateAccountSyncData = mutation({
     return id
   },
 })
-

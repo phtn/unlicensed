@@ -206,7 +206,7 @@ function Sidebar({
           data-sidebar='sidebar'
           data-mobile='true'
           className={cn(
-            'w-(--sidebar-width) bg-linear-to-l from-sidebar via-background to-background p-0 text-sidebar-foreground [&>button]:hidden',
+            'w-(--sidebar-width) bg-sidebar backdrop-blur-3xl p-0 text-sidebar-foreground [&>button]:hidden',
             className,
           )}
           style={

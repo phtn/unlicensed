@@ -67,7 +67,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props} className='border-none!' suppressHydrationWarning>
       <SidebarHeader className=''>
-        <div className='h-16 flex items-end justify-between'>
+        <div className='h-16 translate-x-3 flex items-end justify-between'>
           <div className='h-12 flex w-full items-center _justify-center dark:bg-sidebar bg-linear-to-r from-foreground/90 via-foreground/90 to-transparent dark:from-featured/20 dark:via-foreground/10 px-4 rounded-s-3xl'>
             <Icon
               name='rapid-fire'
@@ -93,9 +93,9 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                   return (
                     <SidebarMenuItem
                       className={cn(
-                        'text-xs tracking-tighter hover:bg-light-gray/15 dark:hover:bg-blue-100/5 rounded-lg',
+                        'text-xs tracking-tighter hover:bg-light-gray/10 dark:hover:bg-blue-100/5 rounded-lg',
                         {
-                          'bg-light-gray/20 dark:bg-dark-gray/60': isActive,
+                          'bg-slate-300 dark:bg-blue-100/10': isActive,
                         },
                       )}
                       key={item.title}>
@@ -126,7 +126,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                       className={cn(
                         'text-sm font-semibold tracking-tight rounded-lg hover:bg-light-gray/20 dark:hover:bg-dark-gray/20',
                         {
-                          'dark:bg-dark-gray/60 bg-light-gray/20': isActive,
+                          'bg-slate-300 dark:bg-blue-100/10': isActive,
                         },
                       )}
                       key={item.title + x}>
@@ -160,7 +160,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 return (
                   <SidebarMenuItem
                     className={cn('text-xs tracking-tighter rounded-lg', {
-                      'dark:bg-dark-gray/60 bg-light-gray/20': isActive,
+                      'bg-slate-300 dark:bg-blue-100/10': isActive,
                     })}
                     key={item.title}>
                     <SidebarMenuButton

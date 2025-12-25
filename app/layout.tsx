@@ -10,6 +10,7 @@ import {
 } from 'next/font/google'
 import {AgeConfirmationModal} from './_components/age-confirmation-modal'
 import {ConditionalNavbar} from './_components/conditional-navbar'
+import {EmailLinkHandler} from './_components/email-link-handler'
 import {ScreenDimensionsTracker} from './_components/screen-dimensions-tracker'
 import './globals.css'
 
@@ -146,6 +147,7 @@ export default function RootLayout({
       <body
         className={`${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased font-sans`}>
         <ProvidersCtxProvider>
+          <EmailLinkHandler />
           <ScreenDimensionsTracker />
           <AgeConfirmationModal />
           <ConditionalNavbar navbar={navbar} />

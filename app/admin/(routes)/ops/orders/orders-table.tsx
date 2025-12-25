@@ -34,11 +34,11 @@ const statusColorMap: Record<string, ChipProps['color']> = {
 }
 
 const columns = [
-  {name: 'ORDER NUMBER', uid: 'orderNumber'},
-  {name: 'CUSTOMER', uid: 'customer'},
   {name: 'STATUS', uid: 'status'},
   {name: 'TOTAL', uid: 'total'},
   {name: 'COURIER', uid: 'courier'},
+  {name: 'ORDER NUMBER', uid: 'orderNumber'},
+  {name: 'CUSTOMER', uid: 'customer'},
   {name: 'DATE', uid: 'date'},
   {name: 'ACTIONS', uid: 'actions'},
 ]
@@ -72,7 +72,7 @@ export const OrdersTable = () => {
               color='foreground'
               href={`/admin/orders/${order.orderNumber}`}
               className='font-mono opacity-80 text-sm hover:underline underline-offset-4 decoration-dashed decoration-foreground/40'>
-              {order.orderNumber}
+              {order.orderNumber.split('-').pop()}
             </Link>
           </div>
         )
@@ -82,22 +82,20 @@ export const OrdersTable = () => {
             <p className='tracking-tight font-medium text-sm'>
               {order.contactEmail}
             </p>
-            {/*{order.userId && (
-              <p className='text-xs opacity-40 font-mono'>
-                {order.userId.substring(0, 12)}
-              </p>
-            )}*/}
           </div>
         )
       case 'status':
         return (
-          <Chip
-            size='sm'
-            variant='flat'
-            className='capitalize'
-            color={statusColorMap[order.orderStatus] || 'default'}>
-            {order.orderStatus}
-          </Chip>
+          <div className='flex items-center justify-center border border-white'>
+            <Chip
+              size='sm'
+              variant='flat'
+              className='capitalize'
+              classNames={{base: ''}}
+              color={statusColorMap[order.orderStatus] || 'default'}>
+              {order.orderStatus}
+            </Chip>
+          </div>
         )
       case 'total':
         return moneyCell(order.totalCents ?? 0)
@@ -108,7 +106,7 @@ export const OrdersTable = () => {
             variant='flat'
             className='capitalize'
             color={'default'}>
-            {order.courier}
+            {order.courier ?? 'Assign Courier'}
           </Chip>
         )
       case 'date':
@@ -145,9 +143,9 @@ export const OrdersTable = () => {
 
   return (
     <Card
-      shadow='sm'
+      shadow='none'
       radius='none'
-      className='p-4 md:rounded-lg dark:bg-dark-table/40 md:h-full h-[calc(100lvh-24px)] w-screen md:full overflow-scroll'>
+      className='p-4 md:rounded-lg bg-sidebar/20  dark:bg-dark-table/40 md:h-full h-[calc(100lvh-24px)] w-screen md:w-full overflow-scroll'>
       <Table
         key={`table-${selectedOrderId || 'none'}-${open}`}
         isCompact
@@ -190,6 +188,7 @@ export const OrdersTable = () => {
                       selectedRow === order._id && isSelected
                         ? 'bg-neutral-300/10 first:border-l not-last:border-r-0 last:border-r -border-dotted border-neutral-300 dark:border-teal-200/40'
                         : '',
+                      columnKey === 'status' && 'w-30',
                     )}>
                     {renderCell(order, columnKey)}
                   </TableCell>

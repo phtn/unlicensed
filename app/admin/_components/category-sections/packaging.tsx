@@ -39,8 +39,8 @@ export const Packaging = ({form}: PackagingProps) => {
   return (
     <FormSection id='packaging' position='middle'>
       <Header label='Packaging' />
-      <div className='grid gap-6'>
-        <div className='flex items-center space-x-6'>
+      <div className='grid grid-cols-1 sm:grid-cols-1 gap-6 w-full'>
+        <div className='flex items-center space-x-6 w-full'>
           <form.AppField name='unitsRaw'>
             {(field) => {
               const unitsValue = (field.state.value as string) ?? ''
@@ -51,7 +51,7 @@ export const Packaging = ({form}: PackagingProps) => {
               const selectedKeys = new Set(selectedUnits)
 
               return (
-                <div className='space-y-2'>
+                <div className='space-y-2 w-full'>
                   <Select
                     label='Units'
                     selectionMode='multiple'
@@ -67,10 +67,10 @@ export const Packaging = ({form}: PackagingProps) => {
                     isMultiline
                     classNames={{
                       ...commonInputClassNames,
-                      value: 'placeholder:text-slate-400/80 py-2',
+                      value: 'placeholder:text-slate-400/80',
                       trigger:
                         'border h-14 border-light-gray/10 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-                      mainWrapper: 'py-4',
+                      mainWrapper: '',
                     }}
                     renderValue={(items) => {
                       return (
@@ -89,12 +89,13 @@ export const Packaging = ({form}: PackagingProps) => {
                       <SelectItem key={unit.key}>{unit.label}</SelectItem>
                     ))}
                   </Select>
-                  <p className='text-xs opacity-80'>
+                  {/*<p className='text-xs opacity-80'>
                     Select multiple units from the suggestions. You can also
                     type custom units separated by commas in the input below.
-                  </p>
+                  </p>*/}
                   <Input
                     size='sm'
+                    label='Add custom units here'
                     value={unitsValue}
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
@@ -176,8 +177,8 @@ export const Packaging = ({form}: PackagingProps) => {
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                     placeholder='Enter denominations separated by commas'
-                    className='mb-6'
-                    minRows={2}
+                    className='mb-1 w-full'
+                    minRows={1}
                     variant='bordered'
                     classNames={commonInputClassNames}
                   />
@@ -190,7 +191,7 @@ export const Packaging = ({form}: PackagingProps) => {
                         </span>
                         :
                       </p>
-                      <div className='flex flex-wrap gap-1 md:gap-3 font-space font-semibold'>
+                      <div className='flex flex-wrap gap-1 md:gap-3 font-space font-semibold h-16'>
                         {suggestions.map((suggestion) => {
                           const isSelected =
                             currentDenominations.includes(suggestion)

@@ -179,7 +179,7 @@ const SettingsPanel = ({
 
   if (isMobile) {
     return (
-      <Drawer defaultChecked={openMobile} onOpenChange={setOpenMobile}>
+      <Drawer isOpen={openMobile} onOpenChange={setOpenMobile} placement='right'>
         <DrawerContent
           className={cn('w-72 px-4 py-0 bg-fade [&>button]:hidden', {})}
           style={
@@ -315,9 +315,7 @@ const PanelHeader = ({title, subtext}: PanelHeaderProps) => {
 }
 
 const SettingsPanelTrigger = () => {
-  const {isMobile, state, togglePanel} = useSettingsPanel()
-
-  const isExpanded = useMemo(() => state === 'expanded', [state])
+  const {isMobile, openMobile, togglePanel} = useSettingsPanel()
 
   if (!isMobile) {
     return null
@@ -329,8 +327,8 @@ const SettingsPanelTrigger = () => {
       data-sidebar='trigger'
       className={cn('text-foreground/80 hover:text-foreground')}
       onPress={togglePanel}>
-      <Icon name='sidebar' className={cn('h-4', isExpanded && 'rotate-180')} />
-      <span className='sr-only'>Toggle Sidebar</span>
+      <Icon name='sidebar' className={cn('h-4', openMobile && 'rotate-180')} />
+      <span className='sr-only'>Toggle Settings Panel</span>
     </Button>
   )
 }

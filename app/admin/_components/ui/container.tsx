@@ -1,6 +1,7 @@
 'use client'
 
 import {Icon} from '@/lib/icons'
+import {useMobile} from '@/hooks/use-mobile'
 import {cn} from '@/lib/utils'
 import {ReactNode, useMemo} from 'react'
 import {useSettingsPanel} from './settings'
@@ -17,15 +18,21 @@ export const WrappedContent = ({
   toolbar,
   withPanel,
 }: WrappedContentProps) => {
-  const {state, togglePanel} = useSettingsPanel()
-  const isExpanded = useMemo(() => state === 'expanded', [state])
+  const {state, openMobile, isMobile, togglePanel} = useSettingsPanel()
+  const isExpanded = useMemo(() => 
+    isMobile ? openMobile : state === 'expanded', 
+    [isMobile, openMobile, state]
+  )
   return (
     <Wrapper isPanelExpanded={isExpanded}>
       <div className='px-3 sm:px-4 space-x-4 flex items-center justify-between min-w-0'>
         <SidebarTrigger />
         {toolbar}
         {withPanel && (
-          <SettingsPanelTrigger state={state} toggleFn={togglePanel} />
+          <SettingsPanelTrigger 
+            state={isMobile ? (openMobile ? 'expanded' : 'collapsed') : state} 
+            toggleFn={togglePanel} 
+          />
         )}
       </div>
       {children}
@@ -63,6 +70,7 @@ interface SettingsPanelTriggerProps {
   toggleFn: VoidFunction
 }
 const SettingsPanelTrigger = ({state, toggleFn}: SettingsPanelTriggerProps) => {
+  const isMobile = useMobile()
   const isExpanded = useMemo(() => state === 'expanded', [state])
   return (
     <button
@@ -70,12 +78,13 @@ const SettingsPanelTrigger = ({state, toggleFn}: SettingsPanelTriggerProps) => {
         'p-1.5 rounded-md border-none hover:bg-light-gray/15 text-foreground hover:text-foreground',
         {'rotate-180': isExpanded},
       )}
-      onClick={toggleFn}>
+      onClick={toggleFn}
+      aria-label={isMobile ? 'Toggle Settings Panel' : 'Toggle Sidebar'}>
       <Icon
         name='sidebar'
-        className={cn('size-5 opacity-80 group-hover:opacity-100')}
+        className={cn('size-5 opacity-80 group-hover:opacity-100 transition-transform')}
       />
-      <span className='sr-only'>Toggle Sidebar</span>
+      <span className='sr-only'>{isMobile ? 'Toggle Settings Panel' : 'Toggle Sidebar'}</span>
     </button>
   )
 }

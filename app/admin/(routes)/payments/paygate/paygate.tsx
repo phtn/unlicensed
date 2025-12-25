@@ -58,6 +58,7 @@ const PayGateContentInner = () => {
         <PaygateAccountForm
           accountId={editingAccount._id}
           initialValues={{
+            hexAddress: editingAccount.hexAddress,
             addressIn: editingAccount.addressIn,
             label: editingAccount.label ?? '',
             description: editingAccount.description ?? '',

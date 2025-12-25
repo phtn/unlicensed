@@ -231,7 +231,7 @@ export const RecentActivities = ({
           )
         case 'details':
           return (
-            <div className='flex flex-col'>
+            <div className='flex flex-col whitespace-nowrap'>
               {activity.metadata?.orderNumber && (
                 <p className='text-bold text-small capitalize'>
                   Order: {activity.metadata.orderNumber}
@@ -346,11 +346,11 @@ export const RecentActivities = ({
 
   return (
     <Card
-      shadow='sm'
+      shadow='none'
       radius='none'
       className={cn(
-        'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden rounded-t-2xl md:w-full w-screen overflow-x-scroll',
-        'transition-transform duration-300',
+        'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden md:rounded-t-2xl md:w-full w-screen overflow-x-scroll',
+        'transition-transform duration-300 md:border-0 border-t border-light-gray/40',
         {'md:-translate-y-46 -translate-y-42 h-full': fullTable},
       )}>
       <div
@@ -360,11 +360,14 @@ export const RecentActivities = ({
             'md:h-[calc(100lvh-66px)]': fullTable,
           },
         )}>
-        <div className='flex items-end justify-between text-sm font-medium px-3 py-2'>
+        <div className='relative flex items-end justify-between text-sm font-medium px-3 py-2 md:w-full w-screen'>
           <span>Recent Activity</span>
           <Icon
-            name='fullscreen'
-            className='size-4.5 opacity-60 hover:opacity-100'
+            name='chevron-double-left'
+            className={cn(
+              'fixed right-1 size-4.5 opacity-60 hover:opacity-100',
+              fullTable ? '-rotate-45' : 'rotate-45',
+            )}
             onClick={toggleFullTable}
           />
         </div>

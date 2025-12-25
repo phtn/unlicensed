@@ -30,9 +30,13 @@ export const createOrUpdateUserInFirestore = async (
   const userData: UserData = {
     email: user.email || '',
     name: user.displayName || user.email?.split('@')[0] || 'User',
-    photoUrl: user.photoURL || undefined,
     updatedAt: Date.now(),
     createdAt: userSnap.exists() ? userSnap.data().createdAt : Date.now(),
+  }
+
+  // Only include photoUrl if it exists (Firestore doesn't allow undefined)
+  if (user.photoURL) {
+    userData.photoUrl = user.photoURL
   }
 
   await setDoc(userRef, userData, {merge: true})

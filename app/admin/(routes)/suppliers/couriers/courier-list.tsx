@@ -1,6 +1,7 @@
 'use client'
 
 import {Doc} from '@/convex/_generated/dataModel'
+import {Icon, IconName} from '@/lib/icons'
 import {
   Card,
   Chip,
@@ -26,9 +27,9 @@ const statusColorMap: Record<string, ChipProps['color']> = {
 
 const columns = [
   {name: 'NAME', uid: 'name'},
-  {name: 'CODE', uid: 'code'},
   {name: 'STATUS', uid: 'status'},
   {name: 'TRACKING URL', uid: 'trackingUrl'},
+  {name: 'CODE', uid: 'code'},
   {name: 'CREATED', uid: 'created'},
 ]
 
@@ -49,17 +50,16 @@ export const CourierList = ({couriers}: CourierListProps) => {
           <div className='flex flex-col'>
             <Link
               href={`/admin/suppliers/logistics?tabId=edit&id=${courier._id}`}
-              className='text-bold text-sm hover:underline'>
-              {courier.name}
+              className='text-bold text-sm hover:underline flex items-center space-x-2'>
+              <Icon name={courier.code as IconName} className='size-7' />
+              <span>{courier.name}</span>
             </Link>
           </div>
         )
       case 'code':
         return (
           <div className='flex flex-col'>
-            <p className='text-bold text-sm font-mono text-gray-400'>
-              {courier.code}
-            </p>
+            <p className='text-sm font-mono opacity-80'>{courier.code}</p>
           </div>
         )
       case 'status':
@@ -78,11 +78,11 @@ export const CourierList = ({couriers}: CourierListProps) => {
         return (
           <div className='flex flex-col'>
             {courier.trackingUrlTemplate ? (
-              <p className='text-bold text-sm text-gray-400 truncate max-w-lg'>
+              <p className='text-bold text-sm opacity-80 truncate max-w-lg'>
                 {courier.trackingUrlTemplate}
               </p>
             ) : (
-              <p className='text-sm text-gray-400'>No template</p>
+              <p className='text-sm opacity-80'>No template</p>
             )}
           </div>
         )
@@ -131,7 +131,7 @@ export const CourierList = ({couriers}: CourierListProps) => {
         <Card
           shadow='none'
           radius='none'
-          className='md:p-4 md:w-full w-screen overflow-auto dark:bg-dark-table/40'>
+          className='md:p-4 md:rounded-xl md:w-full w-screen overflow-auto bg-sidebar/20 dark:bg-dark-table/40'>
           <Table
             isCompact
             removeWrapper

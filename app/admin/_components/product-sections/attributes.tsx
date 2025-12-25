@@ -77,7 +77,7 @@ export const Attributes = ({form}: AttributesProps) => {
           </form.Field>
         </div>
 
-        <div className='flex w-full items-center space-x-6'>
+        <div className='grid grid-cols-1 sm:grid-cols-3 w-full gap-6'>
           <form.Field name='terpenes'>
             {(field) => (
               <div className='space-y-2 w-full'>

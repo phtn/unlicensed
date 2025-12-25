@@ -2,6 +2,7 @@ import {defineSchema, defineTable} from 'convex/server'
 import {activitySchema} from './activities/d'
 import {activityViewSchema} from './activityViews/d'
 import {adminSettingsSchema} from './admin/d'
+import {affiliateAccountSchema} from './affiliateAccounts/d'
 import {blogSchema} from './blogs/d'
 import {cartSchema} from './cart/d'
 import {categorySchema} from './categories/d'
@@ -9,7 +10,6 @@ import {courierSchema} from './couriers/d'
 import {emailSettingsSchema} from './emailSettings/d'
 import {logSchema} from './logs/d'
 import {orderSchema} from './orders/d'
-import {affiliateAccountSchema} from './affiliateAccounts/d'
 import {paygateAccountSchema} from './paygateAccounts/d'
 import {productSchema} from './products/d'
 import {rewardTierSchema, userRewardsSchema} from './rewards/d'
@@ -64,7 +64,10 @@ export default defineSchema({
     .index('by_group', ['group']),
   paygateAccounts: defineTable(paygateAccountSchema)
     .index('by_address_in', ['addressIn'])
+    .index('by_hexAddress', ['hexAddress'])
     .index('by_default', ['isDefault']),
-  affiliateAccounts: defineTable(affiliateAccountSchema)
-    .index('by_wallet_address', ['walletAddress']),
+  affiliateAccounts: defineTable(affiliateAccountSchema).index(
+    'by_wallet_address',
+    ['walletAddress'],
+  ),
 })

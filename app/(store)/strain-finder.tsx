@@ -1,3 +1,4 @@
+import {Icon} from '@/lib/icons'
 import {Button, Chip, Link} from '@heroui/react'
 import NextLink from 'next/link'
 import {StoreCategory} from '../types'
@@ -10,8 +11,8 @@ export const StrainFinderMini = ({categories}: Props) => {
   return (
     <section
       id='finder'
-      className='mx-auto w-full max-w-7xl pt-20 px-4 sm:px-6 lg:px-8'>
-      <div className='rounded-[36px] bg-slate-200 dark:bg-dark-table/50 border border-foreground/20 sm:px-12 sm:py-16 transition-colors p-12'>
+      className='mx-auto w-full max-w-7xl pt-20 px-2 sm:px-4'>
+      <div className='rounded-[36px] bg-slate-200 dark:bg-dark-table/50 border border-foreground/20 sm:px-12 sm:py-16 transition-colors px-6 py-10'>
         <div className='grid gap-12 lg:grid-cols-5 lg:items-center'>
           <div className='space-y-10 lg:col-span-3'>
             <Chip
@@ -19,12 +20,11 @@ export const StrainFinderMini = ({categories}: Props) => {
               className='w-fit rounded-full px-2 py-1.5 text-sm font-medium uppercase tracking-wider bg-foreground text-accent'>
               Strain Finder
             </Chip>
-            <h2 className='text-3xl font-semibold text-foreground tracking-tight sm:text-4xl max-w-[22ch]'>
-              Tell us how you want to{' '}
-              <span className='font-space text-brand'>feel</span>. We’ll build
-              your tasting flight.
+            <h2 className='text-3xl font-bold text-foreground tracking-tight sm:text-4xl max-w-[24ch] font-polysans py-12 sm:py-1'>
+              Describe the <span className='text-effects'>feeling</span> you’re
+              after. We&apos;ll design your tasting flight.
             </h2>
-            <p className='text-base opacity-60 max-w-[54ch]'>
+            <p className='hidden md:flex text-base opacity-60 max-w-[54ch]'>
               Dial in your desired experience, preferred flavor notes, and
               potency level. Our guided strain finder crafts a trio of
               recommendations matched to your vibe.
@@ -44,14 +44,21 @@ export const StrainFinderMini = ({categories}: Props) => {
             </div>
             <Button
               as={NextLink}
+              size='lg'
               href='/strain-finder'
               radius='full'
               variant='solid'
-              className='cta-button w-fit px-8 py-5 text-sm font-semibold uppercase tracking-[0.35em]'>
-              Start the Finder
+              disableRipple
+              className='bg-transparent text-sm font-semibold uppercase tracking-[0.35em]'>
+              <div className='flex items-center justify-start space-x-10'>
+                <div className='w-12 h-12 mr-2 border border-black rounded-full flex items-center justify-between'></div>
+                <span className='px-4 text-lg font-light font-polysans'>
+                  Start the Finder
+                </span>
+              </div>
             </Button>
           </div>
-          <div className='grid gap-4 sm:grid-cols-2 lg:col-span-2'>
+          <div className='hidden md:grid gap-4 sm:grid-cols-2 lg:col-span-2'>
             {categories.map((category) => (
               <Link
                 href={`/category/${category.slug}`}
@@ -67,7 +74,7 @@ export const StrainFinderMini = ({categories}: Props) => {
                   </p>
                 </div>
                 <span className='absolute right-4 top-4 text-xs font-semibold text-color-muted transition group-hover:text-foreground dark:text-brand text-dark-gray'>
-                  →
+                  <Icon name='chevron-right' className='size-4' />
                 </span>
               </Link>
             ))}

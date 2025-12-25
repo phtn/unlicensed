@@ -1,14 +1,11 @@
 'use client'
 
+import {HyperList} from '@/components/expermtl/hyper-list'
+import {Icon} from '@/lib/icons'
 import type {Provider} from '@/lib/paygate/types'
-import {Listbox, ListboxItem, Spinner} from '@heroui/react'
+import {cn} from '@/lib/utils'
+import {Card, CardHeader} from '@heroui/react'
 import {Key, PropsWithChildren, useMemo, useState} from 'react'
-
-const ListboxWrapper = ({children}: PropsWithChildren) => (
-  <div className='w-[260px] border-small px-1 py-2 rounded-small border-default-200 dark:border-default-100'>
-    {children}
-  </div>
-)
 
 interface ProvidersListProps {
   data: Provider[]
@@ -17,7 +14,7 @@ interface ProvidersListProps {
 }
 
 export const ProvidersList = ({data, loading, error}: ProvidersListProps) => {
-  const [selectedKeys, setSelectedKeys] = useState<Set<Key>>(new Set())
+  const [selectedKeys] = useState<Set<Key>>(new Set())
 
   const selectedValue = useMemo(
     () => Array.from(selectedKeys).join(', '),
@@ -27,7 +24,7 @@ export const ProvidersList = ({data, loading, error}: ProvidersListProps) => {
   if (loading) {
     return (
       <div className='flex items-center gap-2'>
-        <Spinner size='sm' />
+        <Icon name='spinners-ring' className='text-flavors' />
         <span className='text-small text-default-500'>
           Loading providers...
         </span>
@@ -52,7 +49,7 @@ export const ProvidersList = ({data, loading, error}: ProvidersListProps) => {
   return (
     <div className='flex flex-col gap-2'>
       <ListboxWrapper>
-        <Listbox
+        {/*<Listbox
           aria-label='PayGate payment providers'
           selectedKeys={selectedKeys as Set<string>}
           selectionMode='multiple'
@@ -73,7 +70,13 @@ export const ProvidersList = ({data, loading, error}: ProvidersListProps) => {
               {provider.provider_name}
             </ListboxItem>
           ))}
-        </Listbox>
+        </Listbox>*/}
+        <HyperList
+          data={data}
+          component={ProviderItem}
+          container='w-full flex flex-col md:flex-row md:flex-wrap gap-2'
+          itemStyle='w-full md:w-auto'
+        />
       </ListboxWrapper>
       {selectedKeys.size > 0 && (
         <p className='text-small text-default-500'>Selected: {selectedValue}</p>
@@ -81,3 +84,34 @@ export const ProvidersList = ({data, loading, error}: ProvidersListProps) => {
     </div>
   )
 }
+
+const ProviderItem = (item: Provider) => (
+  <Card shadow='none' className='border border-sidebar sm:w-84 w-full'>
+    <CardHeader className='flex items-center justify-between px-4 w-full'>
+      <div className='flex items-center w-full'>
+        <span className='font-medium'>{item.provider_name}</span>
+      </div>
+      <div className={cn('flex flex-1')}>
+        <div className='font-space font-foreground! px-6'>
+          {item.minimum_amount} {item.minimum_currency}
+        </div>
+        <div
+          className={cn(
+            'font-space w-28 flex items-center justify-end space-x-2',
+            {
+              'text-emerald-500': item.status === 'active',
+              'text-flavors': item.status === 'redirected',
+              'text-danger': item.status === 'unstable',
+            },
+          )}>
+          <span>{item.status}</span>
+          <span>⬤</span>
+        </div>
+      </div>
+    </CardHeader>
+  </Card>
+)
+
+const ListboxWrapper = ({children}: PropsWithChildren) => (
+  <div className='w-full'>{children}</div>
+)

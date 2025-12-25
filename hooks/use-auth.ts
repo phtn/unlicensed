@@ -36,7 +36,7 @@ export const useAuth = () => {
             email: firebaseUser.email!,
             name: firebaseUser.displayName || firebaseUser.email!.split('@')[0],
             firebaseId: firebaseUser.uid,
-            photoUrl: firebaseUser.photoURL || undefined,
+            ...(firebaseUser.photoURL && {photoUrl: firebaseUser.photoURL}),
           })
         } catch (error) {
           console.error('Failed to sync user with Convex:', error)
