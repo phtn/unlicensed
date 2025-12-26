@@ -2,8 +2,9 @@
 
 import {AddressType} from '@/convex/users/d'
 import {useRouter} from 'next/navigation'
-import {useCallback, useEffect, useMemo, useTransition} from 'react'
+import {useCallback, useEffect, useMemo, useRef, useState, useTransition} from 'react'
 import {CheckoutModal} from './components/checkout-modal'
+import {DevelopmentModal} from './components/development-modal'
 import {OrderSummaryCard} from './components/order-summary-card'
 import {useOrderForm} from './hooks/use-order-form'
 import {CheckoutProps, FormData} from './types'
@@ -31,6 +32,8 @@ export function Checkout({
 }: CheckoutProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [showDevModal, setShowDevModal] = useState(false)
+  const hasShownDevModalRef = useRef(false)
 
   const {
     formData,
@@ -71,40 +74,77 @@ export function Checkout({
     }
   }, [isCheckoutOpen, hasAllRequiredInfo, onCheckoutClose])
 
-  // Handle successful order
+  // Handle successful order - show development modal and redirect to account
   useEffect(() => {
-    if (orderId) {
+    if (orderId && !hasShownDevModalRef.current) {
+      console.log('[Checkout] Order placed successfully, orderId:', orderId)
+      hasShownDevModalRef.current = true
+      
+      let timeoutId: NodeJS.Timeout | null = null
+      let fallbackRedirectId: NodeJS.Timeout | null = null
+      
       // Clear the cart after successful order placement
-      const clearCartAndRedirect = async () => {
+      const clearCartAndShowModal = async () => {
         try {
           await onClearCart()
-          if (process.env.NODE_ENV === 'development') {
-            console.log('[OrderSummary] Cart cleared after successful order')
-          }
+          console.log('[Checkout] Cart cleared after successful order')
         } catch (error) {
-          console.error('[OrderSummary] Failed to clear cart:', error)
-          // Continue with redirect even if cart clearing fails
+          console.error('[Checkout] Failed to clear cart:', error)
+          // Continue even if cart clearing fails
         }
 
-        // Redirect to payment page for PayGate payments, otherwise to order page
-        startTransition(() => {
-          setTimeout(() => {
-            // Check if order uses PayGate payment method
-            // For credit_card or crypto, redirect to payment page
-            const paymentMethod = formData.paymentMethod
-            if (paymentMethod === 'credit_card' || paymentMethod === 'crypto') {
-              router.push(`/order/${orderId}/pay`)
-            } else {
-              router.push(`/account/orders/${orderId}`)
-            }
-            onCheckoutClose()
-          }, 1500)
-        })
+        // Close checkout modal first
+        console.log('[Checkout] Closing checkout modal')
+        onCheckoutClose()
+        
+        // Wait for checkout modal to close, then show development modal
+        // Use a delay to ensure HeroUI modal fully unmounts
+        timeoutId = setTimeout(() => {
+          console.log('[Checkout] Setting showDevModal to true')
+          setShowDevModal(true)
+        }, 1000)
+        
+        // Fallback: redirect to account page after 5 seconds if modal doesn't show
+        fallbackRedirectId = setTimeout(() => {
+          console.log('[Checkout] Fallback redirect to account page')
+          if (!showDevModal) {
+            startTransition(() => {
+              router.push('/account')
+            })
+          }
+        }, 5000)
       }
 
-      clearCartAndRedirect()
+      clearCartAndShowModal()
+      
+      return () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
+        if (fallbackRedirectId) {
+          clearTimeout(fallbackRedirectId)
+        }
+      }
     }
-  }, [orderId, router, onCheckoutClose, onClearCart, formData.paymentMethod])
+  }, [orderId, onCheckoutClose, onClearCart, router, showDevModal])
+  
+  // Also show dev modal when checkout modal closes and we have an orderId
+  useEffect(() => {
+    if (orderId && !isCheckoutOpen && !showDevModal && hasShownDevModalRef.current) {
+      console.log('[Checkout] Checkout modal closed, showing dev modal')
+      const timeoutId = setTimeout(() => {
+        setShowDevModal(true)
+      }, 200)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [orderId, isCheckoutOpen, showDevModal])
+  
+  // Reset the ref when orderId is cleared (e.g., when starting a new order)
+  useEffect(() => {
+    if (!orderId) {
+      hasShownDevModalRef.current = false
+    }
+  }, [orderId])
 
   // Auto-place order if we have all required info
   const handlePlaceOrderClick = useCallback(async () => {
@@ -236,6 +276,14 @@ export function Checkout({
         orderId={orderId}
         onInputChange={handleInputChange}
         onPlaceOrder={handlePlaceOrder}
+      />
+
+      <DevelopmentModal
+        isOpen={showDevModal}
+        onClose={() => {
+          console.log('[Checkout] DevelopmentModal onClose called')
+          setShowDevModal(false)
+        }}
       />
     </>
   )

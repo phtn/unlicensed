@@ -19,7 +19,7 @@ export const usePaygate = () => {
   ): Promise<ApiResponse> => {
     const encodedCallback = encodeURIComponent(encodeURIComponent(callback))
     const url = `${apiUrl}/control/wallet.php?address=${address}&callback=${encodedCallback}`
-    
+
     try {
       const response = await fetch(url, {
         method: 'GET',
@@ -81,6 +81,7 @@ export const usePaygate = () => {
     params.append('email', email)
     params.append('currency', currency)
     const url = `${checkoutUrl}/process-payment.php?${params.toString()}`
+    console.log(url)
     handleApiCall(url)
   }
 

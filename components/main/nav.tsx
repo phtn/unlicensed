@@ -166,14 +166,14 @@ export const Nav = ({children}: NavProps) => {
                         key='profile'
                         variant='flat'
                         classNames={{
-                          title: 'text-foreground/90',
+                          title: 'text-foreground/90 font-polysans',
                           base: 'hover:bg-transparent',
                         }}>
                         <div className='flex flex-col'>
-                          <p className='text-base font-normal font-space'>
+                          <p className='text-base font-normal'>
                             {user.displayName || 'User'}
                           </p>
-                          <p className='text-xs opacity-100 font-normal font-space text-teal-600'>
+                          <p className='text-xs font-light font-nito opacity-60'>
                             {user.email}
                           </p>
                         </div>
@@ -187,7 +187,7 @@ export const Nav = ({children}: NavProps) => {
                           variant='flat'
                           classNames={{
                             title: 'text-foreground/90',
-                            base: 'hover:bg-transparent dark:bg-slate-800',
+                            base: 'hover:bg-transparent dark:bg-dark-table/30',
                           }}>
                           <div className='flex items-center space-x-2'>
                             <Icon name='certificate' className='size-8' />

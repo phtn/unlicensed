@@ -1,4 +1,5 @@
 'use client'
+import {Callout} from '@/components/ui/callout'
 
 import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
@@ -129,11 +130,12 @@ export default function AccountPage() {
         {/* Header Section */}
         <div className='mb-8'>
           <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
-            <div>
-              <h1 className='text-2xl sm:text-3xl font-bold tracking-tight'>
-                Welcome back, {convexUser?.name?.split(' ')[0] || 'User'}
-              </h1>
-            </div>
+            <Callout
+              title='App in development - Redirect enabled'
+              description='Payments route on-going. Please check back later.'
+              icon='code'
+              type='debug'
+            />
             {userRewards?.currentTier && (
               <Chip
                 variant='shadow'
@@ -154,7 +156,9 @@ export default function AccountPage() {
           {/* Left Column: Profile & Rewards (1/3 width) */}
           <div className='space-y-6 lg:col-span-1'>
             {/* Profile Card */}
-            <Card className='border-none shadow-md bg-content1/50 backdrop-blur-sm dark:bg-dark-table/40'>
+            <Card
+              shadow='none'
+              className='border border-foreground/20 bg-content1/50 backdrop-blur-sm dark:bg-dark-table/40'>
               <CardBody className='p-6'>
                 <div className='flex flex-col items-center text-center space-y-5 justify-center'>
                   <div className='relative'>
@@ -171,7 +175,7 @@ export default function AccountPage() {
                             className='w-full h-full object-cover'
                           />
                         ) : (
-                          <div className='w-full h-full flex items-center justify-center bg-linear-to-br from-indigo-100 to-pink-100 dark:from-indigo-900/30 dark:to-pink-900/30 text-4xl font-bold text-indigo-600 dark:text-indigo-400'>
+                          <div className='w-full h-full flex items-center justify-center font-polysans font-normal bg-linear-to-br from-indigo-100 to-pink-100 dark:from-indigo-900/30 dark:to-pink-900/30 text-4xl text-indigo-600 dark:text-indigo-400'>
                             {(
                               convexUser?.name ||
                               firebaseUser?.displayName ||
@@ -217,23 +221,25 @@ export default function AccountPage() {
 
             {/* Points Balance Card */}
             {pointsBalance && (
-              <Card className='border-none shadow-md bg-linear-to-br from-purple-500/10 via-pink-500/10 to-indigo-500/10 backdrop-blur-sm dark:bg-dark-table/20'>
+              <Card
+                shadow='none'
+                className='border border-foreground/20 bg-linear-to-br from-teal-500/10 via-orange-100/10 to-orange-200/10 backdrop-blur-sm dark:bg-dark-table/20'>
                 <CardBody className='p-6 space-y-5'>
                   <div className='flex items-center justify-between'>
-                    <h3 className='font-semibold text-2xl tracking-tight'>
-                      Reward Points
+                    <h3 className='font-semibold font-polysans text-2xl tracking-tight'>
+                      Rewards
                     </h3>
                     <div className=''>
                       <Icon
                         name='coins'
-                        className='size-9 text-purple-600 dark:text-purple-100'
+                        className='size-20 dark:text-purple-100'
                       />
                     </div>
                   </div>
 
                   <div className='space-y-4'>
                     <div className='flex items-baseline gap-2'>
-                      <span className='text-4xl font-medium font-space bg-linear-to-br from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent'>
+                      <span className='text-4xl font-medium font-space bg-linear-to-br from-black to-orange-200 dark:from-orange-400 dark:to-orange-300 bg-clip-text text-transparent'>
                         {pointsBalance.availablePoints.toLocaleString()}
                       </span>
                       <span className='text-base font-medium'>pts</span>
@@ -244,16 +250,14 @@ export default function AccountPage() {
                           <span className='text-sm text-default-600 dark:text-default-400 font-medium'>
                             Next Visit Multiplier
                           </span>
-                          <Chip
-                            size='sm'
-                            variant='flat'
-                            className='bg-purple-500/20 text-purple-700 dark:text-purple-300 font-semibold'>
-                            {nextVisitMultiplier.multiplier}x
-                          </Chip>
+                          <div className='dark:text-teal-300 font-semibold font-bone text-2xl'>
+                            <span className='text-base'>x</span>
+                            {nextVisitMultiplier.multiplier}
+                          </div>
                         </div>
-                        <p className='text-xs text-default-500 leading-relaxed'>
+                        {/*<p className='text-xs text-default-500 leading-relaxed'>
                           {nextVisitMultiplier.message}
-                        </p>
+                        </p>*/}
                       </div>
                     )}
                     <div className='text-xs text-default-500 pt-2'>
@@ -269,21 +273,23 @@ export default function AccountPage() {
 
             {/* Loyalty Progress Card */}
             {userRewards?.nextTier && (
-              <Card className='border-none shadow-md bg-content1/50 backdrop-blur-sm'>
+              <Card
+                shadow='none'
+                className='border border-foreground/20 backdrop-blur-sm'>
                 <CardBody className='p-6 space-y-5'>
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2.5'>
                       <div className='p-2 rounded-xl bg-primary/20'>
                         <Award className='size-5 text-primary' />
                       </div>
-                      <h3 className='font-semibold text-base tracking-tight'>
+                      <h3 className='font-semibold font-nito text-base tracking-tight'>
                         Next Reward Tier
                       </h3>
                     </div>
                     <Chip
                       size='sm'
                       variant='flat'
-                      className='bg-primary/20 text-primary font-semibold'>
+                      className='bg-primary/20 text-primary font-nito font-semibold'>
                       {userRewards.nextTier.name}
                     </Chip>
                   </div>
@@ -323,10 +329,13 @@ export default function AccountPage() {
             )}
 
             {/* Benefits Summary */}
-            <Card className='border-none shadow-md bg-content1/50 backdrop-blur-sm'>
+            <Card
+              shadow='none'
+              radius='none'
+              className='rounded-3xl border border-foreground/20 bg-content1/50 backdrop-blur-sm'>
               <CardBody className='p-0'>
                 <div className='px-6 py-4'>
-                  <h3 className='font-semibold text-base tracking-tight'>
+                  <h3 className='font-semibold font-nito text-base tracking-tight'>
                     Member Benefits
                   </h3>
                 </div>
@@ -362,18 +371,11 @@ export default function AccountPage() {
                       </div>
                     </div>
                   )}
-
-                  <div className='flex items-center gap-3 p-4 rounded-xl bg-default-100/50  border border-default-200/50 transition-all hover:bg-default-100 dark:bg-dark-table/40'>
-                    <div className='p-2.5 rounded-xl bg-primary/20 text-primary'>
-                      <Icon name='user' size={18} />
-                    </div>
-                    <div className='flex-1'>
-                      <p className='text-sm font-semibold'>Member Access</p>
-                      <p className='text-xs text-default-500 mt-0.5'>
-                        Exclusive drops & events
-                      </p>
-                    </div>
-                  </div>
+                  <Callout
+                    title='Member Access'
+                    description='Benefits and perks.'
+                    icon='user'
+                  />
                 </div>
               </CardBody>
             </Card>
@@ -435,19 +437,17 @@ export default function AccountPage() {
                   ) : (
                     recentOrders.map((order) => (
                       <Card
+                        shadow='none'
                         key={order._id}
                         as={NextLink}
                         href={`/account/orders/${order._id}`}
                         isPressable
-                        className='w-full border-none shadow-sm bg-content1/50 backdrop-blur-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5'>
+                        className='w-full border hover:border-foreground/20 bg-content1/50 backdrop-blur-sm hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5'>
                         <CardBody className='p-5'>
                           <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
                             <div className='flex items-start gap-4 flex-1 min-w-0'>
-                              <div className='p-3 rounded-xl bg-linear-to-br from-indigo-500/10 to-pink-500/10 hidden sm:flex shrink-0'>
-                                <Box
-                                  size={22}
-                                  className='text-indigo-600 dark:text-indigo-400'
-                                />
+                              <div className='p-3 rounded-xl bg-linear-to-br from-default-100/30 to-default-500/10 hidden sm:flex shrink-0'>
+                                <Box size={22} className='opacity-50' />
                               </div>
                               <div className='flex-1 min-w-0'>
                                 <div className='flex items-center gap-3 flex-wrap mb-2'>
@@ -488,7 +488,7 @@ export default function AccountPage() {
                                 <p className='text-xs text-default-500 uppercase tracking-wider mb-1'>
                                   Total
                                 </p>
-                                <p className='text-xl font-bold bg-linear-to-br from-indigo-600 to-pink-600 dark:from-indigo-400 dark:to-pink-400 bg-clip-text text-transparent'>
+                                <p className='text-xl font-bold'>
                                   ${formatPrice(order.totalCents)}
                                 </p>
                               </div>

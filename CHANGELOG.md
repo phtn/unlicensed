@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.1
+
+### Patch Changes
+
+- disabled payments
+
 ## 0.15.0
 
 ### Minor Changes

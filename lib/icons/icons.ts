@@ -584,6 +584,12 @@ export const icons = {
     viewBox: '0 0 24 24',
     set: 'proicons',
   },
+  code: {
+    symbol:
+      '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.75 6.5L3.25 12l5.5 5.5m6.5-11l5.5 5.5l-5.5 5.5"/>',
+    viewBox: '0 0 24 24',
+    set: 'proicons',
+  },
 }
 /*
 

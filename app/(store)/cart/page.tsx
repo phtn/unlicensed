@@ -9,14 +9,16 @@ import {usePlaceOrder} from '@/hooks/use-place-order'
 import {Icon} from '@/lib/icons'
 import {Button, useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
+import {useRouter} from 'next/navigation'
 import NextLink from 'next/link'
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef, useState, useTransition} from 'react'
 import {CartItem} from './cart-item'
 import {Checkout} from './checkout'
 import {RecommendedProducts} from './recommended'
 import {RewardsSummary} from './rewards-summary'
 
 export default function CartPage() {
+  const router = useRouter()
   const {cart, updateItem, removeItem, clear, isLoading, isAuthenticated} =
     useCart()
   const {user: firebaseUser} = useAuth()
@@ -26,6 +28,7 @@ export default function CartPage() {
     error: orderError,
     orderId,
   } = usePlaceOrder()
+  const [isPending, startTransition] = useTransition()
   const {
     isOpen: isAuthOpen,
     onOpen: onAuthOpen,
@@ -80,6 +83,20 @@ export default function CartPage() {
   }, [cart])
 
   const hasItems = cartItems.length > 0
+
+  // Redirect to account page when order is placed (prevent showing empty cart)
+  useEffect(() => {
+    if (orderId) {
+      console.log('[CartPage] Order placed, redirecting to account page')
+      const redirectTimer = setTimeout(() => {
+        startTransition(() => {
+          router.push('/account')
+        })
+      }, 2000) // Give time for development modal to show
+      
+      return () => clearTimeout(redirectTimer)
+    }
+  }, [orderId, router])
 
   // Show loader for 3 seconds when cart is empty (after initial load completes)
   useEffect(() => {
