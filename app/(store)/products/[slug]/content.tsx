@@ -415,7 +415,7 @@ export const ProductDetailContent = ({
                   size='lg'
                   variant='solid'
                   href='/cart'
-                  className='w-full sm:flex-1 h-14 font-polysans font-normal text-base md:text-lg bg-dark-gray text-white dark:text-dark-gray'>
+                  className='w-full sm:flex-1 h-15 font-polysans font-normal text-lg bg-foreground/95 text-white dark:text-dark-gray'>
                   <span>Checkout</span>
                 </Button>
               </div>

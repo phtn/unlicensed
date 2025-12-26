@@ -1,7 +1,7 @@
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Select, SelectItem} from '@heroui/react'
-import React from 'react'
+import React, {useEffect} from 'react'
 
 interface IPaymentMethod {
   id: string
@@ -73,6 +73,11 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
     }
   }
 
+  // Set default selection on mount
+  useEffect(() => {
+    onChange('credit_card')
+  }, [onChange])
+
   return (
     <Select
       classNames={{
@@ -83,6 +88,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
         listboxWrapper: 'border dark:border-foreground rounded-2xl',
         listbox: 'border-b',
       }}
+      defaultSelectedKeys={['credit-card']}
       isMultiline={true}
       multiple={false}
       items={methods}
