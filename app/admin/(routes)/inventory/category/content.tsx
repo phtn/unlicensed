@@ -1,10 +1,11 @@
 'use client'
 
+import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
-import {parseAsString, useQueryState} from 'nuqs'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useQuery} from 'convex/react'
+import {parseAsString, useQueryState} from 'nuqs'
 import {Suspense} from 'react'
 import {CategoryProductsContent} from './[slug]/content'
 import {CategoryList} from './category-list'
@@ -15,12 +16,12 @@ const CategoriesContentInner = () => {
   const categories = useQuery(api.categories.q.listCategories)
   const [tabId, , id] = useAdminTabId()
   const [slug] = useQueryState('slug', parseAsString.withDefault(''))
-  
+
   // If slug is present, show category products
   if (slug) {
     return <CategoryProductsContent categorySlug={slug} />
   }
-  
+
   switch (tabId) {
     case 'new':
       return <NewCategory />
@@ -35,9 +36,9 @@ const CategoriesContentInner = () => {
       return <EditCategory id={id as unknown as Id<'categories'>} />
     default:
       return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <MainWrapper className='border-t-0'>
           <CategoryList categories={categories} />
-        </Suspense>
+        </MainWrapper>
       )
   }
 }

@@ -45,16 +45,22 @@ const PaymentsTabInner = () => {
       {/* Buttons on the right - show based on active tab */}
       <ToolbarButtonWrapper>
         <SecondaryTab
+          id='utilities'
+          icon='wrench'
+          label='Utilities'
+          href='/admin/payments/paygate?tabId=utilities'
+        />
+        <SecondaryTab
           id='affiliate'
           icon='plus'
           label='Affiliate'
-          href='/admin/payments?tabId=affiliate&subTabId=new'
+          href='/admin/payments/paygate?tabId=affiliate&subTabId=new'
         />
         <PrimaryTab
           id='new'
           icon='plus'
           label='Wallet'
-          href='/admin/payments?tabId=new'
+          href='/admin/payments/paygate?tabId=new'
         />
       </ToolbarButtonWrapper>
     </>

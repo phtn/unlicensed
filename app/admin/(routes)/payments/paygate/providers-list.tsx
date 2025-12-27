@@ -127,10 +127,10 @@ const ListboxWrapper = ({children}: PropsWithChildren) => (
 )
 
 export const PayGateProviders = () => (
-  <div className='dark:text-white rounded-lg'>
-    <h3 className='text-lg sm:text-xl font-semibold tracking-tight mb-4'>
-      Provider Status
-    </h3>
+  <div className='dark:text-white py-4'>
+    <h2 className='text-2xl font-polysans font-semibold mt-2 mb-4'>
+      Providers
+    </h2>
     <ProvidersList />
   </div>
 )
