@@ -197,20 +197,20 @@ export function useOrderForm({
 
   const handleInputChange = useCallback(
     (field: keyof FormData, value: string | boolean | PaymentMethod) => {
-      startTransition(() => {
-        setFormData((prev) => ({
-          ...prev,
-          [field]: value,
-        }))
-        // Clear error for this field when user starts typing
-        if (formErrors[field as keyof FormErrors]) {
-          setFormErrors((prev) => {
-            const newErrors = {...prev}
-            delete newErrors[field as keyof FormErrors]
-            return newErrors
-          })
-        }
-      })
+      // Use direct state update for input changes to prevent flickering
+      // Only use startTransition for heavy operations
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+      }))
+      // Clear error for this field when user starts typing
+      if (formErrors[field as keyof FormErrors]) {
+        setFormErrors((prev) => {
+          const newErrors = {...prev}
+          delete newErrors[field as keyof FormErrors]
+          return newErrors
+        })
+      }
     },
     [formErrors],
   )

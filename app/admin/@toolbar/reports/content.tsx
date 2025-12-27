@@ -10,7 +10,7 @@ import {PageTitle} from '../../_components/ui/page-title'
 import {PrimaryTab, ToolbarButtonWrapper, ToolbarWrapper} from '../components'
 
 export const ReportsTabContent = () => {
-  const sales = useQuery(api.orders.q.getOrdersByStatus, {status: 'delivered'})
+  const sales = useQuery(api.orders.q.getOrdersByStatus, {status: 'shipped'})
   return (
     <ToolbarWrapper>
       <Link

@@ -21,8 +21,6 @@ import {dateCell, moneyCell} from '../../../_components/ui/cells'
 type Order = Doc<'orders'>
 
 const statusColorMap: Record<string, ChipProps['color']> = {
-  delivered: 'success',
-  confirmed: 'primary',
   shipped: 'success',
 }
 
@@ -40,12 +38,7 @@ export const SalesTable = () => {
 
   const sales = useMemo(() => {
     if (!allOrders) return []
-    return allOrders.filter(
-      (order) =>
-        order.orderStatus === 'delivered' ||
-        order.orderStatus === 'confirmed' ||
-        order.orderStatus === 'shipped',
-    )
+    return allOrders.filter((order) => order.orderStatus === 'shipped')
   }, [allOrders])
 
   const renderCell = (order: Order, columnKey: React.Key) => {
@@ -69,7 +62,10 @@ export const SalesTable = () => {
             color={statusColorMap[order.orderStatus] || 'default'}
             size='sm'
             variant='flat'>
-            {order.orderStatus}
+            {order.orderStatus
+              .split('_')
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ')}
           </Chip>
         )
       case 'items':

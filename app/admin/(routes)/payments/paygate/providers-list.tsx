@@ -1,27 +1,48 @@
 'use client'
 
 import {HyperList} from '@/components/expermtl/hyper-list'
+import {useApiCall} from '@/hooks/use-api-call'
 import {Icon} from '@/lib/icons'
-import type {Provider} from '@/lib/paygate/types'
+import type {Provider, ProviderStatusResponse} from '@/lib/paygate/types'
 import {cn} from '@/lib/utils'
 import {Card, CardHeader} from '@heroui/react'
-import {Key, PropsWithChildren, useMemo, useState} from 'react'
+import {Key, PropsWithChildren, useEffect, useMemo, useState} from 'react'
 
-interface ProvidersListProps {
-  data: Provider[]
-  loading: boolean
-  error: Error | null
+// Type guard for ProviderStatusResponse
+function isProviderStatusResponse(
+  data: unknown,
+): data is ProviderStatusResponse {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'providers' in data &&
+    Array.isArray((data as ProviderStatusResponse).providers)
+  )
 }
 
-export const ProvidersList = ({data, loading, error}: ProvidersListProps) => {
+const ProvidersList = () => {
   const [selectedKeys] = useState<Set<Key>>(new Set())
+  const {handleApiCall, response} = useApiCall()
+
+  useEffect(() => {
+    if (!response) {
+      handleApiCall('https://api.paygate.to/control/provider-status/')
+    }
+  }, [handleApiCall, response])
+
+  const data = useMemo(() => {
+    if (response?.data && isProviderStatusResponse(response.data)) {
+      return response.data.providers
+    }
+    return []
+  }, [response?.data])
 
   const selectedValue = useMemo(
     () => Array.from(selectedKeys).join(', '),
     [selectedKeys],
   )
 
-  if (loading) {
+  if (!response) {
     return (
       <div className='flex items-center gap-2'>
         <Icon name='spinners-ring' className='text-flavors' />
@@ -32,15 +53,19 @@ export const ProvidersList = ({data, loading, error}: ProvidersListProps) => {
     )
   }
 
-  if (error) {
+  if (response.error) {
     return (
       <div className='text-small text-danger'>
-        Failed to load providers: {error.message}
+        Failed to load providers: {response.error}
       </div>
     )
   }
 
-  if (!data || data.length === 0) {
+  if (
+    !response.data ||
+    !isProviderStatusResponse(response.data) ||
+    response.data.providers.length === 0
+  ) {
     return (
       <div className='text-small text-default-500'>No providers available</div>
     )
@@ -64,26 +89,33 @@ export const ProvidersList = ({data, loading, error}: ProvidersListProps) => {
 }
 
 const ProviderItem = (item: Provider) => (
-  <Card shadow='none' className='border border-sidebar sm:w-84 w-full'>
+  <Card shadow='none' className='border border-sidebar md:w-84 w-full'>
     <CardHeader className='flex items-center justify-between px-4 w-full'>
-      <div className='flex items-center flex-1'>
+      <div className='flex items-center flex-1 space-x-2'>
+        <span
+          className={cn('text-sm', {
+            'text-emerald-500': item.status === 'active',
+            'text-flavors': item.status === 'redirected',
+            'text-danger': item.status === 'unstable',
+          })}>
+          ⬤
+        </span>
         <span className='font-medium'>{item.provider_name}</span>
       </div>
-      <div className={cn('flex justify-end')}>
-        <div className='font-space font-foreground! px-6'>
+      <div className={cn('flex justify-end space-x-4 md:space-x-0')}>
+        <div className='font-space font-foreground!'>
           {item.minimum_amount} {item.minimum_currency}
         </div>
         <div
           className={cn(
-            'font-space w-28 md:w-full flex items-center justify-end space-x-2',
+            'md:hidden font-space w-full flex items-center justify-end',
             {
               'text-emerald-500': item.status === 'active',
               'text-flavors': item.status === 'redirected',
               'text-danger': item.status === 'unstable',
             },
           )}>
-          <span className='md:hidden'>{item.status}</span>
-          <span>⬤</span>
+          <span className='w-20'>{item.status}</span>
         </div>
       </div>
     </CardHeader>
@@ -92,4 +124,13 @@ const ProviderItem = (item: Provider) => (
 
 const ListboxWrapper = ({children}: PropsWithChildren) => (
   <div className='w-full'>{children}</div>
+)
+
+export const PayGateProviders = () => (
+  <div className='dark:text-white rounded-lg'>
+    <h3 className='text-lg sm:text-xl font-semibold tracking-tight mb-4'>
+      Provider Status
+    </h3>
+    <ProvidersList />
+  </div>
 )

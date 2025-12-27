@@ -590,6 +590,54 @@ export const icons = {
     viewBox: '0 0 24 24',
     set: 'proicons',
   },
+  clipboard: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" d="M9.75 21.25h-3a3.5 3.5 0 0 1-3.5-3.5V6.25a3.5 3.5 0 0 1 3.5-3.5h9.5a3.5 3.5 0 0 1 3.5 3.5v2"/><path d="M7.75 2.75h7.5v2.5a2 2 0 0 1-2 2h-3.5a2 2 0 0 1-2-2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12.25 13.25a2.5 2.5 0 0 1 2.5-2.5h3.5a2.5 2.5 0 0 1 2.5 2.5v5.5a2.5 2.5 0 0 1-2.5 2.5h-3.5a2.5 2.5 0 0 1-2.5-2.5z"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'proicons',
+  },
+  polygon: {
+    symbol:
+      '<path fill="currentColor" d="m17.82 16.342l5.692-3.287A.98.98 0 0 0 24 12.21V5.635a.98.98 0 0 0-.488-.846l-5.693-3.286a.98.98 0 0 0-.977 0L11.15 4.789a.98.98 0 0 0-.489.846v11.747L6.67 19.686l-3.992-2.304v-4.61l3.992-2.304l2.633 1.52V8.896L7.158 7.658a.98.98 0 0 0-.977 0L.488 10.945a.98.98 0 0 0-.488.846v6.573a.98.98 0 0 0 .488.847l5.693 3.286a.98.98 0 0 0 .977 0l5.692-3.286a.98.98 0 0 0 .489-.846V6.618l.072-.041l3.92-2.263l3.99 2.305v4.609l-3.99 2.304l-2.63-1.517v3.092l2.14 1.236a.98.98 0 0 0 .978 0z"/>',
+    viewBox: '0 0 24 24',
+    set: 'simple-icons',
+  },
+  'arrow-up': {
+    symbol:
+      '<path fill="currentColor" d="m12 6l.354-.354L12 5.293l-.354.353zm-.5 12a.5.5 0 0 0 1 0zm4.854-8.354l-4-4l-.708.708l4 4zm-4.708-4l-4 4l.708.708l4-4zM11.5 6v12h1V6z"/>',
+    viewBox: '0 0 24 24',
+    set: 'lets-icons',
+  },
+  check: {
+    symbol:
+      '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m19.75 7.018l-9.257 9.257a1 1 0 0 1-1.414 0L4.25 11.446"/>',
+    viewBox: '0 0 24 24',
+    set: 'proicons',
+  },
+  'spinner-dots': {
+    symbol:
+      '<circle cx="4" cy="12" r="3" fill="currentColor"><animate id="SVGKiXXedfO" attributeName="cy" begin="0;SVGgLulOGrw.end+0.25s" calcMode="spline" dur="0.6s" keySplines=".33,.66,.66,1;.33,0,.66,.33" values="12;6;12"/></circle><circle cx="12" cy="12" r="3" fill="currentColor"><animate attributeName="cy" begin="SVGKiXXedfO.begin+0.1s" calcMode="spline" dur="0.6s" keySplines=".33,.66,.66,1;.33,0,.66,.33" values="12;6;12"/></circle><circle cx="20" cy="12" r="3" fill="currentColor"><animate id="SVGgLulOGrw" attributeName="cy" begin="SVGKiXXedfO.begin+0.2s" calcMode="spline" dur="0.6s" keySplines=".33,.66,.66,1;.33,0,.66,.33" values="12;6;12"/></circle>',
+    viewBox: '0 0 24 24',
+    set: 'svg-spinners',
+  },
+  copy: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-width="2"><path d="M14 7c0-.932 0-1.398-.152-1.765a2 2 0 0 0-1.083-1.083C12.398 4 11.932 4 11 4H8c-1.886 0-2.828 0-3.414.586S4 6.114 4 8v3c0 .932 0 1.398.152 1.765a2 2 0 0 0 1.083 1.083C5.602 14 6.068 14 7 14"/><rect width="10" height="10" x="10" y="10" rx="2"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lets-icons',
+  },
+  wallet: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-width="2"><path d="M14.25 4h-4.5C6.568 4 4.977 4 3.989 5.004S3 7.624 3 10.857v2.286c0 3.232 0 4.849.989 5.853C4.977 20 6.568 20 9.75 20h4.5c3.182 0 4.773 0 5.762-1.004s.988-2.62.988-5.853v-2.286c0-3.232 0-4.849-.988-5.853C19.023 4 17.432 4 14.25 4Z"/><path stroke-linecap="round" d="M7 8h3"/><path d="M19 16h-2c-.943 0-1.414 0-1.707-.293S15 14.943 15 14s0-1.414.293-1.707S16.057 12 17 12h2c.943 0 1.414 0 1.707.293S21 13.057 21 14s0 1.414-.293 1.707S19.943 16 19 16Z"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lets-icons',
+  },
+  time: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M16.5 12h-4.25a.25.25 0 0 1-.25-.25V8.5"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lets-icons',
+  },
 }
 /*
 

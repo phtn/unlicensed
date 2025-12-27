@@ -1,30 +1,23 @@
 'use client'
 
+import {Callout} from '@/components/ui/callout'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
-import {useApiCall} from '@/hooks/use-api-call'
+import {usePaste} from '@/hooks/use-paste'
 import {usePaygate} from '@/hooks/use-paygate'
-import type {ProviderStatusResponse} from '@/lib/paygate/types'
+import {usePolygonAddressValidation} from '@/hooks/use-polygon-address-validation'
+import {Icon} from '@/lib/icons'
+import type {ApiResponse} from '@/lib/paygate/types'
+import {cn} from '@/lib/utils'
 import {Button, Card, CardBody} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useAction, useMutation} from 'convex/react'
 import {FunctionReference} from 'convex/server'
-import {useCallback, useEffect, useState} from 'react'
+import {FormEvent, useCallback, useEffect, useMemo, useState} from 'react'
 import {z} from 'zod'
 import {useAppForm} from '../../../_components/ui/form-context'
-import {ProvidersList} from './providers-list'
-
-// Type guard for ProviderStatusResponse
-function isProviderStatusResponse(
-  data: unknown,
-): data is ProviderStatusResponse {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'providers' in data &&
-    Array.isArray((data as ProviderStatusResponse).providers)
-  )
-}
+import {CreateWalletResponse} from './create-wallet-response'
+import {CreateWalletResponseData} from './types'
 
 const paygateAccountSchema = z.object({
   hexAddress: z
@@ -45,13 +38,13 @@ type PaygateAccountFormValues = z.infer<typeof paygateAccountSchema>
 const getDefaultValues = (): PaygateAccountFormValues => ({
   hexAddress: '',
   addressIn: '',
+  // Use consistent default to avoid hydration mismatch
+  // Will be updated on client side if needed
   callbackUrl:
-    typeof window !== 'undefined'
-      ? `${window.location.origin}/api/paygate/webhook`
-      : process.env.NEXT_PUBLIC_PAYGATE_CALLBACK_URL ??
-        (process.env.NEXT_PUBLIC_APP_URL
-          ? `${process.env.NEXT_PUBLIC_APP_URL}/api/paygate/webhook`
-          : ''),
+    process.env.NEXT_PUBLIC_PAYGATE_CALLBACK_URL ??
+    (process.env.NEXT_PUBLIC_APP_URL
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/api/paygate/webhook`
+      : ''),
   label: '',
   description: '',
   isDefault: false,
@@ -80,17 +73,12 @@ export const PaygateAccountForm = ({
     api.paygateAccounts.a
       .syncAccountFromPayGate as unknown as FunctionReference<'action'>,
   )
-  const {createWallet} = usePaygate()
-  const {handleApiCall, response} = useApiCall()
+  const {createWallet, loading: isSubmitting} = usePaygate()
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isSyncing, setIsSyncing] = useState(false)
-
-  useEffect(() => {
-    if (!response) {
-      handleApiCall('https://api.paygate.to/control/provider-status/')
-    }
-  }, [handleApiCall, response])
+  const [walletResponse, setWalletResponse] = useState<ApiResponse | null>(null)
+  const {paste, pasted} = usePaste()
 
   const formValues = initialValues ?? getDefaultValues()
 
@@ -99,6 +87,7 @@ export const PaygateAccountForm = ({
     onSubmit: async ({value}) => {
       setStatus('idle')
       setErrorMessage(null)
+      setWalletResponse(null)
       try {
         const parsed = paygateAccountSchema.safeParse(value)
         if (!parsed.success) {
@@ -130,9 +119,12 @@ export const PaygateAccountForm = ({
               ? `${window.location.origin}/api/paygate/webhook`
               : `${process.env.NEXT_PUBLIC_APP_URL || 'https://localhost:3000'}/api/paygate/webhook`
           const paygateResponse = await createWallet(
-            data.addressIn,
+            data.hexAddress,
             callbackUrl,
           )
+
+          // Store the response to display it
+          setWalletResponse(paygateResponse)
 
           if (!paygateResponse.success) {
             const errorMsg =
@@ -144,13 +136,16 @@ export const PaygateAccountForm = ({
             return
           }
 
+          const responseData = paygateResponse.data as CreateWalletResponseData
+
           // If PayGate API call succeeded, save to Convex
           await createAccount({
             hexAddress: data.hexAddress,
-            addressIn: data.addressIn,
+            addressIn: responseData.address_in,
+            polygonAddressIn: responseData.polygon_address_in,
+            callbackUrl: responseData.callback_url,
+            ipnToken: responseData.ipn_token,
             label: data.label,
-            callbackUrl:
-              process.env.NEXT_PUBLIC_WALLET_CALLBACK ?? data.callbackUrl,
             description: data.description,
             isDefault: data.isDefault,
             enabled: data.enabled,
@@ -194,6 +189,79 @@ export const PaygateAccountForm = ({
     }
   }, [accountId, syncAccount])
 
+  const handlePasteAddress = useCallback(async () => {
+    try {
+      const pastedText = await paste()
+      if (pastedText) {
+        form.setFieldValue('hexAddress', pastedText.trim())
+      }
+    } catch (error) {
+      console.error('Failed to paste address:', error)
+    }
+  }, [paste, form])
+
+  // Watch hexAddress field value changes
+  const hexAddressValue = useStore(
+    form.store,
+    (state) => state.values.hexAddress,
+  )
+
+  // Validate Polygon wallet address
+  const addressValidation = usePolygonAddressValidation(hexAddressValue, {
+    autoValidate: true,
+  })
+
+  // Log validation results
+  const walletAddressStatus = useMemo(() => {
+    if (hexAddressValue && addressValidation.isValidating) {
+      // console.log('[POLYGON] Validating address:', hexAddressValue)
+      return 'Validating...'
+    }
+    if (addressValidation.isValid) {
+      // console.log('[POLYGON] Address is valid:', hexAddressValue)
+      return 'VALID Polygon wallet address'
+    }
+    if (addressValidation.error) {
+      // console.error('[POLYGON] Validation error:', addressValidation.error)
+      return 'Polygon wallet address is invalid'
+    }
+    return 'WARNING: Only use USDC wallet address in Polygon Network.'
+  }, [hexAddressValue, addressValidation])
+
+  // Update callbackUrl on client side after hydration to avoid hydration mismatch
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isEditMode) {
+      const currentCallbackUrl = form.getFieldValue('callbackUrl')
+      // Only update if the field is empty or using the default env var value
+      if (
+        !currentCallbackUrl ||
+        currentCallbackUrl ===
+          (process.env.NEXT_PUBLIC_PAYGATE_CALLBACK_URL ??
+            (process.env.NEXT_PUBLIC_APP_URL
+              ? `${process.env.NEXT_PUBLIC_APP_URL}/api/paygate/webhook`
+              : ''))
+      ) {
+        const clientCallbackUrl = `${window.location.origin}/api/paygate/webhook`
+        form.setFieldValue('callbackUrl', clientCallbackUrl)
+      }
+    }
+  }, [form, isEditMode])
+
+  // Clear wallet response when switching modes or when form is reset
+  useEffect(() => {
+    if (isEditMode) {
+      setWalletResponse(null)
+    }
+  }, [isEditMode])
+
+  const onSubmit = useCallback(
+    (e: FormEvent) => {
+      e.preventDefault()
+      form.handleSubmit()
+    },
+    [form],
+  )
+
   return (
     <Card
       shadow='none'
@@ -202,39 +270,105 @@ export const PaygateAccountForm = ({
       <CardBody className='px-4 md:px-6 h-[calc(100lvh-100px)] overflow-scroll'>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8'>
           <div>
-            <div className='mb-5'>
-              <h3 className='text-lg sm:text-xl font-semibold tracking-tight'>
-                {isEditMode ? 'Edit Wallet' : 'Create Wallet'}
-              </h3>
-              <p className='text-sm sm:text-base font-light text-foreground max-w-2xl'>
-                {isEditMode ? (
-                  'Update account settings or sync data from PayGate API.'
-                ) : (
-                  <span>
-                    Only use
-                    <span className='font-semibold px-2 text-rose-700'>
-                      Polygon USDC wallet address
-                    </span>
-                    to create an account.
-                  </span>
+            <div className='mb-4 space-y-5'>
+              <div className='flex items-center space-x-4 pt-4'>
+                <h2 className='text-2xl font-polysans font-semibold'>
+                  {isEditMode ? 'Edit Wallet' : 'Create Wallet'}
+                </h2>
+                {(errorMessage || status === 'success') && (
+                  <div className='space-y-3 font-mono text-xs uppercase tracking-widest'>
+                    {errorMessage && (
+                      <div className='rounded-full bg-danger/9 border border-danger/20 text-danger'>
+                        {errorMessage}
+                      </div>
+                    )}
+
+                    {status === 'success' && (
+                      <div
+                        className={
+                          cn(
+                            `inline-block px-3 py-1 rounded-full`,
+                            'bg-green-100 dark:bg-emerald-700 text-green-800 dark:text-white',
+                          )
+                          // : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
+                        }>
+                        {isEditMode ? 'Update Success' : 'Account Created'}
+                      </div>
+                    )}
+                  </div>
                 )}
-              </p>
-            </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                form.handleSubmit()
-              }}
-              className='space-y-6 sm:space-y-8 w-full'>
-              <form.AppField name='hexAddress'>
-                {(input) => (
-                  <input.TextField
-                    type='text'
-                    label='Polygon Wallet Address'
-                    placeholder='0x611F3143b76a994214d751d762b52D081d8DC4de'
+              </div>
+
+              <Callout
+                type={
+                  addressValidation.isValid || walletResponse
+                    ? 'success'
+                    : 'warning'
+                }
+                icon='polygon'
+                title='Polygon USDC Wallet Address'
+                description={
+                  <div className='flex items-center space-x-2'>
+                    <span>{walletAddressStatus}</span>
+                    {addressValidation.isValidating && (
+                      <Icon name='spinner-dots' className='size-4' />
+                    )}
+                    {addressValidation.isValid && (
+                      <Icon name='check' className='size-4' />
+                    )}
+                  </div>
+                }>
+                <a
+                  href={
+                    hexAddressValue
+                      ? `https://polygonscan.com/address/${hexAddressValue}`
+                      : 'https://polygonscan.com/'
+                  }
+                  rel='noopener noreferrer'
+                  className='text-purple-600 dark:text-purple-300 flex flex-1 hover:underline hover:underline-offset-4 decoration-dotted bg-white dark:bg-white/5 ps-2 pe-1 py-0.5 rounded-full'
+                  target='_blank'>
+                  <span>polygon scan</span>
+                  <Icon
+                    name={addressValidation.isValid ? 'arrow-up' : 'arrow-up'}
+                    className={cn(
+                      ' size-4 translate-y-[0.35px] rotate-25',
+                      addressValidation.isValid ? 'dark:text-white' : '',
+                    )}
                   />
-                )}
-              </form.AppField>
+                </a>
+              </Callout>
+            </div>
+            <form onSubmit={onSubmit} className='space-y-6 sm:space-y-8 w-full'>
+              <div className='relative'>
+                <form.AppField name='hexAddress'>
+                  {(input) => (
+                    <input.TextField
+                      type='text'
+                      label='Polygon USDC Wallet Address'
+                      placeholder='0x611F3143b76a994214d751d762b52D081d8DC4de'
+                    />
+                  )}
+                </form.AppField>
+                <div className='absolute right-2 top-2'>
+                  <button
+                    type='button'
+                    onClick={handlePasteAddress}
+                    className='cursor-pointer'
+                    aria-label='Paste wallet address'>
+                    <Icon
+                      id='paste-wallet-address'
+                      name={
+                        addressValidation.isValidating
+                          ? 'spinners-ring'
+                          : pasted
+                            ? 'check-fill'
+                            : 'clipboard'
+                      }
+                      className='size-4 active:scale-90 opacity-80 hover:opacity-100 will-change-transform transition-transform duration-200'
+                    />
+                  </button>
+                </div>
+              </div>
 
               <form.AppField name='callbackUrl'>
                 {(input) => (
@@ -246,7 +380,7 @@ export const PaygateAccountForm = ({
                 )}
               </form.AppField>
 
-              <div>Internal use</div>
+              <div className='text-sm font-medium'>Internal use fields</div>
 
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-4'>
                 <form.AppField name='label'>
@@ -291,24 +425,6 @@ export const PaygateAccountForm = ({
                   </form.AppField>
                 </div>
 
-                {(errorMessage || status === 'success') && (
-                  <div className='space-y-2'>
-                    {errorMessage && (
-                      <div className='rounded-lg bg-danger/10 border border-danger/20 p-3 sm:p-4 text-sm text-danger'>
-                        {errorMessage}
-                      </div>
-                    )}
-
-                    {status === 'success' && (
-                      <div className='rounded-lg bg-success/10 border border-success/20 p-3 sm:p-4 text-sm text-success'>
-                        {isEditMode
-                          ? 'Account updated successfully!'
-                          : 'Account created successfully!'}
-                      </div>
-                    )}
-                  </div>
-                )}
-
                 <div className='flex flex-row items-stretch sm:items-center sm:justify-start gap-3 sm:gap-3 py-8'>
                   {isEditMode && accountId && (
                     <Button
@@ -334,34 +450,33 @@ export const PaygateAccountForm = ({
                   )}
                   <Button
                     type='submit'
-                    color='default'
-                    className='w-full sm:w-auto sm:min-w-32'
+                    color='primary'
+                    className='w-full sm:w-auto sm:min-w-32 font-polysans font-light disabled:cursor-not-allowed disabled:bg-sidebar/40 disabled:opacity-80 disabled:text-foreground/40'
                     size='lg'
-                    isLoading={useStore(
-                      form.store,
-                      (state) => state.isSubmitting,
-                    )}>
-                    {isEditMode ? 'Update Account' : 'Create Account'}
+                    endContent={
+                      <Icon
+                        name={
+                          addressValidation.isValidating || isSubmitting
+                            ? 'spinners-ring'
+                            : addressValidation.isValid
+                              ? 'chevron-right'
+                              : 'x'
+                        }
+                      />
+                    }
+                    disabled={
+                      useStore(form.store, (state) => state.isSubmitting) ||
+                      !addressValidation.isValid ||
+                      addressValidation.isValidating
+                    }>
+                    {isEditMode ? 'Update Account' : 'Create PayGate Account'}
                   </Button>
                 </div>
               </div>
             </form>
           </div>
 
-          <div className='dark:text-white rounded-lg'>
-            <h3 className='text-lg sm:text-xl font-semibold tracking-tight mb-4'>
-              Provider Status
-            </h3>
-            <ProvidersList
-              data={
-                response?.data && isProviderStatusResponse(response.data)
-                  ? response.data.providers
-                  : []
-              }
-              loading={!response}
-              error={response?.error ? new Error(response.error) : null}
-            />
-          </div>
+          <CreateWalletResponse response={walletResponse} />
         </div>
       </CardBody>
     </Card>

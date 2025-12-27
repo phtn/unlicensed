@@ -42,7 +42,7 @@ const PayGateContentInner = () => {
     case 'new':
       return (
         <PaygateAccountForm
-          onCreated={handleFormSuccess}
+          // onCreated={handleFormSuccess}
           onCancel={handleCancel}
         />
       )

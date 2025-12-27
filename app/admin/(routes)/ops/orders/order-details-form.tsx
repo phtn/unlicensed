@@ -22,23 +22,23 @@ import {useOrderDetailsSafe} from './order-details-context'
 type Order = Doc<'orders'>
 
 const statusColorMap: Record<string, ChipProps['color']> = {
-  pending: 'warning',
-  confirmed: 'primary',
-  processing: 'secondary',
+  pending_payment: 'warning',
+  order_processing: 'primary',
+  awaiting_courier_pickup: 'secondary',
+  shipping: 'default',
+  resend: 'warning',
   shipped: 'success',
-  delivered: 'success',
   cancelled: 'danger',
-  refunded: 'default',
 }
 
 const statusOptions = [
-  {value: 'pending', label: 'Pending'},
-  {value: 'confirmed', label: 'Confirmed'},
-  {value: 'processing', label: 'Processing'},
+  {value: 'pending_payment', label: 'Pending Payment'},
+  {value: 'order_processing', label: 'Order Processing'},
+  {value: 'awaiting_courier_pickup', label: 'Awaiting Courier Pickup'},
+  {value: 'shipping', label: 'Shipping'},
+  {value: 'resend', label: 'Resend'},
   {value: 'shipped', label: 'Shipped'},
-  {value: 'delivered', label: 'Delivered'},
   {value: 'cancelled', label: 'Cancelled'},
-  {value: 'refunded', label: 'Refunded'},
 ]
 
 interface OrderDetailsFormProps {
@@ -111,7 +111,10 @@ export function OrderDetailsForm({
             color={statusColorMap[order.orderStatus] || 'default'}
             size='sm'
             variant='flat'>
-            {order.orderStatus}
+            {order.orderStatus
+              .split('_')
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ')}
           </Chip>
         </div>
       )}

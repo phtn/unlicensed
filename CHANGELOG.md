@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.0
+
+### Minor Changes
+
+- paygate account creation
+
 ## 0.15.1
 
 ### Patch Changes

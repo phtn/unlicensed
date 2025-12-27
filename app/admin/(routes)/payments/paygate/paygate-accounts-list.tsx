@@ -1,23 +1,14 @@
 'use client'
 
+import {HyperList} from '@/components/expermtl/hyper-list'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {cn} from '@/lib/utils'
-import {
-  Button,
-  Card,
-  CardBody,
-  Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from '@heroui/react'
-import {useMutation, useQuery} from 'convex/react'
-import {useState} from 'react'
+import {Card, CardBody} from '@heroui/react'
+import {useQuery} from 'convex/react'
+import Link from 'next/link'
+import {useCallback} from 'react'
+import {AccountItemCard} from './account-item'
 
 type PaygateAccount = Doc<'paygateAccounts'>
 
@@ -27,24 +18,29 @@ interface PaygateAccountsListProps {
 
 export const PaygateAccountsList = ({onEdit}: PaygateAccountsListProps) => {
   const accounts = useQuery(api.paygateAccounts.q.listAccounts)
-  const deleteAccount = useMutation(api.paygateAccounts.m.deleteAccount)
-  const [deletingId, setDeletingId] = useState<PaygateAccount['_id'] | null>(
-    null,
+  // const deleteAccount = useMutation(api.paygateAccounts.m.deleteAccount)
+  // const [, setDeletingId] = useState<PaygateAccount['_id'] | null>(null)
+
+  const handleEdit = useCallback(
+    (id: PaygateAccount['_id']) => () => {
+      if (onEdit) void onEdit(id)
+    },
+    [onEdit],
   )
 
-  const handleDelete = async (id: PaygateAccount['_id']) => {
-    if (!confirm('Are you sure you want to delete this account?')) return
+  // const handleDelete = async (id: PaygateAccount['_id']) => {
+  //   if (!confirm('Are you sure you want to delete this account?')) return
 
-    setDeletingId(id)
-    try {
-      await deleteAccount({id})
-    } catch (error) {
-      console.error('Failed to delete account:', error)
-      alert('Failed to delete account')
-    } finally {
-      setDeletingId(null)
-    }
-  }
+  //   setDeletingId(id)
+  //   try {
+  //     await deleteAccount({id})
+  //   } catch (error) {
+  //     console.error('Failed to delete account:', error)
+  //     alert('Failed to delete account')
+  //   } finally {
+  //     setDeletingId(null)
+  //   }
+  // }
 
   if (accounts === undefined) {
     return (
@@ -58,44 +54,43 @@ export const PaygateAccountsList = ({onEdit}: PaygateAccountsListProps) => {
 
   if (accounts.length === 0) {
     return (
-      <Card shadow='none' radius='none' className='md:rounded-lg w-full'>
+      <Card
+        shadow='none'
+        radius='none'
+        className='md:rounded-lg bg-sidebar/40 dark:bg-dark-table/40 w-full'>
         <CardBody className='text-center py-12'>
-          <p className='text-foreground/60'>No PayGate accounts configured yet.</p>
-          <p className='text-sm text-foreground/40 mt-2'>
-            Create your first account to get started.
+          <p className='text-foreground/60 font-polysans'>
+            Create your first account.
           </p>
+          <Link
+            href='/admin/payments/paygate?tabId=new'
+            className='text-sm text-blue-500 mt-2 mx-auto flex items-center bg-blue-500/10 ps-2.5 pe-1 py-1 rounded-lg'>
+            <span>Get Started</span>
+            <Icon name='chevron-right' className='size-4' />
+          </Link>
         </CardBody>
       </Card>
     )
   }
 
-  const getStatusColor = (
-    account: PaygateAccount,
-  ): 'default' | 'success' | 'warning' | 'danger' => {
-    if (!account.enabled) return 'default'
-    if (account.accountStatus === 'active') return 'success'
-    if (account.accountStatus === 'suspended') return 'danger'
-    if (account.accountStatus === 'pending') return 'warning'
-    return 'default'
-  }
-
-  const getStatusLabel = (account: PaygateAccount): string => {
-    if (!account.enabled) return 'Disabled'
-    if (account.accountStatus) return account.accountStatus
-    return 'Unknown'
-  }
-
   return (
-    <Card shadow='none' radius='none' className='md:rounded-lg w-full'>
+    <Card
+      shadow='none'
+      radius='none'
+      className='md:rounded-lg w-full bg-transparent'>
       <CardBody className='space-y-4'>
-        <div>
-          <h3 className='text-lg font-semibold'>PayGate Accounts</h3>
-          <p className='text-sm text-foreground/60'>
-            Manage your PayGate wallet accounts and sync data from PayGate API.
-          </p>
-        </div>
+        <HyperList
+          data={accounts.map((a) => ({...a, onEdit: handleEdit(a._id)}))}
+          component={AccountItemCard}
+          direction='right'
+        />
+      </CardBody>
+    </Card>
+  )
+}
 
-        <Table aria-label='PayGate accounts table' removeWrapper>
+/*
+<Table aria-label='PayGate accounts table' removeWrapper>
           <TableHeader>
             <TableColumn>LABEL</TableColumn>
             <TableColumn>WALLET ADDRESS</TableColumn>
@@ -156,7 +151,9 @@ export const PaygateAccountsList = ({onEdit}: PaygateAccountsListProps) => {
                       {account.affiliateEnabled !== undefined && (
                         <Chip
                           size='sm'
-                          color={account.affiliateEnabled ? 'success' : 'default'}
+                          color={
+                            account.affiliateEnabled ? 'success' : 'default'
+                          }
                           variant='flat'>
                           {account.affiliateEnabled ? 'Enabled' : 'Disabled'}
                         </Chip>
@@ -170,11 +167,14 @@ export const PaygateAccountsList = ({onEdit}: PaygateAccountsListProps) => {
                   <div className='flex flex-col gap-1 text-xs text-foreground/60'>
                     {account.totalTransactions !== undefined && (
                       <span>
-                        Transactions: {account.totalTransactions.toLocaleString()}
+                        Transactions:{' '}
+                        {account.totalTransactions.toLocaleString()}
                       </span>
                     )}
                     {account.totalVolume !== undefined && (
-                      <span>Volume: ${account.totalVolume.toLocaleString()}</span>
+                      <span>
+                        Volume: ${account.totalVolume.toLocaleString()}
+                      </span>
                     )}
                     {account.lastSyncedAt && (
                       <span className='text-foreground/40'>
@@ -208,8 +208,4 @@ export const PaygateAccountsList = ({onEdit}: PaygateAccountsListProps) => {
             ))}
           </TableBody>
         </Table>
-      </CardBody>
-    </Card>
-  )
-}
-
+*/

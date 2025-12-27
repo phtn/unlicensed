@@ -1,19 +1,12 @@
 import {v} from 'convex/values'
 import {mutation} from '../_generated/server'
+import {paygateAccountSchema} from './d'
 
 /**
  * Create a new PayGate account
  */
 export const createAccount = mutation({
-  args: {
-    hexAddress: v.string(),
-    addressIn: v.string(),
-    callbackUrl: v.optional(v.string()),
-    label: v.optional(v.string()),
-    description: v.optional(v.string()),
-    isDefault: v.optional(v.boolean()),
-    enabled: v.optional(v.boolean()),
-  },
+  args: paygateAccountSchema,
   handler: async (ctx, args) => {
     // Validate wallet address format (basic Ethereum address format)
     const addressRegex = /^0x[a-fA-F0-9]{40}$/
@@ -49,10 +42,8 @@ export const createAccount = mutation({
 
     const now = Date.now()
     const accountId = await ctx.db.insert('paygateAccounts', {
+      ...args,
       hexAddress: args.hexAddress.toLowerCase(), // Normalize to lowercase
-      addressIn: args.addressIn,
-      label: args.label,
-      description: args.description,
       isDefault: args.isDefault ?? false,
       enabled: args.enabled ?? true,
       createdAt: now,

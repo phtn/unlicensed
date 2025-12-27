@@ -20,9 +20,10 @@ import {useMemo} from 'react'
 type Order = Doc<'orders'>
 
 const statusColorMap: Record<string, ChipProps['color']> = {
-  processing: 'secondary',
+  order_processing: 'primary',
+  awaiting_courier_pickup: 'secondary',
+  shipping: 'default',
   shipped: 'success',
-  delivered: 'success',
 }
 
 const columns = [
@@ -41,9 +42,10 @@ export const DeliveriesTable = () => {
     if (!allOrders) return []
     return allOrders.filter(
       (order) =>
-        order.orderStatus === 'processing' ||
-        order.orderStatus === 'shipped' ||
-        order.orderStatus === 'delivered',
+        order.orderStatus === 'order_processing' ||
+        order.orderStatus === 'awaiting_courier_pickup' ||
+        order.orderStatus === 'shipping' ||
+        order.orderStatus === 'shipped',
     )
   }, [allOrders])
 
@@ -82,7 +84,10 @@ export const DeliveriesTable = () => {
             color={statusColorMap[order.orderStatus] || 'default'}
             size='sm'
             variant='flat'>
-            {order.orderStatus}
+            {order.orderStatus
+              .split('_')
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ')}
           </Chip>
         )
       case 'tracking':

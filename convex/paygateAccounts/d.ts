@@ -10,6 +10,9 @@ export const paygateAccountSchema = v.object({
   // Wallet address (Polygon USDC) - primary identifier
   addressIn: v.string(), // address_in from PayGate API (where payments are received)
   hexAddress: v.string(),
+  polygonAddressIn: v.string(),
+  callbackUrl: v.string(),
+  ipnToken: v.string(),
   addressOut: v.optional(v.string()), // address_out from PayGate API (where payments are sent)
 
   // Account metadata

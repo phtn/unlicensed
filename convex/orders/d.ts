@@ -45,13 +45,13 @@ export const paymentSchema = v.object({
 
 // Order status enum
 export const orderStatusSchema = v.union(
-  v.literal('pending'), // Order placed, awaiting payment
-  v.literal('confirmed'), // Payment confirmed, order being processed
-  v.literal('processing'), // Order being prepared
+  v.literal('pending_payment'), // Order placed, awaiting payment
+  v.literal('order_processing'), // Order being processed
+  v.literal('awaiting_courier_pickup'), // Awaiting courier pickup
+  v.literal('shipping'), // Order is shipping
+  v.literal('resend'), // Order needs to be resent
   v.literal('shipped'), // Order has been shipped
-  v.literal('delivered'), // Order has been delivered
   v.literal('cancelled'), // Order was cancelled
-  v.literal('refunded'), // Order was refunded
 )
 
 export type OrderStatus = Infer<typeof orderStatusSchema>

@@ -129,7 +129,7 @@ export const OrdersTable = () => {
     <Card
       shadow='none'
       radius='none'
-      className='p-4 md:rounded-lg bg-sidebar/20  dark:bg-dark-table/40 md:h-full h-[calc(100lvh-24px)] w-screen md:w-full overflow-scroll'>
+      className='p-4 md:rounded-xl bg-sidebar/20  dark:bg-dark-table/40 md:h-full h-[calc(100lvh-24px)] w-screen md:w-full overflow-scroll'>
       <Table
         key={`table-${selectedOrderId || 'none'}-${open}`}
         isCompact
@@ -170,11 +170,12 @@ export const OrdersTable = () => {
                 {(columnKey) => (
                   <TableCell
                     className={cn(
-                      'border-r first:border-l border-dotted border-neutral-300 dark:border-teal-200/10',
+                      'border-r first:border-l border-dotted border-neutral-300 dark:border-teal-200/10 px-1.5',
                       selectedRow === order._id && isSelected
                         ? 'bg-neutral-300/10 first:border-l not-last:border-r-0 last:border-r -border-dotted border-neutral-300 dark:border-teal-200/40'
                         : '',
-                      columnKey === 'status' && 'w-30',
+                      columnKey === 'status' && 'w-52',
+                      columnKey === 'total' && 'w-30',
                     )}>
                     {renderCell(order, columnKey)}
                   </TableCell>

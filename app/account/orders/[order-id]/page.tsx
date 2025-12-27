@@ -20,17 +20,19 @@ import {useMemo} from 'react'
 
 function getStatusColor(status: string) {
   switch (status) {
-    case 'pending':
+    case 'pending_payment':
       return 'warning'
-    case 'confirmed':
-    case 'processing':
+    case 'order_processing':
       return 'primary'
-    case 'shipped':
+    case 'awaiting_courier_pickup':
       return 'secondary'
-    case 'delivered':
+    case 'shipping':
+      return 'default'
+    case 'resend':
+      return 'warning'
+    case 'shipped':
       return 'success'
     case 'cancelled':
-    case 'refunded':
       return 'danger'
     default:
       return 'default'
@@ -424,9 +426,8 @@ export default function OrderDetailPage() {
             <Button variant='flat' as={NextLink} href='/account'>
               Back to Account
             </Button>
-            {order.orderStatus !== 'cancelled' &&
-              order.orderStatus !== 'delivered' &&
-              order.orderStatus !== 'refunded' && (
+            {order.orderStatus !== 'shipped' &&
+              order.orderStatus !== 'cancelled' && (
                 <Button
                   color='danger'
                   variant='flat'

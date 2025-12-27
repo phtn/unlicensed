@@ -53,52 +53,48 @@ export const actionsCell = (selected: boolean, fn: VoidFunction) => {
  * ORDER STATUS
  * 1. Pending Payment
  * 2. Order Processing
- * 3. Awaiting Courier
- * 4. Pick up
- * 5. Shipping
- * 6. Resend
- * 7. Shipped
+ * 3. Awaiting Courier Pick up
+ * 4. Shipping
+ * 5. Resend
+ * 6. Shipped
  */
 
 type StatusCode =
-  | 'pending'
-  | 'awaiting'
+  | 'pending_payment'
+  | 'order_processing'
+  | 'awaiting_courier_pickup'
   | 'shipping'
-  | 'processing'
-  | 'special'
-  | 'cancelled'
+  | 'resend'
   | 'shipped'
-  | 'delivered'
-  | 'confirmed'
-  | 'refunded'
+  | 'cancelled'
   | 'default'
 
 const colorMap: Record<StatusCode, ClassName> = {
-  // pending: 'bg-[#fde1b8]',
-  // confirmed: 'bg-[#f7dac3]',
-  confirmed: 'bg-indigo-200/70 dark:bg-indigo-400/25',
-  pending: 'bg-orange-200/65 dark:bg-orange-400/25',
-  processing: 'bg-sky-600/20 dark:bg-blue-400/35',
-  special: 'bg-purple-200/70 dark:bg-purple-400/25 _bg-indigo-600/15',
+  pending_payment: 'bg-amber-400/25 dark:bg-orange-300/45',
+  order_processing: 'bg-sky-600/20 dark:bg-blue-400/45',
+  awaiting_courier_pickup: 'bg-orange-200/65 dark:bg-orange-400/45',
+  shipping: 'bg-purple-200/70 dark:bg-purple-400/35',
+  resend: 'bg-red-200/70 dark:bg-red-400/50',
+  shipped: 'bg-emerald-400/35 dark:bg-emerald-400/35',
+  cancelled: 'dark:bg-red-400/40',
   default: 'bg-[#e8e6e5]',
-  cancelled: 'dark:bg-red-400/40', //bg-red-500/20
-  shipping: 'bg-[#e4d9e9] dark:bg-lime-300/45',
-  shipped: 'bg-emerald-400/35 dark:bg-emerald-400/35', //#d4ead8
-  awaiting: 'bg-amber-400/25 dark:bg-orange-300/45', //#e1d5eb
-  refunded: 'bg-amber-400/25 dark:bg-orange-300/45', //#e1d5eb
-  delivered: 'bg-emerald-400/35 dark:bg-emerald-400/35',
 }
 
-export const statusCell = (status: StatusCode) => {
-  const color = colorMap[status.toLowerCase() as StatusCode] || 'default'
+export const statusCell = (status: string) => {
+  const normalizedStatus = status.toLowerCase() as StatusCode
+  const color = colorMap[normalizedStatus] || colorMap.default
+  const displayStatus = status
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
   return (
     <div
       className={cn(
         'flex items-center uppercase justify-center rounded-sm w-fit px-2 py-1.5 font-mono shadow-none',
         color,
       )}>
-      <p className='text-bold text-xs tracking-wider font-normal whitespace-nowrap drop-shadow-xs'>
-        {status}
+      <p className='text-xs tracking-wider font-normal whitespace-nowrap drop-shadow-xs'>
+        {displayStatus}
       </p>
     </div>
   )

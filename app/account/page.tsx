@@ -93,21 +93,30 @@ export default function AccountPage() {
   // Helper for Order Status Color
   const getStatusColor = (status: string): ChipProps['color'] => {
     switch (status) {
-      case 'pending':
+      case 'pending_payment':
         return 'warning'
-      case 'confirmed':
-      case 'processing':
+      case 'order_processing':
         return 'primary'
-      case 'shipped':
+      case 'awaiting_courier_pickup':
         return 'secondary'
-      case 'delivered':
+      case 'shipping':
+        return 'default'
+      case 'resend':
+        return 'warning'
+      case 'shipped':
         return 'success'
       case 'cancelled':
-      case 'refunded':
         return 'danger'
       default:
         return 'default'
     }
+  }
+
+  const formatStatus = (status: string) => {
+    return status
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
   }
 
   const toggleShowAllOrders = () => {
@@ -459,7 +468,7 @@ export default function AccountPage() {
                                     color={getStatusColor(order.orderStatus)}
                                     variant='flat'
                                     className='font-medium'>
-                                    {order.orderStatus.toUpperCase()}
+                                    {formatStatus(order.orderStatus)}
                                   </Chip>
                                 </div>
                                 <div className='flex items-center gap-2 text-sm text-default-500 flex-wrap'>

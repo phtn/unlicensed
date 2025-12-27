@@ -105,7 +105,7 @@ export const createOrder = mutation({
     const orderId = await ctx.db.insert('orders', {
       userId: args.userId ?? null,
       orderNumber: generateOrderNumber(),
-      orderStatus: 'pending',
+      orderStatus: 'pending_payment',
       items: orderItems,
       subtotalCents,
       taxCents,
@@ -147,14 +147,7 @@ export const updateOrderStatus = mutation({
     }
 
     const updates: {
-      orderStatus:
-        | 'pending'
-        | 'confirmed'
-        | 'processing'
-        | 'shipped'
-        | 'delivered'
-        | 'cancelled'
-        | 'refunded'
+      orderStatus: typeof args.status
       updatedAt: number
       cancelledAt?: number
       internalNotes?: string
@@ -172,23 +165,6 @@ export const updateOrderStatus = mutation({
     }
 
     await ctx.db.patch(args.orderId, updates)
-
-    // Deduct points when order status changes to refunded
-    const wasRefunded =
-      args.status === 'refunded' &&
-      order.orderStatus !== 'refunded' &&
-      order.userId &&
-      order.pointsEarned
-
-    if (wasRefunded) {
-      await ctx.scheduler.runAfter(
-        0,
-        internal.rewards.m.deductPointsFromRefund,
-        {
-          orderId: args.orderId,
-        },
-      )
-    }
 
     // Log order status change activity
     await ctx.scheduler.runAfter(
@@ -220,14 +196,14 @@ export const updatePayment = mutation({
       throw new Error('Order not found')
     }
 
-    // If payment is completed, update order status to confirmed
+    // If payment is completed, update order status to order_processing
     let orderStatus = order.orderStatus
     const wasPaymentCompleted =
       args.payment.status === 'completed' &&
       order.payment.status !== 'completed'
 
-    if (wasPaymentCompleted && order.orderStatus === 'pending') {
-      orderStatus = 'confirmed'
+    if (wasPaymentCompleted && order.orderStatus === 'pending_payment') {
+      orderStatus = 'order_processing'
     }
 
     // Update payment with paidAt timestamp if completing
@@ -303,8 +279,6 @@ export const updateShipping = mutation({
     let orderStatus = order.orderStatus
     if (args.shipping.shippedAt && order.orderStatus !== 'shipped') {
       orderStatus = 'shipped'
-    } else if (args.shipping.deliveredAt && order.orderStatus !== 'delivered') {
-      orderStatus = 'delivered'
     }
 
     await ctx.db.patch(args.orderId, {
@@ -371,8 +345,8 @@ export const cancelOrder = mutation({
       throw new Error('Order is already cancelled')
     }
 
-    if (order.orderStatus === 'delivered') {
-      throw new Error('Cannot cancel a delivered order')
+    if (order.orderStatus === 'shipped') {
+      throw new Error('Cannot cancel a shipped order')
     }
 
     const notes = args.reason ? `Cancelled: ${args.reason}` : 'Order cancelled'

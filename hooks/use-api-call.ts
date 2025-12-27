@@ -20,7 +20,24 @@ export function useApiCall() {
     setResponse(null)
 
     try {
-      const response = await fetch(url, {
+      // Check if URL is from PolygonScan (requires proxy due to CORS)
+      let targetUrl = url
+      let isPolygonScan = false
+      try {
+        const parsedUrl = new URL(url)
+        isPolygonScan =
+          parsedUrl.hostname === 'polygonscan.com' ||
+          parsedUrl.hostname === 'www.polygonscan.com'
+      } catch {
+        // Invalid URL, will fail in fetch below
+      }
+
+      // Use proxy endpoint for PolygonScan URLs to bypass CORS
+      if (isPolygonScan) {
+        targetUrl = `/api/polygonscan/proxy?url=${encodeURIComponent(url)}`
+      }
+
+      const response = await fetch(targetUrl, {
         method: 'GET',
         headers: {
           Accept: 'application/json, text/html, */*',
@@ -32,6 +49,16 @@ export function useApiCall() {
         return
       }
 
+      // If using proxy, the response is already in ApiResponse format
+      if (isPolygonScan) {
+        const proxyResponse = await response.json()
+        if (!abortController.signal.aborted) {
+          setResponse(proxyResponse)
+        }
+        return
+      }
+
+      // Direct fetch handling for non-proxied requests
       const contentType = response.headers.get('content-type') || ''
       let data: unknown
 

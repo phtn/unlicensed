@@ -8,13 +8,13 @@ import {useRouter} from 'next/navigation'
 import {OrderDetailsForm} from '../order-details-form'
 
 const statusColorMap: Record<string, ChipProps['color']> = {
-  pending: 'warning',
-  confirmed: 'primary',
-  processing: 'secondary',
+  pending_payment: 'warning',
+  order_processing: 'primary',
+  awaiting_courier_pickup: 'secondary',
+  shipping: 'default',
+  resend: 'warning',
   shipped: 'success',
-  delivered: 'success',
   cancelled: 'danger',
-  refunded: 'default',
 }
 
 interface ContentProps {
@@ -75,7 +75,10 @@ export const Content = ({orderNumber}: ContentProps) => {
             color={statusColorMap[order.orderStatus] || 'default'}
             size='sm'
             variant='flat'>
-            {order.orderStatus}
+            {order.orderStatus
+              .split('_')
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ')}
           </Chip>
         </div>
 

@@ -32,6 +32,7 @@ type BaseFieldProps<T> = {
   min?: string | number
   max?: string | number
   minRows?: number
+  spellCheck?: boolean
 }
 
 // Partial type for when name comes from AppField context
@@ -80,6 +81,8 @@ export function TextField<T>(props?: PartialFormInput<T> | FormInput<T>) {
         description={props?.description}
         classNames={commonInputClassNames}
         variant='bordered'
+        suppressHydrationWarning
+        spellCheck={props?.spellCheck ? 'true' : 'false'}
       />
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
         <p className='text-xs text-rose-400'>

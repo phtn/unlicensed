@@ -11,7 +11,7 @@ import Link from 'next/link'
 import {Suspense} from 'react'
 
 const SalesInner = () => {
-  const sales = useQuery(api.orders.q.getOrdersByStatus, {status: 'delivered'})
+  const sales = useQuery(api.orders.q.getOrdersByStatus, {status: 'shipped'})
   const [tabId] = useAdminTabId()
   const isProductRoute = tabId !== 'badges' && tabId !== 'new'
 
