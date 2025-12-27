@@ -344,8 +344,9 @@ export const PaygateAccountForm = ({
                   {(input) => (
                     <input.TextField
                       type='text'
-                      label='Polygon USDC Wallet Address'
+                      label='Wallet Address (USDC Polygon)'
                       placeholder='0x611F3143b76a994214d751d762b52D081d8DC4de'
+                      required
                     />
                   )}
                 </form.AppField>
@@ -376,6 +377,7 @@ export const PaygateAccountForm = ({
                     type='text'
                     label='Callback URL'
                     placeholder='https://example.com/callback'
+                    required
                   />
                 )}
               </form.AppField>

@@ -83,6 +83,7 @@ export const PaygateAccountsList = ({onEdit}: PaygateAccountsListProps) => {
           data={accounts.map((a) => ({...a, onEdit: handleEdit(a._id)}))}
           component={AccountItemCard}
           direction='right'
+          container='grid grid-cols-3'
         />
       </CardBody>
     </Card>
