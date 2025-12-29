@@ -225,7 +225,7 @@ export const PaygateAccountForm = ({
       // console.error('[POLYGON] Validation error:', addressValidation.error)
       return 'Polygon wallet address is invalid'
     }
-    return 'WARNING: Only use USDC wallet address in Polygon Network.'
+    return 'WARNING: Only use USDC in Polygon Network.'
   }, [hexAddressValue, addressValidation])
 
   // Update callbackUrl on client side after hydration to avoid hydration mismatch
@@ -266,19 +266,40 @@ export const PaygateAccountForm = ({
     <Card
       shadow='none'
       radius='none'
-      className='md:rounded-lg dark:bg-dark-table/40 w-full py-2 sm:py-4'>
+      className='md:rounded-lg dark:bg-dark-table/40 w-full sm:py-4'>
       <CardBody className='px-3 sm:px-4 md:px-6 h-[calc(100svh-120px)] sm:h-[calc(100lvh-100px)] overflow-y-auto overflow-x-hidden'>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8'>
           <div>
             <div className='mb-3 sm:mb-4 space-y-3 sm:space-y-5'>
-              <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pt-2 sm:pt-4'>
-                <h2 className='text-xl sm:text-2xl font-polysans font-semibold'>
-                  {isEditMode ? 'Edit Wallet' : 'Create Wallet'}
-                </h2>
+              <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pt-0 sm:pt-4'>
+                <div className='flex items-center justify-between'>
+                  <h2 className='text-xl sm:text-2xl font-polysans md:font-semibold'>
+                    {isEditMode ? 'Edit Wallet' : 'Create Wallet'}
+                  </h2>
+                  <a
+                    href={
+                      hexAddressValue
+                        ? `https://polygonscan.com/address/${hexAddressValue}`
+                        : 'https://polygonscan.com/'
+                    }
+                    rel='noopener noreferrer'
+                    className='text-purple-600 dark:text-purple-300 flex items-center gap-1 hover:underline hover:underline-offset-4 decoration-dotted bg-white dark:bg-white/5 ps-2 pe-1 py-1 sm:py-0.5 rounded-full text-xs sm:text-sm'
+                    target='_blank'>
+                    <span className='wrap-break-words'>polygon scan</span>
+                    <Icon
+                      name={addressValidation.isValid ? 'arrow-up' : 'arrow-up'}
+                      className={cn(
+                        'size-3 sm:size-4 translate-y-[0.35px] rotate-25 shrink-0',
+                        addressValidation.isValid ? 'dark:text-white' : '',
+                      )}
+                    />
+                  </a>
+                </div>
+
                 {(errorMessage || status === 'success') && (
                   <div className='flex flex-col sm:flex-row gap-2 sm:gap-3 font-mono text-xs uppercase tracking-widest'>
                     {errorMessage && (
-                      <div className='rounded-full bg-danger/9 border border-danger/20 text-danger px-2 sm:px-3 py-1 text-center sm:text-left break-words'>
+                      <div className='rounded-full bg-danger/9 border border-danger/20 text-danger px-2 sm:px-3 py-1 text-center sm:text-left wrap-break-words'>
                         {errorMessage}
                       </div>
                     )}
@@ -309,36 +330,21 @@ export const PaygateAccountForm = ({
                 title='Polygon USDC Wallet Address'
                 description={
                   <div className='flex flex-wrap items-center gap-1.5 sm:gap-2'>
-                    <span className='break-words'>{walletAddressStatus}</span>
+                    <span className='wrap-break-words'>
+                      {walletAddressStatus}
+                    </span>
                     {addressValidation.isValidating && (
-                      <Icon name='spinner-dots' className='size-4 flex-shrink-0' />
+                      <Icon name='spinner-dots' className='size-4 shrink-0' />
                     )}
                     {addressValidation.isValid && (
-                      <Icon name='check' className='size-4 flex-shrink-0' />
+                      <Icon name='check' className='size-4 shrink-0' />
                     )}
                   </div>
-                }>
-                <a
-                  href={
-                    hexAddressValue
-                      ? `https://polygonscan.com/address/${hexAddressValue}`
-                      : 'https://polygonscan.com/'
-                  }
-                  rel='noopener noreferrer'
-                  className='text-purple-600 dark:text-purple-300 flex items-center gap-1 hover:underline hover:underline-offset-4 decoration-dotted bg-white dark:bg-white/5 ps-2 pe-1 py-1 sm:py-0.5 rounded-full text-xs sm:text-sm'
-                  target='_blank'>
-                  <span className='break-words'>polygon scan</span>
-                  <Icon
-                    name={addressValidation.isValid ? 'arrow-up' : 'arrow-up'}
-                    className={cn(
-                      'size-3 sm:size-4 translate-y-[0.35px] rotate-25 flex-shrink-0',
-                      addressValidation.isValid ? 'dark:text-white' : '',
-                    )}
-                  />
-                </a>
-              </Callout>
+                }></Callout>
             </div>
-            <form onSubmit={onSubmit} className='space-y-4 sm:space-y-6 md:space-y-8 w-full'>
+            <form
+              onSubmit={onSubmit}
+              className='space-y-4 sm:space-y-6 md:space-y-8 w-full'>
               <div className='relative'>
                 <form.AppField name='hexAddress'>
                   {(input) => (
@@ -382,7 +388,9 @@ export const PaygateAccountForm = ({
                 )}
               </form.AppField>
 
-              <div className='text-xs sm:text-sm font-medium pt-2'>Internal use fields</div>
+              <div className='text-xs sm:text-sm font-medium pt-2'>
+                Internal use fields
+              </div>
 
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4'>
                 <form.AppField name='label'>

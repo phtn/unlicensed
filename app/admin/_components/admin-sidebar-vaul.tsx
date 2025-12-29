@@ -11,7 +11,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/app/admin/_components/ui/sidebar'
+} from '@/app/admin/_components/ui/sidebar-vaul'
 import {ThemeToggle} from '@/components/ui/theme-toggle'
 import {api} from '@/convex/_generated/api'
 import {Icon, IconName} from '@/lib/icons'
@@ -25,7 +25,9 @@ import type {NavGroup, NavItem} from './ui/types'
 // Global Set to track prefetched routes across all instances
 const prefetchedRoutes = new Set<string>()
 
-export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
+export function AdminSidebarVaul({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -67,8 +69,8 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props} className='border-none!' suppressHydrationWarning>
       <SidebarHeader className=''>
-        <div className='h-16 translate-x-3 flex items-end justify-between'>
-          <div className='h-12 flex w-full items-center _justify-center dark:bg-sidebar bg-linear-to-r from-foreground/90 via-foreground/90 to-transparent dark:from-featured/20 dark:via-foreground/10 px-4 rounded-s-3xl'>
+        <div className='h-10 md:h-16 translate-x-1.5 flex items-end justify-between'>
+          <div className='h-12 flex w-full items-center _justify-center dark:bg-sidebar bg-linear-to-r from-foreground/90 via-foreground/90 to-transparent dark:from-featured/10 dark:via-brand/5 ps-2 rounded-s-full'>
             <Icon
               name='rapid-fire'
               className='text-base text-sidebar dark:text-light-table w-32 h-auto font-figtree font-semibold tracking-tight'
@@ -313,7 +315,7 @@ const data: Record<string, NavGroup[]> = {
           icon: 'tag-light',
         },
         {
-          title: 'Analytics',
+          title: 'Website',
           url: '/admin/reports/analytics',
           icon: 'chart-sparkle',
         },

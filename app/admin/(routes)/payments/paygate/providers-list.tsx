@@ -125,7 +125,7 @@ const ListboxWrapper = ({children}: PropsWithChildren) => (
 
 export const PayGateProviders = () => (
   <div className='dark:text-white py-4'>
-    <h2 className='text-2xl font-polysans font-semibold mt-2 mb-4'>
+    <h2 className='text-xl md:text-2xl font-polysans font-semibold mt-2 mb-4'>
       Providers
     </h2>
     <ProvidersList />

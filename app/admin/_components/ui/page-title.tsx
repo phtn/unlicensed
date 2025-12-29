@@ -9,12 +9,12 @@ interface PageTitleProps {
 
 export const PageTitle = ({children, className}: PageTitleProps) => {
   return (
-    <h1
+    <div
       className={cn(
-        'group-hover:underline capitalize underline-offset-4 decoration-dotted decoration-[0.5px] decoration-foreground/60 opacity-70 tracking-tight font-polysans font-normal text-base md:text-lg xl:text-xl',
+        'underline leading-none capitalize underline-offset-4 decoration-dotted decoration-[0.5px] md:decoration-foreground/0 decoration-foreground/50 dark:decoration-foreground/20 md:group-hover:decoration-foreground/60 opacity-80 tracking-tighter md:tracking-tight font-polysans font-normal text-xl xl:text-xl',
         className,
       )}>
       {children}
-    </h1>
+    </div>
   )
 }

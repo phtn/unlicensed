@@ -1,18 +1,22 @@
 'use client'
 
+import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
-import {useQuery} from 'convex/react'
 import {Card, CardBody} from '@heroui/react'
-import {Suspense} from 'react'
+import {useQuery} from 'convex/react'
 import {parseAsString, useQueryState} from 'nuqs'
+import {Suspense} from 'react'
 import {AffiliateAccountForm} from './affiliate-account-form'
 import {AffiliateAccountsList} from './affiliate-accounts-list'
 
 const AffiliateContentInner = () => {
-  const [tabId, setTabId, id, setId] = useAdminTabId()
-  const [subTabId, setSubTabId] = useQueryState('subTabId', parseAsString.withDefault(''))
+  const [, setTabId, id, setId] = useAdminTabId()
+  const [subTabId, setSubTabId] = useQueryState(
+    'subTabId',
+    parseAsString.withDefault(''),
+  )
 
   const editingAffiliate = useQuery(
     api.affiliateAccounts.q.getAffiliateById,
@@ -50,27 +54,27 @@ const AffiliateContentInner = () => {
   }
 
   if (subTabId === 'edit') {
-      if (!id || !editingAffiliate) {
-        return (
-          <Suspense fallback={<div>Loading...</div>}>
-            <AffiliateAccountsList onEdit={handleEdit} />
-          </Suspense>
-        )
-      }
+    if (!id || !editingAffiliate) {
       return (
-        <AffiliateAccountForm
-          affiliateId={editingAffiliate._id}
-          initialValues={{
-            walletAddress: editingAffiliate.walletAddress,
-            label: editingAffiliate.label ?? '',
-            description: editingAffiliate.description ?? '',
-            commissionRate: editingAffiliate.commissionRate,
-            enabled: editingAffiliate.enabled ?? true,
-          }}
-          onUpdated={handleFormSuccess}
-          onCancel={handleCancel}
-        />
+        <Suspense fallback={<div>Loading...</div>}>
+          <AffiliateAccountsList onEdit={handleEdit} />
+        </Suspense>
       )
+    }
+    return (
+      <AffiliateAccountForm
+        affiliateId={editingAffiliate._id}
+        initialValues={{
+          walletAddress: editingAffiliate.walletAddress,
+          label: editingAffiliate.label ?? '',
+          description: editingAffiliate.description ?? '',
+          commissionRate: editingAffiliate.commissionRate,
+          enabled: editingAffiliate.enabled ?? true,
+        }}
+        onUpdated={handleFormSuccess}
+        onCancel={handleCancel}
+      />
+    )
   }
 
   // Default: show affiliate accounts list
@@ -84,18 +88,12 @@ const AffiliateContentInner = () => {
 export const AffiliateContent = () => {
   return (
     <div className='space-y-6'>
-      <Card
-        shadow='none'
-        radius='none'
-        className='md:rounded-lg md:w-full w-screen overflow-auto'>
-        <CardBody className='space-y-4'>
-          <div>
-            <h2 className='text-xl font-semibold'>Affiliate Accounts</h2>
-            <p className='text-sm text-foreground/60 whitespace-normal'>
-              Manage affiliate accounts that earn commissions on PayGate
-              transactions. Configure wallet addresses and commission rates.
-            </p>
-          </div>
+      <Card shadow='none' radius='none' className='md:rounded-lg'>
+        <CardBody className='space-y-4 w-full'>
+          <SectionHeader
+            title='Affiliate Accounts'
+            description='Manage affiliate accounts that earn commissions'
+          />
         </CardBody>
       </Card>
 
@@ -105,4 +103,3 @@ export const AffiliateContent = () => {
     </div>
   )
 }
-

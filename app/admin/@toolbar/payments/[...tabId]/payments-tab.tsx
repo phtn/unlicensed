@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  MainTab,
   PrimaryTab,
   SecondaryTab,
   ToolbarButtonWrapper,
@@ -11,7 +12,6 @@ import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
-import Link from 'next/link'
 import {Suspense} from 'react'
 
 const PaymentsTabInner = () => {
@@ -25,22 +25,20 @@ const PaymentsTabInner = () => {
   return (
     <>
       {/* PayGate Tab */}
-      <Link
-        href='/admin/payments'
-        prefetch
-        className='flex items-center space-x-4 group'>
-        <PageTitle>PayGate Accounts</PageTitle>
+      <MainTab href='/admin/payments'>
+        <PageTitle>PayGate</PageTitle>
 
-        <span
+        <div
           className={cn(
-            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
+            'px-1 h-5.5 md:h-6 flex items-center justify-center w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
             {
-              'bg-indigo-500 dark:bg-indigo-500 text-white': isPayGateRoute,
+              'bg-sidebar/50 dark:bg-white/5 dark:text-indigo-400 text-indigo-500':
+                isPayGateRoute,
             },
           )}>
           <AnimatedNumber value={paygateAccounts?.length ?? 0} />
-        </span>
-      </Link>
+        </div>
+      </MainTab>
 
       {/* Buttons on the right - show based on active tab */}
       <ToolbarButtonWrapper>

@@ -1,11 +1,11 @@
 'use client'
 
-import {Icon} from '@/lib/icons'
 import {useMobile} from '@/hooks/use-mobile'
+import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {ReactNode, useMemo} from 'react'
 import {useSettingsPanel} from './settings'
-import {SidebarTrigger} from './sidebar'
+import {SidebarTrigger as SidebarTriggerVaul} from './sidebar-vaul'
 
 interface WrappedContentProps {
   children: ReactNode
@@ -19,19 +19,19 @@ export const WrappedContent = ({
   withPanel,
 }: WrappedContentProps) => {
   const {state, openMobile, isMobile, togglePanel} = useSettingsPanel()
-  const isExpanded = useMemo(() => 
-    isMobile ? openMobile : state === 'expanded', 
-    [isMobile, openMobile, state]
+  const isExpanded = useMemo(
+    () => (isMobile ? openMobile : state === 'expanded'),
+    [isMobile, openMobile, state],
   )
   return (
     <Wrapper isPanelExpanded={isExpanded}>
-      <div className='px-3 sm:px-4 space-x-4 flex items-center justify-between min-w-0'>
-        <SidebarTrigger />
+      <div className='ps-2 pe-3 sm:px-4 space-x-1 md:space-x-4 flex items-center justify-between min-w-0'>
+        <SidebarTriggerVaul />
         {toolbar}
         {withPanel && (
-          <SettingsPanelTrigger 
-            state={isMobile ? (openMobile ? 'expanded' : 'collapsed') : state} 
-            toggleFn={togglePanel} 
+          <SettingsPanelTrigger
+            state={isMobile ? (openMobile ? 'expanded' : 'collapsed') : state}
+            toggleFn={togglePanel}
           />
         )}
       </div>
@@ -82,9 +82,13 @@ const SettingsPanelTrigger = ({state, toggleFn}: SettingsPanelTriggerProps) => {
       aria-label={isMobile ? 'Toggle Settings Panel' : 'Toggle Sidebar'}>
       <Icon
         name='sidebar'
-        className={cn('size-5 opacity-80 group-hover:opacity-100 transition-transform')}
+        className={cn(
+          'size-5 opacity-80 group-hover:opacity-100 transition-transform',
+        )}
       />
-      <span className='sr-only'>{isMobile ? 'Toggle Settings Panel' : 'Toggle Sidebar'}</span>
+      <span className='sr-only'>
+        {isMobile ? 'Toggle Settings Panel' : 'Toggle Sidebar'}
+      </span>
     </button>
   )
 }

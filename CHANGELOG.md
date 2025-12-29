@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.17.1
+
+### Patch Changes
+
+- using vaul for admin sidebar
+
 ## 0.17.0
 
 ### Minor Changes

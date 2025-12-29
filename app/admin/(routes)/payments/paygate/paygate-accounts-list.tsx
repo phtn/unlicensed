@@ -78,7 +78,7 @@ export const PaygateAccountsList = ({onEdit}: PaygateAccountsListProps) => {
       shadow='none'
       radius='none'
       className='md:rounded-lg w-full bg-transparent'>
-      <CardBody className='space-y-4'>
+      <CardBody className='space-y-4 h-screen overflow-y-scroll md:h-full '>
         <HyperList
           data={accounts.map((a) => ({...a, onEdit: handleEdit(a._id)}))}
           component={AccountItemCard}

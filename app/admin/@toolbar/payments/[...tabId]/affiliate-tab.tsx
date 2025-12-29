@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  MainTab,
   SecondaryTab,
   ToolbarButtonWrapper,
 } from '@/app/admin/@toolbar/components'
@@ -9,20 +10,17 @@ import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
-import Link from 'next/link'
 import {Suspense} from 'react'
 
 const AffiliateTabInner = () => {
   const affiliates = useQuery(api.affiliateAccounts.q.listAffiliates)
   const [tabId] = useAdminTabId()
-  const isAffiliateRoute = tabId === 'affiliate' || tabId?.startsWith('affiliate')
+  const isAffiliateRoute =
+    tabId === 'affiliate' || tabId?.startsWith('affiliate')
 
   return (
     <>
-      <Link
-        href='/admin/payments?tabId=affiliate'
-        prefetch
-        className='flex items-center space-x-4 group'>
+      <MainTab href='/admin/payments/paygate?tabId=affiliate'>
         <span
           className={cn(
             'group-hover:underline underline-offset-4 decoration-dashed decoration-[0.5px] tracking-tighter font-medium',
@@ -41,7 +39,7 @@ const AffiliateTabInner = () => {
           )}>
           <AnimatedNumber value={affiliates?.length ?? 0} />
         </span>
-      </Link>
+      </MainTab>
       {isAffiliateRoute && (
         <ToolbarButtonWrapper>
           <SecondaryTab
@@ -66,4 +64,3 @@ export const AffiliateTab = () => {
     </Suspense>
   )
 }
-

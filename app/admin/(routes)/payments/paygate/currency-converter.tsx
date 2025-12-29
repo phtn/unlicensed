@@ -148,28 +148,23 @@ const CURRENCIES: Array<FiatCurrency> = [
 
 export const CurrencyConverter = () => {
   return (
-    <div className='relative my-6'>
-      <Tabs title='Utilities' className='flex-1 gap-5 ml-36'>
+    <div className='relative my-2 md:my-6'>
+      <Tabs title='Converters' className='flex-1 ml-44'>
         <Tab
           value='converter-1'
-          title='Fiat Converter'
+          title='Fiat'
           className='flex-1 data-[state=active]:shadow-none data-[state=active]:bg-transparent relative before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border dark:before:bg-card first:before:hidden'>
           <ConverterContent currencies={CURRENCIES} />
         </Tab>
         <Tab
           value='tab-2'
           className='flex-1 data-[state=active]:shadow-none data-[state=active]:bg-transparent relative before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border dark:before:bg-card first:before:hidden'>
-          Check Payment Status
+          <pre>{`<InDevelopment />`}</pre>
         </Tab>
-        {/*<Tab
-          value='tab-3'
-          className='flex-1 data-[state=active]:shadow-none data-[state=active]:bg-transparent relative before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border dark:before:bg-card first:before:hidden'>
-
-        </Tab>*/}
       </Tabs>
 
-      <h2 className='text-2xl font-polysans font-semibold absolute top-1.5 left-6'>
-        Utilities
+      <h2 className='text-xl md:text-2xl font-polysans font-semibold absolute top-1.5 left-2 md:left-6'>
+        Converters
       </h2>
     </div>
   )
@@ -434,7 +429,7 @@ function ConverterContent({currencies}: ConverterContentProps) {
   const exchangeRate = getExchangeRate()
 
   return (
-    <div className='max-w-md my-3'>
+    <div className='w-full md:max-w-md my-3'>
       <div className='relative flex flex-col items-center gap-1 mb-4'>
         <ConverterField
           value={fromAmount}

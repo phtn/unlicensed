@@ -22,7 +22,7 @@ export const AnalyticsTabContent = () => {
         className='flex items-center w-full space-x-4'>
         <PageTitle>Visitor Logs</PageTitle>
         {stats ? (
-          <div className='w-6 flex items-center justify-center aspect-square bg-neutral-200/40 rounded-md font-space'>
+          <div className='w-6 flex items-center justify-center aspect-square bg-neutral-200/0 rounded-md font-space'>
             <AnimatedNumber value={stats?.totalVisits ?? 0} />
           </div>
         ) : (

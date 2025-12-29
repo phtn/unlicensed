@@ -1,14 +1,13 @@
 'use client'
 
+import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
-import {Icon} from '@/lib/icons'
 import {Button, Card, CardBody} from '@heroui/react'
-import {useMutation} from 'convex/react'
-import {useCallback, useState} from 'react'
-import {z} from 'zod'
 import {useStore} from '@tanstack/react-store'
-import {TextField, SwitchField} from '../../../_components/ui/fields'
+import {useMutation} from 'convex/react'
+import {useState} from 'react'
+import {z} from 'zod'
 import {useAppForm} from '../../../_components/ui/form-context'
 
 const affiliateAccountSchema = z.object({
@@ -109,20 +108,17 @@ export const AffiliateAccountForm = ({
   })
 
   return (
-    <Card shadow='none' radius='none' className='md:rounded-lg w-full'>
-      <CardBody className='space-y-6'>
-        <div>
-          <h3 className='text-lg font-semibold'>
-            {isEditMode
-              ? 'Edit Affiliate Account'
-              : 'Add New Affiliate Account'}
-          </h3>
-          <p className='text-sm text-foreground/60'>
-            {isEditMode
+    <Card shadow='none' radius='none' className='md:rounded-lg'>
+      <CardBody className='space-y-6 w-full'>
+        <SectionHeader
+          title={
+            isEditMode ? 'Edit Affiliate Account' : 'Add New Affiliate Account'
+          }
+          description={
+            isEditMode
               ? 'Update affiliate account settings and commission rate.'
-              : 'Create a new affiliate account to track commissions and referrals.'}
-          </p>
-        </div>
+              : 'Create a new affiliate account to track commissions'
+          }></SectionHeader>
 
         <form
           onSubmit={(e) => {
@@ -209,10 +205,7 @@ export const AffiliateAccountForm = ({
             </Button>
 
             {onCancel && (
-              <Button
-                type='button'
-                variant='light'
-                onPress={onCancel}>
+              <Button type='button' variant='light' onPress={onCancel}>
                 Cancel
               </Button>
             )}
@@ -222,4 +215,3 @@ export const AffiliateAccountForm = ({
     </Card>
   )
 }
-

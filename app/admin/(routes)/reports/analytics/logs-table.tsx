@@ -309,9 +309,6 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
         className={cn(
           'h-lvh md:h-[calc(100lvh-64px)] overflow-scroll transition-transform duration-300',
         )}>
-        <div className='flex items-end justify-between text-sm font-medium px-3 py-2'>
-          <span>Visit Logs</span>
-        </div>
         <Table
           removeWrapper
           radius='none'

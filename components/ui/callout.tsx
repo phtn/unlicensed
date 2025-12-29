@@ -59,7 +59,7 @@ export const Callout = ({
       <div className='flex-1'>
         <div className='flex items-center justify-between w-full'>
           <p className='text-sm font-bold font-nito'>{title}</p>
-          <span className='text-xs'>{children}</span>
+          <span className='text-xs flex-1'>{children}</span>
         </div>
         <div className='text-xs opacity-80 mt-0.5'>{description}</div>
       </div>
