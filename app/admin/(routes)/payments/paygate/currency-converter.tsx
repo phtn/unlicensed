@@ -66,7 +66,7 @@ function ConverterField({
         <div className='grow flex items-center justify-between w-full gap-12'>
           {!isLast && value ? (
             <Input
-              value={value}
+              value={value.substring(0, 6)}
               onValueChange={onValueChange}
               isDisabled={true} // loading || isLast
               classNames={{
@@ -149,7 +149,7 @@ const CURRENCIES: Array<FiatCurrency> = [
 export const CurrencyConverter = () => {
   return (
     <div className='relative my-2 md:my-6'>
-      <Tabs title='Converters' className='flex-1 ml-44'>
+      <Tabs title='Converters' className='flex-1 ml-44 md:ml-64'>
         <Tab
           value='converter-1'
           title='Fiat'
@@ -158,12 +158,13 @@ export const CurrencyConverter = () => {
         </Tab>
         <Tab
           value='tab-2'
+          title='Crypto'
           className='flex-1 data-[state=active]:shadow-none data-[state=active]:bg-transparent relative before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border dark:before:bg-card first:before:hidden'>
-          <pre>{`<InDevelopment />`}</pre>
+          <div className='px-3'>In-development</div>
         </Tab>
       </Tabs>
 
-      <h2 className='text-xl md:text-2xl font-polysans font-semibold absolute top-1.5 left-2 md:left-6'>
+      <h2 className='text-xl md:text-2xl font-polysans font-semibold absolute top-1.5 left-2'>
         Converters
       </h2>
     </div>

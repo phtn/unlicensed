@@ -60,7 +60,7 @@ function SidebarProvider({
   onOpenChange?: (open: boolean) => void
 }) {
   const isMobile = useMobile()
-  const [openMobile, setOpenMobile] = useState(true)
+  const [openMobile, setOpenMobile] = useState(false)
 
   // Initialize state from cookie if available (client-side only)
   // Use function initializer to read cookie once during initialization
@@ -186,7 +186,7 @@ function Sidebar({
         onOpenChange={setOpenMobile}
         direction={side}>
         <DrawerPrimitive.Portal>
-          <DrawerPrimitive.Overlay className='fixed inset-0 z-50 bg-black/50' />
+          <DrawerPrimitive.Overlay className='fixed inset-0 z-50 bg-black/20' />
           <DrawerPrimitive.Content
             data-sidebar='sidebar'
             data-mobile='true'
