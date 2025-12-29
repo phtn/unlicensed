@@ -21,7 +21,10 @@ export const SectionHeader = ({
         className,
       )}>
       {title && (
-        <div className={cn('flex items-center justify-between', className)}>
+        <div
+          className={cn('flex items-center justify-between w-full', {
+            ' space-x-4': children,
+          })}>
           <div className=' text-xl tracking-tight md:tracking-normal font-polysans md:font-medium'>
             {title}
           </div>

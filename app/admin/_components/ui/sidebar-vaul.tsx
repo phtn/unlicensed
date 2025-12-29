@@ -353,7 +353,7 @@ function SidebarContent({
     <ScrollArea
       data-sidebar='content'
       className={cn(
-        'flex min-h-0 flex-1 flex-col gap-2 group-data-[collapsible=icon]:overflow-hidden',
+        'flex min-h-0 mt-2 flex-1 flex-col gap-0 group-data-[collapsible=icon]:overflow-hidden',
         className,
       )}
       {...props}
@@ -365,7 +365,10 @@ function SidebarGroup({className, ...props}: ComponentProps<'div'>) {
   return (
     <div
       data-sidebar='group'
-      className={cn('relative flex w-full min-w-0 flex-col p-3', className)}
+      className={cn(
+        'relative flex w-full min-w-0 flex-col mb-4 px-3',
+        className,
+      )}
       {...props}
     />
   )

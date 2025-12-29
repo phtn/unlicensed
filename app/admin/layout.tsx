@@ -17,7 +17,6 @@ const AdminLayout = ({children, toolbar}: AdminLayoutProps) => {
     <NuqsAdapter>
       <SidebarProvider>
         <SidebarProviderVaul>
-          {/*<AdminSidebar />*/}
           <AdminSidebarVaul />
           <SettingsPanelProvider>
             <OrderDetailsProvider>

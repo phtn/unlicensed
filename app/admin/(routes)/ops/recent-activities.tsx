@@ -7,6 +7,7 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
 import {
+  Button,
   Card,
   Chip,
   ChipProps,
@@ -334,9 +335,7 @@ export const RecentActivities = ({
   if (activities.length === 0) {
     return (
       <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
-        <h2 className='text-lg font-semibold font-space mb-4 px-4'>
-          Recent Activity
-        </h2>
+        <h2 className='text-lg font-polysans mb-4 px-4'>Recent Activity</h2>
         <div className='flex items-center justify-center py-8'>
           <p className='text-sm text-gray-400'>No activities yet</p>
         </div>
@@ -360,16 +359,18 @@ export const RecentActivities = ({
             'md:h-[calc(100lvh-66px)]': fullTable,
           },
         )}>
-        <div className='relative flex items-end justify-between text-sm font-medium px-3 py-2 md:w-full w-screen'>
-          <span>Recent Activity</span>
-          <Icon
-            name='chevron-double-left'
-            className={cn(
-              'fixed right-1 size-4.5 opacity-60 hover:opacity-100',
-              fullTable ? '-rotate-45' : 'rotate-45',
-            )}
-            onClick={toggleFullTable}
-          />
+        <div className='relative font-polysans text-sm flex items-end justify-between px-3 py-2 md:w-full w-screen'>
+          <div className='flex w-full'>Recent Activity</div>
+          <Button
+            size='sm'
+            isIconOnly
+            onPress={toggleFullTable}
+            className='dark:bg-origin/60 scale-80 rounded-md px-0 overflow-hidden aspect-square flex-1 opacity-60 hover:opacity-100'>
+            <Icon
+              name='chevron-double-left'
+              className={cn('size-6 rotate-45', fullTable && '-rotate-45')}
+            />
+          </Button>
         </div>
         <Table
           removeWrapper

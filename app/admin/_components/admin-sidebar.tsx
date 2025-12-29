@@ -320,6 +320,22 @@ const data: Record<string, NavGroup[]> = {
       ],
     },
     {
+      title: 'messaging',
+      url: '/admin/messaging',
+      items: [
+        {
+          title: 'Email',
+          url: '/admin/messaging/email',
+          icon: 'email',
+        },
+        {
+          title: 'Chat',
+          url: '#',
+          icon: 'x',
+        },
+      ],
+    },
+    {
       title: 'settings',
       url: '#',
       items: [

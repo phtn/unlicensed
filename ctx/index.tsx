@@ -7,6 +7,7 @@ import {ConvexProvider} from 'convex/react'
 import {createContext, useContext, useMemo, type ReactNode} from 'react'
 import {AuthCtxProvider} from './auth'
 import {CartAnimationProvider} from './cart-animation'
+import {Toasts} from './toast'
 
 interface ProvidersProviderProps {
   children: ReactNode
@@ -26,6 +27,7 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
         defaultTheme='system'
         disableTransitionOnChange>
         <AuthCtxProvider>{children}</AuthCtxProvider>
+        <Toasts />
       </ThemeProvider>
     </HeroUIProvider>
   )

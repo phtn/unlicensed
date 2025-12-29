@@ -4,6 +4,7 @@ import {api} from '@/convex/_generated/api'
 import {Card, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useEffect, useRef} from 'react'
+import {SectionHeader} from './ui/section-header'
 
 const STAT_COLORS: Record<string, string> = {
   salesToday: '#06b6d4',
@@ -88,7 +89,7 @@ const MiniStatCard = ({config, onToggle}: MiniStatCardProps) => {
             className='w-1 h-6 rounded-full'
             style={{backgroundColor: color}}
           />
-          <p className='text-lg font-semibold font-space'>{config.label}</p>
+          <p className='text-lg font-polysans font-light'>{config.label}</p>
         </div>
       </div>
     </Card>
@@ -173,12 +174,10 @@ export const StatSettings = () => {
       shadow='none'
       className='p-4 sm:p-6 border-t border-sidebar'>
       <div className='space-y-4'>
-        <div>
-          <h3 className='text-lg font-semibold font-space'>Dashboard Stats</h3>
-          <p className='text-sm text-gray-400 mt-1'>
-            Configure which statistics are visible on your dashboard
-          </p>
-        </div>
+        <SectionHeader
+          title='Dashboard Stats'
+          description='Configure which statistics are visible on your dashboard'
+        />
 
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'>
           {sortedConfigs.map((config) => (

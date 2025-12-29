@@ -1,5 +1,5 @@
 import {Chip, Input, Select, Switch, Textarea} from '@heroui/react'
-import React, {ReactNode} from 'react'
+import React, {InputHTMLAttributes, ReactNode} from 'react'
 import {
   CategorySelectItem,
   getCategoryChipProps,
@@ -33,6 +33,9 @@ type BaseFieldProps<T> = {
   max?: string | number
   minRows?: number
   spellCheck?: boolean
+  inputMode?: InputHTMLAttributes<'text' | 'email' | 'password' | 'url' | 'tel'>
+  error?: string
+  helperText?: string
 }
 
 // Partial type for when name comes from AppField context
@@ -41,7 +44,7 @@ export type PartialFormInput<T> = Omit<FormInput<T>, 'name'> & {
 }
 
 type TextFieldProps<T> = BaseFieldProps<T> & {
-  type: 'text' | 'textarea' | 'number'
+  type: 'text' | 'textarea' | 'number' | 'email' | 'password' | 'url' | 'tel'
 }
 
 export type SelectOption = {

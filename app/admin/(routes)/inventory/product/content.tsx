@@ -20,23 +20,11 @@ const ProductsContentInner = () => {
       return <NewProduct />
     case 'edit':
       if (!id) {
-        return (
-          <div className=''>
-            <Suspense fallback={<div>Loading...</div>}>
-              <ProductList products={products} />
-            </Suspense>
-          </div>
-        )
+        return <ProductList products={products} />
       }
       return <EditProductContent id={id} />
     default:
-      return (
-        <div className=''>
-          <Suspense fallback={<div>Loading...</div>}>
-            <ProductList products={products} />
-          </Suspense>
-        </div>
-      )
+      return <ProductList products={products} />
   }
 }
 

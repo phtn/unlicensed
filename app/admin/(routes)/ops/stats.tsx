@@ -123,9 +123,9 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
 
   return (
     <Card
-      shadow='sm'
+      shadow='none'
       radius='sm'
-      className='p-2 sm:p-3 md:p-4 lg:p-5 min-w-0 dark:bg-dark-table/20'>
+      className='border border-foreground/20 p-2 sm:p-3 md:p-4 lg:p-5 min-w-0 dark:bg-dark-table/20'>
       {/* Mobile: Label left, Value right */}
       <div className='flex items-center justify-between md:hidden'>
         <div className='flex items-center space-x-1.5 p-0.5 md:rounded-lg'>
