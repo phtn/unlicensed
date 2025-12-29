@@ -2,7 +2,15 @@
 
 import {AddressType} from '@/convex/users/d'
 import {useRouter} from 'next/navigation'
-import {useCallback, useEffect, useMemo, useRef, useState, useTransition} from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react'
+import {isCheckoutDevMode} from './config'
 import {CheckoutModal} from './components/checkout-modal'
 import {DevelopmentModal} from './components/development-modal'
 import {OrderSummaryCard} from './components/order-summary-card'
@@ -34,6 +42,7 @@ export function Checkout({
   const [isPending, startTransition] = useTransition()
   const [showDevModal, setShowDevModal] = useState(false)
   const hasShownDevModalRef = useRef(false)
+  const isDevMode = isCheckoutDevMode()
 
   const {
     formData,
@@ -74,17 +83,16 @@ export function Checkout({
     }
   }, [isCheckoutOpen, hasAllRequiredInfo, onCheckoutClose])
 
-  // Handle successful order - show development modal and redirect to account
+  // Handle successful order - show development modal (if dev mode) or redirect to payment page
   useEffect(() => {
     if (orderId && !hasShownDevModalRef.current) {
       console.log('[Checkout] Order placed successfully, orderId:', orderId)
       hasShownDevModalRef.current = true
-      
+
       let timeoutId: NodeJS.Timeout | null = null
-      let fallbackRedirectId: NodeJS.Timeout | null = null
-      
+
       // Clear the cart after successful order placement
-      const clearCartAndShowModal = async () => {
+      const handleOrderSuccess = async () => {
         try {
           await onClearCart()
           console.log('[Checkout] Cart cleared after successful order')
@@ -96,49 +104,49 @@ export function Checkout({
         // Close checkout modal first
         console.log('[Checkout] Closing checkout modal')
         onCheckoutClose()
-        
-        // Wait for checkout modal to close, then show development modal
-        // Use a delay to ensure HeroUI modal fully unmounts
-        timeoutId = setTimeout(() => {
-          console.log('[Checkout] Setting showDevModal to true')
-          setShowDevModal(true)
-        }, 1000)
-        
-        // Fallback: redirect to account page after 5 seconds if modal doesn't show
-        fallbackRedirectId = setTimeout(() => {
-          console.log('[Checkout] Fallback redirect to account page')
-          if (!showDevModal) {
-            startTransition(() => {
-              router.push('/account')
-            })
-          }
-        }, 5000)
+
+        if (isDevMode) {
+          // Dev mode: Show development modal after a delay
+          timeoutId = setTimeout(() => {
+            console.log('[Checkout] Dev mode: Setting showDevModal to true')
+            setShowDevModal(true)
+          }, 500)
+        } else {
+          // Production mode: Redirect to payment page to proceed with payment
+          console.log('[Checkout] Production mode: Redirecting to payment page')
+          startTransition(() => {
+            router.push(`/order/${orderId}/pay`)
+          })
+        }
       }
 
-      clearCartAndShowModal()
-      
+      handleOrderSuccess()
+
       return () => {
         if (timeoutId) {
           clearTimeout(timeoutId)
         }
-        if (fallbackRedirectId) {
-          clearTimeout(fallbackRedirectId)
-        }
       }
     }
-  }, [orderId, onCheckoutClose, onClearCart, router, showDevModal])
-  
-  // Also show dev modal when checkout modal closes and we have an orderId
+  }, [orderId, onCheckoutClose, onClearCart, router, isDevMode])
+
+  // Also show dev modal when checkout modal closes and we have an orderId (dev mode only)
   useEffect(() => {
-    if (orderId && !isCheckoutOpen && !showDevModal && hasShownDevModalRef.current) {
+    if (
+      isDevMode &&
+      orderId &&
+      !isCheckoutOpen &&
+      !showDevModal &&
+      hasShownDevModalRef.current
+    ) {
       console.log('[Checkout] Checkout modal closed, showing dev modal')
       const timeoutId = setTimeout(() => {
         setShowDevModal(true)
       }, 200)
       return () => clearTimeout(timeoutId)
     }
-  }, [orderId, isCheckoutOpen, showDevModal])
-  
+  }, [orderId, isCheckoutOpen, showDevModal, isDevMode])
+
   // Reset the ref when orderId is cleared (e.g., when starting a new order)
   useEffect(() => {
     if (!orderId) {
@@ -278,13 +286,15 @@ export function Checkout({
         onPlaceOrder={handlePlaceOrder}
       />
 
-      <DevelopmentModal
-        isOpen={showDevModal}
-        onClose={() => {
-          console.log('[Checkout] DevelopmentModal onClose called')
-          setShowDevModal(false)
-        }}
-      />
+      {isDevMode && (
+        <DevelopmentModal
+          isOpen={showDevModal}
+          onClose={() => {
+            console.log('[Checkout] DevelopmentModal onClose called')
+            setShowDevModal(false)
+          }}
+        />
+      )}
     </>
   )
 }

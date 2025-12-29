@@ -33,13 +33,9 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
       <div className='flex flex-col gap-20'>
         <div className='flex flex-wrap items-center justify-between gap-4'>
           <div className='space-y-1'>
-            <h2 className='text-3xl font-fugaz tracking-tight sm:text-5xl'>
+            <h2 className='text-3xl font-polysans font-semibold tracking-tight sm:text-5xl'>
               Full Collection
             </h2>
-            <p className='text-sm opacity-80 hidden'>
-              Explore our extensive collection of high-quality cannabis
-              products, handpicked by our cultivation team.
-            </p>
           </div>
           <Button
             as='a'
@@ -58,7 +54,7 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
             <div className='flex flex-col gap-8 rounded-3xl transition-colors'>
               <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
                 <div>
-                  <h3 className='capitalize text-2xl font-semibold text-foreground sm:text-3xl'>
+                  <h3 className='capitalize text-xl font-bone text-foreground sm:text-3xl'>
                     {category.name}
                   </h3>
                 </div>

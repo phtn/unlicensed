@@ -266,19 +266,19 @@ export const PaygateAccountForm = ({
     <Card
       shadow='none'
       radius='none'
-      className='md:rounded-lg dark:bg-dark-table/40 w-full py-4'>
-      <CardBody className='px-4 md:px-6 h-[calc(100lvh-100px)] overflow-scroll'>
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8'>
+      className='md:rounded-lg dark:bg-dark-table/40 w-full py-2 sm:py-4'>
+      <CardBody className='px-3 sm:px-4 md:px-6 h-[calc(100svh-120px)] sm:h-[calc(100lvh-100px)] overflow-y-auto overflow-x-hidden'>
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8'>
           <div>
-            <div className='mb-4 space-y-5'>
-              <div className='flex items-center space-x-4 pt-4'>
-                <h2 className='text-2xl font-polysans font-semibold'>
+            <div className='mb-3 sm:mb-4 space-y-3 sm:space-y-5'>
+              <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pt-2 sm:pt-4'>
+                <h2 className='text-xl sm:text-2xl font-polysans font-semibold'>
                   {isEditMode ? 'Edit Wallet' : 'Create Wallet'}
                 </h2>
                 {(errorMessage || status === 'success') && (
-                  <div className='space-y-3 font-mono text-xs uppercase tracking-widest'>
+                  <div className='flex flex-col sm:flex-row gap-2 sm:gap-3 font-mono text-xs uppercase tracking-widest'>
                     {errorMessage && (
-                      <div className='rounded-full bg-danger/9 border border-danger/20 text-danger'>
+                      <div className='rounded-full bg-danger/9 border border-danger/20 text-danger px-2 sm:px-3 py-1 text-center sm:text-left break-words'>
                         {errorMessage}
                       </div>
                     )}
@@ -287,7 +287,7 @@ export const PaygateAccountForm = ({
                       <div
                         className={
                           cn(
-                            `inline-block px-3 py-1 rounded-full`,
+                            `inline-block px-2 sm:px-3 py-1 rounded-full text-center sm:text-left`,
                             'bg-green-100 dark:bg-emerald-700 text-green-800 dark:text-white',
                           )
                           // : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
@@ -308,13 +308,13 @@ export const PaygateAccountForm = ({
                 icon='polygon'
                 title='Polygon USDC Wallet Address'
                 description={
-                  <div className='flex items-center space-x-2'>
-                    <span>{walletAddressStatus}</span>
+                  <div className='flex flex-wrap items-center gap-1.5 sm:gap-2'>
+                    <span className='break-words'>{walletAddressStatus}</span>
                     {addressValidation.isValidating && (
-                      <Icon name='spinner-dots' className='size-4' />
+                      <Icon name='spinner-dots' className='size-4 flex-shrink-0' />
                     )}
                     {addressValidation.isValid && (
-                      <Icon name='check' className='size-4' />
+                      <Icon name='check' className='size-4 flex-shrink-0' />
                     )}
                   </div>
                 }>
@@ -325,20 +325,20 @@ export const PaygateAccountForm = ({
                       : 'https://polygonscan.com/'
                   }
                   rel='noopener noreferrer'
-                  className='text-purple-600 dark:text-purple-300 flex flex-1 hover:underline hover:underline-offset-4 decoration-dotted bg-white dark:bg-white/5 ps-2 pe-1 py-0.5 rounded-full'
+                  className='text-purple-600 dark:text-purple-300 flex items-center gap-1 hover:underline hover:underline-offset-4 decoration-dotted bg-white dark:bg-white/5 ps-2 pe-1 py-1 sm:py-0.5 rounded-full text-xs sm:text-sm'
                   target='_blank'>
-                  <span>polygon scan</span>
+                  <span className='break-words'>polygon scan</span>
                   <Icon
                     name={addressValidation.isValid ? 'arrow-up' : 'arrow-up'}
                     className={cn(
-                      ' size-4 translate-y-[0.35px] rotate-25',
+                      'size-3 sm:size-4 translate-y-[0.35px] rotate-25 flex-shrink-0',
                       addressValidation.isValid ? 'dark:text-white' : '',
                     )}
                   />
                 </a>
               </Callout>
             </div>
-            <form onSubmit={onSubmit} className='space-y-6 sm:space-y-8 w-full'>
+            <form onSubmit={onSubmit} className='space-y-4 sm:space-y-6 md:space-y-8 w-full'>
               <div className='relative'>
                 <form.AppField name='hexAddress'>
                   {(input) => (
@@ -350,11 +350,11 @@ export const PaygateAccountForm = ({
                     />
                   )}
                 </form.AppField>
-                <div className='absolute right-2 top-2'>
+                <div className='absolute right-2 sm:right-3 top-2 sm:top-3'>
                   <button
                     type='button'
                     onClick={handlePasteAddress}
-                    className='cursor-pointer'
+                    className='cursor-pointer p-1.5 sm:p-1 touch-manipulation'
                     aria-label='Paste wallet address'>
                     <Icon
                       id='paste-wallet-address'
@@ -365,7 +365,7 @@ export const PaygateAccountForm = ({
                             ? 'check-fill'
                             : 'clipboard'
                       }
-                      className='size-4 active:scale-90 opacity-80 hover:opacity-100 will-change-transform transition-transform duration-200'
+                      className='size-4 sm:size-5 active:scale-90 opacity-80 hover:opacity-100 will-change-transform transition-transform duration-200'
                     />
                   </button>
                 </div>
@@ -382,9 +382,9 @@ export const PaygateAccountForm = ({
                 )}
               </form.AppField>
 
-              <div className='text-sm font-medium'>Internal use fields</div>
+              <div className='text-xs sm:text-sm font-medium pt-2'>Internal use fields</div>
 
-              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-4'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4'>
                 <form.AppField name='label'>
                   {(input) => (
                     <input.TextField
@@ -406,8 +406,8 @@ export const PaygateAccountForm = ({
                 </form.AppField>
               </div>
 
-              <div className='py-6'>
-                <div className='flex flex-row justify-around sm:justify-start gap-4 sm:gap-6'>
+              <div className='py-4 sm:py-6'>
+                <div className='flex flex-col sm:flex-row sm:justify-start gap-3 sm:gap-4 md:gap-6'>
                   <form.AppField name='isDefault'>
                     {(input) => (
                       <input.SwitchField
@@ -427,7 +427,7 @@ export const PaygateAccountForm = ({
                   </form.AppField>
                 </div>
 
-                <div className='flex flex-row items-stretch sm:items-center sm:justify-start gap-3 sm:gap-3 py-8'>
+                <div className='flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-start gap-2 sm:gap-3 py-4 sm:py-6 md:py-8'>
                   {isEditMode && accountId && (
                     <Button
                       type='button'
@@ -435,7 +435,7 @@ export const PaygateAccountForm = ({
                       size='lg'
                       onPress={handleSync}
                       isLoading={isSyncing}
-                      className='w-full sm:w-auto'>
+                      className='w-full sm:w-auto touch-manipulation'>
                       Sync from PayGate
                     </Button>
                   )}
@@ -446,14 +446,14 @@ export const PaygateAccountForm = ({
                       variant='flat'
                       size='lg'
                       onPress={onCancel}
-                      className='w-full sm:w-auto'>
+                      className='w-full sm:w-auto touch-manipulation'>
                       Cancel
                     </Button>
                   )}
                   <Button
                     type='submit'
                     color='primary'
-                    className='w-full sm:w-auto sm:min-w-32 font-polysans font-light disabled:cursor-not-allowed disabled:bg-sidebar/40 disabled:opacity-80 disabled:text-foreground/40'
+                    className='w-full sm:w-auto sm:min-w-32 font-polysans font-light disabled:cursor-not-allowed disabled:bg-sidebar/40 disabled:opacity-80 disabled:text-foreground/40 touch-manipulation'
                     size='lg'
                     endContent={
                       <Icon

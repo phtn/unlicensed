@@ -110,10 +110,10 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange} direction='right'>
       <Drawer.Portal>
-        <Drawer.Overlay className='fixed inset-0 bg-slate-800/60 backdrop-blur-1 z-50' />
-        <Drawer.Content className='z–200 border-l-[0.33px] border-foreground/20 bg-background flex flex-col h-full md:w-[400px] w-full fixed bottom-0 right-0 z-70'>
+        <Drawer.Overlay className='z–180 fixed inset-0 bg-slate-800/60 backdrop-blur-1' />
+        <Drawer.Content className='border-l-[0.33px] border-foreground/20 bg-background flex flex-col h-full md:w-[400px] w-full fixed bottom-0 right-0 z-70'>
           <div className='p-4 bg-background flex-1 overflow-auto'>
-            <div className='hidden _flex items-center justify-end space-x-6'>
+            {/*<div className='hidden _flex items-center justify-end space-x-6'>
               <Button isIconOnly variant='solid'>
                 <Icon
                   name='fullscreen'
@@ -121,7 +121,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   className='size-5 opacity-100 cursor-pointer'
                 />
               </Button>
-            </div>
+            </div>*/}
             <div className='mx-auto w-12 h-1.5 shrink-0 bg-border rounded-full mb-0' />
             <div className='flex items-center gap-4 mb-6 px-2'>
               <Drawer.Title className='text-2xl font-semibold tracking-tighter font-space'>

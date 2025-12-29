@@ -11,7 +11,7 @@ const StoreLayout = ({children, navbar}: StoreLayoutProps) => {
     <div className='flex min-h-screen flex-col'>
       {navbar}
       <main className='relative'>{children}</main>
-      <div className='h-96 w-full bg-background'></div>
+      <div className='h-36 w-full bg-background' />
       <Footer />
     </div>
   )

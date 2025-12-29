@@ -34,6 +34,8 @@ export const productSchema = v.object({
   potencyLevel: v.optional(potencyLevel),
   potencyProfile: v.optional(v.string()),
   weightGrams: v.optional(v.number()),
+  brand: v.optional(v.string()),
+  grower: v.optional(v.string()),
   variants: v.optional(
     v.array(
       v.object({

@@ -1,8 +1,6 @@
 import {Highlight, Highlights} from '@/app/(store)/hero'
 import {useMobile} from '@/hooks/use-mobile'
 import {Activity, Suspense, useMemo} from 'react'
-import Grass2 from '../gl/grass'
-import {SceneWrapper} from '../gl/scene'
 import {ShopFinder} from './finder'
 import {Title} from './title'
 
@@ -65,13 +63,12 @@ export const NewHome = () => {
       <Highlights slides={slides} />
       <Activity mode={isMobile ? 'hidden' : 'visible'}>
         <Suspense fallback='null'>
-          <SceneWrapper>
+          {/*<SceneWrapper>
             <Grass2 />
-          </SceneWrapper>
+          </SceneWrapper>*/}
         </Suspense>
       </Activity>
       <ShopFinder />
-      {/*<div className='h-16 bg-linear-to-b dark:from-emerald-800/30 dark:via-emerald-600/10 dark:to-transparent w-full'></div>*/}
     </div>
   )
 }

@@ -42,12 +42,12 @@ function ConverterField({
           type='button'
           onClick={handleSwap}
           className={cn(
-            'flex items-center justify-center inset-shadow-[0_1px_rgb(255_255_255/0.15)] absolute top-1/2 -translate-y-1/2 z-10',
+            'flex items-center justify-center inset-shadow-[0_1px_rgb(255_255_255/0.35)] absolute top-1/2 -translate-y-1/2 z-10',
             'size-14 mt-0.5 rounded-full bg-indigo-500 hover:bg-indigo-600 transition-all duration-600 cursor-pointer',
             {'rotate-180': swap},
           )}
           aria-label='Swap currencies'>
-          <Icon name='arrow-swap' className='text-white -rotate-25' size={20} />
+          <Icon name='swap-round' className='text-white -rotate-25 size-9' />
         </button>
       )}
       <Card
@@ -73,7 +73,10 @@ function ConverterField({
                 input: 'dark:bg-sizebar font-space font-medium text-xl',
                 inputWrapper: 'dark:bg-sizebar',
               }}
-              className='w-full max-w-40 text-2xl font-semibold bg-transparent focus-visible:outline-none py-0.5 px-1 -ml-1 mb-0.5 rounded-lg appearance-none'
+              className={cn(
+                'w-full max-w-40 text-2xl font-semibold bg-transparent focus-visible:outline-none py-0.5 px-1 -ml-1 mb-0.5 rounded-lg appearance-none',
+                {'w-24': !isLast},
+              )}
               type='number'
               placeholder='0'
             />
@@ -100,13 +103,14 @@ function ConverterField({
                 }
               }}
               classNames={{
-                trigger:
-                  'w-24 flex bg-transparent border-none shadow-none bg-white/10',
+                trigger: [
+                  'w-28 flex bg-transparent border-none font-space shadow-none bg-white/10',
+                ],
                 value: 'text-lg font-medium',
               }}
               aria-label='Select currency'>
               {currencies.map((curr) => (
-                <SelectItem key={curr} startContent={'$'}>
+                <SelectItem key={curr} className='font-space'>
                   {curr}
                 </SelectItem>
               ))}
@@ -148,20 +152,20 @@ export const CurrencyConverter = () => {
       <Tabs title='Utilities' className='flex-1 gap-5 ml-36'>
         <Tab
           value='converter-1'
-          title='Converter'
+          title='Fiat Converter'
           className='flex-1 data-[state=active]:shadow-none data-[state=active]:bg-transparent relative before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border dark:before:bg-card first:before:hidden'>
           <ConverterContent currencies={CURRENCIES} />
         </Tab>
         <Tab
           value='tab-2'
           className='flex-1 data-[state=active]:shadow-none data-[state=active]:bg-transparent relative before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border dark:before:bg-card first:before:hidden'>
-          Providers
+          Check Payment Status
         </Tab>
-        <Tab
+        {/*<Tab
           value='tab-3'
           className='flex-1 data-[state=active]:shadow-none data-[state=active]:bg-transparent relative before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border dark:before:bg-card first:before:hidden'>
-          Check Status
-        </Tab>
+
+        </Tab>*/}
       </Tabs>
 
       <h2 className='text-2xl font-polysans font-semibold absolute top-1.5 left-6'>
@@ -460,7 +464,7 @@ function ConverterContent({currencies}: ConverterContentProps) {
         className='p-4 gap-0 rounded-[0.75rem] dark:bg-sidebar bg-sidebar/25'>
         <ul className='text-sm'>
           <li className='flex items-center font-medium justify-between pb-3 mb-3'>
-            <span className='text-muted-foreground'>Exchange Rate</span>
+            <span className='tracking-tight'>Exchange Rate</span>
             <div className=''>
               <span className='flex items-center font-space space-x-1 text-gray-700 dark:text-gray-300'>
                 <span>1 {fromCurrency} =</span>
@@ -475,9 +479,9 @@ function ConverterContent({currencies}: ConverterContentProps) {
               </span>
             </div>
           </li>
-          <li className='flex items-center justify-between'>
-            <span className='text-muted-foreground'>Last updated</span>
-            <span className='font-medium font-space'>
+          <li className='flex items-center justify-between font-medium'>
+            <span className='tracking-tight'>Last updated</span>
+            <span className='font-space'>
               {new Date().toLocaleTimeString()}
             </span>
           </li>

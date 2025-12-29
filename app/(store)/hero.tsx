@@ -214,7 +214,9 @@ const Slide = ({
                 <span className='tracking-tight'>Strain Finder</span>
                 <Icon
                   name={navigating ? 'spinners-ring' : 'search-magic'}
-                  className='w-3 h-3 sm:w-4 sm:h-4 dark:text-white'
+                  className={cn('size-3 sm:w-4 sm:h-4 dark:text-white', {
+                    'sm:size-4': !navigating,
+                  })}
                 />
               </Button>
             </div>

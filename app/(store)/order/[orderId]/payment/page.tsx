@@ -1,5 +1,14 @@
 'use client'
 
+import {
+  ArcActionBar,
+  ArcButtonLeft,
+  ArcButtonRight,
+  ArcCallout,
+  ArcCard,
+  ArcHeader,
+  ArcLineItems,
+} from '@/components/expermtl/arc-card'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {formatPrice} from '@/utils/formatPrice'
@@ -7,7 +16,7 @@ import {Button, Card, CardBody, Spinner} from '@heroui/react'
 import {useAction, useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useParams, useRouter} from 'next/navigation'
-import {useEffect, useState, useTransition} from 'react'
+import {useEffect, useMemo, useState, useTransition} from 'react'
 
 export default function PaymentPage() {
   const params = useParams()
@@ -110,6 +119,15 @@ export default function PaymentPage() {
     }
   }
 
+  const completePaymentLineItems = useMemo(
+    () =>
+      [
+        {label: 'Total Amount', value: formatPrice(order?.totalCents ?? 0)},
+        {label: 'Payment Method', value: order?.payment?.method},
+      ] as Array<{label: string; value: string}>,
+    [order],
+  )
+
   if (!order) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
@@ -184,8 +202,8 @@ export default function PaymentPage() {
 
   if (error) {
     return (
-      <div className='min-h-screen flex items-center justify-center px-4'>
-        <Card className='max-w-md w-full'>
+      <div className='flex items-center justify-center px-4'>
+        <Card shadow='none' className='max-w-md w-full'>
           <CardBody className='p-8 text-center space-y-4'>
             <div className='text-6xl mb-4'>❌</div>
             <h1 className='text-2xl font-semibold'>Payment Error</h1>
@@ -212,72 +230,42 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className='min-h-screen lg:pt-24 px-4 sm:px-6 lg:px-8 py-8'>
-      <div className='max-w-2xl mx-auto'>
-        <Card>
-          <CardBody className='p-8 space-y-6'>
-            <div>
-              <h1 className='text-2xl font-semibold mb-2'>Complete Payment</h1>
-              <p className='text-color-muted'>Order #{order.orderNumber}</p>
-            </div>
+    <div className='md:h-[calc(100lvh-226px)] overflow-clip pt-18 sm:pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
+      <ArcCard>
+        <ArcHeader
+          title='Complete Payment'
+          description={order.orderNumber}
+          icon='hash'
+          iconStyle='text-indigo-400'
+        />
+        <ArcLineItems data={completePaymentLineItems} />
 
-            <div className='space-y-2'>
-              <div className='flex justify-between'>
-                <span className='text-color-muted'>Total Amount</span>
-                <span className='text-xl font-semibold'>
-                  ${formatPrice(order.totalCents)}
-                </span>
-              </div>
-              <div className='flex justify-between text-sm'>
-                <span className='text-color-muted'>Payment Method</span>
-                <span className='capitalize'>
-                  {order.payment.method.replace('_', ' ')}
-                </span>
-              </div>
-            </div>
+        <ArcCallout
+          value={
+            order.payment.method === 'crypto'
+              ? 'You will be redirected to complete your cryptocurrency payment.'
+              : 'Click the button below to complete your payment securely.'
+          }
+          icon='info'
+        />
 
-            {paymentUrl ? (
-              <div className='space-y-4'>
-                <p className='text-sm text-color-muted'>
-                  {order.payment.method === 'crypto'
-                    ? 'You will be redirected to complete your cryptocurrency payment.'
-                    : 'Click the button below to complete your payment securely.'}
-                </p>
-                <Button
-                  onClick={handlePayNow}
-                  color='primary'
-                  size='lg'
-                  className='w-full'
-                  isLoading={isPending}>
-                  {order.payment.method === 'crypto'
-                    ? 'Pay with Cryptocurrency'
-                    : 'Pay Now'}
-                </Button>
-                {checkingStatus && (
-                  <div className='flex items-center justify-center gap-2 text-sm text-color-muted'>
-                    <Spinner size='sm' />
-                    <span>Checking payment status...</span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className='flex items-center justify-center py-8'>
-                <Spinner size='lg' />
-              </div>
-            )}
-
-            <div className='pt-4 border-t border-divider'>
-              <Button
-                as={NextLink}
-                href={`/account/orders/${orderId}`}
-                variant='flat'
-                className='w-full'>
-                Back to Order
-              </Button>
-            </div>
-          </CardBody>
-        </Card>
-      </div>
+        <ArcActionBar>
+          <ArcButtonLeft
+            label='back to order'
+            href={`/account/orders/${orderId}`}
+            icon='chevron-left'
+          />
+          <ArcButtonRight
+            label={
+              order.payment.method === 'crypto'
+                ? 'Pay with Cryptocurrency'
+                : 'Pay Now'
+            }
+            fn={handlePayNow}
+            icon='chevron-right'
+          />
+        </ArcActionBar>
+      </ArcCard>
     </div>
   )
 }

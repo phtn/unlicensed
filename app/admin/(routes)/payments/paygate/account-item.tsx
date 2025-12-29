@@ -31,7 +31,7 @@ export function AccountItemCard({
   affiliateWallet,
 }: Doc<'paygateAccounts'> & {onEdit: VoidFunction}) {
   return (
-    <div className='w-[320px] bg-sidebar/40 dark:bg-dark-table/40 rounded-t-md rounded-b-xl overflow-hidden select-none border border-foreground/80 dark:border-foreground/20 animate-in fade-in zoom-in duration-200'>
+    <div className='w-full sm:w-[320px] md:w-[320px] bg-sidebar/40 dark:bg-dark-table/40 rounded-t-md rounded-b-xl overflow-hidden select-none border border-foreground/80 dark:border-foreground/20 animate-in fade-in zoom-in duration-200'>
       {/* Header */}
       <div className='flex items-center justify-between border-b border-foreground/80 dark:border-foreground/40'>
         <DefaultState isDefault={isDefault} />

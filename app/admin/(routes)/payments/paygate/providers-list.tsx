@@ -77,7 +77,7 @@ const ProvidersList = () => {
         <HyperList
           data={data}
           component={ProviderItem}
-          container='w-full flex flex-col md:flex-row md:flex-wrap gap-2'
+          container='w-full flex flex-col border-t border-x border-sidebar'
           itemStyle='w-full md:w-auto'
         />
       </ListboxWrapper>
@@ -89,7 +89,7 @@ const ProvidersList = () => {
 }
 
 const ProviderItem = (item: Provider) => (
-  <Card shadow='none' className='border border-sidebar md:w-84 w-full'>
+  <Card shadow='none' radius='none' className='border-b border-sidebar w-full'>
     <CardHeader className='flex items-center justify-between px-4 w-full'>
       <div className='flex items-center flex-1 space-x-2'>
         <span
@@ -102,19 +102,16 @@ const ProviderItem = (item: Provider) => (
         </span>
         <span className='font-medium'>{item.provider_name}</span>
       </div>
-      <div className={cn('flex justify-end space-x-4 md:space-x-0')}>
+      <div className={cn('flex justify-end space-x-4')}>
         <div className='font-space font-foreground!'>
           {item.minimum_amount} {item.minimum_currency}
         </div>
         <div
-          className={cn(
-            'md:hidden font-space w-full flex items-center justify-end',
-            {
-              'text-emerald-500': item.status === 'active',
-              'text-flavors': item.status === 'redirected',
-              'text-danger': item.status === 'unstable',
-            },
-          )}>
+          className={cn('font-space w-full flex items-center justify-end', {
+            'text-emerald-500': item.status === 'active',
+            'text-flavors': item.status === 'redirected',
+            'text-danger': item.status === 'unstable',
+          })}>
           <span className='w-20'>{item.status}</span>
         </div>
       </div>

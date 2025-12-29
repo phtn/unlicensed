@@ -26,14 +26,6 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
 
   return (
     <div className='min-h-screen overflow-x-hidden'>
-      <Activity mode={products.length === 0 ? 'visible' : 'hidden'}>
-        <div className='max-w-7xl h-screen mx-auto pt-28'>
-          <Tag text={slug} />
-          <div className=' flex flex-col items-center justify-center gap-4 px-6 py-24 text-center'>
-            <Title title='Nothing here yet' subtitle='Check back soon' />
-          </div>
-        </div>
-      </Activity>
       <section className='pt-6 sm:pt-8 md:pt-10 lg:pt-14 xl:pt-24 2xl:pt-28 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 bg-background'>
         <div className='max-w-7xl mx-auto overflow-hidden'>
           <div className='grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center'>
@@ -70,7 +62,7 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
               </div>
             </div>
 
-            <div className='relative flex items-center justify-center lg:justify-end max-h-[40vh] sm:max-h-[45vh] lg:max-h-[50lvh] overflow-visible'>
+            <div className='relative flex items-center justify-center lg:justify-end h-[40vh] sm:h-[45vh] lg:h-[50lvh] overflow-visible'>
               {heroImage ? (
                 <div
                   id='hero-image'
@@ -88,6 +80,25 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
       {/* Case Studies Grid */}
       <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
         <div className='max-w-7xl mx-auto rounded-4xl py-4 px-6 bg-sidebar/40 dark:bg-sidebar'>
+          <Activity mode={products.length === 0 ? 'visible' : 'hidden'}>
+            <div className='max-w-7xl mx-auto pt-20'>
+              <div className=' flex flex-col items-center justify-center gap-4 px-6 py-24 text-center'>
+                <Title
+                  titleStyle='lowercase'
+                  title='Nothing here yet.'
+                  subtitle={
+                    <div className='flex items-center relative'>
+                      <Icon
+                        name='chevron-double-left'
+                        className='rotate-90 size-12 text-featured opacity-100 relative z-30'
+                      />
+                      <span>check back soon</span>
+                    </div>
+                  }
+                />
+              </div>
+            </div>
+          </Activity>
           <div className='grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-0 w-full'>
             {products.map((product) => (
               <Link

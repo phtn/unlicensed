@@ -1,5 +1,5 @@
 import {Icon} from '@/lib/icons'
-import {Button, Chip, Link} from '@heroui/react'
+import {Button, Link} from '@heroui/react'
 import NextLink from 'next/link'
 import {StoreCategory} from '../types'
 
@@ -11,15 +11,13 @@ export const StrainFinderMini = ({categories}: Props) => {
   return (
     <section
       id='finder'
-      className='mx-auto w-full max-w-7xl pt-20 px-2 sm:px-4'>
+      className='mx-auto w-full max-w-7xl pt-12 sm:pt-16 md:pt-20 px-2 sm:px-4'>
       <div className='rounded-[36px] bg-slate-200 dark:bg-dark-table/50 border border-foreground/20 sm:px-12 sm:py-16 transition-colors px-6 py-10'>
         <div className='grid gap-12 lg:grid-cols-5 lg:items-center'>
           <div className='space-y-10 lg:col-span-3'>
-            <Chip
-              variant='flat'
-              className='w-fit rounded-full px-2 py-1.5 text-sm font-medium uppercase tracking-wider bg-foreground text-accent'>
+            <div className='flex font-polysans font-thin bg-black text-base text-white px-4 py-0.5 rounded-full w-fit'>
               Strain Finder
-            </Chip>
+            </div>
             <h2 className='text-4xl font-medium text-foreground tracking-tight sm:text-4xl max-w-[24ch] font-polysans py-12 sm:py-1'>
               Describe the <span className='text-effects'>feeling</span> you’re
               after. We&apos;ll design your tasting flight.
@@ -49,9 +47,11 @@ export const StrainFinderMini = ({categories}: Props) => {
               radius='full'
               variant='solid'
               disableRipple
-              className='bg-transparent text-sm font-semibold border border-black dark:border-light-gray uppercase tracking-[0.35em]'>
+              className='w-fit bg-transparent text-sm font-semibold dark:border-light-gray uppercase tracking-[0.35em]'>
               <div className='flex items-center justify-start space-x-10'>
-                {/*<div className='w-12 h-12 mr-2 border border-black rounded-full flex items-center justify-start'></div>*/}
+                <div className='w-12 h-12 mr-2 border border-black rounded-full flex items-center justify-center'>
+                  <Icon name='arrow-down' className='rotate-115 size-10' />
+                </div>
                 <span className='px-4 text-base md:text-lg font-light font-polysans'>
                   Start the Finder
                 </span>

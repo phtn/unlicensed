@@ -4,7 +4,7 @@ import {type ReactNode, useMemo, ViewTransition} from 'react'
 
 type CalloutType = 'success' | 'error' | 'warning' | 'info' | 'debug'
 interface CalloutProps {
-  title: string
+  title: ReactNode
   description?: ReactNode
   icon?: IconName
   type?: CalloutType
@@ -61,8 +61,10 @@ export const Callout = ({
           <p className='text-sm font-bold font-nito'>{title}</p>
           <span className='text-xs'>{children}</span>
         </div>
-        <p className='text-xs text-default-500 mt-0.5'>{description}</p>
+        <div className='text-xs opacity-80 mt-0.5'>{description}</div>
       </div>
     </div>
   )
 }
+
+export const DotDiv = () => <span className='opacity-40 text-sm'>⏺</span>

@@ -44,7 +44,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
           <Image
             src={productImageUrl ?? undefined}
             alt={product.name}
-            className='h-80 w-full rounded-t-2xl object-contain aspect-auto transition duration-300 group-hover:scale-[1.03]'
+            className='w-full rounded-t-4xl rounded-b-xl object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
             loading='eager'
           />
           <div className='absolute left-3 sm:left-4 top-3 sm:top-4 z-20 flex flex-col gap-2'>
@@ -57,7 +57,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
         <div className='flex flex-col gap-3 sm:gap-4 p-3 sm:px-6 h-16'>
           <div className='flex items-start justify-between gap-2 h-full'>
             <div className='space-y-1 sm:space-y-2 flex-1 min-w-0'>
-              <h3 className='text-base sm:text-xl font-semibold tracking-tight opacity-80 truncate capitalize'>
+              <h3 className='text-base sm:text-xl font-polysans tracking-tight opacity-80 truncate capitalize'>
                 {product.slug.split('-').join(' ')}
               </h3>
             </div>

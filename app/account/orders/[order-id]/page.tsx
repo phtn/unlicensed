@@ -14,7 +14,7 @@ import {
   Image,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
-import NextLink from 'next/link'
+import {default as Link, default as NextLink} from 'next/link'
 import {useParams} from 'next/navigation'
 import {useMemo} from 'react'
 
@@ -114,25 +114,21 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className='min-h-screen lg:pt-24 px-4 sm:px-6 lg:px-8 py-8'>
+    <div className='min-h-screen pt-16 lg:pt-24 px-4 sm:px-6 lg:px-8 py-8'>
       <div className='max-w-4xl mx-auto'>
         {/* Header */}
         <div className='flex items-center justify-between mb-8'>
           <div>
-            <h1 className='text-base font-space space-x-3'>
+            <h1 className='text-base font-space space-x-1 sm:space-x-3'>
               <span className='opacity-70 font-medium'>
-                <Button
-                  variant='light'
-                  as={NextLink}
-                  href='/account'
-                  className=''>
+                <Link href='/account' className='tracking-tight'>
                   Account
-                </Button>
+                </Link>
                 <span>
-                  /<span className='px-2.5'>Orders</span>/
+                  /<span className='px-1 sm:px-2.5'>Orders</span>/
                 </span>
               </span>
-              <span>{order.orderNumber}</span>
+              <span>{order.orderNumber.split('-').pop()}</span>
             </h1>
           </div>
           <Chip

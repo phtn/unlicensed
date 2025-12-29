@@ -49,7 +49,7 @@ export const Content = ({
   // }
 
   return (
-    <div className='space-y-40 overflow-x-hidden'>
+    <div className='space-y-12 sm:space-y-24 md:space-y-40 overflow-x-hidden'>
       {/*{(delay !== undefined && delay > 0) || buildType !== 'production' ? (
         <div className='fixed bottom-4 right-4 z-50 flex flex-col gap-2'>
           {delay !== undefined && delay > 0 && (
@@ -73,7 +73,7 @@ export const Content = ({
       <FullCollection products={products} categories={categories} />
 
       <QuickScroll
-        className='bg-transparent border-b-[0.33px] border-dashed border-foreground/40'
+        className='bg-transparent border-b-[0.33px] border-dotted border-foreground/10'
         href='#finder'
       />
       <StrainFinderMini categories={categories.slice(0, 4)} />

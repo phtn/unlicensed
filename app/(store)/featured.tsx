@@ -14,7 +14,7 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
       <div className='flex flex-col gap-10'>
         <div className='flex flex-wrap items-center justify-between gap-4 relative'>
           <div className='space-y-1'>
-            <h2 className='text-3xl font-fugaz tracking-tight sm:text-4xl'>
+            <h2 className='text-3xl font-bone tracking-tight sm:text-4xl'>
               Featured Drops
             </h2>
             <p className='text-sm opacity-80'>
@@ -35,11 +35,6 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
           {featuredProducts.map((product) => (
             <ProductCard key={product.slug} product={product} />
           ))}
-          {/*<div
-            key={'beam'}
-            className='absolute left-1/2 -translate-x-1/2 w-full top-16'>
-            <Beams />
-          </div>*/}
         </div>
       </div>
     </section>

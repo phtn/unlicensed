@@ -86,7 +86,7 @@ const Gallery = ({
     <div className='flex flex-col gap-3 sm:gap-0'>
       <div
         ref={imageRef}
-        className='relative aspect-auto w-full overflow-hidden bg-background/60 lg:min-h-168'>
+        className='relative aspect-auto w-full md:max-h-[620px] overflow-hidden bg-background/60 lg:min-h-168'>
         <Lens hovering={isMobile ? false : on} setHovering={setOn}>
           <Image
             radius='none'
@@ -485,8 +485,8 @@ export const ProductDetailContent = ({
           className='mx-auto w-full max-w-6xl px-4 md:px-0'>
           <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4'>
             <div>
-              <h2 className='text-2xl font-semibold text-foreground sm:text-3xl'>
-                Related selections
+              <h2 className='text-2xl font-bone text-foreground sm:text-3xl'>
+                Related Selections
               </h2>
               <p className='text-xs sm:text-sm text-color-muted mt-1'>
                 More from the {category?.name ?? product.categorySlug} family

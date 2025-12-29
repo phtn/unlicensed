@@ -25,6 +25,7 @@
     "@next/mdx": "^16.0.4",
     "@paper-design/shaders-react": "^0.0.68",
     "@radix-ui/react-scroll-area": "^1.2.10",
+    "@react-three/cannon": "^6.6.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
     "@tanstack/react-form": "^1.27.1",

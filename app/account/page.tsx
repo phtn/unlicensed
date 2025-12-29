@@ -1,10 +1,12 @@
 'use client'
-import {Callout} from '@/components/ui/callout'
+import {Callout, DotDiv} from '@/components/ui/callout'
 
+import {Ascend} from '@/components/expermtl/ascend'
 import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
 import {
   Button,
@@ -25,8 +27,9 @@ import {
   Percent,
   Truck,
 } from 'lucide-react'
+import {useTheme} from 'next-themes'
 import NextLink from 'next/link'
-import {startTransition, useMemo, useState, ViewTransition} from 'react'
+import {memo, startTransition, useMemo, useState, ViewTransition} from 'react'
 
 export default function AccountPage() {
   const {user: firebaseUser} = useAuth()
@@ -135,13 +138,21 @@ export default function AccountPage() {
 
   return (
     <div className='min-h-screen bg-background'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 mt-12 sm-mt-16 md:mt-20'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-18 lg:py-28 mt-12 sm-mt-16 md:mt-20'>
         {/* Header Section */}
         <div className='mb-8'>
           <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
             <Callout
-              title='App in development - Redirect enabled'
-              description='Payments route on-going. Please check back later.'
+              title={
+                <h1 className='md:text-xl font-normal font-polysans space-x-1 md:space-x-4'>
+                  <span>App Development</span>
+                  <DotDiv />
+                  <span>In-progress</span>
+                  <DotDiv />
+                  <span>Redirect enabled</span>
+                </h1>
+              }
+              description='Checkout route protected. Please check back later.'
               icon='code'
               type='debug'
             />
@@ -167,12 +178,14 @@ export default function AccountPage() {
             {/* Profile Card */}
             <Card
               shadow='none'
-              className='border border-foreground/20 bg-content1/50 backdrop-blur-sm dark:bg-dark-table/40'>
+              radius='none'
+              className='relative border border-foreground/20 rounded-4xl bg-black dark:bg-dark-table/40'>
+              <ProfileBackground />
               <CardBody className='p-6'>
                 <div className='flex flex-col items-center text-center space-y-5 justify-center'>
-                  <div className='relative'>
-                    <div className='size-28 rounded-full p-0.5 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500'>
-                      <div className='w-full h-full rounded-full overflow-hidden border-4 border-background bg-background'>
+                  <div className=''>
+                    <div className='size-32 mask-b-from-50% mask-radial-[50%_50%] mask-radial-from-80% rounded-full p-0.5 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500'>
+                      <div className='z-200 w-full h-full rounded-full overflow-hidden border-4 border-background bg-background flex items-center justify-center'>
                         {convexUser?.photoUrl || firebaseUser?.photoURL ? (
                           <Image
                             src={
@@ -181,14 +194,14 @@ export default function AccountPage() {
                               ''
                             }
                             alt='Profile'
-                            className='w-full h-full object-cover'
+                            className='size-full object-cover relative z-100'
                           />
                         ) : (
-                          <div className='w-full h-full flex items-center justify-center font-polysans font-normal bg-linear-to-br from-indigo-100 to-pink-100 dark:from-indigo-900/30 dark:to-pink-900/30 text-4xl text-indigo-600 dark:text-indigo-400'>
+                          <div className='w-full h-full flex items-center justify-center font-polysans font-normal bg-linear-to-br from-indigo-100 to-pink-100 dark:from-indigo-900/30 dark:to-pink-900/30 text-4xl text-white dark:text-indigo-400 '>
                             {(
                               convexUser?.name ||
                               firebaseUser?.displayName ||
-                              'U'
+                              ''
                             )
                               .charAt(0)
                               .toUpperCase()}
@@ -202,15 +215,12 @@ export default function AccountPage() {
                       </div>
                     )}
                   </div>
+                  <h2 className='text-xl font-bone tracking-tight text-white'>
+                    {convexUser?.name ?? firebaseUser?.displayName}
+                  </h2>
+                  {/*<div className='space-y-1'>
 
-                  <div className='space-y-1'>
-                    <h2 className='text-xl font-bold tracking-tight'>
-                      {convexUser?.name ?? firebaseUser?.displayName}
-                    </h2>
-                    <p className='hidden text-sm text-default-500'>
-                      {convexUser?.email ?? firebaseUser?.email}
-                    </p>
-                  </div>
+                  </div>*/}
 
                   <div className='hidden w-full pt-4 border-t border-default-200/50'>
                     <div className='flex items-center justify-center gap-6'>
@@ -341,7 +351,7 @@ export default function AccountPage() {
             <Card
               shadow='none'
               radius='none'
-              className='rounded-3xl border border-foreground/20 bg-content1/50 backdrop-blur-sm'>
+              className='hidden rounded-3xl border border-foreground/20 bg-content1/50 backdrop-blur-sm'>
               <CardBody className='p-0'>
                 <div className='px-6 py-4'>
                   <h3 className='font-semibold font-nito text-base tracking-tight'>
@@ -472,7 +482,7 @@ export default function AccountPage() {
                                   </Chip>
                                 </div>
                                 <div className='flex items-center gap-2 text-sm text-default-500 flex-wrap'>
-                                  <span>
+                                  <span className='font-space'>
                                     {order.createdAt
                                       ? new Date(
                                           order.createdAt,
@@ -484,7 +494,7 @@ export default function AccountPage() {
                                       : 'N/A'}
                                   </span>
                                   <span>•</span>
-                                  <span>
+                                  <span className='font-space'>
                                     {order.items.length} item
                                     {order.items.length !== 1 ? 's' : ''}
                                   </span>
@@ -497,14 +507,11 @@ export default function AccountPage() {
                                 <p className='text-xs text-default-500 uppercase tracking-wider mb-1'>
                                   Total
                                 </p>
-                                <p className='text-xl font-bold'>
+                                <p className='text-xl font-space font-semibold'>
                                   ${formatPrice(order.totalCents)}
                                 </p>
                               </div>
-                              <ChevronRight
-                                size={20}
-                                className='text-default-400 shrink-0'
-                              />
+                              <Icon name='chevron-right' className='size-4' />
                             </div>
                           </div>
                         </CardBody>
@@ -520,3 +527,22 @@ export default function AccountPage() {
     </div>
   )
 }
+
+const ProfileBackground = memo(() => {
+  const {theme} = useTheme()
+
+  // Memoize star color to prevent unnecessary rerenders
+  const starColor = useMemo(() => (theme === 'dark' ? '#fff' : '#ccc'), [theme])
+
+  return (
+    <Ascend
+      starColor={starColor}
+      className={cn(
+        'flex items-center justify-center absolute z-0 pointer-events-none inset-0',
+        'dark:bg-[radial-gradient(ellipse_at_bottom,#262626_0%,#000_60%)] _bg-[radial-gradient(ellipse_at_bottom,_#f5f5f5_0%,_#fff_50%)]',
+      )}
+    />
+  )
+})
+
+ProfileBackground.displayName = 'ProfileBackground'

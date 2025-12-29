@@ -20,6 +20,7 @@ import {
   useTransition,
   ViewTransition,
 } from 'react'
+import {OrbScene} from './orbs'
 
 interface ContentProps {
   initialProducts: StoreProduct[]
@@ -235,7 +236,7 @@ export const Content = ({initialProducts}: ContentProps) => {
 
   return (
     <div className='md:min-h-screen min-h-[calc(100lvh-100px)] md:bg-background dark:md:background dark:bg-black'>
-      <div className='mx-auto w-full max-w-7xl px-2 sm:px-6 lg:px-8 pt-16 sm:pt-16 lg:pt-48 md:h-full h-screen overflow-hidden'>
+      <div className='relative mx-auto w-full max-w-7xl px-2 sm:px-6 lg:px-8 pt-16 sm:pt-16 lg:pt-48 md:h-full h-screen overflow-hidden'>
         <ViewTransition>
           <div
             className={cn('text-center mb-4 sm:mb-0', {
@@ -268,6 +269,7 @@ export const Content = ({initialProducts}: ContentProps) => {
         <Activity mode={step === 'intro' ? 'visible' : 'hidden'}>
           <StepWrapper className='md:max-w-7xl'>
             <div className='rounded-[2.75rem] h-[calc(100lvh-140px)] md:h-auto md:rounded-[36px] bg-slate-200 dark:bg-dark-table/60 border border-foreground/20 sm:px-14 sm:pt-8 transition-colors p-4'>
+              <OrbScene />
               <div className='grid md:gap-12 gap-6 lg:grid-cols-5 lg:items-center'>
                 <LeftSideContent
                   nextStep={nextStep}
@@ -543,7 +545,7 @@ const LeftSideContent = ({
       radius='full'
       variant='solid'
       onPress={nextStep}
-      className='cta-button w-fit px-8 py-6 mr-4 text-sm font-semibold uppercase tracking-[0.30em] flex items-center bg-dark-gray dark:bg-effects text-white md:place-self-start place-self-end'
+      className='relative z-200 cta-button w-fit px-8 py-6 mr-4 text-sm font-semibold uppercase tracking-[0.30em] flex items-center bg-dark-gray dark:bg-effects text-white md:place-self-start place-self-end'
       isDisabled={loading}>
       <span>Start</span>
     </Button>
