@@ -33,7 +33,7 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
         variant='flat'
         onPress={handleToggle}
         className={cn(
-          'group w-40 flex items-center justify-start space-x-2 border py-3 text-sm ps-2 text-foreground hover:bg-(--surface-muted) dark:hover:bg-(--surface-muted)',
+          'group w-40 flex items-center bg-transparent justify-start space-x-2 py-3 text-sm ps-2 text-foreground hover:bg-(--surface-muted) dark:hover:bg-(--surface-muted)',
         )}>
         <Icon
           name='toggle-theme'
@@ -51,7 +51,7 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
       isIconOnly
       onPress={handleToggle}
       radius='full'
-      variant='solid'
+      variant='light'
       aria-label='theme'
       className={cn(
         'group active:scale-95 border-none bg-transparent hover:bg-accent/20 text-white transition-all duration-200',

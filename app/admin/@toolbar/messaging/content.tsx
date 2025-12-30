@@ -13,16 +13,16 @@ import {
   ToolbarWrapper,
 } from '../components'
 
-export const SuppliersContent = () => {
-  const couriers = useQuery(api.couriers.q.listCouriers)
+export const MessagingContent = () => {
+  const templates = useQuery(api.emailSettings.q.listEmailSettings)
   return (
     <ToolbarWrapper>
-      <MainTab href='/admin/suppliers/couriers'>
-        <PageTitle>Couriers</PageTitle>
+      <MainTab href='/admin/messaging/email'>
+        <PageTitle>Email Templates</PageTitle>
         <ViewTransition>
-          {couriers ? (
+          {templates ? (
             <div className='size-6 flex items-center justify-center aspect-square bg-foreground/8 rounded-md font-space font-medium text-base md:text-lg'>
-              <AnimatedNumber value={couriers?.length} />
+              <AnimatedNumber value={templates?.length} />
             </div>
           ) : (
             <Icon name='spinners-ring' className='size-4' />
@@ -32,9 +32,9 @@ export const SuppliersContent = () => {
       <ToolbarButtonWrapper>
         <PrimaryTab
           id='new'
-          href='/admin/suppliers/logistics?tabId=new'
+          href='/admin/messaging/email?tabId=new'
           icon='plus'
-          label='New Courier'
+          label='New Template'
         />
       </ToolbarButtonWrapper>
     </ToolbarWrapper>

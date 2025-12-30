@@ -87,7 +87,7 @@ export const EmailTemplateEditor = ({
       <div className='p-6 space-y-10 flex-1 w-full'>
         <section>
           <SectionHeader title='Settings' />
-          <div className='space-y-4'>
+          <div className='space-y-4 pt-2'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <form.AppField name='title'>
                 {(fieldApi) => {

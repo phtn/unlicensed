@@ -125,7 +125,7 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
     <Card
       shadow='none'
       radius='sm'
-      className='border border-foreground/20 p-2 sm:p-3 md:p-4 lg:p-5 min-w-0 dark:bg-dark-table/20'>
+      className='border border-foreground/20 dark:border-foreground/10 p-2 sm:p-3 md:p-4 lg:p-5 min-w-0 dark:bg-dark-table/20 bg-sidebar/20'>
       {/* Mobile: Label left, Value right */}
       <div className='flex items-center justify-between md:hidden'>
         <div className='flex items-center space-x-1.5 p-0.5 md:rounded-lg'>
@@ -133,14 +133,16 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
             className='w-0.5 h-3 rounded-full'
             style={{backgroundColor: color}}
           />
-          <p className='text-xs font-medium'>{config.label}</p>
+          <p className='text-xs font-medium opacity-80 font-polysans'>
+            {config.label}
+          </p>
         </div>
         <div className='flex items-baseline gap-1'>
           <span className='text-lg font-bold tracking-tight font-geist-sans'>
             {statValue.value}
           </span>
           {statValue.subtitle && (
-            <span className='text-xs text-gray-400'>{statValue.subtitle}</span>
+            <span className='text-xs opacity-60'>{statValue.subtitle}</span>
           )}
         </div>
       </div>
@@ -153,7 +155,9 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
               className='w-1 h-4 rounded-full'
               style={{backgroundColor: color}}
             />
-            <p className='text-sm lg:text-base font-medium'>{config.label}</p>
+            <p className='text-sm lg:text-base font-medium font-polysans opacity-80'>
+              {config.label}
+            </p>
           </div>
           {config.id === 'deliveries' ? (
             <div className='font-space text-sm space-x-2'>
@@ -171,18 +175,14 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
         </div>
         <div className='space-y-1'>
           <div className='flex items-baseline gap-2'>
-            <span className='text-2xl lg:text-3xl font-bold tracking-tight font-geist-sans'>
+            <span className='text-2xl lg:text-2xl font-semibold tracking-tight font-space'>
               {statValue.value}
             </span>
             {statValue.subtitle && (
-              <span className='text-sm text-gray-400'>
-                {statValue.subtitle}
-              </span>
+              <span className='text-sm opacity-60'>{statValue.subtitle}</span>
             )}
           </div>
-          {config.id === 'deliveries' && (
-            <p className='text-sm text-gray-400'></p>
-          )}
+          {config.id === 'deliveries' && <p className='text-sm opacity-60'></p>}
         </div>
       </div>
 
@@ -270,7 +270,7 @@ export const Stats = ({
   // If no visible stats, show a message (this shouldn't happen with defaults)
   if (visibleStats.length === 0) {
     return (
-      <div className='text-sm text-gray-400'>
+      <div className='text-sm opacity-60'>
         No stats configured. Please configure stats in the Stats settings page.
       </div>
     )

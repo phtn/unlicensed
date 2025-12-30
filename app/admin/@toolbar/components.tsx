@@ -65,8 +65,12 @@ const PrimaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
           {'decoration-indigo-500': isActive},
         )}>
         {icon && (
-          <Icon name={icon} className='hidden md:flex size-5 mr-1 opacity-80' />
+          <Icon
+            name={icon}
+            className='hidden md:flex size-4.5 mr-1 opacity-90'
+          />
         )}
+        {/*<span className='portrait:font-brk portrait:text-xs portrait:-tracking-widest'>*/}
         <span>{label}</span>
       </span>
     </Button>
@@ -96,7 +100,7 @@ const SecondaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
       disableAnimation
       size='sm'
       className={cn(
-        ' p-1 md:p-2 text-sm dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white bg-white dark:bg-transparent hover:bg-foreground/25 -space-x-1.5',
+        ' p-1 md:p-2 text-sm dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white bg-white dark:bg-transparent hover:bg-foreground/8 -space-x-1.5',
         {
           'text-blue-500 dark:text-blue-100 rounded-none bg-transparent hover:bg-white dark:hover:bg-transparent -space-x-1.5':
             tabId === 'badges',
@@ -110,7 +114,8 @@ const SecondaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
         {icon && (
           <Icon name={icon} className='hidden md:flex size-5 mr-1 opacity-70' />
         )}
-        <span className='font-medium'>{label}</span>
+        {/*<span className='portrait:font-brk portrait:text-xs portrait:-tracking-widest'>*/}
+        <span>{label}</span>
       </div>
     </Button>
   )

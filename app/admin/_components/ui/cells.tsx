@@ -93,7 +93,7 @@ export const statusCell = (status: string) => {
         'flex items-center uppercase justify-center rounded-sm w-fit px-2 py-1.5 font-mono shadow-none',
         color,
       )}>
-      <p className='text-xs tracking-wider font-normal whitespace-nowrap drop-shadow-xs'>
+      <p className='text-xs tracking-wider font-brk whitespace-nowrap drop-shadow-xs'>
         {displayStatus}
       </p>
     </div>

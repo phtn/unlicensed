@@ -103,15 +103,18 @@ const ProviderItem = (item: Provider) => (
         <span className='font-medium'>{item.provider_name}</span>
       </div>
       <div className={cn('flex justify-end space-x-4')}>
-        <div className='font-space font-foreground!'>
+        <div className='font-brk font-foreground!'>
           {item.minimum_amount} {item.minimum_currency}
         </div>
         <div
-          className={cn('font-space w-full flex items-center justify-end', {
-            'text-emerald-500': item.status === 'active',
-            'text-flavors': item.status === 'redirected',
-            'text-danger': item.status === 'unstable',
-          })}>
+          className={cn(
+            'font-brk tracking-tighter w-full flex items-center justify-end',
+            {
+              'text-emerald-500': item.status === 'active',
+              'text-flavors': item.status === 'redirected',
+              'text-danger': item.status === 'unstable',
+            },
+          )}>
           <span className='w-20'>{item.status}</span>
         </div>
       </div>
@@ -125,7 +128,7 @@ const ListboxWrapper = ({children}: PropsWithChildren) => (
 
 export const PayGateProviders = () => (
   <div className='dark:text-white py-4'>
-    <h2 className='text-xl md:text-2xl font-polysans font-semibold mt-2 mb-4'>
+    <h2 className='text-xl md:text-xl font-polysans font-semibold mt-2 mb-4'>
       Providers
     </h2>
     <ProvidersList />

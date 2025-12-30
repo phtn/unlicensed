@@ -67,14 +67,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props} className='border-none!' suppressHydrationWarning>
       <SidebarHeader className=''>
-        <div className='h-16 translate-x-3 flex items-end justify-between'>
-          <div className='h-12 flex w-full items-center _justify-center dark:bg-sidebar bg-linear-to-r from-foreground/90 via-foreground/90 to-transparent dark:from-featured/20 dark:via-foreground/10 px-4 rounded-s-3xl'>
-            <Icon
-              name='rapid-fire'
-              className='text-base text-sidebar dark:text-light-table w-32 h-auto font-figtree font-semibold tracking-tight'
-            />
-          </div>
-        </div>
+        <Logo />
       </SidebarHeader>
       <SidebarContent>
         {/* We only show the first parent group */}
@@ -89,13 +82,15 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                   const isActive = pathname
                     .split('/')
                     .splice(2)
+                    .filter((r) => r !== 'ops')
                     .includes(item.url.split('/').pop()!)
                   return (
                     <SidebarMenuItem
                       className={cn(
-                        'text-xs tracking-tighter hover:bg-light-gray/10 dark:hover:bg-blue-100/5 rounded-lg',
+                        'text-sm font-semibold tracking-tight rounded-xl',
                         {
-                          'bg-slate-300 dark:bg-blue-100/10': isActive,
+                          'bg-dark-gray text-white dark:bg-blue-100/15 md:hover:bg-dark-gray/90 md:dark:hover:bg-blue-100/20':
+                            isActive,
                         },
                       )}
                       key={item.title}>
@@ -112,7 +107,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {data.navMain.slice(1, 5).map((section, i) => (
+        {data.navMain.slice(1, 6).map((section, i) => (
           <SidebarGroup key={`${section.title}` + i}>
             <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-medium opacity-70'>
               {section.title}
@@ -124,9 +119,10 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                   return (
                     <SidebarMenuItem
                       className={cn(
-                        'text-sm font-semibold tracking-tight rounded-lg hover:bg-light-gray/20 dark:hover:bg-dark-gray/20',
+                        'text-sm font-semibold tracking-tight rounded-xl',
                         {
-                          'bg-slate-300 dark:bg-blue-100/10': isActive,
+                          'bg-dark-gray text-white dark:bg-blue-100/15 md:hover:bg-dark-gray/90 md:dark:hover:bg-blue-100/20':
+                            isActive,
                         },
                       )}
                       key={item.title + x}>
@@ -151,17 +147,21 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         {/* Secondary Navigation */}
         <SidebarGroup key='settings'>
           <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-medium opacity-70'>
-            {data.navMain[5]?.title}
+            {data.navMain[6]?.title}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {data.navMain[5]?.items?.map((item) => {
+              {data.navMain[6]?.items?.map((item) => {
                 const isActive = pathname === item.url
                 return (
                   <SidebarMenuItem
-                    className={cn('text-xs tracking-tighter rounded-lg', {
-                      'bg-slate-300 dark:bg-blue-100/10': isActive,
-                    })}
+                    className={cn(
+                      'text-sm font-semibold tracking-tight rounded-xl',
+                      {
+                        'bg-dark-gray text-white dark:bg-blue-100/15 md:hover:bg-dark-gray/90 md:dark:hover:bg-blue-100/20':
+                          isActive,
+                      },
+                    )}
                     key={item.title}>
                     <SidebarMenuButton
                       asChild
@@ -179,6 +179,19 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarFooter>
     </Sidebar>
+  )
+}
+
+const Logo = () => {
+  return (
+    <div className='h-10 md:h-16 translate-x-1.5 flex items-end justify-between'>
+      <div className='h-12 flex w-full items-center ps-2 rounded-s-full'>
+        <Icon
+          name='rapid-fire'
+          className='text-base text-dark-gray dark:text-light-table w-32 h-auto font-figtree font-semibold tracking-tight'
+        />
+      </div>
+    </div>
   )
 }
 
@@ -213,12 +226,9 @@ const MenuContent = memo(function MenuContent(item: NavItem) {
       prefetch={true}
       onMouseEnter={handleMouseEnter}
       onClick={handleClick}
-      className='font-figtree group/menu-content hover:bg-foreground/10 rounded-lg flex items-center px-3 h-8 relative w-full'>
-      <Icon
-        name={item.icon as IconName}
-        className='text-foreground/60 mr-2.5 size-5'
-      />
-      <span className='group-hover/menu-content:text-foreground text-dark-gray font-polysans font-normal tracking-normal text-sm md:text-base capitalize dark:text-white/90'>
+      className='font-figtree group/menu-content hover:bg-foreground/5 rounded-xl flex items-center px-3 h-9 relative w-full'>
+      <Icon name={item.icon as IconName} className='opacity-80 mr-2.5 size-5' />
+      <span className='font-polysans font-light tracking-normal text-sm md:text-base capitalize dark:text-white/90'>
         {item.title}
       </span>
       {showBadge && (
@@ -343,11 +353,6 @@ const data: Record<string, NavGroup[]> = {
           title: 'Payments',
           url: '/admin/payments',
           icon: 'file-sync',
-        },
-        {
-          title: 'Admin',
-          url: '/admin/settings',
-          icon: 'wrench',
         },
         {
           title: 'Store',

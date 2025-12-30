@@ -1,11 +1,12 @@
 'use client'
 
 import {useMobile} from '@/hooks/use-mobile'
+import {useSwipeRight} from '@/hooks/use-swipe-right'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {ReactNode, useMemo} from 'react'
+import {forwardRef, ReactNode, useMemo, useRef} from 'react'
 import {useSettingsPanel} from './settings'
-import {SidebarTrigger as SidebarTriggerVaul} from './sidebar-vaul'
+import {SidebarTrigger, useSidebar} from './sidebar'
 
 interface WrappedContentProps {
   children: ReactNode
@@ -18,15 +19,39 @@ export const WrappedContent = ({
   toolbar,
   withPanel,
 }: WrappedContentProps) => {
+  const sidebarState = useSidebar()
+  const {
+    isMobile: isSidebarMobile,
+    open: sidebarOpenDesktop,
+    openMobile: sidebarOpenMobile,
+    setOpen: setSidebarOpenDesktop,
+    setOpenMobile: setSidebarOpenMobile,
+  } = sidebarState
+  const swipeAreaRef = useRef<HTMLDivElement>(null)
+
+  // Use the appropriate state based on mobile/desktop
+  const sidebarOpen = isSidebarMobile ? sidebarOpenMobile : sidebarOpenDesktop
+  const setSidebarOpen = isSidebarMobile
+    ? setSidebarOpenMobile
+    : setSidebarOpenDesktop
+
+  useSwipeRight(swipeAreaRef, sidebarOpen, setSidebarOpen, {
+    threshold: 50,
+    targetDirection: 'left', // Sidebar opens from the left
+    velocityThreshold: 0.5,
+  })
+
   const {state, openMobile, isMobile, togglePanel} = useSettingsPanel()
+
   const isExpanded = useMemo(
     () => (isMobile ? openMobile : state === 'expanded'),
     [isMobile, openMobile, state],
   )
+
   return (
-    <Wrapper isPanelExpanded={isExpanded}>
+    <Wrapper ref={swipeAreaRef} isPanelExpanded={isExpanded}>
       <div className='ps-2 pe-3 sm:px-4 space-x-1 md:space-x-4 flex items-center justify-between min-w-0'>
-        <SidebarTriggerVaul />
+        <SidebarTrigger />
         {toolbar}
         {withPanel && (
           <SettingsPanelTrigger
@@ -44,19 +69,25 @@ interface WrapperProps {
   isPanelExpanded?: boolean
   children?: ReactNode
 }
-export const Wrapper = ({children, isPanelExpanded}: WrapperProps) => {
-  return (
-    <div
-      className={cn(
-        'flex-1 min-w-0 w-full border border-foreground/40 dark:border-dark-table/40 bg-white dark:bg-origin',
-        'drop-shadow-md md:overflow-hidden',
-        'md:rounded-xl whitespace-nowrap',
-        {'': isPanelExpanded},
-      )}>
-      {children}
-    </div>
-  )
-}
+
+export const Wrapper = forwardRef<HTMLDivElement, WrapperProps>(
+  ({children, isPanelExpanded}, ref) => {
+    return (
+      <div
+        className={cn(
+          'flex-1 min-w-0 w-full border border-foreground/40 dark:border-dark-table/40 bg-white dark:bg-origin',
+          'drop-shadow-md md:overflow-hidden',
+          'md:rounded-xl whitespace-nowrap',
+          {'': isPanelExpanded},
+        )}
+        ref={ref}>
+        {children}
+      </div>
+    )
+  },
+)
+
+Wrapper.displayName = 'Wrapper'
 
 export const Container = ({children}: {children: ReactNode}) => (
   <div className='relative bg-sidebar w-full min-w-0 md:p-5 flex h-screen overflow-clip'>

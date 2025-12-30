@@ -4,15 +4,22 @@ import {useCurrencyConversion} from '@/hooks/use-currency-converter'
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Card, Input, Select, SelectItem, Tab, Tabs} from '@heroui/react'
-import {useCallback, useEffect, useRef, useState, useTransition} from 'react'
+import {Card, Select, SelectItem, Tab, Tabs} from '@heroui/react'
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from 'react'
 import {FiatCurrency} from './types'
 
 interface ConverterFieldProps {
   className?: string
   isLast?: boolean
   value: string | null
-  onValueChange: (value: string) => void
+  onValueChange: (e: ChangeEvent<HTMLInputElement>) => void
   currencyId: FiatCurrency | null
   onCurrencyChange: (currencyId: FiatCurrency) => void
   currencies: Array<FiatCurrency>
@@ -43,16 +50,16 @@ function ConverterField({
           onClick={handleSwap}
           className={cn(
             'flex items-center justify-center inset-shadow-[0_1px_rgb(255_255_255/0.35)] absolute top-1/2 -translate-y-1/2 z-10',
-            'size-14 mt-0.5 rounded-full bg-indigo-500 hover:bg-indigo-600 transition-all duration-600 cursor-pointer',
+            'size-14.5 aspect-square rounded-full bg-indigo-500 hover:bg-indigo-600 transition-all duration-600 cursor-pointer',
             {'rotate-180': swap},
           )}
-          aria-label='Swap currencies'>
+          aria-label='swap-currencies'>
           <Icon name='swap-round' className='text-white -rotate-25 size-9' />
         </button>
       )}
       <Card
         className={cn(
-          'relative w-full flex-row items-center justify-between gap-2 p-5 dark:bg-sidebar bg-sidebar/30',
+          'relative w-full flex-row items-center justify-between gap-2 p-4 dark:bg-sidebar bg-sidebar/60',
           isLast
             ? 'mask-[radial-gradient(ellipse_26px_24px_at_50%_0%,transparent_0,transparent_24px,black_25px)]'
             : 'mask-[radial-gradient(ellipse_26px_24px_at_50%_100%,transparent_0,transparent_24px,black_25px)]',
@@ -65,16 +72,11 @@ function ConverterField({
         )}
         <div className='grow flex items-center justify-between w-full gap-12'>
           {!isLast && value ? (
-            <Input
+            <input
               value={value.substring(0, 6)}
-              onValueChange={onValueChange}
-              isDisabled={true} // loading || isLast
-              classNames={{
-                input: 'dark:bg-sizebar font-space font-medium text-xl',
-                inputWrapper: 'dark:bg-sizebar',
-              }}
+              onChange={onValueChange}
               className={cn(
-                'w-full max-w-40 text-2xl font-semibold bg-transparent focus-visible:outline-none py-0.5 px-1 -ml-1 mb-0.5 rounded-lg appearance-none',
+                'w-full max-w-40 text-xl font-semibold bg-transparent focus-visible:outline-none py-0.5 px-1 -ml-1 mb-0.5 rounded-lg appearance-none font-space',
                 {'w-24': !isLast},
               )}
               type='number'
@@ -82,7 +84,7 @@ function ConverterField({
             />
           ) : (
             <div className='text-xl font-medium font-space flex items-center space-x-2'>
-              <span className='opacity-60'>{currencyId}</span>{' '}
+              <span className='opacity-60 font-brk'>{currencyId}</span>{' '}
               {Number(value) ? (
                 <span>{Number(value).toFixed(4)}</span>
               ) : (
@@ -106,11 +108,11 @@ function ConverterField({
                 trigger: [
                   'w-28 flex bg-transparent border-none font-space shadow-none bg-white/10',
                 ],
-                value: 'text-lg font-medium',
+                value: 'text-lg font-medium font-brk',
               }}
               aria-label='Select currency'>
               {currencies.map((curr) => (
-                <SelectItem key={curr} className='font-space'>
+                <SelectItem key={curr} className='font-brk'>
                   {curr}
                 </SelectItem>
               ))}
@@ -149,7 +151,7 @@ const CURRENCIES: Array<FiatCurrency> = [
 export const CurrencyConverter = () => {
   return (
     <div className='relative my-2 md:my-6'>
-      <Tabs title='Converters' className='flex-1 ml-44 md:ml-64'>
+      <Tabs title='Converters' className='flex-1 ml-54 md:ml-80'>
         <Tab
           value='converter-1'
           title='Fiat'
@@ -164,7 +166,7 @@ export const CurrencyConverter = () => {
         </Tab>
       </Tabs>
 
-      <h2 className='text-xl md:text-2xl font-polysans font-semibold absolute top-1.5 left-2'>
+      <h2 className='text-xl md:text-xl font-polysans font-semibold absolute top-1.5 left-2'>
         Converters
       </h2>
     </div>
@@ -357,13 +359,15 @@ function ConverterContent({currencies}: ConverterContentProps) {
     )
   }, [fromAmount, toAmount, fromCurrency, toCurrency, activeField])
 
-  const handleFromChange = useCallback((value: string) => {
-    setFromAmount(value)
+  const handleFromChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault()
+    setFromAmount(e.target.value)
     setActiveField('from')
   }, [])
 
-  const handleToChange = useCallback((value: string) => {
-    setToAmount(value)
+  const handleToChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault()
+    setToAmount(e.target.value)
     setActiveField('to')
   }, [])
 
@@ -457,13 +461,13 @@ function ConverterContent({currencies}: ConverterContentProps) {
       <Card
         id='summary'
         shadow='none'
-        className='p-4 gap-0 rounded-[0.75rem] dark:bg-sidebar bg-sidebar/25'>
+        className='p-4 gap-0 rounded-2xl dark:bg-sidebar bg-sidebar/25'>
         <ul className='text-sm'>
           <li className='flex items-center font-medium justify-between pb-3 mb-3'>
-            <span className='tracking-tight'>Exchange Rate</span>
+            <span className='tracking-tight font-brk'>Exchange rate</span>
             <div className=''>
               <span className='flex items-center font-space space-x-1 text-gray-700 dark:text-gray-300'>
-                <span>1 {fromCurrency} =</span>
+                <span className='font-brk'>1 {fromCurrency} =</span>
                 {exchangeRate !== null ? (
                   <span>{exchangeRate.toFixed(4)}</span>
                 ) : (
@@ -471,15 +475,13 @@ function ConverterContent({currencies}: ConverterContentProps) {
                     <Icon name='spinner-dots' className='size-4' />
                   </div>
                 )}
-                <span className=''>{toCurrency}</span>
+                <span className='font-brk'>{toCurrency}</span>
               </span>
             </div>
           </li>
           <li className='flex items-center justify-between font-medium'>
-            <span className='tracking-tight'>Last updated</span>
-            <span className='font-space'>
-              {new Date().toLocaleTimeString()}
-            </span>
+            <span className='tracking-tight font-brk'>Last updated</span>
+            <span className='font-brk'>{new Date().toLocaleTimeString()}</span>
           </li>
         </ul>
       </Card>

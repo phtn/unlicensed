@@ -1,8 +1,10 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
+import {Icon} from '@/lib/icons'
 import {Card, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
+import Link from 'next/link'
 import {useEffect, useRef} from 'react'
 import {SectionHeader} from './ui/section-header'
 
@@ -176,8 +178,11 @@ export const StatSettings = () => {
       <div className='space-y-4'>
         <SectionHeader
           title='Dashboard Stats'
-          description='Configure which statistics are visible on your dashboard'
-        />
+          description='Configure which statistics are visible on your dashboard'>
+          <Link href='/admin/ops'>
+            <Icon name='x' className='opacity-70 hover:opacity-90' />
+          </Link>
+        </SectionHeader>
 
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'>
           {sortedConfigs.map((config) => (

@@ -45,55 +45,14 @@ export function AccountItemCard({
         </h2>
       </div>
 
-      {/* Description */}
+      {/* Subtext */}
       <div className='px-4 pb-4'>
         <div className='flex items-center gap-2'>
           <Icon name='wallet' className='size-5' />
-          <h3 className='text-xs font-mono font-light tracking-widest lowercase leading-none '>
+          <h3 className='text-xs font-mono font-light tracking-widest lowercase leading-none max-w-[24ch] truncate'>
             {hexAddress}
           </h3>
         </div>
-
-        {/* Usage info */}
-        {/*{usage.length > 0 && (
-          <div className='bg-black/5 rounded-sm p-3 flex gap-3 items-start mb-4'>
-            <Icon
-              name='info'
-              className='w-4 h-4 text-black/40 mt-0.5 shrink-0'
-            />
-            <p className='text-[10px] font-bold leading-tight'>
-              <span className='opacity-60'>Used to craft: </span>
-              {usage.join(', ')}
-            </p>
-          </div>
-        )}*/}
-
-        {/* Locations */}
-        {/*{locations.length > 0 && (
-          <div className='flex flex-col gap-2 mb-4'>
-            <h4 className='text-[10px] font-black tracking-widest uppercase opacity-40'>
-              Can be found in:
-            </h4>
-            {locations.map((loc, i) => (
-              <div key={i} className='flex items-center gap-2'>
-                <Icon name='info' className='w-3 h-3 rotate-45 text-black/60' />
-                <span className='text-[10px] font-bold'>{loc}</span>
-              </div>
-            ))}
-          </div>
-        )}*/}
-
-        {/* Quest tracking */}
-        {/*{isTracked && (
-          <div className='bg-black/5 rounded-sm p-3 flex items-center gap-3'>
-            <div className='w-4 h-4 rounded-full border-2 border-black/20 flex items-center justify-center'>
-              <div className='w-1.5 h-1.5 bg-black rounded-full' />
-            </div>
-            <span className='text-[10px] font-bold uppercase tracking-wider'>
-              Tracked for quest
-            </span>
-          </div>
-        )}*/}
       </div>
       <div>
         <Accordion className='rounded-lg'>

@@ -33,7 +33,7 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
   const navigateToNew = useCallback(() => {
     withViewTransition(() => {
       startTransition(() => {
-        router.push('/admin/messaging/email/new')
+        router.push('/admin/messaging/email?tabId=new')
       })
     })
   }, [router])
@@ -44,7 +44,7 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
 
   if (templates === undefined) {
     return (
-      <div className='flex items-center justify-center absolute top-1/2 left-1/2'>
+      <div className='flex items-center justify-center absolute top-1/2 left-1/2 portrait:-translate-x-1/2'>
         <motion.div
           initial={{opacity: 0}}
           animate={{opacity: 1}}
@@ -73,7 +73,10 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
               className='rounded-3xl h-[calc(100lvh-140px)] md:h-auto md:rounded-3xl bg-slate-100 dark:bg-dark-table/60 border border-foreground/20 sm:px-8 sm:pt-8 transition-colors p-4'>
               {/*<div className='w-12 h-12 rounded-xl bg-linear-to-br from-cyan-600/10 to-purple-200/10 border border-foreground/20 flex items-center justify-center shrink-0'></div>*/}
               <div className='flex items-center space-x-4'>
-                <Icon name='email' className='size-24 -rotate-6 opacity-60' />
+                <Icon
+                  name='email'
+                  className='size-8 md:size-24 -rotate-6 opacity-60'
+                />
                 <SectionHeader
                   title='Email Templates'
                   description='Manage your email templates here.'>
@@ -83,7 +86,7 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
                     radius='full'
                     color='primary'
                     onPress={navigateToNew}
-                    className='bg-foreground border-0'>
+                    className='bg-foreground dark:text-dark-gray border-0'>
                     <Icon name='plus' className='size-5' />
                   </Button>
                 </SectionHeader>
@@ -98,7 +101,7 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
               {templates.map((template, index) => (
                 <Link
                   key={template._id}
-                  href={`/admin/configs/email/${template._id}`}
+                  href={`/admin/messaging/email/${template._id}`}
                   prefetch>
                   <motion.div
                     initial={{opacity: 0, y: 20}}

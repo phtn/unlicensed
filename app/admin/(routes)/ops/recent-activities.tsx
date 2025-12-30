@@ -43,7 +43,7 @@ const getActivityIcon = (type: Activity['type']) => {
     case 'order_processing':
     case 'order_shipped':
     case 'order_delivered':
-      return 'bag-light'
+      return 'bag-solid'
     case 'order_cancelled':
     case 'order_refunded':
       return 'x'
@@ -350,7 +350,7 @@ export const RecentActivities = ({
       className={cn(
         'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden md:rounded-t-2xl md:w-full w-screen overflow-x-scroll',
         'transition-transform duration-300 md:border-0 border-t border-light-gray/40',
-        {'md:-translate-y-46 -translate-y-42 h-full': fullTable},
+        {'md:-translate-y-46 -translate-y-42 h-full bg-sidebar/40': fullTable},
       )}>
       <div
         className={cn(
@@ -365,10 +365,10 @@ export const RecentActivities = ({
             size='sm'
             isIconOnly
             onPress={toggleFullTable}
-            className='dark:bg-origin/60 scale-80 rounded-md px-0 overflow-hidden aspect-square flex-1 opacity-60 hover:opacity-100'>
+            className='dark:bg-origin/60 bg-sidebar/60 scale-80 rounded-md px-0 overflow-hidden aspect-square flex-1 opacity-60 hover:opacity-100'>
             <Icon
               name='chevron-double-left'
-              className={cn('size-6 rotate-45', fullTable && '-rotate-45')}
+              className={cn('size-7 rotate-45', fullTable && '-rotate-45')}
             />
           </Button>
         </div>
@@ -379,7 +379,10 @@ export const RecentActivities = ({
             ...classNames,
             tbody: 'overflow-hidden rounded-3xl',
             thead: '',
-            th: 'sticky first:rounded-tl-[12.5px] last:rounded-tr-[12.5px] top-0 bg-white/60 dark:bg-dark-table/5 z-10 backdrop-blur-xl h-8 border-b border-gray-200 dark:border-dark-table',
+            th: [
+              'sticky _first:rounded-tl-[12.5px] _last:rounded-tr-[12.5px] top-0 bg-white/60 dark:bg-dark-table/5 z-10 backdrop-blur-xl h-8 border-b border-gray-200 dark:border-dark-table',
+              fullTable && 'border-t',
+            ],
           }}
           aria-label='Recent activities table'>
           <TableHeader columns={columns}>

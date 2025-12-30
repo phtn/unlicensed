@@ -12,39 +12,39 @@ import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
 import {Suspense} from 'react'
 
-const CourierInner = () => {
-  const couriers = useQuery(api.couriers.q.listCouriers)
+const EmailTabInner = () => {
+  const templates = useQuery(api.emailSettings.q.listEmailSettings)
 
   return (
     <>
-      <MainTab href='/admin/suppliers/couriers'>
-        <PageTitle>Couriers</PageTitle>
+      <MainTab href='/admin/messaging/email'>
+        <PageTitle>Email Templates</PageTitle>
         <span
           className={cn(
             'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
           )}>
-          <AnimatedNumber value={couriers?.length ?? 0} />
+          <AnimatedNumber value={templates?.length ?? 0} />
         </span>
       </MainTab>
       <ToolbarButtonWrapper>
         <SecondaryTab
           id='new'
-          href='/admin/suppliers/logistics?tabId=new'
+          href='/admin/messaging/email?tabId=new'
           icon='plus'
-          label='New Courier'
+          label='New Template'
         />
       </ToolbarButtonWrapper>
     </>
   )
 }
 
-export const CourierTab = () => {
+export const EmailTab = () => {
   return (
     <Suspense
       fallback={
         <div className='flex text-base items-center justify-between w-full px-2' />
       }>
-      <CourierInner />
+      <EmailTabInner />
     </Suspense>
   )
 }

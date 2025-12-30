@@ -22,7 +22,6 @@ import {Drawer as DrawerPrimitive} from 'vaul'
 const SIDEBAR_COOKIE_NAME = 'sidebar:state'
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = '13rem'
-const SIDEBAR_WIDTH_MOBILE = '12rem'
 const SIDEBAR_WIDTH_ICON = '3rem'
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
 
@@ -191,15 +190,10 @@ function Sidebar({
             data-sidebar='sidebar'
             data-mobile='true'
             className={cn(
-              'w-(--sidebar-width) bg-sidebar backdrop-blur-3xl p-0 text-sidebar-foreground fixed inset-y-0 z-50 flex flex-col',
+              'w-48 bg-sidebar p-0 text-sidebar-foreground fixed inset-y-0 z-50 flex flex-col [&>button]:hidden',
               side === 'left' ? 'left-0' : 'right-0',
               className,
-            )}
-            style={
-              {
-                '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
-              } as CSSProperties
-            }>
+            )}>
             <DrawerPrimitive.Title></DrawerPrimitive.Title>
             <DrawerPrimitive.Description></DrawerPrimitive.Description>
             <div className='flex h-full w-full flex-col'>{children}</div>

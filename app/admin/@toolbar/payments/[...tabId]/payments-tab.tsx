@@ -44,7 +44,7 @@ const PaymentsTabInner = () => {
       <ToolbarButtonWrapper>
         <SecondaryTab
           id='utilities'
-          icon='wrench'
+          icon='cloud'
           label='Utilities'
           href='/admin/payments/paygate?tabId=utilities'
         />

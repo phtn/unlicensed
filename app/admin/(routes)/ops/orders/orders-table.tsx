@@ -43,11 +43,6 @@ export const OrdersTable = () => {
   const selectedOrderId = selectedOrder?._id
 
   const [selectedRow, setSelectedRow] = useState<Id<'orders'> | null>(null)
-  // Debug: Log when selectedOrder changes
-  // useEffect(() => {
-  //   console.log('Selected order changed:', selectedOrderId, 'Panel open:', open)
-  // }, [selectedOrderId, open])
-  //
   const handleViewOrder = (order: Order) => () => {
     if (order) {
       setSelectedOrder(order)
@@ -129,16 +124,14 @@ export const OrdersTable = () => {
     <Card
       shadow='none'
       radius='none'
-      className='p-4 md:rounded-xl bg-sidebar/20  dark:bg-dark-table/40 md:h-full h-[calc(100lvh-24px)] w-screen md:w-full overflow-scroll'>
+      className='pb-10 md:p-4 md:rounded-xl bg-sidebar/20  dark:bg-dark-table/40 md:h-full h-[calc(100lvh-24px)] w-screen md:w-full overflow-scroll'>
       <Table
         key={`table-${selectedOrderId || 'none'}-${open}`}
         isCompact
         removeWrapper
         aria-label='Orders table'
         classNames={classNames}>
-        <TableHeader
-          columns={columns}
-          className='font-medium drop-shadow-xs text-foreground'>
+        <TableHeader columns={columns} className='font-medium text-foreground'>
           {(column) => (
             <TableColumn
               key={column.uid}

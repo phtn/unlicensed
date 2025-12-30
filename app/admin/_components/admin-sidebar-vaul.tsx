@@ -68,7 +68,7 @@ export function AdminSidebarVaul({
 
   return (
     <Sidebar {...props} className='border-none!' suppressHydrationWarning>
-      <SidebarHeader className=''>
+      <SidebarHeader>
         <Logo />
       </SidebarHeader>
       <SidebarContent>
@@ -158,9 +158,13 @@ export function AdminSidebarVaul({
                 const isActive = pathname === item.url
                 return (
                   <SidebarMenuItem
-                    className={cn('text-xs tracking-tighter rounded-lg', {
-                      'bg-slate-300 dark:bg-blue-100/10': isActive,
-                    })}
+                    className={cn(
+                      'text-sm font-semibold tracking-tight rounded-xl hover:bg-light-gray/20 dark:hover:bg-dark-gray/20',
+                      {
+                        'bg-dark-gray text-white dark:bg-blue-100/10 hover:bg-dark-gray/90':
+                          isActive,
+                      },
+                    )}
                     key={item.title}>
                     <SidebarMenuButton
                       asChild

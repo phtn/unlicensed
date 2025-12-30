@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.18.0
+
+### Minor Changes
+
+- c40a72b: messaging in admin
+
+### Patch Changes
+
+- added swipe gesture to open sidebar
+
 ## 0.17.1
 
 ### Patch Changes

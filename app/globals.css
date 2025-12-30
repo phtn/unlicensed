@@ -28,11 +28,10 @@
 }
 
 @font-face {
-  font-family: 'NeuSans';
-  src: url('/fonts/NeuSansTrial-Regular.otf') format('opentype');
-  font-weight: 400;
+  font-family: 'BrkMono';
+  src: url('/fonts/BerkeleyMono.otf') format('opentype');
+  font-weight: 300;
   font-style: normal;
-  font-display: swap;
 }
 
 @theme inline {
@@ -58,6 +57,7 @@
   --font-sans: var(--font-sans);
   --font-bone: var(--font-bone);
   --font-nito: var(--font-nito);
+  --font-brk: 'BrkMono', Arial, Helvetica, monospace;
   --font-polysans: 'PolySans', Arial, Helvetica, sans-serif;
   --font-neusans: 'NeuSans', Arial, Helvetica, sans-serif;
 
@@ -204,7 +204,8 @@
 
 :root.light {
   --background: oklch(0.99 0 0);
-  --foreground: oklch(0.243 0.027 220.39);
+  --foreground: oklch(0.129 0.042 264.695);
+  /*--foreground: oklch(0.243 0.027 220.39);*/
   --muted: rgba(255, 242, 233, 0.78);
   --accent: oklch(0.96 0.007 67.74);
   --brand: oklch(0.784 0.21 326.75);
@@ -214,7 +215,8 @@
   --secondary-foreground: oklch(0.243 0.027 220.39);
   --tertiary: oklch(0.897 0.007 67.74);
   --tertiary-foreground: oklch(0.243 0.027 220.39);
-  --sidebar: oklch(0.92 0.003 286);
+  --sidebar: oklch(0.956 0.004 286.32);
+  /*--sidebar: oklch(0.92 0.003 286);*/
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.196 0.021 271.47);
   --sidebar-primary-foreground: oklch(0.925 0.006 285.9);
