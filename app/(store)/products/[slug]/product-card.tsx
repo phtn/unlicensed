@@ -1,10 +1,10 @@
 'use client'
 
-export default function ProductCard({
-  onAddToCart,
-}: {
+type ProductCardProps = {
   onAddToCart: VoidFunction
-}) {
+}
+
+export default function ProductCard({onAddToCart}: ProductCardProps) {
   return (
     <div className='bg-neutral-800 rounded-xl p-6 w-96 shadow-2xl'>
       {/* Product Image */}
@@ -36,6 +36,7 @@ export default function ProductCard({
 
       {/* Add to Cart Button */}
       <button
+        type='button'
         onClick={onAddToCart}
         className='w-full bg-white text-neutral-900 font-bold py-3 rounded-lg hover:bg-neutral-100 transition-colors'>
         ADD TO CART →

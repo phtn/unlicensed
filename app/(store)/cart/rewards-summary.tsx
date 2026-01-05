@@ -29,24 +29,36 @@ export function RewardsSummary({
   isAuthenticated,
 }: RewardsSummaryProps) {
   return (
-    <div className='lg:sticky lg:top-24 h-fit'>
+    <div className='lg:top-24 h-fit'>
       <Card
         shadow='none'
-        className='dark:bg-dark-table/40 border border-foreground/40'>
-        <CardBody className='space-y-4 px-8 py-5'>
+        className='dark:bg-dark-table/40 border border-foreground/20'>
+        <CardBody className='space-y-4 px-4 md:px-8 py-5'>
           <div className='flex items-center justify-between'>
-            <h2 className='text-2xl font-normal font-bone'>
-              Rewards Multiplier
-            </h2>
-            <span className='text-4xl text-purple-700 dark:text-purple-400 font-semibold font-bone'>
-              x{nextVisitMultiplier?.multiplier}
+            <div>
+              <h2 className='text-2xl font-normal font-bone'>
+                Rewards Multiplier
+              </h2>
+              {isAuthenticated &&
+                estimatedPoints !== null &&
+                nextVisitMultiplier &&
+                nextVisitMultiplier?.message && (
+                  <p className='text-xs text-foreground/70 font-sans pt-2'>
+                    {nextVisitMultiplier.message}
+                  </p>
+                )}
+            </div>
+
+            <span className='text-4xl text-purple-700 dark:text-purple-400 font-semibold font-space'>
+              <span className='text-2xl'>x</span>
+              {nextVisitMultiplier?.multiplier}
             </span>
           </div>
         </CardBody>
         {/* Estimated Points */}
         {isAuthenticated && estimatedPoints !== null && nextVisitMultiplier && (
           <>
-            <div className='flex items-center justify-between text-sm p-3 bg-purple-400/10 dark:bg-purple-500/20 border-t-2 border-purple-300/20'>
+            <div className='flex items-center justify-between text-sm py-3 px-4 md:px-6 bg-purple-400/10 dark:bg-purple-500/20 border-t-2 border-purple-300/20'>
               <div className='text-lg flex items-center gap-2'>
                 <Icon
                   name='star-fill'
@@ -57,19 +69,12 @@ export function RewardsSummary({
                 </span>
               </div>
               <div className='flex items-center gap-1'>
-                <span className='font-bold tracking-tight font-geist-sans text-purple-700 dark:text-purple-400 text-lg'>
+                <span className='font-bold tracking-tight font-space text-purple-700 dark:text-purple-400 text-lg'>
                   {(estimatedPoints / 33).toFixed(0)}
                 </span>
-                <span className='text-sm text-foreground font-semibold'>
-                  pts
-                </span>
+                <span className='text-sm font-polysans'>pts</span>
               </div>
             </div>
-            {nextVisitMultiplier.message && (
-              <p className='text-xs text-foreground text-center bg-purple-600/15 py-2 border-t border-purple-700/20'>
-                {nextVisitMultiplier.message}
-              </p>
-            )}
           </>
         )}
       </Card>

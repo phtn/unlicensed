@@ -58,7 +58,7 @@ export const CartItem = ({
       shadow='none'
       radius='none'
       className={cn(
-        'border border-foreground/70 bg-white dark:bg-background dark:border-foreground/50 border-dashed first:rounded-t-xl last:rounded-b-xl',
+        'border border-b-0 last:border-b border-foreground/50 bg-white dark:bg-background dark:border-foreground/50 border-dashed first:rounded-t-3xl last:rounded-b-3xl',
         className,
       )}>
       <CardBody>

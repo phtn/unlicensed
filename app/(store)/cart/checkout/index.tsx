@@ -10,10 +10,10 @@ import {
   useState,
   useTransition,
 } from 'react'
-import {isCheckoutDevMode} from './config'
 import {CheckoutModal} from './components/checkout-modal'
 import {DevelopmentModal} from './components/development-modal'
 import {OrderSummaryCard} from './components/order-summary-card'
+import {isCheckoutDevMode} from './config'
 import {useOrderForm} from './hooks/use-order-form'
 import {CheckoutProps, FormData} from './types'
 
@@ -216,7 +216,7 @@ export function Checkout({
     }
 
     const billingAddress: AddressType | undefined = formData.useSameBilling
-      ? undefined
+      ? shippingAddress
       : {
           id: `billing-${Date.now()}`,
           type: 'billing',

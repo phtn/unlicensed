@@ -8,6 +8,7 @@ import {Button, Image} from '@heroui/react'
 import {useRouter} from 'next/navigation'
 import {useMemo, useOptimistic, useTransition} from 'react'
 import {Drawer} from 'vaul'
+import {EmptyCart} from './empty-cart'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -102,7 +103,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     }, 0)
   }, [cartItems])
 
-  const handleViewCart = () => {
+  const handleCartCheckout = () => {
     onOpenChange(false)
     router.push('/cart')
   }
@@ -110,18 +111,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange} direction='right'>
       <Drawer.Portal>
-        <Drawer.Overlay className='z–180 fixed inset-0 bg-slate-800/60 backdrop-blur-1' />
-        <Drawer.Content className='border-l-[0.33px] border-foreground/20 bg-background flex flex-col h-full md:w-[400px] w-full fixed bottom-0 right-0 z-70'>
-          <div className='p-4 bg-background flex-1 overflow-auto'>
-            {/*<div className='hidden _flex items-center justify-end space-x-6'>
-              <Button isIconOnly variant='solid'>
-                <Icon
-                  name='fullscreen'
-                  onClick={handleViewCart}
-                  className='size-5 opacity-100 cursor-pointer'
-                />
-              </Button>
-            </div>*/}
+        <Drawer.Overlay className='z–900 fixed inset-0 bg-slate-950/60 backdrop-grayscale' />
+        <Drawer.Content className='border-l-[0.33px] border-foreground/20 bg-linear-to-b from-background dark:from-black to-background flex flex-col h-full md:w-lg w-full fixed bottom-0 right-0 z-70'>
+          <div className='p-4 flex-1 overflow-auto'>
             <div className='mx-auto w-12 h-1.5 shrink-0 bg-border rounded-full mb-0' />
             <div className='flex items-center gap-4 mb-6 px-2'>
               <Drawer.Title className='text-2xl font-semibold tracking-tighter font-space'>
@@ -142,13 +134,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                 <p className='text-color-muted'>Loading cart...</p>
               </div>
             ) : !hasItems && !isPending ? (
-              <div className='flex flex-col items-center justify-center py-12 space-y-4'>
-                <Icon name='bag-light' className='size-16 text-color-muted' />
-                <p className='text-lg font-medium'>Your cart is empty</p>
-                <Button variant='flat' onPress={() => onOpenChange(false)}>
-                  Continue Shopping
-                </Button>
-              </div>
+              <EmptyCart onPress={() => onOpenChange(false)} />
             ) : (
               <>
                 <div className='max-h-[60lvh] overflow-scroll space-y-4 mb-6 rounded-3xl border border-pink-300/80 dark:border-pink-300/60 bg-indigo-400/5'>
@@ -216,7 +202,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                 size='sm'
                                 variant='flat'
                                 isDisabled={isPending}
-                                className='min-w-0 w-8 h-7'
+                                className='bg-background min-w-0 w-8 h-7'
                                 onPress={() => {
                                   const newQuantity = item.quantity - 1
                                   startTransition(async () => {
@@ -247,7 +233,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                 }}>
                                 <Icon
                                   name='minus'
-                                  className='size-4 opacity-70'
+                                  className='size-4 opacity-80'
                                 />
                               </Button>
                               <span className='text-base font-space font-semibold w-8 text-center'>
@@ -257,7 +243,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                 isIconOnly
                                 size='sm'
                                 variant='flat'
-                                className='min-w-0 w-8 h-7'
+                                className='bg-background min-w-0 w-8 h-7'
                                 isDisabled={isPending}
                                 onPress={() => {
                                   const newQuantity = item.quantity + 1
@@ -277,7 +263,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                 }}>
                                 <Icon
                                   name='plus'
-                                  className='size-4 opacity-70'
+                                  className='size-4 opacity-80'
                                 />
                               </Button>
                             </div>
@@ -316,10 +302,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   <Button
                     size='lg'
                     className='w-full sm:flex-1 h-15 font-polysans font-normal text-lg bg-foreground/95 text-white dark:text-dark-gray'
-                    onPress={() => {
-                      onOpenChange(false)
-                      router.push('/cart')
-                    }}>
+                    onPress={handleCartCheckout}>
                     <span className='font-bold font-space text-lg'>
                       Checkout
                     </span>
@@ -327,7 +310,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                 </div>
                 <button
                   type='button'
-                  onClick={handleViewCart}
+                  onClick={() => {
+                    onOpenChange(false)
+                  }}
                   className='w-full text-sm text-color-muted hover:text-foreground transition-colors text-center py-2'>
                   Continue Shopping
                 </button>

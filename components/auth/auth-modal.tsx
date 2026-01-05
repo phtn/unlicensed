@@ -2,10 +2,9 @@
 
 import {cancelGoogleOneTap} from '@/components/auth/google-one-tap'
 import {useToggle} from '@/hooks/use-toggle'
-import {sendEmailLink, loginWithGoogle} from '@/lib/firebase/auth'
+import {loginWithGoogle, sendEmailLink} from '@/lib/firebase/auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import type {ActionCodeSettings} from 'firebase/auth'
 import {
   Button,
   Divider,
@@ -16,6 +15,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@heroui/react'
+import type {ActionCodeSettings} from 'firebase/auth'
 import {ChangeEvent, FormEvent, InputHTMLAttributes, useState} from 'react'
 import {DitherPhoto, ImageDither} from '../paper/dithering'
 
@@ -88,21 +88,41 @@ export const AuthModal = ({
           <ImageDither image={'/svg/rf-logo-hot-pink-2.svg'} />
           <DitherPhoto />
         </div>
-          <ModalHeader className='relative z-10 tracking-tight'>
-          <div className='bg-black/20 backdrop-blur-2xl  text-white px-2 rounded-lg w-fit'>
-            {emailSent ? 'Check Your Email' : isLogin ? 'Sign In' : 'Create Account'}
+        <ModalHeader className='relative z-10 tracking-tight'>
+          <div className='bg-black/20 backdrop-blur-2xl text-white px-2 rounded-lg w-fit'>
+            {emailSent ? (
+              <a
+                rel='noopener noreferrer'
+                href={`https://${email.split('@').pop()}`}
+                target='_blank'
+                className='font-polysans font-normal flex items-center'>
+                <span>Check Your Email</span>
+                <Icon name='arrow-right' className='size-6 -rotate-20 ml-1' />
+              </a>
+            ) : isLogin ? (
+              'Sign In'
+            ) : (
+              'Create Account'
+            )}
           </div>
         </ModalHeader>
         <form onSubmit={handleSubmit}>
           <ModalBody>
             {emailSent ? (
-              <div className='flex flex-col items-center justify-center h-80 space-y-4 text-center px-4'>
-                <Icon name='email' className='size-12 text-emerald-500' />
+              <div className='relative z-50 bg-foreground/50 rounded-xl backdrop-blur-3xl flex flex-col items-center justify-center h-80 space-y-4 text-center px-4'>
+                <Icon
+                  name='email'
+                  className='size-16 -rotate-10 text-featured'
+                />
                 <p className='text-white text-sm'>
-                  We've sent a sign-in link to <strong>{email}</strong>
+                  We&apos;ve sent a sign-in link to{' '}
+                  <strong className='text-featured font-polysans tracking-wide'>
+                    {email}
+                  </strong>
                 </p>
-                <p className='text-white/70 text-xs'>
-                  Click the link in your email to sign in. The link will expire in 1 hour.
+                <p className='text-white/70 text-xs line-clamp-2 max-w-[25ch]'>
+                  Click the link in your email to sign in. The link will expire
+                  in 1 hour.
                 </p>
                 <Button
                   size='sm'
@@ -168,11 +188,7 @@ export const AuthModal = ({
                     {'bg-black/50': email === '' || loading},
                   )}>
                   <Icon
-                    name={
-                      loading
-                        ? 'spinners-ring'
-                        : 'chevron-right'
-                    }
+                    name={loading ? 'spinners-ring' : 'chevron-right'}
                     className={cn('size-5', {
                       'text-orange-400': loading,
                     })}

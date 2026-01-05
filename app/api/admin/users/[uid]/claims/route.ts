@@ -1,5 +1,55 @@
 import {NextRequest, NextResponse} from 'next/server'
 import {getAdminAuth} from '@/lib/firebase/admin'
+import {ConvexHttpClient} from 'convex/browser'
+import {api} from '@/convex/_generated/api'
+
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+
+type AuthResult =
+  | {ok: true; email: string; uid: string}
+  | {ok: false; response: NextResponse}
+
+function getBearerToken(request: NextRequest): string | null {
+  const authHeader = request.headers.get('authorization')
+  if (!authHeader) return null
+  if (authHeader.startsWith('Bearer ')) {
+    return authHeader.slice('Bearer '.length).trim() || null
+  }
+  return authHeader.trim() || null
+}
+
+async function requireStaffAdmin(request: NextRequest): Promise<AuthResult> {
+  const token = getBearerToken(request)
+  if (!token) {
+    return {
+      ok: false,
+      response: NextResponse.json({error: 'Unauthorized'}, {status: 401}),
+    }
+  }
+
+  const adminAuth = getAdminAuth()
+  const decoded = await adminAuth.verifyIdToken(token)
+  const email = decoded.email
+
+  if (!email) {
+    return {
+      ok: false,
+      response: NextResponse.json({error: 'Unauthorized'}, {status: 401}),
+    }
+  }
+
+  const staff = await convex.query(api.staff.q.getStaffByEmail, {email})
+  const isAdmin = !!staff && staff.active && staff.accessRoles.includes('admin')
+
+  if (!isAdmin) {
+    return {
+      ok: false,
+      response: NextResponse.json({error: 'Forbidden'}, {status: 403}),
+    }
+  }
+
+  return {ok: true, email, uid: decoded.uid}
+}
 
 /**
  * API Route to set custom claims for a Firebase user
@@ -16,6 +66,9 @@ export async function POST(
   {params}: {params: Promise<{uid: string}>},
 ) {
   try {
+    const auth = await requireStaffAdmin(request)
+    if (!auth.ok) return auth.response
+
     const {uid} = await params
     const body = await request.json()
     const {claims} = body
@@ -30,16 +83,6 @@ export async function POST(
         {status: 400},
       )
     }
-
-    // TODO: Add authorization check here
-    // Verify that the requester has admin privileges
-    // You can check Firebase ID token from Authorization header
-    // Example:
-    // const authHeader = request.headers.get('authorization')
-    // if (!authHeader) return NextResponse.json({error: 'Unauthorized'}, {status: 401})
-    // const token = authHeader.replace('Bearer ', '')
-    // const decodedToken = await getAdminAuth().verifyIdToken(token)
-    // if (!decodedToken.admin) return NextResponse.json({error: 'Forbidden'}, {status: 403})
 
     const adminAuth = getAdminAuth()
 
@@ -75,13 +118,14 @@ export async function GET(
   {params}: {params: Promise<{uid: string}>},
 ) {
   try {
+    const auth = await requireStaffAdmin(request)
+    if (!auth.ok) return auth.response
+
     const {uid} = await params
 
     if (!uid) {
       return NextResponse.json({error: 'User ID is required'}, {status: 400})
     }
-
-    // TODO: Add authorization check here
 
     const adminAuth = getAdminAuth()
     const user = await adminAuth.getUser(uid)
@@ -111,13 +155,14 @@ export async function DELETE(
   {params}: {params: Promise<{uid: string}>},
 ) {
   try {
+    const auth = await requireStaffAdmin(request)
+    if (!auth.ok) return auth.response
+
     const {uid} = await params
 
     if (!uid) {
       return NextResponse.json({error: 'User ID is required'}, {status: 400})
     }
-
-    // TODO: Add authorization check here
 
     const adminAuth = getAdminAuth()
 

@@ -58,7 +58,7 @@ export const Callout = ({
       </ViewTransition>
       <div className='flex-1'>
         <div className='flex items-center justify-between w-full'>
-          <p className='text-sm font-bold font-nito'>{title}</p>
+          <div className='text-sm font-bold font-nito'>{title}</div>
           <span className='text-xs flex-1'>{children}</span>
         </div>
         <div className='text-xs opacity-80 mt-0.5'>{description}</div>
@@ -67,4 +67,6 @@ export const Callout = ({
   )
 }
 
-export const DotDiv = () => <span className='opacity-40 text-sm'>⏺</span>
+export const DotDiv = () => (
+  <span className='opacity-40 text-xl leading-0'>&middot;</span>
+)

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.19.0
+
+### Minor Changes
+
+- update in UI and payment processing
+
 ## 0.18.0
 
 ### Minor Changes

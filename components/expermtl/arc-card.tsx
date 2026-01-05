@@ -5,6 +5,7 @@ import {Button, Card, CardBody} from '@heroui/react'
 import Link from 'next/link'
 import {PropsWithChildren, ReactNode} from 'react'
 import {HyperList} from './hyper-list'
+import ShimmerText from './shimmer'
 
 interface ArcCardProps {
   children?: ReactNode
@@ -52,12 +53,12 @@ const ArcHeader = ({
 }: ArcHeaderProps) => (
   <div>
     <div className='flex items-center justify-between w-full'>
-      <h1 className='flex items-center text-2xl font-polysans opacity-90 h-14'>
+      <h1 className='flex items-center text-xl md:text-2xl font-polysans tracking-tight opacity-90 h-12'>
         {title}
       </h1>
       <div className='flex items-center'>{status}</div>
     </div>
-    <div className='flex items-center space-x-1 font-space'>
+    <div className='flex items-center md:space-x-1 font-space'>
       {icon && (
         <Icon name={icon} className={cn('size-6 text-indigo-400', iconStyle)} />
       )}
@@ -72,14 +73,16 @@ interface ArcCalloutProps {
 }
 
 const ArcCallout = ({value, icon}: ArcCalloutProps) => (
-  <div className='flex items-center space-x-2 p-2 bg-sidebar/40 rounded-md'>
-    {icon && <Icon name={icon} className='size-4 ml-0.5' />}
+  <div className='flex items-start md:items-center space-x-2 p-1.5 bg-sidebar/40 rounded-md'>
+    {icon && (
+      <Icon name={icon} className='size-4 opacity-70 mt-0.5 md:mt-0 ml-0.5' />
+    )}
     <p className='text-sm text-color-muted'>{value}</p>
   </div>
 )
 
 const ArcActionBar = ({children}: PropsWithChildren) => (
-  <div className='grid grid-cols-2 gap-2 w-full'>{children}</div>
+  <div className='grid grid-cols-2 gap-0 w-full'>{children}</div>
 )
 
 interface ArcButtonProps {
@@ -117,28 +120,74 @@ const ArcButtonRight = ({label, fn, href, icon}: ArcButtonProps) => (
     {label}
   </Button>
 )
+const ArcButtonFull = ({label, fn, href, icon}: ArcButtonProps) => (
+  <Button
+    as={Link}
+    size='lg'
+    onPress={fn}
+    radius='none'
+    variant='flat'
+    href={href ?? '#'}
+    endContent={icon && <Icon name={icon} className='size-5' />}
+    className='w-full col-span-2 font-polysans font-normal! bg-sidebar dark:bg-dark-table/40'>
+    {label}
+  </Button>
+)
 
 interface ArcLineItemsProps<T> {
   data: T & {label: string; value: string}[]
 }
 
 const ArcLineItems = <T,>({data}: ArcLineItemsProps<T>) => (
-  <HyperList data={data} component={ArcLineItem} container='space-y-2 mb-8' />
+  <HyperList
+    data={data}
+    component={ArcLineItem}
+    container=' bg-sidebar/50 rounded-md p-4 space-y-0.5 mb-8'
+    itemStyle=' border-b border-dotted border-light-gray/40 dark:border-light-gray/20 last:border-0 py-2.5'
+  />
 )
 
 const ArcLineItem = <T extends {label: string; value: string}>(item: T) => (
-  <div className='flex justify-between text-sm border-t border-foreground/20 border-dotted first:border-0 pt-3 first:pt-0'>
-    <span className=''>{item.label}</span>
-    <span className='text-xl font-semibold font-space'>{item.value}</span>
+  <div className='flex items-center justify-between text-sm'>
+    <span className='font-brk opacity-80'>{item.label}</span>
+    <span className='font-brk capitalize'>{item.value}</span>
+  </div>
+)
+
+interface ArcLoaderProps {
+  text?: string
+  loading?: boolean
+  children?: ReactNode
+}
+
+const ArcLoader = ({text, loading, children}: ArcLoaderProps) => (
+  <div className='relative flex items-center font-polysans w-full'>
+    <div className='bg-zinc-900 dark:bg-transparent h-12 w-full flex flex-1 items-center justify-center px-3'>
+      <ShimmerText
+        surface='auto'
+        variant='default'
+        className='text-xs lg:text-2xl flex leading-6 md:leading-6 items-center p-0 m-0 text-center font-semibold font-figtree'>
+        {text} {children}
+      </ShimmerText>
+      <Icon
+        name='spinners-ring'
+        className={cn(
+          'size-3 text-orange-200 ml-1',
+          !loading && 'text-featured',
+        )}
+      />
+    </div>
   </div>
 )
 
 export {
   ArcActionBar,
+  ArcButtonFull,
   ArcButtonLeft,
   ArcButtonRight,
   ArcCallout,
   ArcCard,
   ArcHeader,
   ArcLineItems,
+  ArcLoader,
 }

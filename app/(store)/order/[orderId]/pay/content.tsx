@@ -6,15 +6,14 @@ import {Id} from '@/convex/_generated/dataModel'
 import {usePaygate} from '@/hooks/use-paygate'
 import {Icon} from '@/lib/icons'
 import {paygatePublicConfig} from '@/lib/paygate/config'
+import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useParams, useRouter} from 'next/navigation'
-import {useEffect, useRef, useState} from 'react'
-import {PaymentProcessing} from './payment-processing'
+import {useEffect, useRef} from 'react'
 
 export default function PayPage() {
-  const [debug] = useState(false)
   const params = useParams()
   const router = useRouter()
   const orderId = params.orderId as Id<'orders'>
@@ -31,7 +30,7 @@ export default function PayPage() {
 
   // Initialize payment when order and settings are loaded
   useEffect(() => {
-    if (!order || !adminSettings || hasInitiated.current || debug) return
+    if (!order || !adminSettings || hasInitiated.current) return
 
     // If payment is already completed, redirect to order page
     if (order.payment.status === 'completed') {
@@ -40,11 +39,11 @@ export default function PayPage() {
     }
 
     // Get wallet address from admin settings
-    const wallet =
+    const walletAddress =
       // adminSettings.paygate?.usdcWallet ||
       process.env.NEXT_PUBLIC_TEST_ADDRESS_IN || ''
 
-    if (!wallet) {
+    if (!walletAddress) {
       console.error('PayGate wallet address not configured')
       return
     }
@@ -55,13 +54,13 @@ export default function PayPage() {
     // Initiate hosted payment
     hasInitiated.current = true
     handleProcessPaymentSubmit(
-      wallet,
+      walletAddress,
       amountInDollars,
       'moonpay',
       order.contactEmail,
       'USD',
     )
-  }, [order, adminSettings, handleProcessPaymentSubmit, router, orderId, debug])
+  }, [order, adminSettings, handleProcessPaymentSubmit, router, orderId])
 
   // Handle HTML response - extract URL and redirect
   useEffect(() => {
@@ -158,7 +157,7 @@ export default function PayPage() {
 
   if (!order || !adminSettings) {
     return (
-      <div className='h-screen flex items-center justify-center'>
+      <div className='min-h-screen flex items-center justify-center'>
         <Loader />
       </div>
     )
@@ -172,15 +171,13 @@ export default function PayPage() {
 
   if (!walletAddress) {
     return (
-      <div className='min-h-screen flex items-start justify-center px-4 pt-16 sm:pt-20 md:pt-28'>
-        <PaymentProcessing order={order} loading={loading} />
-
-        {/*<Card
+      <div className='min-h-screen flex items-center justify-center px-4'>
+        <Card
           shadow='none'
           className='max-w-md w-full border border-foreground/50 dark:bg-dark-table/40'>
           <CardBody className='p-8 text-center space-y-4'>
             <div className='text-6xl mb-4'>⚠️</div>
-            <h1 className='text-2xl font-semibold'>Internal Error</h1>
+            <h1 className='text-2xl font-semibold'>Configuration Error</h1>
             <p className='text-color-muted'>
               PayGate wallet address is not configured. Please contact support.
             </p>
@@ -192,7 +189,7 @@ export default function PayPage() {
               Back to Order
             </Button>
           </CardBody>
-        </Card>*/}
+        </Card>
       </div>
     )
   }
@@ -265,8 +262,67 @@ export default function PayPage() {
   }
 
   return (
-    <div className='h-[calc(100vh-100px)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
-      <PaymentProcessing order={order} loading={loading && !response} />
+    <div className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
+      <div className='max-w-2xl mx-auto'>
+        <Card
+          shadow='none'
+          className='w-full border border-dashed border-foreground/50 dark:bg-dark-table/40'>
+          <CardBody className='p-8 space-y-6'>
+            <div>
+              <h1 className='text-2xl font-semibold mb-2'>
+                Processing Payment
+              </h1>
+              <p className='text-color-muted'>Order #{order.orderNumber}</p>
+            </div>
+
+            <div className='space-y-2'>
+              <div className='flex justify-between'>
+                <span className='text-color-muted'>Total Amount</span>
+                <span className='text-xl font-semibold'>
+                  ${formatPrice(order.totalCents)}
+                </span>
+              </div>
+              <div className='flex justify-between text-sm'>
+                <span className='text-color-muted'>Payment Method</span>
+                <span className='capitalize'>
+                  {order.payment.method.replace('_', ' ')}
+                </span>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className='flex flex-col items-center justify-center py-8 space-y-4'>
+                <Icon name='spinners-ring' className='text-orange-400' />
+                <p className='text-sm text-color-muted'>
+                  Initializing payment...
+                </p>
+              </div>
+            ) : (
+              <div className='space-y-4'>
+                <p className='text-sm text-color-muted'>
+                  You will be redirected to complete your payment securely.
+                </p>
+                {response && (
+                  <div className='flex items-center justify-center gap-2 text-sm text-color-muted'>
+                    <Icon name='spinners-ring' className='text-featured' />
+                    <span>Redirecting to payment page...</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className='pt-4 border-t border-divider'>
+              <Button
+                as={NextLink}
+                href={`/account/orders/${orderId}`}
+                variant='flat'
+                className='w-full'>
+                Back to Order
+              </Button>
+            </div>
+          </CardBody>
+        </Card>
+      </div>
     </div>
   )
 }

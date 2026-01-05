@@ -1,7 +1,8 @@
 import {Id} from '@/convex/_generated/dataModel'
 import {CartItemType} from '@/convex/cart/d'
 
-const CART_STORAGE_KEY = 'hyfe_cart_items'
+export const LOCAL_STORAGE_CART_KEY = 'hyfe_cart_items'
+export const LOCAL_STORAGE_CART_UPDATED_EVENT = 'hyfe_cart_updated'
 
 export type LocalStorageCartItem = CartItemType
 
@@ -11,7 +12,7 @@ export type LocalStorageCartItem = CartItemType
 export const getLocalStorageCartItems = (): LocalStorageCartItem[] => {
   if (typeof window === 'undefined') return []
   try {
-    const stored = localStorage.getItem(CART_STORAGE_KEY)
+    const stored = localStorage.getItem(LOCAL_STORAGE_CART_KEY)
     if (!stored) return []
     const items = JSON.parse(stored) as LocalStorageCartItem[]
     // Validate items structure
@@ -35,7 +36,13 @@ export const setLocalStorageCartItems = (
 ): void => {
   if (typeof window === 'undefined') return
   try {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
+    localStorage.setItem(LOCAL_STORAGE_CART_KEY, JSON.stringify(items))
+    // Notify other React trees in the same tab (e.g. parallel routes) to sync.
+    window.dispatchEvent(
+      new CustomEvent<LocalStorageCartItem[]>(LOCAL_STORAGE_CART_UPDATED_EVENT, {
+        detail: items,
+      }),
+    )
   } catch (error) {
     console.error('Failed to save cart to local storage:', error)
   }
@@ -137,7 +144,12 @@ export const removeFromLocalStorageCart = (
 export const clearLocalStorageCart = (): void => {
   if (typeof window === 'undefined') return
   try {
-    localStorage.removeItem(CART_STORAGE_KEY)
+    localStorage.removeItem(LOCAL_STORAGE_CART_KEY)
+    window.dispatchEvent(
+      new CustomEvent<LocalStorageCartItem[]>(LOCAL_STORAGE_CART_UPDATED_EVENT, {
+        detail: [],
+      }),
+    )
   } catch (error) {
     console.error('Failed to clear cart from local storage:', error)
   }

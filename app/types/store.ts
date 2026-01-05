@@ -35,6 +35,8 @@ export interface StoreProduct {
   potencyLevel: PotencyLevel
   potencyProfile?: string
   weightGrams?: number
+  brand?: string
+  grower?: string
   _id?: Id<'products'>
   _creationTime?: number
 }

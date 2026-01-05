@@ -1,6 +1,6 @@
 'use client'
 
-import {CategoryContent} from '@/app/(store)/category/[slug]/category'
+import {Products} from '@/app/(store)/category/[slug]/products'
 import {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
@@ -55,5 +55,5 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     })
   }, [products, resolveUrl])
 
-  return <CategoryContent products={productsWithImages} slug={slug} />
+  return <Products products={productsWithImages} slug={slug} />
 }

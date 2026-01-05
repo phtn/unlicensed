@@ -138,16 +138,14 @@ export default function AccountPage() {
 
   return (
     <div className='min-h-screen bg-background'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-18 lg:py-28 mt-12 sm-mt-16 md:mt-20'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-18 lg:py-28'>
         {/* Header Section */}
         <div className='mb-8'>
           <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
             <Callout
               title={
                 <h1 className='md:text-xl font-normal font-polysans space-x-1 md:space-x-4'>
-                  <span>App Development</span>
-                  <DotDiv />
-                  <span>In-progress</span>
+                  <span>Development in-progress</span>
                   <DotDiv />
                   <span>Redirect enabled</span>
                 </h1>

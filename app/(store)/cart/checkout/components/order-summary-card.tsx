@@ -48,34 +48,34 @@ export function OrderSummaryCard({
     <div className='lg:sticky lg:top-24 h-fit'>
       <Card
         shadow='none'
-        className='dark:bg-dark-table/40 border border-foreground/40'>
-        <CardBody className='space-y-4 p-8'>
+        className='dark:bg-dark-table/40 border border-foreground/20'>
+        <CardBody className='space-y-4 p-4 md:p-8'>
           <h2 className='text-2xl font-normal font-bone'>Order Summary</h2>
           <Divider />
           <ViewTransition>
             <div className='space-y-2 font-sans'>
               <div className='flex justify-between text-sm'>
-                <span className='text-color-muted'>Subtotal</span>
+                <span className='opacity-80 font-brk'>Subtotal</span>
                 <span className='font-space'>${formatPrice(subtotal)}</span>
               </div>
               <div className='flex justify-between text-sm'>
-                <span className='text-color-muted'>Tax</span>
+                <span className='opacity-80 font-brk'>Tax</span>
                 <span className='font-space'>${formatPrice(tax)}</span>
               </div>
               <div className='flex justify-between text-sm'>
-                <span className='text-color-muted'>Shipping</span>
+                <span className='opacity-80 font-brk'>Shipping</span>
                 <span className='font-space'>
                   {shipping === 0 ? (
-                    <span className='text-teal-500'>Free</span>
+                    <span className='bg-teal-500 px-1.5 uppercase rounded-sm font-semibold text-white'>
+                      Free
+                    </span>
                   ) : (
                     `$${formatPrice(shipping)}`
                   )}
                 </span>
               </div>
-              <div className='flex justify-between text-sm dark:purple-300/10 p-1 rounded-md'>
-                <span className='text-foreground font-semibold'>
-                  Reward Points
-                </span>
+              <div className='flex justify-between text-sm dark:purple-300/10 rounded-md'>
+                <span className='text-foreground font-brk'>Reward Points</span>
                 <span className='font-space'>
                   ${pointsBalance?.availablePoints ?? 0}
                 </span>
@@ -83,8 +83,8 @@ export function OrderSummaryCard({
             </div>
           </ViewTransition>
           <Divider />
-          <div className='flex justify-between text-lg font-semibold font-space'>
-            <span>Total</span>
+          <div className='flex justify-between font-semibold font-space'>
+            <span className='font-brk'>Total</span>
             <span className='font-space'>${formatPrice(total)}</span>
           </div>
 

@@ -6,8 +6,9 @@ import {ProductType} from '@/convex/products/d'
 import {
   addToLocalStorageCart,
   clearLocalStorageCart,
-  getLocalStorageCartItemCount,
   getLocalStorageCartItems,
+  LOCAL_STORAGE_CART_KEY,
+  LOCAL_STORAGE_CART_UPDATED_EVENT,
   removeFromLocalStorageCart,
   updateLocalStorageCartItem,
 } from '@/lib/localStorageCart'
@@ -69,6 +70,7 @@ interface UseCartResult {
 export const useCart = (): UseCartResult => {
   const {user} = useAuth()
   const hasMergedRef = useRef(false)
+  const mergeLockKeyRef = useRef<string | null>(null)
   const prevAuthenticatedRef = useRef<boolean | undefined>(undefined)
   const [localStorageCartItems, setLocalStorageCartItems] = useState(() =>
     typeof window !== 'undefined' ? getLocalStorageCartItems() : [],
@@ -162,9 +164,20 @@ export const useCart = (): UseCartResult => {
     const wasAuthenticated = prevAuthenticatedRef.current
     prevAuthenticatedRef.current = isAuthenticated
 
-    if (!isAuthenticated) {
-      // Reset merge flag when user logs out
+    // Only reset merge flag on true logout (firebase user becomes null).
+    // During sign-in, `isAuthenticated` can temporarily be false while `userId` is loading.
+    // Resetting on that transient state can cause the merge to run multiple times.
+    if (!user) {
       hasMergedRef.current = false
+      if (typeof window !== 'undefined' && mergeLockKeyRef.current) {
+        try {
+          sessionStorage.removeItem(mergeLockKeyRef.current)
+        } catch {
+          // ignore
+        } finally {
+          mergeLockKeyRef.current = null
+        }
+      }
     } else if (
       wasAuthenticated === false &&
       isAuthenticated &&
@@ -175,9 +188,27 @@ export const useCart = (): UseCartResult => {
       // Merge local storage cart into Convex when user authenticates
       hasMergedRef.current = true
       const mergeCart = async () => {
+        const mergeLockKey = `hyfe_cart_merge_done:${user.uid}`
+        mergeLockKeyRef.current = mergeLockKey
+
+        // Cross-instance lock: multiple `useCart()` hook instances can mount (navbar slot,
+        // cart drawer, page, etc.). We only want ONE of them to perform the merge.
+        if (typeof window !== 'undefined') {
+          try {
+            const existing = sessionStorage.getItem(mergeLockKey)
+            if (existing) {
+              return
+            }
+            sessionStorage.setItem(mergeLockKey, String(Date.now()))
+          } catch {
+            // If sessionStorage is unavailable, fall through and attempt merge once per instance.
+          }
+        }
+
         try {
+          const itemsToMerge = [...localStorageCartItems]
           // Add each local storage item to Convex cart
-          for (const item of localStorageCartItems) {
+          for (const item of itemsToMerge) {
             await addToCartMutation({
               userId,
               productId: item.productId,
@@ -187,11 +218,10 @@ export const useCart = (): UseCartResult => {
           }
           // Clear local storage after successful merge
           clearLocalStorageCart()
-          setLocalStorageCartItems([])
 
           if (process.env.NODE_ENV === 'development') {
             console.log('[useCart] Local storage cart merged on authentication:', {
-              itemsCount: localStorageCartItems.length,
+              itemsCount: itemsToMerge.length,
               userId,
             })
           }
@@ -199,16 +229,51 @@ export const useCart = (): UseCartResult => {
           console.error('Failed to merge local storage cart:', error)
           // Reset merge flag on error so we can retry
           hasMergedRef.current = false
+          if (typeof window !== 'undefined') {
+            try {
+              sessionStorage.removeItem(mergeLockKey)
+            } catch {
+              // ignore
+            }
+          }
         }
       }
       mergeCart()
     }
   }, [
+    user,
     isAuthenticated,
     userId,
     localStorageCartItems,
     addToCartMutation,
   ])
+
+  // Keep guest cart state in sync across parallel routes (separate React trees).
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const syncFromLocalStorage = () => {
+      setLocalStorageCartItems(getLocalStorageCartItems())
+    }
+
+    const onCartUpdated = (_event: Event) => {
+      syncFromLocalStorage()
+    }
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === LOCAL_STORAGE_CART_KEY) {
+        syncFromLocalStorage()
+      }
+    }
+
+    window.addEventListener(LOCAL_STORAGE_CART_UPDATED_EVENT, onCartUpdated)
+    window.addEventListener('storage', onStorage)
+
+    return () => {
+      window.removeEventListener(LOCAL_STORAGE_CART_UPDATED_EVENT, onCartUpdated)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [isAuthenticated])
 
   // Add item to cart - uses local storage for unauthenticated users
   const addItem = useCallback(
@@ -307,9 +372,12 @@ export const useCart = (): UseCartResult => {
     if (isAuthenticated) {
       return serverCartItemCount ?? 0
     } else {
-      return getLocalStorageCartItemCount()
+      return localStorageCartItems.reduce(
+        (total, item) => total + item.quantity,
+        0,
+      )
     }
-  }, [isAuthenticated, serverCartItemCount])
+  }, [isAuthenticated, localStorageCartItems, serverCartItemCount])
 
   // Determine which cart to return
   const cart = useMemo(() => {

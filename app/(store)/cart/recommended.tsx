@@ -4,7 +4,6 @@ import type {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Doc, Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
-import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct, RawProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
@@ -53,14 +52,14 @@ export const RecommendedProducts = () => {
     return adapted
   }, [productsQuery, cartProductIds])
 
-  // Get all product image IDs for URL resolution
-  const productImageIds = useMemo(
-    () => recommendedProducts.map((p) => p.image).filter(Boolean),
-    [recommendedProducts],
+  const productImage = useQuery(
+    api.products.q.getPrimaryImage,
+    recommendedProducts[0]
+      ? {
+          id: recommendedProducts[0]._id,
+        }
+      : 'skip',
   )
-
-  // Resolve storage IDs to URLs
-  const resolveUrl = useStorageUrls(productImageIds)
 
   if (recommendedProducts.length === 0) {
     return null
@@ -82,32 +81,26 @@ export const RecommendedProducts = () => {
 
   return (
     <div className='mt-4'>
-      <h2 className='text-xl px-4 font-medium tracking-tighter opacity-80 mb-4'>
+      <h2 className='md:text-xl md:px-2 font-medium tracking-tighter opacity-80 mb-2'>
         Recommended for you
       </h2>
       <div className='space-y-3'>
         {recommendedProducts.map((product) => (
           <Card
             key={product._id}
-            className='rounded-xl bg-light-gray/15 dark:bg-teal-600 border border-dark-gray/50 dark:border-light-gray'
+            className='rounded-xl bg-linear-to-l from-featured/15 via-light-gray/10 to-transparent dark:bg-dark-gray/15'
             shadow='none'>
-            <CardBody className='p-2 md:p-6'>
+            <CardBody className='p-0 md:p-6'>
               <div className='flex gap-4 items-center'>
-                <div className='relative w-24 h-24 shrink-0 rounded-lg overflow-hidden bg-secondary/10'>
-                  {product.image ? (
+                <div className='relative w-24 h-24 aspect-square shrink-0 rounded-xl overflow-hidden'>
+                  {productImage ? (
                     <Image
-                      src={
-                        resolveUrl(product.image) ||
-                        '/default-product-image.svg'
-                      }
+                      radius='none'
+                      src={productImage}
                       alt={product.name}
-                      className='w-full h-full object-cover'
+                      className='w-full h-full object-cover aspect-auto'
                     />
-                  ) : (
-                    <div className='w-full h-full flex items-center justify-center text-color-muted text-xs'>
-                      Image
-                    </div>
-                  )}
+                  ) : null}
                 </div>
                 <div className='flex-1 min-w-0'>
                   <h3 className='font-semibold text-xl truncate'>
@@ -121,10 +114,10 @@ export const RecommendedProducts = () => {
 
                     <Button
                       size='sm'
-                      variant='flat'
-                      className='font-medium shrink-0'
-                      startContent={<Icon name='plus' className='size-4' />}
+                      variant='shadow'
+                      className='absolute bg-featured -space-x-1.5 top-2 right-2 font-medium shrink-0 flex text-white text-base'
                       onPress={() => handleAddToCart(product)}>
+                      <Icon name='plus' className='size-5' />
                       Add<span className='md:flex hidden'> to your order</span>
                     </Button>
                   </div>

@@ -1,11 +1,10 @@
 'use client'
 
 import {mapFractions} from '@/app/admin/_components/product-schema'
-import type {StoreProduct, StoreProductDetail} from '@/app/types'
+import type {StoreProductDetail} from '@/app/types'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {QuickScroll} from '@/components/base44/quick-scroll'
 import {ProductCard} from '@/components/store/product-card'
-import {Lens} from '@/components/ui/lens'
 import {ProductProfile} from '@/components/ui/product-profile'
 import {StatChip} from '@/components/ui/terpene'
 import {api} from '@/convex/_generated/api'
@@ -13,7 +12,6 @@ import {Id} from '@/convex/_generated/dataModel'
 import {useCartAnimation} from '@/ctx/cart-animation'
 import {useCart} from '@/hooks/use-cart'
 import {useMobile} from '@/hooks/use-mobile'
-import {useToggle} from '@/hooks/use-toggle'
 import {adaptProductDetail, type RawProductDetail} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
@@ -22,14 +20,12 @@ import {
   BreadcrumbItem,
   Breadcrumbs,
   Button,
-  Image,
   useDisclosure,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {notFound, useRouter} from 'next/navigation'
 import {
-  startTransition,
   useCallback,
   useMemo,
   useOptimistic,
@@ -37,90 +33,11 @@ import {
   useState,
   useTransition,
 } from 'react'
+import {Gallery} from './gallery'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
   return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
-}
-
-const Gallery = ({
-  product,
-  imageRef,
-  productId,
-  isMobile,
-}: {
-  product: StoreProduct
-  imageRef?: React.RefObject<HTMLDivElement | null>
-  productId?: Id<'products'>
-  isMobile: boolean
-}) => {
-  const {on, setOn} = useToggle()
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-
-  // Get primary image URL
-  const primaryImageUrl = useQuery(
-    api.products.q.getPrimaryImage,
-    productId ? {id: productId} : 'skip',
-  )
-
-  // Get gallery images - only query if we have a valid productId
-  const galleryUrls = useQuery(
-    api.products.q.listGallery,
-    productId ? {id: productId} : 'skip',
-  )
-
-  const displayImage = useMemo(
-    () => selectedImage ?? primaryImageUrl ?? undefined,
-    [selectedImage, primaryImageUrl],
-  )
-  const handleSelectImage = useCallback(
-    (src: string) => () => {
-      startTransition(() => {
-        setSelectedImage(src)
-      })
-    },
-    [],
-  )
-
-  return (
-    <div className='flex flex-col gap-3 sm:gap-0'>
-      <div
-        ref={imageRef}
-        className='relative aspect-auto w-full md:max-h-[620px] overflow-hidden bg-background/60 lg:min-h-168'>
-        <Lens hovering={isMobile ? false : on} setHovering={setOn}>
-          <Image
-            radius='none'
-            src={displayImage}
-            alt={product.name}
-            className='object-cover portrait:aspect-square portrait:size-[360px] w-full h-full aspect-auto select-none'
-            loading='eager'
-          />
-        </Lens>
-      </div>
-      <div className='flex items-center w-full lg:w-full overflow-y-scroll gap-1'>
-        {[primaryImageUrl, ...(galleryUrls ?? [])].map((src, index) => (
-          <div
-            key={`${src}-${index}`}
-            onClick={() => src && handleSelectImage(src)()}
-            className={cn(
-              'cursor-pointer select-none relative aspect-square overflow-hidden rounded-md size-20 md:size-32 m-1',
-              selectedImage === src
-                ? 'border-foreground/50 ring-2 ring-limited'
-                : 'border-foreground/10 hover:border-foreground/30',
-            )}>
-            {src && (
-              <Image
-                src={src}
-                alt={`${product.name} gallery ${index + 1}`}
-                className='object-cover size-20 portrait:aspect-square lg:size-32 aspect-auto'
-                loading='lazy'
-              />
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
 }
 
 interface ProductDetailContentProps {
@@ -233,38 +150,9 @@ export const ProductDetailContent = ({
         // Add item to cart - works for both authenticated and anonymous users
         // The cart queries will automatically update when this completes
         await addItem(productId, 1, denomination)
-
-        // Debug: Log after adding to cart
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[ProductDetail] Added to cart successfully:', {
-            productId,
-            timestamp: Date.now(),
-          })
-        }
-
-        // Trigger animation from gallery image
-        const imageUrl = primaryImageUrl ?? product.image
-        if (galleryImageRef.current && imageUrl) {
-          const imageRect = galleryImageRef.current.getBoundingClientRect()
-          const startX = imageRect.left + imageRect.width / 2
-          const startY = imageRect.top + imageRect.height / 2
-          console.log('Triggering animation', {
-            image: imageUrl,
-            startX,
-            startY,
-            imageRect,
-          })
-          triggerAnimation(imageUrl, {x: startX, y: startY})
-        } else {
-          console.warn('Cannot trigger animation', {
-            hasRef: !!galleryImageRef.current,
-            hasImage: !!imageUrl,
-          })
-        }
       } catch (error) {
         console.error('Failed to add to cart:', error)
       } finally {
-        // Reset optimistic state
         setOptimisticAdding(false)
       }
     })
@@ -274,7 +162,7 @@ export const ProductDetailContent = ({
 
   return (
     <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-10 sm:py-8 lg:py-20 overflow-x-hidden w-full'>
-      <section className='md:mx-auto lg:max-w-7xl max-w-screen p-4 sm:pt-8 lg:pt-10 sm:px-6 lg:px-0'>
+      <section className='md:mx-auto lg:max-w-7xl max-w-screen p-2 sm:pt-8 lg:pt-10 sm:px-6 lg:px-0'>
         <Breadcrumbs
           aria-label='Product breadcrumb'
           className='text-xs sm:text-sm text-color-muted'

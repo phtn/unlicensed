@@ -21,7 +21,7 @@ import {
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
-import {useCallback, useEffect} from 'react'
+import {useCallback, useMemo} from 'react'
 import {ThemeToggle} from '../ui/theme-toggle'
 
 interface NavProps {
@@ -30,7 +30,7 @@ interface NavProps {
 
 export const Nav = ({children}: NavProps) => {
   const {user, loading: authLoading} = useAuth()
-  const {cartItemCount, isAuthenticated} = useCart()
+  const {cartItemCount} = useCart()
   const {isOpen, onOpen, onClose} = useDisclosure()
   const route = usePathname().split('/').pop()
   const {
@@ -38,17 +38,6 @@ export const Nav = ({children}: NavProps) => {
     onOpen: onCartDrawerOpen,
     onClose: onCartDrawerClose,
   } = useDisclosure()
-
-  // Debug: Log cart count changes to verify reactivity is working
-  // This helps verify that Convex queries are updating in real-time
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Nav] Cart item count updated:', cartItemCount, {
-        isAuthenticated,
-        timestamp: Date.now(),
-      })
-    }
-  }, [cartItemCount, isAuthenticated])
 
   const handleLogout = useCallback(async () => {
     try {
@@ -64,13 +53,14 @@ export const Nav = ({children}: NavProps) => {
     api.staff.q.getStaffByEmail,
     user?.email ? {email: user.email} : 'skip',
   )
-  const isAdmin =
-    staff?.accessRoles.includes('admin') ||
-    staff?.accessRoles.includes('manager')
+  const isAdmin = useMemo(
+    () => !!staff && staff.active && staff.accessRoles.includes('admin'),
+    [staff],
+  )
 
   return (
     <>
-      <header className='fixed z-200 top-0 left-0 right-0 bg-black backdrop-blur-sm h-12 lg:h-16 xl:h-20 2xl:h-24'>
+      <header className='fixed z-9999 top-0 left-0 right-0 bg-black backdrop-blur-sm h-12 lg:h-16 xl:h-20 2xl:h-24'>
         <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 flex items-center justify-between h-full'>
           <Link
             href={'/'}
@@ -87,8 +77,8 @@ export const Nav = ({children}: NavProps) => {
               </div>
             ) : (
               <Link
-                href={'/'}
-                className='hidden text-sm lg:text-lg text-gray-100 hover:text-brand md:flex font-fugaz'>
+                href={'/category'}
+                className='hidden text-sm lg:text-lg text-gray-100 hover:text-brand md:flex font-polysans font-semibold'>
                 Shop
               </Link>
             )}
@@ -208,13 +198,6 @@ export const Nav = ({children}: NavProps) => {
                   </Dropdown>
                 ) : (
                   <Icon name='user' onClick={onOpen} className='text-white' />
-                  // <Button
-                  //   size='sm'
-                  //   variant='flat'
-                  //   onPress={onOpen}
-                  //   className='text-sm bg-white text-black font-semibold tracking-tight'>
-                  //   Sign In
-                  // </Button>
                 )}
               </>
             )}
@@ -235,29 +218,3 @@ export const Nav = ({children}: NavProps) => {
     </>
   )
 }
-
-/*
-<motion.div
-              className='h-[22px] w-[135.33px] mask-[url("/svg/rapid-fire.svg")] mask-contain'
-              animate={{
-                background: [
-                  'linear-gradient(to right, oklch(0.784 0.21 326.75) 20%, rgb(255, 250, 250))',
-                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 40%, rgb(255, 250, 250))',
-                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 60%, rgb(255, 250, 250))',
-                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 80%, rgb(255, 250, 250))',
-                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 90%, rgb(255, 250, 250))',
-                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 100%, rgb(255, 250, 250))',
-                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 90%, rgb(255, 250, 250))',
-                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 80%, rgb(255, 250, 250))',
-                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 60%, rgb(255, 250, 250))',
-                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 40%, rgb(255, 250, 250))',
-                  // 'linear-gradient(to right, oklch(0.784 0.21 326.75) 20%, rgb(255, 250, 250))',
-                ],
-              }}
-              transition={{
-                duration: 4,
-                repeat: 3,
-                ease: 'easeInOut',
-              }}
-            />
-*/

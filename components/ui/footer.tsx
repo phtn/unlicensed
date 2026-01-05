@@ -13,7 +13,7 @@ export const Footer = () => (
           />
         </div>
 
-        <div className='flex items-center space-x-1 opacity-60 text-sm text-light-gray leading-none'>
+        <div className='hidden items-center space-x-1 opacity-60 text-sm text-light-gray leading-none'>
           <span className='text-xl opacity-50'>●</span>
           <span className='font-thin'>
             Redefining euphoria of true selection of marijuana.

@@ -11,11 +11,11 @@ import {Activity} from 'react'
 import {Tag} from '../../../../components/base44/tag'
 import {Title} from '../../../../components/base44/title'
 
-interface CategoryContentProps {
+interface ProductsProps {
   slug: string
   products: StoreProduct[]
 }
-export const CategoryContent = ({products, slug}: CategoryContentProps) => {
+export const Products = ({products, slug}: ProductsProps) => {
   const category = useQuery(api.categories.q.getCategoryBySlug, {slug})
   const heroImage = useQuery(
     api.categories.q.getHeroImage,
@@ -39,9 +39,10 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
 
               <div className='hidden sm:flex items-center gap-3 sm:gap-4 lg:gap-5 relative z-50 flex-wrap'>
                 <Button
-                  as='a'
-                  href={'#'}
                   size='lg'
+                  as={Link}
+                  href={'/brands'}
+                  prefetch
                   className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-brand hover:text-white text-white font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                   <span className='drop-shadow-xs'>Shop by Brand</span>
                 </Button>
@@ -163,44 +164,16 @@ export const CategoryContent = ({products, slug}: CategoryContentProps) => {
           </div>
         </div>
       </section>
+      <div className='flex justify-center w-full px-4'>
+        <Button
+          size='lg'
+          as={Link}
+          href={'/brands'}
+          fullWidth
+          className='dark:bg-white md:hidden opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-4 sm:px-8 py-2 sm:py-3 text-lg'>
+          <span className='drop-shadow-xs'>Shop by Brand</span>
+        </Button>
+      </div>
     </div>
   )
 }
-
-// <img class="mask mask-parallelogram size-25" src="https://cdn.flyonui.com/fy-assets/components/radio/image-1.png" alt="mask image" />
-
-/* Scroll Indicator */
-/*
-      <div className='hidden _flex justify-end px-6 pb-12'>
-        <div className='max-w-7xl w-full flex justify-end'>
-          <button className='w-10 h-10 rounded-full flex items-center justify-center hover:text-teal-500 transition-colors'>
-            <Icon name='arrow-down' className='w-4 h-4' />
-          </button>
-        </div>
-      </div>
-<div className='flex justify-end px-4 sm:px-6 pb-8 sm:pb-10 lg:pb-12 bg-background shadow'>
-        <div className='hidden max-w-7xl mx-auto w-full overflow-x-auto h-11 sm:h-14 lg:h-20 bg-foreground/10 lg:rounded-4xl rounded-xl sm:rounded-2xl _flex items-center lg:justify-center gap-2 sm:gap-3 lg:gap-4 px-3 lg:px-0 scrollbar-hide'>
-          {[
-            'Indica',
-            'Sativa',
-            'Hybrid',
-            'Bestsellers',
-            'New',
-            'Relaxed',
-            'Creative',
-            'Sharp',
-            'Euphoric',
-            'Happy',
-            'Sleepy',
-            'Wild',
-            'Calm',
-          ].map((filter, index) => (
-            <div
-              key={index}
-              className='text-white bg-foreground/20 tracking-tight font-sans font-medium px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg sm:rounded-xl text-xs sm:text-sm whitespace-nowrap'>
-              {filter}
-            </div>
-          ))}
-        </div>
-      </div>
-*/

@@ -2,15 +2,15 @@
 
 import {AuthModal} from '@/components/auth/auth-modal'
 import {Loader} from '@/components/expermtl/loader'
+import {EmptyCart} from '@/components/store/empty-cart'
 import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {usePlaceOrder} from '@/hooks/use-place-order'
-import {Icon} from '@/lib/icons'
-import {Button, useDisclosure} from '@heroui/react'
+import {cn} from '@/lib/utils'
+import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
-import NextLink from 'next/link'
 import {useEffect, useMemo, useRef, useState, useTransition} from 'react'
 import {CartItem} from './cart-item'
 import {Checkout} from './checkout'
@@ -93,7 +93,7 @@ export default function CartPage() {
           router.push('/account')
         })
       }, 2000) // Give time for development modal to show
-      
+
       return () => clearTimeout(redirectTimer)
     }
   }, [orderId, router])
@@ -176,14 +176,11 @@ export default function CartPage() {
     return points
   }, [subtotal, nextVisitMultiplier, isAuthenticated])
 
-  if (isLoading) {
+  if (isLoading && showEmptyCartLoader) {
     return (
       <div className='min-h-screen pt-20 lg:pt-28 flex items-start justify-center'>
-        <div className='flex items-center space-x-1.5'>
-          <span className='text-lg tracking-tight opacity-70'>
-            Loading Cart items
-          </span>
-          <Icon name='spinners-ring' className='size-5 animate-bounce' />
+        <div className='size-96 aspect-square'>
+          <Loader />
         </div>
       </div>
     )
@@ -201,19 +198,13 @@ export default function CartPage() {
     }
     return (
       <div className='min-h-screen flex items-center justify-center'>
-        <div className='text-center space-y-4'>
-          <Icon name='bag-light' className='size-16 mx-auto text-color-muted' />
-          <h1 className='text-2xl font-semibold'>Your cart is empty</h1>
-          <Button as={NextLink} href='/' color='primary'>
-            Continue Shopping
-          </Button>
-        </div>
+        <EmptyCart />
       </div>
     )
   }
 
   return (
-    <div className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8'>
+    <div className='min-h-screen pt-16 sm:pt-10 md:pt-24 lg:pt-28 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
         <div className='flex items-center justify-between mb-4'>
           <h1 className='text-base font-medium font-space space-x-2 tracking-tight'>
@@ -225,8 +216,8 @@ export default function CartPage() {
 
         <div className='grid gap-8 lg:grid-cols-[1fr_400px]'>
           {/* Cart Items */}
-          <div className='md:h-[70lvh] h-fit bg-linear-to-b dark:from-dark-table/40 via-transparent to-transparent rounded-2xl overflow-hidden flex flex-col'>
-            <div className='flex-1 overflow-y-auto'>
+          <div className='md:h-[70lvh] h-fit bg-linear-to-b dark:from-dark-table/40 via-transparent to-transparent rounded-3xl overflow-hidden flex flex-col'>
+            <div className='flex-1 overflow-y-auto rounded-3xl'>
               {cartItems.map((item) => {
                 const product = item.product
                 const denomination = item.denomination || 1
@@ -239,11 +230,12 @@ export default function CartPage() {
                     itemPrice={itemPrice}
                     onUpdate={updateItem}
                     onRemove={removeItem}
-                    className={
+                    className={cn(
+                      'dark:border-dark-gray',
                       cartItems.length === 1
                         ? 'first:border-b'
-                        : ' first:border-b-0'
-                    }
+                        : ' first:border-b-0',
+                    )}
                   />
                 )
               })}
@@ -252,7 +244,6 @@ export default function CartPage() {
           </div>
 
           <div className='space-y-6'>
-            {/* Order Summary - Read-only review */}
             <RewardsSummary
               nextVisitMultiplier={nextVisitMultiplier}
               pointsBalance={pointsBalance}
@@ -260,7 +251,6 @@ export default function CartPage() {
               isAuthenticated={firebaseUser !== null}
             />
 
-            {/* Checkout - Payment method and place order */}
             <Checkout
               tax={tax}
               total={total}

@@ -207,18 +207,20 @@ const ZoomEffect = ({mousePosition, lensSize, zoom}: ZoomEffectProps) => (
         y1={lensSize / 2}
         x2={lensSize / 2}
         y2={lensSize / 2 + 6}
-        stroke='pink'
-        strokeWidth='1'
-        strokeLinecap='round'
+        stroke='rgba(255, 255, 255, 0.6)'
+        strokeWidth='0.5'
+        strokeLinecap='square'
+        className='translate-y-px'
       />
       <line
-        x1={lensSize / 2 - 8}
+        x1={lensSize / 2 - 6}
         y1={lensSize / 2}
-        x2={lensSize / 2 + 8}
+        x2={lensSize / 2}
         y2={lensSize / 2}
         stroke='rgba(255, 255, 255, 0.6)'
-        strokeWidth='1'
-        strokeLinecap='round'
+        strokeWidth='0.5'
+        strokeLinecap='square'
+        className='-translate-x-px'
       />
     </motion.svg>
   </motion.div>

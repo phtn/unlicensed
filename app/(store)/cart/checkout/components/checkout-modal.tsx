@@ -48,12 +48,12 @@ export function CheckoutModal({
       if (!formData.useSameBilling) {
         onInputChange('useSameBilling', true)
       }
-      
+
       // Always set payment method to credit_card by default when modal opens
       if (formData.paymentMethod !== 'credit_card') {
         onInputChange('paymentMethod', 'credit_card')
       }
-      
+
       // Only populate if fields are empty (check once when modal opens)
       const hasEmptyFields =
         !formData.contactEmail.trim() ||
@@ -66,7 +66,6 @@ export function CheckoutModal({
         !formData.zipCode.trim()
 
       if (hasEmptyFields) {
-        
         // Set test values for empty fields
         if (!formData.contactEmail.trim()) {
           onInputChange('contactEmail', 'test@example.com')
@@ -180,15 +179,17 @@ export function CheckoutModal({
                 Cancel
               </Button>
               <Button
+                size='lg'
                 color='primary'
-                className='bg-featured font-medium dark:text-background tracking-tighter text-base'
+                variant='shadow'
+                className='bg-featured font-medium dark:text-background'
                 onPress={onPlaceOrder}
                 endContent={
                   <Icon
                     name={
-                      isLoading || isPending ? 'spinners-ring' : 'arrow-down'
+                      isLoading || isPending ? 'spinners-ring' : 'arrow-right'
                     }
-                    className='-rotate-45 size-6 md:size-8'
+                    className='size-6 md:size-8'
                   />
                 }
                 isDisabled={!!orderId}>
