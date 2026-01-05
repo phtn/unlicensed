@@ -3,6 +3,7 @@
 import type {ClassName, StoreProduct} from '@/app/types'
 import {HyperList} from '@/components/expermtl/hyper-list'
 import {PrimaryCard} from '@/components/store/primary-card'
+import {ScrollArea} from '@/components/ui/scroll-area'
 import {api} from '@/convex/_generated/api'
 import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
@@ -13,20 +14,24 @@ import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {
   Activity,
-  ReactNode,
   useCallback,
   useMemo,
   useState,
   useTransition,
   ViewTransition,
 } from 'react'
+import {
+  CheckPin,
+  ProgressIndicator,
+  Step,
+  StepHeader,
+  StepWrapper,
+} from './components'
 import {OrbScene} from './orbs'
 
 interface ContentProps {
   initialProducts: StoreProduct[]
 }
-
-type Step = 'intro' | 'mood' | 'flavor' | 'potency' | 'results'
 
 interface FinderPreferences {
   moods: string[]
@@ -66,18 +71,18 @@ const POTENCY_OPTIONS: Array<{
   description: string
   icon: IconName
 }> = [
-  {icon: 'strength', id: 'mild', label: 'Mild', description: 'Light & gentle'},
+  {icon: 'strength', id: 'mild', label: 'Mild', description: 'Light & Gentle'},
   {
     icon: 'strength-medium',
     id: 'medium',
     label: 'Medium',
-    description: 'Balanced experience',
+    description: 'Balanced',
   },
   {
     icon: 'strength-high',
     id: 'high',
     label: 'High',
-    description: 'Potent & strong',
+    description: 'Potent & Strong',
   },
 ]
 
@@ -235,15 +240,15 @@ export const Content = ({initialProducts}: ContentProps) => {
   )
 
   return (
-    <div className='md:min-h-screen min-h-[calc(100lvh-100px)] md:bg-background dark:md:background dark:bg-black'>
-      <div className='relative mx-auto w-full max-w-7xl px-2 sm:px-6 lg:px-8 pt-16 sm:pt-16 lg:pt-48 md:h-full h-screen overflow-hidden'>
+    <div className='h-full md:min-h-screen md:bg-background dark:md:background dark:bg-black'>
+      <ScrollArea className='relative mx-auto w-full max-w-7xl px-2 sm:px-6 lg:px-8 pt-16 sm:pt-16 lg:pt-48 md:h-full h-screen overflow-hidden'>
         <ViewTransition>
           <div
             className={cn('text-center mb-4 sm:mb-0', {
               hidden: step === 'intro',
             })}>
             <div className='flex md:flex-col w-full items-center justify-between'>
-              <div className='md:hidden font-polysans whitespace-nowrap font-medium mb-3 ml-4 bg-light-gray/30 dark:bg-dark-gray/40 dark:text-white text-dark-gray md:text-base text-sm px-4 py-1.5 md:py-1 rounded-full w-fit'>
+              <div className='md:hidden font-polysans whitespace-nowrap font-medium mb-3 ml-4 bg-sidebar dark:bg-dark-gray/40 dark:text-white text-dark-gray md:text-base text-sm px-4 py-1.5 md:py-1 rounded-full w-fit'>
                 Strain Finder
               </div>
               {step !== 'intro' && (
@@ -324,9 +329,9 @@ export const Content = ({initialProducts}: ContentProps) => {
           <StepWrapper>
             <StepHeader
               title="What's your vibe?"
-              hint='Select one or more moods that resonate with you'
+              hint='Select moods that resonate with you'
             />
-            <div className='grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-3.5 md:gap-4 px-0.5'>
+            <div className='grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-3.5 md:gap-4 px-1'>
               {MOOD_OPTIONS.map((mood) => {
                 const isSelected = preferences.moods.includes(mood.id)
                 return (
@@ -336,14 +341,14 @@ export const Content = ({initialProducts}: ContentProps) => {
                     className={`group relative overflow-hidden rounded-2xl border-2 p-3.5 md:p-6 transition-all duration-300 ${
                       isSelected
                         ? 'border-effects bg-effects/10 scale-105'
-                        : 'border-slate-300/40 bg-slate-200/40 dark:bg-dark-table/60 md:hover:border-slate-300/50 hover:scale-102'
+                        : 'border-sidebar bg-sidebar/60 dark:bg-dark-table/60 md:hover:border-slate-300/50 hover:scale-102'
                     }`}>
                     <div className='text-center space-y-2'>
                       <div className='text-4xl'>{mood.emoji}</div>
                       <div className='font-semibold text-foreground'>
                         {mood.label}
                       </div>
-                      <div className='text-xs opacity-60'>
+                      <div className='text-xs text-muted-foreground'>
                         {mood.description}
                       </div>
                     </div>
@@ -365,7 +370,7 @@ export const Content = ({initialProducts}: ContentProps) => {
             />
             <h2 className='text-2xl sm:text-3xl font-semibold text-foreground mb-6 text-center'></h2>
             <p className='text-center text-sm opacity-60 mb-8'></p>
-            <div className='grid grid-cols-3 sm:grid-cols-4 gap-4'>
+            <div className='grid grid-cols-3 sm:grid-cols-4 gap-4 px-1'>
               {FLAVOR_OPTIONS.map((flavor) => {
                 const isSelected = preferences.flavors.includes(flavor.id)
                 return (
@@ -409,25 +414,32 @@ export const Content = ({initialProducts}: ContentProps) => {
                     className={cn(
                       'group relative overflow-hidden rounded-2xl border-2 p-6 md:p-8 transition-all duration-300 border-foreground/20 bg-background md:hover:border-foreground/40 hover:scale-102',
                       {
-                        'border border-rose-500 bg-rose-500/10':
+                        'border border-rose-500 bg-rose-500/5':
                           option.id === 'high' && isSelected,
                       },
                       {
-                        'border-featured bg-featured/10':
+                        'border-terpenes bg-terpenes/5':
                           option.id === 'medium' && isSelected,
                       },
                       {
-                        'border-emerald-500 bg-emerald-500/10':
+                        'border-featured bg-featured/5':
                           option.id === 'mild' && isSelected,
                       },
                     )}>
-                    <div className='flex items-center space-x-8'>
-                      <Icon name={option.icon} className='size-16' />
-                      <div className='text-left md:text-center space-y-1'>
-                        <div className='text-2xl md:text-3xl font-bold text-foreground uppercase'>
+                    <div className='flex items-center space-x-6'>
+                      <Icon
+                        name={option.icon}
+                        className={cn('size-16', {
+                          'text-featured': option.id === 'mild',
+                          'text-terpenes': option.id === 'medium',
+                          'text-rose-500': option.id === 'high',
+                        })}
+                      />
+                      <div className='text-left md:text-center'>
+                        <div className='text-xl md:text-2xl font-polysans font-semibold text-foreground capitalize'>
                           {option.label}
                         </div>
-                        <div className='text-sm opacity-60'>
+                        <div className='text-sm opacity-60 font-sans'>
                           {option.description}
                         </div>
                       </div>
@@ -446,7 +458,8 @@ export const Content = ({initialProducts}: ContentProps) => {
           <StepWrapper>
             <StepHeader
               title='Your Perfect Match'
-              hint="Based on your preferences, here are three strains we think you'll love"
+              hint={`Here are three strains we think you'll love`}
+              // hint="Based on your preferences, "
             />
             <div className='text-center mb-12'>
               <h2 className='text-3xl sm:text-4xl font-semibold text-foreground mb-4'></h2>
@@ -460,18 +473,21 @@ export const Content = ({initialProducts}: ContentProps) => {
                   component={PrimaryCard}
                   container='grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8'
                 />
-              ) : null}
+              ) : (
+                <p className='text-lg opacity-60 mb-6'>
+                  No products match your preferences. Try adjusting your
+                  selections.
+                </p>
+              )}
             </ViewTransition>
             <div className='text-center py-12'>
-              <p className='text-lg opacity-60 mb-6'>
-                No products match your preferences. Try adjusting your
-                selections.
-              </p>
               <Button
+                size='lg'
                 onPress={resetFinder}
                 radius='full'
                 variant='solid'
-                className='cta-button'>
+                color='primary'
+                className='bg-foreground font-polysans dark:text-background'>
                 Start Over
               </Button>
             </div>
@@ -480,14 +496,14 @@ export const Content = ({initialProducts}: ContentProps) => {
 
         {/* Navigation */}
         {step !== 'intro' && (
-          <div className='flex items-center justify-between mt-4 sm:mt-16 max-w-4xl mx-auto'>
-            {step !== 'mood' && (
+          <div className='relative z-200 flex items-center justify-between mt-4 sm:mt-16 max-w-4xl mx-auto'>
+            {step !== 'mood' && step !== 'results' && (
               <Button
                 onPress={prevStep}
-                variant='bordered'
+                variant='flat'
                 radius='full'
                 isDisabled={isPending}
-                className='px-6 ml-2'>
+                className='px-6 ml-2 font-polysans bg-sidebar'>
                 Back
               </Button>
             )}
@@ -498,21 +514,15 @@ export const Content = ({initialProducts}: ContentProps) => {
                 radius='full'
                 variant='solid'
                 isDisabled={!canProceed || isPending}
-                className={cn('cta-button px-8 bg-dark-gray text-white mr-2')}>
+                className={cn(
+                  'px-8 bg-featured text-white font-polysans tracking-wide mr-2',
+                )}>
                 {step === 'potency' ? 'Find My Strains' : 'Continue'}
               </Button>
-            ) : (
-              <Button
-                onPress={resetFinder}
-                radius='full'
-                variant='bordered'
-                className='px-8'>
-                Start Over
-              </Button>
-            )}
+            ) : null}
           </div>
         )}
-      </div>
+      </ScrollArea>
     </div>
   )
 }
@@ -549,95 +559,5 @@ const LeftSideContent = ({
       isDisabled={loading}>
       <span>Start</span>
     </Button>
-  </div>
-)
-
-interface ProgressIndicatorProps {
-  steps: Array<Step>
-  step: Step
-  className?: ClassName
-}
-
-const ProgressIndicator = ({
-  steps,
-  step,
-  className,
-}: ProgressIndicatorProps) => {
-  return (
-    <div
-      className={cn(
-        'flex items-center justify-center gap-1 mb-3 mr-4',
-        className,
-      )}>
-      {steps.map((s, index) => (
-        <div key={s} className='flex items-center'>
-          <div
-            className={`h-2 w-3 sm:w-12 rounded-full transition-all duration-300 ease-in-out ${
-              step === s
-                ? 'bg-featured w-8 sm:w-20'
-                : index <
-                    (
-                      ['mood', 'flavor', 'potency', 'results'] as Step[]
-                    ).indexOf(step)
-                  ? 'bg-featured/50'
-                  : 'bg-foreground/20'
-            }`}
-          />
-          {index < 3 && <div className='h-0 w-1 sm:w-4 bg-foreground/20' />}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-const StepHeader = ({title, hint}: {title: string; hint: string}) => {
-  return (
-    <>
-      <h2 className='text-2xl sm:text-3xl font-polysans font-semibold text-foreground mb-1 md:mb-5 text-center'>
-        {title}
-      </h2>
-      <p className='text-center text-sm opacity-60 mb-4 md:mb-12 line-clamp-2 max-w-[35ch] mx-auto'>
-        {hint}
-      </p>
-    </>
-  )
-}
-
-interface StepWrapperProps {
-  children?: ReactNode
-  className?: ClassName
-}
-
-const StepWrapper = ({children, className}: StepWrapperProps) => (
-  <div
-    className={cn(
-      'max-w-4xl mx-auto md:min-h-full min-h-[calc(100lvh-260px)]',
-      className,
-    )}>
-    {children}
-  </div>
-)
-
-interface CheckPinProps {
-  className?: ClassName
-  step: Step
-}
-
-const CheckPin = ({className, step}: CheckPinProps) => (
-  <div className='absolute top-2 right-2 rotate-6 size-5 rounded-full bg-white flex items-center justify-center'>
-    <div
-      className={cn(
-        'size-6 aspect-square rounded-full bg-indigo-300/60 absolute dark:blur-xs',
-        className,
-      )}
-    />
-    <div className='size-4.5 aspect-square rounded-full bg-white absolute' />
-    <Icon
-      name='check-fill'
-      className={cn('text-effects size-6 relative', {
-        'text-terpenes': step === 'flavor',
-        'text-dark-gray': step === 'potency',
-      })}
-    />
   </div>
 )
