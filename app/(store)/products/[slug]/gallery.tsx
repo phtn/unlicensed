@@ -62,13 +62,13 @@ export const Gallery = ({
           />
         </Lens>
       </div>
-      <div className='flex items-center w-full lg:w-full overflow-y-scroll gap-2 py-1'>
+      <div className='flex items-center w-full lg:w-full overflow-y-scroll gap-2 p-1'>
         {[primaryImageUrl, ...(galleryUrls ?? [])].map((src, index) => (
           <div
             key={`${src}-${index}`}
             onClick={() => src && handleSelectImage(src)()}
             className={cn(
-              'cursor-pointer select-none relative aspect-square overflow-hidden rounded-md size-full md:size-32 m-1',
+              'cursor-pointer select-none relative aspect-square overflow-hidden rounded-md size-full md:size-32',
               selectedImage === src
                 ? 'border-foreground/50 ring-2 ring-limited'
                 : 'border-foreground/10 hover:border-foreground/30',

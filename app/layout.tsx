@@ -152,7 +152,7 @@ export default function RootLayout({
   return (
     <html lang='en' suppressHydrationWarning>
       <body
-        className={`${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased font-sans`}>
+        className={`${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} antialiased font-sans`}>
         <ProvidersCtxProvider>
           <EmailLinkHandler />
           <ScreenDimensionsTracker />

@@ -1,4 +1,5 @@
 import {ProductCard} from '@/components/store/product-card'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Button} from '@heroui/react'
 import {useMemo} from 'react'
 import {StoreCategory, StoreProduct} from '../types'
@@ -22,10 +23,31 @@ const buildCategoryCollections = (
     .filter((section) => section.items.length > 0)
 
 export const FullCollection = ({products, categories}: CollectionProps) => {
+  // Get all image IDs from products (only storageIds, not URLs or null)
+  const imageIds = useMemo(() => products.map((p) => p.image), [products])
+
+  // Resolve URLs for all images
+  const resolveUrl = useStorageUrls(imageIds)
+
+  // Update products with resolved image URLs
+  const productsWithImages = useMemo(() => {
+    return products.map((product) => {
+      if (!product.image) {
+        return product
+      }
+      // Otherwise, resolve the storageId to a URL
+      const resolvedUrl = resolveUrl(product.image)
+      return {
+        ...product,
+        image: resolvedUrl,
+      }
+    })
+  }, [products, resolveUrl])
   const collections = useMemo(
-    () => buildCategoryCollections(categories, products),
-    [categories, products],
+    () => buildCategoryCollections(categories, productsWithImages),
+    [categories, productsWithImages],
   )
+
   return (
     <section
       id='collection'

@@ -68,8 +68,6 @@ export const Content = ({
       <NewHome />
       <FeaturedProducts featuredProducts={featuredProducts} />
 
-      {/*<Brands columnCount={isMobile ? 4 : 5} />*/}
-
       <FullCollection products={products} categories={categories} />
 
       <QuickScroll

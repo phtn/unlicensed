@@ -1,15 +1,16 @@
 import {StoreProduct} from '@/app/types'
+import {Tag} from '@/components/base44/tag'
+import {Title} from '@/components/base44/title'
 import {Loader} from '@/components/expermtl/loader'
+import {EmptyCategory} from '@/components/store/empty-category'
+import {ProductCard} from '@/components/store/product-card'
 import {api} from '@/convex/_generated/api'
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
-import {cn} from '@/lib/utils'
-import {Button, Image} from '@heroui/react'
+import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {Activity} from 'react'
-import {Tag} from '../../../../components/base44/tag'
-import {Title} from '../../../../components/base44/title'
 
 interface ProductsProps {
   slug: string
@@ -80,97 +81,24 @@ export const Products = ({products, slug}: ProductsProps) => {
 
       {/* Case Studies Grid */}
       <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
-        <div className='max-w-7xl mx-auto rounded-4xl py-4 px-6 bg-sidebar/40 dark:bg-sidebar'>
+        <div className='max-w-7xl mx-auto rounded-[3.5rem] md:p-6 bg-sidebar/40 dark:bg-transparent dark:md:bg-sidebar'>
           <Activity mode={products.length === 0 ? 'visible' : 'hidden'}>
-            <div className='max-w-7xl mx-auto pt-20'>
-              <div className=' flex flex-col items-center justify-center gap-4 px-6 py-24 text-center'>
-                <Title
-                  titleStyle='lowercase'
-                  title='Nothing here yet.'
-                  subtitle={
-                    <div className='flex items-center relative'>
-                      <Icon
-                        name='chevron-double-left'
-                        className='rotate-90 size-12 text-featured opacity-100 relative z-30'
-                      />
-                      <span>check back soon</span>
-                    </div>
-                  }
-                />
-              </div>
-            </div>
+            <EmptyCategory />
           </Activity>
-          <div className='grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-0 w-full'>
+          <div className='grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-6 w-full'>
             {products.map((product) => (
-              <Link
-                key={product._id?.substring(-8)}
-                href={`/products/${product.slug}`}
-                prefetch={true}
-                className='group/item cursor-pointer w-full'>
-                {/* Product Image */}
-                <div className='relative flex items-center justify-center bg-transparent rounded-t-2xl sm:rounded-t-3xl overflow-hidden h-50 sm:h-64 lg:h-54'>
-                  <Image
-                    src={product.image ?? undefined}
-                    alt={product.name}
-                    className='mask mask-parallelogram size-50 aspect-square shrink-0 object-cover'
-                    loading='lazy'
-                  />
-                  <div
-                    className={`absolute inset-0 bg-linear-to-br group-hover:opacity-70 transition-opacity duration-300`}></div>
-
-                  {/* Metric Badge */}
-                  <div className='flex items-center gap-1.5 sm:gap-2 absolute top-3 sm:top-4 lg:top-0 right-3 sm:right-4 lg:right-6'>
-                    <span className='hidden group-hover/item:flex bg-foreground/10 backdrop-blur-sm text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-2 rounded-full'>
-                      <span className='font-extrabold opacity-70 font-fugaz tracking-wide'>
-                        THC
-                      </span>
-                      <span className='font-space font-medium ml-1'>
-                        {product.thcPercentage}%
-                      </span>
-                    </span>
-                    <span className='bg-foreground/5 text-xs px-1 sm:px-1.5 py-1 sm:py-1.5 rounded-full'>
-                      <Icon
-                        name={
-                          product.potencyLevel === 'medium'
-                            ? 'strength-medium'
-                            : 'strength-high'
-                        }
-                        className={cn(
-                          'size-5 sm:size-6 lg:size-7 -scale-x-100 text-sky-500',
-                          {
-                            'text-teal-500': product.potencyLevel === 'medium',
-                            'text-red-400 scale-x-100':
-                              product.potencyLevel === 'high',
-                          },
-                        )}
-                      />
-                    </span>
-                  </div>
-                </div>
-
-                {/* Card Content */}
-                <div className='w-full p-3 sm:p-4 _rounded-b-2xl _sm:rounded-b-3xl border-b border-transparent group-hover/item:border-foreground/30'>
-                  <div className='flex-1 min-w-0'>
-                    <h4 className='flex items-center justify-center text-lg sm:text-base lg:text-lg font-sans font-semibold tracking-tight mb-1'>
-                      <span className='capitalize truncate'>
-                        {product.name.split('-').join(' ')}
-                      </span>
-                      <span className='font-light text-base sm:text-lg lg:text-xl whitespace-nowrap'></span>
-                    </h4>
-                  </div>
-                </div>
-              </Link>
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
         </div>
       </section>
-      <div className='flex justify-center w-full px-4'>
+      <div className='flex justify-center w-full px-4 md:hidden pb-20'>
         <Button
           size='lg'
           as={Link}
           href={'/brands'}
           fullWidth
-          className='dark:bg-white md:hidden opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-4 sm:px-8 py-2 sm:py-3 text-lg'>
+          className='dark:bg-white opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-4 sm:px-8 py-2 sm:py-3 text-lg'>
           <span className='drop-shadow-xs'>Shop by Brand</span>
         </Button>
       </div>

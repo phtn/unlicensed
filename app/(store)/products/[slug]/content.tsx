@@ -4,12 +4,10 @@ import {mapFractions} from '@/app/admin/_components/product-schema'
 import type {StoreProductDetail} from '@/app/types'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {QuickScroll} from '@/components/base44/quick-scroll'
-import {ProductCard} from '@/components/store/product-card'
 import {ProductProfile} from '@/components/ui/product-profile'
 import {StatChip} from '@/components/ui/terpene'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
-import {useCartAnimation} from '@/ctx/cart-animation'
 import {useCart} from '@/hooks/use-cart'
 import {useMobile} from '@/hooks/use-mobile'
 import {adaptProductDetail, type RawProductDetail} from '@/lib/convexClient'
@@ -24,16 +22,10 @@ import {
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
-import {notFound, useRouter} from 'next/navigation'
-import {
-  useCallback,
-  useMemo,
-  useOptimistic,
-  useRef,
-  useState,
-  useTransition,
-} from 'react'
+import {notFound} from 'next/navigation'
+import {useMemo, useOptimistic, useRef, useState, useTransition} from 'react'
 import {Gallery} from './gallery'
+import {RelatedProducts} from './related-products'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -53,16 +45,10 @@ export const ProductDetailContent = ({
   const {isOpen, onClose} = useDisclosure()
   const {addItem, isAuthenticated} = useCart()
   const [isPending, startTransition] = useTransition()
-  const {triggerAnimation} = useCartAnimation()
   const addToCartButtonRef = useRef<HTMLDivElement>(null)
   const galleryImageRef = useRef<HTMLDivElement>(null)
 
   const isMobile = useMobile()
-
-  const router = useRouter()
-  const prefetch = useCallback(() => {
-    router.prefetch(`/category-${initialDetail?.category?.slug}`)
-  }, [router, initialDetail?.category?.slug])
 
   // Optimistic state for add-to-cart operations
   const [optimisticAdding, setOptimisticAdding] = useOptimistic(
@@ -261,9 +247,9 @@ export const ProductDetailContent = ({
                           onPress={handleDenominationChange(i)}
                           // selectedDenomination
                           className={cn(
-                            'cursor-pointer rounded-full border border-foreground/20 portrait:px-px',
+                            'cursor-pointer bg-sidebar rounded-full border border-foreground/20 portrait:px-px',
                             {
-                              'bg-dark-gray dark:bg-white dark:border-foreground text-white dark:text-dark-gray hover:bg-black dark:hover:bg-featured dark:hover:text-black hover:text-featured':
+                              'bg-dark-gray dark:bg-white dark:border-foreground text-white dark:text-dark-gray md:hover:bg-black dark:md:hover:bg-featured dark:hover:text-black md:hover:text-featured':
                                 selectedDenomination === i,
                             },
                           )}>
@@ -310,7 +296,7 @@ export const ProductDetailContent = ({
               <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />
             </div>
 
-            <div className='gap-4 py-2 md:py-4 space-y-4'>
+            <div className='gap-4 py-2 md:py-2 space-y-3'>
               <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
                 Terpenes
               </span>
@@ -366,38 +352,7 @@ export const ProductDetailContent = ({
         className='border-b-[0.33px] border-foreground/40 border-dashed bg-transparent'
       />
 
-      {related.length > 0 ? (
-        <section
-          onMouseEnter={prefetch}
-          id='related-selections'
-          className='mx-auto w-full max-w-6xl px-4 md:px-0'>
-          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4'>
-            <div>
-              <h2 className='text-2xl font-bone text-foreground sm:text-3xl'>
-                Related Selections
-              </h2>
-              <p className='text-xs sm:text-sm text-color-muted mt-1'>
-                More from the {category?.name ?? product.categorySlug} family
-                curated for you.
-              </p>
-            </div>
-            <Button
-              as={NextLink}
-              href={`/#category-${product.categorySlug}`}
-              radius='full'
-              variant='faded'
-              size='sm'
-              className='self-start sm:self-auto border border-color-border/70 bg-background/30 text-xs sm:text-sm font-semibold text-foreground/80'>
-              Explore category
-            </Button>
-          </div>
-          <div className='mt-6 sm:mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-            {related.map((item) => (
-              <ProductCard key={item.slug} product={item} />
-            ))}
-          </div>
-        </section>
-      ) : null}
+      {related.length > 0 ? <RelatedProducts products={related} /> : null}
     </div>
   )
 }

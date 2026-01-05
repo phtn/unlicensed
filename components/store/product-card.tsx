@@ -1,9 +1,7 @@
 import type {StoreProduct} from '@/app/types'
-import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {cn} from '@/lib/utils'
 import {Card, CardBody, CardFooter, Image} from '@heroui/react'
 import NextLink from 'next/link'
-import {useMemo} from 'react'
 import {HyperActivity} from '../expermtl/activity'
 import {HyperBadge} from '../main/badge'
 
@@ -20,13 +18,6 @@ const formatPrice = (priceCents: number) => {
 export const ProductCard = ({product, className}: ProductCardProps) => {
   const topEffects = product.effects.slice(0, 2)
 
-  // Resolve product image URL
-  const resolveUrl = useStorageUrls([product.image].filter(Boolean))
-  const productImageUrl = useMemo(
-    () => (product.image ? resolveUrl(product.image) : null),
-    [resolveUrl, product.image],
-  )
-
   return (
     <Card
       as={NextLink}
@@ -42,12 +33,12 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
         <div className='flex justify-center items-center relative overflow-hidden sm:rounded-t-3xl'>
           <div className='absolute size-full overflow-hidden inset-0 z-10 bg-linear-to-t from-foreground/10 via-transparent to-transparent opacity-0 border-b-[0.33px] border-transparent group-hover:border-foreground/40 transition-opacity duration-300 group-hover:opacity-100' />
           <Image
-            src={productImageUrl ?? undefined}
+            src={product.image ?? undefined}
             alt={product.name}
             className='w-full rounded-t-4xl rounded-b-xl object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
             loading='eager'
           />
-          <div className='absolute left-3 sm:left-4 top-3 sm:top-4 z-20 flex flex-col gap-2'>
+          <div className='absolute left-5 sm:left-4 top-5 sm:top-4 z-20 flex flex-col gap-2'>
             <HyperActivity c={product.featured}>
               <HyperBadge variant='limited' size='sm' />
             </HyperActivity>
@@ -57,7 +48,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
         <div className='flex flex-col gap-3 sm:gap-4 p-3 sm:px-6 h-16'>
           <div className='flex items-start justify-between gap-2 h-full'>
             <div className='space-y-1 sm:space-y-2 flex-1 min-w-0'>
-              <h3 className='text-base sm:text-xl font-polysans tracking-tight opacity-80 truncate capitalize'>
+              <h3 className='text-base sm:text-lg font-polysans tracking-tight opacity-80 truncate capitalize'>
                 {product.slug.split('-').join(' ')}
               </h3>
             </div>
@@ -82,9 +73,6 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
               </span>
             ))}
           </div>
-          {/*<p className='hidden text-xs opacity-70 font-normal line-clamp-2 sm:line-clamp-3 text-color-muted leading-relaxed'>
-            {product.shortDescription}
-          </p>*/}
         </div>
       </CardBody>
       <CardFooter className='hidden _flex items-center justify-between px-3 sm:px-5 pb-3 sm:pb-5 pt-0'>

@@ -111,7 +111,7 @@ export const StatChip = ({
       }
       className=' border-[0.33px] border-foreground/15'
       classNames={{
-        base: `ps-2 h-7 grow-0 bg-linear-to-r from-transparent via-transparent to-slate-300/5 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`,
+        base: `ps-2 h-7 grow-0 bg-linear-to-r from-transparent via-transparent to-sidebar/5 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`,
         content:
           'flex items-center justify-center text-foreground uppercase font-semibold text-xs',
       }}

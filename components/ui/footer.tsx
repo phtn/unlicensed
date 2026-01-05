@@ -3,10 +3,10 @@ import {Icon} from '@/lib/icons'
 import {Link} from '@heroui/react'
 
 export const Footer = () => (
-  <footer className='border-t border-foreground/20 bg-black'>
-    <div className='mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8'>
-      <div className='flex flex-col gap-2'>
-        <div className='h-10 flex items-center gap-x-2'>
+  <footer className='flex-1 border-t border-foreground/20 bg-black'>
+    <div className='mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-12 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8'>
+      <div className='flex flex-col'>
+        <div className='h-10 flex items-center'>
           <Icon
             name='rapid-fire'
             className='h-40 md:h-32 w-auto aspect-auto dark:text-light-gray text-light-gray'

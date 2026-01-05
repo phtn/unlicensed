@@ -28,13 +28,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
   }, [initialProducts, productsQuery])
 
   // Get all image IDs from products (only storageIds, not URLs or null)
-  const imageIds = useMemo(
-    () =>
-      products
-        .map((p) => p.image)
-        .filter((img): img is string => !!img && !img.startsWith('http')),
-    [products],
-  )
+  const imageIds = useMemo(() => products.map((p) => p.image), [products])
 
   // Resolve URLs for all images
   const resolveUrl = useStorageUrls(imageIds)
@@ -43,7 +37,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
   const productsWithImages = useMemo(() => {
     return products.map((product) => {
       // If image is null or already a URL, keep it as-is
-      if (!product.image || product.image.startsWith('http')) {
+      if (!product.image) {
         return product
       }
       // Otherwise, resolve the storageId to a URL

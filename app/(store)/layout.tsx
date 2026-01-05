@@ -12,8 +12,7 @@ const StoreLayout = ({children, navbar}: StoreLayoutProps) => {
     <NuqsAdapter>
       <div className='flex min-h-screen flex-col'>
         {navbar}
-        <main className='relative'>{children}</main>
-        <div className='h-36 w-full bg-background' />
+        <main className='relative flex-1'>{children}</main>
         <Footer />
       </div>
     </NuqsAdapter>

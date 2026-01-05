@@ -107,7 +107,7 @@ export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
     <div
       ref={containerRef}
       className={cn(
-        'relative max-w-7xl mx-auto pt-16 md:pt-24 h-[80lvh] md:h-[70lvh]',
+        'relative md:max-w-7xl mx-auto pt-16 md:pt-24 h-[80lvh] md:h-[70lvh]',
         'cursor-grab active:cursor-grabbing',
         className,
       )}
