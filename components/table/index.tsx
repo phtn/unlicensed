@@ -17,7 +17,7 @@ import {
   VisibilityState,
 } from '@tanstack/react-table'
 
-import {Card, CardBody} from '@heroui/react'
+import {Card} from '@heroui/react'
 import {
   ChangeEvent,
   useCallback,
@@ -158,7 +158,7 @@ export const DataTable = <T,>({
   const tableRows = table.getRowModel().rows
   const selectedRows = useMemo(
     () => table.getSelectedRowModel().rows ?? [],
-    [rowSelection],
+    [table],
   )
 
   const isMobile = useMobile()

@@ -70,13 +70,23 @@ const ArcHeader = ({
 interface ArcCalloutProps {
   value?: ReactNode
   icon?: IconName
+  type?: 'success' | 'error' | 'warning' | 'info' | 'default'
 }
 
-const ArcCallout = ({value, icon}: ArcCalloutProps) => (
-  <div className='flex items-start md:items-center space-x-2 p-1.5 bg-sidebar/40 rounded-md'>
-    {icon && (
-      <Icon name={icon} className='size-4 opacity-70 mt-0.5 md:mt-0 ml-0.5' />
-    )}
+const ArcCallout = ({
+  value = 'default',
+  icon,
+  type = 'default',
+}: ArcCalloutProps) => (
+  <div
+    className={cn('flex items-center space-x-2 p-1.5 rounded-md', {
+      'bg-sidebar/40': type === 'default',
+      'bg-terpenes/5': type === 'success',
+      'bg-rose-500/5': type === 'error',
+      'bg-flavors/5': type === 'warning',
+      'bg-featured/5': type === 'info',
+    })}>
+    {icon && <Icon name={icon} className='size-4 opacity-70 ml-0.5' />}
     <p className='text-sm text-color-muted'>{value}</p>
   </div>
 )
@@ -94,9 +104,9 @@ interface ArcButtonProps {
 
 const ArcButtonLeft = ({label, fn, href, icon}: ArcButtonProps) => (
   <Button
-    as={Link}
+    as={fn ? Link : Button}
     size='lg'
-    href={href ?? '#'}
+    href={fn ? '#' : (href ?? '#')}
     radius='none'
     variant='flat'
     onPress={fn}
@@ -108,9 +118,9 @@ const ArcButtonLeft = ({label, fn, href, icon}: ArcButtonProps) => (
 
 const ArcButtonRight = ({label, fn, href, icon}: ArcButtonProps) => (
   <Button
-    as={Link}
+    as={fn ? Link : Button}
     size='lg'
-    href={href ?? '#'}
+    href={fn ? '#' : (href ?? '#')}
     radius='none'
     variant='solid'
     color='primary'
@@ -122,12 +132,12 @@ const ArcButtonRight = ({label, fn, href, icon}: ArcButtonProps) => (
 )
 const ArcButtonFull = ({label, fn, href, icon}: ArcButtonProps) => (
   <Button
-    as={Link}
+    as={fn ? Link : Button}
     size='lg'
     onPress={fn}
     radius='none'
     variant='flat'
-    href={href ?? '#'}
+    href={fn ? '#' : (href ?? '#')}
     endContent={icon && <Icon name={icon} className='size-5' />}
     className='w-full col-span-2 font-polysans font-normal! bg-sidebar dark:bg-dark-table/40'>
     {label}
@@ -154,6 +164,36 @@ const ArcLineItem = <T extends {label: string; value: string}>(item: T) => (
   </div>
 )
 
+interface ArcStatusProps {
+  text?: string
+  children?: ReactNode
+}
+
+const ArcError = ({text, children}: ArcStatusProps) => (
+  <div className='relative flex items-center font-polysans w-full'>
+    <div className='bg-rose-400 dark:bg-transparent h-12 w-full flex flex-1 items-center justify-center px-3'>
+      <ShimmerText
+        surface='dark'
+        variant='chatgpt'
+        className='text-base md:text-2xl flex leading-6 md:leading-6 items-center p-0 m-0 text-center font-semibold font-figtree'>
+        {text} {children}
+      </ShimmerText>
+    </div>
+  </div>
+)
+
+const ArcSuccess = ({text, children}: ArcStatusProps) => (
+  <div className='relative flex items-center font-polysans w-full'>
+    <div className='bg-terpenes h-12 w-full flex flex-1 items-center justify-center px-3'>
+      <ShimmerText
+        surface='light'
+        variant='default'
+        className='text-base md:text-2xl flex leading-6 md:leading-6 items-center p-0 m-0 text-center font-semibold font-figtree'>
+        {text} {children}
+      </ShimmerText>
+    </div>
+  </div>
+)
 interface ArcLoaderProps {
   text?: string
   loading?: boolean
@@ -164,15 +204,15 @@ const ArcLoader = ({text, loading, children}: ArcLoaderProps) => (
   <div className='relative flex items-center font-polysans w-full'>
     <div className='bg-zinc-900 dark:bg-transparent h-12 w-full flex flex-1 items-center justify-center px-3'>
       <ShimmerText
-        surface='auto'
-        variant='default'
-        className='text-xs lg:text-2xl flex leading-6 md:leading-6 items-center p-0 m-0 text-center font-semibold font-figtree'>
+        surface='light'
+        variant={loading ? 'chatgpt' : 'default'}
+        className='text-sm lg:text-2xl flex leading-6 md:leading-6 items-center p-0 m-0 text-center font-semibold font-figtree'>
         {text} {children}
       </ShimmerText>
       <Icon
         name='spinners-ring'
         className={cn(
-          'size-3 text-orange-200 ml-1',
+          'size-3 text-orange-200 ml-1.5',
           !loading && 'text-featured',
         )}
       />
@@ -187,7 +227,9 @@ export {
   ArcButtonRight,
   ArcCallout,
   ArcCard,
+  ArcError,
   ArcHeader,
   ArcLineItems,
   ArcLoader,
+  ArcSuccess,
 }

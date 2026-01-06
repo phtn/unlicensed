@@ -12,6 +12,7 @@ import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
 import {useAuth} from './use-auth'
 import {useCart} from './use-cart'
+import {useRefGen} from './use-ref-gen'
 
 export interface PlaceOrderParams {
   shippingAddress: AddressType
@@ -68,6 +69,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
   const updateContactMutation = useMutation(api.users.m.updateContact)
   const createOrUpdateUserMutation = useMutation(api.users.m.createOrUpdateUser)
   const addToCartMutation = useMutation(api.cart.m.addToCart)
+  const {generateRefPair} = useRefGen()
 
   // Get Convex user ID if authenticated (same pattern as use-cart)
   const convexUser = useQuery(
@@ -83,6 +85,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
 
   const placeOrder = useCallback(
     async (params: PlaceOrderParams): Promise<Id<'orders'> | null> => {
+      const {uuid, refNum} = generateRefPair()
       // Validate cart exists and has items
       if (!cart || cart.items.length === 0) {
         const error = new Error('Cart is empty')
@@ -168,9 +171,14 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
 
         // Use userId from Convex if authenticated, otherwise use cartId
         // The createOrder mutation accepts either userId or cartId
+
+        if (!uuid || !refNum) return null
+
         const orderArgs =
           userIdToUse !== undefined
             ? {
+                uuid,
+                orderNumber: refNum,
                 userId: userIdToUse,
                 shippingAddress: params.shippingAddress,
                 billingAddress: params.billingAddress,
@@ -184,6 +192,8 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 discountCents: params.discountCents,
               }
             : {
+                uuid,
+                orderNumber: refNum,
                 cartId: cartIdToUse!,
                 shippingAddress: params.shippingAddress,
                 billingAddress: params.billingAddress,
@@ -349,6 +359,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
       updateContactMutation,
       createOrUpdateUserMutation,
       addToCartMutation,
+      generateRefPair,
     ],
   )
 

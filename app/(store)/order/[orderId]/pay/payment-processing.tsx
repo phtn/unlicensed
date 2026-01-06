@@ -34,7 +34,7 @@ export const PaymentProcessing = ({order, loading}: PaymentProcessingProps) => {
     <ArcCard>
       <ArcHeader
         title='Processing Payment'
-        description={order.orderNumber.split('-').pop()}
+        description={order.orderNumber}
         icon='hash'
         iconStyle='text-indigo-400'
       />
@@ -42,7 +42,7 @@ export const PaymentProcessing = ({order, loading}: PaymentProcessingProps) => {
 
       <ArcLoader loading={loading}>
         <p className='text-base'>
-          {loading ? 'Initializing payment...' : 'Payment initialized'}
+          {loading ? 'Initializing payment' : 'Payment initialized'}
         </p>
       </ArcLoader>
       <ArcActionBar>

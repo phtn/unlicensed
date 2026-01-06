@@ -3,6 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
+import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {
   Button,
@@ -15,8 +16,8 @@ import {
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {default as Link, default as NextLink} from 'next/link'
-import {useParams} from 'next/navigation'
-import {useMemo} from 'react'
+import {useParams, useSearchParams} from 'next/navigation'
+import {useEffect, useMemo, useState} from 'react'
 
 function getStatusColor(status: string) {
   switch (status) {
@@ -65,8 +66,10 @@ function formatDate(timestamp: number) {
 
 export default function OrderDetailPage() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const {user: firebaseUser} = useAuth()
   const orderId = params['order-id'] as Id<'orders'>
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false)
 
   // Get current user
   const convexUser = useQuery(
@@ -75,7 +78,20 @@ export default function OrderDetailPage() {
   )
 
   // Get order
-  const order = useQuery(api.orders.q.getOrder, {orderId})
+  const order = useQuery(api.orders.q.getById, {id: orderId})
+
+  // Check for payment success query param
+  useEffect(() => {
+    if (searchParams.get('payment') === 'success') {
+      // Remove query param from URL without reload
+      const url = new URL(window.location.href)
+      url.searchParams.delete('payment')
+      window.history.replaceState({}, '', url.toString())
+    }
+    return () => {
+      setShowSuccessBanner(true)
+    }
+  }, [searchParams])
 
   // Verify order belongs to user (or allow if no user - guest order)
   const isAuthorized = useMemo(() => {
@@ -116,6 +132,36 @@ export default function OrderDetailPage() {
   return (
     <div className='min-h-screen pt-16 lg:pt-24 px-4 sm:px-6 lg:px-8 py-8'>
       <div className='max-w-4xl mx-auto'>
+        {/* Payment Success Banner */}
+        {showSuccessBanner && (
+          <Card className='mb-6 border border-terpenes/20 bg-terpenes/5'>
+            <CardBody className='p-4'>
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center gap-3'>
+                  <Icon
+                    name='check-fill'
+                    className='size-5 text-terpenes shrink-0'
+                  />
+                  <div>
+                    <p className='font-semibold text-sm'>Payment Successful</p>
+                    <p className='text-xs text-color-muted'>
+                      Your payment has been processed successfully.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  isIconOnly
+                  variant='light'
+                  size='sm'
+                  onPress={() => setShowSuccessBanner(false)}
+                  className='min-w-0 w-8 h-8'>
+                  <Icon name='x' className='size-4' />
+                </Button>
+              </div>
+            </CardBody>
+          </Card>
+        )}
+
         {/* Header */}
         <div className='flex items-center justify-between mb-8'>
           <div>

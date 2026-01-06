@@ -22,6 +22,7 @@ import {
   statusCell,
 } from '../../../_components/ui/cells'
 import {useSettingsPanel} from '../../../_components/ui/settings'
+import {CourierCell} from './courier-cell'
 import {useOrderDetails} from './order-details-context'
 
 type Order = Doc<'orders'>
@@ -60,8 +61,8 @@ export const OrdersTable = () => {
 
       case 'courier':
         return (
-          <div className='capitalize text-blue-500 flex items-center justify-center'>
-            {order.courier ?? 'Assign'}
+          <div className='flex items-center justify-center'>
+            <CourierCell order={order} />
           </div>
         )
       case 'orderNumber':
@@ -71,7 +72,7 @@ export const OrdersTable = () => {
               color='foreground'
               href={`/admin/orders/${order.orderNumber}`}
               className='font-mono opacity-80 text-sm hover:underline underline-offset-4 decoration-dashed decoration-foreground/40'>
-              {order.orderNumber.split('-').pop()}
+              {order.orderNumber}
             </Link>
           </div>
         )

@@ -58,7 +58,8 @@ export function RewardsSummary({
         {/* Estimated Points */}
         {isAuthenticated && estimatedPoints !== null && nextVisitMultiplier && (
           <>
-            <div className='flex items-center justify-between text-sm py-3 px-4 md:px-6 bg-purple-400/10 dark:bg-purple-500/20 border-t-2 border-purple-300/20'>
+            <div className='relative flex items-center justify-between text-sm py-3 px-4 md:px-6 bg-purple-400/10 dark:bg-purple-500/20 border-t-2 border-purple-300/20 overflow-hidden'>
+              <div className="absolute w-500 scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
               <div className='text-lg flex items-center gap-2'>
                 <Icon
                   name='star-fill'

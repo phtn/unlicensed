@@ -1,5 +1,6 @@
 'use client'
 
+import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
@@ -8,7 +9,6 @@ import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useState} from 'react'
 import {z} from 'zod'
-import {useAppForm} from '../../../_components/ui/form-context'
 
 const affiliateAccountSchema = z.object({
   walletAddress: z

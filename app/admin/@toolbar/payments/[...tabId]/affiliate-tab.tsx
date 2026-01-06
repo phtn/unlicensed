@@ -39,7 +39,7 @@ const AffiliateTabInner = () => {
             id='new'
             icon='plus'
             label='New Affiliate'
-            href='/admin/payments?tabId=affiliate&subTabId=new'
+            href='/admin/payments/paygate?tabId=affiliate&subTabId=new'
           />
         </ToolbarButtonWrapper>
       )}

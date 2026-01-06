@@ -1,5 +1,6 @@
 'use client'
 
+import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {Callout} from '@/components/ui/callout'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
@@ -13,9 +14,16 @@ import {Button, Card, CardBody} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useAction, useMutation} from 'convex/react'
 import {FunctionReference} from 'convex/server'
-import {FormEvent, useCallback, useEffect, useMemo, useState} from 'react'
+import {parseAsString, useQueryState} from 'nuqs'
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {z} from 'zod'
-import {useAppForm} from '../../../_components/ui/form-context'
 import {CreateWalletResponse} from './create-wallet-response'
 import {CreateWalletResponseData} from './types'
 
@@ -35,16 +43,14 @@ const paygateAccountSchema = z.object({
 
 type PaygateAccountFormValues = z.infer<typeof paygateAccountSchema>
 
+const DEFAULT_CALLBACK_URL = 'http://localhost:3000/api/paygate/webhook'
+
 const getDefaultValues = (): PaygateAccountFormValues => ({
   hexAddress: '',
   addressIn: '',
   // Use consistent default to avoid hydration mismatch
   // Will be updated on client side if needed
-  callbackUrl:
-    process.env.NEXT_PUBLIC_PAYGATE_CALLBACK_URL ??
-    (process.env.NEXT_PUBLIC_APP_URL
-      ? `${process.env.NEXT_PUBLIC_APP_URL}/api/paygate/webhook`
-      : ''),
+  callbackUrl: DEFAULT_CALLBACK_URL,
   label: '',
   description: '',
   isDefault: false,
@@ -80,6 +86,15 @@ export const PaygateAccountForm = ({
   const [walletResponse, setWalletResponse] = useState<ApiResponse | null>(null)
   const {paste, pasted} = usePaste()
 
+  // Sync callback URL with URL search params
+  const [callbackUrlParam, setCallbackUrlParam] = useQueryState(
+    'callbackUrl',
+    parseAsString.withDefault(DEFAULT_CALLBACK_URL),
+  )
+
+  // Track if we're updating URL param from form to avoid loops
+  const isUpdatingFromForm = useRef(false)
+
   const formValues = initialValues ?? getDefaultValues()
 
   const form = useAppForm({
@@ -114,10 +129,8 @@ export const PaygateAccountForm = ({
           onUpdated?.()
         } else {
           // Create wallet in PayGate first
-          const callbackUrl =
-            typeof window !== 'undefined'
-              ? `${window.location.origin}/api/paygate/webhook`
-              : `${process.env.NEXT_PUBLIC_APP_URL || 'https://localhost:3000'}/api/paygate/webhook`
+          // Use callbackUrl from form (which is synced with URL param)
+          const callbackUrl = data.callbackUrl || callbackUrlParam
           const paygateResponse = await createWallet(
             data.hexAddress,
             callbackUrl,
@@ -228,24 +241,26 @@ export const PaygateAccountForm = ({
     return 'WARNING: Only use USDC in Polygon Network.'
   }, [hexAddressValue, addressValidation])
 
-  // Update callbackUrl on client side after hydration to avoid hydration mismatch
+  // Initialize form field from URL param on mount
   useEffect(() => {
-    if (typeof window !== 'undefined' && !isEditMode) {
-      const currentCallbackUrl = form.getFieldValue('callbackUrl')
-      // Only update if the field is empty or using the default env var value
-      if (
-        !currentCallbackUrl ||
-        currentCallbackUrl ===
-          (process.env.NEXT_PUBLIC_PAYGATE_CALLBACK_URL ??
-            (process.env.NEXT_PUBLIC_APP_URL
-              ? `${process.env.NEXT_PUBLIC_APP_URL}/api/paygate/webhook`
-              : ''))
-      ) {
-        const clientCallbackUrl = `${window.location.origin}/api/paygate/webhook`
-        form.setFieldValue('callbackUrl', clientCallbackUrl)
+    if (!isEditMode) {
+      const currentFormValue = form.getFieldValue('callbackUrl')
+      // Initialize from URL param if form is empty or using default
+      if (!currentFormValue || currentFormValue === DEFAULT_CALLBACK_URL) {
+        form.setFieldValue('callbackUrl', callbackUrlParam)
       }
     }
-  }, [form, isEditMode])
+  }, [callbackUrlParam, isEditMode, form]) // Only run on mount
+
+  // Sync URL param changes back to form (e.g., browser back/forward)
+  useEffect(() => {
+    if (!isEditMode && !isUpdatingFromForm.current) {
+      const currentFormValue = form.getFieldValue('callbackUrl')
+      if (callbackUrlParam && currentFormValue !== callbackUrlParam) {
+        form.setFieldValue('callbackUrl', callbackUrlParam)
+      }
+    }
+  }, [callbackUrlParam, form, isEditMode])
 
   // Clear wallet response when switching modes or when form is reset
   useEffect(() => {
@@ -283,11 +298,13 @@ export const PaygateAccountForm = ({
                         : 'https://polygonscan.com/'
                     }
                     rel='noopener noreferrer'
-                    className='text-purple-600 dark:text-purple-300 flex items-center gap-1 hover:underline hover:underline-offset-4 decoration-dotted bg-white dark:bg-white/5 ps-2 pe-1 py-1 sm:py-0.5 rounded-full text-xs sm:text-sm'
+                    className='text-purple-600 dark:text-purple-100 flex items-center gap-1 hover:underline hover:underline-offset-4 decoration-dotted bg-white dark:bg-white/5 ps-2 pe-1 py-1 sm:py-0.5 rounded-full text-xs sm:text-sm'
                     target='_blank'>
                     <span className='wrap-break-words'>polygon scan</span>
                     <Icon
-                      name={addressValidation.isValid ? 'arrow-up' : 'arrow-up'}
+                      name={
+                        addressValidation.isValid ? 'arrow-up' : 'spinner-dots'
+                      }
                       className={cn(
                         'size-3 sm:size-4 translate-y-[0.35px] rotate-25 shrink-0',
                         addressValidation.isValid ? 'dark:text-white' : '',
@@ -382,8 +399,22 @@ export const PaygateAccountForm = ({
                   <input.TextField
                     type='text'
                     label='Callback URL'
-                    placeholder='https://example.com/callback'
+                    placeholder={DEFAULT_CALLBACK_URL}
+                    value={DEFAULT_CALLBACK_URL}
+                    disabled={true}
                     required
+                    // onChange={(e) => {
+                    //   input.onChange(e)
+                    //   // Sync to URL param when field changes
+                    //   if (!isEditMode) {
+                    //     isUpdatingFromForm.current = true
+                    //     setCallbackUrlParam(e.target.value)
+                    //     // Reset flag after a brief delay to allow URL update to complete
+                    //     setTimeout(() => {
+                    //       isUpdatingFromForm.current = false
+                    //     }, 0)
+                    //   }
+                    // }}
                   />
                 )}
               </form.AppField>

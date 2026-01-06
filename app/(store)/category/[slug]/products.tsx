@@ -10,7 +10,7 @@ import {Icon} from '@/lib/icons'
 import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
-import {Activity} from 'react'
+import {Activity, ViewTransition} from 'react'
 
 interface ProductsProps {
   slug: string
@@ -65,15 +65,19 @@ export const Products = ({products, slug}: ProductsProps) => {
             </div>
 
             <div className='relative flex items-center justify-center lg:justify-end h-[40vh] sm:h-[45vh] lg:h-[50lvh] overflow-visible'>
-              {heroImage ? (
-                <div
-                  id='hero-image'
-                  className='h-80 md:h-120 w-full mask-[url("https://res.cloudinary.com/dx0heqhhe/image/upload/v1766560488/chevs_drc0jt.svg")] mask-cover bg-cover bg-center bg-no-repeat'
-                  style={{backgroundImage: `url(${heroImage})`}}
-                />
-              ) : (
-                <Loader />
-              )}
+              <ViewTransition enter='auto'>
+                {heroImage ? (
+                  <div
+                    id='hero-image'
+                    className='h-80 md:h-120 w-full mask-[url("https://res.cloudinary.com/dx0heqhhe/image/upload/v1766560488/chevs_drc0jt.svg")] mask-cover bg-cover bg-center bg-no-repeat'
+                    style={{backgroundImage: `url(${heroImage})`}}
+                  />
+                ) : (
+                  <div className='size-full flex justify-center'>
+                    <Loader />
+                  </div>
+                )}
+              </ViewTransition>
             </div>
           </div>
         </div>

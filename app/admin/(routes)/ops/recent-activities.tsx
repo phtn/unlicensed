@@ -108,12 +108,18 @@ interface RecentActivitiesProps {
   fullTable: boolean
   toggleFullTable: VoidFunction
   isMobile: boolean
+  visibleStatsCount: number
+  breakpoint: 'mobile' | 'md' | 'lg'
+  statsHeight: number
 }
 
 export const RecentActivities = ({
   fullTable,
   toggleFullTable,
   isMobile,
+  visibleStatsCount,
+  breakpoint,
+  statsHeight,
 }: RecentActivitiesProps) => {
   const {user: firebaseUser} = useAuth()
   const convexUser = useQuery(
@@ -123,7 +129,7 @@ export const RecentActivities = ({
   const markAsViewed = useMutation(api.activityViews.m.markActivityAsViewed)
 
   const activities = useQuery(api.activities.q.getRecentActivities, {
-    limit: 10,
+    limit: 30,
   })
 
   // Mark activities as viewed when component mounts or activities change
@@ -161,8 +167,8 @@ export const RecentActivities = ({
             return (
               <User
                 avatarProps={{
-                  radius: 'full',
                   size: 'sm',
+                  radius: 'full',
                   src: activity.user.photoUrl,
                 }}
                 classNames={{
@@ -188,16 +194,6 @@ export const RecentActivities = ({
               </div>
             </div>
           )
-        // case 'amount':
-        //   return (
-        //     <div className='capitalize border-none gap-1 text-default-600'>
-        //       {activity.metadata?.orderTotalCents && (
-        //         <p className='font-bold text-tiny font-space'>
-        //           {formatPrice(activity.metadata.orderTotalCents)}
-        //         </p>
-        //       )}
-        //     </div>
-        //   )
         case 'activity':
           return (
             <div className='flex items-center gap-3'>
@@ -212,11 +208,6 @@ export const RecentActivities = ({
                 <p className='text-bold text-small text-foreground whitespace-nowrap'>
                   {activity.title}
                 </p>
-                {/*{activity.description && (
-                  <p className='hidden text-bold text-tiny text-default-500'>
-                    {activity.description}
-                  </p>
-                )}*/}
               </div>
             </div>
           )
@@ -264,17 +255,17 @@ export const RecentActivities = ({
           }
           return (
             <div className='flex items-center gap-1'>
-              {viewers.slice(0, 5).map((viewer) => (
+              {viewers.slice(0, 5).map((viewer, i) => (
                 <div
                   key={viewer.userId}
-                  className='shrink-0'
+                  className={cn('shrink-0', {'-translate-x-3': i !== 0})}
                   title={`${viewer.name} (${viewer.email})`}>
-                  <div className='flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-default-100 ring-1 ring-white'>
+                  <div className='flex size-6 items-center justify-center overflow-hidden rounded-full shadow-md'>
                     {viewer.photoUrl ? (
                       <Image
                         src={viewer.photoUrl}
                         alt={viewer.name}
-                        className='h-full w-full object-cover'
+                        className='h-full w-full object-cover border-[1.5px] border-white'
                       />
                     ) : (
                       <span className='text-xs font-medium text-default-600'>
@@ -305,6 +296,24 @@ export const RecentActivities = ({
     },
     [isMobile],
   )
+
+  // Calculate translate values based on measured stats height
+  const translateStyle = React.useMemo(() => {
+    if (statsHeight === 0 || !fullTable) {
+      return {}
+    }
+
+    // Use the actual measured height of the stats container
+    // Add the spacing between stats and activities (space-y-4 = 1rem = 16px)
+    // Convert pixels to rem (assuming 16px = 1rem)
+    const spacingRem = 1 // space-y-4 = 1rem
+    const translateYRem = statsHeight / 12 + spacingRem
+
+    // Apply the transform using CSS custom property
+    return {
+      '--translate-y': `-${translateYRem}rem`,
+    } as React.CSSProperties
+  }, [statsHeight, fullTable])
 
   const classNames = React.useMemo(
     () => ({
@@ -347,10 +356,14 @@ export const RecentActivities = ({
     <Card
       shadow='none'
       radius='none'
+      style={fullTable ? translateStyle : undefined}
       className={cn(
-        'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden md:rounded-t-2xl md:w-full w-screen overflow-x-scroll',
-        'transition-transform duration-300 md:border-0 border-t border-light-gray/40',
-        {'md:-translate-y-46 -translate-y-42 h-full bg-sidebar/40': fullTable},
+        'relative z-300 border border-black dark:bg-dark-table/40 bg-light-table/0 overflow-hidden md:rounded-t-2xl md:w-full w-screen overflow-x-scroll [mask-image:linear-gradient(white,white)]',
+        'transition-transform duration-300 border-t border-light-gray/40',
+        {
+          'h-full bg-sidebar/40': fullTable,
+          'transform-[translateY(var(--translate-y))]': fullTable,
+        },
       )}>
       <div
         className={cn(
@@ -359,11 +372,12 @@ export const RecentActivities = ({
             'md:h-[calc(100lvh-66px)]': fullTable,
           },
         )}>
-        <div className='relative font-polysans text-sm flex items-end justify-between px-3 py-2 md:w-full w-screen'>
-          <div className='flex w-full'>Recent Activity</div>
+        <div className='relative font-polysans text-sm flex items-center justify-between px-3 py-2 md:w-full w-screen'>
+          <div className='flex w-full'>Today</div>
           <Button
             size='sm'
             isIconOnly
+            id='toggle-full-table'
             onPress={toggleFullTable}
             className='dark:bg-origin/60 bg-sidebar/60 scale-80 rounded-md px-0 overflow-hidden aspect-square flex-1 opacity-60 hover:opacity-100'>
             <Icon
@@ -380,8 +394,7 @@ export const RecentActivities = ({
             tbody: 'overflow-hidden rounded-3xl',
             thead: '',
             th: [
-              'sticky _first:rounded-tl-[12.5px] _last:rounded-tr-[12.5px] top-0 bg-white/60 dark:bg-dark-table/5 z-10 backdrop-blur-xl h-8 border-b border-gray-200 dark:border-dark-table',
-              fullTable && 'border-t',
+              'sticky top-0 overflow-hidden bg-sidebar dark:bg-dark-table backdrop-blur-3xl z-20 h-9 border-b border-sidebar dark:border-dark-table',
             ],
           }}
           aria-label='Recent activities table'>

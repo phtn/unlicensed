@@ -2,6 +2,7 @@
 
 import {
   MainTab,
+  PrimaryTab,
   SecondaryTab,
   ToolbarButtonWrapper,
 } from '@/app/admin/@toolbar/components'
@@ -19,11 +20,14 @@ const PayGateTabInner = () => {
   const isPayGateRoute =
     tabId === 'paygate' ||
     !tabId ||
-    (tabId !== 'affiliate' && !tabId.startsWith('affiliate'))
+    (tabId !== 'affiliate' &&
+      !tabId.startsWith('affiliate') &&
+      tabId !== 'utilities' &&
+      !tabId.startsWith('utilities'))
 
   return (
     <>
-      <MainTab href='/admin/payments'>
+      <MainTab href='/admin/payments/paygate'>
         <PageTitle>PayGate</PageTitle>
         <span
           className={cn(
@@ -38,6 +42,18 @@ const PayGateTabInner = () => {
       {isPayGateRoute && (
         <ToolbarButtonWrapper>
           <SecondaryTab
+            id='utilities'
+            icon='cloud'
+            label='Utilities'
+            href='/admin/payments/paygate?tabId=utilities'
+          />
+          <SecondaryTab
+            id='affiliate'
+            icon='plus'
+            label='Affiliate'
+            href='/admin/payments/paygate?tabId=affiliate&subTabId=new'
+          />
+          <PrimaryTab
             id='new'
             icon='plus'
             label='Wallet'

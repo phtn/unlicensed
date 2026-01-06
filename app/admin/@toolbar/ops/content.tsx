@@ -48,7 +48,10 @@ export const OpsContent = () => {
         <span
           className={cn(
             'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
-            {'bg-blue-500 dark:bg-blue-500 text-white': isOpsRoute},
+            {
+              'bg-blue-500 dark:bg-blue-500 text-white': isOpsRoute,
+              'w-8': (orders?.length ?? 0) > 19,
+            },
           )}>
           <AnimatedNumber value={orders?.length ?? 0} />
         </span>

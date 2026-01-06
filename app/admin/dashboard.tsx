@@ -17,7 +17,7 @@ export const AdminDashboard = () => {
   return (
     <div className='mx-auto flex w-full max-w-6xl flex-col gap-8 py-10'>
       <header className='space-y-3'>
-        <h1 className='text-2xl font-semibold '>Admin Catalog Manager</h1>
+        <h1 className='text-2xl font-semibold'>Admin Catalog Manager</h1>
         <p className='max-w-3xl text-sm'>
           Create categories, enrich product details, and manage media assets
           using the TanStack React Form powered workflow below. New entries sync

@@ -5,21 +5,14 @@ import {addressSchema} from '../users/d'
 import {orderStatusSchema, paymentSchema, shippingSchema} from './d'
 
 /**
- * Generate a unique order number
- */
-function generateOrderNumber(): string {
-  const timestamp = Date.now()
-  const random = Math.floor(Math.random() * 1000)
-  return `ORD-${new Date().getFullYear()}-${timestamp.toString().slice(-6)}${random.toString().padStart(3, '0')}`
-}
-
-/**
  * Create a new order from a cart
  */
 export const createOrder = mutation({
   args: {
     userId: v.optional(v.union(v.id('users'), v.null())),
     cartId: v.optional(v.id('carts')),
+    orderNumber: v.string(),
+    uuid: v.string(),
     shippingAddress: addressSchema,
     billingAddress: v.optional(addressSchema),
     contactEmail: v.string(),
@@ -104,7 +97,8 @@ export const createOrder = mutation({
     // Create order
     const orderId = await ctx.db.insert('orders', {
       userId: args.userId ?? null,
-      orderNumber: generateOrderNumber(),
+      orderNumber: args.orderNumber,
+      uuid: args.uuid,
       orderStatus: 'pending_payment',
       items: orderItems,
       subtotalCents,
@@ -320,6 +314,37 @@ export const addInternalNotes = mutation({
 
     await ctx.db.patch(args.orderId, {
       internalNotes: updatedNotes,
+      updatedAt: Date.now(),
+    })
+
+    return args.orderId
+  },
+})
+
+/**
+ * Update order courier
+ */
+export const updateCourier = mutation({
+  args: {
+    orderId: v.id('orders'),
+    courierId: v.optional(v.union(v.id('couriers'), v.null())),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId)
+    if (!order) {
+      throw new Error('Order not found')
+    }
+
+    // Validate courier exists if provided
+    if (args.courierId) {
+      const courier = await ctx.db.get(args.courierId)
+      if (!courier) {
+        throw new Error('Courier not found')
+      }
+    }
+
+    await ctx.db.patch(args.orderId, {
+      courier: args.courierId ?? undefined,
       updatedAt: Date.now(),
     })
 

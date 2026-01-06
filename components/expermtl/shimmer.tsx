@@ -72,13 +72,13 @@ export default function ShimmerText({
       controls.start({
         backgroundPosition:
           variant === 'chatgpt'
-            ? ['200% center', '-300% center']
+            ? ['300% center', '-300% center']
             : ['300% center', '-300% center'],
         transition: {
           duration: duration ?? (variant === 'chatgpt' ? 4.65 : 6.5),
           ease: (ease ??
             (variant === 'chatgpt'
-              ? 'easeInOut'
+              ? 'backInOut'
               : 'easeInOut')) as Transition['ease'],
           repeat: loop ? Number.POSITIVE_INFINITY : 0,
           repeatDelay: 0,
@@ -108,7 +108,7 @@ export default function ShimmerText({
   const lightChatgpt =
     'dark:from-zinc-700 dark:via-zinc-400 dark:to-zinc-600 from-zinc-200 via-zinc-400 to-zinc-200'
   const darkChatgpt =
-    'dark:from-zinc-200 dark:via-zinc-400 dark:to-zinc-700 from-zinc-200 via-zinc-400 to-zinc-200'
+    'dark:from-zinc-200 dark:via-zinc-400 dark:to-zinc-700 from-zinc-100 via-zinc-200 to-zinc-100'
 
   const gradientClass =
     surface === 'auto'
@@ -118,7 +118,7 @@ export default function ShimmerText({
         : `bg-gradient-to-r ${variant === 'chatgpt' ? darkChatgpt : darkDefault}`
 
   const bgLengthClass =
-    variant === 'chatgpt' ? 'bg-[length:400%_200%]' : 'bg-[length:300%_600%]'
+    variant === 'chatgpt' ? 'bg-[length:400%_200%]' : 'bg-[length:300%_500%]'
 
   return (
     <div className='flex items-center justify-center'>
@@ -129,7 +129,7 @@ export default function ShimmerText({
         transition={{duration: 4.5}}>
         <motion.h1
           className={cn(
-            'text-3xl font-semibold tracking-tight bg-clip-text text-transparent',
+            'text-xl font-semibold tracking-tight bg-clip-text text-transparent',
             gradientClass,
             bgLengthClass,
             className,

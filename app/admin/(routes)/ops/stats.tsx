@@ -40,6 +40,8 @@ type StatsProps = {
   deliveriesData?: Array<{value: number}>
   aovData?: Array<{value: number}>
   fullTable: boolean
+  onVisibleStatsChange?: (count: number) => void
+  onStatsHeightChange?: (height: number) => void
 }
 
 type StatCardProps = {
@@ -216,7 +218,10 @@ export const Stats = ({
   deliveriesData,
   aovData,
   fullTable,
+  onVisibleStatsChange,
+  onStatsHeightChange,
 }: StatsProps) => {
+  const statsContainerRef = useRef<HTMLDivElement>(null)
   const statConfigs = useQuery(api.admin.q.getAdminByIdentifier, {
     identifier: 'statConfigs',
   })
@@ -259,6 +264,33 @@ export const Stats = ({
     return configs.filter((config: StatConfig) => config.visible) ?? []
   }, [statConfigs])
 
+  useEffect(() => {
+    if (onVisibleStatsChange) {
+      onVisibleStatsChange(visibleStats.length)
+    }
+  }, [visibleStats.length, onVisibleStatsChange])
+
+  // Measure and report stats container height
+  useEffect(() => {
+    if (!statsContainerRef.current || !onStatsHeightChange) return
+
+    const updateHeight = () => {
+      const height = statsContainerRef.current?.offsetHeight ?? 0
+      onStatsHeightChange(height)
+    }
+
+    // Use ResizeObserver to track height changes
+    const resizeObserver = new ResizeObserver(updateHeight)
+    resizeObserver.observe(statsContainerRef.current)
+
+    // Initial measurement
+    updateHeight()
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [visibleStats.length, onStatsHeightChange])
+
   // const handleToggleVisibility = async (statId: string, visible: boolean) => {
   //   await updateStatVisibility({statId, visible})
   // }
@@ -278,6 +310,7 @@ export const Stats = ({
 
   return (
     <div
+      ref={statsContainerRef}
       className={cn(
         'portrait:mx-4 space-y-2 md:space-y-4 lg:space-y-6 transition-transform-opacity duration-300',
         {

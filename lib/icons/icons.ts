@@ -680,6 +680,23 @@ export const icons = {
     viewBox: '0 0 24 24',
     set: 'stash',
   },
+  'alert-triangle': {
+    symbol:
+      '<g fill="none"><path stroke="currentColor" stroke-width="1.5" d="M5.732 20.5c-2.29 0-3.723-2.498-2.581-4.5L9.419 5.006c1.144-2.008 4.018-2.008 5.163 0L20.849 16c1.142 2.002-.291 4.5-2.581 4.5z"/><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M12 13.375V9"/><circle cx="1.25" cy="1.25" r="1.25" fill="currentColor" transform="matrix(1 0 0 -1 10.75 17.938)"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'proicons',
+  },
+  'alert-circle': {
+    symbol:
+      '<g fill="none"><circle cx="12" cy="12" r="9.25" stroke="currentColor" stroke-width="1.5"/><path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M12 12.438v-5"/><circle cx="1.25" cy="1.25" r="1.25" fill="currentColor" transform="matrix(1 0 0 -1 10.75 17.063)"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'proicons',
+  },
+  sqrc: {
+    symbol: `<path d="M18 4.5C29 5 31 7 31.5 18C31 29 29 31 18 31.5C7 31 5 29 4.5 18C5 7 7 5 18 4.5Z" fill="currentColor" stroke="none" stroke-width="0.33"/>`,
+    viewBox: `0 0 36 36`,
+    set: `xpriori`,
+  },
 }
 /*
 

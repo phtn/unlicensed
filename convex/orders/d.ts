@@ -79,6 +79,7 @@ export const orderSchema = v.object({
 
   // Order identification
   orderNumber: v.string(), // Human-readable order number (e.g., "ORD-2024-001234")
+  uuid: v.optional(v.string()), // Unique identifier for the order
   orderStatus: orderStatusSchema,
 
   // Order items

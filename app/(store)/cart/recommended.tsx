@@ -118,7 +118,7 @@ export const RecommendedProducts = () => {
                       className='absolute bg-featured -space-x-1.5 top-2 right-2 font-medium shrink-0 flex text-white text-base'
                       onPress={() => handleAddToCart(product)}>
                       <Icon name='plus' className='size-5' />
-                      Add<span className='md:flex hidden'> to your order</span>
+                      Add<span className='md:flex hidden'>to Cart</span>
                     </Button>
                   </div>
                 </div>

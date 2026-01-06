@@ -2,8 +2,7 @@
 
 import {Loader} from '@/components/expermtl/loader'
 import {useRouter} from 'next/navigation'
-import {useEffect} from 'react'
-import {useTransition} from 'react'
+import {useEffect, useTransition} from 'react'
 
 export const Content = () => {
   const router = useRouter()
@@ -16,8 +15,8 @@ export const Content = () => {
   }, [router, startTransition])
 
   return (
-    <main className='px-4 w-full'>
-      <p>Authenticating...</p>
+    <main className='p-4 w-full md:h-screen flex md:items-center '>
+      <p className='p-4'>Watchful</p>
       <Loader />
     </main>
   )

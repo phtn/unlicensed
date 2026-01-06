@@ -159,7 +159,7 @@ export const ProductDetailContent = ({
           <BreadcrumbItem href='/'>
             <Icon name='grid' className='size-3 sm:size-4 opacity-60' />
           </BreadcrumbItem>
-          <BreadcrumbItem href={`/#category-${product.categorySlug}`}>
+          <BreadcrumbItem href={`/category/${product.categorySlug}`}>
             {category?.name ?? product.categorySlug}
           </BreadcrumbItem>
           <BreadcrumbItem>{product.name}</BreadcrumbItem>

@@ -7,6 +7,7 @@ import {blogSchema} from './blogs/d'
 import {cartSchema} from './cart/d'
 import {categorySchema} from './categories/d'
 import {courierSchema} from './couriers/d'
+import {checkoutLogSchema} from './checkoutLogs/d'
 import {emailSettingsSchema} from './emailSettings/d'
 import {logSchema} from './logs/d'
 import {orderSchema} from './orders/d'
@@ -70,4 +71,9 @@ export default defineSchema({
     'by_wallet_address',
     ['walletAddress'],
   ),
+  checkoutLogs: defineTable(checkoutLogSchema)
+    .index('by_status', ['status'])
+    .index('by_user', ['userId'])
+    .index('by_order', ['orderId'])
+    .index('by_created_at', ['createdAt']),
 })

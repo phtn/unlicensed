@@ -20,7 +20,7 @@ export default function PayPage() {
   const hasInitiated = useRef(false)
 
   // Get order
-  const order = useQuery(api.orders.q.getOrder, {orderId})
+  const order = useQuery(api.orders.q.getById, {id: orderId})
 
   // Get admin settings for PayGate wallet address
   const adminSettings = useQuery(api.admin.q.getAdminSettings)

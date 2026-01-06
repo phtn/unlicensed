@@ -31,7 +31,7 @@ export function AccountItemCard({
   affiliateWallet,
 }: Doc<'paygateAccounts'> & {onEdit: VoidFunction}) {
   return (
-    <div className='w-full sm:w-[320px] md:w-[320px] bg-sidebar/40 dark:bg-dark-table/40 rounded-t-md rounded-b-xl overflow-hidden select-none border border-foreground/80 dark:border-foreground/20 animate-in fade-in zoom-in duration-200'>
+    <div className='w-full bg-sidebar/40 dark:bg-dark-table/40 rounded-t-md rounded-b-xl overflow-hidden select-none border border-foreground/80 dark:border-foreground/20 animate-in fade-in zoom-in duration-200'>
       {/* Header */}
       <div className='flex items-center justify-between border-b border-foreground/80 dark:border-foreground/40'>
         <DefaultState isDefault={isDefault} />
@@ -40,7 +40,7 @@ export function AccountItemCard({
 
       {/* Title Section */}
       <div className='p-4 flex flex-col gap-1'>
-        <h2 className='text-2xl font-semibold font-polysans uppercase mt-1 leading-tight'>
+        <h2 className='text-xl font-semibold font-polysans uppercase mt-1 leading-tight'>
           {label ?? 'Account 1'}
         </h2>
       </div>
@@ -60,7 +60,7 @@ export function AccountItemCard({
             key='1'
             aria-label='address_in'
             title='address_in'
-            className='bg-sidebar/0 dark:bg-sidebar px-4 whitespace-normal font-space'>
+            className='bg-sidebar/0 dark:bg-sidebar px-4 whitespace-normal font-brk text-xs'>
             {addressIn}
           </AccordionItem>
           <AccordionItem

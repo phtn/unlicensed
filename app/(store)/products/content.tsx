@@ -1,15 +1,14 @@
 'use client'
 
 import {StoreProduct} from '@/app/types'
+import {ProductCard} from '@/components/store/product-card'
 import {api} from '@/convex/_generated/api'
 import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
-import {cn} from '@/lib/utils'
-import {Button, Image} from '@heroui/react'
+import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
-import Link from 'next/link'
 import {
   parseAsString,
   parseAsStringEnum,
@@ -527,76 +526,7 @@ export const Content = ({initialProducts}: ContentProps) => {
 
           <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8'>
             {productsWithImages.map((product) => (
-              <Link
-                key={product._id || product.slug}
-                href={`/products/${product.slug}`}
-                prefetch={true}
-                className='group/item cursor-pointer w-full'>
-                {/* Product Image */}
-                <div className='relative flex items-center justify-center bg-transparent rounded-t-2xl sm:rounded-t-3xl overflow-hidden h-50 sm:h-64 lg:h-54'>
-                  {product.image ? (
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      className='mask mask-parallelogram size-50 aspect-square shrink-0 object-cover w-full h-full'
-                      loading='lazy'
-                    />
-                  ) : (
-                    <div className='w-full h-full bg-sidebar/40 dark:bg-sidebar flex items-center justify-center'>
-                      <Icon name='image' className='w-16 h-16 opacity-40' />
-                    </div>
-                  )}
-                  <div className='absolute inset-0 bg-linear-to-br from-black/40 via-transparent to-transparent group-hover/item:from-black/60 transition-opacity duration-300' />
-
-                  {/* Metric Badge */}
-                  <div className='flex items-center gap-1.5 sm:gap-2 absolute top-3 sm:top-4 right-3 sm:right-4'>
-                    <span className='hidden group-hover/item:flex bg-foreground/10 backdrop-blur-sm text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-2 rounded-full'>
-                      <span className='font-extrabold opacity-70 font-fugaz tracking-wide'>
-                        THC
-                      </span>
-                      <span className='font-space font-medium ml-1'>
-                        {product.thcPercentage}%
-                      </span>
-                    </span>
-                    <span className='bg-foreground/5 text-xs px-1 sm:px-1.5 py-1 sm:py-1.5 rounded-full'>
-                      <Icon
-                        name={
-                          product.potencyLevel === 'medium'
-                            ? 'strength-medium'
-                            : 'strength-high'
-                        }
-                        className={cn(
-                          'size-5 sm:size-6 lg:size-7 -scale-x-100 text-sky-500',
-                          {
-                            'text-teal-500': product.potencyLevel === 'medium',
-                            'text-red-400 scale-x-100':
-                              product.potencyLevel === 'high',
-                          },
-                        )}
-                      />
-                    </span>
-                  </div>
-                </div>
-
-                {/* Card Content */}
-                <div className='w-full p-3 sm:p-4 border-b border-transparent group-hover/item:border-foreground/30'>
-                  <div className='flex-1 min-w-0'>
-                    <h4 className='flex items-center justify-center text-lg sm:text-base lg:text-lg font-sans font-semibold tracking-tight mb-1'>
-                      <span className='capitalize truncate'>
-                        {product.name.split('-').join(' ')}
-                      </span>
-                    </h4>
-                    {product.brand && (
-                      <p className='text-xs opacity-60 text-center mt-1'>
-                        {product.brand}
-                      </p>
-                    )}
-                    <p className='text-sm font-medium text-center mt-2'>
-                      ${(product.priceCents / 100).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              </Link>
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
         </div>

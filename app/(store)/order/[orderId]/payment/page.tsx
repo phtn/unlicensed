@@ -26,7 +26,7 @@ export default function PaymentPage() {
   const [checkingStatus, setCheckingStatus] = useState(false)
 
   // Get order
-  const order = useQuery(api.orders.q.getOrder, {orderId})
+  const order = useQuery(api.orders.q.getById, {id: orderId})
 
   // PayGate actions
   const initiatePayment = useAction(api.orders.paygate.initiatePayGatePayment)
@@ -161,6 +161,79 @@ export default function PaymentPage() {
               className='w-full'>
               View Order
             </Button>
+          </CardBody>
+        </Card>
+      </div>
+    )
+  }
+
+  if (paymentStatus === 'failed') {
+    return (
+      <div className='min-h-screen flex items-center justify-center px-4'>
+        <Card className='max-w-md w-full'>
+          <CardBody className='p-8 text-center space-y-4'>
+            <div className='text-6xl mb-4'>❌</div>
+            <h1 className='text-2xl font-semibold'>Payment Failed</h1>
+            <p className='text-color-muted'>
+              Your payment could not be processed. Please try again or contact
+              support if the issue persists.
+            </p>
+            <div className='flex gap-4'>
+              <Button
+                as={NextLink}
+                href={`/account/orders/${orderId}`}
+                variant='flat'
+                className='flex-1'>
+                View Order
+              </Button>
+              <Button
+                onPress={handlePayNow}
+                color='primary'
+                className='flex-1'
+                isDisabled={!paymentUrl}>
+                Try Again
+              </Button>
+            </div>
+          </CardBody>
+        </Card>
+      </div>
+    )
+  }
+
+  if (paymentStatus === 'pending') {
+    return (
+      <div className='min-h-screen flex items-center justify-center px-4'>
+        <Card className='max-w-md w-full'>
+          <CardBody className='p-8 text-center space-y-4'>
+            <div className='text-6xl mb-4'>⏳</div>
+            <h1 className='text-2xl font-semibold'>Payment Pending</h1>
+            <p className='text-color-muted'>
+              Your payment is being processed. Please wait while we confirm your
+              payment.
+            </p>
+            {checkingStatus && (
+              <div className='flex items-center justify-center gap-2'>
+                <Spinner size='sm' />
+                <span className='text-sm text-color-muted'>
+                  Checking payment status...
+                </span>
+              </div>
+            )}
+            <div className='flex gap-4'>
+              <Button
+                as={NextLink}
+                href={`/account/orders/${orderId}`}
+                variant='flat'
+                className='flex-1'>
+                View Order
+              </Button>
+              <Button
+                onPress={() => window.location.reload()}
+                color='primary'
+                className='flex-1'>
+                Refresh
+              </Button>
+            </div>
           </CardBody>
         </Card>
       </div>

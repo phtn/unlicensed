@@ -36,6 +36,13 @@ type BaseFieldProps<T> = {
   inputMode?: InputHTMLAttributes<'text' | 'email' | 'password' | 'url' | 'tel'>
   error?: string
   helperText?: string
+  disabled?: boolean
+  value?:
+    | string
+    | number
+    | boolean
+    | undefined
+    | Array<string | number | boolean | undefined>
 }
 
 // Partial type for when name comes from AppField context
@@ -77,11 +84,12 @@ export function TextField<T>(props?: PartialFormInput<T> | FormInput<T>) {
       <Input
         size='lg'
         label={props?.label}
-        value={field.state.value}
+        value={field.state.value ?? props?.value}
         onChange={(e) => field.handleChange(e.target.value)}
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
         description={props?.description}
+        disabled={props?.disabled}
         classNames={commonInputClassNames}
         variant='bordered'
         suppressHydrationWarning

@@ -44,7 +44,7 @@ export const RelatedProducts = ({products}: RelatedProductsProps) => {
         </div>
         <Button
           as={Link}
-          href={`/#category-${products[0].categorySlug}`}
+          href={`/category/${products[0].categorySlug}`}
           radius='full'
           variant='faded'
           size='sm'

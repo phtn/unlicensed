@@ -3,8 +3,8 @@
 import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {Suspense} from 'react'
-import {AffiliateContent} from '../affiliate/affiliate'
-import {UtilitiesContent} from '../utilities/content'
+import {AffiliateContent} from './affiliate/affiliate'
+import {UtilitiesContent} from './utilities/content'
 import {PayGateContent} from './paygate'
 
 const ContentInner = () => {

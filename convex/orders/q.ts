@@ -1,16 +1,16 @@
-import {query} from '../_generated/server'
 import {v} from 'convex/values'
+import {query} from '../_generated/server'
 import {orderStatusSchema} from './d'
 
 /**
  * Get order by ID
  */
-export const getOrder = query({
+export const getById = query({
   args: {
-    orderId: v.id('orders'),
+    id: v.id('orders'),
   },
   handler: async (ctx, args) => {
-    const order = await ctx.db.get(args.orderId)
+    const order = await ctx.db.get(args.id)
     return order
   },
 })
@@ -89,10 +89,7 @@ export const getRecentOrders = query({
   },
   handler: async (ctx, args) => {
     const limit = args.limit ?? 50
-    const orders = await ctx.db
-      .query('orders')
-      .order('desc')
-      .take(limit)
+    const orders = await ctx.db.query('orders').order('desc').take(limit)
 
     return orders
   },
@@ -113,14 +110,15 @@ export const getUserOrderStats = query({
 
     const stats = {
       totalOrders: orders.length,
-      totalSpent: orders.reduce((sum, order) => sum + (order.totalCents ?? 0), 0),
-      pendingOrders: orders.filter((o) => o.orderStatus === 'pending_payment').length,
-      completedOrders: orders.filter(
-        (o) => o.orderStatus === 'shipped',
-      ).length,
-      cancelledOrders: orders.filter(
-        (o) => o.orderStatus === 'cancelled',
-      ).length,
+      totalSpent: orders.reduce(
+        (sum, order) => sum + (order.totalCents ?? 0),
+        0,
+      ),
+      pendingOrders: orders.filter((o) => o.orderStatus === 'pending_payment')
+        .length,
+      completedOrders: orders.filter((o) => o.orderStatus === 'shipped').length,
+      cancelledOrders: orders.filter((o) => o.orderStatus === 'cancelled')
+        .length,
     }
 
     return stats
@@ -253,7 +251,7 @@ export const getAdminChartData = query({
     const now = Date.now()
     const days = 20
     const dayMs = 24 * 60 * 60 * 1000
-    
+
     // Get all orders
     const allOrders = await ctx.db.query('orders').collect()
 
@@ -268,7 +266,7 @@ export const getAdminChartData = query({
       const dayStart = new Date(now - i * dayMs)
       dayStart.setHours(0, 0, 0, 0)
       const dayStartTimestamp = dayStart.getTime()
-      
+
       const dayEnd = new Date(dayStartTimestamp + dayMs)
       const dayEndTimestamp = dayEnd.getTime()
 
@@ -296,9 +294,7 @@ export const getAdminChartData = query({
         0,
       )
       const dayAOV =
-        dayOrdersForAOV.length > 0
-          ? dayTotalForAOV / dayOrdersForAOV.length
-          : 0
+        dayOrdersForAOV.length > 0 ? dayTotalForAOV / dayOrdersForAOV.length : 0
 
       // Count orders for this day
       const dayOrdersCount = dayOrders.length
@@ -325,4 +321,3 @@ export const getAdminChartData = query({
     }
   },
 })
-

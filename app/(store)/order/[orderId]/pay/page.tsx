@@ -4,24 +4,26 @@ import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {usePaygate} from '@/hooks/use-paygate'
-import {Icon} from '@/lib/icons'
 import {paygatePublicConfig} from '@/lib/paygate/config'
-import {Button, Card, CardBody} from '@heroui/react'
 import {useQuery} from 'convex/react'
-import NextLink from 'next/link'
 import {useParams, useRouter} from 'next/navigation'
 import {useEffect, useRef, useState} from 'react'
+import {uuidv7 as v7} from 'uuidv7'
+import {InternalError} from './internal-error'
+import {PaymentError} from './payment-error'
 import {PaymentProcessing} from './payment-processing'
+import {PaymentSuccess} from './payment-success'
 
 export default function PayPage() {
   const [debug] = useState(false)
+  const [errorId] = useState(v7())
   const params = useParams()
   const router = useRouter()
   const orderId = params.orderId as Id<'orders'>
   const hasInitiated = useRef(false)
 
   // Get order
-  const order = useQuery(api.orders.q.getOrder, {orderId})
+  const order = useQuery(api.orders.q.getById, {id: orderId})
 
   // Get admin settings for PayGate wallet address
   const adminSettings = useQuery(api.admin.q.getAdminSettings)
@@ -172,27 +174,8 @@ export default function PayPage() {
 
   if (!walletAddress) {
     return (
-      <div className='min-h-screen flex items-start justify-center px-4 pt-16 sm:pt-20 md:pt-28'>
-        <PaymentProcessing order={order} loading={loading} />
-
-        {/*<Card
-          shadow='none'
-          className='max-w-md w-full border border-foreground/50 dark:bg-dark-table/40'>
-          <CardBody className='p-8 text-center space-y-4'>
-            <div className='text-6xl mb-4'>⚠️</div>
-            <h1 className='text-2xl font-semibold'>Internal Error</h1>
-            <p className='text-color-muted'>
-              PayGate wallet address is not configured. Please contact support.
-            </p>
-            <Button
-              as={NextLink}
-              href={`/account/orders/${orderId}`}
-              color='primary'
-              className='w-full'>
-              Back to Order
-            </Button>
-          </CardBody>
-        </Card>*/}
+      <div className='h-[calc(100vh-104px)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
+        <InternalError errorId={errorId} />
       </div>
     )
   }
@@ -206,66 +189,21 @@ export default function PayPage() {
 
   if (paymentStatus === 'success' && order.payment.status === 'completed') {
     return (
-      <div className='min-h-screen pt-16 md:pt-28 flex items-center justify-center px-4'>
-        <Card
-          shadow='none'
-          className='max-w-md w-full border border-foreground/50 dark:bg-dark-table/40'>
-          <CardBody className='p-8 text-center space-y-4'>
-            <Icon
-              name='check-fill'
-              className='text-6xl mb-4 text-emerald-500'
-            />
-            <h1 className='text-2xl font-semibold'>Payment Successful!</h1>
-            <p className='text-color-muted'>
-              Your payment has been processed successfully.
-            </p>
-            <Button
-              as={NextLink}
-              href={`/account/orders/${orderId}`}
-              color='primary'
-              size='lg'
-              className='w-full'>
-              View Order
-            </Button>
-          </CardBody>
-        </Card>
+      <div className='h-[calc(100vh-104px)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
+        <PaymentSuccess orderId={order.orderNumber.split('-').pop()} />
       </div>
     )
   }
-
   if (response?.error) {
     return (
-      <div className='min-h-screen flex items-center justify-center px-4'>
-        <Card
-          shadow='none'
-          className='max-w-md w-full border border-foreground/50 dark:bg-dark-table/40'>
-          <CardBody className='p-8 text-center space-y-4'>
-            <div className='text-6xl mb-4'>❌</div>
-            <h1 className='text-2xl font-semibold'>Payment Error</h1>
-            <p className='text-color-muted'>{response.error}</p>
-            <div className='flex gap-4'>
-              <Button
-                as={NextLink}
-                href={`/account/orders/${orderId}`}
-                variant='flat'
-                className='flex-1'>
-                View Order
-              </Button>
-              <Button
-                onPress={() => window.location.reload()}
-                color='primary'
-                className='flex-1'>
-                Retry
-              </Button>
-            </div>
-          </CardBody>
-        </Card>
+      <div className='h-[calc(100vh-104px)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
+        <PaymentError errorId={errorId} />
       </div>
     )
   }
 
   return (
-    <div className='h-[calc(100vh-100px)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
+    <div className='h-[calc(100vh-104px)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
       <PaymentProcessing order={order} loading={loading && !response} />
     </div>
   )

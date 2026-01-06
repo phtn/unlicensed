@@ -47,8 +47,8 @@ export function AdminAccessGuard({children}: AdminAccessGuardProps) {
   // Hold rendering until we can make a correct decision (prevents "flash" of admin UI).
   if (!authResolved || (user && !staffResolved)) {
     return (
-      <main className='px-4 w-full'>
-        <p>Authenticating...</p>
+      <main className='p-6 w-full'>
+        <p className='font-polysans font-semibold'>Watchful Guard</p>
         <Loader />
       </main>
     )
@@ -66,4 +66,3 @@ export function AdminAccessGuard({children}: AdminAccessGuardProps) {
 
   return <>{children}</>
 }
-
