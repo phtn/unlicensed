@@ -34,12 +34,13 @@ const nextConfig: NextConfig = {
   async headers() {
     const cspDirectives = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' accounts.google.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' accounts.google.com apis.google.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https: images.unsplash.com res.cloudinary.com",
       "font-src 'self' data:",
-      "connect-src 'self' *.convex.cloud api.paygate.to checkout.paygate.to",
-      "frame-src 'self' accounts.google.com checkout.paygate.to",
+      "connect-src 'self' https://*.convex.cloud wss://*.convex.cloud api.paygate.to checkout.paygate.to *.firebaseio.com *.googleapis.com *.firebaseapp.com",
+      "frame-src 'self' accounts.google.com checkout.paygate.to *.firebaseapp.com",
+      "worker-src 'self' blob:",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

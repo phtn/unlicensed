@@ -1,7 +1,7 @@
 'use client'
 
 import {Physics, usePlane, useSphere} from '@react-three/cannon'
-import {ContactShadows, Environment} from '@react-three/drei'
+import {ContactShadows, Environment, Lightformer} from '@react-three/drei'
 import {Canvas, useFrame, useThree} from '@react-three/fiber'
 import {Suspense, useEffect, useMemo, useState} from 'react'
 
@@ -65,10 +65,9 @@ function Ball({
       <sphereGeometry args={[0.5, 32, 32]} />
       <meshStandardMaterial
         color={hovered ? darkenColor(color, 80) : color}
-        roughness={0.1}
-        metalness={0.1}
-        emissive='black'
-        emissiveIntensity={0}
+        roughness={0.15}
+        metalness={0.4}
+        envMapIntensity={1.2}
       />
     </mesh>
   )
@@ -198,7 +197,42 @@ export const OrbScene = () => {
             blur={2}
             far={4.5}
           />
-          <Environment preset='sunset' />
+
+          {/* Procedural environment - no external HDR files needed */}
+          <Environment resolution={256}>
+            {/* Main warm light from above-right (sunset sun) */}
+            <Lightformer
+              intensity={2}
+              rotation-x={Math.PI / 2}
+              position={[0, 4, -5]}
+              scale={[10, 1, 1]}
+              color='#ff9f43'
+            />
+            {/* Cool fill from left */}
+            <Lightformer
+              intensity={0.5}
+              rotation-y={Math.PI / 2}
+              position={[-5, 1, 0]}
+              scale={[20, 1, 1]}
+              color='#7c5ce5'
+            />
+            {/* Warm accent from right */}
+            <Lightformer
+              intensity={0.8}
+              rotation-y={-Math.PI / 2}
+              position={[5, 0, 0]}
+              scale={[20, 1, 1]}
+              color='#ff6b9d'
+            />
+            {/* Soft ground bounce */}
+            <Lightformer
+              intensity={0.3}
+              rotation-x={-Math.PI / 2}
+              position={[0, -4, 0]}
+              scale={[10, 10, 1]}
+              color='#ffecd2'
+            />
+          </Environment>
         </Canvas>
       </Suspense>
     </div>

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.20.1
+
+### Patch Changes
+
+- fixed csp rules
+
 ## 0.20.0
 
 ### Minor Changes
