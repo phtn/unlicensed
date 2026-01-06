@@ -45,3 +45,7 @@ notes.md
 
 tmux-server-2500.log
 tmux-client-2498.log
+public/sw.js
+public/workbox-*.js
+public/swe-worker-*.js
+web-check-results.json

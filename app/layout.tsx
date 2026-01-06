@@ -1,5 +1,5 @@
 import {ProvidersCtxProvider} from '@/ctx'
-import type {Metadata} from 'next'
+import type {Metadata, Viewport} from 'next'
 import {
   Bakbak_One as BakbakOne,
   Figtree,
@@ -72,12 +72,18 @@ export const metadata: Metadata = {
   authors: [{name: 'xpriori'}, {name: 'quimpoi'}],
   creator: 're-up.ph',
   publisher: 're-up.ph',
+  applicationName: 'Rapid Fire',
+  appleWebApp: {
+    capable: true,
+    title: 'Rapid Fire',
+    statusBarStyle: 'default',
+  },
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://rapid-fire-online.vercel.app'),
+  metadataBase: new URL('https://rapidfirenow.com'),
   alternates: {
     canonical: '/',
   },
@@ -86,7 +92,7 @@ export const metadata: Metadata = {
     description:
       'Modern cannabis commerce with curated drops, immersive product storytelling, and delightful UX.',
     type: 'website',
-    url: 'https://rapid-fire-online.vercel.app',
+    url: 'https://rapidfirenow.com',
     siteName: 'Rapid Fire',
     images: [
       {
@@ -117,9 +123,25 @@ export const metadata: Metadata = {
       url: '/svg/rf-icon-2.svg',
       sizes: 'any',
     },
+    {
+      rel: 'icon',
+      url: '/icons/icon-192x192.png',
+      sizes: '192x192',
+    },
+    {
+      rel: 'apple-touch-icon',
+      url: '/icons/apple-touch-icon.png',
+    },
   ],
 
   referrer: 'strict-origin-when-cross-origin',
+}
+
+export const viewport: Viewport = {
+  themeColor: '#1a1a1a',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 }
 
 /**

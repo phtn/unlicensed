@@ -1,7 +1,12 @@
+import {Metadata} from 'next'
 import {type SearchParams} from 'nuqs/server'
 import {CategoriesContent} from './content'
 import {searchParamsCache} from './searchParams'
 
+export const metadata: Metadata = {
+  title: 'Categories',
+  description: 'Curate collections of products.',
+}
 type PageProps = {
   searchParams: Promise<SearchParams> // Next.js 15+: async searchParams prop
 }

@@ -22,7 +22,7 @@ export default function PaymentPage() {
   const params = useParams()
   const router = useRouter()
   const orderId = params.orderId as Id<'orders'>
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
   const [checkingStatus, setCheckingStatus] = useState(false)
 
   // Get order

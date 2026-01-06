@@ -117,8 +117,6 @@ export const RecentActivities = ({
   fullTable,
   toggleFullTable,
   isMobile,
-  visibleStatsCount,
-  breakpoint,
   statsHeight,
 }: RecentActivitiesProps) => {
   const {user: firebaseUser} = useAuth()
@@ -358,7 +356,7 @@ export const RecentActivities = ({
       radius='none'
       style={fullTable ? translateStyle : undefined}
       className={cn(
-        'relative z-300 border border-black dark:bg-dark-table/40 bg-light-table/0 overflow-hidden md:rounded-t-2xl md:w-full w-screen overflow-x-scroll [mask-image:linear-gradient(white,white)]',
+        'relative z-300 border border-black dark:bg-dark-table/40 bg-light-table/0 overflow-hidden md:rounded-t-2xl md:w-full w-screen overflow-x-scroll mask-[linear-gradient(white,white)]',
         'transition-transform duration-300 border-t border-light-gray/40',
         {
           'h-full bg-sidebar/40': fullTable,

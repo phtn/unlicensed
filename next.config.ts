@@ -1,6 +1,18 @@
 import createMDX from '@next/mdx'
+import withPWAInit from '@ducanh2912/next-pwa'
 import type {NextConfig} from 'next'
 import {execSync} from 'child_process'
+
+const withPWA = withPWAInit({
+  dest: 'public',
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  disable: process.env.NODE_ENV === 'development',
+  workboxOptions: {
+    disableDevLogs: true,
+  },
+})
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -20,6 +32,19 @@ const nextConfig: NextConfig = {
     }
   },
   async headers() {
+    const cspDirectives = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' accounts.google.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https: images.unsplash.com res.cloudinary.com",
+      "font-src 'self' data:",
+      "connect-src 'self' *.convex.cloud api.paygate.to checkout.paygate.to",
+      "frame-src 'self' accounts.google.com checkout.paygate.to",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ')
+
     return [
       {
         source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
@@ -27,6 +52,10 @@ const nextConfig: NextConfig = {
           {
             key: 'Cache-Control',
             value: 'no-store, must-revalidate',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: cspDirectives,
           },
         ],
       },
@@ -42,4 +71,4 @@ const withMDX = createMDX({
   },
 })
 
-export default withMDX(nextConfig)
+export default withPWA(withMDX(nextConfig))

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.20.0
+
+### Minor Changes
+
+- added csp and security.txt and pwa
+
 ## 0.19.1
 
 ### Patch Changes

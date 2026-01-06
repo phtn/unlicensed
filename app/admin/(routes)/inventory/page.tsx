@@ -2,7 +2,7 @@ import type {Metadata} from 'next'
 import {Content} from './content'
 
 export const metadata: Metadata = {
-  title: 'Inventory | Rapid Fire',
+  title: 'Product Inventory',
   description: 'Manage product inventory and stock levels.',
 }
 
