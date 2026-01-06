@@ -27,13 +27,14 @@ export default function PayPage() {
 
   // Get admin settings for PayGate wallet address
   const adminSettings = useQuery(api.admin.q.getAdminSettings)
+  const paygateAccount = useQuery(api.paygateAccounts.q.getDefaultAccount)
 
   // Use PayGate hook
   const {handleProcessPaymentSubmit, loading, response} = usePaygate()
 
   // Initialize payment when order and settings are loaded
   useEffect(() => {
-    if (!order || !adminSettings || hasInitiated.current || debug) return
+    if (!order || !paygateAccount || hasInitiated.current || debug) return
 
     // If payment is already completed, redirect to order page
     if (order.payment.status === 'completed') {
@@ -44,7 +45,7 @@ export default function PayPage() {
     // Get wallet address from admin settings
     const wallet =
       // adminSettings.paygate?.usdcWallet ||
-      process.env.NEXT_PUBLIC_TEST_ADDRESS_IN || ''
+      paygateAccount?.addressIn || process.env.NEXT_PUBLIC_TEST_ADDRESS_IN || ''
 
     if (!wallet) {
       console.error('PayGate wallet address not configured')
@@ -63,7 +64,14 @@ export default function PayPage() {
       order.contactEmail,
       'USD',
     )
-  }, [order, adminSettings, handleProcessPaymentSubmit, router, orderId, debug])
+  }, [
+    order,
+    paygateAccount,
+    handleProcessPaymentSubmit,
+    router,
+    orderId,
+    debug,
+  ])
 
   // Handle HTML response - extract URL and redirect
   useEffect(() => {

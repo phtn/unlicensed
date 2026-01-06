@@ -6,6 +6,6 @@ export const metadata: Metadata = {
   description: 'Manage staff and personnel.',
 }
 
-export default function PersonnelPage() {
+export default function StaffPage() {
   return <Content />
 }
