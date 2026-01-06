@@ -1,5 +1,6 @@
 import createMDX from '@next/mdx'
 import type {NextConfig} from 'next'
+import {execSync} from 'child_process'
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -10,6 +11,26 @@ const nextConfig: NextConfig = {
         hostname: 'images.unsplash.com',
       },
     ],
+  },
+  generateBuildId: async () => {
+    try {
+      return execSync('git rev-parse HEAD').toString().trim()
+    } catch {
+      return 'build-' + Date.now()
+    }
+  },
+  async headers() {
+    return [
+      {
+        source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, must-revalidate',
+          },
+        ],
+      },
+    ]
   },
 }
 
