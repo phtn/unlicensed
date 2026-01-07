@@ -5,12 +5,12 @@ import {NuqsAdapter} from 'nuqs/adapters/next/app'
 import type {ReactNode} from 'react'
 import {RouteProtection} from '../_components/route-protection'
 
-type StoreLayoutProps = {
+type LobbyLayoutProps = {
   children: ReactNode
-  navbar?: React.ReactNode
+  navbar?: ReactNode
 }
 
-const StoreLayout = ({children, navbar}: StoreLayoutProps) => {
+export default function LobbyLayout({children, navbar}: LobbyLayoutProps) {
   return (
     <RouteProtection>
       <NuqsAdapter>
@@ -23,5 +23,3 @@ const StoreLayout = ({children, navbar}: StoreLayoutProps) => {
     </RouteProtection>
   )
 }
-
-export default StoreLayout

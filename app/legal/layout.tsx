@@ -1,11 +1,8 @@
-import type {Metadata} from 'next'
-import type React from 'react'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Legal Documents',
-  description: 'Terms of Use, Privacy Policy, and Purchase Policy',
-}
+import type React from 'react'
+import {RouteProtection} from '../_components/route-protection'
 
 export default function LegalLayout({children}: {children: React.ReactNode}) {
-  return <>{children}</>
+  return <RouteProtection>{children}</RouteProtection>
 }

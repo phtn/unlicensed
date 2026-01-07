@@ -20,8 +20,6 @@ export const adminSettingsSchema = v.object({
   name: v.optional(v.string()),
   identifier: v.optional(v.string()),
   value: v.optional(v.record(v.string(), v.any())),
-  // statConfigs: v.array(statConfigSchema),
-  // paygate: v.optional(paygateSettingsSchema),
   updatedAt: v.number(),
   createdAt: v.optional(v.number()),
   createdBy: v.optional(v.string()),

@@ -7,6 +7,7 @@ import {ConvexProvider} from 'convex/react'
 import {createContext, useContext, useMemo, type ReactNode} from 'react'
 import {AuthCtxProvider} from './auth'
 import {CartAnimationProvider} from './cart-animation'
+import {PinAccessProvider} from './pin-access'
 import {Toasts} from './toast'
 
 interface ProvidersProviderProps {
@@ -34,7 +35,9 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
 
   return (
     <ConvexProvider client={convexClient}>
-      <CartAnimationProvider>{content}</CartAnimationProvider>
+      <PinAccessProvider>
+        <CartAnimationProvider>{content}</CartAnimationProvider>
+      </PinAccessProvider>
     </ConvexProvider>
   )
 }

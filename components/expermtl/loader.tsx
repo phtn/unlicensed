@@ -4,7 +4,7 @@ import {animate, createDrawable, stagger} from 'animejs'
 import {useEffect, useRef} from 'react'
 
 export const Loader = () => (
-  <div className='size-100 m-auto flex items-center justify-center'>
+  <div className='size-fit md:size-200 m-auto flex items-center justify-center'>
     <Tracer />
   </div>
 )
@@ -21,8 +21,8 @@ const Tracer = () => {
       // Uses a smoother draw progression for more natural motion
       animate(drawables, {
         draw: ['0 0', '0 0', '0 1', '1 1'],
-        ease: 'inOutBounce', //[0.43, 0.13, 0.23, 0.96] Custom cubic bezier for smoother motion
-        duration: 1800,
+        ease: 'inOutCirc', //inOutBounce //[0.43, 0.13, 0.23, 0.96] Custom cubic bezier for smoother motion
+        duration: 2000,
         delay: stagger(200),
         loop: true,
         autoplay: true,
@@ -31,9 +31,9 @@ const Tracer = () => {
 
       // Opacity fade animation for depth and breathing effect
       animate(drawables, {
-        opacity: [0.4, 1, 0.4],
+        opacity: [0.6, 1, 0.2],
         ease: 'easeInOutSine',
-        duration: 2400,
+        duration: 4000,
         delay: stagger(400, {start: 400}),
         loop: true,
         autoplay: true,
@@ -43,7 +43,7 @@ const Tracer = () => {
       animate(container, {
         scale: [1, 1.033, 1],
         ease: 'easeInOutSine',
-        duration: 2000,
+        duration: 4000,
         loop: true,
         autoplay: true,
       })
@@ -53,7 +53,7 @@ const Tracer = () => {
   return (
     <div
       ref={containerRef}
-      className='relative inset-1 flex items-center justify-center size-full p-1'>
+      className='relative inset-0 flex items-center justify-center size-full'>
       <HotPink />
     </div>
   )
@@ -61,13 +61,42 @@ const Tracer = () => {
 
 const HotPink = () => {
   return (
-    <div className='absolute flex justify-center items-center size-full'>
+    <div className='absolute flex justify-center items-center'>
       <svg
         width='512'
         height='512'
         viewBox='0 0 512 512'
+        className='shrink-0'
         fill='none'
         xmlns='http://www.w3.org/2000/svg'>
+        <defs>
+          <filter
+            id='neon-glow'
+            x='-50%'
+            y='-50%'
+            width='300%'
+            height='300%'
+            className='opacity-20'>
+            {/* Outer halo */}
+            <feGaussianBlur
+              in='SourceGraphic'
+              stdDeviation='2'
+              result='halo'
+              className='opacity-5'
+            />
+            {/* Inner glow - tight around core */}
+            <feGaussianBlur
+              in='SourceGraphic'
+              stdDeviation='1'
+              result='inner'
+            />
+            <feMerge>
+              <feMergeNode in='halo' />
+              <feMergeNode in='inner' />
+              <feMergeNode in='SourceGraphic' />
+            </feMerge>
+          </filter>
+        </defs>
         <path
           className='logo-outline'
           stroke='#BEBEBE'
@@ -76,15 +105,16 @@ const HotPink = () => {
           fill='none'
         />
         <path
-          className='logo-outline'
+          className='logo-outline dark:stroke-featured stroke-brand'
           strokeWidth='4'
           strokeLinejoin='round'
-          stroke='#FB81FF'
+          filter='url(#neon-glow)'
+          // stroke='#FB81FF'
           d='M213.991 214.142H207.51C206.401 214.142 205.302 213.924 204.278 213.499C203.253 213.075 202.322 212.453 201.537 211.669C200.753 210.884 200.131 209.953 199.707 208.928C199.282 207.904 199.064 206.805 199.064 205.696V203.942C199.064 201.709 199.948 199.567 201.523 197.984C203.098 196.402 205.236 195.507 207.469 195.497C210.33 195.484 212.85 195.484 213.991 195.484C222.633 195.484 230.293 196.27 230.293 204.813C230.195 213.259 222.633 214.142 213.991 214.142ZM366.457 227.052H250.331C249.762 226.861 249.345 226.35 249.345 225.721C249.345 224.969 249.927 224.351 250.677 224.299C256.713 223.887 281.186 220.469 281.359 192.144C281.555 156.3 253.076 152.273 217.919 152.273H147.408C145.168 152.273 143.02 153.163 141.436 154.747C139.852 156.331 138.962 158.479 138.962 160.719V276.502C138.962 278.742 139.852 280.89 141.436 282.474C143.02 284.058 145.168 284.948 147.408 284.948H190.619C192.859 284.948 195.007 284.058 196.591 282.474C198.174 280.89 199.064 278.742 199.064 276.502V254.211C199.064 253.102 199.282 252.003 199.707 250.979C200.131 249.954 200.753 249.023 201.537 248.238C202.322 247.454 203.253 246.832 204.278 246.407C205.302 245.982 206.401 245.764 207.51 245.764C216.643 245.961 218.705 247.729 223.517 264.915C224.832 269.464 226.105 274.024 227.337 278.596C227.817 280.392 228.876 281.978 230.351 283.109C231.826 284.24 233.633 284.852 235.492 284.85H240.991V353.145C240.991 354.89 241.684 356.564 242.918 357.798C244.152 359.032 245.826 359.725 247.571 359.725H294.511C296.256 359.725 297.93 359.032 299.164 357.798C300.398 356.564 301.091 354.89 301.091 353.145V326.042C301.091 324.297 301.784 322.623 303.018 321.389C304.252 320.155 305.926 319.462 307.671 319.462H354.21C355.94 319.462 357.6 318.781 358.831 317.567C360.063 316.352 360.766 314.701 360.79 312.972L361.102 290.091C361.114 289.219 360.953 288.354 360.627 287.545C360.302 286.737 359.819 286.001 359.207 285.38C358.595 284.759 357.865 284.267 357.061 283.93C356.257 283.594 355.394 283.421 354.522 283.421H307.671C305.926 283.421 304.252 282.728 303.018 281.494C301.784 280.26 301.091 278.586 301.091 276.841C301.091 275.096 301.784 273.422 303.018 272.188C304.252 270.954 305.926 270.261 307.671 270.261H365.843C367.565 270.261 369.218 269.586 370.447 268.381C371.677 267.176 372.386 265.537 372.421 263.816L373.036 233.765C373.054 232.89 372.897 232.02 372.574 231.206C372.251 230.393 371.769 229.652 371.157 229.026C370.544 228.401 369.813 227.905 369.006 227.566C368.199 227.227 367.332 227.052 366.457 227.052Z'
           fill='none'
         />
         <path
-          className='logo-outline dark:stroke-brand stroke-featured'
+          className='logo-outline dark:stroke-featured stroke-brand'
           strokeWidth='4'
           fillRule='evenodd'
           clipRule='evenodd'
@@ -92,7 +122,8 @@ const HotPink = () => {
           fill='none'
         />
         <path
-          className='logo-outline dark:stroke-[#323231] stroke-brand'
+          id='inner-logo'
+          className='logo-outline  dark:stroke-brand stroke-featured'
           strokeWidth='6'
           fillRule='evenodd'
           clipRule='evenodd'
@@ -100,9 +131,10 @@ const HotPink = () => {
           fill='none'
         />
         <path
-          className='logo-outline'
+          className='logo-outline dark:stroke-brand stroke-featured'
           strokeWidth='4'
-          stroke='#BBBBBB'
+          filter='url(#neon-glow)'
+          // stroke='#BBBBBB'
           d='M213.991 214.142H207.51C206.401 214.142 205.302 213.924 204.278 213.499C203.253 213.075 202.322 212.453 201.537 211.669C200.753 210.884 200.131 209.953 199.707 208.928C199.282 207.904 199.064 206.805 199.064 205.696V203.942C199.064 201.709 199.948 199.567 201.523 197.984C203.098 196.402 205.236 195.507 207.469 195.497C210.33 195.484 212.85 195.484 213.991 195.484C222.633 195.484 230.293 196.27 230.293 204.813C230.195 213.259 222.633 214.142 213.991 214.142Z'
           fill='none'
         />

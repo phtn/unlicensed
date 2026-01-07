@@ -171,11 +171,31 @@ export const getIpapiGeolocationEnabled = query({
       .withIndex('by_identifier', (q) => q.eq('identifier', 'ipapiGeolocation'))
       .unique()
 
-    if (setting?.value && typeof setting.value === 'object' && 'enabled' in setting.value) {
+    if (
+      setting?.value &&
+      typeof setting.value === 'object' &&
+      'enabled' in setting.value
+    ) {
       return Boolean(setting.value.enabled)
     }
 
     // Default to false if not set
     return false
+  },
+})
+
+/**
+ * Get halt pass setting
+ * Returns whether halt pass is enabled (defaults to false if not set)
+ */
+export const getHaltPass = query({
+  args: {},
+  handler: async ({db}) => {
+    const setting = await db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'halt-pass'))
+      .first()
+
+    return setting
   },
 })

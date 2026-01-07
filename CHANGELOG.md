@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.21.0
+
+### Minor Changes
+
+- halt gate
+
 ## 0.20.1
 
 ### Patch Changes
