@@ -1,14 +1,16 @@
+import {ClassName} from '@/app/types'
 import {Icon, type IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {type ReactNode, useMemo, ViewTransition} from 'react'
 
-type CalloutType = 'success' | 'error' | 'warning' | 'info' | 'debug'
+type CalloutType = 'success' | 'error' | 'warning' | 'info' | 'debug' | 'custom'
 interface CalloutProps {
   title: ReactNode
   description?: ReactNode
   icon?: IconName
   type?: CalloutType
   children?: ReactNode
+  customStyle?: ClassName
 }
 
 export const Callout = ({
@@ -17,6 +19,7 @@ export const Callout = ({
   icon,
   type,
   children,
+  customStyle,
 }: CalloutProps) => {
   const defaultIcon: IconName = useMemo(() => {
     if (icon) return icon
@@ -48,11 +51,15 @@ export const Callout = ({
       )}>
       <ViewTransition>
         <div
-          className={cn('p-2.5 rounded-xl bg-primary text-white', {
-            'bg-indigo-400': type === 'debug',
-            'bg-red-400': type === 'error',
-            'bg-orange-400': type === 'warning',
-          })}>
+          className={cn(
+            'p-2.5 rounded-xl bg-primary text-white',
+            {
+              'bg-indigo-400': type === 'debug',
+              'bg-red-400': type === 'error',
+              'bg-orange-400': type === 'warning',
+            },
+            type === 'custom' && customStyle,
+          )}>
           <Icon name={defaultIcon} size={18} />
         </div>
       </ViewTransition>

@@ -33,7 +33,7 @@ export function RouteProtection({children}: RouteProtectionProps) {
     return (
       <div className='fixed inset-0 z-9998 flex items-center justify-center bg-zinc-950'>
         <div className='text-white/50 font-brk tracking-widest'>
-          <Typewrite text='One moment' />
+          <Typewrite text='ONE MOMENT' />
         </div>
       </div>
     )
@@ -44,7 +44,7 @@ export function RouteProtection({children}: RouteProtectionProps) {
     return (
       <div className='fixed inset-0 z-9998 flex items-center justify-center bg-zinc-950'>
         <div className='text-white/50 font-brk tracking-widest'>
-          <Typewrite initialDelay={0} speed={20} text='Redirecting' />
+          <Typewrite initialDelay={0} speed={15} text='AUTHENTICATING' />
         </div>
       </div>
     )

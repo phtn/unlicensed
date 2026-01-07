@@ -1,6 +1,7 @@
 'use client'
 
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
+import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {Callout} from '@/components/ui/callout'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
@@ -232,7 +233,7 @@ export const PaygateAccountForm = ({
     }
     if (addressValidation.isValid) {
       // console.log('[POLYGON] Address is valid:', hexAddressValue)
-      return 'VALID Polygon wallet address'
+      return 'VALIDATED'
     }
     if (addressValidation.error) {
       // console.error('[POLYGON] Validation error:', addressValidation.error)
@@ -287,10 +288,8 @@ export const PaygateAccountForm = ({
           <div>
             <div className='mb-3 sm:mb-4 space-y-3 sm:space-y-5'>
               <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pt-0 sm:pt-4'>
-                <div className='flex items-center justify-between'>
-                  <h2 className='text-xl sm:text-2xl font-polysans md:font-semibold'>
-                    {isEditMode ? 'Edit Wallet' : 'Create Wallet'}
-                  </h2>
+                <SectionHeader
+                  title={isEditMode ? 'Edit Wallet' : 'Create Wallet'}>
                   <a
                     href={
                       hexAddressValue
@@ -301,18 +300,17 @@ export const PaygateAccountForm = ({
                     className='text-purple-600 dark:text-purple-100 flex items-center gap-1 hover:underline hover:underline-offset-4 decoration-dotted bg-white dark:bg-white/5 ps-2 pe-1 py-1 sm:py-0.5 rounded-full text-xs sm:text-sm'
                     target='_blank'>
                     <span className='wrap-break-words'>polygon scan</span>
-                    <Icon
-                      name={
-                        addressValidation.isValid ? 'arrow-up' : 'spinner-dots'
-                      }
-                      className={cn(
-                        'size-3 sm:size-4 translate-y-[0.35px] rotate-25 shrink-0',
-                        addressValidation.isValid ? 'dark:text-white' : '',
-                      )}
-                    />
+                    {addressValidation.isValid && (
+                      <Icon
+                        name='arrow-up'
+                        className={cn(
+                          'size-3 sm:size-4 translate-y-[0.35px] rotate-25 shrink-0',
+                          addressValidation.isValid ? 'dark:text-white' : '',
+                        )}
+                      />
+                    )}
                   </a>
-                </div>
-
+                </SectionHeader>
                 {(errorMessage || status === 'success') && (
                   <div className='flex flex-col sm:flex-row gap-2 sm:gap-3 font-mono text-xs uppercase tracking-widest'>
                     {errorMessage && (
@@ -340,8 +338,13 @@ export const PaygateAccountForm = ({
               <Callout
                 type={
                   addressValidation.isValid || walletResponse
-                    ? 'success'
+                    ? 'custom'
                     : 'warning'
+                }
+                customStyle={
+                  addressValidation.isValid
+                    ? 'bg-[#7242DB] border-[#7242DB]'
+                    : ''
                 }
                 icon='polygon'
                 title='Polygon USDC Wallet Address'

@@ -1,7 +1,7 @@
-import createMDX from '@next/mdx'
 import withPWAInit from '@ducanh2912/next-pwa'
-import type {NextConfig} from 'next'
+import createMDX from '@next/mdx'
 import {execSync} from 'child_process'
+import type {NextConfig} from 'next'
 
 const withPWA = withPWAInit({
   dest: 'public',
@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https: images.unsplash.com res.cloudinary.com",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.convex.cloud wss://*.convex.cloud api.paygate.to checkout.paygate.to *.firebaseio.com *.googleapis.com *.firebaseapp.com *.moonpay.com",
+      "connect-src 'self' https://*.convex.cloud wss://*.convex.cloud api.paygate.to checkout.paygate.to *.firebaseio.com *.googleapis.com *.firebaseapp.com *.moonpay.com *polygonscan.com",
       "frame-src 'self' accounts.google.com checkout.paygate.to *.firebaseapp.com *.moonpay.com",
       "worker-src 'self' blob:",
       "object-src 'none'",
