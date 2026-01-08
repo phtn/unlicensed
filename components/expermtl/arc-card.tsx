@@ -2,6 +2,7 @@ import {ClassName} from '@/app/types'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Card, CardBody} from '@heroui/react'
+import {motion} from 'motion/react'
 import Link from 'next/link'
 import {PropsWithChildren, ReactNode} from 'react'
 import {HyperList} from './hyper-list'
@@ -22,7 +23,7 @@ const ArcCard = ({
   radius = 'none',
 }: ArcCardProps) => {
   return (
-    <div className='max-w-2xl mx-auto'>
+    <motion.div className='max-w-2xl mx-auto'>
       <Card
         shadow={shadow}
         radius={radius}
@@ -32,7 +33,7 @@ const ArcCard = ({
         )}>
         <CardBody className='p-4 sm:p-8 space-y-6'>{children}</CardBody>
       </Card>
-    </div>
+    </motion.div>
   )
 }
 

@@ -7,7 +7,7 @@ import {usePaygate} from '@/hooks/use-paygate'
 import {paygatePublicConfig} from '@/lib/paygate/config'
 import {useQuery} from 'convex/react'
 import {useParams, useRouter} from 'next/navigation'
-import {useEffect, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {uuidv7 as v7} from 'uuidv7'
 import {InternalError} from './internal-error'
 import {PaymentError} from './payment-error'
@@ -45,7 +45,7 @@ export default function PayPage() {
     // Get wallet address from admin settings
     const wallet =
       // adminSettings.paygate?.usdcWallet ||
-      paygateAccount?.addressIn || process.env.NEXT_PUBLIC_TEST_ADDRESS_IN || ''
+      paygateAccount?.addressIn
 
     if (!wallet) {
       console.error('PayGate wallet address not configured')
@@ -60,7 +60,7 @@ export default function PayPage() {
     handleProcessPaymentSubmit(
       wallet,
       amountInDollars,
-      'moonpay',
+      'wert',
       order.contactEmail,
       'USD',
     )
@@ -157,18 +157,20 @@ export default function PayPage() {
         window.location.href = response.url
         return
       }
-
-      // Last resort: log warning
-      console.warn('Could not extract redirect URL from HTML response', {
-        htmlLength: html.length,
-        responseUrl: response.url,
-      })
     }
   }, [response])
 
+  // Check URL params for payment status
+  const paymentStatus = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      return urlParams?.get('payment')
+    }
+    return null
+  }, [])
   if (!order || !adminSettings) {
     return (
-      <div className='h-screen flex items-center justify-center'>
+      <div className='h-screen w-screen overflow-hidden pt-100 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
         <Loader />
       </div>
     )
@@ -187,13 +189,6 @@ export default function PayPage() {
       </div>
     )
   }
-
-  // Check URL params for payment status
-  const urlParams =
-    typeof window !== 'undefined'
-      ? new URLSearchParams(window.location.search)
-      : null
-  const paymentStatus = urlParams?.get('payment')
 
   if (paymentStatus === 'success' && order.payment.status === 'completed') {
     return (

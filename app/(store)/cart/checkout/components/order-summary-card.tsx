@@ -67,7 +67,7 @@ export function OrderSummaryCard({
                 <span className='opacity-80 font-brk'>Shipping</span>
                 <span className='font-space'>
                   {shipping === 0 ? (
-                    <span className='bg-teal-500 px-1.5 uppercase rounded-sm font-semibold text-white'>
+                    <span className='bg-limited px-1.5 uppercase rounded-sm font-bone text-dark-gray border border-dark-gray'>
                       Free
                     </span>
                   ) : (

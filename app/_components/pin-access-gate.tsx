@@ -27,6 +27,7 @@ export function PinAccessGate() {
   const [isLoading, setIsLoading] = useState(true)
   const inputRef = useRef<HTMLInputElement>(null)
   const [redirectTimer, setRedirectTimer] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -88,6 +89,10 @@ export function PinAccessGate() {
     },
     [authenticate, pinLength, router],
   )
+
+  const handleRedirect = useCallback(() => {
+    setIsRedirecting(true)
+  }, [])
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -151,7 +156,7 @@ export function PinAccessGate() {
         <div className='fixed inset-0 z-9999 flex flex-col items-center justify-center overflow-hidden bg-zinc-950'>
           <div className='absolute inset-0 bg-linear-to-b from-fuchsia-950/20 via-zinc-950 to-zinc-950' />
           <div className='absolute -bottom-96 left-1/2 -translate-x-1/2 size-160 aspect-square rounded-full bg-linear-to-t from-slate-950 via-slate-800/40 to-transparent blur-3xl' />
-          <div className='relative z-10 font-brk tracking-widest'>
+          <div className='relative z-10 font-brk tracking-widest text-white'>
             <Typewrite initialDelay={0} speed={30} text='AWESOME!' />
           </div>
           <div className='relative flex items-center h-16 z-10 font-brk text-sm tracking-widest'>
@@ -159,8 +164,15 @@ export function PinAccessGate() {
               {redirectTimer && (
                 <Link
                   href='/lobby'
-                  className='text-brand underline underline-offset-6 decoration-zinc-100/30 hover:decoration-zinc-100/60 decoration-dotted decoration-0.5'>
-                  TO LOBBY &rarr;
+                  onClick={handleRedirect}
+                  className='flex items-center space-x-4 text-brand underline underline-offset-6 decoration-zinc-100/30 hover:decoration-zinc-100/60 decoration-dotted decoration-0.5'>
+                  <span>TO LOBBY</span>
+                  <Icon
+                    name={isRedirecting ? 'spinners-ring' : 'arrow-right'}
+                    className={
+                      isRedirecting ? 'size-4 text-featured' : 'size-4'
+                    }
+                  />
                 </Link>
               )}
             </ViewTransition>

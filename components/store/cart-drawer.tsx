@@ -9,6 +9,7 @@ import {useRouter} from 'next/navigation'
 import {useMemo, useOptimistic, useTransition} from 'react'
 import {Drawer} from 'vaul'
 import {EmptyCart} from './empty-cart'
+import {SuggestedCartItems} from './suggested-cart-items'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -112,7 +113,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     <Drawer.Root open={open} onOpenChange={onOpenChange} direction='right'>
       <Drawer.Portal>
         <Drawer.Overlay className='z–900 fixed inset-0 bg-slate-950/60 backdrop-grayscale' />
-        <Drawer.Content className='border-l-[0.33px] border-foreground/20 bg-linear-to-b from-background dark:from-black to-background flex flex-col h-full md:w-lg w-full fixed bottom-0 right-0 z-70'>
+        <Drawer.Content className='z-9999 border-l-[0.33px] border-foreground/20 bg-linear-to-b from-background dark:from-black to-background flex flex-col h-full md:w-lg w-full fixed overflow-hidden bottom-0 right-0'>
           <div className='p-4 flex-1 overflow-auto'>
             <div className='mx-auto w-12 h-1.5 shrink-0 bg-border rounded-full mb-0' />
             <div className='flex items-center gap-4 mb-6 px-2'>
@@ -134,7 +135,10 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                 <p className='text-color-muted'>Loading cart...</p>
               </div>
             ) : !hasItems && !isPending ? (
-              <EmptyCart onPress={() => onOpenChange(false)} />
+              <div className='flex flex-col'>
+                <EmptyCart onPress={() => onOpenChange(false)} />
+                <SuggestedCartItems onClose={() => onOpenChange(false)} />
+              </div>
             ) : (
               <>
                 <div className='max-h-[60lvh] overflow-scroll space-y-4 mb-6 rounded-3xl border border-pink-300/80 dark:border-pink-300/60 bg-indigo-400/5'>

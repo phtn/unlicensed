@@ -111,7 +111,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
                 </span>
               </div>
             </div>
-            <div className='flex-1 text-xs font-brk font-normal tracking-tighter px-1.5 py-0.5 bg-dark-gray/5 md:whitespace-nowrap rounded-sm'>
+            <div className='flex-1 text-xs font-brk font-normal tracking-tighter px-1.5 py-0.5 bg-sky-700/10 md:whitespace-nowrap rounded-md'>
               {item.data?.tag}
             </div>
           </div>

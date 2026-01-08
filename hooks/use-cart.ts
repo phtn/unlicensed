@@ -12,6 +12,7 @@ import {
   removeFromLocalStorageCart,
   updateLocalStorageCartItem,
 } from '@/lib/localStorageCart'
+import {addToCartHistory} from '@/lib/localStorageCartHistory'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {useAuth} from './use-auth'
@@ -105,9 +106,7 @@ export const useCart = (): UseCartResult => {
     if (localStorageProducts === undefined) return null // Still loading
 
     // Create a map of productId -> product for quick lookup
-    const productMap = new Map(
-      localStorageProducts.map((p) => [p._id, p]),
-    )
+    const productMap = new Map(localStorageProducts.map((p) => [p._id, p]))
 
     // Build cart items with product data
     const items: CartItemWithProduct[] = localStorageCartItems
@@ -220,10 +219,13 @@ export const useCart = (): UseCartResult => {
           clearLocalStorageCart()
 
           if (process.env.NODE_ENV === 'development') {
-            console.log('[useCart] Local storage cart merged on authentication:', {
-              itemsCount: itemsToMerge.length,
-              userId,
-            })
+            console.log(
+              '[useCart] Local storage cart merged on authentication:',
+              {
+                itemsCount: itemsToMerge.length,
+                userId,
+              },
+            )
           }
         } catch (error) {
           console.error('Failed to merge local storage cart:', error)
@@ -240,13 +242,7 @@ export const useCart = (): UseCartResult => {
       }
       mergeCart()
     }
-  }, [
-    user,
-    isAuthenticated,
-    userId,
-    localStorageCartItems,
-    addToCartMutation,
-  ])
+  }, [user, isAuthenticated, userId, localStorageCartItems, addToCartMutation])
 
   // Keep guest cart state in sync across parallel routes (separate React trees).
   useEffect(() => {
@@ -256,7 +252,8 @@ export const useCart = (): UseCartResult => {
       setLocalStorageCartItems(getLocalStorageCartItems())
     }
 
-    const onCartUpdated = (_event: Event) => {
+    const onCartUpdated = (e: Event) => {
+      e.preventDefault()
       syncFromLocalStorage()
     }
 
@@ -270,7 +267,10 @@ export const useCart = (): UseCartResult => {
     window.addEventListener('storage', onStorage)
 
     return () => {
-      window.removeEventListener(LOCAL_STORAGE_CART_UPDATED_EVENT, onCartUpdated)
+      window.removeEventListener(
+        LOCAL_STORAGE_CART_UPDATED_EVENT,
+        onCartUpdated,
+      )
       window.removeEventListener('storage', onStorage)
     }
   }, [isAuthenticated])
@@ -337,6 +337,9 @@ export const useCart = (): UseCartResult => {
   // Remove item from cart
   const removeItem = useCallback(
     async (productId: Id<'products'>, denomination?: number) => {
+      // Add to cart history before removing
+      addToCartHistory(productId, denomination)
+
       if (isAuthenticated && userId) {
         // Use Convex for authenticated users
         await removeFromCartMutation({
@@ -355,17 +358,15 @@ export const useCart = (): UseCartResult => {
 
   // Clear cart
   const clear = useCallback(async () => {
-      if (isAuthenticated && userId) {
-        // Use Convex for authenticated users
-        await clearCartMutation({userId})
-      } else {
-        // Use local storage for unauthenticated users
-        clearLocalStorageCart()
-        setLocalStorageCartItems([])
-      }
-    },
-    [isAuthenticated, userId, clearCartMutation],
-  )
+    if (isAuthenticated && userId) {
+      // Use Convex for authenticated users
+      await clearCartMutation({userId})
+    } else {
+      // Use local storage for unauthenticated users
+      clearLocalStorageCart()
+      setLocalStorageCartItems([])
+    }
+  }, [isAuthenticated, userId, clearCartMutation])
 
   // Calculate cart item count
   const cartItemCount = useMemo(() => {
@@ -393,7 +394,9 @@ export const useCart = (): UseCartResult => {
     if (isAuthenticated) {
       return serverCart === undefined
     } else {
-      return localStorageProducts === undefined && localStorageCartItems.length > 0
+      return (
+        localStorageProducts === undefined && localStorageCartItems.length > 0
+      )
     }
   }, [isAuthenticated, serverCart, localStorageProducts, localStorageCartItems])
 

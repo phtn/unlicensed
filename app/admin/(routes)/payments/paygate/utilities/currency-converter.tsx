@@ -13,7 +13,7 @@ import {
   useState,
   useTransition,
 } from 'react'
-import {FiatCurrency} from './types'
+import {FiatCurrency} from '../types'
 
 interface ConverterFieldProps {
   className?: string
@@ -67,7 +67,7 @@ function ConverterField({
         )}>
         {isLast && (
           <div
-            className='absolute -top-px left-1/2 -translate-x-1/2 w-[50px] h-[25px] rounded-b-full border-b border-x border-white/15'
+            className='absolute -top-px left-1/2 -translate-x-1/2 w-12.5 h-6.25 rounded-b-full border-b border-x border-white/15'
             aria-hidden='true'></div>
         )}
         <div className='grow flex items-center justify-between w-full gap-12'>

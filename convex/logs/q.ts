@@ -146,7 +146,7 @@ export const getVisitStats = query({
     path: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db.query('logs').withIndex('by_type', (q) => q.eq('type', 'page_visit'))
+    const query = ctx.db.query('logs').withIndex('by_type', (q) => q.eq('type', 'page_visit'))
 
     const logs = await query.collect()
 

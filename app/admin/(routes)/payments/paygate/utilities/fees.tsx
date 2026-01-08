@@ -1,12 +1,13 @@
 'use client'
 
+import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {HyperList} from '@/components/expermtl/hyper-list'
 import {useApiCall} from '@/hooks/use-api-call'
 import {Icon} from '@/lib/icons'
 import type {Provider, ProviderStatusResponse} from '@/lib/paygate/types'
 import {cn} from '@/lib/utils'
 import {Card, CardHeader} from '@heroui/react'
-import {Key, PropsWithChildren, useEffect, useMemo, useState} from 'react'
+import {useEffect, useMemo} from 'react'
 
 // Type guard for ProviderStatusResponse
 function isProviderStatusResponse(
@@ -20,8 +21,7 @@ function isProviderStatusResponse(
   )
 }
 
-const ProvidersList = () => {
-  const [selectedKeys] = useState<Set<Key>>(new Set())
+export const FeesList = () => {
   const {handleApiCall, response} = useApiCall()
 
   useEffect(() => {
@@ -36,11 +36,6 @@ const ProvidersList = () => {
     }
     return []
   }, [response?.data])
-
-  const selectedValue = useMemo(
-    () => Array.from(selectedKeys).join(', '),
-    [selectedKeys],
-  )
 
   if (!response) {
     return (
@@ -72,25 +67,21 @@ const ProvidersList = () => {
   }
 
   return (
-    <div className='flex flex-col gap-2'>
-      <ListboxWrapper>
-        <HyperList
-          data={data}
-          component={ProviderItem}
-          container='w-full flex flex-col border-t border-x border-sidebar'
-          itemStyle='w-full md:w-auto'
-        />
-      </ListboxWrapper>
-      {selectedKeys.size > 0 && (
-        <p className='text-small'>Selected: {selectedValue}</p>
-      )}
+    <div className='dark:text-white space-y-4 py-4'>
+      <SectionHeader title='Providers'>{data.length}</SectionHeader>
+      <HyperList
+        data={data}
+        component={ProviderItem}
+        container='w-full flex flex-col border-t border-x border-sidebar'
+        itemStyle='w-full md:w-auto'
+      />
     </div>
   )
 }
 
 const ProviderItem = (item: Provider) => (
   <Card shadow='none' radius='none' className='border-b border-sidebar w-full'>
-    <CardHeader className='flex items-center justify-between px-4 w-full'>
+    <CardHeader className='flex items-center justify-between px-2 w-full'>
       <div className='flex items-center flex-1 space-x-2'>
         <span
           className={cn('text-sm', {
@@ -115,22 +106,9 @@ const ProviderItem = (item: Provider) => (
               'text-danger': item.status === 'unstable',
             },
           )}>
-          <span className='w-20'>{item.status}</span>
+          <span className='w-24'>{item.status}</span>
         </div>
       </div>
     </CardHeader>
   </Card>
-)
-
-const ListboxWrapper = ({children}: PropsWithChildren) => (
-  <div className='w-full'>{children}</div>
-)
-
-export const PayGateProviders = () => (
-  <div className='dark:text-white py-4'>
-    <h2 className='text-xl md:text-xl font-polysans font-semibold mt-2 mb-4'>
-      Providers
-    </h2>
-    <ProvidersList />
-  </div>
 )

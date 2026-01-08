@@ -139,11 +139,11 @@ function handleOptions(): Response {
 }
 
 // Start server
-console.log(`🚀 PayGate Proxy Server starting on port ${PORT}`)
-console.log(`📝 USDC Wallet: ${USDC_WALLET || 'Not configured'}`)
-console.log(`💰 Affiliate Wallet: ${AFFILIATE_WALLET || 'Not configured'}`)
+console.log(`𝐏 Proxy Server starting on port ${PORT}`)
+console.log(`𝐖 USDC Wallet: ${USDC_WALLET || 'Not configured'}`)
+console.log(`𝐀 Affiliate Wallet: ${AFFILIATE_WALLET || 'Not configured'}`)
 console.log(
-  `🌐 Custom Checkout Domain: ${CUSTOM_CHECKOUT_DOMAIN || 'Not configured'}`,
+  `𝐃 Custom Checkout Domain: ${CUSTOM_CHECKOUT_DOMAIN || 'Not configured'}`,
 )
 
 serve({
@@ -160,7 +160,3 @@ serve({
 
 console.log(`✅ PayGate Proxy Server running at http://localhost:${PORT}`)
 console.log(`📡 Ready to proxy requests to PayGate API`)
-
-
-
-

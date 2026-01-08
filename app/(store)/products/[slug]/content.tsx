@@ -122,17 +122,6 @@ export const ProductDetailContent = ({
       setOptimisticAdding(true)
 
       try {
-        // Debug: Log before adding to cart
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[ProductDetail] Adding to cart:', {
-            productId,
-            quantity: 1,
-            denomination,
-            isAuthenticated,
-            timestamp: Date.now(),
-          })
-        }
-
         // Add item to cart - works for both authenticated and anonymous users
         // The cart queries will automatically update when this completes
         await addItem(productId, 1, denomination)
@@ -245,7 +234,6 @@ export const ProductDetailContent = ({
                         <Button
                           size='sm'
                           onPress={handleDenominationChange(i)}
-                          // selectedDenomination
                           className={cn(
                             'cursor-pointer bg-sidebar rounded-full border border-foreground/20 portrait:px-px',
                             {

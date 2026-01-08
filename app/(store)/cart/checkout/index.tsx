@@ -59,7 +59,6 @@ export function Checkout({
     convexUser,
   })
 
-  // Check if we have all required info to auto-place order
   const hasAllRequiredInfo = useMemo(() => {
     return !!(
       userEmail &&
@@ -74,46 +73,32 @@ export function Checkout({
     )
   }, [userEmail, userPhone, defaultAddress])
 
-  // Auto-close modal if all required data becomes available
   useEffect(() => {
     if (isCheckoutOpen && hasAllRequiredInfo) {
-      // If modal is open but user now has all required data, close it
-      // They can place order directly without the modal
       onCheckoutClose()
     }
   }, [isCheckoutOpen, hasAllRequiredInfo, onCheckoutClose])
 
-  // Handle successful order - show development modal (if dev mode) or redirect to payment page
   useEffect(() => {
     if (orderId && !hasShownDevModalRef.current) {
-      console.log('[Checkout] Order placed successfully, orderId:', orderId)
       hasShownDevModalRef.current = true
 
       let timeoutId: NodeJS.Timeout | null = null
 
-      // Clear the cart after successful order placement
       const handleOrderSuccess = async () => {
         try {
           await onClearCart()
-          console.log('[Checkout] Cart cleared after successful order')
         } catch (error) {
           console.error('[Checkout] Failed to clear cart:', error)
-          // Continue even if cart clearing fails
         }
 
-        // Close checkout modal first
-        console.log('[Checkout] Closing checkout modal')
         onCheckoutClose()
 
         if (isDevMode) {
-          // Dev mode: Show development modal after a delay
           timeoutId = setTimeout(() => {
-            console.log('[Checkout] Dev mode: Setting showDevModal to true')
             setShowDevModal(true)
           }, 500)
         } else {
-          // Production mode: Redirect to payment page to proceed with payment
-          console.log('[Checkout] Production mode: Redirecting to payment page')
           startTransition(() => {
             router.push(`/order/${orderId}/pay`)
           })
@@ -139,7 +124,6 @@ export function Checkout({
       !showDevModal &&
       hasShownDevModalRef.current
     ) {
-      console.log('[Checkout] Checkout modal closed, showing dev modal')
       const timeoutId = setTimeout(() => {
         setShowDevModal(true)
       }, 200)
@@ -179,7 +163,6 @@ export function Checkout({
         })
       })
     } else {
-      // Show form if info is missing
       onOpen()
     }
   }, [
@@ -196,7 +179,6 @@ export function Checkout({
   ])
 
   const handlePlaceOrder = useCallback(async () => {
-    // Validate form
     if (!validate()) {
       return
     }

@@ -68,7 +68,7 @@ export const getOrCreateAdminSettings = mutation({
   args: {uid: v.string()},
   handler: async (ctx, {uid}) => {
     // Check if statConfigs already exist
-    let settings = await ctx.db
+    const settings = await ctx.db
       .query('adminSettings')
       .withIndex('by_identifier', (q) => q.eq('identifier', 'statConfigs'))
       .unique()
@@ -279,7 +279,7 @@ export const updateIpapiGeolocationEnabled = mutation({
     enabled: v.boolean(),
   },
   handler: async (ctx, {enabled}) => {
-    let settings = await ctx.db
+    const settings = await ctx.db
       .query('adminSettings')
       .withIndex('by_identifier', (q) => q.eq('identifier', 'ipapiGeolocation'))
       .unique()

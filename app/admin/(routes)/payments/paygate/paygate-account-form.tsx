@@ -44,7 +44,7 @@ const paygateAccountSchema = z.object({
 
 type PaygateAccountFormValues = z.infer<typeof paygateAccountSchema>
 
-const DEFAULT_CALLBACK_URL = 'http://localhost:3000/api/paygate/webhook'
+const DEFAULT_CALLBACK_URL = 'https://rapidfirenow.com/api/paygate/webhook'
 
 const getDefaultValues = (): PaygateAccountFormValues => ({
   hexAddress: '',
@@ -88,7 +88,7 @@ export const PaygateAccountForm = ({
   const {paste, pasted} = usePaste()
 
   // Sync callback URL with URL search params
-  const [callbackUrlParam, setCallbackUrlParam] = useQueryState(
+  const [callbackUrlParam] = useQueryState(
     'callbackUrl',
     parseAsString.withDefault(DEFAULT_CALLBACK_URL),
   )

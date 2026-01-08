@@ -1,6 +1,7 @@
 import {type ClassName} from '@/app/types'
 import {AnimatePresence, motion, type Variants} from 'motion/react'
 import {type FC, type ReactNode, useCallback, useMemo} from 'react'
+import {ScrollArea} from '../ui/scroll-area'
 
 interface HyperListProps<T> {
   keyId?: keyof T
@@ -126,10 +127,12 @@ export const HyperList = <T extends object>(props: HyperListProps<T>) => {
 
   return (
     <AnimatePresence>
-      {children}
-      <ul className={baseContainerStyle}>
-        {slicedData?.sort(sortFn).map(render)}
-      </ul>
+      <ScrollArea>
+        {children}
+        <ul className={baseContainerStyle}>
+          {slicedData?.sort(sortFn).map(render)}
+        </ul>
+      </ScrollArea>
     </AnimatePresence>
   )
 }

@@ -205,3 +205,55 @@ export const getPrimaryImage = query({
     return primaryImage
   },
 })
+
+export const getFeaturedProducts = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 10
+    const products = await ctx.db
+      .query('products')
+      .filter((q) => q.eq(q.field('featured'), true))
+      .take(limit)
+
+    return sortProducts(products)
+  },
+})
+
+export const getPreviouslyBoughtProducts = query({
+  args: {
+    firebaseId: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    if (!args.firebaseId) return []
+
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId!))
+      .unique()
+
+    if (!user) return []
+
+    const orders = await ctx.db
+      .query('orders')
+      .withIndex('by_user', (q) => q.eq('userId', user._id))
+      .order('desc')
+      .take(50)
+
+    const productIds = new Set<Id<'products'>>()
+    for (const order of orders) {
+      for (const item of order.items) {
+        productIds.add(item.productId)
+      }
+    }
+
+    const limit = args.limit ?? 10
+    const uniqueIds = Array.from(productIds).slice(0, limit)
+
+    const products = await Promise.all(uniqueIds.map((id) => ctx.db.get(id)))
+
+    return products.filter((p): p is NonNullable<typeof p> => p !== null)
+  },
+})

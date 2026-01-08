@@ -1,8 +1,8 @@
 'use client'
 
 import {MainWrapper} from '@/app/admin/_components/main-wrapper'
-import {CurrencyConverter} from '../currency-converter'
-import {PayGateProviders} from '../providers-list'
+import {CurrencyConverter} from './currency-converter'
+import {PayGateProviders} from './providers-list'
 
 export const UtilitiesContent = () => {
   return (
