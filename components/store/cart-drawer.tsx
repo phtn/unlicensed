@@ -106,7 +106,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
 
   const handleCartCheckout = () => {
     onOpenChange(false)
-    router.push('/cart')
+    router.push('/lobby/cart')
   }
 
   return (
@@ -155,9 +155,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                         className='flex gap-4 p-3 bg-surface-highlight border-b border-foreground/25 border-dashed last:border-b-0 pb-6'>
                         <div className='relative w-20 h-20 shrink-0 rounded-lg overflow-hidden'>
                           <Image
-                            src={
-                              productImageUrl || '/default-product-image.svg'
-                            }
+                            src={productImageUrl ?? undefined}
                             alt={product.name}
                             className='w-full h-full object-cover'
                           />

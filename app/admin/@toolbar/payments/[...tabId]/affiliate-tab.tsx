@@ -2,6 +2,7 @@
 
 import {
   MainTab,
+  PrimaryTab,
   SecondaryTab,
   ToolbarButtonWrapper,
 } from '@/app/admin/@toolbar/components'
@@ -21,14 +22,15 @@ const AffiliateTabInner = () => {
 
   return (
     <>
+      <MainTab href='/admin/payments/paygate'>
+        <PageTitle>PayGate</PageTitle>
+      </MainTab>
       <MainTab href='/admin/payments/paygate?tabId=affiliate'>
-        <PageTitle>Affiliate</PageTitle>
+        <PageTitle>Affiliates</PageTitle>
         <span
           className={cn(
             'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
-            {
-              'bg-indigo-500 dark:bg-indigo-500 text-white': isAffiliateRoute,
-            },
+            'bg-sidebar/50 dark:bg-white text-indigo-500',
           )}>
           <AnimatedNumber value={affiliates?.length ?? 0} />
         </span>
@@ -36,9 +38,15 @@ const AffiliateTabInner = () => {
       {isAffiliateRoute && (
         <ToolbarButtonWrapper>
           <SecondaryTab
+            id='accounts'
+            icon='wallet'
+            label='Accounts'
+            href='/admin/payments/paygate?tabId=affiliate'
+          />
+          <PrimaryTab
             id='new'
             icon='plus'
-            label='New Affiliate'
+            label='New'
             href='/admin/payments/paygate?tabId=affiliate&subTabId=new'
           />
         </ToolbarButtonWrapper>

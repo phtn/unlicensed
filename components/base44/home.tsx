@@ -1,4 +1,4 @@
-import {Highlight, Highlights} from '@/app/(store)/hero'
+import {Highlight, Highlights} from '@/app/lobby/(store)/hero'
 import {useMobile} from '@/hooks/use-mobile'
 import {Activity, Suspense, useMemo} from 'react'
 import {ShopFinder} from './finder'
@@ -19,7 +19,7 @@ export const NewHome = () => {
           description:
             'Hyper-seasonal releases, terpene-rich cultivars, chef-crafted edibles, and sparkling infusions—all sourced from boutique growers and makers we know by name.',
           ctaText: 'Shop Flowers',
-          ctaHref: '/category/flower',
+          ctaHref: '/lobby/category/flower',
         },
         {
           id: 'edibles',
@@ -31,7 +31,7 @@ export const NewHome = () => {
           description:
             'A chef-led recipe using cold-pressed citrus and nano-emulsified THC for a crisp, uplifting edible. Balanced with guava nectar for a lush finish.',
           ctaText: 'Shop Edibles',
-          ctaHref: '/category/edibles',
+          ctaHref: '/lobby/category/edibles',
         },
         {
           id: 'extracts',
@@ -42,7 +42,7 @@ export const NewHome = () => {
           description:
             'A diamond in the rough. These THCa diamonds are small, solid, crystalline structures that you can smoke or vape for a potent high. Each package contains 1g.',
           ctaText: 'Shop Concentrates',
-          ctaHref: '/category/concentrates',
+          ctaHref: '/lobby/category/concentrates',
         },
         {
           id: 'vapes',
@@ -53,7 +53,7 @@ export const NewHome = () => {
           description:
             'Powerful sleep support meets rich cocoa indulgence. A decadent chocolate elixir for experienced connoisseurs looking for deepest slumber.',
           ctaText: 'Shop Beverages',
-          ctaHref: '/category/beverages',
+          ctaHref: '/lobby/category/beverages',
         },
       ] as Highlight[],
     [],

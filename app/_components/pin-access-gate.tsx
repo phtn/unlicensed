@@ -41,11 +41,14 @@ export function PinAccessGate() {
     if (isAuthenticated) {
       timer = setTimeout(() => {
         setRedirectTimer(true)
+        startTransition(() => {
+          router.replace('/lobby')
+        })
       }, 4000)
     }
 
     return () => clearTimeout(timer as NodeJS.Timeout)
-  }, [isAuthenticated])
+  }, [isAuthenticated, router])
 
   useEffect(() => {
     return () => {
@@ -64,14 +67,14 @@ export function PinAccessGate() {
   }, [isMounted, isAuthenticated, router])
 
   const handlePinChange = useCallback(
-    (value: string) => {
+    async (value: string) => {
       // Only allow alphanumeric characters
       const sanitized = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
       setPin(sanitized)
       setError(false)
 
       if (sanitized.length === pinLength) {
-        const isValid = authenticate(sanitized)
+        const isValid = await authenticate(sanitized)
         if (isValid) {
           startTransition(() => {
             router.replace('/lobby')
@@ -95,14 +98,14 @@ export function PinAccessGate() {
   }, [])
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault()
       // Get the current value from the input ref for browser automation compatibility
       const inputValue = inputRef.current?.value || pin
       const sanitized = inputValue.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
 
       if (sanitized.length === pinLength) {
-        const isValid = authenticate(sanitized)
+        const isValid = await authenticate(sanitized)
         if (isValid) {
           startTransition(() => {
             router.replace('/lobby')

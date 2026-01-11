@@ -1,6 +1,6 @@
 'use client'
 
-import {CartHistory} from '@/app/(store)/cart/cart-history'
+import {CartHistory} from '@/app/lobby/(store)/cart/cart-history'
 import {Button} from '@heroui/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'

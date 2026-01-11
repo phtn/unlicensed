@@ -21,7 +21,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
   return (
     <Card
       as={NextLink}
-      href={`/products/${product.slug.toLocaleLowerCase()}`}
+      href={`/lobby/products/${product.slug.toLocaleLowerCase()}`}
       isPressable
       shadow='sm'
       className={cn(

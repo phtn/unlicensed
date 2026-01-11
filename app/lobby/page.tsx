@@ -1,7 +1,7 @@
 import {fetchCategories, fetchProducts} from '@/lib/convexClient'
 import {buildTypeFlag, delayFlag} from '@/lib/flags'
 
-import {Content} from '../(store)/content'
+import {Content} from './(store)/content'
 
 export default async function LobbyPage() {
   // Evaluate flags

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.23.0
+
+### Minor Changes
+
+- fixed set rfac to cookies
+
 ## 0.22.0
 
 ### Minor Changes

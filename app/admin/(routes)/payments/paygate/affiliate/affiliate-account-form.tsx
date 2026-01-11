@@ -3,14 +3,15 @@
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {api} from '@/convex/_generated/api'
-import type {Doc} from '@/convex/_generated/dataModel'
+import type {Doc, Id} from '@/convex/_generated/dataModel'
 import {Button, Card, CardBody} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
-import {useMutation} from 'convex/react'
-import {useState} from 'react'
+import {useMutation, useQuery} from 'convex/react'
+import {useMemo, useState} from 'react'
 import {z} from 'zod'
 
 const affiliateAccountSchema = z.object({
+  paygateAccount: z.string(),
   walletAddress: z
     .string()
     .min(1, 'Wallet address is required')
@@ -18,16 +19,19 @@ const affiliateAccountSchema = z.object({
   label: z.string().optional(),
   description: z.string().optional(),
   commissionRate: z.number().min(0).max(1).optional(),
+  merchantRate: z.number().min(0).max(1).optional(),
   enabled: z.boolean().optional(),
 })
 
 type AffiliateAccountFormValues = z.infer<typeof affiliateAccountSchema>
 
 const defaultValues: AffiliateAccountFormValues = {
+  paygateAccount: '',
   walletAddress: '',
   label: '',
   description: '',
-  commissionRate: 0.005, // Default 0.5%
+  commissionRate: 0.4,
+  merchantRate: 0.59,
   enabled: true,
 }
 
@@ -51,6 +55,16 @@ export const AffiliateAccountForm = ({
   const updateAffiliate = useMutation(api.affiliateAccounts.m.updateAffiliate)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const paygateAccounts = useQuery(api.paygateAccounts.q.listAccounts)
+
+  const paygateAccountOptions = useMemo(() => {
+    if (!paygateAccounts) return []
+    return paygateAccounts.map((account) => ({
+      value: account._id,
+      label: account.label ?? account.addressIn,
+    }))
+  }, [paygateAccounts])
 
   const formValues = initialValues ?? defaultValues
 
@@ -78,16 +92,19 @@ export const AffiliateAccountForm = ({
             label: data.label,
             description: data.description,
             commissionRate: data.commissionRate,
+            merchantRate: data.merchantRate,
             enabled: data.enabled,
           })
           setStatus('success')
           onUpdated?.()
         } else {
           await createAffiliate({
+            paygateAccount: data.paygateAccount as Id<'paygateAccounts'>,
             walletAddress: data.walletAddress,
             label: data.label,
             description: data.description,
             commissionRate: data.commissionRate,
+            merchantRate: data.merchantRate,
             enabled: data.enabled,
           })
           form.reset()
@@ -126,13 +143,24 @@ export const AffiliateAccountForm = ({
             form.handleSubmit()
           }}
           className='space-y-4'>
+          <form.AppField name='paygateAccount'>
+            {(input) => (
+              <input.SelectField
+                type='select'
+                name='paygateAccount'
+                label='Select a PayGate account'
+                placeholder='0x'
+                description='Ethereum/Polygon wallet address for receiving commissions'
+                options={paygateAccountOptions}
+              />
+            )}
+          </form.AppField>
           <form.AppField name='walletAddress'>
             {(input) => (
               <input.TextField
                 type='text'
-                label='Affiliate Wallet Address'
-                placeholder='0x...'
-                description='Ethereum/Polygon wallet address for receiving commissions'
+                label='Affiliat Wallet Address'
+                placeholder='0x'
               />
             )}
           </form.AppField>

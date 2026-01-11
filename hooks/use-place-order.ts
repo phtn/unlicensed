@@ -149,15 +149,6 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
               cartIdToUse = tempCartId
               // Clear local storage after successful sync
               clearLocalStorageCart()
-              if (process.env.NODE_ENV === 'development') {
-                console.log(
-                  '[usePlaceOrder] Local storage cart synced to Convex before checkout:',
-                  {
-                    itemsCount: localStorageItems.length,
-                    cartId: tempCartId,
-                  },
-                )
-              }
             } else {
               throw new Error('Failed to create cart from local storage items')
             }
@@ -239,12 +230,6 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 firebaseId: user.uid,
                 address: shippingAddressToSave,
               })
-
-              if (process.env.NODE_ENV === 'development') {
-                console.log(
-                  '[usePlaceOrder] Shipping address saved to user profile',
-                )
-              }
             }
 
             // Add billing address if different from shipping and doesn't exist
@@ -271,12 +256,6 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                   firebaseId: user.uid,
                   address: billingAddressToSave,
                 })
-
-                if (process.env.NODE_ENV === 'development') {
-                  console.log(
-                    '[usePlaceOrder] Billing address saved to user profile',
-                  )
-                }
               }
             }
 
@@ -294,12 +273,6 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                     phone: params.contactPhone,
                   },
                 })
-
-                if (process.env.NODE_ENV === 'development') {
-                  console.log(
-                    '[usePlaceOrder] Contact phone updated in user profile',
-                  )
-                }
               }
             }
 
@@ -314,27 +287,11 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 firebaseId: user.uid,
                 photoUrl: convexUser.photoUrl,
               })
-
-              if (process.env.NODE_ENV === 'development') {
-                console.log('[usePlaceOrder] Email updated in user profile')
-              }
             }
           } catch (userUpdateError) {
             // Log error but don't fail the order placement
-            console.error(
-              '[usePlaceOrder] Failed to update user info:',
-              userUpdateError,
-            )
+            console.error(userUpdateError)
           }
-        }
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[usePlaceOrder] Order placed successfully:', {
-            orderId: newOrderId,
-            userId,
-            cartId: cart._id,
-            isAuthenticated,
-          })
         }
 
         return newOrderId

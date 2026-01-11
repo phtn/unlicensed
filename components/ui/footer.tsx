@@ -22,19 +22,19 @@ export const Footer = () => (
       </div>
       <div className='flex flex-wrap justify-center items-center gap-3'>
         <Link
-          href='/legal/terms-of-use'
+          href='/terms-of-use'
           className='text-light-gray hover:text-foreground/80 text-xs'>
           Terms of Use
         </Link>
         <span className='opacity-20'>●</span>
         <Link
-          href='/legal/privacy-policy'
+          href='/privacy-policy'
           className='text-light-gray hover:text-foreground/80 text-xs'>
           Privacy Policy
         </Link>
         <span className='opacity-20'>●</span>
         <Link
-          href='/legal/purchase-agreement'
+          href='/purchase-agreement'
           className='text-light-gray hover:text-foreground/80 text-xs'>
           Purchase Agreement
         </Link>

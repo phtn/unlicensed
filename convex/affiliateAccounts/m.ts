@@ -6,30 +6,38 @@ import {mutation} from '../_generated/server'
  */
 export const createAffiliate = mutation({
   args: {
+    paygateAccount: v.id('paygateAccounts'),
     walletAddress: v.string(),
     label: v.optional(v.string()),
     description: v.optional(v.string()),
     commissionRate: v.optional(v.number()),
+    merchantRate: v.optional(v.number()),
     enabled: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Validate wallet address format (basic Ethereum address format)
     const addressRegex = /^0x[a-fA-F0-9]{40}$/
     if (!addressRegex.test(args.walletAddress)) {
-      throw new Error('Invalid wallet address format. Must be a valid Ethereum address (0x...).')
+      throw new Error(
+        'Invalid wallet address format. Must be a valid Ethereum address (0x...).',
+      )
     }
 
     // Validate commission rate if provided
     if (args.commissionRate !== undefined) {
       if (args.commissionRate < 0 || args.commissionRate > 1) {
-        throw new Error('Commission rate must be between 0 and 1 (e.g., 0.005 for 0.5%).')
+        throw new Error(
+          'Commission rate must be between 0 and 1 (e.g., 0.005 for 0.5%).',
+        )
       }
     }
 
     // Check if affiliate with this wallet address already exists
     const existing = await ctx.db
       .query('affiliateAccounts')
-      .withIndex('by_wallet_address', (q) => q.eq('walletAddress', args.walletAddress.toLowerCase()))
+      .withIndex('by_wallet_address', (q) =>
+        q.eq('walletAddress', args.walletAddress.toLowerCase()),
+      )
       .unique()
 
     if (existing) {
@@ -38,10 +46,12 @@ export const createAffiliate = mutation({
 
     const now = Date.now()
     const affiliateId = await ctx.db.insert('affiliateAccounts', {
+      paygateAccount: args.paygateAccount,
       walletAddress: args.walletAddress.toLowerCase(), // Normalize to lowercase
       label: args.label,
       description: args.description,
       commissionRate: args.commissionRate,
+      merchantRate: args.merchantRate,
       enabled: args.enabled ?? true,
       totalCommissions: 0,
       totalTransactions: 0,
@@ -63,6 +73,7 @@ export const updateAffiliate = mutation({
     label: v.optional(v.string()),
     description: v.optional(v.string()),
     commissionRate: v.optional(v.number()),
+    merchantRate: v.optional(v.number()),
     enabled: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -74,7 +85,9 @@ export const updateAffiliate = mutation({
     // Validate commission rate if provided
     if (args.commissionRate !== undefined) {
       if (args.commissionRate < 0 || args.commissionRate > 1) {
-        throw new Error('Commission rate must be between 0 and 1 (e.g., 0.005 for 0.5%).')
+        throw new Error(
+          'Commission rate must be between 0 and 1 (e.g., 0.005 for 0.5%).',
+        )
       }
     }
 
@@ -105,4 +118,3 @@ export const deleteAffiliate = mutation({
     return {success: true}
   },
 })
-

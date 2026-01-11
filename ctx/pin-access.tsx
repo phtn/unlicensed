@@ -1,5 +1,10 @@
 'use client'
 
+import {
+  deletePinAccessCookie,
+  getPinAccessCookie,
+  setPinAccessCookie,
+} from '@/app/actions/pin-access'
 import {api} from '@/convex/_generated/api'
 import {useQuery} from 'convex/react'
 import {
@@ -12,13 +17,20 @@ import {
   type ReactNode,
 } from 'react'
 
-const PIN_STORAGE_KEY = 'pin-access-authenticated'
+const PIN_COOKIE_NAME = 'rf-ac'
 const PIN_CODE = 'ZZZZZZ' // 6 character alphanumeric PIN
+
+/**
+ * Get PIN from cookie using server action
+ */
+async function getPinCookie(): Promise<string | undefined> {
+  return await getPinAccessCookie()
+}
 
 interface PinAccessContextValue {
   isAuthenticated: boolean
-  authenticate: (pin: string) => boolean
-  logout: () => void
+  authenticate: (pin: string) => Promise<boolean>
+  logout: () => Promise<void>
   pinLength: number
 }
 
@@ -35,35 +47,43 @@ export function PinAccessProvider({children}: PinAccessProviderProps) {
     [haltPass],
   )
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  // Track manual authentication state (for authenticate/logout actions)
+  const [authStateVersion, setAuthStateVersion] = useState(0)
+  const [storedPin, setStoredPin] = useState<string | undefined>(undefined)
 
-  // Re-check authentication when passes become available from the query
+  // Get PIN cookie value using server action
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (!passes) return
+    getPinCookie().then((pin) => {
+      setStoredPin(pin)
+    })
+  }, [authStateVersion])
 
-    const stored = localStorage.getItem(PIN_STORAGE_KEY)
-    if (stored && passes.includes(stored.toUpperCase())) {
-      setIsAuthenticated(true)
-    }
-  }, [passes])
+  // Derive authentication status from cookie and passes during rendering
+  const isAuthenticated = useMemo(() => {
+    // Always validate stored PIN against passes
+    if (!passes) return false
+    if (!storedPin) return false
+
+    return passes.includes(storedPin.toUpperCase())
+  }, [passes, storedPin])
 
   const authenticate = useCallback(
-    (pin: string): boolean => {
+    async (pin: string): Promise<boolean> => {
       const isValid = passes?.includes(pin.toUpperCase()) ?? false
 
       if (isValid) {
-        localStorage.setItem(PIN_STORAGE_KEY, pin.toUpperCase())
-        setIsAuthenticated(true)
+        await setPinAccessCookie(pin.toUpperCase())
+        // Force state update to trigger useMemo recalculation
+        setAuthStateVersion((prev) => prev + 1)
       }
       return isValid
     },
     [passes],
   )
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(PIN_STORAGE_KEY)
-    setIsAuthenticated(false)
+  const logout = useCallback(async () => {
+    await deletePinAccessCookie()
+    setAuthStateVersion((prev) => prev + 1)
   }, [])
 
   const value = useMemo(
@@ -87,4 +107,4 @@ export function usePinAccess(): PinAccessContextValue {
   return ctx
 }
 
-export {PIN_STORAGE_KEY}
+export {PIN_COOKIE_NAME}

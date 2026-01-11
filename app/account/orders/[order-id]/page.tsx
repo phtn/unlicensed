@@ -82,14 +82,11 @@ export default function OrderDetailPage() {
 
   // Check for payment success query param
   useEffect(() => {
-    if (searchParams.get('payment') === 'success') {
+    if (searchParams.get('') === 'paid') {
       // Remove query param from URL without reload
       const url = new URL(window.location.href)
       url.searchParams.delete('payment')
       window.history.replaceState({}, '', url.toString())
-    }
-    return () => {
-      setShowSuccessBanner(true)
     }
   }, [searchParams])
 

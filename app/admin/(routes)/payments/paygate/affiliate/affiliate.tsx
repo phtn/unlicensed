@@ -65,6 +65,7 @@ const AffiliateContentInner = () => {
       <AffiliateAccountForm
         affiliateId={editingAffiliate._id}
         initialValues={{
+          paygateAccount: editingAffiliate.paygateAccount,
           walletAddress: editingAffiliate.walletAddress,
           label: editingAffiliate.label ?? '',
           description: editingAffiliate.description ?? '',

@@ -53,14 +53,14 @@ const CategoryItem = (item: CategoryItemProps) => {
     <Card
       as={Link}
       key={item._id}
-      href={`/category/${item.slug}`}
+      href={`/lobby/category/${item.slug}`}
       prefetch
       radius='sm'
       className='border-none'
       isFooterBlurred
       isPressable
       shadow='none'
-      onMouseEnter={item.prefetchFn(`/category/${item.slug}`)}>
+      onMouseEnter={item.prefetchFn(`/lobby/category/${item.slug}`)}>
       <CardBody className='overflow-visible p-0'>
         <Image
           alt={item.name}
