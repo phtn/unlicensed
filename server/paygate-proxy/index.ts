@@ -26,7 +26,7 @@ const CUSTOM_CHECKOUT_DOMAIN = process.env.CUSTOM_CHECKOUT_DOMAIN || ''
 
 // PayGate API base URLs (DO NOT CHANGE)
 const PAYGATE_API_URL = 'https://api.paygate.to'
-// const PAYGATE_CHECKOUT_URL = 'https://checkout.paygate.to'
+const PAYGATE_CHECKOUT_URL = 'https://checkout.paygate.to'
 
 async function handleRequest(request: Request): Promise<Response> {
   const url = new URL(request.url)
@@ -48,14 +48,20 @@ async function handleRequest(request: Request): Promise<Response> {
 
   if (path.startsWith('/crypto/')) {
     // Crypto payment endpoints
-    targetUrl = `${PAYGATE_API_URL}${path}?${searchParams.toString()}`
-  } else if (path.startsWith('/create.php') || path === '/create.php') {
+    targetUrl = `${PAYGATE_CHECKOUT_URL}${path}?${searchParams.toString()}`
+  } else if (
+    path.startsWith('/process-payment.php') ||
+    path === '/process-payment.php'
+  ) {
     // Credit card payment creation
-    targetUrl = `${PAYGATE_API_URL}/create.php?${searchParams.toString()}`
-  } else if (path.startsWith('/status.php') || path === '/status.php') {
+    targetUrl = `${PAYGATE_CHECKOUT_URL}/pay.php?${searchParams.toString()}`
+  } else if (path.startsWith('/pay.php') || path === '/pay.php') {
     // Payment status check
-    targetUrl = `${PAYGATE_API_URL}/status.php?${searchParams.toString()}`
-  } else if (path.startsWith('/info.php') || path === '/info.php') {
+    targetUrl = `${PAYGATE_API_URL}/control/payment-status.php?${searchParams.toString()}`
+  } else if (
+    path.startsWith('/control/payment-status.php') ||
+    path === '/control/payment-status.php'
+  ) {
     // General info endpoints
     targetUrl = `${PAYGATE_API_URL}${path}?${searchParams.toString()}`
   } else {

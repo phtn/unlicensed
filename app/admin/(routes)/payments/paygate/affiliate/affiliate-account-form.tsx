@@ -4,10 +4,11 @@ import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import type {Doc, Id} from '@/convex/_generated/dataModel'
+import {useApiCall} from '@/hooks/use-api-call'
 import {Button, Card, CardBody} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation, useQuery} from 'convex/react'
-import {useMemo, useState} from 'react'
+import {useCallback, useMemo, useState} from 'react'
 import {z} from 'zod'
 
 const affiliateAccountSchema = z.object({
@@ -57,6 +58,15 @@ export const AffiliateAccountForm = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const paygateAccounts = useQuery(api.paygateAccounts.q.listAccounts)
+  const {handleApiCall} = useApiCall()
+
+  const getAccountWallet = useCallback(
+    (id: Id<'paygateAccounts'>) => {
+      const account = paygateAccounts?.find((account) => account._id === id)
+      return account?.hexAddress
+    },
+    [paygateAccounts],
+  )
 
   const paygateAccountOptions = useMemo(() => {
     if (!paygateAccounts) return []
@@ -107,6 +117,18 @@ export const AffiliateAccountForm = ({
             merchantRate: data.merchantRate,
             enabled: data.enabled,
           })
+          await handleApiCall(
+            'https://api.paygate.to/control/custom-affiliate.php?address=' +
+              getAccountWallet(data.paygateAccount as Id<'paygateAccounts'>) +
+              '&callback=' +
+              'https%3A%2F%2Frapidfirenow.com%2Forder%3Fnumber%3D82173313628090' +
+              '&affiliate=' +
+              data.walletAddress +
+              '&affiliate_fee=' +
+              data.commissionRate +
+              '&merchant_fee=' +
+              data.merchantRate,
+          )
           form.reset()
           setStatus('success')
           onCreated?.()
