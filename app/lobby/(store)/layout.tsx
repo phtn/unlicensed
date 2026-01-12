@@ -1,6 +1,5 @@
 'use client'
 
-import {Footer} from '@/components/ui/footer'
 import {NuqsAdapter} from 'nuqs/adapters/next/app'
 import type {ReactNode} from 'react'
 import {RouteProtection} from '../../_components/route-protection'
@@ -17,7 +16,7 @@ const StoreLayout = ({children, navbar}: StoreLayoutProps) => {
         <div className='flex min-h-screen flex-col'>
           {navbar}
           <main className='relative flex-1'>{children}</main>
-          <Footer />
+          {/*<Footer />*/}
         </div>
       </NuqsAdapter>
     </RouteProtection>

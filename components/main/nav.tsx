@@ -19,9 +19,11 @@ import {
   useDisclosure,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
+import {useTheme} from 'next-themes'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {useCallback, useMemo} from 'react'
+import {ThemeToggle} from '../ui/theme-toggle'
 
 interface NavProps {
   children?: React.ReactNode
@@ -29,6 +31,7 @@ interface NavProps {
 
 export const Nav = ({children}: NavProps) => {
   const {user, loading: authLoading} = useAuth()
+  const {setTheme} = useTheme()
   const {cartItemCount} = useCart()
   const {isOpen, onOpen, onClose} = useDisclosure()
   const route = usePathname().split('/').pop()
@@ -88,8 +91,6 @@ export const Nav = ({children}: NavProps) => {
             {children}
           </nav>
           <div className='flex w-fit gap-5 md:w-36 items-center justify-between'>
-            {/*<ThemeToggle variant='icon' />*/}
-
             {/* Cart badge - automatically updates via Convex reactivity */}
             {/*
               IMPORTANT: This badge is in a parallel route slot (@navbar), but it shares
@@ -197,6 +198,12 @@ export const Nav = ({children}: NavProps) => {
                         title='Logout'
                         className=''
                       />
+                      <DropdownItem
+                        key='theme'
+                        title='Theme'
+                        onPress={() => setTheme('dark')}>
+                        <ThemeToggle variant='icon' />
+                      </DropdownItem>
                     </DropdownMenu>
                   </Dropdown>
                 ) : (

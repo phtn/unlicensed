@@ -34,16 +34,16 @@ const nextConfig: NextConfig = {
   async headers() {
     const cspDirectives = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' accounts.google.com apis.google.com *.moonpay.com *.wert.io polygonscan.com/*",
-      "style-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' accounts.google.com apis.google.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io",
+      "style-src 'self' 'unsafe-inline'  embed.hel.io",
       "img-src 'self' data: blob: https: images.unsplash.com res.cloudinary.com",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.convex.cloud wss://*.convex.cloud *.paygate.to *.firebaseio.com *.googleapis.com *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com/*",
-      "frame-src 'self' accounts.google.com *.paygate.to *.firebaseapp.com  *.moonpay.com *.wert.io polygonscan.com/*",
+      "connect-src 'self' https://*.convex.cloud wss://*.convex.cloud *.paygate.to *.firebaseio.com *.googleapis.com *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.alchemy.com *.g.alchemy.com",
+      "frame-src 'self' accounts.google.com *.paygate.to *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io",
       "worker-src 'self' blob:",
       "object-src 'none'",
       "base-uri 'self'",
-      "form-action 'self'",
+      "form-action 'self' *.paygate.to *.kryptonim.com *.moonpay.com *.wert.io *.transak.com",
     ].join('; ')
 
     return [

@@ -60,7 +60,7 @@ export default function PayPage() {
     handleProcessPaymentSubmit(
       wallet,
       amountInDollars,
-      'wert',
+      paygateAccount.defaultProvider ?? 'wert',
       order.contactEmail,
       'USD',
     )
@@ -78,6 +78,7 @@ export default function PayPage() {
     if (!response || !response.success) return
 
     const data = response.data
+    // Handle HTML responses
     if (
       data &&
       typeof data === 'object' &&

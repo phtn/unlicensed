@@ -89,7 +89,7 @@ export default function CartPage() {
     if (orderId) {
       const redirectTimer = setTimeout(() => {
         startTransition(() => {
-          router.push('/lobby/account')
+          router.push('/account')
         })
       }, 5000) // Give time for development modal to show
 

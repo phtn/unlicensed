@@ -49,11 +49,6 @@ export function CheckoutModal({
         onInputChange('useSameBilling', true)
       }
 
-      // Always set payment method to credit_card by default when modal opens
-      if (formData.paymentMethod !== 'credit_card') {
-        onInputChange('paymentMethod', 'credit_card')
-      }
-
       // Only populate if fields are empty (check once when modal opens)
       const hasEmptyFields =
         !formData.contactEmail.trim() ||
@@ -123,7 +118,6 @@ export function CheckoutModal({
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, orderId])
 
   return (

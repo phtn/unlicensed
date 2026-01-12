@@ -1,6 +1,8 @@
 'use client'
 
+import {api} from '@/convex/_generated/api'
 import {AddressType} from '@/convex/users/d'
+import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
 import {
   useCallback,
@@ -44,6 +46,21 @@ export function Checkout({
   const hasShownDevModalRef = useRef(false)
   const isDevMode = isCheckoutDevMode()
 
+  // Query the order to get the actual payment method stored in the order
+  const order = useQuery(
+    api.orders.q.getById,
+    orderId ? {id: orderId} : 'skip',
+  )
+
+  // Debug: Log order state
+  useEffect(() => {
+    if (orderId) {
+      console.log('[Checkout] OrderId:', orderId)
+      console.log('[Checkout] Order:', order)
+      console.log('[Checkout] Order payment method:', order?.payment?.method)
+    }
+  }, [orderId, order])
+
   const {
     formData,
     formErrors,
@@ -80,7 +97,16 @@ export function Checkout({
   }, [isCheckoutOpen, hasAllRequiredInfo, onCheckoutClose])
 
   useEffect(() => {
-    if (orderId && !hasShownDevModalRef.current) {
+    // Wait for both orderId and order to be loaded before redirecting
+    // order === undefined means still loading, order === null means not found
+    // We need order to be truthy (not null, not undefined) and have payment method
+    if (
+      orderId &&
+      order !== undefined &&
+      order !== null &&
+      order.payment?.method &&
+      !hasShownDevModalRef.current
+    ) {
       hasShownDevModalRef.current = true
 
       let timeoutId: NodeJS.Timeout | null = null
@@ -99,8 +125,18 @@ export function Checkout({
             setShowDevModal(true)
           }, 500)
         } else {
+          // Use the order's payment method to determine redirect
+          const paymentMethod = order.payment.method
+          console.log('[Checkout] Order payment method:', paymentMethod)
+          console.log('[Checkout] Redirecting to:', paymentMethod === 'credit_card' ? 'pay' : 'commerce')
           startTransition(() => {
-            router.push(`/lobby/order/${orderId}/pay`)
+            // Redirect to commerce for non-credit-card payments, otherwise to pay
+            const redirectPath =
+              paymentMethod === 'credit_card'
+                ? `/lobby/order/${orderId}/pay`
+                : `/lobby/order/${orderId}/commerce`
+            console.log('[Checkout] Redirect path:', redirectPath)
+            router.push(redirectPath)
           })
         }
       }
@@ -113,7 +149,7 @@ export function Checkout({
         }
       }
     }
-  }, [orderId, onCheckoutClose, onClearCart, router, isDevMode])
+  }, [orderId, order, onCheckoutClose, onClearCart, router, isDevMode])
 
   // Also show dev modal when checkout modal closes and we have an orderId (dev mode only)
   useEffect(() => {

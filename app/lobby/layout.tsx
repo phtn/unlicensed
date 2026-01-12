@@ -13,13 +13,15 @@ type LobbyLayoutProps = {
 export default function LobbyLayout({children, navbar}: LobbyLayoutProps) {
   return (
     <RouteProtection>
-      <NuqsAdapter>
-        <div className='flex min-h-screen flex-col'>
-          {navbar}
-          <main className='relative flex-1'>{children}</main>
-          <Footer />
-        </div>
-      </NuqsAdapter>
+      <div suppressHydrationWarning>
+        <NuqsAdapter>
+          <div className='flex min-h-screen flex-col'>
+            {navbar}
+            <main className='relative flex-1'>{children}</main>
+            <Footer />
+          </div>
+        </NuqsAdapter>
+      </div>
     </RouteProtection>
   )
 }

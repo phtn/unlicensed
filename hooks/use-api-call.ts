@@ -58,6 +58,29 @@ export function useApiCall() {
         return
       }
 
+      // Handle redirect responses (301, 302, 307, 308)
+      // When redirecting to a different domain, fetch can't follow due to CORS
+      // Extract the Location header and redirect the browser directly
+      // Note: With redirect: 'manual', redirect responses have status 0 and type 'opaqueredirect'
+      // But we can still read the Location header
+      const isRedirect =
+        response.status >= 300 && response.status < 400
+      const locationHeader =
+        response.headers.get('location') ||
+        response.headers.get('Location') ||
+        ''
+      
+      if (isRedirect && locationHeader && typeof window !== 'undefined') {
+        // Use absolute URL if Location header is relative
+        const absoluteRedirectUrl = locationHeader.startsWith('http')
+          ? locationHeader
+          : new URL(locationHeader, targetUrl).toString()
+        
+        // Redirect immediately - this bypasses CORS because it's a browser navigation, not a fetch
+        window.location.href = absoluteRedirectUrl
+        return
+      }
+
       // Direct fetch handling for non-proxied requests
       const contentType = response.headers.get('content-type') || ''
       let data: unknown
