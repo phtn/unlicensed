@@ -22,7 +22,6 @@ import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {useCallback, useMemo} from 'react'
-import {ThemeToggle} from '../ui/theme-toggle'
 
 interface NavProps {
   children?: React.ReactNode
@@ -64,10 +63,10 @@ export const Nav = ({children}: NavProps) => {
         <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 flex items-center justify-between h-full'>
           <Link
             href={'/lobby'}
-            className='md:w-72 h-12 overflow-hidden pl-1 flex items-center justify-start relative'>
+            className='md:w-36 h-12 overflow-hidden pl-1 flex items-center justify-start relative'>
             <Icon
-              name='rapid-fire'
-              className='h-36 w-auto dark:text-brand text-brand'
+              name='rapid-fire-logo'
+              className='h-10 w-auto dark:text-white text-white'
             />
           </Link>
           <nav className={cn('flex items-center justify-center w-fit')}>
@@ -78,14 +77,18 @@ export const Nav = ({children}: NavProps) => {
             ) : (
               <Link
                 href={'/lobby/category'}
-                className='hidden text-sm lg:text-lg text-gray-100 hover:text-brand md:flex font-polysans font-semibold'>
-                Shop
+                className='hidden text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-polysans font-semibold space-x-1'>
+                <Icon
+                  name='play-solid'
+                  className='size-4 rotate-45 opacity-80'
+                />
+                <span>Shop</span>
               </Link>
             )}
             {children}
           </nav>
-          <div className='flex w-fit gap-5 md:w-72 items-center justify-between'>
-            <ThemeToggle variant='icon' />
+          <div className='flex w-fit gap-5 md:w-36 items-center justify-between'>
+            {/*<ThemeToggle variant='icon' />*/}
 
             {/* Cart badge - automatically updates via Convex reactivity */}
             {/*

@@ -1,14 +1,24 @@
 import {Highlight, Highlights} from '@/app/lobby/(store)/hero'
-import {useMobile} from '@/hooks/use-mobile'
-import {Activity, Suspense, useMemo} from 'react'
+import {useMemo} from 'react'
 import {ShopFinder} from './finder'
-import {Title} from './title'
+import {Title, TitleV2} from './title'
 
 export const NewHome = () => {
-  const isMobile = useMobile()
   const slides = useMemo(
     () =>
       [
+        {
+          id: 'rapid-fire',
+          tag: 'Rapid Fire',
+          imageUrl:
+            'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Slurricane_transparent.png?v=1759173573&width=1488',
+          imageAlt: '',
+          title: <TitleV2 title='THRIVE' subtitle='WHERE FAST MINDS' />,
+          description:
+            'Premium products built for consistency, impact and premium flow.',
+          ctaText: 'Shop Flowers',
+          ctaHref: '/lobby/category/flower',
+        },
         {
           id: 'flower',
           tag: 'Flower',
@@ -61,14 +71,17 @@ export const NewHome = () => {
   return (
     <div className='bg-background'>
       <Highlights slides={slides} />
-      <Activity mode={isMobile ? 'hidden' : 'visible'}>
-        <Suspense fallback='null'>
-          {/*<SceneWrapper>
-            <Grass2 />
-          </SceneWrapper>*/}
-        </Suspense>
-      </Activity>
       <ShopFinder />
     </div>
   )
 }
+
+/*
+<Activity mode={isMobile ? 'hidden' : 'visible'}>
+        <Suspense fallback='null'>
+          <SceneWrapper>
+            <Grass2 />
+          </SceneWrapper>
+        </Suspense>
+      </Activity>
+*/

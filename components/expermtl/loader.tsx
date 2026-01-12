@@ -106,7 +106,7 @@ const HotPink = () => {
           fill='none'
         />
         <path
-          className='logo-outline dark:stroke-featured stroke-brand'
+          className='logo-outline dark:stroke-brand stroke-brand'
           strokeWidth='4'
           strokeLinejoin='round'
           // filter='url(#neon-glow)'
@@ -115,7 +115,7 @@ const HotPink = () => {
           fill='none'
         />
         <path
-          className='logo-outline dark:stroke-featured stroke-brand'
+          className='logo-outline dark:stroke-brand stroke-brand'
           strokeWidth='4'
           fillRule='evenodd'
           clipRule='evenodd'
@@ -124,7 +124,7 @@ const HotPink = () => {
         />
         <path
           id='inner-logo'
-          className='logo-outline  dark:stroke-brand stroke-featured'
+          className='logo-outline  dark:stroke-brand stroke-brand'
           strokeWidth='6'
           fillRule='evenodd'
           clipRule='evenodd'
@@ -132,7 +132,7 @@ const HotPink = () => {
           fill='none'
         />
         <path
-          className='logo-outline dark:stroke-brand stroke-featured'
+          className='logo-outline dark:stroke-brand stroke-brand'
           strokeWidth='4'
           // stroke='#BBBBBB'
           d='M213.991 214.142H207.51C206.401 214.142 205.302 213.924 204.278 213.499C203.253 213.075 202.322 212.453 201.537 211.669C200.753 210.884 200.131 209.953 199.707 208.928C199.282 207.904 199.064 206.805 199.064 205.696V203.942C199.064 201.709 199.948 199.567 201.523 197.984C203.098 196.402 205.236 195.507 207.469 195.497C210.33 195.484 212.85 195.484 213.991 195.484C222.633 195.484 230.293 196.27 230.293 204.813C230.195 213.259 222.633 214.142 213.991 214.142Z'

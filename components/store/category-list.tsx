@@ -4,6 +4,7 @@ import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {useMobile} from '@/hooks/use-mobile'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
+import {Icon} from '@/lib/icons'
 import {Card, CardBody, CardFooter, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
@@ -35,7 +36,7 @@ export const CategoryList = memo(() => {
       direction='right'
       component={CategoryItem}
       disableAnimation={isMobile}
-      container='gap-8 grid grid-cols-2 sm:grid-cols-5'
+      container='gap-8 grid grid-cols-2 sm:grid-cols-5 mt-4'
       data={data}
     />
   )
@@ -61,18 +62,31 @@ const CategoryItem = (item: CategoryItemProps) => {
       isPressable
       shadow='none'
       onMouseEnter={item.prefetchFn(`/lobby/category/${item.slug}`)}>
-      <CardBody className='overflow-visible p-0'>
+      <CardBody className='relative overflow-visible p-0'>
+        <div className="absolute w-500 scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
+        <div className='h-44 w-full overflow-hidden opacity-10 flex items-center justify-center'>
+          <Icon name='rapid-fire-logo' className='size-40 animate-pulse' />
+          {/*<Image
+            alt={item.name}
+            radius='none'
+            shadow='none'
+            className='w-full object-cover object-left size-80'
+            src={'/svg/rf-icon-2.svg'}
+            width='100%'
+            loading='lazy'
+          />*/}
+        </div>
         <Image
           alt={item.name}
           radius='none'
           shadow='none'
-          className='w-full object-cover min-size-[172px]'
+          className='hidden w-full object-cover min-size-[172px]'
           src={item.resolveUrl(item.heroImage ?? '') ?? undefined}
           width='100%'
           loading='lazy'
         />
       </CardBody>
-      <CardFooter className='absolute z-30 bottom-0 text-xl h-10 font-fugaz font-light justify-between text-white'>
+      <CardFooter className='absolute z-30 bottom-0 text-xl flex items-center h-10 font-bone font-light justify-center text-white'>
         <p className='capitalize'>{item.name}</p>
         {/*<p className='text-default-500'>{item.href}</p>*/}
       </CardFooter>

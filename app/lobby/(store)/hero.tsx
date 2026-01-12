@@ -107,7 +107,7 @@ export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
     <div
       ref={containerRef}
       className={cn(
-        'relative md:max-w-7xl mx-auto pt-16 md:pt-24 h-[80lvh] md:h-[70lvh]',
+        'relative md:max-w-7xl mx-auto pt-16 md:pt-24 h-[80lvh] md:h-[80lvh]',
         'cursor-grab active:cursor-grabbing',
         className,
       )}
@@ -174,11 +174,11 @@ export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
 }
 
 const Slide = ({
+  id,
   tag,
   title,
   description,
   imageUrl,
-  // imageAlt,
   ctaHref,
   ctaText,
   // product,
@@ -190,7 +190,11 @@ const Slide = ({
       <div className=''>
         <div className='grid lg:grid-cols-2 gap-12 items-center'>
           <div>
-            <Tag text={tag} />
+            {id === 'rapid-fire' ? (
+              <Icon name='rapid-fire' className='h-36 w-auto text-brand' />
+            ) : (
+              <Tag text={tag} />
+            )}
             {title}
             <p className='hidden md:flex text-base opacity-70 mb-12 max-w-[38ch] leading-relaxed'>
               {description}
@@ -200,7 +204,7 @@ const Slide = ({
                 as={Link}
                 href={ctaHref}
                 variant='solid'
-                className='hidden md:flex dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-brand hover:text-white text-white font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
+                className='hidden md:flex dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-brand font-polysans font-light hover:text-white text-white px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg hover:opacity-100'>
                 {ctaText}
               </Button>
               <Button
@@ -210,7 +214,7 @@ const Slide = ({
                 prefetch
                 onPress={toggle}
                 variant='light'
-                className='hidden border dark:border-dark-gray sm:flex items-center gap-2 dark:text-brand font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
+                className='hidden border dark:border-dark-gray sm:flex items-center gap-2 dark:text-brand bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg font-polysans font-light'>
                 <span className='tracking-tight'>Strain Finder</span>
                 <Icon
                   name={navigating ? 'spinners-ring' : 'search-magic'}
