@@ -25,7 +25,7 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
         enableSystem
         attribute='class'
         enableColorScheme
-        defaultTheme='system'
+        defaultTheme='dark'
         disableTransitionOnChange>
         <AuthCtxProvider>{children}</AuthCtxProvider>
         <Toasts />
