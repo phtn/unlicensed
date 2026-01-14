@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.24.1
+
+### Patch Changes
+
+- cashapp handler
+
 ## 0.24.0
 
 ### Minor Changes

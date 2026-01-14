@@ -15,6 +15,15 @@ const withPWA = withPWAInit({
 })
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      allowedOrigins: [
+        'rapidfirenow.com',
+        'localhost',
+        'rapid-fire-online.vercel.app',
+      ],
+    },
+  },
   reactCompiler: true,
   images: {
     remotePatterns: [
