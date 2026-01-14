@@ -81,13 +81,14 @@ export const CartItem = ({
                   </p>
                 )}
               </div>
-              <Button
-                size='sm'
-                isIconOnly
-                variant='light'
-                onPress={() => onRemove(item.product._id, item.denomination)}>
-                <Icon name='x' className='size-4' />
-              </Button>
+              <p className='font-medium text-xl font-space'>
+                $
+                <AnimatedNumber
+                  mass={1.2}
+                  stiffness={60}
+                  value={(itemPrice * quantity) / 100}
+                />
+              </p>
             </div>
             <div className='flex items-center justify-between mt-auto'>
               <div className='flex items-center gap-2'>
@@ -111,14 +112,13 @@ export const CartItem = ({
                   <Icon name='plus' className='size-4' />
                 </Button>
               </div>
-              <p className='font-medium text-xl font-space'>
-                $
-                <AnimatedNumber
-                  mass={1.2}
-                  stiffness={60}
-                  value={(itemPrice * quantity) / 100}
-                />
-              </p>
+              <Button
+                size='sm'
+                isIconOnly
+                variant='light'
+                onPress={() => onRemove(item.product._id, item.denomination)}>
+                <Icon name='trash' className='size-5 md:size-6 opacity-80' />
+              </Button>
             </div>
           </div>
         </div>

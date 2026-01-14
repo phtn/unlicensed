@@ -1,5 +1,6 @@
 'use client'
 
+import {ClassName} from '@/app/types'
 /**
  * @author: @dorian_baffier
  * @description: Shimmer Text
@@ -17,7 +18,8 @@ import {useEffect, useState} from 'react'
 
 export interface ShimmerTextProps {
   text?: string
-  className?: string
+  container?: ClassName
+  className?: ClassName
   auto?: boolean
   playOnHover?: boolean
   playOnClick?: boolean
@@ -34,6 +36,7 @@ export interface ShimmerTextProps {
 export default function ShimmerText({
   text,
   className,
+  container,
   playOnHover = false,
   playOnClick = false,
   loading = false,
@@ -121,7 +124,7 @@ export default function ShimmerText({
     variant === 'chatgpt' ? 'bg-[length:400%_200%]' : 'bg-[length:300%_500%]'
 
   return (
-    <div className='flex items-center justify-center'>
+    <div className={cn('flex items-center justify-center', container)}>
       <motion.div
         className='relative py-2 overflow-hidden'
         initial={{opacity: 0, y: 0}}

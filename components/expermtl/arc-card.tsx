@@ -140,7 +140,7 @@ const ArcButtonFull = ({label, fn, href, icon}: ArcButtonProps) => (
     variant='flat'
     href={fn ? '#' : (href ?? '#')}
     endContent={icon && <Icon name={icon} className='size-5' />}
-    className='w-full col-span-2 font-polysans font-normal! bg-sidebar dark:bg-dark-table/40'>
+    className='w-full col-span-2 font-polysans font-normal! bg-sidebar dark:bg-white dark:text-dark-gray'>
     {label}
   </Button>
 )
@@ -221,6 +221,19 @@ const ArcLoader = ({text, loading, children}: ArcLoaderProps) => (
   </div>
 )
 
+const ArcMessage = ({text, children}: ArcLoaderProps) => (
+  <div className='relative flex items-center w-full'>
+    <div className='bg-zinc-900 dark:bg-transparent h-12 w-full flex flex-1 items-center justify-center px-3'>
+      <ShimmerText
+        surface='light'
+        variant='default'
+        className='text-sm lg:text-2xl font-polysans font-light flex leading-6 md:leading-6 items-center p-0 m-0 text-center'>
+        {text} {children}
+      </ShimmerText>
+    </div>
+  </div>
+)
+
 export {
   ArcActionBar,
   ArcButtonFull,
@@ -232,5 +245,6 @@ export {
   ArcHeader,
   ArcLineItems,
   ArcLoader,
+  ArcMessage,
   ArcSuccess,
 }

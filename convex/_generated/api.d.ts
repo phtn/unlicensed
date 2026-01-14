@@ -42,6 +42,7 @@ import type * as init from "../init.js";
 import type * as logs_d from "../logs/d.js";
 import type * as logs_m from "../logs/m.js";
 import type * as logs_q from "../logs/q.js";
+import type * as orders_cashapp from "../orders/cashapp.js";
 import type * as orders_d from "../orders/d.js";
 import type * as orders_m from "../orders/m.js";
 import type * as orders_paygate from "../orders/paygate.js";
@@ -106,6 +107,7 @@ declare const fullApi: ApiFromModules<{
   "logs/d": typeof logs_d;
   "logs/m": typeof logs_m;
   "logs/q": typeof logs_q;
+  "orders/cashapp": typeof orders_cashapp;
   "orders/d": typeof orders_d;
   "orders/m": typeof orders_m;
   "orders/paygate": typeof orders_paygate;

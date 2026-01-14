@@ -24,8 +24,8 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
       id: 'credit-card',
       name: 'Credit Card',
       label: 'Credit Card',
-      icon: 'mastercard',
-      iconStyle: 'text-[#16ee37]',
+      icon: 'credit-card',
+      iconStyle: 'dark:text-blue-400 text-blue-500',
       description: 'Visa, Mastercard, AMEX, every card.',
       status: 'active',
       tag: 'Direct Checkout',
@@ -35,8 +35,8 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
       name: 'Crypto',
       label: 'Crypto',
       icon: 'ethereum',
-      iconStyle: 'text-[#16ee37]',
-      description: 'Bitcoin, Ethereum, Multichain, every coin.',
+      iconStyle: 'dark:text-indigo-400 text-indigo-500',
+      description: 'BTC, ETH, USDC, USDT',
       status: 'active',
       tag: 'Verification Required',
     },
@@ -84,8 +84,8 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
         base: 'w-full',
         label: 'text-lg font-semibold tracking-tight',
         trigger:
-          'min-h-14 py-2 bg-sky-100 dark:bg-sky-500/10 border border-foreground/40 placeholder:text-foreground',
-        listboxWrapper: 'border dark:border-foreground rounded-2xl',
+          'min-h-14 py-2 bg-sky-100 dark:bg-zinc-500/10 border border-foreground/40 placeholder:text-foreground',
+        listboxWrapper: 'border dark:border-foreground/40 rounded-2xl',
         listbox: 'border-b',
       }}
       defaultSelectedKeys={['credit-card']}
@@ -103,7 +103,10 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
             className='flex items-center justify-between px-1'>
             <div className='flex items-center w-full gap-2'>
               {item.data?.icon && (
-                <Icon name={item.data?.icon} className='shrink-0 size-6' />
+                <Icon
+                  name={item.data?.icon}
+                  className={cn('shrink-0 size-6', item.data?.iconStyle)}
+                />
               )}
               <div className='flex flex-col px-1 gap-4'>
                 <span className='text-lg tracking-tight'>
@@ -111,7 +114,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
                 </span>
               </div>
             </div>
-            <div className='flex-1 text-xs font-brk font-normal tracking-tighter px-1.5 py-0.5 bg-sky-700/10 md:whitespace-nowrap rounded-md'>
+            <div className='flex-1 text-[8px] font-brk uppercase font-normal px-1.5 py-px bg-sky-700/10 dark:bg-light-gray/20 md:whitespace-nowrap rounded-md'>
               {item.data?.tag}
             </div>
           </div>
@@ -123,13 +126,15 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
         <SelectItem
           key={method.id}
           textValue={method.name}
-          // className=' hover:bg-light-gray/20'
           classNames={{
             wrapper: '',
-            base: 'hover:bg-light-gray/20! data-[selected=true]:bg-sky-500/20!',
+            base: 'hover:bg-light-gray/20! data-[selected=true]:bg-zinc-500/20!',
           }}>
           <div className='flex gap-3 md:gap-6 items-center px-1 py-2 md:p-2'>
-            <Icon name={method.icon} className='size-7 md:size-8' />
+            <Icon
+              name={method.icon}
+              className={cn('shrink-0 size-6', 'opacity-80')}
+            />
             <div className='flex flex-col w-full md:space-y-0.5'>
               <div className='flex items-center justify-between w-full'>
                 <div className='whitespace-nowrap text-base md:text-lg tracking-tight font-medium '>
@@ -137,7 +142,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
                 </div>
                 <div
                   className={cn(
-                    'text-[8px] md:text-xs tracking-tight font-brk whitespace-nowrap w-fit rounded-md px-1 py-0 md:px-1 leading-3 md:leading-normal bg-dark-gray/80 text-white',
+                    'text-[8px] uppercase font-brk whitespace-nowrap w-fit rounded-md px-1 py-0 md:px-1 leading-3 md:leading-normal bg-dark-gray/80 text-white',
                     {'': method.id === 'credit-card'},
                   )}>
                   {method.tag}

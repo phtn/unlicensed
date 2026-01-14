@@ -1,6 +1,7 @@
 'use client'
 
 import {Id} from '@/convex/_generated/dataModel'
+import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody, Divider} from '@heroui/react'
 import {ViewTransition} from 'react'
@@ -24,6 +25,7 @@ interface OrderSummaryCardProps {
   onPlaceOrderClick: () => void
   userId?: Id<'users'>
   pointsBalance: PointsBalance | undefined
+  onOpen?: () => void
 }
 
 export function OrderSummaryCard({
@@ -39,6 +41,7 @@ export function OrderSummaryCard({
   onPaymentMethodChange,
   onPlaceOrderClick,
   pointsBalance,
+  onOpen,
 }: OrderSummaryCardProps) {
   const handleOnChange = (value: FormData['paymentMethod']) => {
     onPaymentMethodChange(value)
@@ -57,11 +60,18 @@ export function OrderSummaryCard({
             <div className='space-y-2 font-sans'>
               <div className='flex justify-between text-sm'>
                 <span className='opacity-80 font-brk'>Subtotal</span>
-                <span className='font-space'>${formatPrice(subtotal)}</span>
+                <span className='font-space'>
+                  <span className='opacity-60'>$</span>
+                  {formatPrice(subtotal)}
+                </span>
               </div>
               <div className='flex justify-between text-sm'>
                 <span className='opacity-80 font-brk'>Tax</span>
-                <span className='font-space'>${formatPrice(tax)}</span>
+
+                <span className='font-space'>
+                  <span className='opacity-60'>$</span>
+                  {formatPrice(tax)}
+                </span>
               </div>
               <div className='flex justify-between text-sm'>
                 <span className='opacity-80 font-brk'>Shipping</span>
@@ -71,7 +81,10 @@ export function OrderSummaryCard({
                       Free
                     </span>
                   ) : (
-                    `$${formatPrice(shipping)}`
+                    <>
+                      <span className='opacity-60'>$</span>
+                      {formatPrice(shipping)}
+                    </>
                   )}
                 </span>
               </div>
@@ -100,9 +113,14 @@ export function OrderSummaryCard({
           )}
 
           {!isAuthenticated && (
-            <div className='p-3 bg-warning/10 border border-warning/20 rounded-lg'>
-              <p className='text-sm text-warning'>
-                Sign in to proceed to checkout
+            <div
+              id='auth-check'
+              onClick={onOpen}
+              className='flex items-center justify-center space-x-1 p-3 bg-brand/10 border border-brand/10 rounded-lg cursor-pointer'>
+              <Icon name='user' className='size-3.5' />
+              <p className='text-sm hover:underline underline-offset-4'>
+                <span className='font-bold'>Sign in</span> to proceed to
+                checkout
               </p>
             </div>
           )}
@@ -110,11 +128,13 @@ export function OrderSummaryCard({
             size='lg'
             radius='md'
             variant='solid'
-            className='w-full font-semibold bg-foreground dark:bg-featured text-background h-14'
+            className='w-full font-polysans text-lg font-semibold bg-foreground dark:bg-brand text-white h-14'
             onPress={onPlaceOrderClick}
             isDisabled={!isAuthenticated || isLoading || isPending}
             isLoading={isLoading || isPending}>
-            {orderId ? 'Order Placed!' : 'Place Order'}
+            <span className='drop-shadow-sm'>
+              {orderId ? 'Order Placed!' : 'Place Order'}
+            </span>
           </Button>
         </CardBody>
       </Card>

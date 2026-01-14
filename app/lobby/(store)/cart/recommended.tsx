@@ -103,21 +103,24 @@ export const RecommendedProducts = () => {
                   ) : null}
                 </div>
                 <div className='flex-1 min-w-0'>
-                  <h3 className='font-semibold text-xl truncate'>
+                  <h3 className='font-polysans font-medium text-xl truncate'>
                     {product.name}
                   </h3>
 
                   <div className='flex items-center justify-between'>
                     <p className='text-base mt-1 font-space'>
-                      ${formatPrice(product.priceCents)}
+                      <span className='opacity-60'>$</span>
+                      {formatPrice(product.priceCents)}
                     </p>
 
                     <Button
                       size='sm'
                       variant='shadow'
-                      className='absolute bg-featured -space-x-1.5 top-2 right-2 font-medium shrink-0 flex text-white text-base'
-                      onPress={() => handleAddToCart(product)}>
-                      <Icon name='plus' className='size-5' />
+                      className='absolute bg-featured dark:bg-white dark:text-dark-gray -space-x-1.5 top-2 right-2 font-polysans font-medium shrink-0 flex text-white text-sm'
+                      onPress={() => handleAddToCart(product)}
+                      startContent={
+                        <Icon name='plus' className='size-5 mb-0.5' />
+                      }>
                       Add<span className='md:flex hidden'>to Cart</span>
                     </Button>
                   </div>

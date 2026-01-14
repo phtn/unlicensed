@@ -42,7 +42,7 @@ export const Content = ({initialCategories}: ContentProps) => {
   return (
     <div className='min-h-screen overflow-x-hidden'>
       {/* Hero Section */}
-      <section className='pt-6 sm:pt-8 md:pt-10 lg:pt-14 xl:pt-24 2xl:pt-28 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 bg-background'>
+      <section className='pt-6 sm:pt-14 lg:pt-16 xl:pt-24 2xl:pt-28 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 bg-background'>
         <div className='max-w-7xl mx-auto overflow-hidden'>
           <div className='grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center'>
             <div className=''>

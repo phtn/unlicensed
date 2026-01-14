@@ -61,7 +61,7 @@ export const Nav = ({children}: NavProps) => {
   )
 
   return (
-    <>
+    <div>
       <header className='fixed z-9999 top-0 left-0 right-0 bg-black backdrop-blur-sm h-12 lg:h-16 xl:h-20 2xl:h-24'>
         <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 flex items-center justify-between h-full'>
           <Link
@@ -69,7 +69,7 @@ export const Nav = ({children}: NavProps) => {
             className='md:w-36 h-12 overflow-hidden pl-1 flex items-center justify-start relative'>
             <Icon
               name='rapid-fire-logo'
-              className='h-10 w-auto dark:text-white text-white'
+              className='h-9 w-auto dark:text-white text-white'
             />
           </Link>
           <nav className={cn('flex items-center justify-center w-fit')}>
@@ -207,7 +207,11 @@ export const Nav = ({children}: NavProps) => {
                     </DropdownMenu>
                   </Dropdown>
                 ) : (
-                  <Icon name='user' onClick={onOpen} className='text-white' />
+                  <Icon
+                    name='user'
+                    onClick={onOpen}
+                    className='text-white size-5'
+                  />
                 )}
               </>
             )}
@@ -225,6 +229,6 @@ export const Nav = ({children}: NavProps) => {
           }
         }}
       />
-    </>
+    </div>
   )
 }

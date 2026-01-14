@@ -24,13 +24,6 @@ export const EmptyCart = ({onPress}: EmptyCartProps) => {
   return (
     <div className='w-full max-w-lg px-4'>
       <div className='text-center space-y-4 pt-8'>
-        {/*<Icon
-          name='bag-solid'
-          className='size-8 md:size-12 mx-auto opacity-50'
-        />*/}
-        {/*<h1 className='md:text-lg font-polysans opacity-70'>
-          Your cart is empty
-        </h1>*/}
         <Button
           size='lg'
           as={Link}

@@ -8,6 +8,7 @@ import {Icon} from '@/lib/icons'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {
+  ChangeEvent,
   startTransition,
   useCallback,
   useEffect,
@@ -67,9 +68,11 @@ export function PinAccessGate() {
   }, [isMounted, isAuthenticated, router])
 
   const handlePinChange = useCallback(
-    async (value: string) => {
+    async (e: ChangeEvent<HTMLInputElement>) => {
       // Only allow alphanumeric characters
-      const sanitized = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+      const sanitized = e.target.value
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .toUpperCase()
       setPin(sanitized)
       setError(false)
 
@@ -186,15 +189,15 @@ export function PinAccessGate() {
   }
 
   return (
-    <div className='fixed inset-0 z-9999 flex items-center justify-center overflow-hidden bg-zinc-950'>
+    <div className='fixed inset-0 flex items-center justify-center overflow-hidden bg-zinc-950'>
       {/* Background gradients */}
-      <div className='absolute inset-0 bg-linear-to-b from-fuchsia-950/20 via-zinc-950 to-zinc-950' />
-      <div className='absolute -bottom-96 left-1/2 -translate-x-1/2 size-160 aspect-square rounded-full bg-linear-to-t from-slate-950 via-slate-800/40 to-transparent blur-3xl' />
-      <div className='absolute -top-32 -right-32 w-96 h-96 rounded-full bg-zinc-500/10 blur-3xl' />
-      <div className='absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-zinc-700/20 blur-3xl' />
+      <div className='absolute pointer-events-none inset-0 bg-linear-to-b from-fuchsia-950/20 via-zinc-950 to-zinc-950' />
+      <div className='absolute pointer-events-none -bottom-96 left-1/2 -translate-x-1/2 size-160 aspect-square rounded-full bg-linear-to-t from-slate-950 via-slate-800/40 to-transparent blur-3xl' />
+      <div className='absolute pointer-events-none -top-32 -right-32 w-96 h-96 rounded-full bg-zinc-500/10 blur-3xl' />
+      <div className='absolute pointer-events-none -bottom-24 -left-24 w-80 h-80 rounded-full bg-zinc-700/20 blur-3xl' />
 
       {/* Content */}
-      <div className='relative z-10 w-full max-w-md px-6 py-16'>
+      <div className='w-full max-w-md px-6 py-16'>
         <div className='flex items-center justify-center space-x-6'>
           {/* Logo/Icon */}
           <div className='flex items-center justify-center h-full'>
@@ -219,10 +222,10 @@ export function PinAccessGate() {
             </ShimmerText>
           </div>
         </div>
-        <div className='flex items-center justify-center h-24'>
-          <p className='text-slate-500 text-base font-light font-brk'>
-            Access Code Required
-          </p>
+        <div className='relative flex items-center justify-center h-24'>
+          <div className='text-sky-100/80 text-base font-normal font-brk'>
+            <Typewrite text={'Access Code Required'} showCursor={false} />
+          </div>
         </div>
         {/* PIN Input Display Container */}
         <div
@@ -235,7 +238,7 @@ export function PinAccessGate() {
             <div
               key={idx}
               className={`
-                w-14 h-13
+                w-13 h-12
                 flex items-center justify-center
                 rounded-xl border-2
                 transition-all duration-200
@@ -243,7 +246,7 @@ export function PinAccessGate() {
                 ${
                   item.filled
                     ? 'bg-brand border-brand/60'
-                    : 'bg-white/5 border-slate-400/20'
+                    : 'bg-white/5 border-zinc-400/20'
                 }
                 ${error ? 'border-red-500/70 bg-red-500/10' : ''}
               `}>
@@ -260,29 +263,29 @@ export function PinAccessGate() {
         </div>
 
         {/* Visible Input Field */}
-        <form onSubmit={handleSubmit} className='flex justify-center mb-4'>
+        <form
+          onSubmit={handleSubmit}
+          className='relative z-9999 flex justify-center mb-4'>
           <input
             ref={inputRef}
-            type='text'
+            type='password'
+            inputMode='text'
             value={pin}
-            onChange={(e) => handlePinChange(e.target.value)}
+            onChange={handlePinChange}
             maxLength={pinLength}
-            autoFocus
             autoComplete='off'
             autoCorrect='off'
-            autoCapitalize='characters'
             spellCheck={false}
+            autoFocus
             placeholder='Access Code'
-            className='w-full max-w-xs px-4 py-3 text-center text-lg font-brk tracking-[0.5em] bg-white/5 border-2 border-slate-400/20 rounded-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-zinc-200/60 focus:bg-white/10 transition-all uppercase'
+            className='w-full max-w-sm px-3 py-3 text-center text-xl font-brk tracking-[0.5em] bg-white/5 border-2 border-zinc-400/20 rounded-xl text-white placeholder:text-zinc-500 placeholder:text-sm focus:outline-none focus:border-zinc-200/60 focus:bg-white/10 transition-all uppercase'
           />
         </form>
 
         {/* Status Message */}
         <div className='text-center text-slate-500 text-sm font-brk'>
-          {error ? (
+          {error && (
             <span className='text-rose-300'>Invalid Pin. Try again.</span>
-          ) : (
-            <span>-</span>
           )}
         </div>
 

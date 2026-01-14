@@ -47,19 +47,16 @@ export function Checkout({
   const isDevMode = isCheckoutDevMode()
 
   // Query the order to get the actual payment method stored in the order
-  const order = useQuery(
-    api.orders.q.getById,
-    orderId ? {id: orderId} : 'skip',
-  )
+  const order = useQuery(api.orders.q.getById, orderId ? {id: orderId} : 'skip')
 
   // Debug: Log order state
-  useEffect(() => {
-    if (orderId) {
-      console.log('[Checkout] OrderId:', orderId)
-      console.log('[Checkout] Order:', order)
-      console.log('[Checkout] Order payment method:', order?.payment?.method)
-    }
-  }, [orderId, order])
+  // useEffect(() => {
+  //   if (orderId) {
+  //     console.log('[Checkout] OrderId:', orderId)
+  //     console.log('[Checkout] Order:', order)
+  //     console.log('[Checkout] Order payment method:', order?.payment?.method)
+  //   }
+  // }, [orderId, order])
 
   const {
     formData,
@@ -128,13 +125,17 @@ export function Checkout({
           // Use the order's payment method to determine redirect
           const paymentMethod = order.payment.method
           console.log('[Checkout] Order payment method:', paymentMethod)
-          console.log('[Checkout] Redirecting to:', paymentMethod === 'credit_card' ? 'pay' : 'commerce')
           startTransition(() => {
-            // Redirect to commerce for non-credit-card payments, otherwise to pay
-            const redirectPath =
-              paymentMethod === 'credit_card'
-                ? `/lobby/order/${orderId}/pay`
-                : `/lobby/order/${orderId}/commerce`
+            // Determine redirect path based on payment method
+            let redirectPath: string
+            if (paymentMethod === 'credit_card') {
+              redirectPath = `/lobby/order/${orderId}/pay`
+            } else if (paymentMethod === 'cashapp') {
+              redirectPath = `/lobby/order/${orderId}/cashapp`
+            } else {
+              // Default to commerce for crypto and other methods
+              redirectPath = `/lobby/order/${orderId}/commerce`
+            }
             console.log('[Checkout] Redirect path:', redirectPath)
             router.push(redirectPath)
           })
@@ -289,6 +290,7 @@ export function Checkout({
         onPlaceOrderClick={handlePlaceOrderClick}
         userId={convexUser?._id}
         pointsBalance={pointsBalance}
+        onOpen={onOpen}
       />
 
       <CheckoutModal

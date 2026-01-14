@@ -41,10 +41,6 @@ export default function CartPage() {
   } = useDisclosure()
   const [showEmptyCartLoader, setShowEmptyCartLoader] = useState(false)
   const loaderTimerRef = useRef<NodeJS.Timeout | null>(null)
-  const previousStateRef = useRef<{isLoading: boolean; hasItems: boolean}>({
-    isLoading: true,
-    hasItems: false,
-  })
 
   // Get user info for checkout
   const convexUser = useQuery(
@@ -89,7 +85,7 @@ export default function CartPage() {
     if (orderId) {
       const redirectTimer = setTimeout(() => {
         startTransition(() => {
-          router.push('/account')
+          router.push(`/account/orders/${orderId}`)
         })
       }, 5000) // Give time for development modal to show
 
@@ -99,41 +95,36 @@ export default function CartPage() {
 
   // Show loader for 3 seconds when cart is empty (after initial load completes)
   useEffect(() => {
-    const prevState = previousStateRef.current
-    const stateChanged =
-      prevState.isLoading !== isLoading || prevState.hasItems !== hasItems
-
-    // Only proceed if state actually changed
-    if (!stateChanged) {
-      return
-    }
-
-    // Update previous state
-    previousStateRef.current = {isLoading, hasItems}
-
     // Clear any existing timer
     if (loaderTimerRef.current) {
       clearTimeout(loaderTimerRef.current)
       loaderTimerRef.current = null
     }
 
-    // Schedule state updates asynchronously to avoid cascading renders
-    if (!isLoading && !hasItems) {
-      // Schedule the loader to show
-      queueMicrotask(() => {
-        setShowEmptyCartLoader(true)
-      })
+    // If loading or has items, hide the loader via timeout callback
+    if (isLoading || hasItems) {
+      const timeoutId = setTimeout(() => {
+        setShowEmptyCartLoader(false)
+      }, 0)
+      return () => clearTimeout(timeoutId)
+    }
 
-      // Schedule it to hide after 3 seconds
+    // If not loading and no items, show loader for 3 seconds then show empty cart
+    if (!isLoading && !hasItems) {
+      const showTimeoutId = setTimeout(() => {
+        setShowEmptyCartLoader(true)
+      }, 0)
       loaderTimerRef.current = setTimeout(() => {
         setShowEmptyCartLoader(false)
         loaderTimerRef.current = null
       }, 3000)
-    } else if (hasItems) {
-      // If cart has items, hide loader immediately
-      queueMicrotask(() => {
-        setShowEmptyCartLoader(false)
-      })
+      return () => {
+        clearTimeout(showTimeoutId)
+        if (loaderTimerRef.current) {
+          clearTimeout(loaderTimerRef.current)
+          loaderTimerRef.current = null
+        }
+      }
     }
 
     return () => {
@@ -176,14 +167,11 @@ export default function CartPage() {
   }, [subtotal, nextVisitMultiplier, isAuthenticated])
 
   if (!hasItems) {
-    if (isLoading || showEmptyCartLoader) {
-      return (
-        <div className='min-h-screen w-screen pt-20 lg:pt-28 flex items-start justify-center'>
-          <Loader />
-        </div>
-      )
-    }
-    return (
+    return isLoading || showEmptyCartLoader ? (
+      <div className='min-h-screen w-screen pt-20 lg:pt-28 flex items-start justify-center'>
+        <Loader />
+      </div>
+    ) : (
       <div className='min-h-screen w-screen flex items-start justify-center pt-16 sm:pt-10 md:pt-24 lg:pt-28 px-4 sm:px-6 lg:px-8'>
         <EmptyCart />
       </div>

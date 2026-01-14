@@ -44,8 +44,8 @@ const CartHistoryItemCard = ({
   return (
     <Card
       shadow='none'
-      className='bg-linear-to-r from-foreground/5 via-transparent to-transparent border border-foreground/10 rounded-xl overflow-hidden'>
-      <CardBody className='p-3'>
+      className='bg-linear-to-r from-foreground/5 via-transparent to-transparent border border-foreground/10 rounded-xl overflow-visible'>
+      <CardBody className='p-3 relative overflow-visible'>
         <div className='flex gap-3 items-center'>
           <div className='relative size-14 shrink-0 rounded-lg overflow-hidden'>
             {productImageUrl ? (
@@ -77,7 +77,7 @@ const CartHistoryItemCard = ({
             </div>
           </div>
 
-          <div className='flex items-center gap-1'>
+          <div className='flex items-end'>
             <Button
               size='sm'
               variant='solid'
@@ -90,15 +90,16 @@ const CartHistoryItemCard = ({
                   className='size-4 -mr-2'
                 />
               }
-              className='font-polysans font-medium text-base'>
+              className='font-polysans dark:bg-white dark:text-dark-gray font-medium text-sm'>
               Add
             </Button>
             <Button
               size='sm'
               isIconOnly
-              variant='light'
+              radius='full'
+              variant='solid'
               onPress={onRemove}
-              className='opacity-50 hover:opacity-100'>
+              className='border absolute -right-4 -top-4 hover:opacity-100'>
               <Icon name='x' className='size-3.5' />
             </Button>
           </div>
@@ -170,7 +171,7 @@ export const CartHistory = ({onItemAdded}: CartHistoryProps) => {
           size='sm'
           variant='light'
           onPress={clearHistory}
-          className='text-xs opacity-50 hover:opacity-100'>
+          className='text-xs font-brk opacity-50 hover:opacity-100'>
           Clear all
         </Button>
       </div>
