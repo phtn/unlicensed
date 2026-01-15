@@ -60,7 +60,7 @@ export const Content = () => {
         <ArcActionBar>
           <ArcButtonLeft
             icon='chevron-left'
-            label='Review Order'
+            label='View Order'
             href={order ? `/account/orders/${order._id}` : '#'}
           />
           <ArcButtonRight

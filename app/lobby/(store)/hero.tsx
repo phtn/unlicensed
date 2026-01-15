@@ -6,6 +6,7 @@ import {cn} from '@/lib/utils'
 import {Button, Image} from '@heroui/react'
 import type {EmblaCarouselType} from 'embla-carousel'
 import useEmblaCarousel from 'embla-carousel-react'
+import wheelGesturesPlugin from 'embla-carousel-wheel-gestures'
 import Link from 'next/link'
 import {
   ReactNode,
@@ -35,15 +36,18 @@ interface HomepageCarouselProps {
 }
 
 export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    loop: true,
-    align: 'start',
-    skipSnaps: false,
-    inViewThreshold: 0.7,
-    watchDrag: true,
-    watchResize: true,
-    watchSlides: false,
-  })
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    {
+      loop: true,
+      align: 'start',
+      skipSnaps: false,
+      inViewThreshold: 0.5,
+      watchDrag: true,
+      watchResize: true,
+      watchSlides: false,
+    },
+    [wheelGesturesPlugin()],
+  )
 
   const [selectedIndex, setSelectedIndex] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)

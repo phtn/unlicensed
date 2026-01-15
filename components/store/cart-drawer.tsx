@@ -8,6 +8,7 @@ import {Button, Image} from '@heroui/react'
 import {useRouter} from 'next/navigation'
 import {useMemo, useOptimistic, useTransition} from 'react'
 import {Drawer} from 'vaul'
+import {DrawerFooter} from '../ui/drawer'
 import {EmptyCart} from './empty-cart'
 import {SuggestedCartItems} from './suggested-cart-items'
 
@@ -141,7 +142,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
               </div>
             ) : (
               <>
-                <div className='max-h-[60lvh] overflow-scroll space-y-4 mb-6 rounded-3xl border border-pink-300/80 dark:border-pink-300/60 bg-indigo-400/5'>
+                <div className='flex overflow-x-auto gap-4 mb-6 pb-4 snap-x snap-mandatory scroll-smooth hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0'>
                   {cartItems.map((item) => {
                     const product = item.product
                     const denomination = item.denomination || 1
@@ -152,7 +153,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                     return (
                       <div
                         key={`${product._id}-${item.denomination || 'default'}`}
-                        className='flex gap-4 p-3 bg-surface-highlight border-b border-foreground/25 border-dashed last:border-b-0 pb-6'>
+                        className='snap-start shrink-0 w-[85vw] md:w-96 flex gap-4 p-3 bg-surface-highlight rounded-2xl border border-foreground/25'>
                         <div className='relative w-20 h-20 shrink-0 rounded-lg overflow-hidden'>
                           <Image
                             src={productImageUrl ?? undefined}
@@ -320,15 +321,18 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                 </button>
               </>
             )}
+            <div className=' pb-24'></div>
           </div>
-          <div className='h-10 w-full border-t border-foreground/5 flex items-center justify-center bg-black'>
-            <Icon name='rapid-fire' className='mr-2 w-20 text-white' />
-            <span className='text-white text-sm'>
-              <span className='font-space font-light tracking-tight'>
-                &copy;{new Date().getFullYear()}
+          <DrawerFooter className='p-0'>
+            <div className='h-10 p-0 w-full border-t border-foreground/5 flex items-center justify-center bg-black'>
+              <Icon name='rapid-fire' className='mr-2 w-20 text-light-gray' />
+              <span className='text-white text-sm'>
+                <span className='font-space font-light tracking-tight'>
+                  &copy;{new Date().getFullYear()}
+                </span>
               </span>
-            </span>
-          </div>
+            </div>
+          </DrawerFooter>
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>

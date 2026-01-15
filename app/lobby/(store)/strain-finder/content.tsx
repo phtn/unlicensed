@@ -455,7 +455,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                     key={option.id}
                     onClick={() => handleSetPotency(option.id)}
                     className={cn(
-                      'group relative overflow-hidden rounded-2xl border-2 p-6 md:p-8 transition-all duration-300 border-foreground/20 bg-background md:hover:border-foreground/40 hover:scale-102',
+                      'group relative overflow-hidden rounded-2xl border-2 p-6 md:py-6 transition-all duration-300 border-foreground/20 bg-background md:hover:border-foreground/40 hover:scale-102',
                       {
                         'border border-rose-500 bg-rose-500/5':
                           option.id === 'high' && isSelected,
@@ -469,19 +469,22 @@ export const Content = ({initialProducts}: ContentProps) => {
                           option.id === 'mild' && isSelected,
                       },
                     )}>
-                    <div className='flex items-center space-x-6'>
-                      <Icon
-                        name={option.icon}
-                        className={cn('size-16', {
-                          'text-featured': option.id === 'mild',
-                          'text-terpenes': option.id === 'medium',
-                          'text-rose-500': option.id === 'high',
-                        })}
-                      />
+                    <div className='flex items-start justify-center'>
                       <div className='text-left md:text-center'>
-                        <div className='text-xl md:text-2xl font-polysans font-semibold text-foreground capitalize'>
-                          {option.label}
+                        <div className='flex items-center space-x-2'>
+                          <Icon
+                            name={option.icon}
+                            className={cn('size-9', {
+                              'text-featured': option.id === 'mild',
+                              'text-terpenes': option.id === 'medium',
+                              'text-rose-500': option.id === 'high',
+                            })}
+                          />
+                          <div className='text-xl md:text-2xl font-polysans font-semibold text-foreground capitalize'>
+                            {option.label}
+                          </div>
                         </div>
+
                         <div className='text-sm opacity-60 font-sans'>
                           {option.description}
                         </div>
@@ -546,7 +549,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                 variant='flat'
                 radius='full'
                 isDisabled={isPending}
-                className='px-6 ml-2 font-polysans bg-sidebar'>
+                className='px-6 ml-2 font-polysans font-semibold bg-sidebar'>
                 Back
               </Button>
             )}
@@ -558,9 +561,12 @@ export const Content = ({initialProducts}: ContentProps) => {
                 variant='solid'
                 isDisabled={!canProceed || isPending}
                 className={cn(
-                  'px-8 bg-featured text-white font-polysans tracking-wide mr-2',
+                  'px-8 bg-brand disabled:bg-zinc-500 text-white font-polysans font-semibold tracking-wide mr-2',
                 )}>
-                {step === 'potency' ? 'Find My Strains' : 'Continue'}
+                <span className='drop-shadow-xs drop-shadow-zinc-600/30'>
+                  {step === 'potency' ? 'Find My Strains' : 'Continue'}
+                  {step === 'potency' && <span className='ml-2'>&rarr;</span>}
+                </span>
               </Button>
             ) : null}
           </div>

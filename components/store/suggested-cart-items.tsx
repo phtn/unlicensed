@@ -9,6 +9,7 @@ import {Button, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useMemo, useState} from 'react'
 import {SectionHeader} from '../ui/section-header'
+import {CartCollection} from './cart-collection'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -61,7 +62,7 @@ export const SuggestedCartItems = ({onClose}: {onClose: () => void}) => {
       {featured.length > 0 && (
         <div className='space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500'>
           <SectionHeader title='Featured Drops' className='px-4 w-md' />
-          <div className='flex overflow-x-auto px-4 gap-3 pb-4 snap-x hide-scrollbar -mx-4 md:mx-0'>
+          <div className='flex overflow-x-auto px-4 gap-3 pb-4 snap-x snap-mandatory scroll-smooth hide-scrollbar -mx-4 md:mx-0'>
             {featured.map((product) => (
               <SuggestedItem
                 key={product._id}
@@ -74,12 +75,15 @@ export const SuggestedCartItems = ({onClose}: {onClose: () => void}) => {
         </div>
       )}
 
+      {/* Collection Section */}
+      <CartCollection />
+
       {/* Previous Section */}
       {previous.length > 0 && (
         <div className='space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100'>
           <SectionHeader title='Buy Again' className='px-4 w-md' />
 
-          <div className='flex md:w-lg w-screen overflow-x-auto px-4 gap-3 pb-4 snap-x hide-scrollbar -mx-4 md:mx-0'>
+          <div className='flex md:w-lg w-screen overflow-x-auto px-4 gap-3 pb-4 snap-x snap-mandatory scroll-smooth hide-scrollbar -mx-4 md:mx-0'>
             {previous.map((product) => (
               <SuggestedItem
                 key={product._id}

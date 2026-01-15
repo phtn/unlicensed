@@ -98,13 +98,13 @@ export const StatChip = ({
         name ? (
           <Icon
             name={name}
-            className={cn('size-6! protrait:pt-1', {
+            className={cn('shrink-0 size-6! mt-0', {
               'text-red-500 dark:text-red-400': value === 'high',
-              'text-blue-500 dark:text-blue-400': value === 'medium',
+              'text-blue-500 dark:text-blue-300': value === 'medium',
             })}
           />
         ) : (
-          <span className='text-xs text-slate-600 dark:text-limited font-bold'>
+          <span className='text-sm text-zinc-600 font-polysans dark:text-zinc-200'>
             {label}
           </span>
         )
@@ -113,10 +113,10 @@ export const StatChip = ({
       classNames={{
         base: `ps-2 h-7 grow-0 bg-linear-to-r from-transparent via-transparent to-sidebar/5 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`,
         content:
-          'flex items-center justify-center text-foreground uppercase font-semibold text-xs',
+          'flex items-center justify-center text-foreground uppercase text-xs',
       }}
       variant='flat'>
-      <span className={cn(`font-space ${name && 'ml-0 opacity-100'}`)}>
+      <span className={cn(`font-brk text-[9px] ${name && 'ml-0 opacity-100'}`)}>
         {value}
       </span>
     </Chip>

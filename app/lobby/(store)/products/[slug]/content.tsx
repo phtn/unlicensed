@@ -43,7 +43,7 @@ export const ProductDetailContent = ({
 }: ProductDetailContentProps) => {
   const [selectedDenomination, setSelectedDenomination] = useState<number>(0)
   const {isOpen, onClose} = useDisclosure()
-  const {addItem, isAuthenticated} = useCart()
+  const {addItem} = useCart()
   const [isPending, startTransition] = useTransition()
   const addToCartButtonRef = useRef<HTMLDivElement>(null)
   const galleryImageRef = useRef<HTMLDivElement>(null)
@@ -262,7 +262,7 @@ export const ProductDetailContent = ({
                     color='success'
                     variant='flat'
                     disableRipple
-                    className='w-full text-black font-polysans font-normal text-base md:text-lg h-14 bg-linear-to-r from-featured via-featured to-featured dark:text-black'
+                    className='w-full h-15 text-black font-polysans font-medium text-base md:text-lg bg-linear-to-r from-brand via-brand to-brand dark:text-dark-gray'
                     onPress={handleAddToCart}
                     isDisabled={isPending}>
                     <span>Add to Cart</span>
@@ -277,18 +277,18 @@ export const ProductDetailContent = ({
                   size='lg'
                   variant='solid'
                   href='/lobby/cart'
-                  className='w-full sm:flex-1 h-15 font-polysans font-normal text-lg bg-foreground/95 text-white dark:text-dark-gray'>
+                  className='w-full sm:flex-1 h-15 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
                   <span>Checkout</span>
                 </Button>
               </div>
               <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />
             </div>
 
-            <div className='gap-4 py-2 md:py-2 space-y-3'>
-              <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
+            <div className='bg-background/30 rounded-3xl gap-4 p-3 md:p-4 space-y-3'>
+              <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
                 Terpenes
               </span>
-              <div className='flex flex-wrap items-center gap-2 py-2'>
+              <div className='flex flex-wrap items-center gap-2 py-2 border-b-[0.5px] border-dotted dark:border-light-gray/60'>
                 {product.terpenes.map((terpene) => (
                   <ProductProfile
                     key={terpene}
@@ -297,15 +297,15 @@ export const ProductDetailContent = ({
                   />
                 ))}
               </div>
-              <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
+              <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
                 Flavor Notes
               </span>
-              <div className='flex flex-wrap items-center gap-2 py-2'>
+              <div className='flex flex-wrap items-center gap-2 py-2 border-b-[0.5px] border-dotted dark:border-light-gray/60'>
                 {product.flavorNotes.map((flavor) => (
                   <ProductProfile key={flavor} name={flavor} group='flavors' />
                 ))}
               </div>
-              <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
+              <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
                 Effects
               </span>
               <div className='flex flex-wrap items-center gap-2 py-2'>

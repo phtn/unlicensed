@@ -26,12 +26,12 @@ export const ProgressIndicator = ({
           <div
             className={`h-2 w-3 sm:w-6 rounded-full transition-all duration-300 ease-in-out origin-center ${
               step === s
-                ? 'bg-featured w-8 sm:w-20'
+                ? 'bg-brand w-8 sm:w-20'
                 : index <
                     (
                       ['mood', 'flavor', 'potency', 'results'] as Step[]
                     ).indexOf(step)
-                  ? 'bg-featured/70'
+                  ? 'bg-brand/70'
                   : 'bg-foreground/15'
             }`}
           />

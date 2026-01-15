@@ -1,21 +1,21 @@
 'use client'
 
-import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {useMobile} from '@/hooks/use-mobile'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {Card, CardBody, CardFooter, Image} from '@heroui/react'
-import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
-import {memo, useMemo} from 'react'
+import {useMemo} from 'react'
 import {HyperList} from '../expermtl/hyper-list'
 
-export const CategoryList = memo(() => {
+interface CatergoryListProps {
+  categories: Array<Doc<'categories'>> | undefined
+}
+export const CategoryList = ({categories}: CatergoryListProps) => {
   const router = useRouter()
   const isMobile = useMobile()
-  const categories = useQuery(api.categories.q.listCategories)
 
   // Get all heroImage storage IDs for URL resolution
   const heroImages = useMemo(
@@ -40,9 +40,7 @@ export const CategoryList = memo(() => {
       data={data}
     />
   )
-})
-
-CategoryList.displayName = 'CategoryList'
+}
 
 interface CategoryItemProps extends Doc<'categories'> {
   prefetchFn: (slug: string) => () => void
@@ -53,28 +51,19 @@ const CategoryItem = (item: CategoryItemProps) => {
   return (
     <Card
       as={Link}
-      key={item._id}
-      href={`/lobby/category/${item.slug}`}
       prefetch
       radius='sm'
-      className='border-none'
-      isFooterBlurred
       isPressable
       shadow='none'
+      key={item._id}
+      isFooterBlurred
+      className='border-none'
+      href={`/lobby/category/${item.slug}`}
       onMouseEnter={item.prefetchFn(`/lobby/category/${item.slug}`)}>
       <CardBody className='relative overflow-visible p-0'>
         <div className="absolute w-500 scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
-        <div className='h-44 w-full overflow-hidden opacity-10 flex items-center justify-center'>
+        <div className='h-24 w-full overflow-hidden opacity-10 flex items-center justify-center'>
           <Icon name='rapid-fire-logo' className='size-40 animate-pulse' />
-          {/*<Image
-            alt={item.name}
-            radius='none'
-            shadow='none'
-            className='w-full object-cover object-left size-80'
-            src={'/svg/rf-icon-2.svg'}
-            width='100%'
-            loading='lazy'
-          />*/}
         </div>
         <Image
           alt={item.name}

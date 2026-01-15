@@ -12,7 +12,8 @@ export const StrainFinderMini = ({categories}: Props) => {
     <section
       id='finder'
       className='mx-auto w-full md:max-w-7xl py-12 sm:py-16 md:py-20 px-2 sm:px-4'>
-      <div className='rounded-[36px] bg-slate-200 dark:bg-dark-table/50 border border-foreground/20 sm:px-12 sm:py-16 transition-colors px-6 py-10'>
+      <div className='relative rounded-[36px] bg-slate-200 dark:bg-dark-table/50 border border-foreground/20 sm:px-12 sm:py-16 transition-colors px-6 py-10'>
+        <div className="absolute w-full inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
         <div className='grid gap-12 lg:grid-cols-5 lg:items-center'>
           <div className='space-y-10 lg:col-span-3'>
             <div className='flex font-polysans font-thin bg-black text-base text-white px-4 py-1.5 rounded-full w-fit'>
@@ -43,10 +44,10 @@ export const StrainFinderMini = ({categories}: Props) => {
             <Button
               as={NextLink}
               size='lg'
-              href='/lobby/strain-finder'
               radius='full'
-              variant='solid'
               disableRipple
+              variant='solid'
+              href='/lobby/strain-finder'
               className='px-0 flex items-center justify-center md:justify-start w-full bg-transparent text-sm font-semibold dark:border-light-gray uppercase tracking-[0.35em]'>
               <div className='flex items-center justify-start'>
                 <div className='w-12 h-12 mr-2 border border-foreground/70 rounded-full flex items-center justify-center'>
@@ -63,9 +64,9 @@ export const StrainFinderMini = ({categories}: Props) => {
               <Link
                 href={`/lobby/category/${category.slug}`}
                 key={category.slug}
-                className='group relative overflow-hidden rounded-3xl border border-foreground/10 dark:bg-(--surface-highlight) bg-slate-500/15 p-5 transition hover:-translate-y-1 hover:bg-panel/60'>
+                className='group relative overflow-hidden rounded-3xl border border-foreground/10 dark:bg-black bg-slate-500/15 p-5 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:bg-panel/40'>
                 <div className='flex flex-col gap-3'>
-                  <span className='text-xs uppercase font-fugaz font-semibold opacity-60 dark:text-light-gray text-dark-gray'>
+                  <span className='text-xs uppercase font-polysans font-semibold opacity-80 dark:text-light-gray text-dark-gray'>
                     {category.slug}
                   </span>
 

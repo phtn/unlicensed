@@ -69,7 +69,7 @@ export const Nav = ({children}: NavProps) => {
             className='md:w-36 h-12 overflow-hidden pl-1 flex items-center justify-start relative'>
             <Icon
               name='rapid-fire-logo'
-              className='h-9 w-auto dark:text-white text-white'
+              className='h-8 w-auto dark:text-white text-white'
             />
           </Link>
           <nav className={cn('flex items-center justify-center w-fit')}>
@@ -80,10 +80,10 @@ export const Nav = ({children}: NavProps) => {
             ) : (
               <Link
                 href={'/lobby/category'}
-                className='hidden text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-polysans font-semibold space-x-1'>
+                className='hidden group text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-polysans font-semibold space-x-1'>
                 <Icon
                   name='play-solid'
-                  className='size-4 rotate-45 opacity-80'
+                  className='size-4 rotate-45 group-hover:text-white group-hover:opacity-100 opacity-80'
                 />
                 <span>Shop</span>
               </Link>
