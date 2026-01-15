@@ -4,10 +4,10 @@ export const AboutUs = () => {
       <div className='max-w-7xl mx-auto px-4 md:px-6 lg:px-8'>
         {/* Header */}
         <div className='text-center mb-16 md:mb-20'>
-          <h2 className='text-4xl md:text-5xl lg:text-6xl font-bold mb-4 tracking-tight'>
+          <h2 className='text-4xl md:text-5xl font-polysans lg:text-6xl font-bold mb-4 tracking-tight'>
             ABOUT US
           </h2>
-          <p className='text-brand text-lg md:text-xl font-medium'>
+          <p className='text-brand font-polysans font-semibold text-lg md:text-xl'>
             Fire in its purest state.
           </p>
         </div>
@@ -15,7 +15,7 @@ export const AboutUs = () => {
         {/* Two Column Content */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16'>
           {/* Left Column */}
-          <div className='space-y-6 md:space-y-8 md:pr-8 md:border-r md:border-[#c026d3]'>
+          <div className='space-y-6 md:space-y-8 md:pr-8 md:border-r md:border-brand'>
             <p className='text-base md:text-lg leading-relaxed text-gray-300'>
               Rapid Fire is a fast-paced online quiz game designed to test how
               quickly you can think under pressure.

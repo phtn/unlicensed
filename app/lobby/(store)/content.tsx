@@ -2,6 +2,7 @@
 import type {StoreCategory, StoreProduct} from '@/app/types'
 import {NewHome} from '@/components/base44/home'
 import {QuickScroll} from '@/components/base44/quick-scroll'
+import {AboutUs} from '@/components/main/about-us'
 import {api} from '@/convex/_generated/api'
 import {adaptCategory, adaptProduct} from '@/lib/convexClient'
 import type {BuildType} from '@/lib/flags'
@@ -74,6 +75,7 @@ export const Content = ({
         href='#finder'
       />
       <StrainFinderMini categories={categories.slice(0, 4)} />
+      <AboutUs />
     </div>
   )
 }
