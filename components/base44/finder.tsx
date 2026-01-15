@@ -14,10 +14,10 @@ export const ShopFinder = () => {
   )
 
   return (
-    <section className='pb-20 pt-16 px-6 border-b-[0.33px] border-foreground/10 border-dotted overflow-hidden'>
+    <section className='mb-20 border-2 border-brand/40 rounded-3xl pt-3 mt-16 overflow-hidden'>
       <div className='relative max-w-7xl mx-auto'>
-        <div className='grid lg:grid-cols-2 gap-12 my-2'>
-          <h2 className='text-xl tracking-tight lg:text-3xl font-bone leading-tight'>
+        <div className='grid lg:grid-cols-2 gap-12 p-6 my-2'>
+          <h2 className='text-xl tracking-tight lg:text-2xl font-bone leading-tight'>
             <span className='mr-2 dark:text-white '>
               Experience by {selectedFilter}
             </span>
@@ -43,7 +43,7 @@ export const ShopFinder = () => {
           </div>
         </div>
 
-        <div className='relative min-h-fit overflow-hidden py-0.5 px-0.5'>
+        <div className='relative min-h-fit overflow-hidden'>
           <CategoryList categories={categories} />
         </div>
       </div>

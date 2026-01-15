@@ -111,7 +111,7 @@ export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
     <div
       ref={containerRef}
       className={cn(
-        'relative md:max-w-7xl mx-auto pt-16 md:pt-24 h-[80lvh] md:h-[80lvh]',
+        'relative md:max-w-7xl mx-auto pt-6 md:pt-24 h-[80lvh] md:h-[80lvh]',
         'cursor-grab active:cursor-grabbing',
         className,
       )}
@@ -190,7 +190,7 @@ const Slide = ({
 }: Highlight) => {
   const {on: navigating, toggle} = useToggle()
   return (
-    <div className='relative min-w-full flex-[0_0_100%] px-6 md:snap-start md:snap-always'>
+    <div className='relative min-w-full flex-[0_0_100%] px-2 md:snap-start md:snap-always'>
       <div className=''>
         <div className='grid lg:grid-cols-2 gap-12 items-center'>
           <div>

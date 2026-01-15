@@ -106,7 +106,7 @@ export default function ShimmerText({
 
   const isInteractive = playOnClick || playOnHover
 
-  const lightDefault = 'from-sky-100 via-white to-orange-50'
+  const lightDefault = 'from-zinc-100 via-white to-pink-50'
   const darkDefault = 'from-white via-neutral-500 to-white'
   const lightChatgpt =
     'dark:from-zinc-700 dark:via-zinc-400 dark:to-zinc-600 from-zinc-200 via-zinc-400 to-zinc-200'

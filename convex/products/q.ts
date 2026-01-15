@@ -114,13 +114,9 @@ export const listGallery = query({
     }
     const galleryItems = product.gallery ?? []
     if (galleryItems.length === 0) {
-      console.log(`[listGallery] Product ${id} has no gallery items`)
       return []
     }
 
-    console.log(
-      `[listGallery] Processing ${galleryItems.length} gallery items for product ${id}`,
-    )
     const gallery: Array<string | null> = []
 
     for (const item of galleryItems) {
@@ -135,15 +131,10 @@ export const listGallery = query({
         } else {
           // Storage ID as string - convert to URL
           try {
-            console.log(
-              `[listGallery] Converting storage ID (string) to URL: ${item}`,
-            )
             const image = await ctx.storage.getUrl(item as Id<'_storage'>)
             // getUrl can return null if storage ID is invalid
             if (image) {
-              console.log(
-                `[listGallery] Successfully got URL for storage ID: ${item}`,
-              )
+              continue
             } else {
               console.warn(
                 `[listGallery] getUrl returned null for storage ID: ${item}`,
@@ -161,15 +152,10 @@ export const listGallery = query({
       } else {
         // Storage ID (Id<'_storage'>) - convert to URL
         try {
-          console.log(
-            `[listGallery] Converting storage ID (Id) to URL: ${item}`,
-          )
           const image = await ctx.storage.getUrl(item)
           // getUrl can return null if storage ID is invalid
           if (image) {
-            console.log(
-              `[listGallery] Successfully got URL for storage ID: ${item}`,
-            )
+            continue
           } else {
             console.warn(
               `[listGallery] getUrl returned null for storage ID: ${item}`,
@@ -186,10 +172,6 @@ export const listGallery = query({
       }
     }
 
-    const validUrls = gallery.filter((url): url is string => !!url)
-    console.log(
-      `[listGallery] Returning ${validUrls.length} valid URLs out of ${gallery.length} total items`,
-    )
     return gallery
   },
 })

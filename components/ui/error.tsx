@@ -116,7 +116,7 @@ export function ErrorComp({error, reset, name}: ErrorProps) {
   }, [])
 
   return (
-    <div className='min-h-[50vh] w-full flex items-center justify-center p-4 sm:p-6 lg:p-8'>
+    <div className='min-h-[70vh] w-full flex items-center justify-center mt-12 p-4 sm:p-6 lg:p-8'>
       <style>
         {`::view-transition-old(error-details),::view-transition-new(error-details){animation:none;mix-blend-mode:normal;}`}
       </style>

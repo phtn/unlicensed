@@ -1,84 +1,59 @@
 'use client'
 
 import {Doc} from '@/convex/_generated/dataModel'
-import {useMobile} from '@/hooks/use-mobile'
-import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {Icon} from '@/lib/icons'
-import {Card, CardBody, CardFooter, Image} from '@heroui/react'
 import Link from 'next/link'
-import {useRouter} from 'next/navigation'
 import {useMemo} from 'react'
 import {HyperList} from '../expermtl/hyper-list'
+import ShimmerText from '../expermtl/shimmer'
 
 interface CatergoryListProps {
   categories: Array<Doc<'categories'>> | undefined
 }
 export const CategoryList = ({categories}: CatergoryListProps) => {
-  const router = useRouter()
-  const isMobile = useMobile()
-
-  // Get all heroImage storage IDs for URL resolution
-  const heroImages = useMemo(
-    () => categories?.map((item) => item.heroImage).filter(Boolean) ?? [],
-    [categories],
-  )
-
-  // Resolve storageIds to URLs
-  const resolveUrl = useStorageUrls(heroImages)
-
-  const prefetchFn = (slug: string) => () => router.prefetch(slug)
-  const data = categories
-    ?.slice()
-    .map((c) => ({...c, prefetchFn, resolveUrl})) as Array<CategoryItemProps>
+  const data = useMemo(() => {
+    // const prefetchFn = (slug: string) => () => router.prefetch(slug)
+    return categories
+      ?.slice()
+      .map((c) => ({name: c.name, slug: c.slug})) as QuickLink[]
+  }, [categories])
 
   return (
-    <HyperList
-      direction='right'
-      component={CategoryItem}
-      disableAnimation={isMobile}
-      container='gap-8 grid grid-cols-2 sm:grid-cols-5 mt-4'
-      data={data}
-    />
+    <div className='relative pt-0'>
+      <div className="absolute w-full top-0 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
+      <HyperList
+        direction='right'
+        component={CategoryLabel}
+        container='gap-0 flex w-screen overflow-scroll md:max-w-7xl bg-background snap-x snap-mandatory'
+        itemStyle='snap-start'
+        data={data}
+      />
+    </div>
   )
 }
 
-interface CategoryItemProps extends Doc<'categories'> {
-  prefetchFn: (slug: string) => () => void
-  resolveUrl: (storageId: string) => string | null
+interface QuickLink {
+  name: string
+  slug: string
 }
-
-const CategoryItem = (item: CategoryItemProps) => {
+const CategoryLabel = (item: QuickLink) => {
   return (
-    <Card
-      as={Link}
-      prefetch
-      radius='sm'
-      isPressable
-      shadow='none'
-      key={item._id}
-      isFooterBlurred
-      className='border-none'
+    <Link
       href={`/lobby/category/${item.slug}`}
-      onMouseEnter={item.prefetchFn(`/lobby/category/${item.slug}`)}>
-      <CardBody className='relative overflow-visible p-0'>
-        <div className="absolute w-500 scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
-        <div className='h-24 w-full overflow-hidden opacity-10 flex items-center justify-center'>
-          <Icon name='rapid-fire-logo' className='size-40 animate-pulse' />
-        </div>
-        <Image
-          alt={item.name}
-          radius='none'
-          shadow='none'
-          className='hidden w-full object-cover min-size-[172px]'
-          src={item.resolveUrl(item.heroImage ?? '') ?? undefined}
-          width='100%'
-          loading='lazy'
-        />
-      </CardBody>
-      <CardFooter className='absolute z-30 bottom-0 text-xl flex items-center h-10 font-bone font-light justify-center text-white'>
-        <p className='capitalize'>{item.name}</p>
-        {/*<p className='text-default-500'>{item.href}</p>*/}
-      </CardFooter>
-    </Card>
+      className='relative flex items-center justify-center'>
+      <div className='absolute font-polysans font-semibold text-brand opacity-20 text-4xl scale-105 whitespace-nowrap capitalize'>
+        {item.name[0].toUpperCase()}
+        {item.name.substring(1, item.name.length)}
+      </div>
+      <div className='absolute font-polysans font-semibold text-pink-300 text-4xl blur-lg scale-105 whitespace-nowrap capitalize'>
+        {item.name[0].toUpperCase()}
+        {item.name.substring(1, item.name.length)}
+      </div>
+      <ShimmerText
+        surface='light'
+        variant='default'
+        className='font-polysans font-semibold text-4xl capitalize whitespace-nowrap w-[calc(100lvw-36px)] md:w-2xs md:mx-auto flex justify-center items-center h-32'
+        text={item.name}
+      />
+    </Link>
   )
 }
