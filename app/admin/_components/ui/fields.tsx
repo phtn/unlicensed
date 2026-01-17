@@ -1,5 +1,6 @@
+import {ClassName} from '@/app/types'
 import {Chip, Input, Select, Switch, Textarea} from '@heroui/react'
-import React, {InputHTMLAttributes, ReactNode} from 'react'
+import React, {ChangeEvent, InputHTMLAttributes, ReactNode, Ref} from 'react'
 import {
   CategorySelectItem,
   getCategoryChipProps,
@@ -19,7 +20,13 @@ export const commonInputClassNames = {
 type BaseFieldProps<T> = {
   name: keyof T // Required for FormInput type, but can be omitted when used inside AppField
   label: string
+  id?: string | number
+  ref?: Ref<T>
   required?: boolean
+  className?: ClassName
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void
+  autoComplete?: 'off' | 'on'
+  autoFill?: 'off' | 'on'
   placeholder?: string
   description?: string
   defaultValue?:

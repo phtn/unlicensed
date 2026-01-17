@@ -1,10 +1,17 @@
 'use client'
 
-import {Badge, Button, Dropdown, DropdownItem, DropdownMenu as HeroUIDropdownMenu, DropdownTrigger} from '@heroui/react'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {
+  Badge,
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownTrigger,
+  DropdownMenu as HeroUIDropdownMenu,
+} from '@heroui/react'
 import {Column} from '@tanstack/react-table'
-import {useMemo, Fragment} from 'react'
+import {Fragment, useMemo} from 'react'
 
 interface Props<T> {
   cols: Column<T, unknown>[]
@@ -100,7 +107,7 @@ export const ColumnView = <T,>({cols, isMobile}: Props<T>) => {
       <DropdownTrigger>
         <Button
           variant='flat'
-          className='relative select-none font-sans md:aspect-auto aspect-square data-[state=open]:bg-origin/50'>
+          className='relative data-[state=open]:bg-origin/60 rounded-sm border -space-x-px select-none h-7.5 ps-1 aspect-square'>
           {invisibleColumns.length > 0 && (
             <Badge className='absolute bg-orange-400 dark:bg-orange-500 rounded-full -top-1.5 md:-top-0.5 left-full -translate-x-3.5 md:-translate-1/2 size-5 aspect-square px-1 text-white font-space'>
               {invisibleColumns.length > 99 ? '99+' : invisibleColumns.length}

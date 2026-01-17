@@ -1,4 +1,3 @@
-import {Button} from '@heroui/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,6 +8,7 @@ import {
 import {useCopy} from '@/hooks/use-copy'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {Button} from '@heroui/react'
 import {Table} from '@tanstack/react-table'
 import {useMemo} from 'react'
 
@@ -59,7 +59,7 @@ export const ExportTable = <T,>({table, loading}: Props<T>) => {
           <Button
             variant='flat'
             className={cn(
-              'ml-auto bg-background/30 translate-x-0 transition-transform duration-200 ease-in-out md:aspect-auto aspect-square select-none',
+              'relative data-[state=open]:bg-origin/60 rounded-sm border -space-x-px select-none h-7.5 ps-1 aspect-square',
             )}>
             <Icon
               name={loading ? 'spinners-ring' : 'arrow-down'}

@@ -10,24 +10,22 @@ export const NewHome = () => {
         {
           id: 'rapid-fire',
           tag: 'Rapid Fire',
-          imageUrl:
-            'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Slurricane_transparent.png?v=1759173573&width=1488',
+          imageUrl: '/static/slurry.webp',
           imageAlt: '',
           title: <TitleV2 title='THRIVE' subtitle='WHERE FAST MINDS' />,
           description:
             'Premium products built for consistency, impact and premium flow.',
-          ctaText: 'Shop Flowers',
-          ctaHref: '/lobby/category/flower',
+          ctaText: 'Shop Collection',
+          ctaHref: '/lobby/collection',
         },
         {
           id: 'flower',
           tag: 'Flower',
-          imageUrl:
-            'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Slurricane_transparent.png?v=1759173573&width=1488',
+          imageUrl: '/static/devilsm.webp',
           imageAlt: '',
           title: <Title title='Elevated' subtitle='Modern Evenings.' />,
           description:
-            'Hyper-seasonal releases, terpene-rich cultivars, chef-crafted edibles, and sparkling infusions—all sourced from boutique growers and makers we know by name.',
+            'Hyper-seasonal releases, terpene-rich cultivars, chef-crafted edibles, and sparkling infusions.',
           ctaText: 'Shop Flowers',
           ctaHref: '/lobby/category/flower',
         },
@@ -71,7 +69,7 @@ export const NewHome = () => {
   return (
     <div className='bg-linear-to-b dark:from-black dark:to-[#1f1f1f]/80 from-background to-dark-table/20'>
       <Highlights slides={slides} />
-      <div className='px-4 max-w-7xl mx-auto'>
+      <div className='px-4 pb-10 max-w-7xl mx-auto'>
         <ShopFinder />
       </div>
     </div>

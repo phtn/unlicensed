@@ -1,12 +1,11 @@
 import {ClassName} from '@/app/types'
-import {Avatar} from '@heroui/react'
 import {cn} from '@/lib/utils'
-import {isOnlyNumbers} from '@/utils/regex'
+import {Avatar} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 // import {useMutation} from 'convex/react'
+import {Doc} from '@/convex/_generated/dataModel'
+import {formatDate} from '@/utils/date'
 import {type ReactNode} from 'react'
-import {api} from '@/convex/_generated/api'
-import {Doc, Id} from '@/convex/_generated/dataModel'
 
 interface CellOptions<T> {
   className?: ClassName
@@ -71,14 +70,13 @@ export const formatText = <T, K extends keyof T>(
 
 export const dateCell = <T,>(
   prop: keyof T,
-  formatter: (d: string | number | symbol | Date) => string,
   className?: ClassName,
   fallback?: ReactNode,
 ) => {
   const cell = superCell<T>(prop, {
     className,
     fallback,
-    formatter: (v) => formatter(v),
+    formatter: (v) => formatDate(v as number),
   })
   cell.displayName = `DateCell(${String(prop)})`
   return cell
@@ -327,9 +325,7 @@ export const UserCell = (ctx: CellContext<Doc<'users'>, unknown>) => {
   )
 }
 
-export const SocialLinksCell = (
-  ctx: CellContext<Doc<'users'>, unknown>,
-) => {
+export const SocialLinksCell = (ctx: CellContext<Doc<'users'>, unknown>) => {
   const {socialMedia} = ctx.row.original
   const website = socialMedia?.website
 

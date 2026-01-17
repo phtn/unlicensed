@@ -28,16 +28,16 @@ export const Title = ({title, subtitle, titleStyle}: TitleProps) => {
 export const TitleV2 = ({title, subtitle, titleStyle}: TitleProps) => {
   return (
     <h2 className='flex flex-col tracking-tighter leading-tight md:mb-8'>
-      <span className='relative flex font-polysans font-light text-foreground text-3xl sm:text-xl md:text-2xl lg:text-5xl'>
+      <div className='relative flex font-bone text-foreground text-3xl sm:text-xl md:text-2xl lg:text-5xl'>
         {subtitle}
-      </span>
-      <span
+      </div>
+      <div
         className={cn(
-          'capitalize font-polysans font-semibold text-6xl md:text-5xl lg:text-8xl text-brand',
+          'capitalize font-polysans font-black text-6xl md:text-5xl lg:text-8xl text-brand',
           titleStyle,
         )}>
         {title}
-      </span>
+      </div>
     </h2>
   )
 }

@@ -23,7 +23,7 @@ export const CategoryList = ({categories}: CatergoryListProps) => {
       <HyperList
         direction='right'
         component={CategoryLabel}
-        container='gap-0 flex w-screen overflow-scroll md:max-w-7xl bg-background snap-x snap-mandatory'
+        container='gap-0 flex w-screen bg-dark-gray overflow-scroll md:max-w-7xl bg-background snap-x snap-mandatory'
         itemStyle='snap-start'
         data={data}
       />

@@ -18,6 +18,7 @@
     "paygate": "bun run server/paygate-proxy/index.ts"
   },
   "dependencies": {
+    "@base-ui/react": "^1.1.0",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@heliofi/checkout-react": "^4.0.2",
     "@heroui/react": "^2.8.7",

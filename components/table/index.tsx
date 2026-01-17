@@ -17,7 +17,7 @@ import {
   VisibilityState,
 } from '@tanstack/react-table'
 
-import {Card} from '@heroui/react'
+import {useQueryState, useQueryStates} from 'nuqs'
 import {
   ChangeEvent,
   useCallback,
@@ -26,6 +26,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import {HyperWrap} from './hyper-wrap'
 
 import {
   Table,
@@ -36,15 +37,23 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {useMobile} from '@/hooks/use-mobile'
-import {useToggle} from '@/hooks/use-toggle'
 import {cn} from '@/lib/utils'
 import {ColumnSort} from './column-sort'
 import {ColumnView} from './column-view'
 import {ActionConfig, ColumnConfig, createColumns} from './create-columns'
 import {DeleteButton} from './delete-button'
-import {ExportTable} from './export-table'
+import {EmptyTable} from './empty-table'
 import {Filter} from './filter'
 import {PageControl, Paginator} from './pagination'
+import {
+  createColumnFiltersParser,
+  createColumnVisibilityParser,
+  createRowSelectionParser,
+  createSortingParser,
+  paginationParser,
+  searchParser,
+  selectModeParser,
+} from './parsers'
 import {Search} from './search'
 import {SelectToggle} from './select-toggle'
 
@@ -69,28 +78,144 @@ export const DataTable = <T,>({
   onDeleteSelected,
   deleteIdAccessor = 'id' as keyof T,
 }: TableProps<T>) => {
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  // URL state management with nuqs
+  const [pagination, setPagination] = useQueryStates(paginationParser)
+
+  const [globalFilter, setGlobalFilter] = useQueryState(
+    'search',
+    searchParser.withDefault(''),
+  )
+
+  const sortingParser = useMemo(() => createSortingParser(), [])
+  const [sortingParam, setSortingParam] = useQueryState('sort', sortingParser)
+
+  const columnFiltersParser = useMemo(() => createColumnFiltersParser(), [])
+  const [columnFiltersParam, setColumnFiltersParam] = useQueryState(
+    'filters',
+    columnFiltersParser,
+  )
+
+  const columnVisibilityParser = useMemo(
+    () => createColumnVisibilityParser(),
+    [],
+  )
+  const [columnVisibilityParam, setColumnVisibilityParam] = useQueryState(
+    'columns',
+    columnVisibilityParser,
+  )
+
+  const rowSelectionParser = useMemo(() => createRowSelectionParser(), [])
+  const [rowSelectionParam, setRowSelectionParam] = useQueryState(
+    'select',
+    rowSelectionParser,
+  )
+
+  const [selectModeParam, setSelectModeParam] = useQueryState(
+    'selectMode',
+    selectModeParser,
+  )
+
+  // Convert URL params to table state
+  const paginationState: PaginationState = useMemo(
+    () => ({
+      pageIndex: pagination.pageIndex ?? 0,
+      pageSize: pagination.pageSize ?? 15,
+    }),
+    [pagination.pageIndex, pagination.pageSize],
+  )
+
+  const sorting: SortingState = useMemo(
+    () => sortingParam ?? [{id: 'createdAt', desc: false}],
+    [sortingParam],
+  )
+
+  const columnFilters: ColumnFiltersState = useMemo(
+    () => columnFiltersParam ?? [],
+    [columnFiltersParam],
+  )
+
+  const columnVisibility: VisibilityState = useMemo(
+    () => columnVisibilityParam ?? {},
+    [columnVisibilityParam],
+  )
+
+  const rowSelection: RowSelectionState = useMemo(
+    () => rowSelectionParam ?? {},
+    [rowSelectionParam],
+  )
+
+  const selectOn = useMemo(() => selectModeParam === 'true', [selectModeParam])
 
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [globalFilter, setGlobalFilter] = useState<string>('')
   const handleFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault()
-    setGlobalFilter(e.target.value)
+    setGlobalFilter(e.target.value || null)
   }
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 15,
-  })
 
-  const [sorting, setSorting] = useState<SortingState>([
-    {
-      id: 'createdAt',
-      desc: false,
+  const handlePaginationChange = useCallback(
+    (
+      updater: PaginationState | ((old: PaginationState) => PaginationState),
+    ) => {
+      const newPagination =
+        typeof updater === 'function' ? updater(paginationState) : updater
+      setPagination({
+        pageIndex: newPagination.pageIndex,
+        pageSize: newPagination.pageSize,
+      })
     },
-  ])
+    [paginationState, setPagination],
+  )
+
+  const handleSortingChange = useCallback(
+    (updater: SortingState | ((old: SortingState) => SortingState)) => {
+      const newSorting =
+        typeof updater === 'function' ? updater(sorting) : updater
+      setSortingParam(newSorting)
+    },
+    [sorting, setSortingParam],
+  )
+
+  const handleColumnFiltersChange = useCallback(
+    (
+      updater:
+        | ColumnFiltersState
+        | ((old: ColumnFiltersState) => ColumnFiltersState),
+    ) => {
+      const newFilters =
+        typeof updater === 'function' ? updater(columnFilters) : updater
+      setColumnFiltersParam(newFilters)
+    },
+    [columnFilters, setColumnFiltersParam],
+  )
+
+  const handleColumnVisibilityChange = useCallback(
+    (
+      updater: VisibilityState | ((old: VisibilityState) => VisibilityState),
+    ) => {
+      const newVisibility =
+        typeof updater === 'function' ? updater(columnVisibility) : updater
+      setColumnVisibilityParam(newVisibility)
+    },
+    [columnVisibility, setColumnVisibilityParam],
+  )
+
+  const handleRowSelectionChange = useCallback(
+    (
+      updater:
+        | RowSelectionState
+        | ((old: RowSelectionState) => RowSelectionState),
+    ) => {
+      const newSelection =
+        typeof updater === 'function' ? updater(rowSelection) : updater
+      setRowSelectionParam(newSelection)
+    },
+    [rowSelection, setRowSelectionParam],
+  )
+
+  const selectToggle = useCallback(() => {
+    setSelectModeParam(selectOn ? 'false' : 'true')
+  }, [selectOn, setSelectModeParam])
 
   const [_data] = useState<T[]>(data)
 
@@ -103,7 +228,6 @@ export const DataTable = <T,>({
   //   table.resetRowSelection();
   // };
 
-  const {on: selectOn, toggle: selectToggle} = useToggle()
   const columns = createColumns(columnConfigs, actionConfig, selectOn)
 
   const table = useReactTable({
@@ -111,20 +235,20 @@ export const DataTable = <T,>({
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
+    onSortingChange: handleSortingChange,
     enableSortingRemoval: false,
     getPaginationRowModel: getPaginationRowModel(),
-    onPaginationChange: setPagination,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
+    onPaginationChange: handlePaginationChange,
+    onColumnFiltersChange: handleColumnFiltersChange,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
+    onRowSelectionChange: handleRowSelectionChange,
     getFilteredRowModel: getFilteredRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     state: {
       sorting,
-      pagination,
+      pagination: paginationState,
       columnFilters,
-      globalFilter,
+      globalFilter: globalFilter ?? '',
       columnVisibility,
       rowSelection,
     },
@@ -140,25 +264,41 @@ export const DataTable = <T,>({
     unknown
   >[]
 
-  const paginationState = table.getState().pagination
   const rowCount = table.getRowCount()
-  const setPageSize = useCallback(
-    (value: string) => table.setPageSize(+value),
-    [table],
-  )
   const pageControl: PageControl = {
-    gotoFirst: () => table.firstPage(),
+    gotoFirst: () => {
+      handlePaginationChange({...paginationState, pageIndex: 0})
+    },
     disabledPrev: !table.getCanPreviousPage(),
-    gotoPrev: () => table.previousPage(),
+    gotoPrev: () => {
+      handlePaginationChange({
+        ...paginationState,
+        pageIndex: Math.max(0, paginationState.pageIndex - 1),
+      })
+    },
     disabledNext: !table.getCanNextPage(),
-    gotoNext: () => table.nextPage(),
-    gotoLast: () => table.lastPage(),
+    gotoNext: () => {
+      handlePaginationChange({
+        ...paginationState,
+        pageIndex: paginationState.pageIndex + 1,
+      })
+    },
+    gotoLast: () => {
+      const lastPageIndex = Math.max(
+        0,
+        Math.ceil(rowCount / paginationState.pageSize) - 1,
+      )
+      handlePaginationChange({
+        ...paginationState,
+        pageIndex: lastPageIndex,
+      })
+    },
   }
 
   const tableRows = table.getRowModel().rows
   const selectedRows = useMemo(
     () => table.getSelectedRowModel().rows ?? [],
-    [table],
+    [rowSelection],
   )
 
   const isMobile = useMobile()
@@ -198,17 +338,11 @@ export const DataTable = <T,>({
       className={cn(
         'text-foreground flex w-full overflow-hidden gap-x-4 transition-[max-width] duration-500 ease-in-out will-change-[max-width] md:max-w-[100vw] xl:max-w-[100vw]',
       )}>
-      <Card className='dark:bg-greyed/80 mb-2 h-[92lvh] inset-0 dark:inset-0 md:rounded-2xl pt-2 md:pt-6 pb-4 flex-1 min-w-0 overflow-hidden'>
-        <div className='px-2 md:pl-0 md:pr-3 md:mb-0 flex items-center justify-between'>
-          <div className='flex items-center gap-x-1 md:gap-4'>
+      <HyperWrap className='gap-0 space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-2xl pb-8 min-w-0 overflow-auto!'>
+        <div className='px-2 md:pl-0 md:pr-3 my-2 flex items-center justify-between'>
+          <div className='flex items-center space-x-1 md:space-x-4'>
             <Title title={title} />
-            <div className='flex items-center space-x-3 md:space-x-3'>
-              <Search
-                ref={inputRef}
-                onChange={handleFilterChange}
-                value={globalFilter}
-              />
-
+            <div className='flex items-center space-x-3'>
               <Filter
                 columns={allCols}
                 activeFilterColumns={activeFilterColumns}
@@ -227,7 +361,7 @@ export const DataTable = <T,>({
                   onDelete={async (ids) => {
                     await onDeleteSelected(ids)
                     // Reset selection after successful deletion
-                    setRowSelection({})
+                    setRowSelectionParam({})
                   }}
                   idAccessor={deleteIdAccessor}
                   disabled={loading}
@@ -235,8 +369,13 @@ export const DataTable = <T,>({
               )}
             </div>
           </div>
-          <div className='flex items-center gap-3'>
-            <ExportTable table={table} loading={loading} />
+          <div className='flex items-center gap-x-3'>
+            {/*<ExportTable table={table} loading={loading} />*/}
+            <Search
+              ref={inputRef}
+              onChange={handleFilterChange}
+              value={globalFilter ?? ''}
+            />
           </div>
         </div>
 
@@ -253,7 +392,12 @@ export const DataTable = <T,>({
                       <TableHead
                         key={header.id}
                         style={{width: `${header.getSize()}px`}}
-                        className='md:h-10 h-8 font-medium font-space tracking-tighter md:tracking-tight text-xs md:text-sm border-y-[0.5px] dark:text-zinc-400 dark:bg-greyed'>
+                        className={cn(
+                          'sticky top-0 z-20',
+                          'md:h-10 h-8 font-medium font-space tracking-tighter md:tracking-tight text-xs md:text-sm border-y-[0.5px]',
+                          'bg-background/95 supports-backdrop-filter:bg-background/80 backdrop-blur',
+                          'dark:text-zinc-400 dark:bg-greyed/95 dark:supports-backdrop-filter:bg-greyed/80',
+                        )}>
                         <ColumnSort flexRender={flexRender} header={header} />
                       </TableHead>
                     )
@@ -278,10 +422,18 @@ export const DataTable = <T,>({
         <Paginator
           state={paginationState}
           rowCount={rowCount}
-          setPageSize={setPageSize}
+          setPageSize={useCallback(
+            (value: string) => {
+              handlePaginationChange({
+                ...paginationState,
+                pageSize: +value,
+              })
+            },
+            [paginationState, handlePaginationChange],
+          )}
           pageControl={pageControl}
         />
-      </Card>
+      </HyperWrap>
     </div>
   )
 }
@@ -352,25 +504,13 @@ const renderCell = <TData, TValue>(
 )
 
 const TableContainer = ({children}: {children: React.ReactNode}) => (
-  <div className='bg-transparent h-[calc(100vh-100px)] md:h-[calc(100vh-124px)] overflow-auto'>
-    {children}
-  </div>
+  <div className='bg-transparent pb-10 h-full'>{children}</div>
 )
 
 const Title = ({title}: {title: string}) => (
-  <div className='w-fit max-w-[8ch] md:max-w-[20ch] md:w-full md:mx-4'>
+  <div className='w-fit md:w-full md:mx-4'>
     <h2 className='capitalize text-lg leading-4 md:leading-5 md:text-2xl font-bold font-figtree tracking-tighter'>
       {title}
     </h2>
   </div>
-)
-
-const EmptyTable = ({colSpan}: {colSpan: number}) => (
-  <TableRow>
-    <TableCell
-      colSpan={colSpan}
-      className='h-24 text-center rounded-xl font-space text-muted-foreground'>
-      No results.
-    </TableCell>
-  </TableRow>
 )

@@ -1,7 +1,15 @@
-import {Badge, Button, Checkbox, Popover, PopoverContent, PopoverTrigger} from '@heroui/react'
-import {Select, SelectItem} from '@heroui/react'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {
+  Badge,
+  Button,
+  Checkbox,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Select,
+  SelectItem,
+} from '@heroui/react'
 import {Column} from '@tanstack/react-table'
 import {useId, useMemo} from 'react'
 
@@ -56,13 +64,7 @@ export const Filter = <T,>({
         selectedValues: filterValue ?? [],
       }
     })
-  }, [
-    activeFilterColumns,
-    // Include serialized filter values as dependency for reactivity
-    JSON.stringify(
-      activeFilterColumns.map((col) => col.getFilterValue() ?? []),
-    ),
-  ])
+  }, [activeFilterColumns])
 
   // Calculate total active filter count - reactive to filter changes
   const totalActiveFilters = useMemo(() => {
@@ -107,7 +109,7 @@ export const Filter = <T,>({
         <Button
           variant='flat'
           className={cn(
-            'relative aspect-square data-[state=open]:bg-origin/50 select-none',
+            'relative data-[state=open]:bg-origin/60 rounded-sm border -space-x-px select-none h-7.5 ps-1 aspect-square',
           )}>
           <Icon
             name='search'
@@ -150,13 +152,13 @@ export const Filter = <T,>({
                     }
                   }}
                   className='w-full mt-1 h-10 rounded-2xl shadow-none bg-origin'>
-                    {availableColumns.map((column) => (
-                      <SelectItem key={column.id}>
-                        {typeof column.columnDef.header === 'string'
-                          ? column.columnDef.header
-                          : column.id}
-                      </SelectItem>
-                    ))}
+                  {availableColumns.map((column) => (
+                    <SelectItem key={column.id}>
+                      {typeof column.columnDef.header === 'string'
+                        ? column.columnDef.header
+                        : column.id}
+                    </SelectItem>
+                  ))}
                 </Select>
               </div>
               <div className='h-0.5 bg-origin/50 my-2' />

@@ -1,8 +1,7 @@
 import {api} from '@/convex/_generated/api'
-import {cn} from '@/lib/utils'
-import {Button, ButtonGroup} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useCallback, useState} from 'react'
+import TextAnimate from '../expermtl/text-animate'
 import {CategoryList} from '../store/category-list'
 
 export const ShopFinder = () => {
@@ -14,33 +13,17 @@ export const ShopFinder = () => {
   )
 
   return (
-    <section className='mb-20 border-2 border-brand/40 rounded-3xl pt-3 mt-16 overflow-hidden'>
+    <section className='mb-20 border-2 border-brand/40 rounded-3xl pt-3 mt-16 overflow-hidden bg-dark-gray'>
       <div className='relative max-w-7xl mx-auto'>
-        <div className='grid lg:grid-cols-2 gap-12 p-6 my-2'>
-          <h2 className='text-xl tracking-tight lg:text-2xl font-bone leading-tight'>
-            <span className='mr-2 dark:text-white '>
-              Experience by {selectedFilter}
+        <div className='px-6 md:px-10 py-6 my-2'>
+          <h2>
+            <span className=''>
+              <TextAnimate
+                className='mr-2 text-white text-xl lg:text-xl font-brk tracking-tight leading-tight'
+                text={`Experience by ${selectedFilter}`}
+              />
             </span>
           </h2>
-
-          <div className='hidden _flex items-center justify-end'>
-            <ButtonGroup variant='solid'>
-              <Button
-                onPress={handleFilterChange('category')}
-                className={cn('bg-dark-gray text-white', {
-                  'bg-dark-gray/70': selectedFilter === 'category',
-                })}>
-                Category
-              </Button>
-              <Button
-                onPress={handleFilterChange('mood')}
-                className={cn('bg-dark-gray text-white', {
-                  'bg-dark-gray/70': selectedFilter === 'mood',
-                })}>
-                Mood
-              </Button>
-            </ButtonGroup>
-          </div>
         </div>
 
         <div className='relative min-h-fit overflow-hidden'>

@@ -24,7 +24,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
       id: 'credit-card',
       name: 'Credit Card',
       label: 'Credit Card',
-      icon: 'credit-card',
+      icon: 'credit-card-2',
       iconStyle: 'dark:text-blue-400 text-blue-500',
       description: 'Visa, Mastercard, AMEX, every card.',
       status: 'active',
@@ -114,7 +114,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
                 </span>
               </div>
             </div>
-            <div className='flex-1 text-[8px] font-brk uppercase font-normal px-1.5 py-px bg-sky-700/10 dark:bg-light-gray/20 md:whitespace-nowrap rounded-md'>
+            <div className='flex-1 text-[8px] font-brk whitespace-nowrap uppercase font-normal px-1.5 py-px bg-sky-700/10 dark:bg-light-gray/20 md:whitespace-nowrap rounded-md'>
               {item.data?.tag}
             </div>
           </div>

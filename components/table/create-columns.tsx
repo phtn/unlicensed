@@ -1,6 +1,6 @@
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Checkbox} from '@heroui/react'
+import {Checkbox} from '@base-ui/react'
 import {
   CellContext,
   ColumnDef,
@@ -9,7 +9,14 @@ import {
   Table,
 } from '@tanstack/react-table'
 import {AnimatePresence, motion} from 'motion/react'
-import {ReactNode, useEffect, useMemo, useRef, useState} from 'react'
+import {
+  ReactNode,
+  startTransition,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {RowActions} from './row-actions'
 
 // Generic filter function for text-based columns
@@ -29,7 +36,8 @@ export const filterFn = <T,>(
     if (filterValue.length === 0) return true
     const rowValueStr = String(value)
     return filterValue.some(
-      (fv) => String(fv).toLowerCase() === rowValueStr.toLowerCase() || fv === value
+      (fv) =>
+        String(fv).toLowerCase() === rowValueStr.toLowerCase() || fv === value,
     )
   }
 
@@ -46,11 +54,9 @@ export const multiSelectFilterFn = <T,>(
   if (!filterValue?.length) return true
   const rowValue = row.getValue(columnId)
   const rowValueStr = String(rowValue)
-  
+
   // Check if filter includes the row value (as string or original type)
-  return filterValue.some(
-    (fv) => String(fv) === rowValueStr || fv === rowValue
-  )
+  return filterValue.some((fv) => String(fv) === rowValueStr || fv === rowValue)
 }
 
 // Column factory configuration interface
@@ -86,7 +92,7 @@ export interface ColumnConfig<T> {
   filterFn?: FilterFn<T>
   enableHiding?: boolean
   enableSorting?: boolean
-  meta?: Record<string, any>
+  meta?: Record<string, string | number | boolean>
 }
 
 // Action configuration interface
@@ -159,7 +165,7 @@ export const createColumns = <T,>(
       header: () => (
         <div className='w-full flex justify-center'>
           <Icon
-            name='arrow-down'
+            name='chevron-down'
             className='size-4 dark:text-cyan-200/80 text-mac-blue/50'
           />
         </div>
@@ -192,16 +198,18 @@ const SelectAllCheckbox = <T,>({
   const [isChecked, setIsChecked] = useState(table.getIsAllPageRowsSelected())
 
   useEffect(() => {
-    if (checkboxRef.current) {
-      checkboxRef.current.indeterminate = table.getIsSomePageRowsSelected()
-      if (table.getIsSomePageRowsSelected()) {
-        setIsChecked(false)
+    startTransition(() => {
+      if (checkboxRef.current) {
+        checkboxRef.current.indeterminate = table.getIsSomePageRowsSelected()
+        if (table.getIsSomePageRowsSelected()) {
+          setIsChecked(false)
+        }
+        if (table.getIsAllPageRowsSelected()) {
+          setIsChecked(true)
+        }
       }
-      if (table.getIsAllPageRowsSelected()) {
-        setIsChecked(true)
-      }
-    }
-  }, [table.getIsSomePageRowsSelected()])
+    })
+  }, [table])
 
   return (
     <AnimatePresence mode='wait'>
@@ -211,14 +219,27 @@ const SelectAllCheckbox = <T,>({
           animate={isVisible ? {opacity: 1, x: 2} : {x: 10}}
           // exit={{x: -40}}
           className={cn('w-10 md:w-11 flex justify-center items-center')}>
-          <Checkbox
+          <Checkbox.Root
             ref={checkboxRef}
-            isSelected={table.getIsAllPageRowsSelected()}
-            onValueChange={(checked) =>
-              table.getToggleAllPageRowsSelectedHandler()({target: {checked}})
-            }
-            className='w-6 flex justify-center items-center'
-          />
+            defaultChecked={table.getIsAllPageRowsSelected()}
+            onClick={(v) => table.getToggleAllPageRowsSelectedHandler()(v)}
+            className='w-6 flex justify-center items-center'>
+            <Icon
+              name={
+                typeof isChecked === 'boolean'
+                  ? isChecked
+                    ? 'checkbox-checked'
+                    : 'checkbox-unchecked'
+                  : 'checkbox-indeterminate'
+              }
+              className={cn('size-4 md:size-6 shrink-0', {
+                'dark:text-amber-500 text-amber-600': isChecked === undefined,
+                'text-background bg-foreground rounded-full':
+                  isChecked === true,
+                'text-foreground': isChecked === false,
+              })}
+            />
+          </Checkbox.Root>
         </motion.div>
       )}
     </AnimatePresence>
@@ -226,11 +247,11 @@ const SelectAllCheckbox = <T,>({
 }
 
 // Select row checkbox component for table cells
-const SelectRowCheckbox = ({
+const SelectRowCheckbox = <T,>({
   row,
   isVisible,
 }: {
-  row: any
+  row: Row<T>
   isVisible: boolean
 }) => {
   const checkboxRef = useRef<HTMLInputElement | null>(null)
@@ -238,15 +259,16 @@ const SelectRowCheckbox = ({
 
   useEffect(() => {
     if (checkboxRef.current) {
-      checkboxRef.current.indeterminate = row.getIsSomeSelected()
+      const ref = checkboxRef.current
+      ref.indeterminate = row.getIsSomeSelected()
     }
-  }, [row.getIsSomeSelected()])
+  }, [row])
 
   const [isChecked, setIsChecked] = useState(row.getIsSelected())
 
   useEffect(() => {
     setIsChecked(row.getIsSelected())
-  }, [row.getIsSelected()])
+  }, [row])
 
   useEffect(() => {
     if (!isVisible) {
@@ -254,16 +276,12 @@ const SelectRowCheckbox = ({
     }
   }, [isVisible])
 
-  prevVisibleRef.current = isVisible
+  // prevVisibleRef.current = isVisible
   // Only animate on visibility changes, not on selection changes
-  const shouldAnimate = useMemo(
-    () => prevVisibleRef.current !== isVisible,
-    [isVisible],
-  )
+  const shouldAnimate = useMemo(() => !isVisible, [isVisible])
 
   const initial = useMemo(
-    () =>
-      prevVisibleRef.current !== isVisible ? {scale: 0} : {scale: 1, x: 10},
+    () => (!isVisible ? {scale: 0} : {scale: 1, x: 10}),
     [isVisible],
   )
 
@@ -275,21 +293,21 @@ const SelectRowCheckbox = ({
           animate={shouldAnimate ? {scale: 1, x: 10} : {x: 10}}
           // exit={{x: shouldAnimate ? -10 : 0}}
           className={cn('w-6 flex items-center justify-center')}>
-          <Checkbox
+          <Checkbox.Root
             ref={checkboxRef}
             defaultChecked={row.getIsSelected()}
             disabled={!row.getCanSelect()}
-            onChange={(value) => row.getToggleSelectedHandler()(value)}
+            onCheckedChange={(value) => row.getToggleSelectedHandler()(value)}
             className={cn('w-6 flex justify-center items-center')}>
             <Icon
-              name={isChecked ? 'check-fill' : 'circle-in'}
+              name={isChecked ? 'check' : 'checkbox-unchecked'}
               className={cn('size-4 md:size-5 rounded-full', {
                 'bg-mac-blue dark:bg-mac-blue/80 opacity-100 text-background dark:text-white':
                   isChecked,
                 'bg-foreground': shouldAnimate,
               })}
             />
-          </Checkbox>
+          </Checkbox.Root>
         </motion.div>
       )}
     </AnimatePresence>

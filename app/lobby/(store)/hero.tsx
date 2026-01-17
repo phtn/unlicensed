@@ -195,7 +195,10 @@ const Slide = ({
         <div className='grid lg:grid-cols-2 gap-12 items-center'>
           <div>
             {id === 'rapid-fire' ? (
-              <Icon name='rapid-fire' className='h-36 w-auto text-brand' />
+              <Icon
+                name='rapid-fire-latest'
+                className='h-28 w-auto text-zinc-400'
+              />
             ) : (
               <Tag text={tag} />
             )}

@@ -3,7 +3,7 @@
 import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {Suspense} from 'react'
-import {SalesTable} from './sales-table'
+import {SalesDataTable} from './x-sales-table'
 
 const ReportsContentInner = () => {
   // const sales = useQuery(api.orders.q.getOrdersByStatus, {status: 'delivered'})
@@ -13,7 +13,7 @@ const ReportsContentInner = () => {
     default:
       return (
         <Suspense fallback={<div>Loading...</div>}>
-          <SalesTable />
+          <SalesDataTable />
         </Suspense>
       )
   }

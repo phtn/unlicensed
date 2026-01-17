@@ -1,6 +1,6 @@
-import {Button} from '@heroui/react'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {Button} from '@heroui/react'
 import {Row} from '@tanstack/react-table'
 import {useCallback, useState} from 'react'
 
@@ -44,7 +44,7 @@ export const DeleteButton = <T,>({
   return (
     <Button
       variant='flat'
-      className='relative aspect-square select-none'
+      className='relative data-[state=open]:bg-origin/60 rounded-sm border -space-x-px select-none h-7.5 ps-1 aspect-square'
       onClick={handleDelete}
       disabled={disabled || !hasSelection}>
       <Icon
