@@ -233,13 +233,13 @@ export const Content = ({initialProducts}: ContentProps) => {
   // Update products with resolved image URLs
   const productsWithImages = useMemo(() => {
     return filteredProducts.map((product) => {
-      if (!product.image || product.image.startsWith('http')) {
+      if (!product.image) {
         return product
       }
       const resolvedUrl = resolveUrl(product.image)
       return {
         ...product,
-        image: resolvedUrl || product.image,
+        image: resolvedUrl ?? product.image,
       }
     })
   }, [filteredProducts, resolveUrl])

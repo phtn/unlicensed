@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.26.0
+
+### Minor Changes
+
+- commerce testnet
+
 ## 0.25.0
 
 ### Minor Changes

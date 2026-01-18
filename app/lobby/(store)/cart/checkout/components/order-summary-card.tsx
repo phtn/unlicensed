@@ -128,7 +128,7 @@ export function OrderSummaryCard({
             size='lg'
             radius='md'
             variant='solid'
-            className='w-full font-polysans text-lg font-semibold bg-foreground dark:bg-brand text-white h-14'
+            className='w-full font-polysans text-lg font-semibold bg-foreground dark:bg-brand text-white h-14 mb-2'
             onPress={onPlaceOrderClick}
             isDisabled={!isAuthenticated || isLoading || isPending}
             isLoading={isLoading || isPending}>

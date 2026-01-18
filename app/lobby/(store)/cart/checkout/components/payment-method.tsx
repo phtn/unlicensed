@@ -1,3 +1,4 @@
+import {PaymentMethod as PaymentMethodType} from '@/convex/orders/d'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Select, SelectItem} from '@heroui/react'
@@ -27,8 +28,8 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
       icon: 'credit-card-2',
       iconStyle: 'dark:text-blue-400 text-blue-500',
       description: 'Visa, Mastercard, AMEX, every card.',
-      status: 'active',
-      tag: 'Direct Checkout',
+      status: 'inactive',
+      tag: 'Not Available',
     },
     {
       id: 'crypto',
@@ -53,10 +54,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
   ]
 
   // Map method IDs to expected payment method values
-  const idToPaymentMethod: Record<
-    string,
-    'credit_card' | 'crypto' | 'cashapp'
-  > = {
+  const idToPaymentMethod: Record<string, PaymentMethodType> = {
     'credit-card': 'credit_card',
     crypto: 'crypto',
     'cash-app': 'cashapp',
@@ -75,7 +73,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
 
   // Set default selection on mount
   useEffect(() => {
-    onChange('credit_card')
+    onChange('crypto')
   }, [onChange])
 
   return (
@@ -88,7 +86,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
         listboxWrapper: 'border dark:border-foreground/40 rounded-2xl',
         listbox: 'border-b',
       }}
-      defaultSelectedKeys={['credit-card']}
+      defaultSelectedKeys={['crypto']}
       isMultiline={true}
       multiple={false}
       items={methods}
@@ -114,7 +112,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
                 </span>
               </div>
             </div>
-            <div className='flex-1 text-[8px] font-brk whitespace-nowrap uppercase font-normal px-1.5 py-px bg-sky-700/10 dark:bg-light-gray/20 md:whitespace-nowrap rounded-md'>
+            <div className='flex-1 text-[8px] font-brk whitespace-nowrap uppercase font-normal px-1.5 py-px md:whitespace-nowrap'>
               {item.data?.tag}
             </div>
           </div>
@@ -126,6 +124,9 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
         <SelectItem
           key={method.id}
           textValue={method.name}
+          className={cn({
+            'opacity-50 pointer-events-none': method.status === 'inactive',
+          })}
           classNames={{
             wrapper: '',
             base: 'hover:bg-light-gray/20! data-[selected=true]:bg-zinc-500/20!',
@@ -142,7 +143,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
                 </div>
                 <div
                   className={cn(
-                    'text-[8px] uppercase font-brk whitespace-nowrap w-fit rounded-md px-1 py-0 md:px-1 leading-3 md:leading-normal bg-dark-gray/80 text-white',
+                    'text-[8px] uppercase font-brk whitespace-nowrap w-fit px-1 py-0 md:px-1 leading-3 md:leading-normal text-white',
                     {'': method.id === 'credit-card'},
                   )}>
                   {method.tag}

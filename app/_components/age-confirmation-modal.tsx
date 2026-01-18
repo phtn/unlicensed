@@ -62,16 +62,15 @@ export function AgeConfirmationModal() {
             You must be 18 years or older to access this website.
           </div>
           <div className='py-2 sm:py-3 text-xs dark:text-white/70 relative z-100'>
-            By clicking &quot;I am 18 years or older&quot;, you confirm that you
-            are of legal age to purchase and consume products in your
-            jurisdiction.
+            By clicking &quot;I am 18 and older&quot;, you confirm that you are
+            of legal age to purchase and consume products in your jurisdiction.
           </div>
         </ModalBody>
         <ModalFooter className='flex-col gap-2 px-0'>
           <div className='space-y-3 sm:space-y-4 pt-2 sm:pt-4 w-full'>
             <Button
               onPress={handleConfirm}
-              className='w-full text-white rounded-full bg-brand py-4 sm:py-6 text-base sm:text-xl font-space font-extrabold drop-shadow-sm hover:opacity-95'>
+              className='w-full text-white rounded-full bg-brand py-4 sm:py-6 text-base sm:text-xl font-space font-extrabold drop-shadow-xs hover:opacity-95'>
               I&apos;m 18 and older
             </Button>
             <button

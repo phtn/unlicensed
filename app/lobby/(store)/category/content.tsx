@@ -42,16 +42,13 @@ export const Content = ({initialCategories}: ContentProps) => {
   return (
     <div className='min-h-screen overflow-x-hidden'>
       {/* Hero Section */}
-      <section className='pt-6 sm:pt-14 lg:pt-16 xl:pt-24 2xl:pt-28 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 bg-background'>
+      <section className='py-8 sm:py-14 lg:py-16 xl:py-24 2xl:py-28 px-4 sm:px-6 bg-background'>
         <div className='max-w-7xl mx-auto overflow-hidden'>
           <div className='grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center'>
             <div className=''>
               <Tag text='Categories' />
-              <Title
-                title='Explore Our Collection'
-                subtitle='Discover Your Perfect Match'
-              />
-              <p className='hidden sm:flex text-sm sm:text-base lg:text-base opacity-60 mb-6 sm:mb-8 lg:mb-12 max-w-md leading-relaxed'>
+              <Title title='Experience by Category' subtitle='' />
+              <p className='hidden sm:flex text-sm sm:text-base lg:text-base opacity-60 mb-8 sm:mb-8 lg:mb-12 max-w-md leading-relaxed'>
                 Browse through our carefully curated categories and find exactly
                 what you&apos;re looking for.
               </p>
@@ -87,7 +84,7 @@ export const Content = ({initialCategories}: ContentProps) => {
                   <Image
                     src='/rapid-fire.webp'
                     className='w-full h-full object-cover'
-                    alt='Brand 1'
+                    alt='branding-rapid-fire'
                   />
                 </div>
               </div>

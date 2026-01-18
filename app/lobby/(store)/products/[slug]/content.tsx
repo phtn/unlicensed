@@ -146,7 +146,7 @@ export const ProductDetailContent = ({
             separator: 'opacity-80',
           }}>
           <BreadcrumbItem href='/lobby'>
-            <Icon name='grid' className='size-3 sm:size-4 opacity-60' />
+            <Icon name='home' className='size-3 sm:size-4 opacity-60' />
           </BreadcrumbItem>
           <BreadcrumbItem href={`/lobby/category/${product.categorySlug}`}>
             {category?.name ?? product.categorySlug}
@@ -262,13 +262,13 @@ export const ProductDetailContent = ({
                     color='success'
                     variant='flat'
                     disableRipple
-                    className='w-full h-15 text-black font-polysans font-medium text-base md:text-lg bg-linear-to-r from-brand via-brand to-brand dark:text-dark-gray'
+                    className='w-full h-14 text-black font-polysans font-medium text-base md:text-lg bg-linear-to-r from-brand via-brand to-brand dark:text-dark-gray flex items-center'
                     onPress={handleAddToCart}
                     isDisabled={isPending}>
                     <span>Add to Cart</span>
                     <Icon
                       name={isAdding ? 'spinners-ring' : 'bag-solid'}
-                      className='ml-2 size-6 sm:size-6'
+                      className='ml-2 size-6 sm:size-6 mb-1'
                     />
                   </Button>
                 </div>
@@ -277,7 +277,7 @@ export const ProductDetailContent = ({
                   size='lg'
                   variant='solid'
                   href='/lobby/cart'
-                  className='w-full sm:flex-1 h-15 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
+                  className='w-full sm:flex-1 h-14 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
                   <span>Checkout</span>
                 </Button>
               </div>
@@ -288,7 +288,7 @@ export const ProductDetailContent = ({
               <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
                 Terpenes
               </span>
-              <div className='flex flex-wrap items-center gap-2 py-2 border-b-[0.5px] border-dotted dark:border-light-gray/60'>
+              <div className='flex flex-wrap items-center gap-2 py-3 border-b-[0.5px] border-dotted dark:border-light-gray/20'>
                 {product.terpenes.map((terpene) => (
                   <ProductProfile
                     key={terpene}
@@ -300,7 +300,7 @@ export const ProductDetailContent = ({
               <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
                 Flavor Notes
               </span>
-              <div className='flex flex-wrap items-center gap-2 py-2 border-b-[0.5px] border-dotted dark:border-light-gray/60'>
+              <div className='flex flex-wrap items-center gap-2 py-3 border-b-[0.5px] border-dotted dark:border-light-gray/20'>
                 {product.flavorNotes.map((flavor) => (
                   <ProductProfile key={flavor} name={flavor} group='flavors' />
                 ))}
@@ -308,7 +308,7 @@ export const ProductDetailContent = ({
               <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
                 Effects
               </span>
-              <div className='flex flex-wrap items-center gap-2 py-2'>
+              <div className='flex flex-wrap items-center gap-2 py-3'>
                 {product.effects.map((effect) => (
                   <ProductProfile key={effect} name={effect} group='effects' />
                 ))}

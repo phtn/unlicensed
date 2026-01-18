@@ -1,4 +1,5 @@
 import type {StoreProduct} from '@/app/types'
+import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Card, CardBody, CardFooter, Image} from '@heroui/react'
 import NextLink from 'next/link'
@@ -31,13 +32,20 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
       )}>
       <CardBody className='flex flex-col p-0'>
         <div className='flex justify-center items-center relative overflow-hidden sm:rounded-t-3xl'>
-          <div className='absolute size-full overflow-hidden inset-0 z-10 bg-linear-to-t from-foreground/10 via-transparent to-transparent opacity-0 border-b-[0.33px] border-transparent group-hover:border-foreground/40 transition-opacity duration-300 group-hover:opacity-100' />
-          <Image
-            src={product.image ?? undefined}
-            alt={product.name}
-            className='w-full rounded-t-4xl rounded-b-xl object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
-            loading='eager'
-          />
+          <div className='absolute size-full overflow-hidden inset-0 z-10 bg-linear-to-t from-foreground/10 via-transparent to-transparent opacity-0 border-b-[0.33px] border-transparent group-hover:border-foreground/40 transition-all duration-300 group-hover:opacity-100' />
+          {product.image ? (
+            <Image
+              src={product.image}
+              alt={product.name}
+              className='w-full rounded-t-4xl rounded-b-xl object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
+              isLoading={!product.image}
+              loading='eager'
+            />
+          ) : (
+            <div className='w-auto h-40 min-h-40 aspect-square flex items-center justify-center'>
+              <Icon name='spinners-ring' />
+            </div>
+          )}
           <div className='absolute left-5 sm:left-4 top-5 sm:top-4 z-20 flex flex-col gap-2'>
             <HyperActivity c={product.featured}>
               <HyperBadge variant='limited' size='sm' />
