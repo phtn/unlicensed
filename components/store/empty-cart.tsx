@@ -22,8 +22,8 @@ export const EmptyCart = ({onPress}: EmptyCartProps) => {
   }
 
   return (
-    <div className='w-full max-w-lg px-4'>
-      <div className='text-center space-y-4 pt-8'>
+    <div className='w-full md:max-w-2xl'>
+      <div className='text-center space-y-4'>
         <Button
           size='lg'
           as={Link}

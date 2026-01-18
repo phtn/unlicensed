@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.25.0
+
+### Minor Changes
+
+- cart-drawer overhaul
+
 ## 0.24.1
 
 ### Patch Changes

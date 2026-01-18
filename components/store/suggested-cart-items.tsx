@@ -1,10 +1,13 @@
 'use client'
 
+import {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
+import {Id} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
+import {Icon} from '@/lib/icons'
 import {Button, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useMemo, useState} from 'react'
@@ -16,7 +19,7 @@ const formatPrice = (priceCents: number) => {
   return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
 }
 
-export const SuggestedCartItems = ({onClose}: {onClose: () => void}) => {
+export const SuggestedCartItems = ({onClose}: {onClose: VoidFunction}) => {
   const {user} = useAuth()
   const {addItem} = useCart()
 
@@ -48,27 +51,30 @@ export const SuggestedCartItems = ({onClose}: {onClose: () => void}) => {
 
   const resolveUrl = useStorageUrls(allImageIds)
 
-  const handleAddToCart = async (productId: any) => {
-    await addItem(productId, 1)
-  }
+  const handleAddToCart =
+    (productId: Id<'products'> | undefined) => async () => {
+      if (productId) {
+        await addItem(productId, 1)
+      }
+    }
 
   // If loading or both empty, we can just return null or loading state
   // But EmptyCart handles the main empty message.
   if (!featuredRaw && !previousRaw) return null
 
   return (
-    <div className='flex flex-col gap-6 py-6 border-t border-foreground/5 w-full'>
+    <div className='flex flex-col h-full gap-6 border-t border-foreground/15 w-full'>
       {/* Featured Section */}
       {featured.length > 0 && (
-        <div className='space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500'>
-          <SectionHeader title='Featured Drops' className='px-4 w-md' />
-          <div className='flex overflow-x-auto px-4 gap-3 pb-4 snap-x snap-mandatory scroll-smooth hide-scrollbar -mx-4 md:mx-0'>
+        <div className=''>
+          <SectionHeader title='Featured Drops' className='p-4 w-full' />
+          <div className='flex w-full overflow-x-auto pr-6 gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3'>
             {featured.map((product) => (
               <SuggestedItem
                 key={product._id}
                 product={product}
-                imageUrl={resolveUrl(product.image ?? '')}
-                onAdd={() => handleAddToCart(product._id)}
+                imageUrl={resolveUrl(product.image ?? '') ?? ''}
+                onAdd={handleAddToCart(product._id)}
               />
             ))}
           </div>
@@ -80,16 +86,16 @@ export const SuggestedCartItems = ({onClose}: {onClose: () => void}) => {
 
       {/* Previous Section */}
       {previous.length > 0 && (
-        <div className='space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100'>
+        <div className='space-y-3'>
           <SectionHeader title='Buy Again' className='px-4 w-md' />
 
-          <div className='flex md:w-lg w-screen overflow-x-auto px-4 gap-3 pb-4 snap-x snap-mandatory scroll-smooth hide-scrollbar -mx-4 md:mx-0'>
+          <div className='flex w-full overflow-x-auto pr-6 gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3'>
             {previous.map((product) => (
               <SuggestedItem
                 key={product._id}
                 product={product}
-                imageUrl={resolveUrl(product.image ?? '')}
-                onAdd={() => handleAddToCart(product._id)}
+                imageUrl={resolveUrl(product.image ?? '') ?? ''}
+                onAdd={handleAddToCart(product._id)}
               />
             ))}
           </div>
@@ -99,7 +105,12 @@ export const SuggestedCartItems = ({onClose}: {onClose: () => void}) => {
   )
 }
 
-const SuggestedItem = ({product, imageUrl, onAdd}: any) => {
+interface ISuggestedItem {
+  product: StoreProduct
+  imageUrl: string
+  onAdd: () => Promise<void> | undefined
+}
+const SuggestedItem = ({product, imageUrl, onAdd}: ISuggestedItem) => {
   const [isAdding, setIsAdding] = useState(false)
 
   const handleAdd = async () => {
@@ -112,17 +123,23 @@ const SuggestedItem = ({product, imageUrl, onAdd}: any) => {
   }
 
   return (
-    <div className='snap-start bg-surface-highlight/50 rounded-2xl overflow-hidden border border-foreground/5 flex flex-col group hover:border-foreground/10 transition-colors md:min-w-sm aspect-square'>
-      <div className='relative w-full bg-white/5 aspect-square'>
+    <div className='snap-start min-w-64 max-w-64 bg-surface-highlight/50 rounded-2xl overflow-hidden border border-foreground/10 flex flex-col group md:hover:border-foreground/20'>
+      {imageUrl ? (
         <Image
-          src={imageUrl || '/default-product-image.svg'}
+          src={imageUrl}
           alt={product.name}
-          className='w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity'
+          radius='none'
+          shadow='none'
+          className='aspect-square object-cover opacity-90 group-hover:opacity-100 transition-opacity'
         />
-      </div>
+      ) : (
+        <div className='min-h-64 w-auto aspect-auto flex items-center justify-center'>
+          <Icon name='spinners-ring' />
+        </div>
+      )}
       <div className='p-3 flex flex-col flex-1 gap-2'>
         <div className='flex items-center justify-between'>
-          <h4 className='font-space font-medium leading-tight line-clamp-2 tracking-tight'>
+          <h4 className='font-polysans leading-tight line-clamp-2 tracking-tight'>
             {product.name}
           </h4>
           <p className='font-space font-semibold'>

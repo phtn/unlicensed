@@ -193,11 +193,11 @@ const Slide = ({
     <div className='relative min-w-full flex-[0_0_100%] px-2 md:snap-start md:snap-always'>
       <div className=''>
         <div className='grid lg:grid-cols-2 gap-12 items-center'>
-          <div>
+          <div className={cn({'mt-10': id === 'rapid-fire'})}>
             {id === 'rapid-fire' ? (
               <Icon
                 name='rapid-fire-latest'
-                className='h-28 w-auto text-zinc-400'
+                className='hidden h-28 w-auto text-zinc-400'
               />
             ) : (
               <Tag text={tag} />

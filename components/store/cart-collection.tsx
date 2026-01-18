@@ -80,8 +80,10 @@ export const CartCollection = () => {
   if (collections.length === 0) return null
 
   return (
-    <div className='flex flex-col gap-6 py-6 border-t border-foreground/5 w-full max-h-36'>
-      <h2 className='font-polysans font-semibold text-3xl'>Fire Collection</h2>
+    <div className='flex flex-col gap-6 py-6 w-full h-full'>
+      <h2 className='font-polysans font-semibold text-3xl pl-4'>
+        Fire Collection
+      </h2>
       {collections.map(({category, items}, index) => (
         <div
           key={category.slug}
@@ -94,7 +96,7 @@ export const CartCollection = () => {
             title={category.name}
             className='px-4 w-md capitalize'
           />
-          <div className='flex overflow-x-auto px-4 gap-3 pb-4 snap-x snap-mandatory scroll-smooth hide-scrollbar -mx-4 md:mx-0'>
+          <div className='flex overflow-x-auto pr-6 gap-3 pb-4 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3'>
             {items
               .filter((product) => product._id)
               .map((product) => (
@@ -137,12 +139,13 @@ const CollectionItem = ({
   }
 
   return (
-    <div className='snap-start bg-surface-highlight/50 rounded-2xl overflow-hidden border border-foreground/5 flex flex-col group hover:border-foreground/10 transition-colors md:max-w-sm aspect-square shrink-0'>
+    <div className='snap-start min-w-40 bg-surface-highlight/50 rounded-2xl overflow-hidden border border-foreground/5 flex flex-col group hover:border-foreground/10 transition-colors md:max-w-sm aspect-square shrink-0'>
       <div className='relative w-full bg-white/5 aspect-square'>
         <Image
-          src={imageUrl || '/default-product-image.svg'}
+          src={imageUrl}
           alt={product.name}
-          className='w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity'
+          isLoading={!imageUrl}
+          className='h-44 w-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity'
         />
       </div>
       <div className='p-3 flex flex-col flex-1 gap-2'>

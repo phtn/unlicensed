@@ -118,7 +118,7 @@ export function CheckoutModal({
         }
       }
     }
-  }, [isOpen, orderId])
+  }, [isOpen, orderId, formData, onInputChange])
 
   return (
     <Modal
@@ -128,7 +128,7 @@ export function CheckoutModal({
       radius='sm'
       scrollBehavior='inside'
       className=''
-      classNames={{wrapper: 'mt-16'}}
+      classNames={{wrapper: 'mt-12 md:mt-16'}}
       placement='top'>
       <ModalContent className='overflow-hidden dark:bg-dark-table'>
         {(onClose) => (

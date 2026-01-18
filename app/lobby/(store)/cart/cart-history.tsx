@@ -162,7 +162,7 @@ export const CartHistory = ({onItemAdded}: CartHistoryProps) => {
   }
 
   return (
-    <div className='w-full max-w-md mx-auto mt-8'>
+    <div className='w-full max-w-xl mx-auto py-6'>
       <div className='flex items-center justify-between mb-8'>
         <HyperBadge variant='limited' title='Previously in cart'>
           <h2 className='font-polysans'>Previously in cart</h2>
@@ -172,7 +172,7 @@ export const CartHistory = ({onItemAdded}: CartHistoryProps) => {
           variant='light'
           onPress={clearHistory}
           className='text-xs font-brk opacity-50 hover:opacity-100'>
-          Clear all
+          Clear history
         </Button>
       </div>
       <div className='space-y-2'>

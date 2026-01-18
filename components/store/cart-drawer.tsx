@@ -113,19 +113,20 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange} direction='right'>
       <Drawer.Portal>
-        <Drawer.Overlay className='z–900 fixed inset-0 bg-slate-950/60 backdrop-grayscale' />
-        <Drawer.Content className='z-9999 border-l-[0.33px] border-foreground/20 bg-linear-to-b from-background dark:from-black to-background flex flex-col h-full md:w-lg w-full fixed overflow-hidden bottom-0 right-0'>
-          <div className='p-4 flex-1 overflow-auto'>
-            <div className='mx-auto w-12 h-1.5 shrink-0 bg-border rounded-full mb-0' />
-            <div className='flex items-center gap-4 mb-6 px-2'>
-              <Drawer.Title className='text-2xl font-semibold tracking-tighter font-space'>
+        <Drawer.Overlay className='fixed inset-0 bg-slate-950/60 backdrop-grayscale' />
+        <Drawer.Content className='z-9999 border-l-[0.33px] border-foreground/20 bg-linear-to-b from-background dark:from-black to-background flex flex-col h-full md:w-2xl w-screen fixed overflow-hidden bottom-0 right-0'>
+          <div className='py-4 flex-1 overflow-y-scroll overflow-x-hidden w-screen md:w-full'>
+            <div className='flex items-center gap-4 mb-4 px-4'>
+              <Drawer.Title className='text-base md:text-lg lg:text-2xl font-semibold tracking-tighter font-space'>
                 Cart
               </Drawer.Title>
               <Drawer.Description asChild>
                 <div className='flex items-center h-7 p-1'>
                   <span className='ml-1 font-space text-base md:text-lg lg:text-2xl px-2 opacity-70'>
                     <span className='mr-1.5'>{cartItemCount}</span>
-                    <span className='tracking-tighter'>items</span>
+                    <span className='tracking-tighter'>
+                      item{cartItemCount > 1 ? `s` : null}
+                    </span>
                   </span>
                 </div>
               </Drawer.Description>
@@ -136,7 +137,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                 <p className='text-color-muted'>Loading cart...</p>
               </div>
             ) : !hasItems && !isPending ? (
-              <div className='flex flex-col'>
+              <div className='flex flex-col h-fit'>
                 <EmptyCart onPress={() => onOpenChange(false)} />
                 <SuggestedCartItems onClose={() => onOpenChange(false)} />
               </div>
@@ -325,7 +326,10 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
           </div>
           <DrawerFooter className='p-0'>
             <div className='h-10 p-0 w-full border-t border-foreground/5 flex items-center justify-center bg-black'>
-              <Icon name='rapid-fire' className='mr-2 w-20 text-light-gray' />
+              <Icon
+                name='rapid-fire-latest'
+                className='mr-2 w-20 text-light-gray'
+              />
               <span className='text-white text-sm'>
                 <span className='font-space font-light tracking-tight'>
                   &copy;{new Date().getFullYear()}
