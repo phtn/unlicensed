@@ -8,7 +8,7 @@ export const Footer = () => (
       <div className='flex flex-col'>
         <div className='h-10 flex items-center'>
           <Icon
-            name='rapid-fire'
+            name='rapid-fire-latest'
             className='h-40 md:h-32 w-auto aspect-auto dark:text-light-gray text-light-gray'
           />
         </div>

@@ -19,13 +19,13 @@ export const CategoryList = ({categories}: CatergoryListProps) => {
 
   return (
     <div className='relative pt-0'>
-      <div className="absolute w-full top-0 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
+      <div className="absolute w-full top-0 inset-0 bg-[url('/svg/noise.svg')] opacity-10 scale-100 pointer-events-none" />
       <HyperList
+        data={data}
         direction='right'
         component={CategoryLabel}
-        container='gap-0 flex w-screen bg-dark-gray overflow-scroll md:max-w-7xl bg-background snap-x snap-mandatory'
+        container='gap-0 flex w-screen bg-dark-gray/0 overflow-scroll md:max-w-7xl bg-background snap-x snap-mandatory'
         itemStyle='snap-start'
-        data={data}
       />
     </div>
   )
