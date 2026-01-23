@@ -6,7 +6,7 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Card, CardBody, Image} from '@heroui/react'
-import {useMemo, useState} from 'react'
+import {memo, useEffect, useMemo, useState, useTransition} from 'react'
 
 interface CartItemProps {
   item: {
@@ -26,7 +26,7 @@ interface CartItemProps {
   className?: ClassName
 }
 
-export const CartItem = ({
+export const CartItem = memo(({
   item,
   itemPrice,
   onUpdate,
@@ -34,6 +34,12 @@ export const CartItem = ({
   className,
 }: CartItemProps) => {
   const [quantity, setQuantity] = useState(item.quantity)
+  const [, startTransition] = useTransition()
+
+  // Sync local quantity with prop when it changes externally
+  useEffect(() => {
+    setQuantity(item.quantity)
+  }, [item.quantity])
 
   // Resolve product image URL
   const resolveUrl = useStorageUrls(
@@ -46,11 +52,21 @@ export const CartItem = ({
 
   const handleQuantityChange = async (newQuantity: number) => {
     if (newQuantity < 1) {
-      await onRemove(item.product._id, item.denomination)
+      startTransition(async () => {
+        await onRemove(item.product._id, item.denomination)
+      })
     } else {
-      setQuantity(newQuantity)
-      await onUpdate(item.product._id, newQuantity, item.denomination)
+      setQuantity(newQuantity) // Optimistic update
+      startTransition(async () => {
+        await onUpdate(item.product._id, newQuantity, item.denomination)
+      })
     }
+  }
+
+  const handleRemove = () => {
+    startTransition(async () => {
+      await onRemove(item.product._id, item.denomination)
+    })
   }
 
   return (
@@ -116,7 +132,7 @@ export const CartItem = ({
                 size='sm'
                 isIconOnly
                 variant='light'
-                onPress={() => onRemove(item.product._id, item.denomination)}>
+                onPress={handleRemove}>
                 <Icon name='trash' className='size-5 md:size-6 opacity-80' />
               </Button>
             </div>
@@ -125,4 +141,4 @@ export const CartItem = ({
       </CardBody>
     </Card>
   )
-}
+})

@@ -297,17 +297,17 @@ export default function OrderDetailPage() {
                       </span>
                     </div>
                   )}
-                  {order.payment.paygateTransactionId && (
+                  {order.payment.gateway?.transactionId && (
                     <div className='flex justify-between'>
                       <span className='text-color-muted'>
                         PayGate Transaction ID
                       </span>
                       <span className='text-sm font-mono'>
-                        {order.payment.paygateTransactionId}
+                        {order.payment.gateway?.transactionId}
                       </span>
                     </div>
                   )}
-                  {order.payment.paygatePaymentUrl &&
+                  {order.payment.gateway?.transactionId &&
                     order.payment.status === 'pending' && (
                       <div className='mt-4 pt-4 border-t border-divider'>
                         <Button

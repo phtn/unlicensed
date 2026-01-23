@@ -43,8 +43,8 @@ export default function PaymentPage() {
     if (!order || paymentUrl || error) return
 
     // If order already has a PayGate payment URL, use it
-    if (order.payment.paygatePaymentUrl) {
-      setPaymentUrl(order.payment.paygatePaymentUrl)
+    if (order.payment.gateway?.paymentUrl) {
+      setPaymentUrl(order.payment.gateway.paymentUrl)
       return
     }
 

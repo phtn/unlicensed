@@ -69,7 +69,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader className=''>
         <Logo />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className='hide-scrollbar'>
         {/* We only show the first parent group */}
         <SidebarGroup key={'operations'}>
           <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-medium opacity-70'>
@@ -108,11 +108,11 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
 
         {data.navMain.slice(1, 6).map((section, i) => (
-          <SidebarGroup key={`${section.title}` + i}>
+          <SidebarGroup key={`${section.title}` + i} className='hide-scrollbar'>
             <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-medium opacity-70'>
               {section.title}
             </SidebarGroupLabel>
-            <SidebarGroupContent>
+            <SidebarGroupContent className='scrollbar-hide'>
               <SidebarMenu>
                 {section.items?.map((item, x) => {
                   const isActive = pathname === item.url
@@ -130,7 +130,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                         asChild
                         size='lg'
                         className={cn(
-                          'group/menu-button font-medium h-8 [&>svg]:size-auto',
+                          'group/menu-button font-medium h-7 [&>svg]:size-auto',
                         )}
                         isActive={isActive}>
                         <MenuContent {...item} />
@@ -228,7 +228,7 @@ const MenuContent = memo(function MenuContent(item: NavItem) {
       onClick={handleClick}
       className='font-figtree group/menu-content hover:bg-foreground/5 rounded-xl flex items-center px-3 h-9 relative w-full'>
       <Icon name={item.icon as IconName} className='opacity-80 mr-2.5 size-5' />
-      <span className='font-polysans font-light tracking-normal text-sm md:text-base capitalize dark:text-white/90'>
+      <span className='font-okxs font-medium tracking-normal text-sm md:text-base capitalize dark:text-white/90'>
         {item.title}
       </span>
       {showBadge && (

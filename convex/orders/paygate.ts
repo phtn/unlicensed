@@ -372,7 +372,7 @@ export const checkPayGatePaymentStatus = action({
       throw new Error('Order not found')
     }
 
-    if (!order.payment.paygateSessionId) {
+    if (!order.payment.gatewayId) {
       throw new Error('Order does not have a PayGate session')
     }
 
@@ -389,7 +389,7 @@ export const checkPayGatePaymentStatus = action({
 
     // Check payment status via PayGate API
     const response: Response = await fetch(
-      `${apiUrl}/status.php?session_id=${order.payment.paygateSessionId}`,
+      `${apiUrl}/status.php?session_id=${order.payment.gateway?.sessionId}`,
       {
         method: 'GET',
         headers: {

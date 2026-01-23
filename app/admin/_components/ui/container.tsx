@@ -75,7 +75,7 @@ export const Wrapper = forwardRef<HTMLDivElement, WrapperProps>(
     return (
       <div
         className={cn(
-          'flex-1 min-w-0 w-full border border-foreground/40 dark:border-dark-table/40 bg-white dark:bg-origin',
+          'flex-1 min-w-0 w-full border border-dark-gray/40 dark:border-dark-table/40 bg-white dark:bg-origin',
           'drop-shadow-md md:overflow-hidden',
           'md:rounded-xl whitespace-nowrap',
           {'': isPanelExpanded},
@@ -91,7 +91,6 @@ Wrapper.displayName = 'Wrapper'
 
 export const Container = ({children}: {children: ReactNode}) => (
   <div className='relative bg-sidebar w-full min-w-0 md:p-5 flex h-screen overflow-clip'>
-    {/*<div className='absolute top-1 hidden _flex items-center px-1 rounded-sm left-4 bg-amber-100/10 h-3 space-x-4 text-xs'></div>*/}
     {children}
   </div>
 )

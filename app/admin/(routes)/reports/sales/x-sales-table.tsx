@@ -1,6 +1,6 @@
 'use client'
 
-import {DataTable} from '@/components/table'
+import {DataTable} from '@/components/table-v2'
 import {dateCell, formatText, textCell} from '@/components/table/cells'
 import {ColumnConfig} from '@/components/table/create-columns'
 import {api} from '@/convex/_generated/api'
@@ -12,23 +12,11 @@ import {useCallback, useMemo} from 'react'
 /**
  * Prefetch avatar images for faster rendering during pagination
  */
-// const prefetchAvatars = (users: Doc<'legacyUsers'>[] | undefined) => {
-//   if (!users || typeof window === 'undefined') return
-
-//   const photoUrls = users
-//     .map((user) => user.photoUrl)
-//     .filter((url): url is string => !!url)
-
-//   photoUrls.forEach((url) => {
-//     const img = new Image()
-//     img.src = url
-//   })
-// }
 
 export const SalesDataTable = () => {
-  const sales_data = useQuery(api.orders.q.getRecentOrders, {limit: 50})
+  const data = useQuery(api.products.q.listProducts, {limit: 50})
 
-  const groupFilter: FilterFn<Doc<'orders'>> = (row, id, filterValue) => {
+  const groupFilter: FilterFn<Doc<'products'>> = (row, id, filterValue) => {
     const value = row.getValue(id)
 
     // Handle array filter values (from multi-select filter component)
@@ -53,36 +41,26 @@ export const SalesDataTable = () => {
   const columns = useMemo(
     () =>
       [
-        // {
-        //   id: 'userId',
-        //   header: 'User',
-        //   accessorKey: 'userId',
-        //   cell: UserCell,
-        //   size: 250,
-        //   enableHiding: true,
-        //   enableSorting: true,
-        // },
-
         {
-          id: 'orderNumber',
-          header: 'Ref#',
-          accessorKey: 'orderNumber',
+          id: 'categoryId',
+          header: 'SKU',
+          accessorKey: 'categoryId',
           cell: formatText(
-            'orderNumber',
+            'categoryId',
             (v) => v,
             'font-mono text-xs w-[30ch] truncate',
           ),
-          size: 150,
+          size: 10,
           enableHiding: true,
           enableSorting: true,
           filterFn: groupFilter,
         },
         {
-          id: 'contactPhone',
-          header: 'Phone',
-          accessorKey: 'contactPhone',
+          id: 'slug',
+          header: 'Slug',
+          accessorKey: 'Slug',
           cell: formatText(
-            'contactPhone',
+            'slug',
             (v) => v,
             'font-space font-sm truncate text-clip w-[13ch]',
           ),
@@ -93,67 +71,47 @@ export const SalesDataTable = () => {
         },
 
         {
-          id: 'orderStatus',
-          header: 'Status',
-          accessorKey: 'orderStatus',
+          id: 'categorySlug',
+          header: 'Category',
+          accessorKey: 'categorySlug',
           cell: textCell(
-            'orderStatus',
+            'categorySlug',
             'font-figtree uppercase text-sm truncate text-clip w-[10ch]',
           ),
-          size: 100,
+          size: 40,
           enableHiding: true,
           enableSorting: true,
           filterFn: groupFilter,
         },
         {
-          id: 'createdAt',
-          header: 'Creation',
-          accessorKey: 'createdAt',
+          id: '_creationTime',
+          header: 'Genesis',
+          accessorKey: '_creationTime',
           cell: dateCell(
-            'createdAt',
+            '_creationTime',
             'font-space text-muted-foreground max-w-[20ch] truncate text-clip',
           ),
-          size: 180,
+          size: 100,
           enableHiding: true,
           enableSorting: true,
         },
-        // {
-        //   id: 'actions',
-        //   accessorKey: '_id',
-        //   header: (
-        //     <div className='w-fit flex justify-center px-1.5'>
-        //       <Icon name='search-magic' className='size-4 md:size-5 opacity-80' />
-        //     </div>
-        //   ),
-        //   cell: ({row}) => (
-        //     <RowActions row={row} viewFn={() => handleView(row.original)} />
-        //   ),
-        //   size: 0,
-        //   enableHiding: false,
-        //   enableSorting: false,
-        // },
-      ] as ColumnConfig<Doc<'orders'>>[],
+      ] as ColumnConfig<Doc<'products'>>[],
     [],
   )
 
-  // const Data = useCallback(
-  //   () => (
-
-  //   ),
-  //   [sales_data, handleDeleteSelected, columns, viewer],
-  // )
-
   return (
-    <div className='relative'>
-      <DataTable
-        data={sales_data ?? []}
-        title={'Sales'}
-        columnConfigs={columns}
-        loading={false}
-        editingRowId={null}
-        onDeleteSelected={handleDeleteSelected}
-        deleteIdAccessor={undefined}
-      />
+    <div className='relative w-full max-w-full overflow-hidden'>
+      {data && (
+        <DataTable
+          data={data}
+          title={'Products'}
+          columnConfigs={columns}
+          loading={false}
+          editingRowId={null}
+          onDeleteSelected={handleDeleteSelected}
+          deleteIdAccessor={'_id'}
+        />
+      )}
     </div>
   )
 }

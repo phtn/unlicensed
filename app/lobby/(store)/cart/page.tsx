@@ -11,15 +11,17 @@ import {cn} from '@/lib/utils'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
-import {useEffect, useMemo, useRef, useState, useTransition} from 'react'
+import {useCallback, useEffect, useMemo, useOptimistic, useRef, useState, useTransition} from 'react'
 import {CartItem} from './cart-item'
 import {Checkout} from './checkout'
 import {RecommendedProducts} from './recommended'
 import {RewardsSummary} from './rewards-summary'
+import {Id} from '@/convex/_generated/dataModel'
+import {ProductType} from '@/convex/products/d'
 
 export default function CartPage() {
   const router = useRouter()
-  const {cart, updateItem, removeItem, clear, isLoading, isAuthenticated} =
+  const {cart, updateItem: baseUpdateItem, removeItem: baseRemoveItem, clear, isLoading, isAuthenticated} =
     useCart()
   const {user: firebaseUser} = useAuth()
   const {
@@ -67,7 +69,7 @@ export default function CartPage() {
   }, [convexUser?.contact?.phone, defaultAddress?.phone])
 
   // Build cart items from server cart
-  const cartItems = useMemo(() => {
+  const serverCartItems = useMemo(() => {
     if (cart && cart.items) {
       return cart.items.map((item) => ({
         product: item.product,
@@ -77,6 +79,87 @@ export default function CartPage() {
     }
     return []
   }, [cart])
+
+  type OptimisticAction =
+    | {
+        type: 'update'
+        productId: Id<'products'>
+        quantity: number
+        denomination?: number
+      }
+    | {
+        type: 'remove'
+        productId: Id<'products'>
+        denomination?: number
+      }
+
+  // Optimistic cart state to prevent blinking
+  const [optimisticCartItems, setOptimisticCartItems] = useOptimistic(
+    serverCartItems,
+    (currentItems, action: OptimisticAction) => {
+      switch (action.type) {
+        case 'update': {
+          return currentItems.map((item) =>
+            item.product._id === action.productId &&
+            (item.denomination ?? undefined) ===
+              (action.denomination ?? undefined)
+              ? {...item, quantity: action.quantity}
+              : item,
+          )
+        }
+        case 'remove': {
+          return currentItems.filter(
+            (item) =>
+              !(
+                item.product._id === action.productId &&
+                (item.denomination ?? undefined) ===
+                  (action.denomination ?? undefined)
+              ),
+          )
+        }
+        default:
+          return currentItems
+      }
+    },
+  )
+
+  // Use optimistic cart items for display
+  const cartItems = optimisticCartItems
+
+  // Wrap updateItem with optimistic updates
+  const updateItem = useCallback(
+    async (
+      productId: Id<'products'>,
+      quantity: number,
+      denomination?: number,
+    ) => {
+      // Optimistically update UI immediately
+      setOptimisticCartItems({
+        type: 'update',
+        productId,
+        quantity,
+        denomination,
+      })
+      // Then perform the actual update
+      await baseUpdateItem(productId, quantity, denomination)
+    },
+    [baseUpdateItem, setOptimisticCartItems],
+  )
+
+  // Wrap removeItem with optimistic updates
+  const removeItem = useCallback(
+    async (productId: Id<'products'>, denomination?: number) => {
+      // Optimistically update UI immediately
+      setOptimisticCartItems({
+        type: 'remove',
+        productId,
+        denomination,
+      })
+      // Then perform the actual removal
+      await baseRemoveItem(productId, denomination)
+    },
+    [baseRemoveItem, setOptimisticCartItems],
+  )
 
   const hasItems = cartItems.length > 0
 
@@ -135,15 +218,17 @@ export default function CartPage() {
     }
   }, [isLoading, hasItems])
 
-  const subtotal = cartItems.reduce((total, item) => {
-    const price = item.product.priceCents ?? 0
-    const denomination = item.denomination || 1
-    return total + price * denomination * item.quantity
-  }, 0)
+  const subtotal = useMemo(() => {
+    return cartItems.reduce((total, item) => {
+      const price = item.product.priceCents ?? 0
+      const denomination = item.denomination || 1
+      return total + price * denomination * item.quantity
+    }, 0)
+  }, [cartItems])
 
-  const tax = subtotal * 0.1 // 10% tax
-  const shipping = subtotal > 5000 ? 0 : 500 // Free shipping over $50
-  const total = subtotal + tax + shipping
+  const tax = useMemo(() => subtotal * 0.1, [subtotal]) // 10% tax
+  const shipping = useMemo(() => (subtotal > 5000 ? 0 : 500), [subtotal]) // Free shipping over $50
+  const total = useMemo(() => subtotal + tax + shipping, [subtotal, tax, shipping])
 
   // Get user's points balance and next visit multiplier
   const pointsBalance = useQuery(

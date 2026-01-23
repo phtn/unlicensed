@@ -1,0 +1,32 @@
+{
+  "submitType": "pay",
+  "lineItems": {
+    "data": [
+      {
+        "priceData": {
+          "currency": "usdc",
+          "productData": {
+            "visibility": 10,
+            "name": "Yamashita",
+            "unitLabel": "pc"
+          },
+          "type": "one_time",
+          "unitAmount": 100000,
+          "intervalCount": 1
+        },
+        "quantity": 1
+      }
+    ]
+  },
+  "paymentSetting": {
+    "allowSwap": true,
+    "allowFiatPayment": true,
+    "allowedChains": [{"chainId": 137}],
+    "preferredChainId": 137
+  },
+  "mode": "payment",
+  "clientReferenceId": "kjlksdfg",
+  "afterCompletion": "hosted_confirmation",
+  "successUrl": "https://rapidfirenow.com/studio",
+  "cancelUrl": "https://rapidfirenow.com/studio"
+}

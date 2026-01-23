@@ -37,10 +37,23 @@ export const paymentSchema = v.object({
   paidAt: v.optional(v.number()), // Timestamp when payment was completed
   refundedAt: v.optional(v.number()), // Timestamp when refund was issued
   refundAmountCents: v.optional(v.number()), // Amount refunded in cents
+  gatewayId: v.optional(v.string()), // Gateway ID
+  gateway: v.optional(
+    v.object({
+      name: v.string(),
+      id: v.string(),
+      provider: v.string(),
+      status: v.string(),
+      sessionId: v.optional(v.string()), // PayGate session ID
+      paymentUrl: v.optional(v.string()), // PayGate payment URL for redirect
+      transactionId: v.optional(v.string()), // PayGate transaction ID
+      metadata: v.optional(v.record(v.string(), v.any())),
+    }),
+  ),
   // PayGate-specific fields
-  paygateSessionId: v.optional(v.string()), // PayGate session ID
-  paygatePaymentUrl: v.optional(v.string()), // PayGate payment URL for redirect
-  paygateTransactionId: v.optional(v.string()), // PayGate transaction ID
+  // paygateSessionId: v.optional(v.string()), // PayGate session ID
+  // paygatePaymentUrl: v.optional(v.string()), // PayGate payment URL for redirect
+  // paygateTransactionId: v.optional(v.string()), // PayGate transaction ID
 })
 
 // Order status enum
@@ -109,6 +122,7 @@ export const orderSchema = v.object({
   // Additional notes
   customerNotes: v.optional(v.string()), // Notes from customer
   internalNotes: v.optional(v.string()), // Internal admin notes
+  remarks: v.optional(v.string()), // Reps notes
 
   // Rewards points
   pointsEarned: v.optional(v.number()), // Points awarded for this order

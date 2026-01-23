@@ -119,7 +119,6 @@ export async function GET(request: NextRequest) {
           ...order.payment,
           status: paymentStatus,
           transactionId: transactionId || order.payment.transactionId,
-          paygateTransactionId: transactionId || undefined,
           paidAt:
             paymentStatus === 'completed'
               ? paidAt
@@ -283,7 +282,6 @@ export async function POST(request: NextRequest) {
           status: paymentStatus,
           transactionId:
             transaction_id || transactionId || order.payment.transactionId,
-          paygateTransactionId: transaction_id || transactionId,
           paidAt:
             paymentStatus === 'completed'
               ? paid_at || paidAt || Date.now()

@@ -26,7 +26,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import {HyperWrap} from './hyper-wrap'
 
 import {
   Table,
@@ -38,13 +37,13 @@ import {
 } from '@/components/ui/table'
 import {useMobile} from '@/hooks/use-mobile'
 import {cn} from '@/lib/utils'
-import {ColumnSort} from './column-sort'
-import {ColumnView} from './column-view'
-import {ActionConfig, ColumnConfig, createColumns} from './create-columns'
-import {DeleteButton} from './delete-button'
-import {EmptyTable} from './empty-table'
-import {Filter} from './filter'
-import {PageControl, Paginator} from './pagination'
+import {ColumnSort} from './column-sort-v2'
+import {ColumnView} from './column-view-v3'
+import {ActionConfig, ColumnConfig, createColumns} from './create-column'
+import {DeleteButton} from './delete-row-v2'
+import {EmptyTable} from './empty-table-v2'
+import {Filter} from './filter-v2'
+import {PageControl} from './pagination-v2'
 import {
   createColumnFiltersParser,
   createColumnVisibilityParser,
@@ -53,9 +52,14 @@ import {
   paginationParser,
   searchParser,
   selectModeParser,
-} from './parsers'
-import {Search} from './search'
+} from './parsers-v2'
+import {Search} from './search-v2'
 import {SelectToggle} from './select-toggle'
+import {
+  CenterTableToolbar,
+  LeftTableToolbar,
+  RightTableToolbar,
+} from './toolbar'
 
 interface TableProps<T> {
   data: T[]
@@ -66,6 +70,7 @@ interface TableProps<T> {
   actionConfig?: ActionConfig<T>
   onDeleteSelected?: (ids: string[]) => void | Promise<void>
   deleteIdAccessor?: keyof T
+  selectedItemId?: string | null
 }
 
 export const DataTable = <T,>({
@@ -77,6 +82,7 @@ export const DataTable = <T,>({
   title = 'Data Table',
   onDeleteSelected,
   deleteIdAccessor = 'id' as keyof T,
+  selectedItemId,
 }: TableProps<T>) => {
   // URL state management with nuqs
   const [pagination, setPagination] = useQueryStates(paginationParser)
@@ -130,7 +136,7 @@ export const DataTable = <T,>({
   )
 
   const columnFilters: ColumnFiltersState = useMemo(
-    () => columnFiltersParam ?? [],
+    () => (Array.isArray(columnFiltersParam) ? columnFiltersParam : []),
     [columnFiltersParam],
   )
 
@@ -336,67 +342,71 @@ export const DataTable = <T,>({
   return (
     <div
       className={cn(
-        'text-foreground flex w-full overflow-hidden transition-[max-width] duration-500 ease-in-out will-change-[max-width] md:max-w-[100vw] xl:max-w-[100vw]',
+        'text-foreground w-full max-w-full overflow-hidden duration-500 ease-in-out',
       )}>
-      <HyperWrap className='gap-0 space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-2xl pb-8 min-w-0 overflow-auto!'>
-        <div className='px-2 md:pl-0 md:pr-3 my-2 flex items-center justify-between'>
-          <div className='flex items-center space-x-1 md:space-x-4'>
-            <Title title={title} />
-            <div className='flex items-center space-x-3'>
+      <div className='h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-lg pb-8 min-w-0 max-w-full overflow-auto'>
+        {/*<HyperWrap className='dark:bg-greyed/60 gap-0 space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-2xl pb-8 min-w-0 overflow-auto!'>*/}
+        <div className='flex items-start justify-between h-10 max-w-[calc(85lvw)] oveflow-scroll'>
+          <LeftTableToolbar
+            select={
+              <SelectToggle
+                on={selectOn}
+                toggleFn={selectToggle}
+                rows={selectedRows}
+              />
+            }
+            deleteRow={
+              onDeleteSelected && (
+                <DeleteButton
+                  rows={selectedRows}
+                  onDelete={async (ids) => {
+                    await onDeleteSelected(ids)
+                    setRowSelectionParam({})
+                  }}
+                  idAccessor={deleteIdAccessor}
+                  disabled={loading}
+                />
+              )
+            }
+          />
+          <CenterTableToolbar
+            filter={
               <Filter
                 columns={allCols}
                 activeFilterColumns={activeFilterColumns}
                 onFilterColumnsChange={setActiveFilterColumns}
                 isMobile={isMobile}
               />
-              <ColumnView cols={allCols} isMobile={isMobile} />
-              <SelectToggle
-                on={selectOn}
-                toggleFn={selectToggle}
-                rows={selectedRows}
+            }
+            view={<ColumnView cols={allCols} isMobile={isMobile} />}
+          />
+          <RightTableToolbar
+            search={
+              <Search
+                ref={inputRef}
+                onChange={handleFilterChange}
+                value={globalFilter ?? ''}
               />
-              {onDeleteSelected && (
-                <DeleteButton
-                  rows={selectedRows}
-                  onDelete={async (ids) => {
-                    await onDeleteSelected(ids)
-                    // Reset selection after successful deletion
-                    setRowSelectionParam({})
-                  }}
-                  idAccessor={deleteIdAccessor}
-                  disabled={loading}
-                />
-              )}
-            </div>
-          </div>
-          <div className='flex items-center gap-x-3'>
-            {/*<ExportTable table={table} loading={loading} />*/}
-            <Search
-              ref={inputRef}
-              onChange={handleFilterChange}
-              value={globalFilter ?? ''}
-            />
-          </div>
+            }
+          />
         </div>
-
         {/* Table */}
         <TableContainer>
-          <Table>
+          <Table className='w-full table-auto'>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
                   key={headerGroup.id}
-                  className='hover:bg-sidebar-border/60 bg-origin/20 border-0'>
+                  className='bg-sidebar/10 border-t border-sidebar'>
                   {headerGroup.headers.map((header) => {
                     return (
                       <TableHead
                         key={header.id}
                         style={{width: `${header.getSize()}px`}}
                         className={cn(
-                          'sticky top-0 z-20',
-                          'md:h-10 h-8 font-medium font-space tracking-tighter md:tracking-tight text-xs md:text-sm border-y-[0.5px]',
-                          'bg-background/95 supports-backdrop-filter:bg-background/80 backdrop-blur',
-                          'dark:text-zinc-400 dark:bg-greyed/95 dark:supports-backdrop-filter:bg-greyed/80',
+                          'sticky top-0 z-20 bg-light-gray/10 md:h-10 h-8 border-b-[0.5px] uppercase',
+                          'font-oksx font-semibold tracking-tighter text-foreground/70 md:tracking-tight text-xs md:text-sm',
+                          'dark:text-zinc-400 dark:bg-greyed/95 backdrop-blur-2xl',
                         )}>
                         <ColumnSort flexRender={flexRender} header={header} />
                       </TableHead>
@@ -409,7 +419,13 @@ export const DataTable = <T,>({
             <TableBody>
               {tableRows.length ? (
                 tableRows.map((row) =>
-                  renderRow(row, editingRowId, row.id, selectOn),
+                  renderRow(
+                    row,
+                    editingRowId,
+                    row.id,
+                    selectOn,
+                    selectedItemId,
+                  ),
                 )
               ) : (
                 <EmptyTable colSpan={columns.length} />
@@ -419,7 +435,7 @@ export const DataTable = <T,>({
         </TableContainer>
 
         {/* Pagination */}
-        <Paginator
+        {/*<Paginator
           state={paginationState}
           rowCount={rowCount}
           setPageSize={useCallback(
@@ -432,8 +448,8 @@ export const DataTable = <T,>({
             [paginationState, handlePaginationChange],
           )}
           pageControl={pageControl}
-        />
-      </HyperWrap>
+        />*/}
+      </div>
     </div>
   )
 }
@@ -443,8 +459,14 @@ const renderRow = <T,>(
   editingRowId: string | null,
   rowId: string,
   showSelectColumn?: boolean,
+  selectedItemId?: string | null,
 ) => {
   const isEditing = editingRowId === rowId
+  // Compare the row's original data cardId with selectedItemId
+  const rowCardId = (row.original as Record<string, unknown>)?.cardId as
+    | string
+    | undefined
+  const isSelected = selectedItemId != null && rowCardId === selectedItemId
 
   const handleRowClick = (e: React.MouseEvent) => {
     // Don't toggle selection if clicking on interactive elements
@@ -469,18 +491,22 @@ const renderRow = <T,>(
       key={row.id}
       data-state={row.getIsSelected() && 'selected'}
       className={cn(
-        'h-14 md:h-16 text-foreground md:text-base text-xs overflow-hidden dark:border-greyed group/row dark:hover:bg-background/40 border-b-origin/40',
-        'peer-hover:border-transparent bg-transparent hover:last:rounded-tr-2xl hover:bg-primary-hover/5',
-        'transition-colors duration-75',
+        'h-14 md:h-16 text-foreground text-xs md:text-base overflow-hidden dark:border-greyed group/row dark:hover:bg-background/40 border-b-origin/40',
+        'peer-hover:border-transparent bg-transparent hover:last:rounded-tr-2xl hover:bg-primary-hover/5 transition-colors duration-75',
         {
           // Apply editing styles - same as hover but persistent
           ' dark:bg-sky-600/40 last:rounded-tr-2xl': isEditing,
+          // Apply selected styles when viewer is open - same as hover but persistent
+          'dark:bg-background/40 bg-primary-hover/5 last:rounded-tr-2xl':
+            isSelected && !isEditing,
           // Add cursor pointer when select mode is on
           'cursor-pointer': showSelectColumn && row.getCanSelect(),
         },
       )}
       onClick={handleRowClick}>
-      {row.getVisibleCells().map((cell) => renderCell(cell, isEditing))}
+      {row
+        .getVisibleCells()
+        .map((cell) => renderCell(cell, isEditing || isSelected))}
     </TableRow>
   )
 }
@@ -504,7 +530,9 @@ const renderCell = <TData, TValue>(
 )
 
 const TableContainer = ({children}: {children: React.ReactNode}) => (
-  <div className='bg-transparent pb-10 w-full h-full'>{children}</div>
+  <div className='relative bg-transparent pb-10 w-full max-w-full overflow-x-auto'>
+    <div className='min-w-0'>{children}</div>
+  </div>
 )
 
 const Title = ({title}: {title: string}) => (

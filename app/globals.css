@@ -34,6 +34,13 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'Okxs';
+  src: url('/fonts/okxs-medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
 @theme inline {
   --radius: 0.625rem;
   --color-background: var(--background);
@@ -57,10 +64,10 @@
   --font-sans: var(--font-sans);
   --font-bone: var(--font-bone);
   --font-nito: var(--font-nito);
-  --font-brk: 'BrkMono', Arial, Helvetica, monospace;
+  --font-brk: 'BrkMono', Menlo, Helvetica, monospace;
   --font-polysans: 'PolySans', Arial, Helvetica, sans-serif;
   --font-neusans: 'NeuSans', Arial, Helvetica, sans-serif;
-
+  --font-okxs: 'Okxs', Helvetica, sans-serif;
   /* Effects, Flavors, Terpenes */
   --color-flavors: oklch(0.783 0.168 66.2);
   --color-terpenes: var(--terpenes);
@@ -101,6 +108,7 @@
   --color-limited: oklch(0.931 0.228 122.86);
   --color-rare: oklch(0.585 0.204 277.12);
   --color-deal: oklch(0.704 0.123 182.5);
+  --color-mac-blue: var(--mac-blue);
 }
 
 :root,
@@ -128,6 +136,7 @@
 
   --effects: oklch(0.673 0.182 276.935);
   --terpenes: oklch(0.6143 0.123 166.24);
+  --mac-blue: oklch(60.61% 0.242 264.8);
 
   --hero-gradient: linear-gradient(
     140deg,
@@ -217,7 +226,8 @@
   --secondary-foreground: oklch(0.243 0.027 220.39);
   --tertiary: oklch(0.897 0.007 67.74);
   --tertiary-foreground: oklch(0.243 0.027 220.39);
-  --sidebar: oklch(0.956 0.004 286.32);
+  /*--sidebar: oklch(0.956 0.004 286.32);*/
+  --sidebar: oklch(0.9495 0.0055 274.96);
   /*--sidebar: oklch(0.92 0.003 286);*/
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.196 0.021 271.47);
@@ -231,6 +241,7 @@
   --pill-border: rgba(255, 255, 255, 0.32);
   --effects: oklch(0.584 0.233 280.76);
   --terpenes: oklch(0.633 0.123 166.24);
+  --mac-blue: oklch(56.59% 0.241 264.58);
 
   --hero-gradient: linear-gradient(
     140deg,

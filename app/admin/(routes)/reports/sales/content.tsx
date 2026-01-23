@@ -6,14 +6,15 @@ import {Suspense} from 'react'
 import {SalesDataTable} from './x-sales-table'
 
 const ReportsContentInner = () => {
-  // const sales = useQuery(api.orders.q.getOrdersByStatus, {status: 'delivered'})
   const [tabId] = useAdminTabId()
 
   switch (tabId) {
     default:
       return (
         <Suspense fallback={<div>Loading...</div>}>
-          <SalesDataTable />
+          <div className='flex items-start justify-center mx-auto min-h-screen w-full dark:bg-dark-table/40'>
+            <SalesDataTable />
+          </div>
         </Suspense>
       )
   }

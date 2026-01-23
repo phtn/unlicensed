@@ -2,6 +2,7 @@
 
 import {Icon} from '@/lib/icons'
 import {Card, CardBody} from '@heroui/react'
+import {memo} from 'react'
 
 export interface NVMultiplier {
   multiplier: number
@@ -23,7 +24,7 @@ interface RewardsSummaryProps {
   isAuthenticated: boolean
 }
 
-export function RewardsSummary({
+export const RewardsSummary = memo(function RewardsSummary({
   nextVisitMultiplier,
   estimatedPoints,
   isAuthenticated,
@@ -81,4 +82,4 @@ export function RewardsSummary({
       </Card>
     </div>
   )
-}
+})

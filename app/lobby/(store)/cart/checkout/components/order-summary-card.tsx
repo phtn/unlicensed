@@ -4,6 +4,7 @@ import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody, Divider} from '@heroui/react'
+import {memo} from 'react'
 import {ViewTransition} from 'react'
 import {PointsBalance} from '../../rewards-summary'
 import {FormData} from '../types'
@@ -28,7 +29,7 @@ interface OrderSummaryCardProps {
   onOpen?: () => void
 }
 
-export function OrderSummaryCard({
+export const OrderSummaryCard = memo(function OrderSummaryCard({
   subtotal,
   tax,
   shipping,
@@ -140,4 +141,4 @@ export function OrderSummaryCard({
       </Card>
     </div>
   )
-}
+})

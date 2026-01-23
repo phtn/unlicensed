@@ -1,12 +1,12 @@
-import {NextRequest, NextResponse} from 'next/server'
-import {ConvexHttpClient} from 'convex/browser'
 import {api} from '@/convex/_generated/api'
+import {ConvexHttpClient} from 'convex/browser'
+import {NextRequest, NextResponse} from 'next/server'
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
 
 /**
  * PayGate Webhook Handler
- * 
+ *
  * Handles payment status updates from PayGate.
  * PayGate will call this endpoint when payment status changes.
  */
@@ -55,7 +55,10 @@ export async function POST(request: NextRequest) {
       // We'd need a query to find by session ID, but for now
       // PayGate should send order_id in webhook
       return NextResponse.json(
-        {error: 'Order not found by session ID. Please include order_id in webhook.'},
+        {
+          error:
+            'Order not found by session ID. Please include order_id in webhook.',
+        },
         {status: 404},
       )
     }
@@ -90,8 +93,8 @@ export async function POST(request: NextRequest) {
       payment: {
         ...order.payment,
         status: paymentStatus,
-        transactionId: transaction_id || transactionId || order.payment.transactionId,
-        paygateTransactionId: transaction_id || transactionId,
+        transactionId:
+          transaction_id || transactionId || order.payment.transactionId,
         paidAt:
           paymentStatus === 'completed'
             ? paid_at || paidAt || Date.now()

@@ -9,14 +9,15 @@ import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
-import {useMemo} from 'react'
+import {memo, useMemo, useTransition} from 'react'
 
 type ProductWithId = StoreProduct & {
   _id: Id<'products'>
 }
 
-export const RecommendedProducts = () => {
+export const RecommendedProducts = memo(() => {
   const {cart, addItem} = useCart()
+  const [, startTransition] = useTransition()
   const productsQuery = useQuery(api.products.q.listProducts, {
     limit: 20,
   }) as Doc<'products'>[] | undefined
@@ -66,17 +67,19 @@ export const RecommendedProducts = () => {
   }
 
   const handleAddToCart = async (product: ProductWithId) => {
-    try {
-      await addItem(
-        product._id,
-        1,
-        product.popularDenomination?.[0] ||
-          product.availableDenominations?.[0] ||
+    startTransition(async () => {
+      try {
+        await addItem(
+          product._id,
           1,
-      )
-    } catch (error) {
-      console.error('Failed to add product to cart:', error)
-    }
+          product.popularDenomination?.[0] ||
+            product.availableDenominations?.[0] ||
+            1,
+        )
+      } catch (error) {
+        console.error('Failed to add product to cart:', error)
+      }
+    })
   }
 
   return (
@@ -133,4 +136,4 @@ export const RecommendedProducts = () => {
       </div>
     </div>
   )
-}
+})

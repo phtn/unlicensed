@@ -797,6 +797,59 @@ export const icons = {
     viewBox: '0 0 24 24',
     set: 'lets-icons',
   },
+  slash: {
+    symbol:
+      '<path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2M9.3 19H7l7.7-14H17z"/>',
+    viewBox: '0 0 24 24',
+    set: 'mdi',
+  },
+  'arrow-down-long': {
+    symbol:
+      '<g fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M12 17V3"/><path fill="currentColor" d="m12.214 21.643l2.059-3.431A.8.8 0 0 0 13.587 17h-3.174a.8.8 0 0 0-.686 1.212l2.059 3.43a.25.25 0 0 0 .428 0"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lets-icons',
+  },
+  'arrow-up-long': {
+    symbol:
+      '<g fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M12 7v14"/><path fill="currentColor" d="M11.786 2.357L9.727 5.788A.8.8 0 0 0 10.413 7h3.174a.8.8 0 0 0 .686-1.212l-2.059-3.43a.25.25 0 0 0-.428 0"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lets-icons',
+  },
+  disconnect: {
+    symbol: `<g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9.25"></circle><path stroke-linecap="round" d="M7.5 12h9"></path></g>`,
+    viewBox: '0 0 24 24',
+    set: 'proicons',
+  },
+  'code-square': {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M10.143 8.857L7 12l3.143 3.143m3.714-6.286L17 12l-3.143 3.143"/><rect width="16.5" height="16.5" x="3.75" y="3.75" rx="4"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'proicons',
+  },
+  download: {
+    symbol:
+      '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12.074 3.25v12.478M6.19 10.465l4.822 4.822c.293.293.677.44 1.06.44m5.883-5.262l-4.822 4.822c-.293.293-.677.44-1.06.44m8.677.788v.935a3.3 3.3 0 0 1-3.3 3.3H6.55a3.3 3.3 0 0 1-3.3-3.3v-.935"/>',
+    viewBox: '0 0 24 24',
+    set: 'proicons',
+  },
+  tweak: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 17H5M19 7h-9"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
+  },
+  settings: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0a2.34 2.34 0 0 0 3.319 1.915a2.34 2.34 0 0 1 2.33 4.033a2.34 2.34 0 0 0 0 3.831a2.34 2.34 0 0 1-2.33 4.033a2.34 2.34 0 0 0-3.319 1.915a2.34 2.34 0 0 1-4.659 0a2.34 2.34 0 0 0-3.32-1.915a2.34 2.34 0 0 1-2.33-4.033a2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
+  },
+  'list-filter': {
+    symbol:
+      '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5H2m4 7h12m-9 7h6m1-14h6m-3 3V2"/>',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
+  },
 }
 /*
 

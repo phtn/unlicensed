@@ -1,4 +1,7 @@
 import {Content} from './content'
 
-const Page = async () => <Content />
+const Page = async () => {
+  return <Content />
+}
+
 export default Page
