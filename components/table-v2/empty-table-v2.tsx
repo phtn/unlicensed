@@ -16,10 +16,10 @@ export const EmptyTable = ({colSpan}: {colSpan: number}) => {
   }, [])
 
   return (
-    <TableRow className='w-screen'>
+    <TableRow className='max-w-7xl'>
       <TableCell
         colSpan={colSpan}
-        className='h-24 rounded-xl font-space text-muted-foreground w-screen flex justify-center'>
+        className='h-24 rounded-xl font-space text-muted-foreground w-full flex justify-center'>
         {isLoading ? (
           <div className='flex items-center justify-center gap-2'>
             <Icon name='spinners-ring' className='size-4' />

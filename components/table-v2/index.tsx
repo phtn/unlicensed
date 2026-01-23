@@ -39,10 +39,16 @@ import {useMobile} from '@/hooks/use-mobile'
 import {cn} from '@/lib/utils'
 import {ColumnSort} from './column-sort-v2'
 import {ColumnView} from './column-view-v3'
-import {ActionConfig, ColumnConfig, createColumns} from './create-column'
+import {
+  ActionConfig,
+  ColumnConfig,
+  createColumns,
+  globalFilterFn,
+} from './create-column'
 import {DeleteButton} from './delete-row-v2'
 import {EmptyTable} from './empty-table-v2'
 import {Filter} from './filter-v2'
+import {HyperWrap} from './hyper-wrap'
 import {PageControl} from './pagination-v2'
 import {
   createColumnFiltersParser,
@@ -60,6 +66,7 @@ import {
   LeftTableToolbar,
   RightTableToolbar,
 } from './toolbar'
+import {ViewStyleGroup} from './view-style-group'
 
 interface TableProps<T> {
   data: T[]
@@ -250,6 +257,7 @@ export const DataTable = <T,>({
     onRowSelectionChange: handleRowSelectionChange,
     getFilteredRowModel: getFilteredRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    globalFilterFn: globalFilterFn,
     state: {
       sorting,
       pagination: paginationState,
@@ -342,11 +350,10 @@ export const DataTable = <T,>({
   return (
     <div
       className={cn(
-        'text-foreground w-full max-w-full overflow-hidden duration-500 ease-in-out',
+        'text-foreground bg-background/90 w-full max-w-full duration-500 ease-in-out',
       )}>
-      <div className='h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-lg pb-8 min-w-0 max-w-full overflow-auto'>
-        {/*<HyperWrap className='dark:bg-greyed/60 gap-0 space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-2xl pb-8 min-w-0 overflow-auto!'>*/}
-        <div className='flex items-start justify-between h-10 max-w-[calc(85lvw)] oveflow-scroll'>
+      <div className='h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-lg pb-8 min-w-0 max-w-full'>
+        <div className='flex items-center justify-between h-10 max-w-[calc(85lvw)] bg-background overflow-scroll'>
           <LeftTableToolbar
             select={
               <SelectToggle
@@ -368,6 +375,7 @@ export const DataTable = <T,>({
                 />
               )
             }
+            views={<ViewStyleGroup />}
           />
           <CenterTableToolbar
             filter={
@@ -391,48 +399,50 @@ export const DataTable = <T,>({
           />
         </div>
         {/* Table */}
-        <TableContainer>
-          <Table className='w-full table-auto'>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow
-                  key={headerGroup.id}
-                  className='bg-sidebar/10 border-t border-sidebar'>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead
-                        key={header.id}
-                        style={{width: `${header.getSize()}px`}}
-                        className={cn(
-                          'sticky top-0 z-20 bg-light-gray/10 md:h-10 h-8 border-b-[0.5px] uppercase',
-                          'font-oksx font-semibold tracking-tighter text-foreground/70 md:tracking-tight text-xs md:text-sm',
-                          'dark:text-zinc-400 dark:bg-greyed/95 backdrop-blur-2xl',
-                        )}>
-                        <ColumnSort flexRender={flexRender} header={header} />
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
+        <HyperWrap className='relative gap-0 space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-2xl pb-8 min-w-0 rounded-t-3xl overflow-hidden'>
+          <TableContainer>
+            <Table className='w-full'>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow
+                    key={headerGroup.id}
+                    className='bg-sidebar/10 dark:bg-dark-table/10'>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead
+                          key={header.id}
+                          style={{width: `${header.getSize()}px`}}
+                          className={cn(
+                            'sticky top-0 z-20 bg-light-gray/10 md:h-10 h-8 uppercase overflow-hidden dark:bg-amber-100',
+                            'font-oksx font-semibold tracking-tighter text-foreground/70 md:tracking-tight text-xs md:text-sm',
+                            'dark:text-zinc-400 dark:bg-dark-table/10',
+                          )}>
+                          <ColumnSort flexRender={flexRender} header={header} />
+                        </TableHead>
+                      )
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
 
-            <TableBody>
-              {tableRows.length ? (
-                tableRows.map((row) =>
-                  renderRow(
-                    row,
-                    editingRowId,
-                    row.id,
-                    selectOn,
-                    selectedItemId,
-                  ),
-                )
-              ) : (
-                <EmptyTable colSpan={columns.length} />
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              <TableBody>
+                {tableRows.length ? (
+                  tableRows.map((row) =>
+                    renderRow(
+                      row,
+                      editingRowId,
+                      row.id,
+                      selectOn,
+                      selectedItemId,
+                    ),
+                  )
+                ) : (
+                  <EmptyTable colSpan={columns.length} />
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </HyperWrap>
 
         {/* Pagination */}
         {/*<Paginator
@@ -492,7 +502,7 @@ const renderRow = <T,>(
       data-state={row.getIsSelected() && 'selected'}
       className={cn(
         'h-14 md:h-16 text-foreground text-xs md:text-base overflow-hidden dark:border-greyed group/row dark:hover:bg-background/40 border-b-origin/40',
-        'peer-hover:border-transparent bg-transparent hover:last:rounded-tr-2xl hover:bg-primary-hover/5 transition-colors duration-75',
+        'peer-hover:border-transparent bg-transparent hover:last:rounded-tr-2xl hover:bg-light-gray/10 transition-colors duration-75',
         {
           // Apply editing styles - same as hover but persistent
           ' dark:bg-sky-600/40 last:rounded-tr-2xl': isEditing,
@@ -518,11 +528,11 @@ const renderCell = <TData, TValue>(
   <TableCell
     key={cell.id}
     className={cn(
-      'last:py-0 overflow-hidden dark:group-hover/row:bg-chalk-100/5',
+      'last:py-0 overflow-hidden',
       'transition-colors duration-300',
       {
         // Apply editing cell styles - same as hover but persistent
-        'dark:bg-chalk-100/5': isEditing,
+        'dark:bg-chalk-100/0': isEditing,
       },
     )}>
     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -530,7 +540,7 @@ const renderCell = <TData, TValue>(
 )
 
 const TableContainer = ({children}: {children: React.ReactNode}) => (
-  <div className='relative bg-transparent pb-10 w-full max-w-full overflow-x-auto'>
+  <div className='relative rounded-t-sm pb-10 w-full max-w-full overflow-x-auto'>
     <div className='min-w-0'>{children}</div>
   </div>
 )

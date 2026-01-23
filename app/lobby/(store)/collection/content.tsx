@@ -1,7 +1,7 @@
 'use client'
 
 import {Tag} from '@/components/base44/tag'
-import {Title} from '@/components/base44/title'
+import {Title, TitleV3} from '@/components/base44/title'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
@@ -84,7 +84,7 @@ export const Content = () => {
           {/* Header */}
           <div className='mb-12 sm:mb-16 lg:mb-20'>
             <Tag text='Collection' />
-            <Title title='Fire Collection' subtitle='' />
+            <TitleV3 title='Fire Collection' subtitle='' />
             <p className='hidden text-sm sm:text-base lg:text-lg opacity-60 mt-6 sm:mt-8 max-w-2xl leading-relaxed'>
               Each brand in our collection represents a commitment to quality,
               innovation, and the highest standards of cultivation. Discover the

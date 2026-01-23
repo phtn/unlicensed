@@ -10,7 +10,7 @@ interface CenterTableToolbarProps {
 
 export const CenterTableToolbar = ({filter, view}: CenterTableToolbarProps) => {
   return (
-    <Toolbar.Root className='flex h-9 w-150 items-center gap-px rounded-sm px-px py-0.5 dark:bg-gray-100/5'>
+    <Toolbar.Root className='flex h-9 w-150 items-center gap-px rounded-sm px-px py-0.5'>
       <ToggleGroup className='flex items-center gap-1' aria-label='Alignment'>
         {filter}
         <Toolbar.Separator className='m-1 h-5 w-px bg-linear-to-b from-transparent via-gray-200 dark:via-zinc-500 to-transparent' />
@@ -30,7 +30,7 @@ interface RightTableToolbarProps {
 
 export const RightTableToolbar = ({search}: RightTableToolbarProps) => {
   return (
-    <Toolbar.Root className='flex justify-end h-9 w-150 items-center gap-px rounded-sm px-px py-0.5 dark:bg-gray-100/5'>
+    <Toolbar.Root className='flex justify-end h-9 w-150 items-center gap-px rounded-sm px-1 py-0.5 overflow-hidden'>
       <ToggleGroup className='flex items-center' aria-label='Alignment'>
         {search}
       </ToggleGroup>
@@ -41,18 +41,20 @@ export const RightTableToolbar = ({search}: RightTableToolbarProps) => {
 interface LeftTableToolbarProps {
   select: ReactNode
   deleteRow: ReactNode
+  views: ReactNode
 }
 
 export const LeftTableToolbar = ({
   select,
   deleteRow,
+  views,
 }: LeftTableToolbarProps) => {
   return (
-    <Toolbar.Root className='flex h-9 w-150 items-center gap-px rounded-sm px-px py-0.5 dark:bg-gray-100/5'>
+    <Toolbar.Root className='flex h-9 w-150 items-center gap-px rounded-sm px-1 py-0.5 overflow-hidden'>
       <ToggleGroup className='flex items-center gap-1' aria-label='Alignment'>
         {select}
-        <Toolbar.Separator className='m-1 h-5 w-px bg-linear-to-b from-transparent via-gray-200 dark:via-zinc-500 to-transparent' />
         {deleteRow}
+        {views}
       </ToggleGroup>
     </Toolbar.Root>
   )

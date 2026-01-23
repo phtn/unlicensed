@@ -96,7 +96,7 @@ export const metadata: Metadata = {
     siteName: 'Rapid Fire',
     images: [
       {
-        url: '/rf-og.png',
+        url: '/rf-og.webp',
         width: 2304,
         height: 1328,
         alt: 'Rapid Fire',
@@ -110,7 +110,7 @@ export const metadata: Metadata = {
       'Discover elevated THC flower, edibles, concentrates, and drinks curated for modern rituals.',
     images: [
       {
-        url: '/rf-x.png',
+        url: '/rf-x.webp',
         width: 2272,
         height: 1392,
         alt: 'Rapid Fire',

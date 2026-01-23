@@ -20,8 +20,8 @@ export const SelectToggle = <T,>({
   return (
     <Toolbar.Button
       className={cn(
-        'flex h-8 items-center justify-center rounded-sm space-x-2 px-4 text-sm select-none bg-gray-100/5 data-pressed:bg-gray-100 focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 active:bg-light-gray/30',
-        {'bg-light-gray/20': on},
+        'flex h-8 items-center justify-center rounded-sm space-x-2 px-3.25 text-sm select-none bg-gray-100/5 data-pressed:bg-gray-100 focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 active:bg-light-gray/30',
+        {'bg-light-gray/20 dark:bg-dark-table': on},
       )}
       onClick={toggleFn}>
       {selectedCount > 0 && (
@@ -36,7 +36,7 @@ export const SelectToggle = <T,>({
           on ? 'text-mac-blue opacity-100' : ' opacity-70',
         )}
       />
-      <span className='hidden md:flex text-sm opacity-80 font-brk'>Select</span>
+      {/*<span className='hidden md:flex text-sm opacity-80 font-brk'>Select</span>*/}
     </Toolbar.Button>
   )
 }

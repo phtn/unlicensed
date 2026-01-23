@@ -12,8 +12,28 @@ import {AnimatePresence, motion} from 'motion/react'
 import type {ChangeEvent, ReactNode} from 'react'
 import {RowActions} from './row-actions'
 
-// Generic filter function for text-based columns
-// Also handles array filter values (for multi-select filtering)
+/**
+ * Normalizes text for better matching by:
+ * - Converting to lowercase
+ * - Trimming whitespace
+ * - Normalizing unicode characters (e.g., é → e)
+ * - Collapsing multiple spaces
+ */
+const normalizeText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .replace(/\s+/g, ' ') // Collapse multiple spaces
+}
+
+/**
+ * Improved generic filter function for text-based columns
+ * - Better null/undefined handling (only excludes when actively filtering)
+ * - Text normalization for better matching
+ * - Handles array filter values (from multi-select filtering)
+ */
 export const filterFn = <T,>(
   row: Row<T>,
   columnId: string,
@@ -21,21 +41,40 @@ export const filterFn = <T,>(
 ): boolean => {
   const value = row.getValue(columnId)
 
-  if (value === null || value === undefined) return false
-  if (!filterValue) return true // no filter applied → keep row
+  // If no filter is applied, include the row
+  if (!filterValue || (typeof filterValue === 'string' && filterValue.trim() === '')) {
+    return true
+  }
+
+  // Handle null/undefined values: exclude only when actively filtering
+  if (value === null || value === undefined) {
+    return false
+  }
 
   // Handle array filter values (from multi-select filter component)
   if (Array.isArray(filterValue)) {
     if (filterValue.length === 0) return true
     const rowValueStr = String(value)
-    return filterValue.some(
-      (fv) =>
-        String(fv).toLowerCase() === rowValueStr.toLowerCase() || fv === value,
-    )
+    const normalizedRowValue = normalizeText(rowValueStr)
+    return filterValue.some((fv) => {
+      const normalizedFilterValue = normalizeText(String(fv))
+      return (
+        normalizedFilterValue === normalizedRowValue ||
+        rowValueStr.toLowerCase().includes(normalizedFilterValue) ||
+        fv === value
+      )
+    })
   }
 
-  // Handle string/text filter values
-  return String(value).toLowerCase().includes(String(filterValue).toLowerCase())
+  // Handle string/text filter values with normalization
+  const filterStr = String(filterValue).trim()
+  if (filterStr === '') return true
+
+  const valueStr = String(value)
+  const normalizedValue = normalizeText(valueStr)
+  const normalizedFilter = normalizeText(filterStr)
+
+  return normalizedValue.includes(normalizedFilter)
 }
 
 // Generic filter function for multi-select columns (like status)
@@ -50,6 +89,63 @@ export const multiSelectFilterFn = <T,>(
 
   // Check if filter includes the row value (as string or original type)
   return filterValue.some((fv) => String(fv) === rowValueStr || fv === rowValue)
+}
+
+// Generic filter function for exact match filtering (group/category filters)
+// Handles both array filter values (from multi-select) and single value exact matches
+export const groupFilter = <T,>(
+  row: Row<T>,
+  columnId: string,
+  filterValue: unknown,
+): boolean => {
+  const value = row.getValue(columnId)
+
+  // Handle array filter values (from multi-select filter component)
+  if (Array.isArray(filterValue)) {
+    if (filterValue.length === 0) return true
+    // Compare both normalized strings and original values
+    const valueStr = String(value)
+    return filterValue.some((fv) => String(fv) === valueStr || fv === value)
+  }
+
+  // Handle single value exact match
+  if (filterValue == null || filterValue === '') return true
+  return value === filterValue || String(value) === String(filterValue)
+}
+
+/**
+ * Custom global filter function for searching across all columns
+ * Searches through all filterable columns and matches using normalized text
+ */
+export const globalFilterFn = <T,>(row: Row<T>, columnId: string, filterValue: string): boolean => {
+  // If no filter is applied, include the row
+  if (!filterValue || filterValue.trim() === '') {
+    return true
+  }
+
+  const normalizedFilter = normalizeText(filterValue)
+
+  // Search through all visible, filterable columns
+  return row.getVisibleCells().some((cell) => {
+    const column = cell.column
+    // Skip select and actions columns
+    if (column.id === 'select' || column.id === 'actions' || !column.getCanFilter()) {
+      return false
+    }
+
+    const value = cell.getValue()
+
+    // Skip null/undefined values
+    if (value === null || value === undefined) {
+      return false
+    }
+
+    // Normalize and check if the value contains the filter text
+    const valueStr = String(value)
+    const normalizedValue = normalizeText(valueStr)
+
+    return normalizedValue.includes(normalizedFilter)
+  })
 }
 
 // Column factory configuration interface
