@@ -16,17 +16,17 @@ export const EmptyTable = ({colSpan}: {colSpan: number}) => {
   }, [])
 
   return (
-    <TableRow className='max-w-7xl'>
+    <TableRow className='max-w-6xl'>
       <TableCell
         colSpan={colSpan}
-        className='h-24 rounded-xl font-space text-muted-foreground w-full flex justify-center'>
+        className='h-9 font-brk text-muted-foreground w-full flex justify-center'>
         {isLoading ? (
-          <div className='flex items-center justify-center gap-2'>
+          <div className='flex items-center justify-center px-4 gap-2'>
             <Icon name='spinners-ring' className='size-4' />
             <span>Loading...</span>
           </div>
         ) : (
-          'No data.'
+          <span className='p-2'>No data.</span>
         )}
       </TableCell>
     </TableRow>

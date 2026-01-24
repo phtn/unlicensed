@@ -66,12 +66,12 @@ export const Search = forwardRef<HTMLInputElement, Props<unknown>>(
           id={`input-${id}`}
           ref={ref}
           className={cn(
-            'peer md:h-8 dark:bg-background/40 w-48 md:min-w-60 bg-sidebar ps-3 rounded-xs outline-0 border-none placeholder:text-foreground/60 placeholder:font-brk font-brk text-sm',
+            'peer md:h-8 dark:bg-background/40 w-48 md:min-w-60 bg-sidebar ps-3 rounded-sm outline-0 border-none placeholder:text-foreground/60 placeholder:font-brk font-brk text-sm',
             Boolean(getFilterValue) && 'pe-10',
           )}
           value={value}
           onChange={onChange}
-          placeholder='Filter search...'
+          placeholder='Search ...'
           type='text'
           inputMode='text'
           aria-label='Search'

@@ -6,6 +6,7 @@ import {useFirebaseAuthUser} from '@/hooks/use-firebase-auth-user'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
 import {type ReactNode, useEffect, useMemo, useTransition} from 'react'
+import {uuidv7} from 'uuidv7'
 
 type AdminAccessGuardProps = {
   children: ReactNode
@@ -48,7 +49,10 @@ export function AdminAccessGuard({children}: AdminAccessGuardProps) {
   if (!authResolved || (user && !staffResolved)) {
     return (
       <main className='p-6 w-full'>
-        <p className='font-polysans font-semibold'>Watchful Guard</p>
+        <p className='font-polysans font-semibold'>
+          Halt Gate
+          <span className='font-brk font-light px-4'>ID:{uuidv7()}</span>
+        </p>
         <Loader />
       </main>
     )

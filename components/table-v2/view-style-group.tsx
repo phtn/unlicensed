@@ -10,19 +10,19 @@ export const ViewStyleGroup = () => {
       <Toggle
         aria-label='Align left'
         value='left'
-        className='flex h-5 w-6 items-center justify-center rounded-xs select-none focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 text-foreground/40 data-pressed:text-zinc-100'>
+        className='flex h-5 w-6 items-center justify-center rounded-xs select-none focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 text-foreground/40 data-pressed:text-dark-gray data-pressed:scale-120 active:scale-95 dark:data-pressed:text-zinc-100 transition-all duration-200 ease-in-out'>
         <Icon name='view-list' className='size-4' />
       </Toggle>
       <Toggle
         aria-label='Align center'
         value='center'
-        className='flex h-5 w-6 items-center justify-center rounded-xs select-none focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800  text-foreground/40 data-pressed:text-zinc-100'>
+        className='flex h-5 w-6 items-center justify-center rounded-xs select-none focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800  text-foreground/40 data-pressed:text-dark-gray data-pressed:scale-120 active:scale-95 dark:data-pressed:text-zinc-100 transition-all duration-200 ease-in-out'>
         <Icon name='grid-nine' className='size-4' />
       </Toggle>
       <Toggle
         aria-label='Align right'
         value='right'
-        className='flex h-5 w-6 items-center justify-center rounded-xs select-none focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 text-foreground/40 data-pressed:text-zinc-100'>
+        className='flex h-5 w-6 items-center justify-center rounded-xs select-none focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 text-foreground/40 data-pressed:text-dark-gray data-pressed:scale-120 active:scale-95 dark:data-pressed:text-zinc-100 transition-all duration-200 ease-in-out'>
         <Icon name='grid-four' className='size-4' />
       </Toggle>
     </ToggleGroup>

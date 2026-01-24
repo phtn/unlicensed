@@ -1,9 +1,8 @@
 'use client'
 
 import {DataTable} from '@/components/table-v2'
-import {groupFilter} from '@/components/table-v2/create-column'
-import {dateCell, formatText, textCell} from '@/components/table/cells'
-import {ColumnConfig} from '@/components/table/create-columns'
+import {dateCell, formatText, textCell} from '@/components/table-v2/cells-v2'
+import {ColumnConfig, groupFilter} from '@/components/table-v2/create-column'
 import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {useQuery} from 'convex/react'
@@ -26,29 +25,29 @@ export const SalesDataTable = () => {
     () =>
       [
         {
-          id: 'categoryId',
-          header: 'SKU',
-          accessorKey: 'categoryId',
+          id: '_id',
+          header: 'ID',
+          accessorKey: '_id',
           cell: formatText(
-            'categoryId',
+            '_id',
             (v) => v,
             'font-mono text-xs w-[30ch] truncate',
           ),
-          size: 10,
+          size: 50,
           enableHiding: true,
           enableSorting: true,
           filterFn: groupFilter,
         },
         {
-          id: 'slug',
-          header: 'Slug',
-          accessorKey: 'Slug',
+          id: 'priceCents',
+          header: 'Price',
+          accessorKey: 'priceCents',
           cell: formatText(
-            'slug',
+            'priceCents',
             (v) => v,
             'font-space font-sm truncate text-clip w-[13ch]',
           ),
-          size: 150,
+          size: 50,
           enableHiding: true,
           enableSorting: true,
           filterFn: groupFilter,
@@ -69,11 +68,11 @@ export const SalesDataTable = () => {
         },
         {
           id: '_creationTime',
-          header: 'Genesis',
+          header: 'Creation',
           accessorKey: '_creationTime',
           cell: dateCell(
             '_creationTime',
-            'font-space text-muted-foreground max-w-[20ch] truncate text-clip',
+            'font-brk text-muted-foreground max-w-[21ch] truncate text-clip',
           ),
           size: 100,
           enableHiding: true,

@@ -10,13 +10,12 @@ interface CenterTableToolbarProps {
 
 export const CenterTableToolbar = ({filter, view}: CenterTableToolbarProps) => {
   return (
-    <Toolbar.Root className='flex h-9 w-150 items-center gap-px rounded-sm px-px py-0.5'>
-      <ToggleGroup className='flex items-center gap-1' aria-label='Alignment'>
+    <Toolbar.Root className='flex h-9 items-start justify-center w-full gap-px px-px pb-1'>
+      <ToggleGroup className='flex items-start gap-1' aria-label='Alignment'>
         {filter}
         <Toolbar.Separator className='m-1 h-5 w-px bg-linear-to-b from-transparent via-gray-200 dark:via-zinc-500 to-transparent' />
         {view}
       </ToggleGroup>
-      <Toolbar.Separator className='m-1 h-5 w-px bg-linear-to-b from-transparent via-gray-200 dark:via-zinc-500 to-transparent' />
       <Toolbar.Group
         className='flex gap-1'
         aria-label='Numerical format'></Toolbar.Group>
@@ -30,8 +29,8 @@ interface RightTableToolbarProps {
 
 export const RightTableToolbar = ({search}: RightTableToolbarProps) => {
   return (
-    <Toolbar.Root className='flex justify-end h-9 w-150 items-center gap-px rounded-sm px-1 py-0.5 overflow-hidden'>
-      <ToggleGroup className='flex items-center' aria-label='Alignment'>
+    <Toolbar.Root className='flex justify-end h-9 w-150 items-start gap-px pb-1 overflow-visible'>
+      <ToggleGroup className='flex items-start' aria-label='Alignment'>
         {search}
       </ToggleGroup>
     </Toolbar.Root>
@@ -41,20 +40,20 @@ export const RightTableToolbar = ({search}: RightTableToolbarProps) => {
 interface LeftTableToolbarProps {
   select: ReactNode
   deleteRow: ReactNode
-  views: ReactNode
+  views?: ReactNode
 }
 
 export const LeftTableToolbar = ({
   select,
   deleteRow,
-  views,
 }: LeftTableToolbarProps) => {
   return (
-    <Toolbar.Root className='flex h-9 w-150 items-center gap-px rounded-sm px-1 py-0.5 overflow-hidden'>
-      <ToggleGroup className='flex items-center gap-1' aria-label='Alignment'>
+    <Toolbar.Root className='relative flex h-9 bg-transparent w-150 items-start gap-px px-1 py-0.5 overflow-visible'>
+      <ToggleGroup
+        className='relative flex items-center bg-transparent gap-4'
+        aria-label='Alignment'>
         {select}
         {deleteRow}
-        {views}
       </ToggleGroup>
     </Toolbar.Root>
   )

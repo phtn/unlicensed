@@ -9,7 +9,9 @@ import {
   Table,
 } from '@tanstack/react-table'
 import {AnimatePresence, motion} from 'motion/react'
-import type {ChangeEvent, ReactNode} from 'react'
+import {useQueryState} from 'nuqs'
+import {type ChangeEvent, memo, type ReactNode, useMemo} from 'react'
+import {createRowSelectionParser} from './parsers-v2'
 import {RowActions} from './row-actions'
 
 /**
@@ -42,7 +44,10 @@ export const filterFn = <T,>(
   const value = row.getValue(columnId)
 
   // If no filter is applied, include the row
-  if (!filterValue || (typeof filterValue === 'string' && filterValue.trim() === '')) {
+  if (
+    !filterValue ||
+    (typeof filterValue === 'string' && filterValue.trim() === '')
+  ) {
     return true
   }
 
@@ -117,7 +122,11 @@ export const groupFilter = <T,>(
  * Custom global filter function for searching across all columns
  * Searches through all filterable columns and matches using normalized text
  */
-export const globalFilterFn = <T,>(row: Row<T>, columnId: string, filterValue: string): boolean => {
+export const globalFilterFn = <T,>(
+  row: Row<T>,
+  columnId: string,
+  filterValue: string,
+): boolean => {
   // If no filter is applied, include the row
   if (!filterValue || filterValue.trim() === '') {
     return true
@@ -129,7 +138,11 @@ export const globalFilterFn = <T,>(row: Row<T>, columnId: string, filterValue: s
   return row.getVisibleCells().some((cell) => {
     const column = cell.column
     // Skip select and actions columns
-    if (column.id === 'select' || column.id === 'actions' || !column.getCanFilter()) {
+    if (
+      column.id === 'select' ||
+      column.id === 'actions' ||
+      !column.getCanFilter()
+    ) {
       return false
     }
 
@@ -209,7 +222,12 @@ export const createColumns = <T,>(
   columns.push({
     id: 'select',
     header: ({table}) => (
-      <SelectAllCheckbox table={table} isVisible={showSelectColumn} />
+      <SelectAllCheckbox
+        table={table}
+        isSome={table.getIsSomePageRowsSelected()}
+        isAll={table.getIsAllPageRowsSelected()}
+        isVisible={showSelectColumn}
+      />
     ),
     cell: ({row}) => (
       <SelectRowCheckbox row={row} isVisible={showSelectColumn} />
@@ -279,45 +297,41 @@ export const createColumns = <T,>(
 const fakeChangeEvent = (checked: boolean): ChangeEvent<HTMLInputElement> =>
   ({target: {checked}}) as ChangeEvent<HTMLInputElement>
 
-// Select all checkbox component for table header
-const SelectAllCheckbox = <T,>({
+// Select all checkbox component for table header.
+// Memoized with primitive props (isSome, isAll, isVisible) so it only re-renders
+// when selection or visibility changes, not on every table state update.
+function SelectAllCheckboxInner<T>({
   table,
+  isSome,
+  isAll,
   isVisible,
 }: {
   table: Table<T>
+  isSome: boolean
+  isAll: boolean
   isVisible: boolean
-}) => {
-  const isSome = table.getIsSomePageRowsSelected()
-  const isAll = table.getIsAllPageRowsSelected()
-  const isChecked = isAll ? true : isSome ? false : false
-
+}) {
   return (
     <AnimatePresence mode='wait'>
       {isVisible && (
         <motion.div
           initial={{opacity: 0.2, x: -1}}
-          animate={isVisible ? {opacity: 1, x: 2} : {x: 10}}
+          animate={{opacity: 1, x: 3}}
           className={cn('w-10 md:w-11 flex justify-center items-center')}>
           <Checkbox.Root
-            defaultChecked={table.getIsAllPageRowsSelected()}
-            indeterminate={isSome && !isAll}
+            checked={isAll}
+            indeterminate={isSome}
             onCheckedChange={(checked) => {
               const handler = table.getToggleAllPageRowsSelectedHandler()
               handler(fakeChangeEvent(!!checked))
             }}
-            className='w-6 flex justify-center items-center'>
+            className='w-4.5 h-4 rounded-[2.5px] bg-foreground flex justify-center items-center'>
             <Icon
-              name={
-                isSome && !isAll
-                  ? 'checkbox-indeterminate'
-                  : isChecked
-                    ? 'check-fill'
-                    : 'checkbox-unchecked'
-              }
-              className={cn('size-4 md:size-6 shrink-0', {
-                'dark:text-amber-500 text-amber-600': isSome && !isAll,
-                'text-background bg-foreground rounded-full': isChecked,
-                'text-foreground': !isChecked && !(isSome && !isAll),
+              name={isSome ? 'minus' : isAll ? 'check' : 'checkbox-unchecked'}
+              className={cn('size-7 shrink-0', {
+                'dark:text-amber-400 text-amber-500': isSome,
+                'text-background -rotate-3': isAll,
+                'rotate-0 size-5 text-foreground': !isAll && !isSome,
               })}
             />
           </Checkbox.Root>
@@ -327,6 +341,10 @@ const SelectAllCheckbox = <T,>({
   )
 }
 
+const SelectAllCheckbox = memo(
+  SelectAllCheckboxInner,
+) as typeof SelectAllCheckboxInner
+
 // Select row checkbox component for table cells
 const SelectRowCheckbox = <T,>({
   row,
@@ -335,7 +353,28 @@ const SelectRowCheckbox = <T,>({
   row: Row<T>
   isVisible: boolean
 }) => {
-  const isChecked = row.getIsSelected()
+  const [rowSelectionParam, setRowSelectionParam] = useQueryState(
+    'select',
+    createRowSelectionParser(),
+  )
+
+  const isChecked = useMemo(
+    () => (rowSelectionParam ?? {})[row.id] === true,
+    [row.id, rowSelectionParam],
+  )
+
+  const handleCheckedChange = (checked: boolean) => {
+    const currentSelection = rowSelectionParam ?? {}
+    const nextSelection = {...currentSelection}
+
+    if (checked) {
+      nextSelection[row.id] = true
+    } else {
+      delete nextSelection[row.id]
+    }
+
+    setRowSelectionParam(nextSelection)
+  }
 
   return (
     <AnimatePresence mode='wait'>
@@ -345,18 +384,14 @@ const SelectRowCheckbox = <T,>({
           animate={{scale: 1, x: 10}}
           className={cn('w-6 flex items-center justify-center')}>
           <Checkbox.Root
-            defaultChecked={row.getIsSelected()}
+            checked={isChecked}
             disabled={!row.getCanSelect()}
-            indeterminate={row.getIsSomeSelected()}
-            onCheckedChange={(checked) => {
-              const handler = row.getToggleSelectedHandler()
-              handler(fakeChangeEvent(!!checked))
-            }}
+            onCheckedChange={handleCheckedChange}
             className={cn('w-6 flex justify-center items-center')}>
             <Icon
               name={isChecked ? 'check' : 'checkbox-unchecked'}
-              className={cn('size-4 md:size-5 rounded-full', {
-                'bg-mac-blue dark:bg-mac-blue/80 opacity-100 text-background dark:text-white':
+              className={cn('h-5 rounded-sm', {
+                'bg-dark-gray dark:bg-mac-blue/80 opacity-100 text-background dark:text-white':
                   isChecked,
               })}
             />

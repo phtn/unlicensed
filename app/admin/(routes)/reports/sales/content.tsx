@@ -12,7 +12,7 @@ const ReportsContentInner = () => {
     default:
       return (
         <Suspense fallback={<div>Loading...</div>}>
-          <div className='flex items-start justify-center mx-auto min-h-screen w-full dark:bg-dark-table/40'>
+          <div className='flex items-start justify-center mx-auto min-h-screen w-full'>
             <SalesDataTable />
           </div>
         </Suspense>
@@ -23,7 +23,7 @@ const ReportsContentInner = () => {
 export const Content = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <MainWrapper className='border-t-0'>
+      <MainWrapper className='border-t-0 px-0'>
         <ReportsContentInner />
       </MainWrapper>
     </Suspense>

@@ -72,7 +72,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent className='hide-scrollbar'>
         {/* We only show the first parent group */}
         <SidebarGroup key={'operations'}>
-          <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-medium opacity-70'>
+          <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-brk'>
             {data.navMain[0]?.title}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -86,13 +86,10 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                     .includes(item.url.split('/').pop()!)
                   return (
                     <SidebarMenuItem
-                      className={cn(
-                        'text-sm font-semibold tracking-tight rounded-xl',
-                        {
-                          'bg-dark-gray text-white dark:bg-blue-100/15 md:hover:bg-dark-gray/90 md:dark:hover:bg-blue-100/20':
-                            isActive,
-                        },
-                      )}
+                      className={cn('text-sm tracking-tight rounded-xl', {
+                        'bg-dark-gray text-white dark:bg-blue-100/15 md:hover:bg-dark-gray/90 md:dark:hover:bg-blue-100/20':
+                          isActive,
+                      })}
                       key={item.title}>
                       <SidebarMenuButton
                         asChild
@@ -109,7 +106,7 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
 
         {data.navMain.slice(1, 6).map((section, i) => (
           <SidebarGroup key={`${section.title}` + i} className='hide-scrollbar'>
-            <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-medium opacity-70'>
+            <SidebarGroupLabel className='pl-3 text-[8px] tracking-widest uppercase font-brk'>
               {section.title}
             </SidebarGroupLabel>
             <SidebarGroupContent className='scrollbar-hide'>
@@ -226,9 +223,9 @@ const MenuContent = memo(function MenuContent(item: NavItem) {
       prefetch={true}
       onMouseEnter={handleMouseEnter}
       onClick={handleClick}
-      className='font-figtree group/menu-content hover:bg-foreground/5 rounded-xl flex items-center px-3 h-9 relative w-full'>
-      <Icon name={item.icon as IconName} className='opacity-80 mr-2.5 size-5' />
-      <span className='font-okxs font-medium tracking-normal text-sm md:text-base capitalize dark:text-white/90'>
+      className='group/menu-content hover:bg-foreground/5 rounded-xl flex items-center px-3 h-8 relative w-full'>
+      <Icon name={item.icon as IconName} className='mr-2.5 size-4' />
+      <span className='font-okxs font-normal tracking-normal text-sm md:text-sm capitalize dark:text-white/90'>
         {item.title}
       </span>
       {showBadge && (

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.26.1
+
+### Patch Changes
+
+- table
+
 ## 0.26.0
 
 ### Minor Changes

@@ -43,20 +43,22 @@ export const DeleteButton = <T,>({
 
   return (
     <Button
-      className='relative data-[state=open]:bg-origin/60 rounded-sm border -space-x-px select-none h-7.5 ps-1 aspect-square'
+      className='flex items-center space-x-1 relative shadow-inner bg-dark-table/10 dark:bg-dark-table/50 rounded-sm select-none h-7.5 ps-1 md:ps-2 aspect-square'
       onClick={handleDelete}
       disabled={disabled || !hasSelection}>
       <Icon
         name={loading ? 'spinners-ring' : 'disconnect'}
-        className={cn('md:size-5 size-4 text-mac-red dark:text-red-500', {
+        className={cn('size-4 text-mac-red dark:text-red-400', {
           'opacity-50': disabled || !hasSelection,
         })}
       />
-      <span className='hidden md:flex'>Delete</span>
+      <span className='hidden md:flex text-xs md:pr-3 font-brk uppercase'>
+        Delete
+      </span>
       {selectedCount > 0 && (
-        <span className='absolute z-50 pointer-events-none select-none rounded-full -top-1.5 md:-top-0.5 left-full -translate-x-3.5 md:-translate-1/2 size-5 aspect-square px-1 text-white font-space bg-mac-red flex items-center justify-center text-xs'>
-          {selectedCount > 99 ? '99+' : selectedCount}
-        </span>
+        <div className='absolute font-oksx font-semibol flex items-center justify-center border border-background _dark:border-background text-background -right-2.5 -top-1.25 z-50 pointer-events-none select-none rounded-sm size-5 aspect-square bg-foreground font-brk'>
+          <span>{selectedCount > 99 ? '99+' : selectedCount}</span>
+        </div>
       )}
     </Button>
   )

@@ -106,11 +106,11 @@ export const Filter = <T,>({
       <Popover.Trigger
         className='md:flex hidden'
         render={
-          <Toolbar.Button className='flex h-8 items-center justify-center rounded-sm space-x-2 px-4 text-sm select-none focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 active:bg-light-gray/10 data-pressed:bg-gray-100 data-pressed:text-gray-900'>
+          <Toolbar.Button className='flex h-8 items-center justify-center rounded-sm space-x-1 px-4 text-sm select-none focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 active:bg-light-gray/10 data-pressed:bg-gray-100 data-pressed:text-gray-900'>
             <Icon
               name='list-filter'
               className={cn(
-                'size-4 opacity-70',
+                'size-3.5 opacity-70',
                 (totalActiveFilters > 0 || activeFilterColumns.length > 0) &&
                   'text-mac-indigo opacity-100',
               )}
@@ -127,7 +127,7 @@ export const Filter = <T,>({
         }></Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner align={isMobile ? 'end' : 'start'}>
-          <Popover.Popup className='w-auto min-w-44 p-3 rounded-3xl'>
+          <Popover.Popup className='w-auto min-w-44 p-3 dark:bg-dark-table rounded-3xl'>
             <div>
               {/* Add Filter Section */}
               {availableColumns.length > 0 && (

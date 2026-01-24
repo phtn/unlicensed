@@ -1,6 +1,5 @@
 'use client'
 import {
-  Cell,
   Column,
   ColumnFiltersState,
   flexRender,
@@ -10,7 +9,6 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   PaginationState,
-  Row,
   RowSelectionState,
   SortingState,
   useReactTable,
@@ -20,8 +18,10 @@ import {
 import {useQueryState, useQueryStates} from 'nuqs'
 import {
   ChangeEvent,
+  ReactNode,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -30,7 +30,6 @@ import {
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -49,7 +48,7 @@ import {DeleteButton} from './delete-row-v2'
 import {EmptyTable} from './empty-table-v2'
 import {Filter} from './filter-v2'
 import {HyperWrap} from './hyper-wrap'
-import {PageControl} from './pagination-v2'
+import {PageControl, Paginator} from './pagination-v2'
 import {
   createColumnFiltersParser,
   createColumnVisibilityParser,
@@ -59,6 +58,7 @@ import {
   searchParser,
   selectModeParser,
 } from './parsers-v2'
+import {RenderRow} from './render-row'
 import {Search} from './search-v2'
 import {SelectToggle} from './select-toggle'
 import {
@@ -86,7 +86,6 @@ export const DataTable = <T,>({
   editingRowId,
   columnConfigs,
   actionConfig,
-  title = 'Data Table',
   onDeleteSelected,
   deleteIdAccessor = 'id' as keyof T,
   selectedItemId,
@@ -137,11 +136,6 @@ export const DataTable = <T,>({
     [pagination.pageIndex, pagination.pageSize],
   )
 
-  const sorting: SortingState = useMemo(
-    () => sortingParam ?? [{id: 'createdAt', desc: false}],
-    [sortingParam],
-  )
-
   const columnFilters: ColumnFiltersState = useMemo(
     () => (Array.isArray(columnFiltersParam) ? columnFiltersParam : []),
     [columnFiltersParam],
@@ -180,13 +174,26 @@ export const DataTable = <T,>({
     [paginationState, setPagination],
   )
 
+  const handlePageSizeChange = useCallback(
+    (value: string) => {
+      const nextPageSize = Number(value) || paginationState.pageSize
+      handlePaginationChange({
+        ...paginationState,
+        pageSize: nextPageSize,
+      })
+    },
+    [paginationState, handlePaginationChange],
+  )
+
   const handleSortingChange = useCallback(
     (updater: SortingState | ((old: SortingState) => SortingState)) => {
+      // React Table passes the current state to the updater function
+      // We just need to update the URL param with the new sorting
       const newSorting =
-        typeof updater === 'function' ? updater(sorting) : updater
+        typeof updater === 'function' ? updater(sortingParam ?? []) : updater
       setSortingParam(newSorting)
     },
-    [sorting, setSortingParam],
+    [sortingParam, setSortingParam],
   )
 
   const handleColumnFiltersChange = useCallback(
@@ -241,7 +248,29 @@ export const DataTable = <T,>({
   //   table.resetRowSelection();
   // };
 
-  const columns = createColumns(columnConfigs, actionConfig, selectOn)
+  const columns = useMemo(
+    () => createColumns(columnConfigs, actionConfig, selectOn),
+    [columnConfigs, actionConfig, selectOn],
+  )
+
+  // Compute effective sorting: use param if available, otherwise find first sortable column
+  const effectiveSorting: SortingState = useMemo(() => {
+    if (sortingParam && sortingParam.length > 0) {
+      return sortingParam
+    }
+    // Find first sortable column (excluding select and actions)
+    const sortableColumn = columns.find(
+      (col) =>
+        col.id &&
+        col.id !== 'select' &&
+        col.id !== 'actions' &&
+        col.enableSorting !== false,
+    )
+    if (sortableColumn?.id) {
+      return [{id: sortableColumn.id, desc: false}]
+    }
+    return []
+  }, [sortingParam, columns])
 
   const table = useReactTable({
     data: _data,
@@ -259,7 +288,7 @@ export const DataTable = <T,>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
     globalFilterFn: globalFilterFn,
     state: {
-      sorting,
+      sorting: effectiveSorting,
       pagination: paginationState,
       columnFilters,
       globalFilter: globalFilter ?? '',
@@ -278,7 +307,7 @@ export const DataTable = <T,>({
     unknown
   >[]
 
-  const rowCount = table.getRowCount()
+  // const rowCount = useMemo(() => table.getRowCount(), [table])
   const pageControl: PageControl = {
     gotoFirst: () => {
       handlePaginationChange({...paginationState, pageIndex: 0})
@@ -290,7 +319,7 @@ export const DataTable = <T,>({
         pageIndex: Math.max(0, paginationState.pageIndex - 1),
       })
     },
-    disabledNext: !table.getCanNextPage(),
+    disabledNext: table.getCanNextPage() === false,
     gotoNext: () => {
       handlePaginationChange({
         ...paginationState,
@@ -300,7 +329,7 @@ export const DataTable = <T,>({
     gotoLast: () => {
       const lastPageIndex = Math.max(
         0,
-        Math.ceil(rowCount / paginationState.pageSize) - 1,
+        Math.ceil(table.getRowCount() / paginationState.pageSize) - 1,
       )
       handlePaginationChange({
         ...paginationState,
@@ -310,10 +339,8 @@ export const DataTable = <T,>({
   }
 
   const tableRows = table.getRowModel().rows
-  const selectedRows = useMemo(
-    () => table.getSelectedRowModel().rows ?? [],
-    [rowSelection],
-  )
+  const selectedRowModel = table.getSelectedRowModel().rows
+  const selectedRows = useMemo(() => selectedRowModel ?? [], [selectedRowModel])
 
   const isMobile = useMobile()
 
@@ -347,13 +374,12 @@ export const DataTable = <T,>({
     }
   }, [])
 
+  const id = useId()
+
   return (
-    <div
-      className={cn(
-        'text-foreground bg-background/90 w-full max-w-full duration-500 ease-in-out',
-      )}>
-      <div className='h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-lg pb-8 min-w-0 max-w-full'>
-        <div className='flex items-center justify-between h-10 max-w-[calc(85lvw)] bg-background overflow-scroll'>
+    <div className={cn('text-foreground w-full duration-500 ease-in-out')}>
+      <div className='h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 pb-8 min-w-0 overflow-hidden'>
+        <div className='flex items-start justify-between shrink h-10'>
           <LeftTableToolbar
             select={
               <SelectToggle
@@ -399,23 +425,23 @@ export const DataTable = <T,>({
           />
         </div>
         {/* Table */}
-        <HyperWrap className='relative gap-0 space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-2xl pb-8 min-w-0 rounded-t-3xl overflow-hidden'>
+        <HyperWrap className='relative gap-0 space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-md pb-14'>
           <TableContainer>
-            <Table className='w-full'>
-              <TableHeader>
+            <Table>
+              <TableHeader className='w-full'>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
                     key={headerGroup.id}
-                    className='bg-sidebar/10 dark:bg-dark-table/10'>
+                    className='bg-sidebar/10 dark:bg-dark-table/0'>
                     {headerGroup.headers.map((header) => {
                       return (
                         <TableHead
-                          key={header.id}
+                          key={header.id + id}
                           style={{width: `${header.getSize()}px`}}
                           className={cn(
-                            'sticky top-0 z-20 bg-light-gray/10 md:h-10 h-8 uppercase overflow-hidden dark:bg-amber-100',
+                            'sticky top-0 z-20 bg-light-gray/10 md:h-10 h-8 uppercase overflow-hidden',
                             'font-oksx font-semibold tracking-tighter text-foreground/70 md:tracking-tight text-xs md:text-sm',
-                            'dark:text-zinc-400 dark:bg-dark-table/10',
+                            'dark:text-zinc-400 dark:bg-dark-table/30',
                           )}>
                           <ColumnSort flexRender={flexRender} header={header} />
                         </TableHead>
@@ -427,121 +453,38 @@ export const DataTable = <T,>({
 
               <TableBody>
                 {tableRows.length ? (
-                  tableRows.map((row) =>
-                    renderRow(
-                      row,
-                      editingRowId,
-                      row.id,
-                      selectOn,
-                      selectedItemId,
-                    ),
-                  )
+                  tableRows.map((row) => (
+                    <RenderRow
+                      key={row.id}
+                      row={row}
+                      editingRowId={editingRowId}
+                      showSelectColumn={selectOn}
+                      selectedItemId={selectedItemId}
+                    />
+                  ))
                 ) : (
                   <EmptyTable colSpan={columns.length} />
                 )}
               </TableBody>
             </Table>
           </TableContainer>
+          <Paginator
+            state={paginationState}
+            rowCount={table.getRowCount()}
+            setPageSize={handlePageSizeChange}
+            pageControl={pageControl}
+          />
         </HyperWrap>
 
         {/* Pagination */}
-        {/*<Paginator
-          state={paginationState}
-          rowCount={rowCount}
-          setPageSize={useCallback(
-            (value: string) => {
-              handlePaginationChange({
-                ...paginationState,
-                pageSize: +value,
-              })
-            },
-            [paginationState, handlePaginationChange],
-          )}
-          pageControl={pageControl}
-        />*/}
       </div>
     </div>
   )
 }
 
-const renderRow = <T,>(
-  row: Row<T>,
-  editingRowId: string | null,
-  rowId: string,
-  showSelectColumn?: boolean,
-  selectedItemId?: string | null,
-) => {
-  const isEditing = editingRowId === rowId
-  // Compare the row's original data cardId with selectedItemId
-  const rowCardId = (row.original as Record<string, unknown>)?.cardId as
-    | string
-    | undefined
-  const isSelected = selectedItemId != null && rowCardId === selectedItemId
-
-  const handleRowClick = (e: React.MouseEvent) => {
-    // Don't toggle selection if clicking on interactive elements
-    if (
-      e.target instanceof HTMLElement &&
-      (e.target.closest('button') ||
-        e.target.closest('input') ||
-        e.target.closest('a') ||
-        e.target.closest('[role="button"]'))
-    ) {
-      return
-    }
-
-    // Only toggle if select mode is on and row can be selected
-    if (showSelectColumn && row.getCanSelect()) {
-      row.getToggleSelectedHandler()({})
-    }
-  }
-
-  return (
-    <TableRow
-      key={row.id}
-      data-state={row.getIsSelected() && 'selected'}
-      className={cn(
-        'h-14 md:h-16 text-foreground text-xs md:text-base overflow-hidden dark:border-greyed group/row dark:hover:bg-background/40 border-b-origin/40',
-        'peer-hover:border-transparent bg-transparent hover:last:rounded-tr-2xl hover:bg-light-gray/10 transition-colors duration-75',
-        {
-          // Apply editing styles - same as hover but persistent
-          ' dark:bg-sky-600/40 last:rounded-tr-2xl': isEditing,
-          // Apply selected styles when viewer is open - same as hover but persistent
-          'dark:bg-background/40 bg-primary-hover/5 last:rounded-tr-2xl':
-            isSelected && !isEditing,
-          // Add cursor pointer when select mode is on
-          'cursor-pointer': showSelectColumn && row.getCanSelect(),
-        },
-      )}
-      onClick={handleRowClick}>
-      {row
-        .getVisibleCells()
-        .map((cell) => renderCell(cell, isEditing || isSelected))}
-    </TableRow>
-  )
-}
-
-const renderCell = <TData, TValue>(
-  cell: Cell<TData, TValue>,
-  isEditing: boolean,
-) => (
-  <TableCell
-    key={cell.id}
-    className={cn(
-      'last:py-0 overflow-hidden',
-      'transition-colors duration-300',
-      {
-        // Apply editing cell styles - same as hover but persistent
-        'dark:bg-chalk-100/0': isEditing,
-      },
-    )}>
-    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-  </TableCell>
-)
-
-const TableContainer = ({children}: {children: React.ReactNode}) => (
-  <div className='relative rounded-t-sm pb-10 w-full max-w-full overflow-x-auto'>
-    <div className='min-w-0'>{children}</div>
+const TableContainer = ({children}: {children: ReactNode}) => (
+  <div className='relative h-full w-full overflow-x-auto'>
+    <div className='inline-block w-full'>{children}</div>
   </div>
 )
 

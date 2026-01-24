@@ -128,7 +128,7 @@ export const linkText = <T, K extends keyof T>(
   className?: ClassName,
   fallback?: ReactNode,
 ) => {
-  const LinkTextComponent = (ctx: CellContext<T, unknown>) => {
+  const LinkTextComponent = (ctx: CellContext<T, keyof T>) => {
     const rawValue = ctx.row.getValue(prop as string)
     if (rawValue === null || rawValue === undefined) {
       return <div className={cn(className)}>{fallback ?? '—'}</div>

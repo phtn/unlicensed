@@ -1,4 +1,5 @@
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {Button} from '@base-ui/react/button'
 import {Select} from '@base-ui/react/select'
 import {PaginationState} from '@tanstack/react-table'
@@ -27,19 +28,18 @@ export const Paginator = ({
 }: Props) => {
   const id = useId()
   return (
-    <div className='fixed z-10 bg-background bottom-0 flex items-center justify-between w-full py-1 md:py-2'>
+    <div className='z-10 flex-1 grow-0 bg-background w-full border-t border-sidebar flex items-center justify-between py-1 md:py-2'>
       {/* Results per page */}
       <div className='flex items-center justify-between space-x-8 px-6'>
         <label htmlFor={id} className='font-space tracking-tight'>
           <span className='font-semibold text-base'>{rowCount}</span>
-          <span className='opacity-80'>items</span>
+          <span className='opacity-80 ml-1'>Items</span>
         </label>
-        <div className='flex items-center border border-greyed/40 dark:hover:bg-background/10 dark:focus-visible:bg-background/15 pl-3 py-1 rounded-lg space-x-1 dark:bg-dysto/20'>
+        <div className='flex items-center border border-greyed/40 dark:hover:bg-background/10 dark:focus-visible:bg-background/15 px-3 py-1 rounded-lg space-x-1 dark:bg-dysto/20'>
           <label
             htmlFor={'showing-rows'}
             className='max-sm:sr-only font-space tracking-tight mx-auto'>
             {/*<span className='font-semibold text-base'>{rowCount}</span>*/}
-            <span className='opacity-80 font-brk text-xs'>rows</span>
 
             <Select.Root
               value={state.pageSize.toString()}
@@ -48,7 +48,7 @@ export const Paginator = ({
               }}>
               <Select.Trigger
                 id='showing-rows'
-                className='whitespace-nowrap font-space'>
+                className='whitespace-nowrap font-space font-semibold'>
                 <Select.Value placeholder='' />
               </Select.Trigger>
               <Select.Portal className='[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-4 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2'>
@@ -57,16 +57,20 @@ export const Paginator = ({
                     className=''
                     key={pageSize}
                     value={pageSize.toString()}>
-                    <span className='mr-2'>{pageSize ?? 10}</span>
+                    <span className='mr-2 font-semibold font-space'>
+                      {pageSize ?? 10}
+                    </span>
                   </Select.Item>
                 ))}
               </Select.Portal>
+
+              <span className='opacity-80 font-brk text-base[] ml-1'>Rows</span>
             </Select.Root>
           </label>
         </div>
       </div>
       {/* Page number information */}
-      <div className='px-4 text-muted-foreground flex grow justify-end text-sm whitespace-nowrap'>
+      <div className='hidden _flex px-4 text-muted-foreground grow justify-end text-sm whitespace-nowrap'>
         <p
           className='hidden text-muted-foreground text-sm whitespace-nowrap'
           aria-live='polite'>
@@ -86,14 +90,19 @@ export const Paginator = ({
         <Button
           onClick={pageControl.gotoPrev}
           disabled={pageControl.disabledPrev}
-          className='dark:bg-background/10 aspect-square size-8 p-0 aria-disabled:pointer-events-none aria-disabled:text-muted-foreground/50 border-[0.33px] dark:border-dark-origin/30 hover:bg-muted/50 dark:hover:bg-background/40 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.04),0_1px_1px_rgba(0,0,0,0.05),0_2px_2px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.05)] dark:inset-shadow-[0_1px_rgb(255_255_255/0.15)] disabled:shadow-none'
+          className='aspect-square size-8 disabled:pointer-events-none disabled:opacity-30 disabled:shadow-none'
           aria-label='Go to previous page'>
-          <Icon name='chevron-left' className='size-4' />
+          <Icon
+            name='chevron-left'
+            className={cn('size-4', {
+              // 'opacity-50': pageControl.disabledPrev,
+            })}
+          />
         </Button>
         <Button
           onClick={pageControl.gotoNext}
           disabled={pageControl.disabledNext}
-          className='dark:bg-background/10 aspect-square size-8 p-0 aria-disabled:pointer-events-none aria-disabled:text-muted-foreground/50 border-[0.33px] dark:border-dark-origin/30 hover:bg-muted/50 dark:hover:bg-background/40 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.04),0_1px_1px_rgba(0,0,0,0.05),0_2px_2px_rgba(0,0,0,0.05),0_2px_4px_rgba(0,0,0,0.05)] dark:inset-shadow-[0_1px_rgb(255_255_255/0.15)] disabled:shadow-none'
+          className='aspect-square size-8 disabled:pointer-events-none disabled:opacity-30 disabled:shadow-none'
           aria-label='Go to next page'>
           <Icon name='chevron-right' className='size-4' />
         </Button>

@@ -16,7 +16,7 @@ export const Content = () => {
 
   return (
     <main className='p-4 w-full md:h-screen flex md:items-center '>
-      <p className='p-4'>Watchful</p>
+      <p className='p-4'>Halt Gate</p>
       <Loader />
     </main>
   )

@@ -20,16 +20,16 @@ export const searchParser = parseAsString.withDefault('')
 export const createSortingParser = () => ({
   parse: (value: string | null): SortingState => {
     if (!value) {
-      return [{id: 'createdAt', desc: false}]
+      return []
     }
     try {
       const parts = value.split(':')
       if (parts.length === 2) {
         return [{id: parts[0], desc: parts[1] === 'desc'}]
       }
-      return [{id: 'createdAt', desc: false}]
+      return []
     } catch {
-      return [{id: 'createdAt', desc: false}]
+      return []
     }
   },
   serialize: (value: SortingState): string => {
@@ -39,7 +39,7 @@ export const createSortingParser = () => ({
     const sort = value[0]
     return `${sort.id}:${sort.desc ? 'desc' : 'asc'}`
   },
-  defaultValue: [{id: 'createdAt', desc: false}] as SortingState,
+  defaultValue: [] as SortingState,
 })
 
 // Column filters parser - format: "id1:value1,value2|id2:value3"
