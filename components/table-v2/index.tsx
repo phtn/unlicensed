@@ -340,7 +340,8 @@ export const DataTable = <T,>({
 
   const tableRows = table.getRowModel().rows
   const selectedRowModel = table.getSelectedRowModel().rows
-  const selectedRows = useMemo(() => selectedRowModel ?? [], [selectedRowModel])
+  // Derive selectedRows during render (simple nullish coalescing)
+  const selectedRows = selectedRowModel ?? []
 
   const isMobile = useMobile()
 

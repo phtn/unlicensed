@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.0
+
+### Minor Changes
+
+- skills
+
 ## 0.26.1
 
 ### Patch Changes

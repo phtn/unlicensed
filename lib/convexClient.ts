@@ -4,6 +4,7 @@ import {Id} from '@/convex/_generated/dataModel'
 import {categoriesSeed, productsSeed} from '@/convex/init'
 import {PotencyLevel} from '@/convex/products/d'
 import {ConvexHttpClient} from 'convex/browser'
+import {cache} from 'react'
 
 export type RawCategory = {
   slug?: string
@@ -173,7 +174,7 @@ export const fallbackProductDetail = (
   })
 }
 
-export const fetchCategories = async (): Promise<StoreCategory[]> => {
+const _fetchCategories = async (): Promise<StoreCategory[]> => {
   const client = getClient()
   if (!client) {
     return fallbackCategories()
@@ -191,7 +192,9 @@ export const fetchCategories = async (): Promise<StoreCategory[]> => {
   }
 }
 
-export const fetchProducts = async (options?: {
+export const fetchCategories = cache(_fetchCategories)
+
+const _fetchProducts = async (options?: {
   categorySlug?: string
   limit?: number
 }): Promise<StoreProduct[]> => {
@@ -214,7 +217,12 @@ export const fetchProducts = async (options?: {
   }
 }
 
-export const fetchProductDetail = async (
+// React.cache() uses Object.is() for cache keys
+// For per-request deduplication, we cache the function but note that different object references
+// will cause cache misses (which is expected for different parameters)
+export const fetchProducts = cache(_fetchProducts)
+
+const _fetchProductDetail = async (
   slug: string,
 ): Promise<StoreProductDetail | null> => {
   const client = getClient()
@@ -235,3 +243,5 @@ export const fetchProductDetail = async (
     return fallbackProductDetail(slug)
   }
 }
+
+export const fetchProductDetail = cache(_fetchProductDetail)

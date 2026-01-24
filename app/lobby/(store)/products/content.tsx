@@ -94,7 +94,7 @@ export const Content = ({initialProducts}: ContentProps) => {
         brands.add(p.brand.toLowerCase())
       }
     })
-    return Array.from(brands).sort()
+    return Array.from(brands).toSorted()
   }, [allProducts])
 
   const uniqueCategories = useMemo(() => {

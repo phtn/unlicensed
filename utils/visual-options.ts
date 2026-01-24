@@ -120,7 +120,7 @@ export function createMultiOptionSlug(
       ([key, value]) =>
         `${slugifyOptionName(key)}_${slugifyOptionValue(value)}`,
     )
-    .sort()
+    .toSorted()
     .join('-')
 
   return optionParts ? `${clean}--${optionParts}` : clean

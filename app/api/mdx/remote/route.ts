@@ -3,6 +3,7 @@ import remarkGfm from 'remark-gfm'
 import remarkToc from 'remark-toc'
 import rehypeSlug from 'rehype-slug'
 import {NextRequest, NextResponse} from 'next/server'
+import {after} from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
@@ -70,7 +71,10 @@ export async function POST(request: NextRequest) {
       source: url,
     })
   } catch (error) {
-    console.error('Error fetching remote MDX:', error)
+    // Log error after response is sent (non-blocking)
+    after(async () => {
+      console.error('Error fetching remote MDX:', error)
+    })
     
     if (error instanceof Error) {
       if (error.name === 'AbortError') {

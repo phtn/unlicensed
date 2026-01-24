@@ -1,7 +1,6 @@
 'use client'
 
-import {ArrowRight} from 'lucide-react'
-
+import {Icon} from '@/lib/icons'
 import {
   TextureCardContent,
   TextureCardFooter,
@@ -77,7 +76,7 @@ export const ProfileInfo = () => {
                   <Button isIconOnly className='w-full'>
                     <div className='flex gap-1 items-center justify-center'>
                       Continue
-                      <ArrowRight className='h-4 w-4 text-neutral-50 mt-1px' />
+                      <Icon name='arrow-right' className='h-4 w-4 text-neutral-50 mt-1px' />
                     </div>
                   </Button>
                 </TextureCardFooter>

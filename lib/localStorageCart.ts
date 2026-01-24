@@ -1,7 +1,8 @@
 import {Id} from '@/convex/_generated/dataModel'
 import {CartItemType} from '@/convex/cart/d'
 
-export const LOCAL_STORAGE_CART_KEY = 'hyfe_cart_items'
+const VERSION = 'v1'
+export const LOCAL_STORAGE_CART_KEY = `hyfe_cart_items:${VERSION}`
 export const LOCAL_STORAGE_CART_UPDATED_EVENT = 'hyfe_cart_updated'
 
 export type LocalStorageCartItem = CartItemType

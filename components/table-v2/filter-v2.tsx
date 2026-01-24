@@ -55,7 +55,7 @@ export const Filter = <T,>({
       const filterValue = filterValues[index] as string[] | undefined
       return {
         column,
-        uniqueValues: Array.from(facetedValues.keys()).sort(),
+        uniqueValues: Array.from(facetedValues.keys()).toSorted(),
         valueCounts: facetedValues as Map<string | number | boolean, number>,
         selectedValues: filterValue ?? [],
       }

@@ -10,7 +10,8 @@ import {
 } from '@heroui/react'
 import {useState} from 'react'
 
-const STORAGE_KEY = 'age-confirmed'
+const VERSION = 'v1'
+const STORAGE_KEY = `age-confirmed:${VERSION}`
 
 export function AgeConfirmationModal() {
   // Initialize state based on localStorage check

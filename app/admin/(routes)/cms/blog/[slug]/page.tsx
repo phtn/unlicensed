@@ -3,10 +3,10 @@
 import {Editor} from '@/components/ui/editor'
 import {api} from '@/convex/_generated/api'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
+import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
 import {Button, Image, Input, Select, SelectItem, Textarea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {ArrowLeft, Save, Upload} from 'lucide-react'
 import Link from 'next/link'
 import {useParams, useRouter} from 'next/navigation'
 import {useEffect, useState} from 'react'
@@ -118,7 +118,7 @@ export default function BlogEditorPage() {
         <div className='flex items-center gap-4'>
           <Link href='/admin/blog'>
             <Button variant='ghost' isIconOnly>
-              <ArrowLeft className='w-5 h-5' />
+              <Icon name='chevron-left' className='w-5 h-5' />
             </Button>
           </Link>
           <h1 className='text-3xl font-bold tracking-tight'>
@@ -126,7 +126,7 @@ export default function BlogEditorPage() {
           </h1>
         </div>
         <Button color='primary' onPress={handleSubmit} isLoading={isSaving}>
-          <Save className='w-4 h-4 mr-2' />
+          <Icon name='save' className='w-4 h-4 mr-2' />
           Save
         </Button>
       </div>
@@ -232,7 +232,7 @@ export default function BlogEditorPage() {
                 variant='bordered'
                 isLoading={isUploading}
                 className='w-full cursor-pointer'>
-                <Upload className='w-4 h-4 mr-2' />
+                <Icon name='upload' className='w-4 h-4 mr-2' />
                 {coverImage ? 'Change Image' : 'Upload Image'}
                 <input
                   type='file'

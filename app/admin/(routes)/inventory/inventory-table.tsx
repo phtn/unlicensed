@@ -55,7 +55,8 @@ export const statusOptions = [
 export const InventoryTable = () => {
   const products = useQuery(api.products.q.listProducts, {limit: 100})
   const categoriesData = useQuery(api.categories.q.listCategories)
-  const categories = useMemo(() => categoriesData ?? [], [categoriesData])
+  // Derive categories during render (simple nullish coalescing)
+  const categories = categoriesData ?? []
   const {selectedProduct, setSelectedProduct} = useProductDetails()
   const {open, setOpen} = useSettingsPanel()
   const selectedProductId = selectedProduct?._id

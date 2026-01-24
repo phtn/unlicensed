@@ -226,9 +226,10 @@ export default function CartPage() {
     }, 0)
   }, [cartItems])
 
-  const tax = useMemo(() => subtotal * 0.1, [subtotal]) // 10% tax
-  const shipping = useMemo(() => (subtotal > 5000 ? 0 : 500), [subtotal]) // Free shipping over $50
-  const total = useMemo(() => subtotal + tax + shipping, [subtotal, tax, shipping])
+  // Derive values during render (simple expressions, no need for useMemo)
+  const tax = subtotal * 0.1 // 10% tax
+  const shipping = subtotal > 5000 ? 0 : 500 // Free shipping over $50
+  const total = subtotal + tax + shipping
 
   // Get user's points balance and next visit multiplier
   const pointsBalance = useQuery(

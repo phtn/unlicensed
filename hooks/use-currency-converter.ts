@@ -1,5 +1,5 @@
 import {FiatCurrency} from '@/app/admin/(routes)/payments/paygate/types'
-import {useEffect, useRef, useState} from 'react'
+import useSWR from 'swr'
 
 interface ConversionResponse {
   status: string
@@ -14,108 +14,57 @@ interface UseCurrencyConversionResult {
   error: Error | null
 }
 
+const fetcher = async (url: string): Promise<ConversionResponse> => {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Conversion failed: ${response.statusText}`)
+  }
+  const data: ConversionResponse = await response.json()
+  if (
+    data.status === 'success' &&
+    data.value_coin &&
+    data.exchange_rate
+  ) {
+    return data
+  }
+  throw new Error('Invalid conversion response')
+}
+
 export function useCurrencyConversion(
   amount: string,
   fromCurrency: FiatCurrency | null,
 ): UseCurrencyConversionResult {
-  const [usdValue, setUsdValue] = useState<string | null>(null)
-  const [exchangeRate, setExchangeRate] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
-  const abortControllerRef = useRef<AbortController | null>(null)
+  // Don't convert if amount is empty, invalid, or currency is already USD
+  const numAmount = parseFloat(amount)
+  const shouldFetch =
+    amount &&
+    !isNaN(numAmount) &&
+    numAmount > 0 &&
+    fromCurrency !== null &&
+    fromCurrency !== 'USD'
 
-  useEffect(() => {
-    // Reset state when inputs change
-    setUsdValue(null)
-    setExchangeRate(null)
-    setError(null)
+  const url = shouldFetch
+    ? `https://api.paygate.to/control/convert.php?from=${encodeURIComponent(fromCurrency)}&value=${encodeURIComponent(amount)}`
+    : null
 
-    // Don't convert if amount is empty, invalid, or currency is already USD
-    const numAmount = parseFloat(amount)
-    if (
-      !amount ||
-      isNaN(numAmount) ||
-      numAmount <= 0 ||
-      fromCurrency === 'USD'
-    ) {
-      setLoading(false)
-      return
-    }
+  const {data, error, isLoading} = useSWR<ConversionResponse>(
+    url,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 300, // Debounce equivalent - dedupe requests within 300ms
+    },
+  )
 
-    // Cancel any pending request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
-    }
-
-    // Create new AbortController for this request
-    const abortController = new AbortController()
-    abortControllerRef.current = abortController
-
-    setLoading(true)
-
-    const fetchConversion = async () => {
-      try {
-        if (!fromCurrency) {
-          setUsdValue(null)
-          setExchangeRate(null)
-          return
-        }
-        const url = `https://api.paygate.to/control/convert.php?from=${encodeURIComponent(fromCurrency)}&value=${encodeURIComponent(amount)}`
-
-        const response = await fetch(url, {
-          signal: abortController.signal,
-        })
-
-        if (abortController.signal.aborted) {
-          return
-        }
-
-        if (!response.ok) {
-          throw new Error(`Conversion failed: ${response.statusText}`)
-        }
-
-        const data: ConversionResponse = await response.json()
-
-        if (abortController.signal.aborted) {
-          return
-        }
-
-        if (
-          data.status === 'success' &&
-          data.value_coin &&
-          data.exchange_rate
-        ) {
-          setUsdValue(data.value_coin)
-          setExchangeRate(data.exchange_rate)
-        } else {
-          throw new Error('Invalid conversion response')
-        }
-      } catch (err) {
-        if (
-          err instanceof Error &&
-          err.name !== 'AbortError' &&
-          !abortController.signal.aborted
-        ) {
-          console.error('Currency conversion error:', err)
-          setError(err)
-        }
-      } finally {
-        if (!abortController.signal.aborted) {
-          setLoading(false)
-        }
-      }
-    }
-
-    // Debounce the API call slightly to avoid too many requests
-    const timeoutId = setTimeout(() => {
-      fetchConversion()
-    }, 300)
-
-    return () => {
-      clearTimeout(timeoutId)
-      abortController.abort()
-    }
-  }, [amount, fromCurrency])
-
-  return {usdValue, exchangeRate, loading, error}
+  return {
+    usdValue: data?.value_coin ?? null,
+    exchangeRate: data?.exchange_rate ?? null,
+    loading: isLoading,
+    error: error
+      ? error instanceof Error
+        ? error
+        : new Error('Currency conversion failed')
+      : null,
+  }
 }

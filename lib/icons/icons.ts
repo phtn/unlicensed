@@ -868,6 +868,30 @@ export const icons = {
     viewBox: '0 0 24 24',
     set: 'mdi',
   },
+  percent: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="2"/><circle cx="15" cy="15" r="2"/><path d="M21 3L3 21"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
+  },
+  truck: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.28a1 1 0 0 0-.684-.948l-1.923-.641a1 1 0 0 0-1.578.843L18 15"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
+  },
+  save: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
+  },
+  circle: {
+    symbol:
+      '<circle cx="12" cy="12" r="10" fill="currentColor"/>',
+    viewBox: '0 0 24 24',
+    set: 'lucide',
+  },
 }
 /*
 

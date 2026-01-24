@@ -2,7 +2,6 @@
 
 import {Timeline} from '@/components/ui/timeline'
 import {cn} from '@/lib/utils'
-import {Circle} from 'lucide-react'
 
 import {api} from '@/convex/_generated/api'
 import {useToggle} from '@/hooks/use-toggle'
@@ -35,7 +34,7 @@ function TaskItem({title, description, status, index}: TaskItemProps) {
         {status === 'in-progress' && (
           <div className='relative'>
             <div className='absolute inset-0 animate-ping rounded-full bg-blue-400 opacity-75'></div>
-            <Circle className='size-6 text-blue-500 fill-blue-500' />
+            <Icon name='circle' className='size-6 text-blue-500' />
           </div>
         )}
         {status === 'pending' && (

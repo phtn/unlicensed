@@ -97,7 +97,9 @@ export const GoogleOneTap = ({
       }
     }
 
-    window.addEventListener('unhandledrejection', unhandledRejectionHandler)
+    window.addEventListener('unhandledrejection', unhandledRejectionHandler, {
+      passive: true,
+    })
 
     // Check if user is already authenticated
     const checkAuth = () => {

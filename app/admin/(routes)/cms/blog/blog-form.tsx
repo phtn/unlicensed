@@ -4,10 +4,10 @@ import {Editor} from '@/components/ui/editor'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
+import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
 import {Button, Image, Input, Select, SelectItem, Textarea} from '@heroui/react'
 import {useMutation} from 'convex/react'
-import {Save, Upload} from 'lucide-react'
 import {useRouter} from 'next/navigation'
 import {useEffect, useState} from 'react'
 
@@ -143,7 +143,7 @@ export const BlogForm = ({blogId, initialValues, onSaved}: BlogFormProps) => {
           {isEditMode ? 'Edit Post' : 'Create Post'}
         </h1>
         <Button color='primary' onPress={handleSubmit} isLoading={isSaving}>
-          <Save className='w-4 h-4 mr-2' />
+          <Icon name='save' className='w-4 h-4 mr-2' />
           Save
         </Button>
       </div>
@@ -249,7 +249,7 @@ export const BlogForm = ({blogId, initialValues, onSaved}: BlogFormProps) => {
                 variant='bordered'
                 isLoading={isUploading}
                 className='w-full cursor-pointer'>
-                <Upload className='w-4 h-4 mr-2' />
+                <Icon name='upload' className='w-4 h-4 mr-2' />
                 {coverImage ? 'Change Image' : 'Upload Image'}
                 <input
                   type='file'

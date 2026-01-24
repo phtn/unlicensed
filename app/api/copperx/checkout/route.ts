@@ -1,13 +1,17 @@
 import {createClient} from '@/lib/copperx'
 import {CreateCheckoutSessionParams} from 'copperx-fn'
 import {NextRequest, NextResponse} from 'next/server'
+import {after} from 'next/server'
 
 export const POST = async (req: NextRequest) => {
   try {
     const payload: CreateCheckoutSessionParams = await req.json()
     const client = createClient()
 
-    console.log('PAYLOAD', payload)
+    // Log payload after response (non-blocking)
+    after(async () => {
+      console.log('PAYLOAD', payload)
+    })
 
     const {checkoutSession} = await client.checkoutSessions.create(payload)
 

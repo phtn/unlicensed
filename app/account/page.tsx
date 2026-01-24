@@ -18,15 +18,6 @@ import {
   Progress,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
-import {
-  Award,
-  Box,
-  ChevronRight,
-  ChevronUp,
-  Package,
-  Percent,
-  Truck,
-} from 'lucide-react'
 import {useTheme} from 'next-themes'
 import NextLink from 'next/link'
 import {memo, startTransition, useMemo, useState, ViewTransition} from 'react'
@@ -163,7 +154,7 @@ export default function AccountPage() {
                     'drop-shadow shadow-black text-white font-semibold tracking-wider px-3',
                 }}
                 size='lg'
-                startContent={<Award size={16} className='text-white' />}>
+                startContent={<Icon name='star-fill' className='size-4 text-white' />}>
                 {userRewards.currentTier.name.toUpperCase()} MEMBER
               </Chip>
             )}
@@ -297,7 +288,7 @@ export default function AccountPage() {
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2.5'>
                       <div className='p-2 rounded-xl bg-primary/20'>
-                        <Award className='size-5 text-primary' />
+                        <Icon name='star-fill' className='size-5 text-primary' />
                       </div>
                       <h3 className='font-semibold font-nito text-base tracking-tight'>
                         Next Reward Tier
@@ -360,7 +351,7 @@ export default function AccountPage() {
                   {tierBenefits?.discountPercentage ? (
                     <div className='flex items-center gap-3 p-4 rounded-xl bg-green-50/50 dark:bg-green-900/10 border border-green-200/50 dark:border-green-800/30 transition-all hover:bg-green-50 dark:hover:bg-green-900/20'>
                       <div className='p-2.5 rounded-xl bg-green-500/20 text-green-600 dark:text-green-400'>
-                        <Percent size={18} />
+                        <Icon name='percent' className='size-[18px]' />
                       </div>
                       <div className='flex-1'>
                         <p className='text-sm font-semibold text-green-700 dark:text-green-400'>
@@ -376,7 +367,7 @@ export default function AccountPage() {
                   {tierBenefits?.freeShipping && (
                     <div className='flex items-center gap-3 p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/30 transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20'>
                       <div className='p-2.5 rounded-xl bg-blue-500/20 text-blue-600 dark:text-blue-400'>
-                        <Truck size={18} />
+                        <Icon name='truck' className='size-[18px]' />
                       </div>
                       <div className='flex-1'>
                         <p className='text-sm font-semibold text-blue-700 dark:text-blue-400'>
@@ -412,9 +403,9 @@ export default function AccountPage() {
                     onPress={toggleShowAllOrders}
                     endContent={
                       showAllOrders ? (
-                        <ChevronUp size={16} />
+                        <Icon name='arrow-up' className='size-4' />
                       ) : (
-                        <ChevronRight size={16} />
+                        <Icon name='chevron-right' className='size-4' />
                       )
                     }
                     className='text-default-600 dark:text-default-400 hover:text-foreground font-medium'>
@@ -433,7 +424,7 @@ export default function AccountPage() {
                     <Card className='border-2 border-dashed border-default-200 dark:border-default-100/20 bg-default-50/50 dark:bg-default-50/5'>
                       <CardBody className='py-16 flex flex-col items-center justify-center text-center'>
                         <div className='w-20 h-20 rounded-full bg-default-100 dark:bg-default-50/10 flex items-center justify-center mb-5'>
-                          <Package size={36} className='text-default-400' />
+                          <Icon name='package-car' className='size-9 text-default-400' />
                         </div>
                         <h3 className='text-xl font-semibold text-foreground mb-2'>
                           No orders yet
@@ -464,7 +455,7 @@ export default function AccountPage() {
                           <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
                             <div className='flex items-start gap-4 flex-1 min-w-0'>
                               <div className='p-3 rounded-xl bg-linear-to-br from-default-100/30 to-default-500/10 hidden sm:flex shrink-0'>
-                                <Box size={22} className='opacity-50' />
+                                <Icon name='box' className='size-[22px] opacity-50' />
                               </div>
                               <div className='flex-1 min-w-0'>
                                 <div className='flex items-center gap-3 flex-wrap mb-2'>
@@ -529,8 +520,8 @@ export default function AccountPage() {
 const ProfileBackground = memo(() => {
   const {theme} = useTheme()
 
-  // Memoize star color to prevent unnecessary rerenders
-  const starColor = useMemo(() => (theme === 'dark' ? '#fff' : '#ccc'), [theme])
+  // Derive star color during render (simple expression, no need for useMemo)
+  const starColor = theme === 'dark' ? '#fff' : '#ccc'
 
   return (
     <Ascend
