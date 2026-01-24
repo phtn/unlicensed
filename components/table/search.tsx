@@ -7,8 +7,8 @@ import {
   forwardRef,
   useCallback,
   useEffect,
+  useEffectEvent,
   useId,
-  useRef,
 } from 'react'
 
 interface Props<T> {
@@ -29,7 +29,6 @@ const inputClassNames = {
 export const Search = forwardRef<HTMLInputElement, Props<string | number>>(
   ({col, value, onChange}, ref) => {
     const getFilterValue = col?.getFilterValue
-    const handlerRef = useRef<((event: KeyboardEvent) => void) | null>(null)
     const id = useId()
 
     const handleKeyDown = useCallback(
@@ -56,18 +55,13 @@ export const Search = forwardRef<HTMLInputElement, Props<string | number>>(
       [ref],
     )
 
-    useEffect(() => {
-      handlerRef.current = handleKeyDown
-    }, [handleKeyDown])
+    // Use useEffectEvent for stable callback reference
+    const onKeyDown = useEffectEvent(handleKeyDown)
 
     useEffect(() => {
-      const handler = (event: KeyboardEvent) => {
-        handlerRef.current?.(event)
-      }
-
-      document.addEventListener('keydown', handler, true)
-      return () => document.removeEventListener('keydown', handler, true)
-    }, [])
+      document.addEventListener('keydown', onKeyDown, true)
+      return () => document.removeEventListener('keydown', onKeyDown, true)
+    }, [onKeyDown])
 
     return (
       <div className='relative'>

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.1
+
+### Patch Changes
+
+- snyk
+
 ## 0.27.0
 
 ### Minor Changes
