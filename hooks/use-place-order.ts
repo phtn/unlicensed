@@ -1,13 +1,10 @@
 'use client'
 
+import {clearGuestCart, getGuestCartItems} from '@/app/actions'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {PaymentMethod} from '@/convex/orders/d'
 import {AddressType} from '@/convex/users/d'
-import {
-  clearLocalStorageCart,
-  getLocalStorageCartItems,
-} from '@/lib/localStorageCart'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
 import {useAuth} from './use-auth'
@@ -120,13 +117,13 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
         let cartIdToUse: Id<'carts'> | undefined
         let userIdToUse: Id<'users'> | undefined
 
-        // If user is not authenticated and has local storage items, sync them to Convex
+        // If user is not authenticated and has guest cart items, sync them to Convex
         if (!isAuthenticated) {
-          const localStorageItems = getLocalStorageCartItems()
-          if (localStorageItems.length > 0) {
-            // Create a temporary cart in Convex with local storage items
+          const guestCartItems = await getGuestCartItems()
+          if (guestCartItems.length > 0) {
+            // Create a temporary cart in Convex with guest cart items
             let tempCartId: Id<'carts'> | null = null
-            for (const item of localStorageItems) {
+            for (const item of guestCartItems) {
               if (!tempCartId) {
                 // Create cart with first item
                 tempCartId = await addToCartMutation({
@@ -147,14 +144,14 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
             }
             if (tempCartId) {
               cartIdToUse = tempCartId
-              // Clear local storage after successful sync
-              clearLocalStorageCart()
+              // Clear guest cart after successful sync
+              await clearGuestCart()
             } else {
-              throw new Error('Failed to create cart from local storage items')
+              throw new Error('Failed to create cart from guest cart items')
             }
           } else {
             // This shouldn't happen as cart validation should catch empty carts
-            throw new Error('No items in local storage cart')
+            throw new Error('No items in guest cart')
           }
         } else if (isAuthenticated && userId) {
           userIdToUse = userId

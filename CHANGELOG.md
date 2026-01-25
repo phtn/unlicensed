@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.4
+
+### Patch Changes
+
+- removed dated cookies lib
+
 ## 0.27.3
 
 ### Patch Changes
