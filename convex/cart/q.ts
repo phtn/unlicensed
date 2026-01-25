@@ -1,5 +1,6 @@
 import {v} from 'convex/values'
 import {query} from '../_generated/server'
+import {safeGet} from '../utils/id_validation'
 
 export const getCart = query({
   args: {
@@ -26,9 +27,10 @@ export const getCart = query({
     }
 
     // Fetch product details for each cart item
+    // Validate productId from database before using in get()
     const itemsWithProducts = await Promise.all(
       cart.items.map(async (item) => {
-        const product = await ctx.db.get(item.productId)
+        const product = await safeGet(ctx.db, 'products', item.productId)
         if (!product) {
           return null
         }

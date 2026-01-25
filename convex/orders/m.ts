@@ -3,6 +3,7 @@ import {internal} from '../_generated/api'
 import {mutation} from '../_generated/server'
 import {addressSchema} from '../users/d'
 import {orderStatusSchema, paymentSchema, shippingSchema} from './d'
+import {safeGet} from '../utils/id_validation'
 
 /**
  * Create a new order from a cart
@@ -46,9 +47,10 @@ export const createOrder = mutation({
     }
 
     // Build order items with product snapshots
+    // Validate productId from database before using in get()
     const orderItems = await Promise.all(
       cart.items.map(async (cartItem) => {
-        const product = await ctx.db.get(cartItem.productId)
+        const product = await safeGet(ctx.db, 'products', cartItem.productId)
         if (!product) {
           throw new Error(`Product ${cartItem.productId} not found`)
         }

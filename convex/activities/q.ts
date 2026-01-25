@@ -2,6 +2,7 @@ import {v} from 'convex/values'
 import {Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
 import {activityTypeSchema} from './d'
+import {safeGet} from '../utils/id_validation'
 
 /**
  * Get all activities (for admin dashboard)
@@ -105,10 +106,11 @@ export const getRecentActivities = query({
     }
 
     // Fetch user data for activities that have userId
+    // Validate userId from database before using in get()
     const activitiesWithUsers = await Promise.all(
       activities.map(async (activity) => {
         if (activity.userId) {
-          const user = await ctx.db.get(activity.userId)
+          const user = await safeGet(ctx.db, 'users', activity.userId)
           return {
             ...activity,
             user: user
@@ -159,7 +161,8 @@ export const getRecentActivities = query({
         const activityViews = viewsByActivity.get(activity._id as string) || []
         const viewers = await Promise.all(
           activityViews.map(async (view) => {
-            const user = await ctx.db.get(view.userId)
+            // Validate userId from database before using in get()
+            const user = await safeGet(ctx.db, 'users', view.userId)
             if (!user) return null
             return {
               userId: view.userId,

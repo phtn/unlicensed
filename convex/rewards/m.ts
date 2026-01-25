@@ -5,6 +5,7 @@ import {
   calculatePointsEarned,
   getDaysSinceLastPayment,
 } from './utils'
+import {safeGet} from '../utils/id_validation'
 
 /**
  * Create a new reward tier (admin only)
@@ -362,8 +363,9 @@ export const assignTierToUser = mutation({
       return rewardsId
     }
     
+    // Validate currentTierId from database before using in get()
     const currentTier = userRewards.currentTierId
-      ? await ctx.db.get(userRewards.currentTierId)
+      ? await safeGet(ctx.db, 'rewardTiers', userRewards.currentTierId)
       : null
     const wasUpgrade =
       !userRewards.currentTierId ||
@@ -607,9 +609,10 @@ export const awardPointsFromOrder = internalMutation({
     }
 
     // Filter order items to only include eligible products
+    // Validate productId from database before using in get()
     const eligibleItems = await Promise.all(
       order.items.map(async (item) => {
-        const product = await ctx.db.get(item.productId)
+        const product = await safeGet(ctx.db, 'products', item.productId)
         // Product is eligible if eligibleForRewards is not explicitly false
         const isEligible = product?.eligibleForRewards !== false
         return { item, isEligible }

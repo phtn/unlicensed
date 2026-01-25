@@ -4,6 +4,7 @@ import {
   calculateRecencyMultiplier,
   getDaysSinceLastPayment,
 } from './utils'
+import {safeGet} from '../utils/id_validation'
 
 /**
  * Get all reward tiers (active only by default)
@@ -70,8 +71,9 @@ export const getUserRewards = query({
     }
     
     // Get current tier details
+    // Validate currentTierId from database before using in get()
     const currentTier = userRewards.currentTierId
-      ? await ctx.db.get(userRewards.currentTierId)
+      ? await safeGet(ctx.db, 'rewardTiers', userRewards.currentTierId)
       : null
     
     // Get next tier (if applicable)
@@ -152,7 +154,8 @@ export const getUserTierBenefits = query({
       return null
     }
     
-    const tier = await ctx.db.get(userRewards.currentTierId)
+    // Validate currentTierId from database before using in get()
+    const tier = await safeGet(ctx.db, 'rewardTiers', userRewards.currentTierId)
     if (!tier || !tier.active) {
       // Check if user has free shipping override even without active tier
       if (userRewards.freeShippingOverride === true) {
@@ -267,7 +270,8 @@ export const calculateDiscount = query({
       return 0
     }
     
-    const tier = await ctx.db.get(userRewards.currentTierId)
+    // Validate currentTierId from database before using in get()
+    const tier = await safeGet(ctx.db, 'rewardTiers', userRewards.currentTierId)
     if (!tier || !tier.active) {
       return 0
     }
@@ -309,7 +313,8 @@ export const getUserFreeShipping = query({
     
     // Check tier-based free shipping
     if (userRewards.currentTierId) {
-      const tier = await ctx.db.get(userRewards.currentTierId)
+      // Validate currentTierId from database before using in get()
+      const tier = await safeGet(ctx.db, 'rewardTiers', userRewards.currentTierId)
       if (tier && tier.active && tier.freeShipping) {
         return true
       }

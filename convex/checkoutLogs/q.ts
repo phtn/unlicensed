@@ -1,5 +1,6 @@
 import {v} from 'convex/values'
 import {query} from '../_generated/server'
+import {safeGet} from '../utils/id_validation'
 
 /**
  * Get checkout logs with pagination and filters
@@ -107,10 +108,15 @@ export const getCheckoutLogs = query({
     const results = hasMore ? filteredLogs.slice(0, limit) : filteredLogs
 
     // Fetch related data
+    // Validate userId and orderId from database before using in get()
     const logsWithRelations = await Promise.all(
       results.map(async (log) => {
-        const user = log.userId ? await ctx.db.get(log.userId) : null
-        const order = log.orderId ? await ctx.db.get(log.orderId) : null
+        const user = log.userId
+          ? await safeGet(ctx.db, 'users', log.userId)
+          : null
+        const order = log.orderId
+          ? await safeGet(ctx.db, 'orders', log.orderId)
+          : null
 
         return {
           ...log,
@@ -292,8 +298,11 @@ export const getCheckoutLogById = query({
     }
 
     // Fetch related data
-    const user = log.userId ? await ctx.db.get(log.userId) : null
-    const order = log.orderId ? await ctx.db.get(log.orderId) : null
+    // Validate userId and orderId from database before using in get()
+    const user = log.userId ? await safeGet(ctx.db, 'users', log.userId) : null
+    const order = log.orderId
+      ? await safeGet(ctx.db, 'orders', log.orderId)
+      : null
 
     return {
       ...log,

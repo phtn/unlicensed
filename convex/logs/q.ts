@@ -1,5 +1,6 @@
 import {v} from 'convex/values'
 import {query} from '../_generated/server'
+import {safeGet} from '../utils/id_validation'
 
 /**
  * Get logs with pagination
@@ -66,10 +67,11 @@ export const getLogs = query({
     const results = hasMore ? filteredLogs.slice(0, limit) : filteredLogs
 
     // Fetch user data for logs that have userId
+    // Validate userId from database before using in get()
     const logsWithUsers = await Promise.all(
       results.map(async (log) => {
         if (log.userId) {
-          const user = await ctx.db.get(log.userId)
+          const user = await safeGet(ctx.db, 'users', log.userId)
           return {
             ...log,
             user: user

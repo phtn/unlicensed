@@ -1,6 +1,7 @@
 import {v} from 'convex/values'
 import {Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
+import {safeGet} from '../utils/id_validation'
 
 export const listProducts = query({
   args: {
@@ -58,7 +59,8 @@ export const getProductBySlug = query({
       return null
     }
 
-    const category = await ctx.db.get(product.categoryId)
+    // Validate categoryId from database before using in get()
+    const category = await safeGet(ctx.db, 'categories', product.categoryId)
     const related = await ctx.db
       .query('products')
       .withIndex('by_category', (q) =>

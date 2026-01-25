@@ -65,6 +65,7 @@ import type * as uploads from "../uploads.js";
 import type * as users_d from "../users/d.js";
 import type * as users_m from "../users/m.js";
 import type * as users_q from "../users/q.js";
+import type * as utils_id_validation from "../utils/id_validation.js";
 
 import type {
   ApiFromModules,
@@ -130,6 +131,7 @@ declare const fullApi: ApiFromModules<{
   "users/d": typeof users_d;
   "users/m": typeof users_m;
   "users/q": typeof users_q;
+  "utils/id_validation": typeof utils_id_validation;
 }>;
 
 /**
