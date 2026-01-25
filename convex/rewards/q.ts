@@ -117,8 +117,7 @@ export const getUserDiscount = query({
     if (!userRewards || !userRewards.currentTierId) {
       return 0
     }
-    
-    const tier = await ctx.db.get(userRewards.currentTierId)
+    const tier = await safeGet(ctx.db, 'rewardTiers', userRewards.currentTierId)
     if (!tier || !tier.active) {
       return 0
     }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.3
+
+### Patch Changes
+
+- updated sql vuln
+
 ## 0.27.2
 
 ### Patch Changes

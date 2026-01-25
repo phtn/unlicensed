@@ -1,6 +1,7 @@
 import {v} from 'convex/values'
 import {mutation} from '../_generated/server'
 import {paygateSettingsSchema, StatConfig, statConfigSchema} from './d'
+import {safeGet} from '../utils/id_validation'
 
 const DEFAULT_STAT_CONFIGS: Array<StatConfig> = [
   {id: 'salesToday', label: 'Sales Today', visible: true, order: 0},
@@ -85,7 +86,7 @@ export const getOrCreateAdminSettings = mutation({
       await ctx.db.patch(legacySettings._id, {
         identifier: 'statConfigs',
       })
-      return await ctx.db.get(legacySettings._id)
+      return await safeGet(ctx.db, 'adminSettings', legacySettings._id)
     }
 
     // Create new settings
@@ -96,7 +97,7 @@ export const getOrCreateAdminSettings = mutation({
       createdAt: Date.now(),
       createdBy: uid,
     })
-    return await ctx.db.get(settingsId)
+    return await safeGet(ctx.db, 'adminSettings', settingsId)
   },
 })
 
@@ -122,7 +123,7 @@ export const updateStatVisibility = mutation({
         await ctx.db.patch(legacySettings._id, {
           identifier: 'statConfigs',
         })
-        settings = await ctx.db.get(legacySettings._id)
+        settings = await safeGet(ctx.db, 'adminSettings', legacySettings._id)
       } else {
         // Create new settings
         const updatedConfigs = DEFAULT_STAT_CONFIGS.map((config) =>
@@ -134,7 +135,7 @@ export const updateStatVisibility = mutation({
           updatedAt: Date.now(),
           createdAt: Date.now(),
         })
-        settings = await ctx.db.get(settingsId)
+        settings = await safeGet(ctx.db, 'adminSettings', settingsId)
       }
     }
 
@@ -182,7 +183,7 @@ export const updateStatOrder = mutation({
         await ctx.db.patch(legacySettings._id, {
           identifier: 'statConfigs',
         })
-        settings = await ctx.db.get(legacySettings._id)
+        settings = await safeGet(ctx.db, 'adminSettings', legacySettings._id)
       } else {
         // Create new settings
         const settingsId = await ctx.db.insert('adminSettings', {
@@ -191,7 +192,7 @@ export const updateStatOrder = mutation({
           updatedAt: Date.now(),
           createdAt: Date.now(),
         })
-        settings = await ctx.db.get(settingsId)
+        settings = await safeGet(ctx.db, 'adminSettings', settingsId)
       }
     }
 
@@ -226,7 +227,7 @@ export const updatePayGateSettings = mutation({
         value: {paygate: args.paygate},
         updatedAt: Date.now(),
       })
-      settings = await ctx.db.get(settingsId)
+      settings = await safeGet(ctx.db, 'adminSettings', settingsId)
     } else {
       await ctx.db.patch(settings._id, {
         value: {

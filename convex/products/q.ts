@@ -39,7 +39,7 @@ export const getProductsByIds = query({
   },
   handler: async (ctx, args) => {
     const products = await Promise.all(
-      args.productIds.map((id) => ctx.db.get(id)),
+      args.productIds.map((id) => safeGet(ctx.db, 'products', id)),
     )
     return products.filter((p): p is NonNullable<typeof p> => p !== null)
   },
@@ -236,8 +236,9 @@ export const getPreviouslyBoughtProducts = query({
     const limit = args.limit ?? 10
     const uniqueIds = Array.from(productIds).slice(0, limit)
 
-    const products = await Promise.all(uniqueIds.map((id) => ctx.db.get(id)))
-
+    const products = await Promise.all(
+      uniqueIds.map((id) => safeGet(ctx.db, 'products', id)),
+    )
     return products.filter((p): p is NonNullable<typeof p> => p !== null)
   },
 })

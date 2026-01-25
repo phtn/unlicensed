@@ -271,7 +271,7 @@ export const updateUserRewardsFromOrder = mutation({
         createdAt: now,
         updatedAt: now,
       })
-      userRewards = await ctx.db.get(rewardsId)
+      userRewards = await safeGet(ctx.db, 'userRewards', rewardsId)
       if (!userRewards) throw new Error('Failed to create user rewards')
     } else {
       // Update existing rewards
@@ -281,7 +281,7 @@ export const updateUserRewardsFromOrder = mutation({
         totalOrders: userRewards.totalOrders + 1,
         updatedAt: Date.now(),
       })
-      userRewards = await ctx.db.get(userRewards._id)
+      userRewards = await safeGet(ctx.db, 'userRewards', userRewards._id)
       if (!userRewards) throw new Error('Failed to update user rewards')
     }
     
@@ -604,7 +604,7 @@ export const awardPointsFromOrder = internalMutation({
         createdAt: now,
         updatedAt: now,
       })
-      userRewards = await ctx.db.get(rewardsId)
+      userRewards = await safeGet(ctx.db, 'userRewards', rewardsId)
       if (!userRewards) throw new Error('Failed to create user rewards')
     }
 
