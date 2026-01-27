@@ -6,20 +6,20 @@ import {Input} from '@heroui/react'
 import {ChangeEvent, useCallback} from 'react'
 import {FormData, FormErrors} from '../types'
 
-interface ContactFormProps {
+interface CashAppFormProps {
   formData: FormData
   formErrors: FormErrors
   onInputChange: (field: keyof FormData, value: string) => void
 }
 
-export function ContactForm({
+export function CashAppForm({
   formData,
   formErrors,
   onInputChange,
-}: ContactFormProps) {
-  const handleEmailChange = useCallback(
+}: CashAppFormProps) {
+  const handleUsernameChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      onInputChange('contactEmail', e.target.value)
+      onInputChange('cashAppUsername', e.target.value)
     },
     [onInputChange],
   )
@@ -34,31 +34,21 @@ export function ContactForm({
   return (
     <div className='space-y-2'>
       <h3 className='flex items-center space-x-1.5 text-lg font-semibold my-3 tracking-tighter'>
-        <Icon name='email' className='size-6 opacity-80' />
-        <span className='whitespace-nowrap'>Contact Information</span>
+        <Icon name='cashapp' className='size-6 opacity-80' />
+        <span className='whitespace-nowrap'>CashApp Info</span>
       </h3>
       <div className='space-y-1'>
         <Input
-          label='Email'
-          type='email'
+          label='CashApp Username'
+          type='text'
           radius='sm'
           classNames={commonInputClassNames}
-          value={formData.contactEmail}
-          onChange={handleEmailChange}
+          value={formData.cashAppUsername}
+          onChange={handleUsernameChange}
           isRequired
           spellCheck='false'
-          isInvalid={!!formErrors.contactEmail}
-          errorMessage={formErrors.contactEmail}
-          autoFocus={false}
-        />
-        <Input
-          label='Phone'
-          radius='sm'
-          type='tel'
-          spellCheck='false'
-          classNames={commonInputClassNames}
-          value={formData.contactPhone}
-          onChange={handlePhoneChange}
+          isInvalid={!!formErrors.cashAppUsername}
+          errorMessage={formErrors.cashAppUsername}
           autoFocus={false}
         />
       </div>

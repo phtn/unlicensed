@@ -12,6 +12,7 @@ import {
 import {useEffect} from 'react'
 import {FormData, FormErrors} from '../types'
 import {BillingForm} from './billing-form'
+import {CashAppForm} from './cashapp-form'
 import {ContactForm} from './contact-form'
 import {OrderStatusMessages} from './order-status-messages'
 import {ShippingForm} from './shipping-form'
@@ -134,7 +135,7 @@ export function CheckoutModal({
         {(onClose) => (
           <>
             <ModalHeader className='flex flex-col justify-center gap-1 text-lg font-semibold tracking-tight bg-foreground dark:bg-foreground/60 text-background h-12 mb-1'>
-              Customer Shipping and Billing
+              Shipping and Billing
             </ModalHeader>
             <ModalBody>
               <OrderStatusMessages
@@ -149,7 +150,13 @@ export function CheckoutModal({
                   formErrors={formErrors}
                   onInputChange={onInputChange}
                 />
-
+                {formData.paymentMethod === 'cashapp' && (
+                  <CashAppForm
+                    formData={formData}
+                    formErrors={formErrors}
+                    onInputChange={onInputChange}
+                  />
+                )}
                 <ShippingForm
                   formData={formData}
                   formErrors={formErrors}
@@ -163,20 +170,20 @@ export function CheckoutModal({
                 />
               </div>
             </ModalBody>
-            <ModalFooter>
+            <ModalFooter className='w-full h-32 flex items-center'>
               <Button
                 size='lg'
                 variant='light'
                 onPress={onClose}
-                className='px-8'
+                className='flex-1 px-12'
+                fullWidth
                 isDisabled={isLoading || isPending}>
                 Cancel
               </Button>
               <Button
                 size='lg'
-                color='primary'
-                variant='shadow'
-                className='bg-featured font-medium dark:text-background'
+                className='bg-white font-polysans dark:text-dark-gray'
+                fullWidth
                 onPress={onPlaceOrder}
                 endContent={
                   <Icon

@@ -4,8 +4,7 @@ import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody, Divider} from '@heroui/react'
-import {memo} from 'react'
-import {ViewTransition} from 'react'
+import {memo, ViewTransition} from 'react'
 import {PointsBalance} from '../../rewards-summary'
 import {FormData} from '../types'
 import {PaymentMethod} from './payment-method'
@@ -59,24 +58,24 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
           <Divider />
           <ViewTransition>
             <div className='space-y-2 font-sans'>
-              <div className='flex justify-between text-sm'>
-                <span className='opacity-80 font-brk'>Subtotal</span>
-                <span className='font-space'>
-                  <span className='opacity-60'>$</span>
+              <div className='flex justify-between font-okxs text-sm'>
+                <span className=''>Subtotal</span>
+                <span className=''>
+                  <span className='opacity-80'>$</span>
                   {formatPrice(subtotal)}
                 </span>
               </div>
-              <div className='flex justify-between text-sm'>
-                <span className='opacity-80 font-brk'>Tax</span>
+              <div className='flex justify-between font-okxs text-sm'>
+                <span className=''>Tax</span>
 
-                <span className='font-space'>
-                  <span className='opacity-60'>$</span>
+                <span className=''>
+                  <span className='opacity-80'>$</span>
                   {formatPrice(tax)}
                 </span>
               </div>
-              <div className='flex justify-between text-sm'>
-                <span className='opacity-80 font-brk'>Shipping</span>
-                <span className='font-space'>
+              <div className='flex justify-between font-okxs text-sm'>
+                <span className=''>Shipping</span>
+                <span className=''>
                   {shipping === 0 ? (
                     <span className='bg-limited px-1.5 uppercase rounded-sm font-bone text-dark-gray border border-dark-gray'>
                       Free
@@ -89,18 +88,16 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   )}
                 </span>
               </div>
-              <div className='flex justify-between text-sm dark:purple-300/10 rounded-md'>
-                <span className='text-foreground font-brk'>Reward Points</span>
-                <span className='font-space'>
-                  ${pointsBalance?.availablePoints ?? 0}
-                </span>
+              <div className='flex justify-between font-okxs text-sm dark:purple-300/10 rounded-md'>
+                <span className='text-foreground'>Reward Points</span>
+                <span className=''>${pointsBalance?.availablePoints ?? 0}</span>
               </div>
             </div>
           </ViewTransition>
           <Divider />
-          <div className='flex justify-between font-semibold font-space'>
-            <span className='font-brk'>Total</span>
-            <span className='font-space'>${formatPrice(total)}</span>
+          <div className='flex justify-between font-medium font-okxs'>
+            <span className=''>Total</span>
+            <span className='font-medium'>${formatPrice(total)}</span>
           </div>
 
           {/* Payment Method Selection */}

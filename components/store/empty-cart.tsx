@@ -24,15 +24,16 @@ export const EmptyCart = ({onPress}: EmptyCartProps) => {
   return (
     <div className='w-full md:max-w-2xl'>
       <div className='text-center space-y-4'>
+        <p className='font-polysans text-foreground/70'>Your cart is empty.</p>
         <Button
           size='lg'
           as={Link}
           color='primary'
-          href='/category'
+          href='/lobby/category'
           prefetch
           variant='shadow'
           onPress={onPress}
-          className='hidden font-polysans font-semibold bg-brand shadow-brand/50'>
+          className='font-polysans font-semibold bg-brand shadow-brand/50'>
           Browse Products
         </Button>
       </div>

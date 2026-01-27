@@ -1,6 +1,9 @@
 'use client'
 
-import {clearGuestCart, getGuestCartItems} from '@/app/actions'
+import {
+  clearLocalStorageCart,
+  getLocalStorageCartItems,
+} from '@/lib/localStorageCart'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {PaymentMethod} from '@/convex/orders/d'
@@ -18,6 +21,7 @@ export interface PlaceOrderParams {
   contactPhone?: string
   paymentMethod: PaymentMethod
   customerNotes?: string
+  cashAppUsername?: string
   // Optional: override calculated totals (useful for discounts, etc.)
   subtotalCents?: number
   taxCents?: number
@@ -117,15 +121,14 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
         let cartIdToUse: Id<'carts'> | undefined
         let userIdToUse: Id<'users'> | undefined
 
-        // If user is not authenticated and has guest cart items, sync them to Convex
+        // If user is not authenticated and has guest cart items (localStorage), sync them to Convex
         if (!isAuthenticated) {
-          const guestCartItems = await getGuestCartItems()
+          const guestCartItems = getLocalStorageCartItems()
           if (guestCartItems.length > 0) {
             // Create a temporary cart in Convex with guest cart items
             let tempCartId: Id<'carts'> | null = null
             for (const item of guestCartItems) {
               if (!tempCartId) {
-                // Create cart with first item
                 tempCartId = await addToCartMutation({
                   userId: null,
                   productId: item.productId,
@@ -133,7 +136,6 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                   denomination: item.denomination,
                 })
               } else {
-                // Add remaining items to the cart
                 await addToCartMutation({
                   cartId: tempCartId,
                   productId: item.productId,
@@ -144,13 +146,11 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
             }
             if (tempCartId) {
               cartIdToUse = tempCartId
-              // Clear guest cart after successful sync
-              await clearGuestCart()
+              clearLocalStorageCart()
             } else {
               throw new Error('Failed to create cart from guest cart items')
             }
           } else {
-            // This shouldn't happen as cart validation should catch empty carts
             throw new Error('No items in guest cart')
           }
         } else if (isAuthenticated && userId) {
@@ -283,6 +283,22 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 name: convexUser.name,
                 firebaseId: user.uid,
                 photoUrl: convexUser.photoUrl,
+              })
+            }
+
+            // Update cashAppUsername if payment method is cashapp and username is provided
+            if (
+              params.paymentMethod === 'cashapp' &&
+              params.cashAppUsername &&
+              params.cashAppUsername.trim() &&
+              convexUser.cashAppUsername !== params.cashAppUsername.trim()
+            ) {
+              await createOrUpdateUserMutation({
+                email: convexUser.email,
+                name: convexUser.name,
+                firebaseId: user.uid,
+                photoUrl: convexUser.photoUrl,
+                cashAppUsername: params.cashAppUsername.trim(),
               })
             }
           } catch (userUpdateError) {

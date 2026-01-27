@@ -185,7 +185,7 @@ export function ErrorComp({error, reset, name}: ErrorProps) {
               </span>
               <code
                 className={cn(
-                  'px-2 py-1 rounded-md text-xs font-mono',
+                  'px-2 py-1 rounded-md text-xs font-brk',
                   'bg-neutral-100 dark:bg-zinc-950',
                   'text-neutral-700 dark:text-zinc-300',
                 )}>
@@ -194,7 +194,7 @@ export function ErrorComp({error, reset, name}: ErrorProps) {
             </div>
 
             {/* Actions */}
-            <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-3'>
+            <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-4'>
               <button
                 type='button'
                 onClick={handleReset}
@@ -233,7 +233,7 @@ export function ErrorComp({error, reset, name}: ErrorProps) {
                   </>
                 ) : (
                   <>
-                    <Icon name='refresh' className='size-4' />
+                    <Icon name='refresh' className='size-5' />
                     <span>Try again</span>
                   </>
                 )}
@@ -247,8 +247,8 @@ export function ErrorComp({error, reset, name}: ErrorProps) {
                   'h-11 px-5 rounded-xl',
                   'text-sm font-medium',
                   'bg-transparent',
-                  'text-neutral-600 dark:text-neutral-400',
-                  'hover:bg-neutral-100 dark:hover:bg-neutral-800',
+                  'text-zinc-600 dark:text-zinc-400',
+                  'hover:bg-zinc-100 dark:hover:bg-zinc-800',
                   'active:scale-[0.98] transition-all duration-150',
                 )}>
                 <Icon

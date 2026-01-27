@@ -136,7 +136,7 @@ export const ProductDetailContent = ({
   const isAdding = optimisticAdding || isPending
 
   return (
-    <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-10 sm:py-8 lg:py-20 overflow-x-hidden w-full'>
+    <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-12 sm:py-8 lg:py-20 overflow-x-hidden w-full'>
       <section className='md:mx-auto lg:max-w-7xl max-w-screen p-2 sm:pt-8 lg:pt-10 sm:px-6 lg:px-0'>
         <Breadcrumbs
           aria-label='Product breadcrumb'
@@ -145,8 +145,8 @@ export const ProductDetailContent = ({
             item: 'text-foreground/85 capitalize',
             separator: 'opacity-80',
           }}>
-          <BreadcrumbItem href='/lobby'>
-            <Icon name='home' className='size-3 sm:size-4 opacity-60' />
+          <BreadcrumbItem href='/lobby/category'>
+            <Icon name='home' className='size-4 sm:size-4 opacity-60' />
           </BreadcrumbItem>
           <BreadcrumbItem href={`/lobby/category/${product.categorySlug}`}>
             {category?.name ?? product.categorySlug}
@@ -337,7 +337,7 @@ export const ProductDetailContent = ({
 
       <QuickScroll
         href='#related-selections'
-        className='border-b-[0.33px] border-foreground/40 border-dashed bg-transparent'
+        className='border-b-[0.33px] border-foreground/20 border-dotted bg-transparent'
       />
 
       {related.length > 0 ? <RelatedProducts products={related} /> : null}

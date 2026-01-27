@@ -194,6 +194,10 @@ export function Checkout({
           contactEmail: userEmail,
           contactPhone: userPhone,
           paymentMethod: formData.paymentMethod,
+          cashAppUsername:
+            formData.paymentMethod === 'cashapp'
+              ? formData.cashAppUsername
+              : undefined,
           subtotalCents: subtotal,
           taxCents: tax,
           shippingCents: shipping,
@@ -256,6 +260,10 @@ export function Checkout({
         contactEmail: formData.contactEmail,
         contactPhone: formData.contactPhone || undefined,
         paymentMethod: formData.paymentMethod,
+        cashAppUsername:
+          formData.paymentMethod === 'cashapp'
+            ? formData.cashAppUsername
+            : undefined,
         subtotalCents: subtotal,
         taxCents: tax,
         shippingCents: shipping,

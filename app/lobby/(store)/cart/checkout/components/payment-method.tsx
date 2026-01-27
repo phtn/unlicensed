@@ -46,7 +46,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
       name: 'CashApp',
       label: 'CashApp',
       icon: 'cashapp',
-      iconStyle: 'text-[#16ee37]',
+      iconStyle: 'text-cashapp',
       description: 'CashApp Account',
       status: 'active',
       tag: 'Verification Required',

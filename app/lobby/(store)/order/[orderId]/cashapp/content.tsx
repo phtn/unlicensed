@@ -48,12 +48,16 @@ export const Content = () => {
         <ArcLineItems data={data ?? []} />
 
         <div className='flex items-center space-x-2 text-base'>
-          <Icon name='info' className='size-4' />
+          <Icon name='info' className='size-5' />
           <ArcMessage>
-            <div className='flex items-center space-x-2 text-base'>
-              <span>One of our associates will be in touch via in-app </span>
-              <span className='font-semibold'>chat</span>
-              <span> messaging.</span>
+            <div className='flex items-center text-left space-x-2 text-base'>
+              <span>
+                One of our associates will be in touch via our in-app{' '}
+                <span className='font-medium underline decoration-dotted'>
+                  chat messaging
+                </span>
+                .
+              </span>
             </div>
           </ArcMessage>
         </div>

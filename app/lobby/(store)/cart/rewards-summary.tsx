@@ -50,7 +50,7 @@ export const RewardsSummary = memo(function RewardsSummary({
                 )}
             </div>
 
-            <span className='text-4xl text-purple-700 dark:text-purple-400 font-semibold font-space'>
+            <span className='text-4xl text-purple-700 dark:text-purple-100 font-semibold font-okxs'>
               <span className='text-2xl'>x</span>
               {nextVisitMultiplier?.multiplier}
             </span>
@@ -64,14 +64,14 @@ export const RewardsSummary = memo(function RewardsSummary({
               <div className='text-lg flex items-center gap-2'>
                 <Icon
                   name='star-fill'
-                  className='size-6 text-purple-700 dark:text-purple-400'
+                  className='size-6 text-purple-700 dark:text-purple-100'
                 />
                 <span className='text-foreground tracking-tighter'>
                   Estimated Points
                 </span>
               </div>
               <div className='flex items-center gap-1'>
-                <span className='font-bold tracking-tight font-space text-purple-700 dark:text-purple-400 text-lg'>
+                <span className='font-bold tracking-tight font-okxs text-purple-700 dark:text-purple-100 text-lg'>
                   {(estimatedPoints / 33).toFixed(0)}
                 </span>
                 <span className='text-sm font-polysans'>pts</span>

@@ -16,6 +16,7 @@ export const createOrUpdateUser = mutation({
     dateOfBirth: v.optional(v.string()),
     gender: v.optional(v.union(v.literal('male'), v.literal('female'), v.literal('other'), v.literal('prefer-not-to-say'))),
     preferences: v.optional(preferencesSchema),
+    cashAppUsername: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const now = Date.now()
@@ -27,19 +28,36 @@ export const createOrUpdateUser = mutation({
       .unique()
 
     if (existing) {
-      // Update existing user
-      await ctx.db.patch(existing._id, {
+      // Update existing user - only patch fields that are provided (not undefined)
+      const updates: {
+        email: string
+        name: string
+        photoUrl?: string
+        contact?: typeof args.contact
+        addresses?: typeof args.addresses
+        socialMedia?: typeof args.socialMedia
+        dateOfBirth?: string
+        gender?: typeof args.gender
+        preferences?: typeof args.preferences
+        cashAppUsername?: string
+        updatedAt: number
+      } = {
         email: args.email,
         name: args.name,
-        photoUrl: args.photoUrl,
-        contact: args.contact,
-        addresses: args.addresses,
-        socialMedia: args.socialMedia,
-        dateOfBirth: args.dateOfBirth,
-        gender: args.gender,
-        preferences: args.preferences,
         updatedAt: now,
-      })
+      }
+
+      if (args.photoUrl !== undefined) updates.photoUrl = args.photoUrl
+      if (args.contact !== undefined) updates.contact = args.contact
+      if (args.addresses !== undefined) updates.addresses = args.addresses
+      if (args.socialMedia !== undefined) updates.socialMedia = args.socialMedia
+      if (args.dateOfBirth !== undefined) updates.dateOfBirth = args.dateOfBirth
+      if (args.gender !== undefined) updates.gender = args.gender
+      if (args.preferences !== undefined) updates.preferences = args.preferences
+      if (args.cashAppUsername !== undefined)
+        updates.cashAppUsername = args.cashAppUsername
+
+      await ctx.db.patch(existing._id, updates)
       return existing._id
     }
 
@@ -55,6 +73,7 @@ export const createOrUpdateUser = mutation({
       dateOfBirth: args.dateOfBirth,
       gender: args.gender,
       preferences: args.preferences,
+      cashAppUsername: args.cashAppUsername,
       createdAt: now,
       updatedAt: now,
     })

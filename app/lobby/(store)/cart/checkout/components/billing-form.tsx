@@ -1,5 +1,6 @@
 'use client'
 
+import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {Checkbox, Input} from '@heroui/react'
 import {useCallback, useMemo} from 'react'
 import {FormData, FormErrors} from '../types'
@@ -38,20 +39,27 @@ export function BillingForm({
     <>
       <div>
         <Checkbox
+          radius='sm'
+          color='primary'
           isSelected={formData.useSameBilling}
+          classNames={{hiddenInput: 'bg-black'}}
           onValueChange={handleCheckboxChange}>
-          <span className='text-sm'>Use same address for billing</span>
+          <span className='text-sm font-okxs'>
+            Use same address for billing
+          </span>
         </Checkbox>
       </div>
       {showBillingFields && (
         <div>
           <h3 className='text-lg font-semibold mb-4'>Billing Address</h3>
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid grid-cols-2 gap-2'>
             <Input
               label='First Name'
               value={formData.billingFirstName}
               onChange={handleChange('billingFirstName')}
               isRequired
+              spellCheck='false'
+              classNames={commonInputClassNames}
               isInvalid={!!formErrors.billingFirstName}
               errorMessage={formErrors.billingFirstName}
               autoFocus={false}
@@ -61,17 +69,21 @@ export function BillingForm({
               value={formData.billingLastName}
               onChange={handleChange('billingLastName')}
               isRequired
+              spellCheck='false'
+              classNames={commonInputClassNames}
               isInvalid={!!formErrors.billingLastName}
               errorMessage={formErrors.billingLastName}
               autoFocus={false}
             />
           </div>
-          <div className='mt-4 space-y-4'>
+          <div className='mt-2 space-y-4'>
             <Input
               label='Address Line 1'
               value={formData.billingAddressLine1}
               onChange={handleChange('billingAddressLine1')}
               isRequired
+              spellCheck='false'
+              classNames={commonInputClassNames}
               isInvalid={!!formErrors.billingAddressLine1}
               errorMessage={formErrors.billingAddressLine1}
               autoFocus={false}
@@ -80,6 +92,8 @@ export function BillingForm({
               label='Address Line 2 (Optional)'
               value={formData.billingAddressLine2}
               onChange={handleChange('billingAddressLine2')}
+              spellCheck='false'
+              classNames={commonInputClassNames}
               autoFocus={false}
             />
             <div className='grid grid-cols-3 gap-4'>
@@ -88,6 +102,8 @@ export function BillingForm({
                 value={formData.billingCity}
                 onChange={handleChange('billingCity')}
                 isRequired
+                spellCheck='false'
+                classNames={commonInputClassNames}
                 isInvalid={!!formErrors.billingCity}
                 errorMessage={formErrors.billingCity}
                 autoFocus={false}
@@ -97,6 +113,8 @@ export function BillingForm({
                 value={formData.billingState}
                 onChange={handleChange('billingState')}
                 isRequired
+                spellCheck='false'
+                classNames={commonInputClassNames}
                 isInvalid={!!formErrors.billingState}
                 errorMessage={formErrors.billingState}
                 autoFocus={false}
@@ -106,6 +124,8 @@ export function BillingForm({
                 value={formData.billingZipCode}
                 onChange={handleChange('billingZipCode')}
                 isRequired
+                spellCheck='false'
+                classNames={commonInputClassNames}
                 isInvalid={!!formErrors.billingZipCode}
                 errorMessage={formErrors.billingZipCode}
                 autoFocus={false}

@@ -26,7 +26,7 @@ export const CategoryItem = (item: CategoryItemProps) => {
       // onMouseEnter={item.prefetchFn(`/lobby/category/${item.slug}`)}
     >
       <CardBody className='relative overflow-visible p-0'>
-        <div className="absolute w-500 scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
+        <div className="absolute w-500 scale-x-50 top-0 -left-150 inset-0 bg-[url('/svg/noise.svg')] opacity-10 scale-100 pointer-events-none" />
         <div className='h-24 w-full overflow-hidden opacity-10 flex items-center justify-center'>
           <Icon name='rapid-fire-logo' className='size-40 animate-pulse' />
         </div>

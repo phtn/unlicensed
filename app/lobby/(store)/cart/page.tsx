@@ -4,6 +4,7 @@ import {AuthModal} from '@/components/auth/auth-modal'
 import {Loader} from '@/components/expermtl/loader'
 import {EmptyCart} from '@/components/store/empty-cart'
 import {api} from '@/convex/_generated/api'
+import {Id} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {usePlaceOrder} from '@/hooks/use-place-order'
@@ -11,18 +12,30 @@ import {cn} from '@/lib/utils'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
-import {useCallback, useEffect, useMemo, useOptimistic, useRef, useState, useTransition} from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useOptimistic,
+  useRef,
+  useState,
+  useTransition,
+} from 'react'
 import {CartItem} from './cart-item'
 import {Checkout} from './checkout'
 import {RecommendedProducts} from './recommended'
 import {RewardsSummary} from './rewards-summary'
-import {Id} from '@/convex/_generated/dataModel'
-import {ProductType} from '@/convex/products/d'
 
 export default function CartPage() {
   const router = useRouter()
-  const {cart, updateItem: baseUpdateItem, removeItem: baseRemoveItem, clear, isLoading, isAuthenticated} =
-    useCart()
+  const {
+    cart,
+    updateItem: baseUpdateItem,
+    removeItem: baseRemoveItem,
+    clear,
+    isLoading,
+    isAuthenticated,
+  } = useCart()
   const {user: firebaseUser} = useAuth()
   const {
     placeOrder,
@@ -58,6 +71,11 @@ export default function CartPage() {
   const defaultBillingAddress = useQuery(
     api.users.q.getDefaultAddress,
     firebaseUser ? {firebaseId: firebaseUser.uid, type: 'billing'} : 'skip',
+  )
+
+  const rawCartDebug = useQuery(
+    api.cart.q.getCartRaw,
+    convexUser?._id ? {userId: convexUser._id} : 'skip',
   )
 
   const userEmail = useMemo(() => {
@@ -125,6 +143,30 @@ export default function CartPage() {
 
   // Use optimistic cart items for display
   const cartItems = optimisticCartItems
+
+  // Log cart data for debugging
+  useEffect(() => {
+    console.log('[Cart Page] Cart Debug:', {
+      cart,
+      cartItems: cartItems.length,
+      serverCartItems: serverCartItems.length,
+      optimisticCartItems: optimisticCartItems.length,
+      isLoading,
+      isAuthenticated,
+      cartItemsDetail: cartItems,
+      serverCartItemsDetail: serverCartItems,
+      rawCart: cart,
+      rawCartDebug,
+    })
+  }, [
+    cart,
+    cartItems,
+    serverCartItems,
+    optimisticCartItems,
+    isLoading,
+    isAuthenticated,
+    rawCartDebug,
+  ])
 
   // Wrap updateItem with optimistic updates
   const updateItem = useCallback(
@@ -265,10 +307,10 @@ export default function CartPage() {
   }
 
   return (
-    <div className='min-h-screen pt-16 sm:pt-10 md:pt-24 lg:pt-28 px-4 sm:px-6 lg:px-8'>
+    <div className='min-h-screen pt-16 sm:pt-10 md:pt-24 lg:pt-28 pb-10 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
         <div className='flex items-center justify-between mb-4'>
-          <h1 className='text-base font-medium font-space space-x-2 tracking-tight'>
+          <h1 className='text-base font-medium font-brk space-x-2 tracking-tight'>
             <span className='opacity-60'>Cart</span>
             <span className='font-light text-sm'>/</span>
             <span>Checkout</span>

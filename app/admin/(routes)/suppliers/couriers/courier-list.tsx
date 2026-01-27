@@ -51,7 +51,10 @@ export const CourierList = ({couriers}: CourierListProps) => {
             <Link
               href={`/admin/suppliers/logistics?tabId=edit&id=${courier._id}`}
               className='text-bold text-sm hover:underline flex items-center space-x-2'>
-              <Icon name={courier.code as IconName} className='size-7' />
+              <Icon
+                name={(courier.code ?? 'truck') as IconName}
+                className='size-7'
+              />
               <span>{courier.name}</span>
             </Link>
           </div>

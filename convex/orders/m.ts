@@ -3,7 +3,6 @@ import {internal} from '../_generated/api'
 import {mutation} from '../_generated/server'
 import {addressSchema} from '../users/d'
 import {orderStatusSchema, paymentSchema, shippingSchema} from './d'
-import {safeGet} from '../utils/id_validation'
 
 /**
  * Create a new order from a cart
@@ -46,11 +45,11 @@ export const createOrder = mutation({
       throw new Error('Cart is empty or not found')
     }
 
-    // Build order items with product snapshots
-    // Validate productId from database before using in get()
+    // Build order items with product snapshots.
+    // Use db.get directly; cart stores Convex product IDs as-is.
     const orderItems = await Promise.all(
       cart.items.map(async (cartItem) => {
-        const product = await safeGet(ctx.db, 'products', cartItem.productId)
+        const product = await ctx.db.get(cartItem.productId)
         if (!product) {
           throw new Error(`Product ${cartItem.productId} not found`)
         }

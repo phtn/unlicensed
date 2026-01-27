@@ -9,12 +9,12 @@ import {
 import {useAppForm, useFieldContext} from './form-context'
 
 export const commonInputClassNames = {
-  label: 'mb-4 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
+  label: 'mb-3 pl-1 opacity-80 tracking-widest uppercase text-xs font-brk',
   input:
-    'text-blue-500 dark:text-white text-base font-semibold placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
+    'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
     'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-lg p-2 outline-none min-h-16 w-full',
-  innerWrapper: 'px-0.5',
+  innerWrapper: 'px-1',
 }
 
 type BaseFieldProps<T> = {

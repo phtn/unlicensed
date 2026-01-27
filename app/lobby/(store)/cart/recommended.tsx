@@ -106,13 +106,13 @@ export const RecommendedProducts = memo(() => {
                   ) : null}
                 </div>
                 <div className='flex-1 min-w-0'>
-                  <h3 className='font-polysans font-medium text-xl truncate'>
+                  <h3 className='font-okxs font-semibold text-xl truncate'>
                     {product.name}
                   </h3>
 
-                  <div className='flex items-center justify-between'>
-                    <p className='text-base mt-1 font-space'>
-                      <span className='opacity-60'>$</span>
+                  <div className='flex font-okxs items-center justify-between'>
+                    <p className='text-base mt-1'>
+                      <span className='opacity-80'>$</span>
                       {formatPrice(product.priceCents)}
                     </p>
 
@@ -137,3 +137,5 @@ export const RecommendedProducts = memo(() => {
     </div>
   )
 })
+
+RecommendedProducts.displayName = 'RecommendedProducts'

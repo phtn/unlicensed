@@ -16,7 +16,13 @@ import {
   ModalHeader,
 } from '@heroui/react'
 import type {ActionCodeSettings} from 'firebase/auth'
-import {ChangeEvent, FormEvent, InputHTMLAttributes, useState} from 'react'
+import {
+  ChangeEvent,
+  FormEvent,
+  InputHTMLAttributes,
+  useMemo,
+  useState,
+} from 'react'
 import {DitherPhoto, ImageDither} from '../paper/dithering'
 
 interface AuthModalProps {
@@ -80,6 +86,7 @@ export const AuthModal = ({
   }
 
   const {on: isEmail, toggle: toggleEmail} = useToggle()
+  const emailLink = useMemo(() => `https://${email.split('@').pop()}`, [email])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} placement='center' size='md'>
@@ -93,7 +100,7 @@ export const AuthModal = ({
             {emailSent ? (
               <a
                 rel='noopener noreferrer'
-                href={`https://${email.split('@').pop()}`}
+                href={emailLink}
                 target='_blank'
                 className='font-polysans font-normal flex items-center'>
                 <span>Check Your Email</span>

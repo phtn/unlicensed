@@ -73,7 +73,7 @@ export const userSchema = v.object({
 
   // Addresses (array to support multiple addresses)
   addresses: v.optional(v.array(addressSchema)),
-  
+
   // Default address references (for quick checkout)
   defaultShippingAddressId: v.optional(v.string()), // ID of default shipping address
   defaultBillingAddressId: v.optional(v.string()), // ID of default billing address
@@ -94,6 +94,7 @@ export const userSchema = v.object({
 
   // Preferences
   preferences: v.optional(preferencesSchema),
+  cashAppUsername: v.optional(v.string()),
 
   // Timestamps
   createdAt: v.optional(v.number()),

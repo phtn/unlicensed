@@ -12,6 +12,7 @@ interface UseOrderFormProps {
   userPhone?: string
   defaultAddress?: AddressType
   defaultBillingAddress?: AddressType
+  cashAppUsername?: string | null
   convexUser?: UserType | null
 }
 
@@ -21,6 +22,7 @@ export function useOrderForm({
   userPhone,
   defaultAddress,
   defaultBillingAddress,
+  cashAppUsername,
   convexUser,
 }: UseOrderFormProps) {
   const [isPending, startTransition] = useTransition()
@@ -33,6 +35,7 @@ export function useOrderForm({
     return {
       contactEmail: userEmail ?? '',
       contactPhone: userPhone ?? defaultAddress?.phone ?? '',
+      cashAppUsername: cashAppUsername ?? '',
       paymentMethod: defaultPaymentMethod,
       // Shipping address - prefer address name, fallback to user's name
       firstName: defaultAddress?.firstName ?? userNameFirst ?? '',

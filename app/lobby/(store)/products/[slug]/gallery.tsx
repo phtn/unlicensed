@@ -68,7 +68,7 @@ export const Gallery = ({
             key={`${src}-${index}`}
             onClick={() => src && handleSelectImage(src)()}
             className={cn(
-              'cursor-pointer select-none relative aspect-square overflow-hidden rounded-md size-full md:size-32',
+              'cursor-pointer select-non portrait:max-h-20 portrait:max-w-20 relative aspect-square overflow-hidden rounded-md size-full md:size-32',
               selectedImage === src
                 ? 'border-foreground/50 ring-2 ring-limited'
                 : 'border-foreground/10 hover:border-foreground/30',
@@ -77,7 +77,7 @@ export const Gallery = ({
               <Image
                 src={src}
                 alt={`${product.name} gallery ${index + 1}`}
-                className='object-cover md:size-20 size-full portrait:aspect-square lg:size-32 aspect-auto'
+                className='object-cover size-20 portrait:aspect-square lg:size-32 aspect-auto'
                 loading='lazy'
               />
             )}

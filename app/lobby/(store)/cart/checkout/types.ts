@@ -49,6 +49,7 @@ export interface FormData {
   billingState: string
   billingZipCode: string
   billingCountry: string
+  cashAppUsername: string
 }
 
 export interface FormErrors {
@@ -67,4 +68,5 @@ export interface FormErrors {
   billingState?: string
   billingZipCode?: string
   billingCountry?: string
+  cashAppUsername?: string
 }

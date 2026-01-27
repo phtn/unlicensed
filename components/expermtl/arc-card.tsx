@@ -105,7 +105,7 @@ interface ArcButtonProps {
 
 const ArcButtonLeft = ({label, fn, href, icon}: ArcButtonProps) => (
   <Button
-    as={fn ? Link : Button}
+    as={fn ? Button : Link}
     size='lg'
     href={fn ? '#' : (href ?? '#')}
     radius='none'

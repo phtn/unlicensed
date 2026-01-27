@@ -1,5 +1,6 @@
 'use client'
 
+import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {Icon} from '@/lib/icons'
 import {Input} from '@heroui/react'
 import {useCallback} from 'react'
@@ -37,6 +38,7 @@ export function ShippingForm({
           value={formData.firstName}
           onChange={handleChange('firstName')}
           isRequired
+          classNames={commonInputClassNames}
           isInvalid={!!formErrors.firstName}
           errorMessage={formErrors.firstName}
           autoFocus={false}
@@ -47,6 +49,7 @@ export function ShippingForm({
           value={formData.lastName}
           onChange={handleChange('lastName')}
           isRequired
+          classNames={commonInputClassNames}
           isInvalid={!!formErrors.lastName}
           errorMessage={formErrors.lastName}
           autoFocus={false}
@@ -59,13 +62,14 @@ export function ShippingForm({
           value={formData.addressLine1}
           onChange={handleChange('addressLine1')}
           isRequired
+          classNames={commonInputClassNames}
           isInvalid={!!formErrors.addressLine1}
           errorMessage={formErrors.addressLine1}
-          autoFocus={false}
         />
         <Input
           label='Address Line 2 (Optional)'
           radius='sm'
+          classNames={commonInputClassNames}
           value={formData.addressLine2}
           onChange={handleChange('addressLine2')}
           autoFocus={false}
@@ -77,7 +81,7 @@ export function ShippingForm({
             value={formData.city}
             onChange={handleChange('city')}
             isRequired
-            isInvalid={!!formErrors.city}
+            classNames={commonInputClassNames}
             errorMessage={formErrors.city}
             autoFocus={false}
           />
@@ -87,6 +91,7 @@ export function ShippingForm({
             value={formData.state}
             onChange={handleChange('state')}
             isRequired
+            classNames={commonInputClassNames}
             isInvalid={!!formErrors.state}
             errorMessage={formErrors.state}
             autoFocus={false}
@@ -97,6 +102,7 @@ export function ShippingForm({
             value={formData.zipCode}
             onChange={handleChange('zipCode')}
             isRequired
+            classNames={commonInputClassNames}
             isInvalid={!!formErrors.zipCode}
             errorMessage={formErrors.zipCode}
             autoFocus={false}

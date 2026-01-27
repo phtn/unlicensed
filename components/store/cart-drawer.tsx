@@ -38,7 +38,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
 
   // Build cart items from server cart
   const serverCartItems = useMemo(() => {
-    if (cart && cart.items) {
+    if (cart && cart.items && Array.isArray(cart.items)) {
       return cart.items.map((item) => ({
         product: item.product,
         quantity: item.quantity,
@@ -50,7 +50,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
 
   // Get all product image IDs for URL resolution
   const productImageIds = useMemo(
-    () => serverCartItems.map((item) => item.product.image).filter(Boolean),
+    () => serverCartItems.map((item) => item.product?.image).filter(Boolean),
     [serverCartItems],
   )
 
@@ -92,6 +92,12 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
 
   const hasItems = cartItems.length > 0
 
+  // Show loading only if the hook says we're loading.
+  // Once isLoading is false, the cart query has resolved (even if cart is null or items are empty).
+  // Note: cartItemCount may be > 0 while cartItems is empty if products were filtered out by safeGet
+  // (e.g., products deleted or invalid IDs). In that case, show empty cart, not loading.
+  const isStillLoading = isLoading
+
   // Calculate optimistic cart item count
   const optimisticCartItemCount = useMemo(() => {
     return cartItems.reduce((total, item) => total + item.quantity, 0)
@@ -117,12 +123,12 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
         <Drawer.Content className='z-9999 border-l-[0.33px] border-foreground/20 bg-linear-to-b from-background dark:from-black to-background flex flex-col h-full md:w-2xl w-screen fixed overflow-hidden bottom-0 right-0'>
           <div className='py-4 flex-1 overflow-y-scroll overflow-x-hidden w-screen md:w-full'>
             <div className='flex items-center gap-4 mb-4 px-4'>
-              <Drawer.Title className='text-base md:text-lg lg:text-2xl font-semibold tracking-tighter font-space'>
+              <Drawer.Title className='text-base md:text-lg lg:text-2xl font-semibold tracking-normal font-okxs'>
                 Cart
               </Drawer.Title>
               <Drawer.Description asChild>
                 <div className='flex items-center h-7 p-1'>
-                  <span className='ml-1 font-space text-base md:text-lg lg:text-2xl px-2 opacity-70'>
+                  <span className='ml-1 font-okxs text-base md:text-lg lg:text-2xl px-2 opacity-70'>
                     <span className='mr-1.5'>{cartItemCount}</span>
                     <span className='tracking-tighter'>
                       item{cartItemCount > 1 ? `s` : null}
@@ -132,7 +138,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
               </Drawer.Description>
             </div>
 
-            {isLoading ? (
+            {isStillLoading ? (
               <div className='flex items-center justify-center py-12'>
                 <p className='text-color-muted'>Loading cart...</p>
               </div>
@@ -143,42 +149,124 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
               </div>
             ) : (
               <>
-                <div className='flex overflow-x-auto gap-4 mb-6 pb-4 snap-x snap-mandatory scroll-smooth hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0'>
+                <div className='space-y-3 px-4 mb-6'>
                   {cartItems.map((item) => {
                     const product = item.product
-                    const denomination = item.denomination || 1
+                    const denomination = item.denomination ?? 1
                     const itemPrice = (product.priceCents ?? 0) * denomination
                     const totalPrice = itemPrice * item.quantity
                     const productImageUrl = resolveUrl(product.image ?? '')
+                    const hasImage = Boolean(product.image && productImageUrl)
 
                     return (
                       <div
-                        key={`${product._id}-${item.denomination || 'default'}`}
-                        className='snap-start shrink-0 w-[85vw] md:w-96 flex gap-4 p-3 bg-surface-highlight rounded-2xl border border-foreground/25'>
-                        <div className='relative w-20 h-20 shrink-0 rounded-lg overflow-hidden'>
-                          <Image
-                            src={productImageUrl ?? undefined}
-                            alt={product.name}
-                            className='w-full h-full object-cover'
-                          />
+                        key={`${product._id}-${item.denomination ?? 'default'}`}
+                        className='flex gap-3 p-3 rounded-xl border border-foreground/15 bg-card/50'>
+                        <div className='relative w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-muted'>
+                          {hasImage ? (
+                            <Image
+                              src={productImageUrl ?? ''}
+                              alt={product.name ?? 'Product'}
+                              className='w-full h-full object-cover'
+                            />
+                          ) : (
+                            <div className='w-full h-full flex items-center justify-center'>
+                              <Icon
+                                name='bag-solid'
+                                className='size-6 text-muted-foreground'
+                              />
+                            </div>
+                          )}
                         </div>
-                        <div className='flex-1 flex flex-col justify-center gap-0 min-w-0'>
-                          <div className='flex items-center justify-between'>
-                            <div className='flex items-center space-x-4 min-w-0'>
-                              <h3 className='font-medium font-space text-base tracking-tight truncate'>
-                                {product.name}
+                        <div className='flex-1 min-w-0 flex flex-col justify-between gap-1'>
+                          <div className='flex items-start justify-between gap-2'>
+                            <div className='min-w-0 flex items-center space-x-4'>
+                              <h3 className='font-medium font-okxs text-base tracking-tight truncate'>
+                                {product.name ?? 'Product'}
                               </h3>
-                              {item.denomination && (
-                                <span className='text-xs text-color-muted font-space'>
-                                  {item.denomination} {product.unit}
-                                </span>
+                              {item.denomination != null && (
+                                <p className='text-xs text-muted-foreground font-okxs'>
+                                  {item.denomination}
+                                  {product.unit ?? ''}
+                                </p>
                               )}
+                            </div>
+                            <p className='font-okxs font-medium text-base shrink-0'>
+                              ${formatPrice(totalPrice)}
+                            </p>
+                          </div>
+                          <div className='flex items-center justify-between'>
+                            <div className='flex items-center gap-1'>
+                              <Button
+                                isIconOnly
+                                size='sm'
+                                radius='sm'
+                                variant='flat'
+                                isDisabled={isPending}
+                                className='min-w-7 w-7 h-7'
+                                onPress={() => {
+                                  const newQty = item.quantity - 1
+                                  startTransition(async () => {
+                                    if (newQty < 1) {
+                                      setOptimisticCartItems({
+                                        type: 'remove',
+                                        productId: product._id,
+                                        denomination: item.denomination,
+                                      })
+                                      await removeItem(
+                                        product._id,
+                                        item.denomination,
+                                      )
+                                    } else {
+                                      setOptimisticCartItems({
+                                        type: 'update',
+                                        productId: product._id,
+                                        quantity: newQty,
+                                        denomination: item.denomination,
+                                      })
+                                      await updateItem(
+                                        product._id,
+                                        newQty,
+                                        item.denomination,
+                                      )
+                                    }
+                                  })
+                                }}>
+                                <Icon name='minus' className='size-3.5' />
+                              </Button>
+                              <span className='font-okxs text-sm font-medium w-5 text-center'>
+                                {item.quantity}
+                              </span>
+                              <Button
+                                isIconOnly
+                                size='sm'
+                                variant='flat'
+                                isDisabled={isPending}
+                                className='min-w-7 w-7 h-7'
+                                onPress={() => {
+                                  const newQty = item.quantity + 1
+                                  startTransition(async () => {
+                                    setOptimisticCartItems({
+                                      type: 'update',
+                                      productId: product._id,
+                                      quantity: newQty,
+                                      denomination: item.denomination,
+                                    })
+                                    await updateItem(
+                                      product._id,
+                                      newQty,
+                                      item.denomination,
+                                    )
+                                  })
+                                }}>
+                                <Icon name='plus' className='size-3.5' />
+                              </Button>
                             </div>
                             <Button
                               size='sm'
                               isIconOnly
                               variant='light'
-                              className='min-w-0 size-6 shrink-0'
+                              className='min-w-7 w-7 h-7 text-muted-foreground'
                               isDisabled={isPending}
                               onPress={() => {
                                 startTransition(async () => {
@@ -193,87 +281,8 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                   )
                                 })
                               }}>
-                              <Icon
-                                name='minus'
-                                className='size-4 text-primary'
-                              />
+                              <Icon name='trash' className='size-4' />
                             </Button>
-                          </div>
-                          <div className='flex items-center justify-between mt-5'>
-                            <div className='flex items-center gap-2'>
-                              <Button
-                                isIconOnly
-                                size='sm'
-                                variant='flat'
-                                isDisabled={isPending}
-                                className='bg-background min-w-0 w-8 h-7'
-                                onPress={() => {
-                                  const newQuantity = item.quantity - 1
-                                  startTransition(async () => {
-                                    if (newQuantity < 1) {
-                                      setOptimisticCartItems({
-                                        type: 'remove',
-                                        productId: product._id,
-                                        denomination: item.denomination,
-                                      })
-                                      await removeItem(
-                                        product._id,
-                                        item.denomination,
-                                      )
-                                    } else {
-                                      setOptimisticCartItems({
-                                        type: 'update',
-                                        productId: product._id,
-                                        quantity: newQuantity,
-                                        denomination: item.denomination,
-                                      })
-                                      await updateItem(
-                                        product._id,
-                                        newQuantity,
-                                        item.denomination,
-                                      )
-                                    }
-                                  })
-                                }}>
-                                <Icon
-                                  name='minus'
-                                  className='size-4 opacity-80'
-                                />
-                              </Button>
-                              <span className='text-base font-space font-semibold w-8 text-center'>
-                                {item.quantity}
-                              </span>
-                              <Button
-                                isIconOnly
-                                size='sm'
-                                variant='flat'
-                                className='bg-background min-w-0 w-8 h-7'
-                                isDisabled={isPending}
-                                onPress={() => {
-                                  const newQuantity = item.quantity + 1
-                                  startTransition(async () => {
-                                    setOptimisticCartItems({
-                                      type: 'update',
-                                      productId: product._id,
-                                      quantity: newQuantity,
-                                      denomination: item.denomination,
-                                    })
-                                    await updateItem(
-                                      product._id,
-                                      newQuantity,
-                                      item.denomination,
-                                    )
-                                  })
-                                }}>
-                                <Icon
-                                  name='plus'
-                                  className='size-4 opacity-80'
-                                />
-                              </Button>
-                            </div>
-                            <p className='font-space font-medium text-lg'>
-                              ${formatPrice(totalPrice)}
-                            </p>
                           </div>
                         </div>
                       </div>
@@ -281,21 +290,17 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   })}
                 </div>
 
-                {/*<Divider className='my-4' />*/}
-
-                <div className='space-y-3 px-4 mb-6'>
-                  <div className='flex justify-between text-sm'>
-                    <span className='text-color-muted font-semibold'>
+                <div className='font-okxs space-y-3 px-6 mb-6'>
+                  <div className='flex justify-between'>
+                    <span className='text-color-muted font-medium'>
                       Subtotal
                     </span>
-                    <span className='font-space font-medium text-lg'>
+                    <span className='font-medium text-lg'>
                       ${formatPrice(subtotal)}
                     </span>
                   </div>
-                  <div className='flex justify-between text-sm'>
-                    <span className='text-color-muted font-semibold'>
-                      Items
-                    </span>
+                  <div className='flex justify-between'>
+                    <span className='text-color-muted font-medium'>Items</span>
                     <span className='font-space font-medium text-lg'>
                       {optimisticCartItemCount}
                     </span>
@@ -307,7 +312,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                     size='lg'
                     className='w-full sm:flex-1 h-15 font-polysans font-normal text-lg bg-foreground/95 text-white dark:text-dark-gray'
                     onPress={handleCartCheckout}>
-                    <span className='font-bold font-space text-lg'>
+                    <span className='font-bold font-polysans text-lg'>
                       Checkout
                     </span>
                   </Button>
@@ -317,7 +322,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   onClick={() => {
                     onOpenChange(false)
                   }}
-                  className='w-full text-sm text-color-muted hover:text-foreground transition-colors text-center py-2'>
+                  className='font-okxs w-full text-sm text-color-muted hover:text-foreground transition-colors text-center py-2'>
                   Continue Shopping
                 </button>
               </>

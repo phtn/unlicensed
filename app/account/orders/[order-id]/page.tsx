@@ -6,6 +6,8 @@ import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {
+  BreadcrumbItem,
+  Breadcrumbs,
   Button,
   Card,
   CardBody,
@@ -15,7 +17,8 @@ import {
   Image,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
-import {default as Link, default as NextLink} from 'next/link'
+import {motion} from 'motion/react'
+import {default as NextLink} from 'next/link'
 import {useParams, useSearchParams} from 'next/navigation'
 import {useEffect, useMemo, useState} from 'react'
 
@@ -93,36 +96,22 @@ export default function OrderDetailPage() {
   // Verify order belongs to user (or allow if no user - guest order)
   const isAuthorized = useMemo(() => {
     if (!order) return true // Still loading
-    if (!convexUser) {
-      // Guest order - allow if order has no userId
-      return order.userId === null
-    }
+    // if (!convexUser) {
+    //   // Guest order - allow if order has no userId
+    //   return order.userId === null
+    // }
     // Authenticated user - must match order userId
-    return order.userId === convexUser._id
+    return order.userId === convexUser?._id
   }, [order, convexUser])
 
-  if (order === undefined) {
+  if (!order) {
     return (
-      <div className='min-h-screen flex items-center justify-center'>
+      <motion.div
+        initial={{opacity: 0}}
+        animate={{opacity: 1}}
+        className='min-h-screen flex items-center justify-center'>
         <p>Loading order...</p>
-      </div>
-    )
-  }
-
-  if (order === null || !isAuthorized) {
-    return (
-      <div className='min-h-screen flex items-center justify-center'>
-        <div className='text-center space-y-4'>
-          <h1 className='text-2xl font-semibold'>Order Not Found</h1>
-          <p className='text-color-muted'>
-            This order doesn&apos;t exist or you don&apos;t have permission to
-            view it.
-          </p>
-          <Button as={NextLink} href='/account' color='primary'>
-            Back to Account
-          </Button>
-        </div>
-      </div>
+      </motion.div>
     )
   }
 
@@ -163,21 +152,19 @@ export default function OrderDetailPage() {
         <div className='flex items-center justify-between mb-8'>
           <div>
             <h1 className='text-base font-space space-x-1 sm:space-x-3'>
-              <span className='opacity-70 font-medium'>
-                <Link href='/account' className='tracking-tight'>
-                  Account
-                </Link>
-                <span>
-                  /<span className='px-1 sm:px-2.5'>Orders</span>/
-                </span>
-              </span>
-              <span>{order.orderNumber.split('-').pop()}</span>
+              <Breadcrumbs>
+                <BreadcrumbItem href='/account'>Account</BreadcrumbItem>
+                <BreadcrumbItem href='/account/orders'>Orders</BreadcrumbItem>
+                <BreadcrumbItem>{order.orderNumber}</BreadcrumbItem>
+              </Breadcrumbs>
             </h1>
           </div>
           <Chip
             color={getStatusColor(order.orderStatus) as ChipProps['color']}
-            variant='flat'
-            size='lg'>
+            variant='faded'
+            radius='sm'
+            size='lg'
+            className='border-none px-0 font-brk text-sm uppercase'>
             {formatStatus(order.orderStatus)}
           </Chip>
         </div>
@@ -186,7 +173,9 @@ export default function OrderDetailPage() {
           {/* Order Items */}
           <Card>
             <CardBody className='p-6'>
-              <h2 className='text-xl font-semibold mb-4'>Order Items</h2>
+              <h2 className='text-xl tracking-wide font-polysans font-semibold mb-4'>
+                Order Items
+              </h2>
               <div className='space-y-4'>
                 {order.items.map((item, index) => (
                   <div key={index}>
@@ -197,19 +186,19 @@ export default function OrderDetailPage() {
                         className='w-20 h-20 object-cover rounded-lg'
                         radius='lg'
                       />
-                      <div className='flex-1'>
-                        <h3 className='font-semibold'>{item.productName}</h3>
-                        <p className='text-sm text-color-muted'>
+                      <div className='flex-1 font-okxs'>
+                        <h3 className=''>{item.productName}</h3>
+                        <p className='text-sm opacity-80'>
                           Quantity: {item.quantity}
                           {item.denomination && item.denomination > 1
                             ? ` × ${item.denomination}`
                             : ''}
                         </p>
-                        <p className='text-sm text-color-muted mt-1'>
+                        <p className='text-sm opacity-80 mt-1'>
                           ${formatPrice(item.unitPriceCents)} each
                         </p>
                       </div>
-                      <div className='text-right'>
+                      <div className='text-right font-okxs'>
                         <p className='font-semibold'>
                           ${formatPrice(item.totalPriceCents)}
                         </p>
@@ -228,8 +217,10 @@ export default function OrderDetailPage() {
           <div className='grid gap-6 md:grid-cols-2'>
             <Card>
               <CardBody className='p-6'>
-                <h2 className='text-xl font-semibold mb-4'>Order Summary</h2>
-                <div className='space-y-2 font-space'>
+                <h2 className='text-xl font-polysans font-semibold mb-4'>
+                  Order Summary
+                </h2>
+                <div className='space-y-2 font-okxs'>
                   <div className='flex justify-between text-sm'>
                     <span className='text-color-muted'>Subtotal</span>
                     <span>${formatPrice(order.subtotalCents ?? 0)}</span>
@@ -257,7 +248,7 @@ export default function OrderDetailPage() {
                     </span>
                   </div>
                   <Divider className='my-2' />
-                  <div className='flex justify-between text-lg font-semibold'>
+                  <div className='flex justify-between'>
                     <span>Total</span>
                     <span>${formatPrice(order.totalCents ?? 0)}</span>
                   </div>
@@ -268,14 +259,23 @@ export default function OrderDetailPage() {
             {/* Payment Information */}
             <Card>
               <CardBody className='p-6'>
-                <h2 className='text-xl font-semibold mb-4'>Payment</h2>
-                <div className='space-y-2'>
+                <div className='flex items-center justify-between'>
+                  <h2 className='text-xl font-polysans font-semibold mb-4'>
+                    Payment
+                  </h2>
+                  <div className='font-okxs text-cashapp'>
+                    {order.payment.method === 'cashapp'
+                      ? '@' + convexUser?.cashAppUsername
+                      : ''}
+                  </div>
+                </div>
+                <div className='space-y-2 font-okxs'>
                   <div className='flex justify-between'>
-                    <span className='text-color-muted'>Method</span>
+                    <span className='text-sm text-color-muted'>Method</span>
                     <span>{formatPaymentMethod(order.payment.method)}</span>
                   </div>
                   <div className='flex justify-between'>
-                    <span className='text-color-muted'>Status</span>
+                    <span className='text-sm text-color-muted'>Status</span>
                     <Chip
                       color={
                         order.payment.status === 'completed'
@@ -299,9 +299,7 @@ export default function OrderDetailPage() {
                   )}
                   {order.payment.gateway?.transactionId && (
                     <div className='flex justify-between'>
-                      <span className='text-color-muted'>
-                        PayGate Transaction ID
-                      </span>
+                      <span className='text-color-muted'>Transaction ID</span>
                       <span className='text-sm font-mono'>
                         {order.payment.gateway?.transactionId}
                       </span>
@@ -338,8 +336,10 @@ export default function OrderDetailPage() {
           <div className='grid gap-6 md:grid-cols-2'>
             <Card>
               <CardBody className='p-6'>
-                <h2 className='text-xl font-semibold mb-4'>Shipping Address</h2>
-                <div className='space-y-1 text-sm'>
+                <h2 className='text-xl font-polysans font-semibold mb-4'>
+                  Shipping Address
+                </h2>
+                <div className='space-y-1 font-okxs text-sm'>
                   {order.shippingAddress.firstName &&
                     order.shippingAddress.lastName && (
                       <p className='font-semibold'>
@@ -353,15 +353,17 @@ export default function OrderDetailPage() {
                   )}
                   <p>
                     {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
-                    {order.shippingAddress.zipCode}
+                    {order.shippingAddress.zipCode},{' '}
+                    <span className='uppercase'>
+                      {order.shippingAddress.country}
+                    </span>
                   </p>
-                  <p>{order.shippingAddress.country}</p>
                   {order.shippingAddress.phone && (
                     <p className='mt-2'>{order.shippingAddress.phone}</p>
                   )}
                 </div>
                 {order.shipping && (
-                  <div className='mt-4 pt-4 border-t border-divider'>
+                  <div className='mt-4 pt-4 font-okxs border-t border-divider'>
                     {order.shipping.trackingNumber && (
                       <div className='space-y-2'>
                         <p className='text-sm text-color-muted'>
@@ -401,10 +403,10 @@ export default function OrderDetailPage() {
             {order.billingAddress && (
               <Card>
                 <CardBody className='p-6'>
-                  <h2 className='text-xl font-semibold mb-4'>
+                  <h2 className='text-xl font-polysans font-semibold mb-4'>
                     Billing Address
                   </h2>
-                  <div className='space-y-1 text-sm'>
+                  <div className='space-y-1 font-okxs text-sm'>
                     {order.billingAddress.firstName &&
                       order.billingAddress.lastName && (
                         <p className='font-semibold'>
@@ -418,9 +420,9 @@ export default function OrderDetailPage() {
                     )}
                     <p>
                       {order.billingAddress.city}, {order.billingAddress.state}{' '}
-                      {order.billingAddress.zipCode}
+                      {order.billingAddress.zipCode},{' '}
+                      {order.billingAddress.country}
                     </p>
-                    <p>{order.billingAddress.country}</p>
                   </div>
                 </CardBody>
               </Card>
@@ -430,8 +432,10 @@ export default function OrderDetailPage() {
           {/* Order Details */}
           <Card>
             <CardBody className='p-6'>
-              <h2 className='text-xl font-semibold mb-4'>Order Details</h2>
-              <div className='space-y-2 text-sm'>
+              <h2 className='text-xl font-polysans font-semibold mb-4'>
+                Order Details
+              </h2>
+              <div className='space-y-2 font-okxs text-sm'>
                 <div className='flex justify-between'>
                   <span className='text-color-muted'>Order Number</span>
                   <span className='font-mono'>{order.orderNumber}</span>
