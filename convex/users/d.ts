@@ -95,6 +95,9 @@ export const userSchema = v.object({
   // Preferences
   preferences: v.optional(preferencesSchema),
   cashAppUsername: v.optional(v.string()),
+  accountType: v.optional(
+    v.union(v.literal('personal'), v.literal('business')),
+  ),
 
   // Timestamps
   createdAt: v.optional(v.number()),

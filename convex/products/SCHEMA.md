@@ -7,6 +7,21 @@ The `potencyLevel` field uses a union type with the following literal values:
 - `'medium'`
 - `'high'`
 
+## Tier Type
+
+The `tier` field uses a union type with the following literal values:
+- `'A'`
+- `'AA'`
+- `'AAA'`
+- `'AAAA'`
+- `'S'`
+
+## DealType Type
+
+The `dealType` field uses a union type with the following literal values:
+- `'withinTier'`
+- `'acrossTiers'`
+
 ## Product Schema Fields
 
 | Field Name | Type | Required | Description |
@@ -37,9 +52,16 @@ The `potencyLevel` field uses a union type with the following literal values:
 | `potencyProfile` | `string` | Optional | Detailed potency profile description |
 | `weightGrams` | `number` | Optional | Product weight in grams |
 | `brand` | `string` | Optional | Product brand name |
-| `grower` | `string` | Optional | Grower information |
+| `lineage` | `string` | Optional | Product lineage information |
+| `noseRating` | `number` | Optional | Nose rating value |
 | `variants` | `Array<{label: string, price: number}>` | Optional | Array of product variants with label and price |
+| `tier` | `Tier` | Optional | Product tier: 'A', 'AA', 'AAA', 'AAAA', or 'S' |
 | `eligibleForRewards` | `boolean` | Optional | Whether this product is eligible for rewards points |
+| `eligibleForDeals` | `boolean` | Optional | Whether this product is eligible for deals |
+| `eligibleDenominationForDeals` | `number[]` | Optional | Array of denominations eligible for deals |
+| `eligibleForUpgrade` | `boolean` | Optional | Whether this product is eligible for upgrade |
+| `upgradePrice` | `number` | Optional | Upgrade price value |
+| `dealType` | `DealType` | Optional | Deal type: 'withinTier' or 'acrossTiers' |
 
 ## Notes
 

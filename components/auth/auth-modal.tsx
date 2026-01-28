@@ -1,6 +1,6 @@
 'use client'
 
-import {cancelGoogleOneTap} from '@/components/auth/google-one-tap'
+import {useAuthCtx} from '@/ctx/auth'
 import {useToggle} from '@/hooks/use-toggle'
 import {loginWithGoogle, sendEmailLink} from '@/lib/firebase/auth'
 import {Icon} from '@/lib/icons'
@@ -20,6 +20,7 @@ import {
   ChangeEvent,
   FormEvent,
   InputHTMLAttributes,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -36,11 +37,24 @@ export const AuthModal = ({
   onClose,
   mode = 'login',
 }: AuthModalProps) => {
+  const {setAuthModalOpen} = useAuthCtx()
   const [isLogin] = useState(mode === 'login')
   const [email, setEmail] = useState('')
   const [emailSent, setEmailSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Sync modal state with context
+  useEffect(() => {
+    setAuthModalOpen(isOpen)
+  }, [isOpen, setAuthModalOpen])
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      setAuthModalOpen(false)
+    }
+  }, [setAuthModalOpen])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -72,11 +86,9 @@ export const AuthModal = ({
     setError(null)
     setLoading(true)
 
-    // Cancel One Tap to prevent conflicts with popup
-    cancelGoogleOneTap()
-
     try {
       await loginWithGoogle()
+      setAuthModalOpen(false)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

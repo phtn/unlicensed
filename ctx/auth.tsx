@@ -17,12 +17,16 @@ interface AuthProviderProps {
 
 interface AuthCtxValues {
   user: User | null
+  isAuthModalOpen: boolean
+  setAuthModalOpen: (isOpen: boolean) => void
+  closeAuthModal: () => void
 }
 
 const AuthCtx = createContext<AuthCtxValues | null>(null)
 
 const AuthCtxProvider = ({children}: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
   useEffect(() => {
     const unsubscribe = auth?.onAuthStateChanged((user) => {
@@ -34,8 +38,11 @@ const AuthCtxProvider = ({children}: AuthProviderProps) => {
   const value = useMemo(
     () => ({
       user,
+      isAuthModalOpen,
+      setAuthModalOpen: setIsAuthModalOpen,
+      closeAuthModal: () => setIsAuthModalOpen(false),
     }),
-    [user],
+    [user, isAuthModalOpen],
   )
   return <AuthCtx value={value}>{children}</AuthCtx>
 }

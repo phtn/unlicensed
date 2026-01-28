@@ -1,4 +1,5 @@
 import {ProvidersCtxProvider} from '@/ctx'
+import {GoogleOneTap} from '@/components/auth/google-one-tap'
 import type {Metadata, Viewport} from 'next'
 import {
   Bakbak_One as BakbakOne,
@@ -179,6 +180,7 @@ export default function RootLayout({
           <EmailLinkHandler />
           <ScreenDimensionsTracker />
           <AgeConfirmationModal />
+          <GoogleOneTap />
           <ConditionalNavbar navbar={navbar} />
           {children}
         </ProvidersCtxProvider>

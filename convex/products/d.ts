@@ -35,7 +35,8 @@ export const productSchema = v.object({
   potencyProfile: v.optional(v.string()),
   weightGrams: v.optional(v.number()),
   brand: v.optional(v.string()),
-  grower: v.optional(v.string()),
+  lineage: v.optional(v.string()),
+  noseRating: v.optional(v.number()),
   variants: v.optional(
     v.array(
       v.object({
@@ -44,7 +45,31 @@ export const productSchema = v.object({
       }),
     ),
   ),
+  tier: v.optional(
+    v.union(
+      v.literal('A'),
+      v.literal('AA'),
+      v.literal('AAA'),
+      v.literal('AAAA'),
+      v.literal('S'),
+    ),
+  ),
   eligibleForRewards: v.optional(v.boolean()), // Whether this product is eligible for rewards points
+  eligibleForDeals: v.optional(v.boolean()), // Whether this product is eligible for rewards points
+  eligibleDenominationForDeals: v.optional(v.array(v.number())),
+  eligibleForUpgrade: v.optional(v.boolean()),
+  upgradePrice: v.optional(v.number()),
+  dealType: v.optional(
+    v.union(v.literal('withinTier'), v.literal('acrossTiers')),
+  ),
 })
 
 export type ProductType = Infer<typeof productSchema>
+
+// flowers, extracts, edibles, vapes, pre-rolls
+// in-house -> 1/8, 1/4, 1/2, 1
+// branded -> only 1/8
+// merch -> shirts,
+// extracts -> 1,3,7 grams
+// packaged -> 1,5,10 unit
+// branded flower -> 1/8,1/4,1/2,1
