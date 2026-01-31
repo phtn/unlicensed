@@ -42,7 +42,7 @@ export const createSortingParser = () => ({
   defaultValue: [] as SortingState,
 })
 
-// Column filters parser - format: "id1:value1,value2|id2:value3"
+// Column filters parser - format: "id1:value1,value2|id2:|id3" (empty value = active column, no values selected)
 export const createColumnFiltersParser = () => ({
   parse: (value: string | null): ColumnFiltersState => {
     if (!value) {
@@ -52,15 +52,19 @@ export const createColumnFiltersParser = () => ({
       const filters: ColumnFiltersState = []
       const filterGroups = value.split('|')
       for (const group of filterGroups) {
-        const [columnId, valuesStr] = group.split(':')
-        if (columnId && valuesStr) {
-          const values = valuesStr.split(',').filter(Boolean)
-          if (values.length > 0) {
-            filters.push({
-              id: columnId,
-              value: values,
-            })
-          }
+        const colonIndex = group.indexOf(':')
+        const columnId =
+          colonIndex >= 0 ? group.slice(0, colonIndex) : group
+        const valuesStr = colonIndex >= 0 ? group.slice(colonIndex + 1) : ''
+        if (columnId) {
+          const values =
+            valuesStr.length > 0
+              ? valuesStr.split(',').filter(Boolean)
+              : []
+          filters.push({
+            id: columnId,
+            value: values,
+          })
         }
       }
       return filters
@@ -74,12 +78,9 @@ export const createColumnFiltersParser = () => ({
     }
     return value
       .map((filter) => {
-        if (Array.isArray(filter.value) && filter.value.length > 0) {
-          return `${filter.id}:${filter.value.join(',')}`
-        }
-        return null
+        const values = Array.isArray(filter.value) ? filter.value : []
+        return `${filter.id}:${values.join(',')}`
       })
-      .filter((v): v is string => v !== null)
       .join('|')
   },
   defaultValue: [] as ColumnFiltersState,

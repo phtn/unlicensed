@@ -17,7 +17,7 @@ const ProductItem = ({product, imageUrl}: ProductItemProps) => (
   <Card
     radius='none'
     isFooterBlurred
-    className='w-full h-[200px] col-span-12 sm:col-span-7 bg-linear-to-b from-dark-gray/50 from-10% via-transparent to-transparent dark:border-dark-gray/80'>
+    className='w-full h-50 col-span-12 sm:col-span-7 bg-linear-to-b from-dark-gray/50 from-10% via-transparent to-transparent dark:border-dark-gray/80'>
     <CardHeader className='absolute z-10 top-0 flex-col items-start p-2 bg-background/20 backdrop-blur-2xl h-fit'>
       <h4 className='capitalize text-white/90 font-medium tracking-tight'>
         {product.name}

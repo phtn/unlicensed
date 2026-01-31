@@ -180,9 +180,9 @@ export const CategoryForm = ({
   return (
     <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 md:p-4 lg:p-0 items-start md:h-[calc(100vh-6rem)] h-[calc(100lvh)]'>
       {/* Left Sidebar Navigation */}
-      <aside className='hidden lg:block cols-span-3 2xl:col-span-2 col-span-3 h-full overflow-y-auto pr-2 space-y-6'>
-        <nav className='flex flex-col gap-1'>
-          <h1 className='text-lg flex items-center space-x-2 tracking-tighter font-semibold py-4 text-dark-gray dark:text-foreground'>
+      <aside className='hidden lg:block cols-span-3 2xl:col-span-2 col-span-3 h-full overflow-y-auto space-y-6'>
+        <nav className='flex flex-col pl-2 gap-1'>
+          <h1 className='text-lg flex pl-2 items-center space-x-2 tracking-tighter font-semibold py-4 text-dark-gray dark:text-foreground'>
             <div
               aria-hidden
               className='size-4 select-none aspect-square rounded-full bg-emerald-500'
@@ -201,7 +201,7 @@ export const CategoryForm = ({
               className={cn(
                 'flex justify-start items-center gap-3 px-4 text-base font-medium tracking-tight rounded-xl transition-all text-left',
                 activeSection === section.id
-                  ? 'dark:bg-zinc-700 dark:text-emerald-300 bg-dark-gray/5 text-emerald-500'
+                  ? 'dark:bg-zinc-700 dark:text-emerald-300 bg-dark-gray/5 text-emerald-600'
                   : 'text-dark-gray/60 dark:text-light-gray/80 dark:hover:text-emerald-100  hover:bg-dark-gray/5 hover:text-dark-gray/90',
               )}>
               <Icon name={section.icon} className='size-4' />
@@ -210,7 +210,29 @@ export const CategoryForm = ({
           ))}
         </nav>
 
-        <div className='px-0 xl:px-4 portrait:fixed portrait:bottom-0'>
+        <form.Field name='visible'>
+          {(field) => {
+            const visible = (field.state.value as boolean) ?? false
+            return (
+              <div className='ml-4 w-fit flex items-center justify-between gap-6 px-4 py-3 rounded-2xl bg-slate-500/10 dark:bg-zinc-800/50 border border-dark-gray/10 dark:border-zinc-700/50'>
+                <span className='text-sm font-medium tracking-tight text-dark-gray dark:text-foreground'>
+                  Active Category
+                </span>
+                <Switch
+                  size='sm'
+                  isSelected={visible}
+                  onValueChange={(value) => field.handleChange(value)}
+                  onBlur={field.handleBlur}
+                  classNames={{
+                    wrapper: 'group-data-[selected=true]:bg-emerald-500',
+                  }}
+                />
+              </div>
+            )
+          }}
+        </form.Field>
+
+        <div className='px-0 xl:px-3 portrait:fixed portrait:bottom-0'>
           <Button
             size='lg'
             type='submit'
@@ -245,32 +267,6 @@ export const CategoryForm = ({
       <main
         ref={mainScrollRef}
         className='col-span-1 lg:col-span-8 xl:col-span-9 2xl:col-span-10 h-full overflow-y-auto space-y-0 pb-24 scroll-smooth px-1 relative md:pt-2'>
-        {/* Visibility Switch - Top Right */}
-        <div className='absolute top-4 right-2 z-30 flex justify-end pr-4 pt-2 pb-2'>
-          <form.Field name='visible'>
-            {(field) => {
-              const visible = (field.state.value as boolean) ?? false
-              return (
-                <div className='flex items-center gap-3 px-1 md:px-4 py-1 rounded-2xl bg-slate-500/20 dark:bg-black/60 backdrop-blur-sm border border-light-gray/10 dark:border-black/20 shadow-sm'>
-                  <div className='flex flex-col gap-0.5'>
-                    <span className='text-sm font-semibold px-2 tracking-tight text-dark-gray dark:text-foreground'>
-                      Active Category
-                    </span>
-                  </div>
-                  <Switch
-                    isSelected={visible}
-                    onValueChange={(value) => field.handleChange(value)}
-                    onBlur={field.handleBlur}
-                    classNames={{
-                      wrapper: 'group-data-[selected=true]:bg-emerald-500',
-                    }}
-                  />
-                </div>
-              )
-            }}
-          </form.Field>
-        </div>
-
         <form
           onSubmit={(e) => {
             e.preventDefault()

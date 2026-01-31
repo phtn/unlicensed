@@ -43,7 +43,7 @@ export function superCell<T>(prop: keyof T, options: CellOptions<T> = {}) {
           {options.fallback ? (
             <span>{options.fallback}</span>
           ) : (
-            <span className='font-brk text-xs opacity-60'>····</span>
+            <span className='font-brk text-sm opacity-60'>····</span>
           )}
         </div>
       )
@@ -54,7 +54,9 @@ export function superCell<T>(prop: keyof T, options: CellOptions<T> = {}) {
       : rawValue
 
     return (
-      <div className={`font-brk ${options.className}`}>{value as string}</div>
+      <div className={`font-brk text-sm ${options.className}`}>
+        {value as string}
+      </div>
     )
   }
   CellComponent.displayName = `SuperCell(${String(prop)})`
@@ -106,7 +108,7 @@ export const firstLCell = <T, K extends keyof T>(
       return fallback ? (
         <span className={className}>{fallback}</span>
       ) : (
-        <span className='font-brk text-xs'>····</span>
+        <span className='font-brk text-sm'>····</span>
       )
     }
     const names = rawVal.split(' ')
@@ -138,7 +140,12 @@ export const linkText = <T, K extends keyof T>(
     const resolvedHref = typeof href === 'function' ? href(ctx) : href
 
     return (
-      <Link href={`${resolvedHref}/${rawValue}`} className={cn(className)}>
+      <Link
+        href={`${resolvedHref}/${rawValue}`}
+        className={cn(
+          'font-brk text-sm tracking-wide uppercase hover:underline underline-offset-4 decoration-dotted text-mac-blue',
+          className,
+        )}>
         {value}
       </Link>
     )
@@ -146,6 +153,108 @@ export const linkText = <T, K extends keyof T>(
 
   LinkTextComponent.displayName = `LinkText(${String(prop)})`
   return LinkTextComponent
+}
+
+/**
+ * Generic factory for reusable monetary cells.
+ */
+export function moneyCell<T>(prop: keyof T, options: CellOptions<T> = {}) {
+  const CellComponent = (ctx: CellContext<T, unknown>) => {
+    const rawValue = ctx.row.getValue(prop as string) as keyof T
+
+    if (rawValue === null || rawValue === undefined) {
+      return (
+        <div className={`font-okxs ${options.className}`}>
+          {options.fallback ? (
+            <span>{options.fallback}</span>
+          ) : (
+            <span className='font-okxs text-base opacity-60'>····</span>
+          )}
+        </div>
+      )
+    }
+
+    const value = options.formatter
+      ? options.formatter(rawValue, ctx)
+      : rawValue
+
+    return (
+      <div className='flex items-center justify-start'>
+        <div
+          className={`w-full font-okxs text-base text-right mr-10 ${options.className}`}>
+          {Number(value).toLocaleString('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            maximumFractionDigits: 0,
+          })}
+        </div>
+      </div>
+    )
+  }
+  CellComponent.displayName = `SuperCell(${String(prop)})`
+  return CellComponent
+}
+
+export const priceCell = <T, K extends keyof T>(
+  prop: K,
+  className?: ClassName,
+  fallback?: ReactNode,
+) => {
+  const cell = moneyCell<T>(prop, {
+    className,
+    fallback,
+  })
+  cell.displayName = `TextCell(${String(prop)})`
+  return cell
+}
+
+/**
+ * Generic factory for reusable numerical cells.
+ */
+export function numberCell<T>(prop: keyof T, options: CellOptions<T> = {}) {
+  const CellComponent = (ctx: CellContext<T, unknown>) => {
+    const rawValue = ctx.row.getValue(prop as string) as keyof T
+
+    if (rawValue === null || rawValue === undefined) {
+      return (
+        <div className={`font-okxs ${options.className}`}>
+          {options.fallback ? (
+            <span>{options.fallback}</span>
+          ) : (
+            <span className='font-okxs text-base opacity-60'>····</span>
+          )}
+        </div>
+      )
+    }
+
+    const value = options.formatter
+      ? options.formatter(rawValue, ctx)
+      : rawValue
+
+    return (
+      <div className='flex items-center justify-start'>
+        <div
+          className={`w-full font-okxs text-base text-right mr-10 ${options.className}`}>
+          {Number(value).toFixed(0)}
+        </div>
+      </div>
+    )
+  }
+  CellComponent.displayName = `SuperCell(${String(prop)})`
+  return CellComponent
+}
+
+export const countCell = <T, K extends keyof T>(
+  prop: K,
+  className?: ClassName,
+  fallback?: ReactNode,
+) => {
+  const cell = numberCell<T>(prop, {
+    className,
+    fallback,
+  })
+  cell.displayName = `TextCell(${String(prop)})`
+  return cell
 }
 
 export const dateCell = <T,>(
@@ -263,7 +372,7 @@ export const editableStatusCell = <T,>(
       } finally {
         setIsUpdating(false)
       }
-    }, [id, value])
+    }, [value])
 
     return (
       <button

@@ -9,7 +9,7 @@ import {
 import {useAppForm, useFieldContext} from './form-context'
 
 export const commonInputClassNames = {
-  label: 'mb-3 pl-1 opacity-80 tracking-widest uppercase text-xs font-brk',
+  label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-brk',
   input:
     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:

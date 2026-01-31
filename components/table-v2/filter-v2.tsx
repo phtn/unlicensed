@@ -1,29 +1,42 @@
+import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Checkbox, Toolbar} from '@base-ui/react'
 import {Popover} from '@base-ui/react/popover'
 import {Select} from '@base-ui/react/select'
 import {Badge} from '@heroui/react'
+import type {ColumnFiltersState} from '@tanstack/react-table'
 import {Column} from '@tanstack/react-table'
-import {useId, useMemo} from 'react'
-
-function getFilterValuesKey<T>(columns: Column<T, unknown>[]): string {
-  return JSON.stringify(columns.map((col) => col.getFilterValue() ?? []))
-}
+import {useQueryState} from 'nuqs'
+import {useId, useMemo, useState} from 'react'
+import {createColumnFiltersParser} from './parsers-v2'
 
 interface Props<T> {
   columns: Column<T, unknown>[]
   activeFilterColumns?: Column<T, unknown>[]
-  onFilterColumnsChange?: (columns: Column<T, unknown>[]) => void
+  onAddFilterColumn?: (columnId: string) => void
+  onRemoveFilterColumn?: (columnId: string) => void
   isMobile: boolean
 }
 export const Filter = <T,>({
   columns,
   activeFilterColumns = [],
-  onFilterColumnsChange,
+  onAddFilterColumn,
+  onRemoveFilterColumn,
   isMobile,
 }: Props<T>) => {
   const baseId = useId()
+
+  // Subscribe to filters search param so the component re-renders when the URL changes
+  const columnFiltersParser = useMemo(
+    () => createColumnFiltersParser(),
+    [],
+  )
+  const [columnFiltersParam] = useQueryState(
+    'filters',
+    columnFiltersParser,
+  )
+  const filtersFromUrl = (columnFiltersParam ?? []) as ColumnFiltersState
 
   // Get filterable columns (exclude select and actions columns)
   const filterableColumns = useMemo(
@@ -45,24 +58,21 @@ export const Filter = <T,>({
     [filterableColumns, activeFilterColumns],
   )
 
-  const filterValuesKey = getFilterValuesKey(activeFilterColumns)
-
-  // Get all active filters data - reactive to column filter changes
+  // Get all active filters data - selectedValues from URL param so UI stays in sync with URL
   const activeFiltersData = useMemo(() => {
-    const filterValues = activeFilterColumns.map((col) => col.getFilterValue())
-    return activeFilterColumns.map((column, index) => {
+    return activeFilterColumns.map((column) => {
       const facetedValues = column.getFacetedUniqueValues()
-      const filterValue = filterValues[index] as string[] | undefined
+      const filterInUrl = filtersFromUrl.find((f) => f.id === column.id)
+      const selectedValues = (filterInUrl?.value ??
+        column.getFilterValue()) as (string | number | boolean)[]
       return {
         column,
         uniqueValues: Array.from(facetedValues.keys()).toSorted(),
         valueCounts: facetedValues as Map<string | number | boolean, number>,
-        selectedValues: filterValue ?? [],
+        selectedValues: Array.isArray(selectedValues) ? selectedValues : [],
       }
     })
-    // filterValuesKey triggers recompute when column filter values change
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
-  }, [activeFilterColumns, filterValuesKey])
+  }, [activeFilterColumns, filtersFromUrl])
 
   // Calculate total active filter count - reactive to filter changes
   const totalActiveFilters = useMemo(() => {
@@ -71,24 +81,17 @@ export const Filter = <T,>({
     }, 0)
   }, [activeFiltersData])
 
+  const [addColumnValue, setAddColumnValue] = useState<string | null>(null)
+
   const handleColumnAdd = (columnId: string) => {
-    const column = filterableColumns.find((col) => col.id === columnId)
-    if (column && !activeFilterColumns.some((col) => col.id === columnId)) {
-      const newActiveColumns = [...activeFilterColumns, column]
-      onFilterColumnsChange?.(newActiveColumns)
+    if (!activeFilterColumns.some((col) => col.id === columnId)) {
+      onAddFilterColumn?.(columnId)
     }
+    setAddColumnValue(null)
   }
 
   const handleColumnRemove = (columnId: string) => {
-    const column = activeFilterColumns.find((col) => col.id === columnId)
-    if (column) {
-      // Clear the filter before removing
-      column.setFilterValue(undefined)
-      const newActiveColumns = activeFilterColumns.filter(
-        (col) => col.id !== columnId,
-      )
-      onFilterColumnsChange?.(newActiveColumns)
-    }
+    onRemoveFilterColumn?.(columnId)
   }
 
   const formatLabel = (value: unknown) => {
@@ -101,22 +104,29 @@ export const Filter = <T,>({
     return String(value)
   }
 
+  const {on, toggle} = useToggle(false)
+
   return (
     <Popover.Root>
       <Popover.Trigger
+        onClick={toggle}
         className='md:flex hidden'
         render={
-          <Toolbar.Button className='flex h-8 items-center justify-center rounded-sm space-x-1 px-4 text-sm select-none focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 active:bg-light-gray/10 data-pressed:bg-gray-100 data-pressed:text-gray-900'>
+          <Toolbar.Button
+            className={cn(
+              'relative flex h-7.5 items-center justify-center rounded-sm space-x-2 px-3.5 text-sm select-none data-pressed:bg-gray-100 focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 hover:bg-sidebar/60 active:bg-sidebar dark:active:bg-dark-table/20 dark:hover:bg-dark-table/50 dark:bg-transparent transition-colors duration-75',
+              {'bg-dark-table/5 dark:bg-dark-table/50 border': on},
+            )}>
             <Icon
-              name='list-filter'
+              name='filter-bold'
               className={cn(
-                'size-3.5 opacity-70',
+                'size-4',
                 (totalActiveFilters > 0 || activeFilterColumns.length > 0) &&
                   'text-mac-indigo opacity-100',
               )}
             />
-            <span className='capitalize hidden md:flex text-sm opacity-80 font-brk'>
-              filter
+            <span className='capitalize hidden md:flex text-sm opacity-90 font-brk'>
+              Filter
             </span>
             {totalActiveFilters > 0 && (
               <Badge className='absolute bg-mac-indigo rounded-full -top-1.5 md:-top-0.5 left-full -translate-x-3.5 md:-translate-1/2 size-5 aspect-square px-1 text-white font-space'>
@@ -125,9 +135,9 @@ export const Filter = <T,>({
             )}
           </Toolbar.Button>
         }></Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Positioner align={isMobile ? 'end' : 'start'}>
-          <Popover.Popup className='w-auto min-w-44 p-3 dark:bg-dark-table rounded-3xl'>
+      <Popover.Portal onPointerLeave={toggle}>
+        <Popover.Positioner sideOffset={4} align={'end'}>
+          <Popover.Popup className='w-54 p-3 border border-dark-table/15 bg-sidebar dark:bg-dark-table rounded-2xl'>
             <div>
               {/* Add Filter Section */}
               {availableColumns.length > 0 && (
@@ -143,24 +153,25 @@ export const Filter = <T,>({
                       </span>
                     </div>
                     <Select.Root
-                      onValueChange={(value: string | null) => {
+                      value={addColumnValue}
+                      onValueChange={(value: string | null, _eventDetails) => {
                         if (value) handleColumnAdd(value)
+                        else setAddColumnValue(null)
                       }}>
-                      <Select.Trigger className='w-full flex items-center space-x-2 text-sm font-medium tracking-tight font-figtree mt-1 h-10 rounded-2xl shadow-none bg-origin'>
-                        <Icon
-                          name='plus'
-                          className='size-3.5 text-mac-blue dark:text-primary-hover'
-                        />
+                      <Select.Trigger className='w-full flex items-center space-x-2 text-sm font-medium tracking-tight font-figtree h-10 rounded-2xl shadow-none'>
+                        <Icon name='plus' className='size-5' />
                         <Select.Value placeholder='Add Columns' />
                       </Select.Trigger>
                       <Select.Portal className='z-60 min-w-44 p-3 rounded-3xl'>
-                        {availableColumns.map((column) => (
-                          <Select.Item key={column.id} value={column.id}>
-                            {typeof column.columnDef.header === 'string'
-                              ? column.columnDef.header
-                              : column.id}
-                          </Select.Item>
-                        ))}
+                        <Select.List>
+                          {availableColumns.map((column) => (
+                            <Select.Item key={column.id} value={column.id}>
+                              {typeof column.columnDef.header === 'string'
+                                ? column.columnDef.header
+                                : column.id}
+                            </Select.Item>
+                          ))}
+                        </Select.List>
                       </Select.Portal>
                     </Select.Root>
                   </div>

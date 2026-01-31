@@ -62,7 +62,7 @@ export const useAuth = () => {
     // after a brief delay to allow the subscription to initialize
     const timer = setTimeout(() => {
       setLoading(false)
-    }, 0)
+    }, 50)
     return () => clearTimeout(timer)
   }, [user])
 

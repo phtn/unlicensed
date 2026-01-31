@@ -32,7 +32,7 @@ interface ToolbarButtonProps {
 
 export const ToolbarWrapper = ({children}: PropsWithChildren) => {
   return (
-    <div className='flex text-base items-center justify-between h-12 md:h-14 w-full'>
+    <div className='flex text-base items-center justify-between h-12 md:h-12 w-full'>
       {children}
     </div>
   )

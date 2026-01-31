@@ -19,7 +19,7 @@ import {
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useTheme} from 'next-themes'
-import NextLink from 'next/link'
+import Link from 'next/link'
 import {memo, startTransition, useMemo, useState, ViewTransition} from 'react'
 
 export default function AccountPage() {
@@ -154,7 +154,9 @@ export default function AccountPage() {
                     'drop-shadow shadow-black text-white font-semibold tracking-wider px-3',
                 }}
                 size='lg'
-                startContent={<Icon name='star-fill' className='size-4 text-white' />}>
+                startContent={
+                  <Icon name='star-fill' className='size-4 text-white' />
+                }>
                 {userRewards.currentTier.name.toUpperCase()} MEMBER
               </Chip>
             )}
@@ -288,7 +290,10 @@ export default function AccountPage() {
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2.5'>
                       <div className='p-2 rounded-xl bg-primary/20'>
-                        <Icon name='star-fill' className='size-5 text-primary' />
+                        <Icon
+                          name='star-fill'
+                          className='size-5 text-primary'
+                        />
                       </div>
                       <h3 className='font-semibold font-nito text-base tracking-tight'>
                         Next Reward Tier
@@ -351,7 +356,7 @@ export default function AccountPage() {
                   {tierBenefits?.discountPercentage ? (
                     <div className='flex items-center gap-3 p-4 rounded-xl bg-green-50/50 dark:bg-green-900/10 border border-green-200/50 dark:border-green-800/30 transition-all hover:bg-green-50 dark:hover:bg-green-900/20'>
                       <div className='p-2.5 rounded-xl bg-green-500/20 text-green-600 dark:text-green-400'>
-                        <Icon name='percent' className='size-[18px]' />
+                        <Icon name='percent' className='size-4.5' />
                       </div>
                       <div className='flex-1'>
                         <p className='text-sm font-semibold text-green-700 dark:text-green-400'>
@@ -367,7 +372,7 @@ export default function AccountPage() {
                   {tierBenefits?.freeShipping && (
                     <div className='flex items-center gap-3 p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/30 transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20'>
                       <div className='p-2.5 rounded-xl bg-blue-500/20 text-blue-600 dark:text-blue-400'>
-                        <Icon name='truck' className='size-[18px]' />
+                        <Icon name='truck' className='size-4.5' />
                       </div>
                       <div className='flex-1'>
                         <p className='text-sm font-semibold text-blue-700 dark:text-blue-400'>
@@ -415,7 +420,7 @@ export default function AccountPage() {
               </div>
 
               <ViewTransition>
-                <div className='space-y-3 min-h-[100px]'>
+                <div className='space-y-3 min-h-25'>
                   {recentOrders === undefined ? (
                     <div className='w-full flex justify-center items-center py-16'>
                       <Loader />
@@ -424,7 +429,10 @@ export default function AccountPage() {
                     <Card className='border-2 border-dashed border-default-200 dark:border-default-100/20 bg-default-50/50 dark:bg-default-50/5'>
                       <CardBody className='py-16 flex flex-col items-center justify-center text-center'>
                         <div className='w-20 h-20 rounded-full bg-default-100 dark:bg-default-50/10 flex items-center justify-center mb-5'>
-                          <Icon name='package-car' className='size-9 text-default-400' />
+                          <Icon
+                            name='package-car'
+                            className='size-9 text-default-400'
+                          />
                         </div>
                         <h3 className='text-xl font-semibold text-foreground mb-2'>
                           No orders yet
@@ -433,7 +441,7 @@ export default function AccountPage() {
                           Start shopping to see your orders and earn rewards!
                         </p>
                         <Button
-                          as={NextLink}
+                          as={Link}
                           href='/products'
                           color='primary'
                           size='lg'
@@ -447,15 +455,18 @@ export default function AccountPage() {
                       <Card
                         shadow='none'
                         key={order._id}
-                        as={NextLink}
+                        as={Link}
                         href={`/account/orders/${order._id}`}
                         isPressable
-                        className='w-full border hover:border-foreground/20 bg-content1/50 backdrop-blur-sm hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5'>
+                        className='w-full border hover:border-foreground/20 bg-content/50 backdrop-blur-sm hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5'>
                         <CardBody className='p-5'>
                           <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
                             <div className='flex items-start gap-4 flex-1 min-w-0'>
                               <div className='p-3 rounded-xl bg-linear-to-br from-default-100/30 to-default-500/10 hidden sm:flex shrink-0'>
-                                <Icon name='box' className='size-[22px] opacity-50' />
+                                <Icon
+                                  name='box'
+                                  className='size-5 opacity-50'
+                                />
                               </div>
                               <div className='flex-1 min-w-0'>
                                 <div className='flex items-center gap-3 flex-wrap mb-2'>

@@ -31,10 +31,7 @@ export const SelectToggle = <T,>({
       )}
       <Icon
         name={'checkbox-indeterminate-2'}
-        className={cn(
-          'size-4',
-          on ? 'text-mac-blue opacity-100' : ' opacity-70',
-        )}
+        className={cn('size-4', on ? 'text-mac-blue opacity-100' : ' ')}
       />
       {/*<span className='hidden md:flex text-sm opacity-80 font-brk'>Select</span>*/}
     </Toolbar.Button>

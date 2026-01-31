@@ -71,7 +71,7 @@ export const Search = forwardRef<HTMLInputElement, Props<unknown>>(
           aria-label='Search'
         />
         <div className='text-foreground/80 pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-2 peer-disabled:opacity-50'>
-          <Icon name='slash' aria-hidden='true' className='size-5 opacity-80' />
+          <Icon name='slash' aria-hidden='true' className='size-5' />
         </div>
         {Boolean(col?.getFilterValue()) && (
           <button

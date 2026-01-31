@@ -10,11 +10,11 @@ interface CenterTableToolbarProps {
 
 export const CenterTableToolbar = ({filter, view}: CenterTableToolbarProps) => {
   return (
-    <Toolbar.Root className='flex h-9 items-start justify-center w-full gap-px px-px pb-1'>
-      <ToggleGroup className='flex items-start gap-1' aria-label='Alignment'>
-        {filter}
-        <Toolbar.Separator className='m-1 h-5 w-px bg-linear-to-b from-transparent via-gray-200 dark:via-zinc-500 to-transparent' />
-        {view}
+    <Toolbar.Root className='flex h-9 items-center justify-center w-full gap-px px-px pb-1'>
+      <ToggleGroup className='flex items-start justify-between'>
+        <div>{filter}</div>
+        {/*<Toolbar.Separator className='m-1 h-5 w-px bg-linear-to-b from-transparent via-gray-200 dark:via-zinc-500 to-transparent' />*/}
+        <div>{view}</div>
       </ToggleGroup>
       <Toolbar.Group
         className='flex gap-1'
@@ -48,7 +48,7 @@ export const LeftTableToolbar = ({
   deleteRow,
 }: LeftTableToolbarProps) => {
   return (
-    <Toolbar.Root className='relative flex h-9 bg-transparent w-150 items-start gap-px px-1 py-0.5 overflow-visible'>
+    <Toolbar.Root className='relative flex h-9 bg-transparent w-150 items-start gap-px px-1.5 py-0.5 overflow-visible'>
       <ToggleGroup
         className='relative flex items-center bg-transparent gap-4'
         aria-label='Alignment'>

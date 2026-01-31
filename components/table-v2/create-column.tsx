@@ -2,15 +2,16 @@ import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Checkbox} from '@base-ui/react/checkbox'
 import {
-  CellContext,
-  ColumnDef,
-  FilterFn,
-  Row,
-  Table,
+  type CellContext,
+  type ColumnDef,
+  type FilterFn,
+  type Row,
+  type RowSelectionState,
+  type Table,
 } from '@tanstack/react-table'
 import {AnimatePresence, motion} from 'motion/react'
 import {useQueryState} from 'nuqs'
-import {type ChangeEvent, memo, type ReactNode, useMemo} from 'react'
+import {type ChangeEvent, type ReactNode, useMemo} from 'react'
 import {createRowSelectionParser} from './parsers-v2'
 import {RowActions} from './row-actions'
 
@@ -81,7 +82,6 @@ export const filterFn = <T,>(
 
   return normalizedValue.includes(normalizedFilter)
 }
-
 // Generic filter function for multi-select columns (like status)
 export const multiSelectFilterFn = <T,>(
   row: Row<T>,
@@ -222,12 +222,7 @@ export const createColumns = <T,>(
   columns.push({
     id: 'select',
     header: ({table}) => (
-      <SelectAllCheckbox
-        table={table}
-        isSome={table.getIsSomePageRowsSelected()}
-        isAll={table.getIsAllPageRowsSelected()}
-        isVisible={showSelectColumn}
-      />
+      <SelectAllCheckbox table={table} isVisible={showSelectColumn} />
     ),
     cell: ({row}) => (
       <SelectRowCheckbox row={row} isVisible={showSelectColumn} />
@@ -298,19 +293,26 @@ const fakeChangeEvent = (checked: boolean): ChangeEvent<HTMLInputElement> =>
   ({target: {checked}}) as ChangeEvent<HTMLInputElement>
 
 // Select all checkbox component for table header.
-// Memoized with primitive props (isSome, isAll, isVisible) so it only re-renders
-// when selection or visibility changes, not on every table state update.
-function SelectAllCheckboxInner<T>({
+// Subscribes to the selection search param so it re-renders when the URL
+// changes; derives isSome/isAll from param + current page row IDs.
+function SelectAllCheckbox<T>({
   table,
-  isSome,
-  isAll,
   isVisible,
 }: {
   table: Table<T>
-  isSome: boolean
-  isAll: boolean
   isVisible: boolean
 }) {
+  const rowSelectionParser = useMemo(() => createRowSelectionParser(), [])
+  const [rowSelectionParam] = useQueryState('selected', rowSelectionParser)
+  const selection = (rowSelectionParam ?? {}) as RowSelectionState
+
+  const pageRowIds = table.getRowModel().rows.map((r) => r.id)
+  const selectedOnPage = pageRowIds.filter((id) => selection[id] === true)
+  const isAll =
+    pageRowIds.length > 0 && selectedOnPage.length === pageRowIds.length
+  const isSome =
+    selectedOnPage.length > 0 && selectedOnPage.length < pageRowIds.length
+
   return (
     <AnimatePresence mode='wait'>
       {isVisible && (
@@ -325,12 +327,18 @@ function SelectAllCheckboxInner<T>({
               const handler = table.getToggleAllPageRowsSelectedHandler()
               handler(fakeChangeEvent(!!checked))
             }}
-            className='w-4.5 h-4 rounded-[2.5px] bg-foreground flex justify-center items-center'>
+            className='w-4 h-4 rounded-[2.75px] bg-sidebar flex justify-center items-center'>
             <Icon
-              name={isSome ? 'minus' : isAll ? 'check' : 'checkbox-unchecked'}
+              name={
+                isSome
+                  ? 'minus'
+                  : isAll
+                    ? 'checkbox-checked'
+                    : 'checkbox-unchecked'
+              }
               className={cn('size-7 shrink-0', {
                 'dark:text-amber-400 text-amber-500': isSome,
-                'text-background -rotate-3': isAll,
+                'text-foreground size-5': isAll,
                 'rotate-0 size-5 text-foreground': !isAll && !isSome,
               })}
             />
@@ -341,10 +349,6 @@ function SelectAllCheckboxInner<T>({
   )
 }
 
-const SelectAllCheckbox = memo(
-  SelectAllCheckboxInner,
-) as typeof SelectAllCheckboxInner
-
 // Select row checkbox component for table cells
 const SelectRowCheckbox = <T,>({
   row,
@@ -354,7 +358,7 @@ const SelectRowCheckbox = <T,>({
   isVisible: boolean
 }) => {
   const [rowSelectionParam, setRowSelectionParam] = useQueryState(
-    'select',
+    'selected',
     createRowSelectionParser(),
   )
 

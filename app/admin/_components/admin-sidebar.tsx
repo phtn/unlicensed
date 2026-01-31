@@ -184,7 +184,7 @@ const Logo = () => {
     <div className='h-10 md:h-16 translate-x-1.5 flex items-end justify-between'>
       <div className='h-12 flex w-full items-center ps-2 rounded-s-full'>
         <Icon
-          name='rapid-fire'
+          name='rapid-fire-latest'
           className='text-base text-dark-gray dark:text-light-table w-32 h-auto font-figtree font-semibold tracking-tight'
         />
       </div>

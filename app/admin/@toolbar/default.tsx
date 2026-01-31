@@ -6,7 +6,7 @@ interface Props {
 
 const Toolbar = ({children}: Props) => {
   return (
-    <div className='flex items-center justify-between h-14 gap-5 md:gap-3 lg:gap-6 md:w-96 px-4 md:px-2 lg:px-5'>
+    <div className='flex items-center justify-between h-12 gap-5 md:gap-3 lg:gap-6 md:w-96 px-4 md:px-2 lg:px-5'>
       {children}
     </div>
   )

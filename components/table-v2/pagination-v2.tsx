@@ -3,7 +3,9 @@ import {cn} from '@/lib/utils'
 import {Button} from '@base-ui/react/button'
 import {Select} from '@base-ui/react/select'
 import {PaginationState} from '@tanstack/react-table'
-import {useId} from 'react'
+import {useId, useMemo} from 'react'
+
+const DEFAULT_PAGE_SIZES = [10, 15, 25, 50, 100] as const
 
 export interface PageControl {
   disabledNext: boolean
@@ -27,6 +29,14 @@ export const Paginator = ({
   pageControl,
 }: Props) => {
   const id = useId()
+  const pageSizeOptions = useMemo(() => {
+    const current = state.pageSize
+    const inDefaults = DEFAULT_PAGE_SIZES.some((s) => s === current)
+    return inDefaults
+      ? [...DEFAULT_PAGE_SIZES]
+      : [...DEFAULT_PAGE_SIZES, current].sort((a, b) => a - b)
+  }, [state.pageSize])
+
   return (
     <div className='z-10 flex-1 grow-0 bg-background w-full border-t border-sidebar flex items-center justify-between py-1 md:py-2'>
       {/* Results per page */}
@@ -52,19 +62,17 @@ export const Paginator = ({
                 <Select.Value placeholder='' />
               </Select.Trigger>
               <Select.Portal className='[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-4 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2'>
-                {[10, 25, 50, 100].map((pageSize) => (
+                {pageSizeOptions.map((size) => (
                   <Select.Item
                     className=''
-                    key={pageSize}
-                    value={pageSize.toString()}>
-                    <span className='mr-2 font-semibold font-space'>
-                      {pageSize ?? 10}
-                    </span>
+                    key={size}
+                    value={size.toString()}>
+                    <span className='mr-2 font-semibold font-space'>{size}</span>
                   </Select.Item>
                 ))}
               </Select.Portal>
 
-              <span className='opacity-80 font-brk text-base[] ml-1'>Rows</span>
+              <span className='opacity-80 font-brk text-base ml-1'>Rows</span>
             </Select.Root>
           </label>
         </div>

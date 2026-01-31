@@ -61,7 +61,7 @@ export function AdminAccessGuard({children}: AdminAccessGuardProps) {
   // If we're redirecting, keep UI minimal.
   if (shouldRedirectHome || isPending) {
     return (
-      <main className='px-4 w-full'>
+      <main suppressHydrationWarning className='px-4 w-full'>
         <p>Redirecting...</p>
         <Loader />
       </main>

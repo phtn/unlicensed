@@ -118,7 +118,7 @@ export const DataTable = <T,>({
 
   const rowSelectionParser = useMemo(() => createRowSelectionParser(), [])
   const [rowSelectionParam, setRowSelectionParam] = useQueryState(
-    'select',
+    'selected',
     rowSelectionParser,
   )
 
@@ -297,10 +297,33 @@ export const DataTable = <T,>({
     },
   })
 
-  // State for active filter columns
-  const [activeFilterColumns, setActiveFilterColumns] = useState<
-    Column<T, unknown>[]
-  >([])
+  // Derive active filter columns from URL so Filter UI stays in sync with ?filters=
+  const activeFilterColumns = useMemo(() => {
+    const cols: Column<T, unknown>[] = []
+    for (const f of columnFilters) {
+      const col = table.getColumn(f.id)
+      if (col?.getCanFilter()) cols.push(col)
+    }
+    return cols
+  }, [table, columnFilters])
+
+  const handleAddFilterColumn = useCallback(
+    (columnId: string) => {
+      if (columnFilters.some((f) => f.id === columnId)) return
+      setColumnFiltersParam([
+        ...columnFilters,
+        {id: columnId, value: [] as string[]},
+      ])
+    },
+    [columnFilters, setColumnFiltersParam],
+  )
+
+  const handleRemoveFilterColumn = useCallback(
+    (columnId: string) => {
+      setColumnFiltersParam(columnFilters.filter((f) => f.id !== columnId))
+    },
+    [columnFilters, setColumnFiltersParam],
+  )
 
   const allCols = table.getAllColumns().filter((c) => c.getCanHide()) as Column<
     T,
@@ -380,7 +403,7 @@ export const DataTable = <T,>({
   return (
     <div className={cn('text-foreground w-full duration-500 ease-in-out')}>
       <div className='h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 pb-8 min-w-0 overflow-hidden'>
-        <div className='flex items-start justify-between shrink h-10'>
+        <div className='flex items-center justify-between shrink h-10.5'>
           <LeftTableToolbar
             select={
               <SelectToggle
@@ -409,7 +432,8 @@ export const DataTable = <T,>({
               <Filter
                 columns={allCols}
                 activeFilterColumns={activeFilterColumns}
-                onFilterColumnsChange={setActiveFilterColumns}
+                onAddFilterColumn={handleAddFilterColumn}
+                onRemoveFilterColumn={handleRemoveFilterColumn}
                 isMobile={isMobile}
               />
             }
@@ -426,14 +450,14 @@ export const DataTable = <T,>({
           />
         </div>
         {/* Table */}
-        <HyperWrap className='relative gap-0 space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-md pb-14'>
+        <HyperWrap className='space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-sm pb-14'>
           <TableContainer>
             <Table>
               <TableHeader className='w-full'>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
                     key={headerGroup.id}
-                    className='bg-sidebar/10 dark:bg-dark-table/0'>
+                    className='bg-dark-table dark:bg-dark-table/0'>
                     {headerGroup.headers.map((header) => {
                       return (
                         <TableHead
@@ -441,7 +465,7 @@ export const DataTable = <T,>({
                           style={{width: `${header.getSize()}px`}}
                           className={cn(
                             'sticky top-0 z-20 bg-light-gray/10 md:h-10 h-8 uppercase overflow-hidden',
-                            'font-oksx font-semibold tracking-tighter text-foreground/70 md:tracking-tight text-xs md:text-sm',
+                            'font-oksx font-semibold tracking-tighter text-white md:tracking-tight text-xs md:text-sm',
                             'dark:text-zinc-400 dark:bg-dark-table/30',
                           )}>
                           <ColumnSort flexRender={flexRender} header={header} />
@@ -476,8 +500,6 @@ export const DataTable = <T,>({
             pageControl={pageControl}
           />
         </HyperWrap>
-
-        {/* Pagination */}
       </div>
     </div>
   )

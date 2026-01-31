@@ -28,7 +28,7 @@ import {DitherPhoto, ImageDither} from '../paper/dithering'
 
 interface AuthModalProps {
   isOpen: boolean
-  onClose: () => void
+  onClose: VoidFunction
   mode?: 'login' | 'signup'
 }
 

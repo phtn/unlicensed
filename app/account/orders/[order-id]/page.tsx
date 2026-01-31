@@ -20,7 +20,7 @@ import {useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {default as NextLink} from 'next/link'
 import {useParams, useSearchParams} from 'next/navigation'
-import {useEffect, useMemo, useState} from 'react'
+import {useEffect, useState} from 'react'
 
 function getStatusColor(status: string) {
   switch (status) {
@@ -92,17 +92,6 @@ export default function OrderDetailPage() {
       window.history.replaceState({}, '', url.toString())
     }
   }, [searchParams])
-
-  // Verify order belongs to user (or allow if no user - guest order)
-  const isAuthorized = useMemo(() => {
-    if (!order) return true // Still loading
-    // if (!convexUser) {
-    //   // Guest order - allow if order has no userId
-    //   return order.userId === null
-    // }
-    // Authenticated user - must match order userId
-    return order.userId === convexUser?._id
-  }, [order, convexUser])
 
   if (!order) {
     return (

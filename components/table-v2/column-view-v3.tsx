@@ -1,9 +1,9 @@
 'use client'
+import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Toolbar} from '@base-ui/react'
 import {Menu} from '@base-ui/react/menu'
-import {Badge} from '@heroui/react'
 import {Column} from '@tanstack/react-table'
 import {ComponentProps, useMemo} from 'react'
 
@@ -49,22 +49,30 @@ export const ColumnView = <T,>({cols, isMobile}: Props<T>) => {
   }, [cols])
 
   const invisibleColumns = hideableColumns.filter((col) => !col.getIsVisible())
+  const {on, toggle} = useToggle()
   return (
     <Menu.Root>
       <Menu.Trigger
         render={
-          <Toolbar.Button className='flex h-8 items-center justify-center space-x-1 px-4 select-none focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 dark:hover:bg-gray-100/5'>
-            {invisibleColumns.length > 0 && (
-              <Badge className='absolute bg-orange-400 dark:bg-orange-500 font-okxs rounded-full -top-1.5 md:-top-0.5 left-full -translate-x-3.5 md:-translate-1/2 size-5 aspect-square px-1'>
+          <Toolbar.Button
+            onClick={toggle}
+            className={cn(
+              'relative flex h-7.5 items-center justify-center rounded-sm space-x-2 px-3.5 text-sm select-none data-pressed:bg-gray-100 focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 hover:bg-sidebar/60 active:bg-sidebar dark:active:bg-dark-table/20 dark:hover:bg-dark-table/50 dark:bg-transparent transition-colors duration-75',
+              {'bg-dark-table/5 dark:bg-dark-table/50': on},
+            )}>
+            {invisibleColumns.length > 0 ? (
+              <span className=' text-orange-400 dark:text-orange-500 font-okxs font-semibold min-w-3.5'>
                 {invisibleColumns.length > 99 ? '99+' : invisibleColumns.length}
-              </Badge>
+              </span>
+            ) : (
+              <Icon
+                name='switches'
+                className={cn('size-4', {
+                  'text-orange-400 opacity-100': invisibleColumns.length > 0,
+                })}
+              />
             )}
-            <Icon
-              name='tweak'
-              className={cn('size-3.5 opacity-70', {
-                'text-orange-400 opacity-100': invisibleColumns.length > 0,
-              })}
-            />
+
             <span className='hidden md:flex tracking-wider opacity-80 text-sm font-brk'>
               Columns
             </span>
@@ -73,22 +81,21 @@ export const ColumnView = <T,>({cols, isMobile}: Props<T>) => {
         <ChevronDownIcon className='-mr-1' />
       </Menu.Trigger>
       <Menu.Portal>
-        <Menu.Positioner className='outline-none' sideOffset={8}>
-          <Menu.Popup className='origin-(--transform-origin) rounded-lg py-1 bg-sidebar dark:bg-dark-table dark:text-zinc-200  outline-gray-200 border border-dark-gray/30 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0 dark:shadow-none'>
-            <Menu.Arrow className='data-[side=bottom]:top-[-7px] data-[side=left]:right-[-13px] data-[side=left]:rotate-90 data-[side=right]:left-[-13px] data-[side=right]:-rotate-90 data-[side=top]:bottom-[-8px] data-[side=top]:rotate-180'>
-              <ArrowSvg />
-            </Menu.Arrow>
+        <Menu.Positioner align='start' className='outline-none' sideOffset={2}>
+          <Menu.Popup className='origin-(--transform-origin) w-54 rounded-lg py-1 bg-sidebar dark:bg-dark-table dark:text-zinc-200  outline-gray-200 border border-dark-gray/30 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0 dark:shadow-none'>
             <div className='flex items-center border-b border-dark-gray/10 dark:border-zinc-800 px-4 py-1 space-x-1.5 italic capitalize'>
-              <span className='opacity-60 text-sm'>Show columns</span>
+              <span className='opacity-60 text-sm font-okxs font-medium'>
+                Toggle columns
+              </span>
             </div>
-            <div className='p-4'>
+            <div className='p-2'>
               {hideableColumns.map((column) => {
                 const headerText = getColumnHeaderText(column)
                 return (
                   <Menu.CheckboxItem
                     key={column.id}
                     className={cn(
-                      'flex items-center justify-between text-xs h-8 opacity-60 italic',
+                      'flex items-center justify-between px-3 text-xs rounded-sm h-8 opacity-60 italic hover:bg-dark-table/10',
                       column.getIsVisible() && 'opacity-100 not-italic',
                     )}
                     checked={column.getIsVisible()}

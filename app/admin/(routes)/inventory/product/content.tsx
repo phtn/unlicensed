@@ -8,6 +8,7 @@ import {EditProductContent} from './[id]/content'
 import {BadgeList} from './badges'
 import {NewProduct} from './new-product'
 import {ProductList} from './product-list'
+import {ProductsData} from './products-data'
 
 const ProductsContentInner = () => {
   const products = useQuery(api.products.q.listProducts, {limit: 100})
@@ -24,7 +25,7 @@ const ProductsContentInner = () => {
       }
       return <EditProductContent id={id} />
     default:
-      return <ProductList products={products} />
+      return <ProductsData data={products} />
   }
 }
 

@@ -17,12 +17,11 @@ interface RenderRowProps<T> {
 export const RenderRow = <T,>({
   row,
   editingRowId,
-  selectedItemId,
   showSelectColumn,
 }: RenderRowProps<T>) => {
   // const rowSelectionParser = useMemo(() => createRowSelectionParser(), [createRowSelectionParser])
   const [rowSelectionParam, setRowSelectionParam] = useQueryState(
-    'select',
+    'selected',
     createRowSelectionParser(),
   )
 
@@ -70,13 +69,13 @@ export const RenderRow = <T,>({
       key={row.id}
       data-state={row.getIsSelected() && 'selected'}
       className={cn(
-        'h-14 md:h-16 text-foreground text-xs md:text-base overflow-hidden dark:border-greyed group/row dark:hover:bg-background/40 border-b-origin/40',
-        'peer-hover:border-transparent bg-transparent hover:last:rounded-tr-2xl hover:bg-light-gray/10 transition-colors duration-75',
+        'h-12 text-foreground text-xs md:text-base dark:border-greyed group/row dark:hover:bg-background/40 border-y border-y-dotted',
+        'bg-transparent hover:bg-sidebar border-y-dark-table/10 hover:border-y-dark-table/30 transition-colors duration-75',
         {
           // Apply editing styles - same as hover but persistent
           ' dark:bg-sky-600/40 last:rounded-tr-2xl': isEditing,
           // Apply selected styles when viewer is open - same as hover but persistent
-          'dark:bg-background/40 bg-sidebar hover:bg-sidebar/80 last:rounded-tr-2xl':
+          'dark:bg-background/40 border-y-dark-table/30 bg-sidebar hover:bg-sidebar last:rounded-tr-2xl':
             isSelected && !isEditing,
           // Add cursor pointer when select mode is on
           'cursor-pointer': showSelectColumn && row.getCanSelect(),
