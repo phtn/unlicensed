@@ -44,9 +44,10 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
                 as={Link}
                 href={`/admin/inventory/category?slug=${category.slug}`}
                 onPress={handleCategoryClick(category.slug!)}
-                className='p-4 hover:bg-neutral-50 min-h-32 dark:hover:bg-dark-table/30 dark:bg-dark-table/40 transition-colors cursor-pointer '>
-                <div className='flex items-center w-full space-x-4'>
+                className='p-4 hover:bg-neutral-50 min-h-64 dark:hover:bg-dark-table/30 dark:bg-dark-table/40 transition-colors cursor-pointer '>
+                <div className='flex items-start w-full h-28 space-x-4'>
                   <Image
+                    isLoading={!resolveUrl(category.heroImage!)}
                     alt={category.name + '-image'}
                     src={
                       (category.heroImage && resolveUrl(category.heroImage)) ??
@@ -55,7 +56,7 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
                     className='portrait:w-28 portrait:aspect-square w-24 h-auto shrink-0 aspect-square!'
                   />
                   <div className='flex items-start justify-between md:w-full h-12'>
-                    <h4 className='capitalize tracking-tight font-semibold '>
+                    <h4 className='capitalize text-xl font-polysans font-medium'>
                       {category.name}
                     </h4>
                     <p className='portrait:hidden text-xs italic text-neutral-500'>

@@ -24,14 +24,14 @@ const buildCategoryCollections = (
 
 export const FullCollection = ({products, categories}: CollectionProps) => {
   // Get all image IDs from products (only storageIds, not URLs or null)
-  const imageIds = useMemo(() => products.map((p) => p.image), [products])
+  const imageIds = useMemo(() => products?.map((p) => p.image), [products])
 
   // Resolve URLs for all images
   const resolveUrl = useStorageUrls(imageIds)
 
   // Update products with resolved image URLs
   const productsWithImages = useMemo(() => {
-    return products.map((product) => {
+    return products?.map((product) => {
       if (!product.image) {
         return product
       }

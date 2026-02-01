@@ -26,7 +26,8 @@ const CategoryContentInner = () => {
           className={cn(
             'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
             {
-              'bg-emerald-500 dark:bg-emerald-500 text-white': isCategoryRoute,
+              'bg-emerald-500 dark:bg-emerald-500/80 text-white':
+                isCategoryRoute,
             },
           )}>
           <AnimatedNumber value={categories?.length ?? 0} />

@@ -78,9 +78,7 @@ export const ProductList = ({products}: ProductListProps) => {
   return (
     <section className='h-[91lvh] overflow-auto px-2'>
       {products?.length === 0 ? (
-        <p className='text-sm text-neutral-500'>
-          No products yet. Create one above to get started.
-        </p>
+        <p className='text-sm text-neutral-500 px-4 font-okxs'>0 products</p>
       ) : (
         <ul className='grid gap-0.5 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6'>
           {products?.map((product) => (

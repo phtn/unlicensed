@@ -2,6 +2,7 @@
 
 import {ProductList} from '@/app/admin/(routes)/inventory/product/product-list'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
+import {Typewrite} from '@/components/expermtl/typewrite'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
@@ -49,7 +50,7 @@ const CategoryProductsContentInner = ({
   return (
     <div className='space-y-4 pt-2'>
       <div className='flex items-center justify-between'>
-        <div className='text-xl font-semibold tracking-tight flex items-center space-x-2'>
+        <div className='text-xl font-semibold tracking-tight flex items-center px-2 space-x-2'>
           <Button
             size='sm'
             isIconOnly
@@ -58,9 +59,15 @@ const CategoryProductsContentInner = ({
             className='text-neutral-500 hover:text-foreground'>
             <Icon name='chevron-left' className='size-4' />
           </Button>
-          <h2 className='capitalize tracking-tighter'>
-            {category?.name || 'Category'}
-          </h2>
+          <div className='flex items-center min-w-16'>
+            {category?.name && (
+              <Typewrite
+                showCursor={false}
+                text={category?.name}
+                className='capitalize text-lg font-okxs font-medium'
+              />
+            )}
+          </div>
 
           <Button
             as={Link}
@@ -68,9 +75,11 @@ const CategoryProductsContentInner = ({
             size='sm'
             variant='faded'
             onPress={handleEdit}
-            className='-space-x-1 text-indigo-500 dark:text-indigo-400 border-white dark:border-transparent bg-indigo-100/50 dark:bg-indigo-200/5'>
-            <Icon name='pencil-single-solid' className='size-4' />
-            <span className='text-sm'>Edit Category</span>
+            className='-space-x-1 text-indigo-500 dark:text-indigo-400 border-white dark:border-transparent bg-gray-100/80 dark:bg-gray-200/5'>
+            <Icon name='pencil-fill' className='size-4' />
+            <span className='text-sm tracking-wide font-okxs'>
+              Edit Category
+            </span>
           </Button>
           <Button
             as={Link}
@@ -78,14 +87,16 @@ const CategoryProductsContentInner = ({
             size='sm'
             variant='bordered'
             href={`/admin/inventory/product?tabId=new&category=${categorySlug}`}
-            className='-space-x-2 text-blue-500 dark:text-blue-400 border-white dark:border-transparent bg-blue-100/50 dark:bg-blue-200/5'>
+            className='-space-x-1 text-blue-500 dark:text-blue-400 border-white dark:border-transparent bg-gray-100/80 dark:bg-gray-200/5'>
             <Icon name='plus' className='size-4' />
-            <span className='text-sm capitalize'>Add {category?.name}</span>
+            <span className='text-sm capitalize tracking-[0.010em] font-okxs'>
+              Add {category?.name}
+            </span>
           </Button>
         </div>
 
-        <div className='flex items-center space-x-2'>
-          <span>Items</span>
+        <div className='flex items-center space-x-2 px-5'>
+          <span className='text-sm font-okxs'>Items</span>
           <span className='text-base text-white font-space bg-blue-500 w-6 rounded-md text-center'>
             <AnimatedNumber value={products?.length ?? 0} />
           </span>

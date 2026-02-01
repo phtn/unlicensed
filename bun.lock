@@ -23,6 +23,7 @@
         "@vercel/flags": "^3.1.1",
         "animejs": "^4.2.2",
         "babel-plugin-react-compiler": "^1.0.0",
+        "better-all": "^0.0.7",
         "bun": "^1.3.5",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -1451,6 +1452,8 @@
     "base64-js": ["base64-js@1.5.1", "", {}, "sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA=="],
 
     "baseline-browser-mapping": ["baseline-browser-mapping@2.9.15", "", { "bin": { "baseline-browser-mapping": "dist/cli.js" } }, "sha512-kX8h7K2srmDyYnXRIppo4AH/wYgzWVCs+eKr3RusRSQ5PvRYoEFmR/I0PbdTjKFAoKqp5+kbxnNTFO9jOfSVJg=="],
+
+    "better-all": ["better-all@0.0.7", "", {}, "sha512-xgdUMWb88Qhz6RtC/PY/7QtR61K/JabCcbKhNYYuXC/IoY3c/bgYdIjVxyTHXR41KP8JQeP+6dg4zH4KOpwJzw=="],
 
     "better-path-resolve": ["better-path-resolve@1.0.0", "", { "dependencies": { "is-windows": "^1.0.0" } }, "sha512-pbnl5XzGBdrFU/wT4jqmJVPn2B6UHPBOhzMQkY/SPUPB6QtUXtmBHBIwCbXJol93mOpGMnQyP/+BB19q04xj7g=="],
 
