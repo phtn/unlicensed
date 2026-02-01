@@ -1,7 +1,7 @@
 import {v} from 'convex/values'
 import {mutation} from '../_generated/server'
-import {paygateSettingsSchema, StatConfig, statConfigSchema} from './d'
 import {safeGet} from '../utils/id_validation'
+import {paygateSettingsSchema, StatConfig, statConfigSchema} from './d'
 
 const DEFAULT_STAT_CONFIGS: Array<StatConfig> = [
   {id: 'salesToday', label: 'Sales Today', visible: true, order: 0},
@@ -127,7 +127,9 @@ export const updateStatVisibility = mutation({
       } else {
         // Create new settings
         const updatedConfigs = DEFAULT_STAT_CONFIGS.map((config) =>
-          config.id === args.statId ? {...config, visible: args.visible} : config,
+          config.id === args.statId
+            ? {...config, visible: args.visible}
+            : config,
         )
         const settingsId = await ctx.db.insert('adminSettings', {
           identifier: 'statConfigs',
@@ -302,6 +304,40 @@ export const updateIpapiGeolocationEnabled = mutation({
           enabled,
         },
         updatedAt: Date.now(),
+      })
+    }
+
+    return {success: true}
+  },
+})
+
+export const updateAdminByIdentifier = mutation({
+  args: {
+    identifier: v.string(),
+    value: v.any(),
+    uid: v.string(),
+  },
+  handler: async (ctx, {identifier, value, uid}) => {
+    const settings = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', identifier))
+      .unique()
+
+    if (!settings) {
+      // Create new setting if it doesn't exist
+      await ctx.db.insert('adminSettings', {
+        identifier,
+        value,
+        updatedAt: Date.now(),
+        createdAt: Date.now(),
+        createdBy: uid,
+      })
+    } else {
+      // Update existing setting
+      await ctx.db.patch(settings._id, {
+        value,
+        updatedAt: Date.now(),
+        updatedBy: uid,
       })
     }
 

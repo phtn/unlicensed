@@ -125,15 +125,20 @@ export const initiatePayGatePayment = action({
 
     // Determine payment method for PayGate
     // Map our payment methods to PayGate's expected format
-    let paygatePaymentMethod: 'credit_card' | 'crypto' | undefined
-    if (order.payment.method === 'credit_card') {
-      paygatePaymentMethod = 'credit_card'
-    } else if (order.payment.method === 'crypto') {
-      paygatePaymentMethod = 'crypto'
+    let paygatePaymentMethod:
+      | 'cards'
+      | 'crypto_transfer'
+      | 'crypto_commerce'
+      | 'cash_app'
+      | undefined
+    if (order.payment.method === 'cards') {
+      paygatePaymentMethod = 'cards'
+    } else if (order.payment.method === 'crypto_transfer') {
+      paygatePaymentMethod = 'crypto_transfer'
     }
     // cashapp is not directly supported by PayGate, treat as credit_card
-    else if (order.payment.method === 'cashapp') {
-      paygatePaymentMethod = 'credit_card'
+    else if (order.payment.method === 'cash_app') {
+      paygatePaymentMethod = 'cards'
     }
 
     // Convert cents to dollars for PayGate API
@@ -145,7 +150,7 @@ export const initiatePayGatePayment = action({
     let endpoint: string
     const params: URLSearchParams = new URLSearchParams()
 
-    if (paygatePaymentMethod === 'crypto') {
+    if (paygatePaymentMethod === 'crypto_commerce') {
       // Crypto payments use the crypto endpoint
       endpoint = `${apiUrl}/crypto/create.php`
       params.append('amount', amountInDollars.toString())
@@ -251,7 +256,7 @@ export const initiatePayGatePayment = action({
           }`,
         )
       }
-    } else if (isHtml && paygatePaymentMethod !== 'crypto') {
+    } else if (isHtml && paygatePaymentMethod !== 'crypto_commerce') {
       // Hosted payment endpoint may return HTML with redirect
       // For hosted payments, we'll construct the payment URL from the endpoint
       // The actual redirect happens client-side
@@ -293,7 +298,7 @@ export const initiatePayGatePayment = action({
       data.payment_url ||
       data.checkout_url ||
       data.url ||
-      (paygatePaymentMethod === 'credit_card'
+      (paygatePaymentMethod === 'cards'
         ? `${checkoutUrl}?session=${data.session_id || data.sessionId || ''}`
         : data.qr_code || '')
     const sessionId: string | undefined = data.session_id || data.sessionId
@@ -308,12 +313,12 @@ export const initiatePayGatePayment = action({
     // For crypto payments, session ID should be in the response
     const finalSessionId: string | undefined =
       sessionId ||
-      (paygatePaymentMethod !== 'crypto'
+      (paygatePaymentMethod !== 'crypto_commerce'
         ? `session_${args.orderId}`
         : undefined)
 
     // Validate session ID for crypto payments (required)
-    if (paygatePaymentMethod === 'crypto' && !finalSessionId) {
+    if (paygatePaymentMethod === 'crypto_commerce' && !finalSessionId) {
       throw new Error(
         'Invalid PayGate response: missing session ID for crypto payment',
       )

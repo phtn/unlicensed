@@ -2,7 +2,12 @@ import {v} from 'convex/values'
 import {internal} from '../_generated/api'
 import {mutation} from '../_generated/server'
 import {addressSchema} from '../users/d'
-import {orderStatusSchema, paymentSchema, shippingSchema} from './d'
+import {
+  orderStatusSchema,
+  paymentMethodSchema,
+  paymentSchema,
+  shippingSchema,
+} from './d'
 
 /**
  * Create a new order from a cart
@@ -17,11 +22,7 @@ export const createOrder = mutation({
     billingAddress: v.optional(addressSchema),
     contactEmail: v.string(),
     contactPhone: v.optional(v.string()),
-    paymentMethod: v.union(
-      v.literal('credit_card'),
-      v.literal('crypto'),
-      v.literal('cashapp'),
-    ),
+    paymentMethod: paymentMethodSchema,
     customerNotes: v.optional(v.string()),
     // Optional: override calculated totals
     subtotalCents: v.optional(v.number()),

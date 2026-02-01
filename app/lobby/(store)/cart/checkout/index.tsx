@@ -128,9 +128,9 @@ export function Checkout({
           startTransition(() => {
             // Determine redirect path based on payment method
             let redirectPath: string
-            if (paymentMethod === 'credit_card') {
+            if (paymentMethod === 'cards') {
               redirectPath = `/lobby/order/${orderId}/pay`
-            } else if (paymentMethod === 'cashapp') {
+            } else if (paymentMethod === 'cash_app') {
               redirectPath = `/lobby/order/${orderId}/cashapp`
             } else {
               // Default to commerce for crypto and other methods
@@ -195,7 +195,7 @@ export function Checkout({
           contactPhone: userPhone,
           paymentMethod: formData.paymentMethod,
           cashAppUsername:
-            formData.paymentMethod === 'cashapp'
+            formData.paymentMethod === 'cash_app'
               ? formData.cashAppUsername
               : undefined,
           subtotalCents: subtotal,
@@ -212,6 +212,7 @@ export function Checkout({
     userEmail,
     userPhone,
     formData.paymentMethod,
+    formData.cashAppUsername,
     subtotal,
     tax,
     shipping,
@@ -261,7 +262,7 @@ export function Checkout({
         contactPhone: formData.contactPhone || undefined,
         paymentMethod: formData.paymentMethod,
         cashAppUsername:
-          formData.paymentMethod === 'cashapp'
+          formData.paymentMethod === 'cash_app'
             ? formData.cashAppUsername
             : undefined,
         subtotalCents: subtotal,

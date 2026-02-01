@@ -1,13 +1,13 @@
 'use client'
 
-import {
-  clearLocalStorageCart,
-  getLocalStorageCartItems,
-} from '@/lib/localStorageCart'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {PaymentMethod} from '@/convex/orders/d'
 import {AddressType} from '@/convex/users/d'
+import {
+  clearLocalStorageCart,
+  getLocalStorageCartItems,
+} from '@/lib/localStorageCart'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
 import {useAuth} from './use-auth'
@@ -288,7 +288,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
 
             // Update cashAppUsername if payment method is cashapp and username is provided
             if (
-              params.paymentMethod === 'cashapp' &&
+              params.paymentMethod === 'cash_app' &&
               params.cashAppUsername &&
               params.cashAppUsername.trim() &&
               convexUser.cashAppUsername !== params.cashAppUsername.trim()

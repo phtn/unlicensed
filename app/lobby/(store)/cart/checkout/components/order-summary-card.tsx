@@ -7,7 +7,7 @@ import {Button, Card, CardBody, Divider} from '@heroui/react'
 import {memo, ViewTransition} from 'react'
 import {PointsBalance} from '../../rewards-summary'
 import {FormData} from '../types'
-import {PaymentMethod} from './payment-method'
+import {PaymentMethods} from './payment-method'
 
 // This component is part of the checkout flow, showing payment method and order button
 
@@ -37,7 +37,6 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   isLoading,
   isPending,
   orderId,
-  // paymentMethod,
   onPaymentMethodChange,
   onPlaceOrderClick,
   pointsBalance,
@@ -105,7 +104,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
             <>
               <Divider />
               <div className='py-5'>
-                <PaymentMethod onChange={handleOnChange} />
+                <PaymentMethods onChange={handleOnChange} />
               </div>
             </>
           )}

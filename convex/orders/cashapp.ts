@@ -102,7 +102,7 @@ export const initiateCashAppPayment = action({
       throw new Error('Order payment already processed')
     }
 
-    if (order.payment.method !== 'cashapp') {
+    if (order.payment.method !== 'cash_app') {
       throw new Error('Order payment method is not Cash App')
     }
 

@@ -18,6 +18,7 @@ import {
   BreadcrumbItem,
   Breadcrumbs,
   Button,
+  Tooltip,
   useDisclosure,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
@@ -43,7 +44,7 @@ export const ProductDetailContent = ({
 }: ProductDetailContentProps) => {
   const [selectedDenomination, setSelectedDenomination] = useState<number>(0)
   const {isOpen, onClose} = useDisclosure()
-  const {addItem} = useCart()
+  const {cart, addItem} = useCart()
   const [isPending, startTransition] = useTransition()
   const addToCartButtonRef = useRef<HTMLDivElement>(null)
   const galleryImageRef = useRef<HTMLDivElement>(null)
@@ -89,6 +90,14 @@ export const ProductDetailContent = ({
     }
     return adapted
   }, [detailQuery, initialDetail, primaryImageUrl, galleryUrls])
+
+  const productId = detailQuery?.product?._id
+  const quantityInCart = useMemo(() => {
+    if (!productId || !cart?.items) return 0
+    return cart.items
+      .filter((item) => item.product._id === productId)
+      .reduce((sum, item) => sum + item.quantity, 0)
+  }, [cart?.items, productId])
 
   if (detail === null) {
     notFound()
@@ -162,12 +171,27 @@ export const ProductDetailContent = ({
           />
           <div className='space-y-6 sm:space-y-8 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue dark:bg-dark-table/50 p-4 sm:p-5 lg:p-6 backdrop-blur-xl w-full'>
             <div className='flex flex-col gap-4 sm:gap-5'>
-              <div className='flex items-center justify-between gap-2 pb-4 md:w-full'>
-                <StatChip value={category?.name ?? product.categorySlug} />
+              <div className='flex items-center h-10 overflow-hidden justify-between gap-2 pb-2 md:w-full'>
+                <StatChip
+                  value={
+                    category?.name.toUpperCase() ??
+                    product.categorySlug.toUpperCase()
+                  }
+                />
                 <div className='flex items-center space-x-4'>
-                  <StatChip label='THC' value={product.thcPercentage + '%'} />
                   <StatChip
-                    label='CBD'
+                    value={
+                      <span>
+                        <span className='font-bold'>THC</span>{' '}
+                        <span className='font-okxs font-semibold text-brand'>
+                          {product.thcPercentage}
+                        </span>
+                        <span className='text-[8px] opacity-80'>%</span>
+                      </span>
+                    }
+                  />
+                  <StatChip
+                    label={''}
                     value={product.potencyLevel}
                     name={
                       product.potencyLevel === 'high'
@@ -176,9 +200,38 @@ export const ProductDetailContent = ({
                     }
                   />
                 </div>
-                <span className='text-[9px] sm:text-xs uppercase text-color-muted whitespace-nowrap'>
-                  in stock
-                </span>
+                {quantityInCart > 0 ? (
+                  <Tooltip key='in-cart' content='In The Bag'>
+                    <Badge
+                      size='lg'
+                      variant='shadow'
+                      className='px-[0.5px]'
+                      classNames={{
+                        badge:
+                          'aspect-square size-6 text-base translate-x-0.5 translate-y-0.5 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-background/85 shadow-md backdrop-blur-2xl bg-brand/80',
+                      }}
+                      content={
+                        <div
+                          suppressHydrationWarning
+                          className='flex items-center justify-center rounded-xs py-0.5 px-1 md:mx-0 size-5 aspect-square'>
+                          <span className='font-okxs font-medium text-base text-white leading-none drop-shadow-xs'>
+                            {quantityInCart}
+                          </span>
+                        </div>
+                      }>
+                      <div className='w-14 flex items-center justify-end'>
+                        <Icon
+                          name='shopping-bag-fill'
+                          className='size-8 drop-shadow-xs mt-1 mr-3.25'
+                        />
+                      </div>
+                    </Badge>
+                  </Tooltip>
+                ) : (
+                  <span className='text-[9px] w-14 sm:text-xs uppercase text-color-muted whitespace-nowrap'>
+                    in stock
+                  </span>
+                )}
               </div>
 
               <div className='space-y-3 sm:space-y-4'>
@@ -197,60 +250,62 @@ export const ProductDetailContent = ({
                       product.priceCents,
                   )}
                 </span>
+
                 <div className='flex flex-wrap items-start gap-3'>
                   {product.availableDenominations &&
                     product.availableDenominations.map((denomination, i) => (
-                      <Badge
-                        key={denomination}
-                        isOneChar
-                        size={isMobile ? 'sm' : 'md'}
-                        content={
-                          product.popularDenomination?.includes(
-                            denomination,
-                          ) ? (
-                            <Icon
-                              name='star-fill'
-                              className='size-4 rotate-12'
-                            />
-                          ) : null
-                        }
-                        placement='top-right'
-                        shape='circle'
-                        className={cn(
-                          'top-0 border-none border-hue dark:border-foreground/20',
-                          {
-                            hidden:
-                              !product.popularDenomination?.includes(
-                                denomination,
-                              ),
-                            'bg-brand text-background':
-                              selectedDenomination === i,
-                            'bg-hue dark:pink-100/10 text-brand':
-                              product.popularDenomination?.includes(
-                                denomination,
-                              ),
-                          },
-                        )}>
-                        <Button
-                          size='sm'
-                          onPress={handleDenominationChange(i)}
+                      <Tooltip key={denomination} content='Popular Choice'>
+                        <Badge
+                          isOneChar
+                          size={isMobile ? 'sm' : 'md'}
+                          content={
+                            product.popularDenomination?.includes(
+                              denomination,
+                            ) ? (
+                              <Icon
+                                name='star-fill'
+                                className='size-4 rotate-12'
+                              />
+                            ) : null
+                          }
+                          placement='top-right'
+                          shape='circle'
                           className={cn(
-                            'cursor-pointer bg-sidebar rounded-full border border-foreground/20 portrait:px-px',
+                            'top-0 border-none border-hue dark:border-foreground/20',
                             {
-                              'bg-dark-gray dark:bg-white dark:border-foreground text-white dark:text-dark-gray md:hover:bg-black dark:md:hover:bg-featured dark:hover:text-black md:hover:text-featured':
+                              hidden:
+                                !product.popularDenomination?.includes(
+                                  denomination,
+                                ),
+                              'bg-brand text-background':
                                 selectedDenomination === i,
+                              'bg-hue dark:pink-100/10 text-brand':
+                                product.popularDenomination?.includes(
+                                  denomination,
+                                ),
                             },
                           )}>
-                          <span
+                          <Button
+                            size='sm'
+                            onPress={handleDenominationChange(i)}
                             className={cn(
-                              'relative font-space text-sm font-medium whitespace-nowrap portrait:px-px',
+                              'cursor-pointer bg-sidebar rounded-full border border-foreground/20 portrait:px-px',
+                              {
+                                'bg-dark-gray dark:bg-white dark:border-foreground text-white dark:text-dark-gray md:hover:bg-black dark:md:hover:bg-featured dark:hover:text-black md:hover:text-featured':
+                                  selectedDenomination === i,
+                              },
                             )}>
-                            {product.unit === 'oz'
-                              ? mapFractions[denomination + product.unit]
-                              : denomination + product.unit}
-                          </span>
-                        </Button>
-                      </Badge>
+                            <span
+                              className={cn(
+                                'relative font-space text-sm font-medium whitespace-nowrap portrait:px-px',
+                              )}>
+                              {product.unit === 'oz'
+                                ? mapFractions[denomination + product.unit]
+                                : denomination + product.unit}
+                            </span>
+                          </Button>
+                        </Badge>
+                      </Tooltip>
                     ))}
                 </div>
               </div>

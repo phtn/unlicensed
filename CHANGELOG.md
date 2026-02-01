@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.8
+
+### Patch Changes
+
+- payment-methods
+
 ## 0.27.7
 
 ### Patch Changes

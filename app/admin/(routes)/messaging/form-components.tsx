@@ -150,18 +150,20 @@ export function SectionHeader({
   gradient,
 }: {
   title: string
-  icon: IconName
-  gradient: string
+  icon?: IconName
+  gradient?: string
 }) {
   return (
     <div className='flex items-center gap-3 mb-5'>
-      <div
-        className={cn(
-          'w-9 h-9 rounded-xl flex items-center justify-center shadow-sm ring-1 ring-white/5',
-          gradient,
-        )}>
-        <Icon name={icon} className='size-4 text-white' />
-      </div>
+      {icon && (
+        <div
+          className={cn(
+            'w-9 h-9 rounded-xl flex items-center justify-center shadow-sm ring-1 ring-white/5',
+            gradient,
+          )}>
+          <Icon name={icon} className='size-4 text-white' />
+        </div>
+      )}
       <h3 className='text-sm font-semibold tracking-tight'>{title}</h3>
       <div className='flex-1 h-px bg-linear-to-r from-foreground/30 to-transparent' />
     </div>

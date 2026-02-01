@@ -315,7 +315,7 @@ export default function PaymentPage() {
 
         <ArcCallout
           value={
-            order.payment.method === 'crypto'
+            order.payment.method === 'crypto_commerce'
               ? 'You will be redirected to complete your cryptocurrency payment.'
               : 'Click the button below to complete your payment securely.'
           }
@@ -330,7 +330,7 @@ export default function PaymentPage() {
           />
           <ArcButtonRight
             label={
-              order.payment.method === 'crypto'
+              order.payment.method === 'crypto_commerce'
                 ? 'Pay with Cryptocurrency'
                 : 'Pay Now'
             }

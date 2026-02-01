@@ -11,6 +11,7 @@ interface CalloutProps {
   type?: CalloutType
   children?: ReactNode
   customStyle?: ClassName
+  size?: 'sm' | 'md' | 'lg'
 }
 
 export const Callout = ({
@@ -20,6 +21,7 @@ export const Callout = ({
   type,
   children,
   customStyle,
+  size = 'md',
 }: CalloutProps) => {
   const defaultIcon: IconName = useMemo(() => {
     if (icon) return icon
@@ -43,7 +45,9 @@ export const Callout = ({
     <div
       className={cn(
         'flex items-center gap-3 p-4 rounded-3xl bg-default-100/50 border border-default-200/50 transition-all hover:bg-default-100 dark:bg-dark-table/40 w-full',
+        {'p-0.75 rounded-2xl': size === 'sm', 'p-6': size === 'lg'},
         {
+          'border-primary bg-primary/10': type === 'info',
           'border-indigo-400 bg-indigo-400/10': type === 'debug',
           'border-red-400 bg-red-400/10': type === 'error',
           'border-flavors bg-flavors/10': type === 'warning',
@@ -54,6 +58,7 @@ export const Callout = ({
           className={cn(
             'p-2.5 rounded-xl bg-primary text-white',
             {
+              'rounded-lg': size === 'sm',
               'bg-indigo-400': type === 'debug',
               'bg-red-400': type === 'error',
               'bg-orange-400': type === 'warning',
@@ -64,8 +69,8 @@ export const Callout = ({
         </div>
       </ViewTransition>
       <div className='flex-1'>
-        <div className='flex items-center justify-between w-full'>
-          <div className='text-sm font-bold font-nito'>{title}</div>
+        <div className='flex items-center justify-between w-full font-okxs'>
+          <div className='text-sm font-medium'>{title}</div>
           <span className='text-xs flex-1'>{children}</span>
         </div>
         <div className='text-xs opacity-80 mt-0.5'>{description}</div>

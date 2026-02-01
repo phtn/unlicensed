@@ -21,6 +21,7 @@ export const adminSettingsSchema = v.object({
   identifier: v.optional(v.string()),
   value: v.optional(v.record(v.string(), v.any())),
   updatedAt: v.number(),
+  updatedBy: v.optional(v.string()),
   createdAt: v.optional(v.number()),
   createdBy: v.optional(v.string()),
 })

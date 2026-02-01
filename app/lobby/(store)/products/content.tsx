@@ -9,7 +9,7 @@ import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
-import {Button} from '@heroui/react'
+import {Button, Select, SelectItem, SharedSelection} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {
   parseAsString,
@@ -17,7 +17,7 @@ import {
   useQueryState,
   useQueryStates,
 } from 'nuqs'
-import {Activity, useMemo} from 'react'
+import {Activity, ChangeEvent, useMemo, useState} from 'react'
 
 interface ContentProps {
   initialProducts: StoreProduct[]
@@ -230,16 +230,23 @@ export const Content = ({initialProducts}: ContentProps) => {
 
   const resolveUrl = useStorageUrls(imageIds)
 
-  // Update products with resolved image URLs
+  // Update products with resolved image URLs. Never pass a Convex storage ID
+  // to <img src> — when unresolved it becomes a relative URL and 404s.
   const productsWithImages = useMemo(() => {
     return filteredProducts.map((product) => {
       if (!product.image) {
         return product
       }
       const resolvedUrl = resolveUrl(product.image)
+      const imageUrl =
+        resolvedUrl && resolvedUrl.startsWith('http')
+          ? resolvedUrl
+          : product.image.startsWith('http')
+            ? product.image
+            : undefined
       return {
         ...product,
-        image: resolvedUrl ?? product.image,
+        image: imageUrl ?? null,
       }
     })
   }, [filteredProducts, resolveUrl])
@@ -270,13 +277,29 @@ export const Content = ({initialProducts}: ContentProps) => {
     flavorNotes ||
     search
 
+  const handleBrandChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setBrand(e.target.value)
+  }
+
+  const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setCategory(e.target.value)
+  }
+
+  const handlePotencyChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setPotency(e.target.value as PotencyLevel)
+  }
+
+  const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setSortParams({sort: e.target.value as SortField})
+  }
+
   return (
     <div className='min-h-screen overflow-x-hidden bg-background'>
       {/* Hero Section */}
       <section className='pt-16 md:pt-20 lg:pt-24 xl:pt-28 2xl:pt-36 pb-12 sm:pb-16 lg:pb-16 px-4 sm:px-6'>
         <div className='max-w-7xl mx-auto'>
-          <Tag text='Products' />
-          <Title title='All Products' subtitle='Discover Our Collection' />
+          <Tag text='Search' />
+          <Title title='Products' subtitle='Advanced Search' />
           <p className='hidden text-sm sm:text-base lg:text-base opacity-60 mt-6 sm:mt-8 max-w-2xl leading-relaxed'>
             Browse our complete selection of premium products. Use filters to
             find exactly what you&apos;re looking for.
@@ -287,20 +310,20 @@ export const Content = ({initialProducts}: ContentProps) => {
       {/* Filters Section */}
       <section className='px-4 sm:px-6 pb-8'>
         <div className='max-w-7xl mx-auto'>
-          <div className='rounded-3xl bg-sidebar/40 dark:bg-sidebar border border-foreground/10 dark:border-dark-gray/50 p-4 sm:p-6'>
+          <div className='rounded-3xl bg-sidebar/40 dark:bg-sidebar border border-foreground/10 dark:border-dark-gray/50 p-4 sm:px-6 sm:py-8'>
             {/* Search Bar */}
             <div className='mb-6'>
               <div className='relative'>
                 <Icon
                   name='search'
-                  className='absolute left-3 top-1/2 -translate-y-1/2 size-5 opacity-60'
+                  className='absolute left-2.75 top-[6.25px] size-4.5 opacity-60'
                 />
                 <input
                   type='text'
                   placeholder='Search products...'
                   value={search || ''}
                   onChange={(e) => setSearch(e.target.value || null)}
-                  className='w-full pl-16 pr-4 py-2.5 rounded-xl bg-background border border-foreground/10 dark:border-dark-gray/50 focus:outline-none focus:ring-2 focus:ring-brand/50'
+                  className='w-full pl-12 pr-4 py-3 placeholder:text-base placeholder:opacity-80 rounded-lg bg-background border border-foreground/10 dark:border-background focus:outline-none focus:ring-2 focus:ring-brand/50'
                 />
               </div>
             </div>
@@ -308,103 +331,44 @@ export const Content = ({initialProducts}: ContentProps) => {
             {/* Filter Controls */}
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4'>
               {/* Brand Filter */}
-              <div>
-                <label className='block text-xs font-medium mb-2 opacity-70'>
-                  Brand
-                </label>
-                <select
-                  value={brand || ''}
-                  onChange={(e) => setBrand(e.target.value || null)}
-                  className='w-full px-3 py-2 rounded-lg bg-background border border-foreground/10 dark:border-dark-gray/50 focus:outline-none focus:ring-2 focus:ring-brand/50 text-sm'>
-                  <option value=''>All Brands</option>
-                  {uniqueBrands.map((b) => (
-                    <option key={b} value={b}>
-                      {b.charAt(0).toUpperCase() + b.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
+              <FilterSelector
+                label='Brand'
+                innerLabel='All Brands'
+                onSelect={handleBrandChange}
+                data={uniqueBrands}
+              />
               {/* Category Filter */}
-              <div>
-                <label className='block text-xs font-medium mb-2 opacity-70'>
-                  Category
-                </label>
-                <select
-                  value={category || ''}
-                  onChange={(e) => setCategory(e.target.value || null)}
-                  className='w-full px-3 py-2 rounded-lg bg-background border border-foreground/10 dark:border-dark-gray/50 focus:outline-none focus:ring-2 focus:ring-brand/50 text-sm'>
-                  <option value=''>All Categories</option>
-                  {uniqueCategories.map((c) => (
-                    <option key={c.slug} value={c.slug}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
+              <FilterSelector
+                label='Category'
+                innerLabel='All Categories'
+                onSelect={handleCategoryChange}
+                data={uniqueCategories}
+              />
               {/* Potency Filter */}
-              <div>
-                <label className='block text-xs font-medium mb-2 opacity-70'>
-                  Potency
-                </label>
-                <select
-                  value={potency || ''}
-                  onChange={(e) =>
-                    setPotency((e.target.value as PotencyLevel) || undefined)
-                  }
-                  className='w-full px-3 py-2 rounded-lg bg-background border border-foreground/10 dark:border-dark-gray/50 focus:outline-none focus:ring-2 focus:ring-brand/50 text-sm'>
-                  <option value=''>All Levels</option>
-                  <option value='mild'>Mild</option>
-                  <option value='medium'>Medium</option>
-                  <option value='high'>High</option>
-                </select>
-              </div>
-
+              <FilterSelector
+                label='Potency'
+                innerLabel='All Potencies'
+                onSelect={handlePotencyChange}
+                data={['mild', 'medium', 'high'] as PotencyLevel[]}
+              />
               {/* Sort */}
-              <div>
-                <label className='block text-xs font-medium mb-2 opacity-70'>
-                  Sort By
-                </label>
-                <div className='flex gap-2'>
-                  <select
-                    value={sortParams.sort}
-                    onChange={(e) =>
-                      setSortParams({sort: e.target.value as SortField})
-                    }
-                    className='flex-1 px-3 py-2 rounded-lg bg-background border border-foreground/10 dark:border-dark-gray/50 focus:outline-none focus:ring-2 focus:ring-brand/50 text-sm'>
-                    <option value='name'>Name</option>
-                    <option value='price'>Price</option>
-                    <option value='thc'>THC %</option>
-                    <option value='rating'>Rating</option>
-                  </select>
-                  <button
-                    onClick={() =>
-                      setSortParams({
-                        order: sortParams.order === 'asc' ? 'desc' : 'asc',
-                      })
-                    }
-                    className='px-3 py-2 rounded-lg bg-background border border-foreground/10 dark:border-dark-gray/50 hover:bg-sidebar/50 transition-colors'>
-                    <Icon
-                      name={
-                        sortParams.order === 'asc' ? 'arrow-up' : 'arrow-down'
-                      }
-                      className='size-4'
-                    />
-                  </button>
-                </div>
-              </div>
+              <FilterSelector
+                label='Sort By'
+                innerLabel='Name'
+                onSelect={handleSortChange}
+                data={['name', 'price', 'thc', 'rating'] as SortField[]}
+              />
             </div>
 
             {/* Advanced Filters */}
-            <details className='mt-4'>
-              <summary className='cursor-pointer text-sm font-medium opacity-70 hover:opacity-100 transition-opacity'>
+            <details className='mt-6'>
+              <summary className='cursor-pointer select-none ml-2 text-sm font-medium opacity-70 hover:opacity-100 transition-opacity'>
                 Advanced Filters
               </summary>
               <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 pt-4 border-t border-foreground/10 dark:border-dark-gray/50'>
                 {/* THC Range */}
                 <div>
-                  <label className='block text-xs font-medium mb-2 opacity-70'>
+                  <label className='block text-xs select-none font-medium mb-2 opacity-70'>
                     Min THC %
                   </label>
                   <input
@@ -419,7 +383,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                   />
                 </div>
                 <div>
-                  <label className='block text-xs font-medium mb-2 opacity-70'>
+                  <label className='block select-none text-xs font-medium mb-2 opacity-70'>
                     Max THC %
                   </label>
                   <input
@@ -441,7 +405,7 @@ export const Content = ({initialProducts}: ContentProps) => {
               <div className='mt-4 pt-4 border-t border-foreground/10 dark:border-dark-gray/50 flex items-center justify-between flex-wrap gap-2'>
                 <div className='flex flex-wrap gap-2'>
                   {brand && (
-                    <span className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand/10 text-xs'>
+                    <span className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand/10 text-xs capitalize'>
                       Brand: {brand}
                       <button
                         onClick={() => setBrand(null)}
@@ -451,8 +415,9 @@ export const Content = ({initialProducts}: ContentProps) => {
                     </span>
                   )}
                   {category && (
-                    <span className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand/10 text-xs'>
-                      Category: {category}
+                    <span className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand/40 text-xs capitalize'>
+                      Category:{' '}
+                      <span className='font-semibold'>{category}</span>
                       <button
                         onClick={() => setCategory(null)}
                         className='hover:opacity-70'>
@@ -461,8 +426,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                     </span>
                   )}
                   {potency && (
-                    <span className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand/10 text-xs'>
-                      Potency: {potency}
+                    <span className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand/40 text-xs capitalize'>
+                      Potency: <span className='font-semibold'>{potency}</span>
                       <button
                         onClick={() => setPotency(null)}
                         className='hover:opacity-70'>
@@ -531,6 +496,65 @@ export const Content = ({initialProducts}: ContentProps) => {
           </div>
         </div>
       </section>
+    </div>
+  )
+}
+
+interface FilterSelectorProps {
+  label: string
+  innerLabel: string
+  data: Array<{slug: string; name: string} | string>
+  onSelect: (e: ChangeEvent<HTMLSelectElement>) => void
+}
+
+const FilterSelector = ({
+  label,
+  innerLabel,
+  data,
+  onSelect,
+}: FilterSelectorProps) => {
+  const [selectChanged, setSelectChanged] = useState(false)
+  const onSelectionChange = (keys: SharedSelection) => {
+    console.log(keys)
+    if ('size' in keys && keys.size === 0) {
+      setSelectChanged(false)
+    } else {
+      setSelectChanged(true)
+    }
+  }
+  const onClear = () => {
+    setSelectChanged(false)
+  }
+  return (
+    <div>
+      <label className='block select-none text-sm font-okxs font-medium ml-2 mb-2 opacity-70'>
+        {label}
+      </label>
+      <Select
+        size='sm'
+        value={typeof data[0] === 'object' ? data[0].name : data[0]}
+        label={innerLabel}
+        onChange={onSelect}
+        onClear={onClear}
+        onSelectionChange={onSelectionChange}
+        selectorIcon={<Icon name='selector' />}
+        className='w-full text-sm font-okxs'
+        classNames={{
+          trigger:
+            'ps-4 pe-0 bg-background dark:hover:bg-background/70 transition-colors duration-300 rounded-lg dark:border-background',
+          popoverContent:
+            'rounded-lg bg-background dark:bg-dark-table dark:text-white',
+          value: 'ml-2 mb-4 capitalize',
+          label: selectChanged ? 'hidden' : 'block',
+        }}>
+        {data.map((b) => (
+          <SelectItem
+            key={typeof b === 'string' ? b : b.slug}
+            className='ml-2 capitalize'>
+            {typeof b === 'string' ? b : b.name}
+          </SelectItem>
+        ))}
+      </Select>
     </div>
   )
 }

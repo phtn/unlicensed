@@ -1,11 +1,16 @@
-import {PaymentMethod as PaymentMethodType} from '@/convex/orders/d'
+import {api} from '@/convex/_generated/api'
+import {
+  PaymentMethod,
+  PaymentMethod as PaymentMethodType,
+} from '@/convex/orders/d'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Select, SelectItem} from '@heroui/react'
-import React, {useEffect} from 'react'
+import {useQuery} from 'convex/react'
+import React, {useEffect, useMemo} from 'react'
 
 interface IPaymentMethod {
-  id: string
+  id: PaymentMethod
   name: string
   label: string
   icon: IconName
@@ -16,48 +21,57 @@ interface IPaymentMethod {
 }
 
 interface PaymentMethodProps {
-  onChange: (value: 'credit_card' | 'crypto' | 'cashapp') => void
+  onChange: (value: PaymentMethod) => void
 }
 
-export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
-  const methods: Array<IPaymentMethod> = [
-    {
-      id: 'credit-card',
-      name: 'Credit Card',
-      label: 'Credit Card',
-      icon: 'credit-card-2',
-      iconStyle: 'dark:text-blue-400 text-blue-500',
-      description: 'Visa, Mastercard, AMEX, every card.',
-      status: 'inactive',
-      tag: 'Not Available',
-    },
-    {
-      id: 'crypto',
-      name: 'Crypto',
-      label: 'Crypto',
-      icon: 'ethereum',
-      iconStyle: 'dark:text-indigo-400 text-indigo-500',
-      description: 'BTC, ETH, USDC, USDT',
-      status: 'active',
-      tag: 'Verification Required',
-    },
-    {
-      id: 'cash-app',
-      name: 'CashApp',
-      label: 'CashApp',
-      icon: 'cashapp',
-      iconStyle: 'text-cashapp',
-      description: 'CashApp Account',
-      status: 'active',
-      tag: 'Verification Required',
-    },
-  ]
+export const PaymentMethods = ({onChange}: PaymentMethodProps) => {
+  // const methods: Array<IPaymentMethod> = [
+  //   {
+  //     id: 'cards',
+  //     name: 'Credit Card',
+  //     label: 'Credit Card',
+  //     icon: 'credit-card-2',
+  //     iconStyle: 'dark:text-blue-400 text-blue-500',
+  //     description: 'Visa, Mastercard, AMEX, every card.',
+  //     status: 'inactive',
+  //     tag: 'Not Available',
+  //   },
+  //   {
+  //     id: 'crypto_commerce',
+  //     name: 'Crypto',
+  //     label: 'Crypto',
+  //     icon: 'ethereum',
+  //     iconStyle: 'dark:text-indigo-400 text-indigo-500',
+  //     description: 'BTC, ETH, USDC, USDT',
+  //     status: 'active',
+  //     tag: 'Verification Required',
+  //   },
+  //   {
+  //     id: 'cash_app',
+  //     name: 'CashApp',
+  //     label: 'CashApp',
+  //     icon: 'cashapp',
+  //     iconStyle: 'text-cashapp',
+  //     description: 'CashApp Account',
+  //     status: 'active',
+  //     tag: 'Verification Required',
+  //   },
+  // ]
+
+  const setting = useQuery(api.admin.q.getAdminByIdentStrict, {
+    identifier: 'payment_methods',
+  })
+
+  const methods = useMemo(
+    () => (setting?.methods ?? []) as IPaymentMethod[],
+    [setting],
+  )
 
   // Map method IDs to expected payment method values
   const idToPaymentMethod: Record<string, PaymentMethodType> = {
-    'credit-card': 'credit_card',
-    crypto: 'crypto',
-    'cash-app': 'cashapp',
+    card: 'cards',
+    crypto: 'crypto_commerce',
+    'cash-app': 'cash_app',
   }
 
   const handleSelectionChange = (keys: 'all' | Set<React.Key>) => {
@@ -73,7 +87,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
 
   // Set default selection on mount
   useEffect(() => {
-    onChange('crypto')
+    onChange('crypto_commerce')
   }, [onChange])
 
   return (
@@ -86,7 +100,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
         listboxWrapper: 'border dark:border-foreground/40 rounded-2xl',
         listbox: 'border-b',
       }}
-      defaultSelectedKeys={['crypto']}
+      defaultSelectedKeys={['crypto_commerce']}
       isMultiline={true}
       multiple={false}
       items={methods}
@@ -144,7 +158,7 @@ export const PaymentMethod = ({onChange}: PaymentMethodProps) => {
                 <div
                   className={cn(
                     'text-[8px] uppercase font-brk whitespace-nowrap w-fit px-1 py-0 md:px-1 leading-3 md:leading-normal text-white',
-                    {'': method.id === 'credit-card'},
+                    {'': method.id === 'cards'},
                   )}>
                   {method.tag}
                 </div>

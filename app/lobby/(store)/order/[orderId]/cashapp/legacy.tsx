@@ -31,7 +31,7 @@ export default function CashAppPage() {
 
   // Validate payment method during render
   const paymentMethodError = useMemo(() => {
-    if (order && order.payment.method !== 'cashapp') {
+    if (order && order.payment.method !== 'cash_app') {
       return 'Invalid payment method for this checkout'
     }
     return null
@@ -59,7 +59,7 @@ export default function CashAppPage() {
     }
 
     // Skip if payment method is invalid (handled during render)
-    if (order.payment.method !== 'cashapp') {
+    if (order.payment.method !== 'cash_app') {
       return
     }
 
@@ -87,9 +87,7 @@ export default function CashAppPage() {
       } catch (err) {
         console.error('Cash App payment initialization error:', err)
         setError(
-          err instanceof Error
-            ? err.message
-            : 'Failed to initialize payment',
+          err instanceof Error ? err.message : 'Failed to initialize payment',
         )
       }
     }
@@ -140,9 +138,7 @@ export default function CashAppPage() {
           // Check payment status and redirect on success
           checkPaymentStatus({orderId}).then((status) => {
             if (status.status === 'completed') {
-              router.push(
-                `/lobby/account/orders/${orderId}?payment=success`,
-              )
+              router.push(`/lobby/account/orders/${orderId}?payment=success`)
             }
           })
         }}

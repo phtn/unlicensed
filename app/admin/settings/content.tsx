@@ -1,11 +1,12 @@
 'use client'
 
-import {PayGateSettings} from './paygate'
+import {MainWrapper} from '../_components/main-wrapper'
+import {SettingsTabs} from './tabs'
 
 export const Content = () => {
   return (
-    <main className='md:px-4 space-y-6 md:py-2'>
-      <PayGateSettings />
-    </main>
+    <MainWrapper className='md:p-4'>
+      <SettingsTabs />
+    </MainWrapper>
   )
 }

@@ -13,10 +13,11 @@ export const orderItemSchema = v.object({
   totalPriceCents: v.number(), // Total price for this line item
 })
 
-const paymentMethodSchema = v.union(
-  v.literal('credit_card'),
-  v.literal('crypto'),
-  v.literal('cashapp'),
+export const paymentMethodSchema = v.union(
+  v.literal('cards'),
+  v.literal('crypto_transfer'),
+  v.literal('crypto_commerce'),
+  v.literal('cash_app'),
 )
 
 export type PaymentMethod = Infer<typeof paymentMethodSchema>

@@ -3,8 +3,7 @@ import {Callout, DotDiv} from '@/components/ui/callout'
 
 import {Ascend} from '@/components/expermtl/ascend'
 import {Loader} from '@/components/expermtl/loader'
-import {api} from '@/convex/_generated/api'
-import {useAuth} from '@/hooks/use-auth'
+import {useAccount} from '@/hooks/use-account'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
@@ -17,72 +16,41 @@ import {
   Image,
   Progress,
 } from '@heroui/react'
-import {useQuery} from 'convex/react'
 import {useTheme} from 'next-themes'
 import Link from 'next/link'
 import {memo, startTransition, useMemo, useState, ViewTransition} from 'react'
+import {OrderItem} from './_components/order-item'
 
 export default function AccountPage() {
-  const {user: firebaseUser} = useAuth()
+  const {
+    user,
+    orders,
+    orderStats,
+    rewards,
+    tierBenefits,
+    pointsBalance,
+    nextVisitMultiplier,
+  } = useAccount()
   const [showAllOrders, setShowAllOrders] = useState(false)
 
-  // 1. Get Current User
-  const convexUser = useQuery(
-    api.users.q.getCurrentUser,
-    firebaseUser ? {firebaseId: firebaseUser.uid} : 'skip',
-  )
-
-  // 2. Get Dependent Data (only if we have convexUser._id)
-  const userId = convexUser?._id
-
-  const orderStats = useQuery(
-    api.orders.q.getUserOrderStats,
-    userId ? {userId} : 'skip',
-  )
-
-  const userRewards = useQuery(
-    api.rewards.q.getUserRewards,
-    userId ? {userId} : 'skip',
-  )
-
-  const recentOrders = useQuery(
-    api.orders.q.getUserOrders,
-    userId ? {userId, limit: showAllOrders ? 20 : 5} : 'skip',
-  )
-
-  const tierBenefits = useQuery(
-    api.rewards.q.getUserTierBenefits,
-    userId ? {userId} : 'skip',
-  )
-
-  const pointsBalance = useQuery(
-    api.rewards.q.getUserPointsBalance,
-    userId ? {userId} : 'skip',
-  )
-
-  const nextVisitMultiplier = useQuery(
-    api.rewards.q.getNextVisitMultiplier,
-    userId ? {userId} : 'skip',
-  )
-
   // Loading State (Initial page load only)
-  const isLoading = !convexUser
+  const isLoading = !user
 
   // Calculate Progress to Next Tier
   const nextTierProgress = useMemo(() => {
-    if (!userRewards || !userRewards.nextTier) return 100
-    const currentSpend = userRewards.lifetimeSpendingCents
-    const nextTierSpend = userRewards.nextTier.minimumSpendingCents || 0
+    if (!rewards || !rewards.nextTier) return 100
+    const currentSpend = rewards.lifetimeSpendingCents
+    const nextTierSpend = rewards.nextTier.minimumSpendingCents || 0
     if (nextTierSpend === 0) return 100
     return Math.min(100, (currentSpend / nextTierSpend) * 100)
-  }, [userRewards])
+  }, [rewards])
 
   const spendToNextTier = useMemo(() => {
-    if (!userRewards || !userRewards.nextTier) return 0
-    const currentSpend = userRewards.lifetimeSpendingCents
-    const nextTierSpend = userRewards.nextTier.minimumSpendingCents || 0
+    if (!rewards || !rewards.nextTier) return 0
+    const currentSpend = rewards.lifetimeSpendingCents
+    const nextTierSpend = rewards.nextTier.minimumSpendingCents || 0
     return Math.max(0, nextTierSpend - currentSpend)
-  }, [userRewards])
+  }, [rewards])
 
   // Helper for Order Status Color
   const getStatusColor = (status: string): ChipProps['color'] => {
@@ -119,7 +87,7 @@ export default function AccountPage() {
     })
   }
 
-  if (isLoading && firebaseUser && true) {
+  if (isLoading) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
         <Loader />
@@ -145,7 +113,7 @@ export default function AccountPage() {
               icon='code'
               type='debug'
             />
-            {userRewards?.currentTier && (
+            {rewards?.currentTier && (
               <Chip
                 variant='shadow'
                 classNames={{
@@ -157,7 +125,7 @@ export default function AccountPage() {
                 startContent={
                   <Icon name='star-fill' className='size-4 text-white' />
                 }>
-                {userRewards.currentTier.name.toUpperCase()} MEMBER
+                {rewards.currentTier.name.toUpperCase()} MEMBER
               </Chip>
             )}
           </div>
@@ -177,37 +145,27 @@ export default function AccountPage() {
                   <div className=''>
                     <div className='size-32 mask-b-from-50% mask-radial-[50%_50%] mask-radial-from-80% rounded-full p-0.5 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500'>
                       <div className='z-200 w-full h-full rounded-full overflow-hidden border-4 border-background bg-background flex items-center justify-center'>
-                        {convexUser?.photoUrl || firebaseUser?.photoURL ? (
+                        {user?.photoUrl ? (
                           <Image
-                            src={
-                              convexUser?.photoUrl ||
-                              firebaseUser?.photoURL ||
-                              ''
-                            }
+                            src={user.photoUrl}
                             alt='Profile'
                             className='size-full object-cover relative z-100'
                           />
                         ) : (
                           <div className='w-full h-full flex items-center justify-center font-polysans font-normal bg-linear-to-br from-indigo-100 to-pink-100 dark:from-indigo-900/30 dark:to-pink-900/30 text-4xl text-white dark:text-indigo-400 '>
-                            {(
-                              convexUser?.name ||
-                              firebaseUser?.displayName ||
-                              ''
-                            )
-                              .charAt(0)
-                              .toUpperCase()}
+                            {(user?.name ?? '').charAt(0).toUpperCase()}
                           </div>
                         )}
                       </div>
                     </div>
-                    {userRewards?.isVIP && (
+                    {rewards?.isVIP && (
                       <div className='absolute -bottom-1 -right-1 bg-linear-to-br from-yellow-400 to-yellow-600 text-black text-xs font-bold px-2.5 py-1 rounded-full shadow-lg border-2 border-background'>
                         VIP
                       </div>
                     )}
                   </div>
                   <h2 className='text-xl font-bone tracking-tight text-white'>
-                    {convexUser?.name ?? firebaseUser?.displayName}
+                    {user?.name}
                   </h2>
                   {/*<div className='space-y-1'>
 
@@ -282,7 +240,7 @@ export default function AccountPage() {
             )}
 
             {/* Loyalty Progress Card */}
-            {userRewards?.nextTier && (
+            {rewards?.nextTier && (
               <Card
                 shadow='none'
                 className='border border-foreground/20 backdrop-blur-sm'>
@@ -303,7 +261,7 @@ export default function AccountPage() {
                       size='sm'
                       variant='flat'
                       className='bg-primary/20 text-primary font-nito font-semibold'>
-                      {userRewards.nextTier.name}
+                      {rewards.nextTier.name}
                     </Chip>
                   </div>
 
@@ -332,7 +290,7 @@ export default function AccountPage() {
                       </span>{' '}
                       more to reach{' '}
                       <span className='font-semibold text-primary'>
-                        {userRewards.nextTier.name}
+                        {rewards.nextTier.name}
                       </span>{' '}
                       status
                     </p>
@@ -402,7 +360,7 @@ export default function AccountPage() {
                 <div>
                   <p className='text-sm text-default-500 px-2'>Active Orders</p>
                 </div>
-                {recentOrders && recentOrders.length > 5 && (
+                {orders && orders.length > 5 && (
                   <Button
                     variant='light'
                     onPress={toggleShowAllOrders}
@@ -421,11 +379,11 @@ export default function AccountPage() {
 
               <ViewTransition>
                 <div className='space-y-3 min-h-25'>
-                  {recentOrders === undefined ? (
+                  {orders === undefined ? (
                     <div className='w-full flex justify-center items-center py-16'>
                       <Loader />
                     </div>
-                  ) : recentOrders.length === 0 ? (
+                  ) : orders.length === 0 ? (
                     <Card className='border-2 border-dashed border-default-200 dark:border-default-100/20 bg-default-50/50 dark:bg-default-50/5'>
                       <CardBody className='py-16 flex flex-col items-center justify-center text-center'>
                         <div className='w-20 h-20 rounded-full bg-default-100 dark:bg-default-50/10 flex items-center justify-center mb-5'>
@@ -451,72 +409,11 @@ export default function AccountPage() {
                       </CardBody>
                     </Card>
                   ) : (
-                    recentOrders.map((order) => (
-                      <Card
-                        shadow='none'
-                        key={order._id}
-                        as={Link}
-                        href={`/account/orders/${order._id}`}
-                        isPressable
-                        className='w-full border hover:border-foreground/20 bg-content/50 backdrop-blur-sm hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5'>
-                        <CardBody className='p-5'>
-                          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
-                            <div className='flex items-start gap-4 flex-1 min-w-0'>
-                              <div className='p-3 rounded-xl bg-linear-to-br from-default-100/30 to-default-500/10 hidden sm:flex shrink-0'>
-                                <Icon
-                                  name='box'
-                                  className='size-5 opacity-50'
-                                />
-                              </div>
-                              <div className='flex-1 min-w-0'>
-                                <div className='flex items-center gap-3 flex-wrap mb-2'>
-                                  <h3 className='font-semibold text-base tracking-tight truncate'>
-                                    {order.orderNumber}
-                                  </h3>
-                                  <Chip
-                                    size='sm'
-                                    color={getStatusColor(order.orderStatus)}
-                                    variant='flat'
-                                    className='font-medium'>
-                                    {formatStatus(order.orderStatus)}
-                                  </Chip>
-                                </div>
-                                <div className='flex items-center gap-2 text-sm text-default-500 flex-wrap'>
-                                  <span className='font-space'>
-                                    {order.createdAt
-                                      ? new Date(
-                                          order.createdAt,
-                                        ).toLocaleDateString('en-US', {
-                                          year: 'numeric',
-                                          month: 'short',
-                                          day: 'numeric',
-                                        })
-                                      : 'N/A'}
-                                  </span>
-                                  <span>•</span>
-                                  <span className='font-space'>
-                                    {order.items.length} item
-                                    {order.items.length !== 1 ? 's' : ''}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className='flex items-center justify-between sm:justify-end gap-4 sm:gap-6 border-t sm:border-none pt-4 sm:pt-0'>
-                              <div className='text-left sm:text-right'>
-                                <p className='text-xs text-default-500 uppercase tracking-wider mb-1'>
-                                  Total
-                                </p>
-                                <p className='text-xl font-space font-semibold'>
-                                  ${formatPrice(order.totalCents)}
-                                </p>
-                              </div>
-                              <Icon name='chevron-right' className='size-4' />
-                            </div>
-                          </div>
-                        </CardBody>
-                      </Card>
-                    ))
+                    orders
+                      .slice(0, 5)
+                      .map((order) => (
+                        <OrderItem key={order.orderNumber} order={order} />
+                      ))
                   )}
                 </div>
               </ViewTransition>

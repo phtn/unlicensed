@@ -1,9 +1,10 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
-import {Id} from '@/convex/_generated/dataModel'
+import {onInfo} from '@/ctx/toast'
 import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
 import {
   BreadcrumbItem,
@@ -21,6 +22,8 @@ import {motion} from 'motion/react'
 import {default as NextLink} from 'next/link'
 import {useParams, useSearchParams} from 'next/navigation'
 import {useEffect, useState} from 'react'
+import {Actions} from './_components/actions'
+import {SectionTitle} from './_components/section'
 
 function getStatusColor(status: string) {
   switch (status) {
@@ -71,7 +74,7 @@ export default function OrderDetailPage() {
   const params = useParams()
   const searchParams = useSearchParams()
   const {user: firebaseUser} = useAuth()
-  const orderId = params['order-id'] as Id<'orders'>
+  const orderNumber = params['order-number'] as string
   const [showSuccessBanner, setShowSuccessBanner] = useState(false)
 
   // Get current user
@@ -81,7 +84,10 @@ export default function OrderDetailPage() {
   )
 
   // Get order
-  const order = useQuery(api.orders.q.getById, {id: orderId})
+  const order = useQuery(
+    api.orders.q.getOrderByNumber,
+    orderNumber ? {orderNumber} : 'skip',
+  )
 
   // Check for payment success query param
   useEffect(() => {
@@ -105,8 +111,8 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className='min-h-screen pt-16 lg:pt-24 px-4 sm:px-6 lg:px-8 py-8'>
-      <div className='max-w-4xl mx-auto'>
+    <div className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
+      <div className='max-w-7xl mx-auto'>
         {/* Payment Success Banner */}
         {showSuccessBanner && (
           <Card className='mb-6 border border-terpenes/20 bg-terpenes/5'>
@@ -138,36 +144,44 @@ export default function OrderDetailPage() {
         )}
 
         {/* Header */}
-        <div className='flex items-center justify-between mb-8'>
+        <div className='flex items-center justify-between mb-5'>
           <div>
             <h1 className='text-base font-space space-x-1 sm:space-x-3'>
               <Breadcrumbs>
                 <BreadcrumbItem href='/account'>Account</BreadcrumbItem>
                 <BreadcrumbItem href='/account/orders'>Orders</BreadcrumbItem>
-                <BreadcrumbItem>{order.orderNumber}</BreadcrumbItem>
+                <BreadcrumbItem>
+                  {order.orderNumber}{' '}
+                  <Chip
+                    color={
+                      getStatusColor(order.orderStatus) as ChipProps['color']
+                    }
+                    variant='faded'
+                    radius='none'
+                    className='ml-1 px-1 border-none rounded-sm dark:text-orange-300 uppercase font-brk dark:bg-black/50'
+                    size='sm'>
+                    {formatStatus(order.orderStatus)}
+                  </Chip>
+                </BreadcrumbItem>
               </Breadcrumbs>
             </h1>
           </div>
-          <Chip
-            color={getStatusColor(order.orderStatus) as ChipProps['color']}
-            variant='faded'
-            radius='sm'
-            size='lg'
-            className='border-none px-0 font-brk text-sm uppercase'>
-            {formatStatus(order.orderStatus)}
-          </Chip>
+          <Actions status={order.orderStatus} />
         </div>
 
         <div className='grid gap-6'>
           {/* Order Items */}
-          <Card>
+          <Card radius='sm' shadow='none' className='dark:bg-dark-table'>
             <CardBody className='p-6'>
-              <h2 className='text-xl tracking-wide font-polysans font-semibold mb-4'>
-                Order Items
-              </h2>
-              <div className='space-y-4'>
+              <SectionTitle title='Items' />
+              <div className='grid md:grid-cols-2 md:gap-0'>
                 {order.items.map((item, index) => (
-                  <div key={index}>
+                  <div
+                    key={item.productId}
+                    className={cn('p', {
+                      'pe-8 border-r border-dotted border-foreground/15':
+                        index % 2 === 0,
+                    })}>
                     <div className='flex gap-4'>
                       <Image
                         src={item.productImage}
@@ -193,9 +207,6 @@ export default function OrderDetailPage() {
                         </p>
                       </div>
                     </div>
-                    {index < order.items.length - 1 && (
-                      <Divider className='mt-4' />
-                    )}
                   </div>
                 ))}
               </div>
@@ -204,11 +215,9 @@ export default function OrderDetailPage() {
 
           {/* Order Summary */}
           <div className='grid gap-6 md:grid-cols-2'>
-            <Card>
+            <Card radius='sm' shadow='none'>
               <CardBody className='p-6'>
-                <h2 className='text-xl font-polysans font-semibold mb-4'>
-                  Order Summary
-                </h2>
+                <SectionTitle title='Order Summary' />
                 <div className='space-y-2 font-okxs'>
                   <div className='flex justify-between text-sm'>
                     <span className='text-color-muted'>Subtotal</span>
@@ -246,14 +255,12 @@ export default function OrderDetailPage() {
             </Card>
 
             {/* Payment Information */}
-            <Card>
+            <Card radius='sm' shadow='none'>
               <CardBody className='p-6'>
                 <div className='flex items-center justify-between'>
-                  <h2 className='text-xl font-polysans font-semibold mb-4'>
-                    Payment
-                  </h2>
+                  <SectionTitle title='Payment' />
                   <div className='font-okxs text-cashapp'>
-                    {order.payment.method === 'cashapp'
+                    {order.payment.method === 'cash_app'
                       ? '@' + convexUser?.cashAppUsername
                       : ''}
                   </div>
@@ -267,15 +274,13 @@ export default function OrderDetailPage() {
                     <span className='text-sm text-color-muted'>Status</span>
                     <Chip
                       color={
-                        order.payment.status === 'completed'
-                          ? 'success'
-                          : order.payment.status === 'failed'
-                            ? 'danger'
-                            : 'warning'
+                        getStatusColor(order.orderStatus) as ChipProps['color']
                       }
-                      variant='flat'
+                      variant='faded'
+                      radius='none'
+                      className='ml-1 px-1 border-none rounded-sm dark:text-orange-300 uppercase font-brk dark:bg-black/30'
                       size='sm'>
-                      {formatStatus(order.payment.status)}
+                      {formatStatus(order.orderStatus)}
                     </Chip>
                   </div>
                   {order.payment.transactionId && (
@@ -323,11 +328,9 @@ export default function OrderDetailPage() {
 
           {/* Shipping Information */}
           <div className='grid gap-6 md:grid-cols-2'>
-            <Card>
+            <Card radius='sm' shadow='none'>
               <CardBody className='p-6'>
-                <h2 className='text-xl font-polysans font-semibold mb-4'>
-                  Shipping Address
-                </h2>
+                <SectionTitle title='Shipping Address' />
                 <div className='space-y-1 font-okxs text-sm'>
                   {order.shippingAddress.firstName &&
                     order.shippingAddress.lastName && (
@@ -390,11 +393,9 @@ export default function OrderDetailPage() {
             </Card>
 
             {order.billingAddress && (
-              <Card>
+              <Card radius='sm' shadow='none'>
                 <CardBody className='p-6'>
-                  <h2 className='text-xl font-polysans font-semibold mb-4'>
-                    Billing Address
-                  </h2>
+                  <SectionTitle title='Billing Address' />
                   <div className='space-y-1 font-okxs text-sm'>
                     {order.billingAddress.firstName &&
                       order.billingAddress.lastName && (
@@ -416,57 +417,52 @@ export default function OrderDetailPage() {
                 </CardBody>
               </Card>
             )}
-          </div>
-
-          {/* Order Details */}
-          <Card>
-            <CardBody className='p-6'>
-              <h2 className='text-xl font-polysans font-semibold mb-4'>
-                Order Details
-              </h2>
-              <div className='space-y-2 font-okxs text-sm'>
-                <div className='flex justify-between'>
-                  <span className='text-color-muted'>Order Number</span>
-                  <span className='font-mono'>{order.orderNumber}</span>
-                </div>
-                <div className='flex justify-between'>
-                  <span className='text-color-muted'>Placed On</span>
-                  <span>{formatDate(order.createdAt ?? 0)}</span>
-                </div>
-                <div className='flex justify-between'>
-                  <span className='text-color-muted'>Contact Email</span>
-                  <span>{order.contactEmail}</span>
-                </div>
-                {order.contactPhone && (
+            {/* Order Details */}
+            <Card radius='sm' shadow='none'>
+              <CardBody className='p-6'>
+                <SectionTitle title='Order Details' />
+                <div className='space-y-2 font-okxs text-sm'>
                   <div className='flex justify-between'>
-                    <span className='text-color-muted'>Contact Phone</span>
-                    <span>{order.contactPhone}</span>
+                    <span className='text-color-muted'>Order Number</span>
+                    <span className='font-mono'>{order.orderNumber}</span>
                   </div>
-                )}
-                {order.customerNotes && (
-                  <div className='mt-4 pt-4 border-t border-divider'>
-                    <p className='text-color-muted mb-2'>Customer Notes</p>
-                    <p className='text-sm'>{order.customerNotes}</p>
+                  <div className='flex justify-between'>
+                    <span className='text-color-muted'>Placed On</span>
+                    <span>{formatDate(order.createdAt ?? 0)}</span>
                   </div>
-                )}
-              </div>
-            </CardBody>
-          </Card>
+                  <div className='flex justify-between'>
+                    <span className='text-color-muted'>Contact Email</span>
+                    <span>{order.contactEmail}</span>
+                  </div>
+                  {order.contactPhone && (
+                    <div className='flex justify-between'>
+                      <span className='text-color-muted'>Contact Phone</span>
+                      <span>{order.contactPhone}</span>
+                    </div>
+                  )}
+                  {order.customerNotes && (
+                    <div className='mt-4 pt-4 border-t border-divider'>
+                      <p className='text-color-muted mb-2'>Customer Notes</p>
+                      <p className='text-sm'>{order.customerNotes}</p>
+                    </div>
+                  )}
+                </div>
+              </CardBody>
+            </Card>
+          </div>
 
           {/* Actions */}
           <div className='flex gap-4 justify-end'>
-            <Button variant='flat' as={NextLink} href='/account'>
+            <Button radius='sm' variant='flat' as={NextLink} href='/account'>
               Back to Account
             </Button>
             {order.orderStatus !== 'shipped' &&
               order.orderStatus !== 'cancelled' && (
                 <Button
                   color='danger'
+                  radius='sm'
                   variant='flat'
-                  onPress={() => {
-                    // TODO: Implement cancel order functionality
-                    alert('Cancel order functionality coming soon')
-                  }}>
+                  onPress={() => onInfo('Order Cancelled')}>
                   Cancel Order
                 </Button>
               )}

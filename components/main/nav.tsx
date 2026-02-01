@@ -125,9 +125,10 @@ export const Nav = ({children}: NavProps) => {
                 ) : undefined
               }
               isInvisible={cartItemCount === 0}
-              className='border-[1.5px] border-black px-0.5 bg-brand translate-x-3.5 -translate-y-1.5'
+              className='px-[0.5px]'
               classNames={{
-                base: 'aspect-square border-none size-8 text-xl rounded-xs flex items-center justify-center',
+                badge:
+                  'aspect-square size-6 text-base translate-x-2.5 -translate-y-1 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-background/85 shadow-md backdrop-blur-2xl bg-brand/80',
               }}
               shape='rectangle'>
               <Button

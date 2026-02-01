@@ -343,9 +343,14 @@ const data: Record<string, NavGroup[]> = {
       ],
     },
     {
-      title: 'settings',
+      title: '',
       url: '#',
       items: [
+        {
+          title: 'Settings',
+          url: '/admin/settings',
+          icon: 'settings',
+        },
         {
           title: 'Payments',
           url: '/admin/payments',

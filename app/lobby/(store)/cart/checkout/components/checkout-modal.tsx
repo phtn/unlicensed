@@ -150,7 +150,7 @@ export function CheckoutModal({
                   formErrors={formErrors}
                   onInputChange={onInputChange}
                 />
-                {formData.paymentMethod === 'cashapp' && (
+                {formData.paymentMethod === 'cash_app' && (
                   <CashAppForm
                     formData={formData}
                     formErrors={formErrors}

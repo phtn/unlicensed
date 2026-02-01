@@ -5,6 +5,13 @@ import type {AdminSettings} from './d'
 /**
  * Get admin settings
  */
+export const listAdminSettings = query({
+  handler: async (ctx): Promise<AdminSettings[]> => {
+    const settings = await ctx.db.query('adminSettings').collect()
+    return settings
+  },
+})
+
 export const getAdminSettings = query({
   args: {},
   handler: async (ctx): Promise<AdminSettings | null> => {
@@ -197,5 +204,21 @@ export const getHaltPass = query({
       .first()
 
     return setting
+  },
+})
+
+export const getAdminByIdentStrict = query({
+  args: {identifier: v.string()},
+  handler: async ({db}, {identifier}) => {
+    const setting = await db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', identifier))
+      .first()
+
+    if (!setting) {
+      return {error: `NOT_FOUND`, status: 404, message: identifier}
+    }
+
+    return setting.value
   },
 })

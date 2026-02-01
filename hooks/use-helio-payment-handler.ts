@@ -61,7 +61,7 @@ export const useHelioPaymentHandler = ({
           orderId: currentOrderId,
           payment: {
             ...currentOrder.payment,
-            method: 'crypto',
+            method: 'crypto_commerce',
             status: 'completed',
             transactionId,
             paidAt: Date.now(),
@@ -130,7 +130,7 @@ export const useHelioPaymentHandler = ({
           orderId: currentOrderId,
           payment: {
             ...currentOrder.payment,
-            method: 'crypto',
+            method: 'crypto_commerce',
             status: 'failed',
             transactionId,
           },

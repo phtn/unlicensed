@@ -1,7 +1,7 @@
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Chip} from '@heroui/react'
-import {useId} from 'react'
+import {ReactNode, useId} from 'react'
 
 interface TerpeneChipProps {
   id: string
@@ -81,7 +81,7 @@ export const ProfilePill = ({group, name}: IProfilePill) => {
 interface StatChipProps {
   label?: string
   name?: IconName
-  value?: string | number | boolean
+  value?: ReactNode
   ghost?: boolean
 }
 
@@ -93,30 +93,29 @@ export const StatChip = ({
 }: StatChipProps) => {
   return (
     <Chip
-      radius='md'
-      startContent={
-        name ? (
-          <Icon
-            name={name}
-            className={cn('shrink-0 size-6! mt-0', {
-              'text-red-500 dark:text-red-400': value === 'high',
-              'text-blue-500 dark:text-blue-300': value === 'medium',
-            })}
-          />
-        ) : (
-          <span className='text-sm text-zinc-600 font-polysans dark:text-zinc-200'>
-            {label}
-          </span>
-        )
-      }
-      className=' border-[0.33px] border-foreground/15'
+      radius='sm'
+      className='flex items-center justify-center h-8 border-[0.33px] border-foreground/15'
       classNames={{
-        base: `ps-2 h-7 grow-0 bg-linear-to-r from-transparent via-transparent to-sidebar/5 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`,
+        base: `ps-2 grow-0 bg-linear-to-r from-transparent via-transparent to-sidebar/5 dark:from-background dark:via-background/60 dark:to-background/80 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`,
         content:
           'flex items-center justify-center text-foreground uppercase text-xs',
       }}
       variant='flat'>
-      <span className={cn(`font-brk text-[9px] ${name && 'ml-0 opacity-100'}`)}>
+      {label && (
+        <span className=' text-sm text-zinc-600 font-polysans dark:text-zinc-200'>
+          {label}
+        </span>
+      )}
+      {name && (
+        <Icon
+          name={name}
+          className={cn('shrink-0 size-4 mb-0.5 mr-1', {
+            'text-red-500 dark:text-red-400': value === 'high',
+            'text-blue-500 dark:text-blue-300': value === 'medium',
+          })}
+        />
+      )}
+      <span className='px-0 text-xs text-zinc-600 font-polysans dark:text-zinc-200'>
         {value}
       </span>
     </Chip>
