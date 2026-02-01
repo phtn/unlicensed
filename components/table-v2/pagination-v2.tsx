@@ -1,7 +1,5 @@
 import {Icon} from '@/lib/icons'
-import {cn} from '@/lib/utils'
-import {Button} from '@base-ui/react/button'
-import {Select} from '@base-ui/react/select'
+import {Button, Select, SelectItem} from '@heroui/react'
 import {PaginationState} from '@tanstack/react-table'
 import {useId, useMemo} from 'react'
 
@@ -47,33 +45,35 @@ export const Paginator = ({
         </label>
         <div className='flex items-center border border-greyed/40 dark:hover:bg-background/10 dark:focus-visible:bg-background/15 px-3 py-1 rounded-lg space-x-1 dark:bg-dysto/20'>
           <label
-            htmlFor={'showing-rows'}
-            className='max-sm:sr-only font-space tracking-tight mx-auto'>
-            {/*<span className='font-semibold text-base'>{rowCount}</span>*/}
-
-            <Select.Root
-              value={state.pageSize.toString()}
-              onValueChange={(value: string | null) => {
-                if (value) setPageSize(value)
+            htmlFor='showing-rows'
+            className='max-sm:sr-only font-space tracking-tight mx-auto flex items-center'>
+            <Select
+              id='showing-rows'
+              selectedKeys={[state.pageSize.toString()]}
+              onSelectionChange={(keys) => {
+                const selectedKey = Array.from(keys)[0] as string
+                if (selectedKey) setPageSize(selectedKey)
+              }}
+              variant='bordered'
+              aria-label='Rows per page'
+              classNames={{
+                trigger:
+                  'min-h-0 h-auto py-0 px-2 border-none shadow-none bg-transparent min-w-unit-12',
+                value: 'whitespace-nowrap font-space font-semibold',
+              }}
+              popoverProps={{
+                classNames: {
+                  content:
+                    '-translate-x-4 mb-2 w-[100px] min-w-[100px] p-1 rounded-lg',
+                },
               }}>
-              <Select.Trigger
-                id='showing-rows'
-                className='whitespace-nowrap font-space font-semibold'>
-                <Select.Value placeholder='' />
-              </Select.Trigger>
-              <Select.Portal className='[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-4 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2'>
-                {pageSizeOptions.map((size) => (
-                  <Select.Item
-                    className=''
-                    key={size}
-                    value={size.toString()}>
-                    <span className='mr-2 font-semibold font-space'>{size}</span>
-                  </Select.Item>
-                ))}
-              </Select.Portal>
-
-              <span className='opacity-80 font-brk text-base ml-1'>Rows</span>
-            </Select.Root>
+              {pageSizeOptions.map((size) => (
+                <SelectItem key={size.toString()} textValue={size.toString()}>
+                  {size}
+                </SelectItem>
+              ))}
+            </Select>
+            <span className='opacity-80 font-brk text-base ml-1'>Rows</span>
           </label>
         </div>
       </div>
@@ -96,21 +96,20 @@ export const Paginator = ({
       {/* Pagination buttons */}
       <div className='px-4 flex items-center gap-3'>
         <Button
-          onClick={pageControl.gotoPrev}
-          disabled={pageControl.disabledPrev}
-          className='aspect-square size-8 disabled:pointer-events-none disabled:opacity-30 disabled:shadow-none'
+          variant='light'
+          isIconOnly
+          onPress={pageControl.gotoPrev}
+          isDisabled={pageControl.disabledPrev}
+          className='aspect-square size-8 aria-disabled:pointer-events-none aria-disabled:opacity-30'
           aria-label='Go to previous page'>
-          <Icon
-            name='chevron-left'
-            className={cn('size-4', {
-              // 'opacity-50': pageControl.disabledPrev,
-            })}
-          />
+          <Icon name='chevron-left' className='size-4' />
         </Button>
         <Button
-          onClick={pageControl.gotoNext}
-          disabled={pageControl.disabledNext}
-          className='aspect-square size-8 disabled:pointer-events-none disabled:opacity-30 disabled:shadow-none'
+          variant='light'
+          isIconOnly
+          onPress={pageControl.gotoNext}
+          isDisabled={pageControl.disabledNext}
+          className='aspect-square size-8 aria-disabled:pointer-events-none aria-disabled:opacity-30'
           aria-label='Go to next page'>
           <Icon name='chevron-right' className='size-4' />
         </Button>

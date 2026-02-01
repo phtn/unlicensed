@@ -69,8 +69,8 @@ export const RenderRow = <T,>({
       key={row.id}
       data-state={row.getIsSelected() && 'selected'}
       className={cn(
-        'h-12 text-foreground text-xs md:text-base dark:border-greyed group/row dark:hover:bg-background/40 border-y border-y-dotted',
-        'bg-transparent hover:bg-sidebar border-y-dark-table/10 hover:border-y-dark-table/30 transition-colors duration-75',
+        ' group/row h-12 text-foreground border-y border-y-dotted dark:border-greyed dark:hover:bg-background/40',
+        'bg-transparent hover:bg-sidebar border-y-dark-table/10 dark:border-y-dark-table/40 hover:border-y-dark-table/30 transition-colors duration-75',
         {
           // Apply editing styles - same as hover but persistent
           ' dark:bg-sky-600/40 last:rounded-tr-2xl': isEditing,

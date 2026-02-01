@@ -5,7 +5,7 @@ import {OrderStatus} from '@/convex/orders/d'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDate} from '@/utils/date'
-import {Avatar} from '@heroui/react'
+import {Avatar, Switch, SwitchProps} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMutation} from 'convex/react'
 import {FunctionReference} from 'convex/server'
@@ -143,7 +143,7 @@ export const linkText = <T, K extends keyof T>(
       <Link
         href={`${resolvedHref}/${rawValue}`}
         className={cn(
-          'font-brk text-sm tracking-wide uppercase hover:underline underline-offset-4 decoration-dotted text-mac-blue',
+          'font-brk text-sm tracking-wide uppercase hover:underline underline-offset-4 decoration-dotted text-mac-blue dark:text-blue-400',
           className,
         )}>
         {value}
@@ -415,7 +415,7 @@ type ToggleCellConfig<T, V> = {
   /** Labels for each value state [firstLabel, secondLabel] */
   labels?: readonly [string, string]
   /** CSS classes for the indicator dot [firstColor, secondColor] */
-  colors?: readonly [string, string]
+  colors?: readonly [SwitchProps['color'], SwitchProps['color']]
   /** Build mutation args from row and new value */
   getMutationArgs: (row: T, newValue: V) => Record<string, unknown>
   /** Optional className for the button */
@@ -452,7 +452,7 @@ type ToggleCellConfig<T, V> = {
  *   }
  * )
  */
-export const createToggleCell = <T, V>(
+export const toggleCell = <T, V>(
   prop: keyof T,
   mutation: FunctionReference<'mutation', 'public'>,
   config: ToggleCellConfig<T, V>,
@@ -460,7 +460,7 @@ export const createToggleCell = <T, V>(
   const {
     values,
     labels = [String(values[0]), String(values[1])],
-    colors = ['bg-blue-500', 'bg-orange-400'],
+    colors = ['default', 'primary'],
     getMutationArgs,
     className,
   } = config
@@ -475,7 +475,9 @@ export const createToggleCell = <T, V>(
     const isFirstValue = currentValue === values[0]
     const newValue = isFirstValue ? values[1] : values[0]
     const currentLabel = isFirstValue ? labels[0] : labels[1]
-    const currentColor = isFirstValue ? colors[0] : colors[1]
+    const currentColor: SwitchProps['color'] = isFirstValue
+      ? colors[0]
+      : colors[1]
 
     const handleToggle = useCallback(async () => {
       setIsUpdating(true)
@@ -490,28 +492,40 @@ export const createToggleCell = <T, V>(
     }, [row, newValue, patchMutation])
 
     return (
-      <button
-        onClick={handleToggle}
-        disabled={isUpdating}
-        className={cn(
-          'flex items-center w-fit gap-0.5 py-0.5 px-2 rounded-full',
-          'border-[0.33px] border-zinc-200 dark:border-zinc-700',
-          'hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed',
-          'capitalize font-space text-sm tracking-tighter',
-          className,
-        )}>
-        {isUpdating ? (
-          <div className='size-2 mr-1.5 border border-current border-t-transparent rounded-full animate-spin' />
-        ) : (
-          <div className={cn('size-2 mr-1.5 rounded-full', currentColor)} />
-        )}
-        <span>{currentLabel}</span>
-      </button>
+      <div className='px-0.5 flex justify-center'>
+        <Switch
+          size='sm'
+          isDisabled={isUpdating}
+          isSelected={isFirstValue}
+          onValueChange={handleToggle}
+          color={currentColor ?? 'default'}
+          className={cn('scale-50', className)}
+        />
+      </div>
     )
   }
 
   ToggleCellComponent.displayName = `ToggleCell(${String(prop)})`
   return ToggleCellComponent
+  /*
+  <button
+          onClick={handleToggle}
+          disabled={isUpdating}
+          className={cn(
+            'flex items-center w-fit gap-0.5 py-0.5 px-2 rounded-full',
+            'border-[0.33px] border-zinc-200 dark:border-zinc-700',
+            'hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed',
+            'capitalize font-space text-sm tracking-tighter',
+            className,
+          )}>
+          {isUpdating ? (
+            <div className='size-2 mr-1.5 border border-current border-t-transparent rounded-full animate-spin' />
+          ) : (
+            <div className={cn('size-2 mr-1.5 rounded-full', currentColor)} />
+          )}
+          <span>{currentLabel}</span>
+        </button>
+  */
 }
 
 /**

@@ -16,7 +16,7 @@ export const HyperWrap = ({children, className}: HyperCardProps) => {
       radius='none'
       className={cn(
         'relative p-0 inset-0 h-[calc(100lvh-100px)]',
-        'group bg-gray-50 dark:bg-sidebar/50',
+        'group bg-white dark:bg-sidebar/50',
         'border border-dark-table/0 dark:border-zinc-700',
         className,
       )}>

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.7
+
+### Patch Changes
+
+- data-table upgrade
+
 ## 0.27.6
 
 ### Patch Changes

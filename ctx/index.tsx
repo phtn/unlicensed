@@ -22,7 +22,6 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
   const content = (
     <HeroUIProvider locale='en-US' className='min-h-screen'>
       <ThemeProvider
-        enableSystem
         attribute='class'
         enableColorScheme
         defaultTheme='dark'

@@ -24,7 +24,6 @@ import {
   useId,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 
 import {
@@ -237,8 +236,6 @@ export const DataTable = <T,>({
     setSelectModeParam(selectOn ? 'false' : 'true')
   }, [selectOn, setSelectModeParam])
 
-  const [_data] = useState<T[]>(data)
-
   // const handleDeleteRows = () => {
   //   const selectedRows = table.getSelectedRowModel().rows;
   //   const updatedData = d.filter(
@@ -273,7 +270,7 @@ export const DataTable = <T,>({
   }, [sortingParam, columns])
 
   const table = useReactTable({
-    data: _data,
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -402,7 +399,7 @@ export const DataTable = <T,>({
 
   return (
     <div className={cn('text-foreground w-full duration-500 ease-in-out')}>
-      <div className='h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 pb-8 min-w-0 overflow-hidden'>
+      <div className='h-[94lvh] inset-0 dark:inset-0 pb-8 min-w-0 overflow-hidden'>
         <div className='flex items-center justify-between shrink h-10.5'>
           <LeftTableToolbar
             select={
@@ -450,7 +447,7 @@ export const DataTable = <T,>({
           />
         </div>
         {/* Table */}
-        <HyperWrap className='space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-sm pb-14'>
+        <HyperWrap className='space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-sm pb-12'>
           <TableContainer>
             <Table>
               <TableHeader className='w-full'>

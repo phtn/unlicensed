@@ -1,14 +1,12 @@
-import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Checkbox, Toolbar} from '@base-ui/react'
+import {Button, Checkbox} from '@base-ui/react'
 import {Popover} from '@base-ui/react/popover'
-import {Select} from '@base-ui/react/select'
-import {Badge} from '@heroui/react'
+import {Select, SelectItem} from '@heroui/react'
 import type {ColumnFiltersState} from '@tanstack/react-table'
 import {Column} from '@tanstack/react-table'
 import {useQueryState} from 'nuqs'
-import {useId, useMemo, useState} from 'react'
+import {useId, useMemo} from 'react'
 import {createColumnFiltersParser} from './parsers-v2'
 
 interface Props<T> {
@@ -23,19 +21,12 @@ export const Filter = <T,>({
   activeFilterColumns = [],
   onAddFilterColumn,
   onRemoveFilterColumn,
-  isMobile,
 }: Props<T>) => {
   const baseId = useId()
 
   // Subscribe to filters search param so the component re-renders when the URL changes
-  const columnFiltersParser = useMemo(
-    () => createColumnFiltersParser(),
-    [],
-  )
-  const [columnFiltersParam] = useQueryState(
-    'filters',
-    columnFiltersParser,
-  )
+  const columnFiltersParser = useMemo(() => createColumnFiltersParser(), [])
+  const [columnFiltersParam] = useQueryState('filters', columnFiltersParser)
   const filtersFromUrl = (columnFiltersParam ?? []) as ColumnFiltersState
 
   // Get filterable columns (exclude select and actions columns)
@@ -81,13 +72,10 @@ export const Filter = <T,>({
     }, 0)
   }, [activeFiltersData])
 
-  const [addColumnValue, setAddColumnValue] = useState<string | null>(null)
-
   const handleColumnAdd = (columnId: string) => {
     if (!activeFilterColumns.some((col) => col.id === columnId)) {
       onAddFilterColumn?.(columnId)
     }
-    setAddColumnValue(null)
   }
 
   const handleColumnRemove = (columnId: string) => {
@@ -104,92 +92,96 @@ export const Filter = <T,>({
     return String(value)
   }
 
-  const {on, toggle} = useToggle(false)
-
   return (
     <Popover.Root>
       <Popover.Trigger
-        onClick={toggle}
         className='md:flex hidden'
         render={
-          <Toolbar.Button
+          <Button
             className={cn(
-              'relative flex h-7.5 items-center justify-center rounded-sm space-x-2 px-3.5 text-sm select-none data-pressed:bg-gray-100 focus-visible:bg-none focus-visible:outline-2 focus-visible:-outline-offset-1 hover:bg-sidebar/60 active:bg-sidebar dark:active:bg-dark-table/20 dark:hover:bg-dark-table/50 dark:bg-transparent transition-colors duration-75',
-              {'bg-dark-table/5 dark:bg-dark-table/50 border': on},
+              'relative flex h-7.5 items-center justify-center rounded-sm space-x-2 px-3.5 text-sm select-none transition-colors duration-75',
+              'data-pressed:bg-gray-100 dark:data-pressed:bg-dark-table/50 ',
+              'bg-sidebar/50 dark:bg-dark-table/10',
+              'hover:bg-sidebar/60 dark:hover:bg-dark-table/50',
+              'active:bg-sidebar dark:active:bg-dark-table/20',
+              'focus-visible:bg-none focus-visible:outline-1 focus-visible:-outline-offset-1',
             )}>
-            <Icon
-              name='filter-bold'
-              className={cn(
-                'size-4',
-                (totalActiveFilters > 0 || activeFilterColumns.length > 0) &&
-                  'text-mac-indigo opacity-100',
-              )}
-            />
+            {totalActiveFilters > 0 ? (
+              <span className='bg-indigo-500 dark:bg-indigo-400 text-white w-5 -ml-1 rounded-sm font-okxs font-semibold'>
+                {totalActiveFilters > 99 ? '99+' : totalActiveFilters}
+              </span>
+            ) : (
+              <Icon
+                name='filter-bold'
+                className={cn('size-4 dark:opacity-80')}
+              />
+            )}
             <span className='capitalize hidden md:flex text-sm opacity-90 font-brk'>
               Filter
             </span>
-            {totalActiveFilters > 0 && (
-              <Badge className='absolute bg-mac-indigo rounded-full -top-1.5 md:-top-0.5 left-full -translate-x-3.5 md:-translate-1/2 size-5 aspect-square px-1 text-white font-space'>
-                {totalActiveFilters > 99 ? '99+' : totalActiveFilters}
-              </Badge>
-            )}
-          </Toolbar.Button>
+          </Button>
         }></Popover.Trigger>
-      <Popover.Portal onPointerLeave={toggle}>
-        <Popover.Positioner sideOffset={4} align={'end'}>
-          <Popover.Popup className='w-54 p-3 border border-dark-table/15 bg-sidebar dark:bg-dark-table rounded-2xl'>
+      <Popover.Portal>
+        <Popover.Positioner
+          sideOffset={4}
+          align={'end'}
+          collisionAvoidance={{side: 'flip', align: 'none'}}
+          positionMethod='fixed'>
+          <Popover.Popup className='w-54 p-2 border border-dark-table/15 bg-sidebar dark:bg-dark-table rounded-2xl'>
             <div>
               {/* Add Filter Section */}
               {availableColumns.length > 0 && (
                 <>
-                  <div className='mb-3'>
-                    <div className='hidden _flex items-center px-2 py-1.5 space-x-2 text-sm font-medium tracking-tight font-figtree'>
-                      <Icon
-                        name='plus'
-                        className='size-3.5 text-mac-blue dark:text-primary-hover'
-                      />
-                      <span className='italic capitalize opacity-60'>
-                        Add Filter
-                      </span>
-                    </div>
-                    <Select.Root
-                      value={addColumnValue}
-                      onValueChange={(value: string | null, _eventDetails) => {
-                        if (value) handleColumnAdd(value)
-                        else setAddColumnValue(null)
+                  <div className='mb-2'>
+                    <Select
+                      placeholder='Add Columns'
+                      selectedKeys={new Set()}
+                      onSelectionChange={(keys) => {
+                        const key = keys === 'all' ? null : Array.from(keys)[0]
+                        if (key) handleColumnAdd(String(key))
+                      }}
+                      variant='bordered'
+                      classNames={{
+                        trigger:
+                          'w-full h-9 border-none min-h-9 rounded-lg shadow-none font-okxs opacity-100 dark:hover:bg-origin/60 dark:bg-origin/40',
+                        value: 'text-sm font-okxs font-semibold opacity-100',
+                      }}
+                      popoverProps={{
+                        classNames: {
+                          content: 'z-60 min-w-64 p-2 m-1 rounded-2xl',
+                          base: 'p-1',
+                        },
                       }}>
-                      <Select.Trigger className='w-full flex items-center space-x-2 text-sm font-medium tracking-tight font-figtree h-10 rounded-2xl shadow-none'>
-                        <Icon name='plus' className='size-5' />
-                        <Select.Value placeholder='Add Columns' />
-                      </Select.Trigger>
-                      <Select.Portal className='z-60 min-w-44 p-3 rounded-3xl'>
-                        <Select.List>
-                          {availableColumns.map((column) => (
-                            <Select.Item key={column.id} value={column.id}>
-                              {typeof column.columnDef.header === 'string'
-                                ? column.columnDef.header
-                                : column.id}
-                            </Select.Item>
-                          ))}
-                        </Select.List>
-                      </Select.Portal>
-                    </Select.Root>
+                      {availableColumns.map((column) => (
+                        <SelectItem
+                          key={column.id}
+                          className='capitalize outline-none '
+                          textValue={
+                            typeof column.columnDef.header === 'string'
+                              ? column.columnDef.header
+                              : column.id
+                          }>
+                          {typeof column.columnDef.header === 'string'
+                            ? column.columnDef.header
+                            : column.id}
+                        </SelectItem>
+                      ))}
+                    </Select>
                   </div>
-                  <div className='h-0.5 bg-origin/50 my-2' />
                 </>
               )}
 
               {/* Active Filters */}
               {activeFiltersData.map((filterData, columnIndex) => (
-                <div key={filterData.column.id} className='mb-4 last:mb-0'>
+                <div key={filterData.column.id} className=' mb-4 last:mb-0'>
                   {/* Filter Header */}
-                  <div className='flex items-center justify-between px-2 py-1.5'>
-                    <div className='flex items-center space-x-2 text-sm font-medium tracking-tight font-figtree'>
+                  <div className='flex items-center justify-between px-0 py-1.5 w-full'>
+                    <div className='flex items-center space-x-2 text-sm font-medium'>
                       <Icon
-                        name='re-up.ph'
-                        className='size-3.5 text-mac-blue dark:text-primary-hover'
+                        name='minus-square-fill'
+                        className='size-4 text-indigo-500 dark:text-indigo-400'
                       />
-                      <span className='italic capitalize opacity-60'>
+                      <span className='font-okxs font-medium capitalize'>
                         {typeof filterData.column.columnDef.header === 'string'
                           ? filterData.column.columnDef.header
                           : filterData.column.id}
@@ -197,13 +189,13 @@ export const Filter = <T,>({
                     </div>
                     <Button
                       onClick={() => handleColumnRemove(filterData.column.id)}
-                      className='h-6 w-6 p-0 text-muted-foreground hover:text-destructive'>
+                      className='h-6 w-3 p-0 text-muted-foreground hover:text-destructive'>
                       <Icon name='x' className='size-3' />
                     </Button>
                   </div>
 
                   {/* Filter Values */}
-                  <div className='max-h-32 overflow-y-auto'>
+                  <div className='max-h-32 overflow-y-auto [scrollbar-gutter:stable]'>
                     {filterData.uniqueValues.map((value, i) => {
                       const id = `v-${baseId}-${columnIndex}-${i}`
                       // Normalize value to string for consistent comparison
@@ -221,7 +213,13 @@ export const Filter = <T,>({
                       return (
                         <div
                           key={id}
-                          className='flex h-10 px-3 items-center gap-2 hover:bg-origin/80 rounded-lg'>
+                          className={cn(
+                            'flex h-8 ml-5 px-1.5 font-brk items-center hover:bg-dark-table/10 dark:hover:bg-origin/30 rounded-sm',
+                            {
+                              'bg-indigo-500 dark:bg-origin/80 hover:bg-indigo-400 dark:hover:bg-origin/50 text-white dark:text-indigo-400 opacity-100':
+                                isChecked,
+                            },
+                          )}>
                           <Checkbox.Root
                             id={id}
                             checked={isChecked}
@@ -268,11 +266,11 @@ export const Filter = <T,>({
                           />
                           <label
                             htmlFor={id}
-                            className='flex grow justify-between gap-2 font-sans text-sm'>
+                            className={cn(
+                              'flex grow justify-between gap-2 font-brk text-xs',
+                            )}>
                             <span className='truncate'>{labelText}</span>
-                            <span className='text-muted-foreground text-xs shrink-0'>
-                              {count}
-                            </span>
+                            <span className='text-xs shrink-0'>{count}</span>
                           </label>
                         </div>
                       )
@@ -282,8 +280,8 @@ export const Filter = <T,>({
               ))}
 
               {activeFilterColumns.length === 0 && (
-                <div className='px-2 py-4 text-center text-sm text-muted-foreground'>
-                  No active filters.
+                <div className='px-2 py-2 font-brk text-center text-xs opacity-60'>
+                  no active filters
                 </div>
               )}
             </div>

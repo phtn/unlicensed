@@ -214,6 +214,70 @@ export const updateProduct = mutation({
   },
 })
 
+export const toggleAvailability = mutation({
+  args: {
+    productId: v.id('products'),
+    available: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.productId)
+    if (!product) {
+      return {success: false, error: 'Product not found'}
+    }
+    await ctx.db.patch(args.productId, {
+      available: args.available,
+    })
+    return {success: true}
+  },
+})
+export const toggleFeatured = mutation({
+  args: {
+    productId: v.id('products'),
+    featured: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.productId)
+    if (!product) {
+      return {success: false, error: 'Product not found'}
+    }
+    await ctx.db.patch(args.productId, {
+      featured: args.featured,
+    })
+    return {success: true}
+  },
+})
+export const toggleRewardEligibility = mutation({
+  args: {
+    productId: v.id('products'),
+    eligibleForRewards: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.productId)
+    if (!product) {
+      return {success: false, error: 'Product not found'}
+    }
+    await ctx.db.patch(args.productId, {
+      eligibleForRewards: args.eligibleForRewards,
+    })
+    return {success: true}
+  },
+})
+export const toggleUpgradeEligibility = mutation({
+  args: {
+    productId: v.id('products'),
+    eligibleForUpgrade: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.productId)
+    if (!product) {
+      return {success: false, error: 'Product not found'}
+    }
+    await ctx.db.patch(args.productId, {
+      eligibleForUpgrade: args.eligibleForUpgrade,
+    })
+    return {success: true}
+  },
+})
 export const bulkUpdatePrices = mutation({
   args: {
     productIds: v.array(v.id('products')),

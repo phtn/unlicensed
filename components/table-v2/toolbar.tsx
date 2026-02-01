@@ -10,16 +10,13 @@ interface CenterTableToolbarProps {
 
 export const CenterTableToolbar = ({filter, view}: CenterTableToolbarProps) => {
   return (
-    <Toolbar.Root className='flex h-9 items-center justify-center w-full gap-px px-px pb-1'>
-      <ToggleGroup className='flex items-start justify-between'>
-        <div>{filter}</div>
+    <div className='flex h-9 items-center justify-center w-full pb-1'>
+      <div className='flex items-start justify-between gap-2'>
+        <div className=''>{filter}</div>
         {/*<Toolbar.Separator className='m-1 h-5 w-px bg-linear-to-b from-transparent via-gray-200 dark:via-zinc-500 to-transparent' />*/}
         <div>{view}</div>
-      </ToggleGroup>
-      <Toolbar.Group
-        className='flex gap-1'
-        aria-label='Numerical format'></Toolbar.Group>
-    </Toolbar.Root>
+      </div>
+    </div>
   )
 }
 
