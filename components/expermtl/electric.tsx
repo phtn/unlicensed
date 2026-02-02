@@ -47,6 +47,7 @@ export const ElectricBorder: React.FC<ElectricBorderProps> = ({
   const svgRef = useRef<SVGSVGElement | null>(null)
   const rootRef = useRef<HTMLDivElement | null>(null)
   const strokeRef = useRef<HTMLDivElement | null>(null)
+  const rafIdRef = useRef<number | null>(null)
 
   const updateAnim = useCallback(() => {
     const svg = svgRef.current
@@ -103,7 +104,9 @@ export const ElectricBorder: React.FC<ElectricBorderProps> = ({
       filterEl.setAttribute('height', '500%')
     }
 
-    requestAnimationFrame(() => {
+    if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current)
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null
       ;[...dyAnims, ...dxAnims].forEach((a: SVGAnimateElement) => {
         if (typeof a.beginElement === 'function') {
           try {
@@ -116,6 +119,12 @@ export const ElectricBorder: React.FC<ElectricBorderProps> = ({
 
   useEffect(() => {
     updateAnim()
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+        rafIdRef.current = null
+      }
+    }
   }, [speed, chaos, updateAnim])
 
   useLayoutEffect(() => {

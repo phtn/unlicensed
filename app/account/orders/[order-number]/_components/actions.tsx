@@ -14,11 +14,10 @@ export const Actions = ({status}: Props) => {
         return (
           <Button
             size='md'
-            radius='sm'
+            radius='none'
             color='success'
-            endContent={<Icon name='chevron-right' className='size-4' />}
-            className='border-none font-okxs font-semibold dark:text-white text-base'>
-            <span className='drop-shadow-xs'>Continue with Payment</span>
+            className='border-none bg-success/80 rounded-lg font-okxs font-semibold dark:text-white text-base'>
+            <span className='drop-shadow-xs'>Complete Payment</span>
           </Button>
         )
       case 'cancelled':

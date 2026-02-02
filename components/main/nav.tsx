@@ -118,7 +118,7 @@ export const Nav = ({children}: NavProps) => {
                   <div
                     suppressHydrationWarning
                     className='flex items-center justify-center rounded-full py-0.5 px-0.5 md:mx-0 size-5 aspect-square'>
-                    <span className='font-space font-semibold text-base text-white leading-none'>
+                    <span className='font-okxs font-semibold text-base text-white leading-none'>
                       {cartItemCount}
                     </span>
                   </div>
@@ -128,7 +128,7 @@ export const Nav = ({children}: NavProps) => {
               className='px-[0.5px]'
               classNames={{
                 badge:
-                  'aspect-square size-6 text-base translate-x-2.5 -translate-y-1 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-background/85 shadow-md backdrop-blur-2xl bg-brand/80',
+                  'aspect-square size-6 text-base translate-x-2.5 -translate-y-1 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-background/90 shadow-md backdrop-blur-2xl bg-brand/80',
               }}
               shape='rectangle'>
               <Button

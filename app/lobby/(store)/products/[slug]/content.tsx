@@ -208,7 +208,7 @@ export const ProductDetailContent = ({
                       className='px-[0.5px]'
                       classNames={{
                         badge:
-                          'aspect-square size-6 text-base translate-x-0.5 translate-y-0.5 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-background/85 shadow-md backdrop-blur-2xl bg-brand/80',
+                          'aspect-square size-6 text-base translate-x-0.5 translate-y-0.5 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-background/85 shadow-md backdrop-blur-2xl bg-brand/90',
                       }}
                       content={
                         <div
@@ -251,62 +251,94 @@ export const ProductDetailContent = ({
                   )}
                 </span>
 
-                <div className='flex flex-wrap items-start gap-3'>
-                  {product.availableDenominations &&
-                    product.availableDenominations.map((denomination, i) => (
-                      <Tooltip key={denomination} content='Popular Choice'>
-                        <Badge
-                          isOneChar
-                          size={isMobile ? 'sm' : 'md'}
+                <div className='flex items-center justify-end md:w-95'>
+                  <div className='flex flex-wrap items-start gap-3'>
+                    {product.availableDenominations &&
+                      product.availableDenominations.map((denomination, i) => (
+                        <Tooltip
+                          key={denomination}
+                          size='sm'
                           content={
-                            product.popularDenomination?.includes(
-                              denomination,
-                            ) ? (
+                            <div className='flex items-center gap-0.5 overflow-hidden whitespace-nowrap h-5 text-sm'>
                               <Icon
                                 name='star-fill'
-                                className='size-4 rotate-12'
+                                className='size-4 text-yellow-500'
                               />
-                            ) : null
+                              <span>Top Picks</span>
+                            </div>
                           }
-                          placement='top-right'
-                          shape='circle'
-                          className={cn(
-                            'top-0 border-none border-hue dark:border-foreground/20',
-                            {
-                              hidden:
-                                !product.popularDenomination?.includes(
-                                  denomination,
-                                ),
-                              'bg-brand text-background':
-                                selectedDenomination === i,
-                              'bg-hue dark:pink-100/10 text-brand':
-                                product.popularDenomination?.includes(
-                                  denomination,
-                                ),
-                            },
-                          )}>
-                          <Button
-                            size='sm'
-                            onPress={handleDenominationChange(i)}
+                          classNames={{
+                            content:
+                              'font-okxs font-semibold overflow-hidden whitespace-nowrap',
+                          }}
+                          className=''>
+                          <Badge
+                            isOneChar
+                            size={isMobile ? 'sm' : 'md'}
+                            content={
+                              product.popularDenomination?.includes(
+                                denomination,
+                              ) ? (
+                                <Icon
+                                  name='star-fill'
+                                  className={cn(
+                                    'size-4 transition-transform duration-300',
+                                    {
+                                      'scale-110 rotate-16':
+                                        selectedDenomination === i,
+                                    },
+                                  )}
+                                />
+                              ) : null
+                            }
+                            placement='top-right'
+                            shape='circle'
                             className={cn(
-                              'cursor-pointer bg-sidebar rounded-full border border-foreground/20 portrait:px-px',
+                              'flex items-center justify-center top-0',
                               {
-                                'bg-dark-gray dark:bg-white dark:border-foreground text-white dark:text-dark-gray md:hover:bg-black dark:md:hover:bg-featured dark:hover:text-black md:hover:text-featured':
-                                  selectedDenomination === i,
+                                hidden:
+                                  !product.popularDenomination?.includes(
+                                    denomination,
+                                  ),
                               },
-                            )}>
-                            <span
+                            )}
+                            classNames={{
+                              badge: cn(
+                                'rounded-full border-[0.5px] dark:border-sidebar/50 size-4 aspect-square',
+                                'transition-transform duration-300',
+                                {
+                                  'bg-white text-brand':
+                                    product.popularDenomination?.includes(
+                                      denomination,
+                                    ),
+                                  'border-1 size-6 shadow-md':
+                                    selectedDenomination === i,
+                                },
+                              ),
+                            }}>
+                            <Button
+                              size='sm'
+                              onPress={handleDenominationChange(i)}
                               className={cn(
-                                'relative font-space text-sm font-medium whitespace-nowrap portrait:px-px',
+                                'cursor-pointer bg-sidebar rounded-full border border-foreground/20 portrait:px-px',
+                                {
+                                  'bg-dark-gray dark:bg-white dark:border-foreground text-white dark:text-dark-gray md:hover:bg-black dark:md:hover:bg-brand dark:md:hover:text-white md:hover:text-featured':
+                                    selectedDenomination === i,
+                                },
                               )}>
-                              {product.unit === 'oz'
-                                ? mapFractions[denomination + product.unit]
-                                : denomination + product.unit}
-                            </span>
-                          </Button>
-                        </Badge>
-                      </Tooltip>
-                    ))}
+                              <span
+                                className={cn(
+                                  'relative font-okxs text-lg font-medium whitespace-nowrap portrait:px-px',
+                                )}>
+                                {product.unit === 'oz'
+                                  ? mapFractions[denomination + product.unit]
+                                  : denomination + product.unit}
+                              </span>
+                            </Button>
+                          </Badge>
+                        </Tooltip>
+                      ))}
+                  </div>
                 </div>
               </div>
 
@@ -314,10 +346,10 @@ export const ProductDetailContent = ({
                 <div ref={addToCartButtonRef} className='w-full sm:flex-1'>
                   <Button
                     size='lg'
-                    color='success'
-                    variant='flat'
+                    color='primary'
+                    variant='solid'
                     disableRipple
-                    className='w-full h-14 text-black font-polysans font-medium text-base md:text-lg bg-linear-to-r from-brand via-brand to-brand dark:text-dark-gray flex items-center'
+                    className='w-full h-14 font-polysans font-medium text-base md:text-lg bg-linear-to-r from-brand via-brand to-brand flex items-center'
                     onPress={handleAddToCart}
                     isDisabled={isPending}>
                     <span>Add to Cart</span>

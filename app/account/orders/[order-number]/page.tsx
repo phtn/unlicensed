@@ -1,7 +1,6 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
-import {onInfo} from '@/ctx/toast'
 import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
@@ -12,8 +11,6 @@ import {
   Button,
   Card,
   CardBody,
-  Chip,
-  ChipProps,
   Divider,
   Image,
 } from '@heroui/react'
@@ -22,36 +19,9 @@ import {motion} from 'motion/react'
 import {default as NextLink} from 'next/link'
 import {useParams, useSearchParams} from 'next/navigation'
 import {useEffect, useState} from 'react'
+import {OrderStatusBadge} from '../../_components/order-status'
 import {Actions} from './_components/actions'
 import {SectionTitle} from './_components/section'
-
-function getStatusColor(status: string) {
-  switch (status) {
-    case 'pending_payment':
-      return 'warning'
-    case 'order_processing':
-      return 'primary'
-    case 'awaiting_courier_pickup':
-      return 'secondary'
-    case 'shipping':
-      return 'default'
-    case 'resend':
-      return 'warning'
-    case 'shipped':
-      return 'success'
-    case 'cancelled':
-      return 'danger'
-    default:
-      return 'default'
-  }
-}
-
-function formatStatus(status: string) {
-  return status
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-}
 
 function formatPaymentMethod(method: string) {
   return method
@@ -152,16 +122,7 @@ export default function OrderDetailPage() {
                 <BreadcrumbItem href='/account/orders'>Orders</BreadcrumbItem>
                 <BreadcrumbItem>
                   {order.orderNumber}{' '}
-                  <Chip
-                    color={
-                      getStatusColor(order.orderStatus) as ChipProps['color']
-                    }
-                    variant='faded'
-                    radius='none'
-                    className='ml-1 px-1 border-none rounded-sm dark:text-orange-300 uppercase font-brk dark:bg-black/50'
-                    size='sm'>
-                    {formatStatus(order.orderStatus)}
-                  </Chip>
+                  <OrderStatusBadge status={order.orderStatus} />
                 </BreadcrumbItem>
               </Breadcrumbs>
             </h1>
@@ -272,16 +233,7 @@ export default function OrderDetailPage() {
                   </div>
                   <div className='flex justify-between'>
                     <span className='text-sm text-color-muted'>Status</span>
-                    <Chip
-                      color={
-                        getStatusColor(order.orderStatus) as ChipProps['color']
-                      }
-                      variant='faded'
-                      radius='none'
-                      className='ml-1 px-1 border-none rounded-sm dark:text-orange-300 uppercase font-brk dark:bg-black/30'
-                      size='sm'>
-                      {formatStatus(order.orderStatus)}
-                    </Chip>
+                    <OrderStatusBadge status={order.orderStatus} />
                   </div>
                   {order.payment.transactionId && (
                     <div className='flex justify-between'>
@@ -453,16 +405,22 @@ export default function OrderDetailPage() {
 
           {/* Actions */}
           <div className='flex gap-4 justify-end'>
-            <Button radius='sm' variant='flat' as={NextLink} href='/account'>
+            <Button
+              radius='none'
+              variant='faded'
+              as={NextLink}
+              href='/account'
+              className='border-transparent dark:bg-dark-table/10 rounded-lg font-okxs font-semibold dark:text-white text-base'>
               Back to Account
             </Button>
             {order.orderStatus !== 'shipped' &&
               order.orderStatus !== 'cancelled' && (
                 <Button
                   color='danger'
-                  radius='sm'
-                  variant='flat'
-                  onPress={() => onInfo('Order Cancelled')}>
+                  size='md'
+                  radius='none'
+                  variant='solid'
+                  className='bg-danger/80 rounded-lg font-okxs font-semibold dark:text-white text-base'>
                   Cancel Order
                 </Button>
               )}

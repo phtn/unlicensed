@@ -4,6 +4,7 @@ import {
   ArcActionBar,
   ArcButtonLeft,
   ArcButtonRight,
+  ArcCallout,
   ArcCard,
   ArcHeader,
   ArcLineItems,
@@ -26,13 +27,13 @@ export const Content = () => {
     () =>
       order?.items.map((item) => ({
         label: item.productName,
-        value: formatPrice(item.unitPriceCents),
+        value: `$${formatPrice(item.unitPriceCents)}`,
       })),
     [order],
   )
 
   return (
-    <main className='h-[calc(100vh-104px)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
+    <main className='h-[calc(100lvh)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-black'>
       <ArcCard>
         <ArcHeader
           title='We received your order!'
@@ -40,14 +41,29 @@ export const Content = () => {
           icon='hash'
           iconStyle='text-indigo-400'
           status={
-            <span className='font-brk text-orange-300 tracking-wide uppercase text-xs'>
+            <span className='font-brk text-orange-300 tracking-wide uppercase text-xs bg-background/60 py-1 px-1.5 rounded-sm'>
               Pending Payment
             </span>
           }
         />
-        <ArcLineItems data={data ?? []} />
+        <ArcLineItems
+          data={
+            data
+              ? [
+                  ...data,
+                  {
+                    label: 'Payment Method',
+                    value:
+                      order?.payment.method.split('_').join(' ') ?? 'Cash App',
+                  },
+                ]
+              : []
+          }
+        />
 
-        <div className='flex items-center space-x-2 text-base'>
+        <ArcCallout icon='info' value='Chat' type='info' />
+
+        <div className='hidden _flex items-center space-x-2 text-base'>
           <Icon name='info' className='size-5' />
           <ArcMessage>
             <div className='flex items-center text-left space-x-2 text-base'>
@@ -65,7 +81,7 @@ export const Content = () => {
           <ArcButtonLeft
             icon='chevron-left'
             label='View Order'
-            href={order ? `/account/orders/${order._id}` : '#'}
+            href={order ? `/account/orders/${order.orderNumber}` : '#'}
           />
           <ArcButtonRight
             icon='chat-rounded'

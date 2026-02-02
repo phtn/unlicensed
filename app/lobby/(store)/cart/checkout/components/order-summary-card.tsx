@@ -37,6 +37,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   isLoading,
   isPending,
   orderId,
+  paymentMethod,
   onPaymentMethodChange,
   onPlaceOrderClick,
   pointsBalance,
@@ -104,7 +105,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
             <>
               <Divider />
               <div className='py-5'>
-                <PaymentMethods onChange={handleOnChange} />
+                <PaymentMethods value={paymentMethod} onChange={handleOnChange} />
               </div>
             </>
           )}

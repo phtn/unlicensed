@@ -18,11 +18,16 @@ const ANIMATION_SETTINGS = {
 export default function CartAnimation() {
   const {animationState, clearAnimation} = useCartAnimation()
   const animationRef = useRef<HTMLDivElement>(null)
+  const rafIdRef = useRef<number | null>(null)
+  const wobbleTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const cancelledRef = useRef(false)
 
   useEffect(() => {
     if (!animationState.isAnimating || !animationState.productImage) {
       return
     }
+
+    cancelledRef.current = false
 
     console.log('Cart animation triggered', {
       isAnimating: animationState.isAnimating,
@@ -32,6 +37,8 @@ export default function CartAnimation() {
 
     // Wait a bit for DOM to be ready
     const timeoutId = setTimeout(() => {
+      if (cancelledRef.current) return
+
       const cartIcon = document.querySelector(CART_ICON_SELECTOR)
       console.log('Cart icon found:', cartIcon, 'Selector:', CART_ICON_SELECTOR)
 
@@ -52,7 +59,7 @@ export default function CartAnimation() {
       const startX = animationState.startPosition.x
       const startY = animationState.startPosition.y
 
-      if (!animationRef.current) return
+      if (!animationRef.current || cancelledRef.current) return
 
       const element = animationRef.current
       element.style.left = `${startX}px`
@@ -70,6 +77,8 @@ export default function CartAnimation() {
       }
 
       const animate = (currentTime: number) => {
+        if (cancelledRef.current) return
+
         const elapsed = currentTime - startTime
         const progress = Math.min(elapsed / duration, 1)
         const easeProgress = easeInOutCubic(progress)
@@ -109,7 +118,7 @@ export default function CartAnimation() {
         element.style.opacity = String(Math.max(0, 1 - easeProgress * 0.3))
 
         if (progress < 1) {
-          requestAnimationFrame(animate)
+          rafIdRef.current = requestAnimationFrame(animate)
         } else {
           // Animation complete - trigger cart wobble
           const cartIconElement = cartIcon as HTMLElement
@@ -123,7 +132,9 @@ export default function CartAnimation() {
             badgeElement.classList.add('cart-wobble')
           }
 
-          setTimeout(() => {
+          wobbleTimeoutIdRef.current = setTimeout(() => {
+            wobbleTimeoutIdRef.current = null
+            if (cancelledRef.current) return
             cartIconElement.classList.remove('cart-wobble')
             if (badgeElement) {
               badgeElement.classList.remove('cart-wobble')
@@ -134,11 +145,20 @@ export default function CartAnimation() {
         }
       }
 
-      requestAnimationFrame(animate)
+      rafIdRef.current = requestAnimationFrame(animate)
     }, 50) // Small delay to ensure DOM is ready
 
     return () => {
+      cancelledRef.current = true
       clearTimeout(timeoutId)
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+        rafIdRef.current = null
+      }
+      if (wobbleTimeoutIdRef.current !== null) {
+        clearTimeout(wobbleTimeoutIdRef.current)
+        wobbleTimeoutIdRef.current = null
+      }
     }
   }, [animationState, clearAnimation])
 

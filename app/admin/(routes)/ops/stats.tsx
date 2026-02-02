@@ -243,10 +243,11 @@ export const Stats = ({
 
     if (needsSeeding && !hasSeededRef.current) {
       hasSeededRef.current = true
+      let timeoutId: ReturnType<typeof setTimeout> | null = null
       ensureStatConfigsSeeded()
         .then(() => {
           // Reset after a delay to allow query to update
-          setTimeout(() => {
+          timeoutId = setTimeout(() => {
             hasSeededRef.current = false
           }, 2000)
         })
@@ -254,6 +255,10 @@ export const Stats = ({
           console.error('Failed to seed statConfigs:', error)
           hasSeededRef.current = false // Reset on error so we can retry
         })
+
+      return () => {
+        if (timeoutId !== null) clearTimeout(timeoutId)
+      }
     }
   }, [statConfigs, ensureStatConfigsSeeded])
 

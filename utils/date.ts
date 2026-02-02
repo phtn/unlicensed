@@ -1,9 +1,16 @@
-import { format, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays } from 'date-fns'
+import {
+  differenceInDays,
+  differenceInHours,
+  differenceInMinutes,
+  differenceInSeconds,
+  format,
+} from 'date-fns'
 
-export const formatTimestamp = (timestamp: number) => {
+export const formatTimestamp = (timestamp: number | undefined) => {
+  if (!timestamp) return null
   const date = new Date(timestamp)
   const now = new Date()
-  
+
   const seconds = differenceInSeconds(now, date)
   const minutes = differenceInMinutes(now, date)
   const hours = differenceInHours(now, date)

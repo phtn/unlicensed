@@ -28,7 +28,7 @@ const ArcCard = ({
         shadow={shadow}
         radius={radius}
         className={cn(
-          'border border-foreground/20 dark:bg-dark-table/40',
+          'border border-foreground/20 dark:bg-dark-table',
           className,
         )}>
         <CardBody className='p-4 sm:p-8 space-y-6'>{children}</CardBody>
@@ -59,11 +59,11 @@ const ArcHeader = ({
       </h1>
       <div className='flex items-center'>{status}</div>
     </div>
-    <div className='flex items-center md:space-x-1 font-space'>
+    <div className='flex items-center md:space-x-px font-space'>
       {icon && (
         <Icon name={icon} className={cn('size-6 text-indigo-400', iconStyle)} />
       )}
-      <span className='opacity-60'>{description}</span>
+      <span className='opacity-60 font-brk'>{description}</span>
     </div>
   </div>
 )
@@ -127,7 +127,7 @@ const ArcButtonRight = ({label, fn, href, icon}: ArcButtonProps) => (
     color='primary'
     onPress={fn}
     endContent={icon && <Icon name={icon} className='size-5' />}
-    className='w-full font-polysans font-normal! bg-dark-gray dark:bg-white dark:text-dark-gray'>
+    className='w-full font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'>
     {label}
   </Button>
 )
@@ -140,7 +140,7 @@ const ArcButtonFull = ({label, fn, href, icon}: ArcButtonProps) => (
     variant='flat'
     href={fn ? '#' : (href ?? '#')}
     endContent={icon && <Icon name={icon} className='size-5' />}
-    className='w-full col-span-2 font-polysans font-normal! bg-sidebar dark:bg-white dark:text-dark-gray'>
+    className='w-full col-span-2 font-polysans font-medium bg-sidebar dark:bg-white dark:text-dark-gray'>
     {label}
   </Button>
 )
@@ -161,7 +161,7 @@ const ArcLineItems = <T,>({data}: ArcLineItemsProps<T>) => (
 const ArcLineItem = <T extends {label: string; value: string}>(item: T) => (
   <div className='flex items-center justify-between text-sm'>
     <span className='font-brk opacity-80'>{item.label}</span>
-    <span className='font-brk capitalize'>{item.value}</span>
+    <span className='font-okxs capitalize'>{item.value}</span>
   </div>
 )
 

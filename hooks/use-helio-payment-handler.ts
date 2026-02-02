@@ -19,11 +19,19 @@ export const useHelioPaymentHandler = ({
 
   const orderRef = useRef(order)
   const orderIdRef = useRef(orderId)
+  const isMountedRef = useRef(true)
 
   useEffect(() => {
     if (order) orderRef.current = order
     orderIdRef.current = orderId
   }, [order, orderId])
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   const handlePaymentSuccess = useCallback(
     (event: {
@@ -37,6 +45,8 @@ export const useHelioPaymentHandler = ({
       if (!enabled) return
 
       setTimeout(() => {
+        if (!isMountedRef.current) return
+
         const currentOrder = orderRef.current
         const currentOrderId = orderIdRef.current
 
@@ -95,6 +105,8 @@ export const useHelioPaymentHandler = ({
       if (!enabled) return
 
       setTimeout(() => {
+        if (!isMountedRef.current) return
+
         const currentOrder = orderRef.current
         const currentOrderId = orderIdRef.current
 

@@ -125,7 +125,8 @@
   --muted-foreground: oklch(0.973 0.007 268.55 / 60%);
   --muted: rgba(203, 213, 225, 0.76);
   --accent: oklch(0.3 0.04 167.17);
-  --brand: oklch(0.784 0.21 326.75);
+  --brand: oklch(0.6146 0.189 347.09);
+  /*--brand: oklch(0.784 0.21 326.75);*/
   --primary: oklch(0.71 0.14 255);
   --primary-foreground: oklch(0.973 0.007 268.55);
   --secondary: oklch(0.7 0.141 49.39);

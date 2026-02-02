@@ -309,9 +309,9 @@ export const flowerDenominations: Array<SelectOption> = [
 ]
 
 export const mapFractions: Record<string, string> = {
-  '0.125oz': '1/8 oz',
-  '0.25oz': '1/4 oz',
-  '0.5oz': '1/2 oz',
+  '0.125oz': '⅛ oz',
+  '0.25oz': '¼ oz',
+  '0.5oz': '½ oz',
   '1oz': '1 oz',
   '2oz': '2 oz',
   '4oz': '4 oz',

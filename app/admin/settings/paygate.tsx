@@ -3,7 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import {Button, Card, CardBody, Divider, Input, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {useEffect, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 
 export function PayGateSettings() {
   const adminSettings = useQuery(api.admin.q.getAdminSettings)
@@ -18,6 +18,8 @@ export function PayGateSettings() {
     'idle',
   )
   const [validationError, setValidationError] = useState<string | null>(null)
+
+  const saveStatusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Load settings when available
   useEffect(() => {
@@ -57,11 +59,13 @@ export function PayGateSettings() {
         },
       })
       setSaveStatus('success')
-      setTimeout(() => setSaveStatus('idle'), 3000)
+      if (saveStatusTimeoutRef.current) clearTimeout(saveStatusTimeoutRef.current)
+      saveStatusTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 3000)
     } catch (error) {
       console.error('Failed to save PayGate settings:', error)
       setSaveStatus('error')
-      setTimeout(() => setSaveStatus('idle'), 3000)
+      if (saveStatusTimeoutRef.current) clearTimeout(saveStatusTimeoutRef.current)
+      saveStatusTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 3000)
     } finally {
       setIsSaving(false)
     }
@@ -77,6 +81,15 @@ export function PayGateSettings() {
       setValidationError(null)
     }
   }, [enabled, usdcWallet])
+
+  useEffect(() => {
+    return () => {
+      if (saveStatusTimeoutRef.current) {
+        clearTimeout(saveStatusTimeoutRef.current)
+        saveStatusTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   return (
     <Card

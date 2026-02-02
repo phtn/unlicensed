@@ -1,5 +1,5 @@
 'use client'
-import {Callout, DotDiv} from '@/components/ui/callout'
+import {Callout} from '@/components/ui/callout'
 
 import {Ascend} from '@/components/expermtl/ascend'
 import {Loader} from '@/components/expermtl/loader'
@@ -7,19 +7,11 @@ import {useAccount} from '@/hooks/use-account'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
-import {
-  Button,
-  Card,
-  CardBody,
-  Chip,
-  ChipProps,
-  Image,
-  Progress,
-} from '@heroui/react'
+import {Button, Card, CardBody, Chip, Image, Progress} from '@heroui/react'
 import {useTheme} from 'next-themes'
 import Link from 'next/link'
 import {memo, startTransition, useMemo, useState, ViewTransition} from 'react'
-import {OrderItem} from './_components/order-item'
+import {OrderListItem} from './_components/order-list-item'
 
 export default function AccountPage() {
   const {
@@ -52,35 +44,6 @@ export default function AccountPage() {
     return Math.max(0, nextTierSpend - currentSpend)
   }, [rewards])
 
-  // Helper for Order Status Color
-  const getStatusColor = (status: string): ChipProps['color'] => {
-    switch (status) {
-      case 'pending_payment':
-        return 'warning'
-      case 'order_processing':
-        return 'primary'
-      case 'awaiting_courier_pickup':
-        return 'secondary'
-      case 'shipping':
-        return 'default'
-      case 'resend':
-        return 'warning'
-      case 'shipped':
-        return 'success'
-      case 'cancelled':
-        return 'danger'
-      default:
-        return 'default'
-    }
-  }
-
-  const formatStatus = (status: string) => {
-    return status
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ')
-  }
-
   const toggleShowAllOrders = () => {
     startTransition(() => {
       setShowAllOrders((prev) => !prev)
@@ -97,11 +60,11 @@ export default function AccountPage() {
 
   return (
     <div className='min-h-screen bg-background'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-18 lg:py-28'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-28'>
         {/* Header Section */}
         <div className='mb-8'>
           <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
-            <Callout
+            {/*<Callout
               title={
                 <h1 className='md:text-xl font-normal font-polysans space-x-1 md:space-x-4'>
                   <span>Development in-progress</span>
@@ -112,7 +75,7 @@ export default function AccountPage() {
               description='Checkout route protected. Please check back later.'
               icon='code'
               type='debug'
-            />
+            />*/}
             {rewards?.currentTier && (
               <Chip
                 variant='shadow'
@@ -167,9 +130,6 @@ export default function AccountPage() {
                   <h2 className='text-xl font-bone tracking-tight text-white'>
                     {user?.name}
                   </h2>
-                  {/*<div className='space-y-1'>
-
-                  </div>*/}
 
                   <div className='hidden w-full pt-4 border-t border-default-200/50'>
                     <div className='flex items-center justify-center gap-6'>
@@ -357,8 +317,9 @@ export default function AccountPage() {
             {/* Recent Orders Section */}
             <div>
               <div className='flex items-center justify-between mb-2'>
-                <div>
-                  <p className='text-sm text-default-500 px-2'>Active Orders</p>
+                <div className='flex items-center px-2 gap-2'>
+                  <Icon name='card-pay-line' className='size-4 opacity-90' />
+                  <p className='text-sm text-default-500'>Active Orders</p>
                 </div>
                 {orders && orders.length > 5 && (
                   <Button
@@ -412,7 +373,7 @@ export default function AccountPage() {
                     orders
                       .slice(0, 5)
                       .map((order) => (
-                        <OrderItem key={order.orderNumber} order={order} />
+                        <OrderListItem key={order.orderNumber} order={order} />
                       ))
                   )}
                 </div>

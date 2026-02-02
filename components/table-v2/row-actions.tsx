@@ -16,7 +16,7 @@ import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button} from '@base-ui/react/button'
 import {Row} from '@tanstack/react-table'
-import {useCallback, useMemo, useState} from 'react'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {HyperList} from '../expermtl/hyper-list'
 
 interface ISubMenuItem {
@@ -50,6 +50,16 @@ export const RowActions = <T,>({
 }: Props<T>) => {
   const {copy} = useCopy({timeout: 2000})
   const [loading, setLoading] = useState(false)
+  const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (loadingTimeoutRef.current !== null) {
+        clearTimeout(loadingTimeoutRef.current)
+        loadingTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   const handleView = useCallback(() => {
     viewFn?.()
@@ -83,7 +93,11 @@ export const RowActions = <T,>({
   const handleDeleteRow = useCallback(() => {
     // TODO: Implement delete row functionality
     setLoading(true)
-    setTimeout(() => setLoading(false), 800)
+    if (loadingTimeoutRef.current !== null) clearTimeout(loadingTimeoutRef.current)
+    loadingTimeoutRef.current = setTimeout(() => {
+      loadingTimeoutRef.current = null
+      setLoading(false)
+    }, 800)
   }, [])
 
   return (

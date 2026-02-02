@@ -45,7 +45,7 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
                 href={`/admin/inventory/category?slug=${category.slug}`}
                 onPress={handleCategoryClick(category.slug!)}
                 className='p-4 hover:bg-neutral-50 min-h-64 dark:hover:bg-dark-table/30 dark:bg-dark-table/40 transition-colors cursor-pointer '>
-                <div className='flex items-start w-full h-28 space-x-4'>
+                <div className='flex items-start w-full h-8 space-x-4'>
                   <Image
                     isLoading={!resolveUrl(category.heroImage!)}
                     alt={category.name + '-image'}

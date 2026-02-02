@@ -175,19 +175,17 @@ export function Checkout({
     }
   }, [orderId])
 
-  // Auto-place order if we have all required info
+  // Auto-place order if we have all required info; otherwise open modal to collect/confirm
   const handlePlaceOrderClick = useCallback(async () => {
     if (hasAllRequiredInfo && defaultAddress) {
-      // Auto-place order with saved info
       const shippingAddress: AddressType = {
         ...defaultAddress,
         id: defaultAddress.id ?? `shipping-${Date.now()}`,
         type: 'shipping',
         firstName: defaultAddress.firstName,
         lastName: defaultAddress.lastName,
-        country: defaultAddress.country || 'US', // Ensure country is set to US
+        country: defaultAddress.country || 'US',
       }
-
       startTransition(async () => {
         await onPlaceOrder({
           shippingAddress,
@@ -279,8 +277,6 @@ export function Checkout({
     [handleInputChange],
   )
 
-  // Only allow modal to open if required data is missing
-  // This ensures the modal never opens for users who have all data on file
   const shouldShowModal = isCheckoutOpen && !hasAllRequiredInfo
 
   return (

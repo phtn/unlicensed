@@ -7,7 +7,7 @@ import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Select, SelectItem} from '@heroui/react'
 import {useQuery} from 'convex/react'
-import React, {useEffect, useMemo} from 'react'
+import React, {useMemo} from 'react'
 
 interface IPaymentMethod {
   id: PaymentMethod
@@ -21,10 +21,11 @@ interface IPaymentMethod {
 }
 
 interface PaymentMethodProps {
+  value: PaymentMethod
   onChange: (value: PaymentMethod) => void
 }
 
-export const PaymentMethods = ({onChange}: PaymentMethodProps) => {
+export const PaymentMethods = ({value, onChange}: PaymentMethodProps) => {
   // const methods: Array<IPaymentMethod> = [
   //   {
   //     id: 'cards',
@@ -78,17 +79,26 @@ export const PaymentMethods = ({onChange}: PaymentMethodProps) => {
     if (keys === 'all' || keys.size === 0) return
     const selectedKey = Array.from(keys)[0] as string
     if (selectedKey) {
-      const paymentMethod = idToPaymentMethod[selectedKey]
-      if (paymentMethod) {
-        onChange(paymentMethod)
-      }
+      const paymentMethod = idToPaymentMethod[selectedKey] ?? (selectedKey as PaymentMethod)
+      onChange(paymentMethod)
     }
   }
 
-  // Set default selection on mount
-  useEffect(() => {
-    onChange('crypto_commerce')
-  }, [onChange])
+  // Selected key: API method.id may match PaymentMethod (e.g. crypto_commerce) or use short form (crypto, card, cash-app)
+  const selectedKey = useMemo(() => {
+    const reverse: Record<PaymentMethod, string> = {
+      cards: 'card',
+      crypto_commerce: 'crypto',
+      crypto_transfer: 'crypto_transfer',
+      cash_app: 'cash-app',
+    }
+    return reverse[value] ?? value
+  }, [value])
+
+  const selectedKeys = useMemo(() => {
+    const key = methods.some((m) => m.id === value) ? value : selectedKey
+    return key ? [key] : []
+  }, [value, selectedKey, methods])
 
   return (
     <Select
@@ -100,7 +110,7 @@ export const PaymentMethods = ({onChange}: PaymentMethodProps) => {
         listboxWrapper: 'border dark:border-foreground/40 rounded-2xl',
         listbox: 'border-b',
       }}
-      defaultSelectedKeys={['crypto_commerce']}
+      selectedKeys={selectedKeys}
       isMultiline={true}
       multiple={false}
       items={methods}
