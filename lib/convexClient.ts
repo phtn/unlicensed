@@ -3,6 +3,7 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {categoriesSeed, productsSeed} from '@/convex/init'
 import {PotencyLevel} from '@/convex/products/d'
+import {getTotalStock} from '@/lib/productStock'
 import {ConvexHttpClient} from 'convex/browser'
 import {cache} from 'react'
 
@@ -32,6 +33,9 @@ export type RawProduct = {
   featured?: boolean
   available?: boolean
   stock?: number
+  stockByDenomination?: Record<string, number>
+  /** Per-denomination price in cents. */
+  priceByDenomination?: Record<string, number>
   rating?: number
   image?: string
   gallery?: string[]
@@ -98,7 +102,9 @@ export const adaptProduct = (product: RawProduct): StoreProduct => ({
   terpenes: product.terpenes ?? [],
   featured: product.featured ?? false,
   available: product.available ?? true,
-  stock: product.stock ?? 0,
+  stock: getTotalStock(product),
+  stockByDenomination: product.stockByDenomination,
+  priceByDenomination: product.priceByDenomination,
   rating: product.rating ?? 0,
   image: product.image ?? '',
   gallery: product.gallery ?? [],

@@ -1,5 +1,6 @@
 'use client'
 
+import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {
   Chip,
@@ -47,6 +48,11 @@ export const Inventory = ({form}: InventoryProps) => {
     return values.availableDenominationsRaw
   })
 
+  const eligibleForUpgrade = useStore(form.store, (state) => {
+    const values = state.values as {eligibleForUpgrade?: boolean}
+    return values.eligibleForUpgrade ?? false
+  })
+
   // Parse current denominations from raw value
   const currentDenominations = useMemo(() => {
     if (!availableDenominationsRaw) return new Set<string>()
@@ -86,22 +92,32 @@ export const Inventory = ({form}: InventoryProps) => {
       })
   }, [variants])
 
-  // Handle selection change
+  // Handle selection change: update raw field and ensure stockByDenomination has an entry for each selected denomination
   const handleSelectionChange = (
     field: {
       handleChange: (value: string) => void
     },
     keys: Set<React.Key> | 'all',
   ) => {
+    const newKeys =
+      keys === 'all'
+        ? variantOptions.map((opt) => opt.key)
+        : Array.from(keys).map((key) => String(key))
     if (keys === 'all') {
       const allDenominations = variantOptions.map((opt) => opt.key).join(', ')
       field.handleChange(allDenominations)
     } else {
-      const selectedDenominations = Array.from(keys)
-        .map((key) => String(key))
-        .join(', ')
-      field.handleChange(selectedDenominations)
+      field.handleChange(newKeys.join(', '))
     }
+    const current =
+      (form.getFieldValue('stockByDenomination') as
+        | Record<string, number>
+        | undefined) ?? {}
+    const next = {...current}
+    for (const k of newKeys) {
+      if (next[k] === undefined) next[k] = 0
+    }
+    form.setFieldValue('stockByDenomination', next)
   }
 
   return (
@@ -109,32 +125,70 @@ export const Inventory = ({form}: InventoryProps) => {
       <Header label='Inventory & Status' />
       <div className='w-full space-y-8'>
         <div className='grid grid-cols-1 md:grid-cols-6 md:gap-x-6 gap-y-6 w-full'>
-          <div className='w-full col-span-1'>
-            <form.Field name='stock'>
+          <div className='w-full col-span-6'>
+            <form.Field name='stockByDenomination'>
               {(field) => {
-                const stockValue = (field.state.value as number) ?? 0
+                const stockByDenomination =
+                  (field.state.value as Record<string, number>) ?? {}
+                const selectedVariantOptions = variantOptions.filter((opt) =>
+                  currentDenominations.has(opt.key),
+                )
+                const handleStockChange = (
+                  denominationKey: string,
+                  value: number,
+                ) => {
+                  const next = {
+                    ...stockByDenomination,
+                    [denominationKey]: Math.max(0, value),
+                  }
+                  field.handleChange(next)
+                }
                 return (
-                  <div className='space-y-2 w-full'>
-                    <label className='text-sm font-medium text-neutral-300'></label>
-                    <Input
-                      label='Stock Quantity'
-                      type='number'
-                      value={String(stockValue ?? 0)}
-                      onChange={(e) =>
-                        field.handleChange(Number(e.target.value))
-                      }
-                      onBlur={field.handleBlur}
-                      min={0}
-                      variant='bordered'
-                      classNames={commonInputClassNames}
-                    />
+                  <div className='space-y-3 w-full'>
+                    <label className='text-sm font-medium text-neutral-300 block'>
+                      Stock by Denomination
+                    </label>
+                    {selectedVariantOptions.length === 0 ? (
+                      <p className='text-sm text-color-muted'>
+                        Select available denominations below to set stock per
+                        size.
+                      </p>
+                    ) : (
+                      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+                        {selectedVariantOptions.map((option) => {
+                          const value = stockByDenomination[option.key] ?? 0
+                          return (
+                            <Input
+                              key={option.key}
+                              label={
+                                mapFractions[option.label] ??
+                                option.displayLabel ??
+                                option.label
+                              }
+                              type='number'
+                              value={String(value)}
+                              onChange={(e) =>
+                                handleStockChange(
+                                  option.key,
+                                  Number(e.target.value) || 0,
+                                )
+                              }
+                              onBlur={field.handleBlur}
+                              min={0}
+                              variant='bordered'
+                              classNames={commonInputClassNames}
+                            />
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 )
               }}
             </form.Field>
           </div>
 
-          <div className='w-full col-span-3'>
+          <div className='w-full col-span-2'>
             <form.Field name='availableDenominationsRaw'>
               {(field) => {
                 const selectedKeys = new Set(
@@ -362,6 +416,61 @@ export const Inventory = ({form}: InventoryProps) => {
               }}
             </form.Field>
           </div>
+          <div className='w-full col-span-2'>
+            <form.Field name='tier'>
+              {(field) => {
+                const tierValue =
+                  (field.state.value as
+                    | 'A'
+                    | 'AA'
+                    | 'AAA'
+                    | 'AAAA'
+                    | 'S'
+                    | undefined) ?? undefined
+                const selectedKeys = tierValue ? [tierValue] : []
+                return (
+                  <Select
+                    label='Tier'
+                    placeholder='Select a tier'
+                    selectedKeys={selectedKeys}
+                    onSelectionChange={(keys) => {
+                      const key = Array.from(keys)[0]
+                      field.handleChange(
+                        key != null
+                          ? (key as 'A' | 'AA' | 'AAA' | 'AAAA' | 'S')
+                          : undefined,
+                      )
+                    }}
+                    onBlur={field.handleBlur}
+                    variant='bordered'
+                    classNames={{
+                      ...commonInputClassNames,
+                      trigger:
+                        'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
+                      label:
+                        'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
+                    }}
+                    disallowEmptySelection={false}>
+                    <SelectItem key='A' textValue='A'>
+                      A
+                    </SelectItem>
+                    <SelectItem key='AA' textValue='AA'>
+                      AA
+                    </SelectItem>
+                    <SelectItem key='AAA' textValue='AAA'>
+                      AAA
+                    </SelectItem>
+                    <SelectItem key='AAAA' textValue='AAAA'>
+                      AAAA
+                    </SelectItem>
+                    <SelectItem key='S' textValue='S'>
+                      S
+                    </SelectItem>
+                  </Select>
+                )
+              }}
+            </form.Field>
+          </div>
         </div>
 
         <div className='grid md:grid-cols-4 items-center gap-8 py-4'>
@@ -423,7 +532,31 @@ export const Inventory = ({form}: InventoryProps) => {
                       Eligible for Rewards
                     </span>
                     <span className='text-xs opacity-70'>
-                      Customers can earn rewards for purchasing this product.
+                      +Rewards for purchasing this product.
+                    </span>
+                  </div>
+                </Switch>
+              )
+            }}
+          </form.Field>
+
+          <form.Field name='eligibleForUpgrade'>
+            {(field) => {
+              const eligibleForUpgradeValue =
+                (field.state.value as boolean) ?? false
+              return (
+                <Switch
+                  isSelected={eligibleForUpgradeValue}
+                  onValueChange={field.handleChange}
+                  classNames={{
+                    wrapper: 'group-data-[selected=true]:bg-violet-500',
+                  }}>
+                  <div className='flex flex-col gap-px portrait:pl-4'>
+                    <span className='text-base font-semibold'>
+                      Eligible for Upgrade
+                    </span>
+                    <span className='text-xs opacity-70'>
+                      Product can be upgraded to a higher tier.
                     </span>
                   </div>
                 </Switch>
@@ -431,6 +564,39 @@ export const Inventory = ({form}: InventoryProps) => {
             }}
           </form.Field>
         </div>
+
+        {eligibleForUpgrade && (
+          <div className='grid md:grid-cols-4 items-center gap-8 py-4'>
+            <form.Field name='upgradePrice'>
+              {(field) => {
+                const value = (field.state.value as number | undefined) ?? 0
+                return (
+                  <div className='space-y-2'>
+                    <Input
+                      label='Upgrade Price ($)'
+                      type='number'
+                      value={String(value)}
+                      onChange={(e) =>
+                        field.handleChange(Number(e.target.value) || 0)
+                      }
+                      onBlur={field.handleBlur}
+                      min={0}
+                      step={0.01}
+                      variant='bordered'
+                      classNames={commonInputClassNames}
+                      startContent={
+                        <Icon
+                          name='dollar'
+                          className='size-5 mb-0.5 opacity-80'
+                        />
+                      }
+                    />
+                  </div>
+                )
+              }}
+            </form.Field>
+          </div>
+        )}
       </div>
     </FormSection>
   )

@@ -111,8 +111,13 @@ export const ProductDetailContent = ({
   const category = detail.category
   const related = detail.related
 
-  const handleDenominationChange = (denomination: number) => () => {
-    setSelectedDenomination(denomination)
+  // Selected denomination value (e.g. 0.125, 1, 3.5) for priceByDenomination/stockByDenomination lookups; keyed by string in store
+  const currentDenominationValue =
+    product.availableDenominations?.[selectedDenomination] ?? 0
+  const currentDenominationKey = String(currentDenominationValue)
+
+  const handleDenominationChange = (index: number) => () => {
+    setSelectedDenomination(index)
   }
 
   const handleAddToCart = async () => {
@@ -124,7 +129,7 @@ export const ProductDetailContent = ({
       return
     }
 
-    const denomination = product.availableDenominations?.[selectedDenomination]
+    const denomination = currentDenominationValue
 
     startTransition(async () => {
       // Set optimistic state immediately
@@ -169,7 +174,7 @@ export const ProductDetailContent = ({
             productId={detailQuery?.product?._id ?? product._id}
             isMobile={isMobile}
           />
-          <div className='space-y-6 sm:space-y-8 lg:min-h-[78lvh] rounded-3xl border border-foreground/20 bg-hue dark:bg-dark-table/50 p-4 sm:p-5 lg:p-6 backdrop-blur-xl w-full'>
+          <div className='space-y-6 sm:space-y-8 lg:min-h-[78lvh] rounded-3xl rounded-tl-none border border-foreground/20 bg-hue dark:bg-dark-table/50 p-4 sm:p-5 lg:p-6 backdrop-blur-xl w-full'>
             <div className='flex flex-col gap-4 sm:gap-5'>
               <div className='flex items-center h-10 overflow-hidden justify-between gap-2 pb-2 md:w-full'>
                 <StatChip
@@ -219,7 +224,7 @@ export const ProductDetailContent = ({
                           </span>
                         </div>
                       }>
-                      <div className='w-14 flex items-center justify-end'>
+                      <div className='w-20 flex items-center justify-end'>
                         <Icon
                           name='shopping-bag-fill'
                           className='size-8 drop-shadow-xs mt-1 mr-3.25'
@@ -228,8 +233,13 @@ export const ProductDetailContent = ({
                     </Badge>
                   </Tooltip>
                 ) : (
-                  <span className='text-[9px] w-14 sm:text-xs uppercase text-color-muted whitespace-nowrap'>
-                    in stock
+                  <span className='text-[9px] w-20 sm:text-xs uppercase text-color-muted whitespace-nowrap'>
+                    <span className='text-brand font-okxs font-medium'>
+                      {product.stockByDenomination?.[currentDenominationKey] ??
+                        product.stock ??
+                        0}
+                    </span>{' '}
+                    in-stock
                   </span>
                 )}
               </div>
@@ -246,8 +256,9 @@ export const ProductDetailContent = ({
                 <span className='font-space text-3xl sm:text-4xl font-semibold text-foreground w-40 md:w-28'>
                   <span className='font-light opacity-80 scale-90'>$</span>
                   {formatPrice(
-                    product.availableDenominations[selectedDenomination] *
-                      product.priceCents,
+                    product.priceByDenomination?.[currentDenominationKey] ??
+                      product.priceCents ??
+                      0,
                   )}
                 </span>
 

@@ -42,7 +42,8 @@ The `dealType` field uses a union type with the following literal values:
 | `terpenes` | `string[]` | Optional | Array of terpene names |
 | `featured` | `boolean` | Optional | Whether product is featured |
 | `available` | `boolean` | Optional | Product availability status |
-| `stock` | `number` | Optional | Stock quantity |
+| `stock` | `number` | Optional | Total stock quantity (legacy; prefer `stockByDenomination` when per-size inventory is used) |
+| `stockByDenomination` | `Record<string, number>` | Optional | Per-denomination inventory. Key = denomination as string (e.g. `"0.125"`, `"1"`, `"3.5"`), value = count. |
 | `rating` | `number` | Optional | Product rating value |
 | `image` | `Id<'_storage'>` | Optional | Main product image storage ID |
 | `gallery` | `(Id<'_storage'> \| string)[]` | Optional | Array of gallery images (storage IDs or URLs) |

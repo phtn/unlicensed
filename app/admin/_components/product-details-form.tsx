@@ -3,6 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
+import {getTotalStock} from '@/lib/productStock'
 import {Button, Image, Input, Switch, Textarea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useEffect, useState} from 'react'
@@ -27,7 +28,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
 
   const [name, setName] = useState(product.name)
   const [priceCents, setPriceCents] = useState(product.priceCents)
-  const [stock, setStock] = useState(product.stock ?? 0)
+  const [stock, setStock] = useState(getTotalStock(product))
   const [unit, setUnit] = useState(product.unit)
   const [available, setAvailable] = useState(product.available)
   const [featured, setFeatured] = useState(product.featured)
@@ -37,7 +38,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
   useEffect(() => {
     setName(product.name)
     setPriceCents(product.priceCents)
-    setStock(product.stock ?? 0)
+    setStock(getTotalStock(product))
     setUnit(product.unit)
     setAvailable(product.available)
     setFeatured(product.featured)
@@ -46,6 +47,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
     product.name,
     product.priceCents,
     product.stock,
+    product.stockByDenomination,
     product.unit,
     product.available,
     product.featured,
@@ -105,7 +107,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
       if (priceCents !== product.priceCents) {
         fields.priceCents = priceCents
       }
-      if (stock !== (product.stock ?? 0)) {
+      if (stock !== getTotalStock(product)) {
         fields.stock = stock
       }
       if (unit !== product.unit) {
@@ -124,7 +126,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
       // Revert form state on error
       setName(product.name)
       setPriceCents(product.priceCents)
-      setStock(product.stock ?? 0)
+      setStock(getTotalStock(product))
       setUnit(product.unit)
     } finally {
       setIsSaving(false)

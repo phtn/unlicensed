@@ -2,20 +2,34 @@
 
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {Input} from '@heroui/react'
+import {Input, Select, SelectItem} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
-import {useEffect, useMemo} from 'react'
+import {useEffect, useMemo, useRef} from 'react'
 import {mapFractions, ProductFormApi} from '../product-schema'
 import {commonInputClassNames} from '../ui/fields'
 import {FormSection, Header} from './components'
 
+function extractDenominationFromLabel(label: string): string | null {
+  const match = label.match(/^(\d+\.?\d*)/)
+  if (match) {
+    const num = Number.parseFloat(match[1])
+    return Number.isNaN(num) ? null : String(num)
+  }
+  return null
+}
+
 interface PricingProps {
   form: ProductFormApi
   categories?: Doc<'categories'>[]
+  /** When true (editing), we only auto-fill variants when empty. When false (creating), we always sync variants to the selected category's denominations. */
+  isEditMode?: boolean
 }
 
-export const Pricing = ({form, categories}: PricingProps) => {
-  // Get categorySlug reactively from form store
+export const Pricing = ({
+  form,
+  categories,
+  isEditMode = false,
+}: PricingProps) => {
   const categorySlug = useStore(form.store, (state) => {
     const values = state.values as {categorySlug?: string}
     return values.categorySlug
@@ -26,34 +40,74 @@ export const Pricing = ({form, categories}: PricingProps) => {
     return categories.find((c) => c.slug === categorySlug) ?? null
   }, [categories, categorySlug])
 
-  // Generate variants based on category denominations and units
+  const lastAppliedCategorySlugRef = useRef<string | null>(null)
+
+  // Reflect category's denominations only: when creating, sync variants when category is selected or changes so only that category's options (e.g. 1, 3, 7 for Extracts) appear. When editing, only fill when variants are empty. Don't overwrite on every run or we'd wipe price edits.
   useEffect(() => {
-    if (!selectedCategory) return
+    if (!selectedCategory) {
+      lastAppliedCategorySlugRef.current = null
+      return
+    }
 
     const units = selectedCategory.units ?? []
     const denominations = selectedCategory.denominations ?? []
 
-    // Only generate variants if both units and denominations exist
+    const currentUnit = (form.getFieldValue('unit') as string) ?? ''
+    if (units.length > 0 && !currentUnit.trim()) {
+      form.setFieldValue('unit', units[0])
+    }
+
     if (units.length === 0 || denominations.length === 0) return
 
-    // Generate variant labels by combining denominations with units
-    const generatedVariants = denominations.flatMap((denomination) =>
-      units.map((unit) => ({
-        label: `${denomination}${unit}`,
-        price: 0, // Default price, user can edit
-      })),
-    )
-
-    // Only update if variants haven't been set yet or are empty
-    const currentVariants = form.getFieldValue('variants')
+    const currentVariants = form.getFieldValue('variants') as
+      | Array<{label: string; price: number}>
+      | undefined
     const isEmpty =
       !currentVariants ||
       !Array.isArray(currentVariants) ||
       currentVariants.length === 0
-    if (isEmpty) {
-      form.setFieldValue('variants', generatedVariants)
+
+    const slug = selectedCategory.slug ?? null
+    const categoryChanged = lastAppliedCategorySlugRef.current !== slug
+    if (categoryChanged) {
+      lastAppliedCategorySlugRef.current = slug
     }
-  }, [selectedCategory, form])
+
+    const shouldApply = isEmpty || (isEditMode ? false : categoryChanged)
+    if (!shouldApply) return
+
+    const primaryUnit = units[0]
+    const generatedVariants = denominations.map((denomination) => ({
+      label: `${denomination}${primaryUnit}`,
+      price: 0,
+    }))
+
+    form.setFieldValue('variants', generatedVariants)
+    form.setFieldValue(
+      'availableDenominationsRaw',
+      denominations.map(String).join(', '),
+    )
+    const currentStock =
+      (form.getFieldValue('stockByDenomination') as
+        | Record<string, number>
+        | undefined) ?? {}
+    const next: Record<string, number> = {...currentStock}
+    for (const d of denominations) {
+      const key = String(d)
+      if (next[key] === undefined) next[key] = 0
+    }
+    form.setFieldValue('stockByDenomination', next)
+    const currentPrices =
+      (form.getFieldValue('priceByDenomination') as
+        | Record<string, number>
+        | undefined) ?? {}
+    const nextPrices: Record<string, number> = {...currentPrices}
+    for (const d of denominations) {
+      const key = String(d)
+      if (nextPrices[key] === undefined) nextPrices[key] = 0
+    }
+    form.setFieldValue('priceByDenomination', nextPrices)
+  }, [selectedCategory, form, isEditMode])
   return (
     <FormSection id='pricing'>
       <Header label='Pricing' />
@@ -89,18 +143,46 @@ export const Pricing = ({form, categories}: PricingProps) => {
           <form.AppField name='unit'>
             {(field) => {
               const unitValue = (field.state.value as string) ?? ''
+              const categoryUnits = selectedCategory?.units ?? []
+              const hasCategoryUnits = categoryUnits.length > 0
               return (
                 <div className='space-y-2'>
-                  <label className='text-sm font-medium text-neutral-300'></label>
-                  <Input
-                    label='Unit of Measurement'
-                    value={unitValue}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder='e.g. 3.5g, each'
-                    variant='bordered'
-                    classNames={commonInputClassNames}
-                  />
+                  {hasCategoryUnits ? (
+                    <Select
+                      label='Unit'
+                      selectedKeys={unitValue ? [unitValue] : []}
+                      onSelectionChange={(keys) => {
+                        const key = Array.from(keys)[0]
+                        field.handleChange(key != null ? String(key) : '')
+                      }}
+                      onBlur={field.handleBlur}
+                      placeholder='Select unit'
+                      variant='bordered'
+                      classNames={{
+                        ...commonInputClassNames,
+                        trigger:
+                          'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
+                        label:
+                          'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
+                      }}
+                      disallowEmptySelection={false}>
+                      {categoryUnits.map((u) => (
+                        <SelectItem key={u} textValue={u}>
+                          {u}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                  ) : (
+                    <Input
+                      label='Unit of Measurement'
+                      value={unitValue}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder='e.g. g, oz, each'
+                      variant='bordered'
+                      classNames={commonInputClassNames}
+                    />
+                  )}
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
                       <p className='text-xs text-rose-400'>
@@ -114,51 +196,67 @@ export const Pricing = ({form, categories}: PricingProps) => {
         </div>
 
         <form.Field name='variants'>
-          {(field) => {
+          {(variantsField) => {
             const variants =
-              (field.state.value as
+              (variantsField.state.value as
                 | Array<{label: string; price: number}>
                 | undefined) || []
             return (
               <div className='space-y-3 p-4'>
                 <div className='flex items-center justify-between'>
                   <label className='text-sm font-medium'>
-                    Variants & Pricing
+                    Price by Denomination
                   </label>
-                  <span className='text-xs'>Optional override per unit</span>
+                  <span className='text-xs'>Price per size (from category)</span>
                 </div>
 
                 {variants.length > 0 ? (
-                  <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4'>
-                    {variants.map((variant, index) => (
-                      <Input
-                        key={variant.label}
-                        type='number'
-                        label={mapFractions[variant.label] ?? variant.label}
-                        value={String(variant.price ?? '')}
-                        onChange={(e) => {
-                          const newVariants = [...variants]
-                          newVariants[index] = {
-                            ...variant,
-                            price: Number(e.target.value) || 0,
-                          }
-                          field.handleChange(newVariants)
-                        }}
-                        startContent={
-                          <Icon
-                            name='dollar'
-                            className='size-4 opacity-80 mb-1 -mr-2'
-                          />
-                        }
-                        size='sm'
-                        variant='bordered'
-                        classNames={{
-                          ...commonInputClassNames,
-                          label: 'mb-4 ml-1',
-                        }}
-                      />
-                    ))}
-                  </div>
+                  <form.Field name='priceByDenomination'>
+                    {(priceField) => {
+                      const priceByDenomination =
+                        (priceField.state.value as Record<string, number>) ?? {}
+                      return (
+                        <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4'>
+                          {variants.map((variant) => {
+                            const denomKey =
+                              extractDenominationFromLabel(variant.label)
+                            if (denomKey == null) return null
+                            const value = priceByDenomination[denomKey] ?? 0
+                            return (
+                              <Input
+                                key={variant.label}
+                                type='number'
+                                label={
+                                  mapFractions[variant.label] ?? variant.label
+                                }
+                                value={String(value)}
+                                onChange={(e) => {
+                                  const next = {
+                                    ...priceByDenomination,
+                                    [denomKey]: Number(e.target.value) || 0,
+                                  }
+                                  priceField.handleChange(next)
+                                }}
+                                onBlur={priceField.handleBlur}
+                                startContent={
+                                  <Icon
+                                    name='dollar'
+                                    className='size-4 opacity-80 mb-1 -mr-2'
+                                  />
+                                }
+                                size='sm'
+                                variant='bordered'
+                                classNames={{
+                                  ...commonInputClassNames,
+                                  label: 'mb-4 ml-1',
+                                }}
+                              />
+                            )
+                          })}
+                        </div>
+                      )
+                    }}
+                  </form.Field>
                 ) : (
                   <div className='text-center py-4 text-xs'>
                     {selectedCategory?.units && selectedCategory?.denominations

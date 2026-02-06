@@ -59,6 +59,7 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
     available: product.available ?? false,
     eligibleForRewards: product.eligibleForRewards ?? true,
     stock: product.stock ?? 0,
+    stockByDenomination: product.stockByDenomination ?? {},
     rating: product.rating ?? 0,
     image: product.image ?? '',
     gallery: product.gallery ?? [],
@@ -67,8 +68,30 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
     potencyProfile: product.potencyProfile ?? '',
     variants: product.variants?.map((v) => ({
       label: v.label,
-      price: v.price / 100, // Convert from cents to dollars
+      price: v.price / 100,
     })),
+    priceByDenomination:
+      product.priceByDenomination &&
+      Object.keys(product.priceByDenomination).length > 0
+        ? Object.fromEntries(
+            Object.entries(product.priceByDenomination).map(([k, v]) => [
+              k,
+              Number(v) / 100,
+            ]),
+          )
+        : product.variants?.length
+          ? Object.fromEntries(
+              product.variants.map((v) => {
+                const match = v.label.match(/^(\d+\.?\d*)/)
+                const key = match?.[1] ?? v.label
+                return [key, (v.price ?? 0) / 100]
+              }),
+            )
+          : {},
+    tier: product.tier,
+    eligibleForUpgrade: product.eligibleForUpgrade ?? false,
+    upgradePrice:
+      product.upgradePrice != null ? product.upgradePrice / 100 : undefined,
   }
 
   const handleUpdated = () => {

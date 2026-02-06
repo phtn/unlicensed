@@ -27,6 +27,10 @@ export interface StoreProduct {
   featured: boolean
   available: boolean
   stock: number
+  /** Per-denomination inventory counts. Key = denomination as string (e.g. "0.125", "1", "3.5"). */
+  stockByDenomination?: Record<string, number>
+  /** Per-denomination price in cents. Key = denomination as string (e.g. "0.125", "1", "3.5"). */
+  priceByDenomination?: Record<string, number>
   rating: number
   image: string | null
   gallery: string[]

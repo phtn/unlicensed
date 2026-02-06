@@ -6,10 +6,12 @@ export const productSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   slug: z.string().optional(),
   categorySlug: z.string().min(1, 'Select a category.'),
-  shortDescription: z.string().min(10, 'Short description is required.'),
-  description: z
-    .string()
-    .min(20, 'Description must be at least 20 characters.'),
+  shortDescription: z.optional(
+    z.string().min(0, 'Short description is required.'),
+  ),
+  description: z.optional(
+    z.string().min(0, 'Description must be at least 20 characters.'),
+  ),
   priceCents: z.number().min(0, 'Price must be positive.'),
   unit: z.string().min(1, 'Unit is required.'),
   availableDenominationsRaw: z.string().optional(),
@@ -25,16 +27,28 @@ export const productSchema = z.object({
   featured: z.boolean(),
   available: z.boolean(),
   eligibleForRewards: z.boolean(),
-  stock: z.number().min(0, 'Stock must be positive.'),
-  rating: z
-    .number()
-    .min(0, 'Rating must be at least 0.')
-    .max(5, 'Rating must be 5 or less.'),
+  stock: z.optional(z.number().min(0, 'Stock must be positive.')),
+  /** Per-denomination inventory. Key = denomination as string (e.g. "0.125", "1"), value = count. */
+  stockByDenomination: z.optional(
+    z.record(z.string(), z.number().min(0, 'Stock must be 0 or more.')),
+  ),
+  /** Per-denomination price in dollars. Key = denomination as string (e.g. "0.125", "1", "3.5"), value = price. */
+  priceByDenomination: z.optional(
+    z.record(z.string(), z.number().min(0, 'Price must be 0 or more.')),
+  ),
+  rating: z.optional(
+    z
+      .number()
+      .min(0, 'Rating must be at least 0.')
+      .max(5, 'Rating must be 5 or less.'),
+  ),
   image: z
     .string()
     .min(1, 'Upload a primary image or provide a URL/storage ID.'),
-  gallery: z.array(z.string()),
-  consumption: z.string().min(5, 'Consumption guidance is required.'),
+  gallery: z.optional(z.array(z.string())),
+  consumption: z.optional(
+    z.string().min(0, 'Consumption guidance is required.'),
+  ),
   potencyLevel: z.enum(['mild', 'medium', 'high']),
   potencyProfile: z.string().optional(),
   weightGrams: z.string().optional(),
@@ -46,6 +60,11 @@ export const productSchema = z.object({
       }),
     )
     .optional(),
+  tier: z
+    .enum(['A', 'AA', 'AAA', 'AAAA', 'S'])
+    .optional(),
+  eligibleForUpgrade: z.boolean().optional(),
+  upgradePrice: z.number().min(0, 'Upgrade price must be 0 or more.').optional(),
 })
 
 export type ProductFormValues = z.infer<typeof productSchema>
@@ -235,14 +254,6 @@ export const productFields: FormInput<ProductFormValues>[] = [
     defaultValue: true,
   },
   {
-    name: 'stock',
-    label: 'Stock',
-    required: true,
-    type: 'number',
-    placeholder: '0',
-    defaultValue: 0,
-  },
-  {
     name: 'rating',
     label: 'Rating',
     required: true,
@@ -289,15 +300,21 @@ export const productFields: FormInput<ProductFormValues>[] = [
   },
 ]
 
-export const defaultValues: ProductFormValues = productFields.reduce(
-  (acc, field) => {
-    const key = field.name as keyof ProductFormValues
-    // Type assertion is safe because field definitions match ProductFormValues structure
-    ;(acc as Record<string, unknown>)[key] = field.defaultValue
-    return acc
-  },
-  {} as Record<string, unknown>,
-) as ProductFormValues
+export const defaultValues: ProductFormValues = {
+  ...productFields.reduce(
+    (acc, field) => {
+      const key = field.name as keyof ProductFormValues
+      ;(acc as Record<string, unknown>)[key] = field.defaultValue
+      return acc
+    },
+    {} as Record<string, unknown>,
+  ),
+  stockByDenomination: {},
+  priceByDenomination: {},
+  tier: undefined,
+  eligibleForUpgrade: false,
+  upgradePrice: undefined,
+} as ProductFormValues
 
 export const flowerDenominations: Array<SelectOption> = [
   {value: '1/8', label: '1/8'},

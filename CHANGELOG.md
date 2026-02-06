@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.10
+
+### Patch Changes
+
+- updated product schema
+
 ## 0.27.9
 
 ### Patch Changes

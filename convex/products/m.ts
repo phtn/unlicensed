@@ -59,6 +59,7 @@ export const createProduct = mutation({
       featured: args.featured,
       available: args.available,
       stock: args.stock,
+      stockByDenomination: args.stockByDenomination,
       rating: args.rating,
       image: args.image,
       gallery: args.gallery,
@@ -68,7 +69,11 @@ export const createProduct = mutation({
       potencyProfile: args.potencyProfile,
       weightGrams: args.weightGrams,
       variants: args.variants,
+      priceByDenomination: args.priceByDenomination,
       eligibleForRewards: args.eligibleForRewards,
+      tier: args.tier,
+      eligibleForUpgrade: args.eligibleForUpgrade,
+      upgradePrice: args.upgradePrice,
     })
 
     // Log product created activity
@@ -174,6 +179,9 @@ export const updateProduct = mutation({
     if (fields.stock !== undefined) {
       updates.stock = fields.stock
     }
+    if (fields.stockByDenomination !== undefined) {
+      updates.stockByDenomination = fields.stockByDenomination
+    }
     if (fields.rating !== undefined) {
       updates.rating = fields.rating
     }
@@ -207,6 +215,18 @@ export const updateProduct = mutation({
     }
     if (fields.variants !== undefined) {
       updates.variants = fields.variants
+    }
+    if (fields.priceByDenomination !== undefined) {
+      updates.priceByDenomination = fields.priceByDenomination
+    }
+    if (fields.tier !== undefined) {
+      updates.tier = fields.tier
+    }
+    if (fields.eligibleForUpgrade !== undefined) {
+      updates.eligibleForUpgrade = fields.eligibleForUpgrade
+    }
+    if (fields.upgradePrice !== undefined) {
+      updates.upgradePrice = fields.upgradePrice
     }
 
     await ctx.db.patch(id, updates)

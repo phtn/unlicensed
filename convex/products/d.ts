@@ -8,6 +8,16 @@ const potencyLevel = v.union(
 
 export type PotencyLevel = Infer<typeof potencyLevel>
 
+const productTier = v.union(
+  v.literal('A'),
+  v.literal('AA'),
+  v.literal('AAA'),
+  v.literal('AAAA'),
+  v.literal('S'),
+)
+
+export type ProductTier = Infer<typeof productTier>
+
 export const productSchema = v.object({
   name: v.optional(v.string()),
   slug: v.optional(v.string()),
@@ -26,6 +36,9 @@ export const productSchema = v.object({
   featured: v.optional(v.boolean()),
   available: v.optional(v.boolean()),
   stock: v.optional(v.number()),
+  /** Per-denomination inventory. Key = denomination as string (e.g. "0.125", "1", "3.5"), value = count. */
+  stockByDenomination: v.optional(v.record(v.string(), v.number())),
+  priceByDenomination: v.optional(v.record(v.string(), v.number())),
   rating: v.optional(v.number()),
   image: v.optional(v.id('_storage')),
   gallery: v.optional(v.array(v.union(v.id('_storage'), v.string()))),
@@ -45,15 +58,7 @@ export const productSchema = v.object({
       }),
     ),
   ),
-  tier: v.optional(
-    v.union(
-      v.literal('A'),
-      v.literal('AA'),
-      v.literal('AAA'),
-      v.literal('AAAA'),
-      v.literal('S'),
-    ),
-  ),
+  tier: v.optional(productTier),
   eligibleForRewards: v.optional(v.boolean()), // Whether this product is eligible for rewards points
   eligibleForDeals: v.optional(v.boolean()), // Whether this product is eligible for rewards points
   eligibleDenominationForDeals: v.optional(v.array(v.number())),

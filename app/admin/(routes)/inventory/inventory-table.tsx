@@ -333,14 +333,23 @@ export const InventoryTable = () => {
         return moneyCell(product.priceCents ?? 0)
       case 'unit':
         return textCell(product.unit ?? '')
-      case 'stock':
+      case 'stock': {
+        const total =
+          product.stockByDenomination &&
+          Object.keys(product.stockByDenomination).length > 0
+            ? Object.values(product.stockByDenomination).reduce(
+                (a, b) => a + b,
+                0,
+              )
+            : product.stock
         return (
           <div className='flex flex-col items-center'>
             <p className='text-bold text-sm'>
-              {product.stock !== undefined ? product.stock : 'N/A'}
+              {total !== undefined ? total : 'N/A'}
             </p>
           </div>
         )
+      }
       case 'status':
         const status = product.available
           ? 'active'

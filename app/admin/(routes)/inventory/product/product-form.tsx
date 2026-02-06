@@ -95,8 +95,8 @@ export const ProductForm = ({
           name: data.name.trim(),
           slug: ensureSlug(data.slug ?? '', data.name),
           categorySlug: data.categorySlug,
-          shortDescription: data.shortDescription.trim(),
-          description: data.description.trim(),
+          shortDescription: data.shortDescription?.trim(),
+          description: data.description?.trim(),
           priceCents: Math.round(data.priceCents * 100),
           unit: data.unit.trim(),
           availableDenominations: parseNumbers(data.availableDenominationsRaw),
@@ -113,11 +113,12 @@ export const ProductForm = ({
           terpenes: data.terpenes || [],
           featured: data.featured,
           available: data.available,
-          stock: Math.round(data.stock),
+          stock: data.stock ? Math.round(data.stock) : undefined,
+          stockByDenomination: data.stockByDenomination,
           rating: data.rating,
           image: data.image as Id<'_storage'>,
           gallery: data.gallery as Array<Id<'_storage'>>,
-          consumption: data.consumption.trim(),
+          consumption: data.consumption?.trim(),
           flavorNotes: data.flavors || [],
           potencyLevel: data.potencyLevel,
           potencyProfile: data.potencyProfile?.trim() || undefined,
@@ -125,10 +126,30 @@ export const ProductForm = ({
             data.weightGrams && data.weightGrams.length > 0
               ? Number(data.weightGrams)
               : undefined,
-          variants: data.variants?.map((v) => ({
-            ...v,
-            price: Math.round(v.price * 100),
-          })),
+          variants: data.variants?.map((v) => {
+            const denomKey = v.label.match(/^(\d+\.?\d*)/)?.[1]
+            const priceCents =
+              denomKey != null && data.priceByDenomination?.[denomKey] != null
+                ? Math.round(data.priceByDenomination[denomKey] * 100)
+                : Math.round((v.price ?? 0) * 100)
+            return { ...v, price: priceCents }
+          }),
+          priceByDenomination:
+            data.priceByDenomination &&
+            Object.keys(data.priceByDenomination).length > 0
+              ? Object.fromEntries(
+                  Object.entries(data.priceByDenomination).map(([k, v]) => [
+                    k,
+                    Math.round(Number(v) * 100),
+                  ]),
+                )
+              : undefined,
+          tier: data.tier,
+          eligibleForUpgrade: data.eligibleForUpgrade,
+          upgradePrice:
+            data.upgradePrice != null
+              ? Math.round(data.upgradePrice * 100)
+              : undefined,
         }
 
         if (isEditMode && productId) {
@@ -299,7 +320,11 @@ export const ProductForm = ({
               fields={productFields.slice(3, 4)}></Media>
           </div>
           <div id='pricing' className='scroll-mt-4'>
-            <Pricing form={form as ProductFormApi} categories={categories} />
+            <Pricing
+              form={form as ProductFormApi}
+              categories={categories}
+              isEditMode={isEditMode}
+            />
           </div>
 
           <div id='inventory' className='scroll-mt-4'>
