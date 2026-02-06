@@ -1,8 +1,10 @@
 'use client'
 
+import {mapNumericFractions} from '@/app/admin/_components/product-schema'
 import {DataTable} from '@/components/table-v2'
 import {
   countCell,
+  HoverCell,
   linkText,
   priceCell,
   textCell,
@@ -13,7 +15,51 @@ import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
+import {formatPrice} from '@/utils/formatPrice'
+import {CellContext} from '@tanstack/react-table'
 import {useMemo} from 'react'
+
+function availableDenominationsCell(
+  ctx: CellContext<Doc<'products'>, unknown>,
+) {
+  const row = ctx.row.original
+  const denoms = row.availableDenominations ?? []
+  const priceByDenom = row.priceByDenomination ?? {}
+  const stockByDenom = row.stockByDenomination ?? {}
+
+  if (denoms.length === 0) {
+    return <span className='font-brk text-sm opacity-60'>····</span>
+  }
+
+  return (
+    <div className='font-brk text-sm flex flex-wrap items-center gap-x-1 gap-y-0.5'>
+      {denoms.map((denom, index) => {
+        const key = String(denom)
+        const label = mapNumericFractions[key] ?? key
+        const price = priceByDenom[key]
+        const stock = stockByDenom[key]
+        const content = (
+          <div className='space-y-1 text-sm'>
+            {/*<div className='font-medium'>{label}</div>*/}
+            {price != null && <div>Price: {formatPrice(price)}</div>}
+            {stock != null && <div>Stock: {Number(stock).toFixed(0)}</div>}
+            {price == null && stock == null && (
+              <div className='text-muted-foreground'>No price/stock data</div>
+            )}
+          </div>
+        )
+        return (
+          <span key={`${key}-${index}`}>
+            <HoverCell label={label} content={content}>
+              <span className='px-1'>{label}</span>
+            </HoverCell>
+            {index < denoms.length - 1 ? ' ' : null}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
 
 interface ProductsDataProps {
   data: Doc<'products'>[] | undefined
@@ -138,10 +184,12 @@ export const ProductsData = ({data}: ProductsDataProps) => {
         },
         {
           id: 'availableDenominations',
-          header: <ColHeader tip='Available Denominations' symbol='Denom' />,
+          header: (
+            <ColHeader tip='Available Denominations' symbol='Denominations' />
+          ),
           accessorKey: 'availableDenominations',
-          cell: textCell('availableDenominations'),
-          size: 100,
+          cell: availableDenominationsCell,
+          size: 160,
         },
         {
           id: 'popularDenomination',

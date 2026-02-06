@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.11
+
+### Patch Changes
+
+- update product data
+
 ## 0.27.10
 
 ### Patch Changes

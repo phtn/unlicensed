@@ -60,11 +60,12 @@ export const productSchema = z.object({
       }),
     )
     .optional(),
-  tier: z
-    .enum(['A', 'AA', 'AAA', 'AAAA', 'S'])
-    .optional(),
+  tier: z.enum(['A', 'AA', 'AAA', 'AAAA', 'S']).optional(),
   eligibleForUpgrade: z.boolean().optional(),
-  upgradePrice: z.number().min(0, 'Upgrade price must be 0 or more.').optional(),
+  upgradePrice: z
+    .number()
+    .min(0, 'Upgrade price must be 0 or more.')
+    .optional(),
 })
 
 export type ProductFormValues = z.infer<typeof productSchema>
@@ -333,4 +334,18 @@ export const mapFractions: Record<string, string> = {
   '2oz': '2 oz',
   '4oz': '4 oz',
   '8oz': '8 oz',
+}
+
+export const mapNumericFractions: Record<string, string> = {
+  0.125: '⅛',
+  0.25: '¼',
+  0.5: '½',
+  1: '1',
+  2: '2',
+  3: '3',
+  4: '4',
+  5: '5',
+  6: '6',
+  7: '7',
+  8: '8',
 }

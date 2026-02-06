@@ -17,6 +17,26 @@ const formatPrice = (priceCents: number) => {
   return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
 }
 
+/** Unit price in cents for one unit of the selected denomination. */
+function getUnitPriceCents(
+  product: {
+    priceCents?: number
+    priceByDenomination?: Record<string, number>
+  },
+  denomination: number | undefined,
+): number {
+  const denom = denomination ?? 1
+  const byDenom = product.priceByDenomination
+  if (byDenom && Object.keys(byDenom).length > 0) {
+    const key = String(denom)
+    const priceDollars = byDenom[key]
+    if (typeof priceDollars === 'number' && priceDollars >= 0) {
+      return Math.round(priceDollars * 100)
+    }
+  }
+  return (product.priceCents ?? 0) * denom
+}
+
 type OptimisticAction =
   | {
       type: 'update'
@@ -105,9 +125,8 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
 
   const subtotal = useMemo(() => {
     return cartItems.reduce((total, item) => {
-      const price = item.product.priceCents ?? 0
-      const denomination = item.denomination || 1
-      return total + price * denomination * item.quantity
+      const unitCents = getUnitPriceCents(item.product, item.denomination)
+      return total + unitCents * item.quantity
     }, 0)
   }, [cartItems])
 
@@ -152,8 +171,8 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                 <div className='space-y-3 px-4 mb-6'>
                   {cartItems.map((item) => {
                     const product = item.product
-                    const denomination = item.denomination ?? 1
-                    const itemPrice = (product.priceCents ?? 0) * denomination
+                    const denomination = item.denomination
+                    const itemPrice = getUnitPriceCents(product, denomination)
                     const totalPrice = itemPrice * item.quantity
                     const productImageUrl = resolveUrl(product.image ?? '')
                     const hasImage = Boolean(product.image && productImageUrl)

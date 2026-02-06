@@ -20,6 +20,11 @@ import {
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '../animate-ui/components/radix/hover-card'
 
 interface CellOptions<T> {
   className?: ClassName
@@ -92,6 +97,31 @@ export const formatText = <T, K extends keyof T>(
   })
   cell.displayName = `TextCell(${String(prop)})`
   return cell
+}
+
+interface HoverCellProps {
+  /** Content shown inside the HoverCard on hover. */
+  content?: ReactNode
+  /** Trigger element; must be a single element when using Radix asChild. */
+  children: ReactNode
+  label?: string
+}
+export const HoverCell = ({children, content, label}: HoverCellProps) => {
+  return (
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <span className='cursor-default'>{children}</span>
+      </HoverCardTrigger>
+      {content != null && (
+        <HoverCardContent className='bg-sidebar dark:bg-dark-table'>
+          <div className='flex items-start space-x-2'>
+            <div className='text-3xl'>{label}</div>
+            <div>{content}</div>
+          </div>
+        </HoverCardContent>
+      )}
+    </HoverCard>
+  )
 }
 
 /**
