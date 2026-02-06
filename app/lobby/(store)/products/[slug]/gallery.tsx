@@ -51,13 +51,13 @@ export const Gallery = ({
     <div className='flex flex-col gap-y-3 sm:gap-0'>
       <div
         ref={imageRef}
-        className='relative aspect-auto md:rounded-s-3xl border-s border-y border-foreground/10 dark:border-foreground/30 w-full md:max-h-115 overflow-hidden bg-background/60 lg:min-h-168'>
+        className='relative aspect-auto md:rounded-s-3xl md:border-s md:border-y border-foreground/10 dark:border-foreground/30 w-full md:max-h-115 overflow-hidden bg-background/60 lg:min-h-168'>
         <Lens hovering={isMobile ? false : on} setHovering={setOn}>
           <Image
             radius='none'
             src={displayImage}
             alt={product.name}
-            className='object-cover portrait:aspect-square portrait:size-full w-full h-full aspect-auto select-none'
+            className='object-cover portrait:aspect-square portrait:size-full w-full h-full aspect-auto select-none rounded-md md:rounded-none'
             loading='eager'
           />
         </Lens>
@@ -68,7 +68,7 @@ export const Gallery = ({
             key={`${src}-${index}`}
             onClick={() => src && handleSelectImage(src)()}
             className={cn(
-              'cursor-pointer select-none portrait:max-h-20 portrait:max-w-20 relative aspect-square overflow-hidden rounded-3xl size-full md:size-32',
+              'cursor-pointer select-none portrait:max-h-20 portrait:max-w-20 relative aspect-square overflow-hidden md:rounded-3xl rounded-xl size-full md:size-32',
               selectedImage === src
                 ? 'border-foreground/50 ring-2 ring-limited'
                 : 'border-foreground/10 hover:border-foreground/30',
@@ -77,7 +77,7 @@ export const Gallery = ({
               <Image
                 src={src}
                 alt={`${product.name} gallery ${index + 1}`}
-                className='object-cover size-20 portrait:aspect-square lg:size-32 aspect-auto'
+                className='object-cover size-20 portrait:aspect-square lg:size-32 rounded-lg aspect-auto'
                 loading='lazy'
               />
             )}
