@@ -169,7 +169,10 @@ export const ProductDetailContent = ({
             separator: 'opacity-80',
           }}>
           <BreadcrumbItem href='/lobby/category'>
-            <Icon name='home' className='size-4 sm:size-4 dark:opacity-60' />
+            <Icon
+              name='home'
+              className='size-4 sm:size-4 opacity-60 dark:opacity-100'
+            />
           </BreadcrumbItem>
           <BreadcrumbItem href={`/lobby/category/${product.categorySlug}`}>
             {category?.name ?? product.categorySlug}
@@ -242,7 +245,7 @@ export const ProductDetailContent = ({
                   </Tooltip>
                 ) : (
                   <span className='text-[9px] w-20 sm:text-xs uppercase text-color-muted whitespace-nowrap'>
-                    <span className='text-brand font-okxs font-medium'>
+                    <span className='text-brand font-polysans font-medium'>
                       {product.stockByDenomination?.[currentDenominationKey] ??
                         product.stock ??
                         0}
@@ -366,11 +369,7 @@ export const ProductDetailContent = ({
                   {addToCartError}
                 </p>
               )}
-              {availableQuantity !== undefined && availableQuantity <= 5 && (
-                <p className='text-sm text-foreground/70'>
-                  Only {availableQuantity} left
-                </p>
-              )}
+
               <div className='flex flex-col sm:flex-row gap-3'>
                 <div ref={addToCartButtonRef} className='w-full sm:flex-1'>
                   <Button
@@ -381,7 +380,8 @@ export const ProductDetailContent = ({
                     className='w-full h-14 font-polysans font-medium text-base md:text-lg bg-linear-to-r from-brand via-brand to-brand flex items-center'
                     onPress={handleAddToCart}
                     isDisabled={
-                      isPending || (availableQuantity !== undefined && availableQuantity < 1)
+                      isPending ||
+                      (availableQuantity !== undefined && availableQuantity < 1)
                     }>
                     <span>Add to Cart</span>
                     <Icon
@@ -402,7 +402,7 @@ export const ProductDetailContent = ({
               <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />
             </div>
 
-            <div className='bg-background/30 rounded-3xl gap-4 p-3 md:p-4 space-y-3'>
+            <div className='bg-linear-to-r from-dark-gray/5 via-dark-gray/5 to-dark-gray/5 dark:bg-background/30 rounded-3xl gap-4 p-3 md:p-4 space-y-3'>
               <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
                 Terpenes
               </span>
