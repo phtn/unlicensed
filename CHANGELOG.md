@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.14
+
+### Patch Changes
+
+- stock hold
+
 ## 0.27.13
 
 ### Patch Changes

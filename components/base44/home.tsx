@@ -75,13 +75,3 @@ export const NewHome = () => {
     </div>
   )
 }
-
-/*
-<Activity mode={isMobile ? 'hidden' : 'visible'}>
-        <Suspense fallback='null'>
-          <SceneWrapper>
-            <Grass2 />
-          </SceneWrapper>
-        </Suspense>
-      </Activity>
-*/

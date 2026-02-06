@@ -12,6 +12,7 @@ import {emailSettingsSchema} from './emailSettings/d'
 import {logSchema} from './logs/d'
 import {orderSchema} from './orders/d'
 import {paygateAccountSchema} from './paygateAccounts/d'
+import {productHoldSchema} from './productHolds/d'
 import {productSchema} from './products/d'
 import {rewardTierSchema, userRewardsSchema} from './rewards/d'
 import {staffSchema} from './staff/d'
@@ -34,6 +35,10 @@ export default defineSchema({
   staff: defineTable(staffSchema).index('by_email', ['email']),
   users: defineTable(userSchema).index('by_firebase_id', ['firebaseId']),
   carts: defineTable(cartSchema).index('by_user', ['userId']),
+  productHolds: defineTable(productHoldSchema)
+    .index('by_cart', ['cartId'])
+    .index('by_product_denom', ['productId', 'denomination'])
+    .index('by_expires', ['expiresAt']),
   orders: defineTable(orderSchema)
     .index('by_user', ['userId'])
     .index('by_order_number', ['orderNumber'])

@@ -53,7 +53,7 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
             href='#finder'
             radius='full'
             variant='flat'
-            className='hidden lg:flex border border-(--surface-outline) bg-(--surface-highlight) text-sm font-semibold text-foreground transition hover:bg-(--surface-muted)'>
+            className='hidden lg:flex border border-(--surface-outline) bg-(--surface-highlight) text-sm text-foreground transition hover:bg-(--surface-muted)'>
             Personalize with Strain Finder
           </Button>
         </div>

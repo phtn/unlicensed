@@ -113,16 +113,17 @@ export const CartItem = memo(
                       className='flex items-center gap-2 flex-wrap'>
                       {item.denomination != null && (
                         <p className='font-okxs text-xs md:text-sm text-muted-foreground'>
-                          {item.denomination}
-                          {item.product.unit ?? ''}
-                        </p>
-                      )}
-                      {item.denomination != null && (
-                        <p className='font-okxs text-xs md:text-sm text-muted-foreground'>
                           $
                           <span>
-                            {itemPrice / 100 / (item.denomination ?? 1)}
+                            {itemPrice / 100}
                           </span>
+                        </p>
+                      )}
+                      <span className='opacity-60'>/</span>
+                      {item.denomination != null && (
+                        <p className='font-okxs text-xs md:text-sm text-muted-foreground'>
+                          {item.denomination}
+                          {item.product.unit ?? ''}
                         </p>
                       )}
                     </div>

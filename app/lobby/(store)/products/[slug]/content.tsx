@@ -56,8 +56,19 @@ export const ProductDetailContent = ({
     false,
     (current, isAdding: boolean) => isAdding,
   )
+  const [addToCartError, setAddToCartError] = useState<string | null>(null)
 
   const detailQuery = useQuery(api.products.q.getProductBySlug, {slug})
+
+  const denominationForQuery =
+    detailQuery?.product?.availableDenominations?.[selectedDenomination]
+  const productIdForAvailable = detailQuery?.product?._id
+  const availableQuantity = useQuery(
+    api.productHolds.q.getAvailableQuantity,
+    productIdForAvailable != null && denominationForQuery !== undefined
+      ? {productId: productIdForAvailable, denomination: denominationForQuery}
+      : 'skip',
+  )
 
   // Get primary image URL for the product
   const primaryImageUrl = useQuery(
@@ -121,26 +132,24 @@ export const ProductDetailContent = ({
   }
 
   const handleAddToCart = async () => {
-    // Get product ID from detailQuery if available, otherwise use _id from product
-    const productId: Id<'products'> | undefined =
+    const productIdForAdd: Id<'products'> | undefined =
       detailQuery?.product?._id || (product._id as Id<'products'> | undefined)
-    if (!productId) {
+    if (!productIdForAdd) {
       console.error('Product ID not available')
       return
     }
 
     const denomination = currentDenominationValue
+    setAddToCartError(null)
 
     startTransition(async () => {
-      // Set optimistic state immediately
       setOptimisticAdding(true)
-
       try {
-        // Add item to cart - works for both authenticated and anonymous users
-        // The cart queries will automatically update when this completes
-        await addItem(productId, 1, denomination)
+        await addItem(productIdForAdd, 1, denomination)
       } catch (error) {
-        console.error('Failed to add to cart:', error)
+        const message =
+          error instanceof Error ? error.message : 'Failed to add to cart'
+        setAddToCartError(message)
       } finally {
         setOptimisticAdding(false)
       }
@@ -352,6 +361,16 @@ export const ProductDetailContent = ({
                 </div>
               </div>
 
+              {addToCartError && (
+                <p className='text-sm text-danger' role='alert'>
+                  {addToCartError}
+                </p>
+              )}
+              {availableQuantity !== undefined && availableQuantity <= 5 && (
+                <p className='text-sm text-foreground/70'>
+                  Only {availableQuantity} left
+                </p>
+              )}
               <div className='flex flex-col sm:flex-row gap-3'>
                 <div ref={addToCartButtonRef} className='w-full sm:flex-1'>
                   <Button
@@ -361,7 +380,9 @@ export const ProductDetailContent = ({
                     disableRipple
                     className='w-full h-14 font-polysans font-medium text-base md:text-lg bg-linear-to-r from-brand via-brand to-brand flex items-center'
                     onPress={handleAddToCart}
-                    isDisabled={isPending}>
+                    isDisabled={
+                      isPending || (availableQuantity !== undefined && availableQuantity < 1)
+                    }>
                     <span>Add to Cart</span>
                     <Icon
                       name={isAdding ? 'spinners-ring' : 'bag-solid'}

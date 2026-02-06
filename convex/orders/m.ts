@@ -1,6 +1,8 @@
 import {v} from 'convex/values'
+import type {Id} from '../_generated/dataModel'
 import {internal} from '../_generated/api'
-import {mutation} from '../_generated/server'
+import type {MutationCtx} from '../_generated/server'
+import {internalMutation, mutation} from '../_generated/server'
 import {addressSchema} from '../users/d'
 import {
   orderStatusSchema,
@@ -8,6 +10,56 @@ import {
   paymentSchema,
   shippingSchema,
 } from './d'
+
+async function getProductStockForOrder(
+  ctx: MutationCtx,
+  productId: Id<'products'>,
+  denomination: number | undefined,
+): Promise<number> {
+  const product = await ctx.db.get(productId)
+  if (!product) return 0
+  if (product.stockByDenomination != null && denomination !== undefined) {
+    const key = String(denomination)
+    return product.stockByDenomination[key] ?? 0
+  }
+  if (product.stockByDenomination != null) {
+    return Object.values(product.stockByDenomination).reduce((a, b) => a + b, 0)
+  }
+  return product.stock ?? 0
+}
+
+async function getHeldQuantityForOrder(
+  ctx: MutationCtx,
+  productId: Id<'products'>,
+  denomination: number | undefined,
+): Promise<number> {
+  const holds = await ctx.db
+    .query('productHolds')
+    .withIndex('by_product_denom', (q) =>
+      q.eq('productId', productId).eq('denomination', denomination),
+    )
+    .collect()
+  const now = Date.now()
+  return holds
+    .filter((h) => h.expiresAt > now)
+    .reduce((sum, h) => sum + h.quantity, 0)
+}
+
+async function getOurHoldForOrder(
+  ctx: MutationCtx,
+  cartId: Id<'carts'>,
+  productId: Id<'products'>,
+  denomination: number | undefined,
+): Promise<number> {
+  const holds = await ctx.db
+    .query('productHolds')
+    .withIndex('by_cart', (q) => q.eq('cartId', cartId))
+    .collect()
+  const match = holds.find(
+    (h) => h.productId === productId && h.denomination === denomination,
+  )
+  return match?.quantity ?? 0
+}
 
 /**
  * Create a new order from a cart
@@ -31,7 +83,6 @@ export const createOrder = mutation({
     discountCents: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // Get cart
     let cart = null
     if (args.cartId) {
       cart = await ctx.db.get(args.cartId)
@@ -44,6 +95,20 @@ export const createOrder = mutation({
 
     if (!cart || cart.items.length === 0) {
       throw new Error('Cart is empty or not found')
+    }
+
+    for (const item of cart.items) {
+      const stock = await getProductStockForOrder(ctx, item.productId, item.denomination)
+      const heldTotal = await getHeldQuantityForOrder(ctx, item.productId, item.denomination)
+      const ourHold = await getOurHoldForOrder(ctx, cart._id, item.productId, item.denomination)
+      const available = stock - heldTotal + ourHold
+      if (available < item.quantity) {
+        const product = await ctx.db.get(item.productId)
+        const name = product?.name ?? 'Product'
+        throw new Error(
+          `${name} is no longer available in the requested quantity. Please update your cart.`,
+        )
+      }
     }
 
     // Build order items with product snapshots.
@@ -117,6 +182,15 @@ export const createOrder = mutation({
       createdAt: Date.now(),
       updatedAt: Date.now(),
     })
+
+    // Delete all holds for this cart (items are now in the order)
+    const holds = await ctx.db
+      .query('productHolds')
+      .withIndex('by_cart', (q) => q.eq('cartId', cart._id))
+      .collect()
+    for (const hold of holds) {
+      await ctx.db.delete(hold._id)
+    }
 
     // Log order created activity
     await ctx.scheduler.runAfter(0, internal.activities.m.logOrderCreated, {
@@ -220,6 +294,13 @@ export const updatePayment = mutation({
     // Award points when payment is completed (only if it wasn't already completed)
     if (wasPaymentCompleted && order.userId) {
       await ctx.scheduler.runAfter(0, internal.rewards.m.awardPointsFromOrder, {
+        orderId: args.orderId,
+      })
+    }
+
+    // Deduct stock when payment is completed (only on paid orders)
+    if (wasPaymentCompleted) {
+      await ctx.scheduler.runAfter(0, internal.orders.m.deductStockForOrder, {
         orderId: args.orderId,
       })
     }
@@ -390,5 +471,43 @@ export const cancelOrder = mutation({
     })
 
     return args.orderId
+  },
+})
+
+/**
+ * Internal: deduct product stock for a paid order. Called when payment is completed.
+ */
+export const deductStockForOrder = internalMutation({
+  args: {
+    orderId: v.id('orders'),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId)
+    if (!order) return
+
+    for (const item of order.items) {
+      const product = await ctx.db.get(item.productId)
+      if (!product) continue
+
+      const denom = item.denomination
+      const denomKey = denom !== undefined ? String(denom) : null
+
+      if (product.stockByDenomination != null && denomKey != null) {
+        const current = product.stockByDenomination[denomKey] ?? 0
+        const next = Math.max(0, current - item.quantity)
+        await ctx.db.patch(item.productId, {
+          stockByDenomination: {
+            ...product.stockByDenomination,
+            [denomKey]: next,
+          },
+        })
+      } else {
+        const current = product.stock ?? 0
+        const next = Math.max(0, current - item.quantity)
+        await ctx.db.patch(item.productId, {
+          stock: next,
+        })
+      }
+    }
   },
 })

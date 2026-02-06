@@ -23,11 +23,12 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
     <Card
       as={NextLink}
       href={`/lobby/products/${product.slug.toLocaleLowerCase()}`}
+      radius='none'
       isPressable
       shadow='sm'
       className={cn(
         'group h-full transition-all duration-300 hover:-translate-y-1.5',
-        'rounded-4xl',
+        'rounded-3xl',
         className,
       )}>
       <CardBody className='flex flex-col p-0'>
@@ -37,7 +38,8 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
             <Image
               src={product.image}
               alt={product.name}
-              className='w-full rounded-t-4xl rounded-b-xl object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
+              shadow='none'
+              className='w-full rounded-t-3xl rounded-b-xl object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
               isLoading={!product.image}
               loading='eager'
             />
@@ -60,7 +62,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
                 {product.slug.split('-').join(' ')}
               </h3>
             </div>
-            <span className='whitespace-nowrap text-base sm:text-lg font-space text-foreground shrink-0'>
+            <span className='whitespace-nowrap text-base sm:text-lg font-okxs text-foreground shrink-0'>
               <span className='font-thin opacity-70'>$</span>
               {formatPrice(product.priceCents)}
             </span>

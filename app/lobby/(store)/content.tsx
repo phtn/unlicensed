@@ -22,8 +22,6 @@ interface StorefrontPageProps {
 export const Content = ({
   initialCategories,
   initialProducts,
-  // delay,
-  // buildType,
 }: StorefrontPageProps) => {
   const categoriesQuery = useQuery(api.categories.q.listCategories, {})
   const productsQuery = useQuery(api.products.q.listProducts, {})
@@ -40,13 +38,6 @@ export const Content = ({
     () => products.filter((item) => item.featured).slice(0, 4),
     [products],
   )
-
-  // const buildTypeColors: Record<BuildType, string> = {
-  //   testing: 'bg-yellow-500/90',
-  //   debug: 'bg-purple-500/90',
-  //   staging: 'bg-orange-500/90',
-  //   production: 'bg-green-500/90',
-  // }
 
   return (
     <div className='space-y-12 sm:space-y-24 md:space-y-40 overflow-x-hidden'>
@@ -67,13 +58,8 @@ export const Content = ({
       ) : null}*/}
       <NewHome />
       <FeaturedProducts featuredProducts={featuredProducts} />
-
       <FullCollection products={products} categories={categories} />
-
-      <QuickScroll
-        className='bg-transparent border-b-[0.33px] border-dotted border-foreground/10'
-        href='#finder'
-      />
+      <QuickScroll href='#finder' />
       <StrainFinderMini categories={categories.slice(0, 4)} />
       <AboutUs />
     </div>
