@@ -18,6 +18,7 @@ interface ProductsProps {
 }
 export const Products = ({products, slug}: ProductsProps) => {
   const category = useQuery(api.categories.q.getCategoryBySlug, {slug})
+  const categories = useQuery(api.categories.q.listCategories)
   const heroImage = useQuery(
     api.categories.q.getHeroImage,
     category ? {id: category._id} : 'skip',
@@ -32,7 +33,7 @@ export const Products = ({products, slug}: ProductsProps) => {
           <div className='grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center'>
             <div className=''>
               <Tag text={slug} />
-              <Title title={slug} subtitle='Exotic Flavors' />
+              <Title title={slug} subtitle={category?.highlight} />
               <p className='hidden sm:flex text-sm sm:text-base lg:text-base opacity-60 mb-6 sm:mb-8 lg:mb-12 max-w-md leading-relaxed'>
                 Enjoy the beauty of nature with our exquisite flower collection.
                 Explore our selection today and discover your soul strain.
@@ -96,13 +97,39 @@ export const Products = ({products, slug}: ProductsProps) => {
           </div>
         </div>
       </section>
+      <section className='py-12 sm:py-16 lg:py-20 px-4 sm:px-6 max-w-7xl mx-auto'>
+        <div className='flex flex-col gap-20'>
+          <div className='flex flex-wrap items-center justify-between gap-4'>
+            <div className='space-y-1'>
+              <h2 className='text-xl font-polysans font-semibold tracking-tight sm:text-5xl'>
+                Browse Category
+              </h2>
+            </div>
+            <div className='w-full md:w-fit flex items-center justify-between gap-2'>
+              {categories
+                ?.filter((cat) => cat.slug !== slug)
+                .map((cat) => (
+                  <Button
+                    key={cat._id}
+                    size='sm'
+                    as={Link}
+                    href={`/lobby/category/${cat.slug}`}
+                    prefetch
+                    className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tighter'>
+                    <span className='drop-shadow-xs'>{cat.name}</span>
+                  </Button>
+                ))}
+            </div>
+          </div>
+        </div>
+      </section>
       <div className='flex justify-center w-full px-4 md:hidden pb-20'>
         <Button
           size='lg'
           as={Link}
           href={'/lobby/brands'}
           fullWidth
-          className='dark:bg-white opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-4 sm:px-8 py-2 sm:py-3 text-lg'>
+          className='dark:bg-white h-14 opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-4 sm:px-8 py-2 sm:py-3 text-lg'>
           <span className='drop-shadow-xs'>Shop by Brand</span>
         </Button>
       </div>

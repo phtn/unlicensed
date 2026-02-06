@@ -154,13 +154,13 @@ export const ProductDetailContent = ({
       <section className='md:mx-auto lg:max-w-7xl max-w-screen p-2 sm:pt-8 lg:pt-10 sm:px-6 lg:px-0'>
         <Breadcrumbs
           aria-label='Product breadcrumb'
-          className='text-xs sm:text-sm text-color-muted'
+          className='text-xs sm:text-sm text-color-muted font-brk tracking-tighter'
           itemClasses={{
             item: 'text-foreground/85 capitalize',
             separator: 'opacity-80',
           }}>
           <BreadcrumbItem href='/lobby/category'>
-            <Icon name='home' className='size-4 sm:size-4 opacity-60' />
+            <Icon name='home' className='size-4 sm:size-4 dark:opacity-60' />
           </BreadcrumbItem>
           <BreadcrumbItem href={`/lobby/category/${product.categorySlug}`}>
             {category?.name ?? product.categorySlug}
@@ -332,13 +332,13 @@ export const ProductDetailContent = ({
                               className={cn(
                                 'cursor-pointer bg-sidebar rounded-full border border-foreground/20 portrait:px-px',
                                 {
-                                  'bg-dark-gray dark:bg-white dark:border-foreground text-white dark:text-dark-gray md:hover:bg-black dark:md:hover:bg-brand dark:md:hover:text-white md:hover:text-featured':
+                                  'bg-dark-gray dark:bg-white dark:border-foreground text-white dark:text-dark-gray md:hover:bg-black dark:md:hover:bg-brand dark:md:hover:text-white md:hover:text-brand':
                                     selectedDenomination === i,
                                 },
                               )}>
                               <span
                                 className={cn(
-                                  'relative font-okxs text-base md:text-lg font-medium whitespace-nowrap portrait:px-px',
+                                  'relative font-okxs text-base md:text-lg font-medium whitespace-nowrap portrait:px-0',
                                 )}>
                                 {product.unit === 'oz'
                                   ? mapFractions[denomination + product.unit]

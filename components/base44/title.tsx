@@ -19,7 +19,7 @@ export const Title = ({title, subtitle, titleStyle}: TitleProps) => {
         )}>
         {title}
       </div>
-      <span className='relative flex font-polysans font-normal text-muted-foreground text-lg sm:text-xl md:text-2xl lg:text-3xl'>
+      <span className='relative flex font-polysans font-normal text-muted-foreground text-lg sm:text-xl md:text-2xl lg:text-3xl capitalize'>
         {subtitle}
       </span>
     </h2>

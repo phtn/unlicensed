@@ -31,7 +31,7 @@ interface NavProps {
 
 export const Nav = ({children}: NavProps) => {
   const {user, loading: authLoading} = useAuth()
-  const {setTheme} = useTheme()
+  const {setTheme, theme} = useTheme()
   const {cartItemCount} = useCart()
   const {isOpen, onOpen, onClose} = useDisclosure()
   const route = usePathname().split('/').pop()
@@ -59,6 +59,10 @@ export const Nav = ({children}: NavProps) => {
     () => !!staff && staff.active && staff.accessRoles.includes('admin'),
     [staff],
   )
+
+  const handleToggleTheme = useCallback(() => {
+    setTheme(theme === 'light' ? 'dark' : 'light')
+  }, [setTheme, theme])
 
   return (
     <div>
@@ -202,7 +206,7 @@ export const Nav = ({children}: NavProps) => {
                       <DropdownItem
                         key='theme'
                         title='Theme'
-                        onPress={() => setTheme('dark')}>
+                        onPress={handleToggleTheme}>
                         <ThemeToggle variant='icon' />
                       </DropdownItem>
                     </DropdownMenu>

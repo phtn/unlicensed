@@ -228,7 +228,8 @@
   --muted: rgba(255, 242, 233, 0.78);
   --muted-foreground: oklch(0.129 0.042 264.695 / 60%);
   --accent: oklch(0.96 0.007 67.74);
-  --brand: oklch(0.784 0.21 326.75);
+  --brand: oklch(0.6146 0.189 347.09);
+  /*--brand: oklch(0.784 0.21 326.75);*/
   --primary: oklch(0.755 0.153 231.64);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.755 0.153 231.64 / 20%);
