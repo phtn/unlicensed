@@ -22,9 +22,7 @@ export const CategoryItem = (item: CategoryItemProps) => {
       key={item._id}
       isFooterBlurred
       className='border-none'
-      href={`/lobby/category/${item.slug}`}
-      // onMouseEnter={item.prefetchFn(`/lobby/category/${item.slug}`)}
-    >
+      href={`/lobby/category/${item.slug}`}>
       <CardBody className='relative overflow-visible p-0'>
         <div className="absolute w-500 scale-x-50 top-0 -left-150 inset-0 bg-[url('/svg/noise.svg')] opacity-10 scale-100 pointer-events-none" />
         <div className='h-24 w-full overflow-hidden opacity-10 flex items-center justify-center'>
@@ -35,7 +33,6 @@ export const CategoryItem = (item: CategoryItemProps) => {
           radius='none'
           shadow='none'
           className='hidden w-full object-cover min-size-[172px]'
-          // src={item.resolveUrl(item.heroImage ?? '') ?? undefined}
           src={resolvedImageUrl(item.heroImage as Id<'_storage'>) as string}
           width='100%'
           loading='lazy'
@@ -43,7 +40,6 @@ export const CategoryItem = (item: CategoryItemProps) => {
       </CardBody>
       <CardFooter className='absolute z-30 bottom-0 text-xl flex items-center h-10 font-bone font-light justify-center text-white'>
         <p className='capitalize'>{item.name}</p>
-        {/*<p className='text-default-500'>{item.href}</p>*/}
       </CardFooter>
     </Card>
   )

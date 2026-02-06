@@ -50,9 +50,9 @@ export const RewardsSummary = memo(function RewardsSummary({
                 )}
             </div>
 
-            <span className='text-4xl text-purple-700 dark:text-purple-100 font-semibold font-okxs'>
-              <span className='text-2xl'>x</span>
+            <span className='text-3xl md:text-4xl text-purple-700 dark:text-purple-100 font-semibold font-okxs'>
               {nextVisitMultiplier?.multiplier}
+              <span className='text-2xl'>x</span>
             </span>
           </div>
         </CardBody>

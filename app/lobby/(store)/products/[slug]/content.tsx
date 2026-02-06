@@ -174,7 +174,7 @@ export const ProductDetailContent = ({
             productId={detailQuery?.product?._id ?? product._id}
             isMobile={isMobile}
           />
-          <div className='space-y-6 sm:space-y-8 lg:min-h-[78lvh] rounded-3xl rounded-tl-none border border-foreground/20 bg-hue dark:bg-dark-table/50 p-4 sm:p-5 lg:p-6 backdrop-blur-xl w-full'>
+          <div className='space-y-6 sm:space-y-8 lg:min-h-[78lvh] rounded-3xl md:rounded-tl-none border border-foreground/20 bg-hue dark:bg-dark-table/50 p-4 sm:p-5 lg:p-6 backdrop-blur-xl w-full'>
             <div className='flex flex-col gap-4 sm:gap-5'>
               <div className='flex items-center h-10 overflow-hidden justify-between gap-1 pb-2 md:w-full'>
                 <StatChip
@@ -188,7 +188,7 @@ export const ProductDetailContent = ({
                     value={
                       <span>
                         <span className='font-bold'>THC</span>{' '}
-                        <span className='font-okxs font-bold text-brand'>
+                        <span className='font-polysans font-semibold text-brand'>
                           {product.thcPercentage}
                         </span>
                         <span className='text-foreground'>%</span>
@@ -196,7 +196,6 @@ export const ProductDetailContent = ({
                     }
                   />
                   <StatChip
-                    label={''}
                     value={product.potencyLevel}
                     name={
                       product.potencyLevel === 'high'
@@ -253,17 +252,17 @@ export const ProductDetailContent = ({
                 </p>
               </div>
               <div className='flex items-start justify-between py-3 sm:py-4'>
-                <span className='font-space text-3xl sm:text-4xl font-semibold text-foreground w-40 md:w-28'>
-                  <span className='font-light opacity-80 scale-90'>$</span>
+                <div className='flex items-center font-okxs text-3xl sm:text-4xl font-semibold text-foreground w-40 md:w-28'>
+                  <div className='font-light opacity-80 scale-95'>$</div>
                   {formatPrice(
                     product.priceByDenomination?.[currentDenominationKey] ??
                       product.priceCents ??
                       0,
                   )}
-                </span>
+                </div>
 
                 <div className='flex items-center justify-end md:w-95'>
-                  <div className='flex flex-wrap items-start gap-3'>
+                  <div className='flex flex-wrap items-start gap-2 md:gap-3'>
                     {product.availableDenominations &&
                       product.availableDenominations.map((denomination, i) => (
                         <Tooltip
@@ -339,7 +338,7 @@ export const ProductDetailContent = ({
                               )}>
                               <span
                                 className={cn(
-                                  'relative font-okxs text-lg font-medium whitespace-nowrap portrait:px-px',
+                                  'relative font-okxs text-base md:text-lg font-medium whitespace-nowrap portrait:px-px',
                                 )}>
                                 {product.unit === 'oz'
                                   ? mapFractions[denomination + product.unit]

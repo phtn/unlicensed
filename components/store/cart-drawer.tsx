@@ -4,11 +4,11 @@ import {Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
+import {getUnitPriceCents} from '@/utils/cartPrice'
+import {formatPrice} from '@/utils/formatPrice'
 import {Button, Image} from '@heroui/react'
 import {useRouter} from 'next/navigation'
 import {useMemo, useOptimistic, useTransition} from 'react'
-import {getUnitPriceCents} from '@/utils/cartPrice'
-import {formatPrice} from '@/utils/formatPrice'
 import {Drawer} from 'vaul'
 import {DrawerFooter} from '../ui/drawer'
 import {EmptyCart} from './empty-cart'
@@ -120,8 +120,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
           <div className='py-4 flex-1 overflow-y-scroll overflow-x-hidden w-screen md:w-full'>
             <div className='flex items-center gap-4 mb-4 px-4'>
               <Drawer.Title className='text-base md:text-lg lg:text-2xl font-semibold tracking-normal font-okxs'>
-                Cart
+                In Cart
               </Drawer.Title>
+              <Icon name='play-solid' className='size-4 opacity-70' />
               <Drawer.Description asChild>
                 <div className='flex items-center h-7 p-1'>
                   <span className='ml-1 font-okxs text-base md:text-lg lg:text-2xl px-2 opacity-70'>

@@ -109,7 +109,7 @@ export const StatChip = ({
       {name && (
         <Icon
           name={name}
-          className={cn('shrink-0 size-4 mb-0.5 mr-1', {
+          className={cn('shrink-0 size-4 -ml-0.5 mb-0.5 mr-1', {
             'text-red-500 dark:text-red-400': value === 'high',
             'text-blue-500 dark:text-blue-300': value === 'medium',
           })}

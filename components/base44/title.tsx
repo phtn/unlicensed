@@ -14,7 +14,7 @@ export const Title = ({title, subtitle, titleStyle}: TitleProps) => {
     <h2 className='flex flex-col tracking-tighter leading-tight md:mb-8'>
       <div
         className={cn(
-          'font-polysans font-bold text-3xl md:text-5xl lg:text-6xl line-clamp-2',
+          'font-polysans font-bold text-3xl md:text-5xl lg:text-6xl line-clamp-2 capitalize',
           titleStyle,
         )}>
         {title}
