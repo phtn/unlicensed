@@ -176,22 +176,22 @@ export const ProductDetailContent = ({
           />
           <div className='space-y-6 sm:space-y-8 lg:min-h-[78lvh] rounded-3xl rounded-tl-none border border-foreground/20 bg-hue dark:bg-dark-table/50 p-4 sm:p-5 lg:p-6 backdrop-blur-xl w-full'>
             <div className='flex flex-col gap-4 sm:gap-5'>
-              <div className='flex items-center h-10 overflow-hidden justify-between gap-2 pb-2 md:w-full'>
+              <div className='flex items-center h-10 overflow-hidden justify-between gap-1 pb-2 md:w-full'>
                 <StatChip
                   value={
                     category?.name.toUpperCase() ??
                     product.categorySlug.toUpperCase()
                   }
                 />
-                <div className='flex items-center space-x-4'>
+                <div className='flex items-center space-x-2'>
                   <StatChip
                     value={
                       <span>
                         <span className='font-bold'>THC</span>{' '}
-                        <span className='font-okxs font-semibold text-brand'>
+                        <span className='font-okxs font-bold text-brand'>
                           {product.thcPercentage}
                         </span>
-                        <span className='text-[8px] opacity-80'>%</span>
+                        <span className='text-foreground'>%</span>
                       </span>
                     }
                   />

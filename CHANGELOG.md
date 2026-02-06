@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.12
+
+### Patch Changes
+
+- update in cart calc amount
+
 ## 0.27.11
 
 ### Patch Changes

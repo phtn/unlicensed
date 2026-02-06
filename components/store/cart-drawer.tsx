@@ -31,7 +31,7 @@ function getUnitPriceCents(
     const key = String(denom)
     const priceDollars = byDenom[key]
     if (typeof priceDollars === 'number' && priceDollars >= 0) {
-      return Math.round(priceDollars * 100)
+      return Math.round(priceDollars)
     }
   }
   return (product.priceCents ?? 0) * denom
@@ -210,7 +210,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                 </p>
                               )}
                             </div>
-                            <p className='font-okxs font-medium text-base shrink-0'>
+                            <p className='font-okxs font-medium text-lg shrink-0'>
                               ${formatPrice(totalPrice)}
                             </p>
                           </div>
@@ -219,10 +219,10 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                               <Button
                                 isIconOnly
                                 size='sm'
-                                radius='sm'
+                                radius='none'
                                 variant='flat'
                                 isDisabled={isPending}
-                                className='min-w-7 w-7 h-7'
+                                className='min-w-7 w-7 h-7 aspect-square rounded-sm'
                                 onPress={() => {
                                   const newQty = item.quantity - 1
                                   startTransition(async () => {
@@ -253,15 +253,16 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                 }}>
                                 <Icon name='minus' className='size-3.5' />
                               </Button>
-                              <span className='font-okxs text-sm font-medium w-5 text-center'>
+                              <span className='font-okxs text-lg font-semibold w-8 text-center'>
                                 {item.quantity}
                               </span>
                               <Button
                                 isIconOnly
                                 size='sm'
+                                radius='none'
                                 variant='flat'
                                 isDisabled={isPending}
-                                className='min-w-7 w-7 h-7'
+                                className='min-w-7 w-7 h-7 aspect-square rounded-sm'
                                 onPress={() => {
                                   const newQty = item.quantity + 1
                                   startTransition(async () => {
@@ -283,9 +284,10 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                             </div>
                             <Button
                               size='sm'
+                              radius='none'
                               isIconOnly
                               variant='light'
-                              className='min-w-7 w-7 h-7 text-muted-foreground'
+                              className='min-w-8 w-8 h-7 aspect-square rounded-sm text-muted-foreground opacity-80 hover:opacity-100'
                               isDisabled={isPending}
                               onPress={() => {
                                 startTransition(async () => {
@@ -300,7 +302,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                   )
                                 })
                               }}>
-                              <Icon name='trash' className='size-4' />
+                              <Icon name='trash' className='size-6' />
                             </Button>
                           </div>
                         </div>
@@ -319,7 +321,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                     </span>
                   </div>
                   <div className='flex justify-between'>
-                    <span className='text-color-muted font-medium'>Items</span>
+                    <span className='text-color-muted font-medium'>
+                      Total Items
+                    </span>
                     <span className='font-space font-medium text-lg'>
                       {optimisticCartItemCount}
                     </span>
