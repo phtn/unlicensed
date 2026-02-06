@@ -120,8 +120,13 @@ export const metadata: Metadata = {
   icons: [
     {
       rel: 'icon',
-      url: '/svg/rf-icon-2.svg',
+      url: '/svg/rf-logo-round-latest.svg',
       sizes: 'any',
+    },
+    {
+      rel: 'icon',
+      url: '/icons/icon-512x512.png',
+      sizes: '512x512',
     },
     {
       rel: 'icon',

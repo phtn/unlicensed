@@ -7,35 +7,12 @@ import {Icon} from '@/lib/icons'
 import {Button, Image} from '@heroui/react'
 import {useRouter} from 'next/navigation'
 import {useMemo, useOptimistic, useTransition} from 'react'
+import {getUnitPriceCents} from '@/utils/cartPrice'
+import {formatPrice} from '@/utils/formatPrice'
 import {Drawer} from 'vaul'
 import {DrawerFooter} from '../ui/drawer'
 import {EmptyCart} from './empty-cart'
 import {SuggestedCartItems} from './suggested-cart-items'
-
-const formatPrice = (priceCents: number) => {
-  const dollars = priceCents / 100
-  return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
-}
-
-/** Unit price in cents for one unit of the selected denomination. */
-function getUnitPriceCents(
-  product: {
-    priceCents?: number
-    priceByDenomination?: Record<string, number>
-  },
-  denomination: number | undefined,
-): number {
-  const denom = denomination ?? 1
-  const byDenom = product.priceByDenomination
-  if (byDenom && Object.keys(byDenom).length > 0) {
-    const key = String(denom)
-    const priceDollars = byDenom[key]
-    if (typeof priceDollars === 'number' && priceDollars >= 0) {
-      return Math.round(priceDollars)
-    }
-  }
-  return (product.priceCents ?? 0) * denom
-}
 
 type OptimisticAction =
   | {

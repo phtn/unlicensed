@@ -3,6 +3,7 @@
 import {useAuthCtx} from '@/ctx/auth'
 import {useToggle} from '@/hooks/use-toggle'
 import {loginWithGoogle, sendEmailLink} from '@/lib/firebase/auth'
+import {parseFirebaseAuthError} from '@/lib/firebase/parseAuthError'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
@@ -75,7 +76,7 @@ export const AuthModal = ({
         // The user needs to check their email
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(parseFirebaseAuthError(err))
       setEmailSent(false)
     } finally {
       setLoading(false)
@@ -91,44 +92,63 @@ export const AuthModal = ({
       setAuthModalOpen(false)
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(parseFirebaseAuthError(err))
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleClose = () => {
+    setAuthModalOpen(false)
+    onClose()
   }
 
   const {on: isEmail, toggle: toggleEmail} = useToggle()
   const emailLink = useMemo(() => `https://${email.split('@').pop()}`, [email])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} placement='center' size='md'>
-      <ModalContent className='rounded-4xl dark:border border-light-gray/80 w-96'>
-        <div className='absolute h-160 w-160 aspect-auto -top-28 -left-10 flex items-center'>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      placement='center'
+      size='md'
+      hideCloseButton>
+      <ModalContent className='md:rounded-4xl rounded-3xl dark:border-brand border-light-gray/80 w-96 overflow-hidden'>
+        <div className='absolute h-160 w-160 aspect-auto -top-24 md:-top-28 -left-16 flex items-center'>
           <ImageDither image={'/svg/rf-logo-hot-pink-2.svg'} />
           <DitherPhoto />
         </div>
-        <ModalHeader className='relative z-10 tracking-tight'>
+        <ModalHeader className='relative z-10 tracking-tight flex justify-between items-start'>
           <div className='bg-black/20 backdrop-blur-2xl text-white px-2 rounded-lg w-fit'>
             {emailSent ? (
               <a
                 rel='noopener noreferrer'
                 href={emailLink}
                 target='_blank'
-                className='font-polysans font-normal flex items-center'>
+                className='font-polysans font-normal text-sm flex items-center'>
                 <span>Check Your Email</span>
                 <Icon name='arrow-right' className='size-6 -rotate-20 ml-1' />
               </a>
             ) : isLogin ? (
-              'Sign In'
+              'Sign in'
             ) : (
               'Create Account'
             )}
           </div>
+          <Button
+            isIconOnly
+            size='sm'
+            variant='light'
+            aria-label='Close'
+            onPress={handleClose}
+            className='text-white/80 hover:text-white hover:bg-white/10 min-w-unit-8 w-8 h-8 z-20'>
+            <Icon name='x' className='size-5' />
+          </Button>
         </ModalHeader>
         <form onSubmit={handleSubmit}>
           <ModalBody>
             {emailSent ? (
-              <div className='relative z-50 bg-foreground/50 rounded-xl backdrop-blur-3xl flex flex-col items-center justify-center h-80 space-y-4 text-center px-4'>
+              <div className='relative z-50 bg-foreground/50 rounded-xl backdrop-blur-3xl flex flex-col items-center justify-center h-80 space-y-4 text-center px-0 md:px-4'>
                 <Icon
                   name='email'
                   className='size-16 -rotate-10 text-featured'
@@ -161,8 +181,13 @@ export const AuthModal = ({
                 className='flex items-center h-80 justify-center'></div>
             )}
             {error && (
-              <div className='text-red-500 text-xs px-4 py-2 bg-red-500/10 rounded-lg'>
-                {error}
+              <div className='absolute w-full flex items-center justify-center left-0 z-300 px-2'>
+                <div className='bg-red-50 w-full rounded-lg p-4 space-y-4'>
+                  <div className='text-red-700 text-sm font-brk font-medium uppercase'>
+                    Authentication Error (!)
+                  </div>
+                  <div className='text-red-600 text-xs'>{error}</div>
+                </div>
               </div>
             )}
           </ModalBody>
@@ -191,8 +216,8 @@ export const AuthModal = ({
                   startContent={
                     <Icon
                       onClick={toggleEmail}
-                      name={email === '' ? 'x' : 'email'}
-                      className='size-6'
+                      name={email === '' ? 'email' : 'x'}
+                      className={cn('size-6', {'size-6': email === ''})}
                     />
                   }
                 />
@@ -207,7 +232,7 @@ export const AuthModal = ({
                     {'bg-black/50': email === '' || loading},
                   )}>
                   <Icon
-                    name={loading ? 'spinners-ring' : 'chevron-right'}
+                    name={loading ? 'spinners-ring' : 'send-fill'}
                     className={cn('size-5', {
                       'text-orange-400': loading,
                     })}
@@ -222,14 +247,14 @@ export const AuthModal = ({
                   variant='flat'
                   onPress={toggleEmail}
                   startContent={<Icon name='email' className='size-5' />}
-                  className='bg-black/80 backdrop-blur-2xl w-fit text-white'>
+                  className='bg-black/80 backdrop-blur-2xl w-fit font-okxs font-medium text-sm text-white'>
                   Email
                 </Button>
                 <Button
                   size='lg'
                   type='button'
                   variant='solid'
-                  className='bg-black/80 backdrop-blur-2xl w-fit text-white'
+                  className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-fit text-white'
                   onPress={handleGoogleLogin}
                   startContent={
                     <Icon
@@ -299,16 +324,7 @@ export const SignInFooter = () => {
         size='sm'
         type='button'
         variant='light'
-        className='hidden'
-        // onPress={() => {
-        //   setIsLogin(!isLogin)
-        //   setError(null)
-        // }}
-      >
-        {/*{isLogin
-                    ? "Don't have an account? Sign up"
-                    : 'Already have an account? Sign in'}*/}
-      </Button>
+        className='hidden'></Button>
     </div>
   )
 }

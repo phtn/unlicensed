@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.13
+
+### Patch Changes
+
+- icons
+
 ## 0.27.12
 
 ### Patch Changes

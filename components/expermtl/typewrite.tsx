@@ -169,6 +169,7 @@ export const Typewrite = ({
     texts,
     currentTextIndex,
     loop,
+    initialDelay,
   ])
 
   return createElement(

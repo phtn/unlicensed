@@ -5,7 +5,6 @@ import {api} from '@/convex/_generated/api'
 import {Doc, Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
 import {adaptProduct, RawProduct} from '@/lib/convexClient'
-import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
@@ -111,7 +110,7 @@ export const RecommendedProducts = memo(() => {
                   </h3>
 
                   <div className='flex font-okxs items-center justify-between'>
-                    <p className='text-base mt-1'>
+                    <p className='text-base font-medium mt-1'>
                       <span className='opacity-80'>$</span>
                       {formatPrice(product.priceCents)}
                     </p>
@@ -120,12 +119,9 @@ export const RecommendedProducts = memo(() => {
                       size='sm'
                       radius='none'
                       variant='shadow'
-                      className='absolute bg-featured dark:bg-white/10 dark:backdrop-blur-xl rounded-s-lg dark:text-white/70 dark:hover:text-white border-b border-l border-white/10 -space-x-1.5 top-3.5 right-0 font-polysans font-medium shrink-0 flex text-white text-sm'
-                      onPress={() => handleAddToCart(product)}
-                      startContent={
-                        <Icon name='plus' className='size-5 mb-0.5' />
-                      }>
-                      Add<span className='md:flex hidden'>to Cart</span>
+                      className='absolute bg-featured dark:bg-white/10 dark:backdrop-blur-xl rounded-s-lg dark:text-white/80 dark:hover:text-white border-b border-l border-white/10 -space-x-1.5 top-3.5 right-0 font-okxs font-medium shrink-0 flex text-white text-sm'
+                      onPress={() => handleAddToCart(product)}>
+                      <span className='md:flex hidden'>Add to Cart</span>
                     </Button>
                   </div>
                 </div>

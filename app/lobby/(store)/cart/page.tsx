@@ -8,7 +8,9 @@ import {Id} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {usePlaceOrder} from '@/hooks/use-place-order'
+import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {getUnitPriceCents} from '@/utils/cartPrice'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
@@ -262,9 +264,8 @@ export default function CartPage() {
 
   const subtotal = useMemo(() => {
     return cartItems.reduce((total, item) => {
-      const price = item.product.priceCents ?? 0
-      const denomination = item.denomination || 1
-      return total + price * denomination * item.quantity
+      const unitCents = getUnitPriceCents(item.product, item.denomination)
+      return total + unitCents * item.quantity
     }, 0)
   }, [cartItems])
 
@@ -312,8 +313,8 @@ export default function CartPage() {
         <div className='flex items-center justify-between mb-4'>
           <h1 className='text-base font-medium font-brk space-x-2 tracking-tight'>
             <span className='opacity-60'>Cart</span>
-            <span className='font-light text-sm'>/</span>
-            <span>Checkout</span>
+            <span className='font-light text-sm'>\</span>
+            {isPending ? <Icon name='spinner-dots' /> : <span>Checkout</span>}
           </h1>
         </div>
 
@@ -323,8 +324,7 @@ export default function CartPage() {
             <div className='flex-1 overflow-y-auto rounded-3xl'>
               {cartItems.map((item) => {
                 const product = item.product
-                const denomination = item.denomination || 1
-                const itemPrice = (product.priceCents ?? 0) * denomination
+                const itemPrice = getUnitPriceCents(product, item.denomination)
 
                 return (
                   <CartItem

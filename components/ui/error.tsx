@@ -1,6 +1,5 @@
 'use client'
 
-import ShimmerText from '@/components/expermtl/shimmer'
 import {Icon, type IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
@@ -11,6 +10,7 @@ import {
   ViewTransition,
 } from 'react'
 import {flushSync} from 'react-dom'
+import {Typewrite} from '../expermtl/typewrite'
 
 interface ErrorProps {
   error: Error & {digest?: string}
@@ -153,14 +153,13 @@ export function ErrorComp({error, reset, name}: ErrorProps) {
               </div>
 
               <div className='min-w-0 flex-1'>
-                <ShimmerText
-                  surface='dark'
-                  variant='default'
+                <Typewrite
                   text={errorInsight.category}
-                  container='items-start justify-start -mt-2'
-                  className='text-lg md:text-2xl font-bone font-semibold text-neutral-900/50 dark:text-zinc-100/50 justify-start w-fit'></ShimmerText>
+                  speed={15}
+                  className='text-lg md:text-2xl font-polysans font-semibold text-neutral-900/50 dark:text-zinc-100/50 justify-start w-fit'
+                />
 
-                <p className='-mt-2 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed'>
+                <p className='text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed'>
                   {errorInsight.description}
                 </p>
               </div>
@@ -234,7 +233,7 @@ export function ErrorComp({error, reset, name}: ErrorProps) {
                 ) : (
                   <>
                     <Icon name='refresh' className='size-5' />
-                    <span>Try again</span>
+                    <span>Refresh</span>
                   </>
                 )}
               </button>
