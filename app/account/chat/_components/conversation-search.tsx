@@ -38,7 +38,7 @@ export function ConversationSearch({
           type='text'
           value={localQuery}
           onChange={handleChange}
-          placeholder=''
+          placeholder='Search conversations'
           radius='none'
           classNames={chatInputClassNames}
           // classNames={{

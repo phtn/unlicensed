@@ -1,6 +1,5 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useImageConverter} from '@/hooks/use-image-converter'
@@ -649,7 +648,7 @@ export function MessageInput({
 
         {/* Text Input Area */}
         <div className='flex-1 relative'>
-          <div className='relative flex items-end rounded-2xl bg-muted/50 border border-border/40 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all'>
+          <div className='relative flex items-end rounded-lg bg-muted/50 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all'>
             <Textarea
               ref={textareaRef}
               value={message}
@@ -657,8 +656,12 @@ export function MessageInput({
               onKeyDown={handleKeyPress}
               placeholder='Type a message...'
               disabled={isSending || uploading}
-              rows={1}
-              classNames={commonInputClassNames}
+              rows={3}
+              className='touch-manipulation'
+              classNames={{
+                ...chatInputClassNames,
+                innerWrapper: 'ps-2! rounded-lg',
+              }}
               // className={cn(
               //   'w-full resize-none bg-transparent px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base',
               //   'placeholder:text-muted-foreground/60',
@@ -716,6 +719,6 @@ export const chatInputClassNames: InputProps['classNames'] = {
   input:
     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
-    'border shadow-none border-dark-table/40 dark:border-black/20 bg-sidebar dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table rounded-lg p-2 outline-none min-h-16 w-full',
-  innerWrapper: 'px-1',
+    'border shadow-none border-dark-table/40 dark:border-black/20 bg-sidebar dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-16 w-full',
+  innerWrapper: 'ps-8',
 }

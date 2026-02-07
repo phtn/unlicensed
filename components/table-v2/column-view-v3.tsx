@@ -3,12 +3,15 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button} from '@base-ui/react'
 import {Menu} from '@base-ui/react/menu'
-import {Column} from '@tanstack/react-table'
-import {ComponentProps, useMemo} from 'react'
+import {Column, VisibilityState} from '@tanstack/react-table'
+import {ComponentProps, useCallback, useMemo} from 'react'
 
 interface Props<T> {
   cols: Column<T, unknown>[]
   isMobile: boolean
+  onColumnVisibilityChange?: (
+    updater: VisibilityState | ((old: VisibilityState) => VisibilityState),
+  ) => void
 }
 
 // Helper function to extract header text from column definition
@@ -41,13 +44,29 @@ const formatColumnId = (id: string): string => {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ')
 }
-export const ColumnView = <T,>({cols}: Props<T>) => {
+export const ColumnView = <T,>({
+  cols,
+  onColumnVisibilityChange,
+}: Props<T>) => {
   // Filter columns where enableHiding is true (default is true, so filter out false)
   const hideableColumns = useMemo(() => {
     return cols.filter((col) => col.getCanHide())
   }, [cols])
 
   const invisibleColumns = hideableColumns.filter((col) => !col.getIsVisible())
+
+  const handleToggle = useCallback(
+    (columnId: string, nextVisible: boolean) => {
+      if (onColumnVisibilityChange) {
+        onColumnVisibilityChange((old) => ({...old, [columnId]: nextVisible}))
+      } else {
+        const col = hideableColumns.find((c) => c.id === columnId)
+        col?.toggleVisibility(nextVisible)
+      }
+    },
+    [onColumnVisibilityChange, hideableColumns],
+  )
+
   return (
     <Menu.Root>
       <Menu.Trigger
@@ -99,7 +118,7 @@ export const ColumnView = <T,>({cols}: Props<T>) => {
                     )}
                     checked={column.getIsVisible()}
                     onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
+                      handleToggle(column.id, value === true)
                     }
                     onSelect={(event) => event.preventDefault()}>
                     <span>{headerText}</span>

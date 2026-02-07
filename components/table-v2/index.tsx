@@ -24,6 +24,7 @@ import {
   useId,
   useMemo,
   useRef,
+  useState,
 } from 'react'
 
 import {
@@ -35,6 +36,7 @@ import {
 } from '@/components/ui/table'
 import {useMobile} from '@/hooks/use-mobile'
 import {cn} from '@/lib/utils'
+import {ColumnVisibilityProvider, useColumnVisibility} from './column-visibility-context'
 import {ColumnSort} from './column-sort-v2'
 import {ColumnView} from './column-view-v3'
 import {
@@ -79,7 +81,7 @@ interface TableProps<T> {
   selectedItemId?: string | null
 }
 
-export const DataTable = <T,>({
+function DataTableContent<T>({
   data,
   loading,
   editingRowId,
@@ -88,45 +90,31 @@ export const DataTable = <T,>({
   onDeleteSelected,
   deleteIdAccessor = 'id' as keyof T,
   selectedItemId,
-}: TableProps<T>) => {
-  // URL state management with nuqs
-  const [pagination, setPagination] = useQueryStates(paginationParser)
+}: TableProps<T>) {
+  const {columnVisibility, setColumnVisibility} = useColumnVisibility()
 
+  const [pagination, setPagination] = useQueryStates(paginationParser)
   const [globalFilter, setGlobalFilter] = useQueryState(
     'search',
     searchParser.withDefault(''),
   )
-
   const sortingParser = useMemo(() => createSortingParser(), [])
   const [sortingParam, setSortingParam] = useQueryState('sort', sortingParser)
-
   const columnFiltersParser = useMemo(() => createColumnFiltersParser(), [])
   const [columnFiltersParam, setColumnFiltersParam] = useQueryState(
     'filters',
     columnFiltersParser,
   )
-
-  const columnVisibilityParser = useMemo(
-    () => createColumnVisibilityParser(),
-    [],
-  )
-  const [columnVisibilityParam, setColumnVisibilityParam] = useQueryState(
-    'columns',
-    columnVisibilityParser,
-  )
-
   const rowSelectionParser = useMemo(() => createRowSelectionParser(), [])
   const [rowSelectionParam, setRowSelectionParam] = useQueryState(
     'selected',
     rowSelectionParser,
   )
-
   const [selectModeParam, setSelectModeParam] = useQueryState(
     'selectMode',
     selectModeParser,
   )
 
-  // Convert URL params to table state
   const paginationState: PaginationState = useMemo(
     () => ({
       pageIndex: pagination.pageIndex ?? 0,
@@ -138,11 +126,6 @@ export const DataTable = <T,>({
   const columnFilters: ColumnFiltersState = useMemo(
     () => (Array.isArray(columnFiltersParam) ? columnFiltersParam : []),
     [columnFiltersParam],
-  )
-
-  const columnVisibility: VisibilityState = useMemo(
-    () => columnVisibilityParam ?? {},
-    [columnVisibilityParam],
   )
 
   const rowSelection: RowSelectionState = useMemo(
@@ -208,17 +191,6 @@ export const DataTable = <T,>({
     [columnFilters, setColumnFiltersParam],
   )
 
-  const handleColumnVisibilityChange = useCallback(
-    (
-      updater: VisibilityState | ((old: VisibilityState) => VisibilityState),
-    ) => {
-      const newVisibility =
-        typeof updater === 'function' ? updater(columnVisibility) : updater
-      setColumnVisibilityParam(newVisibility)
-    },
-    [columnVisibility, setColumnVisibilityParam],
-  )
-
   const handleRowSelectionChange = useCallback(
     (
       updater:
@@ -279,7 +251,7 @@ export const DataTable = <T,>({
     getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange: handlePaginationChange,
     onColumnFiltersChange: handleColumnFiltersChange,
-    onColumnVisibilityChange: handleColumnVisibilityChange,
+    onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: handleRowSelectionChange,
     getFilteredRowModel: getFilteredRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
@@ -434,7 +406,13 @@ export const DataTable = <T,>({
                 isMobile={isMobile}
               />
             }
-            view={<ColumnView cols={allCols} isMobile={isMobile} />}
+            view={
+              <ColumnView
+                cols={allCols}
+                isMobile={isMobile}
+                onColumnVisibilityChange={setColumnVisibility}
+              />
+            }
           />
           <RightTableToolbar
             search={
@@ -455,9 +433,11 @@ export const DataTable = <T,>({
                   <TableRow
                     key={headerGroup.id}
                     className='bg-dark-table dark:bg-dark-table/0'>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead
+                    {headerGroup.headers
+                      .filter((header) => header.column.getIsVisible())
+                      .map((header) => {
+                        return (
+                          <TableHead
                           key={header.id + id}
                           style={{width: `${header.getSize()}px`}}
                           className={cn(
@@ -499,6 +479,24 @@ export const DataTable = <T,>({
         </HyperWrap>
       </div>
     </div>
+  )
+}
+
+export const DataTable = <T,>(props: TableProps<T>) => {
+  const columnVisibilityParser = useMemo(
+    () => createColumnVisibilityParser(),
+    [],
+  )
+  const [columnVisibilityParam, setColumnVisibilityParam] = useQueryState(
+    'columns',
+    columnVisibilityParser,
+  )
+  return (
+    <ColumnVisibilityProvider
+      valueFromUrl={columnVisibilityParam ?? {}}
+      onVisibilityChange={setColumnVisibilityParam}>
+      <DataTableContent<T> {...props} />
+    </ColumnVisibilityProvider>
   )
 }
 

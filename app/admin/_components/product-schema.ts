@@ -15,7 +15,12 @@ export const productSchema = z.object({
   priceCents: z.number().min(0, 'Price must be positive.'),
   unit: z.string().min(1, 'Unit is required.'),
   availableDenominationsRaw: z.string().optional(),
-  popularDenomination: z.array(z.number()).optional(),
+  popularDenomination: z
+    .union([z.array(z.number()), z.literal('')])
+    .optional()
+    .transform((val) =>
+      Array.isArray(val) && val.length > 0 ? val : undefined,
+    ),
   thcPercentage: z.number().min(0, 'THC percentage must be positive.'),
   cbdPercentage: z.string().optional(),
   effectsRaw: z.string().optional(), // Keep for backward compatibility or parse elsewhere
@@ -173,7 +178,7 @@ export const productFields: FormInput<ProductFormValues>[] = [
     type: 'select',
     mode: 'single',
     options: [], // Populated dynamically from categories
-    defaultValue: '',
+    defaultValue: [] as number[],
   },
 
   {
@@ -312,6 +317,7 @@ export const defaultValues: ProductFormValues = {
   ),
   stockByDenomination: {},
   priceByDenomination: {},
+  popularDenomination: [] as number[],
   tier: undefined,
   eligibleForUpgrade: false,
   upgradePrice: undefined,

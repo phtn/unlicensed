@@ -82,13 +82,16 @@ export const RenderRow = <T,>({
         },
       )}
       onClick={handleRowClick}>
-      {row.getVisibleCells().map((cell) => (
-        <RenderCell
-          key={cell.id}
-          cell={cell}
-          isEditing={isSelected || showSelectColumn}
-        />
-      ))}
+      {row
+        .getVisibleCells()
+        .filter((cell) => cell.column.getIsVisible())
+        .map((cell) => (
+          <RenderCell
+            key={cell.id}
+            cell={cell}
+            isEditing={isSelected || showSelectColumn}
+          />
+        ))}
     </TableRow>
   )
 }

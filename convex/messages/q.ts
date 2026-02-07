@@ -103,6 +103,16 @@ export const searchConversations = query({
       connectedUserIds.add(follow.followerId as string)
     }
 
+    // Check if current user is staff with admin privileges (can search staff)
+    const currentUserStaff = await ctx.db
+      .query('staff')
+      .withIndex('by_email', (q) => q.eq('email', user.email))
+      .unique()
+    const isStaffAdmin =
+      !!currentUserStaff &&
+      currentUserStaff.active &&
+      currentUserStaff.accessRoles.includes('admin')
+
     // Get all users and filter by search query
     const allUsers = await ctx.db.query('users').collect()
     const matchingUsers = allUsers.filter((u) => {
@@ -117,6 +127,41 @@ export const searchConversations = query({
         email.split('@')[0].includes(searchLower)
       )
     })
+
+    // If staff admin: also search staff members and include their linked users
+    const staffMatchingUserIds = new Set<string>()
+    if (isStaffAdmin) {
+      const allStaff = await ctx.db.query('staff').collect()
+      const matchingStaff = allStaff.filter((s) => {
+        if (!s.active) return false
+        const name = (s.name || '').toLowerCase()
+        const email = (s.email || '').toLowerCase()
+        return (
+          name.includes(searchLower) ||
+          email.includes(searchLower) ||
+          (email && email.split('@')[0].includes(searchLower))
+        )
+      })
+      for (const s of matchingStaff) {
+        let linkedUser: Awaited<ReturnType<typeof ctx.db.get>> = null
+        const staffEmail = s.email
+        if (s.userId) {
+          linkedUser = await ctx.db.get(s.userId)
+        } else if (staffEmail) {
+          linkedUser = await ctx.db
+            .query('users')
+            .withIndex('by_email', (q) => q.eq('email', staffEmail))
+            .first()
+        }
+        if (
+          linkedUser &&
+          'fid' in linkedUser &&
+          linkedUser._id !== user._id
+        ) {
+          staffMatchingUserIds.add(linkedUser._id as string)
+        }
+      }
+    }
 
     // Get conversations with matching messages
     const sentMessages = await ctx.db
@@ -148,6 +193,7 @@ export const searchConversations = query({
     const resultUserIds = new Set([
       ...matchingUsers.map((u) => u._id as string),
       ...Array.from(matchingMessageUserIds),
+      ...Array.from(staffMatchingUserIds),
     ])
 
     const results = await Promise.all(

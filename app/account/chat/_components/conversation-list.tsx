@@ -9,7 +9,7 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
 import {formatRecordingTime} from '@/utils/time'
-import {User} from '@heroui/react'
+import {Avatar} from '@heroui/react'
 import {Fragment, useCallback, useRef, useState} from 'react'
 
 export interface Conversation {
@@ -187,26 +187,11 @@ export function ConversationList({
               'w-full px-3 md:px-4 py-3 text-left transition-all duration-200 active:bg-blue-800',
               'touch-manipulation',
               isSelected &&
-                'bg-blue-500 border-l-2 md:border-l-4 border-l-blue-800',
+                'bg-blue-500/10 border-l-2 md:border-l-4 border-l-blue-800',
             )}>
             <div className='flex items-start gap-2 md:gap-3'>
               <div className='relative shrink-0'>
-                <User
-                  avatarProps={{
-                    src:
-                      conversation.otherUser?.avatarUrl ??
-                      conversation.otherUser?.photoUrl ??
-                      '',
-                    fallback: initials,
-                  }}
-                  description={<span>Ask</span>}
-                  name={
-                    conversation.otherUser?.displayName ??
-                    conversation.otherUser?.name ??
-                    undefined
-                  }
-                />
-
+                <Avatar src={conversation.otherUser?.avatarUrl ?? undefined} />
                 <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border-2 border-background' />
               </div>
               <div className='min-w-0 flex-1'>

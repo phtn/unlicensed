@@ -1,6 +1,10 @@
+'use client'
+
+import {api} from '@/convex/_generated/api'
 import {Icon, IconName} from '@/lib/icons'
 import {
   Avatar,
+  Badge,
   Button,
   Dropdown,
   DropdownItem,
@@ -10,6 +14,7 @@ import {
   Link,
   Tooltip,
 } from '@heroui/react'
+import {useQuery} from 'convex/react'
 import {User} from 'firebase/auth'
 
 interface UserDropdownProps {
@@ -27,6 +32,11 @@ export const UserDropdown = ({
   onLogout,
   onThemeToggle,
 }: UserDropdownProps) => {
+  const unreadCount = useQuery(
+    api.messages.q.getUnreadCount,
+    user ? {fid: user.uid} : 'skip',
+  )
+
   return (
     <Dropdown
       placement='bottom-end'
@@ -112,14 +122,30 @@ export const UserDropdown = ({
               base: ' bg-white hover:bg-white/80 dark:bg-background/60 dark:hover:bg-background/70 gap-x-4',
             }}>
             <div className='flex items-center gap-4 w-fit'>
-              <JustTheTip
-                id='messages'
-                icon='chat'
-                tip='messages'
-                offset={6}
-                as={Link}
-                href='/account/chat'
-              />
+              <Badge
+                size='sm'
+                key={`chat-badge-${unreadCount ?? 0}`}
+                content={
+                  (unreadCount ?? 0) > 0 ? (
+                    <span className='font-okxs font-semibold text-white leading-none'>
+                      {(unreadCount ?? 0) > 99 ? '99+' : unreadCount}
+                    </span>
+                  ) : undefined
+                }
+                isInvisible={(unreadCount ?? 0) === 0}
+                classNames={{
+                  badge:
+                    'min-w-5 h-5 px-1 flex items-center justify-center rounded-full border-1.5 dark:border-background/90 shadow-md bg-brand/80',
+                }}>
+                <JustTheTip
+                  id='messages'
+                  icon='chat'
+                  tip='messages'
+                  offset={6}
+                  as={Link}
+                  href='/account/chat'
+                />
+              </Badge>
 
               <JustTheTip
                 id='theme-toggle'

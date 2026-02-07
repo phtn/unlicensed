@@ -1,5 +1,71 @@
 import {v} from 'convex/values'
+import type {Id} from '../_generated/dataModel'
 import {mutation} from '../_generated/server'
+
+// Connect admin with staff member for chat: creates follow and returns staff user's fid
+export const connectStaffForChat = mutation({
+  args: {
+    staffId: v.id('staff'),
+    currentUserFid: v.string(), // Firebase UID of the admin initiating the chat
+  },
+  handler: async (ctx, args) => {
+    const staff = await ctx.db.get(args.staffId)
+    if (!staff) {
+      throw new Error('Staff member not found')
+    }
+
+    let staffUser: Awaited<ReturnType<typeof ctx.db.get>> = null
+    if (staff.userId) {
+      staffUser = await ctx.db.get(staff.userId as Id<'users'>)
+    } else if (staff.email) {
+      staffUser = await ctx.db
+        .query('users')
+        .withIndex('by_email', (q) => q.eq('email', staff.email as string))
+        .first()
+    }
+
+    if (!staffUser || !('fid' in staffUser)) {
+      throw new Error(
+        'Staff member does not have a linked user account to chat',
+      )
+    }
+
+    const staffUserFid =
+      (staffUser.fid ?? staffUser.firebaseId ?? '') as string
+    if (!staffUserFid) {
+      throw new Error('Staff user has no Firebase ID')
+    }
+
+    const follower = await ctx.db
+      .query('users')
+      .withIndex('by_fid', (q) => q.eq('fid', args.currentUserFid))
+      .first()
+
+    if (!follower) {
+      throw new Error('Current user not found')
+    }
+
+    const existingFollow = await ctx.db
+      .query('follows')
+      .withIndex('by_follower_followed', (q) =>
+        q.eq('followerId', follower._id).eq('followedId', staffUser._id),
+      )
+      .first()
+
+    if (!existingFollow) {
+      if (follower._id !== staffUser._id) {
+        await ctx.db.insert('follows', {
+          followerId: follower._id,
+          followedId: staffUser._id,
+          createdAt: new Date().toISOString(),
+          visible: true,
+        })
+      }
+    }
+
+    return {staffUserFid}
+  },
+})
 
 // Follow a user
 export const follow = mutation({

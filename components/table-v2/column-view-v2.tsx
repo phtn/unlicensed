@@ -9,12 +9,15 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Toolbar} from '@base-ui/react'
 import {Badge} from '@heroui/react'
-import {Column} from '@tanstack/react-table'
-import {useMemo} from 'react'
+import {Column, VisibilityState} from '@tanstack/react-table'
+import {useCallback, useMemo} from 'react'
 
 interface Props<T> {
   cols: Column<T, unknown>[]
   isMobile: boolean
+  onColumnVisibilityChange?: (
+    updater: VisibilityState | ((old: VisibilityState) => VisibilityState),
+  ) => void
 }
 
 // Helper function to extract header text from column definition
@@ -48,13 +51,37 @@ const formatColumnId = (id: string): string => {
     .join(' ')
 }
 
-export const ColumnView = <T,>({cols, isMobile}: Props<T>) => {
+export const ColumnView = <T,>({
+  cols,
+  isMobile,
+  onColumnVisibilityChange,
+}: Props<T>) => {
   // Filter columns where enableHiding is true (default is true, so filter out false)
   const hideableColumns = useMemo(() => {
     return cols.filter((col) => col.getCanHide())
   }, [cols])
 
   const invisibleColumns = hideableColumns.filter((col) => !col.getIsVisible())
+
+  const handleToggle = useCallback(
+    (columnId: string, nextVisible: boolean) => {
+      if (onColumnVisibilityChange) {
+        onColumnVisibilityChange((old) => ({...old, [columnId]: nextVisible}))
+      } else {
+        const col = hideableColumns.find((c) => c.id === columnId)
+        col?.toggleVisibility(nextVisible)
+      }
+    },
+    [onColumnVisibilityChange, hideableColumns],
+  )
+
+  const handleReset = useCallback(() => {
+    if (onColumnVisibilityChange) {
+      onColumnVisibilityChange(() => ({}))
+    } else {
+      hideableColumns.forEach((col) => col.toggleVisibility(true))
+    }
+  }, [onColumnVisibilityChange, hideableColumns])
 
   return (
     <DropdownMenu>
@@ -95,7 +122,9 @@ export const ColumnView = <T,>({cols, isMobile}: Props<T>) => {
                 column.getIsVisible() && 'opacity-100 not-italic',
               )}
               checked={column.getIsVisible()}
-              onCheckedChange={(value) => column.toggleVisibility(!!value)}
+              onCheckedChange={(value) =>
+                handleToggle(column.id, value === true)
+              }
               onSelect={(event) => event.preventDefault()}>
               {headerText}
             </DropdownMenuCheckboxItem>
@@ -106,7 +135,7 @@ export const ColumnView = <T,>({cols, isMobile}: Props<T>) => {
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
-            hideableColumns.forEach((col) => col.toggleVisibility(true))
+            handleReset()
           }}
           className='w-full tracking-tight font-medium font-figtree rounded-2xl hover:bg-origin dark:hover:bg-origin/20 hover:border-origin dark:hover:border-origin/80 h-12'>
           Reset
