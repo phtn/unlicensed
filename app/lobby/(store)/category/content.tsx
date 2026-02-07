@@ -49,8 +49,8 @@ export const Content = ({initialCategories}: ContentProps) => {
               <Tag text='Categories' />
               <Title title='Experience by Category' subtitle='' />
               <p className='hidden sm:flex text-sm sm:text-base lg:text-base opacity-60 mb-8 sm:mb-8 lg:mb-12 max-w-md leading-relaxed'>
-                Browse through our carefully curated categories and find exactly
-                what you&apos;re looking for.
+                Different doors to the same room. Where your pulse syncs with
+                the universe&apos;s paced drumbeats.
               </p>
 
               <div className='hidden sm:flex items-center gap-3 sm:gap-4 lg:gap-5 relative z-50 flex-wrap'>
@@ -95,7 +95,7 @@ export const Content = ({initialCategories}: ContentProps) => {
 
       {/* Categories Grid */}
       <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
-        <div className='max-w-7xl mx-auto rounded-4xl'>
+        <div className='max-w-7xl mx-auto rounded-3xl'>
           <Activity mode={categories.length === 0 ? 'visible' : 'hidden'}>
             <div className='max-w-7xl mx-auto pt-20'>
               <div className='flex flex-col items-center justify-center gap-4 px-6 py-24 text-center'>
@@ -121,7 +121,7 @@ export const Content = ({initialCategories}: ContentProps) => {
                 key={category.slug}
                 href={`/lobby/category/${category.slug}`}
                 prefetch={true}
-                className='group/item cursor-pointer w-full'>
+                className='group/item cursor-pointer w-full border-x border-b border-dark-gray/50 rounded-2xl sm:rounded-3xl'>
                 {/* Category Image */}
                 <div className='relative flex items-center justify-center bg-transparent rounded-t-2xl sm:rounded-t-3xl overflow-hidden h-fig sm:h-64 lg:h-72'>
                   {category.heroImage ? (
@@ -158,15 +158,13 @@ export const Content = ({initialCategories}: ContentProps) => {
                         {category.name}
                       </span>
                     </h4>
-                    {category.benefits && category.benefits.length > 0 && (
-                      <div className='flex truncate gap-1.5 mt-3 justify-center'>
-                        {category.benefits.slice(0, 2).map((benefit, idx) => (
-                          <span
-                            key={idx}
-                            className='text-[10px] sm:text-xs px-2 py-0.5 opacity-70'>
-                            {benefit}
-                          </span>
-                        ))}
+                    {category.highlight && (
+                      <div className='flex truncate gap-1.5 mt-3 justify-center text-brand font-okxs font-medium'>
+                        <span
+                          key={category.slug}
+                          className='text-[10px] sm:text-xs px-2 py-0.5 opacity-70'>
+                          {category.highlight}
+                        </span>
                       </div>
                     )}
                   </div>

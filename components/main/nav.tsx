@@ -19,10 +19,11 @@ import {
   useDisclosure,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
+import {motion} from 'motion/react'
 import {useTheme} from 'next-themes'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
-import {useCallback, useMemo} from 'react'
+import {useCallback, useMemo, useState} from 'react'
 import {ThemeToggle} from '../ui/theme-toggle'
 
 interface NavProps {
@@ -64,16 +65,37 @@ export const Nav = ({children}: NavProps) => {
     setTheme(theme === 'light' ? 'dark' : 'light')
   }, [setTheme, theme])
 
+  const [hovered, setHovered] = useState(false)
+  const handleHomeMouseEnter = useCallback(() => {
+    setHovered(true)
+  }, [])
+
+  const handleHomeMouseLeave = useCallback(() => {
+    setHovered(false)
+  }, [])
+
   return (
     <div>
       <header className='fixed z-9999 top-0 left-0 right-0 bg-black backdrop-blur-sm h-12 lg:h-16 xl:h-20 2xl:h-24'>
         <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 flex items-center justify-between h-full'>
           <Link
             href={'/lobby'}
-            className='md:w-36 h-12 overflow-hidden pl-1 flex items-center justify-start relative'>
+            onMouseEnter={handleHomeMouseEnter}
+            onMouseLeave={handleHomeMouseLeave}
+            className='group relative flex items-center justify-start md:w-36 h-10 md:h-12 overflow-hidden pl-1 text-white hover:text-brand shadow-inner active:text-brand'>
+            <motion.div
+              initial={{y: 12, opacity: 0, scale: 0}}
+              animate={{
+                y: hovered ? 0 : 0,
+                opacity: hovered ? 1 : 0,
+                scale: hovered ? 0.8 : 0,
+              }}
+              exit={{y: -12, opacity: 0, scale: 0}}
+              className='hidden md:flex absolute size-8 md:size-10 bg-white aspect-square rounded-full'
+            />
             <Icon
               name='rapid-fire-logo'
-              className='h-8 w-auto dark:text-white text-white relative'
+              className='h-8 md:h-10 w-auto relative'
             />
           </Link>
           <nav className={cn('flex items-center justify-center w-fit')}>
@@ -151,7 +173,7 @@ export const Nav = ({children}: NavProps) => {
                     <DropdownTrigger>
                       <Avatar
                         size='sm'
-                        className='cursor-pointer border-2 border-neutral-100 hover:border-white dark:hover:border-white shadow-inner'
+                        className='cursor-pointer border-2 border-white hover:border-brand dark:hover:border-white shadow-inner hover:shadow-white'
                         src={user.photoURL ?? undefined}
                         name={user.displayName ?? user.email ?? 'U'}
                       />
@@ -205,7 +227,7 @@ export const Nav = ({children}: NavProps) => {
                       />
                       <DropdownItem
                         key='theme'
-                        title='Theme'
+                        title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
                         onPress={handleToggleTheme}>
                         <ThemeToggle variant='icon' />
                       </DropdownItem>

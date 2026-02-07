@@ -35,8 +35,7 @@ export const Products = ({products, slug}: ProductsProps) => {
               <Tag text={slug} />
               <Title title={slug} subtitle={category?.highlight} />
               <p className='hidden sm:flex text-sm sm:text-base lg:text-base opacity-60 mb-6 sm:mb-8 lg:mb-12 max-w-md leading-relaxed'>
-                Enjoy the beauty of nature with our exquisite flower collection.
-                Explore our selection today and discover your soul strain.
+                {category?.description}
               </p>
 
               <div className='hidden sm:flex items-center gap-3 sm:gap-4 lg:gap-5 relative z-50 flex-wrap'>

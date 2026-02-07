@@ -50,7 +50,7 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
             </div>
             <div className='space-y-3 px-4'>
               <OrderStatusBadge status={orderStatus} />
-              <div className='flex items-center justify-center gap-1 capitalize text-xs font-okxs font-medium'>
+              <div className='flex items-center justify-start gap-1 px-1 capitalize text-xs font-okxs font-medium'>
                 <Icon
                   name={paymentMethodIconMap[payment.method].icon}
                   className={`size-4 ${paymentMethodIconMap[payment.method].style}`}

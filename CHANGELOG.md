@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.16
+
+### Patch Changes
+
+- product card price per denom
+
 ## 0.27.15
 
 ### Patch Changes

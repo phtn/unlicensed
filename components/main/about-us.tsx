@@ -15,22 +15,18 @@ export const AboutUs = () => {
         {/* Two Column Content */}
         <div className='grid grid-cols-1 md:grid-cols-11 gap-8 md:gap-12 lg:gap-16'>
           {/* Left Column */}
-          <div className='space-y-6 md:space-y-8 md:col-span-5 md:pr-8'>
-            <p className='text-base md:text-lg leading-relaxed text-gray-300'>
-              Rapid Fire is a fast-paced online quiz game designed to test how
-              quickly you can think under pressure.
+          <div className='space-y-6 md:space-y-8 md:col-span-5 md:pr-8 text-center md:text-right'>
+            <p className='text-base md:text-lg leading-relaxed opacity-80'>
+              Rapid Fire is your grandma&apos;s dream dispensary.
             </p>
-            <p className='text-base md:text-lg leading-relaxed text-gray-300'>
-              Each question gives you only seconds to respond—no overthinking,
-              no second chances.
+            <p className='text-base md:text-lg leading-relaxed opacity-80'>
+              We&apos;re the reason she started smoking at eighty.
             </p>
-            <p className='text-base md:text-lg leading-relaxed text-gray-300'>
-              Just pure focus, speed, and instinct. Whether you&apos;re playing
-              for fun, training your brain, or challenging friends, Rapid Fire
-              pushes your reflexes and decision-making skills to the limit.
+            <p className='text-base md:text-lg leading-relaxed opacity-80'>
+              We&apos;re all about getting high without getting played.
             </p>
-            <p className='text-base md:text-lg leading-relaxed text-gray-300'>
-              The goal is simple: answer fast, stay sharp, and beat the clock.
+            <p className='text-base md:text-lg leading-relaxed opacity-80'>
+              We&apos;re all about fast minds finding high quality highs.
             </p>
           </div>
 
@@ -40,24 +36,18 @@ export const AboutUs = () => {
           </div>
 
           {/* Right Column */}
-          <div className='space-y-6 md:space-y-8 md:col-span-5'>
-            <p className='text-base md:text-lg leading-relaxed text-gray-300'>
-              A refined, high-intensity quiz experience built for sharp minds
-              who thrive under pressure.
+          <div className='space-y-6 md:space-y-8 md:col-span-5 text-center md:text-left'>
+            <p className='text-base md:text-lg leading-relaxed opacity-80'>
+              We&apos;re the reason your ex still texts you.
             </p>
-            <p className='text-base md:text-lg leading-relaxed text-gray-300'>
-              Every question is crafted to challenge your speed, precision, and
-              focus—because in Rapid Fire, hesitation costs more than a wrong
-              answer.
+            <p className='text-base md:text-lg leading-relaxed opacity-80'>
+              We&apos;re the reason your boss can&apos;t fire you.
             </p>
-            <p className='text-base md:text-lg leading-relaxed text-gray-300'>
-              Designed with a clean interface and smooth gameplay, Rapid Fire
-              delivers a premium experience where every second matters. No
-              clutter. No distractions. Just you, the clock, and your ability to
-              think fast with confidence.
+            <p className='text-base md:text-lg leading-relaxed opacity-80'>
+              We&apos;re the reason you&apos;re on top of everything.
             </p>
-            <p className='text-base md:text-lg leading-relaxed text-gray-300'>
-              This isn&apos;t just a game—it&apos;s a test of mental agility.
+            <p className='text-base md:text-lg leading-relaxed opacity-80'>
+              A refined, high-intensity swoon and pure quality bloom.
             </p>
           </div>
         </div>

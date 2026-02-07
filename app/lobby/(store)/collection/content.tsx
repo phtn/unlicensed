@@ -10,7 +10,7 @@ import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useMemo} from 'react'
-import {FullCollection} from '../collection'
+import {FullCollection} from './collection'
 
 export const Content = ({
   initialCategories,

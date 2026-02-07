@@ -1,9 +1,11 @@
+import {mapNumericFractions} from '@/app/admin/_components/product-schema'
 import type {StoreProduct} from '@/app/types'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Card, CardBody, CardFooter, Image} from '@heroui/react'
 import NextLink from 'next/link'
 import {HyperActivity} from '../expermtl/activity'
+import {TextFlip} from '../expermtl/text-flip'
 import {HyperBadge} from '../main/badge'
 
 type ProductCardProps = {
@@ -16,8 +18,28 @@ const formatPrice = (priceCents: number) => {
   return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
 }
 
+const priceWordsFromDenomination = (
+  priceByDenomination: Record<string, number> | undefined,
+  unit: string,
+): Array<{price: string; denom: string}> | null => {
+  if (!priceByDenomination || Object.keys(priceByDenomination).length === 0) {
+    return null
+  }
+  const entries = Object.entries(priceByDenomination).sort(
+    ([a], [b]) => Number(a) - Number(b),
+  )
+  return entries.map(([denom, cents]) => ({
+    price: formatPrice(cents),
+    denom: `${mapNumericFractions[denom]} ${unit}`,
+  }))
+}
+
 export const ProductCard = ({product, className}: ProductCardProps) => {
   const topEffects = product.effects.slice(0, 2)
+  const priceWords = priceWordsFromDenomination(
+    product.priceByDenomination,
+    product.unit,
+  )
 
   return (
     <Card
@@ -57,14 +79,29 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
         <div className='flex flex-col gap-3 sm:gap-4 p-3 sm:px-6 h-16'>
           <div className='flex items-start justify-between gap-2 h-full'>
             <div className='space-y-1 sm:space-y-2 flex-1 min-w-0'>
-              <h3 className='text-base sm:text-lg font-polysans tracking-tight opacity-80 truncate capitalize'>
+              <h3 className='text-base sm:text-lg font-okxs truncate capitalize'>
                 {product.slug.split('-').join(' ')}
               </h3>
             </div>
-            <span className='whitespace-nowrap text-base sm:text-lg font-okxs text-foreground shrink-0'>
-              <span className='font-thin opacity-70'>$</span>
-              {formatPrice(product.priceCents)}
-            </span>
+            <div className=' flex items-center justify-end whitespace-nowrap text-base sm:text-lg font-okxs text-foreground shrink-0 w-fit'>
+              {priceWords ? (
+                <TextFlip
+                  words={priceWords.map(
+                    ({price, denom}) => `$${price} ∕ ${denom}`,
+                  )}
+                  direction='vertical'
+                  interval={4000}
+                  animationDuration={400}
+                  className='bg-transparent shadow-none min-w-0 w-fit'
+                  textClassName='font-okxs text-base sm:text-lg'
+                />
+              ) : (
+                <>
+                  <span className='font-thin opacity-70'>$</span>
+                  {formatPrice(product.priceCents)}
+                </>
+              )}
+            </div>
           </div>
 
           <div className='hidden _flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs uppercase tracking-wide text-color-muted'>

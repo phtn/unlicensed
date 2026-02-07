@@ -13,8 +13,7 @@ export const NewHome = () => {
           imageUrl: '/static/slurry.webp',
           imageAlt: '',
           title: <TitleV2 title='THRIVE' subtitle='WHERE FAST MINDS' />,
-          description:
-            'Premium products built for consistency, impact and premium flow.',
+          description: 'Pure elevation. Crafted for the modern mind.',
           ctaText: 'Shop Collection',
           ctaHref: '/lobby/collection',
         },
