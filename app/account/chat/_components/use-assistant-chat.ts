@@ -110,7 +110,7 @@ export function useAssistantChat(): UseAssistantChatReturn {
             content: msg.content,
           })) ?? []
 
-        const response = await fetch('/api/ai/chat', {
+        const response = await fetch('/api/ai/assistant', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -120,7 +120,15 @@ export function useAssistantChat(): UseAssistantChatReturn {
         })
 
         if (!response.ok) {
-          throw new Error('Failed to get response')
+          const errBody = await response.text()
+          let errMessage = 'Failed to get response'
+          try {
+            const parsed = JSON.parse(errBody) as {error?: string}
+            if (typeof parsed.error === 'string') errMessage = parsed.error
+          } catch {
+            if (errBody) errMessage = errBody.slice(0, 200)
+          }
+          throw new Error(`${errMessage} (${response.status})`)
         }
 
         const reader = response.body?.getReader()

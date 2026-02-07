@@ -184,10 +184,10 @@ export function ConversationList({
               }
             }}
             className={cn(
-              'w-full px-3 md:px-4 py-3 text-left transition-all duration-200 active:bg-primary',
-              'hover:bg-primary touch-manipulation',
+              'w-full px-3 md:px-4 py-3 text-left transition-all duration-200 active:bg-blue-800',
+              'touch-manipulation',
               isSelected &&
-                'bg-primary border-l-2 md:border-l-3 border-l-primary',
+                'bg-blue-500 border-l-2 md:border-l-4 border-l-blue-800',
             )}>
             <div className='flex items-start gap-2 md:gap-3'>
               <div className='relative shrink-0'>

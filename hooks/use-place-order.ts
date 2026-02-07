@@ -4,6 +4,7 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {PaymentMethod} from '@/convex/orders/d'
 import {AddressType} from '@/convex/users/d'
+import {addToCartHistory} from '@/lib/localStorageCartHistory'
 import {
   clearLocalStorageCart,
   getLocalStorageCartItems,
@@ -146,6 +147,14 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
             }
             if (tempCartId) {
               cartIdToUse = tempCartId
+              // Add guest cart items to history before clearing so "Previously in cart" shows
+              const seen = new Set<string>()
+              for (const item of guestCartItems) {
+                const key = `${item.productId}-${item.denomination ?? 'default'}`
+                if (seen.has(key)) continue
+                seen.add(key)
+                addToCartHistory(item.productId, item.denomination)
+              }
               clearLocalStorageCart()
             } else {
               throw new Error('Failed to create cart from guest cart items')

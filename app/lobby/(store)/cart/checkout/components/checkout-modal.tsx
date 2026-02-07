@@ -191,7 +191,7 @@ export function CheckoutModal({
                 radius='none'
                 color='primary'
                 variant='solid'
-                className='rounded-lg bg-black font-polysans dark:text-white disabled:opacity-50'
+                className='rounded-lg bg-black font-polysans font-normal dark:text-white disabled:opacity-50'
                 fullWidth
                 onPress={onPlaceOrder}
                 endContent={
@@ -205,7 +205,7 @@ export function CheckoutModal({
                   />
                 }
                 isDisabled={!!orderId}>
-                {orderId ? 'Order Placed!' : 'Proceed to Payment'}
+                {orderId ? 'Order Placed!' : 'Pay'}
               </Button>
             </ModalFooter>
           </>

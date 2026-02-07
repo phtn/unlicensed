@@ -38,7 +38,7 @@ export default function PayPage() {
 
     // If payment is already completed, redirect to order page
     if (order.payment.status === 'completed') {
-      router.push(`/lobby/account/orders/${orderId}`)
+      router.push(`/lobby/account/orders/${order.orderNumber}`)
       return
     }
 

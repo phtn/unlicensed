@@ -7,7 +7,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {User} from '@heroui/react'
+import {Avatar, User} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
@@ -395,7 +395,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   const showChatArea = !isMobile || showChat
 
   return (
-    <div className='flex h-[calc(100vh-4rem)] md:h-[calc(100vh-6rem)] w-full bg-primary/5 overflow-hidden rounded-xs'>
+    <div className='flex h-[calc(100vh-4rem)] md:h-[calc(100vh-6rem)] w-full bg-sidebar/20 overflow-hidden rounded-xs'>
       {/* Conversation List Sidebar */}
       <div
         className={cn(
@@ -421,9 +421,9 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 onClick={handleSelectAssistant}
                 className={cn(
                   'w-full px-3 md:px-4 py-3 text-left transition-all duration-200 active:bg-accent/70',
-                  'hover:bg-accent/50 touch-manipulation',
+                  'hover:bg-sidebar touch-manipulation',
                   isAssistant &&
-                    'bg-accent border-l-2 md:border-l-2 border-l-primary',
+                    'bg-sidebar border-l-2 md:border-l-2 border-l-blue-500',
                 )}>
                 <div className='flex items-start gap-2 md:gap-3'>
                   <div className='relative shrink-0'>
@@ -438,9 +438,11 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                   </div>
                   <div className='min-w-0 flex-1'>
                     <div className='flex items-center justify-between gap-2 mb-1'>
-                      <p className='truncate font-semibold text-sm text-foreground flex items-center gap-1.5'>
-                        {assistantUser?.name ?? ASSISTANT_NAME}
-                        <span className='text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium'>
+                      <p className='truncate text-sm text-foreground flex items-center gap-1.5'>
+                        <span className='font-okxs font-medium'>
+                          {assistantUser?.name ?? ASSISTANT_NAME}
+                        </span>
+                        <span className='text-[10px] px-1.5 py-0.5 rounded-sm bg-sidebar text-brand dark:text-sky-50 font-polysans font-semibold'>
                           AI
                         </span>
                       </p>
@@ -482,7 +484,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 {isMobile && (
                   <button
                     onClick={handleBackToConversations}
-                    className='p-2 -ml-2 rounded-full hover:bg-accent transition-colors shrink-0 active:scale-95'>
+                    className='p-2 -ml-2 rounded-full hover:bg-sidebar transition-colors shrink-0 active:scale-95'>
                     <Icon
                       name='chevron-left'
                       className='size-4 text-foreground'
@@ -500,8 +502,10 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 </div>
                 <div className='min-w-0 flex-1'>
                   <h2 className='font-semibold text-sm truncate flex items-center gap-1.5'>
-                    {assistantUser?.name ?? ASSISTANT_NAME}
-                    <span className='text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium'>
+                    <span className='font-okxs font-medium'>
+                      {assistantUser?.name ?? ASSISTANT_NAME}
+                    </span>
+                    <span className='text-[10px] px-1.5 py-0.5 rounded-full bg-sidebar text-brand dark:text-sky-50 font-polysans font-semibold'>
                       AI
                     </span>
                   </h2>
@@ -573,22 +577,10 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 <div className='relative shrink-0'>
                   {otherUser?.name ? (
                     <Link href={`/u/${otherUser.name}`}>
-                      <User
-                        avatarProps={{
-                          src: otherUser?.photoUrl ?? undefined,
-                        }}
-                        description={<span>Ask me anything</span>}
-                        name='Assistant'
-                      />
+                      <Avatar src={currentUserConvex?.photoUrl ?? undefined} />
                     </Link>
                   ) : (
-                    <User
-                      avatarProps={{
-                        src: otherUser?.photoUrl ?? undefined,
-                      }}
-                      description={<span>Ask me anything</span>}
-                      name='Assistant'
-                    />
+                    <Avatar src={otherUser?.photoUrl ?? undefined} />
                   )}
                   <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border-2 border-card' />
                 </div>
@@ -676,15 +668,15 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
           <div className='flex h-full items-center justify-center bg-linear-to-br from-background to-muted/20'>
             <div className='text-center space-y-4 px-4'>
               <div className='flex justify-center'>
-                <div className='size-16 md:size-20 rounded-full bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/20'>
+                <div className='size-16 md:size-20 rounded-full bg-linear-to-br from-sidebar/20 to-sidebar/60 flex items-center justify-center border border-sidebar/20'>
                   <Icon
-                    name='chat-rounded'
-                    className='size-8 md:size-10 text-primary/60'
+                    name='chat'
+                    className='size-8 md:size-10 text-dark-table'
                   />
                 </div>
               </div>
               <div className='space-y-2'>
-                <h3 className='text-base md:text-lg font-semibold'>
+                <h3 className='text-base md:text-lg font-polysans font-semibold'>
                   Select a conversation
                 </h3>
                 <p className='text-xs md:text-sm text-muted-foreground max-w-sm mx-auto'>

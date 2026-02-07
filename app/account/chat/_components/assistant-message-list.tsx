@@ -1,7 +1,7 @@
 'use client'
 
 import {cn} from '@/lib/utils'
-import {User} from '@heroui/react'
+import {Avatar} from '@heroui/react'
 import DOMPurify from 'dompurify'
 import {marked} from 'marked'
 import {useMemo} from 'react'
@@ -114,33 +114,17 @@ export function AssistantMessageList({
     }
   }
 
-  const quickActions = [
-    'What is Protap?',
-    'Tell me about insurance',
-    'How do NFC cards work?',
-    'Return policy?',
-  ]
+  const quickActions = ['Check my order status?', 'What flavors are available?']
 
   if (messages.length === 0) {
     return (
       <div className='flex h-full items-center justify-center'>
         <div className='text-center space-y-4 px-4 max-w-md'>
-          <User
-            avatarProps={{
-              src: '/svg/rf-logo-round-204-latest.svg',
-            }}
-            description={<span>Ask me anything</span>}
-            name='Assistant'
-          />
+          <Avatar src='/svg/rf-logo-round-204-latest.svg' />
           <div className='space-y-2'>
-            <h3 className='text-lg font-semibold'>
+            <h3 className='text-lg font-polysans font-medium'>
               Hi! I&apos;m {ASSISTANT_NAME}
             </h3>
-            <p className='text-sm text-muted-foreground'>
-              I can help you with questions about Protap, including features,
-              insurance coverage, digital business cards, and our policies. How
-              can I assist you today?
-            </p>
           </div>
           <div className='flex flex-wrap justify-center gap-2 pt-2'>
             {quickActions.map((suggestion) => (
@@ -149,7 +133,7 @@ export function AssistantMessageList({
                 type='button'
                 disabled={!onQuickAction || isLoading}
                 onClick={() => onQuickAction?.(suggestion)}
-                className='text-xs px-3 py-1.5 rounded-full bg-muted hover:bg-accent transition-colors'>
+                className='text-xs px-3 py-1.5 rounded-full bg-sidebar'>
                 {suggestion}
               </button>
             ))}
@@ -193,21 +177,9 @@ export function AssistantMessageList({
                 {/* Avatar */}
                 <div className='w-7 md:w-8 shrink-0'>
                   {showAvatar && !isUser ? (
-                    <User
-                      avatarProps={{
-                        src: '/static/rf-logo-round-204-latest.svg',
-                      }}
-                      description={<span>Ask me anything</span>}
-                      name='Assistant'
-                    />
+                    <Avatar src='/svg/rf-logo-round-204-latest.svg' />
                   ) : showAvatar && isUser ? (
-                    <User
-                      avatarProps={{
-                        src: message.role,
-                      }}
-                      description={<span>Ask me anything</span>}
-                      name={message.role}
-                    />
+                    <Avatar className='size-7 md:size-8 border-2 border-background'></Avatar>
                   ) : null}
                 </div>
 
@@ -220,10 +192,10 @@ export function AssistantMessageList({
                   )}>
                   <div
                     className={cn(
-                      'rounded-2xl px-3 md:px-4 py-2 shadow-sm',
+                      'rounded-2xl px-3 md:px-4 py-2',
                       isUser
-                        ? 'bg-primary text-white rounded-tr-sm'
-                        : 'bg-muted text-foreground rounded-tl-sm',
+                        ? 'bg-dark-table text-white rounded-tr-sm'
+                        : 'bg-sidebar text-foreground rounded-tl-sm',
                       isLastInGroup &&
                         (isUser ? 'rounded-br-2xl' : 'rounded-bl-2xl'),
                     )}>
@@ -250,7 +222,7 @@ export function AssistantMessageList({
                   </div>
 
                   {/* Timestamp */}
-                  <span className='text-xs text-muted-foreground px-1'>
+                  <span className='text-[8px] font-brk text-muted-foreground px-2'>
                     {formatTime(message.createdAt)}
                   </span>
                 </div>
@@ -266,13 +238,7 @@ export function AssistantMessageList({
         messages[messages.length - 1].role === 'user' && (
           <div className='flex gap-2 items-end'>
             <div className='w-7 md:w-8 shrink-0'>
-              <User
-                avatarProps={{
-                  src: '/static/rf-girl.png',
-                }}
-                description={<span>Ask me anything</span>}
-                name={'Assistant'}
-              />
+              <Avatar src={'/svg/rf-logo-round-204-latest.svg'} />
             </div>
             <div className='rounded-2xl rounded-tl-sm px-3 md:px-4 py-2 shadow-sm bg-muted'>
               <span className='inline-flex gap-1'>

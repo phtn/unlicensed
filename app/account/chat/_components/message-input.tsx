@@ -8,7 +8,7 @@ import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatRecordingTime} from '@/utils/time'
-import {Textarea} from '@heroui/react'
+import {InputProps, Textarea} from '@heroui/react'
 import {useMutation} from 'convex/react'
 import {
   KeyboardEvent,
@@ -666,9 +666,6 @@ export function MessageInput({
               //   'max-h-30 overflow-y-auto',
               //   'touch-manipulation',
               // )}
-              style={{
-                minHeight: '44px', // Minimum touch target size for mobile
-              }}
             />
           </div>
         </div>
@@ -705,11 +702,20 @@ export function MessageInput({
             {isSending ? (
               <div className='size-5 border-2 border-current border-t-transparent rounded-full animate-spin' />
             ) : (
-              <Icon name='arrow-right' className='size-5 -rotate-90' />
+              <Icon name='send-fill' className='size-5' />
             )}
           </button>
         )}
       </div>
     </div>
   )
+}
+
+export const chatInputClassNames: InputProps['classNames'] = {
+  label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-brk',
+  input:
+    'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
+  inputWrapper:
+    'border shadow-none border-dark-table/40 dark:border-black/20 bg-sidebar dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table rounded-lg p-2 outline-none min-h-16 w-full',
+  innerWrapper: 'px-1',
 }

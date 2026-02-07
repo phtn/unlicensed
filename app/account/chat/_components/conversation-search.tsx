@@ -1,9 +1,9 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {Icon} from '@/lib/icons'
 import {Input} from '@heroui/react'
 import {useState} from 'react'
+import {chatInputClassNames} from './message-input'
 
 interface ConversationSearchProps {
   onSearch: (query: string) => void
@@ -40,18 +40,28 @@ export function ConversationSearch({
           onChange={handleChange}
           placeholder=''
           radius='none'
-          classNames={{
-            ...commonInputClassNames,
-            inputWrapper: [
-              commonInputClassNames.inputWrapper,
-              'hover:bg-black bg-sidebar border-dark-gray/40',
-            ],
-            input: [
-              commonInputClassNames.input,
-              'font-okxs font-normal text-sm md:text-lg hover:bg-black',
-            ],
-            innerWrapper: [commonInputClassNames.innerWrapper, 'pl-8'],
-          }}
+          classNames={chatInputClassNames}
+          // classNames={{
+          //   label:
+          //     'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-brk',
+          //   input:
+          //     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
+          //   inputWrapper:
+          //     'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-lg p-2 outline-none min-h-16 w-full',
+          //   innerWrapper: 'px-1',
+          // }}
+          // classNames={{
+          //   ...commonInputClassNames,
+          //   inputWrapper: [
+          //     commonInputClassNames.inputWrapper,
+          //     'hover:bg-black bg-sidebar border-dark-gray/40',
+          //   ],
+          //   input: [
+          //     commonInputClassNames.input,
+          //     'font-okxs font-normal text-sm md:text-lg hover:bg-black',
+          //   ],
+          //   innerWrapper: [commonInputClassNames.innerWrapper, 'pl-8'],
+          // }}
           className='focus:bg-sidebar hover:bg-sidebar placeholder:text-sm placeholder:opacity-80 dark:placeholder:focus:bg-background placeholder:text-primary  dark:placeholder:text-white shadow-none'
         />
         {localQuery && (

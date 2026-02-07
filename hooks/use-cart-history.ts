@@ -74,13 +74,16 @@ export const useCartHistory = (): UseCartHistoryResult => {
       .filter((item): item is CartHistoryItemWithProduct => item !== null)
   }, [historyData, products])
 
-  // Sync with local storage changes
+  // Sync with local storage changes (and read on mount so client has data after hydration)
   useEffect(() => {
     if (typeof window === 'undefined') return
 
     const syncFromLocalStorage = () => {
       setHistoryData(getCartHistoryItems())
     }
+
+    // Sync from localStorage on mount so "Previously in cart" shows when history exists
+    syncFromLocalStorage()
 
     const onHistoryUpdated = () => {
       syncFromLocalStorage()

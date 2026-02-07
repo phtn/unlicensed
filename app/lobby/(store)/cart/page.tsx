@@ -10,6 +10,7 @@ import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {usePlaceOrder} from '@/hooks/use-place-order'
 import {Icon} from '@/lib/icons'
+import {addToCartHistory} from '@/lib/localStorageCartHistory'
 import {cn} from '@/lib/utils'
 import {getUnitPriceCents} from '@/utils/cartPrice'
 import {useDisclosure} from '@heroui/react'
@@ -168,6 +169,14 @@ export default function CartPage() {
 
   // Use optimistic cart items for display
   const cartItems = optimisticCartItems
+
+  // Clear cart after order success; add current items to history so "Previously in cart" shows
+  const handleClearCart = useCallback(async () => {
+    cartItems.forEach((item) => {
+      addToCartHistory(item.product._id, item.denomination)
+    })
+    await clear()
+  }, [cartItems, clear])
 
   // Log cart data for debugging
   useEffect(() => {
@@ -395,7 +404,7 @@ export default function CartPage() {
               orderId={orderId}
               onCheckoutClose={onCheckoutClose}
               isCheckoutOpen={isCheckoutOpen}
-              onClearCart={clear}
+              onClearCart={handleClearCart}
               pointsBalance={pointsBalance}
               paymentMethodFromUrl={paymentMethod}
               onPaymentMethodUrlChange={setPaymentMethod}

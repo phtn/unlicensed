@@ -69,7 +69,7 @@ export const seedAssistant = mutation({
       name: ASSISTANT_USERNAME,
       photoUrl: ASSISTANT_AVATAR,
       email: ASSISTANT_EMAIL,
-      bio: "Hi! I'm Protap Girl, your AI assistant. I can help you with questions about Protap, including features, insurance coverage, digital business cards, and our policies.",
+      bio: "Hi! I'm Rapid Assist, your AI assistant. I can help you with questions about our products, promos, deals, and also check you order status.",
       isActive: true,
       createdAt: Date.now(),
       updatedAt: Date.now(),

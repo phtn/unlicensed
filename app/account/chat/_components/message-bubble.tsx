@@ -2,7 +2,7 @@
 
 import type {Id} from '@/convex/_generated/dataModel'
 import {cn} from '@/lib/utils'
-import {User} from '@heroui/react'
+import {Avatar, User} from '@heroui/react'
 import {AudioMessagePlayer} from './audio-message-player'
 import {MessageBubbleAttachments} from './message-bubble-attachments'
 import {MessageBubbleTimestamp} from './message-bubble-timestamp'
@@ -44,9 +44,9 @@ export function MessageBubble({
 }: MessageBubbleProps) {
   const isCurrentUser = message.senderId === currentUser._id
   const displayUser = isCurrentUser ? currentUser : otherUser
-  const displayName =
-    displayUser?.displayName || displayUser?.email || 'Unknown User'
-  const initials = displayName[0]?.toUpperCase() || 'U'
+  // const displayName =
+  //   displayUser?.displayName || displayUser?.email || 'Unknown User'
+  // const initials = displayName[0]?.toUpperCase() || 'U'
 
   const isLiked = message.likes?.some((like) => like.userId === currentUser._id)
   const likesCount = message.likes?.length || 0
@@ -93,14 +93,7 @@ export function MessageBubble({
       {/* Avatar - only show for first message in a group */}
       <div className='w-7 md:w-8 shrink-0'>
         {showAvatar && displayUser ? (
-          <User
-            avatarProps={{
-              src: displayUser.avatarUrl ?? '',
-              fallback: initials,
-            }}
-            description={<span>Ask me anything</span>}
-            name={displayName}
-          />
+          <Avatar src={displayUser.avatarUrl ?? undefined} />
         ) : null}
       </div>
 
@@ -173,8 +166,8 @@ export function MessageBubble({
             className={cn(
               'rounded-2xl px-3 md:px-4 py-2 shadow-sm cursor-pointer',
               isCurrentUser
-                ? 'bg-primary text-white rounded-tr-sm'
-                : 'bg-muted text-foreground rounded-tl-sm',
+                ? 'bg-brand text-white rounded-tr-sm'
+                : 'bg-sidebar text-foreground rounded-tl-sm',
               isLastInGroup &&
                 (isCurrentUser ? 'rounded-br-2xl' : 'rounded-bl-2xl'),
             )}>

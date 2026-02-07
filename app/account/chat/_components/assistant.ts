@@ -1,7 +1,7 @@
 // Must match convex/assistant/d.ts
 export const ASSISTANT_PRO_ID = 'fire-g-001'
 export const ASSISTANT_EMAIL = 'support@rapidfirenow.com'
-export const ASSISTANT_NAME = 'Fire Girl'
+export const ASSISTANT_NAME = 'Rapid Assistant'
 export const ASSISTANT_AVATAR = '/svg/rf-logo-round-24-latest.svg'
 export const ASSISTANT_USERNAME = 'fire-assist'
 
@@ -12,6 +12,6 @@ export interface AssistantMessage {
   createdAt: string
 }
 
-export const isAssistantConversation = (proId: string | null): boolean => {
-  return proId === ASSISTANT_PRO_ID
+export const isAssistantConversation = (fid: string | null): boolean => {
+  return fid === ASSISTANT_PRO_ID
 }

@@ -46,7 +46,10 @@ export const PaymentProcessing = ({order, loading}: PaymentProcessingProps) => {
         </p>
       </ArcLoader>
       <ArcActionBar>
-        <ArcButtonFull label='Cancel' href={`/account/orders/${order._id}`} />
+        <ArcButtonFull
+          label='Cancel'
+          href={`/account/orders/${order.orderNumber}`}
+        />
       </ArcActionBar>
     </ArcCard>
   )

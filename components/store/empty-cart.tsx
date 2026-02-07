@@ -22,22 +22,36 @@ export const EmptyCart = ({onPress}: EmptyCartProps) => {
   }
 
   return (
-    <div className='w-full md:max-w-2xl mb-2'>
+    <div className='w-full md:max-w-2xl mb-4'>
       <div className='text-center space-y-4'>
-        <p className='font-polysans text-foreground/70'>Your cart is empty.</p>
-        <Button
-          size='md'
-          as={Link}
-          color='primary'
-          href='/lobby/category'
-          prefetch
-          variant='shadow'
-          onPress={onPress}
-          className='font-polysans font-semibold bg-brand/90 hover:bg-brand group hover:opacity-100 hover:shadow-lg shadow-md shadow-brand/50 transition-all duration-200'>
-          <span className='drop-shadow-xs text-white group-hover:opacity-100'>
-            Browse Products
-          </span>
-        </Button>
+        <div className='flex items-center justify-center space-x-2'>
+          <Button
+            size='md'
+            radius='none'
+            as={Link}
+            color='primary'
+            href='/lobby/products'
+            prefetch
+            onPress={onPress}
+            className='rounded-lg font-polysans font-medium dark:bg-white dark:text-brand group hover:opacity-100'>
+            <span className='dark:text-brand group-hover:opacity-100'>
+              All Products
+            </span>
+          </Button>
+          <Button
+            size='md'
+            radius='none'
+            as={Link}
+            color='primary'
+            href='/lobby/category'
+            prefetch
+            onPress={onPress}
+            className='rounded-lg font-polysans font-medium dark:bg-white dark:text-brand group hover:opacity-100'>
+            <span className='dark:text-dark-gray group-hover:opacity-100'>
+              Browse by Category
+            </span>
+          </Button>
+        </div>
       </div>
 
       <CartHistory onItemAdded={handleItemAdded} />

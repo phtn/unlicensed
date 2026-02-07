@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.18
+
+### Patch Changes
+
+- chat-ai
+
 ## 0.27.17
 
 ### Patch Changes

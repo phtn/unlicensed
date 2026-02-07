@@ -161,7 +161,7 @@ export function AudioMessagePlayer({url}: AudioMessagePlayerProps) {
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0
 
   return (
-    <div className='flex items-center gap-3 p-3 rounded-2xl min-w-[220px] max-w-[300px] bg-indigo-500 shadow-md'>
+    <div className='flex items-center gap-3 p-3 rounded-2xl min-w-[220.1px] max-w-[300.1px] bg-indigo-500 shadow-md'>
       <audio ref={audioRef} src={url} preload='metadata' />
 
       {/* Play/Pause Button */}

@@ -110,7 +110,7 @@ const CartHistoryItemCard = ({
 }
 
 interface CartHistoryProps {
-  onItemAdded?: () => void
+  onItemAdded?: VoidFunction
 }
 
 export const CartHistory = ({onItemAdded}: CartHistoryProps) => {

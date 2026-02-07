@@ -82,11 +82,11 @@ export const Nav = ({children}: NavProps) => {
                 scale: hovered ? 0.8 : 0,
               }}
               exit={{y: -12, opacity: 0, scale: 0}}
-              className='hidden md:flex absolute size-8 md:size-10 bg-white aspect-square rounded-full'
+              className='hidden md:flex absolute size-7 md:size-8 bg-white aspect-square rounded-full'
             />
             <Icon
               name='rapid-fire-logo'
-              className='h-8 md:h-10 w-auto relative'
+              className='h-8 md:h-8 w-auto relative'
             />
           </Link>
           <nav className={cn('flex items-center justify-center w-fit')}>
