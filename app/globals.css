@@ -63,6 +63,7 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-hue: var(--hue);
+  --color-alum: oklch(0.773 0.011 212.53);
   --font-geist-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-space: var(--font-space);

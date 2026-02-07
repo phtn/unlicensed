@@ -14,6 +14,8 @@ interface UseOrderFormProps {
   defaultBillingAddress?: AddressType
   cashAppUsername?: string | null
   convexUser?: UserType | null
+  /** When provided (e.g. from URL), used as initial payment method instead of user preference */
+  initialPaymentMethod?: PaymentMethod
 }
 
 export function useOrderForm({
@@ -24,13 +26,15 @@ export function useOrderForm({
   defaultBillingAddress,
   cashAppUsername,
   convexUser,
+  initialPaymentMethod,
 }: UseOrderFormProps) {
   const [isPending, startTransition] = useTransition()
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [formData, setFormData] = useState<FormData>(() => {
     const {firstName: userNameFirst, lastName: userNameLast} =
       splitUserName(convexUser)
-    const defaultPaymentMethod = getDefaultPaymentMethod(convexUser)
+    const defaultPaymentMethod =
+      initialPaymentMethod ?? getDefaultPaymentMethod(convexUser)
 
     return {
       contactEmail: userEmail ?? '',
@@ -64,6 +68,17 @@ export function useOrderForm({
     [convexUser],
   )
 
+  // Sync URL payment method into form when it changes (e.g. back/forward)
+  useEffect(() => {
+    if (initialPaymentMethod !== undefined) {
+      setFormData((prev) =>
+        prev.paymentMethod === initialPaymentMethod
+          ? prev
+          : {...prev, paymentMethod: initialPaymentMethod},
+      )
+    }
+  }, [initialPaymentMethod])
+
   // Auto-populate form fields from user data when available
   // This effect runs whenever user data changes and populates empty fields
   useEffect(() => {
@@ -84,8 +99,11 @@ export function useOrderForm({
           updates.contactPhone = phoneToUse
         }
 
-        // Populate payment method from preferences if available
-        if (convexUser?.preferences?.defaultPaymentMethod) {
+        // Populate payment method from preferences if available (URL takes precedence via initialPaymentMethod)
+        if (
+          initialPaymentMethod === undefined &&
+          convexUser?.preferences?.defaultPaymentMethod
+        ) {
           updates.paymentMethod = convexUser.preferences
             .defaultPaymentMethod as PaymentMethod
         }

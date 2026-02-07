@@ -1,30 +1,43 @@
 import {v} from 'convex/values'
-import {mutation} from '../_generated/server'
-import {addressSchema, contactSchema, socialMediaSchema, preferencesSchema} from './d'
 import {internal} from '../_generated/api'
+import {mutation} from '../_generated/server'
+import {
+  addressSchema,
+  contactSchema,
+  preferencesSchema,
+  socialMediaSchema,
+} from './d'
 
 export const createOrUpdateUser = mutation({
   args: {
     email: v.string(),
     name: v.string(),
     firebaseId: v.string(),
+    fid: v.optional(v.string()),
     photoUrl: v.optional(v.string()),
     // Optional customer fields for backward compatibility
     contact: v.optional(contactSchema),
     addresses: v.optional(v.array(addressSchema)),
     socialMedia: v.optional(socialMediaSchema),
     dateOfBirth: v.optional(v.string()),
-    gender: v.optional(v.union(v.literal('male'), v.literal('female'), v.literal('other'), v.literal('prefer-not-to-say'))),
+    gender: v.optional(
+      v.union(
+        v.literal('male'),
+        v.literal('female'),
+        v.literal('other'),
+        v.literal('prefer-not-to-say'),
+      ),
+    ),
     preferences: v.optional(preferencesSchema),
     cashAppUsername: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const now = Date.now()
-    
-    // Check if user exists by firebaseId
+
+    // Check if user exists by fid
     const existing = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId))
+      .withIndex('by_email', (q) => q.eq('email', args.email))
       .unique()
 
     if (existing) {
@@ -32,6 +45,7 @@ export const createOrUpdateUser = mutation({
       const updates: {
         email: string
         name: string
+        fid: string
         photoUrl?: string
         contact?: typeof args.contact
         addresses?: typeof args.addresses
@@ -44,6 +58,7 @@ export const createOrUpdateUser = mutation({
       } = {
         email: args.email,
         name: args.name,
+        fid: args.firebaseId,
         updatedAt: now,
       }
 
@@ -66,6 +81,7 @@ export const createOrUpdateUser = mutation({
       email: args.email,
       name: args.name,
       firebaseId: args.firebaseId,
+      fid: args.firebaseId,
       photoUrl: args.photoUrl,
       contact: args.contact,
       addresses: args.addresses,
@@ -89,14 +105,14 @@ export const createOrUpdateUser = mutation({
   },
 })
 
-export const getUserByFirebaseId = mutation({
+export const getUserByFid = mutation({
   args: {
-    firebaseId: v.string(),
+    fid: v.string(),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId))
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .unique()
 
     return user
@@ -105,13 +121,13 @@ export const getUserByFirebaseId = mutation({
 
 export const updateContact = mutation({
   args: {
-    firebaseId: v.string(),
+    fid: v.string(),
     contact: contactSchema,
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId))
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .unique()
 
     if (!user) {
@@ -136,13 +152,13 @@ export const updateContact = mutation({
 
 export const addAddress = mutation({
   args: {
-    firebaseId: v.string(),
+    fid: v.string(),
     address: addressSchema,
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId))
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .unique()
 
     if (!user) {
@@ -163,14 +179,14 @@ export const addAddress = mutation({
 
 export const updateAddress = mutation({
   args: {
-    firebaseId: v.string(),
+    fid: v.string(),
     addressId: v.string(),
     address: addressSchema,
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId))
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .unique()
 
     if (!user) {
@@ -197,13 +213,13 @@ export const updateAddress = mutation({
 
 export const removeAddress = mutation({
   args: {
-    firebaseId: v.string(),
+    fid: v.string(),
     addressId: v.string(),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId))
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .unique()
 
     if (!user) {
@@ -225,13 +241,13 @@ export const removeAddress = mutation({
 
 export const updateSocialMedia = mutation({
   args: {
-    firebaseId: v.string(),
+    fid: v.string(),
     socialMedia: socialMediaSchema,
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId))
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .unique()
 
     if (!user) {
@@ -256,13 +272,13 @@ export const updateSocialMedia = mutation({
 
 export const updatePreferences = mutation({
   args: {
-    firebaseId: v.string(),
+    fid: v.string(),
     preferences: preferencesSchema,
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId))
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .unique()
 
     if (!user) {
@@ -287,7 +303,7 @@ export const updatePreferences = mutation({
 
 export const updateProfile = mutation({
   args: {
-    firebaseId: v.string(),
+    fid: v.string(),
     name: v.optional(v.string()),
     photoUrl: v.optional(v.string()),
     dateOfBirth: v.optional(v.string()),
@@ -303,7 +319,7 @@ export const updateProfile = mutation({
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId))
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .unique()
 
     if (!user) {

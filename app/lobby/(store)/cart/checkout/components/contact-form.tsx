@@ -34,7 +34,7 @@ export function ContactForm({
   return (
     <div className='space-y-2'>
       <h3 className='flex items-center space-x-1.5 text-lg font-semibold my-3 tracking-tighter'>
-        <Icon name='email' className='size-6 opacity-80' />
+        <Icon name='mail-send-fill' className='size-5' />
         <span className='whitespace-nowrap'>Contact Information</span>
       </h3>
       <div className='space-y-1'>

@@ -73,7 +73,7 @@ export const StaffForm = ({
   // Get current user for authorization
   const convexUser = useQuery(
     api.users.q.getCurrentUser,
-    firebaseUser ? {firebaseId: firebaseUser.uid} : 'skip',
+    firebaseUser ? {fid: firebaseUser.uid} : 'skip',
   )
 
   // Get current user's staff record for authorization check

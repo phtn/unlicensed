@@ -1,23 +1,36 @@
-import {query} from '../_generated/server'
 import {v} from 'convex/values'
+import {query} from '../_generated/server'
 
 export const getCurrentUser = query({
   args: {
-    firebaseId: v.string(),
+    fid: v.string(),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId))
-      .unique()
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
+      .first()
 
     return user
   },
 })
 
+/** Get user by fid (Firebase/auth UID) - alias for message/chat components that use "proId" for fid */
+export const getByFid = query({
+  args: {
+    fid: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return ctx.db
+      .query('users')
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
+      .first()
+  },
+})
+
 export const getUserAddresses = query({
   args: {
-    firebaseId: v.string(),
+    fid: v.string(),
     type: v.optional(
       v.union(v.literal('shipping'), v.literal('billing'), v.literal('both')),
     ),
@@ -25,7 +38,7 @@ export const getUserAddresses = query({
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId))
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .unique()
 
     if (!user || !user.addresses) {
@@ -44,7 +57,7 @@ export const getUserAddresses = query({
 
 export const getDefaultAddress = query({
   args: {
-    firebaseId: v.string(),
+    fid: v.string(),
     type: v.optional(
       v.union(v.literal('shipping'), v.literal('billing'), v.literal('both')),
     ),
@@ -52,7 +65,7 @@ export const getDefaultAddress = query({
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId))
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .unique()
 
     if (!user || !user.addresses) {
@@ -98,9 +111,3 @@ export const getAllUsers = query({
     return sorted.slice(0, limit)
   },
 })
-
-
-
-
-
-

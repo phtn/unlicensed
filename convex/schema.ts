@@ -3,13 +3,17 @@ import {activitySchema} from './activities/d'
 import {activityViewSchema} from './activityViews/d'
 import {adminSettingsSchema} from './admin/d'
 import {affiliateAccountSchema} from './affiliateAccounts/d'
+import {archivedConversationSchema} from './archives/d'
 import {blogSchema} from './blogs/d'
 import {cartSchema} from './cart/d'
 import {categorySchema} from './categories/d'
-import {courierSchema} from './couriers/d'
 import {checkoutLogSchema} from './checkoutLogs/d'
+import {courierSchema} from './couriers/d'
 import {emailSettingsSchema} from './emailSettings/d'
+import {followSchema} from './follows/d'
 import {logSchema} from './logs/d'
+import {messageSchema} from './messages/d'
+import {notificationSchema} from './notifications/d'
 import {orderSchema} from './orders/d'
 import {paygateAccountSchema} from './paygateAccounts/d'
 import {productHoldSchema} from './productHolds/d'
@@ -33,7 +37,9 @@ export default defineSchema({
       filterFields: ['categorySlug'],
     }),
   staff: defineTable(staffSchema).index('by_email', ['email']),
-  users: defineTable(userSchema).index('by_firebase_id', ['firebaseId']),
+  users: defineTable(userSchema)
+    .index('by_fid', ['fid'])
+    .index('by_email', ['email']),
   carts: defineTable(cartSchema).index('by_user', ['userId']),
   productHolds: defineTable(productHoldSchema)
     .index('by_cart', ['cartId'])
@@ -81,4 +87,24 @@ export default defineSchema({
     .index('by_user', ['userId'])
     .index('by_order', ['orderId'])
     .index('by_created_at', ['createdAt']),
+
+  messages: defineTable(messageSchema)
+    .index('by_sender', ['senderId']) // All messages sent by a user
+    .index('by_receiver', ['receiverId']) // All messages received by a user
+    .index('by_sender_receiver', ['senderId', 'receiverId']) // Messages between two specific users
+    .index('by_receiver_sender', ['receiverId', 'senderId']), // Messages between two specific users (reverse)
+
+  archivedConversations: defineTable(archivedConversationSchema)
+    .index('by_userId', ['userId'])
+    .index('by_userId_otherUserId', ['userId', 'otherUserId']),
+
+  follows: defineTable(followSchema)
+    .index('by_follower', ['followerId']) // All users that a user follows
+    .index('by_followed', ['followedId']) // All followers of a user
+    .index('by_follower_followed', ['followerId', 'followedId']), // Check if specific follow relationship exists
+
+  notifications: defineTable(notificationSchema)
+    .index('by_uid', ['uid']) // All notifications for a user
+    .index('by_user_read', ['uid', 'readAt']) // Notifications by user and read status
+    .index('by_user_created', ['uid', 'createdAt']), // Notifications by user sorted by creation time
 })

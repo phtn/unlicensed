@@ -39,10 +39,15 @@ export function BillingForm({
     <>
       <div>
         <Checkbox
-          radius='sm'
-          color='primary'
+          radius='none'
           isSelected={formData.useSameBilling}
-          classNames={{hiddenInput: 'bg-black'}}
+          color='default'
+          className='rounded-xs'
+          classNames={{
+            icon: 'size-5 text-white bg-black rounded-xs border-2 border-black',
+            wrapper: 'rounded-sm',
+            hiddenInput: 'bg-black',
+          }}
           onValueChange={handleCheckboxChange}>
           <span className='text-sm font-okxs'>
             Use same address for billing

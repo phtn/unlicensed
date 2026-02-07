@@ -115,7 +115,7 @@ export const RecentActivities = ({
   const {user: firebaseUser} = useAuth()
   const convexUser = useQuery(
     api.users.q.getCurrentUser,
-    firebaseUser ? {firebaseId: firebaseUser.uid} : 'skip',
+    firebaseUser ? {fid: firebaseUser.uid} : 'skip',
   )
   const markAsViewed = useMutation(api.activityViews.m.markActivityAsViewed)
 

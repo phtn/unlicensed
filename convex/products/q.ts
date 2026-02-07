@@ -207,15 +207,15 @@ export const getFeaturedProducts = query({
 
 export const getPreviouslyBoughtProducts = query({
   args: {
-    firebaseId: v.optional(v.string()),
+    fid: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    if (!args.firebaseId) return []
+    if (!args.fid) return []
 
     const user = await ctx.db
       .query('users')
-      .withIndex('by_firebase_id', (q) => q.eq('firebaseId', args.firebaseId!))
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid!))
       .unique()
 
     if (!user) return []

@@ -9,7 +9,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@heroui/react'
-import {useEffect} from 'react'
+import {useEffect, useRef} from 'react'
 import {FormData, FormErrors} from '../types'
 import {BillingForm} from './billing-form'
 import {CashAppForm} from './cashapp-form'
@@ -42,81 +42,86 @@ export function CheckoutModal({
   onInputChange,
   onPlaceOrder,
 }: CheckoutModalProps) {
-  // Set default test values when modal opens and fields are empty
+  const didInitForOpenRef = useRef(false)
+
+  // Set default test values when modal opens and fields are empty (only on first open, so we don't overwrite user toggles)
   useEffect(() => {
-    if (isOpen && !orderId) {
-      // Always set useSameBilling to true by default when modal opens
-      if (!formData.useSameBilling) {
-        onInputChange('useSameBilling', true)
+    if (!isOpen || orderId) {
+      didInitForOpenRef.current = false
+      return
+    }
+
+    if (!didInitForOpenRef.current) {
+      didInitForOpenRef.current = true
+      onInputChange('useSameBilling', true)
+    }
+
+    // Only populate if fields are empty (check once when modal opens)
+    const hasEmptyFields =
+      !formData.contactEmail.trim() ||
+      !formData.contactPhone.trim() ||
+      !formData.firstName.trim() ||
+      !formData.lastName.trim() ||
+      !formData.addressLine1.trim() ||
+      !formData.city.trim() ||
+      !formData.state.trim() ||
+      !formData.zipCode.trim()
+
+    if (hasEmptyFields) {
+      // Set test values for empty fields
+      if (!formData.contactEmail.trim()) {
+        onInputChange('contactEmail', 'test@example.com')
       }
-
-      // Only populate if fields are empty (check once when modal opens)
-      const hasEmptyFields =
-        !formData.contactEmail.trim() ||
-        !formData.contactPhone.trim() ||
-        !formData.firstName.trim() ||
-        !formData.lastName.trim() ||
-        !formData.addressLine1.trim() ||
-        !formData.city.trim() ||
-        !formData.state.trim() ||
-        !formData.zipCode.trim()
-
-      if (hasEmptyFields) {
-        // Set test values for empty fields
-        if (!formData.contactEmail.trim()) {
-          onInputChange('contactEmail', 'test@example.com')
-        }
-        if (!formData.contactPhone.trim()) {
-          onInputChange('contactPhone', '555-123-4567')
-        }
-        if (!formData.firstName.trim()) {
-          onInputChange('firstName', 'John')
-        }
-        if (!formData.lastName.trim()) {
-          onInputChange('lastName', 'Doe')
-        }
-        if (!formData.addressLine1.trim()) {
-          onInputChange('addressLine1', '123 Test Street')
-        }
-        if (!formData.addressLine2.trim()) {
-          onInputChange('addressLine2', 'Apt 4B')
-        }
-        if (!formData.city.trim()) {
-          onInputChange('city', 'Los Angeles')
-        }
-        if (!formData.state.trim()) {
-          onInputChange('state', 'CA')
-        }
-        if (!formData.zipCode.trim()) {
-          onInputChange('zipCode', '90001')
-        }
-        if (!formData.country.trim()) {
-          onInputChange('country', 'US')
-        }
-        if (!formData.billingFirstName.trim()) {
-          onInputChange('billingFirstName', 'John')
-        }
-        if (!formData.billingLastName.trim()) {
-          onInputChange('billingLastName', 'Doe')
-        }
-        if (!formData.billingAddressLine1.trim()) {
-          onInputChange('billingAddressLine1', '123 Test Street')
-        }
-        if (!formData.billingAddressLine2.trim()) {
-          onInputChange('billingAddressLine2', 'Apt 4B')
-        }
-        if (!formData.billingCity.trim()) {
-          onInputChange('billingCity', 'Los Angeles')
-        }
-        if (!formData.billingState.trim()) {
-          onInputChange('billingState', 'CA')
-        }
-        if (!formData.billingZipCode.trim()) {
-          onInputChange('billingZipCode', '90001')
-        }
-        if (!formData.billingCountry.trim()) {
-          onInputChange('billingCountry', 'US')
-        }
+      if (!formData.contactPhone.trim()) {
+        onInputChange('contactPhone', '555-123-4567')
+      }
+      if (!formData.firstName.trim()) {
+        onInputChange('firstName', 'John')
+      }
+      if (!formData.lastName.trim()) {
+        onInputChange('lastName', 'Doe')
+      }
+      if (!formData.addressLine1.trim()) {
+        onInputChange('addressLine1', '123 Test Street')
+      }
+      if (!formData.addressLine2.trim()) {
+        onInputChange('addressLine2', 'Apt 4B')
+      }
+      if (!formData.city.trim()) {
+        onInputChange('city', 'Los Angeles')
+      }
+      if (!formData.state.trim()) {
+        onInputChange('state', 'CA')
+      }
+      if (!formData.zipCode.trim()) {
+        onInputChange('zipCode', '90001')
+      }
+      if (!formData.country.trim()) {
+        onInputChange('country', 'US')
+      }
+      if (!formData.billingFirstName.trim()) {
+        onInputChange('billingFirstName', 'John')
+      }
+      if (!formData.billingLastName.trim()) {
+        onInputChange('billingLastName', 'Doe')
+      }
+      if (!formData.billingAddressLine1.trim()) {
+        onInputChange('billingAddressLine1', '123 Test Street')
+      }
+      if (!formData.billingAddressLine2.trim()) {
+        onInputChange('billingAddressLine2', 'Apt 4B')
+      }
+      if (!formData.billingCity.trim()) {
+        onInputChange('billingCity', 'Los Angeles')
+      }
+      if (!formData.billingState.trim()) {
+        onInputChange('billingState', 'CA')
+      }
+      if (!formData.billingZipCode.trim()) {
+        onInputChange('billingZipCode', '90001')
+      }
+      if (!formData.billingCountry.trim()) {
+        onInputChange('billingCountry', 'US')
       }
     }
   }, [isOpen, orderId, formData, onInputChange])
@@ -135,7 +140,7 @@ export function CheckoutModal({
         {(onClose) => (
           <>
             <ModalHeader className='flex flex-col justify-center gap-1 text-lg font-semibold tracking-tight bg-foreground dark:bg-foreground/60 text-background h-12 mb-1'>
-              Shipping and Billing
+              Confirm Shipping & Billing
             </ModalHeader>
             <ModalBody>
               <OrderStatusMessages
@@ -173,22 +178,28 @@ export function CheckoutModal({
             <ModalFooter className='w-full h-32 flex items-center'>
               <Button
                 size='lg'
+                radius='none'
                 variant='light'
                 onPress={onClose}
-                className='flex-1 px-12'
+                className='px-12 rounded-lg dark:hover:bg-white/5'
                 fullWidth
                 isDisabled={isLoading || isPending}>
                 Cancel
               </Button>
               <Button
                 size='lg'
-                className='bg-white font-polysans dark:text-dark-gray'
+                radius='none'
+                color='primary'
+                variant='solid'
+                className='rounded-lg bg-black font-polysans dark:text-white disabled:opacity-50'
                 fullWidth
                 onPress={onPlaceOrder}
                 endContent={
                   <Icon
                     name={
-                      isLoading || isPending ? 'spinners-ring' : 'arrow-right'
+                      isLoading || isPending
+                        ? 'spinners-ring'
+                        : 'hand-card-fill'
                     }
                     className='size-6 md:size-8'
                   />

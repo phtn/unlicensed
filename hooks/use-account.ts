@@ -8,7 +8,7 @@ export const useAccount = () => {
   // 1. Get Current User
   const convexUser = useQuery(
     api.users.q.getCurrentUser,
-    firebaseUser ? {firebaseId: firebaseUser.uid} : 'skip',
+    firebaseUser ? {fid: firebaseUser.uid} : 'skip',
   )
 
   const userId = convexUser?._id

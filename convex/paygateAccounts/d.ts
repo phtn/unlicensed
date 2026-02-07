@@ -19,6 +19,7 @@ export const paygateAccountSchema = v.object({
   label: v.optional(v.string()), // Admin-friendly label/name
   description: v.optional(v.string()), // Optional description
   defaultProvider: v.optional(v.string()),
+  topTenProviders: v.optional(v.array(v.string())),
 
   // Affiliate settings
   affiliateWallet: v.optional(v.string()), // Affiliate wallet address for commissions

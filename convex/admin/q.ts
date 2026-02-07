@@ -222,3 +222,35 @@ export const getAdminByIdentStrict = query({
     return setting.value
   },
 })
+
+const DEFAULT_SHIPPING_FEE_CENTS = 500 // $5
+const DEFAULT_MINIMUM_ORDER_CENTS = 5000 // $50 for free shipping
+
+export const getShippingConfig = query({
+  args: {},
+  handler: async ({db}) => {
+    const setting = await db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'shipping_config'))
+      .unique()
+
+    if (!setting?.value || typeof setting.value !== 'object') {
+      return {
+        shippingFeeCents: DEFAULT_SHIPPING_FEE_CENTS,
+        minimumOrderCents: DEFAULT_MINIMUM_ORDER_CENTS,
+      }
+    }
+
+    const v = setting.value as Record<string, unknown>
+    return {
+      shippingFeeCents:
+        typeof v.shippingFeeCents === 'number'
+          ? v.shippingFeeCents
+          : DEFAULT_SHIPPING_FEE_CENTS,
+      minimumOrderCents:
+        typeof v.minimumOrderCents === 'number'
+          ? v.minimumOrderCents
+          : DEFAULT_MINIMUM_ORDER_CENTS,
+    }
+  },
+})

@@ -8,23 +8,14 @@ import {useCart} from '@/hooks/use-cart'
 import {logout} from '@/lib/firebase/auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {
-  Avatar,
-  Badge,
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  useDisclosure,
-} from '@heroui/react'
+import {Badge, Button, useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useTheme} from 'next-themes'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {useCallback, useMemo, useState} from 'react'
-import {ThemeToggle} from '../ui/theme-toggle'
+import {UserDropdown} from './user-dropdown'
 
 interface NavProps {
   children?: React.ReactNode
@@ -166,81 +157,20 @@ export const Nav = ({children}: NavProps) => {
               </Button>
             </Badge>
 
-            {!authLoading && (
-              <>
-                {user ? (
-                  <Dropdown placement='bottom-end'>
-                    <DropdownTrigger>
-                      <Avatar
-                        size='sm'
-                        className='cursor-pointer border-2 border-white hover:border-brand dark:hover:border-white shadow-inner hover:shadow-white'
-                        src={user.photoURL ?? undefined}
-                        name={user.displayName ?? user.email ?? 'U'}
-                      />
-                    </DropdownTrigger>
-                    <DropdownMenu
-                      aria-label='user-menu'
-                      className='p-2 bg-transparent'>
-                      <DropdownItem
-                        as={Link}
-                        href='/account'
-                        key='profile'
-                        variant='flat'
-                        classNames={{
-                          title: 'text-foreground/90 font-polysans',
-                          base: 'hover:bg-transparent',
-                        }}>
-                        <div className='flex flex-col'>
-                          <p className='text-base font-normal'>
-                            {user.displayName || 'User'}
-                          </p>
-                          <p className='text-xs font-light font-nito opacity-60'>
-                            {user.email}
-                          </p>
-                        </div>
-                      </DropdownItem>
-
-                      {isAdmin ? (
-                        <DropdownItem
-                          key='admin'
-                          as={Link}
-                          href={'/admin'}
-                          variant='flat'
-                          classNames={{
-                            title: 'text-foreground/90',
-                            base: 'hover:bg-transparent dark:bg-dark-table/30',
-                          }}>
-                          <div className='flex items-center space-x-2'>
-                            <Icon name='certificate' className='size-8' />
-                            <p className='text-base font-space font-semibold tracking-tighter dark:text-limited'>
-                              Admin
-                            </p>
-                          </div>
-                        </DropdownItem>
-                      ) : null}
-
-                      <DropdownItem
-                        key='logout'
-                        onPress={handleLogout}
-                        title='Logout'
-                        className=''
-                      />
-                      <DropdownItem
-                        key='theme'
-                        title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-                        onPress={handleToggleTheme}>
-                        <ThemeToggle variant='icon' />
-                      </DropdownItem>
-                    </DropdownMenu>
-                  </Dropdown>
-                ) : (
-                  <Icon
-                    name='user'
-                    onClick={onOpen}
-                    className='text-white size-5'
-                  />
-                )}
-              </>
+            {user ? (
+              <UserDropdown
+                loading={authLoading}
+                user={user}
+                isAdmin={isAdmin}
+                onThemeToggle={handleToggleTheme}
+                onLogout={handleLogout}
+              />
+            ) : (
+              <Icon
+                name='user'
+                onClick={onOpen}
+                className='text-white size-5'
+              />
             )}
           </div>
         </div>

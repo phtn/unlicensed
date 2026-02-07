@@ -8,5 +8,13 @@ type AccountLayoutProps = {
 }
 
 export default function AccountLayout({children}: AccountLayoutProps) {
-  return <RouteProtection>{children}</RouteProtection>
+  return (
+    <RouteProtection>
+      <div className='min-h-screen bg-white dark:bg-background overflow-hidden'>
+        <div className='max-w-7xl mx-auto my-10 sm:my-12 lg:my-24 h-[calc(100lvh-144px)]'>
+          {children}
+        </div>
+      </div>
+    </RouteProtection>
+  )
 }

@@ -28,7 +28,7 @@ export const EmailTemplateViewer = ({id}: {id: Id<'emailSettings'>}) => {
 
   const u = useQuery(
     api.users.q.getCurrentUser,
-    user?.uid ? {firebaseId: user.uid} : 'skip',
+    user?.uid ? {fid: user.uid} : 'skip',
   )
 
   const isAdmin = u !== undefined

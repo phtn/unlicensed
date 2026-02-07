@@ -7,7 +7,6 @@ import {useRouter} from 'next/navigation'
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   useTransition,
@@ -39,6 +38,8 @@ export function Checkout({
   isCheckoutOpen,
   onClearCart,
   pointsBalance,
+  paymentMethodFromUrl,
+  onPaymentMethodUrlChange,
 }: CheckoutProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -71,27 +72,8 @@ export function Checkout({
     defaultAddress,
     defaultBillingAddress,
     convexUser,
+    initialPaymentMethod: paymentMethodFromUrl,
   })
-
-  const hasAllRequiredInfo = useMemo(() => {
-    return !!(
-      userEmail &&
-      userPhone &&
-      defaultAddress &&
-      defaultAddress.firstName &&
-      defaultAddress.lastName &&
-      defaultAddress.addressLine1 &&
-      defaultAddress.city &&
-      defaultAddress.state &&
-      defaultAddress.zipCode
-    )
-  }, [userEmail, userPhone, defaultAddress])
-
-  useEffect(() => {
-    if (isCheckoutOpen && hasAllRequiredInfo) {
-      onCheckoutClose()
-    }
-  }, [isCheckoutOpen, hasAllRequiredInfo, onCheckoutClose])
 
   useEffect(() => {
     // Wait for both orderId and order to be loaded before redirecting
@@ -175,48 +157,10 @@ export function Checkout({
     }
   }, [orderId])
 
-  // Auto-place order if we have all required info; otherwise open modal to collect/confirm
-  const handlePlaceOrderClick = useCallback(async () => {
-    if (hasAllRequiredInfo && defaultAddress) {
-      const shippingAddress: AddressType = {
-        ...defaultAddress,
-        id: defaultAddress.id ?? `shipping-${Date.now()}`,
-        type: 'shipping',
-        firstName: defaultAddress.firstName,
-        lastName: defaultAddress.lastName,
-        country: defaultAddress.country || 'US',
-      }
-      startTransition(async () => {
-        await onPlaceOrder({
-          shippingAddress,
-          contactEmail: userEmail,
-          contactPhone: userPhone,
-          paymentMethod: formData.paymentMethod,
-          cashAppUsername:
-            formData.paymentMethod === 'cash_app'
-              ? formData.cashAppUsername
-              : undefined,
-          subtotalCents: subtotal,
-          taxCents: tax,
-          shippingCents: shipping,
-        })
-      })
-    } else {
-      onOpen()
-    }
-  }, [
-    hasAllRequiredInfo,
-    defaultAddress,
-    userEmail,
-    userPhone,
-    formData.paymentMethod,
-    formData.cashAppUsername,
-    subtotal,
-    tax,
-    shipping,
-    onPlaceOrder,
-    onOpen,
-  ])
+  // "Place Order" only opens the checkout modal; payment is triggered by "Proceed to Payment" inside the modal
+  const handlePlaceOrderClick = useCallback(() => {
+    onOpen()
+  }, [onOpen])
 
   const handlePlaceOrder = useCallback(async () => {
     if (!validate()) {
@@ -273,11 +217,12 @@ export function Checkout({
   const handlePaymentMethodChange = useCallback(
     (value: FormData['paymentMethod']) => {
       handleInputChange('paymentMethod', value)
+      onPaymentMethodUrlChange?.(value)
     },
-    [handleInputChange],
+    [handleInputChange, onPaymentMethodUrlChange],
   )
 
-  const shouldShowModal = isCheckoutOpen && !hasAllRequiredInfo
+  const shouldShowModal = isCheckoutOpen
 
   return (
     <>

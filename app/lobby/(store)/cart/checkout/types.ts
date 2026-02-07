@@ -24,6 +24,8 @@ export interface CheckoutProps {
   isCheckoutOpen: boolean
   onClearCart: () => Promise<void>
   pointsBalance: PointsBalance | undefined
+  paymentMethodFromUrl?: PaymentMethod
+  onPaymentMethodUrlChange?: (method: PaymentMethod) => void
 }
 
 export interface FormData {

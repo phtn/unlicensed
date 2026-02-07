@@ -82,7 +82,7 @@ export const useCart = (): UseCartResult => {
   // Get user ID from Convex - this query automatically subscribes and updates
   const convexUser = useQuery(
     api.users.q.getCurrentUser,
-    user ? {firebaseId: user.uid} : 'skip',
+    user ? {fid: user.uid} : 'skip',
   )
 
   // Memoize userId to ensure stability for cart queries

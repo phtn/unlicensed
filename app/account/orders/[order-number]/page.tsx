@@ -50,7 +50,7 @@ export default function OrderDetailPage() {
   // Get current user
   const convexUser = useQuery(
     api.users.q.getCurrentUser,
-    firebaseUser ? {firebaseId: firebaseUser.uid} : 'skip',
+    firebaseUser ? {fid: firebaseUser.uid} : 'skip',
   )
 
   // Get order

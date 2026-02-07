@@ -179,3 +179,31 @@ export const updateAccountSyncData = mutation({
     return id
   },
 })
+
+const TOP_TEN_MAX = 10
+
+/**
+ * Update top 10 providers for a PayGate account
+ */
+export const updateTopTenProviders = mutation({
+  args: {
+    id: v.id('paygateAccounts'),
+    topTenProviders: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    if (args.topTenProviders.length > TOP_TEN_MAX) {
+      throw new Error(
+        `At most ${TOP_TEN_MAX} providers can be selected as top ten.`,
+      )
+    }
+    const account = await ctx.db.get(args.id)
+    if (!account) {
+      throw new Error('Account not found')
+    }
+    await ctx.db.patch(args.id, {
+      topTenProviders: args.topTenProviders,
+      updatedAt: Date.now(),
+    })
+    return args.id
+  },
+})

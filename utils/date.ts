@@ -6,7 +6,7 @@ import {
   format,
 } from 'date-fns'
 
-export const formatTimestamp = (timestamp: number | undefined) => {
+export const formatTimestamp = (timestamp: number | string | undefined) => {
   if (!timestamp) return null
   const date = new Date(timestamp)
   const now = new Date()
@@ -26,4 +26,25 @@ export const formatTimestamp = (timestamp: number | undefined) => {
 
 export const formatDate = (timestamp: number) => {
   return format(new Date(timestamp), 'MMM d, yyyy, h:mm a')
+}
+
+/** Compact time format for message timestamps (e.g. "2:30 PM") */
+export const formatTimeCompact = (timestamp: number | string | undefined) => {
+  if (!timestamp) return ''
+  return format(new Date(timestamp), 'h:mm a')
+}
+
+export const formatDateFn = (dateString: string) => {
+  const date = new Date(dateString)
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+
+  if (date.toDateString() === today.toDateString()) {
+    return 'Today'
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return 'Yesterday'
+  } else {
+    return dateString
+  }
 }

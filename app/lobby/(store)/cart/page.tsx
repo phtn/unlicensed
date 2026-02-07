@@ -5,6 +5,7 @@ import {Loader} from '@/components/expermtl/loader'
 import {EmptyCart} from '@/components/store/empty-cart'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import type {PaymentMethod} from '@/convex/orders/d'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {usePlaceOrder} from '@/hooks/use-place-order'
@@ -13,6 +14,8 @@ import {cn} from '@/lib/utils'
 import {getUnitPriceCents} from '@/utils/cartPrice'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
+import {parseAsString, parseAsStringEnum} from 'nuqs'
+import {useQueryState} from 'nuqs'
 import {useRouter} from 'next/navigation'
 import {
   useCallback,
@@ -27,6 +30,14 @@ import {CartItem} from './cart-item'
 import {Checkout} from './checkout'
 import {RecommendedProducts} from './recommended'
 import {RewardsSummary} from './rewards-summary'
+
+const checkoutModalParser = parseAsString.withDefault('')
+const paymentMethodParser = parseAsStringEnum<PaymentMethod>([
+  'cards',
+  'crypto_transfer',
+  'crypto_commerce',
+  'cash_app',
+]).withDefault('cards')
 
 export default function CartPage() {
   const router = useRouter()
@@ -51,28 +62,40 @@ export default function CartPage() {
     onOpen: onAuthOpen,
     onClose: onAuthClose,
   } = useDisclosure()
-  const {
-    isOpen: isCheckoutOpen,
-    onOpen: onCheckoutOpen,
-    onClose: onCheckoutClose,
-  } = useDisclosure()
+
+  const [checkoutParam, setCheckoutParam] = useQueryState(
+    'checkout',
+    checkoutModalParser,
+  )
+  const [paymentMethod, setPaymentMethod] = useQueryState(
+    'payment',
+    paymentMethodParser,
+  )
+
+  const isCheckoutOpen = checkoutParam === 'open'
+  const onCheckoutOpen = useCallback(() => {
+    setCheckoutParam('open')
+  }, [setCheckoutParam])
+  const onCheckoutClose = useCallback(() => {
+    setCheckoutParam(null)
+  }, [setCheckoutParam])
   const [showEmptyCartLoader, setShowEmptyCartLoader] = useState(false)
   const loaderTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Get user info for checkout
   const convexUser = useQuery(
     api.users.q.getCurrentUser,
-    firebaseUser ? {firebaseId: firebaseUser.uid} : 'skip',
+    firebaseUser ? {fid: firebaseUser.uid} : 'skip',
   )
 
   const defaultAddress = useQuery(
     api.users.q.getDefaultAddress,
-    firebaseUser ? {firebaseId: firebaseUser.uid, type: 'shipping'} : 'skip',
+    firebaseUser ? {fid: firebaseUser.uid, type: 'shipping'} : 'skip',
   )
 
   const defaultBillingAddress = useQuery(
     api.users.q.getDefaultAddress,
-    firebaseUser ? {firebaseId: firebaseUser.uid, type: 'billing'} : 'skip',
+    firebaseUser ? {fid: firebaseUser.uid, type: 'billing'} : 'skip',
   )
 
   const rawCartDebug = useQuery(
@@ -374,6 +397,8 @@ export default function CartPage() {
               isCheckoutOpen={isCheckoutOpen}
               onClearCart={clear}
               pointsBalance={pointsBalance}
+              paymentMethodFromUrl={paymentMethod}
+              onPaymentMethodUrlChange={setPaymentMethod}
             />
           </div>
         </div>

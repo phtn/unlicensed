@@ -75,7 +75,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
   // Get Convex user ID if authenticated (same pattern as use-cart)
   const convexUser = useQuery(
     api.users.q.getCurrentUser,
-    user ? {firebaseId: user.uid} : 'skip',
+    user ? {fid: user.uid} : 'skip',
   )
 
   const userId = useMemo(() => convexUser?._id, [convexUser?._id])
@@ -224,7 +224,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
               }
 
               await addAddressMutation({
-                firebaseId: user.uid,
+                fid: user.uid,
                 address: shippingAddressToSave,
               })
             }
@@ -250,7 +250,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 }
 
                 await addAddressMutation({
-                  firebaseId: user.uid,
+                  fid: user.uid,
                   address: billingAddressToSave,
                 })
               }
@@ -264,7 +264,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
 
               if (hasPhoneChanged) {
                 await updateContactMutation({
-                  firebaseId: user.uid,
+                  fid: user.uid,
                   contact: {
                     ...existingContact,
                     phone: params.contactPhone,

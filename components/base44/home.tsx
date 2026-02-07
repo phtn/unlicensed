@@ -66,7 +66,7 @@ export const NewHome = () => {
     [],
   )
   return (
-    <div className='bg-linear-to-b dark:from-black dark:to-[#1f1f1f]/80 from-background to-dark-table/20'>
+    <div className='bg-linear-to-b dark:from-black dark:to-[#1f1f1f]/80 from-background to-white'>
       <Highlights slides={slides} />
       <div className='px-4 pb-10 max-w-7xl mx-auto'>
         <ShopFinder />

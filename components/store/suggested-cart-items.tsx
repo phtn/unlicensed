@@ -29,7 +29,7 @@ export const SuggestedCartItems = ({onClose}: {onClose: VoidFunction}) => {
   // Fetch previously bought products
   const previousRaw = useQuery(
     api.products.q.getPreviouslyBoughtProducts,
-    user?.uid ? {firebaseId: user.uid, limit: 5} : 'skip',
+    user?.uid ? {fid: user.uid, limit: 5} : 'skip',
   )
 
   const featured = useMemo(

@@ -25,7 +25,7 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
   // const emailSettings = useQuery(api.emailSettings.q.listEmailSettings)
   const u = useQuery(
     api.users.q.getCurrentUser,
-    user?.uid ? {firebaseId: user.uid} : 'skip',
+    user?.uid ? {fid: user.uid} : 'skip',
   )
 
   const isAdmin = u !== undefined

@@ -3,6 +3,7 @@ import {Infer, v} from 'convex/values'
 // Address schema for shipping/billing addresses
 export const addressSchema = v.object({
   id: v.string(), // Unique identifier for the address
+  bio: v.optional(v.string()),
   type: v.union(v.literal('shipping'), v.literal('billing'), v.literal('both')),
   firstName: v.string(), // Required for order processing
   lastName: v.string(), // Required for order processing
@@ -61,11 +62,20 @@ export const preferencesSchema = v.object({
   defaultPaymentMethod: v.optional(paymentMethodSchema), // Default payment method preference
 })
 
+export const fcmSchema = v.object({
+  token: v.optional(v.string()),
+  // Multiple devices: store all active device tokens (best-effort; keep `token` for back-compat).
+  tokens: v.optional(v.array(v.string())),
+  hasDeclined: v.optional(v.boolean()),
+  attempted: v.optional(v.boolean()),
+})
 export const userSchema = v.object({
   // Basic information
   email: v.string(),
   name: v.string(),
-  firebaseId: v.string(),
+  firebaseId: v.optional(v.string()),
+  fid: v.optional(v.string()),
+  bio: v.optional(v.string()),
   photoUrl: v.optional(v.string()),
 
   // Contact information
@@ -98,6 +108,8 @@ export const userSchema = v.object({
   accountType: v.optional(
     v.union(v.literal('personal'), v.literal('business')),
   ),
+  fcm: v.optional(fcmSchema),
+  isActive: v.optional(v.boolean()),
 
   // Timestamps
   createdAt: v.optional(v.number()),

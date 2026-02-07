@@ -33,7 +33,7 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
         variant='flat'
         onPress={handleToggle}
         className={cn(
-          'group w-40 flex items-center bg-transparent justify-start space-x-2 py-3 text-sm ps-2 text-foreground hover:bg-(--surface-muted) dark:hover:bg-(--surface-muted)',
+          'group w-40 flex items-center bg-transparent justify-start space-x-2 py-3 text-sm ps-2',
         )}>
         <Icon
           name='toggle-theme'
@@ -41,7 +41,9 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
             ' group:active:scale-90 transition-transform duration-200 ease-out',
           )}
         />
-        <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+        <span className='text-foreground'>
+          {isDark ? 'Light Mode' : 'Dark Mode'}
+        </span>
       </Button>
     )
   }
@@ -54,7 +56,7 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
       variant='light'
       aria-label='theme'
       className={cn(
-        'group active:scale-95 border-none bg-transparent hover:bg-accent/20 text-white transition-all duration-200',
+        'group active:scale-95 border-none bg-transparent hover:bg-accent/20 dark:text-white transition-all duration-200',
       )}>
       <div
         suppressHydrationWarning

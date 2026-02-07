@@ -2,7 +2,7 @@
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {Icon} from '@/lib/icons'
-import {Input} from '@heroui/react'
+import {Button, Input} from '@heroui/react'
 import {useCallback} from 'react'
 import {FormData, FormErrors} from '../types'
 
@@ -26,10 +26,20 @@ export function ShippingForm({
 
   return (
     <div className='space-y-2'>
-      <h3 className='flex items-center space-x-1.5 text-lg font-semibold my-3 tracking-tighter'>
-        <Icon name='pin' className='size-6 opacity-80' />
-        <span className='whitespace-nowrap'>Shipping Address</span>
-      </h3>
+      <div className='flex items-center justify-between'>
+        <h3 className='flex items-center space-x-1.5 text-lg font-semibold my-3 tracking-tighter'>
+          <Icon name='mailbox-fill' className='size-5' />
+          <span className='whitespace-nowrap'>Shipping Address</span>
+        </h3>
+        <Button
+          size='sm'
+          radius='none'
+          variant='faded'
+          startContent={<Icon name='plus' className='size-4' />}
+          className='border-none flex items-center rounded-sm font-okxs'>
+          <span>New</span>
+        </Button>
+      </div>
 
       <div className='grid grid-cols-2 gap-1'>
         <Input

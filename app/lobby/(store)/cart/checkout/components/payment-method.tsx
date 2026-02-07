@@ -7,7 +7,7 @@ import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Select, SelectItem} from '@heroui/react'
 import {useQuery} from 'convex/react'
-import React, {useCallback, useMemo, memo} from 'react'
+import React, {memo, useCallback, useMemo} from 'react'
 
 interface IPaymentMethod {
   id: PaymentMethod
@@ -62,12 +62,18 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
       />
       <div className='flex flex-col w-full md:space-y-0.5'>
         <div className='flex items-center justify-between w-full'>
-          <div className='whitespace-nowrap text-base md:text-lg tracking-tight font-medium '>
-            {method.name}
+          <div className='flex items-center space-x-2 whitespace-nowrap text-base md:text-lg tracking-tight font-medium '>
+            <span>{method.name}</span>
+            {method.id === 'cards' ? (
+              <div className='flex items-center space-x-1'>
+                <Icon name='applepay' className='size-10' />
+                <Icon name='googlepay' className='size-10' />
+              </div>
+            ) : null}
           </div>
           <div
             className={cn(
-              'text-[8px] uppercase font-brk whitespace-nowrap w-fit px-1 py-0 md:px-1 leading-3 md:leading-normal text-white',
+              'text-[8px] uppercase font-brk whitespace-nowrap w-fit px-1 py-0 md:px-1 leading-3 md:leading-normal dark:text-white',
               {'': method.id === 'cards'},
             )}>
             {method.tag}
@@ -99,7 +105,15 @@ function SelectedValueContent({
           />
         ) : null}
         <div className='flex flex-col px-1 gap-4'>
-          <span className='text-lg tracking-tight'>{data.name}</span>
+          <div className='flex items-center space-x-2'>
+            <span className='text-lg tracking-tight'>{data.name}</span>
+            {data.id === 'cards' ? (
+              <div className='flex items-center space-x-2'>
+                <Icon name='applepay' className='size-10' />
+                <Icon name='googlepay' className='size-10' />
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
       <div className='flex-1 text-[8px] font-brk whitespace-nowrap uppercase font-normal px-1.5 py-px md:whitespace-nowrap'>
@@ -145,10 +159,7 @@ export const PaymentMethods = memo(function PaymentMethods({
   const renderValue = useCallback(
     (items: Array<{key?: React.Key; data?: IPaymentMethod | null}>) => {
       return items.map((item, index) => (
-        <SelectedValueContent
-          key={item.key ?? index}
-          item={item}
-        />
+        <SelectedValueContent key={item.key ?? index} item={item} />
       ))
     },
     [],
@@ -177,7 +188,7 @@ export const PaymentMethods = memo(function PaymentMethods({
             'opacity-50 pointer-events-none': method.status === 'inactive',
           })}
           classNames={{
-            wrapper: '',
+            wrapper: 'placeholder:text-dark-gray',
             base: 'hover:bg-light-gray/20! data-[selected=true]:bg-zinc-500/20!',
           }}>
           <PaymentMethodOptionRow method={method} />

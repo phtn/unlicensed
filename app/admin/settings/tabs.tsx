@@ -2,11 +2,13 @@ import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react/tabs'
 import {OverviewContent} from './_components/overview-content'
 import {PaymentsSettings} from './_components/payments-settings'
+import {ShippingContent} from './_components/shipping-content'
 
 export const SettingsTabs = () => {
   const tabs = [
     {id: 'overview', label: 'Overview'},
     {id: 'payments', label: 'Payments'},
+    {id: 'shipping', label: 'Shipping'},
   ]
   return (
     <Tabs.Root defaultValue='overview'>
@@ -26,11 +28,20 @@ export const SettingsTabs = () => {
         ))}
         <Tabs.Indicator className='absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-sm bg-linear-to-r from-slate-700/90 via-slate-900/90 to-origin dark:bg-dark-table transition-all duration-300 ease-in-out' />
       </Tabs.List>
-      <Tabs.Panel className='relative flex min-h-32 flex-1 flex-col px-2 py-4' value='overview'>
+      <Tabs.Panel
+        className='relative flex min-h-32 flex-1 flex-col px-2 py-4'
+        value='overview'>
         <OverviewContent />
       </Tabs.Panel>
-      <Tabs.Panel className='relative flex min-h-32 flex-1 flex-col p-4' value='payments'>
+      <Tabs.Panel
+        className='relative flex min-h-32 flex-1 flex-col p-4'
+        value='payments'>
         <PaymentsSettings />
+      </Tabs.Panel>
+      <Tabs.Panel
+        className='relative flex min-h-32 flex-1 flex-col p-4'
+        value='shipping'>
+        <ShippingContent />
       </Tabs.Panel>
     </Tabs.Root>
   )

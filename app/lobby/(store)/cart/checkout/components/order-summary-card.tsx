@@ -22,10 +22,10 @@ interface OrderSummaryCardProps {
   orderId: string | null
   paymentMethod: FormData['paymentMethod']
   onPaymentMethodChange: (value: FormData['paymentMethod']) => void
-  onPlaceOrderClick: () => void
+  onPlaceOrderClick: VoidFunction
   userId?: Id<'users'>
   pointsBalance: PointsBalance | undefined
-  onOpen?: () => void
+  onOpen?: VoidFunction
 }
 
 export const OrderSummaryCard = memo(function OrderSummaryCard({
@@ -105,7 +105,10 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
             <>
               <Divider />
               <div className='py-5'>
-                <PaymentMethods value={paymentMethod} onChange={handleOnChange} />
+                <PaymentMethods
+                  value={paymentMethod}
+                  onChange={handleOnChange}
+                />
               </div>
             </>
           )}
