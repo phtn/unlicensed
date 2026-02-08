@@ -27,9 +27,10 @@ export default function CardProvidersPage() {
     () => paygateAccount?.topTenProviders ?? [],
     [paygateAccount?.topTenProviders],
   )
-  const walletAddress = useMemo(() => paygateAccount?.addressIn ?? '', [
-    paygateAccount?.addressIn,
-  ])
+  const walletAddress = useMemo(
+    () => paygateAccount?.addressIn ?? '',
+    [paygateAccount?.addressIn],
+  )
   const amountInDollars = useMemo(
     () => ((order?.totalCents ?? 0) / 100).toFixed(2),
     [order?.totalCents],
@@ -81,17 +82,17 @@ export default function CardProvidersPage() {
     <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 dark:bg-black'>
       <div className='mx-auto max-w-7xl space-y-4'>
         <Card radius='none' shadow='none' className='rounded-sm bg-dark-gray/0'>
-          <CardBody className='p-6'>
+          <CardBody className='p-2 md:p-6'>
             <div className='flex items-center justify-between w-full'>
               <div className='space-y-1'>
                 <div className='flex items-center space-x-5 opacity-60'>
-                  <p className='text-sm uppercase tracking-[0.22em] font-pixel-line'>
+                  <p className='text-xs md:text-sm uppercase tracking-[0.22em] font-pixel-line'>
                     Card Payment
                   </p>
-                  <Icon name='applepay' className='size-9' />
-                  <Icon name='googlepay' className='size-9' />
+                  <Icon name='applepay' className='size-4 md:size-9' />
+                  <Icon name='googlepay' className='size-4 md:size-9' />
                 </div>
-                <h1 className='text-lg md:text-2xl font-okxs'>
+                <h1 className='text-base md:text-lg lg:text-2xl font-okxs'>
                   Select a payment provider
                 </h1>
               </div>
@@ -101,7 +102,7 @@ export default function CardProvidersPage() {
                     You Pay
                   </p>
                 </div>
-                <p className='text-2xl font-okxs font-normal'>
+                <p className='text-xl md:text-2xl font-okxs font-normal'>
                   ${formatPrice(order.totalCents)}
                 </p>
               </div>
