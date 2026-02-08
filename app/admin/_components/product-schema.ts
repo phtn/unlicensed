@@ -49,7 +49,7 @@ export const productSchema = z.object({
   ),
   image: z
     .string()
-    .min(1, 'Upload a primary image or provide a URL/storage ID.'),
+    .min(0, 'Upload a primary image or provide a URL/storage ID.'),
   gallery: z.optional(z.array(z.string())),
   consumption: z.optional(
     z.string().min(0, 'Consumption guidance is required.'),
@@ -141,7 +141,7 @@ export const productFields: FormInput<ProductFormValues>[] = [
     required: true,
     type: 'text',
     placeholder: 'Image URL or storage ID',
-    defaultValue: '',
+    defaultValue: 'kg2c1s5svzexeqx3ft64e7cpmh80s5g2',
   },
   {
     name: 'gallery',

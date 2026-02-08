@@ -111,7 +111,7 @@ export function Checkout({
             // Determine redirect path based on payment method
             let redirectPath: string
             if (paymentMethod === 'cards') {
-              redirectPath = `/lobby/order/${orderId}/pay`
+              redirectPath = `/lobby/order/${orderId}/cards`
             } else if (paymentMethod === 'cash_app') {
               redirectPath = `/lobby/order/${orderId}/cashapp`
             } else {

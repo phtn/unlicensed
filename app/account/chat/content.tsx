@@ -404,7 +404,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
             ? showConversationList
               ? 'w-full'
               : 'hidden'
-            : 'w-[22rem] shrink-0',
+            : 'w-88 shrink-0',
         )}>
         {/* Search Input */}
         <ConversationSearch
@@ -447,7 +447,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                         </span>
                       </p>
                     </div>
-                    <p className='truncate max-w-[200px] text-sm text-muted-foreground'>
+                    <p className='truncate max-w-50 text-sm text-muted-foreground'>
                       {lastAssistantMessage
                         ? lastAssistantMessage.content.slice(0, 50) +
                           (lastAssistantMessage.content.length > 50

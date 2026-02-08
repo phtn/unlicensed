@@ -3,10 +3,11 @@
 import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {onSuccess} from '@/ctx/toast'
 import {usePaygate} from '@/hooks/use-paygate'
 import {paygatePublicConfig} from '@/lib/paygate/config'
 import {useQuery} from 'convex/react'
-import {useParams, useRouter} from 'next/navigation'
+import {useParams, useRouter, useSearchParams} from 'next/navigation'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {uuidv7 as v7} from 'uuidv7'
 import {InternalError} from './internal-error'
@@ -19,6 +20,7 @@ export default function PayPage() {
   const [errorId] = useState(v7())
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const orderId = params.orderId as Id<'orders'>
   const hasInitiated = useRef(false)
 
@@ -31,14 +33,26 @@ export default function PayPage() {
 
   // Use PayGate hook
   const {handleProcessPaymentSubmit, loading, response} = usePaygate()
+  const selectedProvider = useMemo(
+    () => searchParams.get('provider')?.trim() || '',
+    [searchParams],
+  )
 
   // Initialize payment when order and settings are loaded
   useEffect(() => {
-    if (!order || !paygateAccount || hasInitiated.current || debug) return
+    if (!order || !paygateAccount || hasInitiated.current || debug) {
+      onSuccess('LINE:39 TRIGGER')
+      return
+    }
+
+    /****
+     *****--DISABLED NAVIGATION--*****
+     ****/
 
     // If payment is already completed, redirect to order page
     if (order.payment.status === 'completed') {
-      router.push(`/lobby/account/orders/${order.orderNumber}`)
+      // router.push(`/lobby/account/orders/${order.orderNumber}`)
+      onSuccess('LINE:47 TRIGGER')
       return
     }
 
@@ -54,13 +68,23 @@ export default function PayPage() {
 
     // Convert cents to dollars for PayGate
     const amountInDollars = (order.totalCents / 100).toFixed(2)
+    const provider =
+      (selectedProvider &&
+      paygateAccount.topTenProviders?.some(
+        (item) => item.id === selectedProvider,
+      )
+        ? selectedProvider
+        : '') ||
+      paygateAccount.defaultProvider ||
+      paygateAccount.topTenProviders?.[0]?.id ||
+      'wert'
 
     // Initiate hosted payment
     hasInitiated.current = true
     handleProcessPaymentSubmit(
       wallet,
       amountInDollars,
-      paygateAccount.defaultProvider ?? 'wert',
+      provider,
       order.contactEmail,
       'USD',
     )
@@ -71,6 +95,7 @@ export default function PayPage() {
     router,
     orderId,
     debug,
+    selectedProvider,
   ])
 
   // Handle HTML response - extract URL and redirect

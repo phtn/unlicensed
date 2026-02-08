@@ -10,7 +10,14 @@ import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
 import {formatRecordingTime} from '@/utils/time'
 import {Avatar} from '@heroui/react'
-import {Fragment, useCallback, useRef, useState} from 'react'
+import {
+  Fragment,
+  ReactNode,
+  TouchEvent,
+  useCallback,
+  useRef,
+  useState,
+} from 'react'
 
 export interface Conversation {
   otherUserId: string
@@ -36,7 +43,7 @@ function SwipeableConversationRow({
 }: {
   conversation: Conversation
   onArchive: (otherUserId: string, otherUserProId: string) => void
-  children: React.ReactNode
+  children: ReactNode
 }) {
   const [translateX, setTranslateX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -44,14 +51,14 @@ function SwipeableConversationRow({
   const touchStartTranslate = useRef(0)
 
   const handleTouchStart = useCallback(
-    (e: React.TouchEvent) => {
+    (e: TouchEvent) => {
       touchStartX.current = e.touches[0].clientX
       touchStartTranslate.current = translateX
       setIsDragging(true)
     },
     [translateX],
   )
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+  const handleTouchMove = useCallback((e: TouchEvent) => {
     const deltaX = e.touches[0].clientX - touchStartX.current
     const next = Math.max(
       -ARCHIVE_BUTTON_WIDTH,
@@ -195,7 +202,7 @@ export function ConversationList({
                 <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border-2 border-background' />
               </div>
               <div className='min-w-0 flex-1'>
-                <div className='flex items-center justify-between gap-2 mb-1'>
+                <div className='flex items-center justify-between gap-2 mb-0.5'>
                   <p
                     className={cn(
                       'truncate font-semibold text-sm',

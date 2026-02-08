@@ -40,6 +40,16 @@ function formatDate(timestamp: number) {
   })
 }
 
+function getPaymentRoute(orderId: string, paymentMethod: string) {
+  if (paymentMethod === 'cards') {
+    return `/order/${orderId}/cards`
+  }
+  if (paymentMethod === 'cash_app') {
+    return `/order/${orderId}/cashapp`
+  }
+  return `/order/${orderId}/commerce`
+}
+
 export default function OrderDetailPage() {
   const params = useParams()
   const searchParams = useSearchParams()
@@ -256,7 +266,7 @@ export default function OrderDetailPage() {
                       <div className='mt-4 pt-4 border-t border-divider'>
                         <Button
                           as={NextLink}
-                          href={`/order/${order._id}/pay`}
+                          href={getPaymentRoute(order._id, order.payment.method)}
                           color='primary'
                           className='w-full'>
                           Complete Payment

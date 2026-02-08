@@ -117,6 +117,10 @@
   --color-rare: oklch(0.585 0.204 277.12);
   --color-deal: oklch(0.704 0.123 182.5);
   --color-mac-blue: var(--mac-blue);
+  --color-robinhood: oklch(0.9301 0.229 123.31);
+  --color-unlimit: oklch(0.9124 0.207 122.95);
+  --color-moonpay: oklch(0.5272 0.293 292.95);
+  --color-rampnetwork: oklch(0.7102 0.1663 155.57);
 }
 
 :root,

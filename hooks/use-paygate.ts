@@ -81,7 +81,7 @@ export const usePaygate = () => {
     params.append('email', email)
     params.append('currency', currency)
     const url = `${checkoutUrl}/process-payment.php?${params.toString()}`
-    
+
     // Redirect directly instead of using fetch - this endpoint redirects to payment providers
     // and fetch can't follow cross-origin redirects due to CORS
     // The browser will handle the redirect chain naturally

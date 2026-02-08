@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.0
+
+### Minor Changes
+
+- wagmi-init
+
 ## 0.27.19
 
 ### Patch Changes

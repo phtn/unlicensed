@@ -3,11 +3,11 @@ import type {ToastOptions} from 'react-hot-toast'
 import {Toaster, toast} from 'react-hot-toast'
 
 const BASE_TOAST_STYLE = {
-  background: '#18181b',
+  background: '#000000',
   color: 'white',
-  padding: '8px 12px',
+  padding: '0px 10px',
   letterSpacing: '-0.50px',
-  fontFamily: 'Figtree',
+  fontFamily: 'Okxs',
 } satisfies CSSProperties
 
 const TOAST_STYLE_SM = {
@@ -135,9 +135,9 @@ export const removeToast = (toastId?: string) => toast.remove(toastId)
 export const Toasts = () => {
   return (
     <Toaster
-      gutter={10}
+      gutter={4}
       toastOptions={{
-        position: 'bottom-center',
+        position: 'top-center',
         duration: 4000,
         success: {
           style: {

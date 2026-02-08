@@ -2,6 +2,7 @@
 
 import {AuthModal} from '@/components/auth/auth-modal'
 import {api} from '@/convex/_generated/api'
+import {onSuccess} from '@/ctx/toast'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {usePlaceOrder} from '@/hooks/use-place-order'
@@ -36,7 +37,6 @@ export default function CartPage() {
     placeOrder,
     isLoading: isPlacingOrder,
     error: orderError,
-    orderNumber,
     orderId,
   } = usePlaceOrder()
   const [isPending, startTransition] = useTransition()
@@ -111,18 +111,25 @@ export default function CartPage() {
 
   const hasItems = cartItems.length > 0
 
-  // Redirect to account page when order is placed (prevent showing empty cart)
+  // Fallback redirect when order is placed
   useEffect(() => {
-    if (orderNumber) {
+    if (orderId) {
       const redirectTimer = setTimeout(() => {
         startTransition(() => {
-          router.push(`/account/orders/${orderNumber}`)
+          const redirectPath =
+            paymentMethod === 'cards'
+              ? `/lobby/order/${orderId}/cards`
+              : paymentMethod === 'cash_app'
+                ? `/lobby/order/${orderId}/cashapp`
+                : `/lobby/order/${orderId}/commerce`
+          onSuccess(' C/PAGE:121:TX')
+          router.replace(redirectPath)
         })
-      }, 5000) // Give time for development modal to show
+      }, 5000)
 
       return () => clearTimeout(redirectTimer)
     }
-  }, [orderNumber, router, startTransition])
+  }, [orderId, paymentMethod, router, startTransition])
 
   const showEmptyCartLoader = useEmptyCartLoader({
     isLoading,

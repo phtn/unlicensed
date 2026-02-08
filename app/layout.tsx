@@ -1,4 +1,5 @@
 import {ProvidersCtxProvider} from '@/ctx'
+import {DynamicWagmiContext} from '@/ctx/wagmi/dynamic'
 import type {Metadata, Viewport} from 'next'
 import {
   Bakbak_One as BakbakOne,
@@ -9,6 +10,7 @@ import {
   Nunito_Sans as NunitoSans,
   Space_Grotesk,
 } from 'next/font/google'
+import {headers} from 'next/headers'
 import {AgeConfirmationModal} from './_components/age-confirmation-modal'
 import {ConditionalNavbar} from './_components/conditional-navbar'
 import {EmailLinkHandler} from './_components/email-link-handler'
@@ -169,25 +171,28 @@ export const viewport: Viewport = {
  * - Each slot can have its own loading, error, and default files
  * - All slots share the same React context (including ConvexProvider)
  */
-export default function RootLayout({
+export default async function RootLayout({
   children,
   navbar,
 }: Readonly<{
   children: React.ReactNode
   navbar?: React.ReactNode
 }>) {
+  const cookies = (await headers()).get('cookie')
   return (
     <html lang='en' suppressHydrationWarning>
       <body
         className={`${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} antialiased font-sans`}>
-        <ProvidersCtxProvider>
-          <EmailLinkHandler />
-          <ScreenDimensionsTracker />
-          <AgeConfirmationModal />
-          {/*<GoogleOneTap />*/}
-          <ConditionalNavbar navbar={navbar} />
-          {children}
-        </ProvidersCtxProvider>
+        <DynamicWagmiContext cookies={cookies}>
+          <ProvidersCtxProvider>
+            <EmailLinkHandler />
+            <ScreenDimensionsTracker />
+            <AgeConfirmationModal />
+            {/*<GoogleOneTap />*/}
+            <ConditionalNavbar navbar={navbar} />
+            {children}
+          </ProvidersCtxProvider>
+        </DynamicWagmiContext>
       </body>
     </html>
   )
