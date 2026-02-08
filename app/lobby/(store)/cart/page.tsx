@@ -1,44 +1,25 @@
 'use client'
 
 import {AuthModal} from '@/components/auth/auth-modal'
-import {Loader} from '@/components/expermtl/loader'
-import {EmptyCart} from '@/components/store/empty-cart'
 import {api} from '@/convex/_generated/api'
-import {Id} from '@/convex/_generated/dataModel'
-import type {PaymentMethod} from '@/convex/orders/d'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {usePlaceOrder} from '@/hooks/use-place-order'
-import {Icon} from '@/lib/icons'
-import {addToCartHistory} from '@/lib/localStorageCartHistory'
-import {cn} from '@/lib/utils'
 import {getUnitPriceCents} from '@/utils/cartPrice'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
-import {parseAsString, parseAsStringEnum} from 'nuqs'
-import {useQueryState} from 'nuqs'
 import {useRouter} from 'next/navigation'
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useOptimistic,
-  useRef,
-  useState,
-  useTransition,
-} from 'react'
-import {CartItem} from './cart-item'
+import {useEffect, useMemo, useTransition} from 'react'
+import {CartEmptyState} from './CartEmptyState'
+import {CartItemsSection} from './CartItemsSection'
+import {CartPageHeader} from './CartPageHeader'
 import {Checkout} from './checkout'
-import {RecommendedProducts} from './recommended'
+import {useCartCheckoutQueryState} from './hooks/use-cart-checkout-query-state'
+import {useCartDebugLog} from './hooks/use-cart-debug-log'
+import {useEmptyCartLoader} from './hooks/use-empty-cart-loader'
+import {useOptimisticCartItems} from './hooks/use-optimistic-cart-items'
 import {RewardsSummary} from './rewards-summary'
-
-const checkoutModalParser = parseAsString.withDefault('')
-const paymentMethodParser = parseAsStringEnum<PaymentMethod>([
-  'cards',
-  'crypto_transfer',
-  'crypto_commerce',
-  'cash_app',
-]).withDefault('cards')
+import type {CartPageItem} from './types'
 
 export default function CartPage() {
   const router = useRouter()
@@ -55,6 +36,7 @@ export default function CartPage() {
     placeOrder,
     isLoading: isPlacingOrder,
     error: orderError,
+    orderNumber,
     orderId,
   } = usePlaceOrder()
   const [isPending, startTransition] = useTransition()
@@ -63,25 +45,13 @@ export default function CartPage() {
     onOpen: onAuthOpen,
     onClose: onAuthClose,
   } = useDisclosure()
-
-  const [checkoutParam, setCheckoutParam] = useQueryState(
-    'checkout',
-    checkoutModalParser,
-  )
-  const [paymentMethod, setPaymentMethod] = useQueryState(
-    'payment',
-    paymentMethodParser,
-  )
-
-  const isCheckoutOpen = checkoutParam === 'open'
-  const onCheckoutOpen = useCallback(() => {
-    setCheckoutParam('open')
-  }, [setCheckoutParam])
-  const onCheckoutClose = useCallback(() => {
-    setCheckoutParam(null)
-  }, [setCheckoutParam])
-  const [showEmptyCartLoader, setShowEmptyCartLoader] = useState(false)
-  const loaderTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const {
+    isCheckoutOpen,
+    onCheckoutOpen,
+    onCheckoutClose,
+    paymentMethod,
+    onPaymentMethodChange,
+  } = useCartCheckoutQueryState()
 
   // Get user info for checkout
   const convexUser = useQuery(
@@ -112,187 +82,52 @@ export default function CartPage() {
     return convexUser?.contact?.phone || defaultAddress?.phone || ''
   }, [convexUser?.contact?.phone, defaultAddress?.phone])
 
-  // Build cart items from server cart
-  const serverCartItems = useMemo(() => {
-    if (cart && cart.items) {
-      return cart.items.map((item) => ({
+  const serverCartItems = useMemo<CartPageItem[]>(() => {
+    return (
+      cart?.items.map((item) => ({
         product: item.product,
         quantity: item.quantity,
         denomination: item.denomination,
-      }))
-    }
-    return []
-  }, [cart])
+      })) ?? []
+    )
+  }, [cart?.items])
 
-  type OptimisticAction =
-    | {
-        type: 'update'
-        productId: Id<'products'>
-        quantity: number
-        denomination?: number
-      }
-    | {
-        type: 'remove'
-        productId: Id<'products'>
-        denomination?: number
-      }
-
-  // Optimistic cart state to prevent blinking
-  const [optimisticCartItems, setOptimisticCartItems] = useOptimistic(
-    serverCartItems,
-    (currentItems, action: OptimisticAction) => {
-      switch (action.type) {
-        case 'update': {
-          return currentItems.map((item) =>
-            item.product._id === action.productId &&
-            (item.denomination ?? undefined) ===
-              (action.denomination ?? undefined)
-              ? {...item, quantity: action.quantity}
-              : item,
-          )
-        }
-        case 'remove': {
-          return currentItems.filter(
-            (item) =>
-              !(
-                item.product._id === action.productId &&
-                (item.denomination ?? undefined) ===
-                  (action.denomination ?? undefined)
-              ),
-          )
-        }
-        default:
-          return currentItems
-      }
-    },
-  )
-
-  // Use optimistic cart items for display
-  const cartItems = optimisticCartItems
-
-  // Clear cart after order success; add current items to history so "Previously in cart" shows
-  const handleClearCart = useCallback(async () => {
-    cartItems.forEach((item) => {
-      addToCartHistory(item.product._id, item.denomination)
+  const {cartItems, updateItem, removeItem, clearCartWithHistory} =
+    useOptimisticCartItems({
+      serverCartItems,
+      onUpdateItem: baseUpdateItem,
+      onRemoveItem: baseRemoveItem,
+      onClearCart: clear,
     })
-    await clear()
-  }, [cartItems, clear])
 
-  // Log cart data for debugging
-  useEffect(() => {
-    console.log('[Cart Page] Cart Debug:', {
-      cart,
-      cartItems: cartItems.length,
-      serverCartItems: serverCartItems.length,
-      optimisticCartItems: optimisticCartItems.length,
-      isLoading,
-      isAuthenticated,
-      cartItemsDetail: cartItems,
-      serverCartItemsDetail: serverCartItems,
-      rawCart: cart,
-      rawCartDebug,
-    })
-  }, [
+  useCartDebugLog({
     cart,
     cartItems,
     serverCartItems,
-    optimisticCartItems,
     isLoading,
     isAuthenticated,
     rawCartDebug,
-  ])
-
-  // Wrap updateItem with optimistic updates
-  const updateItem = useCallback(
-    async (
-      productId: Id<'products'>,
-      quantity: number,
-      denomination?: number,
-    ) => {
-      // Optimistically update UI immediately
-      setOptimisticCartItems({
-        type: 'update',
-        productId,
-        quantity,
-        denomination,
-      })
-      // Then perform the actual update
-      await baseUpdateItem(productId, quantity, denomination)
-    },
-    [baseUpdateItem, setOptimisticCartItems],
-  )
-
-  // Wrap removeItem with optimistic updates
-  const removeItem = useCallback(
-    async (productId: Id<'products'>, denomination?: number) => {
-      // Optimistically update UI immediately
-      setOptimisticCartItems({
-        type: 'remove',
-        productId,
-        denomination,
-      })
-      // Then perform the actual removal
-      await baseRemoveItem(productId, denomination)
-    },
-    [baseRemoveItem, setOptimisticCartItems],
-  )
+  })
 
   const hasItems = cartItems.length > 0
 
   // Redirect to account page when order is placed (prevent showing empty cart)
   useEffect(() => {
-    if (orderId) {
+    if (orderNumber) {
       const redirectTimer = setTimeout(() => {
         startTransition(() => {
-          router.push(`/account/orders/${orderId}`)
+          router.push(`/account/orders/${orderNumber}`)
         })
       }, 5000) // Give time for development modal to show
 
       return () => clearTimeout(redirectTimer)
     }
-  }, [orderId, router])
+  }, [orderNumber, router, startTransition])
 
-  // Show loader for 3 seconds when cart is empty (after initial load completes)
-  useEffect(() => {
-    // Clear any existing timer
-    if (loaderTimerRef.current) {
-      clearTimeout(loaderTimerRef.current)
-      loaderTimerRef.current = null
-    }
-
-    // If loading or has items, hide the loader via timeout callback
-    if (isLoading || hasItems) {
-      const timeoutId = setTimeout(() => {
-        setShowEmptyCartLoader(false)
-      }, 0)
-      return () => clearTimeout(timeoutId)
-    }
-
-    // If not loading and no items, show loader for 3 seconds then show empty cart
-    if (!isLoading && !hasItems) {
-      const showTimeoutId = setTimeout(() => {
-        setShowEmptyCartLoader(true)
-      }, 0)
-      loaderTimerRef.current = setTimeout(() => {
-        setShowEmptyCartLoader(false)
-        loaderTimerRef.current = null
-      }, 3000)
-      return () => {
-        clearTimeout(showTimeoutId)
-        if (loaderTimerRef.current) {
-          clearTimeout(loaderTimerRef.current)
-          loaderTimerRef.current = null
-        }
-      }
-    }
-
-    return () => {
-      if (loaderTimerRef.current) {
-        clearTimeout(loaderTimerRef.current)
-        loaderTimerRef.current = null
-      }
-    }
-  }, [isLoading, hasItems])
+  const showEmptyCartLoader = useEmptyCartLoader({
+    isLoading,
+    hasItems,
+  })
 
   const subtotal = useMemo(() => {
     return cartItems.reduce((total, item) => {
@@ -328,55 +163,25 @@ export default function CartPage() {
   }, [subtotal, nextVisitMultiplier, isAuthenticated])
 
   if (!hasItems) {
-    return isLoading || showEmptyCartLoader ? (
-      <div className='min-h-screen w-screen pt-20 lg:pt-28 flex items-start justify-center'>
-        <Loader />
-      </div>
-    ) : (
-      <div className='min-h-screen w-screen flex items-start justify-center pt-16 sm:pt-10 md:pt-24 lg:pt-28 px-4 sm:px-6 lg:px-8'>
-        <EmptyCart />
-      </div>
+    return (
+      <CartEmptyState
+        isLoading={isLoading}
+        showEmptyCartLoader={showEmptyCartLoader}
+      />
     )
   }
 
   return (
     <div className='min-h-screen pt-16 sm:pt-10 md:pt-24 lg:pt-28 pb-10 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
-        <div className='flex items-center justify-between mb-4'>
-          <h1 className='text-base font-medium font-brk space-x-2 tracking-tight'>
-            <span className='opacity-60'>Cart</span>
-            <span className='font-light text-sm'>\</span>
-            {isPending ? <Icon name='spinner-dots' /> : <span>Checkout</span>}
-          </h1>
-        </div>
+        <CartPageHeader isPending={isPending} />
 
         <div className='grid gap-8 lg:grid-cols-[1fr_400px]'>
-          {/* Cart Items */}
-          <div className='md:h-[70lvh] h-fit bg-linear-to-b dark:from-dark-table/40 via-transparent to-transparent rounded-3xl overflow-hidden flex flex-col'>
-            <div className='flex-1 overflow-y-auto rounded-3xl'>
-              {cartItems.map((item) => {
-                const product = item.product
-                const itemPrice = getUnitPriceCents(product, item.denomination)
-
-                return (
-                  <CartItem
-                    key={`${product._id}-${item.denomination || 'default'}`}
-                    item={item}
-                    itemPrice={itemPrice}
-                    onUpdate={updateItem}
-                    onRemove={removeItem}
-                    className={cn(
-                      'dark:border-dark-gray',
-                      cartItems.length === 1
-                        ? 'first:border-b'
-                        : ' first:border-b-0',
-                    )}
-                  />
-                )
-              })}
-            </div>
-            <RecommendedProducts />
-          </div>
+          <CartItemsSection
+            cartItems={cartItems}
+            onUpdateItem={updateItem}
+            onRemoveItem={removeItem}
+          />
 
           <div className='space-y-6'>
             <RewardsSummary
@@ -404,10 +209,10 @@ export default function CartPage() {
               orderId={orderId}
               onCheckoutClose={onCheckoutClose}
               isCheckoutOpen={isCheckoutOpen}
-              onClearCart={handleClearCart}
+              onClearCart={clearCartWithHistory}
               pointsBalance={pointsBalance}
               paymentMethodFromUrl={paymentMethod}
-              onPaymentMethodUrlChange={setPaymentMethod}
+              onPaymentMethodUrlChange={onPaymentMethodChange}
             />
           </div>
         </div>

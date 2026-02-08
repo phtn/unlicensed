@@ -83,7 +83,7 @@ export const RenderRow = <T,>({
       )}
       onClick={handleRowClick}>
       {row
-        .getVisibleCells()
+        .getAllCells()
         .filter((cell) => cell.column.getIsVisible())
         .map((cell) => (
           <RenderCell

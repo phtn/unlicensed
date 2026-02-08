@@ -122,6 +122,8 @@ export const ProductForm = ({
           flavorNotes: data.flavors || [],
           potencyLevel: data.potencyLevel,
           potencyProfile: data.potencyProfile?.trim() || undefined,
+          lineage: data.lineage?.trim() || undefined,
+          noseRating: data.noseRating,
           weightGrams:
             data.weightGrams && data.weightGrams.length > 0
               ? Number(data.weightGrams)

@@ -166,7 +166,7 @@ export function MessageBubble({
             className={cn(
               'rounded-2xl px-3 md:px-4 py-2 shadow-sm cursor-pointer',
               isCurrentUser
-                ? 'bg-brand text-white rounded-tr-sm'
+                ? 'bg-dark-table text-white rounded-tr-sm'
                 : 'bg-sidebar text-foreground rounded-tl-sm',
               isLastInGroup &&
                 (isCurrentUser ? 'rounded-br-2xl' : 'rounded-bl-2xl'),

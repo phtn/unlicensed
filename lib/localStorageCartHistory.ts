@@ -11,6 +11,22 @@ export type CartHistoryItem = {
   addedAt: number
 }
 
+const isValidHistoryItem = (item: unknown): item is CartHistoryItem => {
+  if (!item || typeof item !== 'object') return false
+
+  const value = item as Partial<CartHistoryItem>
+  const hasValidProductId =
+    typeof value.productId === 'string' && value.productId.length > 0
+  const hasValidAddedAt =
+    typeof value.addedAt === 'number' && Number.isFinite(value.addedAt)
+  const hasValidDenomination =
+    value.denomination === undefined ||
+    (typeof value.denomination === 'number' &&
+      Number.isFinite(value.denomination))
+
+  return hasValidProductId && hasValidAddedAt && hasValidDenomination
+}
+
 /**
  * Get cart history items from local storage
  */
@@ -19,14 +35,10 @@ export const getCartHistoryItems = (): CartHistoryItem[] => {
   try {
     const stored = localStorage.getItem(LOCAL_STORAGE_CART_HISTORY_KEY)
     if (!stored) return []
-    const items = JSON.parse(stored) as CartHistoryItem[]
+    const items = JSON.parse(stored) as unknown[]
     // Validate items structure and sort by most recent
     return items
-      .filter(
-        (item) =>
-          item.productId &&
-          typeof item.addedAt === 'number',
-      )
+      .filter(isValidHistoryItem)
       .sort((a, b) => b.addedAt - a.addedAt)
   } catch (error) {
     console.error('Failed to read cart history from local storage:', error)

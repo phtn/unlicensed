@@ -1,24 +1,16 @@
 /**
  * Checkout Configuration
  *
- * Toggle checkout dev mode behavior:
- * - true: Shows development modal after order placement (skips payment)
- * - false: Redirects to payment page to proceed with payment processing (production mode)
- *
- * To toggle: Change DEFAULT_CHECKOUT_DEV_MODE below, or set NEXT_PUBLIC_CHECKOUT_DEV_MODE env var
+ * Dev mode: Set NEXT_PUBLIC_CHECKOUT_DEV_MODE=true to skip payment and show dev modal.
+ * Production mode (default): Omit the env var or set it to false to redirect to payment processing.
  */
-
-// Change this to false to enable production mode (payment processing)
-const DEFAULT_CHECKOUT_DEV_MODE = false
 
 /**
- * Check if checkout is in dev mode
- * Checks NEXT_PUBLIC_CHECKOUT_DEV_MODE env var first, then falls back to default
+ * Check if checkout is in dev mode (skips payment, shows dev modal).
+ * Only returns true when NEXT_PUBLIC_CHECKOUT_DEV_MODE is explicitly "true" or "1".
+ * All other values (including "false", undefined, empty) enable production mode (payment processing).
  */
 export const isCheckoutDevMode = (): boolean => {
-  const envValue = process.env.NEXT_PUBLIC_CHECKOUT_DEV_MODE
-  if (envValue !== undefined) {
-    return envValue === 'true'
-  }
-  return DEFAULT_CHECKOUT_DEV_MODE
+  const envValue = process.env.NEXT_PUBLIC_CHECKOUT_DEV_MODE?.toLowerCase()
+  return envValue === 'true' || envValue === '1'
 }

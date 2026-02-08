@@ -1,6 +1,6 @@
 import {v} from 'convex/values'
 import {mutation} from '../_generated/server'
-import {paygateAccountSchema} from './d'
+import {paygateAccountSchema, topTenProviderValidator} from './d'
 
 /**
  * Create a new PayGate account
@@ -188,7 +188,7 @@ const TOP_TEN_MAX = 10
 export const updateTopTenProviders = mutation({
   args: {
     id: v.id('paygateAccounts'),
-    topTenProviders: v.array(v.string()),
+    topTenProviders: v.array(topTenProviderValidator),
   },
   handler: async (ctx, args) => {
     if (args.topTenProviders.length > TOP_TEN_MAX) {

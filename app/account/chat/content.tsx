@@ -395,16 +395,16 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   const showChatArea = !isMobile || showChat
 
   return (
-    <div className='flex h-[calc(100vh-4rem)] md:h-[calc(100vh-6rem)] w-full bg-sidebar/20 overflow-hidden rounded-xs'>
+    <div className='flex h-full min-h-0 w-full overflow-hidden rounded-xl border border-sidebar/40 bg-sidebar/20'>
       {/* Conversation List Sidebar */}
       <div
         className={cn(
-          'backdrop-blur-sm lg:border-l flex flex-col transition-all duration-300',
+          'backdrop-blur-sm border-r border-sidebar/40 flex min-h-0 flex-col transition-all duration-300',
           isMobile
             ? showConversationList
               ? 'w-full'
               : 'hidden'
-            : 'w-90 shrink-0',
+            : 'w-[22rem] shrink-0',
         )}>
         {/* Search Input */}
         <ConversationSearch
@@ -473,13 +473,13 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
       {/* Chat Area */}
       <div
         className={cn(
-          'flex flex-1 flex-col bg-background transition-all duration-300 border-t lg:border-x border-sidebar',
+          'flex flex-1 min-h-0 flex-col bg-background transition-all duration-300',
           isMobile && !showChatArea && 'hidden',
         )}>
         {isAssistant ? (
           <>
             {/* Assistant Chat Header */}
-            <div className='sticky top-0 z-10 h-14 md:h-16 flex items-center justify-between px-3 md:px-4 backdrop-blur-md shrink-0 border-b border-border/40'>
+            <div className='sticky top-0 z-10 h-14 md:h-16 flex items-center justify-between px-3 md:px-4 backdrop-blur-md shrink-0 border-b border-border/40 bg-background/95'>
               <div className='flex items-center gap-0 md:gap-3 flex-1 min-w-0'>
                 {isMobile && (
                   <button
@@ -561,7 +561,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
         ) : selectedUserProId && chatDisplayUser ? (
           <>
             {/* Chat Header - Sticky (works for both listed and archived conversations) */}
-            <div className='sticky top-0 z-10 h-14 md:h-16 flex items-center justify-between px-3 md:px-4 backdrop-blur-md shrink-0'>
+            <div className='sticky top-0 z-10 h-14 md:h-16 flex items-center justify-between px-3 md:px-4 backdrop-blur-md shrink-0 border-b border-border/40 bg-background/95'>
               <div className='flex items-center gap-0 md:gap-3 flex-1 min-w-0'>
                 {/* Back button on mobile */}
                 {isMobile && (

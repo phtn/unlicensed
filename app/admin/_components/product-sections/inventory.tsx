@@ -2,18 +2,12 @@
 
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {
-  Chip,
-  Input,
-  Select,
-  SelectItem,
-  SelectedItems,
-  Switch,
-} from '@heroui/react'
+import {Chip, Input, Select, SelectItem, SelectedItems} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMemo} from 'react'
 import {ProductFormApi, mapFractions} from '../product-schema'
 import {commonInputClassNames} from '../ui/fields'
+import {JunctionBox} from '../ui/junction-box'
 import {FormSection, Header} from './components'
 
 interface InventoryProps {
@@ -122,7 +116,7 @@ export const Inventory = ({form}: InventoryProps) => {
 
   return (
     <FormSection id='inventory'>
-      <Header label='Inventory & Status' />
+      <Header label='Inventory' />
       <div className='w-full space-y-8'>
         <div className='grid grid-cols-1 md:grid-cols-6 md:gap-x-6 gap-y-6 w-full'>
           <div className='w-full col-span-6'>
@@ -145,7 +139,7 @@ export const Inventory = ({form}: InventoryProps) => {
                 }
                 return (
                   <div className='space-y-3 w-full'>
-                    <label className='text-sm font-medium text-neutral-300 block'>
+                    <label className='text-sm font-medium block'>
                       Stock by Denomination
                     </label>
                     {selectedVariantOptions.length === 0 ? (
@@ -430,7 +424,7 @@ export const Inventory = ({form}: InventoryProps) => {
                 const selectedKeys = tierValue ? [tierValue] : []
                 return (
                   <Select
-                    label='Tier'
+                    label='Product Tier'
                     placeholder='Select a tier'
                     selectedKeys={selectedKeys}
                     onSelectionChange={(keys) => {
@@ -473,93 +467,85 @@ export const Inventory = ({form}: InventoryProps) => {
           </div>
         </div>
 
-        <div className='grid md:grid-cols-4 items-center gap-8 py-4'>
+        <div className='flex items-center pt-8 space-x-2'>
+          <Icon name='boomerang' className='size-4 rotate-25' />
+          <span className='font-polysans font-medium'>Statuses</span>
+        </div>
+
+        <div className='grid md:grid-cols-4 items-center gap-6 py-4'>
           <form.Field name='available'>
             {(field) => {
-              const availableValue = (field.state.value as boolean) ?? false
               return (
-                <Switch
-                  isSelected={availableValue}
-                  onValueChange={field.handleChange}
-                  classNames={{
-                    wrapper: 'group-data-[selected=true]:bg-emerald-500',
-                  }}>
-                  <div className='flex flex-col gap-px portrait:pl-4'>
-                    <span className='text-base font-semibold'>
-                      Available for Sale
-                    </span>
-                    <span className='text-xs opacity-70'>
-                      Product is visible in store
-                    </span>
-                  </div>
-                </Switch>
+                <JunctionBox
+                  title='Active'
+                  description='Product is visible in store.'
+                  checked={(field.state.value as boolean) ?? false}
+                  onUpdate={field.handleChange}
+                />
+              )
+            }}
+          </form.Field>
+          <form.Field name='eligibleForDeals'>
+            {(field) => {
+              const currentState = (field.state.value as boolean) ?? false
+              return (
+                <JunctionBox
+                  title='Deals'
+                  description='Discounts and package deals.'
+                  checked={currentState}
+                  onUpdate={field.handleChange}
+                />
               )
             }}
           </form.Field>
 
-          <form.Field name='featured'>
+          <form.Field name='eligibleForRewards'>
             {(field) => {
-              const featuredValue = (field.state.value as boolean) ?? false
               return (
-                <Switch
-                  isSelected={featuredValue}
-                  onValueChange={field.handleChange}
-                  classNames={{
-                    wrapper: 'group-data-[selected=true]:bg-featured',
-                  }}>
-                  <div className='flex flex-col gap-px portrait:pl-4'>
-                    <span className='text-base font-semibold'>Featured</span>
-                    <span className='text-xs opacity-70'>
-                      Highlight in featured sections
-                    </span>
-                  </div>
-                </Switch>
+                <JunctionBox
+                  title='Rewards'
+                  description='+Rewards for purchasing this product.'
+                  checked={(field.state.value as boolean) ?? false}
+                  onUpdate={field.handleChange}
+                />
               )
             }}
           </form.Field>
-          <form.Field name='eligibleForRewards'>
+          <form.Field name='featured'>
             {(field) => {
-              const eligibleValue = (field.state.value as boolean) ?? false
               return (
-                <Switch
-                  isSelected={eligibleValue}
-                  onValueChange={field.handleChange}
-                  classNames={{
-                    wrapper: 'group-data-[selected=true]:bg-amber-400',
-                  }}>
-                  <div className='flex flex-col gap-px portrait:pl-4'>
-                    <span className='text-base font-semibold'>
-                      Eligible for Rewards
-                    </span>
-                    <span className='text-xs opacity-70'>
-                      +Rewards for purchasing this product.
-                    </span>
-                  </div>
-                </Switch>
+                <JunctionBox
+                  title='Featured'
+                  description='Highlight in featured sections.'
+                  checked={(field.state.value as boolean) ?? false}
+                  onUpdate={field.handleChange}
+                />
+              )
+            }}
+          </form.Field>
+          <form.Field name='sale'>
+            {(field) => {
+              return (
+                <JunctionBox
+                  title='On Sale'
+                  description='Product is on-sale.'
+                  checked={(field.state.value as boolean) ?? false}
+                  onUpdate={field.handleChange}
+                />
               )
             }}
           </form.Field>
 
           <form.Field name='eligibleForUpgrade'>
             {(field) => {
-              const eligibleForUpgradeValue =
-                (field.state.value as boolean) ?? false
+              const currentState = (field.state.value as boolean) ?? false
               return (
-                <Switch
-                  isSelected={eligibleForUpgradeValue}
-                  onValueChange={field.handleChange}
-                  classNames={{
-                    wrapper: 'group-data-[selected=true]:bg-violet-500',
-                  }}>
-                  <div className='flex flex-col gap-px portrait:pl-4'>
-                    <span className='text-base font-semibold'>
-                      Eligible for Upgrade
-                    </span>
-                    <span className='text-xs opacity-70'>
-                      Product can be upgraded to a higher tier.
-                    </span>
-                  </div>
-                </Switch>
+                <JunctionBox
+                  title='Upgradable'
+                  description='Product can be upgraded to a higher tiers.'
+                  checked={currentState}
+                  onUpdate={field.handleChange}
+                />
               )
             }}
           </form.Field>

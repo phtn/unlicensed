@@ -12,7 +12,6 @@ import {
   RowSelectionState,
   SortingState,
   useReactTable,
-  VisibilityState,
 } from '@tanstack/react-table'
 
 import {useQueryState, useQueryStates} from 'nuqs'
@@ -24,7 +23,6 @@ import {
   useId,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 
 import {
@@ -298,6 +296,14 @@ function DataTableContent<T>({
     T,
     unknown
   >[]
+  const columnVisibilitySignature = useMemo(
+    () =>
+      Object.entries(columnVisibility)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([id, visible]) => `${id}:${visible === false ? '0' : '1'}`)
+        .join('|'),
+    [columnVisibility],
+  )
 
   // const rowCount = useMemo(() => table.getRowCount(), [table])
   const pageControl: PageControl = {
@@ -457,7 +463,7 @@ function DataTableContent<T>({
                 {tableRows.length ? (
                   tableRows.map((row) => (
                     <RenderRow
-                      key={row.id}
+                      key={`${row.id}:${columnVisibilitySignature}`}
                       row={row}
                       editingRowId={editingRowId}
                       showSelectColumn={selectOn}

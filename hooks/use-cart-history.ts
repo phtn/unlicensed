@@ -40,7 +40,10 @@ export const useCartHistory = (): UseCartHistoryResult => {
 
   // Get product IDs from history
   const productIds = useMemo(() => {
-    return historyData.map((item) => item.productId)
+    const ids = historyData
+      .map((item) => item.productId)
+      .filter((id): id is Id<'products'> => typeof id === 'string' && id.length > 0)
+    return Array.from(new Set(ids))
   }, [historyData])
 
   // Fetch products for history items

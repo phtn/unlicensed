@@ -32,7 +32,7 @@ export const FormSection = ({
 
 export const Header = ({label}: {label: string}) => {
   return (
-    <CardHeader className='tracking-tight px-0 font-semibold'>
+    <CardHeader className='px-0 font-polysans font-medium'>
       <h2>{label}</h2>
     </CardHeader>
   )

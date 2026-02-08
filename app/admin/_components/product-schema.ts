@@ -56,6 +56,12 @@ export const productSchema = z.object({
   ),
   potencyLevel: z.enum(['mild', 'medium', 'high']),
   potencyProfile: z.string().optional(),
+  lineage: z.string().optional(),
+  noseRating: z
+    .number()
+    .min(0, 'Nose rating must be 0 or more.')
+    .max(10, 'Nose rating must be 10 or less.')
+    .optional(),
   weightGrams: z.string().optional(),
   variants: z
     .array(
@@ -319,6 +325,8 @@ export const defaultValues: ProductFormValues = {
   priceByDenomination: {},
   popularDenomination: [] as number[],
   tier: undefined,
+  lineage: undefined,
+  noseRating: undefined,
   eligibleForUpgrade: false,
   upgradePrice: undefined,
 } as ProductFormValues

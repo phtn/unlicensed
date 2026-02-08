@@ -5,9 +5,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useState,
   type ReactNode,
 } from 'react'
 
@@ -32,28 +30,37 @@ interface ColumnVisibilityProviderProps {
   children: ReactNode
 }
 
+const isVisibilityEqual = (
+  a: VisibilityState,
+  b: VisibilityState,
+): boolean => {
+  const aKeys = Object.keys(a)
+  const bKeys = Object.keys(b)
+
+  if (aKeys.length !== bKeys.length) {
+    return false
+  }
+
+  return aKeys.every((key) => a[key] === b[key])
+}
+
 export function ColumnVisibilityProvider({
   valueFromUrl,
   onVisibilityChange,
   children,
 }: ColumnVisibilityProviderProps) {
-  const [columnVisibility, setColumnVisibilityState] =
-    useState<VisibilityState>(() => valueFromUrl ?? {})
-
-  useEffect(() => {
-    setColumnVisibilityState(valueFromUrl ?? {})
-  }, [valueFromUrl])
+  const columnVisibility = useMemo(() => valueFromUrl ?? {}, [valueFromUrl])
 
   const setColumnVisibility = useCallback<SetColumnVisibility>(
     (updater) => {
-      setColumnVisibilityState((prev) => {
-        const next =
-          typeof updater === 'function' ? updater(prev) : updater
-        onVisibilityChange(next)
-        return next
-      })
+      const next =
+        typeof updater === 'function' ? updater(columnVisibility) : updater
+      if (isVisibilityEqual(columnVisibility, next)) {
+        return
+      }
+      onVisibilityChange(next)
     },
-    [onVisibilityChange],
+    [columnVisibility, onVisibilityChange],
   )
 
   const value = useMemo<ColumnVisibilityContextValue>(

@@ -71,11 +71,13 @@ export function useOrderForm({
   // Sync URL payment method into form when it changes (e.g. back/forward)
   useEffect(() => {
     if (initialPaymentMethod !== undefined) {
-      setFormData((prev) =>
-        prev.paymentMethod === initialPaymentMethod
-          ? prev
-          : {...prev, paymentMethod: initialPaymentMethod},
-      )
+      startTransition(() => {
+        setFormData((prev) =>
+          prev.paymentMethod === initialPaymentMethod
+            ? prev
+            : {...prev, paymentMethod: initialPaymentMethod},
+        )
+      })
     }
   }, [initialPaymentMethod])
 
@@ -205,6 +207,7 @@ export function useOrderForm({
       })
     })
   }, [
+    initialPaymentMethod,
     isAuthenticated,
     userEmail,
     userPhone,

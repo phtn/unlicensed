@@ -1,5 +1,21 @@
 import {Infer, v} from 'convex/values'
 
+/** Provider object shape (matches PayGate API provider-status response) */
+export const topTenProviderValidator = v.object({
+  id: v.string(),
+  provider_name: v.string(),
+  status: v.union(
+    v.literal('active'),
+    v.literal('inactive'),
+    v.literal('redirected'),
+    v.literal('unstable'),
+  ),
+  minimum_currency: v.string(),
+  minimum_amount: v.number(),
+})
+
+export type TopTenProvider = Infer<typeof topTenProviderValidator>
+
 /**
  * PayGate Account Schema
  *
@@ -19,7 +35,7 @@ export const paygateAccountSchema = v.object({
   label: v.optional(v.string()), // Admin-friendly label/name
   description: v.optional(v.string()), // Optional description
   defaultProvider: v.optional(v.string()),
-  topTenProviders: v.optional(v.array(v.string())),
+  topTenProviders: v.optional(v.array(topTenProviderValidator)),
 
   // Affiliate settings
   affiliateWallet: v.optional(v.string()), // Affiliate wallet address for commissions

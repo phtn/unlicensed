@@ -3,10 +3,8 @@
 import {mapNumericFractions} from '@/app/admin/_components/product-schema'
 import {DataTable} from '@/components/table-v2'
 import {
-  countCell,
   HoverCell,
   linkText,
-  priceCell,
   textCell,
   toggleCell,
 } from '@/components/table-v2/cells-v2'
@@ -32,7 +30,7 @@ function availableDenominationsCell(
   }
 
   return (
-    <div className='font-brk text-sm flex flex-wrap items-center gap-x-1 gap-y-0.5'>
+    <div className='font-brk text-sm flex flex-wrap items-center gap-x-1 gap-y-0.5 px-4'>
       {denoms.map((denom, index) => {
         const key = String(denom)
         const label = mapNumericFractions[key] ?? key
@@ -51,9 +49,23 @@ function availableDenominationsCell(
         return (
           <span key={`${key}-${index}`}>
             <HoverCell label={label} content={content}>
-              <span className='px-1'>{label}</span>
+              <div className='px-2 font-brk text-base flex items-center space-x-3 bg-alum/20 rounded-sm'>
+                {label === '⅛' && (
+                  <Icon name='8th' className='size-5 text-purple-600' />
+                )}
+                {label === '¼' && (
+                  <Icon name='4th' className='size-5 text-orange-600' />
+                )}
+                {label === '½' && (
+                  <Icon name='half' className='size-5 text-lime-600' />
+                )}
+                {Number(label) >= 1 && <span className='min-w-5'>{label}</span>}
+                <span className='w-8 font-okxs text-lg bg-sidebar/20 rounded-sm'>
+                  {stock != null && Number(stock).toFixed(0)}
+                </span>
+              </div>
             </HoverCell>
-            {index < denoms.length - 1 ? ' ' : null}
+            {/*{Number(label) > 1 && < denoms.length - 1 ? ' ' : null}*/}
           </span>
         )
       })}
@@ -96,21 +108,6 @@ export const ProductsData = ({data}: ProductsDataProps) => {
           cell: linkText('categorySlug', '/admin/inventory/category/'),
           size: 100,
         },
-        {
-          id: 'priceCents',
-          header: () => <div className='text-right w-full mr-10'>Price</div>,
-          accessorKey: 'priceCents',
-          cell: priceCell('priceCents'),
-          size: 120,
-        },
-        {
-          id: 'stock',
-          header: () => <div className='text-center w-full'>Stock</div>,
-          accessorKey: 'stock',
-          cell: countCell('stock', 'text-center'),
-          size: 80,
-        },
-
         {
           id: 'tier',
           header: <ColHeader tip='Tier Class' symbol='tier' />,
@@ -185,11 +182,14 @@ export const ProductsData = ({data}: ProductsDataProps) => {
         {
           id: 'availableDenominations',
           header: (
-            <ColHeader tip='Available Denominations' symbol='Denominations' />
+            <ColHeader
+              tip='Available Denominations'
+              symbol='_____  Denominations'
+            />
           ),
           accessorKey: 'availableDenominations',
           cell: availableDenominationsCell,
-          size: 160,
+          size: 480,
         },
         {
           id: 'popularDenomination',
@@ -197,11 +197,11 @@ export const ProductsData = ({data}: ProductsDataProps) => {
           accessorKey: 'popularDenomination',
           cell: textCell('popularDenomination'),
         },
-        {
-          id: 'createdAt',
-          header: 'Created',
-          accessorKey: 'createdAt',
-        },
+        // {
+        //   id: 'createdAt',
+        //   header: 'Created',
+        //   accessorKey: 'createdAt',
+        // },
       ] as ColumnConfig<Doc<'products'>>[],
     [],
   )

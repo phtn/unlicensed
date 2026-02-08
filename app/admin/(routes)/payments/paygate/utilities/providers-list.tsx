@@ -50,12 +50,22 @@ const ProvidersList = () => {
   )
 
   const handleToggleProvider = useCallback(
-    (providerName: string) => {
+    (item: Provider) => {
       if (defaultAccount == null) return
-      const next = topTen.includes(providerName)
-        ? topTen.filter((p) => p !== providerName)
+      const isInTopTen = topTen.some((p) => p.id === item.id)
+      const next = isInTopTen
+        ? topTen.filter((p) => p.id !== item.id)
         : topTen.length < TOP_TEN_MAX
-          ? [...topTen, providerName]
+          ? [
+              ...topTen,
+              {
+                id: item.id,
+                provider_name: item.provider_name,
+                status: item.status,
+                minimum_currency: item.minimum_currency,
+                minimum_amount: item.minimum_amount,
+              },
+            ]
           : topTen
       if (next !== topTen) {
         updateTopTenProviders({
@@ -121,8 +131,8 @@ const ProvidersList = () => {
           <ProviderItem
             key={item.id}
             item={item}
-            isSelected={topTen.includes(item.provider_name)}
-            onToggle={() => handleToggleProvider(item.provider_name)}
+            isSelected={topTen.some((p) => p.id === item.id)}
+            onToggle={() => handleToggleProvider(item)}
             disabled={!canSelect}
           />
         ))}

@@ -1,6 +1,6 @@
 'use client'
 
-import {Input} from '@heroui/react'
+import {Input, Slider} from '@heroui/react'
 import {ChangeEvent} from 'react'
 import {ProductFormApi} from '../product-schema'
 import {TagSelector} from '../tag-selector'
@@ -123,6 +123,71 @@ export const Attributes = ({form}: AttributesProps) => {
                 />
               </div>
             )}
+          </form.Field>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          <form.Field name='lineage'>
+            {(field) => {
+              const value = (field.state.value as string) ?? ''
+              return (
+                <div className='space-y-2'>
+                  <Input
+                    label='Lineage'
+                    type='text'
+                    value={value}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      field.handleChange(e.target.value)
+                    }
+                    onBlur={field.handleBlur}
+                    placeholder='e.g., OG Kush x Sour Diesel'
+                    variant='bordered'
+                    size='lg'
+                    classNames={commonInputClassNames}
+                  />
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {field.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                </div>
+              )
+            }}
+          </form.Field>
+
+          <form.Field name='noseRating'>
+            {(field) => {
+              const value =
+                typeof field.state.value === 'number' ? field.state.value : 0
+              return (
+                <div className='space-y-2'>
+                  <Slider
+                    label='Nose Rating'
+                    minValue={0}
+                    maxValue={10}
+                    step={1}
+                    showSteps
+                    value={value}
+                    onChange={(v) =>
+                      field.handleChange(Array.isArray(v) ? v[0] ?? 0 : v)
+                    }
+                    getValue={(v) =>
+                      `${Array.isArray(v) ? v[0] ?? 0 : v}/10`
+                    }
+                    classNames={{
+                      base: 'max-w-full',
+                    }}
+                  />
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {field.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                </div>
+              )
+            }}
           </form.Field>
         </div>
       </div>

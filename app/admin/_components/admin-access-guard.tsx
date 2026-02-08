@@ -1,11 +1,14 @@
 'use client'
 
+import {HyperList} from '@/components/expermtl/hyper-list'
 import {Loader} from '@/components/expermtl/loader'
+import {Typewrite} from '@/components/expermtl/typewrite'
 import {api} from '@/convex/_generated/api'
 import {useFirebaseAuthUser} from '@/hooks/use-firebase-auth-user'
+import {Icon} from '@/lib/icons'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
-import {type ReactNode, useEffect, useMemo, useTransition} from 'react'
+import {FC, type ReactNode, useEffect, useMemo, useTransition} from 'react'
 import {uuidv7} from 'uuidv7'
 
 type AdminAccessGuardProps = {
@@ -44,15 +47,20 @@ export function AdminAccessGuard({children}: AdminAccessGuardProps) {
       router.replace('/')
     })
   }, [router, shouldRedirectHome, startTransition])
+  const nonce = uuidv7()
+    .split('-')
+    .reverse()
+    .map((el) => ({item: el}))
 
   // Hold rendering until we can make a correct decision (prevents "flash" of admin UI).
   if (!authResolved || (user && !staffResolved)) {
     return (
-      <main className='p-6 w-full'>
-        <p className='font-polysans font-semibold'>
-          Halt Gate
-          <span className='font-brk font-light px-4'>ID:{uuidv7()}</span>
-        </p>
+      <main className='p-6 w-full space-y-3'>
+        <div className='flex items-center gap-1'>
+          <Icon name='safe-shield' />
+          <p className='font-polysans font-semibold'>Halt Gate</p>
+        </div>
+        <HyperList data={nonce} component={Nonce} direction='right' />
         <Loader />
       </main>
     )
@@ -70,3 +78,13 @@ export function AdminAccessGuard({children}: AdminAccessGuardProps) {
 
   return <>{children}</>
 }
+
+const Nonce: FC<{item: string}> = ({item}) => (
+  <div className='flex items-center gap-2'>
+    <Icon name='check' className='size-3 text-emerald-800' />
+
+    <span className='font-brk font-light text-xs'>
+      <Typewrite showCursor={false} text={item} />
+    </span>
+  </div>
+)

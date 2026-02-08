@@ -5,7 +5,7 @@ import {OrderStatus} from '@/convex/orders/d'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDate} from '@/utils/date'
-import {Avatar, Switch, SwitchProps} from '@heroui/react'
+import {Avatar, Button, SwitchProps} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMutation} from 'convex/react'
 import {FunctionReference} from 'convex/server'
@@ -17,6 +17,7 @@ import {
   useEffect,
   useRef,
   useState,
+  ViewTransition,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react'
@@ -523,14 +524,25 @@ export const toggleCell = <T, V>(
 
     return (
       <div className='px-0.5 flex justify-center'>
-        <Switch
+        <Button
+          isIconOnly
           size='sm'
+          radius='full'
           isDisabled={isUpdating}
-          isSelected={isFirstValue}
-          onValueChange={handleToggle}
-          color={currentColor ?? 'default'}
-          className={cn('scale-50', className)}
-        />
+          onPress={handleToggle}
+          className={cn('h-8 w-6 aspect-square group/tb bg-alum/10', {
+            'opacity-85': isFirstValue,
+          })}>
+          <ViewTransition>
+            <Icon
+              name={isFirstValue ? 'circ' : 'confirm-circle'}
+              className={cn('size-7 text-mac-blue/70', {
+                'text-slate-400 group-hover/tb:text-slate-600 dark:group-hover/tb:text-slate-300 group-hover/tb:opacity-95':
+                  isFirstValue,
+              })}
+            />
+          </ViewTransition>
+        </Button>
       </div>
     )
   }

@@ -4,11 +4,11 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {PaymentMethod} from '@/convex/orders/d'
 import {AddressType} from '@/convex/users/d'
-import {addToCartHistory} from '@/lib/localStorageCartHistory'
 import {
   clearLocalStorageCart,
   getLocalStorageCartItems,
 } from '@/lib/localStorageCart'
+import {addToCartHistory} from '@/lib/localStorageCartHistory'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
 import {useAuth} from './use-auth'
@@ -35,7 +35,8 @@ export interface UsePlaceOrderResult {
   isLoading: boolean
   error: Error | null
   orderId: Id<'orders'> | null
-  reset: () => void
+  orderNumber: string | null
+  reset: VoidFunction
 }
 
 /**
@@ -84,6 +85,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [orderId, setOrderId] = useState<Id<'orders'> | null>(null)
+  const [orderNumber, setOrderNumber] = useState<string | null>(null)
 
   const placeOrder = useCallback(
     async (params: PlaceOrderParams): Promise<Id<'orders'> | null> => {
@@ -207,6 +209,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
         // Create order
         const newOrderId = await createOrderMutation(orderArgs)
         setOrderId(newOrderId)
+        setOrderNumber(refNum)
 
         // For PayGate payments (credit_card or crypto), redirect to payment page
         // Note: We'll handle the redirect in the checkout component after order is created
@@ -353,6 +356,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
     isLoading,
     error,
     orderId,
+    orderNumber,
     reset,
   }
 }

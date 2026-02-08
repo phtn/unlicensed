@@ -35,7 +35,9 @@ export const getProductById = query({
 
 export const getProductsByIds = query({
   args: {
-    productIds: v.array(v.id('products')),
+    // Accept string IDs from client-side localStorage history and sanitize server-side.
+    // This prevents one malformed legacy entry from failing the whole query.
+    productIds: v.array(v.string()),
   },
   handler: async (ctx, args) => {
     const products = await Promise.all(
