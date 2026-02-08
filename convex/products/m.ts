@@ -73,6 +73,8 @@ export const createProduct = mutation({
       variants: args.variants,
       priceByDenomination: args.priceByDenomination,
       eligibleForRewards: args.eligibleForRewards,
+      eligibleForDeals: args.eligibleForDeals,
+      onSale: args.onSale,
       tier: args.tier,
       eligibleForUpgrade: args.eligibleForUpgrade,
       upgradePrice: args.upgradePrice,
@@ -230,6 +232,12 @@ export const updateProduct = mutation({
     if (fields.tier !== undefined) {
       updates.tier = fields.tier
     }
+    if (fields.eligibleForDeals !== undefined) {
+      updates.eligibleForDeals = fields.eligibleForDeals
+    }
+    if (fields.onSale !== undefined) {
+      updates.onSale = fields.onSale
+    }
     if (fields.eligibleForUpgrade !== undefined) {
       updates.eligibleForUpgrade = fields.eligibleForUpgrade
     }
@@ -254,6 +262,22 @@ export const toggleAvailability = mutation({
     }
     await ctx.db.patch(args.productId, {
       available: args.available,
+    })
+    return {success: true}
+  },
+})
+export const toggleDeals = mutation({
+  args: {
+    productId: v.id('products'),
+    deals: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.productId)
+    if (!product) {
+      return {success: false, error: 'Product not found'}
+    }
+    await ctx.db.patch(args.productId, {
+      eligibleForDeals: args.deals,
     })
     return {success: true}
   },
@@ -286,6 +310,22 @@ export const toggleRewardEligibility = mutation({
     }
     await ctx.db.patch(args.productId, {
       eligibleForRewards: args.eligibleForRewards,
+    })
+    return {success: true}
+  },
+})
+export const toggleOnSale = mutation({
+  args: {
+    productId: v.id('products'),
+    onSale: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.productId)
+    if (!product) {
+      return {success: false, error: 'Product not found'}
+    }
+    await ctx.db.patch(args.productId, {
+      onSale: args.onSale,
     })
     return {success: true}
   },

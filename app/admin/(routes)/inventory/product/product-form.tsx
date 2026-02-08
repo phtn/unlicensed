@@ -113,6 +113,8 @@ export const ProductForm = ({
           terpenes: data.terpenes || [],
           featured: data.featured,
           available: data.available,
+          eligibleForDeals: data.eligibleForDeals,
+          onSale: data.onSale,
           stock: data.stock ? Math.round(data.stock) : undefined,
           stockByDenomination: data.stockByDenomination,
           rating: data.rating,
@@ -134,7 +136,7 @@ export const ProductForm = ({
               denomKey != null && data.priceByDenomination?.[denomKey] != null
                 ? Math.round(data.priceByDenomination[denomKey] * 100)
                 : Math.round((v.price ?? 0) * 100)
-            return { ...v, price: priceCents }
+            return {...v, price: priceCents}
           }),
           priceByDenomination:
             data.priceByDenomination &&

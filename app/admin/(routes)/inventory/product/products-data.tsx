@@ -51,10 +51,16 @@ function availableDenominationsCell(
             <HoverCell label={label} content={content}>
               <div className='px-2 font-brk text-base flex items-center space-x-3 bg-alum/20 rounded-sm'>
                 {label === '⅛' && (
-                  <Icon name='8th' className='size-5 text-purple-600' />
+                  <Icon
+                    name='8th'
+                    className='size-5 text-purple-600 dark:text-indigo-400'
+                  />
                 )}
                 {label === '¼' && (
-                  <Icon name='4th' className='size-5 text-orange-600' />
+                  <Icon
+                    name='4th'
+                    className='size-5 text-orange-600 dark:text-orange-400'
+                  />
                 )}
                 {label === '½' && (
                   <Icon name='half' className='size-5 text-lime-600' />
@@ -110,10 +116,10 @@ export const ProductsData = ({data}: ProductsDataProps) => {
         },
         {
           id: 'tier',
-          header: <ColHeader tip='Tier Class' symbol='tier' />,
+          header: <ColHeader tip='Tier Class' symbol='tier' center />,
           accessorKey: 'tier',
           cell: textCell('tier', 'text-center uppercase'),
-          size: 40,
+          size: 64,
         },
         {
           id: 'available',
@@ -121,10 +127,24 @@ export const ProductsData = ({data}: ProductsDataProps) => {
           accessorKey: 'available',
           cell: toggleCell('available', api.products.m.toggleAvailability, {
             values: [true, false],
-            colors: ['success', 'default'],
+            colors: ['primary', 'default'],
             getMutationArgs: (row, newValue) => ({
               productId: row._id,
               available: newValue,
+            }),
+          }),
+          size: 40,
+        },
+        {
+          id: 'eligibleForDeals',
+          header: <ColHeader tip='Deals' symbol='deal' center />,
+          accessorKey: 'eligibleForDeals',
+          cell: toggleCell('eligibleForDeals', api.products.m.toggleDeals, {
+            values: [true, false],
+            colors: ['primary', 'default'],
+            getMutationArgs: (row, newValue) => ({
+              productId: row._id,
+              deals: newValue,
             }),
           }),
           size: 40,
@@ -152,13 +172,27 @@ export const ProductsData = ({data}: ProductsDataProps) => {
             api.products.m.toggleRewardEligibility,
             {
               values: [true, false],
-              colors: ['warning', 'default'],
+              colors: ['primary', 'default'],
               getMutationArgs: (row, newValue) => ({
                 productId: row._id,
                 eligibleForRewards: newValue,
               }),
             },
           ),
+          size: 40,
+        },
+        {
+          id: 'onSale',
+          header: <ColHeader tip='On-Sale Product' symbol='Sale' center />,
+          accessorKey: 'onSale',
+          cell: toggleCell('onSale', api.products.m.toggleOnSale, {
+            values: [true, false],
+            colors: ['primary', 'default'],
+            getMutationArgs: (row, newValue) => ({
+              productId: row._id,
+              onSale: newValue,
+            }),
+          }),
           size: 40,
         },
         {
@@ -170,7 +204,7 @@ export const ProductsData = ({data}: ProductsDataProps) => {
             api.products.m.toggleUpgradeEligibility,
             {
               values: [true, false],
-              colors: ['success', 'success'],
+              colors: ['primary', 'default'],
               getMutationArgs: (row, newValue) => ({
                 productId: row._id,
                 eligibleForUpgrade: newValue,
@@ -184,18 +218,27 @@ export const ProductsData = ({data}: ProductsDataProps) => {
           header: (
             <ColHeader
               tip='Available Denominations'
-              symbol='_____  Denominations'
+              symbol='Denominations'
+              className='pl-4'
             />
           ),
           accessorKey: 'availableDenominations',
           cell: availableDenominationsCell,
           size: 480,
         },
+
         {
-          id: 'popularDenomination',
-          header: <ColHeader tip='Popular' symbol='Pop' />,
-          accessorKey: 'popularDenomination',
-          cell: textCell('popularDenomination'),
+          id: 'lineage',
+          header: <ColHeader tip='Lineage' symbol='Lineage' />,
+          accessorKey: 'lineage',
+          cell: textCell('lineage'),
+        },
+        {
+          id: 'noseRating',
+          header: <ColHeader tip='Nose Rating' symbol='Nose' left />,
+          accessorKey: 'noseRating',
+          cell: textCell('noseRating'),
+          size: 50,
         },
         // {
         //   id: 'createdAt',

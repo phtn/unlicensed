@@ -3,14 +3,14 @@
 import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
-import {Icon, IconName} from '@/lib/icons'
-import {cn} from '@/lib/utils'
+import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useParams} from 'next/navigation'
 import {useMemo} from 'react'
+import {TopProviders} from './providers'
 
 const providerStatusTone = {
   active: 'text-emerald-500',
@@ -102,58 +102,49 @@ export default function CardProvidersPage() {
             </CardBody>
           </Card>
         ) : (
-          <div className='grid grid-cols-2 gap-4'>
-            {providers.map((provider) => {
-              const isDefault = paygateAccount?.defaultProvider === provider.id
-              const payHref = `/lobby/order/${orderId}/pay?provider=${encodeURIComponent(provider.id)}`
-
-              return (
-                <Card
-                  key={provider.id}
-                  radius='none'
-                  shadow='none'
-                  className='min-h-80 rounded-sm bg-dark-table/10'>
-                  <CardBody className='p-5 flex items-center justify-between gap-4'>
-                    <div className='space-y-1 min-w-0'>
-                      <div className='flex items-center gap-2'>
-                        <div className='flex items-center text-base font-okxs dark:text-background truncate bg-robinhood py-3 px-6 rounded-full space-x-1'>
-                          <Icon
-                            name={provider.id as IconName}
-                            className='dark:text-black'
-                          />
-                          <span className='text-xl'>
-                            {provider.provider_name}
-                          </span>
-                        </div>
-                        {isDefault && (
-                          <span className='text-[10px] uppercase tracking-[0.18em] px-2 py-0.5 rounded bg-primary/15 text-primary'>
-                            Default
-                          </span>
-                        )}
-                      </div>
-                      <p
-                        className={cn(
-                          'text-xs uppercase tracking-[0.2em]',
-                          providerStatusTone[provider.status],
-                        )}>
-                        {provider.status}
-                      </p>
-                      <p className='text-sm text-default-500'>
-                        Minimum: {provider.minimum_amount}{' '}
-                        {provider.minimum_currency}
-                      </p>
-                    </div>
-
-                    <Button as={NextLink} href={payHref} color='primary'>
-                      Continue
-                    </Button>
-                  </CardBody>
-                </Card>
-              )
-            })}
-          </div>
+          // <div className='grid grid-cols-2 gap-4'>
+          <TopProviders providers={providers} />
+          // </div>
         )}
       </div>
     </main>
   )
 }
+
+// const OldList = ({providers}: {providers: TopTenProvider[]}) => (
+// <Card
+//   key={provider.id}
+//   radius='none'
+//   shadow='none'
+//   className='min-h-80 rounded-sm bg-dark-table/10'>
+//   <CardBody className='p-5 flex items-center justify-between gap-4'>
+//     <div className='space-y-1 min-w-0'>
+//       <div className='flex items-center gap-2'>
+//         <div className='flex items-center text-base font-okxs dark:text-background truncate bg-robinhood py-3 px-6 rounded-full space-x-1'>
+//           <Icon name={provider.id as IconName} className='dark:text-black' />
+//           <span className='text-xl'>{provider.provider_name}</span>
+//         </div>
+//         {isDefault && (
+//           <span className='text-[10px] uppercase tracking-[0.18em] px-2 py-0.5 rounded bg-primary/15 text-primary'>
+//             Default
+//           </span>
+//         )}
+//       </div>
+//       <p
+//         className={cn(
+//           'text-xs uppercase tracking-[0.2em]',
+//           providerStatusTone[provider.status],
+//         )}>
+//         {provider.status}
+//       </p>
+//       <p className='text-sm text-default-500'>
+//         Minimum: {provider.minimum_amount} {provider.minimum_currency}
+//       </p>
+//     </div>
+
+//     <Button as={NextLink} href={payHref} color='primary'>
+//       Continue
+//     </Button>
+//   </CardBody>
+// </Card>
+// )

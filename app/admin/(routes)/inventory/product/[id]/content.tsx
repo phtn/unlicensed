@@ -58,6 +58,8 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
     featured: product.featured ?? false,
     available: product.available ?? false,
     eligibleForRewards: product.eligibleForRewards ?? true,
+    eligibleForDeals: product.eligibleForDeals ?? false,
+    onSale: product.onSale ?? false,
     stock: product.stock ?? 0,
     stockByDenomination: product.stockByDenomination ?? {},
     rating: product.rating ?? 0,
@@ -111,4 +113,3 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
     />
   )
 }
-

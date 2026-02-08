@@ -441,11 +441,11 @@ export const editableStatusCell = <T,>(
  * Configuration for the generic toggle cell factory
  */
 type ToggleCellConfig<T, V> = {
-  /** The two values to toggle between [firstValue, secondValue] */
+  /** The two values to toggle between [enabledValue, disabledValue] */
   values: readonly [V, V]
-  /** Labels for each value state [firstLabel, secondLabel] */
+  /** Labels for each value state [enabledLabel, disabledLabel] */
   labels?: readonly [string, string]
-  /** CSS classes for the indicator dot [firstColor, secondColor] */
+  /** Colors for each value state [enabledColor, disabledColor] */
   colors?: readonly [SwitchProps['color'], SwitchProps['color']]
   /** Build mutation args from row and new value */
   getMutationArgs: (row: T, newValue: V) => Record<string, unknown>
@@ -491,7 +491,7 @@ export const toggleCell = <T, V>(
   const {
     values,
     labels = [String(values[0]), String(values[1])],
-    colors = ['default', 'primary'],
+    colors = ['primary', 'default'],
     getMutationArgs,
     className,
   } = config
@@ -531,15 +531,18 @@ export const toggleCell = <T, V>(
           isDisabled={isUpdating}
           onPress={handleToggle}
           className={cn('h-8 w-6 aspect-square group/tb bg-alum/10', {
-            'opacity-85': isFirstValue,
+            'opacity-85': !isFirstValue,
           })}>
           <ViewTransition>
             <Icon
-              name={isFirstValue ? 'circ' : 'confirm-circle'}
-              className={cn('size-7 text-mac-blue/70', {
-                'text-slate-400 group-hover/tb:text-slate-600 dark:group-hover/tb:text-slate-300 group-hover/tb:opacity-95':
-                  isFirstValue,
-              })}
+              name={isFirstValue ? 'confirm-circle' : 'circ'}
+              className={cn(
+                'size-7 dark:text-primary/80 text-blue-400 dark:group-hover/tb:text-slate-600 ',
+                {
+                  'text-slate-400 group-hover/tb:text-slate-600 dark:text-slate-600 group-hover/tb:opacity-90':
+                    !isFirstValue,
+                },
+              )}
             />
           </ViewTransition>
         </Button>

@@ -487,12 +487,11 @@ export const Inventory = ({form}: InventoryProps) => {
           </form.Field>
           <form.Field name='eligibleForDeals'>
             {(field) => {
-              const currentState = (field.state.value as boolean) ?? false
               return (
                 <JunctionBox
                   title='Deals'
                   description='Discounts and package deals.'
-                  checked={currentState}
+                  checked={(field.state.value as boolean) ?? false}
                   onUpdate={field.handleChange}
                 />
               )
@@ -538,12 +537,11 @@ export const Inventory = ({form}: InventoryProps) => {
 
           <form.Field name='eligibleForUpgrade'>
             {(field) => {
-              const currentState = (field.state.value as boolean) ?? false
               return (
                 <JunctionBox
                   title='Upgradable'
                   description='Product can be upgraded to a higher tiers.'
-                  checked={currentState}
+                  checked={(field.state.value as boolean) ?? false}
                   onUpdate={field.handleChange}
                 />
               )

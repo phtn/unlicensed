@@ -1,5 +1,6 @@
 import {cn} from '@/lib/utils'
 import {Card, Switch} from '@heroui/react'
+import {useCallback} from 'react'
 
 interface JunctionBoxProps {
   title: string
@@ -13,7 +14,10 @@ export const JunctionBox = ({
   onUpdate,
   description,
 }: JunctionBoxProps) => {
-  const handleCardToggle = () => onUpdate(!checked)
+  const handleCardToggle = useCallback(
+    () => onUpdate(!checked),
+    [checked, onUpdate],
+  )
   return (
     <Card
       radius='none'

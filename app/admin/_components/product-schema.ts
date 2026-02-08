@@ -32,6 +32,8 @@ export const productSchema = z.object({
   featured: z.boolean(),
   available: z.boolean(),
   eligibleForRewards: z.boolean(),
+  eligibleForDeals: z.optional(z.boolean()),
+  onSale: z.optional(z.boolean()),
   stock: z.optional(z.number().min(0, 'Stock must be positive.')),
   /** Per-denomination inventory. Key = denomination as string (e.g. "0.125", "1"), value = count. */
   stockByDenomination: z.optional(
@@ -259,11 +261,25 @@ export const productFields: FormInput<ProductFormValues>[] = [
     defaultValue: true,
   },
   {
+    name: 'eligibleForDeals',
+    label: 'Eligible for Deals',
+    required: false,
+    type: 'checkbox',
+    defaultValue: false,
+  },
+  {
     name: 'eligibleForRewards',
     label: 'Eligible for Rewards',
     required: true,
     type: 'checkbox',
     defaultValue: true,
+  },
+  {
+    name: 'onSale',
+    label: 'On Sale',
+    required: false,
+    type: 'checkbox',
+    defaultValue: false,
   },
   {
     name: 'rating',
@@ -327,6 +343,7 @@ export const defaultValues: ProductFormValues = {
   tier: undefined,
   lineage: undefined,
   noseRating: undefined,
+  onSale: false,
   eligibleForUpgrade: false,
   upgradePrice: undefined,
 } as ProductFormValues

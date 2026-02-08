@@ -238,6 +238,7 @@ export const createColumns = <T,>(
   // Add data columns based on configuration
   columnConfigs.forEach((config) => {
     const column: ColumnDef<T> = {
+      id: config.id,
       header: config.header as string,
       accessorKey: config.accessorKey as string,
       size: config.size ?? 150,
