@@ -6,8 +6,14 @@ import {useCallback, useState} from 'react'
 
 interface TopProvidersProps {
   providers: Array<TopTenProvider>
+  onSelectProvider: (providerId: string) => void
+  selectedProviderId?: string | null
 }
-export const TopProviders = ({providers}: TopProvidersProps) => {
+export const TopProviders = ({
+  providers,
+  onSelectProvider,
+  selectedProviderId = null,
+}: TopProvidersProps) => {
   const [hovered, setHovered] = useState<string | null>(null)
   const handleHover = useCallback(
     (id: string | null) => () => {
@@ -15,33 +21,38 @@ export const TopProviders = ({providers}: TopProvidersProps) => {
     },
     [],
   )
+  const handleSelect = useCallback(
+    (providerId: string) => () => {
+      onSelectProvider(providerId)
+    },
+    [onSelectProvider],
+  )
 
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-12'>
       {providers.map((provider) => (
-        <div
+        <button
           key={provider.id}
+          type='button'
           onMouseEnter={handleHover(provider.id)}
           onMouseLeave={handleHover(null)}
-          className='group relative'>
+          onClick={handleSelect(provider.id)}
+          aria-label={`Pay with ${provider.provider_name}`}
+          disabled={selectedProviderId !== null}
+          className='group relative text-left'>
           {/* Card */}
           <div
             className='relative bg-linear-to-r from-alum/20 to-white dark:from-dark-table dark:to-dark-table/80 rounded-xl p-8 md:p-10 h-full cursor-pointer
-                      border border-stone-500/30
+                      border border-stone-500/30 outline-none
+                      transition-all duration-300
+                      group-hover:ring-1 group-hover:ring-primary/50
+                      group-focus-visible:ring-2 group-focus-visible:ring-primary
+                      group-disabled:opacity-70
                       '>
-            {/* Decorative top accent line */}
             <div
-              className={`absolute top-0 left-8 md:left-10 h-0.5 w-16 transition-all duration-500 rounded-b-full
-                        opacity-50 ${
-                          hovered === provider.id
-                            ? 'bg-linear-to-r ' +
-                              cmap[provider.id] +
-                              'to-black border-b'
-                            : cmap[provider.id]
-                        }`}
+              className={`absolute top-0 left-8 md:left-10 h-1 w-16 transition-all duration-500 rounded-b-full
+                        opacity-50 border-b dark:border-background dark:bg-background`}
             />
-
-            {/* Icon */}
             <div className='flex items-center space-x-6 text-5xl mb-3 transition-transform duration-500 group-hover:scale-101 group-hover:translate-y-0'>
               <div
                 className={cn(
@@ -58,25 +69,56 @@ export const TopProviders = ({providers}: TopProvidersProps) => {
                 />
               </div>
               <div>
-                <h3 className='text-2xl font-okxs text-slate-900 dark:text-white tracking-wide'>
-                  {provider.provider_name}
-                </h3>
-                <p className='text-sm text-emerald-500 font-brk font-thin leading-relaxed uppercase tracking-widest'>
+                <div className='flex items-center space-x-6'>
+                  <h3 className='text-2xl font-pixel-line text-slate-900 dark:text-white tracking-wide'>
+                    {provider.provider_name}
+                  </h3>
+                  <h3 className='text-xl font-okxs text-slate-900 dark:text-white'>
+                    {provider.id === 'robinhood' ? (
+                      <span className='underline underline-offset-2 decoration-0.5 decoration-robinhood'>
+                        3% Discount
+                      </span>
+                    ) : (
+                      '5% Surcharge'
+                    )}
+                  </h3>
+                </div>
+                <p className='text-sm text-emerald-500 font-pixel-sqr font-thin leading-relaxed uppercase tracking-widest'>
                   {provider.status}
                 </p>
               </div>
             </div>
 
-            {/* Arrow indicator */}
             <div className='flex items-center justify-end'>
+              {selectedProviderId === provider.id && (
+                <div className='absolute right-17 bottom-11 text-xs uppercase tracking-[0.2em] font-pixel-line'>
+                  Preparing
+                </div>
+              )}
               <Icon
-                name='arrow-right'
-                className='text-slate-400 transition-all duration-500
-                          transform group-hover:translate-x-2 group-hover:text-slate-900 size-5'
+                name={
+                  selectedProviderId === provider.id
+                    ? 'spinners-ring'
+                    : 'arrow-right'
+                }
+                className={cn(
+                  'transition-all duration-500 transform-gpu opacity-0 -translate-x-14 group-hover:translate-x-3 group-hover:opacity-100 group-hover:text-slate-100 dark:group-hover:text-slate-100 blur-sm group-hover:blur-none size-6 delay-75',
+                  {'size-5': selectedProviderId === provider.id},
+                )}
+              />
+              <Icon
+                name={
+                  selectedProviderId === provider.id
+                    ? 'spinners-ring'
+                    : 'arrow-right'
+                }
+                className={cn(
+                  'transition-all duration-500 transform group-hover:translate-x-7 group-hover:text-slate-900 group-hover:blur-xs size-6 group-hover:opacity-0',
+                  {'size-5': selectedProviderId === provider.id},
+                )}
               />
             </div>
 
-            {/* Hover overlay gradient */}
             <div
               className={`absolute inset-0 rounded-xl opacity-0
                         transition-opacity duration-500 pointer-events-none
@@ -84,7 +126,7 @@ export const TopProviders = ({providers}: TopProvidersProps) => {
                         ${hovered === provider.id ? 'opacity-100' : 'opacity-0'}`}
             />
           </div>
-        </div>
+        </button>
       ))}
     </div>
   )

@@ -121,6 +121,11 @@
   --color-unlimit: oklch(0.9124 0.207 122.95);
   --color-moonpay: oklch(0.5272 0.293 292.95);
   --color-rampnetwork: oklch(0.7102 0.1663 155.57);
+  --font-pixel-sqr: 'GeistPixelSquare';
+  --font-pixel-cir: 'GeistPixelCircle';
+  --font-pixel-tri: 'GeistPixelTriangle';
+  --font-pixel-grid: 'GeistPixelGrid';
+  --font-pixel-line: 'GeistPixelLine';
 }
 
 :root,

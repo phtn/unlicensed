@@ -1,6 +1,6 @@
 {
   "name": "hyfe",
-  "version": "0.28.1",
+  "version": "0.28.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -54,6 +54,7 @@
     "firebase": "^12.7.0",
     "firebase-admin": "^13.6.0",
     "flags": "^4.0.2",
+    "geist": "^1.7.0",
     "leva": "^0.10.1",
     "marked": "^17.0.1",
     "motion": "^12.33.0",

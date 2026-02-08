@@ -1,5 +1,12 @@
 import {ProvidersCtxProvider} from '@/ctx'
 import {DynamicWagmiContext} from '@/ctx/wagmi/dynamic'
+import {
+  GeistPixelCircle,
+  GeistPixelGrid,
+  GeistPixelLine,
+  GeistPixelSquare,
+  GeistPixelTriangle,
+} from 'geist/font/pixel'
 import type {Metadata, Viewport} from 'next'
 import {
   Bakbak_One as BakbakOne,
@@ -182,7 +189,7 @@ export default async function RootLayout({
   return (
     <html lang='en' suppressHydrationWarning>
       <body
-        className={`${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} antialiased font-sans`}>
+        className={`${GeistPixelSquare.className} ${GeistPixelCircle.className} ${GeistPixelTriangle.className} ${GeistPixelGrid.className} ${GeistPixelLine.className} ${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} antialiased font-sans`}>
         <DynamicWagmiContext cookies={cookies}>
           <ProvidersCtxProvider>
             <EmailLinkHandler />

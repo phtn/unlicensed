@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.2
+
+### Patch Changes
+
+- payment-providers-wired
+
 ## 0.28.1
 
 ### Patch Changes

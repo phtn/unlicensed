@@ -3,31 +3,51 @@
 import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {usePaygate} from '@/hooks/use-paygate'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useParams} from 'next/navigation'
-import {useMemo} from 'react'
+import {useCallback, useMemo, useState} from 'react'
 import {TopProviders} from './providers'
-
-const providerStatusTone = {
-  active: 'text-emerald-500',
-  inactive: 'text-default-500',
-  redirected: 'text-flavors',
-  unstable: 'text-danger',
-} as const
 
 export default function CardProvidersPage() {
   const params = useParams()
   const orderId = params.orderId as Id<'orders'>
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(
+    null,
+  )
   const order = useQuery(api.orders.q.getById, {id: orderId})
   const paygateAccount = useQuery(api.paygateAccounts.q.getDefaultAccount)
+  const {handleProcessPaymentSubmit} = usePaygate()
 
   const providers = useMemo(
     () => paygateAccount?.topTenProviders ?? [],
     [paygateAccount?.topTenProviders],
+  )
+  const walletAddress = useMemo(() => paygateAccount?.addressIn ?? '', [
+    paygateAccount?.addressIn,
+  ])
+  const amountInDollars = useMemo(
+    () => ((order?.totalCents ?? 0) / 100).toFixed(2),
+    [order?.totalCents],
+  )
+
+  const handleProviderSelect = useCallback(
+    (providerId: string) => {
+      if (!order || !walletAddress) return
+      setSelectedProviderId(providerId)
+      handleProcessPaymentSubmit(
+        walletAddress,
+        amountInDollars,
+        providerId,
+        order.contactEmail,
+        'USD',
+      )
+    },
+    [amountInDollars, handleProcessPaymentSubmit, order, walletAddress],
   )
 
   if (order === undefined || paygateAccount === undefined) {
@@ -60,12 +80,12 @@ export default function CardProvidersPage() {
   return (
     <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 dark:bg-black'>
       <div className='mx-auto max-w-7xl space-y-4'>
-        <Card radius='none' shadow='none' className='rounded-sm'>
+        <Card radius='none' shadow='none' className='rounded-sm bg-dark-gray/0'>
           <CardBody className='p-6'>
             <div className='flex items-center justify-between w-full'>
               <div className='space-y-1'>
                 <div className='flex items-center space-x-5 opacity-60'>
-                  <p className='text-sm uppercase tracking-[0.22em] font-brk'>
+                  <p className='text-sm uppercase tracking-[0.22em] font-pixel-line'>
                     Card Payment
                   </p>
                   <Icon name='applepay' className='size-9' />
@@ -76,8 +96,8 @@ export default function CardProvidersPage() {
                 </h1>
               </div>
               <div className='space-y-2'>
-                <div className='flex items-center space-x-2'>
-                  <p className='text-sm uppercase tracking-widest font-brk font-light opacity-60'>
+                <div className='flex items-center justify-end'>
+                  <p className='text-sm uppercase tracking-widest font-pixel-line font-light opacity-60'>
                     You Pay
                   </p>
                 </div>
@@ -103,7 +123,11 @@ export default function CardProvidersPage() {
           </Card>
         ) : (
           // <div className='grid grid-cols-2 gap-4'>
-          <TopProviders providers={providers} />
+          <TopProviders
+            providers={providers}
+            onSelectProvider={handleProviderSelect}
+            selectedProviderId={selectedProviderId}
+          />
           // </div>
         )}
       </div>

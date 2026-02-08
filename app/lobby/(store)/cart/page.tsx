@@ -2,7 +2,6 @@
 
 import {AuthModal} from '@/components/auth/auth-modal'
 import {api} from '@/convex/_generated/api'
-import {onSuccess} from '@/ctx/toast'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {usePlaceOrder} from '@/hooks/use-place-order'
@@ -122,7 +121,6 @@ export default function CartPage() {
               : paymentMethod === 'cash_app'
                 ? `/lobby/order/${orderId}/cashapp`
                 : `/lobby/order/${orderId}/commerce`
-          onSuccess(' C/PAGE:121:TX')
           router.replace(redirectPath)
         })
       }, 5000)
