@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.3
+
+### Patch Changes
+
+- server-proxy
+
 ## 0.28.2
 
 ### Patch Changes

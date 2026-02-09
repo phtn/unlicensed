@@ -32,10 +32,26 @@ async function handleRequest(request: Request): Promise<Response> {
   const url = new URL(request.url)
   const path = url.pathname
   const searchParams = url.searchParams
+  const host = (request.headers.get('host') || '').split(':')[0]
+  const isCheckoutHost =
+    (CUSTOM_CHECKOUT_DOMAIN && host === CUSTOM_CHECKOUT_DOMAIN) ||
+    host.startsWith('checkout.')
 
-  // Add wallet parameter if configured and not already present
-  if (USDC_WALLET && !searchParams.has('wallet')) {
-    searchParams.set('wallet', USDC_WALLET)
+  // For checkout endpoints, make sure `address` is present when a wallet is configured.
+  // This keeps provider-specific card checkout endpoints working on remote deployments.
+  const isCheckoutPath =
+    path.startsWith('/process-payment.php') ||
+    path === '/process-payment.php' ||
+    path.startsWith('/pay.php') ||
+    path === '/pay.php'
+  if (USDC_WALLET) {
+    if (isCheckoutPath) {
+      if (!searchParams.has('address')) {
+        searchParams.set('address', USDC_WALLET)
+      }
+    } else if (!searchParams.has('wallet')) {
+      searchParams.set('wallet', USDC_WALLET)
+    }
   }
 
   // Add affiliate parameter if configured and not already present
@@ -46,24 +62,15 @@ async function handleRequest(request: Request): Promise<Response> {
   // Determine target endpoint
   let targetUrl: string
 
-  if (path.startsWith('/crypto/')) {
-    // Crypto payment endpoints
-    targetUrl = `${PAYGATE_CHECKOUT_URL}${path}?${searchParams.toString()}`
-  } else if (
-    path.startsWith('/process-payment.php') ||
-    path === '/process-payment.php'
-  ) {
-    // Credit card payment creation
-    targetUrl = `${PAYGATE_CHECKOUT_URL}/pay.php?${searchParams.toString()}`
-  } else if (path.startsWith('/pay.php') || path === '/pay.php') {
-    // Payment status check
+  if (path.startsWith('/control/payment-status.php')) {
+    // Payment status endpoint lives on API host
     targetUrl = `${PAYGATE_API_URL}/control/payment-status.php?${searchParams.toString()}`
-  } else if (
-    path.startsWith('/control/payment-status.php') ||
-    path === '/control/payment-status.php'
-  ) {
-    // General info endpoints
-    targetUrl = `${PAYGATE_API_URL}${path}?${searchParams.toString()}`
+  } else if (isCheckoutPath) {
+    // Provider-specific checkout endpoints (do NOT rewrite process-payment.php to pay.php)
+    targetUrl = `${PAYGATE_CHECKOUT_URL}${path}?${searchParams.toString()}`
+  } else if (isCheckoutHost) {
+    // If the request came through checkout.yourdomain.com, preserve checkout upstream
+    targetUrl = `${PAYGATE_CHECKOUT_URL}${path}?${searchParams.toString()}`
   } else {
     // Default: proxy to PayGate API
     targetUrl = `${PAYGATE_API_URL}${path}?${searchParams.toString()}`
