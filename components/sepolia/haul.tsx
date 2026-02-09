@@ -1,6 +1,6 @@
 'use client'
 
-import {CryptoWidget} from '@/components/ncash/widget'
+import {CryptoWidget} from '@/components/appkit/widget'
 import {SearchParamsProvider} from './search-params-context'
 
 export const Haul = () => {

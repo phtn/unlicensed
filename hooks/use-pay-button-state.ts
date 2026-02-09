@@ -1,4 +1,4 @@
-import type {Token} from '@/components/ncash/token-coaster'
+import type {Token} from '@/components/appkit/token-coaster'
 import {useEffect, useMemo} from 'react'
 import type {Address} from 'viem'
 

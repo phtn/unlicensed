@@ -32,6 +32,7 @@ import {PayTabProps} from './types'
 export const PayTab = ({
   tokenPrice,
   disabled,
+  defaultPaymentAmountUsd,
   isPending = false,
   isConfirming = false,
   receipt = null,
@@ -57,7 +58,8 @@ export const PayTab = ({
   )
 
   // Payment amount state (always in USD) - sync with search params
-  const paymentAmountUsd = params.paymentAmountUsd ?? '0.25'
+  const paymentAmountUsd =
+    params.paymentAmountUsd ?? defaultPaymentAmountUsd ?? '0.25'
   const setPaymentAmountUsd = useCallback(
     (value: string | ((prev: string) => string)) => {
       const newValue =
@@ -518,7 +520,7 @@ export const PayTab = ({
       animate={{opacity: 1, y: 0}}
       exit={{opacity: 0, y: -10}}
       transition={{layout: {duration: 0.3, ease: 'easeInOut'}}}
-      className='space-y-0'>
+      className='space-y-0 w-full'>
       {/* Amount Info */}
       {paymentAmountUsd && usdValue && !activeReceipt && (
         <PayAmount

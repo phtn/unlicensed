@@ -105,7 +105,11 @@ export function Checkout({
           }, 500)
         } else {
           // Use the order's payment method to determine redirect
-          const paymentMethod = order.payment.method
+          const paymentMethod = String(order.payment.method)
+          const isCryptoPaymentMethod =
+            paymentMethod === 'crypto_commerce' ||
+            paymentMethod === 'crypto_transfer' ||
+            paymentMethod === 'crypto-payment'
           console.log('[Checkout] Order payment method:', paymentMethod)
           startTransition(() => {
             // Determine redirect path based on payment method
@@ -114,6 +118,8 @@ export function Checkout({
               redirectPath = `/lobby/order/${orderId}/cards`
             } else if (paymentMethod === 'cash_app') {
               redirectPath = `/lobby/order/${orderId}/cashapp`
+            } else if (isCryptoPaymentMethod) {
+              redirectPath = `/lobby/order/${orderId}/crypto`
             } else {
               // Default to commerce for crypto and other methods
               redirectPath = `/lobby/order/${orderId}/commerce`

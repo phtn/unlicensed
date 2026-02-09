@@ -115,12 +115,19 @@ export default function CartPage() {
     if (orderId) {
       const redirectTimer = setTimeout(() => {
         startTransition(() => {
+          const paymentMethodValue = String(paymentMethod)
+          const isCryptoPaymentMethod =
+            paymentMethodValue === 'crypto_commerce' ||
+            paymentMethodValue === 'crypto_transfer' ||
+            paymentMethodValue === 'crypto-payment'
           const redirectPath =
-            paymentMethod === 'cards'
+            paymentMethodValue === 'cards'
               ? `/lobby/order/${orderId}/cards`
-              : paymentMethod === 'cash_app'
+              : paymentMethodValue === 'cash_app'
                 ? `/lobby/order/${orderId}/cashapp`
-                : `/lobby/order/${orderId}/commerce`
+                : isCryptoPaymentMethod
+                  ? `/lobby/order/${orderId}/crypto`
+                  : `/lobby/order/${orderId}/commerce`
           router.replace(redirectPath)
         })
       }, 5000)

@@ -48,8 +48,8 @@ export const TokenModern = ({
           `relative rounded-3xl flex items-center justify-center w-auto h-6 md:h-10 aspect-square`,
         )}>
         <Icon
-          name='circ'
-          className={cn('size-14 absolute', {
+          name='squircle'
+          className={cn('size-14 text-ethereum absolute', {
             'text-usdt': token === 'usdt',
             'text-ethereum': token === 'ethereum',
             'text-usdc': token === 'usdc',

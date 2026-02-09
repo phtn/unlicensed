@@ -20,6 +20,8 @@ export interface PayTabProps {
   setTo: Dispatch<SetStateAction<string>>
   setAmount: Dispatch<SetStateAction<string>>
   amount: string
+  /** Default USD amount when no paymentAmountUsd in URL (e.g. order total for order payment flow). */
+  defaultPaymentAmountUsd?: string
   isPending?: boolean
   isConfirming?: boolean
   receipt?: ReceiptStatus

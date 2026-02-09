@@ -41,11 +41,19 @@ function formatDate(timestamp: number) {
 }
 
 function getPaymentRoute(orderId: string, paymentMethod: string) {
-  if (paymentMethod === 'cards') {
+  const paymentMethodValue = String(paymentMethod)
+  if (paymentMethodValue === 'cards') {
     return `/order/${orderId}/cards`
   }
-  if (paymentMethod === 'cash_app') {
+  if (paymentMethodValue === 'cash_app') {
     return `/order/${orderId}/cashapp`
+  }
+  if (
+    paymentMethodValue === 'crypto_commerce' ||
+    paymentMethodValue === 'crypto_transfer' ||
+    paymentMethodValue === 'crypto-payment'
+  ) {
+    return `/order/${orderId}/crypto`
   }
   return `/order/${orderId}/commerce`
 }

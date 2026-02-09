@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.4
+
+### Patch Changes
+
+- appkit-widget-init
+
 ## 0.28.3
 
 ### Patch Changes

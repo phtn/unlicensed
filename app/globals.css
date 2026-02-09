@@ -121,6 +121,11 @@
   --color-unlimit: oklch(0.9124 0.207 122.95);
   --color-moonpay: oklch(0.5272 0.293 292.95);
   --color-rampnetwork: oklch(0.7102 0.1663 155.57);
+  --color-usdc: oklch(0.562 0.1504 253.19);
+  --color-polygon: oklch(0.5284 0.2186 291.48);
+  --color-ethereum: oklch(0.6416 0.1738 268.95);
+  --color-bitcoin: oklch(0.7523 0.1663 62.59);
+  --color-usdt: oklch(0.6346 0.1184 167.54);
   --font-pixel-sqr: 'GeistPixelSquare';
   --font-pixel-cir: 'GeistPixelCircle';
   --font-pixel-tri: 'GeistPixelTriangle';

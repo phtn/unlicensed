@@ -6,6 +6,7 @@ import {AnimatePresence, motion} from 'motion/react'
 import QRCode from 'qrcode'
 import {useCallback, useEffect, useState} from 'react'
 import {AnimatedNumber} from '../ui/animated-number'
+import {WalletComponent} from './wallet'
 
 export interface PayAmountProps {
   usdValue: number
@@ -68,7 +69,7 @@ function PayQrModal({
             className='fixed inset-0 z-50 cursor-pointer bg-black/60 backdrop-blur-sm'
             aria-hidden
           />
-          <div className='fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none'>
+          <div className='fixed inset-0 z-200 flex items-center justify-center p-4 pointer-events-none'>
             <motion.div
               role='dialog'
               aria-modal='true'
@@ -78,7 +79,7 @@ function PayQrModal({
               exit={{opacity: 0, scale: 0.95, y: 8}}
               transition={{type: 'spring', damping: 25, stiffness: 300}}
               className={cn(
-                'relative w-full max-w-sm pointer-events-auto',
+                'relative w-full max-w-md pointer-events-auto',
                 'rounded-2xl border border-white/10 bg-zinc-900/95 shadow-2xl overflow-hidden',
               )}
               onClick={(e) => e.stopPropagation()}>
@@ -244,6 +245,9 @@ export function PayAmount({
                   />
                 </motion.div>
               </button>
+              <div className='border border-brand/20 rounded-full w-fit relative z-40'>
+                <WalletComponent />
+              </div>
             </div>
           </div>
         </div>

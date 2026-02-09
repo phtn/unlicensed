@@ -1,5 +1,5 @@
 import {useApiCall} from '@/hooks/use-api-call'
-import {useCallback, useEffect, useMemo, useState} from 'react'
+import {startTransition, useCallback, useEffect, useMemo, useState} from 'react'
 
 interface UsePolygonAddressValidationOptions {
   /**
@@ -31,164 +31,126 @@ interface ValidationResult {
   isValidating: boolean
 }
 
+/**
+ * Validates the format of an Ethereum address (pure helper).
+ */
+function checkFormat(
+  addr: string | null | undefined,
+  minLength: number,
+): boolean {
+  if (!addr || typeof addr !== 'string') {
+    return false
+  }
+  const trimmed = addr.trim()
+  if (trimmed.length !== minLength || !trimmed.startsWith('0x')) {
+    return false
+  }
+  const hexPart = trimmed.slice(2)
+  if (hexPart.length !== 40) {
+    return false
+  }
+  return /^[0-9a-fA-F]+$/.test(hexPart)
+}
+
 export function usePolygonAddressValidation(
   address: string | null | undefined,
   options: UsePolygonAddressValidationOptions = {},
 ) {
   const {minLength = 42, autoValidate = true} = options
   const {handleApiCall, response, loading} = useApiCall()
-  const [validationResult, setValidationResult] =
-    useState<ValidationResult>({
-      isValidFormat: false,
-      isValidAddress: null,
-      error: null,
-      isValidating: false,
-    })
+  const [lastValidatedAddress, setLastValidatedAddress] = useState<string>('')
 
-  /**
-   * Validates the format of an Ethereum address
-   */
   const validateFormat = useCallback(
-    (addr: string | null | undefined): boolean => {
-      if (!addr || typeof addr !== 'string') {
-        return false
-      }
-
-      const trimmed = addr.trim()
-
-      // Check length
-      if (trimmed.length !== minLength) {
-        return false
-      }
-
-      // Check if it starts with 0x
-      if (!trimmed.startsWith('0x')) {
-        return false
-      }
-
-      // Check if the rest is valid hexadecimal (40 characters after 0x)
-      const hexPart = trimmed.slice(2)
-      if (hexPart.length !== 40) {
-        return false
-      }
-
-      // Validate hex characters
-      const hexRegex = /^[0-9a-fA-F]+$/
-      return hexRegex.test(hexPart)
-    },
+    (addr: string | null | undefined): boolean => checkFormat(addr, minLength),
     [minLength],
   )
 
   /**
-   * Validates the address by checking if it exists on Polygon network
+   * Validates the address by checking if it exists on Polygon network.
+   * Does not call setState; result is derived from useApiCall's response.
    */
   const validateAddress = useCallback(
     async (addr: string): Promise<boolean> => {
-      if (!validateFormat(addr)) {
+      if (!checkFormat(addr, minLength)) {
         return false
       }
-
       try {
-        setValidationResult((prev) => ({
-          ...prev,
-          isValidating: true,
-          error: null,
-        }))
-
-        // Make API call to PolygonScan
         await handleApiCall(`https://polygonscan.com/address/${addr}`)
-
-        // The response will be set by useApiCall hook
-        // We'll check it in the useEffect below
         return true
       } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : 'Failed to validate address'
-        setValidationResult((prev) => ({
-          ...prev,
-          isValidating: false,
-          error: errorMessage,
-          isValidAddress: false,
-        }))
+        console.error(error)
         return false
       }
     },
-    [handleApiCall, validateFormat],
+    [handleApiCall, minLength],
   )
 
-  // Update validation result based on API response
+  // Only trigger async validation when address changes; track which address via state (set in transition to avoid sync setState in effect)
   useEffect(() => {
-    if (loading) {
+    if (!autoValidate || !address) {
+      startTransition(() => setLastValidatedAddress(''))
       return
     }
-
-    if (!response) {
-      return
+    const trimmed = address.trim()
+    if (trimmed.length === minLength && checkFormat(trimmed, minLength)) {
+      startTransition(() => setLastValidatedAddress(trimmed))
+      void validateAddress(trimmed).catch((error) => {
+        console.error('Address validation error:', error)
+      })
+    } else {
+      startTransition(() => setLastValidatedAddress(''))
     }
+  }, [address, autoValidate, minLength, validateAddress])
 
-    const isValidFormatResult = validateFormat(address)
+  // Derive validation result from response/loading and current address (no setState in effects)
+  const validationResult = useMemo((): ValidationResult => {
+    const isValidFormat = validateFormat(address)
+    const trimmed = address?.trim() ?? ''
 
-    if (!isValidFormatResult) {
-      setValidationResult({
+    if (!address) {
+      return {
         isValidFormat: false,
         isValidAddress: null,
         error: null,
         isValidating: false,
-      })
-      return
+      }
     }
 
-    // Check if the API call was successful
-    // PolygonScan returns HTML for valid addresses (200 status)
-    // A successful response means the address page exists on PolygonScan
-    // If response.success is true, the address exists; if false, it might not exist or there was an error
-    const isValid = response.success === true
+    const isResponseForCurrentAddress =
+      response != null && trimmed === lastValidatedAddress
 
-    setValidationResult({
-      isValidFormat: true,
-      isValidAddress: isValid,
-      error: response.error || null,
+    if (loading && trimmed === lastValidatedAddress) {
+      return {
+        isValidFormat,
+        isValidAddress: null,
+        error: null,
+        isValidating: true,
+      }
+    }
+
+    if (isResponseForCurrentAddress && response) {
+      return {
+        isValidFormat: true,
+        isValidAddress: response.success,
+        error: response.error ?? null,
+        isValidating: false,
+      }
+    }
+
+    return {
+      isValidFormat,
+      isValidAddress: null,
+      error: null,
       isValidating: false,
-    })
-  }, [response, loading, address, validateFormat])
-
-  // Auto-validate when address changes
-  useEffect(() => {
-    if (!autoValidate || !address) {
-      const isValidFormatResult = validateFormat(address)
-      setValidationResult({
-        isValidFormat: isValidFormatResult,
-        isValidAddress: null,
-        error: null,
-        isValidating: false,
-      })
-      return
     }
+  }, [address, response, loading, lastValidatedAddress, validateFormat])
 
-    const trimmed = address.trim()
-    if (trimmed.length === minLength && validateFormat(trimmed)) {
-      validateAddress(trimmed).catch((error) => {
-        console.error('Address validation error:', error)
-      })
-    } else {
-      setValidationResult({
-        isValidFormat: validateFormat(trimmed),
-        isValidAddress: null,
-        error: null,
-        isValidating: false,
-      })
-    }
-  }, [address, autoValidate, minLength, validateFormat, validateAddress])
-
-  // Memoized validation state
-  const isValid = useMemo(() => {
-    return (
+  const isValid = useMemo(
+    () =>
       validationResult.isValidFormat &&
-      validationResult.isValidAddress === true
-    )
-  }, [validationResult.isValidFormat, validationResult.isValidAddress])
+      validationResult.isValidAddress === true,
+    [validationResult.isValidFormat, validationResult.isValidAddress],
+  )
 
   return {
     ...validationResult,
@@ -201,4 +163,3 @@ export function usePolygonAddressValidation(
     }, [address, validateAddress]),
   }
 }
-
