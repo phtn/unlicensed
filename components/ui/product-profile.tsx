@@ -63,7 +63,8 @@ export const ProductProfile = ({group, name}: IProductProfile) => {
   return (
     <div
       id={id}
-      className={`flex items-center justify-between pl-1 pr-2 gap-0 rounded-full h-7 grow-0  bg-background/80 overflow-hidden`}>
+      className={`flex items-center justify-between pl-1 pr-2 gap-0 rounded-full h-7 grow-0  bg-background/80 overflow-hidden`}
+    >
       {iconData ? (
         <svg
           className={cn('shrink-0 size-7 aspect-square', {
@@ -141,6 +142,11 @@ export const FLAVOR_ICON_MAP = {
   green_leaf_fresh: 28,
   pinecone: 29,
   evergreen: 30,
+
+  cinnamon: 31,
+  gassy: 32,
+  diesel: 33,
+  funky: 34,
 } as const
 
 export const EFFECTS_ICON_MAP = {

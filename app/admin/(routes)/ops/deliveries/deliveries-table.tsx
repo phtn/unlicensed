@@ -1,190 +1,170 @@
 'use client'
 
+import {DataTable} from '@/components/table-v2'
+import {ColumnConfig} from '@/components/table-v2/create-column'
+import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
+import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
-import {
-  Card,
-  Chip,
-  ChipProps,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 
 type Order = Doc<'orders'>
 
-const statusColorMap: Record<string, ChipProps['color']> = {
-  order_processing: 'primary',
-  awaiting_courier_pickup: 'secondary',
-  shipping: 'default',
-  shipped: 'success',
+const deliveryStatuses: Order['orderStatus'][] = [
+  'order_processing',
+  'awaiting_courier_pickup',
+  'shipping',
+  'shipped',
+]
+
+const statusColorMap: Record<Order['orderStatus'], string> = {
+  pending_payment: 'bg-zinc-300/30 text-zinc-700 dark:bg-zinc-500/30 dark:text-zinc-300',
+  order_processing:
+    'bg-sky-500/20 text-sky-800 dark:bg-sky-400/25 dark:text-sky-200',
+  awaiting_courier_pickup:
+    'bg-orange-500/20 text-orange-800 dark:bg-orange-400/25 dark:text-orange-200',
+  shipping:
+    'bg-indigo-500/20 text-indigo-800 dark:bg-indigo-400/25 dark:text-indigo-200',
+  resend: 'bg-rose-500/20 text-rose-800 dark:bg-rose-400/25 dark:text-rose-200',
+  shipped:
+    'bg-emerald-500/20 text-emerald-800 dark:bg-emerald-400/25 dark:text-emerald-200',
+  cancelled: 'bg-red-500/20 text-red-800 dark:bg-red-400/25 dark:text-red-200',
 }
 
-const columns = [
-  {name: 'ORDER NUMBER', uid: 'orderNumber'},
-  {name: 'CUSTOMER', uid: 'customer'},
-  {name: 'STATUS', uid: 'status'},
-  {name: 'TRACKING', uid: 'tracking'},
-  {name: 'ESTIMATED DELIVERY', uid: 'estimatedDelivery'},
-  {name: 'TOTAL', uid: 'total'},
-]
+const formatDeliveryDate = (timestamp?: number) => {
+  if (!timestamp) return 'N/A'
+  return new Date(timestamp).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+const formatStatus = (status: Order['orderStatus']) =>
+  status
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 
 export const DeliveriesTable = () => {
   const allOrders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
 
   const deliveries = useMemo(() => {
     if (!allOrders) return []
-    return allOrders.filter(
-      (order) =>
-        order.orderStatus === 'order_processing' ||
-        order.orderStatus === 'awaiting_courier_pickup' ||
-        order.orderStatus === 'shipping' ||
-        order.orderStatus === 'shipped',
-    )
+    return allOrders.filter((order) => deliveryStatuses.includes(order.orderStatus))
   }, [allOrders])
 
-  const formatDate = (timestamp?: number) => {
-    if (!timestamp) return 'N/A'
-    return new Date(timestamp).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
-
-  const renderCell = (order: Order, columnKey: React.Key) => {
-    switch (columnKey) {
-      case 'orderNumber':
-        return (
-          <div className='flex flex-col'>
-            <p className='text-bold text-sm capitalize'>{order.orderNumber}</p>
-          </div>
-        )
-      case 'customer':
-        return (
-          <div className='flex flex-col'>
-            <p className='text-bold text-sm'>{order.contactEmail}</p>
-            {order.shippingAddress && (
-              <p className='text-xs text-gray-400'>
-                {order.shippingAddress.city}, {order.shippingAddress.state}
+  const columns = useMemo(
+    () =>
+      [
+        {
+          id: 'orderNumber',
+          header: <ColHeader tip='Order number' symbol='Order Number' />,
+          accessorKey: 'orderNumber',
+          size: 180,
+          cell: ({row}) => (
+            <div className='flex flex-col'>
+              <p className='font-medium text-sm'>{row.original.orderNumber}</p>
+            </div>
+          ),
+        },
+        {
+          id: 'customer',
+          header: <ColHeader tip='Customer' symbol='Customer' />,
+          accessorKey: 'contactEmail',
+          size: 260,
+          cell: ({row}) => (
+            <div className='flex flex-col'>
+              <p className='font-medium text-sm'>{row.original.contactEmail}</p>
+              <p className='text-xs text-muted-foreground'>
+                {row.original.shippingAddress.city}, {row.original.shippingAddress.state}
               </p>
-            )}
-          </div>
-        )
-      case 'status':
-        return (
-          <Chip
-            className='capitalize'
-            color={statusColorMap[order.orderStatus] || 'default'}
-            size='sm'
-            variant='flat'>
-            {order.orderStatus
-              .split('_')
-              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' ')}
-          </Chip>
-        )
-      case 'tracking':
-        return (
-          <div className='flex flex-col'>
-            {order.shipping?.trackingNumber ? (
-              <p className='text-bold text-sm font-mono'>
-                {order.shipping.trackingNumber}
+            </div>
+          ),
+        },
+        {
+          id: 'status',
+          header: <ColHeader tip='Delivery status' symbol='Status' center />,
+          accessorKey: 'orderStatus',
+          size: 220,
+          cell: ({row}) => (
+            <div className='flex justify-center'>
+              <span
+                className={cn(
+                  'inline-flex items-center rounded-sm px-2 py-1 font-mono text-xs uppercase tracking-wide',
+                  statusColorMap[row.original.orderStatus],
+                )}>
+                {formatStatus(row.original.orderStatus)}
+              </span>
+            </div>
+          ),
+        },
+        {
+          id: 'tracking',
+          header: <ColHeader tip='Tracking number + carrier' symbol='Tracking' />,
+          accessorKey: 'shipping',
+          size: 220,
+          cell: ({row}) => (
+            <div className='flex flex-col'>
+              {row.original.shipping?.trackingNumber ? (
+                <p className='font-mono text-sm'>{row.original.shipping.trackingNumber}</p>
+              ) : (
+                <p className='text-sm text-muted-foreground'>No tracking</p>
+              )}
+              {row.original.shipping?.carrier && (
+                <p className='text-xs text-muted-foreground'>{row.original.shipping.carrier}</p>
+              )}
+            </div>
+          ),
+        },
+        {
+          id: 'estimatedDelivery',
+          header: <ColHeader tip='ETA + shipped date' symbol='Estimated Delivery' />,
+          accessorKey: 'shipping',
+          size: 220,
+          cell: ({row}) => (
+            <div className='flex flex-col'>
+              <p className='font-medium text-sm'>
+                {formatDeliveryDate(row.original.shipping?.estimatedDelivery)}
               </p>
-            ) : (
-              <p className='text-sm text-gray-400'>No tracking</p>
-            )}
-            {order.shipping?.carrier && (
-              <p className='text-xs text-gray-400'>{order.shipping.carrier}</p>
-            )}
-          </div>
-        )
-      case 'estimatedDelivery':
-        return (
-          <div className='flex flex-col'>
-            <p className='text-bold text-sm'>
-              {formatDate(order.shipping?.estimatedDelivery)}
-            </p>
-            {order.shipping?.shippedAt && (
-              <p className='text-xs text-gray-400'>
-                Shipped: {formatDate(order.shipping.shippedAt)}
-              </p>
-            )}
-          </div>
-        )
-      case 'total':
-        return (
-          <div className='flex flex-col'>
-            <p className='text-bold text-sm'>
-              ${formatPrice(order.totalCents)}
-            </p>
-          </div>
-        )
-      default:
-        return null
-    }
-  }
-
-  const classNames = useMemo(
-    () => ({
-      wrapper: ['max-h-[382px]', 'max-w-3xl'],
-      th: ['bg-transparent', 'text-gray-400', 'border-b', 'border-divider'],
-      td: [
-        'group-data-[first=true]:first:before:rounded-none',
-        'group-data-[first=true]:last:before:rounded-none',
-        'group-data-[middle=true]:before:rounded-none',
-        'group-data-[last=true]:first:before:rounded-none',
-        'group-data-[last=true]:last:before:rounded-none',
-      ],
-    }),
+              {row.original.shipping?.shippedAt && (
+                <p className='text-xs text-muted-foreground'>
+                  Shipped: {formatDeliveryDate(row.original.shipping?.shippedAt)}
+                </p>
+              )}
+            </div>
+          ),
+        },
+        {
+          id: 'total',
+          header: <ColHeader tip='Order total' symbol='Total' right />,
+          accessorKey: 'totalCents',
+          size: 120,
+          cell: ({row}) => (
+            <div className='text-right'>
+              <p className='font-medium text-sm'>${formatPrice(row.original.totalCents)}</p>
+            </div>
+          ),
+        },
+      ] as ColumnConfig<Order>[],
     [],
   )
 
   if (!allOrders) {
-    return (
-      <Card shadow='sm' className='p-4'>
-        <p className='text-sm text-gray-400'>Loading deliveries...</p>
-      </Card>
-    )
+    return <p className='text-sm text-muted-foreground px-4'>Loading deliveries...</p>
   }
 
   return (
-    <Card
-      shadow='none'
-      radius='none'
-      className='md:rounded-lg md:w-full w-screen overflow-scroll p-4 dark:bg-dark-table/40'>
-      {/*<div className='flex items-center justify-between mb-4'>
-        <h2 className='text-lg font-semibold font-space'>Deliveries</h2>
-        <p className='text-sm text-gray-400'>{deliveries.length} active</p>
-      </div>*/}
-      <Table
-        isCompact
-        removeWrapper
-        aria-label='Deliveries table'
-        classNames={classNames}>
-        <TableHeader columns={columns}>
-          {(column) => (
-            <TableColumn key={column.uid} align='start'>
-              {column.name}
-            </TableColumn>
-          )}
-        </TableHeader>
-        <TableBody emptyContent={'No deliveries found'} items={deliveries}>
-          {(order) => (
-            <TableRow key={order._id} className='h-16'>
-              {(columnKey) => (
-                <TableCell>{renderCell(order, columnKey)}</TableCell>
-              )}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </Card>
+    <div className='relative w-full max-w-full overflow-hidden'>
+      <DataTable
+        title='Deliveries'
+        data={deliveries}
+        loading={false}
+        editingRowId={null}
+        columnConfigs={columns}
+      />
+    </div>
   )
 }

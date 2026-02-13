@@ -82,7 +82,8 @@ export const TagSelector = ({
                     }),
 
                     content: 'text-xs flex items-center gap-1',
-                  }}>
+                  }}
+                >
                   <span className='capitalize font-medium'>
                     {item.textValue}
                   </span>
@@ -91,7 +92,8 @@ export const TagSelector = ({
             })}
           </div>
         )
-      }}>
+      }}
+    >
       {items.map((item) => (
         <SelectItem key={item.id} textValue={item.name}>
           <div className='flex items-center gap-2'>

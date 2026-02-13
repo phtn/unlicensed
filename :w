@@ -13,7 +13,6 @@ import { useMutation, useQuery } from 'convex/react'
 import Link from 'next/link'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSettingsPanel } from '../../../_components/ui/settings'
-import { CourierAccountCell } from './courier-account-cell'
 import { CourierCell } from './courier-cell'
 import { useOrderDetails } from './order-details-context'
 
@@ -109,7 +108,7 @@ function statusCell() {
           )}
         >
           {statusOptions.map((option) => (
-            <option key={option.value} value={option.value} className='text-lg'>
+            <option key={option.value} value={option.value} className='text-sm'>
               {option.label}
             </option>
           ))}
@@ -130,10 +129,10 @@ function orderNumberCell() {
       <div className='flex flex-col w-fit'>
         <Link
           color='foreground'
-          href={`/admin/ops/orders/${orderNumber}`}
-          className='font-mono opacity-80 text-sm hover:underline underline-offset-2 decoration-dotted decoration-foreground/40'
+          href={`/admin/orders/${orderNumber}`}
+          className='font-mono opacity-80 text-sm hover:underline underline-offset-4 decoration-dashed decoration-foreground/40'
         >
-          {orderNumber.substring(5)}
+          {orderNumber}
         </Link>
       </div>
     )
@@ -171,20 +170,6 @@ function courierCell() {
   return CourierCellComponent
 }
 
-function courierAccountCell() {
-  const CourierAccountCellComponent = (ctx: CellContext<Order, unknown>) => {
-    const order = ctx.row.original
-
-    return (
-      <div className='flex items-center justify-center'>
-        <CourierAccountCell order={order} />
-      </div>
-    )
-  }
-  CourierAccountCellComponent.displayName = 'CourierAccountCell'
-  return CourierAccountCellComponent
-}
-
 export const OrdersTable = () => {
   const orders = useQuery(api.orders.q.getRecentOrders, { limit: 100 })
   const { setSelectedOrder } = useOrderDetails()
@@ -213,7 +198,7 @@ export const OrdersTable = () => {
         header: <ColHeader tip='Total' symbol='Total' center />,
         accessorKey: 'totalCents',
         cell: priceCell('totalCents', (v) => formatPrice(+v)),
-        size: 120,
+        size: 100,
       },
       {
         id: 'courier',
@@ -223,17 +208,15 @@ export const OrdersTable = () => {
         size: 100,
       },
       {
-        id: 'courierAccount',
-        header: (
-          <ColHeader tip='Courier account' symbol='Courier Acct' center />
-        ),
-        accessorKey: 'courierAccountId',
-        cell: courierAccountCell(),
+        id: 'shippingAddress',
+        header: <ColHeader tip='Shipping Address' symbol='Shipping' />,
+        accessorKey: 'shippingAddress',
+        cell: textCell('shipping'),
         size: 180,
       },
       {
         id: 'orderNumber',
-        header: <ColHeader tip='Order #' symbol='Order #' />,
+        header: <ColHeader tip='Order #' symbol='Order' />,
         accessorKey: 'orderNumber',
         cell: orderNumberCell(),
         size: 140,

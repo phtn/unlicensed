@@ -418,16 +418,77 @@ export const updateCourier = mutation({
       throw new Error('Order not found')
     }
 
-    // Validate courier exists if provided
+    let nextCourierAccountId = order.courierAccountId
+
+    // Validate courier exists if provided and keep account id only if valid for that courier
     if (args.courierId) {
       const courier = await ctx.db.get(args.courierId)
       if (!courier) {
         throw new Error('Courier not found')
       }
+
+      const accountIds = new Set((courier.accounts ?? []).map((account) => account.id))
+      if (
+        !nextCourierAccountId ||
+        !accountIds.has(nextCourierAccountId)
+      ) {
+        nextCourierAccountId = undefined
+      }
+    } else {
+      nextCourierAccountId = undefined
     }
 
     await ctx.db.patch(args.orderId, {
       courier: args.courierId ?? undefined,
+      courierAccountId: nextCourierAccountId,
+      updatedAt: Date.now(),
+    })
+
+    return args.orderId
+  },
+})
+
+/**
+ * Update order courier account
+ */
+export const updateCourierAccount = mutation({
+  args: {
+    orderId: v.id('orders'),
+    courierAccountId: v.optional(v.union(v.string(), v.null())),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId)
+    if (!order) {
+      throw new Error('Order not found')
+    }
+
+    if (!args.courierAccountId) {
+      await ctx.db.patch(args.orderId, {
+        courierAccountId: undefined,
+        updatedAt: Date.now(),
+      })
+      return args.orderId
+    }
+
+    if (!order.courier) {
+      throw new Error('Assign a courier before selecting an account')
+    }
+
+    const courier = await ctx.db.get(order.courier)
+    if (!courier) {
+      throw new Error('Assigned courier not found')
+    }
+
+    const accountExists = (courier.accounts ?? []).some(
+      (account) => account.id === args.courierAccountId,
+    )
+
+    if (!accountExists) {
+      throw new Error('Courier account not found for assigned courier')
+    }
+
+    await ctx.db.patch(args.orderId, {
+      courierAccountId: args.courierAccountId,
       updatedAt: Date.now(),
     })
 
