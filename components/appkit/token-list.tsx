@@ -61,7 +61,7 @@ export const Tokens = ({
         animate={{opacity: 1, y: 0, scale: 1}}
         exit={{opacity: 0, y: 20, scale: 0.95}}
         transition={{duration: 0.15, ease: 'easeInOut'}}
-        className='absolute z-50 w-full mt-px overflow-hidden'>
+        className='absolute z-50 w-full p-1 mt-px overflow-hidden'>
         {filteredTokens.map((token, i) => {
           const tokenBalance = balanceMap.get(token)
           const balance = tokenBalance
@@ -91,10 +91,10 @@ export const Tokens = ({
               animate={{opacity: 1, y: 0, scale: 1}}
               transition={{duration: 0.3, ease: 'easeOut', delay: 0.1 * i}}
               className={cn(
-                'relative w-full flex items-start justify-between py-3 px-5 transition-colors duration-75',
-                'transition-colors duration-75 cursor-pointer',
+                'relative w-full flex items-start justify-between py-3 px-4 transition-colors duration-75',
+                'transition-colors duration-75 cursor-pointer rounded-xl',
                 {
-                  'bg-brand rounded-2xl': selectedToken === token,
+                  'bg-brand': selectedToken === token,
                 },
               )}>
               <div className='flex items-center gap-3 flex-1 min-w-0'>

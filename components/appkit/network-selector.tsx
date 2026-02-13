@@ -39,7 +39,7 @@ export const NetworkSelector = ({
         animate={{opacity: 1, scale: 1}}
         exit={{opacity: 0, scale: 0.6}}
         transition={{duration: 0.2}}
-        className='flex items-center space-x-8 px-4 py-6 border-b-[0.33px] border-white/0 w-full'>
+        className='flex items-center space-x-8 px-3 py-6 border-b-[0.33px] border-white/0 w-full'>
         <div className='font-brk flex items-center space-x-0.5 text-white/80'>
           <Icon name='network' className='text-white/70 size-5' />
           <span className='text-xs uppercase'>Network</span>
@@ -48,7 +48,7 @@ export const NetworkSelector = ({
           direction='up'
           data={network_list}
           component={NetworkButtonRound}
-          container='w-full flex items-center justify-around'
+          container='w-full flex items-center justify-around py-1'
         />
       </motion.div>
     </>
@@ -87,8 +87,8 @@ const NetworkButtonRound = ({
               ? 'polygon'
               : 'ethereum'
         }
-        className={cn('text-slate-300 size-3', {
-          'size-3': selected,
+        className={cn('text-slate-300 size-4', {
+          'size-4': selected,
           'text-rose-400': name === 'sepolia' && selected,
           'text-polygon': name === 'polygon' && selected,
           'text-ethereum': name === 'ethereum' && selected,

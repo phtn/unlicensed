@@ -547,7 +547,7 @@ export const PayTab = ({
       animate={{opacity: 1, y: 0}}
       exit={{opacity: 0, y: -10}}
       transition={{layout: {duration: 0.3, ease: 'easeInOut'}}}
-      className='space-y-0 w-full p-4 pb-10 border border-slate-400/50'>
+      className='space-y-0 w-full p-4 pb-10 border border-slate-500/50'>
       {/* Amount Info */}
       {paymentAmountUsd && usdValue && !activeReceipt && (
         <PayAmount

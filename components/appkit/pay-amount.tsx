@@ -234,7 +234,7 @@ export function PayAmount({
                   />
                 </motion.div>
               </button>
-              <div className='border border-slate-500/50 rounded-full w-fit relative z-40'>
+              <div className='border-2 border-slate-800 rounded-full w-fit relative z-40'>
                 <WalletComponent />
               </div>
             </div>

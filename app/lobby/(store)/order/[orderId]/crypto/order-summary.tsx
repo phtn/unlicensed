@@ -31,7 +31,7 @@ export const OrderSummaryWidget = () => {
   )
 
   return (
-    <main className='h-[calc(100lvh)] bg-black w-3xl'>
+    <main className='md:h-[calc(100lvh)] bg-black md:w-3xl'>
       <ArcCard>
         <ArcHeader
           title={

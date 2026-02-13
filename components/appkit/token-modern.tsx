@@ -43,7 +43,7 @@ export const TokenModern = ({
     : '0'
 
   return (
-    <div className='flex items-center justify-start w-full py-2 gap-4'>
+    <div className='flex items-center justify-start w-full py-1 gap-4'>
       <div
         className={cn(
           `relative rounded-3xl flex items-center justify-center w-auto h-6 md:h-10 aspect-square`,

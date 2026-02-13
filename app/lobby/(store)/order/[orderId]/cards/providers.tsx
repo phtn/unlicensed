@@ -129,7 +129,6 @@ export const TopProviders = ({
                 />
               </div>
             </div>
-
             <div
               className={`absolute inset-0 rounded-xl opacity-0
                         transition-opacity duration-500 pointer-events-none

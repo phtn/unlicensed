@@ -77,7 +77,7 @@ export const Content = () => {
 
   return (
     <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-black'>
-      <div className='flex mx-auto max-w-7xl'>
+      <div className='md:flex md:mx-auto md:max-w-7xl'>
         <OrderSummaryWidget />
         <CryptoPay />
       </div>
