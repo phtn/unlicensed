@@ -80,6 +80,7 @@ export const ProductForm = ({
         }
 
         const data = parsed.data
+        const isVapeCategory = data.categorySlug === 'vapes'
 
         // Helper to parse comma-separated numbers
         const parseNumbers = (val?: string) => {
@@ -125,7 +126,10 @@ export const ProductForm = ({
           potencyLevel: data.potencyLevel,
           potencyProfile: data.potencyProfile?.trim() || undefined,
           lineage: data.lineage?.trim() || undefined,
-          noseRating: data.noseRating,
+          productType: isVapeCategory
+            ? data.productType?.trim() || undefined
+            : undefined,
+          noseRating: isVapeCategory ? undefined : data.noseRating,
           weightGrams:
             data.weightGrams && data.weightGrams.length > 0
               ? Number(data.weightGrams)

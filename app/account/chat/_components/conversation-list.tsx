@@ -191,10 +191,11 @@ export function ConversationList({
               }
             }}
             className={cn(
-              'w-full px-3 md:px-4 py-3 text-left transition-all duration-200 active:bg-blue-800',
-              'touch-manipulation',
-              isSelected &&
-                'bg-blue-500/10 border-l-2 md:border-l-4 border-l-blue-800',
+              'w-full px-3 md:px-4 py-3 text-left transition-all duration-200 active:bg-blue-100',
+              'touch-manipulation border-l-2 md:border-l-4 border-l-dark-gray/0',
+              {
+                'dark:bg-alum/20 bg-alum/20 border-l-dark-gray': isSelected,
+              },
             )}>
             <div className='flex items-start gap-2 md:gap-3'>
               <div className='relative shrink-0'>
@@ -205,7 +206,7 @@ export function ConversationList({
                 <div className='flex items-center justify-between gap-2 mb-0.5'>
                   <p
                     className={cn(
-                      'truncate font-semibold text-sm',
+                      'truncate font-medium text-sm',
                       isUnread && 'text-foreground',
                       !isUnread && 'text-foreground/80',
                     )}>

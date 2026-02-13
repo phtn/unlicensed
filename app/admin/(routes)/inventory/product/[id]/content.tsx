@@ -69,6 +69,7 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
     potencyLevel: product.potencyLevel ?? 'medium',
     potencyProfile: product.potencyProfile ?? '',
     lineage: product.lineage ?? '',
+    productType: product.productType ?? '',
     noseRating: product.noseRating ?? 0,
     variants: product.variants?.map((v) => ({
       label: v.label,

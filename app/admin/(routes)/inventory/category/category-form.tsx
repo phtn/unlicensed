@@ -15,6 +15,7 @@ import {
   CategoryFormValues,
   categorySchema,
   defaultValues,
+  parseCommaList,
   parseList,
   parseNumbers,
 } from '../../../_components/category-schema'
@@ -71,9 +72,10 @@ export const CategoryForm = ({
         }
 
         const data = parsed.data
+        const categorySlug = ensureSlug(data.slug ?? '', data.name)
         const payload = {
           name: data.name.trim(),
-          slug: ensureSlug(data.slug ?? '', data.name),
+          slug: categorySlug,
           description: data.description.trim(),
           heroImage: data.heroImage
             ? (data.heroImage as Id<'_storage'>)
@@ -87,6 +89,10 @@ export const CategoryForm = ({
                 .map((u) => u.trim())
                 .filter((u) => u.length > 0)
             : undefined,
+          productTypes:
+            categorySlug === 'vapes'
+              ? parseCommaList(data.productTypesRaw)
+              : undefined,
           denominations: parseNumbers(data.denominationsRaw),
         }
 
@@ -143,6 +149,7 @@ export const CategoryForm = ({
       form.setFieldValue('highlight', initialValues.highlight ?? '')
       form.setFieldValue('benefitsRaw', initialValues.benefitsRaw ?? '')
       form.setFieldValue('unitsRaw', initialValues.unitsRaw ?? '')
+      form.setFieldValue('productTypesRaw', initialValues.productTypesRaw ?? '')
       form.setFieldValue(
         'denominationsRaw',
         initialValues.denominationsRaw ?? '',
@@ -151,6 +158,11 @@ export const CategoryForm = ({
   }, [initialValues, form])
 
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
+  const isVapesCategory = useStore(form.store, (state) => {
+    const values = state.values as {slug?: string; name?: string}
+    const slug = ensureSlug(values.slug ?? '', values.name ?? '')
+    return slug === 'vapes'
+  })
 
   const scrollToSection = useCallback(
     (sectionId: string) => () => {
@@ -285,7 +297,10 @@ export const CategoryForm = ({
           </div>
 
           <div id='packaging'>
-            <Packaging form={form as CategoryFormApi} />
+            <Packaging
+              form={form as CategoryFormApi}
+              isVapesCategory={isVapesCategory}
+            />
           </div>
 
           <div id='details'>

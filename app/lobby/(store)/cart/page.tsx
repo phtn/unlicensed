@@ -21,6 +21,9 @@ import {useOptimisticCartItems} from './hooks/use-optimistic-cart-items'
 import {RewardsSummary} from './rewards-summary'
 import type {CartPageItem} from './types'
 
+const DEFAULT_SHIPPING_FEE_CENTS = 500
+const DEFAULT_MINIMUM_ORDER_CENTS = 5000
+
 export default function CartPage() {
   const router = useRouter()
   const {
@@ -51,6 +54,11 @@ export default function CartPage() {
     paymentMethod,
     onPaymentMethodChange,
   } = useCartCheckoutQueryState()
+
+  const shippingConfig = useQuery(api.admin.q.getShippingConfig, {})
+
+  const shippingFeeCents = shippingConfig?.shippingFeeCents ?? DEFAULT_SHIPPING_FEE_CENTS
+  const minimumOrderCents = shippingConfig?.minimumOrderCents ?? DEFAULT_MINIMUM_ORDER_CENTS
 
   // Get user info for checkout
   const convexUser = useQuery(
@@ -150,7 +158,7 @@ export default function CartPage() {
 
   // Derive values during render (simple expressions, no need for useMemo)
   const tax = subtotal * 0.1 // 10% tax
-  const shipping = subtotal > 5000 ? 0 : 500 // Free shipping over $50
+  const shipping = subtotal >= minimumOrderCents ? 0 : shippingFeeCents
   const total = subtotal + tax + shipping
 
   // Get user's points balance and next visit multiplier
@@ -225,6 +233,8 @@ export default function CartPage() {
               pointsBalance={pointsBalance}
               paymentMethodFromUrl={paymentMethod}
               onPaymentMethodUrlChange={onPaymentMethodChange}
+              minimumOrderCents={minimumOrderCents}
+              shippingFeeCents={shippingFeeCents}
             />
           </div>
         </div>

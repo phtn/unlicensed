@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.29.0
+
+### Minor Changes
+
+- payment processing
+
 ## 0.28.4
 
 ### Patch Changes

@@ -68,6 +68,7 @@ export const productSchema = v.object({
   dealType: v.optional(
     v.union(v.literal('withinTier'), v.literal('acrossTiers')),
   ),
+  productType: v.optional(v.string()),
 })
 
 export type ProductType = Infer<typeof productSchema>

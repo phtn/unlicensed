@@ -48,7 +48,7 @@ const getActivityIcon = (type: Activity['type']) => {
     case 'order_refunded':
       return 'x'
     case 'payment_completed':
-      return 'plus'
+      return 'receive-money-fill'
     case 'payment_failed':
       return 'x'
     case 'product_created':

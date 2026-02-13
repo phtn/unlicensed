@@ -7,6 +7,7 @@ export const categorySchema = {
   heroImage: v.optional(v.id('_storage')),
   highlight: v.optional(v.string()),
   benefits: v.optional(v.array(v.string())),
+  productTypes: v.optional(v.array(v.string())),
   denominations: v.optional(v.array(v.number())),
   units: v.optional(v.array(v.string())),
   visible: v.optional(v.boolean()),

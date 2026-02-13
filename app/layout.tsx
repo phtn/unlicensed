@@ -189,7 +189,7 @@ export default async function RootLayout({
   return (
     <html lang='en' suppressHydrationWarning>
       <body
-        className={`${GeistPixelSquare.className} ${GeistPixelCircle.className} ${GeistPixelTriangle.className} ${GeistPixelGrid.className} ${GeistPixelLine.className} ${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} antialiased font-sans`}>
+        className={`${GeistPixelSquare.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelGrid.variable} ${GeistPixelLine.variable} ${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} antialiased font-okxs font-normal`}>
         <DynamicWagmiContext cookies={cookies}>
           <ProvidersCtxProvider>
             <EmailLinkHandler />

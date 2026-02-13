@@ -3,10 +3,68 @@ import createMDX from '@next/mdx'
 import {execSync} from 'child_process'
 import type {NextConfig} from 'next'
 
+const DEFAULT_SERVER_ACTION_ALLOWED_ORIGINS = [
+  'rapidfirenow.com',
+  'localhost',
+  'rapid-fire-online.vercel.app',
+]
+
+const customAllowedOrigins = (
+  process.env.NEXT_SERVER_ACTIONS_ALLOWED_ORIGINS ?? ''
+)
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+
+const serverActionAllowedOrigins = Array.from(
+  new Set([...DEFAULT_SERVER_ACTION_ALLOWED_ORIGINS, ...customAllowedOrigins]),
+)
+
+const sanitizeId = (value: string) => {
+  const sanitized = value.replace(/[^a-zA-Z0-9_-]/g, '-')
+  return sanitized || 'local-dev'
+}
+
+const resolveBuildId = () => {
+  const envBuildId = [
+    process.env.NEXT_BUILD_ID,
+    process.env.NEXT_DEPLOYMENT_ID,
+    process.env.GITHUB_SHA,
+    process.env.CI_COMMIT_SHA,
+    process.env.RAILWAY_GIT_COMMIT_SHA,
+    process.env.SOURCE_VERSION,
+  ]
+    .map((value) => value?.trim())
+    .find(Boolean)
+
+  if (envBuildId) return sanitizeId(envBuildId)
+
+  try {
+    return sanitizeId(execSync('git rev-parse HEAD').toString().trim())
+  } catch {
+    return 'local-dev'
+  }
+}
+
+const buildId = resolveBuildId()
+const deploymentId = sanitizeId(
+  process.env.NEXT_DEPLOYMENT_ID?.trim() || buildId,
+)
+
+if (
+  process.env.NODE_ENV === 'production' &&
+  !process.env.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
+) {
+  throw new Error(
+    'Missing NEXT_SERVER_ACTIONS_ENCRYPTION_KEY in production. Self-hosted Server Actions require a stable key across all app instances.',
+  )
+}
+
 const withPWA = withPWAInit({
   dest: 'public',
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
+  // Prevent stale client navigation caches from holding old Server Action ids after deploys.
+  cacheOnFrontEndNav: false,
+  aggressiveFrontEndNavCaching: false,
   reloadOnOnline: true,
   disable: process.env.NODE_ENV === 'development',
   workboxOptions: {
@@ -15,13 +73,10 @@ const withPWA = withPWAInit({
 })
 
 const nextConfig: NextConfig = {
+  deploymentId,
   experimental: {
     serverActions: {
-      allowedOrigins: [
-        'rapidfirenow.com',
-        'localhost',
-        'rapid-fire-online.vercel.app',
-      ],
+      allowedOrigins: serverActionAllowedOrigins,
     },
   },
   reactCompiler: true,
@@ -34,11 +89,7 @@ const nextConfig: NextConfig = {
     ],
   },
   generateBuildId: async () => {
-    try {
-      return execSync('git rev-parse HEAD').toString().trim()
-    } catch {
-      return 'build-' + Date.now()
-    }
+    return buildId
   },
   async headers() {
     const cspDirectives = [

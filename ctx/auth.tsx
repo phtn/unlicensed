@@ -10,7 +10,6 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import {onSuccess} from './toast'
 
 interface AuthProviderProps {
   children: ReactNode
@@ -34,7 +33,7 @@ const AuthCtxProvider = ({children}: AuthProviderProps) => {
       setUser(user)
       if (user) {
         // Perform additional actions when user is authenticated
-        onSuccess(`Welcome back, ${user.displayName?.split(' ')[0]}!`)
+        // onSuccess(`Welcome back, ${user.displayName?.split(' ')[0]}!`)
       }
     })
     return () => unsubscribe?.()

@@ -1,6 +1,7 @@
 'use client'
 
 import {Input, Slider} from '@heroui/react'
+import {useStore} from '@tanstack/react-store'
 import {ChangeEvent} from 'react'
 import {ProductFormApi} from '../product-schema'
 import {TagSelector} from '../tag-selector'
@@ -12,6 +13,12 @@ interface AttributesProps {
 }
 
 export const Attributes = ({form}: AttributesProps) => {
+  const categorySlug = useStore(form.store, (state) => {
+    const values = state.values as {categorySlug?: string}
+    return values.categorySlug
+  })
+  const isVapeCategory = categorySlug === 'vapes'
+
   return (
     <FormSection id='attributes'>
       <Header label='Attributes & Profile' />
@@ -40,7 +47,7 @@ export const Attributes = ({form}: AttributesProps) => {
                 {...field}
                 type='number'
                 name='thcPercentage'
-                label='THC %'
+                label='THC (mg)'
                 placeholder='0.0'
               />
             )}
@@ -52,7 +59,7 @@ export const Attributes = ({form}: AttributesProps) => {
               return (
                 <div className='space-y-2'>
                   <Input
-                    label='CBD %'
+                    label='CBD (mg)'
                     type='number'
                     step='0.1'
                     value={cbdValue}
@@ -126,7 +133,22 @@ export const Attributes = ({form}: AttributesProps) => {
           </form.Field>
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+          <form.Field name='brand'>
+            {(field) => (
+              <div className='space-y-2 w-full'>
+                <TagSelector
+                  label='Brand'
+                  type='effects'
+                  placeholder='Select Brand...'
+                  selectedKeys={
+                    Array.isArray(field.state.value) ? field.state.value : []
+                  }
+                  onSelectionChange={(keys) => field.handleChange(keys)}
+                />
+              </div>
+            )}
+          </form.Field>
           <form.Field name='lineage'>
             {(field) => {
               const value = (field.state.value as string) ?? ''
@@ -156,39 +178,70 @@ export const Attributes = ({form}: AttributesProps) => {
             }}
           </form.Field>
 
-          <form.Field name='noseRating'>
-            {(field) => {
-              const value =
-                typeof field.state.value === 'number' ? field.state.value : 0
-              return (
-                <div className='space-y-2'>
-                  <Slider
-                    label='Nose Rating'
-                    minValue={0}
-                    maxValue={10}
-                    step={1}
-                    showSteps
-                    value={value}
-                    onChange={(v) =>
-                      field.handleChange(Array.isArray(v) ? v[0] ?? 0 : v)
-                    }
-                    getValue={(v) =>
-                      `${Array.isArray(v) ? v[0] ?? 0 : v}/10`
-                    }
-                    classNames={{
-                      base: 'max-w-full',
-                    }}
-                  />
-                  {field.state.meta.isTouched &&
-                    field.state.meta.errors.length > 0 && (
-                      <p className='text-xs text-rose-400'>
-                        {field.state.meta.errors.join(', ')}
-                      </p>
-                    )}
-                </div>
-              )
-            }}
-          </form.Field>
+          {isVapeCategory ? (
+            <form.Field name='productType'>
+              {(field) => {
+                const value = (field.state.value as string) ?? ''
+                return (
+                  <div className='space-y-2'>
+                    <Input
+                      label='Product Type'
+                      type='text'
+                      value={value}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        field.handleChange(e.target.value)
+                      }
+                      onBlur={field.handleBlur}
+                      placeholder='e.g., Disposable, Cartridge, Pod'
+                      variant='bordered'
+                      size='lg'
+                      classNames={commonInputClassNames}
+                    />
+                    {field.state.meta.isTouched &&
+                      field.state.meta.errors.length > 0 && (
+                        <p className='text-xs text-rose-400'>
+                          {field.state.meta.errors.join(', ')}
+                        </p>
+                      )}
+                  </div>
+                )
+              }}
+            </form.Field>
+          ) : (
+            <form.Field name='noseRating'>
+              {(field) => {
+                const value =
+                  typeof field.state.value === 'number' ? field.state.value : 0
+                return (
+                  <div className='space-y-2'>
+                    <Slider
+                      label='Nose Rating'
+                      minValue={0}
+                      maxValue={10}
+                      step={1}
+                      showSteps
+                      value={value}
+                      onChange={(v) =>
+                        field.handleChange(Array.isArray(v) ? (v[0] ?? 0) : v)
+                      }
+                      getValue={(v) =>
+                        `${Array.isArray(v) ? (v[0] ?? 0) : v}/10`
+                      }
+                      classNames={{
+                        base: 'max-w-full',
+                      }}
+                    />
+                    {field.state.meta.isTouched &&
+                      field.state.meta.errors.length > 0 && (
+                        <p className='text-xs text-rose-400'>
+                          {field.state.meta.errors.join(', ')}
+                        </p>
+                      )}
+                  </div>
+                )
+              }}
+            </form.Field>
+          )}
         </div>
       </div>
     </FormSection>

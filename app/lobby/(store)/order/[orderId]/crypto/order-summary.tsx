@@ -13,6 +13,7 @@ import {
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
 import {useQuery} from 'convex/react'
 import {useParams} from 'next/navigation'
@@ -27,13 +28,13 @@ export const OrderSummaryWidget = () => {
     () =>
       order?.items.map((item) => ({
         label: item.productName,
-        value: `$${formatPrice(item.unitPriceCents)}`,
+        value: `$${formatPrice(order.totalCents)}`,
       })),
     [order],
   )
 
   return (
-    <main className='h-[calc(100lvh)] bg-black'>
+    <main className='h-[calc(100lvh)] bg-black w-3xl'>
       <ArcCard>
         <ArcHeader
           title='We received your order!'
@@ -41,8 +42,12 @@ export const OrderSummaryWidget = () => {
           icon='hash'
           iconStyle='text-indigo-400'
           status={
-            <span className='font-brk text-orange-300 tracking-wide uppercase text-xs bg-background/60 py-1 px-1.5 rounded-sm'>
-              Pending Payment
+            <span
+              className={cn(
+                'font-brk text-orange-300 tracking-wide uppercase text-xs bg-background/60 py-1 px-1.5 rounded-sm',
+                {'text-emerald-500': order?.payment.status === 'completed'},
+              )}>
+              {order?.payment.status}
             </span>
           }
         />
@@ -61,10 +66,15 @@ export const OrderSummaryWidget = () => {
           }
         />
 
-        <ArcCallout icon='info' value='Chat' type='info' />
+        <ArcCallout
+          className='font-brk opacity-80'
+          icon={order?.payment.transactionId ? 'hash' : 'info'}
+          value={order?.payment.transactionId?.substring(0, 24) + ' ...'}
+          type='success'
+        />
 
         <div className='hidden _flex items-center space-x-2 text-base'>
-          <Icon name='info' className='size-5' />
+          <Icon name='hash' className='size-5' />
           <ArcMessage>
             <div className='flex items-center text-left space-x-2 text-base'>
               <span>

@@ -210,17 +210,7 @@ export function PayAmount({
           </div>
           <div className='flex items-center justify-between text-xs md:text-sm'>
             <div className='text-right px-2'>
-              <span className='text-white text-xl font-okxs'>
-                $
-                <AnimatedNumber
-                  value={usdValue}
-                  format={(v) => v.toFixed(2)}
-                  precision={3}
-                  stiffness={100}
-                  mass={0.1}
-                  damping={120}
-                />
-              </span>
+              <MoneyFormat value={usdValue} />
             </div>
             <div className='flex items-center space-x-8'>
               <button
@@ -263,5 +253,21 @@ export function PayAmount({
         usdValue={usdValue}
       />
     </>
+  )
+}
+
+export const MoneyFormat = ({value}: {value: number}) => {
+  return (
+    <span className='text-white text-xl font-okxs'>
+      $
+      <AnimatedNumber
+        value={value}
+        format={(v) => v.toFixed(2)}
+        precision={3}
+        stiffness={100}
+        mass={0.1}
+        damping={120}
+      />
+    </span>
   )
 }

@@ -671,15 +671,15 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 <div className='size-16 md:size-20 rounded-full bg-linear-to-br from-sidebar/20 to-sidebar/60 flex items-center justify-center border border-sidebar/20'>
                   <Icon
                     name='chat'
-                    className='size-8 md:size-10 text-dark-table'
+                    className='size-8 md:size-10 text-dark-table dark:text-white'
                   />
                 </div>
               </div>
               <div className='space-y-2'>
-                <h3 className='text-base md:text-lg font-polysans font-semibold'>
+                <h3 className='text-base md:text-lg font-polysans font-semibold opacity-80'>
                   Select a conversation
                 </h3>
-                <p className='text-xs md:text-sm text-muted-foreground max-w-sm mx-auto'>
+                <p className='text-xs md:text-sm opacity-70 max-w-sm mx-auto'>
                   {isMobile
                     ? 'Choose a conversation to start messaging'
                     : 'Choose a conversation from the sidebar to start messaging'}

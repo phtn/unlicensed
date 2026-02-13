@@ -1,184 +1,218 @@
 'use client'
 
+import {DataTable} from '@/components/table-v2'
+import {dateCell, textCell} from '@/components/table-v2/cells-v2'
+import {ColumnConfig} from '@/components/table-v2/create-column'
+import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
-import {Id, type Doc} from '@/convex/_generated/dataModel'
+import type {Doc} from '@/convex/_generated/dataModel'
 import {cn} from '@/lib/utils'
-import {
-  Card,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from '@heroui/react'
+import {formatPrice} from '@/utils/formatPrice'
+import {CellContext} from '@tanstack/react-table'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
-import {useMemo, useState} from 'react'
-import {
-  actionsCell,
-  dateCell,
-  moneyCell,
-  statusCell,
-} from '../../../_components/ui/cells'
+import {useMemo} from 'react'
 import {useSettingsPanel} from '../../../_components/ui/settings'
 import {CourierCell} from './courier-cell'
 import {useOrderDetails} from './order-details-context'
 
 type Order = Doc<'orders'>
 
-const columns = [
-  {name: 'STATUS', uid: 'status'},
-  {name: 'TOTAL', uid: 'total'},
-  {name: 'COURIER', uid: 'courier'},
-  {name: 'ORDER#', uid: 'orderNumber'},
-  {name: 'CUSTOMER', uid: 'customer'},
-  {name: 'DATE', uid: 'date'},
-  {name: 'ACTIONS', uid: 'actions'},
-]
+type StatusCode =
+  | 'pending_payment'
+  | 'order_processing'
+  | 'awaiting_courier_pickup'
+  | 'shipping'
+  | 'resend'
+  | 'shipped'
+  | 'cancelled'
+  | 'default'
+
+const colorMap: Record<StatusCode, string> = {
+  pending_payment: 'bg-amber-400/25 dark:bg-orange-300/45',
+  order_processing: 'bg-sky-600/20 dark:bg-blue-400/45',
+  awaiting_courier_pickup: 'bg-orange-200/65 dark:bg-orange-400/45',
+  shipping: 'bg-purple-200/70 dark:bg-purple-400/35',
+  resend: 'bg-red-200/70 dark:bg-red-400/50',
+  shipped: 'bg-emerald-400/35 dark:bg-emerald-400/35',
+  cancelled: 'dark:bg-red-400/40',
+  default: 'bg-[#e8e6e5]',
+}
+
+function statusCell() {
+  const StatusCellComponent = (ctx: CellContext<Order, unknown>) => {
+    const status = ctx.getValue() as string | undefined
+    if (!status) return <span className='text-muted-foreground'>—</span>
+    const normalizedStatus = status.toLowerCase() as StatusCode
+    const color = colorMap[normalizedStatus] || colorMap.default
+    const displayStatus = status
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+
+    return (
+      <div
+        className={cn(
+          'flex items-center uppercase justify-center rounded-sm w-fit px-2 py-1.5 font-mono shadow-none',
+          color,
+        )}>
+        <p className='text-xs tracking-wider font-brk whitespace-nowrap drop-shadow-xs'>
+          {displayStatus}
+        </p>
+      </div>
+    )
+  }
+  StatusCellComponent.displayName = 'StatusCell'
+  return StatusCellComponent
+}
+
+function totalCell() {
+  const TotalCellComponent = (ctx: CellContext<Order, unknown>) => {
+    const totalCents = ctx.getValue() as number | undefined
+    if (totalCents == null) return <span className='text-muted-foreground'>—</span>
+
+    return (
+      <div className='flex flex-col items-end w-full'>
+        <p className='whitespace-nowrap font-semibold text-sm font-space text-right'>
+          {formatPrice(totalCents)}
+        </p>
+      </div>
+    )
+  }
+  TotalCellComponent.displayName = 'TotalCell'
+  return TotalCellComponent
+}
+
+function orderNumberCell() {
+  const OrderNumberCellComponent = (ctx: CellContext<Order, unknown>) => {
+    const orderNumber = ctx.getValue() as string | undefined
+    if (!orderNumber) return <span className='text-muted-foreground'>—</span>
+
+    return (
+      <div className='flex flex-col w-fit'>
+        <Link
+          color='foreground'
+          href={`/admin/orders/${orderNumber}`}
+          className='font-mono opacity-80 text-sm hover:underline underline-offset-4 decoration-dashed decoration-foreground/40'>
+          {orderNumber}
+        </Link>
+      </div>
+    )
+  }
+  OrderNumberCellComponent.displayName = 'OrderNumberCell'
+  return OrderNumberCellComponent
+}
+
+function customerCell() {
+  const CustomerCellComponent = (ctx: CellContext<Order, unknown>) => {
+    const email = ctx.getValue() as string | undefined
+    if (!email) return <span className='text-muted-foreground'>—</span>
+
+    return (
+      <div className='flex flex-col'>
+        <p className='tracking-tight font-medium text-sm'>{email}</p>
+      </div>
+    )
+  }
+  CustomerCellComponent.displayName = 'CustomerCell'
+  return CustomerCellComponent
+}
+
+function courierCell() {
+  const CourierCellComponent = (ctx: CellContext<Order, unknown>) => {
+    const order = ctx.row.original
+
+    return (
+      <div className='flex items-center justify-center'>
+        <CourierCell order={order} />
+      </div>
+    )
+  }
+  CourierCellComponent.displayName = 'CourierCell'
+  return CourierCellComponent
+}
 
 export const OrdersTable = () => {
   const orders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
-  const {selectedOrder, setSelectedOrder} = useOrderDetails()
-  const {open, setOpen} = useSettingsPanel()
-  const selectedOrderId = selectedOrder?._id
+  const {setSelectedOrder} = useOrderDetails()
+  const {setOpen} = useSettingsPanel()
 
-  const [selectedRow, setSelectedRow] = useState<Id<'orders'> | null>(null)
-  const handleViewOrder = (order: Order) => () => {
-    if (order) {
-      setSelectedOrder(order)
-      setSelectedRow(order._id)
-      setOpen(true)
-    }
+  const handleViewOrder = (order: Order) => {
+    setSelectedOrder(order)
+    setOpen(true)
   }
 
-  const renderCell = (order: Order, columnKey: React.Key) => {
-    switch (columnKey) {
-      case 'status':
-        return statusCell(order.orderStatus)
-      case 'total':
-        return moneyCell(order.totalCents ?? 0)
-
-      case 'courier':
-        return (
-          <div className='flex items-center justify-center'>
-            <CourierCell order={order} />
-          </div>
-        )
-      case 'orderNumber':
-        return (
-          <div className='flex flex-col w-fit'>
-            <Link
-              color='foreground'
-              href={`/admin/orders/${order.orderNumber}`}
-              className='font-mono opacity-80 text-sm hover:underline underline-offset-4 decoration-dashed decoration-foreground/40'>
-              {order.orderNumber}
-            </Link>
-          </div>
-        )
-      case 'customer':
-        return (
-          <div className='flex flex-col'>
-            <p className='tracking-tight font-medium text-sm'>
-              {order.contactEmail}
-            </p>
-          </div>
-        )
-      case 'date':
-        return dateCell(order.createdAt ?? 0)
-      case 'actions':
-        return actionsCell(selectedRow === order._id, handleViewOrder(order))
-      default:
-        return null
-    }
-  }
-
-  const classNames = useMemo(
-    () => ({
-      wrapper: ['max-h-[382px]', 'max-w-3xl'],
-      th: [
-        'bg-transparent',
-        'text-foreground/80 capitalize font-nito tracking-wide',
-        'border-b',
-        'border-divider',
-      ],
-      td: [
-        'group-data-[first=true]:first:before:rounded-none',
-        'group-data-[first=true]:last:before:rounded-none',
-        'group-data-[middle=true]:before:rounded-none',
-        'group-data-[last=true]:first:before:rounded-none',
-        'group-data-[last=true]:last:before:rounded-none',
-      ],
-    }),
+  const columns = useMemo<ColumnConfig<Order>[]>(
+    () => [
+      {
+        id: 'status',
+        header: <ColHeader tip='Status' symbol='Status' />,
+        accessorKey: 'orderStatus',
+        cell: statusCell(),
+        size: 200,
+      },
+      {
+        id: 'total',
+        header: <ColHeader tip='Total' symbol='Total' center />,
+        accessorKey: 'totalCents',
+        cell: totalCell(),
+        size: 100,
+      },
+      {
+        id: 'courier',
+        header: <ColHeader tip='Courier' symbol='Courier' center />,
+        accessorKey: 'courier',
+        cell: courierCell(),
+        size: 100,
+      },
+      {
+        id: 'orderNumber',
+        header: <ColHeader tip='Order #' symbol='Order' />,
+        accessorKey: 'orderNumber',
+        cell: orderNumberCell(),
+        size: 140,
+      },
+      {
+        id: 'customer',
+        header: <ColHeader tip='Customer' symbol='Customer' />,
+        accessorKey: 'contactEmail',
+        cell: customerCell(),
+        size: 180,
+      },
+      {
+        id: 'date',
+        header: <ColHeader tip='Date' symbol='Date' />,
+        accessorKey: 'createdAt',
+        cell: dateCell('createdAt'),
+        size: 120,
+      },
+    ],
     [],
   )
 
-  if (!orders) {
-    return (
-      <Card shadow='sm' className='p-4'>
-        <p className='text-sm text-gray-400'>Loading orders...</p>
-      </Card>
-    )
-  }
+  const actionConfig = useMemo(
+    () => ({
+      customActions: [
+        {
+          label: 'View Details',
+          icon: 'eye' as const,
+          onClick: (order: Order) => handleViewOrder(order),
+        },
+      ],
+    }),
+    [handleViewOrder],
+  )
 
   return (
-    <Card
-      shadow='none'
-      radius='none'
-      className='pb-10 md:p-4 md:rounded-xl bg-sidebar/20  dark:bg-dark-table/40 md:h-full h-[calc(100lvh-24px)] w-screen md:w-full overflow-scroll'>
-      <Table
-        key={`table-${selectedOrderId || 'none'}-${open}`}
-        isCompact
-        removeWrapper
-        aria-label='Orders table'
-        classNames={classNames}>
-        <TableHeader columns={columns} className='font-medium text-foreground'>
-          {(column) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === 'actions' ? 'center' : 'start'}
-              className={cn('border-b-0', {'w-14': column.uid === 'actions'})}>
-              {column.name}
-            </TableColumn>
-          )}
-        </TableHeader>
-        <TableBody emptyContent={'No orders found'} items={orders}>
-          {(order) => {
-            const isSelected = Boolean(
-              selectedOrderId &&
-              order._id &&
-              String(selectedOrderId) === String(order._id) &&
-              open,
-            )
-            return (
-              <TableRow
-                key={`${order._id}-${isSelected}`}
-                data-order-selected={isSelected ? 'true' : 'false'}
-                className={cn(
-                  'hover:bg-sidebar/65 dark:hover:bg-sidebar/80',
-                  'border-dotted border-neutral-300 dark:border-teal-200/10 h-8 transition-colors',
-                  selectedRow === order._id && isSelected
-                    ? 'bg-sidebar/40 shadow-inner dark:border-teal-200/40 -border-dotted border-y-1'
-                    : 'first:border-t border-b',
-                )}>
-                {(columnKey) => (
-                  <TableCell
-                    className={cn(
-                      'border-r first:border-l border-dotted border-neutral-300 dark:border-teal-200/10 px-1.5',
-                      selectedRow === order._id && isSelected
-                        ? 'bg-neutral-300/10 first:border-l not-last:border-r-0 last:border-r -border-dotted border-neutral-300 dark:border-teal-200/40'
-                        : '',
-                      columnKey === 'status' && 'w-52',
-                      columnKey === 'total' && 'w-30',
-                    )}>
-                    {renderCell(order, columnKey)}
-                  </TableCell>
-                )}
-              </TableRow>
-            )
-          }}
-        </TableBody>
-      </Table>
-    </Card>
+    <div className='relative w-full max-w-full overflow-hidden'>
+      <DataTable
+        title='Orders'
+        data={orders ?? []}
+        loading={!orders}
+        columnConfigs={columns}
+        actionConfig={actionConfig}
+        editingRowId={null}
+      />
+    </div>
   )
 }

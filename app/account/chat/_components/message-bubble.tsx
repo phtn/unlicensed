@@ -3,6 +3,7 @@
 import type {Id} from '@/convex/_generated/dataModel'
 import {cn} from '@/lib/utils'
 import {Avatar, User} from '@heroui/react'
+import {useCallback} from 'react'
 import {AudioMessagePlayer} from './audio-message-player'
 import {MessageBubbleAttachments} from './message-bubble-attachments'
 import {MessageBubbleTimestamp} from './message-bubble-timestamp'
@@ -84,6 +85,13 @@ export function MessageBubble({
     }
   }
 
+  const handleLikeMessage = useCallback(
+    (id: Id<'messages'>) => () => {
+      onLike(id)
+    },
+    [onLike],
+  )
+
   return (
     <div
       className={cn(
@@ -91,7 +99,7 @@ export function MessageBubble({
         isCurrentUser && 'flex-row-reverse',
       )}>
       {/* Avatar - only show for first message in a group */}
-      <div className='w-7 md:w-8 shrink-0'>
+      <div className='hidden w-7 md:w-8 shrink-0'>
         {showAvatar && displayUser ? (
           <Avatar src={displayUser.avatarUrl ?? undefined} />
         ) : null}
@@ -151,13 +159,13 @@ export function MessageBubble({
             otherUser={otherUser}
             isLiked={isLiked}
             likesCount={likesCount}
-            onLike={() => onLike(message._id)}
+            onLike={handleLikeMessage(message._id)}
           />
         </div>
       ) : (
         <div
           className={cn(
-            'flex flex-col gap-1 max-w-[75%] md:max-w-[70%]',
+            'flex flex-col gap-0.5 max-w-[75%] md:max-w-[70%]',
             isCurrentUser && 'items-end',
             !isCurrentUser && 'items-start',
           )}>
@@ -198,7 +206,7 @@ export function MessageBubble({
             otherUser={otherUser}
             isLiked={isLiked}
             likesCount={likesCount}
-            onLike={() => onLike(message._id)}
+            onLike={handleLikeMessage(message._id)}
           />
         </div>
       )}

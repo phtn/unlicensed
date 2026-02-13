@@ -26,6 +26,8 @@ export interface CheckoutProps {
   pointsBalance: PointsBalance | undefined
   paymentMethodFromUrl?: PaymentMethod
   onPaymentMethodUrlChange?: (method: PaymentMethod) => void
+  minimumOrderCents?: number
+  shippingFeeCents?: number
 }
 
 export interface FormData {

@@ -7,9 +7,8 @@ import {Button, Card, CardBody, Divider} from '@heroui/react'
 import {memo, ViewTransition} from 'react'
 import {PointsBalance} from '../../rewards-summary'
 import {FormData} from '../types'
+import {MoneyFormat} from './money-format'
 import {PaymentMethods} from './payment-method'
-
-// This component is part of the checkout flow, showing payment method and order button
 
 interface OrderSummaryCardProps {
   subtotal: number
@@ -26,6 +25,8 @@ interface OrderSummaryCardProps {
   userId?: Id<'users'>
   pointsBalance: PointsBalance | undefined
   onOpen?: VoidFunction
+  minimumOrderCents?: number
+  shippingFeeCents?: number
 }
 
 export const OrderSummaryCard = memo(function OrderSummaryCard({
@@ -42,10 +43,17 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   onPlaceOrderClick,
   pointsBalance,
   onOpen,
+  minimumOrderCents = 5000,
+  shippingFeeCents = 500,
 }: OrderSummaryCardProps) {
   const handleOnChange = (value: FormData['paymentMethod']) => {
     onPaymentMethodChange(value)
   }
+
+  const isFreeShipping = shipping === 0
+  const remainingForFreeShipping = minimumOrderCents - subtotal
+  const showShippingProgress = !isFreeShipping && remainingForFreeShipping > 0
+  const progressPercent = Math.min(100, (subtotal / minimumOrderCents) * 100)
 
   return (
     <div className='lg:sticky lg:top-24 h-fit'>
@@ -76,7 +84,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
               <div className='flex justify-between font-okxs text-sm'>
                 <span className=''>Shipping</span>
                 <span className=''>
-                  {shipping === 0 ? (
+                  {isFreeShipping ? (
                     <span className='bg-limited px-1.5 uppercase rounded-sm font-bone text-dark-gray border border-dark-gray'>
                       Free
                     </span>
@@ -88,6 +96,25 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   )}
                 </span>
               </div>
+              {showShippingProgress && (
+                <div className='space-y-1.5 pt-1'>
+                  <div className='h-1.5 bg-foreground/10 rounded-full overflow-hidden'>
+                    <div
+                      className='h-full bg-brand rounded-full transition-all duration-300'
+                      style={{width: `${progressPercent}%`}}
+                    />
+                  </div>
+                  <p className='space-x-1 font-okxs text-xs'>
+                    <span className='text-muted-foreground'>Add</span>
+
+                    <MoneyFormat value={remainingForFreeShipping} />
+
+                    <span className='text-muted-foreground'>
+                      more for free shipping
+                    </span>
+                  </p>
+                </div>
+              )}
               <div className='flex justify-between font-okxs text-sm dark:purple-300/10 rounded-md'>
                 <span className='text-foreground'>Reward Points</span>
                 <span className=''>${pointsBalance?.availablePoints ?? 0}</span>

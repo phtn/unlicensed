@@ -40,6 +40,8 @@ export function Checkout({
   pointsBalance,
   paymentMethodFromUrl,
   onPaymentMethodUrlChange,
+  minimumOrderCents,
+  shippingFeeCents,
 }: CheckoutProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -247,6 +249,8 @@ export function Checkout({
         userId={convexUser?._id}
         pointsBalance={pointsBalance}
         onOpen={onOpen}
+        minimumOrderCents={minimumOrderCents}
+        shippingFeeCents={shippingFeeCents}
       />
 
       <CheckoutModal

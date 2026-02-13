@@ -648,10 +648,11 @@ export function MessageInput({
 
         {/* Text Input Area */}
         <div className='flex-1 relative'>
-          <div className='relative flex items-end rounded-lg bg-muted/50 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all'>
+          <div className='relative flex items-end rounded-xl bg-muted/50 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all'>
             <Textarea
               ref={textareaRef}
               value={message}
+              radius='none'
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder='Type a message...'
@@ -660,7 +661,7 @@ export function MessageInput({
               className='touch-manipulation'
               classNames={{
                 ...chatInputClassNames,
-                innerWrapper: 'ps-2! rounded-lg',
+                innerWrapper: 'ps-2!',
               }}
               // className={cn(
               //   'w-full resize-none bg-transparent px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base',
@@ -713,12 +714,19 @@ export function MessageInput({
     </div>
   )
 }
-
+export const searchInputClassNames: InputProps['classNames'] = {
+  label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-brk',
+  input:
+    'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
+  inputWrapper:
+    'shadow-none border rounded-xl border-dark-table/40 dark:border-black/10 bg-alum/10 dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-16 w-full',
+  innerWrapper: 'ps-8',
+}
 export const chatInputClassNames: InputProps['classNames'] = {
   label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-brk',
   input:
     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
-    'border shadow-none border-dark-table/40 dark:border-black/20 bg-sidebar dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-16 w-full',
+    'border shadow-none rounded-xl border-dark-table/40 dark:border-black/10 bg-sidebar dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-16 w-full',
   innerWrapper: 'ps-8',
 }

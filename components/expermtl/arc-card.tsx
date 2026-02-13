@@ -72,12 +72,14 @@ interface ArcCalloutProps {
   value?: ReactNode
   icon?: IconName
   type?: 'success' | 'error' | 'warning' | 'info' | 'default'
+  className?: ClassName
 }
 
 const ArcCallout = ({
   value = 'default',
   icon,
   type = 'default',
+  className,
 }: ArcCalloutProps) => (
   <div
     className={cn('flex items-center space-x-2 p-1.5 rounded-md', {
@@ -88,7 +90,7 @@ const ArcCallout = ({
       'bg-featured/5': type === 'info',
     })}>
     {icon && <Icon name={icon} className='size-4 opacity-70 ml-0.5' />}
-    <p className='text-sm text-color-muted'>{value}</p>
+    <p className={cn('text-sm text-color-muted', className)}>{value}</p>
   </div>
 )
 

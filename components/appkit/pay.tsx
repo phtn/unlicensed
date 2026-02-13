@@ -10,7 +10,14 @@ import {getUsdtAddress, isUsdtSupportedChain} from '@/lib/usdt'
 import {cn} from '@/lib/utils'
 import {mainnet, polygon, polygonAmoy, sepolia} from '@reown/appkit/networks'
 import {AnimatePresence, motion} from 'motion/react'
-import {useCallback, useEffect, useMemo, useState, useTransition} from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react'
 import {parseUnits, type Address} from 'viem'
 import {
   useChainId,
@@ -30,6 +37,7 @@ import {Tokens} from './token-list'
 import {PayTabProps} from './types'
 
 export const PayTab = ({
+  onPaymentSuccess,
   tokenPrice,
   disabled,
   defaultPaymentAmountUsd,
@@ -374,6 +382,25 @@ export const PayTab = ({
   const activeIsConfirming = localIsConfirming || isConfirming
   const activeHash = localHash || hash
   const activeReceipt = localReceipt || receipt
+  const reportedSuccessHashRef = useRef<`0x${string}` | null>(null)
+
+  useEffect(() => {
+    if (
+      !onPaymentSuccess ||
+      !activeHash ||
+      !activeReceipt ||
+      activeReceipt.status !== 'success'
+    ) {
+      return
+    }
+
+    if (reportedSuccessHashRef.current === activeHash) {
+      return
+    }
+
+    reportedSuccessHashRef.current = activeHash
+    void onPaymentSuccess(activeHash)
+  }, [activeHash, activeReceipt, onPaymentSuccess])
 
   const receiptExplorerUrl = useMemo(
     () => getTransactionExplorerUrl(currentChain, activeHash) ?? explorerUrl,
@@ -552,13 +579,13 @@ export const PayTab = ({
         animate={{opacity: 1, y: 0}}
         exit={{opacity: 0, y: -10}}
         transition={{layout: {duration: 0.3, ease: 'easeInOut'}}}
-        className='space-y-6 pb-4 transition-transform duration-200 '>
+        className='space-y-6 pb-0 transition-transform duration-200 '>
         <motion.div
           layout
           transition={{duration: 0.3, ease: 'easeInOut'}}
-          className={cn('overflow-hidden', {
+          className={cn('overflow-scroll', {
             'h-28': availableTokens.length <= 1,
-            'h-full': availableTokens.length > 1,
+            'h-44': availableTokens.length > 1,
           })}>
           {tokensLoading ? (
             <motion.div
@@ -594,7 +621,7 @@ export const PayTab = ({
 
       {/* Processing / Success State */}
       <AnimatePresence mode='wait'>
-        <motion.div layout className='mt-4'>
+        <motion.div layout className='mt-0'>
           {activeReceipt && activeReceipt.status === 'success' ? (
             <PaymentSuccess
               key='success'

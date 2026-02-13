@@ -21,11 +21,15 @@ export const create = mutation({
     const benefits = (args.benefits ?? [])
       .map((benefit) => benefit.trim())
       .filter((benefit) => benefit.length > 0)
+    const productTypes = (args.productTypes ?? [])
+      .map((type) => type.trim())
+      .filter((type) => type.length > 0)
 
     const categoryId = await ctx.db.insert('categories', {
       ...args,
       slug,
       benefits,
+      productTypes: productTypes.length > 0 ? productTypes : undefined,
     })
 
     // Log category created activity
@@ -68,11 +72,15 @@ export const update = mutation({
     const benefits = (args.benefits ?? [])
       .map((benefit) => benefit.trim())
       .filter((benefit) => benefit.length > 0)
+    const productTypes = (args.productTypes ?? [])
+      .map((type) => type.trim())
+      .filter((type) => type.length > 0)
 
     const {categoryId, ...updateData} = args
     await ctx.db.patch(categoryId, {
       ...updateData,
       benefits,
+      productTypes: productTypes.length > 0 ? productTypes : undefined,
       slug,
     })
 

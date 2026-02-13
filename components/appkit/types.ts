@@ -11,6 +11,7 @@ export type ReceiptStatus = { blockNumber: bigint; status: 'success' | 'reverted
 
 export interface PayTabProps {
   onSend: VoidFunction
+  onPaymentSuccess?: (transactionHash: `0x${string}`) => void | Promise<void>
   formattedBalance: string | null
   balance: Balance | null
   tokenPrice: number | null

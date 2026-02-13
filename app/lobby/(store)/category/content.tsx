@@ -158,15 +158,15 @@ export const Content = ({initialCategories}: ContentProps) => {
                         {category.name}
                       </span>
                     </h4>
-                    {category.highlight && (
+                    {/*{category.highlight && (
                       <div className='flex truncate gap-1.5 mt-3 justify-center text-brand font-okxs font-medium'>
                         <span
                           key={category.slug}
                           className='text-[10px] sm:text-xs px-2 py-0.5 opacity-70'>
-                          {category.highlight}
+                          {category.shortDesc}
                         </span>
                       </div>
-                    )}
+                    )}*/}
                   </div>
                 </div>
               </Link>

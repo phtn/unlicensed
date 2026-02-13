@@ -216,7 +216,7 @@ export function moneyCell<T>(prop: keyof T, options: CellOptions<T> = {}) {
           {Number(value).toLocaleString('en-US', {
             style: 'currency',
             currency: 'USD',
-            maximumFractionDigits: 0,
+            maximumFractionDigits: 2,
           })}
         </div>
       </div>
@@ -228,10 +228,12 @@ export function moneyCell<T>(prop: keyof T, options: CellOptions<T> = {}) {
 
 export const priceCell = <T, K extends keyof T>(
   prop: K,
+  formatter: (value: string) => string,
   className?: ClassName,
   fallback?: ReactNode,
 ) => {
   const cell = moneyCell<T>(prop, {
+    formatter: (v) => formatter(v as string),
     className,
     fallback,
   })

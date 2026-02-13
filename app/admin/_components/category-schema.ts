@@ -12,6 +12,7 @@ export const categorySchema = z.object({
   highlight: z.string().optional(),
   benefitsRaw: z.string().optional(),
   unitsRaw: z.string().optional(),
+  productTypesRaw: z.string().optional(),
   denominationsRaw: z.string().optional(),
   visible: z.boolean().default(false),
 })
@@ -40,7 +41,16 @@ const parseNumbers = (value?: string): number[] | undefined => {
   return numbers.length > 0 ? numbers : undefined
 }
 
-export {parseList, parseNumbers}
+const parseCommaList = (value?: string): string[] | undefined => {
+  if (!value) return undefined
+  const values = value
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+  return values.length > 0 ? values : undefined
+}
+
+export {parseList, parseNumbers, parseCommaList}
 
 export const categoryFields: FormInput<CategoryFormValues>[] = [
   {
@@ -105,6 +115,14 @@ export const categoryFields: FormInput<CategoryFormValues>[] = [
     required: false,
     type: 'text',
     placeholder: 'e.g., g, oz, ml, kg, lb, each',
+    defaultValue: '',
+  },
+  {
+    name: 'productTypesRaw',
+    label: 'Product Types',
+    required: false,
+    type: 'text',
+    placeholder: 'e.g., Disposable, Cartridge, Pod',
     defaultValue: '',
   },
   {

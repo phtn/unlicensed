@@ -1,11 +1,11 @@
 'use client'
 
-import {ViewTransition} from 'react'
-import {Avatar} from '@heroui/react'
+import type {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimeCompact} from '@/utils/date'
-import type {Id} from '@/convex/_generated/dataModel'
+import {Avatar} from '@heroui/react'
+import {ViewTransition} from 'react'
 
 interface User {
   displayName?: string | null
@@ -22,18 +22,16 @@ interface MessageBubbleTimestampProps {
   otherUser?: User | null
   isLiked?: boolean
   likesCount?: number
-  onLike?: () => void
+  onLike?: VoidFunction
 }
 
 export function MessageBubbleTimestamp({
-  messageId,
   createdAt,
   isCurrentUser,
   isVisible,
   isLastRead,
   otherUser,
   isLiked,
-  likesCount,
   onLike,
 }: MessageBubbleTimestampProps) {
   return (
@@ -41,11 +39,14 @@ export function MessageBubbleTimestamp({
       {isCurrentUser ? (
         <>
           <div className='min-w-12 relative'>
-            <ViewTransition name='chat-message-timestamp' enter='vt-enter' exit='vt-exit'>
+            <ViewTransition
+              name='chat-message-timestamp'
+              enter='vt-enter'
+              exit='vt-exit'>
               {isVisible ? (
                 <span
                   key='timestamp'
-                  className='font-space absolute whitespace-nowrap top-0'>
+                  className='font-brk absolute whitespace-nowrap top-0'>
                   {formatTimeCompact(createdAt)}
                 </span>
               ) : null}
@@ -84,7 +85,10 @@ export function MessageBubbleTimestamp({
             </button>
           )}
           <div className='min-w-12'>
-            <ViewTransition name='chat-message-timestamp' enter='vt-enter' exit='vt-exit'>
+            <ViewTransition
+              name='chat-message-timestamp'
+              enter='vt-enter'
+              exit='vt-exit'>
               {isVisible ? (
                 <span key='timestamp' className='font-space'>
                   {formatTimeCompact(createdAt)}
