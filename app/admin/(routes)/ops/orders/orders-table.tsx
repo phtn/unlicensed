@@ -1,8 +1,8 @@
 'use client'
 
 import {DataTable} from '@/components/table-v2'
-import {dateCell, textCell} from '@/components/table-v2/cells-v2'
-import {ColumnConfig} from '@/components/table-v2/create-column'
+import {dateCell, priceCell, textCell} from '@/components/table-v2/cells-v2'
+import {ActionConfig, ColumnConfig} from '@/components/table-v2/create-column'
 import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
@@ -11,7 +11,7 @@ import {formatPrice} from '@/utils/formatPrice'
 import {CellContext} from '@tanstack/react-table'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
-import {useMemo} from 'react'
+import {useCallback, useMemo} from 'react'
 import {useSettingsPanel} from '../../../_components/ui/settings'
 import {CourierCell} from './courier-cell'
 import {useOrderDetails} from './order-details-context'
@@ -66,23 +66,6 @@ function statusCell() {
   return StatusCellComponent
 }
 
-function totalCell() {
-  const TotalCellComponent = (ctx: CellContext<Order, unknown>) => {
-    const totalCents = ctx.getValue() as number | undefined
-    if (totalCents == null) return <span className='text-muted-foreground'>—</span>
-
-    return (
-      <div className='flex flex-col items-end w-full'>
-        <p className='whitespace-nowrap font-semibold text-sm font-space text-right'>
-          {formatPrice(totalCents)}
-        </p>
-      </div>
-    )
-  }
-  TotalCellComponent.displayName = 'TotalCell'
-  return TotalCellComponent
-}
-
 function orderNumberCell() {
   const OrderNumberCellComponent = (ctx: CellContext<Order, unknown>) => {
     const orderNumber = ctx.getValue() as string | undefined
@@ -135,12 +118,15 @@ function courierCell() {
 export const OrdersTable = () => {
   const orders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
   const {setSelectedOrder} = useOrderDetails()
-  const {setOpen} = useSettingsPanel()
+  const {togglePanel} = useSettingsPanel()
 
-  const handleViewOrder = (order: Order) => {
-    setSelectedOrder(order)
-    setOpen(true)
-  }
+  const handleViewOrder = useCallback(
+    (order: Order) => {
+      setSelectedOrder(order)
+      togglePanel()
+    },
+    [setSelectedOrder, togglePanel],
+  )
 
   const columns = useMemo<ColumnConfig<Order>[]>(
     () => [
@@ -152,10 +138,10 @@ export const OrdersTable = () => {
         size: 200,
       },
       {
-        id: 'total',
+        id: 'totalCents',
         header: <ColHeader tip='Total' symbol='Total' center />,
         accessorKey: 'totalCents',
-        cell: totalCell(),
+        cell: priceCell('totalCents', (v) => formatPrice(+v)),
         size: 100,
       },
       {
@@ -164,6 +150,13 @@ export const OrdersTable = () => {
         accessorKey: 'courier',
         cell: courierCell(),
         size: 100,
+      },
+      {
+        id: 'shippingAddress',
+        header: <ColHeader tip='Shipping Address' symbol='Shipping' />,
+        accessorKey: 'shippingAddress',
+        cell: textCell('shipping'),
+        size: 180,
       },
       {
         id: 'orderNumber',
@@ -184,22 +177,26 @@ export const OrdersTable = () => {
         header: <ColHeader tip='Date' symbol='Date' />,
         accessorKey: 'createdAt',
         cell: dateCell('createdAt'),
-        size: 120,
       },
     ],
     [],
   )
 
   const actionConfig = useMemo(
-    () => ({
-      customActions: [
-        {
-          label: 'View Details',
-          icon: 'eye' as const,
-          onClick: (order: Order) => handleViewOrder(order),
-        },
-      ],
-    }),
+    () =>
+      ({
+        mode: 'buttons',
+        align: 'end',
+        actions: [
+          {
+            id: 'view',
+            label: '',
+            icon: 'details',
+            appearance: 'icon-button',
+            onClick: (order: Order) => handleViewOrder(order),
+          },
+        ],
+      }) as ActionConfig<Order>,
     [handleViewOrder],
   )
 

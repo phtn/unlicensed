@@ -197,9 +197,49 @@ export interface ColumnConfig<T> {
   meta?: Record<string, unknown>
 }
 
-// Action configuration interface
+export type ActionRenderMode = 'dropdown' | 'buttons' | 'custom'
+export type ActionAlign = 'start' | 'center' | 'end'
+
+export interface ActionItem<T> {
+  id?: string
+  label: string
+  icon?: IconName
+  shortcut?: string
+  section?: string
+  variant?: 'default' | 'destructive'
+  appearance?: 'button' | 'icon-button'
+  className?: string
+  hidden?: boolean | ((row: T) => boolean)
+  disabled?: boolean | ((row: T) => boolean)
+  onClick: (row: T) => void
+}
+
+export interface ActionTriggerConfig<T> {
+  icon?: IconName
+  label?: string
+  className?: string
+  render?: (ctx: {
+    row: Row<T>
+    loading: boolean
+    defaultTrigger: ReactNode
+  }) => ReactNode
+}
+
 export interface ActionConfig<T> {
-  viewFn?: VoidFunction
+  mode?: ActionRenderMode
+  align?: ActionAlign
+  header?: ReactNode
+  columnSize?: number
+  trigger?: ActionTriggerConfig<T>
+  actions?: ActionItem<T>[]
+  render?: (ctx: {
+    row: Row<T>
+    actions: ActionItem<T>[]
+    defaultDropdown: ReactNode
+    defaultButtons: ReactNode
+  }) => ReactNode
+  // Backward-compatible legacy config
+  viewFn?: (row: T) => void
   deleteFn?: (row: T) => void
   customActions?: Array<{
     label: string
@@ -256,32 +296,31 @@ export const createColumns = <T,>(
     columns.push(column)
   })
 
-  // Add actions column if action config is provided
-  if (
-    actionConfig &&
-    (actionConfig.viewFn ||
+  const hasActions =
+    !!actionConfig &&
+    !!(
+      actionConfig.render ||
+      actionConfig.actions?.length ||
+      actionConfig.viewFn ||
       actionConfig.deleteFn ||
-      actionConfig.customActions?.length)
-  ) {
+      actionConfig.customActions?.length
+    )
+
+  // Add actions column if action config is provided
+  if (hasActions) {
     columns.push({
       id: 'actions',
-      header: () => (
-        <div className='w-full flex justify-center'>
-          <Icon
-            name='chevron-down'
-            className='size-4 dark:text-cyan-200/80 text-mac-blue/50'
-          />
-        </div>
-      ),
-      cell: ({row}) => (
-        <RowActions
-          row={row}
-          viewFn={actionConfig.viewFn}
-          deleteFn={actionConfig.deleteFn}
-          customActions={actionConfig.customActions}
-        />
-      ),
-      size: 0,
+      header: () =>
+        actionConfig?.header ?? (
+          <div className='w-full flex justify-center'>
+            <Icon
+              name='chevron-down'
+              className='size-4 dark:text-cyan-200/80 text-mac-blue/50'
+            />
+          </div>
+        ),
+      cell: ({row}) => <RowActions row={row} actionConfig={actionConfig} />,
+      size: actionConfig?.columnSize ?? 0,
       enableHiding: false,
     })
   }

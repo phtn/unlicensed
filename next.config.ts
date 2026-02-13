@@ -94,16 +94,16 @@ const nextConfig: NextConfig = {
   async headers() {
     const cspDirectives = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' accounts.google.com apis.google.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com api.web3modal.org rpc.walletconnect.org *.coinbase.com",
-      "style-src 'self' 'unsafe-inline' embed.hel.io rpc.walletconnect.org *.reown.com firestore.googleapis.com api.web3modal.org",
-      "img-src 'self' data: blob: https: images.unsplash.com res.cloudinary.com *.reown.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' accounts.google.com apis.google.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com api.web3modal.org rpc.walletconnect.org *.coinbase.com *.rapidfirenow.com",
+      "style-src 'self' 'unsafe-inline' embed.hel.io rpc.walletconnect.org *.reown.com firestore.googleapis.com api.web3modal.org *.rapidfirenow.com",
+      "img-src 'self' data: blob: https: images.unsplash.com res.cloudinary.com *.reown.com *.rapidfirenow.com",
       "font-src 'self' data: *.reown.com",
-      "connect-src 'self' *.convex.cloud wss://*.convex.cloud *.paygate.to *.firebaseio.com *.googleapis.com *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.alchemy.com *.g.alchemy.com *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com  rpc.walletconnect.org  *.coinbase.com api.web3modal.org pulse.walletconnect.org",
-      "frame-src 'self' accounts.google.com *.paygate.to *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com  rpc.walletconnect.org  *.coinbase.com",
+      "connect-src 'self' *.convex.cloud wss://*.convex.cloud *.paygate.to *.firebaseio.com *.googleapis.com *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.alchemy.com *.g.alchemy.com *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com  rpc.walletconnect.org  *.coinbase.com api.web3modal.org pulse.walletconnect.org *.rapidfirenow.com",
+      "frame-src 'self' accounts.google.com *.paygate.to *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com  rpc.walletconnect.org  *.coinbase.com *.rapidfirenow.com",
       "worker-src 'self' blob:",
       "object-src 'none'",
       "base-uri 'self'",
-      "form-action 'self' *.paygate.to *.kryptonim.com *.moonpay.com *.wert.io *.transak.com *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com",
+      "form-action 'self' *.paygate.to *.kryptonim.com *.moonpay.com *.wert.io *.transak.com *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com *.rapidfirenow.com",
     ].join('; ')
 
     return [

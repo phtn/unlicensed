@@ -378,7 +378,7 @@ function DataTableContent<T>({
   return (
     <div className={cn('text-foreground w-full duration-500 ease-in-out')}>
       <div className='h-[94lvh] inset-0 dark:inset-0 pb-8 min-w-0 overflow-hidden'>
-        <div className='flex items-center justify-between shrink h-10.5'>
+        <div className='flex h-auto shrink flex-wrap items-center justify-between gap-2 md:h-10.5 md:flex-nowrap md:gap-0'>
           <LeftTableToolbar
             select={
               <SelectToggle
@@ -433,7 +433,7 @@ function DataTableContent<T>({
         {/* Table */}
         <HyperWrap className='space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-sm pb-12'>
           <TableContainer>
-            <Table>
+            <Table className='w-full min-w-max'>
               <TableHeader className='w-full'>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
@@ -508,7 +508,7 @@ export const DataTable = <T,>(props: TableProps<T>) => {
 
 const TableContainer = ({children}: {children: ReactNode}) => (
   <div className='relative h-full w-full overflow-x-auto'>
-    <div className='inline-block w-full'>{children}</div>
+    <div className='inline-block min-w-full align-top'>{children}</div>
   </div>
 )
 

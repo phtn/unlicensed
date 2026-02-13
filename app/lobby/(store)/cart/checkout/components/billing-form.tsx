@@ -56,7 +56,9 @@ export function BillingForm({
       </div>
       {showBillingFields && (
         <div>
-          <h3 className='text-lg font-semibold mb-4'>Billing Address</h3>
+          <h3 className='text-lg font-semibold mb-4 opacity-80'>
+            Billing Address
+          </h3>
           <div className='grid grid-cols-2 gap-2'>
             <Input
               label='First Name'

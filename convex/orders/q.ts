@@ -148,6 +148,8 @@ export const getAdminStats = query({
 
     // Get all orders
     const allOrders = await ctx.db.query('orders').collect()
+    const hasCompletedPayment = (order: (typeof allOrders)[number]) =>
+      order.payment.status === 'completed'
 
     // Get all users
     const allUsers = await ctx.db.query('users').collect()
@@ -155,12 +157,12 @@ export const getAdminStats = query({
     // Get all products
     const allProducts = await ctx.db.query('products').collect()
 
-    // Calculate sales today (only shipped orders)
+    // Calculate sales today (only completed payments)
     const salesToday = allOrders
       .filter(
         (order) =>
           (order.createdAt ?? 0) >= startOfTodayTimestamp &&
-          order.orderStatus === 'shipped',
+          hasCompletedPayment(order),
       )
       .reduce((sum, order) => sum + (order.totalCents ?? 0), 0)
 
@@ -169,7 +171,7 @@ export const getAdminStats = query({
       .filter(
         (order) =>
           (order.createdAt ?? 0) >= startOfWeekTimestamp &&
-          order.orderStatus === 'shipped',
+          hasCompletedPayment(order),
       )
       .reduce((sum, order) => sum + (order.totalCents ?? 0), 0)
 
@@ -178,13 +180,13 @@ export const getAdminStats = query({
       .filter(
         (order) =>
           (order.createdAt ?? 0) >= startOfMonthTimestamp &&
-          order.orderStatus === 'shipped',
+          hasCompletedPayment(order),
       )
       .reduce((sum, order) => sum + (order.totalCents ?? 0), 0)
 
-    // Calculate total revenue (all shipped orders)
+    // Calculate total revenue (all completed payments)
     const totalRevenue = allOrders
-      .filter((order) => order.orderStatus === 'shipped')
+      .filter(hasCompletedPayment)
       .reduce((sum, order) => sum + (order.totalCents ?? 0), 0)
 
     // Count pending orders
@@ -254,6 +256,8 @@ export const getAdminChartData = query({
 
     // Get all orders
     const allOrders = await ctx.db.query('orders').collect()
+    const hasCompletedPayment = (order: (typeof allOrders)[number]) =>
+      order.payment.status === 'completed'
 
     // Initialize arrays for the last 20 days
     const salesData: Array<{value: number}> = []
@@ -277,9 +281,9 @@ export const getAdminChartData = query({
           (order.createdAt ?? 0) < dayEndTimestamp,
       )
 
-      // Calculate sales for this day (only shipped orders)
+      // Calculate sales for this day (only completed payments)
       const completedDayOrders = dayOrders.filter(
-        (order) => order.orderStatus === 'shipped',
+        (order) => hasCompletedPayment(order),
       )
 
       const daySales = completedDayOrders.reduce(

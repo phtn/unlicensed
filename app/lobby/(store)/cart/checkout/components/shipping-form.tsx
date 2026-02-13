@@ -27,7 +27,7 @@ export function ShippingForm({
   return (
     <div className='space-y-2'>
       <div className='flex items-center justify-between'>
-        <h3 className='flex items-center space-x-1.5 text-lg font-semibold my-3 tracking-tighter'>
+        <h3 className='flex items-center space-x-1.5 text-lg font-semibold my-3 opacity-80'>
           <Icon name='mailbox-fill' className='size-5' />
           <span className='whitespace-nowrap'>Shipping Address</span>
         </h3>
