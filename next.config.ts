@@ -1,7 +1,7 @@
 import withPWAInit from '@ducanh2912/next-pwa'
 import createMDX from '@next/mdx'
-import {execSync} from 'child_process'
-import type {NextConfig} from 'next'
+import { execSync } from 'child_process'
+import type { NextConfig } from 'next'
 
 const DEFAULT_SERVER_ACTION_ALLOWED_ORIGINS = [
   'rapidfirenow.com',
@@ -94,7 +94,7 @@ const nextConfig: NextConfig = {
   async headers() {
     const cspDirectives = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' accounts.google.com apis.google.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com api.web3modal.org rpc.walletconnect.org *.coinbase.com *.rapidfirenow.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' accounts.google.com apis.google.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com api.web3modal.org rpc.walletconnect.org *.coinbase.com *.rapidfirenow.com static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline' embed.hel.io rpc.walletconnect.org *.reown.com firestore.googleapis.com api.web3modal.org *.rapidfirenow.com",
       "img-src 'self' data: blob: https: images.unsplash.com res.cloudinary.com *.reown.com *.rapidfirenow.com",
       "font-src 'self' data: *.reown.com",
