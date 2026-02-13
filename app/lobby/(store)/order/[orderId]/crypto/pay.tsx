@@ -72,7 +72,7 @@ const CryptoPayContent = () => {
 
   return (
     <div className='relative w-3xl max-w-3xl mx-auto flex h-full'>
-      <div className='w-full relative bg-linear-to-br from-zinc-900 via-zinc-950 to-zinc-950 md:border-[0.33px] border-white/10 overflow-hidden shadow-2xl pb-12'>
+      <div className='w-full relative bg-linear-to-br from-zinc-900 via-zinc-950 to-zinc-950 overflow-hidden shadow-2xl pb-12'>
         <PayTab
           onSend={() => undefined}
           onPaymentSuccess={handlePaymentSuccess}

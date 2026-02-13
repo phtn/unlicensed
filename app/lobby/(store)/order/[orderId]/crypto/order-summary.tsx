@@ -1,9 +1,6 @@
 'use client'
 
 import {
-  ArcActionBar,
-  ArcButtonLeft,
-  ArcButtonRight,
   ArcCallout,
   ArcCard,
   ArcHeader,
@@ -37,17 +34,21 @@ export const OrderSummaryWidget = () => {
     <main className='h-[calc(100lvh)] bg-black w-3xl'>
       <ArcCard>
         <ArcHeader
-          title='We received your order!'
+          title={
+            order?.payment.status === 'completed'
+              ? 'Payment received!'
+              : 'Pay with Crypto.'
+          }
           description={order?.orderNumber}
           icon='hash'
           iconStyle='text-indigo-400'
           status={
             <span
               className={cn(
-                'font-brk text-orange-300 tracking-wide uppercase text-xs bg-background/60 py-1 px-1.5 rounded-sm',
+                'font-brk text-orange-500 tracking-wide uppercase text-xs dark:bg-background/60 bg-slate-200/50 py-1 px-1.5 rounded-sm',
                 {'text-emerald-500': order?.payment.status === 'completed'},
               )}>
-              {order?.payment.status}
+              payment {order?.payment.status}
             </span>
           }
         />
@@ -69,8 +70,12 @@ export const OrderSummaryWidget = () => {
         <ArcCallout
           className='font-brk opacity-80'
           icon={order?.payment.transactionId ? 'hash' : 'info'}
-          value={order?.payment.transactionId?.substring(0, 24) + ' ...'}
-          type='success'
+          value={
+            (order?.payment.transactionId &&
+              order.payment.transactionId.substring(0, 24) + ' ...') ??
+            'Awaiting Payment'
+          }
+          type={order?.payment.transactionId ? 'success' : 'info'}
         />
 
         <div className='hidden _flex items-center space-x-2 text-base'>
@@ -87,7 +92,7 @@ export const OrderSummaryWidget = () => {
             </div>
           </ArcMessage>
         </div>
-        <ArcActionBar>
+        {/*<ArcActionBar>
           <ArcButtonLeft
             icon='chevron-left'
             label='View Order'
@@ -98,7 +103,7 @@ export const OrderSummaryWidget = () => {
             label='Open Chat'
             href={order ? `/account/chat/${order._id}` : '#'}
           />
-        </ArcActionBar>
+        </ArcActionBar>*/}
       </ArcCard>
     </main>
   )

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.29.1
+
+### Patch Changes
+
+- appkit ui
+
 ## 0.29.0
 
 ### Minor Changes

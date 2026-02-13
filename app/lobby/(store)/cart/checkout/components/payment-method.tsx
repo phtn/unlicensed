@@ -1,13 +1,13 @@
-import { api } from '@/convex/_generated/api'
+import {api} from '@/convex/_generated/api'
 import {
-    PaymentMethod,
-    PaymentMethod as PaymentMethodType,
+  PaymentMethod,
+  PaymentMethod as PaymentMethodType,
 } from '@/convex/orders/d'
-import { Icon, IconName } from '@/lib/icons'
-import { cn } from '@/lib/utils'
-import { Select, SelectItem } from '@heroui/react'
-import { useQuery } from 'convex/react'
-import React, { memo, useCallback, useMemo } from 'react'
+import {Icon, IconName} from '@/lib/icons'
+import {cn} from '@/lib/utils'
+import {Select, SelectItem} from '@heroui/react'
+import {useQuery} from 'convex/react'
+import React, {memo, useCallback, useMemo} from 'react'
 
 interface IPaymentMethod {
   id: PaymentMethod
@@ -63,7 +63,7 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
       <div className='flex flex-col w-full md:space-y-0.5'>
         <div className='flex items-center justify-between w-full'>
           <div className='flex items-center space-x-2 whitespace-nowrap text-base md:text-lg tracking-tight font-medium '>
-            <span>{method.name}</span>
+            <span>{method.label}</span>
             {method.id === 'cards' ? (
               <div className='flex items-center space-x-1'>
                 <Icon name='applepay' className='size-10' />

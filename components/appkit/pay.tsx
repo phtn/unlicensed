@@ -547,7 +547,7 @@ export const PayTab = ({
       animate={{opacity: 1, y: 0}}
       exit={{opacity: 0, y: -10}}
       transition={{layout: {duration: 0.3, ease: 'easeInOut'}}}
-      className='space-y-0 w-full'>
+      className='space-y-0 w-full p-4 pb-10 border border-slate-400/50'>
       {/* Amount Info */}
       {paymentAmountUsd && usdValue && !activeReceipt && (
         <PayAmount
@@ -579,7 +579,7 @@ export const PayTab = ({
         animate={{opacity: 1, y: 0}}
         exit={{opacity: 0, y: -10}}
         transition={{layout: {duration: 0.3, ease: 'easeInOut'}}}
-        className='space-y-6 pb-0 transition-transform duration-200 '>
+        className='space-y-6 px-4 pb-0 transition-transform duration-200'>
         <motion.div
           layout
           transition={{duration: 0.3, ease: 'easeInOut'}}
@@ -593,9 +593,7 @@ export const PayTab = ({
               animate={{opacity: 1, y: 0}}
               transition={{delay: 0.5}}
               className='flex items-center justify-center h-24'>
-              {/*<motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>*/}
               <Icon name='spinners-ring' className='w-6 h-6 text-white/40' />
-              {/*</motion.div>*/}
             </motion.div>
           ) : availableTokens.length > 0 ? (
             <Tokens
@@ -609,7 +607,6 @@ export const PayTab = ({
             />
           ) : (
             <div className='relative h-28 overflow-hidden flex items-center justify-center text-white/60 text-sm'>
-              {/*<div className='absolute bg-[url("/svg/noise.svg")] opacity-3 scale-100 pointer-events-none top-0 left-0 w-full h-full' />*/}
               <motion.div className='space-y-3 sm:space-y-4 opacity-60 bg-blend-lighten blur-3xl w-full h-full absolute -top-1 right-0 bg-top-right' />
               <p className=' line-clamp-2 max-w-[18ch] text-center font-okxs'>
                 No tokens with balance found on this network
@@ -647,11 +644,11 @@ export const PayTab = ({
         <motion.div
           whileHover={{scale: isPayDisabled ? 1 : 1.02}}
           whileTap={{scale: 0.98}}
-          className='mt-4 mx-4'>
+          className='mt-8 mx-4'>
           {activeReceipt && activeReceipt.status === 'success' && onReset ? (
             <button
               onClick={() => setShowReceiptModal(true)}
-              className='flex items-center justify-center w-full mx-auto h-14 text-lg font-medium rounded-xl bg-linear-to-r from-slate-500 via-slate-400 to-cyan-100 hover:from-slate-500 hover:to-slate-100 text-white border-0 shadow-lg transition-all'>
+              className='hidden _flex items-center justify-center w-full mx-auto h-14 text-lg font-medium rounded-xl bg-linear-to-r from-slate-500 via-slate-400 to-cyan-100 hover:from-slate-500 hover:to-slate-100 text-white border-0 shadow-lg transition-all'>
               <span className='flex items-center font-exo font-semibold italic gap-2'>
                 View Receipt
                 <Icon name='receipt-fill' className='w-5 h-5' />
@@ -662,7 +659,7 @@ export const PayTab = ({
               onClick={handlePay}
               disabled={isPayDisabled}
               className={cn(
-                'flex items-center justify-center w-full mx-auto h-14 text-lg font-semibold rounded-xl bg-linear-to-r from-slate-400 via-slate-400 to-rose-200 text-white border-0 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed',
+                'flex items-center justify-center w-full mx-auto h-14 text-lg font-semibold bg-linear-to-r from-slate-400 via-slate-400 to-rose-200 text-white border-0 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed rounded-xs',
                 {
                   'hover:from-slate-200 hover:to-rose-100':
                     !disabled &&

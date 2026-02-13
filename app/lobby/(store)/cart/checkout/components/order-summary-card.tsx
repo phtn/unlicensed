@@ -107,7 +107,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   <p className='space-x-1 font-okxs text-xs'>
                     <span className='text-muted-foreground'>Add</span>
 
-                    <MoneyFormat value={remainingForFreeShipping} />
+                    <MoneyFormat value={remainingForFreeShipping / 100} />
 
                     <span className='text-muted-foreground'>
                       more for free shipping

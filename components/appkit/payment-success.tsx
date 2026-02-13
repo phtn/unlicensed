@@ -1,5 +1,6 @@
 import {Icon} from '@/lib/icons'
 import {motion} from 'motion/react'
+import {tickerSymbol} from './ticker'
 
 interface PaymentSuccessProps {
   tokenAmount: string
@@ -69,20 +70,27 @@ export const PaymentSuccess = ({
         </div>
         <div className='mt-6 pt-4 border-t border-emerald-200/40 border-dashed space-y-3'>
           <div className='flex items-start justify-between'>
-            <span className='text-sm font-polysans font-medium uppercase opacity-70 text-white'>
+            <span className='text-sm font-polysans font-medium uppercase opacity-80 text-white'>
               Amount
             </span>
-            <div className='text-right'>
+            <div className='flex flex-col items-end'>
               <span className='text-sm font-okxs text-white'>
-                {tokenAmount} <span className='uppercase'>{tokenSymbol}</span>
+                {tokenAmount}{' '}
+                <span className='uppercase opacity-70'>
+                  {tickerSymbol(tokenSymbol)}
+                </span>
               </span>
               {usdValue !== null && (
-                <p className='text-base font-okxs font-medium text-white'>
-                  $
-                  {usdValue.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
+                <p className='text-sm font-okxs leading-none flex items-center space-x-1 text-white'>
+                  <span className='space-x-1'>
+                    <span className='font-medium'>
+                      {usdValue.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                    <span className='opacity-70'>USD</span>
+                  </span>
                 </p>
               )}
             </div>

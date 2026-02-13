@@ -200,15 +200,14 @@ export function PayAmount({
           layout: {duration: 0.3, ease: 'easeInOut'},
           ease: 'easeInOut',
         }}
-        className='mt-4'>
-        <div className='p-4 border-b decoration-1 border-white/10 space-y-1'>
+        className='mt-3'>
+        <div className='p-4 border-b decoration-1 decoation-dotted border-white/10 space-y-1'>
           <div className='flex items-center space-x-0'>
-            <h3 className='p-2 font-brk text-xs md:text-sm uppercase opacity-70 text-slate-300'>
+            <h3 className='px-2 font-brk text-xs md:text-sm uppercase opacity-70 text-slate-300'>
               You pay
             </h3>
-            <Icon name='tag' className='size-2.5 text-slate-300/90' />
           </div>
-          <div className='flex items-center justify-between text-xs md:text-sm'>
+          <div className='flex items-center justify-between text-xs md:text-base'>
             <div className='text-right px-2'>
               <MoneyFormat value={usdValue} />
             </div>
@@ -227,7 +226,7 @@ export function PayAmount({
               </button>
               <button
                 onClick={spinRandomAmount}
-                className='btn btn-ghost btn-lg btn-circle hover:bg-transparent backdrop-blur-3xl'>
+                className='hidden btn btn-ghost btn-lg btn-circle hover:bg-transparent backdrop-blur-3xl'>
                 <motion.div className='relative flex items-center justify-center h-6 w-6 aspect-square'>
                   <Icon
                     name='cash'
@@ -235,7 +234,7 @@ export function PayAmount({
                   />
                 </motion.div>
               </button>
-              <div className='border border-brand/20 rounded-full w-fit relative z-40'>
+              <div className='border border-slate-500/50 rounded-full w-fit relative z-40'>
                 <WalletComponent />
               </div>
             </div>
@@ -258,7 +257,7 @@ export function PayAmount({
 
 export const MoneyFormat = ({value}: {value: number}) => {
   return (
-    <span className='text-white text-xl font-okxs'>
+    <span className='text-white text-2xl font-okxs'>
       $
       <AnimatedNumber
         value={value}

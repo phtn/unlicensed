@@ -39,13 +39,16 @@ export const NetworkSelector = ({
         animate={{opacity: 1, scale: 1}}
         exit={{opacity: 0, scale: 0.6}}
         transition={{duration: 0.2}}
-        className='flex items-center justify-between px-4 py-6 border-b-[0.33px] border-white/0 w-full'>
-        {/*<Icon name='network' className='text-white/70 size-5' />*/}
+        className='flex items-center space-x-8 px-4 py-6 border-b-[0.33px] border-white/0 w-full'>
+        <div className='font-brk flex items-center space-x-0.5 text-white/80'>
+          <Icon name='network' className='text-white/70 size-5' />
+          <span className='text-xs uppercase'>Network</span>
+        </div>
         <HyperList
           direction='up'
           data={network_list}
           component={NetworkButtonRound}
-          container=' w-full flex items-center justify-around'
+          container='w-full flex items-center justify-around'
         />
       </motion.div>
     </>
@@ -68,10 +71,8 @@ const NetworkButtonRound = ({
       animate={{opacity: 1}}
       exit={{opacity: 0}}
       onClick={onSelect}
-      whileHover={{scale: 1.05}}
-      whileTap={{scale: 0.95}}
       className={cn(
-        'relative flex items-center justify-center w-auto h-7 px-2 rounded-full overflow-hidden',
+        'relative flex items-center justify-center w-auto h-7 px-2 rounded-full overflow-hidden space-x-1 mx-2',
         {
           'bg-white': selected,
           'hover:bg-white/2 ': !selected,
@@ -86,7 +87,7 @@ const NetworkButtonRound = ({
               ? 'polygon'
               : 'ethereum'
         }
-        className={cn('text-slate-300/50 size-3', {
+        className={cn('text-slate-300 size-3', {
           'size-3': selected,
           'text-rose-400': name === 'sepolia' && selected,
           'text-polygon': name === 'polygon' && selected,
@@ -95,10 +96,10 @@ const NetworkButtonRound = ({
         })}
       />
       <span
-        className={cn('font-brk opacity-80 text-sm', {
-          'text-black opacity-100': selected,
+        className={cn('font-brk opacity-80 text-sm text-white', {
+          'opacity-100 text-black': selected,
         })}>
-        {name.substring(0, 3)}
+        {name.substring(0, 3).toUpperCase()}
       </span>
     </motion.button>
   )

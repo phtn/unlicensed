@@ -1,7 +1,8 @@
-import { useCallback, useMemo } from 'react'
-import { type Address, type Chain, formatEther, parseEther } from 'viem'
-import { useSendTransaction, useWaitForTransactionReceipt } from 'wagmi'
-import { useCrypto } from './use-crypto'
+'use client'
+import {useCallback} from 'react'
+import {type Address, type Chain, formatEther, parseEther} from 'viem'
+import {useSendTransaction, useWaitForTransactionReceipt} from 'wagmi'
+import {useCrypto} from './use-crypto'
 
 interface SendParams {
   /** Recipient address. Defaults to a predefined address if not provided. */
@@ -26,24 +27,36 @@ interface UseSendReturn {
   /** Transaction hash, if successful */
   hash: `0x${string}` | undefined
   /** Transaction receipt, if confirmed */
-  receipt: { blockNumber: bigint; status: 'success' | 'reverted' } | null
+  receipt: {blockNumber: bigint; status: 'success' | 'reverted'} | null
   /** Convert ETH amount (in wei) to USD */
   ethToUsd: (eth: bigint) => number | null
   /** Convert USD amount to ETH (returns string for parseEther) */
   usdToEth: (usd: number) => string | null
 }
 
-const DEFAULT_RECIPIENT: Address = '0x611F3143b76a994214d751d762b52D081d8DC4de'
-const FALLBACK_ETH_PRICE = 3039.96
+const DEFAULT_RECIPIENT: Address = process.env
+  .NEXT_PUBLIC_TEST_TXN_OLD as Address
 const MIN_USD_AMOUNT = 0.01
+const RECEIPT_RETRY_DELAY_MS = (attemptIndex: number) =>
+  Math.min(1000 * 2 ** attemptIndex, 5000)
+const RECEIPT_REFETCH_INTERVAL_MS = (query: {
+  state: {data: unknown}
+}): number | false => {
+  // Stop polling once we have a receipt
+  if (query.state.data) {
+    return false
+  }
+  // Poll every 2 seconds while waiting
+  return 2000
+}
 
 /**
  * Hook for sending ETH transactions with USD amount conversion.
  * Uses real-time ETH price from the crypto API when available.
  */
 export const useSend = (): UseSendReturn => {
-  const { getBySymbol } = useCrypto()
-  const { mutateAsync, isPending, error, data: transactionHash } = useSendTransaction()
+  const {getBySymbol} = useCrypto()
+  const {mutate, isPending, error, data: transactionHash} = useSendTransaction()
 
   // Wait for transaction receipt once we have a hash
   // Note: wagmi's useWaitForTransactionReceipt automatically cleans up the refetchInterval
@@ -54,38 +67,31 @@ export const useSend = (): UseSendReturn => {
     isError: isReceiptError,
     error: receiptError,
     data: receipt,
-    fetchStatus
+    fetchStatus,
   } = useWaitForTransactionReceipt({
     hash: transactionHash,
     query: {
       enabled: !!transactionHash,
       retry: 5,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-      refetchInterval: (query) => {
-        // Stop polling once we have a receipt
-        if (query.state.data) {
-          return false
-        }
-        // Poll every 2 seconds while waiting
-        return 2000
-      }
-    }
+      retryDelay: RECEIPT_RETRY_DELAY_MS,
+      refetchInterval: RECEIPT_REFETCH_INTERVAL_MS,
+    },
   })
 
   // Get current ETH price
-  const ethQuote = useMemo(() => getBySymbol('ETH'), [getBySymbol])
-  const ethPrice = ethQuote?.price ?? null
+  const ethPrice = getBySymbol('ETH')?.price ?? null
 
   /**
    * Convert ETH amount (in wei) to USD
    */
   const ethToUsd = useCallback(
     (eth: bigint): number | null => {
-      const price = ethPrice ?? FALLBACK_ETH_PRICE
+      if (!ethPrice) return null
+      const price = ethPrice
       const ethAmount = Number(formatEther(eth))
       return ethAmount * price
     },
-    [ethPrice]
+    [ethPrice],
   )
 
   /**
@@ -94,15 +100,13 @@ export const useSend = (): UseSendReturn => {
    */
   const usdToEth = useCallback(
     (usd: number): string | null => {
-      const price = ethPrice ?? FALLBACK_ETH_PRICE
-      if (price <= 0) return null
-
-      const ethAmount = usd / price
+      if (!ethPrice) return null
+      const ethAmount = usd / ethPrice
       // Use toFixed(18) to ensure we have enough precision for parseEther
       // parseEther can handle up to 18 decimal places
       return ethAmount.toFixed(18)
     },
-    [ethPrice]
+    [ethPrice],
   )
 
   /**
@@ -110,7 +114,7 @@ export const useSend = (): UseSendReturn => {
    */
   const send = useCallback(
     (params: SendParams): void => {
-      const { to = DEFAULT_RECIPIENT, usd } = params
+      const {to = DEFAULT_RECIPIENT, usd, chainId} = params
 
       // Validate USD amount
       if (usd <= 0) {
@@ -131,68 +135,41 @@ export const useSend = (): UseSendReturn => {
         const value = parseEther(ethString)
 
         if (process.env.NODE_ENV === 'development') {
+          if (!ethPrice) {
+            console.warn('ETH price not available')
+          }
           console.table({
             'USD Amount': `$${usd.toFixed(2)}`,
             'ETH Amount': ethString,
             'Wei Value': value.toString(),
-            'ETH Price': `$${ethPrice?.toFixed(2) ?? FALLBACK_ETH_PRICE.toFixed(2)}`,
-            Recipient: to
+            'ETH Price': `$${ethPrice?.toFixed(2)}`,
+            Recipient: to,
           })
         }
 
-        mutateAsync({
+        mutate({
           to,
-          value
+          value,
+          chainId,
         })
       } catch (err) {
         throw new Error(
           err instanceof Error
             ? `Failed to send transaction: ${err.message}`
-            : 'Failed to send transaction: Unknown error'
+            : 'Failed to send transaction: Unknown error',
         )
       }
     },
-    [mutateAsync, usdToEth, ethPrice]
+    [mutate, usdToEth, ethPrice],
   )
 
   // Determine if we're still confirming - we have a hash but no receipt yet
-  const isStillConfirming = useMemo(() => {
-    if (!transactionHash) return false
-    // If we have a receipt, we're done confirming
-    if (receipt) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Receipt received:', { blockNumber: receipt.blockNumber, status: receipt.status })
-      }
-      return false
-    }
-    // If it's confirmed (isSuccess), we're done even if receipt is null (shouldn't happen but safety check)
-    if (isConfirmed) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Transaction confirmed (isSuccess=true)')
-      }
-      return false
-    }
-    // If there's an error, stop confirming (transaction might have failed or RPC issue)
-    if (isReceiptError) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('⚠️ Receipt error:', receiptError)
-      }
-      // Still return false to stop showing loading, but error will be shown
-      return false
-    }
-    // Log polling status in dev
-    if (process.env.NODE_ENV === 'development') {
-      console.log('⏳ Still confirming:', {
-        isConfirming,
-        fetchStatus,
-        hasReceipt: !!receipt,
-        isConfirmed,
-        isError: isReceiptError
-      })
-    }
-    // Only show confirming if actively fetching and not in error state
-    return (isConfirming || fetchStatus === 'fetching') && !isReceiptError
-  }, [transactionHash, receipt, isConfirmed, isConfirming, fetchStatus, isReceiptError, receiptError])
+  const isStillConfirming =
+    !!transactionHash &&
+    !receipt &&
+    !isConfirmed &&
+    !isReceiptError &&
+    (isConfirming || fetchStatus === 'fetching')
 
   return {
     send,
@@ -204,11 +181,11 @@ export const useSend = (): UseSendReturn => {
     receipt: receipt
       ? {
           blockNumber: receipt.blockNumber,
-          status: receipt.status === 'success' ? 'success' : 'reverted'
+          status: receipt.status === 'success' ? 'success' : 'reverted',
         }
       : null,
     ethToUsd,
-    usdToEth
+    usdToEth,
   }
 }
 
@@ -216,7 +193,11 @@ export const useSend = (): UseSendReturn => {
  * Convert ETH amount (in wei) to USD using a static price.
  * @deprecated Use useSend().ethToUsd() for real-time prices
  */
-export const eth_2_usd = (eth: bigint, price: number = FALLBACK_ETH_PRICE): number => {
+export const eth_2_usd = (eth: bigint, price: number | null): number => {
+  if (!price) {
+    console.warn('ETH price not available')
+    return 0
+  }
   const ethAmount = Number(formatEther(eth))
   return ethAmount * price
 }

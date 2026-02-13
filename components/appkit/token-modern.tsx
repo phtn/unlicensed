@@ -1,18 +1,19 @@
-import {Icon, IconName} from '@/lib/icons'
+import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {AnimatePresence, motion} from 'motion/react'
+import {tickerSymbol} from './ticker'
 import {Token, TokenCoaster} from './token-coaster'
 import {UsdcBalance} from './usdc-balance'
 
-const tokenData: Record<string, {name: string; color: string; icon: IconName}> =
-  {
-    BTC: {name: 'Bitcoin', color: '#f7931a', icon: 'ethereum'},
-    ETH: {name: 'Ethereum', color: '#627eea', icon: 'ethereum'},
-    USDT: {name: 'Tether', color: '#26a17b', icon: 'ethereum'},
-    USDC: {name: 'USD Coin', color: '#2775ca', icon: 'ethereum'},
-    SOL: {name: 'Solana', color: '#9945ff', icon: 'ethereum'},
-    BNB: {name: 'BNB', color: '#f0b90b', icon: 'ethereum'},
-  }
+// const tokenData: Record<string, {name: string; color: string; icon: IconName}> =
+//   {
+//     BTC: {name: 'Bitcoin', color: '#f7931a', icon: 'ethereum'},
+//     ETH: {name: 'Ethereum', color: '#627eea', icon: 'ethereum'},
+//     USDT: {name: 'Tether', color: '#26a17b', icon: 'ethereum'},
+//     USDC: {name: 'USD Coin', color: '#2775ca', icon: 'ethereum'},
+//     SOL: {name: 'Solana', color: '#9945ff', icon: 'ethereum'},
+//     BNB: {name: 'BNB', color: '#f0b90b', icon: 'ethereum'},
+//   }
 
 interface TokenDisplayProps {
   token: Token
@@ -59,29 +60,39 @@ export const TokenModern = ({
         />
         <TokenCoaster nativeSymbol={nativeSymbol} size='lg' token={token} />
       </div>
-      <div className='flex items-center justify-between w-full'>
+      <div className='font-okxs flex items-center justify-between w-full'>
         <div className='text-left -space-y-px'>
+          <p className='text-white font-medium'>
+            {tickerSymbol(
+              token === 'ethereum'
+                ? nativeSymbol === 'matic'
+                  ? 'polygon'
+                  : 'ethereum'
+                : token,
+            )}
+          </p>
           <p className={cn('')}>
             {token === 'usdc' && balance === null ? (
               // Fallback to UsdcBalance component if balance not provided
               <UsdcBalance compact />
             ) : (
-              <span className='font-okxs font-normal text-indigo-100 text-lg'>
+              <span className='font-okxs font-normal text-indigo-100 text-sm opacity-90'>
                 {formattedBalance}
               </span>
             )}
           </p>
-          <div className='flex items-center space-x-2'>
+          <div className='hidden _flex items-center space-x-2'>
             <span className='text-slate-300/50 font-okxs font-medium text-xs px-0.5 uppercase'>
               {token === 'ethereum' && nativeSymbol ? nativeSymbol : token} · 1
               = ${price?.toLocaleString('en-US', {maximumFractionDigits: 2})}
             </span>
           </div>
         </div>
-        <div className='text-right'>
+        <div className='text-right text-white'>
           {showBalance && (
-            <p className={`md:text-base text-base font-okxs font-medium px-2`}>
-              <span className='pr-0.5'>$</span>
+            <p
+              className={`lg:text-2xl md:text-xl text-lg font-okxs px-2 leading-none`}>
+              <span className=''>$</span>
               <span className=''>
                 {balance &&
                   (balance * (price ?? 1)).toLocaleString('en-US', {
@@ -111,5 +122,3 @@ export const TokenModern = ({
     </div>
   )
 }
-
-export {tokenData}
