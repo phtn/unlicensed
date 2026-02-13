@@ -424,7 +424,16 @@ export const Inventory = ({form}: InventoryProps) => {
                     selectedKeys={selectedKeys}
                     onSelectionChange={(keys) => {
                       const key = Array.from(keys)[0]
-                      field.handleChange(key != null ? productTiers : undefined)
+                      if (key == null) {
+                        field.handleChange(undefined)
+                        return
+                      }
+                      const nextTier = String(key)
+                      field.handleChange(
+                        productTiers.includes(nextTier)
+                          ? (nextTier as ProductTier)
+                          : undefined,
+                      )
                     }}
                     onBlur={field.handleBlur}
                     variant='bordered'

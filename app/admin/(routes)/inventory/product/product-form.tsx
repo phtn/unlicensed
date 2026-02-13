@@ -109,6 +109,7 @@ export const ProductForm = ({
           shortDescription: data.shortDescription?.trim(),
           description: data.description?.trim(),
           priceCents: Math.round(data.priceCents * 100),
+          batchId: data.batchId?.trim() || undefined,
           unit: data.unit.trim(),
           availableDenominations: parseNumbers(data.availableDenominationsRaw),
           popularDenomination:

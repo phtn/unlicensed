@@ -114,19 +114,16 @@ export const Pricing = ({
       <div className='grid gap-6'>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           {/*{renderFields(form, fields, flowerDenominations)}*/}
-          <form.AppField name='priceCents'>
+          <form.AppField name='batchId'>
             {(field) => (
               <div className='space-y-2'>
                 <Input
-                  label='Base Price'
-                  type='number'
+                  label='Batch ID'
+                  type='text'
                   value={String(field.state.value ?? '')}
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
+                  onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
-                  startContent={
-                    <Icon name='dollar' className='size-5 mb-0.5' />
-                  }
-                  placeholder='0.00'
+                  placeholder='e.g., B-2026-0007'
                   variant='bordered'
                   classNames={commonInputClassNames}
                 />

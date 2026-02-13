@@ -70,6 +70,7 @@ export const productSchema = z.object({
   weightGrams: z.string().optional(),
   netWeight: z.string().optional(),
   netWeightUnit: z.string().optional(),
+  batchId: z.string().optional(),
   variants: z
     .array(
       z.object({
@@ -182,6 +183,14 @@ export const productFields: FormInput<ProductFormValues>[] = [
     type: 'textarea',
     placeholder: 'Image URLs separated by commas or newlines',
     defaultValue: [],
+  },
+  {
+    name: 'batchId',
+    label: 'Batch ID',
+    required: false,
+    type: 'text',
+    placeholder: 'e.g., B-2026-0007',
+    defaultValue: '',
   },
   {
     name: 'priceCents',

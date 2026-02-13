@@ -49,6 +49,7 @@ export const createProduct = mutation({
       shortDescription: args.shortDescription,
       description: args.description,
       priceCents: args.priceCents,
+      batchId: args.batchId?.trim() || undefined,
       unit: args.unit,
       availableDenominations: numericArray(args.availableDenominations),
       popularDenomination: args.popularDenomination,
@@ -154,6 +155,9 @@ export const updateProduct = mutation({
     }
     if (fields.priceCents !== undefined) {
       updates.priceCents = fields.priceCents
+    }
+    if (fields.batchId !== undefined) {
+      updates.batchId = fields.batchId.trim() || undefined
     }
     if (fields.unit !== undefined) {
       updates.unit = fields.unit.trim()

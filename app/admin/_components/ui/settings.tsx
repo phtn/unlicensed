@@ -81,10 +81,14 @@ const SettingsPanelProvider = ({
   ...props
 }: SettingsPanelProviderProps) => {
   const isMobile = useMobile()
-  const [openMobile, setOpenMobile] = useState(false)
+  const [openMobile, setOpenMobileState] = useState(false)
 
   const [_open, _setOpen] = useState(defaultOpen)
   const open = openProp ?? _open
+  const persistOpenState = useCallback((openState: boolean) => {
+    document.cookie = `${SETTINGS_COOKIE_NAME}=${openState}; path=/; max-age=${SETTINGS_COOKIE_MAX_AGE}`
+  }, [])
+
   const setOpen = useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
       const openState = typeof value === 'function' ? value(open) : value
@@ -93,9 +97,25 @@ const SettingsPanelProvider = ({
       } else {
         _setOpen(openState)
       }
-      document.cookie = `${SETTINGS_COOKIE_NAME}=${openState}; path=/; max-age=${SETTINGS_COOKIE_MAX_AGE}`
+      setOpenMobileState(openState)
+      persistOpenState(openState)
     },
-    [setOpenProp, open],
+    [setOpenProp, open, persistOpenState],
+  )
+
+  const setOpenMobile = useCallback(
+    (value: boolean | ((value: boolean) => boolean)) => {
+      const openState =
+        typeof value === 'function' ? value(openMobile) : value
+      setOpenMobileState(openState)
+      if (setOpenProp) {
+        setOpenProp(openState)
+      } else {
+        _setOpen(openState)
+      }
+      persistOpenState(openState)
+    },
+    [openMobile, persistOpenState, setOpenProp],
   )
 
   const togglePanel = useCallback(() => {
@@ -161,7 +181,7 @@ const SettingsPanel = ({
   side = 'right',
   ...props
 }: SettingsPanelProps) => {
-  const {isMobile, openMobile, setOpenMobile, collapsible, state} =
+  const {isMobile, open, openMobile, setOpenMobile, collapsible, state} =
     useSettingsPanel()
 
   if (collapsible === 'none') {
@@ -197,23 +217,25 @@ const SettingsPanel = ({
   }
 
   return (
-    <ScrollArea className='scrollbar-hide h-fit'>
+    <ScrollArea
+      className='scrollbar-hide hidden md:block h-svh shrink-0 overflow-hidden transition-[width] duration-200 ease-in-out'
+      style={{width: open ? SETTINGS_WIDTH : SETTINGS_WIDTH_ICON}}>
       <div
         data-state={state}
         data-collapsible={state === 'collapsed' ? collapsible : ''}
         data-side={side}
         className={cn(
-          'bg-linear-to-r from-transparent from-10% via-sidebar to-sidebar group peer relative hidden md:block text-sidebar-foreground transition-[width] duration-200 ease-in-out',
+          'bg-linear-to-r from-transparent from-10% via-sidebar to-sidebar group peer relative text-sidebar-foreground h-svh',
           'border-b-4 border-teal-300',
-          state === 'expanded' ? 'w-(--settings-width)' : 'w-0',
         )}>
         <div
           className={cn(
             'ml-4 relative h-svh overflow-hidden bg-transparent transition-transform duration-400 ease-in-out',
-            'w-(--settings-width) px-2 md:pr-4',
+            'px-2 md:pr-4',
             state === 'collapsed' &&
               (side === 'right' ? 'translate-x-full' : '-translate-x-full'),
-          )}>
+          )}
+          style={{width: SETTINGS_WIDTH}}>
           <SettingsPanelContent />
         </div>
       </div>
