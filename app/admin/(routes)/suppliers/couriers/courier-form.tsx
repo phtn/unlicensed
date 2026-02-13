@@ -11,13 +11,16 @@ import {
   courierSchema,
   defaultValues,
 } from '@/app/admin/_components/courier-schema'
-import {renderFields} from '@/app/admin/_components/ui/fields'
+import {
+  commonInputClassNames,
+  renderFields,
+} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Switch} from '@heroui/react'
+import {Button, Input, Switch} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useCallback, useEffect, useRef, useState} from 'react'
@@ -29,8 +32,23 @@ type CourierFormProps = {
   onUpdated?: VoidFunction
 }
 
+type CourierAccountFormValue = CourierFormValues['accounts'][number]
+type EditableCourierAccountField = 'label' | 'value'
+
+const createCourierAccountId = () =>
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `courier-account-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+const createEmptyCourierAccount = (): CourierAccountFormValue => ({
+  id: createCourierAccountId(),
+  label: '',
+  value: '',
+})
+
 const SECTIONS = [
   {id: 'basic-info', label: 'Basic Info', icon: 'file'},
+  {id: 'accounts', label: 'Accounts', icon: 'wallet'},
 ] as const
 
 export const CourierForm = ({
@@ -66,11 +84,21 @@ export const CourierForm = ({
         }
 
         const data = parsed.data
+        const now = Date.now()
+        const code = data.code.trim().toLowerCase()
         const payload = {
           name: data.name.trim(),
-          code: data.code.trim().toLowerCase(),
+          code,
           active: data.active ?? true,
           trackingUrlTemplate: data.trackingUrlTemplate?.trim() || undefined,
+          accounts: data.accounts.map((account, index) => ({
+            id: account.id?.trim() || `${code}-${now}-${index}`,
+            label: account.label.trim(),
+            value: account.value.trim(),
+            createdAt: account.createdAt ?? now,
+            updatedAt: now,
+            updatedBy: account.updatedBy?.trim() || undefined,
+          })),
         }
 
         if (isEditMode && courierId) {
@@ -125,6 +153,7 @@ export const CourierForm = ({
         'trackingUrlTemplate',
         initialValues.trackingUrlTemplate ?? '',
       )
+      form.setFieldValue('accounts', initialValues.accounts ?? [])
     }
   }, [initialValues, form])
 
@@ -160,7 +189,7 @@ export const CourierForm = ({
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block cols-span-3 2xl:col-span-2 col-span-3 h-full overflow-y-auto pr-2 space-y-6'>
         <nav className='flex flex-col gap-1'>
-          <h1 className='text-lg flex items-center space-x-2 pl-2 tracking-tighter font-semibold py-4 text-dark-gray dark:text-foreground'>
+          <h1 className='text-lg flex items-center space-x-2 pl-2 font-semibold py-4 opacity-80'>
             <div
               aria-hidden
               className='size-4 select-none aspect-square rounded-full bg-yellow-500'
@@ -231,11 +260,11 @@ export const CourierForm = ({
               return (
                 <div className='flex items-center gap-3 px-4 py-1 rounded-lg bg-slate-500/20 dark:bg-black/60 backdrop-blur-sm border border-light-gray/10 dark:border-black/20 shadow-sm'>
                   <div className='flex flex-col gap-0.5'>
-                    <span className='text-sm font-semibold tracking-tight text-dark-gray dark:text-foreground'>
-                      Toggle Courier Status
+                    <span className='text-sm font-semibold text-dark-gray dark:text-foreground'>
+                      Active
                     </span>
                     <span className='text-xs text-dark-gray/80 dark:text-light-gray/80'>
-                      {active ? 'Active and available' : 'Currently inactive'}
+                      {active ? 'Courier is active' : 'Currently inactive'}
                     </span>
                   </div>
                   <Switch
@@ -260,7 +289,7 @@ export const CourierForm = ({
           }}
           className='space-y-0 pt-2 relative'>
           <div id='basic-info' className=''>
-            <FormSection id='basic-info' position='bottom'>
+            <FormSection id='basic-info' position='top'>
               <Header label='Courier Information' />
               <div className='grid gap-6 w-full mt-4'>
                 {renderFields(
@@ -268,6 +297,117 @@ export const CourierForm = ({
                   courierFields.filter((f) => f.name !== 'active'),
                 )}
               </div>
+            </FormSection>
+          </div>
+
+          <div id='accounts'>
+            <FormSection id='accounts' position='bottom'>
+              <Header label='Courier Accounts' />
+              <form.Field name='accounts'>
+                {(field) => {
+                  const accounts = field.state.value ?? []
+
+                  const handleAddAccount = () => {
+                    field.handleChange([
+                      ...accounts,
+                      createEmptyCourierAccount(),
+                    ])
+                  }
+
+                  const handleRemoveAccount = (index: number) => () => {
+                    field.handleChange(accounts.filter((_, i) => i !== index))
+                  }
+
+                  const handleAccountChange =
+                    (index: number, key: EditableCourierAccountField) =>
+                    (nextValue: string) => {
+                      field.handleChange(
+                        accounts.map((account, i) =>
+                          i === index
+                            ? {...account, [key]: nextValue}
+                            : account,
+                        ),
+                      )
+                    }
+
+                  return (
+                    <div className='space-y-4 w-full mt-4'>
+                      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'>
+                        <p className='text-sm text-dark-gray/70 dark:text-light-gray/80'>
+                          Add courier account labels and values for dispatching
+                          or fulfillment workflows.
+                        </p>
+                        <Button
+                          size='sm'
+                          type='button'
+                          variant='flat'
+                          className='bg-yellow-500 text-white font-medium'
+                          onPress={handleAddAccount}>
+                          <span className='inline-flex items-center gap-2'>
+                            <Icon name='plus' className='size-4' />
+                            Add Account
+                          </span>
+                        </Button>
+                      </div>
+
+                      {accounts.length === 0 ? (
+                        <div className='rounded-lg border border-dashed border-light-gray/40 dark:border-black/30 px-4 py-3 text-sm text-dark-gray/70 dark:text-light-gray/70'>
+                          No courier accounts added yet.
+                        </div>
+                      ) : (
+                        <div className='space-y-3'>
+                          {accounts.map((account, index) => (
+                            <div
+                              key={account.id ?? `account-${index}`}
+                              className='rounded-xl border border-light-gray/40 dark:border-black/30 p-3 lg:p-4 bg-light-gray/5 dark:bg-black/20'>
+                              <div className='grid gap-3 lg:grid-cols-[1fr_1fr_auto] items-end'>
+                                <Input
+                                  size='lg'
+                                  label='Account Label'
+                                  value={account.label}
+                                  placeholder='e.g., Main Account'
+                                  variant='bordered'
+                                  classNames={commonInputClassNames}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) =>
+                                    handleAccountChange(
+                                      index,
+                                      'label',
+                                    )(event.target.value)
+                                  }
+                                />
+                                <Input
+                                  size='lg'
+                                  label='Account Value'
+                                  value={account.value}
+                                  placeholder='e.g., account-001'
+                                  variant='bordered'
+                                  classNames={commonInputClassNames}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) =>
+                                    handleAccountChange(
+                                      index,
+                                      'value',
+                                    )(event.target.value)
+                                  }
+                                />
+                                <Button
+                                  size='sm'
+                                  type='button'
+                                  variant='flat'
+                                  className='text-rose-500 bg-rose-500/10'
+                                  onPress={handleRemoveAccount(index)}>
+                                  Remove
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                }}
+              </form.Field>
             </FormSection>
           </div>
 

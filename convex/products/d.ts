@@ -9,11 +9,12 @@ const potencyLevel = v.union(
 export type PotencyLevel = Infer<typeof potencyLevel>
 
 const productTier = v.union(
+  v.literal('B'),
   v.literal('A'),
   v.literal('AA'),
   v.literal('AAA'),
   v.literal('AAAA'),
-  v.literal('S'),
+  v.literal('RARE'),
 )
 
 export type ProductTier = Infer<typeof productTier>
@@ -69,6 +70,9 @@ export const productSchema = v.object({
     v.union(v.literal('withinTier'), v.literal('acrossTiers')),
   ),
   productType: v.optional(v.string()),
+  netWeight: v.optional(v.number()),
+  netWeightUnit: v.optional(v.string()),
+  subcategory: v.optional(v.string()),
 })
 
 export type ProductType = Infer<typeof productSchema>

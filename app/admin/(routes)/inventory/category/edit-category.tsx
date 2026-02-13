@@ -49,6 +49,7 @@ export const EditCategory = ({id}: EditCategoryContentProps) => {
     benefitsRaw: category.benefits?.join('\n') ?? '',
     unitsRaw: category.units?.join(', ') ?? '',
     productTypesRaw: category.productTypes?.join(', ') ?? '',
+    subcategoriesRaw: category.subcategories?.join(', ') ?? '',
     denominationsRaw: category.denominations?.join(', ') ?? '',
   }
 

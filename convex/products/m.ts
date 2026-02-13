@@ -68,9 +68,12 @@ export const createProduct = mutation({
       potencyLevel: args.potencyLevel,
       potencyProfile: args.potencyProfile,
       lineage: args.lineage,
+      subcategory: args.subcategory?.trim() || undefined,
       productType: args.productType?.trim() || undefined,
       noseRating: args.noseRating,
       weightGrams: args.weightGrams,
+      netWeight: args.netWeight,
+      netWeightUnit: args.netWeightUnit?.trim() || undefined,
       variants: args.variants,
       priceByDenomination: args.priceByDenomination,
       eligibleForRewards: args.eligibleForRewards,
@@ -218,8 +221,17 @@ export const updateProduct = mutation({
     if (fields.weightGrams !== undefined) {
       updates.weightGrams = fields.weightGrams
     }
+    if (fields.netWeight !== undefined) {
+      updates.netWeight = fields.netWeight
+    }
+    if (fields.netWeightUnit !== undefined) {
+      updates.netWeightUnit = fields.netWeightUnit.trim() || undefined
+    }
     if (fields.lineage !== undefined) {
       updates.lineage = fields.lineage.trim() || undefined
+    }
+    if (fields.subcategory !== undefined) {
+      updates.subcategory = fields.subcategory.trim() || undefined
     }
     if (fields.productType !== undefined) {
       updates.productType = fields.productType.trim() || undefined

@@ -1,11 +1,12 @@
 'use client'
 
+import {ProductTier} from '@/convex/products/d'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Chip, Input, Select, SelectItem, SelectedItems} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMemo} from 'react'
-import {ProductFormApi, mapFractions} from '../product-schema'
+import {ProductFormApi, mapFractions, productTiers} from '../product-schema'
 import {commonInputClassNames} from '../ui/fields'
 import {JunctionBox} from '../ui/junction-box'
 import {FormSection, Header} from './components'
@@ -414,13 +415,7 @@ export const Inventory = ({form}: InventoryProps) => {
             <form.Field name='tier'>
               {(field) => {
                 const tierValue =
-                  (field.state.value as
-                    | 'A'
-                    | 'AA'
-                    | 'AAA'
-                    | 'AAAA'
-                    | 'S'
-                    | undefined) ?? undefined
+                  (field.state.value as ProductTier) ?? undefined
                 const selectedKeys = tierValue ? [tierValue] : []
                 return (
                   <Select
@@ -429,11 +424,7 @@ export const Inventory = ({form}: InventoryProps) => {
                     selectedKeys={selectedKeys}
                     onSelectionChange={(keys) => {
                       const key = Array.from(keys)[0]
-                      field.handleChange(
-                        key != null
-                          ? (key as 'A' | 'AA' | 'AAA' | 'AAAA' | 'S')
-                          : undefined,
-                      )
+                      field.handleChange(key != null ? productTiers : undefined)
                     }}
                     onBlur={field.handleBlur}
                     variant='bordered'
@@ -445,21 +436,11 @@ export const Inventory = ({form}: InventoryProps) => {
                         'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
                     }}
                     disallowEmptySelection={false}>
-                    <SelectItem key='A' textValue='A'>
-                      A
-                    </SelectItem>
-                    <SelectItem key='AA' textValue='AA'>
-                      AA
-                    </SelectItem>
-                    <SelectItem key='AAA' textValue='AAA'>
-                      AAA
-                    </SelectItem>
-                    <SelectItem key='AAAA' textValue='AAAA'>
-                      AAAA
-                    </SelectItem>
-                    <SelectItem key='S' textValue='S'>
-                      S
-                    </SelectItem>
+                    {productTiers.map((tier) => (
+                      <SelectItem key={tier} textValue={tier}>
+                        {tier}
+                      </SelectItem>
+                    ))}
                   </Select>
                 )
               }}
@@ -468,7 +449,7 @@ export const Inventory = ({form}: InventoryProps) => {
         </div>
 
         <div className='flex items-center pt-8 space-x-2'>
-          <Icon name='boomerang' className='size-4 rotate-25' />
+          <Icon name='chevron-right' className='size-4 opacity-60' />
           <span className='font-polysans font-medium'>Statuses</span>
         </div>
 

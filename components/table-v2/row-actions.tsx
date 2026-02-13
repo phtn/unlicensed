@@ -231,7 +231,7 @@ export const RowActions = <T,>({row, actionConfig}: Props<T>) => {
               isIconButton ? 'w-8 min-w-8' : 'px-2 gap-2',
               action.className,
             )}
-            onPress={() => runAction(action)}>
+            onClick={() => runAction(action)}>
             <span className='inline-flex w-4 shrink-0 items-center justify-center'>
               {action.icon ? (
                 <Icon name={action.icon} className='size-4' />

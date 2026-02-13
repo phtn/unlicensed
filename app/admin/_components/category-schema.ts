@@ -13,6 +13,7 @@ export const categorySchema = z.object({
   benefitsRaw: z.string().optional(),
   unitsRaw: z.string().optional(),
   productTypesRaw: z.string().optional(),
+  subcategoriesRaw: z.string().optional(),
   denominationsRaw: z.string().optional(),
   visible: z.boolean().default(false),
 })
@@ -123,6 +124,14 @@ export const categoryFields: FormInput<CategoryFormValues>[] = [
     required: false,
     type: 'text',
     placeholder: 'e.g., Disposable, Cartridge, Pod',
+    defaultValue: '',
+  },
+  {
+    name: 'subcategoriesRaw',
+    label: 'Subcategories',
+    required: false,
+    type: 'text',
+    placeholder: 'e.g., Sativa, Hybrid, Indica',
     defaultValue: '',
   },
   {

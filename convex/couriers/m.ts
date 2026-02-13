@@ -1,12 +1,22 @@
 import {v} from 'convex/values'
 import {mutation} from '../_generated/server'
 
+const courierAccountSchema = v.object({
+  id: v.string(),
+  label: v.string(),
+  value: v.string(),
+  createdAt: v.number(),
+  updatedAt: v.optional(v.number()),
+  updatedBy: v.optional(v.string()),
+})
+
 export const createCourier = mutation({
   args: {
     name: v.string(),
     code: v.string(),
     active: v.boolean(),
     trackingUrlTemplate: v.optional(v.string()),
+    accounts: v.optional(v.array(courierAccountSchema)),
   },
   handler: async (ctx, args) => {
     const now = Date.now()
@@ -26,6 +36,7 @@ export const createCourier = mutation({
       code: args.code,
       active: args.active,
       trackingUrlTemplate: args.trackingUrlTemplate,
+      accounts: args.accounts,
       createdAt: now,
       updatedAt: now,
     })
@@ -41,6 +52,7 @@ export const updateCourier = mutation({
     code: v.optional(v.string()),
     active: v.optional(v.boolean()),
     trackingUrlTemplate: v.optional(v.string()),
+    accounts: v.optional(v.array(courierAccountSchema)),
   },
   handler: async (ctx, args) => {
     const {id, ...updates} = args
@@ -72,4 +84,3 @@ export const deleteCourier = mutation({
     await ctx.db.delete(args.id)
   },
 })
-

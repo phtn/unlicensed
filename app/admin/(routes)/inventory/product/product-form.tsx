@@ -21,6 +21,7 @@ import {BasicInfo} from '../../../_components/product-sections/basic-info'
 import {Details} from '../../../_components/product-sections/details'
 import {Inventory} from '../../../_components/product-sections/inventory'
 import {Media} from '../../../_components/product-sections/media'
+import {NetWeight} from '../../../_components/product-sections/net-weight'
 import {Pricing} from '../../../_components/product-sections/pricing'
 import {useAppForm} from '../../../_components/ui/form-context'
 
@@ -39,6 +40,7 @@ const SECTIONS = [
   {id: 'basic-info', label: 'Basic Info', icon: 'file'},
   {id: 'media', label: 'Media', icon: 'image'},
   {id: 'pricing', label: 'Pricing', icon: 'dollar'},
+  {id: 'net-weight', label: 'Packaging', icon: 'box'},
   {id: 'inventory', label: 'Inventory', icon: 'box'},
   {id: 'attributes', label: 'Attributes', icon: 'sliders'},
   {id: 'details', label: 'Details', icon: 'align-left'},
@@ -81,6 +83,14 @@ export const ProductForm = ({
 
         const data = parsed.data
         const isVapeCategory = data.categorySlug === 'vapes'
+        const parsedNetWeight =
+          data.netWeight && data.netWeight.trim().length > 0
+            ? Number(data.netWeight)
+            : undefined
+        const netWeight =
+          parsedNetWeight != null && Number.isFinite(parsedNetWeight)
+            ? parsedNetWeight
+            : undefined
 
         // Helper to parse comma-separated numbers
         const parseNumbers = (val?: string) => {
@@ -126,14 +136,15 @@ export const ProductForm = ({
           potencyLevel: data.potencyLevel,
           potencyProfile: data.potencyProfile?.trim() || undefined,
           lineage: data.lineage?.trim() || undefined,
-          productType: isVapeCategory
-            ? data.productType?.trim() || undefined
-            : undefined,
+          productType: data.productType?.trim() || undefined,
+          subcategory: data.subcategory?.trim() || undefined,
           noseRating: isVapeCategory ? undefined : data.noseRating,
           weightGrams:
             data.weightGrams && data.weightGrams.length > 0
               ? Number(data.weightGrams)
               : undefined,
+          netWeight,
+          netWeightUnit: data.netWeightUnit?.trim() || undefined,
           variants: data.variants?.map((v) => {
             const denomKey = v.label.match(/^(\d+\.?\d*)/)?.[1]
             const priceCents =
@@ -246,7 +257,7 @@ export const ProductForm = ({
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block col-span-2 h-full overflow-y-auto pr-2 space-y-6'>
         <nav className='flex flex-col gap-1'>
-          <h1 className='flex items-center space-x-2 tracking-tighter font-semibold p-4'>
+          <h1 className='flex items-center space-x-2 font-okxs font-semibold p-4 opacity-80'>
             <div
               aria-hidden
               className='size-4 select-none aspect-square rounded-full bg-blue-500'
@@ -319,13 +330,13 @@ export const ProductForm = ({
           <div id='basic-info' className='scroll-mt-4'>
             <BasicInfo
               form={form as ProductFormApi}
-              fields={productFields.slice(0, 3)}
+              fields={productFields.slice(0, 6)}
               categories={categories}></BasicInfo>
           </div>
           <div id='media' className='scroll-mt-4'>
             <Media
               form={form as ProductFormApi}
-              fields={productFields.slice(3, 4)}></Media>
+              fields={productFields.slice(6, 7)}></Media>
           </div>
           <div id='pricing' className='scroll-mt-4'>
             <Pricing
@@ -333,6 +344,10 @@ export const ProductForm = ({
               categories={categories}
               isEditMode={isEditMode}
             />
+          </div>
+
+          <div id='net-weight' className='scroll-mt-4'>
+            <NetWeight form={form as ProductFormApi} />
           </div>
 
           <div id='inventory' className='scroll-mt-4'>

@@ -6,6 +6,8 @@ export const productSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   slug: z.string().optional(),
   categorySlug: z.string().min(1, 'Select a category.'),
+  subcategory: z.string().optional(),
+  brand: z.string().optional(),
   shortDescription: z.optional(
     z.string().min(0, 'Short description is required.'),
   ),
@@ -66,6 +68,8 @@ export const productSchema = z.object({
     .max(10, 'Nose rating must be 10 or less.')
     .optional(),
   weightGrams: z.string().optional(),
+  netWeight: z.string().optional(),
+  netWeightUnit: z.string().optional(),
   variants: z
     .array(
       z.object({
@@ -74,7 +78,7 @@ export const productSchema = z.object({
       }),
     )
     .optional(),
-  tier: z.enum(['A', 'AA', 'AAA', 'AAAA', 'S']).optional(),
+  tier: z.enum(['B', 'A', 'AA', 'AAA', 'AAAA', 'RARE']).optional(),
   eligibleForUpgrade: z.boolean().optional(),
   upgradePrice: z
     .number()
@@ -136,6 +140,31 @@ export const productFields: FormInput<ProductFormValues>[] = [
     required: true,
     type: 'select',
     options: [], // Populated dynamically from categories
+    defaultValue: '',
+  },
+  {
+    name: 'subcategory',
+    label: 'Subcategory',
+    required: false,
+    type: 'text',
+    placeholder: 'Cartridge, Disposable, Pod',
+    defaultValue: '',
+  },
+  {
+    name: 'brand',
+    label: 'Brand',
+    required: false,
+    type: 'text',
+    placeholder: 'Brand name',
+    defaultValue: '',
+  },
+  {
+    name: 'productType',
+    label: 'Product Type',
+    required: false,
+    type: 'select',
+    options: [],
+    placeholder: 'Product type',
     defaultValue: '',
   },
   {
@@ -327,6 +356,22 @@ export const productFields: FormInput<ProductFormValues>[] = [
     placeholder: 'Product weight in grams',
     defaultValue: '',
   },
+  {
+    name: 'netWeight',
+    label: 'Net Weight',
+    required: false,
+    type: 'text',
+    placeholder: 'e.g., 3.5',
+    defaultValue: '',
+  },
+  {
+    name: 'netWeightUnit',
+    label: 'Net Weight Unit',
+    required: false,
+    type: 'text',
+    placeholder: 'e.g., g, oz, ml',
+    defaultValue: '',
+  },
 ]
 
 export const defaultValues: ProductFormValues = {
@@ -382,3 +427,5 @@ export const mapNumericFractions: Record<string, string> = {
   7: '7',
   8: '8',
 }
+
+export const productTiers = ['B', 'A', 'AA', 'AAA', 'AAAA', 'RARE']

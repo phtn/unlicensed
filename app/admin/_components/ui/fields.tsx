@@ -13,7 +13,7 @@ export const commonInputClassNames = {
   input:
     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
-    'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-lg p-2 outline-none min-h-16 w-full',
+    'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-lg p-2 outline-none min-h-18 w-full',
   innerWrapper: 'px-1',
 }
 
@@ -391,6 +391,7 @@ export const renderFields = <T extends Record<string, unknown>>(
                 label={field.label}
                 placeholder={field.placeholder}
                 isCategory={field.name === 'categorySlug'}
+                className='w-full flex'
                 // options={
                 //   field.name === 'categoryslug' ||
                 //   field.name === 'availabledenominationsraw'
@@ -405,7 +406,7 @@ export const renderFields = <T extends Record<string, unknown>>(
               <input.TextField
                 {...input}
                 type={field.type}
-                name={field.name as keyof T}
+                name={field.name as keyof T as string}
                 label={field.label}
                 placeholder={field.placeholder}
               />

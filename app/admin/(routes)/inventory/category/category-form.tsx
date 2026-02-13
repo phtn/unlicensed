@@ -89,10 +89,8 @@ export const CategoryForm = ({
                 .map((u) => u.trim())
                 .filter((u) => u.length > 0)
             : undefined,
-          productTypes:
-            categorySlug === 'vapes'
-              ? parseCommaList(data.productTypesRaw)
-              : undefined,
+          productTypes: parseCommaList(data.productTypesRaw),
+          subcategories: parseCommaList(data.subcategoriesRaw),
           denominations: parseNumbers(data.denominationsRaw),
         }
 
@@ -151,6 +149,10 @@ export const CategoryForm = ({
       form.setFieldValue('unitsRaw', initialValues.unitsRaw ?? '')
       form.setFieldValue('productTypesRaw', initialValues.productTypesRaw ?? '')
       form.setFieldValue(
+        'subcategoriesRaw',
+        initialValues.subcategoriesRaw ?? '',
+      )
+      form.setFieldValue(
         'denominationsRaw',
         initialValues.denominationsRaw ?? '',
       )
@@ -158,11 +160,6 @@ export const CategoryForm = ({
   }, [initialValues, form])
 
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
-  const isVapesCategory = useStore(form.store, (state) => {
-    const values = state.values as {slug?: string; name?: string}
-    const slug = ensureSlug(values.slug ?? '', values.name ?? '')
-    return slug === 'vapes'
-  })
 
   const scrollToSection = useCallback(
     (sectionId: string) => () => {
@@ -194,7 +191,7 @@ export const CategoryForm = ({
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block cols-span-3 2xl:col-span-2 col-span-3 h-full overflow-y-auto space-y-6'>
         <nav className='flex flex-col pl-2 gap-1'>
-          <h1 className='text-lg flex pl-2 items-center space-x-2 tracking-tighter font-semibold py-4 text-dark-gray dark:text-foreground'>
+          <h1 className='text-lg flex pl-2 items-center space-x-2 font-okxs font-semibold py-4 opacity-80'>
             <div
               aria-hidden
               className='size-4 select-none aspect-square rounded-full bg-emerald-500'
@@ -297,10 +294,7 @@ export const CategoryForm = ({
           </div>
 
           <div id='packaging'>
-            <Packaging
-              form={form as CategoryFormApi}
-              isVapesCategory={isVapesCategory}
-            />
+            <Packaging form={form as CategoryFormApi} />
           </div>
 
           <div id='details'>

@@ -29,12 +29,50 @@ import {
 import {AmountPayInput} from './amount-pay'
 import {NetworkSelector} from './network-selector'
 import {PayAmount} from './pay-amount'
+import {PayButtons} from './pay-buttons'
 import {PaymentProcessing} from './payment-processing'
 import {PaymentSuccess} from './payment-success'
 import {ReceiptModal} from './receipt-modal'
+import {tickerSymbol} from './ticker'
 import type {Token} from './token-coaster'
 import {Tokens} from './token-list'
 import {PayTabProps} from './types'
+
+const ERC20_TRANSFER_ABI = [
+  {
+    name: 'transfer',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      {name: 'to', type: 'address'},
+      {name: 'amount', type: 'uint256'},
+    ],
+    outputs: [{name: '', type: 'bool'}],
+  },
+] as const
+
+const RECEIPT_RETRY_DELAY_MS = (attemptIndex: number) =>
+  Math.min(1000 * 2 ** attemptIndex, 5000)
+const RECEIPT_REFETCH_INTERVAL_MS = (query: {
+  state: {data: unknown}
+}): number | false => {
+  if (query.state.data) return false
+  return 2000
+}
+
+const getDisplayTokenSymbol = (
+  token: Token | null,
+  nativeSymbol: string,
+): string => {
+  if (token === 'ethereum') return nativeSymbol
+  if (token === 'usdc' || token === 'usdt') return token
+  return nativeSymbol
+}
+
+const PAY_FEE_BPS = 675
+const BPS_DENOMINATOR = 10_000
+const withPayFee = (amountUsd: number): number =>
+  (amountUsd * (BPS_DENOMINATOR + PAY_FEE_BPS)) / BPS_DENOMINATOR
 
 export const PayTab = ({
   onPaymentSuccess,
@@ -79,6 +117,9 @@ export const PayTab = ({
 
   // Token used for the last/in-flight payment (so we show correct symbol and use correct tx state)
   const [lastPaymentToken, setLastPaymentToken] = useState<Token | null>(null)
+  const [lastPaymentChainId, setLastPaymentChainId] = useState<number | null>(
+    null,
+  )
 
   const chainId = useChainId()
   const chains = useChains()
@@ -114,23 +155,27 @@ export const PayTab = ({
     [nativeTokenPrice],
   )
 
-  // Calculate token amount from USD amount
-  const tokenAmount = useMemo(() => {
-    if (!selectedToken || !paymentAmountUsd) return null
-    const usdAmount = Number.parseFloat(paymentAmountUsd)
-    if (Number.isNaN(usdAmount) || usdAmount <= 0) return null
-    const price = getTokenPrice(selectedToken)
-    if (!price) return null
-    return usdAmount / price
-  }, [selectedToken, paymentAmountUsd, getTokenPrice])
-
-  // USD value is the payment amount itself (since it's already in USD)
-  const usdValue = useMemo(() => {
+  // Base USD value entered by the user before fees
+  const baseUsdValue = useMemo(() => {
     if (!paymentAmountUsd) return null
     const parsedAmount = Number.parseFloat(paymentAmountUsd)
     if (Number.isNaN(parsedAmount) || parsedAmount <= 0) return null
     return parsedAmount
   }, [paymentAmountUsd])
+
+  // Amount actually charged to the payer (base + 6.75% fee)
+  const payableUsdValue = useMemo(() => {
+    if (baseUsdValue === null) return null
+    return withPayFee(baseUsdValue)
+  }, [baseUsdValue])
+
+  // Calculate token amount from payable USD amount
+  const tokenAmount = useMemo(() => {
+    if (!selectedToken || payableUsdValue === null) return null
+    const price = getTokenPrice(selectedToken)
+    if (!price) return null
+    return payableUsdValue / price
+  }, [selectedToken, payableUsdValue, getTokenPrice])
 
   // Map network names to chain IDs
   const networkChainMap: Record<string, number> = useMemo(
@@ -213,20 +258,20 @@ export const PayTab = ({
   // For success/receipt: use lastPaymentToken and USD-based token amount
   const successTokenAmountFormatted = useMemo(() => {
     const tok = lastPaymentToken
-    if (!tok || !usdValue) return ''
+    if (!tok || payableUsdValue === null) return ''
     const price = getTokenPrice(tok)
     if (!price) return ''
-    const amt = usdValue / price
+    const amt = payableUsdValue / price
     return amt.toLocaleString('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: tok === 'usdc' || tok === 'usdt' ? 6 : 8,
     })
-  }, [lastPaymentToken, usdValue, getTokenPrice])
+  }, [lastPaymentToken, payableUsdValue, getTokenPrice])
 
   const nativeSymbol =
     chainId === polygon.id || chainId === polygonAmoy.id ? 'matic' : 'ethereum'
   const displayTokenSymbol = (t: Token | null) =>
-    t === 'usdc' ? 'usdc' : t === 'ethereum' ? nativeSymbol : 'matic'
+    getDisplayTokenSymbol(t, nativeSymbol)
 
   // Get payment destination from environment variable
   const paymentDestination = useMemo(() => {
@@ -250,22 +295,18 @@ export const PayTab = ({
     if (selectedToken === 'usdc') {
       if (!isUsdcSupportedChain(chainId)) return null
       const usdcAddress = getUsdcAddress(chainId)
-      if (!usdcAddress || !paymentAmountUsd) return null
-      const usd = Number.parseFloat(paymentAmountUsd)
-      if (Number.isNaN(usd) || usd <= 0) return null
+      if (!usdcAddress || payableUsdValue === null) return null
       // ERC20 transfer: ethereum:token@chainId/transfer?address=0x...&uint256=1.5e6
-      const amount = `${usd.toFixed(6)}e6`
+      const amount = `${payableUsdValue.toFixed(6)}e6`
       return `ethereum:${usdcAddress}@${chainId}/transfer?address=${paymentDestination}&uint256=${amount}`
     }
     if (selectedToken === 'usdt') {
       if (!isUsdtSupportedChain(chainId)) return null
       const usdtAddress = getUsdtAddress(chainId)
-      if (!usdtAddress || !paymentAmountUsd) return null
-      const usd = Number.parseFloat(paymentAmountUsd)
-      if (Number.isNaN(usd) || usd <= 0) return null
+      if (!usdtAddress || payableUsdValue === null) return null
       // ERC20 transfer: ethereum:token@chainId/transfer?address=0x...&uint256=1.5e6
       // USDT uses 6 decimals
-      const amount = `${usd.toFixed(6)}e6`
+      const amount = `${payableUsdValue.toFixed(6)}e6`
       return `ethereum:${usdtAddress}@${chainId}/transfer?address=${paymentDestination}&uint256=${amount}`
     }
     return null
@@ -274,7 +315,7 @@ export const PayTab = ({
     selectedToken,
     chainId,
     tokenAmount,
-    paymentAmountUsd,
+    payableUsdValue,
   ])
 
   // Hook for sending transactions
@@ -301,11 +342,8 @@ export const PayTab = ({
       query: {
         enabled: !!usdcHash,
         retry: 5,
-        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-        refetchInterval: (query) => {
-          if (query.state.data) return false
-          return 2000
-        },
+        retryDelay: RECEIPT_RETRY_DELAY_MS,
+        refetchInterval: RECEIPT_REFETCH_INTERVAL_MS,
       },
     })
 
@@ -316,11 +354,8 @@ export const PayTab = ({
       query: {
         enabled: !!usdtHash,
         retry: 5,
-        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-        refetchInterval: (query) => {
-          if (query.state.data) return false
-          return 2000
-        },
+        retryDelay: RECEIPT_RETRY_DELAY_MS,
+        refetchInterval: RECEIPT_REFETCH_INTERVAL_MS,
       },
     })
 
@@ -383,6 +418,7 @@ export const PayTab = ({
   const activeHash = localHash || hash
   const activeReceipt = localReceipt || receipt
   const reportedSuccessHashRef = useRef<`0x${string}` | null>(null)
+  const relayedPaymentHashRef = useRef<`0x${string}` | null>(null)
 
   useEffect(() => {
     if (
@@ -401,6 +437,51 @@ export const PayTab = ({
     reportedSuccessHashRef.current = activeHash
     void onPaymentSuccess(activeHash)
   }, [activeHash, activeReceipt, onPaymentSuccess])
+
+  useEffect(() => {
+    if (!activeHash || !activeReceipt || activeReceipt.status !== 'success') {
+      return
+    }
+
+    const relayToken = tokenForTxState
+    const relayChainId = lastPaymentChainId ?? chainId
+    if (!relayToken || !relayChainId) {
+      return
+    }
+
+    if (relayedPaymentHashRef.current === activeHash) {
+      return
+    }
+
+    relayedPaymentHashRef.current = activeHash
+
+    void (async () => {
+      try {
+        const response = await fetch('/api/relay', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            paymentHash: activeHash,
+            chainId: relayChainId,
+            token: relayToken,
+          }),
+        })
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => null)
+          throw new Error(payload?.error ?? 'Relay request failed')
+        }
+
+        if (process.env.NODE_ENV === 'development') {
+          const payload = await response.json().catch(() => null)
+          console.log('Relay completed:', payload)
+        }
+      } catch (relayError) {
+        relayedPaymentHashRef.current = null
+        console.error('Relay forwarding failed:', relayError)
+      }
+    })()
+  }, [activeHash, activeReceipt, tokenForTxState, lastPaymentChainId, chainId])
 
   const receiptExplorerUrl = useMemo(
     () => getTransactionExplorerUrl(currentChain, activeHash) ?? explorerUrl,
@@ -432,17 +513,17 @@ export const PayTab = ({
       return
     }
 
-    const usdAmount = Number.parseFloat(paymentAmountUsd)
-    if (Number.isNaN(usdAmount) || usdAmount <= 0) {
+    if (payableUsdValue === null) {
       return
     }
 
     setLastPaymentToken(selectedToken)
+    setLastPaymentChainId(chainId)
 
     try {
       if (selectedToken === 'ethereum') {
         // Send ETH using the existing send function
-        sendEth({to: paymentDestination, usd: usdAmount})
+        sendEth({to: paymentDestination, usd: payableUsdValue, chainId})
       } else if (selectedToken === 'usdc') {
         // Send USDC using writeContract
         if (!isUsdcSupportedChain(chainId)) {
@@ -456,21 +537,7 @@ export const PayTab = ({
 
         // USDC is $1, so USD amount = USDC amount
         // USDC uses 6 decimals
-        const usdcAmount = parseUnits(usdAmount.toFixed(6), 6)
-
-        // ERC20 transfer ABI
-        const ERC20_TRANSFER_ABI = [
-          {
-            name: 'transfer',
-            type: 'function',
-            stateMutability: 'nonpayable',
-            inputs: [
-              {name: 'to', type: 'address'},
-              {name: 'amount', type: 'uint256'},
-            ],
-            outputs: [{name: '', type: 'bool'}],
-          },
-        ] as const
+        const usdcAmount = parseUnits(payableUsdValue.toFixed(6), 6)
 
         mutate({
           abi: ERC20_TRANSFER_ABI,
@@ -491,21 +558,7 @@ export const PayTab = ({
 
         // USDT is $1, so USD amount = USDT amount
         // USDT uses 6 decimals
-        const usdtAmount = parseUnits(usdAmount.toFixed(6), 6)
-
-        // ERC20 transfer ABI
-        const ERC20_TRANSFER_ABI = [
-          {
-            name: 'transfer',
-            type: 'function',
-            stateMutability: 'nonpayable',
-            inputs: [
-              {name: 'to', type: 'address'},
-              {name: 'amount', type: 'uint256'},
-            ],
-            outputs: [{name: '', type: 'bool'}],
-          },
-        ] as const
+        const usdtAmount = parseUnits(payableUsdValue.toFixed(6), 6)
 
         mutateUsdt({
           abi: ERC20_TRANSFER_ABI,
@@ -521,6 +574,7 @@ export const PayTab = ({
   }, [
     selectedToken,
     paymentAmountUsd,
+    payableUsdValue,
     paymentDestination,
     hasInsufficientBalance,
     chainId,
@@ -541,6 +595,21 @@ export const PayTab = ({
     )
   }, [setPaymentAmountUsd])
 
+  const payButtonTokenLabel = selectedToken
+    ? tickerSymbol(displayTokenSymbol(selectedToken))
+    : null
+  const payButtonLabel = payButtonTokenLabel
+    ? `Pay with ${payButtonTokenLabel}`
+    : 'Pay'
+  const enablePayHoverStyles =
+    !disabled &&
+    !activeIsConfirming &&
+    !activeIsPending &&
+    !hasInsufficientBalance &&
+    !!selectedToken &&
+    !!paymentAmountUsd &&
+    !!paymentDestination
+
   return (
     <motion.div
       initial={{opacity: 0, y: 10}}
@@ -548,11 +617,10 @@ export const PayTab = ({
       exit={{opacity: 0, y: -10}}
       transition={{layout: {duration: 0.3, ease: 'easeInOut'}}}
       className='space-y-0 w-full p-4 pb-10 border border-slate-500/50'>
-      {/* Amount Info */}
-      {paymentAmountUsd && usdValue && !activeReceipt && (
+      {paymentAmountUsd && payableUsdValue !== null && !activeReceipt && (
         <PayAmount
           spinRandomAmount={spinRandomAmount}
-          usdValue={usdValue}
+          usdValue={payableUsdValue}
           paymentRequestUri={paymentRequestUri}
           recipient={paymentDestination}
           tokenAmountFormatted={processingTokenAmountFormatted}
@@ -624,7 +692,7 @@ export const PayTab = ({
               key='success'
               tokenAmount={successTokenAmountFormatted}
               tokenSymbol={displayTokenSymbol(lastPaymentToken)}
-              usdValue={usdValue}
+              usdValue={payableUsdValue}
               hash={activeHash || null}
               explorerUrl={receiptExplorerUrl}
             />
@@ -633,66 +701,29 @@ export const PayTab = ({
               key='sending'
               tokenAmount={processingTokenAmountFormatted}
               tokenSymbol={displayTokenSymbol(selectedToken)}
-              usdValue={usdValue}
+              usdValue={payableUsdValue}
             />
           ) : null}
         </motion.div>
       </AnimatePresence>
 
-      <motion.div layout>
-        {/* Send Button / Send Another Button */}
-        <motion.div
-          whileHover={{scale: isPayDisabled ? 1 : 1.02}}
-          whileTap={{scale: 0.98}}
-          className='mt-8 mx-4'>
-          {activeReceipt && activeReceipt.status === 'success' && onReset ? (
-            <button
-              onClick={() => setShowReceiptModal(true)}
-              className='hidden _flex items-center justify-center w-full mx-auto h-14 text-lg font-medium rounded-xl bg-linear-to-r from-slate-500 via-slate-400 to-cyan-100 hover:from-slate-500 hover:to-slate-100 text-white border-0 shadow-lg transition-all'>
-              <span className='flex items-center font-exo font-semibold italic gap-2'>
-                View Receipt
-                <Icon name='receipt-fill' className='w-5 h-5' />
-              </span>
-            </button>
-          ) : (
-            <button
-              onClick={handlePay}
-              disabled={isPayDisabled}
-              className={cn(
-                'flex items-center justify-center w-full mx-auto h-14 text-lg font-semibold bg-linear-to-r from-slate-400 via-slate-400 to-rose-200 text-white border-0 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed rounded-xs',
-                {
-                  'hover:from-slate-200 hover:to-rose-100':
-                    !disabled &&
-                    !activeIsConfirming &&
-                    !activeIsPending &&
-                    !hasInsufficientBalance &&
-                    selectedToken &&
-                    paymentAmountUsd &&
-                    paymentDestination,
-                },
-              )}>
-              {activeIsPending || activeIsConfirming ? (
-                <motion.div
-                  animate={{x: [0, 16, 0]}}
-                  transition={{duration: 0.5, repeat: Infinity}}>
-                  <Icon name='cash-fast' className='w-5 h-5' />
-                </motion.div>
-              ) : (
-                <span className='flex items-center text-white opacity-100 gap-2 font-exo font-bold italic drop-shadow-2xs'>
-                  Pay
-                  <Icon name='cash-fast' className='w-5 h-5' />
-                </span>
-              )}
-            </button>
-          )}
-        </motion.div>
-      </motion.div>
+      <PayButtons
+        showReceiptButton={
+          !!activeReceipt && activeReceipt.status === 'success' && !!onReset
+        }
+        onViewReceipt={() => setShowReceiptModal(true)}
+        onPay={handlePay}
+        isPayDisabled={isPayDisabled}
+        isPayProcessing={activeIsPending || activeIsConfirming}
+        payLabel={payButtonLabel}
+        enablePayHoverStyles={enablePayHoverStyles}
+      />
       <ReceiptModal
         open={showReceiptModal}
         onClose={() => setShowReceiptModal(false)}
         amount={successTokenAmountFormatted}
         symbol={displayTokenSymbol(lastPaymentToken)}
-        usdValue={usdValue}
+        usdValue={payableUsdValue}
         hash={activeHash ?? null}
         explorerUrl={receiptExplorerUrl}
         recipient={null}

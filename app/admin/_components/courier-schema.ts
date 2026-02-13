@@ -2,11 +2,21 @@ import {z} from 'zod'
 import {FormInput} from './ui/fields'
 import {useAppForm} from './ui/form-context'
 
+export const courierAccountSchema = z.object({
+  id: z.string().optional(),
+  label: z.string().trim().min(1, 'Account label is required.'),
+  value: z.string().trim().min(1, 'Account value is required.'),
+  createdAt: z.number().optional(),
+  updatedAt: z.number().optional(),
+  updatedBy: z.string().optional(),
+})
+
 export const courierSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   code: z.string().min(1, 'Code is required.'),
   active: z.boolean().default(true),
   trackingUrlTemplate: z.string().optional(),
+  accounts: z.array(courierAccountSchema).default([]),
 })
 
 export type CourierFormValues = z.infer<typeof courierSchema>
@@ -49,9 +59,10 @@ export const courierFields: FormInput<CourierFormValues>[] = [
   },
 ]
 
-export const defaultValues = courierFields
-  .map((f) => ({
-    [f.name]: f.defaultValue,
-  }))
-  .reduce((acc, obj) => ({...acc, ...obj}), {}) as CourierFormValues
-
+export const defaultValues: CourierFormValues = {
+  name: '',
+  code: '',
+  active: true,
+  trackingUrlTemplate: '',
+  accounts: [],
+}

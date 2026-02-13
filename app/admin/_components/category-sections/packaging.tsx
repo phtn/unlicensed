@@ -2,7 +2,6 @@
 
 import {cn} from '@/lib/utils'
 import {Chip, Input, Select, SelectItem, Textarea} from '@heroui/react'
-import {KeyboardEvent, useEffect, useState} from 'react'
 import {CategoryFormApi} from '../category-schema'
 import {commonInputClassNames} from '../ui/fields'
 import {FormSection, Header} from './components'
@@ -34,132 +33,9 @@ const DENOMINATION_SUGGESTIONS: Record<string, number[]> = {
 
 interface PackagingProps {
   form: CategoryFormApi
-  isVapesCategory?: boolean
 }
 
-const parseProductTypes = (value: string) =>
-  value
-    .split(',')
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0)
-
-const ProductTypesInput = ({
-  value,
-  onChange,
-  onBlur,
-}: {
-  value: string
-  onChange: (next: string) => void
-  onBlur: VoidFunction
-}) => {
-  const [draft, setDraft] = useState('')
-  const [productTypes, setProductTypes] = useState<string[]>(
-    parseProductTypes(value),
-  )
-
-  useEffect(() => {
-    setProductTypes(parseProductTypes(value))
-  }, [value])
-
-  const appendTypes = (items: string[]) => {
-    if (items.length === 0) return
-
-    setProductTypes((current) => {
-      const next = [...current]
-      items.forEach((item) => {
-        const exists = next.some(
-          (existing) => existing.toLowerCase() === item.toLowerCase(),
-        )
-        if (!exists) {
-          next.push(item)
-        }
-      })
-      onChange(next.join(', '))
-      return next
-    })
-  }
-
-  const commitDraft = () => {
-    const trimmed = draft.trim()
-    if (!trimmed) return
-    appendTypes([trimmed])
-    setDraft('')
-  }
-
-  const removeType = (typeToRemove: string) => {
-    setProductTypes((current) => {
-      const next = current.filter((type) => type !== typeToRemove)
-      onChange(next.join(', '))
-      return next
-    })
-  }
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' || event.key === 'Tab') {
-      event.preventDefault()
-      commitDraft()
-      return
-    }
-
-    if (event.key === 'Backspace' && !draft && productTypes.length > 0) {
-      setProductTypes((current) => {
-        const next = current.slice(0, -1)
-        onChange(next.join(', '))
-        return next
-      })
-    }
-  }
-
-  return (
-    <div className='space-y-3'>
-      <Input
-        label='Product Types'
-        value={draft}
-        onChange={(event) => {
-          const raw = event.target.value
-          if (!raw.includes(',')) {
-            setDraft(raw)
-            return
-          }
-
-          const parts = raw.split(',')
-          const completed = parts
-            .slice(0, -1)
-            .map((item) => item.trim())
-            .filter((item) => item.length > 0)
-          appendTypes(completed)
-          setDraft(parts[parts.length - 1] ?? '')
-        }}
-        onKeyDown={handleKeyDown}
-        onBlur={() => {
-          commitDraft()
-          onBlur()
-        }}
-        placeholder='Type a product type and use comma, Enter, or Tab'
-        variant='bordered'
-        classNames={commonInputClassNames}
-      />
-      <div className='flex flex-wrap gap-2 min-h-8'>
-        {productTypes.map((type) => (
-          <Chip
-            key={type}
-            size='sm'
-            variant='flat'
-            color='primary'
-            isCloseable
-            onClose={() => removeType(type)}>
-            {type}
-          </Chip>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-export const Packaging = ({
-  form,
-  isVapesCategory = false,
-}: PackagingProps) => {
+export const Packaging = ({form}: PackagingProps) => {
   return (
     <FormSection id='packaging' position='middle'>
       <Header label='Packaging' />
@@ -359,16 +235,20 @@ export const Packaging = ({
           </form.AppField>
         </div>
 
-        {isVapesCategory ? (
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           <form.AppField name='productTypesRaw'>
             {(field) => {
               const value = (field.state.value as string) ?? ''
               return (
                 <div className='space-y-2 w-full'>
-                  <ProductTypesInput
+                  <Input
+                    label='Product Types'
                     value={value}
-                    onChange={(next) => field.handleChange(next)}
+                    onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
+                    placeholder='Comma-separated (e.g., Disposable, Cartridge, Pod)'
+                    variant='bordered'
+                    classNames={commonInputClassNames}
                   />
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
@@ -380,7 +260,32 @@ export const Packaging = ({
               )
             }}
           </form.AppField>
-        ) : null}
+
+          <form.AppField name='subcategoriesRaw'>
+            {(field) => {
+              const value = (field.state.value as string) ?? ''
+              return (
+                <div className='space-y-2 w-full'>
+                  <Input
+                    label='Subcategories'
+                    value={value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder='Comma-separated (e.g., Sativa, Hybrid, Indica)'
+                    variant='bordered'
+                    classNames={commonInputClassNames}
+                  />
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {field.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                </div>
+              )
+            }}
+          </form.AppField>
+        </div>
       </div>
     </FormSection>
   )

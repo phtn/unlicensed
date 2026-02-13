@@ -118,14 +118,15 @@ function courierCell() {
 export const OrdersTable = () => {
   const orders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
   const {setSelectedOrder} = useOrderDetails()
-  const {togglePanel} = useSettingsPanel()
+  const {setOpen, setOpenMobile} = useSettingsPanel()
 
   const handleViewOrder = useCallback(
     (order: Order) => {
       setSelectedOrder(order)
-      togglePanel()
+      setOpen(true)
+      setOpenMobile(true)
     },
-    [setSelectedOrder, togglePanel],
+    [setOpen, setOpenMobile, setSelectedOrder],
   )
 
   const columns = useMemo<ColumnConfig<Order>[]>(

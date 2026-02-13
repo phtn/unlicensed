@@ -24,12 +24,16 @@ export const create = mutation({
     const productTypes = (args.productTypes ?? [])
       .map((type) => type.trim())
       .filter((type) => type.length > 0)
+    const subcategories = (args.subcategories ?? [])
+      .map((subcategory) => subcategory.trim())
+      .filter((subcategory) => subcategory.length > 0)
 
     const categoryId = await ctx.db.insert('categories', {
       ...args,
       slug,
       benefits,
       productTypes: productTypes.length > 0 ? productTypes : undefined,
+      subcategories: subcategories.length > 0 ? subcategories : undefined,
     })
 
     // Log category created activity
@@ -75,12 +79,16 @@ export const update = mutation({
     const productTypes = (args.productTypes ?? [])
       .map((type) => type.trim())
       .filter((type) => type.length > 0)
+    const subcategories = (args.subcategories ?? [])
+      .map((subcategory) => subcategory.trim())
+      .filter((subcategory) => subcategory.length > 0)
 
     const {categoryId, ...updateData} = args
     await ctx.db.patch(categoryId, {
       ...updateData,
       benefits,
       productTypes: productTypes.length > 0 ? productTypes : undefined,
+      subcategories: subcategories.length > 0 ? subcategories : undefined,
       slug,
     })
 
