@@ -57,9 +57,11 @@ export const ProductForm = ({
   const isEditMode = !!productId
   const createProduct = useMutation(api.products.m.createProduct)
   const updateProduct = useMutation(api.products.m.updateProduct)
+  const archiveProduct = useMutation(api.products.m.archiveProduct)
   const [activeSection, setActiveSection] = useState<string>('basic-info')
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isArchiving, setIsArchiving] = useState(false)
   const mainScrollRef = useRef<HTMLElement>(null)
 
   const formValues = initialValues ?? defaultValues
@@ -253,6 +255,25 @@ export const ProductForm = ({
     }
   }, [])
 
+  const handleArchiveProduct = useCallback(async () => {
+    if (!productId) return
+
+    setStatus('idle')
+    setErrorMessage(null)
+    setIsArchiving(true)
+    try {
+      await archiveProduct({productId})
+      onUpdated?.()
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to archive product.'
+      setErrorMessage(message)
+      setStatus('error')
+    } finally {
+      setIsArchiving(false)
+    }
+  }, [archiveProduct, onUpdated, productId])
+
   return (
     <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 md:p-4 lg:p-0 items-start h-[calc(100vh-6rem)]'>
       {/* Left Sidebar Navigation */}
@@ -332,7 +353,9 @@ export const ProductForm = ({
             <BasicInfo
               form={form as ProductFormApi}
               fields={productFields.slice(0, 6)}
-              categories={categories}></BasicInfo>
+              categories={categories}
+              onArchiveProduct={isEditMode ? handleArchiveProduct : undefined}
+              isArchiving={isArchiving}></BasicInfo>
           </div>
           <div id='media' className='scroll-mt-4'>
             <Media

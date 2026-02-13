@@ -74,6 +74,7 @@ export const productSchema = v.object({
   netWeightUnit: v.optional(v.string()),
   subcategory: v.optional(v.string()),
   batchId: v.optional(v.string()),
+  archived: v.optional(v.boolean()),
 })
 
 export type ProductType = Infer<typeof productSchema>

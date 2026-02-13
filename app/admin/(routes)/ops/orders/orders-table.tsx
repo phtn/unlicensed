@@ -1,194 +1,40 @@
 'use client'
 
-import { DataTable } from '@/components/table-v2'
-import { dateCell, priceCell, textCell } from '@/components/table-v2/cells-v2'
-import { ActionConfig, ColumnConfig } from '@/components/table-v2/create-column'
-import { ColHeader } from '@/components/table-v2/headers'
-import { api } from '@/convex/_generated/api'
-import type { Doc } from '@/convex/_generated/dataModel'
-import { cn } from '@/lib/utils'
-import { formatPrice } from '@/utils/formatPrice'
-import { CellContext } from '@tanstack/react-table'
-import { useMutation, useQuery } from 'convex/react'
-import Link from 'next/link'
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
-import { useSettingsPanel } from '../../../_components/ui/settings'
-import { CourierAccountCell } from './courier-account-cell'
-import { CourierCell } from './courier-cell'
-import { useOrderDetails } from './order-details-context'
+import {DataTable} from '@/components/table-v2'
+import {priceCell} from '@/components/table-v2/cells-v2'
+import {ActionConfig, ColumnConfig} from '@/components/table-v2/create-column'
+import {ColHeader} from '@/components/table-v2/headers'
+import {api} from '@/convex/_generated/api'
+import {formatPrice} from '@/utils/formatPrice'
+import {useQuery} from 'convex/react'
+import {useCallback, useMemo} from 'react'
+import {useSettingsPanel} from '../../../_components/ui/settings'
+import {
+  courierAccountCell,
+  courierCell,
+  customerCell,
+  orderNumberCell,
+  statusCell,
+} from '../components'
+import type {Order} from '../types'
+import {useOrderDetails} from './order-details-context'
 
-type Order = Doc<'orders'>
-type OrderStatusCode = Order['orderStatus']
-
-type StatusCode = OrderStatusCode | 'default'
-
-const statusOptions: Array<{ value: OrderStatusCode; label: string }> = [
-  { value: 'pending_payment', label: 'Pending Payment' },
-  { value: 'order_processing', label: 'Order Processing' },
-  { value: 'awaiting_courier_pickup', label: 'Awaiting Courier Pickup' },
-  { value: 'shipping', label: 'Shipping' },
-  { value: 'resend', label: 'Resend' },
-  { value: 'shipped', label: 'Shipped' },
-  { value: 'cancelled', label: 'Cancelled' },
-]
-
-const colorMap: Record<StatusCode, string> = {
-  pending_payment: 'bg-amber-400/25 dark:bg-orange-300/45',
-  order_processing: 'bg-sky-600/20 dark:bg-blue-400/45',
-  awaiting_courier_pickup: 'bg-orange-200/65 dark:bg-orange-400/45',
-  shipping: 'bg-purple-200/70 dark:bg-purple-400/35',
-  resend: 'bg-red-200/70 dark:bg-red-400/50',
-  shipped: 'bg-emerald-400/35 dark:bg-emerald-400/35',
-  cancelled: 'dark:bg-red-400/40',
-  default: 'bg-[#e8e6e5]',
-}
-
-function statusCell() {
-  const StatusCellComponent = (ctx: CellContext<Order, unknown>) => {
-    const updateOrderStatus = useMutation(api.orders.m.updateOrderStatus)
-    const status = ctx.getValue() as OrderStatusCode | undefined
-    const [localStatus, setLocalStatus] = useState<OrderStatusCode | null>(
-      status ?? null,
-    )
-    const [isUpdating, setIsUpdating] = useState(false)
-
-    useEffect(() => {
-      setLocalStatus(status ?? null)
-    }, [status])
-
-    if (!status || !localStatus) {
-      return <span className='text-muted-foreground'>—</span>
-    }
-
-    const handleStatusChange = async (
-      event: ChangeEvent<HTMLSelectElement>,
-    ) => {
-      const nextStatus = event.target.value as OrderStatusCode
-      if (nextStatus === localStatus) return
-
-      const previousStatus = localStatus
-      setLocalStatus(nextStatus)
-      setIsUpdating(true)
-
-      try {
-        await updateOrderStatus({
-          orderId: ctx.row.original._id,
-          status: nextStatus,
-        })
-      } catch (error) {
-        console.error('Failed to update order status:', error)
-        setLocalStatus(previousStatus)
-      } finally {
-        setIsUpdating(false)
-      }
-    }
-
-    const normalizedStatus = localStatus.toLowerCase() as StatusCode
-    const color = colorMap[normalizedStatus] || colorMap.default
-
-    return (
-      <div
-        className={cn(
-          'flex items-center uppercase justify-center rounded-sm w-fit px-1 py-1 font-mono shadow-none',
-          color,
-        )}
-      >
-        <select
-          aria-label='Update order status'
-          value={localStatus}
-          onChange={(event) => void handleStatusChange(event)}
-          disabled={isUpdating}
-          className={cn(
-            'bg-transparent border border-transparent rounded-sm',
-            'text-sm tracking-wider font-brk uppercase whitespace-nowrap',
-            'px-1.5 py-0.5 pr-6 outline-none',
-            'focus:border-foreground/20',
-            {
-              'cursor-wait opacity-70': isUpdating,
-            },
-          )}
-        >
-          {statusOptions.map((option) => (
-            <option key={option.value} value={option.value} className='text-lg'>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
-    )
-  }
-  StatusCellComponent.displayName = 'StatusCell'
-  return StatusCellComponent
-}
-
-function orderNumberCell() {
-  const OrderNumberCellComponent = (ctx: CellContext<Order, unknown>) => {
-    const orderNumber = ctx.getValue() as string | undefined
-    if (!orderNumber) return <span className='text-muted-foreground'>—</span>
-
-    return (
-      <div className='flex flex-col w-fit'>
-        <Link
-          color='foreground'
-          href={`/admin/ops/orders/${orderNumber}`}
-          className='font-mono opacity-80 text-sm hover:underline underline-offset-2 decoration-dotted decoration-foreground/40'
-        >
-          {orderNumber.substring(5)}
-        </Link>
-      </div>
-    )
-  }
-  OrderNumberCellComponent.displayName = 'OrderNumberCell'
-  return OrderNumberCellComponent
-}
-
-function customerCell() {
-  const CustomerCellComponent = (ctx: CellContext<Order, unknown>) => {
-    const email = ctx.getValue() as string | undefined
-    if (!email) return <span className='text-muted-foreground'>—</span>
-
-    return (
-      <div className='flex flex-col'>
-        <p className='tracking-tight font-medium text-sm'>{email}</p>
-      </div>
-    )
-  }
-  CustomerCellComponent.displayName = 'CustomerCell'
-  return CustomerCellComponent
-}
-
-function courierCell() {
-  const CourierCellComponent = (ctx: CellContext<Order, unknown>) => {
-    const order = ctx.row.original
-
-    return (
-      <div className='flex items-center justify-center'>
-        <CourierCell order={order} />
-      </div>
-    )
-  }
-  CourierCellComponent.displayName = 'CourierCell'
-  return CourierCellComponent
-}
-
-function courierAccountCell() {
-  const CourierAccountCellComponent = (ctx: CellContext<Order, unknown>) => {
-    const order = ctx.row.original
-
-    return (
-      <div className='flex items-center justify-center'>
-        <CourierAccountCell order={order} />
-      </div>
-    )
-  }
-  CourierAccountCellComponent.displayName = 'CourierAccountCell'
-  return CourierAccountCellComponent
+const formatPlacedAt = (order: Order) => {
+  const timestamp = order.createdAt ?? order._creationTime
+  if (!timestamp) return 'N/A'
+  return new Date(timestamp).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 }
 
 export const OrdersTable = () => {
-  const orders = useQuery(api.orders.q.getRecentOrders, { limit: 100 })
-  const { setSelectedOrder } = useOrderDetails()
-  const { setOpen, setOpenMobile } = useSettingsPanel()
+  const orders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
+  const {setSelectedOrder} = useOrderDetails()
+  const {setOpen, setOpenMobile} = useSettingsPanel()
 
   const handleViewOrder = useCallback(
     (order: Order) => {
@@ -210,7 +56,7 @@ export const OrdersTable = () => {
       },
       {
         id: 'totalCents',
-        header: <ColHeader tip='Total' symbol='Total' center />,
+        header: <ColHeader tip='Total Amount' symbol='Amount' center />,
         accessorKey: 'totalCents',
         cell: priceCell('totalCents', (v) => formatPrice(+v)),
         size: 120,
@@ -247,9 +93,12 @@ export const OrdersTable = () => {
       },
       {
         id: 'date',
-        header: <ColHeader tip='Date' symbol='Date' />,
+        header: <ColHeader tip='Order placed date and time' symbol='Placed' />,
         accessorKey: 'createdAt',
-        cell: dateCell('createdAt'),
+        size: 180,
+        cell: ({row}) => (
+          <span className='text-sm'>{formatPlacedAt(row.original)}</span>
+        ),
       },
     ],
     [],

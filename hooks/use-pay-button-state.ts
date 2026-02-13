@@ -9,7 +9,7 @@ export interface UsePayButtonStateParams {
   hasInsufficientBalance: boolean
   selectedToken: Token | null
   paymentAmountUsd: string
-  paymentDestination: Address | null
+  dtest: Address | null
   /** For dev debug output only */
   localIsPending?: boolean
   localIsConfirming?: boolean
@@ -29,7 +29,7 @@ export function usePayButtonState(params: UsePayButtonStateParams): boolean {
     hasInsufficientBalance,
     selectedToken,
     paymentAmountUsd,
-    paymentDestination,
+    dtest,
     localIsPending,
     localIsConfirming,
     isPendingProp,
@@ -44,7 +44,7 @@ export function usePayButtonState(params: UsePayButtonStateParams): boolean {
       hasInsufficientBalance ||
       !selectedToken ||
       !paymentAmountUsd ||
-      !paymentDestination
+      !dtest
     )
   }, [
     disabled,
@@ -53,7 +53,7 @@ export function usePayButtonState(params: UsePayButtonStateParams): boolean {
     hasInsufficientBalance,
     selectedToken,
     paymentAmountUsd,
-    paymentDestination,
+    dtest,
   ])
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export function usePayButtonState(params: UsePayButtonStateParams): boolean {
       hasInsufficientBalance,
       noSelectedToken: !selectedToken,
       noPaymentAmount: !paymentAmountUsd,
-      noPaymentDestination: !paymentDestination,
+      noPaymentDestination: !dtest,
     }
 
     const conditionTable: Record<string, string> = {}
@@ -88,7 +88,7 @@ export function usePayButtonState(params: UsePayButtonStateParams): boolean {
       hasInsufficientBalance,
       selectedToken: selectedToken ?? 'null',
       paymentAmountUsd: paymentAmountUsd || 'empty',
-      paymentDestination: paymentDestination ?? 'null',
+      paymentDestination: dtest ?? 'null',
     })
     if (
       localIsPending !== undefined ||
@@ -117,7 +117,7 @@ export function usePayButtonState(params: UsePayButtonStateParams): boolean {
     hasInsufficientBalance,
     selectedToken,
     paymentAmountUsd,
-    paymentDestination,
+    dtest,
     isDisabled,
     localIsPending,
     localIsConfirming,

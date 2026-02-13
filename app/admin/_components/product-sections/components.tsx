@@ -19,9 +19,9 @@ export const FormSection = ({
       radius='none'
       shadow='none'
       className={cn(
-        'dark:bg-dark-table/40 p-4 border-x border-t border-gray-300 dark:border-origin',
+        'dark:bg-dark-table/40 px-4 pb-4 border-x border-t border-gray-300 dark:border-origin',
         {
-          'rounded-none border-t-0': position === 'top',
+          'rounded-sm': position === 'top',
           'border-b rounded-b-2xl': position === 'bottom',
         },
       )}>
@@ -30,10 +30,17 @@ export const FormSection = ({
   )
 }
 
-export const Header = ({label}: {label: string}) => {
+interface HeaderProps {
+  label: string
+  children?: ReactNode
+}
+export const Header = ({label, children}: HeaderProps) => {
   return (
     <CardHeader className='px-0 font-polysans font-medium'>
-      <h2>{label}</h2>
+      <div className='flex items-center justify-between w-full'>
+        <h2>{label}</h2>
+      </div>
+      <div>{children}</div>
     </CardHeader>
   )
 }

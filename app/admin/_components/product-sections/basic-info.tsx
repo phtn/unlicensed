@@ -2,7 +2,18 @@
 
 import {Doc} from '@/convex/_generated/dataModel'
 import {ensureSlug} from '@/lib/slug'
-import {Input, Select, SelectItem} from '@heroui/react'
+import {
+  Button,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Select,
+  SelectItem,
+  useDisclosure,
+} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useEffect, useMemo, useState} from 'react'
 import {ProductFormValues} from '../product-schema'
@@ -14,10 +25,19 @@ interface BasicInfoProps {
   categories: Doc<'categories'>[] | undefined
   form: ReturnType<typeof useAppForm>
   fields: Array<FormInput<ProductFormValues>>
+  onArchiveProduct?: () => void | Promise<void>
+  isArchiving?: boolean
 }
 
-export const BasicInfo = ({categories, form, fields}: BasicInfoProps) => {
+export const BasicInfo = ({
+  categories,
+  form,
+  fields,
+  onArchiveProduct,
+  isArchiving = false,
+}: BasicInfoProps) => {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const {isOpen, onOpen, onClose, onOpenChange} = useDisclosure()
   const categorySlug = useStore(form.store, (state) => {
     const values = state.values as {categorySlug?: string}
     return values.categorySlug ?? ''
@@ -39,13 +59,13 @@ export const BasicInfo = ({categories, form, fields}: BasicInfoProps) => {
   const nameField = fields.find((field) => field.name === 'name')
   const slugField = fields.find((field) => field.name === 'slug')
   const basicFields = fields.filter(
-    (field) =>
-      field.name === 'categorySlug' ||
-      field.name === 'brand',
+    (field) => field.name === 'categorySlug' || field.name === 'brand',
   )
   const selectedCategory = useMemo(() => {
     if (!availableCategories || !categorySlug) return null
-    return availableCategories.find((category) => category.slug === categorySlug)
+    return availableCategories.find(
+      (category) => category.slug === categorySlug,
+    )
   }, [availableCategories, categorySlug])
 
   const subcategoryOptions = useMemo(() => {
@@ -63,8 +83,10 @@ export const BasicInfo = ({categories, form, fields}: BasicInfoProps) => {
   }, [selectedCategory])
 
   useEffect(() => {
-    const currentProductType = (form.getFieldValue('productType') as string) ?? ''
-    const currentSubcategory = (form.getFieldValue('subcategory') as string) ?? ''
+    const currentProductType =
+      (form.getFieldValue('productType') as string) ?? ''
+    const currentSubcategory =
+      (form.getFieldValue('subcategory') as string) ?? ''
 
     if (
       currentProductType &&
@@ -85,7 +107,20 @@ export const BasicInfo = ({categories, form, fields}: BasicInfoProps) => {
 
   return (
     <FormSection id='basic-info' position='top'>
-      <Header label='Basic Information' />
+      <div className='flex items-center'>
+        <Header label='Basic Information'>
+          <Button
+            size='sm'
+            radius='none'
+            color='danger'
+            onPress={onOpen}
+            isDisabled={!onArchiveProduct}
+            isLoading={isArchiving}
+            className='rounded-sm flex-1'>
+            Delete
+          </Button>
+        </Header>
+      </div>
       <div className='grid gap-6 w-full'>
         <div className='md:flex items-center w-full space-x-2'>
           {nameField && (
@@ -157,8 +192,12 @@ export const BasicInfo = ({categories, form, fields}: BasicInfoProps) => {
             {(field) => {
               const currentValue = (field.state.value as string) ?? ''
               const options =
-                currentValue && !subcategoryOptions.some((o) => o.key === currentValue)
-                  ? [{key: currentValue, label: currentValue}, ...subcategoryOptions]
+                currentValue &&
+                !subcategoryOptions.some((o) => o.key === currentValue)
+                  ? [
+                      {key: currentValue, label: currentValue},
+                      ...subcategoryOptions,
+                    ]
                   : subcategoryOptions
               const hasOptions = options.length > 0
               return (
@@ -207,8 +246,12 @@ export const BasicInfo = ({categories, form, fields}: BasicInfoProps) => {
             {(field) => {
               const currentValue = (field.state.value as string) ?? ''
               const options =
-                currentValue && !productTypeOptions.some((o) => o.key === currentValue)
-                  ? [{key: currentValue, label: currentValue}, ...productTypeOptions]
+                currentValue &&
+                !productTypeOptions.some((o) => o.key === currentValue)
+                  ? [
+                      {key: currentValue, label: currentValue},
+                      ...productTypeOptions,
+                    ]
                   : productTypeOptions
               const hasOptions = options.length > 0
               return (
@@ -254,6 +297,34 @@ export const BasicInfo = ({categories, form, fields}: BasicInfoProps) => {
           </form.Field>
         </div>
       </div>
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        placement='center'
+        backdrop='blur'>
+        <ModalContent>
+          <ModalHeader>Archive Product</ModalHeader>
+          <ModalBody>
+            <p className='text-sm text-foreground-600'>
+              This will archive the product and remove it from product lists.
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='light' onPress={onClose} isDisabled={isArchiving}>
+              Cancel
+            </Button>
+            <Button
+              color='danger'
+              isLoading={isArchiving}
+              onPress={async () => {
+                await onArchiveProduct?.()
+                onClose()
+              }}>
+              Archive
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </FormSection>
   )
 }

@@ -43,8 +43,8 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   onPlaceOrderClick,
   pointsBalance,
   onOpen,
-  minimumOrderCents = 5000,
-  shippingFeeCents = 500,
+  minimumOrderCents = 1000,
+  shippingFeeCents = 1000,
 }: OrderSummaryCardProps) {
   const handleOnChange = (value: FormData['paymentMethod']) => {
     onPaymentMethodChange(value)

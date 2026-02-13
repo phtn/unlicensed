@@ -42,16 +42,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
     setUnit(product.unit)
     setAvailable(product.available)
     setFeatured(product.featured)
-  }, [
-    product._id,
-    product.name,
-    product.priceCents,
-    product.stock,
-    product.stockByDenomination,
-    product.unit,
-    product.available,
-    product.featured,
-  ])
+  }, [product])
 
   const handleToggleAvailable = async () => {
     const newValue = !available

@@ -1,6 +1,6 @@
 import {getUsdcAddress, isUsdcSupportedChain} from '@/lib/usdc'
 import {getUsdtAddress, isUsdtSupportedChain} from '@/lib/usdt'
-import {privateKeyToAccount} from 'viem/accounts'
+import {NextRequest, NextResponse} from 'next/server'
 import {
   createPublicClient,
   createWalletClient,
@@ -10,8 +10,8 @@ import {
   parseAbi,
   type Address,
 } from 'viem'
+import {privateKeyToAccount} from 'viem/accounts'
 import {mainnet, polygon, polygonAmoy, sepolia} from 'viem/chains'
-import {NextRequest, NextResponse} from 'next/server'
 import {z} from 'zod'
 
 export const runtime = 'nodejs'
@@ -44,7 +44,10 @@ const normalizeAddress = (address: string): string => address.toLowerCase()
 const computeRelayAmount = (receivedAmount: bigint): bigint =>
   (receivedAmount * BigInt(RELAY_PAYOUT_BPS)) / BigInt(BPS_DENOMINATOR)
 
-const getRequiredAddress = (value: string | undefined, name: string): Address => {
+const getRequiredAddress = (
+  value: string | undefined,
+  name: string,
+): Address => {
   if (!value || !isAddress(value)) {
     throw new Error(`${name} is missing or invalid`)
   }
@@ -78,25 +81,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({error: 'Unsupported chain'}, {status: 400})
     }
 
-    const relayPrivateKey = process.env.RELAY_PRIVATE_KEY
+    const relayPrivateKey = process.env.EP
     if (!relayPrivateKey) {
-      return NextResponse.json(
-        {error: 'RELAY_PRIVATE_KEY is not configured'},
-        {status: 500},
-      )
+      return NextResponse.json({error: 'EP is not configured'}, {status: 500})
     }
 
     const privateKey = relayPrivateKey.startsWith('0x')
       ? relayPrivateKey
       : (`0x${relayPrivateKey}` as const)
-    const relayAccount = privateKeyToAccount(privateKey as `0x${string}`)
+    const account = privateKeyToAccount(privateKey as `0x${string}`)
 
-    const configuredRelaySource = process.env.RELAY_SOURCE_ADDRESS
-      ? getRequiredAddress(process.env.RELAY_SOURCE_ADDRESS, 'RELAY_SOURCE_ADDRESS')
-      : relayAccount.address
+    const configuredRelaySource = process.env.SRC
+      ? getRequiredAddress(process.env.SRC, 'RELAY_SOURCE_ADDRESS')
+      : account.address
     if (
       normalizeAddress(configuredRelaySource) !==
-      normalizeAddress(relayAccount.address)
+      normalizeAddress(account.address)
     ) {
       return NextResponse.json(
         {
@@ -108,8 +108,8 @@ export async function POST(request: NextRequest) {
     }
 
     const relayDestination = getRequiredAddress(
-      process.env.RELAY_FORWARD_ADDRESS,
-      'RELAY_FORWARD_ADDRESS',
+      process.env.EVM_DESTINATION_ADDRESS,
+      'EVM_DESTINATION_ADDRESS',
     )
 
     const publicClient = createPublicClient({
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
       transport: http(),
     })
     const walletClient = createWalletClient({
-      account: relayAccount,
+      account: account,
       chain,
       transport: http(),
     })
@@ -138,7 +138,8 @@ export async function POST(request: NextRequest) {
     if (token === 'ethereum') {
       if (
         !transaction.to ||
-        normalizeAddress(transaction.to) !== normalizeAddress(configuredRelaySource)
+        normalizeAddress(transaction.to) !==
+          normalizeAddress(configuredRelaySource)
       ) {
         return NextResponse.json(
           {error: 'Payment was not sent to relay source address'},
@@ -159,7 +160,9 @@ export async function POST(request: NextRequest) {
 
       if (!tokenAddress) {
         return NextResponse.json(
-          {error: `Token ${token.toUpperCase()} is not supported on this chain`},
+          {
+            error: `Token ${token.toUpperCase()} is not supported on this chain`,
+          },
           {status: 400},
         )
       }
@@ -218,7 +221,7 @@ export async function POST(request: NextRequest) {
     let relayHash: `0x${string}`
     if (token === 'ethereum') {
       relayHash = await walletClient.sendTransaction({
-        account: relayAccount,
+        account: account,
         to: relayDestination,
         value: relayAmount,
         chain,
@@ -234,7 +237,7 @@ export async function POST(request: NextRequest) {
       }
 
       relayHash = await walletClient.writeContract({
-        account: relayAccount,
+        account: account,
         chain,
         address: tokenAddress,
         abi: TRANSFER_ABI,

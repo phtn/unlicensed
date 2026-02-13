@@ -19,7 +19,10 @@ export const listProducts = query({
       : ctx.db.query('products')
 
     const products = await baseQuery.collect()
-    return sortProducts(products).slice(0, limit)
+    return sortProducts(products.filter((p) => p.archived !== true)).slice(
+      0,
+      limit,
+    )
   },
 })
 

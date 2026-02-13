@@ -104,7 +104,7 @@ export function OrderDetailsForm({
       {!hideHeader && (
         <div className='flex items-center justify-between mb-4 pb-0 shrink-0'>
           <div>
-            <h2 className='text-lg font-semibold'>{order.orderNumber}</h2>
+            <h2 className='text-lg font-medium'>{order.orderNumber}</h2>
           </div>
           <Chip
             className='capitalize'
@@ -136,10 +136,14 @@ export function OrderDetailsForm({
           <User
             name={order.contactEmail}
             description={order.contactPhone}
-            avatarProps={{fallback: order.contactEmail.slice(0, 2), size: 'sm'}}
+            avatarProps={{
+              fallback: order.contactEmail.slice(0, 2),
+              size: 'sm',
+            }}
             classNames={{
-              name: 'tracking-tight',
-              description: 'font-space text-primary',
+              name: 'lowercase',
+              description: 'font-space text-mac-blue lowercase',
+              base: 'uppercase',
             }}
           />
         </div>
@@ -210,7 +214,7 @@ export function OrderDetailsForm({
         </div>
 
         {/* Totals */}
-        <div className='flex justify-between py-2 border-b border-divider font-semibold'>
+        <div className='flex justify-between py-2 border-b border-divider font-medium'>
           <h3 className='text-sm font-bold tracking-tight mb-2 block'>Total</h3>
           <span className='font-space'>
             <span className='font-light opacity-80'>$</span>
@@ -219,9 +223,7 @@ export function OrderDetailsForm({
         </div>
         {/* Shipping Address */}
         <div className='flex items-start justify-between'>
-          <h3 className='text-sm font-bold tracking-tight mb-2 block'>
-            Shipping Address
-          </h3>
+          <h3 className='text-sm font-medium mb-2 block'>Shipping Address</h3>
           <div className='text-right text-sm text-muted-foreground'>
             <p>{order.shippingAddress.addressLine1}</p>
             <p>
@@ -246,7 +248,7 @@ export function OrderDetailsForm({
       <div className='space-y-4 pt-4 border-t border-divider shrink-0'>
         {/* Status */}
         <div>
-          <label className='text-sm font-bold tracking-tight mb-2 block'>
+          <label className='text-sm font-medium mb-2 block'>
             Update Status
           </label>
           <Select
@@ -267,7 +269,7 @@ export function OrderDetailsForm({
 
         {/* Remarks */}
         <div>
-          <label className='text-sm font-bold tracking-tight mb-2 block'>
+          <label className='text-sm font-medium mb-2 block'>
             Internal Remarks
           </label>
           <Textarea

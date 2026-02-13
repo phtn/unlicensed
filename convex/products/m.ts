@@ -83,6 +83,7 @@ export const createProduct = mutation({
       tier: args.tier,
       eligibleForUpgrade: args.eligibleForUpgrade,
       upgradePrice: args.upgradePrice,
+      archived: false,
     })
 
     // Log product created activity
@@ -385,5 +386,19 @@ export const bulkUpdatePrices = mutation({
       }
     }
     return {updated: results.filter((r) => r.success).length, results}
+  },
+})
+
+export const archiveProduct = mutation({
+  args: {
+    productId: v.id('products'),
+  },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.productId)
+    if (!product) return null
+
+    return await ctx.db.patch(product._id, {
+      archived: true,
+    })
   },
 })

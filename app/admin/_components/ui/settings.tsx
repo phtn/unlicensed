@@ -105,8 +105,7 @@ const SettingsPanelProvider = ({
 
   const setOpenMobile = useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
-      const openState =
-        typeof value === 'function' ? value(openMobile) : value
+      const openState = typeof value === 'function' ? value(openMobile) : value
       setOpenMobileState(openState)
       if (setOpenProp) {
         setOpenProp(openState)
@@ -199,7 +198,10 @@ const SettingsPanel = ({
 
   if (isMobile) {
     return (
-      <Drawer isOpen={openMobile} onOpenChange={setOpenMobile} placement='right'>
+      <Drawer
+        isOpen={openMobile}
+        onOpenChange={setOpenMobile}
+        placement='right'>
         <DrawerContent
           className={cn('w-72 px-4 py-0 bg-fade [&>button]:hidden', {})}
           style={
@@ -324,7 +326,7 @@ const PanelHeader = ({title, subtext}: PanelHeaderProps) => {
   return (
     <div className='w-full h-10 flex items-center justify-between'>
       <input
-        className='text-xl font-medium w-full tracking-tighter bg-transparent border-none shadow-none outline-none focus-within:ring-0 focus-visible:ring-0'
+        className='text-xl font-medium w-full bg-transparent border-none shadow-none outline-none focus-within:ring-0 focus-visible:ring-0'
         defaultValue={title}
       />
       {subtext && (

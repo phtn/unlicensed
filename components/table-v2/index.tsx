@@ -34,9 +34,12 @@ import {
 } from '@/components/ui/table'
 import {useMobile} from '@/hooks/use-mobile'
 import {cn} from '@/lib/utils'
-import {ColumnVisibilityProvider, useColumnVisibility} from './column-visibility-context'
 import {ColumnSort} from './column-sort-v2'
 import {ColumnView} from './column-view-v3'
+import {
+  ColumnVisibilityProvider,
+  useColumnVisibility,
+} from './column-visibility-context'
 import {
   ActionConfig,
   ColumnConfig,
@@ -431,9 +434,9 @@ function DataTableContent<T>({
           />
         </div>
         {/* Table */}
-        <HyperWrap className='space-y-0 mb-0 h-[94lvh] md:h-[92lvh] inset-0 dark:inset-0 md:rounded-sm pb-12'>
+        <HyperWrap className='h-[94lvh] md:h-[92lvh] pb-12'>
           <TableContainer>
-            <Table className='w-full min-w-max'>
+            <Table className='w-fit min-w-4xl overflow-scroll'>
               <TableHeader className='w-full'>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
@@ -444,17 +447,20 @@ function DataTableContent<T>({
                       .map((header) => {
                         return (
                           <TableHead
-                          key={header.id + id}
-                          style={{width: `${header.getSize()}px`}}
-                          className={cn(
-                            'sticky top-0 z-20 bg-light-gray/10 md:h-10 h-8 uppercase overflow-hidden',
-                            'font-oksx font-semibold tracking-tighter text-white md:tracking-tight text-xs md:text-sm',
-                            'dark:text-zinc-400 dark:bg-dark-table/30',
-                          )}>
-                          <ColumnSort flexRender={flexRender} header={header} />
-                        </TableHead>
-                      )
-                    })}
+                            key={header.id + id}
+                            style={{width: `${header.getSize()}px`}}
+                            className={cn(
+                              'sticky top-0 z-20 bg-light-gray/10 md:h-10 h-8 uppercase overflow-hidden',
+                              'font-oksx font-semibold tracking-tighter text-white md:tracking-tight text-xs md:text-sm',
+                              'dark:text-zinc-400 dark:bg-dark-table/30',
+                            )}>
+                            <ColumnSort
+                              flexRender={flexRender}
+                              header={header}
+                            />
+                          </TableHead>
+                        )
+                      })}
                   </TableRow>
                 ))}
               </TableHeader>

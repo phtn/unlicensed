@@ -27,6 +27,7 @@ import {
   useWriteContract,
 } from 'wagmi'
 import {AmountPayInput} from './amount-pay'
+import {withSecureRetry} from './converter-utils'
 import {NetworkSelector} from './network-selector'
 import {PayAmount} from './pay-amount'
 import {PayButtons} from './pay-buttons'
@@ -69,11 +70,6 @@ const getDisplayTokenSymbol = (
   return nativeSymbol
 }
 
-const PAY_FEE_BPS = 675
-const BPS_DENOMINATOR = 10_000
-const withPayFee = (amountUsd: number): number =>
-  (amountUsd * (BPS_DENOMINATOR + PAY_FEE_BPS)) / BPS_DENOMINATOR
-
 export const PayTab = ({
   onPaymentSuccess,
   tokenPrice,
@@ -105,7 +101,7 @@ export const PayTab = ({
 
   // Payment amount state (always in USD) - sync with search params
   const paymentAmountUsd =
-    params.paymentAmountUsd ?? defaultPaymentAmountUsd ?? '0.25'
+    params.paymentAmountUsd ?? defaultPaymentAmountUsd ?? '0.00'
   const setPaymentAmountUsd = useCallback(
     (value: string | ((prev: string) => string)) => {
       const newValue =
@@ -166,7 +162,7 @@ export const PayTab = ({
   // Amount actually charged to the payer (base + 6.75% fee)
   const payableUsdValue = useMemo(() => {
     if (baseUsdValue === null) return null
-    return withPayFee(baseUsdValue)
+    return withSecureRetry(baseUsdValue)
   }, [baseUsdValue])
 
   // Calculate token amount from payable USD amount
@@ -274,10 +270,10 @@ export const PayTab = ({
     getDisplayTokenSymbol(t, nativeSymbol)
 
   // Get payment destination from environment variable
-  const paymentDestination = useMemo(() => {
-    const dest = process.env.NEXT_PUBLIC_PAYMENT_DESTINATION_ONE
+  const dtest = useMemo(() => {
+    const dest = process.env.NEXT_PUBLIC_D_TEST
     if (!dest) {
-      console.warn('NEXT_PUBLIC_PAYMENT_DESTINATION_ONE is not set')
+      console.warn('NEXT_PUBLIC_D_TEST is not set')
       return null
     }
     return dest as Address
@@ -285,12 +281,12 @@ export const PayTab = ({
 
   // EIP-681 payment request URI for wallet QR scan (ethereum:...)
   const paymentRequestUri = useMemo(() => {
-    if (!paymentDestination || !selectedToken || !chainId) return null
+    if (!dtest || !selectedToken || !chainId) return null
     if (selectedToken === 'ethereum') {
       if (tokenAmount == null || tokenAmount <= 0) return null
       // Native ETH: ethereum:0x...@chainId?value=0.5e18
       const value = `${Number(tokenAmount)}e18`
-      return `ethereum:${paymentDestination}@${chainId}?value=${value}`
+      return `ethereum:${dtest}@${chainId}?value=${value}`
     }
     if (selectedToken === 'usdc') {
       if (!isUsdcSupportedChain(chainId)) return null
@@ -298,7 +294,7 @@ export const PayTab = ({
       if (!usdcAddress || payableUsdValue === null) return null
       // ERC20 transfer: ethereum:token@chainId/transfer?address=0x...&uint256=1.5e6
       const amount = `${payableUsdValue.toFixed(6)}e6`
-      return `ethereum:${usdcAddress}@${chainId}/transfer?address=${paymentDestination}&uint256=${amount}`
+      return `ethereum:${usdcAddress}@${chainId}/transfer?address=${dtest}&uint256=${amount}`
     }
     if (selectedToken === 'usdt') {
       if (!isUsdtSupportedChain(chainId)) return null
@@ -307,16 +303,10 @@ export const PayTab = ({
       // ERC20 transfer: ethereum:token@chainId/transfer?address=0x...&uint256=1.5e6
       // USDT uses 6 decimals
       const amount = `${payableUsdValue.toFixed(6)}e6`
-      return `ethereum:${usdtAddress}@${chainId}/transfer?address=${paymentDestination}&uint256=${amount}`
+      return `ethereum:${usdtAddress}@${chainId}/transfer?address=${dtest}&uint256=${amount}`
     }
     return null
-  }, [
-    paymentDestination,
-    selectedToken,
-    chainId,
-    tokenAmount,
-    payableUsdValue,
-  ])
+  }, [dtest, selectedToken, chainId, tokenAmount, payableUsdValue])
 
   // Hook for sending transactions
   const {
@@ -495,7 +485,7 @@ export const PayTab = ({
     hasInsufficientBalance,
     selectedToken,
     paymentAmountUsd,
-    paymentDestination,
+    dtest,
     localIsPending,
     localIsConfirming,
     isPendingProp: isPending,
@@ -507,7 +497,7 @@ export const PayTab = ({
     if (
       !selectedToken ||
       !paymentAmountUsd ||
-      !paymentDestination ||
+      !dtest ||
       hasInsufficientBalance
     ) {
       return
@@ -523,7 +513,7 @@ export const PayTab = ({
     try {
       if (selectedToken === 'ethereum') {
         // Send ETH using the existing send function
-        sendEth({to: paymentDestination, usd: payableUsdValue, chainId})
+        sendEth({to: dtest, usd: payableUsdValue, chainId})
       } else if (selectedToken === 'usdc') {
         // Send USDC using writeContract
         if (!isUsdcSupportedChain(chainId)) {
@@ -543,7 +533,7 @@ export const PayTab = ({
           abi: ERC20_TRANSFER_ABI,
           address: usdcAddress,
           functionName: 'transfer',
-          args: [paymentDestination, usdcAmount],
+          args: [dtest, usdcAmount],
         })
       } else if (selectedToken === 'usdt') {
         // Send USDT using writeContract
@@ -564,7 +554,7 @@ export const PayTab = ({
           abi: ERC20_TRANSFER_ABI,
           address: usdtAddress,
           functionName: 'transfer',
-          args: [paymentDestination, usdtAmount],
+          args: [dtest, usdtAmount],
         })
       }
     } catch (error) {
@@ -575,7 +565,7 @@ export const PayTab = ({
     selectedToken,
     paymentAmountUsd,
     payableUsdValue,
-    paymentDestination,
+    dtest,
     hasInsufficientBalance,
     chainId,
     sendEth,
@@ -608,7 +598,7 @@ export const PayTab = ({
     !hasInsufficientBalance &&
     !!selectedToken &&
     !!paymentAmountUsd &&
-    !!paymentDestination
+    !!dtest
 
   return (
     <motion.div
@@ -622,7 +612,7 @@ export const PayTab = ({
           spinRandomAmount={spinRandomAmount}
           usdValue={payableUsdValue}
           paymentRequestUri={paymentRequestUri}
-          recipient={paymentDestination}
+          recipient={dtest}
           tokenAmountFormatted={processingTokenAmountFormatted}
           symbol={displayTokenSymbol(selectedToken)}
         />
