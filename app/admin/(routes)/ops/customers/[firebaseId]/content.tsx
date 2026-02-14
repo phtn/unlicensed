@@ -92,7 +92,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                 }}
                 icon={<Icon name='user-fill' className='size-5' />}
               />
-              <div className='flex-1'>
+              <div className='flex-1 space-y-1'>
                 <h1 className='text-xl font-semibold space-x-3'>
                   <span className='opacity-80'>
                     {customer.email?.split('@').shift()}
@@ -103,16 +103,17 @@ export const Content = ({firebaseId}: ContentProps) => {
                 </h1>
                 <div className='flex items-center space-x-6'>
                   <div className='flex items-center space-x-1'>
-                    <Icon name='phone' className='size-5 opacity-80' />
-                    <p className='text-sm text-mac-blue mt-1'>
+                    <Icon name='phone' className='size-4.5 opacity-80' />
+                    <p className='text-sm text-mac-blue'>
                       {customer.contact?.phone}
                     </p>
                   </div>
                   <div className='flex items-center space-x-1'>
-                    <Icon name='mail-send-fill' className='size-5 opacity-80' />
-                    <p className='text-sm text-mac-blue mt-1'>
-                      {customer.email}
-                    </p>
+                    <Icon
+                      name='mail-send-fill'
+                      className='size-4.5 opacity-80'
+                    />
+                    <p className='text-sm text-mac-blue'>{customer.email}</p>
                   </div>
                 </div>
               </div>

@@ -167,16 +167,17 @@ function DataTableContent<T>({
     },
     [paginationState, handlePaginationChange],
   )
-
+  const sorting: SortingState = useMemo(
+    () => (Array.isArray(sortingParam) ? sortingParam : []),
+    [sortingParam],
+  )
   const handleSortingChange = useCallback(
     (updater: SortingState | ((old: SortingState) => SortingState)) => {
-      // React Table passes the current state to the updater function
-      // We just need to update the URL param with the new sorting
       const newSorting =
-        typeof updater === 'function' ? updater(sortingParam ?? []) : updater
+        typeof updater === 'function' ? updater(sorting) : updater
       setSortingParam(newSorting)
     },
-    [sortingParam, setSortingParam],
+    [sorting, setSortingParam],
   )
 
   const handleColumnFiltersChange = useCallback(
@@ -223,25 +224,6 @@ function DataTableContent<T>({
     [columnConfigs, actionConfig, selectOn],
   )
 
-  // Compute effective sorting: use param if available, otherwise find first sortable column
-  const effectiveSorting: SortingState = useMemo(() => {
-    if (sortingParam && sortingParam.length > 0) {
-      return sortingParam
-    }
-    // Find first sortable column (excluding select and actions)
-    const sortableColumn = columns.find(
-      (col) =>
-        col.id &&
-        col.id !== 'select' &&
-        col.id !== 'actions' &&
-        col.enableSorting !== false,
-    )
-    if (sortableColumn?.id) {
-      return [{id: sortableColumn.id, desc: false}]
-    }
-    return []
-  }, [sortingParam, columns])
-
   const table = useReactTable({
     data,
     columns,
@@ -258,7 +240,7 @@ function DataTableContent<T>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
     globalFilterFn: globalFilterFn,
     state: {
-      sorting: effectiveSorting,
+      sorting,
       pagination: paginationState,
       columnFilters,
       globalFilter: globalFilter ?? '',
@@ -515,13 +497,5 @@ export const DataTable = <T,>(props: TableProps<T>) => {
 const TableContainer = ({children}: {children: ReactNode}) => (
   <div className='relative h-full w-full overflow-x-auto'>
     <div className='inline-block min-w-full align-top'>{children}</div>
-  </div>
-)
-
-const Title = ({title}: {title: string}) => (
-  <div className='w-fit md:w-full md:mx-4'>
-    <h2 className='capitalize text-lg leading-4 md:leading-5 md:text-2xl font-bold font-figtree tracking-tighter'>
-      {title}
-    </h2>
   </div>
 )

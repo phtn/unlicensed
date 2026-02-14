@@ -5,15 +5,16 @@ import {priceCell} from '@/components/table-v2/cells-v2'
 import {ActionConfig, ColumnConfig} from '@/components/table-v2/create-column'
 import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
+import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useCallback, useMemo} from 'react'
 import {useSettingsPanel} from '../../../_components/ui/settings'
 import {
-  courierAccountCell,
-  courierCell,
+  courierAssignmentCell,
   orderNumberCell,
+  paymentMethodCell,
   statusCell,
 } from '../components'
 import type {Order} from '../types'
@@ -66,7 +67,7 @@ export const OrdersTable = () => {
         header: <ColHeader tip='Status' symbol='Status' />,
         accessorKey: 'orderStatus',
         cell: statusCell(),
-        size: 200,
+        size: 180,
       },
       {
         id: 'totalCents',
@@ -76,35 +77,50 @@ export const OrdersTable = () => {
         size: 120,
       },
       {
-        id: 'courier',
-        header: <ColHeader tip='Courier' symbol='Courier' center />,
-        accessorKey: 'courier',
-        cell: courierCell(),
+        id: 'method',
+        header: <ColHeader tip='Payment Method' symbol='Method' center />,
+        accessorKey: 'payment',
+        cell: paymentMethodCell(),
         size: 100,
       },
       {
-        id: 'courierAccount',
+        id: 'courier',
         header: (
-          <ColHeader tip='Courier account' symbol='Courier Acct' center />
+          <ColHeader
+            tip='Courier and account'
+            symbol='Courier · Account'
+            center
+          />
         ),
-        accessorKey: 'courierAccountId',
-        cell: courierAccountCell(),
-        size: 180,
+        accessorKey: 'courier',
+        cell: courierAssignmentCell(),
+        size: 240,
       },
       {
         id: 'orderNumber',
-        header: <ColHeader tip='Order #' symbol='Order #' />,
+        header: (
+          <ColHeader
+            tip='Order Number'
+            symbol={
+              <div className='flex'>
+                <span>Order</span>
+                <Icon name='hash' />
+              </div>
+            }
+            center
+          />
+        ),
         accessorKey: 'orderNumber',
         cell: orderNumberCell(),
-        size: 140,
+        size: 60,
       },
       {
         id: 'customer',
-        header: <ColHeader tip='Customer' symbol='Customer' />,
+        header: <ColHeader tip='Customer' symbol='Customer' center />,
         accessorKey: 'contactEmail',
         cell: ({row}) => {
           const email = row.original.contactEmail
-          if (!email) return <span className='text-muted-foreground'>—</span>
+          if (!email) return <span className='text-muted-foreground'>····</span>
 
           const profileId = row.original.userId
             ? customerProfileIdByUserId.get(String(row.original.userId))
@@ -116,16 +132,18 @@ export const OrdersTable = () => {
                 <Link
                   prefetch
                   href={`/admin/ops/customers/${profileId}`}
-                  className='tracking-tight font-medium text-sm hover:underline underline-offset-2 decoration-dotted decoration-foreground/40'>
+                  className='flex justify-center opacity-80 hover:opacity-100 font-okxs text-sm hover:underline underline-offset-4 decoration-dotted decoration-foreground/40 hover:decoration-blue-500 dark:hover:decoration-primary'>
                   {email?.split('@').shift()}
                 </Link>
               ) : (
-                <p className='tracking-tight font-medium text-sm'>{email}</p>
+                <p className='tracking-tight font-medium text-sm'>
+                  {email?.split('@').shift()}
+                </p>
               )}
             </div>
           )
         },
-        size: 180,
+        size: 140,
       },
       {
         id: 'date',

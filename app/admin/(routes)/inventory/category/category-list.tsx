@@ -49,10 +49,7 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
                   <Image
                     isLoading={!resolveUrl(category.heroImage!)}
                     alt={category.name + '-image'}
-                    src={
-                      (category.heroImage && resolveUrl(category.heroImage)) ??
-                      '/default-category-image.svg'
-                    }
+                    src={resolveUrl(category.heroImage!) ?? undefined}
                     className='portrait:w-28 portrait:aspect-square w-24 h-auto shrink-0 aspect-square!'
                   />
                   <div className='flex items-start justify-between md:w-full h-12'>

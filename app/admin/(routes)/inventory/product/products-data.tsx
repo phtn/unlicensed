@@ -30,7 +30,7 @@ function availableDenominationsCell(
   }
 
   return (
-    <div className='font-brk text-sm flex flex-wrap items-center gap-x-1 gap-y-0.5 px-4'>
+    <div className='font-brk text-sm flex items-center whitespace-nowrap gap-x-1 gap-y-0.5 px-4'>
       {denoms.map((denom, index) => {
         const key = String(denom)
         const label = mapNumericFractions[key] ?? key

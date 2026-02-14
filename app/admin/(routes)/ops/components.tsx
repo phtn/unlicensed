@@ -1,4 +1,5 @@
 import {api} from '@/convex/_generated/api'
+import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {CellContext} from '@tanstack/react-table'
 import {useMutation} from 'convex/react'
@@ -19,7 +20,7 @@ export const orderNumberCell = () => {
           color='foreground'
           prefetch
           href={`/admin/ops/orders/${orderNumber}`}
-          className='font-mono opacity-80 text-sm hover:underline underline-offset-2 decoration-dotted decoration-foreground/40'>
+          className='font-brk opacity-80 text-xs hover:underline hover:opacity-100 underline-offset-4 decoration-dotted decoration-foreground/40 hover:decoration-blue-500 dark:hover:decoration-primary'>
           {orderNumber.substring(5)}
         </Link>
       </div>
@@ -75,7 +76,7 @@ export const statusCell = () => {
     return (
       <div
         className={cn(
-          'flex items-center uppercase justify-center rounded-sm w-fit px-1 py-1 font-mono shadow-none',
+          'flex items-center uppercase justify-center rounded-sm w-fit px-1 py-1 font-brk shadow-none',
           color,
         )}>
         <select
@@ -120,6 +121,34 @@ export function customerCell() {
   return CustomerCellComponent
 }
 
+export const paymentMethodCell = () => {
+  const PaymentMethodCellComponent = (ctx: CellContext<Order, unknown>) => {
+    const method = ctx.row.original.payment?.method
+
+    if (!method) {
+      return <span className='text-muted-foreground'>—</span>
+    }
+
+    return (
+      <div className='flex items-center justify-center'>
+        <span
+          className={cn(
+            'inline-flex w-28 items-center justify-start gap-2.5 rounded-sm px-2 py-1 font-brk text-[11px] uppercase tracking-wide',
+            paymentMethodClassMap[method],
+          )}>
+          <Icon
+            name={paymentMethodIconMap[method]}
+            className='size-3.5 shrink-0 opacity-85 ml-0.5'
+          />
+          <span>{paymentMethodLabelMap[method]}</span>
+        </span>
+      </div>
+    )
+  }
+  PaymentMethodCellComponent.displayName = 'PaymentMethodCell'
+  return PaymentMethodCellComponent
+}
+
 export const courierCell = () => {
   const CourierCellComponent = (ctx: CellContext<Order, unknown>) => {
     const order = ctx.row.original
@@ -132,6 +161,21 @@ export const courierCell = () => {
   }
   CourierCellComponent.displayName = 'CourierCell'
   return CourierCellComponent
+}
+
+export const courierAssignmentCell = () => {
+  const CourierAssignmentCellComponent = (ctx: CellContext<Order, unknown>) => {
+    const order = ctx.row.original
+
+    return (
+      <div className='flex items-center justify-center gap-0.5 whitespace-nowrap'>
+        <CourierCell order={order} />
+        <CourierAccountCell order={order} />
+      </div>
+    )
+  }
+  CourierAssignmentCellComponent.displayName = 'CourierAssignmentCell'
+  return CourierAssignmentCellComponent
 }
 
 export const courierAccountCell = () => {
@@ -167,4 +211,31 @@ const colorMap: Record<StatusCode, string> = {
   resend: 'bg-red-200/70 dark:bg-red-400/50',
   cancelled: 'dark:bg-red-400/40',
   default: 'bg-[#e8e6e5]',
+}
+
+type OrderPaymentMethod = Order['payment']['method']
+
+const paymentMethodLabelMap: Record<OrderPaymentMethod, string> = {
+  cards: 'Cards',
+  crypto_transfer: 'Crypto',
+  crypto_commerce: 'Crypto',
+  cash_app: 'Cashapp',
+}
+
+const paymentMethodIconMap: Record<OrderPaymentMethod, IconName> = {
+  cards: 'credit-card-2',
+  crypto_transfer: 'arrow-right',
+  crypto_commerce: 'cash-fast',
+  cash_app: 'cashapp',
+}
+
+const paymentMethodClassMap: Record<OrderPaymentMethod, string> = {
+  cards:
+    'bg-rose-500/10 text-neutral-800 dark:bg-rose-400/20 dark:text-neutral-200',
+  crypto_transfer:
+    'bg-indigo-500/10 text-indigo-700 dark:bg-indigo-400/25 dark:text-indigo-200',
+  crypto_commerce:
+    'bg-ethereum/10 text-indigo-900/80 dark:bg-ethereum/25 dark:text-violet-200',
+  cash_app:
+    'bg-cashapp/10 text-emerald-900/80 dark:bg-emerald-400/25 dark:text-emerald-200',
 }

@@ -59,16 +59,18 @@ export const Content = ({orderNumber}: ContentProps) => {
         {/* Header with back button */}
         <div className='flex items-center gap-4'>
           <Button
-            onPress={router.back}
+            size='lg'
+            radius='none'
             isIconOnly
-            variant='light'
+            variant='faded'
+            onPress={router.back}
             aria-label='Back to orders'
-            className='min-w-0'>
+            className='min-w-0 rounded-lg border-none'>
             <Icon name='chevron-left' className='size-4' />
           </Button>
           <div className='flex-1'>
-            <h1 className='text-2xl font-semibold'>Order Details</h1>
-            <p className='text-sm text-gray-400 mt-1'>{order.orderNumber}</p>
+            <h1 className='text-xl font-semibold'>Order Details</h1>
+            <p className='text-sm opacity-70 mt-0.5'>{order.orderNumber}</p>
           </div>
           <Chip
             className='capitalize'

@@ -1,113 +1,91 @@
-import {api} from '@/convex/_generated/api'
+import {settlePaygateCallback} from '@/app/api/paygate/settlement'
 import {ConvexHttpClient} from 'convex/browser'
 import {NextRequest, NextResponse} from 'next/server'
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
+
+if (!convexUrl) {
+  throw new Error('NEXT_PUBLIC_CONVEX_URL is required for PayGate webhook')
+}
+
+const convex = new ConvexHttpClient(convexUrl)
+
+const toPayload = (searchParams: URLSearchParams): Record<string, unknown> =>
+  Object.fromEntries(searchParams.entries())
+
+const parsePostPayload = async (
+  request: NextRequest,
+): Promise<Record<string, unknown>> => {
+  const contentType = request.headers.get('content-type') || ''
+
+  if (contentType.includes('application/json')) {
+    const json = await request.json()
+    if (json && typeof json === 'object') {
+      return json as Record<string, unknown>
+    }
+    return {}
+  }
+
+  if (contentType.includes('application/x-www-form-urlencoded')) {
+    const form = await request.formData()
+    return Object.fromEntries(form.entries())
+  }
+
+  const text = await request.text()
+  if (!text.trim()) return {}
+
+  try {
+    const parsed = JSON.parse(text) as unknown
+    if (parsed && typeof parsed === 'object') {
+      return parsed as Record<string, unknown>
+    }
+  } catch {
+    const params = new URLSearchParams(text)
+    if ([...params.keys()].length > 0) {
+      return Object.fromEntries(params.entries())
+    }
+  }
+
+  return {}
+}
+
+const okTextResponse = () =>
+  new NextResponse('ok', {
+    status: 200,
+    headers: {'Content-Type': 'text/plain; charset=utf-8'},
+  })
 
 /**
- * PayGate Webhook Handler
+ * PayGate Callback/Webhook Handler
  *
- * Handles payment status updates from PayGate.
- * PayGate will call this endpoint when payment status changes.
+ * This endpoint handles:
+ * - PayGate GET callback events (`txid_in`, `value_coin`, `address_in`, etc.)
+ * - Optional webhook style POST payloads (`status`, `order_id`, etc.)
  */
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-
-    // PayGate webhook payload structure (may vary)
-    const {
-      session_id,
-      sessionId,
-      transaction_id,
-      transactionId,
-      order_id,
-      orderId,
-      status,
-      amount,
-      currency,
-      paid_at,
-      paidAt,
-    } = body
-
-    // Extract order identifier
-    const orderIdentifier = order_id || orderId
-    const sessionIdentifier = session_id || sessionId
-
-    if (!orderIdentifier && !sessionIdentifier) {
-      return NextResponse.json(
-        {error: 'Missing order_id or session_id'},
-        {status: 400},
-      )
-    }
-
-    // Find order by order number or session ID
-    let order
-    if (orderIdentifier) {
-      order = await convex.query(api.orders.q.getOrderByNumber, {
-        orderNumber: orderIdentifier,
-      })
-    }
-
-    // If order not found by order number, try to find by session ID
-    // Note: This requires a query by payment.paygateSessionId
-    // For now, we'll rely on order number matching
-    if (!order && sessionIdentifier) {
-      // We'd need a query to find by session ID, but for now
-      // PayGate should send order_id in webhook
-      return NextResponse.json(
-        {
-          error:
-            'Order not found by session ID. Please include order_id in webhook.',
-        },
-        {status: 404},
-      )
-    }
-
-    if (!order) {
-      return NextResponse.json({error: 'Order not found'}, {status: 404})
-    }
-
-    // Map PayGate status to our payment status
-    let paymentStatus:
-      | 'pending'
-      | 'processing'
-      | 'completed'
-      | 'failed'
-      | 'refunded'
-      | 'partially_refunded' = 'pending'
-
-    const paygateStatus = (status || '').toLowerCase()
-    if (paygateStatus === 'completed' || paygateStatus === 'paid') {
-      paymentStatus = 'completed'
-    } else if (paygateStatus === 'failed' || paygateStatus === 'error') {
-      paymentStatus = 'failed'
-    } else if (paygateStatus === 'processing' || paygateStatus === 'pending') {
-      paymentStatus = paygateStatus === 'processing' ? 'processing' : 'pending'
-    } else if (paygateStatus === 'refunded') {
-      paymentStatus = 'refunded'
-    }
-
-    // Update order payment status
-    await convex.mutation(api.orders.m.updatePayment, {
-      orderId: order._id,
-      payment: {
-        ...order.payment,
-        status: paymentStatus,
-        transactionId:
-          transaction_id || transactionId || order.payment.transactionId,
-        paidAt:
-          paymentStatus === 'completed'
-            ? paid_at || paidAt || Date.now()
-            : order.payment.paidAt,
-      },
+export async function GET(request: NextRequest) {
+  const payload = toPayload(request.nextUrl.searchParams)
+  if (Object.keys(payload).length === 0) {
+    return NextResponse.json({
+      message: 'PayGate webhook endpoint is active',
+      methods: ['GET', 'POST'],
     })
+  }
 
-    return NextResponse.json({success: true, orderId: order._id})
+  try {
+    const result = await settlePaygateCallback(convex, payload)
+    if (!result.ok) {
+      return NextResponse.json(
+        {error: result.error, details: result.details},
+        {status: result.status},
+      )
+    }
+
+    return okTextResponse()
   } catch (error) {
-    console.error('PayGate webhook error:', error)
+    console.error('PayGate GET callback error:', error)
     return NextResponse.json(
       {
-        error: 'Webhook processing failed',
+        error: 'Failed to process PayGate callback',
         message: error instanceof Error ? error.message : 'Unknown error',
       },
       {status: 500},
@@ -115,10 +93,33 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Also support GET for webhook verification/testing
-export async function GET(request: NextRequest) {
-  return NextResponse.json({
-    message: 'PayGate webhook endpoint is active',
-    method: 'POST',
-  })
+export async function POST(request: NextRequest) {
+  try {
+    const payload = await parsePostPayload(request)
+    const result = await settlePaygateCallback(convex, payload)
+
+    if (!result.ok) {
+      return NextResponse.json(
+        {error: result.error, details: result.details},
+        {status: result.status},
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      updated: result.updated,
+      orderId: result.orderId,
+      orderNumber: result.orderNumber,
+      paymentStatus: result.paymentStatus,
+    })
+  } catch (error) {
+    console.error('PayGate POST webhook error:', error)
+    return NextResponse.json(
+      {
+        error: 'Failed to process PayGate webhook',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      },
+      {status: 500},
+    )
+  }
 }

@@ -1,7 +1,10 @@
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import type {CoreHeader, Renderable} from '@tanstack/react-table'
+import type {CoreHeader, Renderable, SortingState} from '@tanstack/react-table'
+import {useQueryState} from 'nuqs'
 import type {JSX, ReactNode} from 'react'
+import {useMemo} from 'react'
+import {createSortingParser} from './parsers-v2'
 
 interface Props<TData, TValue> {
   header: CoreHeader<TData, TValue>
@@ -14,8 +17,24 @@ export const ColumnSort = <TData, TValue>({
   header,
   flexRender,
 }: Props<TData, TValue>) => {
+  const sortingParser = useMemo(() => createSortingParser(), [])
+  const [sortingParam, setSortingParam] = useQueryState('sort', sortingParser)
+  const currentSort = sortingParam?.[0]
+  const isActiveSortColumn = currentSort?.id === header.column.id
+  const sorted = isActiveSortColumn
+    ? currentSort?.desc
+      ? 'desc'
+      : 'asc'
+    : false
+
   const handleSort = () => {
-    return header.column.toggleSorting()
+    if (!header.column.getCanSort()) return
+
+    const nextSorting: SortingState = !isActiveSortColumn
+      ? [{id: header.column.id, desc: false}]
+      : [{id: header.column.id, desc: !(currentSort?.desc ?? false)}]
+
+    setSortingParam(nextSorting)
   }
 
   return header.isPlaceholder ? null : header.column.getCanSort() ? (
@@ -37,24 +56,19 @@ export const ColumnSort = <TData, TValue>({
       }}
       tabIndex={header.column.getCanSort() ? 0 : undefined}>
       {flexRender(header.column.columnDef.header, header.getContext())}
-      {{
-        asc: (
-          <Icon
-            solid
-            aria-hidden='true'
-            name='arrow-up-long'
-            className='size-3 shrink-0 dark:text-teal-500 text-teal-600 dark:opacity-90'
-          />
-        ),
-        desc: (
-          <Icon
-            solid
-            aria-hidden='true'
-            name='arrow-down-long'
-            className='size-3 translate-y-0 drop-shadow-xs shrink-0 text-amber-500 dark:text-amber-300/80 dark:opacity-90'
-          />
-        ),
-      }[header.column.getIsSorted() as string] ?? null}
+      {sorted === 'asc' ? (
+        <Icon
+          aria-hidden='true'
+          name='arrow-down'
+          className='absolute size-4 shrink-0 text-teal-500 rotate-90 dark:opacity-90'
+        />
+      ) : sorted === 'desc' ? (
+        <Icon
+          aria-hidden='true'
+          name='arrow-down'
+          className='absolute left-2 size-4 shrink-0 text-amber-500 dark:opacity-90'
+        />
+      ) : null}
     </div>
   ) : (
     flexRender(header.column.columnDef.header, header.getContext())

@@ -39,10 +39,6 @@ const CategoryProductsContentInner = ({
     // Keep the slug in the URL when editing
   }
 
-  const handleBack = () => {
-    setSlug(null) // Clear slug to go back to category list
-  }
-
   useEffect(() => {
     console.log(categorySlug)
   }, [categorySlug])
@@ -53,9 +49,10 @@ const CategoryProductsContentInner = ({
         <div className='text-xl font-semibold tracking-tight flex items-center px-2 space-x-2'>
           <Button
             size='sm'
+            as={Link}
             isIconOnly
             variant='light'
-            onPress={handleBack}
+            href={'/admin/inventory/category'}
             className='text-neutral-500 hover:text-foreground'>
             <Icon name='chevron-left' className='size-4' />
           </Button>

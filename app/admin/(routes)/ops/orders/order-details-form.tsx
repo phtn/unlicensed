@@ -14,6 +14,7 @@ import {
   User,
 } from '@heroui/react'
 import {useMutation} from 'convex/react'
+import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {useEffect, useState} from 'react'
 import {useSettingsPanelSafe} from '../../../_components/ui/settings'
@@ -134,7 +135,11 @@ export function OrderDetailsForm({
             )}
           </div>
           <User
-            name={order.contactEmail}
+            name={
+              <Link href={`/admin/ops/customers${order}`}>
+                {order.contactEmail}
+              </Link>
+            }
             description={order.contactPhone}
             avatarProps={{
               fallback: order.contactEmail.slice(0, 2),

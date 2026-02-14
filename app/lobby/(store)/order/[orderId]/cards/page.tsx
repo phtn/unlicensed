@@ -3,7 +3,6 @@
 import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
-import {usePaygate} from '@/hooks/use-paygate'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody} from '@heroui/react'
@@ -19,36 +18,53 @@ export default function CardProvidersPage() {
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(
     null,
   )
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const order = useQuery(api.orders.q.getById, {id: orderId})
   const paygateAccount = useQuery(api.paygateAccounts.q.getDefaultAccount)
-  const {handleProcessPaymentSubmit} = usePaygate()
 
   const providers = useMemo(
     () => paygateAccount?.topTenProviders ?? [],
     [paygateAccount?.topTenProviders],
   )
-  const walletAddress = useMemo(
-    () => paygateAccount?.addressIn ?? '',
-    [paygateAccount?.addressIn],
-  )
-  const amountInDollars = useMemo(
-    () => ((order?.totalCents ?? 0) / 100).toFixed(2),
-    [order?.totalCents],
-  )
 
   const handleProviderSelect = useCallback(
-    (providerId: string) => {
-      if (!order || !walletAddress) return
+    async (providerId: string) => {
+      if (!order) return
+
+      setCheckoutError(null)
       setSelectedProviderId(providerId)
-      handleProcessPaymentSubmit(
-        walletAddress,
-        amountInDollars,
-        providerId,
-        order.contactEmail,
-        'USD',
-      )
+
+      try {
+        const response = await fetch('/api/paygate/checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            orderId: order._id,
+            providerId,
+          }),
+        })
+
+        const data = (await response.json().catch(() => null)) as
+          | {success?: boolean; paymentUrl?: string; error?: string}
+          | null
+
+        if (!response.ok || !data?.success || !data.paymentUrl) {
+          throw new Error(data?.error || 'Unable to start PayGate checkout')
+        }
+
+        window.location.href = data.paymentUrl
+      } catch (error) {
+        setSelectedProviderId(null)
+        setCheckoutError(
+          error instanceof Error
+            ? error.message
+            : 'Unable to start PayGate checkout',
+        )
+      }
     },
-    [amountInDollars, handleProcessPaymentSubmit, order, walletAddress],
+    [order],
   )
 
   if (order === undefined || paygateAccount === undefined) {
@@ -123,14 +139,20 @@ export default function CardProvidersPage() {
             </CardBody>
           </Card>
         ) : (
-          // <div className='grid grid-cols-2 gap-4'>
           <TopProviders
             providers={providers}
             onSelectProvider={handleProviderSelect}
             selectedProviderId={selectedProviderId}
           />
-          // </div>
         )}
+
+        {checkoutError ? (
+          <Card radius='sm' shadow='none'>
+            <CardBody className='p-6'>
+              <p className='text-sm text-danger'>{checkoutError}</p>
+            </CardBody>
+          </Card>
+        ) : null}
       </div>
     </main>
   )
