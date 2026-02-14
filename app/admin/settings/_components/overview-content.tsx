@@ -6,22 +6,12 @@ import {
   TextureCardContent,
   TextureCardDescription,
 } from '@/components/ui/texture-card'
-import {Icon} from '@/lib/icons'
+import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Card} from '@heroui/react'
 import {ViewTransition} from 'react'
 
 const SETTINGS_FEATURES = [
-  // {
-  //   id: 'overview',
-  //   title: 'Overview',
-  //   description:
-  //     'Your central hub for understanding the Settings area. Quick orientation and links to each section.',
-  //   icon: 'view-list' as const,
-  //   accent:
-  //     'from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5',
-  //   border: 'border-slate-300/60 dark:border-slate-600/40',
-  // },
   {
     id: 'payments',
     title: 'Payments',
@@ -31,6 +21,25 @@ const SETTINGS_FEATURES = [
     accent:
       'from-emerald-600/10 to-emerald-800/5 dark:from-emerald-400/10 dark:to-emerald-600/5',
     border: 'border-emerald-300/60 dark:border-emerald-600/40',
+  },
+  {
+    id: 'shipping',
+    title: 'Shipping',
+    description:
+      'Configure shipping fees and minimum purchase amount to cover shipping.',
+    icon: 'airplane-takeoff' as IconName,
+    accent:
+      'from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5',
+    border: 'border-slate-300/60 dark:border-slate-600/40',
+  },
+  {
+    id: 'assistant',
+    title: 'Assistant',
+    description: 'Configure AI assistat instructions and context.',
+    icon: 'phone' as IconName,
+    accent:
+      'from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5',
+    border: 'border-slate-300/60 dark:border-slate-600/40',
   },
 ] as const
 
@@ -61,7 +70,7 @@ export const OverviewContent = () => {
             type='error'
             title='Warning'
             description='Changes here affect how the admin panel and connected services
-                                behave. Review each section before savin.g.'
+                                behave. Review each section before saving.'
             customStyle='rounded-2xl border border-primary/20 bg-primary/5 dark:bg-primary/10'
           />
         </ViewTransition>

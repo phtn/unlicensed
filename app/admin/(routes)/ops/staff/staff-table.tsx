@@ -4,13 +4,13 @@ import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {
   Card,
+  Chip,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-  Chip,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
@@ -35,13 +35,15 @@ export const StaffTable = () => {
       case 'name':
         return (
           <div className='flex flex-col'>
-            <p className='text-bold text-sm'>{member.name || 'N/A'}</p>
+            <p className='font-okxs font-medium text-sm'>
+              {member.name || 'N/A'}
+            </p>
           </div>
         )
       case 'email':
         return (
           <div className='flex flex-col'>
-            <p className='text-bold text-sm'>{member.email}</p>
+            <p className='font-medium text-sm'>{member.email}</p>
           </div>
         )
       case 'position':

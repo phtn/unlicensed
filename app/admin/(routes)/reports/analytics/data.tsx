@@ -1,14 +1,23 @@
 'use client'
 
 import {DataTable} from '@/components/table-v2'
+import {textCell} from '@/components/table-v2/cells-v2'
 import {ColumnConfig} from '@/components/table-v2/create-column'
 import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 
+type LogRow = Doc<'logs'> & {
+  user?: {name: string; email: string; photoUrl?: string} | null
+}
+
 export const VisitorLogData = () => {
-  const data = useQuery(api.products.q.listProducts, {limit: 100})
+  const logsQuery = useQuery(api.logs.q.getLogs, {
+    limit: 100,
+    type: 'page_visit',
+  })
+  const data = logsQuery?.logs ?? []
 
   const columns = useMemo(
     () =>
@@ -21,62 +30,82 @@ export const VisitorLogData = () => {
           cell: ({row}) => (
             <div className='flex items-center gap-2'>
               <div className='w-4 h-4 rounded-full bg-gray-300' />
-              <div className='text-sm font-medium'>
+              <div className='text-xs uppercase font-brk'>
                 {row.original._id.substring(0, 8)}
               </div>
             </div>
           ),
         },
-
         {
-          id: 'name',
-          header: 'Name',
-          accessorKey: 'name',
-          size: 200,
+          id: 'path',
+          header: 'Path',
+          accessorKey: 'path',
+          size: 260,
+          cell: ({row}) => (
+            <span className='text-sm truncate'>{row.original.path}</span>
+          ),
         },
         {
-          id: 'priceCents',
-          header: 'Price',
-          accessorKey: 'priceCents',
+          id: 'method',
+          header: 'Method',
+          accessorKey: 'method',
+          size: 100,
+          cell: ({row}) => (
+            <span className='text-xs uppercase tracking-wide'>
+              {row.original.method ?? 'GET'}
+            </span>
+          ),
+        },
+        {
+          id: 'deviceType',
+          header: 'Device',
+          accessorKey: 'deviceType',
+          cell: textCell('deviceType', 'uppercase text-xs'),
           size: 100,
         },
         {
-          id: 'categorySlug',
-          header: 'Category',
-          accessorKey: 'categorySlug',
+          id: 'browser',
+          header: 'Browser',
+          accessorKey: 'browser',
+          cell: textCell('browser', 'uppercase text-xs'),
+          size: 100,
+        },
+        {
+          id: 'country',
+          header: 'Country',
+          accessorKey: 'country',
+          size: 120,
         },
         {
           id: 'createdAt',
-          header: 'Created At',
+          header: 'Time',
           accessorKey: 'createdAt',
-          size: 200,
+          size: 180,
+          cell: ({row}) => (
+            <span className='text-xs text-muted-foreground'>
+              {new Date(row.original.createdAt).toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+              })}
+            </span>
+          ),
         },
-        {
-          id: 'updatedAt',
-          header: 'Updated At',
-          accessorKey: 'updatedAt',
-          size: 200,
-        },
-        {
-          id: 'featured',
-          header: 'featured',
-          accessorKey: 'featured',
-        },
-      ] as ColumnConfig<Doc<'products'>>[],
+      ] as ColumnConfig<LogRow>[],
     [],
   )
 
   return (
     <div className='relative w-full max-w-full overflow-hidden'>
-      {data && (
-        <DataTable
-          title={'Visitor Logs'}
-          data={data}
-          loading={!data}
-          columnConfigs={columns}
-          editingRowId={null}
-        />
-      )}
+      <DataTable
+        title={'Visitor Logs'}
+        data={data}
+        loading={!logsQuery}
+        columnConfigs={columns}
+        editingRowId={null}
+      />
     </div>
   )
 }

@@ -1,100 +1,117 @@
 'use client'
 
 import {DataTable} from '@/components/table-v2'
-import {dateCell, formatText, textCell} from '@/components/table-v2/cells-v2'
-import {ColumnConfig, groupFilter} from '@/components/table-v2/create-column'
+import {ColumnConfig} from '@/components/table-v2/create-column'
 import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
+import {formatPrice} from '@/utils/formatPrice'
 import {useQuery} from 'convex/react'
-import {useCallback, useMemo} from 'react'
-
-/**
- * Prefetch avatar images for faster rendering during pagination
- */
+import {useMemo} from 'react'
 
 export const SalesDataTable = () => {
-  const data = useQuery(api.products.q.listProducts, {limit: 50})
+  const allOrders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
 
-  const handleDeleteSelected = useCallback(async (cardIds: string[]) => {
-    if (cardIds.length === 0) {
-      console.log('No cards selected')
-    }
-  }, [])
+  const data = useMemo(() => {
+    if (!allOrders) return []
+    return allOrders.filter((order) => order.payment.status === 'completed')
+  }, [allOrders])
 
   const columns = useMemo(
     () =>
       [
         {
-          id: '_id',
-          header: 'ID',
-          accessorKey: '_id',
-          cell: formatText(
-            '_id',
-            (v) => v,
-            'font-mono text-xs w-[30ch] truncate',
-          ),
-          size: 50,
-          enableHiding: true,
-          enableSorting: true,
-          filterFn: groupFilter,
+          id: 'orderNumber',
+          header: 'Order #',
+          accessorKey: 'orderNumber',
+          size: 140,
         },
         {
-          id: 'priceCents',
-          header: 'Price',
-          accessorKey: 'priceCents',
-          cell: formatText(
-            'priceCents',
-            (v) => v,
-            'font-space font-sm truncate text-clip w-[13ch]',
+          id: 'customer',
+          header: 'Customer',
+          accessorKey: 'contactEmail',
+          size: 220,
+          cell: ({row}) => (
+            <span className='text-sm truncate'>
+              {row.original.contactEmail}
+            </span>
           ),
-          size: 50,
-          enableHiding: true,
-          enableSorting: true,
-          filterFn: groupFilter,
-        },
-
-        {
-          id: 'categorySlug',
-          header: 'Category',
-          accessorKey: 'categorySlug',
-          cell: textCell(
-            'categorySlug',
-            'font-figtree uppercase text-sm truncate text-clip w-[10ch]',
-          ),
-          size: 40,
-          enableHiding: true,
-          enableSorting: true,
-          filterFn: groupFilter,
         },
         {
-          id: '_creationTime',
-          header: 'Creation',
-          accessorKey: '_creationTime',
-          cell: dateCell(
-            '_creationTime',
-            'font-brk text-muted-foreground max-w-[21ch] truncate text-clip',
+          id: 'shipTo',
+          header: 'ship to',
+          accessorKey: 'shippingAddress',
+          size: 220,
+          cell: ({row}) => (
+            <span className='text-sm truncate'>
+              {row.original.shippingAddress.state}
+            </span>
           ),
+        },
+        {
+          id: 'status',
+          header: 'Status',
+          accessorKey: 'orderStatus',
+          size: 180,
+          cell: ({row}) => (
+            <span className='text-xs uppercase tracking-wide'>
+              {row.original.orderStatus.replaceAll('_', ' ')}
+            </span>
+          ),
+        },
+        {
+          id: 'items',
+          header: 'Items',
+          accessorKey: 'items',
           size: 100,
-          enableHiding: true,
-          enableSorting: true,
+          cell: ({row}) => (
+            <span className='text-sm'>
+              {row.original.items.reduce((sum, item) => sum + item.quantity, 0)}
+            </span>
+          ),
         },
-      ] as ColumnConfig<Doc<'products'>>[],
+        {
+          id: 'total',
+          header: 'Amount',
+          accessorKey: 'totalCents',
+          size: 120,
+          cell: ({row}) => (
+            <span className='text-sm'>
+              ${formatPrice(row.original.totalCents)}
+            </span>
+          ),
+        },
+        {
+          id: 'createdAt',
+          header: 'Created',
+          accessorKey: 'createdAt',
+          cell: ({row}) => (
+            <span className='text-xs text-muted-foreground'>
+              {new Date(
+                row.original.createdAt ?? row.original._creationTime,
+              ).toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+              })}
+            </span>
+          ),
+          size: 180,
+        },
+      ] as ColumnConfig<Doc<'orders'>>[],
     [],
   )
 
   return (
     <div className='relative w-full max-w-full overflow-hidden'>
-      {data && (
-        <DataTable
-          data={data}
-          title={'Products'}
-          columnConfigs={columns}
-          loading={false}
-          editingRowId={null}
-          onDeleteSelected={handleDeleteSelected}
-          deleteIdAccessor={'_id'}
-        />
-      )}
+      <DataTable
+        data={data}
+        title={'Sales'}
+        columnConfigs={columns}
+        loading={!allOrders}
+        editingRowId={null}
+      />
     </div>
   )
 }

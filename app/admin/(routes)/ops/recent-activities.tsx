@@ -3,7 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
-import {Icon} from '@/lib/icons'
+import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
 import {
@@ -34,17 +34,22 @@ const columns = [
   {name: 'TIME', uid: 'time'},
 ]
 
-const getActivityIcon = (type: Activity['type']) => {
+const getActivityIcon = (type: Activity['type']): IconName => {
   switch (type) {
     case 'user_signup':
       return 'user'
     case 'order_created':
+      return 'arrow-right-down-circle-fill'
     case 'order_confirmed':
+      return 'check'
     case 'order_processing':
+      return 'refresh-2-fill'
     case 'order_shipped':
+      return 'airplane-takeoff'
     case 'order_delivered':
-      return 'bag-solid'
+      return 'box-bold'
     case 'order_cancelled':
+      return 'cancel-circle'
     case 'order_refunded':
       return 'x'
     case 'payment_completed':
@@ -52,8 +57,9 @@ const getActivityIcon = (type: Activity['type']) => {
     case 'payment_failed':
       return 'x'
     case 'product_created':
+      return 't'
     case 'product_updated':
-      return 'bag-solid'
+      return 't'
     case 'category_created':
     case 'category_updated':
       return 'eye'
@@ -67,7 +73,7 @@ const getActivityIconColor = (type: Activity['type']) => {
     if (type.includes('delivered')) return 'text-dark-gray dark:text-limited '
     if (type.includes('cancelled') || type.includes('refunded'))
       return 'text-red-500'
-    return 'text-featured'
+    return 'text-mac-blue'
   }
   if (type.startsWith('payment_')) {
     if (type.includes('completed')) return 'text-deal'
@@ -184,11 +190,10 @@ export const RecentActivities = ({
           }
           return (
             <div className='flex items-center gap-2'>
-              <div className='flex h-8 w-8 items-center justify-center rounded-full bg-default-100'>
-                <Icon name='eye' className='w-4 h-4 text-default-400' />
-              </div>
               <div className='flex flex-col'>
-                <p className='text-bold text-small text-default-400'>System</p>
+                <p className='font-brk text-xs uppercase text-default-400'>
+                  System
+                </p>
               </div>
             </div>
           )
