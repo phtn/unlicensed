@@ -201,7 +201,7 @@ export function PayAmount({
           ease: 'easeInOut',
         }}
         className='mt-3'>
-        <div className='p-4 border-b decoration-1 decoation-dotted border-white/10 space-y-1'>
+        <div className='p-1 md:p-4 border-b decoration-1 decoation-dotted border-white/10 space-y-1'>
           <div className='flex items-center space-x-0'>
             <h3 className='px-2 font-brk text-xs md:text-sm uppercase opacity-70 text-slate-300'>
               You pay
@@ -234,7 +234,7 @@ export function PayAmount({
                   />
                 </motion.div>
               </button>
-              <div className='border-2 border-slate-800 rounded-full w-fit relative z-40'>
+              <div className='rounded-full w-fit relative z-40'>
                 <WalletComponent />
               </div>
             </div>

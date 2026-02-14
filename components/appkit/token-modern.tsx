@@ -24,6 +24,7 @@ interface TokenDisplayProps {
   isInsufficient?: boolean | ''
   /** Symbol for the native gas token when token is 'ethereum' (e.g. 'ETH', 'MATIC'). */
   nativeSymbol?: string
+  isSelected?: boolean
 }
 
 export const TokenModern = ({
@@ -33,6 +34,7 @@ export const TokenModern = ({
   isInsufficient,
   showBalance = true,
   nativeSymbol,
+  isSelected,
 }: TokenDisplayProps) => {
   // Format balance for display
   const formattedBalance = balance
@@ -111,7 +113,10 @@ export const TokenModern = ({
                   animate={{opacity: 1, y: 0}}
                   exit={{opacity: 0.5, y: 5}}
                   transition={{ease: 'easeOut'}}
-                  className='text-[8px] uppercase text-red-300 font-brk tracking-widest whitespace-nowrap'>
+                  className={cn(
+                    'text-[8px] uppercase text-red-300 font-brk tracking-widest whitespace-nowrap',
+                    {'text-red-100': isSelected},
+                  )}>
                   Low balance
                 </motion.span>
               )}

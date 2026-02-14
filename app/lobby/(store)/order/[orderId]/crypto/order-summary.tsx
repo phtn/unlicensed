@@ -31,8 +31,8 @@ export const OrderSummaryWidget = () => {
   )
 
   return (
-    <main className='md:h-[calc(100lvh)] bg-black md:w-3xl'>
-      <ArcCard>
+    <main className='bg-black md:w-3xl z-80'>
+      <ArcCard className='md:h-150 scale-y-95 md:rounded-sm rounded-lg'>
         <ArcHeader
           title={
             order?.payment.status === 'completed'
@@ -45,7 +45,7 @@ export const OrderSummaryWidget = () => {
           status={
             <span
               className={cn(
-                'font-brk text-orange-500 tracking-wide uppercase text-xs dark:bg-background/60 bg-slate-200/50 py-1 px-1.5 rounded-sm',
+                'font-brk text-orange-500 dark:text-orange-300 tracking-wide uppercase text-xs dark:bg-background/60 bg-slate-200/50 py-1 px-1.5 rounded-sm',
                 {'text-emerald-500': order?.payment.status === 'completed'},
               )}>
               payment {order?.payment.status}

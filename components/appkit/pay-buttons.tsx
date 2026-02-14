@@ -49,15 +49,11 @@ export const PayButtons = ({
               },
             )}>
             {isPayProcessing ? (
-              <motion.div
-                animate={{x: [0, 16, 0]}}
-                transition={{duration: 0.5, repeat: Infinity}}>
-                <Icon name='cash-fast' className='w-5 h-5' />
-              </motion.div>
+              <Icon name='spinner-dots' className='w-5 h-5' />
             ) : (
-              <span className='flex items-center text-white opacity-100 gap-2 font-exo font-bold italic drop-shadow-2xs'>
+              <span className='flex items-center font-polysans font-bold text-white opacity-100 gap-2 drop-shadow-xs'>
                 {payLabel}
-                <Icon name='cash-fast' className='w-5 h-5' />
+                <Icon name='cash-fast' className='w-7 h-7' />
               </span>
             )}
           </button>

@@ -623,107 +623,112 @@ export const PayTab = ({
       animate={{opacity: 1, y: 0}}
       exit={{opacity: 0, y: -10}}
       transition={{layout: {duration: 0.3, ease: 'easeInOut'}}}
-      className='space-y-0 w-full p-4 pb-10 border border-slate-500/50'>
-      {paymentAmountUsd && payableUsdValue !== null && !activeReceipt && (
-        <PayAmount
-          spinRandomAmount={spinRandomAmount}
-          usdValue={payableUsdValue}
-          paymentRequestUri={paymentRequestUri}
-          recipient={dtest}
-          tokenAmountFormatted={processingTokenAmountFormatted}
-          symbol={displayTokenSymbol(selectedToken)}
+      className='space-y-0 w-full p-1 md:p-4 pb-10 md:h-150 rounded-lg border-2 border-white/20 flex flex-col'>
+      <div>
+        {paymentAmountUsd && payableUsdValue !== null && !activeReceipt && (
+          <PayAmount
+            spinRandomAmount={spinRandomAmount}
+            usdValue={payableUsdValue}
+            paymentRequestUri={paymentRequestUri}
+            recipient={dtest}
+            tokenAmountFormatted={processingTokenAmountFormatted}
+            symbol={displayTokenSymbol(selectedToken)}
+          />
+        )}
+        {selectedToken && (
+          <AmountPayInput
+            selectedTokenBalance={selectedTokenBalance}
+            tokenAmount={tokenAmount}
+            selectedToken={selectedToken}
+            paymentAmountUsd={paymentAmountUsd}
+            setPaymentAmountUsd={setPaymentAmountUsd}
+            getTokenPrice={getTokenPrice}
+          />
+        )}
+        <NetworkSelector
+          currentNetwork={currentNetwork}
+          onSelectNetwork={handleNetworkSelect}
         />
-      )}
-      {selectedToken && (
-        <AmountPayInput
-          selectedTokenBalance={selectedTokenBalance}
-          tokenAmount={tokenAmount}
-          selectedToken={selectedToken}
-          paymentAmountUsd={paymentAmountUsd}
-          setPaymentAmountUsd={setPaymentAmountUsd}
-          getTokenPrice={getTokenPrice}
-        />
-      )}
-      <NetworkSelector
-        currentNetwork={currentNetwork}
-        onSelectNetwork={handleNetworkSelect}
-      />
-      <motion.div
-        initial={{opacity: 0, y: 5}}
-        animate={{opacity: 1, y: 0}}
-        exit={{opacity: 0, y: -10}}
-        transition={{layout: {duration: 0.3, ease: 'easeInOut'}}}
-        className='space-y-6 px-4 pb-0 transition-transform duration-200'>
         <motion.div
-          layout
-          transition={{duration: 0.3, ease: 'easeInOut'}}
-          className={cn('overflow-scroll', {
-            'h-28': availableTokens.length <= 1,
-            'h-44': availableTokens.length > 1,
-          })}>
-          {tokensLoading ? (
-            <motion.div
-              initial={{opacity: 0, y: -20}}
-              animate={{opacity: 1, y: 0}}
-              transition={{delay: 0.5}}
-              className='flex items-center justify-center h-24'>
-              <Icon name='spinners-ring' className='w-6 h-6 text-white/40' />
-            </motion.div>
-          ) : availableTokens.length > 0 ? (
-            <Tokens
-              tokens={availableTokens}
-              tokenBalances={networkTokens}
-              selectedToken={selectedToken}
-              paymentAmountUsd={paymentAmountUsd}
-              tokenPrices={{usdc: 1, usdt: 1, ethereum: nativeTokenPrice}}
-              nativeSymbol={nativeSymbol}
-              onTokenSelect={handleTokenSelect}
-            />
-          ) : (
-            <div className='relative h-28 overflow-hidden flex items-center justify-center text-white/60 text-sm'>
-              <motion.div className='space-y-3 sm:space-y-4 opacity-60 bg-blend-lighten blur-3xl w-full h-full absolute -top-1 right-0 bg-top-right' />
-              <p className=' line-clamp-2 max-w-[18ch] text-center font-okxs'>
-                No tokens with balance found on this network
-              </p>
-            </div>
-          )}
+          initial={{opacity: 0, y: 5}}
+          animate={{opacity: 1, y: 0}}
+          exit={{opacity: 0, y: -10}}
+          transition={{layout: {duration: 0.3, ease: 'easeInOut'}}}
+          className='space-y-6 md:px-4 transition-transform duration-200'>
+          <motion.div
+            layout
+            transition={{duration: 0.3, ease: 'easeInOut'}}
+            className={cn('overflow-y-auto', {
+              'h-28': availableTokens.length <= 1,
+              'h-56': availableTokens.length > 1,
+            })}>
+            {tokensLoading ? (
+              <motion.div
+                initial={{opacity: 0, y: -20}}
+                animate={{opacity: 1, y: 0}}
+                transition={{delay: 0.5}}
+                className='flex items-center justify-center h-24'>
+                <Icon name='spinners-ring' className='w-6 h-6 text-white/40' />
+              </motion.div>
+            ) : availableTokens.length > 0 ? (
+              <Tokens
+                tokens={availableTokens}
+                tokenBalances={networkTokens}
+                selectedToken={selectedToken}
+                paymentAmountUsd={paymentAmountUsd}
+                tokenPrices={{usdc: 1, usdt: 1, ethereum: nativeTokenPrice}}
+                nativeSymbol={nativeSymbol}
+                listHeightClassName='h-56'
+                onTokenSelect={handleTokenSelect}
+              />
+            ) : (
+              <div className='relative h-28 overflow-hidden flex items-center justify-center text-white/60 text-sm'>
+                <motion.div className='space-y-3 sm:space-y-4 opacity-60 bg-blend-lighten blur-3xl w-full h-full absolute -top-1 right-0 bg-top-right' />
+                <p className=' line-clamp-2 max-w-[18ch] text-center font-okxs'>
+                  No tokens with balance found on this network
+                </p>
+              </div>
+            )}
+          </motion.div>
         </motion.div>
-      </motion.div>
 
-      {/* Processing / Success State */}
-      <AnimatePresence mode='wait'>
-        <motion.div layout className='mt-0'>
-          {activeReceipt && activeReceipt.status === 'success' ? (
-            <PaymentSuccess
-              key='success'
-              tokenAmount={successTokenAmountFormatted}
-              tokenSymbol={displayTokenSymbol(lastPaymentToken)}
-              usdValue={payableUsdValue}
-              hash={activeHash || null}
-              explorerUrl={receiptExplorerUrl}
-            />
-          ) : activeIsPending || activeIsConfirming ? (
-            <PaymentProcessing
-              key='sending'
-              tokenAmount={processingTokenAmountFormatted}
-              tokenSymbol={displayTokenSymbol(selectedToken)}
-              usdValue={payableUsdValue}
-            />
-          ) : null}
-        </motion.div>
-      </AnimatePresence>
+        {/* Processing / Success State */}
+        <AnimatePresence mode='wait'>
+          <motion.div layout className='mt-0'>
+            {activeReceipt && activeReceipt.status === 'success' ? (
+              <PaymentSuccess
+                key='success'
+                tokenAmount={successTokenAmountFormatted}
+                tokenSymbol={displayTokenSymbol(lastPaymentToken)}
+                usdValue={payableUsdValue}
+                hash={activeHash || null}
+                explorerUrl={receiptExplorerUrl}
+              />
+            ) : activeIsPending || activeIsConfirming ? (
+              <PaymentProcessing
+                key='sending'
+                tokenAmount={processingTokenAmountFormatted}
+                tokenSymbol={displayTokenSymbol(selectedToken)}
+                usdValue={payableUsdValue}
+              />
+            ) : null}
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-      <PayButtons
-        showReceiptButton={
-          !!activeReceipt && activeReceipt.status === 'success' && !!onReset
-        }
-        onViewReceipt={() => setShowReceiptModal(true)}
-        onPay={handlePay}
-        isPayDisabled={isPayDisabled}
-        isPayProcessing={activeIsPending || activeIsConfirming}
-        payLabel={payButtonLabel}
-        enablePayHoverStyles={enablePayHoverStyles}
-      />
+      <div className='mt-auto pb-4'>
+        <PayButtons
+          showReceiptButton={
+            !!activeReceipt && activeReceipt.status === 'success' && !!onReset
+          }
+          onViewReceipt={() => setShowReceiptModal(true)}
+          onPay={handlePay}
+          isPayDisabled={isPayDisabled}
+          isPayProcessing={activeIsPending || activeIsConfirming}
+          payLabel={payButtonLabel}
+          enablePayHoverStyles={enablePayHoverStyles}
+        />
+      </div>
       <ReceiptModal
         open={showReceiptModal}
         onClose={() => setShowReceiptModal(false)}

@@ -47,6 +47,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
       href={`/lobby/products/${product.slug.toLocaleLowerCase()}`}
       radius='none'
       isPressable
+      disableRipple
       shadow='sm'
       className={cn(
         'group h-full transition-all duration-300 hover:-translate-y-1.5 rounded-3xl',

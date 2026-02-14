@@ -39,10 +39,11 @@ export const NetworkSelector = ({
         animate={{opacity: 1, scale: 1}}
         exit={{opacity: 0, scale: 0.6}}
         transition={{duration: 0.2}}
-        className='flex items-center space-x-8 px-3 py-6 border-b-[0.33px] border-white/0 w-full'>
+        className='flex items-center space-x-8 md:justify-between px-3 py-6 border-b-[0.33px] border-white/0 w-full'>
         <div className='font-brk flex items-center space-x-0.5 text-white/80'>
-          <Icon name='network' className='text-white/70 size-5' />
-          <span className='text-xs uppercase'>Network</span>
+          <Icon name='network' className='text-white/70 md:size-5 size-6' />
+          <span className='hidden md:flex text-xs uppercase'>Network</span>
+          <Icon name='chevron-right' className='size-3 opacity-80' />
         </div>
         <HyperList
           direction='up'

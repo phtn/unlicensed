@@ -176,14 +176,7 @@ export const WalletComponent = () => {
   )
 }
 const WalletConnector = () => {
-  return (
-    <w3m-button
-      balance='hide'
-      loadingLabel='Connecting...'
-      size='sm'
-      label='→'
-    />
-  )
+  return <w3m-account-button balance='hide' />
 }
 export const chainMap = {
   sepolia: sepolia.id,

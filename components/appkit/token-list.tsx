@@ -14,6 +14,7 @@ interface TokensProps {
   tokenPrices?: {usdc: number; usdt?: number; ethereum: number | null}
   /** Symbol for the native gas token (e.g. 'ETH' or 'MATIC'). Used when token is 'ethereum'. */
   nativeSymbol?: string
+  listHeightClassName?: string
   onTokenSelect?: (token: Token) => void
 }
 
@@ -25,6 +26,7 @@ export const Tokens = ({
   paymentAmountUsd = '',
   tokenPrices,
   nativeSymbol,
+  listHeightClassName,
   onTokenSelect,
 }: TokensProps) => {
   const filteredTokens = useMemo(
@@ -53,9 +55,13 @@ export const Tokens = ({
 
   return (
     <div
-      className={cn('relative max-h-0 h-64 transition-transform duration-300', {
-        'max-h-full': filteredTokens.length > 1,
-      })}>
+      className={cn(
+        'relative max-h-0 h-64 transition-transform duration-300',
+        listHeightClassName,
+        {
+          'max-h-full': filteredTokens.length > 1,
+        },
+      )}>
       <motion.div
         initial={{opacity: 0, y: -2, scale: 0.95}}
         animate={{opacity: 1, y: 0, scale: 1}}
@@ -99,6 +105,7 @@ export const Tokens = ({
               )}>
               <div className='flex items-center gap-3 flex-1 min-w-0'>
                 <TokenModern
+                  isSelected={selectedToken === token}
                   isInsufficient={hasInsufficientBalance}
                   price={price ?? 0}
                   token={token}

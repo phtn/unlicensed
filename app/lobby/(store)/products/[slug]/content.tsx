@@ -203,7 +203,7 @@ export const ProductDetailContent = ({
                         <span className='font-polysans font-semibold text-brand'>
                           {product.thcPercentage}
                         </span>
-                        <span className='text-foreground'>%</span>
+                        <span className='text-foreground'>mg</span>
                       </span>
                     }
                   />
