@@ -15,7 +15,9 @@
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish",
-    "paygate": "bun run server/paygate-proxy/index.ts"
+    "paygate": "bun run server/paygate-proxy/index.ts",
+    "fb:u": "firebase use rapidfirenow-web",
+    "fb:dr": "firebase deploy --only firestore:rules"
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",

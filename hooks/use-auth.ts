@@ -21,7 +21,7 @@ export const useAuth = () => {
       setLoading(false)
 
       if (firebaseUser) {
-        // Sync Firebase user with Firestore at unlicensed/u/{uid}
+        // Sync Firebase user with Firestore at /unlicensed/u/u/{uid}
         if (firestore) {
           try {
             await createOrUpdateUserInFirestore(firestore, firebaseUser)

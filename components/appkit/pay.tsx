@@ -28,6 +28,8 @@ import {
 import {AmountPayInput} from './amount-pay'
 import {withSecureRetry} from './converter-utils'
 import {NetworkSelector} from './network-selector'
+import {PayAmount} from './pay-amount'
+import {PayButtons} from './pay-buttons'
 import {
   getChainIdForNetwork,
   getNativeSymbolForChainId,
@@ -38,8 +40,6 @@ import {
   parseTokenParam,
   type EvmPayToken,
 } from './pay-config'
-import {PayAmount} from './pay-amount'
-import {PayButtons} from './pay-buttons'
 import {PaymentProcessing} from './payment-processing'
 import {PaymentSuccess} from './payment-success'
 import {ReceiptModal} from './receipt-modal'
@@ -102,7 +102,10 @@ const toLocalReceipt = (
   if (!txReceipt) return null
   return {
     blockNumber: txReceipt.blockNumber,
-    status: txReceipt.status === 'success' ? ('success' as const) : ('reverted' as const),
+    status:
+      txReceipt.status === 'success'
+        ? ('success' as const)
+        : ('reverted' as const),
   }
 }
 
@@ -171,7 +174,10 @@ export const PayTab = ({
     return priceSymbol === 'ETH' ? tokenPrice : null
   }, [chainId, getBySymbol, tokenPrice])
 
-  const bitcoinPrice = useMemo(() => getBySymbol('BTC')?.price ?? null, [getBySymbol])
+  const bitcoinPrice = useMemo(
+    () => getBySymbol('BTC')?.price ?? null,
+    [getBySymbol],
+  )
 
   // Get token price for displayed token amounts.
   const getTokenPrice = useCallback(
@@ -519,7 +525,9 @@ export const PayTab = ({
 
       const tokenAddress = tokenConfig.getAddress(chainId)
       if (!tokenAddress) {
-        throw new Error(`${token.toUpperCase()} address not found for this chain`)
+        throw new Error(
+          `${token.toUpperCase()} address not found for this chain`,
+        )
       }
 
       const transferAmount = parseUnits(usdAmount.toFixed(6), 6)
@@ -636,7 +644,6 @@ export const PayTab = ({
           getTokenPrice={getTokenPrice}
         />
       )}
-      {/* Token Selection */}
       <NetworkSelector
         currentNetwork={currentNetwork}
         onSelectNetwork={handleNetworkSelect}

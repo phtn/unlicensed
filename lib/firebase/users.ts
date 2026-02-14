@@ -10,7 +10,7 @@ export interface UserData {
 }
 
 /**
- * Creates or updates a user document in Firestore at unlicensed/u/{uid}
+ * Creates or updates a user document in Firestore at /unlicensed/u/u/{uid}
  * Path structure: unlicensed collection -> u document -> u subcollection -> {uid} document
  */
 export const createOrUpdateUserInFirestore = async (
@@ -21,10 +21,10 @@ export const createOrUpdateUserInFirestore = async (
     throw new Error('Firestore not initialized')
   }
 
-  // Path: unlicensed/u/{uid}
+  // Path: /unlicensed/u/u/{uid}
   // This creates: unlicensed collection -> u document -> u subcollection -> {uid} document
   // Using collection/document/subcollection/document pattern
-  const userRef = doc(firestore, 'unlicensed', 'u', 'users', user.uid)
+  const userRef = doc(firestore, 'unlicensed', 'u', 'u', user.uid)
   const userSnap = await getDoc(userRef)
 
   const userData: UserData = {
@@ -43,7 +43,7 @@ export const createOrUpdateUserInFirestore = async (
 }
 
 /**
- * Gets user data from Firestore at unlicensed/u/{uid}
+ * Gets user data from Firestore at /unlicensed/u/u/{uid}
  */
 export const getUserFromFirestore = async (
   firestore: Firestore,
@@ -53,7 +53,7 @@ export const getUserFromFirestore = async (
     throw new Error('Firestore not initialized')
   }
 
-  // Path: unlicensed/u/{uid}
+  // Path: /unlicensed/u/u/{uid}
   const userRef = doc(firestore, 'unlicensed', 'u', 'u', uid)
   const userSnap = await getDoc(userRef)
 
