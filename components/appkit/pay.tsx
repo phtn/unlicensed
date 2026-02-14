@@ -8,7 +8,6 @@ import {Icon} from '@/lib/icons'
 import {getUsdcAddress, isUsdcSupportedChain} from '@/lib/usdc'
 import {getUsdtAddress, isUsdtSupportedChain} from '@/lib/usdt'
 import {cn} from '@/lib/utils'
-import {mainnet, polygon, polygonAmoy, sepolia} from '@reown/appkit/networks'
 import {AnimatePresence, motion} from 'motion/react'
 import {
   useCallback,
@@ -29,6 +28,16 @@ import {
 import {AmountPayInput} from './amount-pay'
 import {withSecureRetry} from './converter-utils'
 import {NetworkSelector} from './network-selector'
+import {
+  getChainIdForNetwork,
+  getNativeSymbolForChainId,
+  getNetworkForChainId,
+  getPriceSymbolForChainId,
+  getTokenFractionDigits,
+  isEvmPayToken,
+  parseTokenParam,
+  type EvmPayToken,
+} from './pay-config'
 import {PayAmount} from './pay-amount'
 import {PayButtons} from './pay-buttons'
 import {PaymentProcessing} from './payment-processing'
@@ -70,6 +79,33 @@ const getDisplayTokenSymbol = (
   return nativeSymbol
 }
 
+const STABLE_TOKEN_CONFIG: Record<
+  Exclude<EvmPayToken, 'ethereum'>,
+  {
+    isSupportedChain: (chainId: number) => boolean
+    getAddress: (chainId: number) => Address | undefined
+  }
+> = {
+  usdc: {
+    isSupportedChain: isUsdcSupportedChain,
+    getAddress: getUsdcAddress,
+  },
+  usdt: {
+    isSupportedChain: isUsdtSupportedChain,
+    getAddress: getUsdtAddress,
+  },
+}
+
+const toLocalReceipt = (
+  txReceipt: {blockNumber: bigint; status: string} | null | undefined,
+) => {
+  if (!txReceipt) return null
+  return {
+    blockNumber: txReceipt.blockNumber,
+    status: txReceipt.status === 'success' ? ('success' as const) : ('reverted' as const),
+  }
+}
+
 export const PayTab = ({
   onPaymentSuccess,
   tokenPrice,
@@ -86,12 +122,7 @@ export const PayTab = ({
 
   // Selected token state - sync with search params
   const selectedTokenParam = params.tokenSelected
-  const selectedToken: Token | null =
-    selectedTokenParam === 'usdc' ||
-    selectedTokenParam === 'ethereum' ||
-    selectedTokenParam === 'usdt'
-      ? selectedTokenParam
-      : null
+  const selectedToken = parseTokenParam(selectedTokenParam)
   const setSelectedToken = useCallback(
     (token: Token | null) => {
       void setParams({tokenSelected: token ?? null})
@@ -132,23 +163,27 @@ export const PayTab = ({
 
   // Get native token price based on current network
   const nativeTokenPrice = useMemo(() => {
-    // For Polygon and Amoy, use MATIC price; for Ethereum/Sepolia, use ETH price
-    const isPolygonNetwork =
-      chainId === polygon.id || chainId === polygonAmoy.id
-    const symbol = isPolygonNetwork ? 'POL' : 'ETH'
-    const quote = getBySymbol(symbol)
-    return quote?.price ?? (isPolygonNetwork ? null : tokenPrice) // Fallback to tokenPrice prop for ETH networks
+    const priceSymbol = getPriceSymbolForChainId(chainId)
+    const quote = getBySymbol(priceSymbol)
+    if (quote?.price) {
+      return quote.price
+    }
+    return priceSymbol === 'ETH' ? tokenPrice : null
   }, [chainId, getBySymbol, tokenPrice])
 
-  // Get token price (USDC = $1, USDT = $1, native token = nativeTokenPrice)
+  const bitcoinPrice = useMemo(() => getBySymbol('BTC')?.price ?? null, [getBySymbol])
+
+  // Get token price for displayed token amounts.
   const getTokenPrice = useCallback(
     (token: Token | null): number | null => {
       if (!token) return null
       if (token === 'usdc' || token === 'usdt') return 1 // USDC and USDT are always $1
       if (token === 'ethereum') return nativeTokenPrice // This handles ETH, MATIC, etc. based on network
+      if (token === 'matic') return nativeTokenPrice
+      if (token === 'bitcoin') return bitcoinPrice
       return null
     },
-    [nativeTokenPrice],
+    [nativeTokenPrice, bitcoinPrice],
   )
 
   // Base USD value entered by the user before fees
@@ -173,26 +208,8 @@ export const PayTab = ({
     return payableUsdValue / price
   }, [selectedToken, payableUsdValue, getTokenPrice])
 
-  // Map network names to chain IDs
-  const networkChainMap: Record<string, number> = useMemo(
-    () => ({
-      sepolia: sepolia.id,
-      ethereum: mainnet.id,
-      polygon: polygon.id,
-      amoy: polygonAmoy.id,
-      // bitcoin is not an EVM chain, so we'll skip it for now
-    }),
-    [],
-  )
-
   // Get current network name from chainId
-  const currentNetwork = useMemo(() => {
-    if (chainId === sepolia.id) return 'sepolia'
-    if (chainId === mainnet.id) return 'ethereum'
-    if (chainId === polygon.id) return 'polygon'
-    if (chainId === polygonAmoy.id) return 'amoy'
-    return null
-  }, [chainId])
+  const currentNetwork = useMemo(() => getNetworkForChainId(chainId), [chainId])
 
   // Sync network to search params when chainId changes
   useEffect(() => {
@@ -204,7 +221,7 @@ export const PayTab = ({
   // Handle network selection
   const handleNetworkSelect = useCallback(
     (network: string) => () => {
-      const targetChainId = networkChainMap[network]
+      const targetChainId = getChainIdForNetwork(network)
       if (targetChainId && targetChainId !== chainId) {
         startTransition(() => {
           void setParams({network})
@@ -212,7 +229,7 @@ export const PayTab = ({
         })
       }
     },
-    [chainId, mutateAsync, startTransition, networkChainMap, setParams],
+    [chainId, mutateAsync, startTransition, setParams],
   )
 
   // Extract token list from network tokens
@@ -246,8 +263,7 @@ export const PayTab = ({
     if (tokenAmount == null) return ''
     return tokenAmount.toLocaleString('en-US', {
       minimumFractionDigits: 0,
-      maximumFractionDigits:
-        selectedToken === 'usdc' || selectedToken === 'usdt' ? 6 : 8,
+      maximumFractionDigits: getTokenFractionDigits(selectedToken),
     })
   }, [tokenAmount, selectedToken])
 
@@ -260,12 +276,11 @@ export const PayTab = ({
     const amt = payableUsdValue / price
     return amt.toLocaleString('en-US', {
       minimumFractionDigits: 0,
-      maximumFractionDigits: tok === 'usdc' || tok === 'usdt' ? 6 : 8,
+      maximumFractionDigits: getTokenFractionDigits(tok),
     })
   }, [lastPaymentToken, payableUsdValue, getTokenPrice])
 
-  const nativeSymbol =
-    chainId === polygon.id || chainId === polygonAmoy.id ? 'matic' : 'ethereum'
+  const nativeSymbol = getNativeSymbolForChainId(chainId)
   const displayTokenSymbol = (t: Token | null) =>
     getDisplayTokenSymbol(t, nativeSymbol)
 
@@ -284,27 +299,23 @@ export const PayTab = ({
     if (!dtest || !selectedToken || !chainId) return null
     if (selectedToken === 'ethereum') {
       if (tokenAmount == null || tokenAmount <= 0) return null
-      // Native ETH: ethereum:0x...@chainId?value=0.5e18
       const value = `${Number(tokenAmount)}e18`
       return `ethereum:${dtest}@${chainId}?value=${value}`
     }
-    if (selectedToken === 'usdc') {
-      if (!isUsdcSupportedChain(chainId)) return null
-      const usdcAddress = getUsdcAddress(chainId)
-      if (!usdcAddress || payableUsdValue === null) return null
-      // ERC20 transfer: ethereum:token@chainId/transfer?address=0x...&uint256=1.5e6
+
+    if (selectedToken === 'usdc' || selectedToken === 'usdt') {
+      const tokenConfig = STABLE_TOKEN_CONFIG[selectedToken]
+      if (!tokenConfig.isSupportedChain(chainId) || payableUsdValue === null) {
+        return null
+      }
+
+      const tokenAddress = tokenConfig.getAddress(chainId)
+      if (!tokenAddress) return null
+
       const amount = `${payableUsdValue.toFixed(6)}e6`
-      return `ethereum:${usdcAddress}@${chainId}/transfer?address=${dtest}&uint256=${amount}`
+      return `ethereum:${tokenAddress}@${chainId}/transfer?address=${dtest}&uint256=${amount}`
     }
-    if (selectedToken === 'usdt') {
-      if (!isUsdtSupportedChain(chainId)) return null
-      const usdtAddress = getUsdtAddress(chainId)
-      if (!usdtAddress || payableUsdValue === null) return null
-      // ERC20 transfer: ethereum:token@chainId/transfer?address=0x...&uint256=1.5e6
-      // USDT uses 6 decimals
-      const amount = `${payableUsdValue.toFixed(6)}e6`
-      return `ethereum:${usdtAddress}@${chainId}/transfer?address=${dtest}&uint256=${amount}`
-    }
+
     return null
   }, [dtest, selectedToken, chainId, tokenAmount, payableUsdValue])
 
@@ -352,57 +363,54 @@ export const PayTab = ({
   // Use lastPaymentToken to resolve tx state (token we actually paid with), fallback to selectedToken
   const tokenForTxState = lastPaymentToken ?? selectedToken
 
-  // Determine which transaction state to use (use local state if available, otherwise use props)
-  const localIsPending =
-    tokenForTxState === 'ethereum'
-      ? isEthPending
-      : tokenForTxState === 'usdt'
-        ? isUsdtPending
-        : isUsdcPending
-  const localIsConfirming =
-    tokenForTxState === 'ethereum'
-      ? isEthConfirming
-      : tokenForTxState === 'usdt'
-        ? isUsdtConfirming
-        : isUsdcConfirming
-  const localHash =
-    tokenForTxState === 'ethereum'
-      ? ethHash
-      : tokenForTxState === 'usdt'
-        ? usdtHash
-        : usdcHash
-  const localReceipt =
-    tokenForTxState === 'ethereum'
-      ? ethReceipt
-        ? {
-            blockNumber: ethReceipt.blockNumber,
-            status:
-              ethReceipt.status === 'success'
-                ? ('success' as const)
-                : ('reverted' as const),
-          }
-        : null
-      : tokenForTxState === 'usdt'
-        ? usdtReceipt
-          ? {
-              blockNumber: usdtReceipt.blockNumber,
-              status:
-                usdtReceipt.status === 'success'
-                  ? ('success' as const)
-                  : ('reverted' as const),
-            }
-          : null
-        : usdcReceipt
-          ? {
-              blockNumber: usdcReceipt.blockNumber,
-              status:
-                usdcReceipt.status === 'success'
-                  ? ('success' as const)
-                  : ('reverted' as const),
-            }
-          : null
+  const localTxStateByToken = useMemo(
+    () => ({
+      ethereum: {
+        isPending: isEthPending,
+        isConfirming: isEthConfirming,
+        hash: ethHash,
+        receipt: toLocalReceipt(ethReceipt),
+      },
+      usdc: {
+        isPending: isUsdcPending,
+        isConfirming: isUsdcConfirming,
+        hash: usdcHash,
+        receipt: toLocalReceipt(usdcReceipt),
+      },
+      usdt: {
+        isPending: isUsdtPending,
+        isConfirming: isUsdtConfirming,
+        hash: usdtHash,
+        receipt: toLocalReceipt(usdtReceipt),
+      },
+    }),
+    [
+      isEthPending,
+      isEthConfirming,
+      ethHash,
+      ethReceipt,
+      isUsdcPending,
+      isUsdcConfirming,
+      usdcHash,
+      usdcReceipt,
+      isUsdtPending,
+      isUsdtConfirming,
+      usdtHash,
+      usdtReceipt,
+    ],
+  )
+
+  const localTxState =
+    tokenForTxState && isEvmPayToken(tokenForTxState)
+      ? localTxStateByToken[tokenForTxState]
+      : null
 
   // Use local transaction state if we have an active transaction, otherwise use props
+  const localIsPending = localTxState?.isPending ?? false
+  const localIsConfirming = localTxState?.isConfirming ?? false
+  const localHash = localTxState?.hash ?? null
+  const localReceipt = localTxState?.receipt ?? null
+
   const activeIsPending = localIsPending || isPending
   const activeIsConfirming = localIsConfirming || isConfirming
   const activeHash = localHash || hash
@@ -430,6 +438,10 @@ export const PayTab = ({
 
   useEffect(() => {
     if (!activeHash || !activeReceipt || activeReceipt.status !== 'success') {
+      return
+    }
+
+    if (!tokenForTxState || !isEvmPayToken(tokenForTxState)) {
       return
     }
 
@@ -478,7 +490,10 @@ export const PayTab = ({
     [currentChain, activeHash, explorerUrl],
   )
 
-  const isPayDisabled = usePayButtonState({
+  const isUnsupportedPaymentToken =
+    selectedToken !== null && !isEvmPayToken(selectedToken)
+
+  const isBasePayDisabled = usePayButtonState({
     disabled,
     activeIsConfirming,
     activeIsPending,
@@ -491,6 +506,33 @@ export const PayTab = ({
     isPendingProp: isPending,
     isConfirmingProp: isConfirming,
   })
+  const isPayDisabled = isBasePayDisabled || isUnsupportedPaymentToken
+
+  const sendStableTokenPayment = useCallback(
+    (token: Exclude<EvmPayToken, 'ethereum'>, usdAmount: number) => {
+      if (!dtest) return
+
+      const tokenConfig = STABLE_TOKEN_CONFIG[token]
+      if (!tokenConfig.isSupportedChain(chainId)) {
+        throw new Error(`${token.toUpperCase()} is not supported on this chain`)
+      }
+
+      const tokenAddress = tokenConfig.getAddress(chainId)
+      if (!tokenAddress) {
+        throw new Error(`${token.toUpperCase()} address not found for this chain`)
+      }
+
+      const transferAmount = parseUnits(usdAmount.toFixed(6), 6)
+      const writer = token === 'usdc' ? mutate : mutateUsdt
+      writer({
+        abi: ERC20_TRANSFER_ABI,
+        address: tokenAddress,
+        functionName: 'transfer',
+        args: [dtest, transferAmount],
+      })
+    },
+    [chainId, dtest, mutate, mutateUsdt],
+  )
 
   // Handle payment
   const handlePay = useCallback(() => {
@@ -511,51 +553,18 @@ export const PayTab = ({
     setLastPaymentChainId(chainId)
 
     try {
-      if (selectedToken === 'ethereum') {
-        // Send ETH using the existing send function
-        sendEth({to: dtest, usd: payableUsdValue, chainId})
-      } else if (selectedToken === 'usdc') {
-        // Send USDC using writeContract
-        if (!isUsdcSupportedChain(chainId)) {
-          throw new Error('USDC is not supported on this chain')
-        }
-
-        const usdcAddress = getUsdcAddress(chainId)
-        if (!usdcAddress) {
-          throw new Error('USDC address not found for this chain')
-        }
-
-        // USDC is $1, so USD amount = USDC amount
-        // USDC uses 6 decimals
-        const usdcAmount = parseUnits(payableUsdValue.toFixed(6), 6)
-
-        mutate({
-          abi: ERC20_TRANSFER_ABI,
-          address: usdcAddress,
-          functionName: 'transfer',
-          args: [dtest, usdcAmount],
-        })
-      } else if (selectedToken === 'usdt') {
-        // Send USDT using writeContract
-        if (!isUsdtSupportedChain(chainId)) {
-          throw new Error('USDT is not supported on this chain')
-        }
-
-        const usdtAddress = getUsdtAddress(chainId)
-        if (!usdtAddress) {
-          throw new Error('USDT address not found for this chain')
-        }
-
-        // USDT is $1, so USD amount = USDT amount
-        // USDT uses 6 decimals
-        const usdtAmount = parseUnits(payableUsdValue.toFixed(6), 6)
-
-        mutateUsdt({
-          abi: ERC20_TRANSFER_ABI,
-          address: usdtAddress,
-          functionName: 'transfer',
-          args: [dtest, usdtAmount],
-        })
+      switch (selectedToken) {
+        case 'ethereum':
+          sendEth({to: dtest, usd: payableUsdValue, chainId})
+          return
+        case 'usdc':
+        case 'usdt':
+          sendStableTokenPayment(selectedToken, payableUsdValue)
+          return
+        default:
+          console.warn('Selected token is not supported yet for payments', {
+            token: selectedToken,
+          })
       }
     } catch (error) {
       console.error('Payment error:', error)
@@ -569,8 +578,7 @@ export const PayTab = ({
     hasInsufficientBalance,
     chainId,
     sendEth,
-    mutate,
-    mutateUsdt,
+    sendStableTokenPayment,
   ])
 
   const spinRandomAmount = useCallback(() => {
@@ -596,6 +604,7 @@ export const PayTab = ({
     !activeIsConfirming &&
     !activeIsPending &&
     !hasInsufficientBalance &&
+    !isUnsupportedPaymentToken &&
     !!selectedToken &&
     !!paymentAmountUsd &&
     !!dtest

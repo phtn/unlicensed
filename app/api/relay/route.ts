@@ -142,7 +142,11 @@ export async function POST(request: NextRequest) {
           normalizeAddress(configuredRelaySource)
       ) {
         return NextResponse.json(
-          {error: 'Payment was not sent to relay source address'},
+          {
+            error: 'Payment was not sent to relay source address',
+            expectedRelaySource: configuredRelaySource,
+            actualRecipient: transaction.to ?? null,
+          },
           {status: 400},
         )
       }
@@ -195,7 +199,11 @@ export async function POST(request: NextRequest) {
         normalizeAddress(transferTo) !== normalizeAddress(configuredRelaySource)
       ) {
         return NextResponse.json(
-          {error: 'Token transfer recipient is not relay source address'},
+          {
+            error: 'Token transfer recipient is not relay source address',
+            expectedRelaySource: configuredRelaySource,
+            actualRecipient: transferTo,
+          },
           {status: 400},
         )
       }

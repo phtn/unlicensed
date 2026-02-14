@@ -8,7 +8,7 @@ export const PrimaryCard = (item: StoreProduct) => {
   return (
     <ViewTransition key={item?.slug}>
       <div className='group relative overflow-hidden rounded-3xl border border-foreground/10 bg-background hover:border-foreground/30 transition-all duration-300 hover:-translate-y-1'>
-        <Link href={`/products/${item?.slug}`}>
+        <Link href={`/lobby/products/${item?.slug}`}>
           <div>
             {item?.image && (
               <div className='relative aspect-square overflow-hidden bg-foreground/5'>
