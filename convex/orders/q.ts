@@ -202,7 +202,6 @@ export const getAdminStats = query({
     // Count ongoing deliveries (shipping, awaiting_courier_pickup, or order_processing)
     const ongoingDeliveriesCount = allOrders.filter(
       (order) =>
-        order.orderStatus === 'shipping' ||
         order.orderStatus === 'awaiting_courier_pickup' ||
         order.orderStatus === 'order_processing',
     ).length
@@ -282,8 +281,8 @@ export const getAdminChartData = query({
       )
 
       // Calculate sales for this day (only completed payments)
-      const completedDayOrders = dayOrders.filter(
-        (order) => hasCompletedPayment(order),
+      const completedDayOrders = dayOrders.filter((order) =>
+        hasCompletedPayment(order),
       )
 
       const daySales = completedDayOrders.reduce(
@@ -306,7 +305,6 @@ export const getAdminChartData = query({
       // Count deliveries for this day (shipping, awaiting_courier_pickup, or order_processing)
       const dayDeliveriesCount = dayOrders.filter(
         (order) =>
-          order.orderStatus === 'shipping' ||
           order.orderStatus === 'awaiting_courier_pickup' ||
           order.orderStatus === 'order_processing',
       ).length

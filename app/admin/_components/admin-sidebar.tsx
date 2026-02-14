@@ -259,7 +259,11 @@ const data: Record<string, NavGroup[]> = {
           url: '/admin/ops/deliveries',
           icon: 'package',
         },
-
+        {
+          title: 'Customers',
+          url: '/admin/ops/customers',
+          icon: 'user-fill',
+        },
         {
           title: 'Staff',
           url: '/admin/ops/staff',
@@ -334,11 +338,6 @@ const data: Record<string, NavGroup[]> = {
           title: 'Email',
           url: '/admin/messaging/email',
           icon: 'email',
-        },
-        {
-          title: 'Chat',
-          url: '#',
-          icon: 'x',
         },
       ],
     },

@@ -6,15 +6,30 @@ import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {formatPrice} from '@/utils/formatPrice'
 import {useQuery} from 'convex/react'
+import Link from 'next/link'
 import {useMemo} from 'react'
 
 export const SalesDataTable = () => {
   const allOrders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
+  const users = useQuery(api.users.q.getAllUsers, {limit: 5000})
 
   const data = useMemo(() => {
     if (!allOrders) return []
     return allOrders.filter((order) => order.payment.status === 'completed')
   }, [allOrders])
+
+  const customerProfileIdByUserId = useMemo(() => {
+    const map = new Map<string, string>()
+    if (!users) return map
+
+    for (const user of users) {
+      const profileId = user.firebaseId ?? user.fid
+      if (!profileId) continue
+      map.set(String(user._id), profileId)
+    }
+
+    return map
+  }, [users])
 
   const columns = useMemo(
     () =>
@@ -30,11 +45,25 @@ export const SalesDataTable = () => {
           header: 'Customer',
           accessorKey: 'contactEmail',
           size: 220,
-          cell: ({row}) => (
-            <span className='text-sm truncate'>
-              {row.original.contactEmail}
-            </span>
-          ),
+          cell: ({row}) => {
+            const email = row.original.contactEmail
+            const profileId = row.original.userId
+              ? customerProfileIdByUserId.get(String(row.original.userId))
+              : undefined
+
+            if (!profileId) {
+              return <span className='text-sm truncate'>{email}</span>
+            }
+
+            return (
+              <Link
+                prefetch
+                href={`/admin/ops/customers/${profileId}`}
+                className='text-sm truncate hover:underline underline-offset-2 decoration-dotted decoration-foreground/40'>
+                {email}
+              </Link>
+            )
+          },
         },
         {
           id: 'shipTo',
@@ -100,7 +129,7 @@ export const SalesDataTable = () => {
           size: 180,
         },
       ] as ColumnConfig<Doc<'orders'>>[],
-    [],
+    [customerProfileIdByUserId],
   )
 
   return (

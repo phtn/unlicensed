@@ -13,6 +13,8 @@ export const courierSchema = v.object({
   name: v.string(),
   code: v.string(),
   active: v.boolean(),
+  shipFrom: v.optional(v.string()),
+  notes: v.optional(v.string()),
   trackingUrlTemplate: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.optional(v.number()),

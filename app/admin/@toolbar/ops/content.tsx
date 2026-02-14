@@ -11,12 +11,6 @@ import {PageTitle} from '../../_components/ui/page-title'
 import {SecondaryTab, ToolbarWrapper} from '../components'
 
 const ToolbarTabs = () => {
-  // const pathname = usePathname()
-  // const isStaffRoute = pathname?.includes('/staff')
-  // const newHref = isStaffRoute
-  //   ? '/admin/ops/staff?tabId=new'
-  //   : '/admin/ops?tabId=new'
-
   return (
     <div className='flex items-center space-x-1 md:space-x-4 text-base'>
       <SecondaryTab
@@ -44,7 +38,13 @@ export const OpsContent = () => {
         href='/admin/ops'
         prefetch
         className='flex items-center space-x-4 group'>
-        <PageTitle>{route === 'ops' ? 'Activity' : route}</PageTitle>
+        <PageTitle>
+          {route === 'ops'
+            ? 'Activity'
+            : pathname.includes('customers')
+              ? 'Customers'
+              : route}
+        </PageTitle>
         <span
           className={cn(
             'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',

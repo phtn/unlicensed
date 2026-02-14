@@ -7,12 +7,12 @@ import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import {formatPrice} from '@/utils/formatPrice'
 import {useQuery} from 'convex/react'
+import Link from 'next/link'
 import {useCallback, useMemo} from 'react'
 import {useSettingsPanel} from '../../../_components/ui/settings'
 import {
   courierAccountCell,
   courierCell,
-  customerCell,
   orderNumberCell,
   statusCell,
 } from '../components'
@@ -33,8 +33,22 @@ const formatPlacedAt = (order: Order) => {
 
 export const OrdersTable = () => {
   const orders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
+  const users = useQuery(api.users.q.getAllUsers, {limit: 5000})
   const {setSelectedOrder} = useOrderDetails()
   const {setOpen, setOpenMobile} = useSettingsPanel()
+
+  const customerProfileIdByUserId = useMemo(() => {
+    const map = new Map<string, string>()
+    if (!users) return map
+
+    for (const user of users) {
+      const profileId = user.firebaseId ?? user.fid
+      if (!profileId) continue
+      map.set(String(user._id), profileId)
+    }
+
+    return map
+  }, [users])
 
   const handleViewOrder = useCallback(
     (order: Order) => {
@@ -88,7 +102,29 @@ export const OrdersTable = () => {
         id: 'customer',
         header: <ColHeader tip='Customer' symbol='Customer' />,
         accessorKey: 'contactEmail',
-        cell: customerCell(),
+        cell: ({row}) => {
+          const email = row.original.contactEmail
+          if (!email) return <span className='text-muted-foreground'>—</span>
+
+          const profileId = row.original.userId
+            ? customerProfileIdByUserId.get(String(row.original.userId))
+            : undefined
+
+          return (
+            <div className='flex flex-col'>
+              {profileId ? (
+                <Link
+                  prefetch
+                  href={`/admin/ops/customers/${profileId}`}
+                  className='tracking-tight font-medium text-sm hover:underline underline-offset-2 decoration-dotted decoration-foreground/40'>
+                  {email?.split('@').shift()}
+                </Link>
+              ) : (
+                <p className='tracking-tight font-medium text-sm'>{email}</p>
+              )}
+            </div>
+          )
+        },
         size: 180,
       },
       {
@@ -101,7 +137,7 @@ export const OrdersTable = () => {
         ),
       },
     ],
-    [],
+    [customerProfileIdByUserId],
   )
 
   const actionConfig = useMemo(

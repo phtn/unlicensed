@@ -8,6 +8,7 @@ import type {Doc, Id} from '@/convex/_generated/dataModel'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
 import {useMutation, useQuery} from 'convex/react'
+import Link from 'next/link'
 import {useEffect, useMemo, useState} from 'react'
 import {courierCell, orderNumberCell} from '../components'
 
@@ -16,7 +17,6 @@ type Order = Doc<'orders'>
 const deliveryStatuses: Order['orderStatus'][] = [
   'order_processing',
   'awaiting_courier_pickup',
-  'shipping',
   'shipped',
 ]
 
@@ -27,11 +27,12 @@ const statusColorMap: Record<Order['orderStatus'], string> = {
     'bg-sky-500/20 text-sky-800 dark:bg-sky-400/25 dark:text-sky-200',
   awaiting_courier_pickup:
     'bg-orange-500/20 text-orange-800 dark:bg-orange-400/25 dark:text-orange-200',
-  shipping:
-    'bg-indigo-500/20 text-indigo-800 dark:bg-indigo-400/25 dark:text-indigo-200',
-  resend: 'bg-rose-500/20 text-rose-800 dark:bg-rose-400/25 dark:text-rose-200',
   shipped:
     'bg-emerald-500/20 text-emerald-800 dark:bg-emerald-400/25 dark:text-emerald-200',
+  // shipping:
+  //   'bg-indigo-500/20 text-indigo-800 dark:bg-indigo-400/25 dark:text-indigo-200',
+  resend: 'bg-rose-500/20 text-rose-800 dark:bg-rose-400/25 dark:text-rose-200',
+
   cancelled: 'bg-red-500/20 text-red-800 dark:bg-red-400/25 dark:text-red-200',
 }
 
@@ -178,6 +179,7 @@ const EstimatedDeliveryEditableCell = ({row}: {row: {original: Order}}) => {
 
 export const DeliveriesTable = () => {
   const allOrders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
+  const users = useQuery(api.users.q.getAllUsers, {limit: 5000})
 
   const deliveries = useMemo(() => {
     if (!allOrders) return []
@@ -185,6 +187,19 @@ export const DeliveriesTable = () => {
       deliveryStatuses.includes(order.orderStatus),
     )
   }, [allOrders])
+
+  const customerProfileIdByUserId = useMemo(() => {
+    const map = new Map<string, string>()
+    if (!users) return map
+
+    for (const user of users) {
+      const profileId = user.firebaseId ?? user.fid
+      if (!profileId) continue
+      map.set(String(user._id), profileId)
+    }
+
+    return map
+  }, [users])
 
   const columns = useMemo(
     () =>
@@ -217,11 +232,30 @@ export const DeliveriesTable = () => {
           header: <ColHeader tip='Customer' symbol='Customer' />,
           accessorKey: 'contactEmail',
           size: 200,
-          cell: ({row}) => (
-            <div className='flex flex-col'>
-              <p className='font-medium text-sm'>{row.original.contactEmail}</p>
-            </div>
-          ),
+          cell: ({row}) => {
+            const profileId = row.original.userId
+              ? customerProfileIdByUserId.get(String(row.original.userId))
+              : undefined
+            const label =
+              row.original.contactEmail?.split('@').shift() ??
+              row.original.contactEmail ??
+              'Guest'
+
+            return (
+              <div className='flex flex-col'>
+                {profileId ? (
+                  <Link
+                    prefetch
+                    href={`/admin/ops/customers/${profileId}`}
+                    className='font-medium text-sm hover:underline underline-offset-2 decoration-dotted decoration-foreground/40'>
+                    {label}
+                  </Link>
+                ) : (
+                  <p className='font-medium text-sm'>{label}</p>
+                )}
+              </div>
+            )
+          },
         },
         {
           id: 'shipTo',
@@ -276,7 +310,7 @@ export const DeliveriesTable = () => {
           ),
         },
       ] as ColumnConfig<Order>[],
-    [],
+    [customerProfileIdByUserId],
   )
 
   if (!allOrders) {

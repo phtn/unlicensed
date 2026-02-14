@@ -114,6 +114,8 @@ export const userSchema = v.object({
   // Timestamps
   createdAt: v.optional(v.number()),
   updatedAt: v.optional(v.number()),
+  notes: v.optional(v.string()),
+  accountStatus: v.optional(v.string()),
 })
 
 export type UserType = Infer<typeof userSchema>

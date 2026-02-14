@@ -313,7 +313,7 @@ export const StaffForm = ({
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block cols-span-3 2xl:col-span-2 col-span-3 h-full overflow-y-auto pr-2 space-y-6'>
         <nav className='flex flex-col gap-1'>
-          <h1 className='text-lg flex items-center space-x-2 pl-2 tracking-tighter font-semibold py-4 text-dark-gray dark:text-foreground'>
+          <h1 className='text-lg flex items-center space-x-2 pl-2 font-medium py-4 opacity-80'>
             <div
               aria-hidden
               className='size-4 select-none aspect-square rounded-full bg-pink-500'
@@ -388,7 +388,7 @@ export const StaffForm = ({
           className='space-y-0 pt-2'>
           <div id='basic-info' className='scroll-mt-4 space-y-6'>
             <div>
-              <h2 className='text-xl font-semibold tracking-tight mb-4'>
+              <h2 className='text-xl font-medium mb-4 opacity-80'>
                 Basic Information
               </h2>
               <div className='space-y-6'>

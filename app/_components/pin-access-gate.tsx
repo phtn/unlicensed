@@ -239,7 +239,7 @@ export function PinAccessGate() {
               key={idx}
               className={`
                 w-13 h-12
-                flex items-center justify-center
+                hidden _flex items-center justify-center
                 rounded-xl border-2
                 transition-all duration-200
                 pointer-events-none
