@@ -65,7 +65,8 @@ function StepRow({
               state === 'complete',
             'border-indigo-400/60 bg-indigo-500/15 text-indigo-300':
               state === 'active',
-            'border-rose-400/60 bg-rose-500/15 text-rose-300': state === 'error',
+            'border-rose-400/60 bg-rose-500/15 text-rose-300':
+              state === 'error',
             'border-foreground/20 bg-foreground/5 text-foreground/60':
               state === 'pending',
           },
@@ -301,7 +302,13 @@ export const Content = () => {
   ])
 
   const setupState = useMemo<
-    'idle' | 'connecting' | 'ready' | 'needs_auth' | 'not_owner' | 'no_rep' | 'error'
+    | 'idle'
+    | 'connecting'
+    | 'ready'
+    | 'needs_auth'
+    | 'not_owner'
+    | 'no_rep'
+    | 'error'
   >(() => {
     if (!order) return 'idle'
     if (!isCashAppOrder) return 'error'
@@ -333,7 +340,8 @@ export const Content = () => {
     }
     if (setupState === 'no_rep') {
       return (
-        connectionError ?? 'No active payment representatives are available right now.'
+        connectionError ??
+        'No active payment representatives are available right now.'
       )
     }
     return null
@@ -365,7 +373,8 @@ export const Content = () => {
 
   const chatCalloutType = useMemo(() => {
     if (setupState === 'ready') return 'success' as const
-    if (setupState === 'connecting' || setupState === 'idle') return 'info' as const
+    if (setupState === 'connecting' || setupState === 'idle')
+      return 'info' as const
     if (setupState === 'needs_auth') return 'warning' as const
     return 'error' as const
   }, [setupState])
@@ -425,7 +434,14 @@ export const Content = () => {
                 : ('pending' as StepState),
         },
       ] as Array<{title: string; description: string; state: StepState}>,
-    [assignedRep?.email, assignedRep?.name, hasStarterMessage, isCashAppOrder, order, setupState],
+    [
+      assignedRep?.email,
+      assignedRep?.name,
+      hasStarterMessage,
+      isCashAppOrder,
+      order,
+      setupState,
+    ],
   )
 
   const paymentStatus =
@@ -441,7 +457,9 @@ export const Content = () => {
       : 'font-brk text-orange-300 tracking-wide uppercase text-xs bg-orange-500/10 border border-orange-400/30 py-1 px-1.5 rounded-sm'
 
   const orderHref = order ? `/account/orders/${order.orderNumber}` : '#'
-  const chatHref = assignedRepFid ? `/account/chat/${assignedRepFid}` : '/account/chat'
+  const chatHref = assignedRepFid
+    ? `/account/chat/${assignedRepFid}`
+    : '/account/chat'
   const repName =
     assignedRep?.name ?? assignedRep?.email?.split('@')[0] ?? 'Representative'
 
@@ -461,7 +479,7 @@ export const Content = () => {
     <main className='min-h-[calc(100lvh)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-black'>
       <ArcCard className='relative overflow-hidden bg-[radial-gradient(130%_120%_at_10%_0%,rgba(0,190,160,0.18),rgba(0,0,0,0)_45%),radial-gradient(110%_120%_at_100%_0%,rgba(79,70,229,0.20),rgba(0,0,0,0)_40%)]'>
         <ArcHeader
-          title='Cash App Concierge'
+          title='Cash App Checkout'
           description={order?.orderNumber}
           icon='chat-rounded'
           iconStyle='text-emerald-300'
@@ -473,9 +491,12 @@ export const Content = () => {
         <div className='rounded-xl border border-foreground/15 bg-black/35 p-4 space-y-4'>
           <div className='flex items-center justify-between gap-3'>
             <div>
-              <p className='text-sm font-polysans tracking-tight'>Live Handoff Panel</p>
+              <p className='text-sm font-polysans tracking-tight'>
+                Live Handoff Panel
+              </p>
               <p className='text-xs opacity-70'>
-                Guided flow to move this payment into a representative chat session.
+                Guided flow to move this payment into a representative chat
+                session.
               </p>
             </div>
             <Chip
@@ -488,19 +509,29 @@ export const Content = () => {
 
           <div className='grid grid-cols-2 gap-3'>
             <div className='rounded-lg border border-foreground/15 bg-foreground/5 p-3'>
-              <p className='text-[11px] uppercase tracking-wide opacity-70'>Order Total</p>
-              <p className='text-lg font-polysans leading-6'>{orderTotalLabel}</p>
+              <p className='text-[11px] uppercase tracking-wide opacity-70'>
+                Order Total
+              </p>
+              <p className='text-lg font-polysans leading-6'>
+                {orderTotalLabel}
+              </p>
             </div>
             <div className='rounded-lg border border-foreground/15 bg-foreground/5 p-3'>
-              <p className='text-[11px] uppercase tracking-wide opacity-70'>Items</p>
-              <p className='text-lg font-polysans leading-6'>{itemCountLabel}</p>
+              <p className='text-[11px] uppercase tracking-wide opacity-70'>
+                Items
+              </p>
+              <p className='text-lg font-polysans leading-6'>
+                {itemCountLabel}
+              </p>
             </div>
           </div>
         </div>
 
         <div className='rounded-xl border border-foreground/15 bg-black/30 p-4 space-y-4'>
           <div className='flex items-center justify-between'>
-            <p className='text-sm font-polysans tracking-tight'>Checkout Flow Status</p>
+            <p className='text-sm font-polysans tracking-tight'>
+              Checkout Flow Status
+            </p>
             {setupState === 'ready' ? (
               <Chip
                 size='sm'
@@ -523,23 +554,42 @@ export const Content = () => {
         </div>
 
         <div className='rounded-xl border border-foreground/15 bg-black/35 p-4 space-y-3'>
-          <p className='text-sm font-polysans tracking-tight'>What To Send In Chat</p>
+          <p className='text-sm font-polysans tracking-tight'>
+            What To Send In Chat
+          </p>
           <p className='text-xs opacity-75'>
-            Send these immediately so the rep can process your Cash App payment without back-and-forth.
+            Send these immediately so the rep can process your Cash App payment
+            without back-and-forth.
           </p>
           <Divider className='bg-foreground/15' />
           <div className='grid gap-2 text-xs'>
             <div className='flex items-start gap-2'>
-              <Icon name='check-fill' className='size-4 mt-0.5 text-emerald-300' />
-              <span>Confirm your Cash App username and preferred payment window.</span>
+              <Icon
+                name='check-fill'
+                className='size-4 mt-0.5 text-emerald-300'
+              />
+              <span>
+                Confirm your Cash App username and preferred payment window.
+              </span>
             </div>
             <div className='flex items-start gap-2'>
-              <Icon name='check-fill' className='size-4 mt-0.5 text-emerald-300' />
-              <span>Share any delivery notes or timing constraints for this order.</span>
+              <Icon
+                name='check-fill'
+                className='size-4 mt-0.5 text-emerald-300'
+              />
+              <span>
+                Share any delivery notes or timing constraints for this order.
+              </span>
             </div>
             <div className='flex items-start gap-2'>
-              <Icon name='check-fill' className='size-4 mt-0.5 text-emerald-300' />
-              <span>Keep this order number in the thread: {order?.orderNumber ?? '--'}.</span>
+              <Icon
+                name='check-fill'
+                className='size-4 mt-0.5 text-emerald-300'
+              />
+              <span>
+                Keep this order number in the thread:{' '}
+                {order?.orderNumber ?? '--'}.
+              </span>
             </div>
           </div>
         </div>
