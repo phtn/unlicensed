@@ -1,18 +1,10 @@
 'use client'
 
+import {DataTable} from '@/components/table-v2'
+import {ColumnConfig} from '@/components/table-v2/create-column'
+import {ColHeader} from '@/components/table-v2/headers'
 import {Doc} from '@/convex/_generated/dataModel'
-import {Icon, IconName} from '@/lib/icons'
-import {
-  Card,
-  Chip,
-  ChipProps,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from '@heroui/react'
+import {Chip, ChipProps} from '@heroui/react'
 import Link from 'next/link'
 import {useMemo} from 'react'
 
@@ -25,14 +17,6 @@ const statusColorMap: Record<string, ChipProps['color']> = {
   inactive: 'default',
 }
 
-const columns = [
-  {name: 'NAME', uid: 'name'},
-  {name: 'STATUS', uid: 'status'},
-  {name: 'TRACKING URL', uid: 'trackingUrl'},
-  {name: 'CODE', uid: 'code'},
-  {name: 'CREATED', uid: 'created'},
-]
-
 export const CourierList = ({couriers}: CourierListProps) => {
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return 'N/A'
@@ -43,122 +27,97 @@ export const CourierList = ({couriers}: CourierListProps) => {
     })
   }
 
-  const renderCell = (courier: Doc<'couriers'>, columnKey: React.Key) => {
-    switch (columnKey) {
-      case 'name':
-        return (
-          <div className='flex flex-col'>
-            <Link
-              href={`/admin/suppliers/logistics?tabId=edit&id=${courier._id}`}
-              className='text-bold text-sm hover:underline flex items-center space-x-2'>
-              <Icon
-                name={(courier.code ?? 'truck') as IconName}
-                className='size-7'
-              />
-              <span>{courier.name}</span>
-            </Link>
-          </div>
-        )
-      case 'code':
-        return (
-          <div className='flex flex-col'>
-            <p className='text-sm font-mono opacity-80'>{courier.code}</p>
-          </div>
-        )
-      case 'status':
-        return (
-          <Chip
-            className='capitalize'
-            color={
-              courier.active ? statusColorMap.active : statusColorMap.inactive
-            }
-            size='sm'
-            variant='flat'>
-            {courier.active ? 'Active' : 'Inactive'}
-          </Chip>
-        )
-      case 'trackingUrl':
-        return (
-          <div className='flex flex-col'>
-            {courier.trackingUrlTemplate ? (
+  const columns = useMemo(
+    () =>
+      [
+        {
+          id: 'name',
+          header: <ColHeader tip='Courier name' symbol='NAME' />,
+          accessorKey: 'name',
+          size: 220,
+          cell: ({row}) => {
+            const courier = row.original
+            return (
+              <Link
+                href={`/admin/suppliers/logistics?tabId=edit&id=${courier._id}&code=${courier.code}`}
+                className='text-bold text-sm hover:underline flex items-center space-x-2'>
+                <span>{courier.name}</span>
+              </Link>
+            )
+          },
+        },
+        {
+          id: 'status',
+          header: <ColHeader tip='Courier status' symbol='STATUS' />,
+          accessorKey: 'active',
+          size: 110,
+          cell: ({row}) => (
+            <Chip
+              className='capitalize'
+              color={
+                row.original.active
+                  ? statusColorMap.active
+                  : statusColorMap.inactive
+              }
+              size='sm'
+              variant='flat'>
+              {row.original.active ? 'Active' : 'Inactive'}
+            </Chip>
+          ),
+        },
+        {
+          id: 'shipFrom',
+          header: <ColHeader tip='Ship From' symbol='Ship From' />,
+          accessorKey: 'shipFrom',
+          size: 360,
+          cell: ({row}) =>
+            row.original.shipFrom ? (
               <p className='text-bold text-sm opacity-80 truncate max-w-lg'>
-                {courier.trackingUrlTemplate}
+                {row.original.shipFrom}
               </p>
             ) : (
-              <p className='text-sm opacity-80'>No template</p>
-            )}
-          </div>
-        )
-      case 'created':
-        return (
-          <div className='flex flex-col'>
-            <p className='text-bold text-sm'>{formatDate(courier.createdAt)}</p>
-          </div>
-        )
-      default:
-        return null
-    }
-  }
-
-  const classNames = useMemo(
-    () => ({
-      wrapper: ['max-h-[382px]', 'max-w-full'],
-      th: ['bg-transparent', 'text-gray-400', 'border-b', 'border-divider'],
-      td: [
-        'group-data-[first=true]:first:before:rounded-none',
-        'group-data-[first=true]:last:before:rounded-none',
-        'group-data-[middle=true]:before:rounded-none',
-        'group-data-[last=true]:first:before:rounded-none',
-        'group-data-[last=true]:last:before:rounded-none',
-      ],
-    }),
+              <p className='text-sm opacity-80'>N/A</p>
+            ),
+        },
+        {
+          id: 'code',
+          header: <ColHeader tip='Courier code' symbol='CODE' />,
+          accessorKey: 'code',
+          size: 120,
+          cell: ({row}) => (
+            <p className='text-sm font-mono opacity-80'>{row.original.code}</p>
+          ),
+        },
+        {
+          id: 'createdAt',
+          header: <ColHeader tip='Created date' symbol='created at' />,
+          accessorKey: 'createdAt',
+          size: 140,
+          cell: ({row}) => (
+            <p className='text-bold text-sm'>
+              {formatDate(row.original.createdAt)}
+            </p>
+          ),
+        },
+      ] as ColumnConfig<Doc<'couriers'>>[],
     [],
   )
 
-  if (couriers === undefined) {
-    return (
-      <Card shadow='sm' className='p-4'>
-        <p className='text-sm text-gray-400'>Loading couriers...</p>
-      </Card>
-    )
-  }
-
   return (
-    <section className=''>
-      {/*<h3 className='text-2xl tracking-tighter font-semibold py-2'>Couriers</h3>*/}
-      {couriers.length === 0 ? (
+    <div className='relative w-full max-w-full overflow-hidden'>
+      {couriers && couriers.length === 0 ? (
         <p className='text-sm text-neutral-500'>
           No couriers yet. Create one above to get started.
         </p>
       ) : (
-        <Card
-          shadow='none'
-          radius='none'
-          className='md:p-4 md:rounded-xl md:w-full w-screen overflow-auto bg-sidebar/20 dark:bg-dark-table/40'>
-          <Table
-            isCompact
-            removeWrapper
-            aria-label='Couriers table'
-            classNames={classNames}>
-            <TableHeader columns={columns}>
-              {(column) => (
-                <TableColumn key={column.uid} align='start'>
-                  {column.name}
-                </TableColumn>
-              )}
-            </TableHeader>
-            <TableBody emptyContent={'No couriers found'} items={couriers}>
-              {(courier) => (
-                <TableRow key={courier._id} className='h-16'>
-                  {(columnKey) => (
-                    <TableCell>{renderCell(courier, columnKey)}</TableCell>
-                  )}
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Card>
+        <DataTable
+          title='Couriers'
+          data={couriers ?? []}
+          loading={couriers === undefined}
+          editingRowId={null}
+          columnConfigs={columns}
+        />
       )}
-    </section>
+    </div>
   )
 }

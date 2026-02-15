@@ -37,6 +37,7 @@ export const EditCourier = ({id}: EditCourierContentProps) => {
     code: courier.code ?? '',
     active: courier.active ?? true,
     trackingUrlTemplate: courier.trackingUrlTemplate ?? '',
+    notes: courier.notes ?? '',
     accounts: courier.accounts ?? [],
   }
 

@@ -18,11 +18,12 @@ import {
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
-import {Icon} from '@/lib/icons'
+import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Input, Switch} from '@heroui/react'
+import {Button, Input, Switch, Textarea} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
+import {useQueryState} from 'nuqs'
 import {useCallback, useEffect, useRef, useState} from 'react'
 
 type CourierFormProps = {
@@ -57,6 +58,7 @@ export const CourierForm = ({
   onCreated,
   onUpdated,
 }: CourierFormProps) => {
+  const [courierCodeParam] = useQueryState('code')
   const isEditMode = !!courierId
   const createCourier = useMutation(api.couriers.m.createCourier)
   const updateCourier = useMutation(api.couriers.m.updateCourier)
@@ -66,6 +68,7 @@ export const CourierForm = ({
   const mainScrollRef = useRef<HTMLElement>(null)
 
   const formValues = initialValues ?? defaultValues
+  const courierCode = courierCodeParam?.trim().toLowerCase()
 
   const form = useAppForm({
     defaultValues: formValues,
@@ -290,7 +293,10 @@ export const CourierForm = ({
           className='space-y-0 pt-2 relative'>
           <div id='basic-info' className=''>
             <FormSection id='basic-info' position='top'>
-              <Header label='Courier Information' />
+              <Icon
+                name={(courierCode || 'truck') as IconName}
+                className='size-14'
+              />
               <div className='grid gap-6 w-full mt-4'>
                 {renderFields(
                   form as CourierFormApi,
@@ -407,6 +413,25 @@ export const CourierForm = ({
                     </div>
                   )
                 }}
+              </form.Field>
+              <form.Field name='notes'>
+                {(notesField) => (
+                  <div className='space-y-2 mt-6'>
+                    <p className='text-sm font-medium text-dark-gray/80 dark:text-light-gray/90'>
+                      Notes
+                    </p>
+                    <Textarea
+                      minRows={4}
+                      maxRows={10}
+                      value={(notesField.state.value as string) ?? ''}
+                      placeholder='Internal notes for this courier (optional)'
+                      variant='bordered'
+                      classNames={commonInputClassNames}
+                      onBlur={notesField.handleBlur}
+                      onValueChange={(value) => notesField.handleChange(value)}
+                    />
+                  </div>
+                )}
               </form.Field>
             </FormSection>
           </div>

@@ -16,6 +16,7 @@ export const courierSchema = z.object({
   code: z.string().min(1, 'Code is required.'),
   active: z.boolean().default(true),
   trackingUrlTemplate: z.string().optional(),
+  notes: z.string().optional(),
   accounts: z.array(courierAccountSchema).default([]),
 })
 
@@ -64,5 +65,6 @@ export const defaultValues: CourierFormValues = {
   code: '',
   active: true,
   trackingUrlTemplate: '',
+  notes: '',
   accounts: [],
 }

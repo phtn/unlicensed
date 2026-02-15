@@ -1,12 +1,15 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
+import {useAuthCtx} from '@/ctx/auth'
+import {onError, onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Avatar, Button, Card, Chip} from '@heroui/react'
-import {useQuery} from 'convex/react'
+import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
+import {useCallback, useMemo, useState} from 'react'
 
 interface ContentProps {
   firebaseId: string
@@ -23,20 +26,61 @@ const formatDate = (timestamp?: number) => {
   })
 }
 
-const getStatusColor = (status?: string) => {
-  const normalized = (status ?? 'active').toLowerCase()
-  if (normalized === 'suspended' || normalized === 'banned') return 'danger'
-  if (normalized === 'pending') return 'warning'
-  return 'success'
-}
-
 export const Content = ({firebaseId}: ContentProps) => {
   const router = useRouter()
+  const {user} = useAuthCtx()
+  const [isOpeningChat, setIsOpeningChat] = useState(false)
+  const followForChat = useMutation(api.follows.m.follow)
   const customer = useQuery(api.users.q.getByFid, {fid: firebaseId})
+  const conversations = useQuery(
+    api.messages.q.getConversations,
+    user?.uid ? {fid: user.uid} : 'skip',
+  )
   const orders = useQuery(
     api.orders.q.getUserOrders,
     customer?._id ? {userId: customer._id, limit: 15} : 'skip',
   )
+  const customerChatFid = customer?.fid ?? customer?.firebaseId ?? null
+  const hasExistingConversation = useMemo(() => {
+    if (!customerChatFid || !conversations) return false
+    return conversations.some((conversation) => {
+      const otherFid = conversation?.otherUser?.fid
+      return otherFid != null && otherFid === customerChatFid
+    })
+  }, [conversations, customerChatFid])
+
+  const handleOpenChat = useCallback(async () => {
+    if (!user?.uid) {
+      onError('You must be signed in to start a chat')
+      return
+    }
+    if (!customer || !customerChatFid) {
+      onError('Customer does not have a chat profile ID')
+      return
+    }
+    setIsOpeningChat(true)
+    try {
+      if (!hasExistingConversation) {
+        await followForChat({
+          followedId: customer._id,
+          followerId: user.uid,
+        })
+        onSuccess('Chat room created')
+      }
+      router.push(`/account/chat/${customerChatFid}`)
+    } catch (err) {
+      onError(err instanceof Error ? err.message : 'Failed to open chat')
+    } finally {
+      setIsOpeningChat(false)
+    }
+  }, [
+    customer,
+    customerChatFid,
+    followForChat,
+    hasExistingConversation,
+    router,
+    user?.uid,
+  ])
 
   if (customer === undefined) {
     return (
@@ -58,9 +102,11 @@ export const Content = ({firebaseId}: ContentProps) => {
               No customer exists for ID: {firebaseId}
             </p>
             <Button
-              color='primary'
+              prefetch
+              as={Link}
               variant='flat'
-              onPress={() => router.push('/admin/ops/customers')}>
+              color='primary'
+              href={'/admin/ops/customers'}>
               Back to Customers
             </Button>
           </div>
@@ -71,14 +117,17 @@ export const Content = ({firebaseId}: ContentProps) => {
 
   return (
     <main className='min-h-screen px-4 pb-16'>
-      <div className='space-y-6'>
+      <div className='space-y-6 mt-4'>
         <div className='flex items-center gap-4'>
           <Button
+            prefetch
+            as={Link}
+            radius='none'
             isIconOnly
-            variant='light'
+            variant='faded'
+            className='min-w-0 border-none rounded-lg'
             aria-label='Back to customers'
-            className='min-w-0'
-            onPress={() => router.push('/admin/ops/customers')}>
+            href={'/admin/ops/customers'}>
             <Icon name='chevron-left' className='size-4' />
           </Button>
           <div className='flex-1'>
@@ -100,40 +149,52 @@ export const Content = ({firebaseId}: ContentProps) => {
                   <span className='font-okxs font-light text-foreground opacity-60'>
                     {customer.name}
                   </span>
+                  <Chip
+                    size='sm'
+                    variant='faded'
+                    className='capitalize border-none bg-dark-table text-white'>
+                    {(customer.accountStatus ?? 'active').replace(/_/g, ' ')}
+                  </Chip>
                 </h1>
                 <div className='flex items-center space-x-6'>
+                  {customer.contact?.phone && (
+                    <div className='flex items-center space-x-1'>
+                      <Icon name='phone' className='size-4.5 opacity-80' />
+                      <p className='text-sm text-mac-blue'>
+                        {customer.contact?.phone}
+                      </p>
+                    </div>
+                  )}
+
+                  <Button
+                    radius='none'
+                    variant='solid'
+                    size='sm'
+                    isLoading={isOpeningChat}
+                    isDisabled={isOpeningChat || !customerChatFid}
+                    onPress={handleOpenChat}
+                    className='flex items-center bg-transparent border-none text-sm space-x-1 hover:bg-sidebar rounded-md'
+                    startContent={
+                      <Icon name='chat' className='size-4.5 cursor-pointer' />
+                    }>
+                    <span className='-ml-2'>chat</span>
+                  </Button>
                   <div className='flex items-center space-x-1'>
-                    <Icon name='phone' className='size-4.5 opacity-80' />
-                    <p className='text-sm text-mac-blue'>
-                      {customer.contact?.phone}
-                    </p>
-                  </div>
-                  <div className='flex items-center space-x-1'>
-                    <Icon
-                      name='mail-send-fill'
-                      className='size-4.5 opacity-80'
-                    />
-                    <p className='text-sm text-mac-blue'>{customer.email}</p>
+                    <Icon name='mail-send-fill' className='size-4.5' />
+                    <p className='text-sm opacity-80'>{customer.email}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <Chip
-            size='sm'
-            variant='flat'
-            color={getStatusColor(customer.accountStatus)}
-            className='capitalize'>
-            {(customer.accountStatus ?? 'active').replace(/_/g, ' ')}
-          </Chip>
         </div>
-
-        <div className='grid md:grid-cols-2 gap-4'>
+        <div className='h-2 bg-sidebar' />
+        <div className='grid md:grid-cols-2 gap-0'>
           <div className='space-y-4'>
-            <Card shadow='none' className='p-6 space-y-5'>
+            <Card shadow='none' className='p-2 space-y-5'>
               <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 <div className='space-y-1'>
-                  <p className='text-xs uppercase tracking-wide text-muted-foreground'>
+                  <p className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
                     Firebase ID
                   </p>
                   <p className='font-mono text-xs'>
@@ -141,19 +202,19 @@ export const Content = ({firebaseId}: ContentProps) => {
                   </p>
                 </div>
                 <div className='space-y-1'>
-                  <p className='text-xs uppercase tracking-wide text-muted-foreground'>
+                  <p className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
                     FID
                   </p>
                   <p className='font-mono text-xs'>{customer.fid ?? 'N/A'}</p>
                 </div>
                 <div className='space-y-1'>
-                  <p className='text-xs uppercase tracking-wide text-muted-foreground'>
+                  <p className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
                     Created
                   </p>
                   <p className='text-sm'>{formatDate(customer.createdAt)}</p>
                 </div>
                 <div className='space-y-1'>
-                  <p className='text-xs uppercase tracking-wide text-muted-foreground'>
+                  <p className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
                     Last Updated
                   </p>
                   <p className='text-sm'>{formatDate(customer.updatedAt)}</p>
@@ -161,7 +222,7 @@ export const Content = ({firebaseId}: ContentProps) => {
               </div>
             </Card>
 
-            <Card shadow='none' className='p-6 space-y-4'>
+            <Card shadow='none' className='py-6 px-2'>
               <h2 className='text-base font-semibold'>Addresses</h2>
               {customer.addresses?.length ? (
                 <div className='space-y-3'>
@@ -187,7 +248,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                 </p>
               )}
             </Card>
-            <Card shadow='none' className='p-6 space-y-4'>
+            <Card shadow='none' className='py-6 px-2 space-y-4'>
               <h2 className='text-base font-semibold'>Shipping Accounts</h2>
 
               <p className='text-sm text-muted-foreground'>
@@ -195,10 +256,11 @@ export const Content = ({firebaseId}: ContentProps) => {
               </p>
             </Card>
           </div>
-          <div>
+          <div className='px-4 border-l border-sidebar'>
             <Card
               shadow='none'
-              className='p-6 space-y-4 max-h-[calc(82lvh)] overflow-scroll'>
+              radius='none'
+              className='py-2 space-y-4 max-h-[calc(82lvh)] overflow-scroll'>
               <h2 className='text-base font-semibold'>Recent Orders</h2>
               {orders === undefined ? (
                 <p className='text-sm text-muted-foreground'>
@@ -216,6 +278,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                         <div className='font-brk opacity-70'>{i + 1}</div>
                         <div>
                           <Link
+                            prefetch
                             href={`/admin/ops/orders/${order.orderNumber}`}
                             className='font-medium hover:underline underline-offset-2'>
                             {order.orderNumber}

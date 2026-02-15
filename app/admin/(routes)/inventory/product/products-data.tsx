@@ -18,6 +18,29 @@ import {CellContext} from '@tanstack/react-table'
 import {useMemo} from 'react'
 import {mapNumericFractions} from './product-schema'
 
+function parseStockValue(value: unknown) {
+  const stock =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string'
+        ? Number(value)
+        : Number.NaN
+  return Number.isFinite(stock) ? stock : Number.POSITIVE_INFINITY
+}
+
+function getStockClasses(stock: number) {
+  if (!Number.isFinite(stock) || stock <= 0) {
+    return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950/40 dark:text-red-200 dark:border-red-900/50'
+  }
+  if (stock <= 3) {
+    return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950/40 dark:text-orange-200 dark:border-orange-900/50'
+  }
+  if (stock <= 9) {
+    return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-900/50'
+  }
+  return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-900/50'
+}
+
 function availableDenominationsCell(
   ctx: CellContext<Doc<'products'>, unknown>,
 ) {
@@ -25,6 +48,12 @@ function availableDenominationsCell(
   const denoms = row.availableDenominations ?? []
   const priceByDenom = row.priceByDenomination ?? {}
   const stockByDenom = row.stockByDenomination ?? {}
+  const sortedDenoms = [...denoms].sort((a, b) => {
+    const stockA = parseStockValue(stockByDenom[String(a)])
+    const stockB = parseStockValue(stockByDenom[String(b)])
+    if (stockA === stockB) return a - b
+    return stockA - stockB
+  })
 
   if (denoms.length === 0) {
     return <span className='font-brk text-sm opacity-60'>····</span>
@@ -32,11 +61,13 @@ function availableDenominationsCell(
 
   return (
     <div className='font-brk text-sm flex items-center whitespace-nowrap gap-x-1 gap-y-0.5 px-4'>
-      {denoms.map((denom, index) => {
+      {sortedDenoms.map((denom, index) => {
         const key = String(denom)
         const label = mapNumericFractions[key] ?? key
         const price = priceByDenom[key]
         const stock = stockByDenom[key]
+        const parsedStock = parseStockValue(stock)
+        const stockClasses = getStockClasses(parsedStock)
         const content = (
           <div className='space-y-1 text-sm'>
             {/*<div className='font-medium'>{label}</div>*/}
@@ -50,7 +81,9 @@ function availableDenominationsCell(
         return (
           <span key={`${key}-${index}`}>
             <HoverCell label={label} content={content}>
-              <div className='px-2 font-brk text-base flex items-center space-x-3 bg-alum/20 rounded-sm'>
+              <div
+                className={`px-2 font-brk text-base flex items-center space-x-3 border rounded-sm ${stockClasses}`}
+              >
                 {label === '⅛' && (
                   <Icon
                     name='8th'
@@ -67,7 +100,7 @@ function availableDenominationsCell(
                   <Icon name='half' className='size-5 text-lime-600' />
                 )}
                 {Number(label) >= 1 && <span className='min-w-5'>{label}</span>}
-                <span className='w-8 font-okxs text-lg bg-sidebar/20 rounded-sm'>
+                <span className='w-8 font-okxs text-lg text-center bg-white/30 dark:bg-black/20 rounded-sm'>
                   {stock != null && Number(stock).toFixed(0)}
                 </span>
               </div>

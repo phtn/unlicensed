@@ -16,6 +16,7 @@ export const createCourier = mutation({
     code: v.string(),
     active: v.boolean(),
     trackingUrlTemplate: v.optional(v.string()),
+    notes: v.optional(v.string()),
     accounts: v.optional(v.array(courierAccountSchema)),
   },
   handler: async (ctx, args) => {
@@ -36,6 +37,7 @@ export const createCourier = mutation({
       code: args.code,
       active: args.active,
       trackingUrlTemplate: args.trackingUrlTemplate,
+      notes: args.notes,
       accounts: args.accounts,
       createdAt: now,
       updatedAt: now,
@@ -52,6 +54,7 @@ export const updateCourier = mutation({
     code: v.optional(v.string()),
     active: v.optional(v.boolean()),
     trackingUrlTemplate: v.optional(v.string()),
+    notes: v.optional(v.string()),
     accounts: v.optional(v.array(courierAccountSchema)),
   },
   handler: async (ctx, args) => {
