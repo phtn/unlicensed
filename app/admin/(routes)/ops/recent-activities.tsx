@@ -21,6 +21,7 @@ import {
   User,
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
+import Link from 'next/link'
 import React, {ReactNode, useEffect} from 'react'
 
 type Activity = Doc<'activities'>
@@ -217,7 +218,7 @@ export const RecentActivities = ({
         case 'type':
           return (
             <Chip
-              className='capitalize border-none gap-1 text-default-600'
+              className='border-none gap-1 opacity-70 font-brk uppercase'
               color={getActivityChipColor(activity.type)}
               size='sm'
               variant='dot'>
@@ -228,9 +229,13 @@ export const RecentActivities = ({
           return (
             <div className='flex flex-col whitespace-nowrap'>
               {activity.metadata?.orderNumber && (
-                <p className='text-bold text-small capitalize'>
-                  Order: {activity.metadata.orderNumber}
-                </p>
+                <Link
+                  href={`/admin/ops/orders/${activity.metadata.orderNumber}`}>
+                  <div className='text-bold text-small capitalize flex items-center opacity-70 hover:underline underline-offset-4 decoration-dotted decoration-blue-500 dark:decoration-primary hover:opacity-100'>
+                    <Icon name='hash' className='' />
+                    <span>{activity.metadata.orderNumber?.substring(5)}</span>
+                  </div>
+                </Link>
               )}
               {activity.metadata?.productName && (
                 <p className='text-bold text-small capitalize'>
