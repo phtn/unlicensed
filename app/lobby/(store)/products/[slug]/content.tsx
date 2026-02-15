@@ -8,6 +8,7 @@ import {ProductProfile} from '@/components/ui/product-profile'
 import {StatChip} from '@/components/ui/terpene'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {useAuthCtx} from '@/ctx/auth'
 import {useCart} from '@/hooks/use-cart'
 import {useMobile} from '@/hooks/use-mobile'
 import {adaptProductDetail, type RawProductDetail} from '@/lib/convexClient'
@@ -22,8 +23,7 @@ import {
   useDisclosure,
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
-import NextLink from 'next/link'
-import {notFound} from 'next/navigation'
+import {notFound, useRouter} from 'next/navigation'
 import {useMemo, useOptimistic, useRef, useState, useTransition} from 'react'
 import {Gallery} from './gallery'
 import {RelatedProducts} from './related-products'
@@ -43,7 +43,9 @@ export const ProductDetailContent = ({
   slug,
 }: ProductDetailContentProps) => {
   const [selectedDenomination, setSelectedDenomination] = useState<number>(0)
-  const {isOpen, onClose} = useDisclosure()
+  const {isOpen, onOpen, onClose} = useDisclosure()
+  const {user} = useAuthCtx()
+  const router = useRouter()
   const {cart, addItem} = useCart()
   const [isPending, startTransition] = useTransition()
   const addToCartButtonRef = useRef<HTMLDivElement>(null)
@@ -129,6 +131,14 @@ export const ProductDetailContent = ({
 
   const handleDenominationChange = (index: number) => () => {
     setSelectedDenomination(index)
+  }
+
+  const handleCheckoutPress = () => {
+    if (!user) {
+      onOpen()
+      return
+    }
+    router.push('/lobby/cart')
   }
 
   const handleAddToCart = async () => {
@@ -391,10 +401,9 @@ export const ProductDetailContent = ({
                   </Button>
                 </div>
                 <Button
-                  as={NextLink}
                   size='lg'
                   variant='solid'
-                  href='/lobby/cart'
+                  onPress={handleCheckoutPress}
                   className='w-full sm:flex-1 h-14 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
                   <span>Checkout</span>
                 </Button>

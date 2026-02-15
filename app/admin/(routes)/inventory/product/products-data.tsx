@@ -14,6 +14,7 @@ import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
+import {Slider} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMemo} from 'react'
 
@@ -75,6 +76,33 @@ function availableDenominationsCell(
           </span>
         )
       })}
+    </div>
+  )
+}
+
+function noseRatingCell(ctx: CellContext<Doc<'products'>, unknown>) {
+  const rawValue = ctx.row.original.noseRating
+  const value =
+    typeof rawValue === 'number' && Number.isFinite(rawValue)
+      ? Math.max(0, Math.min(10, Math.round(rawValue)))
+      : 0
+
+  return (
+    <div className='flex items-center justify-center'>
+      <Slider
+        aria-label='Nose rating'
+        orientation='vertical'
+        minValue={0}
+        maxValue={10}
+        step={1}
+        value={value}
+        isDisabled
+        hideValue
+        size='sm'
+        classNames={{
+          base: 'h-16 w-6',
+        }}
+      />
     </div>
   )
 }
@@ -237,7 +265,7 @@ export const ProductsData = ({data}: ProductsDataProps) => {
           id: 'noseRating',
           header: <ColHeader tip='Nose Rating' symbol='Nose' left />,
           accessorKey: 'noseRating',
-          cell: textCell('noseRating'),
+          cell: noseRatingCell,
           size: 50,
         },
         // {

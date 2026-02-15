@@ -1,23 +1,19 @@
 'use client'
 
-import {
-  ArcActionBar,
-  ArcButtonLeft,
-  ArcButtonRight,
-  ArcCallout,
-  ArcCard,
-  ArcHeader,
-  ArcLineItems,
-  ArcMessage,
-} from '@/components/expermtl/arc-card'
+import {ArcCallout, ArcCard, ArcHeader} from '@/components/expermtl/arc-card'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
+import {Button, Chip, Divider} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
+import NextLink from 'next/link'
 import {useParams} from 'next/navigation'
 import {useEffect, useMemo, useRef, useState} from 'react'
+
+type StepState = 'complete' | 'active' | 'pending' | 'error'
 
 function scoreStaffForCashAppRep(staff: {
   division?: string
@@ -43,6 +39,52 @@ function scoreStaffForCashAppRep(staff: {
   return score
 }
 
+function stepIconName(state: StepState) {
+  if (state === 'complete') return 'check-fill'
+  if (state === 'active') return 'spinners-ring'
+  if (state === 'error') return 'x'
+  return 'hash'
+}
+
+function StepRow({
+  title,
+  description,
+  state,
+}: {
+  title: string
+  description: string
+  state: StepState
+}) {
+  return (
+    <div className='flex items-start gap-3'>
+      <div
+        className={cn(
+          'mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full border',
+          {
+            'border-emerald-400/60 bg-emerald-500/15 text-emerald-300':
+              state === 'complete',
+            'border-indigo-400/60 bg-indigo-500/15 text-indigo-300':
+              state === 'active',
+            'border-rose-400/60 bg-rose-500/15 text-rose-300': state === 'error',
+            'border-foreground/20 bg-foreground/5 text-foreground/60':
+              state === 'pending',
+          },
+        )}>
+        <Icon
+          name={stepIconName(state)}
+          className={cn('size-4', {
+            'animate-spin': state === 'active',
+          })}
+        />
+      </div>
+      <div className='space-y-0.5'>
+        <p className='text-sm font-polysans tracking-tight'>{title}</p>
+        <p className='text-xs opacity-70'>{description}</p>
+      </div>
+    </div>
+  )
+}
+
 export const Content = () => {
   const {user} = useAuthCtx()
   const params = useParams()
@@ -56,9 +98,25 @@ export const Content = () => {
   const connectStaffForChat = useMutation(api.follows.m.connectStaffForChat)
   const sendMessage = useMutation(api.messages.m.sendMessage)
 
-  const [assignedRepFid, setAssignedRepFid] = useState<string | null>(null)
-  const [isConnectingRep, setIsConnectingRep] = useState(false)
-  const [connectionError, setConnectionError] = useState<string | null>(null)
+  const [chatConnection, setChatConnection] = useState<{
+    orderId: string
+    repFid: string | null
+    isConnecting: boolean
+    error: string | null
+  }>({
+    orderId: '',
+    repFid: null,
+    isConnecting: false,
+    error: null,
+  })
+
+  const assignedRepFid =
+    chatConnection.orderId === orderId ? chatConnection.repFid : null
+  const isConnectingRep =
+    chatConnection.orderId === orderId ? chatConnection.isConnecting : false
+  const connectionError =
+    chatConnection.orderId === orderId ? chatConnection.error : null
+
   const seededOrderRef = useRef<string | null>(null)
 
   const assignedRep = useQuery(
@@ -121,8 +179,12 @@ export const Content = () => {
     let cancelled = false
 
     const connect = async () => {
-      setIsConnectingRep(true)
-      setConnectionError(null)
+      setChatConnection({
+        orderId,
+        repFid: null,
+        isConnecting: true,
+        error: null,
+      })
 
       let nextRepFid: string | null = null
 
@@ -144,14 +206,21 @@ export const Content = () => {
       if (cancelled) return
 
       if (nextRepFid) {
-        setAssignedRepFid(nextRepFid)
+        setChatConnection({
+          orderId,
+          repFid: nextRepFid,
+          isConnecting: false,
+          error: null,
+        })
       } else {
-        setConnectionError(
-          'No chat-enabled representative account is available right now. Please try again shortly.',
-        )
+        setChatConnection({
+          orderId,
+          repFid: null,
+          isConnecting: false,
+          error:
+            'No chat-enabled representative account is available right now. Please try again shortly.',
+        })
       }
-
-      setIsConnectingRep(false)
     }
 
     connect()
@@ -162,9 +231,21 @@ export const Content = () => {
   }, [
     canAttemptRepConnection,
     connectStaffForChat,
+    orderId,
     staffCandidates,
     user?.uid,
   ])
+
+  const hasStarterMessage = useMemo(() => {
+    if (!order || !currentUser || !conversationMessages) return false
+    return conversationMessages.some(
+      (message) =>
+        message.senderId === currentUser._id &&
+        message.content.includes(
+          `Cash App checkout request for order ${order.orderNumber}`,
+        ),
+    )
+  }, [conversationMessages, currentUser, order])
 
   useEffect(() => {
     if (
@@ -178,22 +259,13 @@ export const Content = () => {
     }
 
     if (!isOrderOwner) return
-    if (seededOrderRef.current === order._id) return
-
-    const starterMessage = `Cash App checkout request for order ${order.orderNumber}. I selected Cash App and need a representative to continue payment in this chat.`
-
-    const hasStarterMessage = conversationMessages.some(
-      (message) =>
-        message.senderId === currentUser._id &&
-        message.content.includes(
-          `Cash App checkout request for order ${order.orderNumber}`,
-        ),
-    )
-
     if (hasStarterMessage) {
       seededOrderRef.current = order._id
       return
     }
+    if (seededOrderRef.current === order._id) return
+
+    const starterMessage = `Cash App checkout request for order ${order.orderNumber}. I selected Cash App and need a representative to continue payment in this chat.`
 
     let cancelled = false
 
@@ -221,6 +293,7 @@ export const Content = () => {
     assignedRepFid,
     conversationMessages,
     currentUser,
+    hasStarterMessage,
     isOrderOwner,
     order,
     sendMessage,
@@ -266,45 +339,17 @@ export const Content = () => {
     return null
   }, [connectionError, setupState])
 
-  const data = useMemo(
-    () =>
-      order
-        ? [
-            ...order.items.map((item) => ({
-              label: item.productName,
-              value: `$${formatPrice(item.unitPriceCents)}`,
-            })),
-            {
-              label: 'Payment Method',
-              value: order.payment.method.split('_').join(' '),
-            },
-            ...(setupState === 'ready'
-              ? [
-                  {
-                    label: 'Assigned Rep',
-                    value:
-                      assignedRep?.name ??
-                      assignedRep?.email?.split('@')[0] ??
-                      'Support',
-                  },
-                ]
-              : []),
-          ]
-        : [],
-    [assignedRep?.email, assignedRep?.name, order, setupState],
-  )
-
   const chatMessage = useMemo(() => {
     if (setupState === 'ready') {
       const repName =
         assignedRep?.name ?? assignedRep?.email?.split('@')[0] ?? 'a rep'
-      return `${repName} is assigned and will continue your payment in chat.`
+      return `${repName} is assigned. Open chat now to complete your Cash App handoff.`
     }
     if (setupState === 'connecting') {
-      return 'Connecting you to the next available payment representative...'
+      return 'We are matching your order with the next available representative.'
     }
     if (setupState === 'needs_auth') {
-      return 'Sign in to continue Cash App payment through in-app chat.'
+      return 'Sign in to continue the Cash App checkout in live chat.'
     }
     if (setupState === 'not_owner') {
       return (
@@ -315,7 +360,7 @@ export const Content = () => {
     if (setupState === 'no_rep' || setupState === 'error') {
       return setupError ?? 'We could not connect chat support for this order.'
     }
-    return 'Preparing your payment chat...'
+    return 'Preparing your checkout handoff...'
   }, [assignedRep?.email, assignedRep?.name, setupError, setupState])
 
   const chatCalloutType = useMemo(() => {
@@ -325,10 +370,64 @@ export const Content = () => {
     return 'error' as const
   }, [setupState])
 
-  const chatHref = assignedRepFid ? `/account/chat/${assignedRepFid}` : '/account/chat'
-  const chatLabel = setupState === 'ready' ? 'Open Chat' : 'Chat Inbox'
+  const flowSteps = useMemo(
+    () =>
+      [
+        {
+          title: 'Order Context Verified',
+          description: isCashAppOrder
+            ? 'This order is marked for Cash App representative handoff.'
+            : 'Order is not using Cash App and cannot use this flow.',
+          state: !order
+            ? ('active' as StepState)
+            : isCashAppOrder
+              ? ('complete' as StepState)
+              : ('error' as StepState),
+        },
+        {
+          title: 'Representative Assignment',
+          description:
+            setupState === 'ready'
+              ? `Connected with ${assignedRep?.name ?? assignedRep?.email?.split('@')[0] ?? 'your rep'}.`
+              : setupState === 'no_rep'
+                ? 'No active representative could be connected.'
+                : 'Selecting the next available representative.',
+          state:
+            setupState === 'ready'
+              ? ('complete' as StepState)
+              : setupState === 'no_rep'
+                ? ('error' as StepState)
+                : ('active' as StepState),
+        },
+        {
+          title: 'Chat Pre-Seed',
+          description: hasStarterMessage
+            ? 'Order details were pre-sent so your rep has context immediately.'
+            : 'Preparing your conversation starter with order details.',
+          state:
+            setupState !== 'ready'
+              ? ('pending' as StepState)
+              : hasStarterMessage
+                ? ('complete' as StepState)
+                : ('active' as StepState),
+        },
+        {
+          title: 'Live Chat Action',
+          description:
+            setupState === 'ready'
+              ? 'Open chat and confirm your Cash App handle + payment timing.'
+              : 'Chat opens once representative assignment is ready.',
+          state:
+            setupState === 'ready'
+              ? ('active' as StepState)
+              : setupState === 'no_rep'
+                ? ('pending' as StepState)
+                : ('pending' as StepState),
+        },
+      ] as Array<{title: string; description: string; state: StepState}>,
+    [assignedRep?.email, assignedRep?.name, hasStarterMessage, isCashAppOrder, order, setupState],
+  )
 
-  const orderHref = order ? `/account/orders/${order.orderNumber}` : '#'
   const paymentStatus =
     setupState === 'ready'
       ? 'Rep Connected'
@@ -338,47 +437,144 @@ export const Content = () => {
 
   const paymentStatusStyle =
     setupState === 'ready'
-      ? 'font-brk text-emerald-300 tracking-wide uppercase text-xs bg-background/60 py-1 px-1.5 rounded-sm'
-      : 'font-brk text-orange-300 tracking-wide uppercase text-xs bg-background/60 py-1 px-1.5 rounded-sm'
+      ? 'font-brk text-emerald-300 tracking-wide uppercase text-xs bg-emerald-500/10 border border-emerald-400/30 py-1 px-1.5 rounded-sm'
+      : 'font-brk text-orange-300 tracking-wide uppercase text-xs bg-orange-500/10 border border-orange-400/30 py-1 px-1.5 rounded-sm'
 
-  const isLoadingOrder = order === undefined
+  const orderHref = order ? `/account/orders/${order.orderNumber}` : '#'
+  const chatHref = assignedRepFid ? `/account/chat/${assignedRepFid}` : '/account/chat'
+  const repName =
+    assignedRep?.name ?? assignedRep?.email?.split('@')[0] ?? 'Representative'
+
+  const orderTotalLabel = order ? `$${formatPrice(order.totalCents)}` : '--'
+  const itemCountLabel = order ? `${order.items.length}` : '--'
+
+  const handleRetry = () => {
+    setChatConnection({
+      orderId,
+      repFid: null,
+      isConnecting: false,
+      error: null,
+    })
+  }
 
   return (
-    <main className='h-[calc(100lvh)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-black'>
-      <ArcCard>
+    <main className='min-h-[calc(100lvh)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-black'>
+      <ArcCard className='relative overflow-hidden bg-[radial-gradient(130%_120%_at_10%_0%,rgba(0,190,160,0.18),rgba(0,0,0,0)_45%),radial-gradient(110%_120%_at_100%_0%,rgba(79,70,229,0.20),rgba(0,0,0,0)_40%)]'>
         <ArcHeader
-          title='We received your order!'
+          title='Cash App Concierge'
           description={order?.orderNumber}
-          icon='hash'
-          iconStyle='text-indigo-400'
-          status={
-            <span className={paymentStatusStyle}>
-              {isLoadingOrder ? 'Loading' : paymentStatus}
-            </span>
-          }
+          icon='chat-rounded'
+          iconStyle='text-emerald-300'
+          status={<span className={paymentStatusStyle}>{paymentStatus}</span>}
         />
-        <ArcLineItems data={data} />
 
         <ArcCallout icon='info' value={chatMessage} type={chatCalloutType} />
 
-        <div className='hidden _flex items-center space-x-2 text-base'>
-          <Icon name='info' className='size-5' />
-          <ArcMessage>
-            <div className='flex items-center text-left space-x-2 text-base'>
-              <span>
-                One of our associates will be in touch via our in-app{' '}
-                <span className='font-medium underline decoration-dotted'>
-                  chat messaging
-                </span>
-                .
-              </span>
+        <div className='rounded-xl border border-foreground/15 bg-black/35 p-4 space-y-4'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <p className='text-sm font-polysans tracking-tight'>Live Handoff Panel</p>
+              <p className='text-xs opacity-70'>
+                Guided flow to move this payment into a representative chat session.
+              </p>
             </div>
-          </ArcMessage>
+            <Chip
+              size='sm'
+              variant='flat'
+              className='bg-foreground/10 text-foreground/80 border border-foreground/20'>
+              {order?.payment.method?.split('_').join(' ') ?? 'cash app'}
+            </Chip>
+          </div>
+
+          <div className='grid grid-cols-2 gap-3'>
+            <div className='rounded-lg border border-foreground/15 bg-foreground/5 p-3'>
+              <p className='text-[11px] uppercase tracking-wide opacity-70'>Order Total</p>
+              <p className='text-lg font-polysans leading-6'>{orderTotalLabel}</p>
+            </div>
+            <div className='rounded-lg border border-foreground/15 bg-foreground/5 p-3'>
+              <p className='text-[11px] uppercase tracking-wide opacity-70'>Items</p>
+              <p className='text-lg font-polysans leading-6'>{itemCountLabel}</p>
+            </div>
+          </div>
         </div>
-        <ArcActionBar>
-          <ArcButtonLeft icon='chevron-left' label='View Order' href={orderHref} />
-          <ArcButtonRight icon='chat-rounded' label={chatLabel} href={chatHref} />
-        </ArcActionBar>
+
+        <div className='rounded-xl border border-foreground/15 bg-black/30 p-4 space-y-4'>
+          <div className='flex items-center justify-between'>
+            <p className='text-sm font-polysans tracking-tight'>Checkout Flow Status</p>
+            {setupState === 'ready' ? (
+              <Chip
+                size='sm'
+                variant='flat'
+                className='bg-emerald-500/10 text-emerald-300 border border-emerald-400/30'>
+                {repName}
+              </Chip>
+            ) : null}
+          </div>
+          <div className='space-y-3'>
+            {flowSteps.map((step) => (
+              <StepRow
+                key={step.title}
+                title={step.title}
+                description={step.description}
+                state={step.state}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className='rounded-xl border border-foreground/15 bg-black/35 p-4 space-y-3'>
+          <p className='text-sm font-polysans tracking-tight'>What To Send In Chat</p>
+          <p className='text-xs opacity-75'>
+            Send these immediately so the rep can process your Cash App payment without back-and-forth.
+          </p>
+          <Divider className='bg-foreground/15' />
+          <div className='grid gap-2 text-xs'>
+            <div className='flex items-start gap-2'>
+              <Icon name='check-fill' className='size-4 mt-0.5 text-emerald-300' />
+              <span>Confirm your Cash App username and preferred payment window.</span>
+            </div>
+            <div className='flex items-start gap-2'>
+              <Icon name='check-fill' className='size-4 mt-0.5 text-emerald-300' />
+              <span>Share any delivery notes or timing constraints for this order.</span>
+            </div>
+            <div className='flex items-start gap-2'>
+              <Icon name='check-fill' className='size-4 mt-0.5 text-emerald-300' />
+              <span>Keep this order number in the thread: {order?.orderNumber ?? '--'}.</span>
+            </div>
+          </div>
+        </div>
+
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+          {setupState === 'no_rep' ? (
+            <Button
+              size='lg'
+              color='primary'
+              className='font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
+              onPress={handleRetry}
+              endContent={<Icon name='spinners-ring' className='size-5' />}>
+              Retry Rep Assignment
+            </Button>
+          ) : (
+            <Button
+              as={NextLink}
+              href={chatHref}
+              size='lg'
+              color='primary'
+              className='font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
+              endContent={<Icon name='chat-rounded' className='size-5' />}>
+              {setupState === 'ready' ? 'Open Live Chat' : 'Open Chat Inbox'}
+            </Button>
+          )}
+          <Button
+            as={NextLink}
+            href={orderHref}
+            size='lg'
+            variant='flat'
+            className='font-polysans font-normal dark:bg-sidebar'
+            startContent={<Icon name='chevron-left' className='size-5' />}>
+            Back To Order
+          </Button>
+        </div>
       </ArcCard>
     </main>
   )

@@ -2,6 +2,40 @@ import {Icon} from '@/lib/icons'
 import {motion} from 'motion/react'
 import {tickerSymbol} from './ticker'
 
+const CONFETTI_COLORS = [
+  '#86efac',
+  '#fef08a',
+  '#7dd3fc',
+  '#fca5a5',
+  '#c4b5fd',
+  '#67e8f9',
+] as const
+
+const CONFETTI_PARTICLES = Array.from({length: 36}, (_, index) => {
+  const spreadX = ((index * 29) % 240) - 120
+  const peakY = -110 - (index % 7) * 16
+  const endY = 170 + (index % 6) * 22
+  const rotate = ((index * 53) % 720) - 360
+  const delay = (index % 12) * 0.03
+  const duration = 1.2 + (index % 6) * 0.12
+  const color = CONFETTI_COLORS[index % CONFETTI_COLORS.length]
+  const width = 4 + (index % 3)
+  const height = 10 + (index % 4) * 2
+
+  return {
+    id: index,
+    spreadX,
+    peakY,
+    endY,
+    rotate,
+    delay,
+    duration,
+    color,
+    width,
+    height,
+  }
+})
+
 interface PaymentSuccessProps {
   tokenAmount: string
   tokenSymbol: string
@@ -24,6 +58,33 @@ export const PaymentSuccess = ({
       exit={{opacity: 0, scale: 0.95}}
       className='relative rounded-3xl border border-emerald-400/30 space-y-0 overflow-hidden'>
       <div className='absolute bg-[url("/svg/noise.svg")] opacity-15 scale-100 pointer-events-none top-0 left-0 w-full h-full' />
+      <div
+        aria-hidden
+        className='pointer-events-none absolute inset-0 overflow-hidden'>
+        {CONFETTI_PARTICLES.map((particle) => (
+          <motion.span
+            key={particle.id}
+            initial={{opacity: 0, x: 0, y: 40, rotate: 0}}
+            animate={{
+              opacity: [0, 1, 1, 0],
+              x: [0, particle.spreadX],
+              y: [40, particle.peakY, particle.endY],
+              rotate: particle.rotate,
+            }}
+            transition={{
+              duration: particle.duration,
+              delay: particle.delay,
+              ease: 'easeOut',
+            }}
+            style={{
+              backgroundColor: particle.color,
+              width: particle.width,
+              height: particle.height,
+            }}
+            className='absolute top-1/2 left-1/2 rounded-[2px]'
+          />
+        ))}
+      </div>
       <div className='relative bg-emerald-500/10 px-4 py-6'>
         <div className='flex items-center gap-4'>
           <motion.div

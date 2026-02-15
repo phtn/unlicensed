@@ -41,7 +41,6 @@ import {
   type EvmPayToken,
 } from './pay-config'
 import {PaymentProcessing} from './payment-processing'
-import {PaymentSuccess} from './payment-success'
 import {ReceiptModal} from './receipt-modal'
 import {tickerSymbol} from './ticker'
 import type {Token} from './token-coaster'
@@ -616,6 +615,7 @@ export const PayTab = ({
     !!selectedToken &&
     !!paymentAmountUsd &&
     !!dtest
+  const showProcessingState = activeIsPending || activeIsConfirming
 
   return (
     <motion.div
@@ -692,19 +692,9 @@ export const PayTab = ({
           </motion.div>
         </motion.div>
 
-        {/* Processing / Success State */}
         <AnimatePresence mode='wait'>
           <motion.div layout className='mt-0'>
-            {activeReceipt && activeReceipt.status === 'success' ? (
-              <PaymentSuccess
-                key='success'
-                tokenAmount={successTokenAmountFormatted}
-                tokenSymbol={displayTokenSymbol(lastPaymentToken)}
-                usdValue={payableUsdValue}
-                hash={activeHash || null}
-                explorerUrl={receiptExplorerUrl}
-              />
-            ) : activeIsPending || activeIsConfirming ? (
+            {showProcessingState ? (
               <PaymentProcessing
                 key='sending'
                 tokenAmount={processingTokenAmountFormatted}
@@ -724,7 +714,7 @@ export const PayTab = ({
           onViewReceipt={() => setShowReceiptModal(true)}
           onPay={handlePay}
           isPayDisabled={isPayDisabled}
-          isPayProcessing={activeIsPending || activeIsConfirming}
+          isPayProcessing={showProcessingState}
           payLabel={payButtonLabel}
           enablePayHoverStyles={enablePayHoverStyles}
         />

@@ -1,12 +1,14 @@
 'use client'
 
+import {AuthModal} from '@/components/auth/auth-modal'
 import {Id} from '@/convex/_generated/dataModel'
+import {useAuthCtx} from '@/ctx/auth'
 import {useCart} from '@/hooks/use-cart'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {getUnitPriceCents} from '@/utils/cartPrice'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Image} from '@heroui/react'
+import {Button, Image, useDisclosure} from '@heroui/react'
 import {useRouter} from 'next/navigation'
 import {useMemo, useOptimistic, useTransition} from 'react'
 import {Drawer} from 'vaul'
@@ -30,6 +32,9 @@ interface CartDrawerProps {
 
 export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   const {cart, updateItem, removeItem, isLoading, cartItemCount} = useCart()
+  const {user} = useAuthCtx()
+  const {isOpen: isAuthOpen, onOpen: onAuthOpen, onClose: onAuthClose} =
+    useDisclosure()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -108,6 +113,10 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   }, [cartItems])
 
   const handleCartCheckout = () => {
+    if (!user) {
+      onAuthOpen()
+      return
+    }
     onOpenChange(false)
     router.push('/lobby/cart')
   }
@@ -345,6 +354,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
           </DrawerFooter>
         </Drawer.Content>
       </Drawer.Portal>
+      <AuthModal isOpen={isAuthOpen} onClose={onAuthClose} mode='login' />
     </Drawer.Root>
   )
 }

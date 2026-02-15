@@ -5,8 +5,10 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {Button, Card, CardBody} from '@heroui/react'
 import {useQuery} from 'convex/react'
+import {AnimatePresence, motion} from 'motion/react'
 import NextLink from 'next/link'
 import {useParams} from 'next/navigation'
+import {CheckoutSuccess} from './checkout-success'
 import {OrderSummaryWidget} from './order-summary'
 import {CryptoPay} from './pay'
 
@@ -75,11 +77,38 @@ export const Content = () => {
     )
   }
 
+  const isPaymentCompleted = order.payment.status === 'completed'
+
   return (
     <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-black'>
-      <div className='relative md:flex md:mx-auto md:max-w-7xl'>
-        <OrderSummaryWidget />
-        <CryptoPay />
+      <div className='relative md:mx-auto md:max-w-7xl min-h-[36rem] md:min-h-[40rem] overflow-hidden'>
+        <AnimatePresence initial={false} mode='sync'>
+          {!isPaymentCompleted ? (
+            <motion.div
+              key='crypto-checkout'
+              initial={{opacity: 1, y: 0}}
+              animate={{opacity: 1, y: 0}}
+              exit={{opacity: 0, y: -110}}
+              transition={{duration: 0.5, ease: [0.22, 1, 0.36, 1]}}
+              className='md:flex'>
+              <OrderSummaryWidget />
+              <CryptoPay />
+            </motion.div>
+          ) : (
+            <motion.div
+              key='crypto-success'
+              initial={{opacity: 0, y: '100%'}}
+              animate={{opacity: 1, y: 0}}
+              exit={{opacity: 0, y: '100%'}}
+              transition={{duration: 0.55, ease: [0.22, 1, 0.36, 1]}}
+              className='absolute inset-0 z-20 flex items-center justify-center'>
+              <CheckoutSuccess
+                orderNumber={order.orderNumber}
+                transactionId={order.payment.transactionId}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </main>
   )
