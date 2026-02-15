@@ -22,7 +22,7 @@ import {
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
-import React, {ReactNode, useEffect} from 'react'
+import React, {CSSProperties, ReactNode, useEffect} from 'react'
 
 type Activity = Doc<'activities'>
 
@@ -179,7 +179,6 @@ export const RecentActivities = ({
                 classNames={{
                   description: 'text-default-500',
                 }}
-                // description={activity.user.email}
                 name={
                   isMobile
                     ? activity.user.name.split(' ').shift()
@@ -320,7 +319,7 @@ export const RecentActivities = ({
     // Apply the transform using CSS custom property
     return {
       '--translate-y': `-${translateYRem}rem`,
-    } as React.CSSProperties
+    } as CSSProperties
   }, [statsHeight, fullTable])
 
   const classNames = React.useMemo(
@@ -400,7 +399,6 @@ export const RecentActivities = ({
           classNames={{
             ...classNames,
             tbody: 'overflow-hidden rounded-3xl',
-            thead: '',
             th: [
               'sticky top-0 overflow-hidden bg-sidebar dark:bg-dark-table backdrop-blur-3xl z-20 h-9 border-b border-sidebar dark:border-dark-table',
             ],

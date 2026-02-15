@@ -1,12 +1,15 @@
 'use client'
 
+import {
+  commonInputClassNames,
+  commonSelectClassNames,
+} from '@/app/admin/_components/ui/fields'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {Input, Select, SelectItem} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useEffect, useMemo, useRef} from 'react'
 import {mapFractions, ProductFormApi} from '../product-schema'
-import {commonInputClassNames} from '../ui/fields'
 import {FormSection, Header} from './components'
 
 function extractDenominationFromLabel(label: string): string | null {
@@ -155,13 +158,7 @@ export const Pricing = ({
                       onBlur={field.handleBlur}
                       placeholder='Select unit'
                       variant='bordered'
-                      classNames={{
-                        ...commonInputClassNames,
-                        trigger:
-                          'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-                        label:
-                          'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
-                      }}
+                      classNames={commonSelectClassNames}
                       disallowEmptySelection={false}>
                       {categoryUnits.map((u) => (
                         <SelectItem key={u} textValue={u}>
@@ -199,12 +196,14 @@ export const Pricing = ({
                 | Array<{label: string; price: number}>
                 | undefined) || []
             return (
-              <div className='space-y-3 p-4'>
+              <div className='space-y-3 p-1 md:p-4'>
                 <div className='flex items-center justify-between'>
                   <label className='text-sm font-medium'>
                     Price by Denomination
                   </label>
-                  <span className='text-xs'>Price per size (from category)</span>
+                  <span className='text-xs'>
+                    Price per size (from category)
+                  </span>
                 </div>
 
                 {variants.length > 0 ? (
@@ -215,8 +214,9 @@ export const Pricing = ({
                       return (
                         <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4'>
                           {variants.map((variant) => {
-                            const denomKey =
-                              extractDenominationFromLabel(variant.label)
+                            const denomKey = extractDenominationFromLabel(
+                              variant.label,
+                            )
                             if (denomKey == null) return null
                             const value = priceByDenomination[denomKey] ?? 0
                             return (

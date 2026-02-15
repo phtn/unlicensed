@@ -1,5 +1,7 @@
 'use client'
 
+import {FormInput, renderFields} from '@/app/admin/_components/ui/fields'
+import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {Id} from '@/convex/_generated/dataModel'
 import {useImageConverter} from '@/hooks/use-image-converter'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
@@ -10,8 +12,6 @@ import {Button, Image} from '@heroui/react'
 import {Derived, useStore} from '@tanstack/react-store'
 import {useMemo, useState} from 'react'
 import {ProductFormValues} from '../product-schema'
-import {FormInput, renderFields} from '../ui/fields'
-import {useAppForm} from '../ui/form-context'
 import {FormSection, Header} from './components'
 
 interface MediaProps {
@@ -136,7 +136,7 @@ export const Media = ({form, fields}: MediaProps) => {
                   // Convert to webp
                   const converted = await convert(pendingPrimaryImage.file, {
                     format: 'webp',
-                    quality: 0.9,
+                    quality: 0.8,
                   })
 
                   // Create a File object from the converted blob
@@ -332,7 +332,7 @@ export const Media = ({form, fields}: MediaProps) => {
                     // Convert to webp
                     const converted = await convert(pendingImage.file, {
                       format: 'webp',
-                      quality: 0.9,
+                      quality: 0.8,
                     })
 
                     // Create a File object from the converted blob
@@ -438,18 +438,23 @@ export const Media = ({form, fields}: MediaProps) => {
                       return (
                         <div
                           key={storageId + index}
-                          className={`relative w-32 h-32 rounded-xl overflow-hidden group ${
+                          className={`relative w-32 h-32 rounded-xl group ${
                             isPrimary
                               ? 'border-2 border-blue-500'
                               : 'border-2 border-foreground/20 bg-background'
                           } ${primaryImageValue ? 'flex' : 'hidden'}`}>
+                          {isPrimary && (
+                            <div className='absolute z-200 -top-2.5 right-1.5 px-1.5 py-0 text-[8px] font-brk uppercase bg-blue-600 text-white rounded'>
+                              Primary
+                            </div>
+                          )}
                           {preview ? (
                             <Image
                               src={preview}
                               radius='none'
                               alt={isPrimary ? 'Primary image' : 'Gallery item'}
                               className={cn(
-                                'w-full h-full object-cover rounded-xl',
+                                'w-full h-full object-cover rounded-xl overflow-hidden',
                               )}
                             />
                           ) : (
@@ -457,11 +462,7 @@ export const Media = ({form, fields}: MediaProps) => {
                               <Icon name='image-open-light' />
                             </div>
                           )}
-                          {isPrimary && (
-                            <div className='absolute top-1 left-1 px-2 py-0.5 text-xs font-medium bg-blue-500/80 text-white rounded'>
-                              Primary
-                            </div>
-                          )}
+
                           {!isPrimary && (
                             <button
                               type='button'

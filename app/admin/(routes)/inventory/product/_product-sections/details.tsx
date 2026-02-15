@@ -1,8 +1,8 @@
 'use client'
 
+import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {Textarea} from '@heroui/react'
 import {ProductFormApi} from '../product-schema'
-import {commonInputClassNames} from '../ui/fields'
 import {FormSection, Header} from './components'
 
 interface DetailsProps {

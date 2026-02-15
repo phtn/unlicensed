@@ -1,6 +1,6 @@
 'use client'
 
-import {mapFractions} from '@/app/admin/_components/product-schema'
+import {mapFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
 import type {StoreProductDetail} from '@/app/types'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {QuickScroll} from '@/components/base44/quick-scroll'

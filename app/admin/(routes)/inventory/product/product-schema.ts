@@ -1,13 +1,14 @@
+import {FormInput, SelectOption} from '@/app/admin/_components/ui/fields'
+import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {z} from 'zod'
-import {FormInput, SelectOption} from './ui/fields'
-import {useAppForm} from './ui/form-context'
 
 export const productSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   slug: z.string().optional(),
   categorySlug: z.string().min(1, 'Select a category.'),
-  subcategory: z.string().optional(),
   brand: z.string().optional(),
+  productTier: z.string().optional(),
+  subcategory: z.string().optional(),
   shortDescription: z.optional(
     z.string().min(0, 'Short description is required.'),
   ),
@@ -152,6 +153,15 @@ export const productFields: FormInput<ProductFormValues>[] = [
     defaultValue: '',
   },
   {
+    name: 'productType',
+    label: 'Product Type',
+    required: false,
+    type: 'select',
+    options: [],
+    placeholder: 'Product type',
+    defaultValue: '',
+  },
+  {
     name: 'brand',
     label: 'Brand',
     required: false,
@@ -160,12 +170,24 @@ export const productFields: FormInput<ProductFormValues>[] = [
     defaultValue: '',
   },
   {
-    name: 'productType',
-    label: 'Product Type',
+    name: 'tier',
+    label: 'Tier',
     required: false,
     type: 'select',
-    options: [],
-    placeholder: 'Product type',
+    options: [
+      {value: 'B', label: 'B'},
+      {value: 'A', label: 'A'},
+      {value: 'AA', label: 'AA'},
+    ],
+    placeholder: 'B | A | AA',
+    defaultValue: '',
+  },
+  {
+    name: 'batchId',
+    label: 'Batch ID',
+    required: false,
+    type: 'text',
+    placeholder: 'e.g., B-2026-0007',
     defaultValue: '',
   },
   {
@@ -184,14 +206,7 @@ export const productFields: FormInput<ProductFormValues>[] = [
     placeholder: 'Image URLs separated by commas or newlines',
     defaultValue: [],
   },
-  {
-    name: 'batchId',
-    label: 'Batch ID',
-    required: false,
-    type: 'text',
-    placeholder: 'e.g., B-2026-0007',
-    defaultValue: '',
-  },
+
   {
     name: 'priceCents',
     label: 'Price ($)',

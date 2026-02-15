@@ -1,5 +1,5 @@
 import {ClassName} from '@/app/types'
-import {Chip, Input, Select, Switch, Textarea} from '@heroui/react'
+import {Chip, Input, Select, SelectProps, Switch, Textarea} from '@heroui/react'
 import React, {ChangeEvent, InputHTMLAttributes, ReactNode, Ref} from 'react'
 import {
   CategorySelectItem,
@@ -15,6 +15,13 @@ export const commonInputClassNames = {
   inputWrapper:
     'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-lg p-2 outline-none min-h-18 w-full',
   innerWrapper: 'px-1',
+}
+
+export const commonSelectClassNames = {
+  value: 'placeholder:text-slate-400/80 py-4 mt-2',
+  trigger:
+    'border h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
+  mainWrapper: 'py-4',
 }
 
 type BaseFieldProps<T> = {
@@ -167,7 +174,9 @@ export function TextAreaField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   )
 }
 
-export function SelectField<T>(props?: SelectFieldProps<T>) {
+export function SelectField<T>(
+  props?: SelectFieldProps<T> & Pick<SelectProps, 'classNames'>,
+) {
   const mode = props?.mode ?? 'single'
   const isMultiple = mode === 'multiple'
 
@@ -228,10 +237,7 @@ export function SelectField<T>(props?: SelectFieldProps<T>) {
         isMultiline={isMultiple}
         classNames={{
           ...commonInputClassNames,
-          value: 'placeholder:text-slate-400/80 py-4 mt-2',
-          trigger:
-            'border h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-          mainWrapper: 'py-4',
+          ...commonSelectClassNames,
         }}
         renderValue={
           isMultiple
@@ -386,18 +392,13 @@ export const renderFields = <T extends Record<string, unknown>>(
               <input.SelectField
                 {...input}
                 type={field.type}
-                name={field.name as keyof T}
+                name={field.name as unknown as keyof T}
                 mode={field.mode}
                 label={field.label}
                 placeholder={field.placeholder}
                 isCategory={field.name === 'categorySlug'}
                 className='w-full flex'
-                // options={
-                //   field.name === 'categoryslug' ||
-                //   field.name === 'availabledenominationsraw'
-                //     ? (options ?? [])
-                //     : field.options
-                // }
+                classNames={{...commonSelectClassNames}}
                 options={options ?? []}
               />
             )

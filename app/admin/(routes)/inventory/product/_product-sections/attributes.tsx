@@ -1,11 +1,15 @@
 'use client'
 
+import {TagSelector} from '@/app/admin/_components/tag-selector'
+import {
+  commonInputClassNames,
+  NumberField,
+  SelectField,
+} from '@/app/admin/_components/ui/fields'
 import {Input, Slider} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {ChangeEvent} from 'react'
 import {ProductFormApi} from '../product-schema'
-import {TagSelector} from '../tag-selector'
-import {commonInputClassNames, NumberField, SelectField} from '../ui/fields'
 import {FormSection, Header} from './components'
 
 interface AttributesProps {

@@ -1,8 +1,11 @@
 'use client'
 
+import {
+  commonInputClassNames,
+  commonSelectClassNames,
+} from '@/app/admin/_components/ui/fields'
 import {Input, Select, SelectItem} from '@heroui/react'
 import {ProductFormApi} from '../product-schema'
-import {commonInputClassNames} from '../ui/fields'
 import {FormSection, Header} from './components'
 
 interface NetWeightProps {
@@ -68,13 +71,7 @@ export const NetWeight = ({form}: NetWeightProps) => {
                   placeholder='Select unit'
                   variant='bordered'
                   disallowEmptySelection={false}
-                  classNames={{
-                    ...commonInputClassNames,
-                    trigger:
-                      'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-                    label:
-                      'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
-                  }}>
+                  classNames={commonSelectClassNames}>
                   {NET_WEIGHT_UNIT_OPTIONS.map((unit) => (
                     <SelectItem key={unit.key} textValue={unit.label}>
                       {unit.label}

@@ -1,11 +1,11 @@
 'use client'
 
 import {ProductForm} from '@/app/admin/(routes)/inventory/product/product-form'
-import {ProductFormValues} from '@/app/admin/_components/product-schema'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
+import {ProductFormValues} from '../product-schema'
 
 interface EditProductContentProps {
   id: string

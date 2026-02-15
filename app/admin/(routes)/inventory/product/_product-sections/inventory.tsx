@@ -1,14 +1,16 @@
 'use client'
 
-import {ProductTier} from '@/convex/products/d'
+import {
+  commonInputClassNames,
+  commonSelectClassNames,
+} from '@/app/admin/_components/ui/fields'
+import {JunctionBox} from '@/app/admin/_components/ui/junction-box'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Chip, Input, Select, SelectItem, SelectedItems} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMemo} from 'react'
-import {ProductFormApi, mapFractions, productTiers} from '../product-schema'
-import {commonInputClassNames} from '../ui/fields'
-import {JunctionBox} from '../ui/junction-box'
+import {ProductFormApi, mapFractions} from '../product-schema'
 import {FormSection, Header} from './components'
 
 interface InventoryProps {
@@ -183,7 +185,7 @@ export const Inventory = ({form}: InventoryProps) => {
             </form.Field>
           </div>
 
-          <div className='w-full col-span-2'>
+          <div className='w-full grid md:grid-col-2 col-span-4'>
             <form.Field name='availableDenominationsRaw'>
               {(field) => {
                 const selectedKeys = new Set(
@@ -209,13 +211,7 @@ export const Inventory = ({form}: InventoryProps) => {
                       variant='bordered'
                       isMultiline={true}
                       isDisabled={variantOptions.length === 0}
-                      classNames={{
-                        ...commonInputClassNames,
-                        trigger:
-                          'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-                        label:
-                          'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
-                      }}
+                      classNames={commonSelectClassNames}
                       renderValue={(items: SelectedItems<object>) => {
                         return (
                           <div className='flex flex-wrap gap-2'>
@@ -277,7 +273,7 @@ export const Inventory = ({form}: InventoryProps) => {
             </form.Field>
           </div>
 
-          <div className='w-full col-span-2'>
+          <div className='w-full col-span-4'>
             <form.Field name='popularDenomination'>
               {(field) => {
                 const popularDenominationValue =
@@ -343,13 +339,7 @@ export const Inventory = ({form}: InventoryProps) => {
                       variant='bordered'
                       isMultiline={true}
                       isDisabled={variantOptions.length === 0}
-                      classNames={{
-                        ...commonInputClassNames,
-                        trigger:
-                          'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-                        label:
-                          'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
-                      }}
+                      classNames={commonSelectClassNames}
                       renderValue={(items: SelectedItems<object>) => {
                         return (
                           <div className='flex flex-wrap gap-2'>
@@ -407,50 +397,6 @@ export const Inventory = ({form}: InventoryProps) => {
                       </p>
                     )}
                   </div>
-                )
-              }}
-            </form.Field>
-          </div>
-          <div className='w-full col-span-2'>
-            <form.Field name='tier'>
-              {(field) => {
-                const tierValue =
-                  (field.state.value as ProductTier) ?? undefined
-                const selectedKeys = tierValue ? [tierValue] : []
-                return (
-                  <Select
-                    label='Product Tier'
-                    placeholder='Select a tier'
-                    selectedKeys={selectedKeys}
-                    onSelectionChange={(keys) => {
-                      const key = Array.from(keys)[0]
-                      if (key == null) {
-                        field.handleChange(undefined)
-                        return
-                      }
-                      const nextTier = String(key)
-                      field.handleChange(
-                        productTiers.includes(nextTier)
-                          ? (nextTier as ProductTier)
-                          : undefined,
-                      )
-                    }}
-                    onBlur={field.handleBlur}
-                    variant='bordered'
-                    classNames={{
-                      ...commonInputClassNames,
-                      trigger:
-                        'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-                      label:
-                        'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
-                    }}
-                    disallowEmptySelection={false}>
-                    {productTiers.map((tier) => (
-                      <SelectItem key={tier} textValue={tier}>
-                        {tier}
-                      </SelectItem>
-                    ))}
-                  </Select>
                 )
               }}
             </form.Field>

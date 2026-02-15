@@ -1,5 +1,6 @@
 'use client'
 
+import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {api} from '@/convex/_generated/api'
 import {Doc, Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
@@ -9,21 +10,20 @@ import {Button} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useCallback, useEffect, useRef, useState} from 'react'
+import {Attributes} from './_product-sections/attributes'
+import {BasicInfo} from './_product-sections/basic-info'
+import {Details} from './_product-sections/details'
+import {Inventory} from './_product-sections/inventory'
+import {Media} from './_product-sections/media'
+import {NetWeight} from './_product-sections/net-weight'
+import {Pricing} from './_product-sections/pricing'
 import {
   defaultValues,
   productFields,
   ProductFormApi,
   ProductFormValues,
   productSchema,
-} from '../../../_components/product-schema'
-import {Attributes} from '../../../_components/product-sections/attributes'
-import {BasicInfo} from '../../../_components/product-sections/basic-info'
-import {Details} from '../../../_components/product-sections/details'
-import {Inventory} from '../../../_components/product-sections/inventory'
-import {Media} from '../../../_components/product-sections/media'
-import {NetWeight} from '../../../_components/product-sections/net-weight'
-import {Pricing} from '../../../_components/product-sections/pricing'
-import {useAppForm} from '../../../_components/ui/form-context'
+} from './product-schema'
 
 type CategoryDoc = Doc<'categories'>
 
@@ -306,7 +306,7 @@ export const ProductForm = ({
           ))}
         </nav>
 
-        <div className='px-4'>
+        <div className='px-1 xl:px-2 2xl:px-4'>
           <Button
             size='lg'
             type='submit'
@@ -318,7 +318,7 @@ export const ProductForm = ({
                 ? 'Updating...'
                 : 'Creating...'
               : isEditMode
-                ? 'Update Product'
+                ? 'Save Changes'
                 : 'Create Product'}
           </Button>
           {status === 'success' && (
@@ -341,7 +341,7 @@ export const ProductForm = ({
       {/* Main Content Area */}
       <main
         ref={mainScrollRef}
-        className='col-span-1 lg:col-span-10 h-full overflow-y-auto space-y-0 mb-24 scroll-smooth px-1 dark:bg-dark-table/40'>
+        className='col-span-1 lg:col-span-10 h-full overflow-y-auto space-y-0 md:mb-24 scroll-smooth px-1 dark:bg-dark-table/40'>
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -352,7 +352,7 @@ export const ProductForm = ({
           <div id='basic-info' className='scroll-mt-4'>
             <BasicInfo
               form={form as ProductFormApi}
-              fields={productFields.slice(0, 6)}
+              fields={productFields.slice(0, 9)}
               categories={categories}
               onArchiveProduct={isEditMode ? handleArchiveProduct : undefined}
               isArchiving={isArchiving}></BasicInfo>
@@ -360,7 +360,7 @@ export const ProductForm = ({
           <div id='media' className='scroll-mt-4'>
             <Media
               form={form as ProductFormApi}
-              fields={productFields.slice(6, 7)}></Media>
+              fields={productFields.slice(9, 10)}></Media>
           </div>
           <div id='pricing' className='scroll-mt-4'>
             <Pricing
@@ -387,18 +387,20 @@ export const ProductForm = ({
           </div>
 
           {/* Mobile Actions */}
-          <div className='lg:hidden sticky bottom-4 z-20 p-4 bg-neutral-900/80 backdrop-blur-md border border-neutral-800 rounded-xl shadow-2xl'>
+          <div className='lg:hidden sticky z-200'>
             <Button
+              size='lg'
               type='submit'
+              radius='none'
               color='success'
-              className='w-full font-semibold'
+              className='w-full font-medium font-okxs h-14'
               isLoading={isSubmitting}>
               {isSubmitting
                 ? isEditMode
                   ? 'Updating...'
                   : 'Creating...'
                 : isEditMode
-                  ? 'Update Product'
+                  ? 'Save Changes'
                   : 'Create Product'}
             </Button>
           </div>

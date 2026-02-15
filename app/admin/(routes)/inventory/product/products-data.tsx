@@ -1,6 +1,5 @@
 'use client'
 
-import {mapNumericFractions} from '@/app/admin/_components/product-schema'
 import {DataTable} from '@/components/table-v2'
 import {
   HoverCell,
@@ -17,6 +16,7 @@ import {formatPrice} from '@/utils/formatPrice'
 import {Slider} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMemo} from 'react'
+import {mapNumericFractions} from './product-schema'
 
 function availableDenominationsCell(
   ctx: CellContext<Doc<'products'>, unknown>,
@@ -263,10 +263,12 @@ export const ProductsData = ({data}: ProductsDataProps) => {
         },
         {
           id: 'noseRating',
-          header: <ColHeader tip='Nose Rating' symbol='Nose' left />,
+          header: (
+            <ColHeader tip='Nose Rating' symbol='Nose' className='pr-4' />
+          ),
           accessorKey: 'noseRating',
-          cell: noseRatingCell,
-          size: 50,
+          cell: textCell('noseRating'),
+          size: 20,
         },
         // {
         //   id: 'createdAt',

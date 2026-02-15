@@ -1,4 +1,3 @@
-import {mapNumericFractions} from '@/app/admin/_components/product-schema'
 import type {StoreProduct} from '@/app/types'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
@@ -7,6 +6,7 @@ import NextLink from 'next/link'
 import {HyperActivity} from '../expermtl/activity'
 import {TextFlip} from '../expermtl/text-flip'
 import {HyperBadge} from '../main/badge'
+import { mapNumericFractions } from '@/app/admin/(routes)/inventory/product/product-schema'
 
 type ProductCardProps = {
   product: StoreProduct
