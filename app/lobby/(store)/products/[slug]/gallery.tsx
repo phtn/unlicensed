@@ -48,7 +48,7 @@ export const Gallery = ({
   )
 
   return (
-    <div className='flex flex-col gap-y-3 sm:gap-0'>
+    <section className='flex flex-col gap-y-3 sm:gap-0'>
       <div
         ref={imageRef}
         className='relative aspect-auto md:rounded-s-3xl md:border-s md:border-y border-foreground/10 dark:border-foreground/30 w-full md:max-h-115 overflow-hidden bg-background/60 lg:min-h-168'>
@@ -84,6 +84,6 @@ export const Gallery = ({
           </div>
         ))}
       </div>
-    </div>
+    </section>
   )
 }
