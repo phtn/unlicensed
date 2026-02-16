@@ -14,6 +14,7 @@ const statusColorMap: Record<string, ChipProps['color']> = {
   shipping: 'default',
   resend: 'warning',
   shipped: 'success',
+  delivered: 'success',
   cancelled: 'danger',
 }
 

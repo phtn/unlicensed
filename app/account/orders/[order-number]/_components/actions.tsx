@@ -29,6 +29,15 @@ export const Actions = ({status}: Props) => {
             </p>
           </div>
         )
+      case 'delivered':
+        return (
+          <div className='flex flex-col items-center justify-center'>
+            <Icon name='check' className='size-12 text-green-500' />
+            <p className='text-center text-sm font-semibold text-gray-500'>
+              Order Delivered
+            </p>
+          </div>
+        )
       default:
         return null
     }

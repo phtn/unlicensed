@@ -29,6 +29,7 @@ const statusColorMap: Record<string, ChipProps['color']> = {
   shipping: 'default',
   resend: 'warning',
   shipped: 'success',
+  delivered: 'success',
   cancelled: 'danger',
 }
 
@@ -39,6 +40,7 @@ const statusOptions = [
   {value: 'shipping', label: 'Shipping'},
   {value: 'resend', label: 'Resend'},
   {value: 'shipped', label: 'Shipped'},
+  {value: 'delivered', label: 'Delivered'},
   {value: 'cancelled', label: 'Cancelled'},
 ]
 

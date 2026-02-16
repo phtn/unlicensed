@@ -107,6 +107,7 @@ export const ProductForm = ({
         const payload = {
           name: data.name.trim(),
           slug: ensureSlug(data.slug ?? '', data.name),
+          base: data.base?.trim() || undefined,
           categorySlug: data.categorySlug,
           shortDescription: data.shortDescription?.trim(),
           description: data.description?.trim(),
@@ -352,7 +353,7 @@ export const ProductForm = ({
           <div id='basic-info' className='scroll-mt-4'>
             <BasicInfo
               form={form as ProductFormApi}
-              fields={productFields.slice(0, 9)}
+              fields={productFields.slice(0, 10)}
               categories={categories}
               onArchiveProduct={isEditMode ? handleArchiveProduct : undefined}
               isArchiving={isArchiving}></BasicInfo>
@@ -360,7 +361,7 @@ export const ProductForm = ({
           <div id='media' className='scroll-mt-4'>
             <Media
               form={form as ProductFormApi}
-              fields={productFields.slice(9, 10)}></Media>
+              fields={productFields.slice(10, 11)}></Media>
           </div>
           <div id='pricing' className='scroll-mt-4'>
             <Pricing

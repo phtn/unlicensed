@@ -15,6 +15,16 @@ const productTier = v.union(
   v.literal('AAA'),
   v.literal('AAAA'),
   v.literal('RARE'),
+  v.literal('Cured Resin'),
+  v.literal('Fresh Frozen'),
+  v.literal('Live Resin'),
+  v.literal('Full Melt'),
+  v.literal('Half Melt'),
+  v.literal('Distillate'),
+  v.literal('Liquid Diamonds'),
+  v.literal('Sauce'),
+  v.literal('Live Rosin'),
+  v.literal('Cured Rosin'),
 )
 
 export type ProductTier = Infer<typeof productTier>
@@ -22,6 +32,7 @@ export type ProductTier = Infer<typeof productTier>
 export const productSchema = v.object({
   name: v.optional(v.string()),
   slug: v.optional(v.string()),
+  base: v.optional(v.string()),
   categoryId: v.optional(v.id('categories')),
   categorySlug: v.optional(v.string()),
   shortDescription: v.optional(v.string()),

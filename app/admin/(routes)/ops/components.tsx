@@ -198,6 +198,7 @@ const statusOptions: Array<{value: OrderStatusCode; label: string}> = [
   {value: 'awaiting_courier_pickup', label: 'Awaiting Courier Pickup'},
   // {value: 'shipping', label: 'Shipping'},
   {value: 'shipped', label: 'Shipped'},
+  {value: 'delivered', label: 'Delivered'},
   {value: 'resend', label: 'Resend'},
   {value: 'cancelled', label: 'Cancelled'},
 ]
@@ -207,6 +208,7 @@ const colorMap: Record<StatusCode, string> = {
   order_processing: 'bg-sky-600/20 dark:bg-blue-400/45',
   awaiting_courier_pickup: 'bg-orange-200/65 dark:bg-rose-300/50',
   shipped: 'bg-emerald-400/35 dark:bg-emerald-400/35',
+  delivered: 'bg-green-500/25 dark:bg-green-400/35',
   // shipping: 'bg-purple-200/70 dark:bg-purple-400/35',
   resend: 'bg-red-200/70 dark:bg-red-400/50',
   cancelled: 'dark:bg-red-400/40',

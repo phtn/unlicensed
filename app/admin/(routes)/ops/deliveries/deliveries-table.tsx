@@ -18,6 +18,7 @@ const deliveryStatuses: Order['orderStatus'][] = [
   'order_processing',
   'awaiting_courier_pickup',
   'shipped',
+  'delivered',
 ]
 
 const statusColorMap: Record<Order['orderStatus'], string> = {
@@ -29,6 +30,8 @@ const statusColorMap: Record<Order['orderStatus'], string> = {
     'bg-orange-500/20 text-orange-800 dark:bg-orange-400/25 dark:text-orange-200',
   shipped:
     'bg-emerald-500/20 text-emerald-800 dark:bg-emerald-400/25 dark:text-emerald-200',
+  delivered:
+    'bg-green-500/20 text-green-800 dark:bg-green-400/25 dark:text-green-200',
   // shipping:
   //   'bg-indigo-500/20 text-indigo-800 dark:bg-indigo-400/25 dark:text-indigo-200',
   resend: 'bg-rose-500/20 text-rose-800 dark:bg-rose-400/25 dark:text-rose-200',

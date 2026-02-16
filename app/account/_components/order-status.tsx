@@ -20,6 +20,8 @@ export const OrderStatusBadge = ({status}: Props) => {
         return 'warning'
       case 'shipped':
         return 'success'
+      case 'delivered':
+        return 'success'
       case 'cancelled':
         return 'danger'
       default:

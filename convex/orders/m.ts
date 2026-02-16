@@ -221,6 +221,7 @@ export const updateOrderStatus = mutation({
       updatedAt: number
       cancelledAt?: number
       internalNotes?: string
+      shipping?: typeof order.shipping
     } = {
       orderStatus: args.status,
       updatedAt: Date.now(),
@@ -232,6 +233,13 @@ export const updateOrderStatus = mutation({
 
     if (args.internalNotes) {
       updates.internalNotes = args.internalNotes
+    }
+
+    if (args.status === 'delivered' && !order.shipping?.deliveredAt) {
+      updates.shipping = {
+        ...order.shipping,
+        deliveredAt: Date.now(),
+      }
     }
 
     await ctx.db.patch(args.orderId, updates)
@@ -352,9 +360,15 @@ export const updateShipping = mutation({
       throw new Error('Order not found')
     }
 
-    // If shipped, update order status
+    // Keep order status in sync with shipping milestones.
     let orderStatus = order.orderStatus
-    if (args.shipping.shippedAt && order.orderStatus !== 'shipped') {
+    if (args.shipping.deliveredAt && order.orderStatus !== 'delivered') {
+      orderStatus = 'delivered'
+    } else if (
+      args.shipping.shippedAt &&
+      order.orderStatus !== 'shipped' &&
+      order.orderStatus !== 'delivered'
+    ) {
       orderStatus = 'shipped'
     }
 
@@ -514,8 +528,8 @@ export const cancelOrder = mutation({
       throw new Error('Order is already cancelled')
     }
 
-    if (order.orderStatus === 'shipped') {
-      throw new Error('Cannot cancel a shipped order')
+    if (order.orderStatus === 'shipped' || order.orderStatus === 'delivered') {
+      throw new Error('Cannot cancel a shipped or delivered order')
     }
 
     const notes = args.reason ? `Cancelled: ${args.reason}` : 'Order cancelled'

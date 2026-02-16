@@ -116,7 +116,9 @@ export const getUserOrderStats = query({
       ),
       pendingOrders: orders.filter((o) => o.orderStatus === 'pending_payment')
         .length,
-      completedOrders: orders.filter((o) => o.orderStatus === 'shipped').length,
+      completedOrders: orders.filter(
+        (o) => o.orderStatus === 'shipped' || o.orderStatus === 'delivered',
+      ).length,
       cancelledOrders: orders.filter((o) => o.orderStatus === 'cancelled')
         .length,
     }
@@ -206,9 +208,10 @@ export const getAdminStats = query({
         order.orderStatus === 'order_processing',
     ).length
 
-    // Count shipped orders
+    // Count fulfilled orders (shipped or delivered)
     const deliveredOrdersCount = allOrders.filter(
-      (order) => order.orderStatus === 'shipped',
+      (order) =>
+        order.orderStatus === 'shipped' || order.orderStatus === 'delivered',
     ).length
 
     // Total orders count

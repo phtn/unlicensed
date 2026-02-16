@@ -432,6 +432,7 @@ export default function OrderDetailPage() {
               Back to Account
             </Button>
             {order.orderStatus !== 'shipped' &&
+              order.orderStatus !== 'delivered' &&
               order.orderStatus !== 'cancelled' && (
                 <Button
                   color='danger'

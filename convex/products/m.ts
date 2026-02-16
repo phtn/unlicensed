@@ -4,6 +4,104 @@ import {internal} from '../_generated/api'
 import {mutation} from '../_generated/server'
 import {productSchema} from './d'
 
+const FLOWER_TIERS = new Set(['B', 'A', 'AA', 'AAA', 'AAAA', 'RARE'])
+const EXTRACT_TIERS = new Set([
+  'Cured Resin',
+  'Fresh Frozen',
+  'Live Resin',
+  'Full Melt',
+  'Half Melt',
+])
+const VAPE_TIERS = new Set([
+  'Distillate',
+  'Live Resin',
+  'Cured Resin',
+  'Liquid Diamonds',
+  'Sauce',
+  'Live Rosin',
+  'Cured Rosin',
+])
+const EXTRACT_AND_EDIBLE_BASES = new Set([
+  'Distillate',
+  'Hydrocarbon (BHO)',
+  'CO2',
+  'Rosin',
+  'Hash',
+])
+const PRE_ROLL_BASES = new Set(['Flower', 'Infused'])
+
+const categoryContains = (
+  categorySlug: string,
+  candidates: readonly string[],
+) => candidates.some((candidate) => categorySlug.includes(candidate))
+
+const getAllowedTierSetForCategory = (categorySlug?: string) => {
+  const normalized = categorySlug?.toLowerCase().trim() ?? ''
+
+  if (categoryContains(normalized, ['extract', 'concentrate'])) {
+    return EXTRACT_TIERS
+  }
+
+  if (categoryContains(normalized, ['vape', 'cart', 'cartridge'])) {
+    return VAPE_TIERS
+  }
+
+  return FLOWER_TIERS
+}
+
+const getAllowedBaseSetForCategory = (categorySlug?: string) => {
+  const normalized = categorySlug?.toLowerCase().trim() ?? ''
+
+  if (categoryContains(normalized, ['extract', 'concentrate', 'edible'])) {
+    return EXTRACT_AND_EDIBLE_BASES
+  }
+
+  if (categoryContains(normalized, ['pre-roll', 'preroll', 'pre roll'])) {
+    return PRE_ROLL_BASES
+  }
+
+  return null
+}
+
+const validateTierForCategory = (
+  tier: string | undefined,
+  categorySlug?: string,
+) => {
+  if (!tier) {
+    return
+  }
+
+  const allowedTierSet = getAllowedTierSetForCategory(categorySlug)
+  if (allowedTierSet.has(tier)) {
+    return
+  }
+
+  const allowedTiers = Array.from(allowedTierSet).join(', ')
+  throw new Error(
+    `Tier "${tier}" is invalid for category "${categorySlug ?? 'unknown'}". Allowed tiers: ${allowedTiers}.`,
+  )
+}
+
+const validateBaseForCategory = (base: string | undefined, categorySlug?: string) => {
+  if (!base) {
+    return
+  }
+
+  const allowedBaseSet = getAllowedBaseSetForCategory(categorySlug)
+  if (!allowedBaseSet) {
+    return
+  }
+
+  if (allowedBaseSet.has(base)) {
+    return
+  }
+
+  const allowedBases = Array.from(allowedBaseSet).join(', ')
+  throw new Error(
+    `Base "${base}" is invalid for category "${categorySlug ?? 'unknown'}". Allowed base values: ${allowedBases}.`,
+  )
+}
+
 export const createProduct = mutation({
   args: productSchema,
   handler: async (ctx, args) => {
@@ -34,6 +132,11 @@ export const createProduct = mutation({
       throw new Error(`Category "${args.categorySlug}" not found.`)
     }
 
+    const base = args.base?.trim() || undefined
+
+    validateTierForCategory(args.tier, category.slug ?? args.categorySlug)
+    validateBaseForCategory(base, category.slug ?? args.categorySlug)
+
     const sanitizeArray = (values: Array<string> | undefined) =>
       values &&
       values.map((value) => value.trim()).filter((value) => value.length > 0)
@@ -44,6 +147,7 @@ export const createProduct = mutation({
     const productId = await ctx.db.insert('products', {
       name: args.name ?? '',
       slug,
+      base,
       categoryId: category._id,
       categorySlug: category.slug ?? '',
       shortDescription: args.shortDescription,
@@ -120,6 +224,9 @@ export const updateProduct = mutation({
       values?.filter((value) => Number.isFinite(value)) ?? undefined
 
     const updates: Partial<typeof product> = {}
+    let nextCategorySlug = product.categorySlug
+    let categoryChanged = false
+
     if (fields.name !== undefined) {
       updates.name = fields.name.trim()
     }
@@ -145,8 +252,15 @@ export const updateProduct = mutation({
       if (!category) {
         throw new Error(`Category "${fields.categorySlug}" not found.`)
       }
+      nextCategorySlug = category.slug ?? ''
       updates.categoryId = category._id
-      updates.categorySlug = category.slug ?? ''
+      updates.categorySlug = nextCategorySlug
+      categoryChanged = nextCategorySlug !== product.categorySlug
+    }
+    const nextBaseFromFields = fields.base?.trim() || undefined
+    const baseChanged = fields.base !== undefined && nextBaseFromFields !== product.base
+    if (fields.base !== undefined) {
+      updates.base = nextBaseFromFields
     }
     if (fields.shortDescription !== undefined) {
       updates.shortDescription = fields.shortDescription.trim()
@@ -250,8 +364,35 @@ export const updateProduct = mutation({
     if (fields.priceByDenomination !== undefined) {
       updates.priceByDenomination = fields.priceByDenomination
     }
+    const tierChanged = fields.tier !== undefined && fields.tier !== product.tier
     if (fields.tier !== undefined) {
       updates.tier = fields.tier
+    }
+
+    if (categoryChanged && fields.tier === undefined && product.tier !== undefined) {
+      updates.tier = undefined
+    }
+
+    if (tierChanged || categoryChanged) {
+      const nextTier =
+        fields.tier !== undefined
+          ? fields.tier
+          : categoryChanged
+            ? undefined
+            : product.tier
+      validateTierForCategory(nextTier, nextCategorySlug)
+    }
+    if (categoryChanged && fields.base === undefined && product.base !== undefined) {
+      updates.base = undefined
+    }
+    if (baseChanged || categoryChanged) {
+      const nextBase =
+        fields.base !== undefined
+          ? nextBaseFromFields
+          : categoryChanged
+            ? undefined
+            : product.base
+      validateBaseForCategory(nextBase, nextCategorySlug)
     }
     if (fields.eligibleForDeals !== undefined) {
       updates.eligibleForDeals = fields.eligibleForDeals

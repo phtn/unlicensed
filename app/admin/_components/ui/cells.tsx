@@ -57,6 +57,7 @@ export const actionsCell = (selected: boolean, fn: VoidFunction) => {
  * 4. Shipping
  * 5. Resend
  * 6. Shipped
+ * 7. Delivered
  */
 
 type StatusCode =
@@ -66,6 +67,7 @@ type StatusCode =
   | 'shipping'
   | 'resend'
   | 'shipped'
+  | 'delivered'
   | 'cancelled'
   | 'default'
 
@@ -76,6 +78,7 @@ const colorMap: Record<StatusCode, ClassName> = {
   shipping: 'bg-purple-200/70 dark:bg-purple-400/35',
   resend: 'bg-red-200/70 dark:bg-red-400/50',
   shipped: 'bg-emerald-400/35 dark:bg-emerald-400/35',
+  delivered: 'bg-green-500/25 dark:bg-green-400/35',
   cancelled: 'dark:bg-red-400/40',
   default: 'bg-[#e8e6e5]',
 }

@@ -158,7 +158,11 @@ export const Pricing = ({
                       onBlur={field.handleBlur}
                       placeholder='Select unit'
                       variant='bordered'
-                      classNames={commonSelectClassNames}
+                      classNames={{
+                        ...commonInputClassNames,
+                        ...commonSelectClassNames,
+                        mainWrapper: 'py-0',
+                      }}
                       disallowEmptySelection={false}>
                       {categoryUnits.map((u) => (
                         <SelectItem key={u} textValue={u}>

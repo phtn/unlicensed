@@ -238,6 +238,7 @@ export function SelectField<T>(
         classNames={{
           ...commonInputClassNames,
           ...commonSelectClassNames,
+          ...props?.classNames,
         }}
         renderValue={
           isMultiple
@@ -372,6 +373,7 @@ export const renderFields = <T extends Record<string, unknown>>(
   form: ReturnType<typeof useAppForm>,
   fields: FormInput<T>[],
   options?: Array<SelectOption>,
+  optionsByField?: Partial<Record<string, Array<SelectOption>>>,
 ) =>
   fields.map((field) => (
     <form.AppField key={String(field.name)} name={field.name as string}>
@@ -387,7 +389,14 @@ export const renderFields = <T extends Record<string, unknown>>(
                 placeholder={field.placeholder}
               />
             )
-          case 'select':
+          case 'select': {
+            const fieldName = String(field.name)
+            const selectOptions =
+              optionsByField?.[fieldName] ??
+              (fieldName === 'categorySlug'
+                ? options ?? field.options ?? []
+                : field.options ?? [])
+
             return (
               <input.SelectField
                 {...input}
@@ -399,9 +408,10 @@ export const renderFields = <T extends Record<string, unknown>>(
                 isCategory={field.name === 'categorySlug'}
                 className='w-full flex'
                 classNames={{...commonSelectClassNames}}
-                options={options ?? []}
+                options={selectOptions}
               />
             )
+          }
           default:
             return (
               <input.TextField
@@ -421,6 +431,7 @@ interface FieldGroupProps<T extends Record<string, unknown>> {
   form: ReturnType<typeof useAppForm>
   fields: Array<FormInput<T>>
   options?: Array<SelectOption>
+  optionsByField?: Partial<Record<string, Array<SelectOption>>>
   children?: ReactNode
 }
 
@@ -428,6 +439,7 @@ export const FieldGroup = <T extends Record<string, unknown>>({
   form,
   fields,
   options,
+  optionsByField,
 }: FieldGroupProps<T>) =>
   fields.map((field) => (
     <form.AppField key={String(field.name)} name={field.name as string}>
@@ -443,7 +455,14 @@ export const FieldGroup = <T extends Record<string, unknown>>({
                 placeholder={field.placeholder}
               />
             )
-          case 'select':
+          case 'select': {
+            const fieldName = String(field.name)
+            const selectOptions =
+              optionsByField?.[fieldName] ??
+              (fieldName === 'categorySlug'
+                ? options ?? field.options ?? []
+                : field.options ?? [])
+
             return (
               <input.SelectField
                 {...input}
@@ -453,9 +472,10 @@ export const FieldGroup = <T extends Record<string, unknown>>({
                 label={field.label}
                 placeholder={field.placeholder}
                 isCategory={field.name === 'categorySlug'}
-                options={options ?? []}
+                options={selectOptions}
               />
             )
+          }
           default:
             return (
               <input.TextField

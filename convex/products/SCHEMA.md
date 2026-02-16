@@ -10,11 +10,22 @@ The `potencyLevel` field uses a union type with the following literal values:
 ## Tier Type
 
 The `tier` field uses a union type with the following literal values:
+- `'B'`
 - `'A'`
 - `'AA'`
 - `'AAA'`
 - `'AAAA'`
-- `'S'`
+- `'RARE'`
+- `'Cured Resin'`
+- `'Fresh Frozen'`
+- `'Live Resin'`
+- `'Full Melt'`
+- `'Half Melt'`
+- `'Distillate'`
+- `'Liquid Diamonds'`
+- `'Sauce'`
+- `'Live Rosin'`
+- `'Cured Rosin'`
 
 ## DealType Type
 
@@ -56,7 +67,7 @@ The `dealType` field uses a union type with the following literal values:
 | `lineage` | `string` | Optional | Product lineage information |
 | `noseRating` | `number` | Optional | Nose rating value |
 | `variants` | `Array<{label: string, price: number}>` | Optional | Array of product variants with label and price |
-| `tier` | `Tier` | Optional | Product tier: 'A', 'AA', 'AAA', 'AAAA', or 'S' |
+| `tier` | `Tier` | Optional | Product tier for Flower, Extracts, and Vapes |
 | `eligibleForRewards` | `boolean` | Optional | Whether this product is eligible for rewards points |
 | `eligibleForDeals` | `boolean` | Optional | Whether this product is eligible for deals |
 | `eligibleDenominationForDeals` | `number[]` | Optional | Array of denominations eligible for deals |

@@ -63,6 +63,7 @@ export const orderStatusSchema = v.union(
   v.literal('order_processing'), // Order being processed
   v.literal('awaiting_courier_pickup'), // Awaiting courier pickup
   v.literal('shipped'), // Order has been shipped
+  v.literal('delivered'), // Order has been delivered
   v.literal('resend'), // Order needs to be resent
   v.literal('cancelled'), // Order was cancelled
 )

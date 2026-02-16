@@ -71,7 +71,11 @@ export const NetWeight = ({form}: NetWeightProps) => {
                   placeholder='Select unit'
                   variant='bordered'
                   disallowEmptySelection={false}
-                  classNames={commonSelectClassNames}>
+                  classNames={{
+                    ...commonInputClassNames,
+                    ...commonSelectClassNames,
+                    mainWrapper: 'py-0',
+                  }}>
                   {NET_WEIGHT_UNIT_OPTIONS.map((unit) => (
                     <SelectItem key={unit.key} textValue={unit.label}>
                       {unit.label}

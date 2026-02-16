@@ -11,7 +11,13 @@ import Link from 'next/link'
 import {Suspense} from 'react'
 
 const SalesInner = () => {
-  const sales = useQuery(api.orders.q.getOrdersByStatus, {status: 'shipped'})
+  const shippedSales = useQuery(api.orders.q.getOrdersByStatus, {
+    status: 'shipped',
+  })
+  const deliveredSales = useQuery(api.orders.q.getOrdersByStatus, {
+    status: 'delivered',
+  })
+  const salesCount = (shippedSales?.length ?? 0) + (deliveredSales?.length ?? 0)
   const [tabId] = useAdminTabId()
   const isProductRoute = tabId !== 'badges' && tabId !== 'new'
 
@@ -27,7 +33,7 @@ const SalesInner = () => {
             'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
             {'bg-blue-500 dark:bg-blue-500 text-white': isProductRoute},
           )}>
-          <AnimatedNumber value={sales?.length ?? 0} />
+          <AnimatedNumber value={salesCount} />
         </span>
       </Link>
       <ToolbarButtonWrapper>

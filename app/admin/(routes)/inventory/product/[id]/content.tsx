@@ -43,6 +43,7 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
   const initialValues: ProductFormValues = {
     name: product.name ?? '',
     slug: product.slug ?? '',
+    base: product.base ?? '',
     categorySlug: product.categorySlug ?? '',
     shortDescription: product.shortDescription ?? '',
     description: product.description ?? '',

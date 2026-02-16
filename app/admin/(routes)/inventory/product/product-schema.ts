@@ -2,9 +2,108 @@ import {FormInput, SelectOption} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {z} from 'zod'
 
+export const flowerProductTiers = [
+  'B',
+  'A',
+  'AA',
+  'AAA',
+  'AAAA',
+  'RARE',
+] as const
+
+export const extractProductTiers = [
+  'Cured Resin',
+  'Fresh Frozen',
+  'Live Resin',
+  'Full Melt',
+  'Half Melt',
+] as const
+
+export const vapeProductTiers = [
+  'Distillate',
+  'Live Resin',
+  'Cured Resin',
+  'Liquid Diamonds',
+  'Sauce',
+  'Live Rosin',
+  'Cured Rosin',
+] as const
+
+export const allProductTiers = [
+  ...flowerProductTiers,
+  ...extractProductTiers,
+  'Distillate',
+  'Liquid Diamonds',
+  'Sauce',
+  'Live Rosin',
+  'Cured Rosin',
+] as const
+
+export const extractAndEdibleProductBases = [
+  'Distillate',
+  'Hydrocarbon (BHO)',
+  'CO2',
+  'Rosin',
+  'Hash',
+] as const
+
+export const preRollProductBases = ['Flower', 'Infused'] as const
+
+const categoryContains = (
+  categorySlug: string,
+  candidates: readonly string[],
+) => candidates.some((candidate) => categorySlug.includes(candidate))
+
+export const getProductTierValuesByCategory = (categorySlug?: string) => {
+  const normalized = categorySlug?.toLowerCase().trim() ?? ''
+
+  if (categoryContains(normalized, ['extract', 'concentrate'])) {
+    return extractProductTiers
+  }
+
+  if (categoryContains(normalized, ['vape', 'cart', 'cartridge'])) {
+    return vapeProductTiers
+  }
+
+  return flowerProductTiers
+}
+
+export const getProductTierOptionsByCategory = (
+  categorySlug?: string,
+): SelectOption[] =>
+  getProductTierValuesByCategory(categorySlug).map((tier) => ({
+    value: tier,
+    label: tier,
+  }))
+
+export const getProductBaseValuesByCategory = (
+  categorySlug?: string,
+): readonly string[] => {
+  const normalized = categorySlug?.toLowerCase().trim() ?? ''
+
+  if (categoryContains(normalized, ['extract', 'concentrate', 'edible'])) {
+    return extractAndEdibleProductBases
+  }
+
+  if (categoryContains(normalized, ['pre-roll', 'preroll', 'pre roll'])) {
+    return preRollProductBases
+  }
+
+  return []
+}
+
+export const getProductBaseOptionsByCategory = (
+  categorySlug?: string,
+): SelectOption[] =>
+  getProductBaseValuesByCategory(categorySlug).map((base) => ({
+    value: base,
+    label: base,
+  }))
+
 export const productSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   slug: z.string().optional(),
+  base: z.string().optional(),
   categorySlug: z.string().min(1, 'Select a category.'),
   brand: z.string().optional(),
   productTier: z.string().optional(),
@@ -80,7 +179,7 @@ export const productSchema = z.object({
       }),
     )
     .optional(),
-  tier: z.enum(['B', 'A', 'AA', 'AAA', 'AAAA', 'RARE']).optional(),
+  tier: z.enum(allProductTiers).optional(),
   eligibleForUpgrade: z.boolean().optional(),
   upgradePrice: z
     .number()
@@ -137,6 +236,16 @@ export const productFields: FormInput<ProductFormValues>[] = [
     defaultValue: '',
   },
   {
+    name: 'base',
+    label: 'Base',
+    required: false,
+    type: 'select',
+    mode: 'single',
+    options: [],
+    placeholder: 'Select base',
+    defaultValue: '',
+  },
+  {
     name: 'categorySlug',
     label: 'Category',
     required: true,
@@ -174,12 +283,8 @@ export const productFields: FormInput<ProductFormValues>[] = [
     label: 'Tier',
     required: false,
     type: 'select',
-    options: [
-      {value: 'B', label: 'B'},
-      {value: 'A', label: 'A'},
-      {value: 'AA', label: 'AA'},
-    ],
-    placeholder: 'B | A | AA',
+    options: allProductTiers.map((tier) => ({value: tier, label: tier})),
+    placeholder: 'Select tier',
     defaultValue: '',
   },
   {
@@ -452,4 +557,4 @@ export const mapNumericFractions: Record<string, string> = {
   8: '8',
 }
 
-export const productTiers = ['B', 'A', 'AA', 'AAA', 'AAAA', 'RARE']
+export const productTiers = allProductTiers

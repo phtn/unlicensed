@@ -20,7 +20,11 @@ import {
 } from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useEffect, useMemo, useState} from 'react'
-import {ProductFormValues} from '../product-schema'
+import {
+  getProductBaseOptionsByCategory,
+  getProductTierOptionsByCategory,
+  ProductFormValues,
+} from '../product-schema'
 import {FormSection, Header} from './components'
 
 interface BasicInfoProps {
@@ -46,23 +50,58 @@ export const BasicInfo = ({
   })
 
   const availableCategories = useMemo(() => {
-    return categories?.sort((a, b) => a.name.localeCompare(b.name))
+    if (!categories) return []
+    return [...categories].sort((a, b) => a.name.localeCompare(b.name))
   }, [categories])
 
   const selectCategories = useMemo(
     () =>
       availableCategories
-        ?.filter((c) => c.slug)
+        .filter((c) => c.slug)
         .map((c) => ({value: c.slug!, label: c.name})),
     [availableCategories],
   )
 
-  // Separate name and slug fields from other fields
+  const defaultProductTypeOptions = useMemo(() => {
+    const field = fields.find((entry) => entry.name === 'productType')
+    return field?.type === 'select' ? field.options : []
+  }, [fields])
+
+  const defaultTierOptions = useMemo(() => {
+    const field = fields.find((entry) => entry.name === 'tier')
+    return field?.type === 'select' ? field.options : []
+  }, [fields])
+
+  const defaultBaseOptions = useMemo(() => {
+    const field = fields.find((entry) => entry.name === 'base')
+    return field?.type === 'select' ? field.options : []
+  }, [fields])
+
+  // Separate top-row fields from other basic info fields
   const nameField = fields.find((field) => field.name === 'name')
   const slugField = fields.find((field) => field.name === 'slug')
-  const basicFields = fields.slice(2, 8)
+  const baseField = fields.find((field) => field.name === 'base')
+  const basicFieldNames = useMemo(
+    () =>
+      new Set([
+        'categorySlug',
+        'subcategory',
+        'productType',
+        'brand',
+        'tier',
+        'batchId',
+      ]),
+    [],
+  )
+  const basicFields = useMemo(
+    () =>
+      fields.filter((field) =>
+        basicFieldNames.has(field.name as string),
+      ),
+    [basicFieldNames, fields],
+  )
   const selectedCategory = useMemo(() => {
-    if (!availableCategories || !categorySlug) return null
+    if (!categorySlug) return null
     return availableCategories.find(
       (category) => category.slug === categorySlug,
     )
@@ -72,38 +111,71 @@ export const BasicInfo = ({
     if (!selectedCategory?.subcategories) return []
     return [...new Set(selectedCategory.subcategories.map((s) => s.trim()))]
       .filter((s) => s.length > 0)
-      .map((s) => ({key: s, label: s}))
+      .map((s) => ({value: s, label: s}))
   }, [selectedCategory])
 
   const productTypeOptions = useMemo(() => {
-    if (!selectedCategory?.productTypes) return []
+    if (!selectedCategory?.productTypes) return defaultProductTypeOptions
     return [...new Set(selectedCategory.productTypes.map((s) => s.trim()))]
       .filter((s) => s.length > 0)
-      .map((s) => ({key: s, label: s}))
-  }, [selectedCategory])
+      .map((s) => ({value: s, label: s}))
+  }, [defaultProductTypeOptions, selectedCategory])
+
+  const tierOptions = useMemo(() => {
+    if (!categorySlug) return defaultTierOptions
+    return getProductTierOptionsByCategory(categorySlug)
+  }, [categorySlug, defaultTierOptions])
+
+  const baseOptions = useMemo(() => {
+    if (!categorySlug) return defaultBaseOptions
+    return getProductBaseOptionsByCategory(categorySlug)
+  }, [categorySlug, defaultBaseOptions])
 
   useEffect(() => {
     const currentProductType =
       (form.getFieldValue('productType') as string) ?? ''
     const currentSubcategory =
       (form.getFieldValue('subcategory') as string) ?? ''
+    const currentTier = (form.getFieldValue('tier') as string) ?? ''
+    const currentBase = (form.getFieldValue('base') as string) ?? ''
 
     if (
       currentProductType &&
-      productTypeOptions.length > 0 &&
-      !productTypeOptions.some((option) => option.key === currentProductType)
+      selectedCategory &&
+      !productTypeOptions.some((option) => option.value === currentProductType)
     ) {
       form.setFieldValue('productType', '')
     }
 
     if (
       currentSubcategory &&
-      subcategoryOptions.length > 0 &&
-      !subcategoryOptions.some((option) => option.key === currentSubcategory)
+      selectedCategory &&
+      !subcategoryOptions.some((option) => option.value === currentSubcategory)
     ) {
       form.setFieldValue('subcategory', '')
     }
-  }, [form, productTypeOptions, subcategoryOptions])
+
+    if (
+      currentTier &&
+      !tierOptions.some((option) => option.value === currentTier)
+    ) {
+      form.setFieldValue('tier', undefined)
+    }
+
+    if (
+      currentBase &&
+      !baseOptions.some((option) => option.value === currentBase)
+    ) {
+      form.setFieldValue('base', '')
+    }
+  }, [
+    baseOptions,
+    form,
+    productTypeOptions,
+    selectedCategory,
+    subcategoryOptions,
+    tierOptions,
+  ])
 
   return (
     <FormSection id='basic-info' position='top'>
@@ -123,7 +195,7 @@ export const BasicInfo = ({
         </Header>
       </div>
       <div className='grid gap-6 w-full'>
-        <div className='md:flex items-center w-full space-x-2'>
+        <div className='grid gap-4 md:grid-cols-3 md:gap-2 items-start w-full'>
           {nameField && (
             <form.AppField name='name'>
               {(input) => (
@@ -181,11 +253,30 @@ export const BasicInfo = ({
               )}
             </form.AppField>
           )}
+          {baseField?.type === 'select' && (
+            <form.AppField name='base'>
+              {(input) => (
+                <input.SelectField
+                  {...input}
+                  type='select'
+                  name='base'
+                  mode='single'
+                  label={baseField.label}
+                  placeholder={baseField.placeholder}
+                  options={baseOptions}
+                  classNames={{mainWrapper: 'py-0'}}
+                />
+              )}
+            </form.AppField>
+          )}
         </div>
 
         <div className='items-center grid md:grid-cols-3 gap-4 md:gap-2'>
           {basicFields.length > 0 &&
-            renderFields(form, basicFields, selectCategories)}
+            renderFields(form, basicFields, selectCategories, {
+              productType: productTypeOptions,
+              tier: tierOptions,
+            })}
         </div>
       </div>
       <Modal

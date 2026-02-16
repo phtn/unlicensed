@@ -22,6 +22,7 @@ type Order = Doc<'orders'>
 
 const statusColorMap: Record<string, ChipProps['color']> = {
   shipped: 'success',
+  delivered: 'success',
 }
 
 const columns = [
@@ -38,7 +39,10 @@ export const SalesTable = () => {
 
   const sales = useMemo(() => {
     if (!allOrders) return []
-    return allOrders.filter((order) => order.orderStatus === 'shipped')
+    return allOrders.filter(
+      (order) =>
+        order.orderStatus === 'shipped' || order.orderStatus === 'delivered',
+    )
   }, [allOrders])
 
   const renderCell = (order: Order, columnKey: React.Key) => {
