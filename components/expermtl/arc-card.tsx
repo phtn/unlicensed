@@ -38,7 +38,7 @@ const ArcCard = ({
 }
 
 interface ArcHeaderProps {
-  title: string
+  title: ReactNode
   description?: string
   icon?: IconName
   iconStyle?: ClassName
@@ -54,7 +54,7 @@ const ArcHeader = ({
 }: ArcHeaderProps) => (
   <div>
     <div className='flex items-center justify-between w-full'>
-      <h1 className='flex items-center text-xl md:text-2xl font-polysans tracking-tight opacity-90 h-12'>
+      <h1 className='flex items-center text-xl md:text-2xl font-okxs font-semibold h-12'>
         {title}
       </h1>
       <div className='flex items-center'>{status}</div>

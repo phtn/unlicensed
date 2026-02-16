@@ -13,6 +13,32 @@ interface ConversionResult {
   compressionRatio: number
 }
 
+interface WorkerConversionRequest {
+  id: string
+  file: Blob
+  format: ConversionOptions['format']
+  quality?: number
+}
+
+interface WorkerConversionResponse {
+  id: string
+  blob: Blob
+  size: number
+  format: string
+}
+
+interface WorkerErrorResponse {
+  id: string
+  error: string
+}
+
+const createRequestId = () => {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID()
+  }
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
 export function useImageConverter() {
   const workerRef = useRef<Worker | null>(null)
 
@@ -25,86 +51,146 @@ export function useImageConverter() {
     return workerRef.current
   }, [])
 
+  const convertOnMainThread = useCallback(
+    async (
+      file: File,
+      options: ConversionOptions,
+    ): Promise<Pick<ConversionResult, 'blob' | 'size' | 'format'>> => {
+      const imageBitmap = await createImageBitmap(file)
+      const canvas = document.createElement('canvas')
+      canvas.width = imageBitmap.width
+      canvas.height = imageBitmap.height
+      const ctx = canvas.getContext('2d')
+
+      if (!ctx) {
+        imageBitmap.close()
+        throw new Error('Failed to get canvas context')
+      }
+
+      ctx.drawImage(imageBitmap, 0, 0)
+      imageBitmap.close()
+
+      const mimeType = `image/${options.format}`
+      const quality = options.quality ?? 0.8
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (result) => {
+            if (!result) {
+              reject(new Error('Canvas conversion failed'))
+              return
+            }
+            resolve(result)
+          },
+          mimeType,
+          quality,
+        )
+      })
+
+      return {
+        blob,
+        size: blob.size,
+        format: mimeType,
+      }
+    },
+    [],
+  )
+
+  const verifyBlob = useCallback(async (blob: Blob) => {
+    if (blob.size <= 0) {
+      throw new Error('Converted image is empty')
+    }
+    const imageBitmap = await createImageBitmap(blob)
+    imageBitmap.close()
+  }, [])
+
   const convert = useCallback(
     async (
       file: File,
       options: ConversionOptions,
     ): Promise<ConversionResult> => {
-      return new Promise((resolve, reject) => {
+      const requestId = createRequestId()
+
+      const workerResult = await new Promise<
+        Pick<ConversionResult, 'blob' | 'size' | 'format'>
+      >((resolve, reject) => {
         const worker = initWorker()
+        let timeoutId: ReturnType<typeof setTimeout> | null = null
 
-        // Load the image file
-        const reader = new FileReader()
-
-        reader.onload = async (e: ProgressEvent<FileReader>) => {
-          try {
-            const arrayBuffer = e.target?.result as ArrayBuffer
-            if (!arrayBuffer) {
-              throw new Error('Failed to read file')
-            }
-
-            // Create an image bitmap from the file
-            const blob = new Blob([arrayBuffer], {type: file.type})
-            const imageBitmap = await createImageBitmap(blob)
-
-            // Create a canvas to extract ImageData
-            const canvas = document.createElement('canvas')
-            canvas.width = imageBitmap.width
-            canvas.height = imageBitmap.height
-            const ctx = canvas.getContext('2d')
-
-            if (!ctx) {
-              throw new Error('Failed to get canvas context')
-            }
-
-            ctx.drawImage(imageBitmap, 0, 0)
-            const imageData = ctx.getImageData(
-              0,
-              0,
-              canvas.width,
-              canvas.height,
-            )
-
-            // Set up worker message handler
-            const handleMessage = (event: MessageEvent) => {
-              if ('error' in event.data) {
-                reject(new Error(event.data.error))
-              } else {
-                const result: ConversionResult = {
-                  ...event.data,
-                  originalSize: file.size,
-                  compressionRatio:
-                    ((file.size - event.data.size) / file.size) * 100,
-                }
-                resolve(result)
-              }
-              worker.removeEventListener('message', handleMessage)
-            }
-
-            const handleError = (error: ErrorEvent) => {
-              reject(error)
-              worker.removeEventListener('error', handleError)
-            }
-
-            worker.addEventListener('message', handleMessage)
-            worker.addEventListener('error', handleError)
-
-            // Send to worker
-            worker.postMessage({
-              imageData,
-              format: options.format,
-              quality: options.quality,
-            })
-          } catch (error) {
-            reject(error)
+        const cleanup = (
+          handleMessage: (event: MessageEvent<unknown>) => void,
+          handleError: (error: ErrorEvent) => void,
+        ) => {
+          worker.removeEventListener('message', handleMessage)
+          worker.removeEventListener('error', handleError)
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+            timeoutId = null
           }
         }
 
-        reader.onerror = () => reject(new Error('Failed to read file'))
-        reader.readAsArrayBuffer(file)
+        const handleMessage = (event: MessageEvent<unknown>) => {
+          const data = event.data as
+            | WorkerConversionResponse
+            | WorkerErrorResponse
+            | undefined
+
+          if (!data || data.id !== requestId) {
+            return
+          }
+
+          cleanup(handleMessage, handleError)
+
+          if ('error' in data) {
+            reject(new Error(data.error))
+            return
+          }
+
+          resolve({
+            blob: data.blob,
+            size: data.size,
+            format: data.format,
+          })
+        }
+
+        const handleError = (error: ErrorEvent) => {
+          cleanup(handleMessage, handleError)
+          reject(error)
+        }
+
+        worker.addEventListener('message', handleMessage)
+        worker.addEventListener('error', handleError)
+
+        timeoutId = setTimeout(() => {
+          cleanup(handleMessage, handleError)
+          reject(new Error('Image conversion timed out'))
+        }, 30000)
+
+        const payload: WorkerConversionRequest = {
+          id: requestId,
+          file,
+          format: options.format,
+          quality: options.quality,
+        }
+
+        worker.postMessage(payload)
+      }).catch(async (workerError) => {
+        console.warn(
+          'Image worker conversion failed. Falling back to main thread conversion.',
+          workerError,
+        )
+        return convertOnMainThread(file, options)
       })
+
+      await verifyBlob(workerResult.blob)
+
+      return {
+        ...workerResult,
+        originalSize: file.size,
+        compressionRatio: ((file.size - workerResult.size) / file.size) * 100,
+      }
     },
-    [initWorker],
+    [convertOnMainThread, initWorker, verifyBlob],
   )
 
   const validateImageFile = useCallback(
@@ -122,8 +208,7 @@ export function useImageConverter() {
 
       // Validate that the file can be processed by the converter
       try {
-        const blob = new Blob([file], {type: file.type})
-        const imageBitmap = await createImageBitmap(blob)
+        const imageBitmap = await createImageBitmap(file)
 
         // Check minimum dimensions (optional - you can remove this if not needed)
         if (imageBitmap.width < 1 || imageBitmap.height < 1) {

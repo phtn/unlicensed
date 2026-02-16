@@ -1,6 +1,6 @@
 'use client'
 
-import {ArcCallout, ArcCard, ArcHeader} from '@/components/expermtl/arc-card'
+import {ArcCard, ArcHeader} from '@/components/expermtl/arc-card'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -61,9 +61,9 @@ function StepRow({
         className={cn(
           'mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full border',
           {
-            'border-emerald-400/60 bg-emerald-500/15 text-emerald-300':
+            'border-cashapp/60 bg-emerald-500/15 text-emerald-300':
               state === 'complete',
-            'border-indigo-400/60 bg-indigo-500/15 text-indigo-300':
+            'border-orange-400/60 bg-orange-500/15 text-orange-300':
               state === 'active',
             'border-rose-400/60 bg-rose-500/15 text-rose-300':
               state === 'error',
@@ -79,7 +79,7 @@ function StepRow({
         />
       </div>
       <div className='space-y-0.5'>
-        <p className='text-sm font-polysans tracking-tight'>{title}</p>
+        <p className='text-sm font-okxs tracking-tight'>{title}</p>
         <p className='text-xs opacity-70'>{description}</p>
       </div>
     </div>
@@ -383,9 +383,9 @@ export const Content = () => {
     () =>
       [
         {
-          title: 'Order Context Verified',
+          title: 'Order Placed',
           description: isCashAppOrder
-            ? 'This order is marked for Cash App representative handoff.'
+            ? 'Your order has been placed by the system.'
             : 'Order is not using Cash App and cannot use this flow.',
           state: !order
             ? ('active' as StepState)
@@ -394,7 +394,7 @@ export const Content = () => {
               : ('error' as StepState),
         },
         {
-          title: 'Representative Assignment',
+          title: 'Pending Payment',
           description:
             setupState === 'ready'
               ? `Connected with ${assignedRep?.name ?? assignedRep?.email?.split('@')[0] ?? 'your rep'}.`
@@ -408,38 +408,38 @@ export const Content = () => {
                 ? ('error' as StepState)
                 : ('active' as StepState),
         },
-        {
-          title: 'Chat Pre-Seed',
-          description: hasStarterMessage
-            ? 'Order details were pre-sent so your rep has context immediately.'
-            : 'Preparing your conversation starter with order details.',
-          state:
-            setupState !== 'ready'
-              ? ('pending' as StepState)
-              : hasStarterMessage
-                ? ('complete' as StepState)
-                : ('active' as StepState),
-        },
-        {
-          title: 'Live Chat Action',
-          description:
-            setupState === 'ready'
-              ? 'Open chat and confirm your Cash App handle + payment timing.'
-              : 'Chat opens once representative assignment is ready.',
-          state:
-            setupState === 'ready'
-              ? ('active' as StepState)
-              : setupState === 'no_rep'
-                ? ('pending' as StepState)
-                : ('pending' as StepState),
-        },
+        // {
+        //   title: 'Chat Pre-Seed',
+        //   description: hasStarterMessage
+        //     ? 'Order details were pre-sent so your rep has context immediately.'
+        //     : 'Preparing your conversation starter with order details.',
+        //   state:
+        //     setupState !== 'ready'
+        //       ? ('pending' as StepState)
+        //       : hasStarterMessage
+        //         ? ('complete' as StepState)
+        //         : ('active' as StepState),
+        // },
+        // {
+        //   title: 'Live Chat Action',
+        //   description:
+        //     setupState === 'ready'
+        //       ? 'Open chat and confirm your Cash App handle + payment timing.'
+        //       : 'Chat opens once representative assignment is ready.',
+        //   state:
+        //     setupState === 'ready'
+        //       ? ('active' as StepState)
+        //       : setupState === 'no_rep'
+        //         ? ('pending' as StepState)
+        //         : ('pending' as StepState),
+        // },
       ] as Array<{title: string; description: string; state: StepState}>,
     [
       assignedRep?.email,
       assignedRep?.name,
-      hasStarterMessage,
       isCashAppOrder,
       order,
+      // hasStarterMessage,
       setupState,
     ],
   )
@@ -448,13 +448,13 @@ export const Content = () => {
     setupState === 'ready'
       ? 'Rep Connected'
       : setupState === 'connecting'
-        ? 'Connecting Rep'
+        ? 'Pending Payment'
         : 'Pending Payment'
 
   const paymentStatusStyle =
     setupState === 'ready'
       ? 'font-brk text-emerald-300 tracking-wide uppercase text-xs bg-emerald-500/10 border border-emerald-400/30 py-1 px-1.5 rounded-sm'
-      : 'font-brk text-orange-300 tracking-wide uppercase text-xs bg-orange-500/10 border border-orange-400/30 py-1 px-1.5 rounded-sm'
+      : 'font-brk text-foreground tracking-wide uppercase text-xs bg-orange-500/10 border border-orange-400/30 py-1 px-1.5 rounded-sm'
 
   const orderHref = order ? `/account/orders/${order.orderNumber}` : '#'
   const chatHref = assignedRepFid
@@ -477,19 +477,23 @@ export const Content = () => {
 
   return (
     <main className='min-h-[calc(100lvh)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-black'>
-      <ArcCard className='relative overflow-hidden bg-[radial-gradient(130%_120%_at_10%_0%,rgba(0,190,160,0.18),rgba(0,0,0,0)_45%),radial-gradient(110%_120%_at_100%_0%,rgba(79,70,229,0.20),rgba(0,0,0,0)_40%)]'>
+      <ArcCard className='relative overflow-hidden'>
         <ArcHeader
-          title='Cash App Checkout'
+          title={
+            <div className='flex items-center space-x-2'>
+              <Icon name='cashapp' className='text-cashapp size-6' />
+              <span>Cash App Checkout</span>
+            </div>
+          }
           description={order?.orderNumber}
-          icon='chat-rounded'
           iconStyle='text-emerald-300'
           status={<span className={paymentStatusStyle}>{paymentStatus}</span>}
         />
 
-        <ArcCallout icon='info' value={chatMessage} type={chatCalloutType} />
+        {/*<ArcCallout icon='info' value={chatMessage} type={chatCalloutType} />*/}
 
-        <div className='rounded-xl border border-foreground/15 bg-black/35 p-4 space-y-4'>
-          <div className='flex items-center justify-between gap-3'>
+        <div className='rounded-xl border border-foreground/15 dark:bg-black/35 p-4 space-y-4'>
+          <div className='hidden _flex items-center justify-between gap-3'>
             <div>
               <p className='text-sm font-polysans tracking-tight'>
                 Live Handoff Panel
@@ -527,11 +531,9 @@ export const Content = () => {
           </div>
         </div>
 
-        <div className='rounded-xl border border-foreground/15 bg-black/30 p-4 space-y-4'>
+        <div className='rounded-xl border border-foreground/15 dark:bg-black/30 p-4 space-y-4'>
           <div className='flex items-center justify-between'>
-            <p className='text-sm font-polysans tracking-tight'>
-              Checkout Flow Status
-            </p>
+            <p className='text-sm font-okxs tracking-tight'>Checkout Status</p>
             {setupState === 'ready' ? (
               <Chip
                 size='sm'
@@ -553,13 +555,10 @@ export const Content = () => {
           </div>
         </div>
 
-        <div className='rounded-xl border border-foreground/15 bg-black/35 p-4 space-y-3'>
-          <p className='text-sm font-polysans tracking-tight'>
-            What To Send In Chat
-          </p>
+        <div className='rounded-xl border border-foreground/15 dark:bg-black/35 p-4 space-y-3'>
+          <p className='text-sm font-okxs tracking-tight'>Checkout Guide</p>
           <p className='text-xs opacity-75'>
-            Send these immediately so the rep can process your Cash App payment
-            without back-and-forth.
+            Our representatives will guide you through the payment process.
           </p>
           <Divider className='bg-foreground/15' />
           <div className='grid gap-2 text-xs'>
@@ -569,7 +568,7 @@ export const Content = () => {
                 className='size-4 mt-0.5 text-emerald-300'
               />
               <span>
-                Confirm your Cash App username and preferred payment window.
+                Confirm your Cash App username with our representatives.
               </span>
             </div>
             <div className='flex items-start gap-2'>
@@ -581,20 +580,19 @@ export const Content = () => {
                 Share any delivery notes or timing constraints for this order.
               </span>
             </div>
-            <div className='flex items-start gap-2'>
-              <Icon
-                name='check-fill'
-                className='size-4 mt-0.5 text-emerald-300'
-              />
-              <span>
-                Keep this order number in the thread:{' '}
-                {order?.orderNumber ?? '--'}.
-              </span>
-            </div>
           </div>
         </div>
 
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+          <Button
+            as={NextLink}
+            href={orderHref}
+            size='lg'
+            variant='flat'
+            className='font-polysans font-normal dark:bg-sidebar'
+            startContent={<Icon name='chevron-left' className='size-5' />}>
+            Back To Order
+          </Button>
           {setupState === 'no_rep' ? (
             <Button
               size='lg'
@@ -611,19 +609,10 @@ export const Content = () => {
               size='lg'
               color='primary'
               className='font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
-              endContent={<Icon name='chat-rounded' className='size-5' />}>
-              {setupState === 'ready' ? 'Open Live Chat' : 'Open Chat Inbox'}
+              endContent={<Icon name='chat' className='size-5' />}>
+              {setupState === 'ready' ? 'Open Live Chat' : 'Open Chat'}
             </Button>
           )}
-          <Button
-            as={NextLink}
-            href={orderHref}
-            size='lg'
-            variant='flat'
-            className='font-polysans font-normal dark:bg-sidebar'
-            startContent={<Icon name='chevron-left' className='size-5' />}>
-            Back To Order
-          </Button>
         </div>
       </ArcCard>
     </main>

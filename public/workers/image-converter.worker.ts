@@ -1,16 +1,19 @@
 interface ConversionRequest {
-  imageData: ImageData
+  id: string
+  file: Blob
   format: 'avif' | 'webp' | 'jpeg'
   quality?: number
 }
 
 interface ConversionResponse {
+  id: string
   blob: Blob
   size: number
   format: string
 }
 
 interface ErrorResponse {
+  id: string
   error: string
 }
 
@@ -42,8 +45,10 @@ function isValidMessage(
 
   // Validate required fields
   if (
-    !data.imageData ||
-    !(data.imageData instanceof ImageData) ||
+    !data.id ||
+    typeof data.id !== 'string' ||
+    !data.file ||
+    !(data.file instanceof Blob) ||
     !data.format ||
     !['avif', 'webp', 'jpeg'].includes(data.format)
   ) {
@@ -65,26 +70,39 @@ self.addEventListener(
   async (event: MessageEvent<ConversionRequest>) => {
     // Validate message origin and structure
     if (!isValidMessage(event)) {
+      const candidateId =
+        event.data &&
+        typeof event.data === 'object' &&
+        'id' in event.data &&
+        typeof (event.data as {id?: unknown}).id === 'string'
+          ? ((event.data as {id: string}).id ?? 'unknown')
+          : 'unknown'
       const errorResponse: ErrorResponse = {
+        id: candidateId,
         error: 'Invalid message: origin or structure validation failed',
       }
       self.postMessage(errorResponse)
       return
     }
 
+    const {id} = event.data
+
     try {
-      const {imageData, format, quality = 0.8} = event.data
+      const {file, format, quality = 0.8} = event.data
+      const imageBitmap = await createImageBitmap(file)
 
       // Create an OffscreenCanvas (available in workers)
-      const canvas = new OffscreenCanvas(imageData.width, imageData.height)
+      const canvas = new OffscreenCanvas(imageBitmap.width, imageBitmap.height)
       const ctx = canvas.getContext('2d')
 
       if (!ctx) {
+        imageBitmap.close()
         throw new Error('Failed to get canvas context')
       }
 
-      // Put the image data onto the canvas
-      ctx.putImageData(imageData, 0, 0)
+      // Draw the source image onto the canvas
+      ctx.drawImage(imageBitmap, 0, 0)
+      imageBitmap.close()
 
       // Convert to desired format
       const mimeType = `image/${format}`
@@ -94,6 +112,7 @@ self.addEventListener(
       })
 
       const response: ConversionResponse = {
+        id,
         blob,
         size: blob.size,
         format: mimeType,
@@ -104,6 +123,7 @@ self.addEventListener(
       self.postMessage(response)
     } catch (error) {
       const errorResponse: ErrorResponse = {
+        id,
         error:
           error instanceof Error ? error.message : 'Unknown error occurred',
       }

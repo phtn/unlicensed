@@ -51,7 +51,7 @@ export const Gallery = ({
     <section className='flex flex-col gap-y-3 sm:gap-0'>
       <div
         ref={imageRef}
-        className='relative aspect-auto md:rounded-s-3xl md:border-s md:border-y border-foreground/10 dark:border-foreground/30 w-full md:max-h-115 overflow-hidden bg-background/60 lg:min-h-168'>
+        className='relative aspect-auto sm:rounded-s-3xl lg:border-s lg:border-e-none lg:border-y border-foreground/10 dark:border-foreground/30 w-full md:max-h-115 overflow-hidden bg-background/60 lg:min-h-168'>
         <Lens hovering={isMobile ? false : on} setHovering={setOn}>
           <Image
             radius='none'
@@ -62,7 +62,7 @@ export const Gallery = ({
           />
         </Lens>
       </div>
-      <div className='flex items-center w-full lg:w-full overflow-y-scroll gap-2 p-1'>
+      <div className='flex items-center w-full lg:w-full overflow-y-scroll gap-2 p-1 mt-8 lg:mt-0'>
         {[primaryImageUrl, ...(galleryUrls ?? [])].map((src, index) => (
           <div
             key={`${src}-${index}`}

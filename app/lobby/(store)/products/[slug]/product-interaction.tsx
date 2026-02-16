@@ -81,6 +81,7 @@ export const ProductInteraction = ({
       onOpen()
       return
     }
+
     router.push('/lobby/cart')
   }
 
@@ -250,6 +251,7 @@ export const ProductInteraction = ({
           <Button
             size='lg'
             variant='solid'
+            isDisabled={isPending || quantityInCart < 1}
             onPress={handleCheckoutPress}
             className='w-full sm:flex-1 h-14 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
             <span>Checkout</span>
