@@ -19,16 +19,10 @@ import {motion} from 'motion/react'
 import {default as NextLink} from 'next/link'
 import {useParams, useSearchParams} from 'next/navigation'
 import {useEffect, useState} from 'react'
+import {mmap} from '../../_components/order-list-item'
 import {OrderStatusBadge} from '../../_components/order-status'
 import {Actions} from './_components/actions'
-import {SectionTitle} from './_components/section'
-
-function formatPaymentMethod(method: string) {
-  return method
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-}
+import {SectionTitle, TxnId} from './_components/section'
 
 function formatDate(timestamp: number) {
   return new Date(timestamp).toLocaleDateString('en-US', {
@@ -100,7 +94,7 @@ export default function OrderDetailPage() {
 
   return (
     <div className='min-h-screen pt-4'>
-      <div className='max-w-7xl mx-auto'>
+      <div className='max-w-7xl mx-auto xl:px-0 px-4'>
         {/* Payment Success Banner */}
         {showSuccessBanner && (
           <Card className='mb-6 border border-terpenes/20 bg-terpenes/5'>
@@ -246,8 +240,10 @@ export default function OrderDetailPage() {
                 </div>
                 <div className='space-y-2 font-okxs'>
                   <div className='flex justify-between'>
-                    <span className='text-sm text-color-muted'>Method</span>
-                    <span>{formatPaymentMethod(order.payment.method)}</span>
+                    <span className='text-sm md:text-base text-color-muted'>
+                      Method
+                    </span>
+                    <span>{mmap[order.payment.method]}</span>
                   </div>
                   <div className='flex justify-between'>
                     <span className='text-sm text-color-muted'>Status</span>
@@ -256,9 +252,7 @@ export default function OrderDetailPage() {
                   {order.payment.transactionId && (
                     <div className='flex justify-between'>
                       <span className='text-color-muted'>Transaction ID</span>
-                      <span className='text-sm font-mono'>
-                        {order.payment.transactionId}
-                      </span>
+                      <TxnId id={order.payment.transactionId} />
                     </div>
                   )}
                   {order.payment.gateway?.transactionId && (
@@ -274,7 +268,10 @@ export default function OrderDetailPage() {
                       <div className='mt-4 pt-4 border-t border-divider'>
                         <Button
                           as={NextLink}
-                          href={getPaymentRoute(order._id, order.payment.method)}
+                          href={getPaymentRoute(
+                            order._id,
+                            order.payment.method,
+                          )}
                           color='primary'
                           className='w-full'>
                           Complete Payment

@@ -22,17 +22,17 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
       key={orderNumber}
       as={Link}
       href={`/account/orders/${orderNumber}`}
-      className='w-full rounded-lg border dark:border-dark-table dark:bg-dark-table bg-content/50 dark:hover:bg-dark-table/70'>
+      className='w-full rounded-lg border dark:border-dark-table border-dark-table/40 dark:bg-dark-table bg-content/50 dark:hover:bg-dark-table/70'>
       <CardBody className='p-5'>
         <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
           <div className='flex items-start gap-8 flex-1 min-w-0'>
             <div className='p-4 rounded-lg bg-linear-to-br from-default-100 to-default-500/10 hidden sm:flex shrink-0'>
               <Icon name='box' className='size-5 opacity-50' />
             </div>
-            <div className='space-y-2.5'>
+            <div className='space-y-2.5 portrait:w-full'>
               <div className='flex items-center flex-wrap'>
-                <h3 className='font-polysans font-medium text-base tracking-widest'>
-                  {orderNumber}
+                <h3 className='font-mono font-medium text-base tracking-widest'>
+                  {orderNumber.substring(5)}
                 </h3>
               </div>
               <div className='flex items-center gap-6 text-sm text-default-500 flex-wrap'>
@@ -48,24 +48,24 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
                 </div>
               </div>
             </div>
-            <div className='space-y-3 px-4'>
+            <div className='space-y-3 md:px-4 portrait:flex-1 portrait:text-right'>
               <OrderStatusBadge status={orderStatus} />
-              <div className='flex items-center justify-start gap-1 px-1 capitalize text-xs font-okxs font-medium'>
+              <div className='flex items-center justify-start portrait:justify-end gap-1.5 px-1 capitalize text-sm font-okxs font-medium'>
                 <Icon
                   name={paymentMethodIconMap[payment.method].icon}
-                  className={`size-4 ${paymentMethodIconMap[payment.method].style}`}
+                  className={`size-3.5 ${paymentMethodIconMap[payment.method].style}`}
                 />
-                <span>{payment.method.split('_').join(' ')}</span>
+                <p className='whitespace-nowrap'>{mmap[payment.method]}</p>
               </div>
             </div>
           </div>
 
           <div className='flex items-center justify-between sm:justify-end gap-4 sm:gap-6 border-t border-dotted sm:border-none border-foreground/10 pt-4 sm:pt-0'>
             <div className='text-left sm:text-right'>
-              <p className='text-xs text-default-500 uppercase tracking-wider mb-1'>
+              <p className='text-xs text-default-500 font-brk uppercase tracking-widest mb-1'>
                 Total
               </p>
-              <p className='text-xl font-okxs font-semibold'>
+              <p className='text-xl font-okxs font-medium'>
                 ${formatPrice(totalCents)}
               </p>
             </div>
@@ -85,4 +85,11 @@ const paymentMethodIconMap: Record<
   crypto_commerce: {icon: 'ethereum', style: 'text-indigo-400'},
   crypto_transfer: {icon: 'polygon', style: 'text-sky-500'},
   cash_app: {icon: 'cashapp', style: 'text-cashapp'},
+}
+
+export const mmap: Record<PaymentMethod, string> = {
+  cards: 'Credit/Debit Card/Ewallet',
+  crypto_transfer: 'Send Crypto',
+  crypto_commerce: 'Pay with Crypto',
+  cash_app: 'Cash App',
 }

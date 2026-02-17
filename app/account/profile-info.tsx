@@ -1,6 +1,5 @@
 'use client'
 
-import {Icon} from '@/lib/icons'
 import {
   TextureCardContent,
   TextureCardFooter,
@@ -9,6 +8,7 @@ import {
   TextureCardTitle,
   TextureSeparator,
 } from '@/components/ui/texture-card'
+import {Icon} from '@/lib/icons'
 import {Button, Input} from '@heroui/react'
 
 export const ProfileInfo = () => {
@@ -76,7 +76,10 @@ export const ProfileInfo = () => {
                   <Button isIconOnly className='w-full'>
                     <div className='flex gap-1 items-center justify-center'>
                       Continue
-                      <Icon name='arrow-right' className='h-4 w-4 text-neutral-50 mt-1px' />
+                      <Icon
+                        name='arrow-right'
+                        className='h-4 w-4 text-neutral-50 mt-1px'
+                      />
                     </div>
                   </Button>
                 </TextureCardFooter>
@@ -93,9 +96,7 @@ export const ProfileInfo = () => {
                   <TextureSeparator />
                   <div className='flex flex-col items-center justify-center '>
                     <div className='py-2 px-2'>
-                      <div className='text-center text-xs '>
-                        Secured by Supabase
-                      </div>
+                      <div className='text-center text-xs '>Secured by</div>
                     </div>
                   </div>
                 </div>

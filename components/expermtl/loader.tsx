@@ -1,10 +1,16 @@
 'use client'
 
+import {ClassName} from '@/app/types'
 import {animate, createDrawable, stagger} from 'animejs'
 import {useEffect, useRef} from 'react'
 
-export const Loader = () => (
-  <div className='size-fit md:size-200 m-auto flex items-center justify-center'>
+interface LoaderProps {
+  className?: ClassName
+}
+
+export const Loader = ({className}: LoaderProps) => (
+  <div
+    className={`size-fit md:size-200 m-auto flex items-center justify-center ${className}`}>
     <Tracer />
   </div>
 )

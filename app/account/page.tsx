@@ -10,7 +10,7 @@ import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody, Chip, Image, Progress} from '@heroui/react'
 import {useTheme} from 'next-themes'
 import Link from 'next/link'
-import {memo, startTransition, useMemo, useState, ViewTransition} from 'react'
+import {memo, useMemo, ViewTransition} from 'react'
 import {OrderListItem} from './_components/order-list-item'
 
 export default function AccountPage() {
@@ -23,7 +23,6 @@ export default function AccountPage() {
     pointsBalance,
     nextVisitMultiplier,
   } = useAccount()
-  const [showAllOrders, setShowAllOrders] = useState(false)
 
   // Loading State (Initial page load only)
   const isLoading = !user
@@ -44,38 +43,20 @@ export default function AccountPage() {
     return Math.max(0, nextTierSpend - currentSpend)
   }, [rewards])
 
-  const toggleShowAllOrders = () => {
-    startTransition(() => {
-      setShowAllOrders((prev) => !prev)
-    })
-  }
-
   if (isLoading) {
     return (
-      <div className='min-h-screen flex items-center justify-center'>
-        <Loader />
+      <div className='min-h-140 w-full flex'>
+        <Loader className='scale-50' />
       </div>
     )
   }
 
   return (
     <div className='min-h-screen bg-background'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-28'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-6 pb-10'>
         {/* Header Section */}
         <div className='mb-8'>
           <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
-            {/*<Callout
-              title={
-                <h1 className='md:text-xl font-normal font-polysans space-x-1 md:space-x-4'>
-                  <span>Development in-progress</span>
-                  <DotDiv />
-                  <span>Redirect enabled</span>
-                </h1>
-              }
-              description='Checkout route protected. Please check back later.'
-              icon='code'
-              type='debug'
-            />*/}
             {rewards?.currentTier && (
               <Chip
                 variant='shadow'
@@ -103,7 +84,7 @@ export default function AccountPage() {
               radius='none'
               className='relative border border-foreground/20 rounded-4xl bg-black dark:bg-dark-table/40'>
               <ProfileBackground />
-              <CardBody className='p-6'>
+              <CardBody className='p-6 min-h-80'>
                 <div className='flex flex-col items-center text-center space-y-5 justify-center'>
                   <div className=''>
                     <div className='size-32 mask-b-from-50% mask-radial-[50%_50%] mask-radial-from-80% rounded-full p-0.5 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500'>
@@ -319,21 +300,20 @@ export default function AccountPage() {
               <div className='flex items-center justify-between mb-2'>
                 <div className='flex items-center px-2 gap-2'>
                   <Icon name='card-pay-line' className='size-4 opacity-90' />
-                  <p className='text-sm text-default-500'>Active Orders</p>
+                  <p className='font-okxs text-sm text-default-500'>
+                    Recent Orders
+                  </p>
                 </div>
                 {orders && orders.length > 5 && (
                   <Button
+                    as={Link}
+                    href='/account/orders'
                     variant='light'
-                    onPress={toggleShowAllOrders}
                     endContent={
-                      showAllOrders ? (
-                        <Icon name='arrow-up' className='size-4' />
-                      ) : (
-                        <Icon name='chevron-right' className='size-4' />
-                      )
+                      <Icon name='chevron-right' className='size-4' />
                     }
-                    className='text-default-600 dark:text-default-400 hover:text-foreground font-medium'>
-                    {showAllOrders ? 'Show Less' : 'View All'}
+                    className='text-default-600 dark:text-default-400 hover:text-foreground font-okxs'>
+                    View All
                   </Button>
                 )}
               </div>
