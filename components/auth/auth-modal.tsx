@@ -3,6 +3,7 @@
 import {useAuthCtx} from '@/ctx/auth'
 import {useToggle} from '@/hooks/use-toggle'
 import {loginWithGoogle, sendEmailLink} from '@/lib/firebase/auth'
+import {auth} from '@/lib/firebase/config'
 import {parseFirebaseAuthError} from '@/lib/firebase/parseAuthError'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
@@ -38,17 +39,26 @@ export const AuthModal = ({
   onClose,
   mode = 'login',
 }: AuthModalProps) => {
-  const {setAuthModalOpen} = useAuthCtx()
+  const {setAuthModalOpen, user} = useAuthCtx()
   const [isLogin] = useState(mode === 'login')
   const [email, setEmail] = useState('')
   const [emailSent, setEmailSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const hasActiveSession = Boolean(user ?? auth?.currentUser)
+  const canOpen = isOpen && !hasActiveSession
 
   // Sync modal state with context
   useEffect(() => {
-    setAuthModalOpen(isOpen)
-  }, [isOpen, setAuthModalOpen])
+    setAuthModalOpen(canOpen)
+  }, [canOpen, setAuthModalOpen])
+
+  useEffect(() => {
+    if (isOpen && hasActiveSession) {
+      setAuthModalOpen(false)
+      onClose()
+    }
+  }, [hasActiveSession, isOpen, onClose, setAuthModalOpen])
 
   // Clean up on unmount
   useEffect(() => {
@@ -108,10 +118,13 @@ export const AuthModal = ({
 
   return (
     <Modal
-      isOpen={isOpen}
+      isOpen={canOpen}
       onClose={handleClose}
       placement='center'
       size='md'
+      classNames={{
+        wrapper: 'z-[20000]',
+      }}
       hideCloseButton>
       <ModalContent className='md:rounded-4xl rounded-3xl dark:border-brand border-light-gray/80 w-96 overflow-hidden'>
         <div className='absolute h-160 w-160 aspect-auto -top-24 md:-top-28 -left-16 flex items-center'>

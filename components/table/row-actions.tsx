@@ -17,7 +17,6 @@ import {useCopy} from '@/hooks/use-copy'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Row} from '@tanstack/react-table'
-import {useMutation} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
 // import {api} from '@/convex/_generated/api'
 
@@ -51,10 +50,10 @@ export const RowActions = <T,>({
   customActions = [],
 }: Props<T>) => {
   const {copy} = useCopy({timeout: 2000})
-  const [loading, setLoading] = useState(false)
+  const [loading] = useState(false)
 
   const handleView = useCallback(() => {
-    viewFn && viewFn()
+    viewFn?.()
   }, [viewFn])
 
   const handleDelete = useCallback(() => {
@@ -79,7 +78,7 @@ export const RowActions = <T,>({
         },
         {label: 'Advance', icon: 'arrow-trending', fn: () => console.log('delete')},
       ] as ISubMenuItem[],
-    [copy],
+    [copy, row.original],
   )
 
   // NOTE: This references a non-existent 'cards' API
@@ -90,7 +89,7 @@ export const RowActions = <T,>({
     // setLoading(true)
     // rowItem({cardId})
     console.warn('Delete row functionality requires cards API')
-  }, [row])
+  }, [])
 
   return (
     <DropdownMenu>

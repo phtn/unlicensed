@@ -1,11 +1,7 @@
 'use client'
 
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownMenu as HeroUIDropdownMenu,
-  DropdownTrigger,
-} from '@heroui/react'
+import {DropdownItem} from '@heroui/react'
+import {useId} from 'react'
 import type {ReactNode} from 'react'
 
 interface DropdownMenuProps {
@@ -22,7 +18,6 @@ interface DropdownMenuTriggerProps {
 }
 
 export const DropdownMenuTrigger = ({
-  asChild,
   children,
 }: DropdownMenuTriggerProps) => {
   return <>{children}</>
@@ -36,10 +31,7 @@ interface DropdownMenuContentProps {
 }
 
 export const DropdownMenuContent = ({
-  align,
-  alignOffset,
   children,
-  className,
 }: DropdownMenuContentProps) => {
   // This is a wrapper - actual content should be rendered by the parent using HeroUI Dropdown directly
   return <>{children}</>
@@ -60,12 +52,14 @@ export const DropdownMenuItem = ({
   onSelect,
   asChild,
 }: DropdownMenuItemProps) => {
+  const itemKey = useId()
+
   if (asChild) {
     return <>{children}</>
   }
   return (
     <DropdownItem
-      key={String(Math.random())}
+      key={itemKey}
       className={className}
       onPress={() => {
         onClick?.()
@@ -93,9 +87,11 @@ export const DropdownMenuCheckboxItem = ({
   onCheckedChange,
   onSelect,
 }: DropdownMenuCheckboxItemProps) => {
+  const itemKey = useId()
+
   return (
     <DropdownItem
-      key={String(Math.random())}
+      key={itemKey}
       className={className}
       isSelected={checked}
       onPress={() => {
@@ -166,9 +162,6 @@ interface DropdownMenuSubContentProps {
 export const DropdownMenuSubContent = ({
   children,
   className,
-  side,
-  alignOffset,
-  sideOffset,
 }: DropdownMenuSubContentProps) => {
   return <div className={className}>{children}</div>
 }
@@ -188,4 +181,3 @@ interface DropdownMenuShortcutProps {
 export const DropdownMenuShortcut = ({children}: DropdownMenuShortcutProps) => {
   return <span>{children}</span>
 }
-

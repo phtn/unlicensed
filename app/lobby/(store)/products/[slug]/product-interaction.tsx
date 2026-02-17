@@ -14,7 +14,14 @@ import {cn} from '@/lib/utils'
 import {Badge, Button, Tooltip, useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
-import {useMemo, useOptimistic, useRef, useState, useTransition} from 'react'
+import {
+  useMemo,
+  useOptimistic,
+  useRef,
+  useState,
+  useTransition,
+  ViewTransition,
+} from 'react'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -76,11 +83,14 @@ export const ProductInteraction = ({
     setSelectedDenomination(index)
   }
 
+  const requireAuthForInteraction = () => {
+    if (user) return true
+    onOpen()
+    return false
+  }
+
   const handleCheckoutPress = () => {
-    if (!user) {
-      onOpen()
-      return
-    }
+    if (!requireAuthForInteraction()) return
 
     router.push('/lobby/cart')
   }
@@ -248,14 +258,26 @@ export const ProductInteraction = ({
               />
             </Button>
           </div>
-          <Button
-            size='lg'
-            variant='solid'
-            isDisabled={isPending || quantityInCart < 1}
-            onPress={handleCheckoutPress}
-            className='w-full sm:flex-1 h-14 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
-            <span>Checkout</span>
-          </Button>
+          <ViewTransition>
+            {user ? (
+              <Button
+                size='lg'
+                variant='solid'
+                isDisabled={isPending || quantityInCart < 1}
+                onPress={handleCheckoutPress}
+                className='w-full sm:flex-1 h-14 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
+                <span>Checkout</span>
+              </Button>
+            ) : (
+              <Button
+                size='lg'
+                variant='solid'
+                onPress={handleCheckoutPress}
+                className='w-full sm:flex-1 h-14 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
+                <span>Sign in</span>
+              </Button>
+            )}
+          </ViewTransition>
         </div>
         <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />
       </div>

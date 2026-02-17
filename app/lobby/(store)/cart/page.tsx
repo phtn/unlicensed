@@ -224,6 +224,7 @@ export default function CartPage() {
               defaultAddress={defaultAddress || undefined}
               defaultBillingAddress={defaultBillingAddress || undefined}
               userPhone={userPhone}
+              cashAppUsername={convexUser?.cashAppUsername}
               convexUser={convexUser || undefined}
               orderError={orderError}
               orderId={orderId}

@@ -1,64 +1,32 @@
 import type {Doc, Id, TableNames} from '../_generated/dataModel'
 
-/**
- * CWE-89 (SQL Injection) mitigation:
- * Convex does not use SQL; it uses a typed document API. All lookups are
- * parameterized (id passed as value, never concatenated). We still apply
- * "accept known good" (CWE-89): validate ID format and table before any
- * database access. See https://cwe.mitre.org/data/definitions/89.html
- */
-
-const BASE64_ID_PART = /^[A-Za-z0-9+/=]+$/
-
-/**
- * Validates that an ID is a valid Convex ID format (allowlist).
- * Convex IDs: tableName:base64EncodedString — alphanumeric, +, /, = only.
- */
-export function isValidConvexId(id: unknown): id is string {
-  if (typeof id !== 'string') return false
-  if (!id.includes(':')) return false
-  const parts = id.split(':')
-  if (parts.length !== 2) return false
-  const [tableName, idPart] = parts
-  if (!tableName?.length || !idPart?.length) return false
-  if (!BASE64_ID_PART.test(idPart)) return false
-  return true
+type DbReader = {
+  get: <T extends TableNames>(id: Id<T>) => Promise<Doc<T> | null>
+  normalizeId: <T extends TableNames>(tableName: T, id: string) => Id<T> | null
 }
 
 /**
- * Validates that an ID belongs to a specific table.
- */
-export function isValidIdForTable<T extends TableNames>(
-  id: unknown,
-  tableName: T,
-): id is Id<T> {
-  if (!isValidConvexId(id)) return false
-  const parts = id.split(':')
-  return parts[0] === tableName
-}
-
-/**
- * Sanitizes an ID for use in db.get (CWE-89: accept known good).
- * Returns a validated Id<T> or null. Use only this sanitized value for get.
+ * Uses Convex's own table-aware ID normalization so both current and legacy
+ * ID string representations are handled safely.
  */
 export function sanitizeIdForTable<T extends TableNames>(
+  db: Pick<DbReader, 'normalizeId'>,
   id: unknown,
   tableName: T,
 ): Id<T> | null {
-  if (!isValidIdForTable(id, tableName)) return null
-  return id as Id<T>
+  if (typeof id !== 'string' || id.length === 0) return null
+  return db.normalizeId(tableName, id)
 }
 
 /**
- * Safely gets a document by ID. Uses sanitizeIdForTable so only validated
- * IDs reach db.get (parameterized; no query string construction).
+ * Safely gets a document by ID using table-aware ID normalization.
  */
 export async function safeGet<T extends TableNames>(
-  db: { get: (id: Id<T>) => Promise<Doc<T> | null> },
+  db: Pick<DbReader, 'get' | 'normalizeId'>,
   tableName: T,
   id: unknown,
 ): Promise<Doc<T> | null> {
-  const sanitized = sanitizeIdForTable(id, tableName)
+  const sanitized = sanitizeIdForTable(db, id, tableName)
   if (sanitized === null) return null
   try {
     return await db.get(sanitized)

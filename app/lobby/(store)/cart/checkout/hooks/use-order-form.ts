@@ -101,6 +101,11 @@ export function useOrderForm({
           updates.contactPhone = phoneToUse
         }
 
+        // Populate Cash App username if field is empty and username is available
+        if (cashAppUsername && !prev.cashAppUsername.trim()) {
+          updates.cashAppUsername = cashAppUsername
+        }
+
         // Populate payment method from preferences if available (URL takes precedence via initialPaymentMethod)
         if (
           initialPaymentMethod === undefined &&
@@ -211,6 +216,7 @@ export function useOrderForm({
     isAuthenticated,
     userEmail,
     userPhone,
+    cashAppUsername,
     defaultAddress,
     defaultBillingAddress,
     convexUser?.preferences?.defaultPaymentMethod,

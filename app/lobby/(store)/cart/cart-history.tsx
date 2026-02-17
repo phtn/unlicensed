@@ -1,6 +1,6 @@
 'use client'
 
-import {HyperBadge} from '@/components/main/badge'
+import FuzzyText from '@/components/FuzzyText'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
 import {
@@ -164,15 +164,29 @@ export const CartHistory = ({onItemAdded}: CartHistoryProps) => {
   return (
     <div className='w-full max-w-xl mx-auto py-6'>
       <div className='flex items-center justify-between mb-8'>
-        <HyperBadge variant='limited' title='Previously in cart'>
-          <h2 className='font-polysans'>Previously in cart</h2>
-        </HyperBadge>
+        <h2 className='font-polysans'>Your cart history</h2>
         <Button
           size='sm'
           variant='light'
           onPress={clearHistory}
-          className='text-xs font-brk opacity-50 hover:opacity-100'>
-          Clear history
+          className='group text-sm font-brk opacity-60 hover:opacity-100'>
+          <span>Clear</span>
+          <span className='relative inline-block leading-none'>
+            <span className='invisible'>history</span>
+            <span className='absolute inset-0 transition-opacity duration-150 group-hover:opacity-0'>
+              history
+            </span>
+            <FuzzyText
+              className='pointer-events-none absolute -left-0.5 top-2 -translate-y-1/2 opacity-0 transition-opacity duration-150 group-hover:opacity-100'
+              compact
+              enableHover={false}
+              fuzzRange={6}
+              baseIntensity={0.22}
+              fontSize='11px'
+              fontFamily='inherit'>
+              history
+            </FuzzyText>
+          </span>
         </Button>
       </div>
       <div className='space-y-2'>

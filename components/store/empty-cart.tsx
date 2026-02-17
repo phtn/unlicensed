@@ -24,7 +24,7 @@ export const EmptyCart = ({onPress}: EmptyCartProps) => {
   return (
     <div className='w-full md:max-w-2xl mb-4'>
       <div className='text-center space-y-4'>
-        <div className='flex items-center justify-center space-x-2'>
+        <div className='hidden _flex items-center justify-center space-x-2'>
           <Button
             size='md'
             radius='none'

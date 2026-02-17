@@ -1,3 +1,5 @@
+import ScrollReveal from '../ScrollReveal'
+
 export const AboutUs = () => {
   return (
     <section className='py-16 md:py-24 lg:py-32'>
@@ -15,21 +17,22 @@ export const AboutUs = () => {
         {/* Two Column Content */}
         <div className='grid grid-cols-1 md:grid-cols-11 gap-8 md:gap-12 lg:gap-16'>
           {/* Left Column */}
-          <div className='space-y-6 md:space-y-8 md:col-span-5 md:pr-8 text-center md:text-right'>
-            <p className='text-base md:text-lg leading-relaxed opacity-80'>
-              Rapid Fire is your grandma&apos;s dream dispensary.
-            </p>
-            <p className='text-base md:text-lg leading-relaxed opacity-80'>
-              We&apos;re the reason she started smoking at eighty.
-            </p>
-            <p className='text-base md:text-lg leading-relaxed opacity-80'>
-              We&apos;re all about getting high without getting played.
-            </p>
-            <p className='text-base md:text-lg leading-relaxed opacity-80'>
-              We&apos;re all about fast minds finding high quality highs.
-            </p>
-          </div>
-
+          <ScrollReveal>
+            <div className='space-y-6 md:space-y-8 md:col-span-5 md:pr-8 text-center md:text-right'>
+              <p className='text-base md:text-lg leading-relaxed opacity-80'>
+                Rapid Fire is your grandma&apos;s dream dispensary.
+              </p>
+              <p className='text-base md:text-lg leading-relaxed opacity-80'>
+                We&apos;re the reason she started smoking at eighty.
+              </p>
+              <p className='text-base md:text-lg leading-relaxed opacity-80'>
+                We&apos;re all about getting high without getting played.
+              </p>
+              <p className='text-base md:text-lg leading-relaxed opacity-80'>
+                We&apos;re all about fast minds finding high quality highs.
+              </p>
+            </div>
+          </ScrollReveal>
           <div className='relative flex items-center justify-center h-full'>
             <div className='absolute h-full w-0.75 bg-linear-to-b from-transparent via-fuchsia-200 blur-xs to-transparent rounded-full' />
             <div className='h-full w-0.75 bg-linear-to-b from-transparent via-brand to-transparent rounded-full' />

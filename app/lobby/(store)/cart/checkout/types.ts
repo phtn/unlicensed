@@ -17,6 +17,7 @@ export interface CheckoutProps {
   defaultAddress?: AddressType
   defaultBillingAddress?: AddressType
   userPhone?: string
+  cashAppUsername?: string
   convexUser?: Doc<'users'> | null
   orderError: Error | null
   orderId: Id<'orders'> | null

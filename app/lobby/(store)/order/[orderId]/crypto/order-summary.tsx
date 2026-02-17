@@ -15,6 +15,7 @@ import {formatPrice} from '@/utils/formatPrice'
 import {useQuery} from 'convex/react'
 import {useParams} from 'next/navigation'
 import {useMemo} from 'react'
+import {pmmap} from '../../utils'
 
 export const OrderSummaryWidget = () => {
   const params = useParams()
@@ -59,8 +60,7 @@ export const OrderSummaryWidget = () => {
                   ...data,
                   {
                     label: 'Payment Method',
-                    value:
-                      order?.payment.method.split('_').join(' ') ?? 'Cash App',
+                    value: pmmap[order?.payment.method ?? 'cash_app'],
                   },
                 ]
               : []
