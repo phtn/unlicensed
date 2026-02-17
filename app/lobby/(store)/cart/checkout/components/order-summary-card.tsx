@@ -60,7 +60,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
       <Card
         shadow='none'
         className='dark:bg-dark-table/40 border border-foreground/20'>
-        <CardBody className='relative space-y-4 p-4 md:p-8'>
+        <CardBody className='relative space-y-4 p-2 sm:p-4 md:p-6 lg:p-8'>
           <div className="absolute w-500 h-full scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
           <h2 className='text-2xl font-normal font-bone'>Order Summary</h2>
           <Divider />

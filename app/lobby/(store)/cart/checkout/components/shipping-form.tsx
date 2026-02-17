@@ -1,6 +1,7 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
+import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {Button, Input} from '@heroui/react'
 import {useCallback} from 'react'
@@ -24,20 +25,22 @@ export function ShippingForm({
     [onInputChange],
   )
 
+  const isMobile = useMobile()
+
   return (
     <div className='space-y-2'>
       <div className='flex items-center justify-between'>
-        <h3 className='flex items-center space-x-1.5 text-lg font-semibold my-3 opacity-80'>
+        <h3 className='flex items-center space-x-1.5 text-lg font-medium my-3 opacity-80'>
           <Icon name='mailbox-fill' className='size-5' />
           <span className='whitespace-nowrap'>Shipping Address</span>
         </h3>
         <Button
-          size='sm'
           radius='none'
-          variant='faded'
-          startContent={<Icon name='plus' className='size-4' />}
-          className='border-none flex items-center rounded-sm font-okxs'>
-          <span>New</span>
+          variant='solid'
+          isIconOnly={isMobile}
+          className='border-none flex items-center rounded-sm font-okxs dark:bg-white dark:text-dark-gray h-6 px-0 md:px-1'>
+          <Icon name='plus' className='size-4' />
+          <span className='hidden md:flex'>New</span>
         </Button>
       </div>
 

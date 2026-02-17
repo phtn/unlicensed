@@ -5,7 +5,7 @@ import {
 } from '@/convex/orders/d'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Select, SelectItem} from '@heroui/react'
+import {Select, SelectItem, SelectProps} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import React, {memo, useCallback, useMemo} from 'react'
 
@@ -43,10 +43,12 @@ const SELECT_CLASS_NAMES = {
   base: 'w-full',
   label: 'text-lg font-semibold tracking-tight',
   trigger:
-    'min-h-14 py-2 bg-sky-100 dark:bg-zinc-500/10 border border-foreground/40 placeholder:text-foreground',
-  listboxWrapper: 'border dark:border-foreground/40 rounded-2xl',
-  listbox: 'border-b',
-} as const
+    'min-h-14 p-2 md:ps-3 bg-white dark:bg-zinc-500/10 border border-foreground/40 placeholder:text-foreground',
+  listboxWrapper:
+    'border-[0.5px] dark:border-foreground/40 rounded-xl outline-none focus-visible:outline-none px-0',
+  listbox: 'outline-none focus-visible:outline-none px-1.5',
+  selectorIcon: 'translate-x-2',
+} as SelectProps['classNames']
 
 // Memoized row for list items to reduce re-renders when dropdown opens (5.5, 6.3)
 const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
@@ -55,13 +57,10 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
   method: IPaymentMethod
 }) {
   return (
-    <div className='flex gap-3 md:gap-6 items-center px-1 py-2 md:p-2'>
-      <Icon
-        name={method.icon}
-        className={cn('shrink-0 size-6', 'opacity-80')}
-      />
-      <div className='flex flex-col w-full md:space-y-0.5'>
-        <div className='flex items-center justify-between w-full'>
+    <div className='h-14 flex gap-2 md:gap-3 md:p-2'>
+      <Icon name={method.icon} className={cn('shrink-0 size-4 mt-1')} />
+      <div className='flex flex-col w-full md:space-y-0.5 h-14'>
+        <div className='flex items-center justify-between w-full h-8 md:h-7'>
           <div className='flex items-center space-x-2 whitespace-nowrap text-base md:text-lg tracking-tight font-medium '>
             <span>{method.label}</span>
             {method.id === 'cards' ? (
@@ -70,10 +69,11 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
                 <Icon name='googlepay' className='size-10' />
               </div>
             ) : null}
+            <TxnSpeed method={method.id} />
           </div>
           <div
             className={cn(
-              'text-[8px] uppercase font-brk whitespace-nowrap w-fit px-1 py-0 md:px-1 leading-3 md:leading-normal dark:text-white',
+              'text-[8px] uppercase font-brk w-fit px-1 py-0 md:px-1 leading-3 md:leading-normal dark:text-white text-right',
               {'': method.id === 'cards'},
             )}>
             {method.tag}
@@ -96,27 +96,30 @@ function SelectedValueContent({
   const data = item.data
   if (!data) return null
   return (
-    <div className='flex items-center justify-between px-1'>
+    <div className='flex items-center justify-between ps-1'>
       <div className='flex items-center w-full gap-2'>
         {data.icon ? (
           <Icon
             name={data.icon}
-            className={cn('shrink-0 size-6', data.iconStyle)}
+            className={cn('shrink-0 size-5', data.iconStyle)}
           />
         ) : null}
-        <div className='flex flex-col px-1 gap-4'>
+        <div className='flex flex-col pl-0.5 gap-4'>
           <div className='flex items-center space-x-2'>
-            <span className='text-lg tracking-tight'>{data.label}</span>
+            <span className='text-lg whitespace-nowrap tracking-tight'>
+              {data.label}
+            </span>
             {data.id === 'cards' ? (
               <div className='flex items-center space-x-2'>
                 <Icon name='applepay' className='size-10' />
                 <Icon name='googlepay' className='size-10' />
               </div>
             ) : null}
+            <TxnSpeed method={data.id} selected />
           </div>
         </div>
       </div>
-      <div className='flex-1 text-[8px] font-brk whitespace-nowrap uppercase font-normal px-1.5 py-px md:whitespace-nowrap'>
+      <div className='flex-1 text-[8px] font-brk uppercase font-normal px-1.5 py-px md:whitespace-nowrap leading-3'>
         {data.tag}
       </div>
     </div>
@@ -178,6 +181,7 @@ export const PaymentMethods = memo(function PaymentMethods({
       placeholder='Select Payment Method'
       renderValue={renderValue}
       selectionMode='single'
+      selectorIcon={<Icon name='selector' />}
       variant='flat'
       disableAnimation>
       {(method) => (
@@ -189,7 +193,8 @@ export const PaymentMethods = memo(function PaymentMethods({
           })}
           classNames={{
             wrapper: 'placeholder:text-dark-gray',
-            base: 'hover:bg-light-gray/20! data-[selected=true]:bg-zinc-500/20!',
+            base: 'data-[selected=true]:bg-brand/12 dark:data-[selected=true]:bg-brand gap-0 px-1 py-2',
+            selectedIcon: 'p-0 size-2 mb-7 md:mb-4',
           }}>
           <PaymentMethodOptionRow method={method} />
         </SelectItem>
@@ -197,3 +202,22 @@ export const PaymentMethods = memo(function PaymentMethods({
     </Select>
   )
 })
+
+interface TxnSpeedProps {
+  method: PaymentMethod
+  selected?: boolean
+}
+
+const TxnSpeed = ({method, selected = false}: TxnSpeedProps) => {
+  return method === 'crypto_commerce' ? (
+    <span
+      className={cn(
+        'text-brand dark:text-white text-[7px] italic uppercase font-medium tracking-normal',
+        {'text-brand dark:text-brand': selected},
+      )}>
+      Fastest
+    </span>
+  ) : (
+    ''
+  )
+}

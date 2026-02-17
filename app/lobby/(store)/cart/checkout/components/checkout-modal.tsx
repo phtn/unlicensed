@@ -134,13 +134,13 @@ export function CheckoutModal({
       radius='sm'
       scrollBehavior='inside'
       className=''
-      classNames={{wrapper: 'mt-12 md:mt-16'}}
+      classNames={{wrapper: 'mt-12 md:mt-10', body: 'p-2 md:p-4'}}
       placement='top'>
       <ModalContent className='overflow-hidden dark:bg-dark-table'>
         {(onClose) => (
           <>
-            <ModalHeader className='flex flex-col justify-center gap-1 text-lg font-semibold tracking-tight bg-foreground dark:bg-foreground/60 text-background h-12 mb-1'>
-              Confirm Shipping & Billing
+            <ModalHeader className='flex flex-col justify-center gap-1 text-base md:text-lg font-semibold bg-foreground dark:bg-foreground/60 text-background h-12 mb-1'>
+              Confirm Shipping & Billing Info
             </ModalHeader>
             <ModalBody>
               <OrderStatusMessages

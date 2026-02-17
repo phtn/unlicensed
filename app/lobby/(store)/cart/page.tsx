@@ -57,8 +57,10 @@ export default function CartPage() {
 
   const shippingConfig = useQuery(api.admin.q.getShippingConfig, {})
 
-  const shippingFeeCents = shippingConfig?.shippingFeeCents ?? DEFAULT_SHIPPING_FEE_CENTS
-  const minimumOrderCents = shippingConfig?.minimumOrderCents ?? DEFAULT_MINIMUM_ORDER_CENTS
+  const shippingFeeCents =
+    shippingConfig?.shippingFeeCents ?? DEFAULT_SHIPPING_FEE_CENTS
+  const minimumOrderCents =
+    shippingConfig?.minimumOrderCents ?? DEFAULT_MINIMUM_ORDER_CENTS
 
   // Get user info for checkout
   const convexUser = useQuery(
@@ -192,7 +194,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className='min-h-screen pt-16 sm:pt-10 md:pt-24 lg:pt-28 pb-10 px-4 sm:px-6 lg:px-8'>
+    <div className='min-h-screen pt-16 sm:pt-10 md:pt-24 lg:pt-28 pb-10 px-2 md:px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
         <CartPageHeader isPending={isPending} />
 

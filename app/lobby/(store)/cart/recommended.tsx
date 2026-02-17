@@ -119,9 +119,10 @@ export const RecommendedProducts = memo(() => {
                       size='sm'
                       radius='none'
                       variant='shadow'
-                      className='absolute bg-featured dark:bg-white/10 dark:backdrop-blur-xl rounded-s-lg dark:text-white/80 dark:hover:text-white border-b border-l border-white/10 -space-x-1.5 top-3.5 right-0 font-okxs font-medium shrink-0 flex text-white text-sm'
+                      className='absolute bg-dark-table dark:bg-white/10 dark:backdrop-blur-xl rounded-s-lg dark:text-white/80 dark:hover:text-white border-b border-l border-white/10 -space-x-1.5 top-3.5 right-0 font-okxs font-medium shrink-0 flex text-white text-sm'
                       onPress={() => handleAddToCart(product)}>
-                      <span className='md:flex hidden'>Add to Cart</span>
+                      <span>Add</span>
+                      <span className='md:flex hidden'> to Cart</span>
                     </Button>
                   </div>
                 </div>

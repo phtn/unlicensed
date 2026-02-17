@@ -1,6 +1,7 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
+import {Icon} from '@/lib/icons'
 import {Checkbox, Input} from '@heroui/react'
 import {useCallback, useMemo} from 'react'
 import {FormData, FormErrors} from '../types'
@@ -56,8 +57,9 @@ export function BillingForm({
       </div>
       {showBillingFields && (
         <div>
-          <h3 className='text-lg font-semibold mb-4 opacity-80'>
-            Billing Address
+          <h3 className='flex items-center space-x-1.5 text-lg font-medium my-3 opacity-80'>
+            <Icon name='mailbox-line' className='size-5' />
+            <span className='whitespace-nowrap'>Billing Address</span>
           </h3>
           <div className='grid grid-cols-2 gap-2'>
             <Input
