@@ -1,6 +1,5 @@
 import type {Token} from '@/components/appkit/token-coaster'
 import {useEffect, useMemo} from 'react'
-import type {Address} from 'viem'
 
 export interface UsePayButtonStateParams {
   disabled: boolean
@@ -9,7 +8,7 @@ export interface UsePayButtonStateParams {
   hasInsufficientBalance: boolean
   selectedToken: Token | null
   paymentAmountUsd: string
-  dtest: Address | null
+  dtest: string | null
   /** For dev debug output only */
   localIsPending?: boolean
   localIsConfirming?: boolean

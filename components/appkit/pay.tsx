@@ -1,6 +1,8 @@
 import {useSearchParams} from '@/components/sepolia/search-params-context'
+import {useBitcoinBalance} from '@/hooks/use-bitcoin-balance'
+import {useBitcoinTransfer} from '@/hooks/use-bitcoin-transfer'
 import {useCrypto} from '@/hooks/use-crypto'
-import {useNetworkTokens} from '@/hooks/use-network-tokens'
+import {useNetworkTokens, type TokenBalance} from '@/hooks/use-network-tokens'
 import {usePayButtonState} from '@/hooks/use-pay-button-state'
 import {useSend} from '@/hooks/x-use-send'
 import {getTransactionExplorerUrl} from '@/lib/explorer'
@@ -8,6 +10,8 @@ import {Icon} from '@/lib/icons'
 import {getUsdcAddress, isUsdcSupportedChain} from '@/lib/usdc'
 import {getUsdtAddress, isUsdtSupportedChain} from '@/lib/usdt'
 import {cn} from '@/lib/utils'
+import {bitcoin} from '@reown/appkit/networks'
+import {useAppKitNetwork} from '@reown/appkit/react'
 import {AnimatePresence, motion} from 'motion/react'
 import {
   useCallback,
@@ -74,9 +78,12 @@ const getDisplayTokenSymbol = (
   nativeSymbol: string,
 ): string => {
   if (token === 'ethereum') return nativeSymbol
-  if (token === 'usdc' || token === 'usdt') return token
+  if (token === 'usdc' || token === 'usdt' || token === 'bitcoin') return token
   return nativeSymbol
 }
+
+const BITCOIN_ADDRESS_PATTERN =
+  /^(bc1[ac-hj-np-z02-9]{11,71}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/i
 
 const STABLE_TOKEN_CONFIG: Record<
   Exclude<EvmPayToken, 'ethereum'>,
@@ -150,10 +157,27 @@ export const PayTab = ({
     null,
   )
 
+  const {caipNetwork, switchNetwork: switchAppKitNetwork} = useAppKitNetwork()
   const chainId = useChainId()
   const chains = useChains()
   const {mutateAsync} = useSwitchChain()
   const {tokens: networkTokens, isLoading: tokensLoading} = useNetworkTokens()
+  const {
+    balanceSats: bitcoinBalanceSats,
+    balanceBtc: bitcoinBalanceBtc,
+    isLoading: isBitcoinBalanceLoading,
+    error: bitcoinBalanceError,
+  } = useBitcoinBalance(
+    params.network === 'bitcoin' || caipNetwork?.chainNamespace === 'bip122',
+  )
+  const {
+    send: sendBitcoinTransfer,
+    isReady: isBitcoinTransferReady,
+    isPending: isBitcoinPending,
+    isConfirming: isBitcoinConfirming,
+    hash: bitcoinHash,
+    receipt: bitcoinReceipt,
+  } = useBitcoinTransfer()
   const [, startTransition] = useTransition()
   const [showReceiptModal, setShowReceiptModal] = useState(false)
   const {getBySymbol} = useCrypto()
@@ -215,10 +239,23 @@ export const PayTab = ({
 
   // Get current network name from chainId
   const currentNetwork = useMemo(() => getNetworkForChainId(chainId), [chainId])
+  const isAppKitBitcoinNetwork = caipNetwork?.chainNamespace === 'bip122'
+  const selectedNetwork =
+    params.network ?? (isAppKitBitcoinNetwork ? 'bitcoin' : currentNetwork)
+  const isBitcoinNetworkSelected = selectedNetwork === 'bitcoin'
+
+  useEffect(() => {
+    if (!isAppKitBitcoinNetwork || params.network === 'bitcoin') return
+    void setParams({network: 'bitcoin'})
+  }, [isAppKitBitcoinNetwork, params.network, setParams])
 
   // Sync network to search params when chainId changes
   useEffect(() => {
-    if (currentNetwork && params.network !== currentNetwork) {
+    if (!currentNetwork || params.network === 'bitcoin') {
+      return
+    }
+
+    if (params.network !== currentNetwork) {
       void setParams({network: currentNetwork})
     }
   }, [currentNetwork, params.network, setParams])
@@ -226,27 +263,77 @@ export const PayTab = ({
   // Handle network selection
   const handleNetworkSelect = useCallback(
     (network: string) => () => {
+      if (network === 'bitcoin') {
+        startTransition(() => {
+          void setParams({network, tokenSelected: 'bitcoin'})
+        })
+        void switchAppKitNetwork(bitcoin).catch((error) => {
+          console.error('Failed to switch to Bitcoin network', {error})
+        })
+        return
+      }
+
       const targetChainId = getChainIdForNetwork(network)
       if (targetChainId && targetChainId !== chainId) {
         startTransition(() => {
-          void setParams({network})
+          void setParams({
+            network,
+            tokenSelected: selectedToken === 'bitcoin' ? null : selectedToken,
+          })
           mutateAsync({chainId: targetChainId})
         })
       }
     },
-    [chainId, mutateAsync, startTransition, setParams],
+    [
+      chainId,
+      mutateAsync,
+      selectedToken,
+      startTransition,
+      setParams,
+      switchAppKitNetwork,
+    ],
   )
+
+  useEffect(() => {
+    if (isBitcoinNetworkSelected && selectedToken !== 'bitcoin') {
+      setSelectedToken('bitcoin')
+    }
+  }, [isBitcoinNetworkSelected, selectedToken, setSelectedToken])
+
+  const bitcoinTokenBalance = useMemo<TokenBalance>(
+    () => ({
+      token: 'bitcoin',
+      value: bitcoinBalanceSats,
+      formatted: bitcoinBalanceBtc,
+      decimals: 8,
+      isLoading: isBitcoinBalanceLoading,
+      error: bitcoinBalanceError,
+    }),
+    [
+      bitcoinBalanceBtc,
+      bitcoinBalanceError,
+      bitcoinBalanceSats,
+      isBitcoinBalanceLoading,
+    ],
+  )
+
+  const tokenBalances = useMemo<TokenBalance[]>(() => {
+    if (isBitcoinNetworkSelected) {
+      return [bitcoinTokenBalance]
+    }
+    return networkTokens
+  }, [bitcoinTokenBalance, isBitcoinNetworkSelected, networkTokens])
 
   // Extract token list from network tokens
   const availableTokens = useMemo<Token[]>(() => {
-    return networkTokens.map((t) => t.token)
-  }, [networkTokens])
+    return tokenBalances.map((tokenBalance) => tokenBalance.token)
+  }, [tokenBalances])
 
   // Get selected token balance
   const selectedTokenBalance = useMemo(() => {
     if (!selectedToken) return null
-    return networkTokens.find((t) => t.token === selectedToken) ?? null
-  }, [selectedToken, networkTokens])
+    return tokenBalances.find((token) => token.token === selectedToken) ?? null
+  }, [selectedToken, tokenBalances])
 
   // Check if selected token has insufficient balance
   const hasInsufficientBalance = useMemo(() => {
@@ -299,9 +386,41 @@ export const PayTab = ({
     return dest as Address
   }, [])
 
+  const bitcoinRelaySource = useMemo(() => {
+    const configuredSource =
+      process.env.NEXT_PUBLIC_BTC_TEST ??
+      process.env.NEXT_PUBLIC_BTC_RELAY_SOURCE ??
+      process.env.NEXT_PUBLIC_BTC_DESTINATION
+    if (!configuredSource) return null
+    return BITCOIN_ADDRESS_PATTERN.test(configuredSource)
+      ? configuredSource
+      : null
+  }, [])
+
+  useEffect(() => {
+    if (!isBitcoinNetworkSelected) return
+    if (bitcoinRelaySource) return
+    console.warn(
+      'NEXT_PUBLIC_BTC_TEST (or NEXT_PUBLIC_BTC_RELAY_SOURCE) is missing or invalid. Bitcoin payments are disabled.',
+    )
+  }, [bitcoinRelaySource, isBitcoinNetworkSelected])
+
+  const paymentDestination = isBitcoinNetworkSelected
+    ? bitcoinRelaySource
+    : dtest
+
   // EIP-681 payment request URI for wallet QR scan (ethereum:...)
   const paymentRequestUri = useMemo(() => {
-    if (!dtest || !selectedToken || !chainId) return null
+    if (!selectedToken) return null
+
+    if (selectedToken === 'bitcoin') {
+      if (!bitcoinRelaySource) return null
+      if (tokenAmount == null || tokenAmount <= 0) return null
+      const amount = tokenAmount.toFixed(8)
+      return `bitcoin:${bitcoinRelaySource}?amount=${amount}`
+    }
+
+    if (!dtest || !chainId) return null
     if (selectedToken === 'ethereum') {
       if (tokenAmount == null || tokenAmount <= 0) return null
       const value = `${Number(tokenAmount)}e18`
@@ -322,7 +441,14 @@ export const PayTab = ({
     }
 
     return null
-  }, [dtest, selectedToken, chainId, tokenAmount, payableUsdValue])
+  }, [
+    bitcoinRelaySource,
+    chainId,
+    dtest,
+    selectedToken,
+    tokenAmount,
+    payableUsdValue,
+  ])
 
   // Hook for sending transactions
   const {
@@ -368,8 +494,26 @@ export const PayTab = ({
   // Use lastPaymentToken to resolve tx state (token we actually paid with), fallback to selectedToken
   const tokenForTxState = lastPaymentToken ?? selectedToken
 
-  const localTxStateByToken = useMemo(
+  const localTxStateByToken = useMemo<
+    Partial<
+      Record<
+        Token,
+        {
+          isPending: boolean
+          isConfirming: boolean
+          hash: `0x${string}` | null | undefined
+          receipt: {blockNumber: bigint; status: 'success' | 'reverted'} | null
+        }
+      >
+    >
+  >(
     () => ({
+      bitcoin: {
+        isPending: isBitcoinPending,
+        isConfirming: isBitcoinConfirming,
+        hash: bitcoinHash,
+        receipt: bitcoinReceipt,
+      },
       ethereum: {
         isPending: isEthPending,
         isConfirming: isEthConfirming,
@@ -390,6 +534,10 @@ export const PayTab = ({
       },
     }),
     [
+      isBitcoinPending,
+      isBitcoinConfirming,
+      bitcoinHash,
+      bitcoinReceipt,
       isEthPending,
       isEthConfirming,
       ethHash,
@@ -405,10 +553,9 @@ export const PayTab = ({
     ],
   )
 
-  const localTxState =
-    tokenForTxState && isEvmPayToken(tokenForTxState)
-      ? localTxStateByToken[tokenForTxState]
-      : null
+  const localTxState = tokenForTxState
+    ? (localTxStateByToken[tokenForTxState] ?? null)
+    : null
 
   // Use local transaction state if we have an active transaction, otherwise use props
   const localIsPending = localTxState?.isPending ?? false
@@ -446,13 +593,7 @@ export const PayTab = ({
       return
     }
 
-    if (!tokenForTxState || !isEvmPayToken(tokenForTxState)) {
-      return
-    }
-
-    const relayToken = tokenForTxState
-    const relayChainId = lastPaymentChainId ?? chainId
-    if (!relayToken || !relayChainId) {
+    if (!tokenForTxState) {
       return
     }
 
@@ -464,15 +605,29 @@ export const PayTab = ({
 
     void (async () => {
       try {
-        const response = await fetch('/api/relay', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            paymentHash: activeHash,
-            chainId: relayChainId,
-            token: relayToken,
-          }),
-        })
+        const response = isEvmPayToken(tokenForTxState)
+          ? await fetch('/api/relay', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                paymentHash: activeHash,
+                chainId: lastPaymentChainId ?? chainId,
+                token: tokenForTxState,
+              }),
+            })
+          : tokenForTxState === 'bitcoin'
+            ? await fetch('/api/relay/bitcoin', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                  paymentHash: activeHash,
+                }),
+              })
+            : null
+
+        if (!response) {
+          return
+        }
 
         if (!response.ok) {
           const payload = await response.json().catch(() => null)
@@ -491,12 +646,21 @@ export const PayTab = ({
   }, [activeHash, activeReceipt, tokenForTxState, lastPaymentChainId, chainId])
 
   const receiptExplorerUrl = useMemo(
-    () => getTransactionExplorerUrl(currentChain, activeHash) ?? explorerUrl,
-    [currentChain, activeHash, explorerUrl],
+    () =>
+      tokenForTxState === 'bitcoin' && activeHash
+        ? `https://mempool.space/tx/${activeHash.replace(/^0x/, '')}`
+        : (getTransactionExplorerUrl(currentChain, activeHash) ?? explorerUrl),
+    [currentChain, activeHash, explorerUrl, tokenForTxState],
   )
 
   const isUnsupportedPaymentToken =
-    selectedToken !== null && !isEvmPayToken(selectedToken)
+    selectedToken !== null &&
+    selectedToken !== 'bitcoin' &&
+    !isEvmPayToken(selectedToken)
+  const isUnsupportedPaymentNetwork =
+    isBitcoinNetworkSelected && !isBitcoinTransferReady
+  const isMissingBitcoinDestination =
+    isBitcoinNetworkSelected && !bitcoinRelaySource
 
   const isBasePayDisabled = usePayButtonState({
     disabled,
@@ -505,13 +669,17 @@ export const PayTab = ({
     hasInsufficientBalance,
     selectedToken,
     paymentAmountUsd,
-    dtest,
+    dtest: paymentDestination,
     localIsPending,
     localIsConfirming,
     isPendingProp: isPending,
     isConfirmingProp: isConfirming,
   })
-  const isPayDisabled = isBasePayDisabled || isUnsupportedPaymentToken
+  const isPayDisabled =
+    isBasePayDisabled ||
+    isUnsupportedPaymentToken ||
+    isUnsupportedPaymentNetwork ||
+    isMissingBitcoinDestination
 
   const sendStableTokenPayment = useCallback(
     (token: Exclude<EvmPayToken, 'ethereum'>, usdAmount: number) => {
@@ -541,12 +709,33 @@ export const PayTab = ({
     [chainId, dtest, mutate, mutateUsdt],
   )
 
+  const sendBitcoinPayment = useCallback(
+    async (btcAmount: number) => {
+      if (!bitcoinRelaySource) {
+        throw new Error(
+          'NEXT_PUBLIC_BTC_TEST (or NEXT_PUBLIC_BTC_RELAY_SOURCE) is missing or invalid for Bitcoin payments',
+        )
+      }
+
+      const satoshis = parseUnits(btcAmount.toFixed(8), 8)
+      if (satoshis <= BigInt(0)) {
+        throw new Error('Bitcoin payment amount must be greater than zero')
+      }
+
+      await sendBitcoinTransfer({
+        recipient: bitcoinRelaySource,
+        amountSats: satoshis,
+      })
+    },
+    [bitcoinRelaySource, sendBitcoinTransfer],
+  )
+
   // Handle payment
-  const handlePay = useCallback(() => {
+  const handlePay = useCallback(async () => {
     if (
       !selectedToken ||
       !paymentAmountUsd ||
-      !dtest ||
+      !paymentDestination ||
       hasInsufficientBalance
     ) {
       return
@@ -561,7 +750,13 @@ export const PayTab = ({
 
     try {
       switch (selectedToken) {
+        case 'bitcoin':
+          if (tokenAmount == null) return
+          setLastPaymentChainId(null)
+          await sendBitcoinPayment(tokenAmount)
+          return
         case 'ethereum':
+          if (!dtest) return
           sendEth({to: dtest, usd: payableUsdValue, chainId})
           return
         case 'usdc':
@@ -582,8 +777,11 @@ export const PayTab = ({
     paymentAmountUsd,
     payableUsdValue,
     dtest,
+    paymentDestination,
     hasInsufficientBalance,
+    tokenAmount,
     chainId,
+    sendBitcoinPayment,
     sendEth,
     sendStableTokenPayment,
   ])
@@ -612,9 +810,11 @@ export const PayTab = ({
     !activeIsPending &&
     !hasInsufficientBalance &&
     !isUnsupportedPaymentToken &&
+    !isUnsupportedPaymentNetwork &&
+    !isMissingBitcoinDestination &&
     !!selectedToken &&
     !!paymentAmountUsd &&
-    !!dtest
+    !!paymentDestination
   const showProcessingState = activeIsPending || activeIsConfirming
 
   return (
@@ -630,7 +830,7 @@ export const PayTab = ({
             spinRandomAmount={spinRandomAmount}
             usdValue={payableUsdValue}
             paymentRequestUri={paymentRequestUri}
-            recipient={dtest}
+            recipient={paymentDestination}
             tokenAmountFormatted={processingTokenAmountFormatted}
             symbol={displayTokenSymbol(selectedToken)}
           />
@@ -646,7 +846,7 @@ export const PayTab = ({
           />
         )}
         <NetworkSelector
-          currentNetwork={currentNetwork}
+          currentNetwork={selectedNetwork}
           onSelectNetwork={handleNetworkSelect}
         />
         <motion.div
@@ -662,7 +862,9 @@ export const PayTab = ({
               'h-28': availableTokens.length <= 1,
               'h-56': availableTokens.length > 1,
             })}>
-            {tokensLoading ? (
+            {(
+              isBitcoinNetworkSelected ? isBitcoinBalanceLoading : tokensLoading
+            ) ? (
               <motion.div
                 initial={{opacity: 0, y: -20}}
                 animate={{opacity: 1, y: 0}}
@@ -673,10 +875,15 @@ export const PayTab = ({
             ) : availableTokens.length > 0 ? (
               <Tokens
                 tokens={availableTokens}
-                tokenBalances={networkTokens}
+                tokenBalances={tokenBalances}
                 selectedToken={selectedToken}
                 paymentAmountUsd={paymentAmountUsd}
-                tokenPrices={{usdc: 1, usdt: 1, ethereum: nativeTokenPrice}}
+                tokenPrices={{
+                  usdc: 1,
+                  usdt: 1,
+                  ethereum: nativeTokenPrice,
+                  bitcoin: bitcoinPrice,
+                }}
                 nativeSymbol={nativeSymbol}
                 listHeightClassName='h-56'
                 onTokenSelect={handleTokenSelect}

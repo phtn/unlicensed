@@ -4,7 +4,7 @@ import {motion} from 'motion/react'
 import {useMemo} from 'react'
 import {HyperList} from '../expermtl/hyper-list'
 
-type AllowedNetworks = 'sepolia' | 'ethereum' | 'polygon' | 'amoy'
+type AllowedNetworks = 'sepolia' | 'ethereum' | 'polygon' | 'amoy' | 'bitcoin'
 
 interface NetworkSelectorProps {
   currentNetwork: string | null
@@ -15,23 +15,15 @@ export const NetworkSelector = ({
   currentNetwork,
   onSelectNetwork,
 }: NetworkSelectorProps) => {
-  const network_list = useMemo(
-    () =>
-      ['sepolia', 'ethereum', 'polygon', 'amoy'].map((net) => ({
-        name: net,
-        icon:
-          net === 'sepolia'
-            ? 'sepolia'
-            : net === 'ethereum'
-              ? 'ethereum'
-              : net === 'polygon'
-                ? 'polygon'
-                : 'amoy',
-        onSelect: onSelectNetwork(net),
-        selected: currentNetwork === net,
-      })) as NetworkButtonRoundProps[],
-    [currentNetwork, onSelectNetwork],
-  )
+  const network_list = useMemo(() => {
+    const networks: AllowedNetworks[] = ['bitcoin', 'ethereum', 'polygon']
+
+    return networks.map((net) => ({
+      name: net,
+      onSelect: onSelectNetwork(net),
+      selected: currentNetwork === net,
+    }))
+  }, [currentNetwork, onSelectNetwork])
   return (
     <>
       <motion.div
@@ -82,11 +74,13 @@ const NetworkButtonRound = ({
       )}>
       <Icon
         name={
-          name === 'sepolia'
-            ? 'ethereum'
-            : name === 'polygon' || name === 'amoy'
-              ? 'polygon'
-              : 'ethereum'
+          name === 'bitcoin'
+            ? 'bitcoin'
+            : name === 'sepolia'
+              ? 'ethereum'
+              : name === 'polygon' || name === 'amoy'
+                ? 'polygon'
+                : 'ethereum'
         }
         className={cn('text-slate-300 size-4', {
           'size-4': selected,
@@ -94,13 +88,14 @@ const NetworkButtonRound = ({
           'text-polygon': name === 'polygon' && selected,
           'text-ethereum': name === 'ethereum' && selected,
           'text-rose-300': name === 'amoy' && selected,
+          'text-bitcoin': name === 'bitcoin' && selected,
         })}
       />
       <span
         className={cn('font-brk opacity-80 text-sm text-white', {
           'opacity-100 text-black': selected,
         })}>
-        {name.substring(0, 3).toUpperCase()}
+        {name === 'bitcoin' ? 'BTC' : name.substring(0, 3).toUpperCase()}
       </span>
     </motion.button>
   )

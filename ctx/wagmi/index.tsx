@@ -5,7 +5,7 @@ import {createAppKit} from '@reown/appkit/react'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {type ReactNode} from 'react'
 import {cookieToInitialState, WagmiProvider, type Config} from 'wagmi'
-import {networks, projectId, wagmiAdapter} from './config'
+import {bitcoinAdapter, networks, projectId, wagmiAdapter} from './config'
 
 // Set up queryClient
 const queryClient = new QueryClient()
@@ -27,7 +27,7 @@ const metadata = {
 
 // Create the modal
 export const modal = createAppKit({
-  adapters: [wagmiAdapter],
+  adapters: [wagmiAdapter, bitcoinAdapter],
   projectId,
   networks,
   defaultNetwork: mainnet,

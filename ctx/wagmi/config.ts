@@ -19,6 +19,7 @@ import {
   zeroGTestnet
 } from '@reown/appkit/networks'
 import { cookieStorage, createStorage } from '@wagmi/core'
+import {BitcoinAdapter} from './bitcoin-adapter'
 
 // Get projectId from https://cloud.reown.com
 export const projectId = process.env.NEXT_PUBLIC_REOWN_ID as string
@@ -55,5 +56,7 @@ export const wagmiAdapter = new WagmiAdapter({
   projectId,
   networks
 })
+
+export const bitcoinAdapter = new BitcoinAdapter()
 
 export const config = wagmiAdapter.wagmiConfig

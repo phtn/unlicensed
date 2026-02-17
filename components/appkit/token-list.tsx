@@ -11,7 +11,12 @@ interface TokensProps {
   tokenBalances?: TokenBalance[]
   selectedToken?: Token | null
   paymentAmountUsd?: string
-  tokenPrices?: {usdc: number; usdt?: number; ethereum: number | null}
+  tokenPrices?: {
+    usdc: number
+    usdt?: number
+    ethereum: number | null
+    bitcoin?: number | null
+  }
   /** Symbol for the native gas token (e.g. 'ETH' or 'MATIC'). Used when token is 'ethereum'. */
   nativeSymbol?: string
   listHeightClassName?: string
@@ -50,6 +55,7 @@ export const Tokens = ({
     if (token === 'usdc') return tokenPrices.usdc
     if (token === 'usdt') return tokenPrices.usdt ?? 1
     if (token === 'ethereum') return tokenPrices.ethereum
+    if (token === 'bitcoin') return tokenPrices.bitcoin ?? null
     return null
   }
 
