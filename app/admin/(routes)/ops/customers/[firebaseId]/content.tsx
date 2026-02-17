@@ -32,6 +32,9 @@ export const Content = ({firebaseId}: ContentProps) => {
   const [isOpeningChat, setIsOpeningChat] = useState(false)
   const followForChat = useMutation(api.follows.m.follow)
   const customer = useQuery(api.users.q.getByFid, {fid: firebaseId})
+  const customerAddresses = useQuery(api.users.q.getUserAddresses, {
+    fid: firebaseId,
+  })
   const conversations = useQuery(
     api.messages.q.getConversations,
     user?.uid ? {fid: user.uid} : 'skip',
@@ -189,7 +192,7 @@ export const Content = ({firebaseId}: ContentProps) => {
           </div>
         </div>
         <div className='h-2 bg-sidebar' />
-        <div className='grid md:grid-cols-2 gap-0'>
+        <div className='grid md:grid-cols-2 gap-2'>
           <div className='space-y-4'>
             <Card shadow='none' className='p-2 space-y-5'>
               <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
@@ -224,9 +227,13 @@ export const Content = ({firebaseId}: ContentProps) => {
 
             <Card shadow='none' className='py-6 px-2'>
               <h2 className='text-base font-semibold'>Addresses</h2>
-              {customer.addresses?.length ? (
+              {customerAddresses === undefined ? (
+                <p className='text-sm text-muted-foreground'>
+                  Loading addresses...
+                </p>
+              ) : customerAddresses.length ? (
                 <div className='space-y-3'>
-                  {customer.addresses.map((address) => (
+                  {customerAddresses.map((address) => (
                     <div
                       key={address.id}
                       className='rounded-lg border border-divider p-3 text-sm'>

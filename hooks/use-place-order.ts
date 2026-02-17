@@ -79,6 +79,10 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
     api.users.q.getCurrentUser,
     user ? {fid: user.uid} : 'skip',
   )
+  const savedAddresses = useQuery(
+    api.users.q.getUserAddresses,
+    user ? {fid: user.uid} : 'skip',
+  )
 
   const userId = useMemo(() => convexUser?._id, [convexUser?._id])
 
@@ -218,7 +222,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
         if (isAuthenticated && user && userId && convexUser) {
           try {
             // Check if shipping address already exists
-            const existingAddresses = convexUser.addresses || []
+            const existingAddresses = savedAddresses || []
             const addressExists = existingAddresses.some(
               (addr) =>
                 addr.addressLine1 === params.shippingAddress.addressLine1 &&
@@ -336,6 +340,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
       userId,
       user,
       convexUser,
+      savedAddresses,
       createOrderMutation,
       addAddressMutation,
       updateContactMutation,

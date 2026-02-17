@@ -17,6 +17,7 @@ type StarLayerProps = HTMLMotionProps<'div'> & {
   size: number
   transition: Transition
   starColor: string
+  blur?: string
 }
 
 function generateStars(count: number, starColor: string) {
@@ -35,6 +36,7 @@ function StarLayer({
   transition = {repeat: Infinity, duration: 50, ease: 'linear'},
   starColor = '#fff',
   className,
+  blur,
   ...props
 }: StarLayerProps) {
   const [boxShadow, setBoxShadow] = useState<string>('')
@@ -56,6 +58,7 @@ function StarLayer({
           width: `${size}px`,
           height: `${size}px`,
           boxShadow,
+          filter: blur ? `blur(${blur})` : '',
         }}
       />
       <div
@@ -110,7 +113,8 @@ function Ascend({
     <div
       data-slot='stars-background'
       className={cn(
-        'relative size-full overflow-hidden dark:bg-[radial-gradient(ellipse_at_bottom,#262626_0%,#000_100%)]',
+        'relative size-full overflow-hidden',
+        ' dark:bg-[radial-gradient(ellipse_at_bottom,#262626_0%,#000_100%)]',
         className,
       )}
       onMouseMove={handleMouseMove}
@@ -136,7 +140,18 @@ function Ascend({
         />
         <StarLayer
           count={200}
-          size={3}
+          size={4}
+          transition={{
+            repeat: Infinity,
+            duration: speed * 3,
+            ease: 'linear',
+          }}
+          starColor={starColor}
+        />
+        <StarLayer
+          count={20}
+          size={10}
+          blur='4px'
           transition={{
             repeat: Infinity,
             duration: speed * 3,

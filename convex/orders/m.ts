@@ -273,6 +273,7 @@ export const updatePayment = mutation({
     if (!order) {
       throw new Error('Order not found')
     }
+    const didPaymentStatusChange = order.payment.status !== args.payment.status
 
     // If payment is completed, update order status to order_processing
     let orderStatus = order.orderStatus
@@ -330,17 +331,19 @@ export const updatePayment = mutation({
       )
     }
 
-    // Log payment status change activity
-    await ctx.scheduler.runAfter(
-      0,
-      internal.activities.m.logPaymentStatusChange,
-      {
-        orderId: args.orderId,
-        previousStatus: order.payment.status,
-        newStatus: args.payment.status,
-        transactionId: args.payment.transactionId,
-      },
-    )
+    // Log payment status change activity only when status actually changed
+    if (didPaymentStatusChange) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.activities.m.logPaymentStatusChange,
+        {
+          orderId: args.orderId,
+          previousStatus: order.payment.status,
+          newStatus: args.payment.status,
+          transactionId: args.payment.transactionId,
+        },
+      )
+    }
 
     return args.orderId
   },

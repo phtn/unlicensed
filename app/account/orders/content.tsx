@@ -194,7 +194,7 @@ export const Content = () => {
     <main className='px-2 sm:px-4 lg:px-6 space-y-5 pb-8'>
       <Card shadow='none' className='border border-foreground/15'>
         <CardBody className='p-3 md:p-5 space-y-4 bg-sidebar/40 dark:bg-sidebar'>
-          <div className='grid grid-cols-1 lg:grid-cols-4 gap-3 w-full h-15'>
+          <div className='grid grid-cols-1 lg:grid-cols-4 gap-3 w-full xl:h-15'>
             <Input
               type='search'
               value={searchQuery}

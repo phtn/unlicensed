@@ -14,6 +14,7 @@ import type * as activities_q from "../activities/q.js";
 import type * as activityViews_d from "../activityViews/d.js";
 import type * as activityViews_m from "../activityViews/m.js";
 import type * as activityViews_q from "../activityViews/q.js";
+import type * as addresses_d from "../addresses/d.js";
 import type * as admin_d from "../admin/d.js";
 import type * as admin_m from "../admin/m.js";
 import type * as admin_q from "../admin/q.js";
@@ -98,6 +99,7 @@ declare const fullApi: ApiFromModules<{
   "activityViews/d": typeof activityViews_d;
   "activityViews/m": typeof activityViews_m;
   "activityViews/q": typeof activityViews_q;
+  "addresses/d": typeof addresses_d;
   "admin/d": typeof admin_d;
   "admin/m": typeof admin_m;
   "admin/q": typeof admin_q;

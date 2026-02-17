@@ -1,5 +1,57 @@
 import {v} from 'convex/values'
+import type {Doc, Id} from '../_generated/dataModel'
+import type {QueryCtx} from '../_generated/server'
 import {query} from '../_generated/server'
+import type {AddressType} from './d'
+
+const matchesType = (
+  addressType: AddressType['type'],
+  requestedType?: AddressType['type'],
+) => {
+  if (!requestedType) {
+    return true
+  }
+  return addressType === requestedType || addressType === 'both'
+}
+
+const mapAddressDocToAddress = (doc: Doc<'addresses'>): AddressType => ({
+  id: doc.id,
+  bio: doc.bio,
+  type: doc.type,
+  firstName: doc.firstName,
+  lastName: doc.lastName,
+  company: doc.company,
+  addressLine1: doc.addressLine1,
+  addressLine2: doc.addressLine2,
+  city: doc.city,
+  state: doc.state,
+  zipCode: doc.zipCode,
+  country: doc.country,
+  phone: doc.phone,
+  isDefault: doc.isDefault,
+  visible: doc.visible,
+  telegram: doc.telegram,
+  signal: doc.signal,
+})
+
+const getLegacyAddresses = (
+  user: Doc<'users'>,
+  type?: AddressType['type'],
+): AddressType[] => {
+  if (!user.addresses || user.addresses.length === 0) {
+    return []
+  }
+  if (!type) {
+    return user.addresses
+  }
+  return user.addresses.filter((address) => matchesType(address.type, type))
+}
+
+const getUserAddressDocs = async (ctx: QueryCtx, userId: Id<'users'>) =>
+  ctx.db
+    .query('addresses')
+    .withIndex('by_user', (q) => q.eq('userId', userId))
+    .collect()
 
 export const getCurrentUser = query({
   args: {
@@ -41,17 +93,19 @@ export const getUserAddresses = query({
       .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .unique()
 
-    if (!user || !user.addresses) {
+    if (!user) {
       return []
     }
 
-    if (args.type) {
-      return user.addresses.filter(
-        (addr) => addr.type === args.type || addr.type === 'both',
-      )
+    const addressDocs = await getUserAddressDocs(ctx, user._id)
+    if (addressDocs.length > 0) {
+      return addressDocs
+        .filter((doc) => matchesType(doc.type, args.type))
+        .map(mapAddressDocToAddress)
     }
 
-    return user.addresses
+    // Backward compatibility for users who still have embedded addresses.
+    return getLegacyAddresses(user, args.type)
   },
 })
 
@@ -68,26 +122,52 @@ export const getDefaultAddress = query({
       .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .unique()
 
-    if (!user || !user.addresses) {
+    if (!user) {
       return null
     }
 
-    let addresses = user.addresses
+    const addressDocs = await getUserAddressDocs(ctx, user._id)
+    if (addressDocs.length > 0) {
+      const matchingDocs = addressDocs.filter((doc) => matchesType(doc.type, args.type))
+      if (matchingDocs.length === 0) {
+        return null
+      }
 
-    if (args.type) {
-      addresses = addresses.filter(
-        (addr) => addr.type === args.type || addr.type === 'both',
-      )
+      const defaultIdForType =
+        args.type === 'shipping'
+          ? user.defaultShippingAddressId
+          : args.type === 'billing'
+            ? user.defaultBillingAddressId
+            : user.defaultShippingAddressId ?? user.defaultBillingAddressId
+
+      if (defaultIdForType) {
+        const defaultDoc = matchingDocs.find(
+          (doc) => String(doc._id) === defaultIdForType,
+        )
+        if (defaultDoc) {
+          return mapAddressDocToAddress(defaultDoc)
+        }
+      }
+
+      const flaggedDefault = matchingDocs.find((doc) => doc.isDefault === true)
+      if (flaggedDefault) {
+        return mapAddressDocToAddress(flaggedDefault)
+      }
+
+      return mapAddressDocToAddress(matchingDocs[0])
     }
 
-    // Find default address
-    const defaultAddr = addresses.find((addr) => addr.isDefault === true)
-    if (defaultAddr) {
-      return defaultAddr
+    const legacyAddresses = getLegacyAddresses(user, args.type)
+    if (legacyAddresses.length === 0) {
+      return null
     }
 
-    // If no default, return first address
-    return addresses[0] || null
+    const legacyDefault = legacyAddresses.find((addr) => addr.isDefault === true)
+    if (legacyDefault) {
+      return legacyDefault
+    }
+
+    return legacyAddresses[0]
   },
 })
 

@@ -1,7 +1,7 @@
 import {Infer, v} from 'convex/values'
 
 // Address schema for shipping/billing addresses
-export const addressSchema = v.object({
+export const addressFields = {
   id: v.string(), // Unique identifier for the address
   bio: v.optional(v.string()),
   type: v.union(v.literal('shipping'), v.literal('billing'), v.literal('both')),
@@ -19,7 +19,9 @@ export const addressSchema = v.object({
   visible: v.optional(v.boolean()),
   telegram: v.optional(v.string()),
   signal: v.optional(v.string()),
-})
+}
+
+export const addressSchema = v.object(addressFields)
 
 // Contact information schema
 export const contactSchema = v.object({
@@ -81,12 +83,12 @@ export const userSchema = v.object({
   // Contact information
   contact: v.optional(contactSchema),
 
-  // Addresses (array to support multiple addresses)
+  // Deprecated legacy field; new writes should use the `addresses` table.
   addresses: v.optional(v.array(addressSchema)),
 
-  // Default address references (for quick checkout)
-  defaultShippingAddressId: v.optional(v.string()), // ID of default shipping address
-  defaultBillingAddressId: v.optional(v.string()), // ID of default billing address
+  // Default address references (Convex `addresses` document IDs serialized as strings)
+  defaultShippingAddressId: v.optional(v.union(v.string(), v.null())),
+  defaultBillingAddressId: v.optional(v.union(v.string(), v.null())),
 
   // Social media links
   socialMedia: v.optional(socialMediaSchema),

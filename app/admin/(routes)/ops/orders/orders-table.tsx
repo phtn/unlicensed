@@ -78,10 +78,10 @@ export const OrdersTable = () => {
       },
       {
         id: 'method',
-        header: <ColHeader tip='Payment Method' symbol='Method' center />,
+        header: <ColHeader tip='Payment Method' symbol='Payment' center />,
         accessorKey: 'payment',
         cell: paymentMethodCell(),
-        size: 100,
+        size: 160,
       },
       {
         id: 'courier',

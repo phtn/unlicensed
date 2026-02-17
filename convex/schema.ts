@@ -2,6 +2,7 @@ import {defineSchema, defineTable} from 'convex/server'
 import {activitySchema} from './activities/d'
 import {activityViewSchema} from './activityViews/d'
 import {adminSettingsSchema} from './admin/d'
+import {addressRecordSchema} from './addresses/d'
 import {affiliateAccountSchema} from './affiliateAccounts/d'
 import {archivedConversationSchema} from './archives/d'
 import {blogSchema} from './blogs/d'
@@ -40,6 +41,11 @@ export default defineSchema({
   users: defineTable(userSchema)
     .index('by_fid', ['fid'])
     .index('by_email', ['email']),
+  addresses: defineTable(addressRecordSchema)
+    .index('by_user', ['userId'])
+    .index('by_user_type', ['userId', 'type'])
+    .index('by_user_address_id', ['userId', 'id'])
+    .index('by_user_updated_at', ['userId', 'updatedAt']),
   carts: defineTable(cartSchema).index('by_user', ['userId']),
   productHolds: defineTable(productHoldSchema)
     .index('by_cart', ['cartId'])

@@ -1,12 +1,142 @@
 import {v} from 'convex/values'
+import type {Doc, Id} from '../_generated/dataModel'
 import {internal} from '../_generated/api'
+import type {MutationCtx} from '../_generated/server'
 import {mutation} from '../_generated/server'
 import {
   addressSchema,
   contactSchema,
   preferencesSchema,
   socialMediaSchema,
+  type AddressType,
 } from './d'
+
+const supportsShipping = (type: AddressType['type']) =>
+  type === 'shipping' || type === 'both'
+
+const supportsBilling = (type: AddressType['type']) =>
+  type === 'billing' || type === 'both'
+
+const findFallbackDefaultId = (
+  addresses: Doc<'addresses'>[],
+  kind: 'shipping' | 'billing',
+): string | null => {
+  const fallback = addresses.find((address) =>
+    kind === 'shipping'
+      ? supportsShipping(address.type)
+      : supportsBilling(address.type),
+  )
+  return fallback ? String(fallback._id) : null
+}
+
+const upsertUserAddress = async (
+  ctx: MutationCtx,
+  userId: Id<'users'>,
+  address: AddressType,
+  now: number,
+): Promise<{id: Id<'addresses'>; inserted: boolean}> => {
+  const existing = await ctx.db
+    .query('addresses')
+    .withIndex('by_user_address_id', (q) =>
+      q.eq('userId', userId).eq('id', address.id),
+    )
+    .unique()
+
+  if (existing) {
+    await ctx.db.patch(existing._id, {
+      ...address,
+      updatedAt: now,
+    })
+    return {
+      id: existing._id,
+      inserted: false,
+    }
+  }
+
+  const id = await ctx.db.insert('addresses', {
+    userId,
+    ...address,
+    createdAt: now,
+    updatedAt: now,
+  })
+  return {
+    id,
+    inserted: true,
+  }
+}
+
+const syncLegacyAddressesToTable = async (
+  ctx: MutationCtx,
+  user: Doc<'users'>,
+  addresses: AddressType[],
+  now: number,
+): Promise<{inserted: number; updated: number}> => {
+  let inserted = 0
+  let updated = 0
+  let defaultShippingAddressId = user.defaultShippingAddressId ?? null
+  let defaultBillingAddressId = user.defaultBillingAddressId ?? null
+  let firstShippingAddressId: string | null = null
+  let firstBillingAddressId: string | null = null
+  const syncedAddressIds = new Set<string>()
+
+  for (const address of addresses) {
+    const result = await upsertUserAddress(ctx, user._id, address, now)
+    if (result.inserted) {
+      inserted += 1
+    } else {
+      updated += 1
+    }
+
+    const addressDocId = String(result.id)
+    syncedAddressIds.add(addressDocId)
+    if (
+      supportsShipping(address.type) &&
+      (address.isDefault === true || !defaultShippingAddressId)
+    ) {
+      defaultShippingAddressId = addressDocId
+    }
+    if (supportsShipping(address.type) && !firstShippingAddressId) {
+      firstShippingAddressId = addressDocId
+    }
+    if (
+      supportsBilling(address.type) &&
+      (address.isDefault === true || !defaultBillingAddressId)
+    ) {
+      defaultBillingAddressId = addressDocId
+    }
+    if (supportsBilling(address.type) && !firstBillingAddressId) {
+      firstBillingAddressId = addressDocId
+    }
+  }
+
+  if (
+    defaultShippingAddressId &&
+    !syncedAddressIds.has(defaultShippingAddressId) &&
+    firstShippingAddressId
+  ) {
+    defaultShippingAddressId = firstShippingAddressId
+  }
+  if (
+    defaultBillingAddressId &&
+    !syncedAddressIds.has(defaultBillingAddressId) &&
+    firstBillingAddressId
+  ) {
+    defaultBillingAddressId = firstBillingAddressId
+  }
+
+  if (
+    defaultShippingAddressId !== (user.defaultShippingAddressId ?? null) ||
+    defaultBillingAddressId !== (user.defaultBillingAddressId ?? null)
+  ) {
+    await ctx.db.patch(user._id, {
+      defaultShippingAddressId,
+      defaultBillingAddressId,
+      updatedAt: now,
+    })
+  }
+
+  return {inserted, updated}
+}
 
 export const createOrUpdateUser = mutation({
   args: {
@@ -48,7 +178,6 @@ export const createOrUpdateUser = mutation({
         fid: string
         photoUrl?: string
         contact?: typeof args.contact
-        addresses?: typeof args.addresses
         socialMedia?: typeof args.socialMedia
         dateOfBirth?: string
         gender?: typeof args.gender
@@ -64,7 +193,6 @@ export const createOrUpdateUser = mutation({
 
       if (args.photoUrl !== undefined) updates.photoUrl = args.photoUrl
       if (args.contact !== undefined) updates.contact = args.contact
-      if (args.addresses !== undefined) updates.addresses = args.addresses
       if (args.socialMedia !== undefined) updates.socialMedia = args.socialMedia
       if (args.dateOfBirth !== undefined) updates.dateOfBirth = args.dateOfBirth
       if (args.gender !== undefined) updates.gender = args.gender
@@ -73,6 +201,11 @@ export const createOrUpdateUser = mutation({
         updates.cashAppUsername = args.cashAppUsername
 
       await ctx.db.patch(existing._id, updates)
+
+      if (args.addresses && args.addresses.length > 0) {
+        await syncLegacyAddressesToTable(ctx, existing, args.addresses, now)
+      }
+
       return existing._id
     }
 
@@ -84,7 +217,6 @@ export const createOrUpdateUser = mutation({
       fid: args.firebaseId,
       photoUrl: args.photoUrl,
       contact: args.contact,
-      addresses: args.addresses,
       socialMedia: args.socialMedia,
       dateOfBirth: args.dateOfBirth,
       gender: args.gender,
@@ -93,6 +225,13 @@ export const createOrUpdateUser = mutation({
       createdAt: now,
       updatedAt: now,
     })
+
+    if (args.addresses && args.addresses.length > 0) {
+      const createdUser = await ctx.db.get(userId)
+      if (createdUser) {
+        await syncLegacyAddressesToTable(ctx, createdUser, args.addresses, now)
+      }
+    }
 
     // Log user signup activity
     await ctx.scheduler.runAfter(0, internal.activities.m.logUserSignup, {
@@ -165,13 +304,32 @@ export const addAddress = mutation({
       throw new Error('User not found')
     }
 
-    const addresses = user.addresses || []
-    addresses.push(args.address)
+    const now = Date.now()
+    const upserted = await upsertUserAddress(ctx, user._id, args.address, now)
+    const addressDocId = String(upserted.id)
 
-    await ctx.db.patch(user._id, {
-      addresses,
-      updatedAt: Date.now(),
-    })
+    const updates: {
+      defaultShippingAddressId?: string
+      defaultBillingAddressId?: string
+      updatedAt: number
+    } = {
+      updatedAt: now,
+    }
+
+    if (
+      supportsShipping(args.address.type) &&
+      (args.address.isDefault === true || !user.defaultShippingAddressId)
+    ) {
+      updates.defaultShippingAddressId = addressDocId
+    }
+    if (
+      supportsBilling(args.address.type) &&
+      (args.address.isDefault === true || !user.defaultBillingAddressId)
+    ) {
+      updates.defaultBillingAddressId = addressDocId
+    }
+
+    await ctx.db.patch(user._id, updates)
 
     return user._id
   },
@@ -193,19 +351,67 @@ export const updateAddress = mutation({
       throw new Error('User not found')
     }
 
-    const addresses = user.addresses || []
-    const index = addresses.findIndex((addr) => addr.id === args.addressId)
+    const existingAddress = await ctx.db
+      .query('addresses')
+      .withIndex('by_user_address_id', (q) =>
+        q.eq('userId', user._id).eq('id', args.addressId),
+      )
+      .unique()
 
-    if (index === -1) {
+    if (!existingAddress) {
       throw new Error('Address not found')
     }
 
-    addresses[index] = args.address
-
-    await ctx.db.patch(user._id, {
-      addresses,
-      updatedAt: Date.now(),
+    const now = Date.now()
+    await ctx.db.patch(existingAddress._id, {
+      ...args.address,
+      updatedAt: now,
     })
+
+    const addressDocId = String(existingAddress._id)
+    const addresses = await ctx.db
+      .query('addresses')
+      .withIndex('by_user', (q) => q.eq('userId', user._id))
+      .collect()
+
+    const updates: {
+      defaultShippingAddressId?: string | null
+      defaultBillingAddressId?: string | null
+      updatedAt: number
+    } = {
+      updatedAt: now,
+    }
+
+    if (args.address.isDefault === true) {
+      if (supportsShipping(args.address.type)) {
+        updates.defaultShippingAddressId = addressDocId
+      }
+      if (supportsBilling(args.address.type)) {
+        updates.defaultBillingAddressId = addressDocId
+      }
+    }
+
+    if (
+      user.defaultShippingAddressId === addressDocId &&
+      !supportsShipping(args.address.type)
+    ) {
+      updates.defaultShippingAddressId = findFallbackDefaultId(
+        addresses,
+        'shipping',
+      )
+    }
+
+    if (
+      user.defaultBillingAddressId === addressDocId &&
+      !supportsBilling(args.address.type)
+    ) {
+      updates.defaultBillingAddressId = findFallbackDefaultId(
+        addresses,
+        'billing',
+      )
+    }
+
+    await ctx.db.patch(user._id, updates)
 
     return user._id
   },
@@ -226,14 +432,48 @@ export const removeAddress = mutation({
       throw new Error('User not found')
     }
 
-    const addresses = (user.addresses || []).filter(
-      (addr) => addr.id !== args.addressId,
-    )
+    const existingAddress = await ctx.db
+      .query('addresses')
+      .withIndex('by_user_address_id', (q) =>
+        q.eq('userId', user._id).eq('id', args.addressId),
+      )
+      .unique()
 
-    await ctx.db.patch(user._id, {
-      addresses,
+    if (!existingAddress) {
+      throw new Error('Address not found')
+    }
+
+    await ctx.db.delete(existingAddress._id)
+
+    const addressDocId = String(existingAddress._id)
+    const remainingAddresses = await ctx.db
+      .query('addresses')
+      .withIndex('by_user', (q) => q.eq('userId', user._id))
+      .collect()
+
+    const updates: {
+      defaultShippingAddressId?: string | null
+      defaultBillingAddressId?: string | null
+      updatedAt: number
+    } = {
       updatedAt: Date.now(),
-    })
+    }
+
+    if (user.defaultShippingAddressId === addressDocId) {
+      updates.defaultShippingAddressId = findFallbackDefaultId(
+        remainingAddresses,
+        'shipping',
+      )
+    }
+
+    if (user.defaultBillingAddressId === addressDocId) {
+      updates.defaultBillingAddressId = findFallbackDefaultId(
+        remainingAddresses,
+        'billing',
+      )
+    }
+
+    await ctx.db.patch(user._id, updates)
 
     return user._id
   },
@@ -347,6 +587,45 @@ export const updateProfile = mutation({
   },
 })
 
+export const migrateLegacyAddressesToTable = mutation({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const users = await ctx.db.query('users').collect()
+    const max = args.limit ?? users.length
+
+    let usersScanned = 0
+    let usersMigrated = 0
+    let addressesInserted = 0
+    let addressesUpdated = 0
+
+    for (const user of users.slice(0, max)) {
+      usersScanned += 1
+      if (!user.addresses || user.addresses.length === 0) {
+        continue
+      }
+
+      const result = await syncLegacyAddressesToTable(
+        ctx,
+        user,
+        user.addresses,
+        Date.now(),
+      )
+      usersMigrated += 1
+      addressesInserted += result.inserted
+      addressesUpdated += result.updated
+    }
+
+    return {
+      usersScanned,
+      usersMigrated,
+      addressesInserted,
+      addressesUpdated,
+    }
+  },
+})
+
 export const purgeTestUsers = mutation({
   handler: async ({db}) => {
     const allItems = await db.query('users').collect()
@@ -354,6 +633,13 @@ export const purgeTestUsers = mutation({
       item.email.startsWith('test'),
     )
     for (const item of itemsToDelete) {
+      const userAddresses = await db
+        .query('addresses')
+        .withIndex('by_user', (q) => q.eq('userId', item._id))
+        .collect()
+      for (const address of userAddresses) {
+        await db.delete(address._id)
+      }
       await db.delete(item._id)
     }
     return itemsToDelete.length

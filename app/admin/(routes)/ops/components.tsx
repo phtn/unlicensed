@@ -1,6 +1,15 @@
 import {api} from '@/convex/_generated/api'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {
+  Button,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  useDisclosure,
+} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMutation} from 'convex/react'
 import Link from 'next/link'
@@ -76,7 +85,7 @@ export const statusCell = () => {
     return (
       <div
         className={cn(
-          'flex items-center uppercase justify-center rounded-sm w-fit px-1 py-1 font-brk shadow-none',
+          'flex items-center uppercase justify-center rounded-sm w-fit py-1 font-brk shadow-none',
           color,
         )}>
         <select
@@ -87,7 +96,7 @@ export const statusCell = () => {
           className={cn(
             'bg-transparent border border-transparent rounded-sm',
             'text-sm tracking-wider font-brk uppercase whitespace-nowrap',
-            'px-1.5 py-0.5 pr-6 outline-none',
+            'py-0.5 pr-1 outline-none',
             'focus:border-foreground/20',
             {
               'cursor-wait opacity-70': isUpdating,
@@ -123,26 +132,138 @@ export function customerCell() {
 
 export const paymentMethodCell = () => {
   const PaymentMethodCellComponent = (ctx: CellContext<Order, unknown>) => {
+    const updatePayment = useMutation(api.orders.m.updatePayment)
     const method = ctx.row.original.payment?.method
+    const payment = ctx.row.original.payment
+    const orderStatus = ctx.row.original.orderStatus
+    const [localMethod, setLocalMethod] = useState<OrderPaymentMethod | null>(
+      method ?? null,
+    )
+    const [nextMethod, setNextMethod] = useState<OrderPaymentMethod | null>(
+      null,
+    )
+    const [isUpdating, setIsUpdating] = useState(false)
+    const {isOpen, onOpen, onClose} = useDisclosure()
 
-    if (!method) {
+    useEffect(() => {
+      setLocalMethod(method ?? null)
+      setNextMethod(null)
+    }, [method])
+
+    if (!localMethod || !payment) {
       return <span className='text-muted-foreground'>—</span>
     }
 
+    const isEditable = orderStatus === 'pending_payment'
+
+    const handleMethodSelection = (event: ChangeEvent<HTMLSelectElement>) => {
+      const selectedMethod = event.target.value as OrderPaymentMethod
+      if (selectedMethod === localMethod) return
+
+      setNextMethod(selectedMethod)
+      onOpen()
+    }
+
+    const handleCloseConfirm = () => {
+      setNextMethod(null)
+      onClose()
+    }
+
+    const handleConfirmMethodChange = async () => {
+      if (!nextMethod || nextMethod === localMethod) {
+        handleCloseConfirm()
+        return
+      }
+
+      const previousMethod = localMethod
+      setLocalMethod(nextMethod)
+      setIsUpdating(true)
+
+      try {
+        await updatePayment({
+          orderId: ctx.row.original._id,
+          payment: {
+            ...payment,
+            method: nextMethod,
+          },
+        })
+        handleCloseConfirm()
+      } catch (error) {
+        console.error('Failed to update payment method:', error)
+        setLocalMethod(previousMethod)
+      } finally {
+        setIsUpdating(false)
+      }
+    }
+
     return (
-      <div className='flex items-center justify-center'>
-        <span
-          className={cn(
-            'inline-flex w-28 items-center justify-start gap-2.5 rounded-sm px-2 py-1 font-brk text-[11px] uppercase tracking-wide',
-            paymentMethodClassMap[method],
-          )}>
-          <Icon
-            name={paymentMethodIconMap[method]}
-            className='size-3.5 shrink-0 opacity-85 ml-0.5'
-          />
-          <span>{paymentMethodLabelMap[method]}</span>
-        </span>
-      </div>
+      <>
+        <div className='flex items-center justify-center'>
+          <span
+            className={cn(
+              'inline-flex w-36 items-center justify-start gap-2.5 rounded-sm px-2 py-1 font-brk text-[11px] uppercase tracking-wide',
+              paymentMethodClassMap[localMethod],
+              {'gap-1': isEditable},
+            )}>
+            <Icon
+              name={paymentMethodIconMap[localMethod]}
+              className='size-3.5 shrink-0 opacity-85'
+            />
+            {isEditable ? (
+              <select
+                aria-label='Update payment method'
+                value={localMethod}
+                onChange={handleMethodSelection}
+                disabled={isUpdating}
+                className={cn(
+                  'w-full bg-transparent border border-transparent rounded-sm',
+                  'text-[11px] tracking-wide font-brk uppercase whitespace-nowrap',
+                  'outline-none focus:border-foreground/20',
+                  {
+                    'cursor-wait opacity-70': isUpdating,
+                  },
+                )}>
+                {paymentMethodOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span>{paymentMethodLabelMap[localMethod]}</span>
+            )}
+          </span>
+        </div>
+
+        <Modal isOpen={isOpen} onClose={handleCloseConfirm} size='sm'>
+          <ModalContent>
+            <ModalHeader className='font-okxs font-semibold'>
+              Confirm payment method update
+            </ModalHeader>
+            <ModalBody>
+              <p className='text-sm text-muted-foreground'>
+                Change payment method from{' '}
+                {paymentMethodSelectionLabelMap[localMethod]} to{' '}
+                {nextMethod
+                  ? paymentMethodSelectionLabelMap[nextMethod]
+                  : 'the selected method'}
+                ?
+              </p>
+            </ModalBody>
+            <ModalFooter className='gap-2'>
+              <Button variant='flat' onPress={handleCloseConfirm}>
+                Cancel
+              </Button>
+              <Button
+                color='primary'
+                onPress={() => void handleConfirmMethodChange()}
+                isLoading={isUpdating}>
+                Confirm
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      </>
     )
   }
   PaymentMethodCellComponent.displayName = 'PaymentMethodCell'
@@ -217,9 +338,30 @@ const colorMap: Record<StatusCode, string> = {
 
 type OrderPaymentMethod = Order['payment']['method']
 
+const paymentMethodSelectionLabelMap: Record<OrderPaymentMethod, string> = {
+  cards: 'Cards',
+  crypto_transfer: 'Send',
+  crypto_commerce: 'Crypto',
+  cash_app: 'Cash App',
+}
+
+const paymentMethodOptions: Array<{value: OrderPaymentMethod; label: string}> =
+  [
+    {value: 'cards', label: paymentMethodSelectionLabelMap.cards},
+    {
+      value: 'crypto_transfer',
+      label: paymentMethodSelectionLabelMap.crypto_transfer,
+    },
+    {
+      value: 'crypto_commerce',
+      label: paymentMethodSelectionLabelMap.crypto_commerce,
+    },
+    {value: 'cash_app', label: paymentMethodSelectionLabelMap.cash_app},
+  ]
+
 const paymentMethodLabelMap: Record<OrderPaymentMethod, string> = {
   cards: 'Cards',
-  crypto_transfer: 'Crypto',
+  crypto_transfer: 'Send',
   crypto_commerce: 'Crypto',
   cash_app: 'Cashapp',
 }

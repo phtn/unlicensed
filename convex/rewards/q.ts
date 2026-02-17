@@ -1,10 +1,7 @@
-import {query} from '../_generated/server'
 import {v} from 'convex/values'
-import {
-  calculateRecencyMultiplier,
-  getDaysSinceLastPayment,
-} from './utils'
+import {query} from '../_generated/server'
 import {safeGet} from '../utils/id_validation'
+import {calculateRecencyMultiplier, getDaysSinceLastPayment} from './utils'
 
 /**
  * Get all reward tiers (active only by default)
@@ -15,11 +12,11 @@ export const getRewardTiers = query({
   },
   handler: async (ctx, args) => {
     let tiers = await ctx.db.query('rewardTiers').collect()
-    
+
     if (!args.includeInactive) {
       tiers = tiers.filter((tier) => tier.active)
     }
-    
+
     // Sort by level (ascending - lowest tier first)
     return tiers.sort((a, b) => a.level - b.level)
   },
@@ -48,7 +45,7 @@ export const getDefaultTier = query({
       .filter((q) => q.eq(q.field('isDefault'), true))
       .filter((q) => q.eq(q.field('active'), true))
       .first()
-    
+
     return tier
   },
 })
@@ -65,17 +62,17 @@ export const getUserRewards = query({
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
-    
+
     if (!userRewards) {
       return null
     }
-    
+
     // Get current tier details
     // Validate currentTierId from database before using in get()
     const currentTier = userRewards.currentTierId
       ? await safeGet(ctx.db, 'rewardTiers', userRewards.currentTierId)
       : null
-    
+
     // Get next tier (if applicable)
     let nextTier = null
     if (currentTier) {
@@ -83,16 +80,16 @@ export const getUserRewards = query({
         .query('rewardTiers')
         .filter((q) => q.eq(q.field('active'), true))
         .collect()
-      
+
       const higherTiers = allTiers.filter(
         (tier) => tier.level > currentTier.level,
       )
-      
+
       if (higherTiers.length > 0) {
         nextTier = higherTiers.sort((a, b) => a.level - b.level)[0]
       }
     }
-    
+
     return {
       ...userRewards,
       currentTier,
@@ -113,7 +110,7 @@ export const getUserDiscount = query({
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
-    
+
     if (!userRewards || !userRewards.currentTierId) {
       return 0
     }
@@ -121,7 +118,7 @@ export const getUserDiscount = query({
     if (!tier || !tier.active) {
       return 0
     }
-    
+
     return tier.discountPercentage
   },
 })
@@ -138,7 +135,7 @@ export const getUserTierBenefits = query({
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
-    
+
     if (!userRewards || !userRewards.currentTierId) {
       // Check if user has free shipping override even without tier
       if (userRewards?.freeShippingOverride === true) {
@@ -152,7 +149,7 @@ export const getUserTierBenefits = query({
       }
       return null
     }
-    
+
     // Validate currentTierId from database before using in get()
     const tier = await safeGet(ctx.db, 'rewardTiers', userRewards.currentTierId)
     if (!tier || !tier.active) {
@@ -168,15 +165,15 @@ export const getUserTierBenefits = query({
       }
       return null
     }
-    
+
     // Free shipping override takes precedence over tier-based free shipping
     const freeShipping =
       userRewards.freeShippingOverride === true
         ? true
         : userRewards.freeShippingOverride === false
           ? false
-          : tier.freeShipping ?? false
-    
+          : (tier.freeShipping ?? false)
+
     return {
       discountPercentage: tier.discountPercentage,
       freeShipping,
@@ -200,11 +197,11 @@ export const getUsersByTier = query({
       .query('userRewards')
       .filter((q) => q.eq(q.field('currentTierId'), args.tierId))
       .collect()
-    
+
     if (args.limit) {
       users = users.slice(0, args.limit)
     }
-    
+
     return users
   },
 })
@@ -221,11 +218,11 @@ export const getVIPUsers = query({
       .query('userRewards')
       .filter((q) => q.eq(q.field('isVIP'), true))
       .collect()
-    
+
     if (args.limit) {
       users = users.slice(0, args.limit)
     }
-    
+
     return users
   },
 })
@@ -239,11 +236,8 @@ export const getTopCustomers = query({
   },
   handler: async (ctx, args) => {
     const limit = args.limit ?? 10
-    const users = await ctx.db
-      .query('userRewards')
-      .order('desc')
-      .take(limit)
-    
+    const users = await ctx.db.query('userRewards').order('desc').take(limit)
+
     // Sort by lifetime spending
     return users.sort(
       (a, b) => b.lifetimeSpendingCents - a.lifetimeSpendingCents,
@@ -264,22 +258,22 @@ export const calculateDiscount = query({
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
-    
+
     if (!userRewards || !userRewards.currentTierId) {
       return 0
     }
-    
+
     // Validate currentTierId from database before using in get()
     const tier = await safeGet(ctx.db, 'rewardTiers', userRewards.currentTierId)
     if (!tier || !tier.active) {
       return 0
     }
-    
+
     // Calculate discount amount
     const discountCents = Math.round(
       (args.subtotalCents * tier.discountPercentage) / 100,
     )
-    
+
     return discountCents
   },
 })
@@ -297,11 +291,11 @@ export const getUserFreeShipping = query({
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
-    
+
     if (!userRewards) {
       return false
     }
-    
+
     // Check for manual override first (takes precedence)
     if (userRewards.freeShippingOverride === true) {
       return true
@@ -309,16 +303,20 @@ export const getUserFreeShipping = query({
     if (userRewards.freeShippingOverride === false) {
       return false
     }
-    
+
     // Check tier-based free shipping
     if (userRewards.currentTierId) {
       // Validate currentTierId from database before using in get()
-      const tier = await safeGet(ctx.db, 'rewardTiers', userRewards.currentTierId)
+      const tier = await safeGet(
+        ctx.db,
+        'rewardTiers',
+        userRewards.currentTierId,
+      )
       if (tier && tier.active && tier.freeShipping) {
         return true
       }
     }
-    
+
     return false
   },
 })
@@ -335,11 +333,11 @@ export const getUsersWithFreeShippingOverride = query({
       .query('userRewards')
       .filter((q) => q.eq(q.field('freeShippingOverride'), true))
       .collect()
-    
+
     if (args.limit) {
       users = users.slice(0, args.limit)
     }
-    
+
     return users
   },
 })
@@ -465,4 +463,3 @@ function getMultiplierMessage(
 
   return 'Earning standard points. Return within 2 weeks for 3x points!'
 }
-
