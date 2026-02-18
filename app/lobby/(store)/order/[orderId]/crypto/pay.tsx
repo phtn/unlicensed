@@ -1,6 +1,7 @@
 'use client'
 
 import {PayTab} from '@/components/appkit/pay'
+import type {PaymentSuccessContext} from '@/components/appkit/types'
 import {
   SearchParamsProvider,
   useSearchParams,
@@ -47,7 +48,10 @@ const CryptoPayContent = () => {
   }, [setParams])
 
   const handlePaymentSuccess = useCallback(
-    async (transactionHash: `0x${string}`) => {
+    async (
+      transactionHash: `0x${string}`,
+      context?: PaymentSuccessContext,
+    ) => {
       if (!order || order.payment.status === 'completed') return
       if (paymentSyncedTxHashRef.current === transactionHash) return
 
@@ -59,6 +63,10 @@ const CryptoPayContent = () => {
             ...order.payment,
             status: 'completed',
             transactionId: transactionHash,
+            asset: context?.asset ?? order.payment.asset,
+            chain: context?.chain ?? order.payment.chain,
+            nativeValue: context?.nativeValue ?? order.payment.nativeValue,
+            usdValue: context?.usdValue ?? order.payment.usdValue,
             paidAt: Date.now(),
           },
         })

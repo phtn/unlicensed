@@ -11,6 +11,11 @@ import {useParams} from 'next/navigation'
 import {CheckoutSuccess} from './checkout-success'
 import {OrderSummaryWidget} from './order-summary'
 import {CryptoPay} from './pay'
+import {
+  getCryptoFallbackHref,
+  isCryptoPaymentMethod,
+  isPaymentCompleted,
+} from './route-utils'
 
 export const Content = () => {
   const params = useParams()
@@ -43,18 +48,10 @@ export const Content = () => {
   }
 
   const paymentMethod = String(order.payment.method)
-  const isCryptoPaymentMethod =
-    paymentMethod === 'crypto_commerce' ||
-    paymentMethod === 'crypto_transfer' ||
-    paymentMethod === 'crypto-payment'
+  const isAllowedCryptoRoute = isCryptoPaymentMethod(paymentMethod)
 
-  if (!isCryptoPaymentMethod) {
-    const fallbackHref =
-      paymentMethod === 'cards'
-        ? `/lobby/order/${orderId}/cards`
-        : paymentMethod === 'cash_app'
-          ? `/lobby/order/${orderId}/cashapp`
-          : `/lobby/order/${orderId}/crypto`
+  if (!isAllowedCryptoRoute) {
+    const fallbackHref = getCryptoFallbackHref(orderId, paymentMethod)
 
     return (
       <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
@@ -77,13 +74,13 @@ export const Content = () => {
     )
   }
 
-  const isPaymentCompleted = order.payment.status === 'completed'
+  const hasCompletedPayment = isPaymentCompleted(order.payment.status)
 
   return (
     <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-black'>
       <div className='relative md:mx-auto md:max-w-7xl min-h-[36rem] md:min-h-[40rem] overflow-hidden'>
         <AnimatePresence initial={false} mode='sync'>
-          {!isPaymentCompleted ? (
+          {!hasCompletedPayment ? (
             <motion.div
               key='crypto-checkout'
               initial={{opacity: 1, y: 0}}

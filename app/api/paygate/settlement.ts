@@ -23,9 +23,26 @@ const TX_IN_KEYS = ['txid_in', 'txidIn', 'transaction_id', 'transactionId'] as c
 const TX_OUT_KEYS = ['txid_out', 'txidOut'] as const
 const ADDRESS_IN_KEYS = ['address_in', 'addressIn'] as const
 const PROVIDER_KEYS = ['provider', 'provider_id', 'providerId'] as const
-const VALUE_COIN_KEYS = ['value_coin', 'valueCoin', 'amount'] as const
+const VALUE_COIN_KEYS = ['value_coin', 'valueCoin'] as const
+const AMOUNT_KEYS = ['amount'] as const
 const VALUE_FORWARDED_KEYS = ['value_forwarded_coin', 'valueForwardedCoin'] as const
 const COIN_KEYS = ['coin', 'currency'] as const
+const ASSET_KEYS = ['asset', 'token', 'coin_symbol', 'coinSymbol'] as const
+const CHAIN_KEYS = ['chain', 'network', 'blockchain', 'blockchainSymbol'] as const
+const USD_VALUE_KEYS = [
+  'value_usd',
+  'valueUsd',
+  'amount_usd',
+  'amountUsd',
+  'usd_value',
+  'usdValue',
+  'fiat_value',
+  'fiatValue',
+  'value_fiat',
+  'valueFiat',
+  'total_usd',
+  'totalUsd',
+] as const
 const IPN_TOKEN_KEYS = ['ipn_token', 'ipnToken'] as const
 const PENDING_KEYS = ['pending'] as const
 
@@ -76,6 +93,39 @@ const parseNumeric = (value: unknown): number | undefined => {
   return undefined
 }
 
+const parseCoinDescriptor = (
+  coin: string | undefined,
+): {asset?: string; chain?: string} => {
+  if (!coin) return {}
+
+  const trimmed = coin.trim()
+  if (!trimmed) return {}
+
+  if (trimmed.includes('/')) {
+    const [chain, asset] = trimmed.split('/', 2)
+    return {chain, asset}
+  }
+
+  if (trimmed.includes(':')) {
+    const [chain, asset] = trimmed.split(':', 2)
+    return {chain, asset}
+  }
+
+  return {asset: trimmed}
+}
+
+const normalizeAsset = (value: string | undefined): string | undefined => {
+  if (!value) return undefined
+  const normalized = value.trim().toUpperCase()
+  if (normalized === 'USD') return undefined
+  return normalized
+}
+
+const normalizeChain = (value: string | undefined): string | undefined => {
+  if (!value) return undefined
+  return value.trim().toLowerCase()
+}
+
 const getFirstString = (
   payload: CallbackPayload,
   keys: readonly string[],
@@ -110,7 +160,8 @@ const mapStatusFromPayload = (payload: CallbackPayload): PaymentStatus => {
   const txIn = getFirstString(payload, TX_IN_KEYS)
   const txOut = getFirstString(payload, TX_OUT_KEYS)
   const valueCoin = parseNumeric(getFirstString(payload, VALUE_COIN_KEYS))
-  const hasPaymentSignal = Boolean(txIn || txOut || (valueCoin ?? 0) > 0)
+  const amount = parseNumeric(getFirstString(payload, AMOUNT_KEYS))
+  const hasPaymentSignal = Boolean(txIn || txOut || (valueCoin ?? amount ?? 0) > 0)
 
   if (pendingFlag === true) return 'processing'
   if (hasPaymentSignal) return 'completed'
@@ -185,10 +236,20 @@ const needsPaymentUpdate = (
   valueCoin: number | undefined,
   valueForwardedCoin: number | undefined,
   coin: string | undefined,
+  asset: string | undefined,
+  chain: string | undefined,
+  nativeValue: number | undefined,
+  usdValue: number | undefined,
 ): boolean => {
   if (nextStatus !== order.payment.status) return true
   if (txIn && txIn !== order.payment.transactionId) return true
   if (txOut && txOut !== order.payment.gateway?.transactionId) return true
+  if (asset && asset !== order.payment.asset) return true
+  if (chain && chain !== order.payment.chain) return true
+  if (nativeValue !== undefined && nativeValue !== order.payment.nativeValue) {
+    return true
+  }
+  if (usdValue !== undefined && usdValue !== order.payment.usdValue) return true
 
   const metadata = order.payment.gateway?.metadata as
     | Record<string, unknown>
@@ -228,10 +289,30 @@ export const settlePaygateCallback = async (
   const sessionId = getFirstString(payload, SESSION_KEYS)
   const ipnToken = getFirstString(payload, IPN_TOKEN_KEYS)
   const coin = getFirstString(payload, COIN_KEYS)
+  const amount = parseNumeric(getFirstString(payload, AMOUNT_KEYS))
   const valueCoin = parseNumeric(getFirstString(payload, VALUE_COIN_KEYS))
   const valueForwardedCoin = parseNumeric(
     getFirstString(payload, VALUE_FORWARDED_KEYS),
   )
+  const usdValueFromPayload = parseNumeric(getFirstString(payload, USD_VALUE_KEYS))
+  const coinDescriptor = parseCoinDescriptor(coin)
+  const assetFromPayload = getFirstString(payload, ASSET_KEYS)
+  const chainFromPayload = getFirstString(payload, CHAIN_KEYS)
+  const isCryptoPayment =
+    order.payment.method === 'crypto_commerce' ||
+    order.payment.method === 'crypto_transfer'
+  const asset = isCryptoPayment
+    ? normalizeAsset(assetFromPayload || coinDescriptor.asset)
+    : undefined
+  const chain = isCryptoPayment
+    ? normalizeChain(chainFromPayload || coinDescriptor.chain)
+    : undefined
+  const nativeValue = isCryptoPayment
+    ? valueCoin ?? (asset ? amount : undefined)
+    : undefined
+  const usdValue = isCryptoPayment
+    ? usdValueFromPayload ?? order.payment.usdValue ?? order.totalCents / 100
+    : undefined
   const rawStatus = getFirstString(payload, STATUS_KEYS)
   const now = Date.now()
 
@@ -243,6 +324,10 @@ export const settlePaygateCallback = async (
     valueCoin,
     valueForwardedCoin,
     coin,
+    asset,
+    chain,
+    nativeValue,
+    usdValue,
   )
 
   if (!shouldUpdate) {
@@ -264,10 +349,14 @@ export const settlePaygateCallback = async (
   }
 
   if (valueCoin !== undefined) nextMetadata.valueCoin = valueCoin
+  if (nativeValue !== undefined) nextMetadata.nativeValue = nativeValue
+  if (usdValue !== undefined) nextMetadata.usdValue = usdValue
   if (valueForwardedCoin !== undefined) {
     nextMetadata.valueForwardedCoin = valueForwardedCoin
   }
   if (coin) nextMetadata.coin = coin
+  if (asset) nextMetadata.asset = asset
+  if (chain) nextMetadata.chain = chain
   if (txIn) nextMetadata.txidIn = txIn
   if (txOut) nextMetadata.txidOut = txOut
   if (addressIn) nextMetadata.addressIn = addressIn
@@ -303,6 +392,10 @@ export const settlePaygateCallback = async (
       ...order.payment,
       status: nextStatus,
       transactionId: txIn || order.payment.transactionId,
+      asset: asset ?? order.payment.asset,
+      chain: chain ?? order.payment.chain,
+      nativeValue: nativeValue ?? order.payment.nativeValue,
+      usdValue: usdValue ?? order.payment.usdValue,
       paidAt,
       gatewayId: gatewaySession || order.payment.gatewayId,
       gateway: nextGateway,

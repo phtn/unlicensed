@@ -5,6 +5,7 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
+import {toggleChatDockWindow} from '@/lib/chat-dock'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Chip, Divider} from '@heroui/react'
@@ -457,9 +458,6 @@ export const Content = () => {
       : 'font-brk text-foreground tracking-wide uppercase text-xs bg-orange-500/10 border border-orange-400/30 py-1 px-1.5 rounded-sm'
 
   const orderHref = order ? `/account/orders/${order.orderNumber}` : '#'
-  const chatHref = assignedRepFid
-    ? `/account/chat/${assignedRepFid}`
-    : '/account/chat'
   const repName =
     assignedRep?.name ?? assignedRep?.email?.split('@')[0] ?? 'Representative'
 
@@ -604,11 +602,10 @@ export const Content = () => {
             </Button>
           ) : (
             <Button
-              as={NextLink}
-              href={chatHref}
               size='lg'
               color='primary'
               className='font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
+              onPress={toggleChatDockWindow}
               endContent={<Icon name='chat' className='size-5' />}>
               {setupState === 'ready' ? 'Open Live Chat' : 'Open Chat'}
             </Button>

@@ -59,7 +59,7 @@ import {ReceiptModal} from './receipt-modal'
 import {tickerSymbol} from './ticker'
 import type {Token} from './token-coaster'
 import {Tokens} from './token-list'
-import {PayTabProps} from './types'
+import {PayTabProps, type PaymentSuccessContext} from './types'
 
 const ERC20_TRANSFER_ABI = [
   {
@@ -90,6 +90,28 @@ const getDisplayTokenSymbol = (
   if (token === 'ethereum') return nativeSymbol
   if (token === 'usdc' || token === 'usdt' || token === 'bitcoin') return token
   return nativeSymbol
+}
+
+const getPaymentAssetSymbol = (
+  token: Token | null,
+  paymentChainId: number | null,
+): string | null => {
+  if (!token) return null
+  if (token === 'ethereum') {
+    if (paymentChainId === null) return tickerSymbol('ethereum')
+    return tickerSymbol(getNativeSymbolForChainId(paymentChainId))
+  }
+  return tickerSymbol(token)
+}
+
+const getPaymentChainName = (
+  token: Token | null,
+  paymentChainId: number | null,
+): string | null => {
+  if (!token) return null
+  if (token === 'bitcoin') return 'bitcoin'
+  if (paymentChainId === null) return null
+  return getNetworkForChainId(paymentChainId) ?? String(paymentChainId)
 }
 
 const BITCOIN_ADDRESS_PATTERN =
@@ -171,6 +193,12 @@ export const PayTab = ({
   // Token used for the last/in-flight payment (so we show correct symbol and use correct tx state)
   const [lastPaymentToken, setLastPaymentToken] = useState<Token | null>(null)
   const [lastPaymentChainId, setLastPaymentChainId] = useState<number | null>(
+    null,
+  )
+  const [lastPaymentNativeValue, setLastPaymentNativeValue] = useState<
+    number | null
+  >(null)
+  const [lastPaymentUsdValue, setLastPaymentUsdValue] = useState<number | null>(
     null,
   )
 
@@ -487,22 +515,27 @@ export const PayTab = ({
     })
   }, [tokenAmount, selectedToken])
 
-  // For success/receipt: use lastPaymentToken and USD-based token amount
-  const successTokenAmountFormatted = useMemo(() => {
-    const tok = lastPaymentToken
-    if (!tok || payableUsdValue === null) return ''
-    const price = getTokenPrice(tok)
-    if (!price) return ''
-    const amt = payableUsdValue / price
-    return amt.toLocaleString('en-US', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: getTokenFractionDigits(tok),
-    })
-  }, [lastPaymentToken, payableUsdValue, getTokenPrice])
-
   const nativeSymbol = getNativeSymbolForChainId(chainId)
   const displayTokenSymbol = (t: Token | null) =>
     getDisplayTokenSymbol(t, nativeSymbol)
+
+  // For success/receipt: use the tracked values from the latest payment attempt
+  const successTokenAmountFormatted = useMemo(() => {
+    if (lastPaymentNativeValue === null) return ''
+    return lastPaymentNativeValue.toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: getTokenFractionDigits(lastPaymentToken),
+    })
+  }, [lastPaymentNativeValue, lastPaymentToken])
+
+  const successTokenSymbol = useMemo(() => {
+    const paymentChainId =
+      lastPaymentToken === 'bitcoin' ? null : lastPaymentChainId
+    return (
+      getPaymentAssetSymbol(lastPaymentToken, paymentChainId) ??
+      getDisplayTokenSymbol(lastPaymentToken, nativeSymbol)
+    )
+  }, [lastPaymentChainId, lastPaymentToken, nativeSymbol])
 
   // Get payment destination from environment variable
   const src_e = useMemo(() => {
@@ -692,6 +725,33 @@ export const PayTab = ({
   const activeIsConfirming = localIsConfirming || isConfirming
   const activeHash = localHash || hash
   const activeReceipt = localReceipt || receipt
+  const paymentSuccessContext = useMemo<PaymentSuccessContext | undefined>(() => {
+    if (!tokenForTxState) return undefined
+
+    const paymentChainId =
+      tokenForTxState === 'bitcoin' ? null : (lastPaymentChainId ?? chainId)
+    const asset = getPaymentAssetSymbol(tokenForTxState, paymentChainId)
+    const chain = getPaymentChainName(tokenForTxState, paymentChainId)
+    const nativeValue = lastPaymentNativeValue
+    const usdValue = lastPaymentUsdValue
+
+    if (!asset || !chain || nativeValue === null || usdValue === null) {
+      return undefined
+    }
+
+    return {
+      asset,
+      chain,
+      nativeValue,
+      usdValue,
+    }
+  }, [
+    tokenForTxState,
+    lastPaymentChainId,
+    chainId,
+    lastPaymentNativeValue,
+    lastPaymentUsdValue,
+  ])
   const reportedSuccessHashRef = useRef<`0x${string}` | null>(null)
   const relayedPaymentHashRef = useRef<`0x${string}` | null>(null)
 
@@ -710,8 +770,8 @@ export const PayTab = ({
     }
 
     reportedSuccessHashRef.current = activeHash
-    void onPaymentSuccess(activeHash)
-  }, [activeHash, activeReceipt, onPaymentSuccess])
+    void onPaymentSuccess(activeHash, paymentSuccessContext)
+  }, [activeHash, activeReceipt, onPaymentSuccess, paymentSuccessContext])
 
   useEffect(() => {
     if (!activeHash || !activeReceipt || activeReceipt.status !== 'success') {
@@ -872,6 +932,8 @@ export const PayTab = ({
 
     setLastPaymentToken(selectedToken)
     setLastPaymentChainId(chainId)
+    setLastPaymentNativeValue(tokenAmount)
+    setLastPaymentUsdValue(payableUsdValue)
 
     try {
       switch (selectedToken) {
@@ -1057,8 +1119,8 @@ export const PayTab = ({
         open={showReceiptModal}
         onClose={() => setShowReceiptModal(false)}
         amount={successTokenAmountFormatted}
-        symbol={displayTokenSymbol(lastPaymentToken)}
-        usdValue={payableUsdValue}
+        symbol={successTokenSymbol}
+        usdValue={lastPaymentUsdValue}
         hash={activeHash ?? null}
         explorerUrl={receiptExplorerUrl}
         recipient={null}

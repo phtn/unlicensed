@@ -35,6 +35,11 @@ export const paymentSchema = v.object({
   ),
   transactionId: v.optional(v.string()),
   paymentIntentId: v.optional(v.string()), // For Stripe or similar
+  // Crypto payment details
+  asset: v.optional(v.string()), // e.g. ETH, USDC, BTC
+  chain: v.optional(v.string()), // e.g. ethereum, polygon, bitcoin
+  nativeValue: v.optional(v.number()), // Amount paid in asset units
+  usdValue: v.optional(v.number()), // USD equivalent of nativeValue
   paidAt: v.optional(v.number()), // Timestamp when payment was completed
   refundedAt: v.optional(v.number()), // Timestamp when refund was issued
   refundAmountCents: v.optional(v.number()), // Amount refunded in cents

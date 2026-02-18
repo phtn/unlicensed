@@ -9,9 +9,19 @@ export interface Balance {
 
 export type ReceiptStatus = { blockNumber: bigint; status: 'success' | 'reverted' } | null
 
+export interface PaymentSuccessContext {
+  asset: string
+  chain: string
+  nativeValue: number
+  usdValue: number
+}
+
 export interface PayTabProps {
   onSend: VoidFunction
-  onPaymentSuccess?: (transactionHash: `0x${string}`) => void | Promise<void>
+  onPaymentSuccess?: (
+    transactionHash: `0x${string}`,
+    context?: PaymentSuccessContext,
+  ) => void | Promise<void>
   formattedBalance: string | null
   balance: Balance | null
   tokenPrice: number | null
