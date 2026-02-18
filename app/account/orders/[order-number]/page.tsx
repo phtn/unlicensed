@@ -37,19 +37,19 @@ function formatDate(timestamp: number) {
 function getPaymentRoute(orderId: string, paymentMethod: string) {
   const paymentMethodValue = String(paymentMethod)
   if (paymentMethodValue === 'cards') {
-    return `/order/${orderId}/cards`
+    return `/lobby/order/${orderId}/cards`
   }
   if (paymentMethodValue === 'cash_app') {
-    return `/order/${orderId}/cashapp`
+    return `/lobby/order/${orderId}/cashapp`
   }
   if (
     paymentMethodValue === 'crypto_commerce' ||
     paymentMethodValue === 'crypto_transfer' ||
     paymentMethodValue === 'crypto-payment'
   ) {
-    return `/order/${orderId}/crypto`
+    return `/lobby/order/${orderId}/crypto`
   }
-  return `/order/${orderId}/commerce`
+  return `/lobby/order/${orderId}/crypto`
 }
 
 export default function OrderDetailPage() {
@@ -139,7 +139,10 @@ export default function OrderDetailPage() {
               </Breadcrumbs>
             </h1>
           </div>
-          <Actions status={order.orderStatus} />
+          <Actions
+            href={getPaymentRoute(order._id, order.payment.method)}
+            status={order.orderStatus}
+          />
         </div>
 
         <div className='grid gap-6'>

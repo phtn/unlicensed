@@ -54,7 +54,7 @@ export const Content = () => {
         ? `/lobby/order/${orderId}/cards`
         : paymentMethod === 'cash_app'
           ? `/lobby/order/${orderId}/cashapp`
-          : `/lobby/order/${orderId}/commerce`
+          : `/lobby/order/${orderId}/crypto`
 
     return (
       <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>

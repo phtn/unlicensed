@@ -4,7 +4,7 @@ import {motion} from 'motion/react'
 import {useMemo} from 'react'
 import {HyperList} from '../expermtl/hyper-list'
 
-type AllowedNetworks = 'sepolia' | 'ethereum' | 'polygon' | 'amoy' | 'bitcoin'
+type AllowedNetworks = 'ethereum' | 'polygon' | 'bitcoin' | 'sepolia' | 'amoy'
 
 interface NetworkSelectorProps {
   currentNetwork: string | null
@@ -16,7 +16,7 @@ export const NetworkSelector = ({
   onSelectNetwork,
 }: NetworkSelectorProps) => {
   const network_list = useMemo(() => {
-    const networks: AllowedNetworks[] = ['bitcoin', 'ethereum', 'polygon']
+    const networks: AllowedNetworks[] = ['ethereum', 'polygon', 'bitcoin']
 
     return networks.map((net) => ({
       name: net,
@@ -64,6 +64,7 @@ const NetworkButtonRound = ({
       animate={{opacity: 1}}
       exit={{opacity: 0}}
       onClick={onSelect}
+      disabled={name === 'bitcoin'}
       className={cn(
         'relative flex items-center justify-center w-auto h-7 px-2 rounded-full overflow-hidden space-x-1 mx-2',
         {
@@ -91,12 +92,13 @@ const NetworkButtonRound = ({
           'text-bitcoin': name === 'bitcoin' && selected,
         })}
       />
-      <span
-        className={cn('font-brk opacity-80 text-sm text-white', {
-          'opacity-100 text-black': selected,
+      <p
+        className={cn('font-brk opacity-80 text-sm text-white capitalize', {
+          'opacity-100 text-dark-table max-w-[8ch]': selected,
         })}>
-        {name === 'bitcoin' ? 'BTC' : name.substring(0, 3).toUpperCase()}
-      </span>
+        {/*{name === 'bitcoin' && !selected ? 'BTC' : name}*/}
+        {name}
+      </p>
     </motion.button>
   )
 }
