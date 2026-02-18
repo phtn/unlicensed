@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { useReadContract } from 'wagmi'
-import { formatUnits } from 'viem'
+import { formatUnits, isAddress, type Address } from 'viem'
 import {
   ERC20_BALANCE_ABI,
   getUsdcAddress,
@@ -34,8 +34,12 @@ export interface UsdcBalanceResult {
  * with balanceOf + decimals. Ensure wallet is connected and on a supported chain.
  */
 export function useUsdcBalance(): UsdcBalanceResult {
-  const { address } = useAppKitAccount()
+  const { address } = useAppKitAccount({ namespace: 'eip155' })
   const chainId = useChainId()
+  const evmAddress = useMemo<Address | undefined>(
+    () => (address && isAddress(address) ? address : undefined),
+    [address]
+  )
   const usdcAddress = useMemo(
     () => (isUsdcSupportedChain(chainId) ? getUsdcAddress(chainId) : undefined),
     [chainId]
@@ -49,8 +53,8 @@ export function useUsdcBalance(): UsdcBalanceResult {
     abi: ERC20_BALANCE_ABI,
     address: usdcAddress,
     functionName: 'balanceOf',
-    args: address ? [address as `0x${string}`] : undefined,
-    query: { enabled: Boolean(address && usdcAddress) },
+    args: evmAddress ? [evmAddress] : undefined,
+    query: { enabled: Boolean(evmAddress && usdcAddress) },
   })
 
   const { data: decimalsRaw } = useReadContract({

@@ -10,8 +10,18 @@ import {Icon} from '@/lib/icons'
 import {getUsdcAddress, isUsdcSupportedChain} from '@/lib/usdc'
 import {getUsdtAddress, isUsdtSupportedChain} from '@/lib/usdt'
 import {cn} from '@/lib/utils'
-import {bitcoin} from '@reown/appkit/networks'
-import {useAppKitNetwork} from '@reown/appkit/react'
+import {
+  bitcoin,
+  mainnet,
+  polygon,
+  polygonAmoy,
+  sepolia,
+} from '@reown/appkit/networks'
+import {
+  useAppKit,
+  useAppKitAccount,
+  useAppKitNetwork,
+} from '@reown/appkit/react'
 import {AnimatePresence, motion} from 'motion/react'
 import {
   useCallback,
@@ -85,6 +95,13 @@ const getDisplayTokenSymbol = (
 const BITCOIN_ADDRESS_PATTERN =
   /^(bc1[ac-hj-np-z02-9]{11,71}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/i
 
+const EVM_APPKIT_NETWORKS = {
+  ethereum: mainnet,
+  polygon,
+  sepolia,
+  amoy: polygonAmoy,
+} as const
+
 const STABLE_TOKEN_CONFIG: Record<
   Exclude<EvmPayToken, 'ethereum'>,
   {
@@ -157,11 +174,25 @@ export const PayTab = ({
     null,
   )
 
+  const {open: openAppKit} = useAppKit()
+  const {address: evmWalletAddress, isConnected: isEvmWalletConnected} =
+    useAppKitAccount({
+      namespace: 'eip155',
+    })
+  const {address: bitcoinWalletAddress, isConnected: isBitcoinWalletConnected} =
+    useAppKitAccount({namespace: 'bip122'})
   const {caipNetwork, switchNetwork: switchAppKitNetwork} = useAppKitNetwork()
   const chainId = useChainId()
   const chains = useChains()
   const {mutateAsync} = useSwitchChain()
   const {tokens: networkTokens, isLoading: tokensLoading} = useNetworkTokens()
+  const persistedBitcoinAddress = useMemo(() => {
+    const candidateAddress = params.walletAddress ?? params.btcAddress
+    if (!candidateAddress) return null
+    return BITCOIN_ADDRESS_PATTERN.test(candidateAddress)
+      ? candidateAddress
+      : null
+  }, [params.walletAddress, params.btcAddress])
   const {
     balanceSats: bitcoinBalanceSats,
     balanceBtc: bitcoinBalanceBtc,
@@ -169,6 +200,7 @@ export const PayTab = ({
     error: bitcoinBalanceError,
   } = useBitcoinBalance(
     params.network === 'bitcoin' || caipNetwork?.chainNamespace === 'bip122',
+    persistedBitcoinAddress,
   )
   const {
     send: sendBitcoinTransfer,
@@ -240,25 +272,59 @@ export const PayTab = ({
   // Get current network name from chainId
   const currentNetwork = useMemo(() => getNetworkForChainId(chainId), [chainId])
   const isAppKitBitcoinNetwork = caipNetwork?.chainNamespace === 'bip122'
-  const selectedNetwork =
-    params.network ?? (isAppKitBitcoinNetwork ? 'bitcoin' : currentNetwork)
+  const selectedNetwork = useMemo(() => {
+    if (isAppKitBitcoinNetwork) return 'bitcoin'
+    if (caipNetwork?.chainNamespace === 'eip155') return currentNetwork
+    if (isBitcoinWalletConnected && !isEvmWalletConnected) return 'bitcoin'
+    if (isEvmWalletConnected && currentNetwork) return currentNetwork
+    return params.network ?? currentNetwork
+  }, [
+    caipNetwork?.chainNamespace,
+    currentNetwork,
+    isAppKitBitcoinNetwork,
+    isBitcoinWalletConnected,
+    isEvmWalletConnected,
+    params.network,
+  ])
   const isBitcoinNetworkSelected = selectedNetwork === 'bitcoin'
+  const selectedWalletAddress = useMemo(() => {
+    if (selectedNetwork === 'bitcoin') {
+      return bitcoinWalletAddress ?? persistedBitcoinAddress ?? null
+    }
+
+    return evmWalletAddress ?? null
+  }, [
+    selectedNetwork,
+    bitcoinWalletAddress,
+    persistedBitcoinAddress,
+    evmWalletAddress,
+  ])
 
   useEffect(() => {
-    if (!isAppKitBitcoinNetwork || params.network === 'bitcoin') return
-    void setParams({network: 'bitcoin'})
-  }, [isAppKitBitcoinNetwork, params.network, setParams])
+    if (!selectedNetwork) return
+    if (params.network === selectedNetwork) return
+    void setParams({network: selectedNetwork})
+  }, [selectedNetwork, params.network, setParams])
 
-  // Sync network to search params when chainId changes
   useEffect(() => {
-    if (!currentNetwork || params.network === 'bitcoin') {
+    if (
+      params.walletAddress === selectedWalletAddress &&
+      params.btcAddress === null
+    ) {
       return
     }
 
-    if (params.network !== currentNetwork) {
-      void setParams({network: currentNetwork})
-    }
-  }, [currentNetwork, params.network, setParams])
+    void setParams({
+      walletAddress: selectedWalletAddress,
+      // Cleanup legacy param once walletAddress is in place.
+      btcAddress: null,
+    })
+  }, [
+    selectedWalletAddress,
+    params.walletAddress,
+    params.btcAddress,
+    setParams,
+  ])
 
   // Handle network selection
   const handleNetworkSelect = useCallback(
@@ -267,26 +333,81 @@ export const PayTab = ({
         startTransition(() => {
           void setParams({network, tokenSelected: 'bitcoin'})
         })
-        void switchAppKitNetwork(bitcoin).catch((error) => {
-          console.error('Failed to switch to Bitcoin network', {error})
-        })
+        void (async () => {
+          try {
+            await switchAppKitNetwork(bitcoin)
+          } catch (error) {
+            console.error('Failed to switch to Bitcoin network', {error})
+          }
+
+          if (isBitcoinWalletConnected) return
+
+          try {
+            await openAppKit({
+              view: 'Connect',
+              namespace: 'bip122',
+            })
+          } catch (error) {
+            console.error('Failed to open Bitcoin wallet connect', {error})
+          }
+        })()
         return
       }
-
       const targetChainId = getChainIdForNetwork(network)
-      if (targetChainId && targetChainId !== chainId) {
-        startTransition(() => {
-          void setParams({
-            network,
-            tokenSelected: selectedToken === 'bitcoin' ? null : selectedToken,
-          })
-          mutateAsync({chainId: targetChainId})
+      if (!targetChainId) return
+      const targetAppKitNetwork =
+        EVM_APPKIT_NETWORKS[network as keyof typeof EVM_APPKIT_NETWORKS]
+      if (!targetAppKitNetwork) return
+
+      startTransition(() => {
+        void setParams({
+          network,
+          tokenSelected: selectedToken === 'bitcoin' ? null : selectedToken,
         })
-      }
+      })
+
+      void (async () => {
+        try {
+          await switchAppKitNetwork(targetAppKitNetwork)
+        } catch (error) {
+          console.error('Failed to switch AppKit to EVM network', {
+            network,
+            targetChainId,
+            error,
+          })
+        }
+
+        if (!isEvmWalletConnected) {
+          try {
+            await openAppKit({
+              view: 'Connect',
+              namespace: 'eip155',
+            })
+          } catch (error) {
+            console.error('Failed to open EVM wallet connect', {error})
+          }
+          return
+        }
+
+        if (chainId === targetChainId) return
+
+        try {
+          await mutateAsync({chainId: targetChainId})
+        } catch (error) {
+          console.error('Failed to switch to EVM network', {
+            network,
+            targetChainId,
+            error,
+          })
+        }
+      })()
     },
     [
       chainId,
+      isEvmWalletConnected,
+      isBitcoinWalletConnected,
       mutateAsync,
+      openAppKit,
       selectedToken,
       startTransition,
       setParams,
@@ -295,8 +416,15 @@ export const PayTab = ({
   )
 
   useEffect(() => {
-    if (isBitcoinNetworkSelected && selectedToken !== 'bitcoin') {
-      setSelectedToken('bitcoin')
+    if (isBitcoinNetworkSelected) {
+      if (selectedToken !== 'bitcoin') {
+        setSelectedToken('bitcoin')
+      }
+      return
+    }
+
+    if (selectedToken === 'bitcoin') {
+      setSelectedToken(null)
     }
   }, [isBitcoinNetworkSelected, selectedToken, setSelectedToken])
 
@@ -820,7 +948,7 @@ export const PayTab = ({
       animate={{opacity: 1, y: 0}}
       exit={{opacity: 0, y: -10}}
       transition={{layout: {duration: 0.3, ease: 'easeInOut'}}}
-      className='space-y-0 w-full p-1 md:p-4 pb-10 md:h-150 rounded-lg border-2 border-white/20 flex flex-col'>
+      className='space-y-0 w-full p-1 md:p-4 pb-10 md:h-160 rounded-lg border-2 border-white/20 flex flex-col'>
       <div>
         {paymentAmountUsd && payableUsdValue !== null && !activeReceipt && (
           <PayAmount
@@ -921,6 +1049,8 @@ export const PayTab = ({
           isPayProcessing={showProcessingState}
           payLabel={payButtonLabel}
           enablePayHoverStyles={enablePayHoverStyles}
+          payToken={selectedToken}
+          nativeSymbol={nativeSymbol}
         />
       </div>
       <ReceiptModal

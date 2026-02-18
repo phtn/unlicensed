@@ -16,7 +16,7 @@ export const NetworkSelector = ({
   onSelectNetwork,
 }: NetworkSelectorProps) => {
   const network_list = useMemo(() => {
-    const networks: AllowedNetworks[] = ['ethereum', 'polygon', 'bitcoin']
+    const networks: AllowedNetworks[] = ['bitcoin', 'ethereum', 'polygon']
 
     return networks.map((net) => ({
       name: net,
@@ -32,9 +32,11 @@ export const NetworkSelector = ({
         exit={{opacity: 0, scale: 0.6}}
         transition={{duration: 0.2}}
         className='flex items-center space-x-8 md:justify-between px-3 py-6 border-b-[0.33px] border-white/0 w-full'>
-        <div className='font-brk flex items-center space-x-0.5 text-white/80'>
+        <div className='flex items-center space-x-0.5 md:space-x-2 text-white/80 ps-2'>
           <Icon name='network' className='text-white/70 md:size-5 size-6' />
-          <span className='hidden md:flex text-xs uppercase'>Network</span>
+          <span className='hidden md:flex font-brk text-xs uppercase'>
+            Network
+          </span>
           <Icon name='chevron-right' className='size-3 opacity-80' />
         </div>
         <HyperList
@@ -64,7 +66,7 @@ const NetworkButtonRound = ({
       animate={{opacity: 1}}
       exit={{opacity: 0}}
       onClick={onSelect}
-      disabled={name === 'bitcoin'}
+      // disabled={name === 'bitcoin'}
       className={cn(
         'relative flex items-center justify-center w-auto h-7 px-2 rounded-full overflow-hidden space-x-1 mx-2',
         {

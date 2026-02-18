@@ -20,13 +20,23 @@ export interface BitcoinBalanceResult {
 }
 
 const DEFAULT_BALANCE_BTC = '0'
+const BITCOIN_ADDRESS_PATTERN =
+  /^(bc1[ac-hj-np-z02-9]{11,71}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/i
 
-export function useBitcoinBalance(enabled: boolean): BitcoinBalanceResult {
-  const {address} = useAppKitAccount({namespace: 'bip122'})
+export function useBitcoinBalance(
+  enabled: boolean,
+  addressOverride?: string | null,
+): BitcoinBalanceResult {
+  const {address: walletAddress} = useAppKitAccount({namespace: 'bip122'})
   const [balanceSats, setBalanceSats] = useState<bigint>(BigInt(0))
   const [balanceBtc, setBalanceBtc] = useState<string>(DEFAULT_BALANCE_BTC)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
+  const address =
+    walletAddress ??
+    (addressOverride && BITCOIN_ADDRESS_PATTERN.test(addressOverride)
+      ? addressOverride
+      : null)
 
   const refetch = useCallback(async () => {
     if (!enabled || !address) {

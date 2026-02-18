@@ -57,7 +57,7 @@ export const TokenModern = ({
             'text-ethereum': token === 'ethereum',
             'text-usdc': token === 'usdc',
             'text-polygon': token === 'ethereum' && nativeSymbol === 'matic',
-            'text-bitcoin/10': token === 'bitcoin',
+            'text-white': token === 'bitcoin',
           })}
         />
         <TokenCoaster nativeSymbol={nativeSymbol} size='lg' token={token} />

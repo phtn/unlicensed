@@ -32,7 +32,11 @@ export const CryptoWidget = () => {
   )
 
   const { send, isPending, isConfirming, hash, receipt, ethPrice } = useSend()
-  const { address } = useAppKitAccount()
+  const { address } = useAppKitAccount({ namespace: 'eip155' })
+  const evmAddress = useMemo(() => {
+    if (!address) return undefined
+    return isAddress(address) ? address : undefined
+  }, [address])
 
   // Use search params for to and amount
   const to = params.to ?? ''
@@ -152,9 +156,9 @@ export const CryptoWidget = () => {
   useEffect(() => {
     let isMounted = true
 
-    if (address && chainId) {
+    if (evmAddress && chainId) {
       getBalance(config, {
-        address: address as `0x${string}`,
+        address: evmAddress,
         chainId
       })
         .then((bal) => {
@@ -187,7 +191,7 @@ export const CryptoWidget = () => {
     return () => {
       isMounted = false
     }
-  }, [address, chainId, startTransition])
+  }, [evmAddress, chainId, startTransition])
 
   // Set timeout for confirmation - if RPC is slow, stop showing loading after 30 seconds
   useEffect(() => {
@@ -206,9 +210,9 @@ export const CryptoWidget = () => {
       let isMounted = true
 
       // Refetch balance after successful transaction
-      if (address && chainId) {
+      if (evmAddress && chainId) {
         getBalance(config, {
-          address: address as `0x${string}`,
+          address: evmAddress,
           chainId
         })
           .then((bal) => {
@@ -237,7 +241,7 @@ export const CryptoWidget = () => {
     return () => {
       // No-op cleanup when condition is false
     }
-  }, [receipt, address, chainId, startTransition])
+  }, [receipt, evmAddress, chainId, startTransition])
 
   // Reset form after successful transaction
   const handleReset = useCallback(() => {

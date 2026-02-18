@@ -9,6 +9,9 @@ const searchParamsSchema = {
   tabId: parseAsString.withDefault('pay'),
   network: parseAsString,
   tokenSelected: parseAsString,
+  walletAddress: parseAsString,
+  // Legacy param kept for backward compatibility with existing shared URLs.
+  btcAddress: parseAsString,
   amount: parseAsString,
   to: parseAsString,
   paymentAmountUsd: parseAsString
@@ -18,6 +21,8 @@ type SearchParams = {
   tabId: string // Has default value, so never null
   network: string | null
   tokenSelected: string | null
+  walletAddress: string | null
+  btcAddress: string | null
   amount: string | null
   to: string | null
   paymentAmountUsd: string | null
@@ -56,6 +61,8 @@ function SearchParamsContextInner({ children }: { children: ReactNode }) {
       tabId: params.tabId, // Has default, so always a string
       network: params.network ?? null,
       tokenSelected: params.tokenSelected ?? null,
+      walletAddress: params.walletAddress ?? null,
+      btcAddress: params.btcAddress ?? null,
       amount: params.amount ?? null,
       to: params.to ?? null,
       paymentAmountUsd: params.paymentAmountUsd ?? null

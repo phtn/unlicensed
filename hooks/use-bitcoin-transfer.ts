@@ -1,5 +1,6 @@
 'use client'
 
+import type {BitcoinConnector} from '@reown/appkit-adapter-bitcoin'
 import {useAppKitProvider} from '@reown/appkit/react'
 import {useCallback, useState} from 'react'
 
@@ -8,12 +9,15 @@ type BitcoinTransferRequestParams = {
   amount: string
 }
 
-type BitcoinProvider = {
+type BitcoinRpcProvider = {
   request: <T>(args: {
     method: string
     params?: readonly unknown[] | object
   }) => Promise<T>
 }
+
+type BitcoinWalletProvider = Pick<BitcoinConnector, 'sendTransfer'> &
+  Partial<BitcoinRpcProvider>
 
 type BitcoinReceipt = {blockNumber: bigint; status: 'success' | 'reverted'}
 
@@ -28,9 +32,17 @@ const normalizeTxHash = (value: string): `0x${string}` => {
 }
 
 const sendTransfer = async (
-  provider: BitcoinProvider,
+  provider: BitcoinWalletProvider,
   params: BitcoinTransferRequestParams,
 ): Promise<string> => {
+  if (typeof provider.sendTransfer === 'function') {
+    return provider.sendTransfer(params)
+  }
+
+  if (typeof provider.request !== 'function') {
+    throw new Error('Bitcoin wallet provider does not support sendTransfer')
+  }
+
   try {
     return await provider.request<string>({
       method: 'sendTransfer',
@@ -56,7 +68,7 @@ export interface BitcoinTransferResult {
 }
 
 export function useBitcoinTransfer(): BitcoinTransferResult {
-  const {walletProvider} = useAppKitProvider<BitcoinProvider | undefined>(
+  const {walletProvider} = useAppKitProvider<BitcoinWalletProvider | undefined>(
     'bip122',
   )
   const [isPending, setIsPending] = useState(false)

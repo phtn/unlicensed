@@ -15,7 +15,7 @@ import {
 import {useAppKitAccount} from '@reown/appkit/react'
 import {getBalance} from '@wagmi/core'
 import {useEffect, useMemo, useState} from 'react'
-import {formatUnits} from 'viem'
+import {formatUnits, isAddress, type Address} from 'viem'
 import {useChainId, useReadContract} from 'wagmi'
 
 export interface TokenBalance {
@@ -37,8 +37,12 @@ export interface NetworkTokensResult {
  * Returns tokens with balance > 0 (ETH native balance, USDC and USDT if supported and have balance).
  */
 export function useNetworkTokens(): NetworkTokensResult {
-  const {address} = useAppKitAccount()
+  const {address} = useAppKitAccount({namespace: 'eip155'})
   const chainId = useChainId()
+  const evmAddress = useMemo<Address | undefined>(
+    () => (address && isAddress(address) ? address : undefined),
+    [address],
+  )
 
   // Get USDC address if supported
   const usdcAddress = useMemo(
@@ -66,8 +70,8 @@ export function useNetworkTokens(): NetworkTokensResult {
     abi: ERC20_BALANCE_ABI,
     address: usdcAddress,
     functionName: 'balanceOf',
-    args: address ? [address as `0x${string}`] : undefined,
-    query: {enabled: Boolean(address && usdcAddress)},
+    args: evmAddress ? [evmAddress] : undefined,
+    query: {enabled: Boolean(evmAddress && usdcAddress)},
   })
 
   const {data: usdcDecimalsRaw} = useReadContract({
@@ -86,8 +90,8 @@ export function useNetworkTokens(): NetworkTokensResult {
     abi: USDT_ERC20_BALANCE_ABI,
     address: usdtAddress,
     functionName: 'balanceOf',
-    args: address ? [address as `0x${string}`] : undefined,
-    query: {enabled: Boolean(address && usdtAddress)},
+    args: evmAddress ? [evmAddress] : undefined,
+    query: {enabled: Boolean(evmAddress && usdtAddress)},
   })
 
   const {data: usdtDecimalsRaw} = useReadContract({
@@ -99,7 +103,7 @@ export function useNetworkTokens(): NetworkTokensResult {
 
   // Fetch ETH balance
   useEffect(() => {
-    if (!address) {
+    if (!evmAddress) {
       setEthBalance(null)
       setEthLoading(false)
       return
@@ -107,7 +111,7 @@ export function useNetworkTokens(): NetworkTokensResult {
 
     setEthLoading(true)
     getBalance(config, {
-      address: address as `0x${string}`,
+      address: evmAddress,
       chainId,
     })
       .then((bal) => {
@@ -121,7 +125,7 @@ export function useNetworkTokens(): NetworkTokensResult {
       .finally(() => {
         setEthLoading(false)
       })
-  }, [address, chainId])
+  }, [evmAddress, chainId])
 
   const usdcDecimals =
     usdcDecimalsRaw !== undefined ? Number(usdcDecimalsRaw) : 6

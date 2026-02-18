@@ -13,7 +13,7 @@ import {useCrypto} from '@/hooks/use-crypto'
 import {Icon} from '@/lib/icons'
 import {useAppKitAccount} from '@reown/appkit/react'
 import {getBalance} from '@wagmi/core'
-import {formatUnits} from 'viem'
+import {formatUnits, isAddress} from 'viem'
 import {
   polygon,
   polygonAmoy,
@@ -26,7 +26,11 @@ import {useChainId, useChains} from 'wagmi'
 type AllowedNet = 'eth' | 'sepolia' | 'polygon' | 'amoy' | 'zeroG' | 'galileo'
 
 export const WalletComponent = () => {
-  const {address} = useAppKitAccount()
+  const {address} = useAppKitAccount({namespace: 'eip155'})
+  const evmAddress = useMemo(() => {
+    if (!address) return undefined
+    return isAddress(address) ? address : undefined
+  }, [address])
   const {getBySymbol} = useCrypto()
   const chainId = useChainId()
   const chains = useChains()
@@ -58,8 +62,10 @@ export const WalletComponent = () => {
   }, [chainId])
 
   const getBal = useCallback(async () => {
+    if (!evmAddress || !chainBalId) return null
+
     const balance = await getBalance(config, {
-      address: address as `0x${string}`,
+      address: evmAddress,
       chainId: chainBalId,
     })
     // formatUnits converts wei → human-readable string
@@ -88,7 +94,7 @@ export const WalletComponent = () => {
       minimumFractionDigits: 2,
       currencyDisplay: 'symbol',
     })
-  }, [address, chainBalId, getBySymbol, nc])
+  }, [evmAddress, chainBalId, getBySymbol, nc])
 
   const [balance, setBalance] = useState<string | null>(null)
   const [isFetching, setIsFetching] = useState(false)
@@ -96,14 +102,14 @@ export const WalletComponent = () => {
   const prevAddressRef = useRef<string | undefined>(undefined)
 
   useEffect(() => {
-    if (address && networkId && !isFetching) {
+    if (evmAddress && networkId && !isFetching) {
       // Fetch if network changed or address changed
       const networkChanged = prevNetworkIdRef.current !== networkId
-      const addressChanged = prevAddressRef.current !== address
+      const addressChanged = prevAddressRef.current !== evmAddress
 
       if (networkChanged || addressChanged) {
         prevNetworkIdRef.current = networkId
-        prevAddressRef.current = address
+        prevAddressRef.current = evmAddress
 
         startTransition(() => {
           setIsFetching(true)
@@ -125,7 +131,7 @@ export const WalletComponent = () => {
           })
       }
     }
-  }, [address, networkId, getBal, isFetching])
+  }, [evmAddress, networkId, getBal, isFetching])
 
   return (
     <div
@@ -183,6 +189,4 @@ export const chainMap = {
   eth: 1,
   polygon: polygon.id,
   amoy: polygonAmoy.id,
-  galileo: zeroGGalileoTestnet.id,
-  zeroG: zeroGMainnet.id,
 }

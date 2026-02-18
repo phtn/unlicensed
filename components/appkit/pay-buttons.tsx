@@ -3,6 +3,7 @@
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {motion} from 'motion/react'
+import type {Token} from './token-coaster'
 
 interface PayButtonsProps {
   showReceiptButton: boolean
@@ -12,6 +13,8 @@ interface PayButtonsProps {
   isPayProcessing: boolean
   payLabel: string
   enablePayHoverStyles: boolean
+  payToken: Token | null
+  nativeSymbol: 'ethereum' | 'matic'
 }
 
 export const PayButtons = ({
@@ -22,7 +25,16 @@ export const PayButtons = ({
   isPayProcessing,
   payLabel,
   enablePayHoverStyles,
+  payToken,
+  nativeSymbol,
 }: PayButtonsProps) => {
+  const payTokenIcon =
+    payToken === 'ethereum'
+      ? nativeSymbol === 'matic'
+        ? 'matic'
+        : 'ethereum'
+      : payToken
+
   return (
     <motion.div layout>
       <motion.div
@@ -51,9 +63,16 @@ export const PayButtons = ({
             {isPayProcessing ? (
               <Icon name='spinner-dots' className='w-5 h-5' />
             ) : (
-              <span className='flex items-center font-polysans font-bold text-white opacity-100 gap-2 drop-shadow-xs'>
+              <span className='flex items-center font-polysans font-medium text-white opacity-100 gap-2 drop-shadow-xs'>
                 {payLabel}
-                <Icon name='cash-fast' className='w-7 h-7' />
+                {payTokenIcon ? (
+                  <Icon
+                    name={payTokenIcon}
+                    className='size-5 text-foreground'
+                  />
+                ) : (
+                  <Icon name='cash-fast' className='size-6' />
+                )}
               </span>
             )}
           </button>
