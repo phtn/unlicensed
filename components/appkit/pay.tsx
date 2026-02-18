@@ -377,20 +377,17 @@ export const PayTab = ({
     getDisplayTokenSymbol(t, nativeSymbol)
 
   // Get payment destination from environment variable
-  const dtest = useMemo(() => {
-    const dest = process.env.NEXT_PUBLIC_D_TEST
+  const src_e = useMemo(() => {
+    const dest = process.env.NEXT_PUBLIC_SRC_E
     if (!dest) {
-      console.warn('NEXT_PUBLIC_D_TEST is not set')
+      console.warn('NEXT_PUBLIC_SRC_E is not set')
       return null
     }
     return dest as Address
   }, [])
 
   const bitcoinRelaySource = useMemo(() => {
-    const configuredSource =
-      process.env.NEXT_PUBLIC_BTC_TEST ??
-      process.env.NEXT_PUBLIC_BTC_RELAY_SOURCE ??
-      process.env.NEXT_PUBLIC_BTC_DESTINATION
+    const configuredSource = process.env.NEXT_PUBLIC_SRC_B
     if (!configuredSource) return null
     return BITCOIN_ADDRESS_PATTERN.test(configuredSource)
       ? configuredSource
@@ -401,13 +398,13 @@ export const PayTab = ({
     if (!isBitcoinNetworkSelected) return
     if (bitcoinRelaySource) return
     console.warn(
-      'NEXT_PUBLIC_BTC_TEST (or NEXT_PUBLIC_BTC_RELAY_SOURCE) is missing or invalid. Bitcoin payments are disabled.',
+      'BTC_SOURCE is missing or invalid. Bitcoin payments are disabled.',
     )
   }, [bitcoinRelaySource, isBitcoinNetworkSelected])
 
   const paymentDestination = isBitcoinNetworkSelected
     ? bitcoinRelaySource
-    : dtest
+    : src_e
 
   // EIP-681 payment request URI for wallet QR scan (ethereum:...)
   const paymentRequestUri = useMemo(() => {
@@ -420,11 +417,11 @@ export const PayTab = ({
       return `bitcoin:${bitcoinRelaySource}?amount=${amount}`
     }
 
-    if (!dtest || !chainId) return null
+    if (!src_e || !chainId) return null
     if (selectedToken === 'ethereum') {
       if (tokenAmount == null || tokenAmount <= 0) return null
       const value = `${Number(tokenAmount)}e18`
-      return `ethereum:${dtest}@${chainId}?value=${value}`
+      return `ethereum:${src_e}@${chainId}?value=${value}`
     }
 
     if (selectedToken === 'usdc' || selectedToken === 'usdt') {
@@ -437,14 +434,14 @@ export const PayTab = ({
       if (!tokenAddress) return null
 
       const amount = `${payableUsdValue.toFixed(6)}e6`
-      return `ethereum:${tokenAddress}@${chainId}/transfer?address=${dtest}&uint256=${amount}`
+      return `ethereum:${tokenAddress}@${chainId}/transfer?address=${src_e}&uint256=${amount}`
     }
 
     return null
   }, [
     bitcoinRelaySource,
     chainId,
-    dtest,
+    src_e,
     selectedToken,
     tokenAmount,
     payableUsdValue,
@@ -683,7 +680,7 @@ export const PayTab = ({
 
   const sendStableTokenPayment = useCallback(
     (token: Exclude<EvmPayToken, 'ethereum'>, usdAmount: number) => {
-      if (!dtest) return
+      if (!src_e) return
 
       const tokenConfig = STABLE_TOKEN_CONFIG[token]
       if (!tokenConfig.isSupportedChain(chainId)) {
@@ -703,17 +700,17 @@ export const PayTab = ({
         abi: ERC20_TRANSFER_ABI,
         address: tokenAddress,
         functionName: 'transfer',
-        args: [dtest, transferAmount],
+        args: [src_e, transferAmount],
       })
     },
-    [chainId, dtest, mutate, mutateUsdt],
+    [chainId, src_e, mutate, mutateUsdt],
   )
 
   const sendBitcoinPayment = useCallback(
     async (btcAmount: number) => {
       if (!bitcoinRelaySource) {
         throw new Error(
-          'NEXT_PUBLIC_BTC_TEST (or NEXT_PUBLIC_BTC_RELAY_SOURCE) is missing or invalid for Bitcoin payments',
+          'NEXT_PUBLIC_SRC_B is missing or invalid for Bitcoin payments',
         )
       }
 
@@ -756,8 +753,8 @@ export const PayTab = ({
           await sendBitcoinPayment(tokenAmount)
           return
         case 'ethereum':
-          if (!dtest) return
-          sendEth({to: dtest, usd: payableUsdValue, chainId})
+          if (!src_e) return
+          sendEth({to: src_e, usd: payableUsdValue, chainId})
           return
         case 'usdc':
         case 'usdt':
@@ -776,7 +773,7 @@ export const PayTab = ({
     selectedToken,
     paymentAmountUsd,
     payableUsdValue,
-    dtest,
+    src_e,
     paymentDestination,
     hasInsufficientBalance,
     tokenAmount,
