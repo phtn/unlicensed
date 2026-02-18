@@ -725,8 +725,8 @@ export const searchInputClassNames: InputProps['classNames'] = {
 export const chatInputClassNames: InputProps['classNames'] = {
   label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-brk',
   input:
-    'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
+    'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-dark-table/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
     'border shadow-none rounded-xl border-dark-table/40 dark:border-black/10 bg-sidebar dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-16 w-full',
-  innerWrapper: 'ps-8',
+  innerWrapper: 'ps-2',
 }

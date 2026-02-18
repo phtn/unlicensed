@@ -57,7 +57,7 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
                 description: 'text-xs opacity-80 text-foreground',
               }}
               name={
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-1'>
                   <h4 className='font-medium text-base'>
                     {member.name || 'Unnamed Staff'}
                   </h4>
@@ -101,26 +101,26 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
           <Button
             size='sm'
             isIconOnly
-            radius='full'
+            radius='sm'
             variant='flat'
             isDisabled={isConnecting}
             isLoading={isConnecting}
             aria-label='Open chat'
             onPress={handleChatClick}
-            className='text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'>
-            <Icon name='chat-2-fill' className='size-4 text-featured' />
+            className='text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800 bg-sidebar/50'>
+            <Icon name='chat' className='size-5' />
           </Button>
 
           <Button
             size='sm'
             as={Link}
             isIconOnly
-            radius='full'
+            radius='sm'
             variant='flat'
             prefetch
             href={`/admin/ops/staff?tabId=edit&id=${member._id}`}
-            className='text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'>
-            <Icon name='pencil-single-solid' className='size-4' />
+            className='text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800 bg-sidebar/50'>
+            <Icon name='pencil-fill' className='size-5' />
           </Button>
         </div>
       </div>

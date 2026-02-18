@@ -276,11 +276,6 @@ const data: Record<string, NavGroup[]> = {
       url: '/admin/inventory',
       items: [
         {
-          title: 'Overview',
-          url: '/admin/inventory',
-          icon: 'document',
-        },
-        {
           title: 'Category',
           url: '/admin/inventory/category',
           icon: 'book',
@@ -288,7 +283,12 @@ const data: Record<string, NavGroup[]> = {
         {
           title: 'Product',
           url: '/admin/inventory/product',
-          icon: 'candy',
+          icon: 't',
+        },
+        {
+          title: 'Tools',
+          url: '/admin/inventory/tools',
+          icon: 'gallery-edit-bold',
         },
       ],
     },

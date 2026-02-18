@@ -1,8 +1,8 @@
 import {defineSchema, defineTable} from 'convex/server'
 import {activitySchema} from './activities/d'
 import {activityViewSchema} from './activityViews/d'
-import {adminSettingsSchema} from './admin/d'
 import {addressRecordSchema} from './addresses/d'
+import {adminSettingsSchema} from './admin/d'
 import {affiliateAccountSchema} from './affiliateAccounts/d'
 import {archivedConversationSchema} from './archives/d'
 import {blogSchema} from './blogs/d'
@@ -11,6 +11,7 @@ import {categorySchema} from './categories/d'
 import {checkoutLogSchema} from './checkoutLogs/d'
 import {courierSchema} from './couriers/d'
 import {emailSettingsSchema} from './emailSettings/d'
+import {fileSchema} from './files/upload'
 import {followSchema} from './follows/d'
 import {logSchema} from './logs/d'
 import {messageSchema} from './messages/d'
@@ -113,4 +114,7 @@ export default defineSchema({
     .index('by_uid', ['uid']) // All notifications for a user
     .index('by_user_read', ['uid', 'readAt']) // Notifications by user and read status
     .index('by_user_created', ['uid', 'createdAt']), // Notifications by user sorted by creation time
+  files: defineTable(fileSchema)
+    .index('by_body', ['body'])
+    .index('by_author', ['author']),
 })

@@ -13,6 +13,7 @@ interface AssistantMessageInputProps {
   onMessageSent?: VoidFunction
   value?: string
   onValueChange?: (value: string) => void
+  autoFocus?: boolean
 }
 
 export function AssistantMessageInput({
@@ -21,6 +22,7 @@ export function AssistantMessageInput({
   onMessageSent,
   value,
   onValueChange,
+  autoFocus = false,
 }: AssistantMessageInputProps) {
   const isMobile = useMobile()
   const [message, setMessage] = useState('')
@@ -39,6 +41,18 @@ export function AssistantMessageInput({
       )}px`
     }
   }, [currentValue])
+
+  useEffect(() => {
+    if (!autoFocus || isMobile || isLoading || !textareaRef.current) return
+
+    const timeoutId = window.setTimeout(() => {
+      textareaRef.current?.focus()
+    }, 0)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [autoFocus, isLoading, isMobile])
 
   const handleSend = async () => {
     if (!currentValue.trim() || isLoading) return
@@ -80,7 +94,7 @@ export function AssistantMessageInput({
     <div className='flex items-end gap-2'>
       {/* Text Input Area */}
       <div className='flex-1 relative'>
-        <div className='relative flex items-end rounded-lg focus-within:ring-2 focus-within:ring-primary/20 dark:focus-within:ring-primary/5 transition-all'>
+        <div className='relative flex items-end rounded-xl focus-within:ring-2 focus-within:ring-primary/20 dark:focus-within:ring-primary/5 transition-all'>
           <Textarea
             ref={textareaRef}
             value={currentValue}
@@ -93,21 +107,11 @@ export function AssistantMessageInput({
               }
             }}
             onKeyDown={handleKeyPress}
-            placeholder='ask me anything'
+            placeholder='type message'
             onBlur={handleOnBlur}
             disabled={isLoading}
             rows={3}
             classNames={chatInputClassNames}
-            // className={cn(
-            //   'w-full resize-none bg-transparent px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base',
-            //   'placeholder:text-muted-foreground/60',
-            //   'focus:outline-none',
-            //   'max-h-[120px] overflow-y-auto',
-            //   'touch-manipulation',
-            // )}
-            // style={{
-            //   minHeight: '44px',
-            // }}
           />
         </div>
       </div>
@@ -120,13 +124,13 @@ export function AssistantMessageInput({
         className={cn(
           'p-2.5 md:p-2 rounded-full transition-all shrink-0 touch-manipulation active:scale-95',
           currentValue.trim() && !isLoading
-            ? 'bg-dark-gray text-primary-foreground hover:bg-primary/90'
-            : 'bg-sidebar text-muted-foreground cursor-not-allowed',
+            ? 'bg-dark-gray text-primary-foreground hover:bg-brand/90'
+            : 'bg-sidebar text-foreground/30 cursor-not-allowed',
         )}>
         {isLoading ? (
           <div className='size-5 border-2 border-current border-t-transparent rounded-full animate-spin' />
         ) : (
-          <Icon name='send-fill' className='size-5' />
+          <Icon name='arrow-up-fat' className='size-5' />
         )}
       </button>
     </div>

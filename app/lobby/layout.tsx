@@ -1,5 +1,6 @@
 'use client'
 
+import {ChatDock} from '@/components/main/chat-dock'
 import {Footer} from '@/components/ui/footer'
 import {NuqsAdapter} from 'nuqs/adapters/next/app'
 import type {ReactNode} from 'react'
@@ -16,7 +17,10 @@ export default function LobbyLayout({children, navbar}: LobbyLayoutProps) {
       <NuqsAdapter>
         <div suppressHydrationWarning className='flex min-h-screen flex-col'>
           {navbar}
-          <main className='relative flex-1'>{children}</main>
+          <main className='relative flex-1'>
+            {children}
+            <ChatDock />
+          </main>
           <Footer />
         </div>
       </NuqsAdapter>
