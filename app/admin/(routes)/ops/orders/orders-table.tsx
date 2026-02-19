@@ -10,6 +10,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {onError} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
+import {Badge, Button} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useCallback, useMemo, useState} from 'react'
@@ -37,6 +38,10 @@ export const OrdersTable = () => {
   const {user} = useAuthCtx()
   const orders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
   const users = useQuery(api.users.q.getAllUsers, {limit: 5000})
+  const conversations = useQuery(
+    api.messages.q.getConversations,
+    user?.uid ? {fid: user.uid} : 'skip',
+  )
   const connectCustomerForChat = useMutation(
     api.follows.m.connectCustomerForChat,
   )
@@ -60,6 +65,19 @@ export const OrdersTable = () => {
 
     return map
   }, [users])
+
+  const unreadCountByFid = useMemo(() => {
+    const map = new Map<string, number>()
+    if (!conversations) return map
+
+    for (const conversation of conversations) {
+      const fid = conversation?.otherUser?.fid
+      if (!fid) continue
+      map.set(fid, conversation.unreadCount ?? 0)
+    }
+
+    return map
+  }, [conversations])
 
   const handleViewOrder = useCallback(
     (order: Order) => {
@@ -207,28 +225,63 @@ export const OrdersTable = () => {
   const actionConfig = useMemo(
     () =>
       ({
-        mode: 'buttons',
-        align: 'end',
-        actions: [
-          {
-            id: 'chat',
-            label: '',
-            icon: 'chat',
-            appearance: 'icon-button',
-            onClick: (order: Order) => {
-              void handleOpenCustomerChat(order)
-            },
-          },
-          {
-            id: 'view',
-            label: '',
-            icon: 'details',
-            appearance: 'icon-button',
-            onClick: (order: Order) => handleViewOrder(order),
-          },
-        ],
+        mode: 'custom',
+        render: ({row}) => {
+          const order = row.original
+          const customerFid = order.userId
+            ? customerProfileIdByUserId.get(String(order.userId))
+            : null
+          const unreadCount = customerFid
+            ? (unreadCountByFid.get(customerFid) ?? 0)
+            : 0
+
+          return (
+            <div className='flex w-full items-center justify-end gap-1'>
+              <Badge
+                key={`orders-chat-badge-${String(order._id)}-${unreadCount}`}
+                content={
+                  unreadCount > 0 ? (
+                    <span className='font-okxs font-semibold text-white leading-none'>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  ) : undefined
+                }
+                isInvisible={unreadCount === 0}
+                classNames={{
+                  badge:
+                    'min-w-5 h-5 px-1 flex items-center justify-center rounded-full border-1.5 dark:border-background/90 shadow-md bg-brand/80',
+                }}>
+                <Button
+                  isIconOnly
+                  size='sm'
+                  variant='light'
+                  isDisabled={isOpeningChat}
+                  className='h-8 w-8 min-w-8 rounded-lg'
+                  onPress={() => {
+                    void handleOpenCustomerChat(order)
+                  }}>
+                  <Icon name='chat' className='size-4' />
+                </Button>
+              </Badge>
+              <Button
+                isIconOnly
+                size='sm'
+                variant='light'
+                className='h-8 w-8 min-w-8 rounded-lg'
+                onPress={() => handleViewOrder(order)}>
+                <Icon name='details' className='size-4' />
+              </Button>
+            </div>
+          )
+        },
       }) as ActionConfig<Order>,
-    [handleOpenCustomerChat, handleViewOrder],
+    [
+      customerProfileIdByUserId,
+      handleOpenCustomerChat,
+      handleViewOrder,
+      isOpeningChat,
+      unreadCountByFid,
+    ],
   )
 
   return (
