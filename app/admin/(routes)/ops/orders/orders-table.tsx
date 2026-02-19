@@ -7,7 +7,7 @@ import {ActionConfig, ColumnConfig} from '@/components/table-v2/create-column'
 import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {onError, onSuccess} from '@/ctx/toast'
+import {onError} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {useMutation, useQuery} from 'convex/react'
@@ -37,10 +37,8 @@ export const OrdersTable = () => {
   const {user} = useAuthCtx()
   const orders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
   const users = useQuery(api.users.q.getAllUsers, {limit: 5000})
-  const followForChat = useMutation(api.follows.m.follow)
-  const conversations = useQuery(
-    api.messages.q.getConversations,
-    user?.uid ? {fid: user.uid} : 'skip',
+  const connectCustomerForChat = useMutation(
+    api.follows.m.connectCustomerForChat,
   )
   const {setSelectedOrder} = useOrderDetails()
   const {setOpen, setOpenMobile} = useSettingsPanel()
@@ -85,32 +83,19 @@ export const OrdersTable = () => {
         return
       }
 
-      const customerFid = customerProfileIdByUserId.get(String(order.userId))
-      if (!customerFid) {
-        onError('Customer does not have a chat profile ID')
-        return
-      }
-      if (customerFid === user.uid) {
-        onError('Cannot open chat with your own account')
-        return
-      }
-
       setIsOpeningChat(true)
       try {
-        const hasExistingConversation =
-          conversations?.some(
-            (conversation) => conversation?.otherUser?.fid === customerFid,
-          ) ?? false
+        const result = await connectCustomerForChat({
+          customerId: order.userId,
+          currentUserFid: user.uid,
+        })
 
-        if (!hasExistingConversation) {
-          await followForChat({
-            followedId: order.userId,
-            followerId: user.uid,
-          })
-          onSuccess('Chat room created')
+        if (result.customerFid === user.uid) {
+          onError('Cannot open chat with your own account')
+          return
         }
 
-        setChatConversationFid(customerFid)
+        setChatConversationFid(result.customerFid)
         setIsChatWindowOpen(true)
       } catch (err) {
         onError(err instanceof Error ? err.message : 'Failed to open chat')
@@ -118,13 +103,7 @@ export const OrdersTable = () => {
         setIsOpeningChat(false)
       }
     },
-    [
-      conversations,
-      customerProfileIdByUserId,
-      followForChat,
-      isOpeningChat,
-      user?.uid,
-    ],
+    [connectCustomerForChat, isOpeningChat, user?.uid],
   )
 
   const columns = useMemo<ColumnConfig<Order>[]>(

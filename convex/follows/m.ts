@@ -67,6 +67,63 @@ export const connectStaffForChat = mutation({
   },
 })
 
+// Connect current user with a customer for chat: creates follow and returns customer fid
+export const connectCustomerForChat = mutation({
+  args: {
+    customerId: v.id('users'),
+    currentUserFid: v.string(), // Firebase UID of the user initiating the chat
+  },
+  handler: async (ctx, args) => {
+    const customer = await ctx.db.get(args.customerId)
+    if (!customer) {
+      throw new Error('Customer not found')
+    }
+
+    let customerFid = (customer.fid ?? customer.firebaseId ?? '') as string
+    if (!customerFid) {
+      throw new Error('Customer does not have a linked user account to chat')
+    }
+
+    // Backfill fid when legacy records only have firebaseId.
+    if (!customer.fid && customer.firebaseId) {
+      await ctx.db.patch(customer._id, {
+        fid: customer.firebaseId,
+        updatedAt: Date.now(),
+      })
+      customerFid = customer.firebaseId
+    }
+
+    const follower = await ctx.db
+      .query('users')
+      .withIndex('by_fid', (q) => q.eq('fid', args.currentUserFid))
+      .first()
+
+    if (!follower) {
+      throw new Error('Current user not found')
+    }
+
+    const existingFollow = await ctx.db
+      .query('follows')
+      .withIndex('by_follower_followed', (q) =>
+        q.eq('followerId', follower._id).eq('followedId', customer._id),
+      )
+      .first()
+
+    if (!existingFollow) {
+      if (follower._id !== customer._id) {
+        await ctx.db.insert('follows', {
+          followerId: follower._id,
+          followedId: customer._id,
+          createdAt: new Date().toISOString(),
+          visible: true,
+        })
+      }
+    }
+
+    return {customerFid}
+  },
+})
+
 // Follow a user
 export const follow = mutation({
   args: {
@@ -128,12 +185,12 @@ export const follow = mutation({
         actionUrl: null, // Could link to follower's profile
       })
 
-      const followedProfile = await ctx.db.get('users', followedUser._id)
-      const tokens =
-        followedProfile?.fcm?.tokens?.filter((t) => t.length > 0) ?? []
-      const token = followedProfile?.fcm?.token
-      const hasDeclined = followedProfile?.fcm?.hasDeclined === true
-
+      // Push notification wiring intentionally disabled for follow events.
+      // const followedProfile = await ctx.db.get('users', followedUser._id)
+      // const tokens =
+      //   followedProfile?.fcm?.tokens?.filter((t) => t.length > 0) ?? []
+      // const token = followedProfile?.fcm?.token
+      // const hasDeclined = followedProfile?.fcm?.hasDeclined === true
       // const sendTokens = tokens.length > 0 ? tokens : token ? [token] : []
       // if (sendTokens.length > 0 && !hasDeclined) {
       //   for (const token of sendTokens) {
