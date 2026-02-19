@@ -587,6 +587,26 @@ export const updateProfile = mutation({
   },
 })
 
+export const updateNotes = mutation({
+  args: {
+    userId: v.id('users'),
+    notes: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId)
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    await ctx.db.patch(args.userId, {
+      notes: args.notes,
+      updatedAt: Date.now(),
+    })
+
+    return args.userId
+  },
+})
+
 export const migrateLegacyAddressesToTable = mutation({
   args: {
     limit: v.optional(v.number()),

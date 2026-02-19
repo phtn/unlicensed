@@ -361,7 +361,7 @@ export const ProductForm = ({
           <div id='media' className='scroll-mt-4'>
             <Media
               form={form as ProductFormApi}
-              fields={productFields.slice(10, 11)}></Media>
+              fields={productFields.slice(10, 12)}></Media>
           </div>
           <div id='pricing' className='scroll-mt-4'>
             <Pricing

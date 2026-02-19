@@ -94,10 +94,7 @@ export const BasicInfo = ({
     [],
   )
   const basicFields = useMemo(
-    () =>
-      fields.filter((field) =>
-        basicFieldNames.has(field.name as string),
-      ),
+    () => fields.filter((field) => basicFieldNames.has(field.name as string)),
     [basicFieldNames, fields],
   )
   const selectedCategory = useMemo(() => {
@@ -189,7 +186,7 @@ export const BasicInfo = ({
             onPress={onOpen}
             isDisabled={!onArchiveProduct}
             isLoading={isArchiving}
-            className='rounded-sm flex-1'>
+            className='rounded-sm flex-1 border-transparent bg-red-100'>
             Delete
           </Button>
         </Header>

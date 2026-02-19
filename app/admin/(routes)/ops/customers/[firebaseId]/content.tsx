@@ -5,11 +5,11 @@ import {useAuthCtx} from '@/ctx/auth'
 import {onError, onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Avatar, Button, Card, Chip} from '@heroui/react'
+import {Avatar, Button, Card, Chip, Textarea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
-import {useCallback, useMemo, useState} from 'react'
+import {useCallback, useEffect, useMemo, useState} from 'react'
 
 interface ContentProps {
   firebaseId: string
@@ -30,7 +30,10 @@ export const Content = ({firebaseId}: ContentProps) => {
   const router = useRouter()
   const {user} = useAuthCtx()
   const [isOpeningChat, setIsOpeningChat] = useState(false)
+  const [remarks, setRemarks] = useState('')
+  const [isSavingRemarks, setIsSavingRemarks] = useState(false)
   const followForChat = useMutation(api.follows.m.follow)
+  const updateCustomerNotes = useMutation(api.users.m.updateNotes)
   const customer = useQuery(api.users.q.getByFid, {fid: firebaseId})
   const customerAddresses = useQuery(api.users.q.getUserAddresses, {
     fid: firebaseId,
@@ -43,6 +46,8 @@ export const Content = ({firebaseId}: ContentProps) => {
     api.orders.q.getUserOrders,
     customer?._id ? {userId: customer._id, limit: 15} : 'skip',
   )
+  const customerId = customer?._id
+  const customerNotes = customer?.notes ?? ''
   const customerChatFid = customer?.fid ?? customer?.firebaseId ?? null
   const hasExistingConversation = useMemo(() => {
     if (!customerChatFid || !conversations) return false
@@ -51,6 +56,11 @@ export const Content = ({firebaseId}: ContentProps) => {
       return otherFid != null && otherFid === customerChatFid
     })
   }, [conversations, customerChatFid])
+
+  useEffect(() => {
+    if (!customerId) return
+    setRemarks(customerNotes)
+  }, [customerId, customerNotes])
 
   const handleOpenChat = useCallback(async () => {
     if (!user?.uid) {
@@ -84,6 +94,28 @@ export const Content = ({firebaseId}: ContentProps) => {
     router,
     user?.uid,
   ])
+
+  const handleSaveRemarks = useCallback(async () => {
+    if (!customerId) return
+    if (remarks === customerNotes) return
+
+    setIsSavingRemarks(true)
+    try {
+      await updateCustomerNotes({
+        userId: customerId,
+        notes: remarks,
+      })
+      onSuccess('Customer notes updated')
+    } catch (err) {
+      onError(err instanceof Error ? err.message : 'Failed to update notes')
+    } finally {
+      setIsSavingRemarks(false)
+    }
+  }, [customerId, customerNotes, remarks, updateCustomerNotes])
+
+  const handleRemarksBlur = useCallback(() => {
+    void handleSaveRemarks()
+  }, [handleSaveRemarks])
 
   if (customer === undefined) {
     return (
@@ -262,6 +294,31 @@ export const Content = ({firebaseId}: ContentProps) => {
                 No Shipping accounts link to customer&apos;s orders on file.
               </p>
             </Card>
+            {/* Remarks */}
+            <div>
+              <label className='text-sm font-medium mb-2 block'>
+                Internal Remarks
+              </label>
+              <Textarea
+                value={remarks}
+                onValueChange={setRemarks}
+                onBlur={handleRemarksBlur}
+                placeholder='Add internal notes or remarks...'
+                minRows={3}
+                maxRows={6}
+                isDisabled={isSavingRemarks}
+              />
+              <div className='mt-2 flex justify-end'>
+                <Button
+                  size='sm'
+                  variant='flat'
+                  onPress={() => void handleSaveRemarks()}
+                  isLoading={isSavingRemarks}
+                  isDisabled={isSavingRemarks || remarks === customerNotes}>
+                  Save notes
+                </Button>
+              </div>
+            </div>
           </div>
           <div className='px-4 border-l border-sidebar'>
             <Card

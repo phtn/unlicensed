@@ -2,15 +2,13 @@
 
 import {FormInput, renderFields} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
-import {Id} from '@/convex/_generated/dataModel'
-import {useImageConverter} from '@/hooks/use-image-converter'
-import {useStorageUpload} from '@/hooks/use-storage-upload'
-import {useStorageUrls} from '@/hooks/use-storage-urls'
+import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Image} from '@heroui/react'
+import {Button, Drawer, DrawerContent, DrawerHeader, Image} from '@heroui/react'
 import {Derived, useStore} from '@tanstack/react-store'
-import {useMemo, useState} from 'react'
+import {useQuery} from 'convex/react'
+import {useCallback, useMemo, useState} from 'react'
 import {ProductFormValues} from '../product-schema'
 import {FormSection, Header} from './components'
 
@@ -23,33 +21,43 @@ interface FormStoreState {
   values: ProductFormValues
 }
 
-export const Media = ({form, fields}: MediaProps) => {
-  const {uploadFile, isUploading} = useStorageUpload()
-  const {convert, validateImageFile} = useImageConverter()
-  const [imagePreviewMap, setImagePreviewMap] = useState<
-    Record<string, string>
-  >({})
-  const [galleryPreviewMap, setGalleryPreviewMap] = useState<
-    Record<string, string>
-  >({})
-  const [pendingPrimaryImage, setPendingPrimaryImage] = useState<{
-    file: File
-    preview: string
-  } | null>(null)
-  const [pendingGalleryImages, setPendingGalleryImages] = useState<
-    Array<{file: File; preview: string}>
-  >([])
-  const [isConverting, setIsConverting] = useState(false)
-  const [isConvertingGallery, setIsConvertingGallery] = useState(false)
-  const [validationError, setValidationError] = useState<string | null>(null)
-  const [galleryValidationErrors, setGalleryValidationErrors] = useState<
-    Record<number, string | null>
-  >({})
+type MediaLibraryTarget = 'primary' | 'gallery'
 
-  // Get primary image value to include in gallery display (reactively)
+type TagGalleryGroup = {
+  tag: string
+  total: number
+  items: Array<{
+    storageId: string
+    caption: string | null
+    url: string | null
+  }>
+}
+
+const normalizeTag = (value: string) => value.trim().toLowerCase()
+
+const titleCaseTag = (value: string) =>
+  value
+    .replace(/[-_]+/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part[0]?.toUpperCase() + part.slice(1))
+    .join(' ')
+
+export const Media = ({form, fields}: MediaProps) => {
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false)
+  const [libraryTarget, setLibraryTarget] =
+    useState<MediaLibraryTarget>('primary')
+  const [tagSearch, setTagSearch] = useState('')
+  const [activeTag, setActiveTag] = useState<string | null>(null)
+
   const primaryImageValue = useStore(
     form.store as unknown as Derived<FormStoreState, never>,
-    (state: FormStoreState) => (state.values.image as Id<'_storage'>) ?? '',
+    (state: FormStoreState) => (state.values.image as string) ?? '',
+  )
+
+  const categorySlug = useStore(
+    form.store as unknown as Derived<FormStoreState, never>,
+    (state: FormStoreState) => (state.values.categorySlug as string) ?? '',
   )
 
   const galleryValue = useStore(
@@ -57,503 +65,455 @@ export const Media = ({form, fields}: MediaProps) => {
     (state: FormStoreState) => (state.values.gallery as string[]) ?? [],
   )
 
-  const allImageIds = useMemo(() => {
-    const ids = [primaryImageValue, ...galleryValue].filter(Boolean)
-    return [...new Set(ids)]
-  }, [primaryImageValue, galleryValue])
+  const libraryResponse = useQuery(api.files.upload.listImageGalleriesByTag, {
+    requiredTag: 'gallery:optimized',
+    maxTags: 48,
+    limitPerTag: 40,
+  })
 
-  const resolveUrl = useStorageUrls(allImageIds)
+  const allTaggedGroups = useMemo(
+    () => (libraryResponse?.tags ?? []) as TagGalleryGroup[],
+    [libraryResponse],
+  )
 
-  // Helper to get preview URL
-  const getPreview = (storageId: string, map: Record<string, string>) => {
-    if (!storageId) return null
-    if (storageId.startsWith('http') || storageId.startsWith('data:')) {
-      return storageId
+  const allSelectedImageIds = useMemo(
+    () => [primaryImageValue, ...galleryValue].filter(Boolean),
+    [primaryImageValue, galleryValue],
+  )
+
+  const previewById = useMemo(() => {
+    const map = new Map<string, string>()
+
+    for (const group of allTaggedGroups) {
+      for (const item of group.items) {
+        if (item.url) {
+          map.set(item.storageId, item.url)
+        }
+      }
     }
-    // Check local preview map first (for newly uploaded files)
-    if (map[storageId]) return map[storageId]
 
-    // Then check resolved URLs from server
-    return resolveUrl(storageId) || null
-  }
+    return map
+  }, [allTaggedGroups])
+
+  const resolvePreview = useCallback(
+    (storageId: string) => {
+      if (!storageId) {
+        return null
+      }
+      if (storageId.startsWith('http') || storageId.startsWith('data:')) {
+        return storageId
+      }
+      return previewById.get(storageId) ?? null
+    },
+    [previewById],
+  )
+
+  const filteredTagGroups = useMemo(() => {
+    const normalizedSearch = normalizeTag(tagSearch)
+    if (!normalizedSearch) {
+      return allTaggedGroups
+    }
+
+    return allTaggedGroups.filter((group) =>
+      normalizeTag(group.tag).includes(normalizedSearch),
+    )
+  }, [allTaggedGroups, tagSearch])
+
+  const preferredTagFromCategory = useMemo(() => {
+    const normalizedCategory = normalizeTag(categorySlug)
+    if (!normalizedCategory) {
+      return null
+    }
+
+    return (
+      filteredTagGroups.find((group) => {
+        const normalizedTag = normalizeTag(group.tag)
+        return (
+          normalizedTag === normalizedCategory ||
+          normalizedTag.includes(normalizedCategory) ||
+          normalizedCategory.includes(normalizedTag)
+        )
+      })?.tag ?? null
+    )
+  }, [categorySlug, filteredTagGroups])
+
+  const activeGroup = useMemo(() => {
+    if (filteredTagGroups.length === 0) {
+      return null
+    }
+
+    if (!activeTag) {
+      return filteredTagGroups[0]
+    }
+
+    return (
+      filteredTagGroups.find((group) => group.tag === activeTag) ??
+      filteredTagGroups[0]
+    )
+  }, [activeTag, filteredTagGroups])
+
+  const openLibrary = useCallback(
+    (target: MediaLibraryTarget) => {
+      const nextTag =
+        preferredTagFromCategory ?? allTaggedGroups[0]?.tag ?? null
+      setTagSearch('')
+      setActiveTag(nextTag)
+      setLibraryTarget(target)
+      setIsLibraryOpen(true)
+    },
+    [allTaggedGroups, preferredTagFromCategory],
+  )
+
+  const clearPrimaryImage = useCallback(() => {
+    form.setFieldValue('image', '')
+  }, [form])
+
+  const toggleGalleryItem = useCallback(
+    (storageId: string) => {
+      const nextGallery = galleryValue.includes(storageId)
+        ? galleryValue.filter((id) => id !== storageId)
+        : [...galleryValue, storageId]
+
+      form.setFieldValue('gallery', nextGallery)
+    },
+    [form, galleryValue],
+  )
+
+  const selectLibraryImage = useCallback(
+    (storageId: string) => {
+      if (libraryTarget === 'primary') {
+        form.setFieldValue('image', storageId)
+        setIsLibraryOpen(false)
+        return
+      }
+
+      toggleGalleryItem(storageId)
+    },
+    [form, libraryTarget, toggleGalleryItem],
+  )
+
+  const displayImages = useMemo(() => {
+    if (!primaryImageValue) {
+      return galleryValue
+    }
+
+    return [
+      primaryImageValue,
+      ...galleryValue.filter((id) => id !== primaryImageValue),
+    ]
+  }, [galleryValue, primaryImageValue])
+
+  const primaryPreview = resolvePreview(primaryImageValue)
 
   return (
-    <FormSection id='media'>
-      <Header label='Media' />
-      <div className='grid gap-6'>
-        {renderFields(form, fields)}
-        <div className='flex w-full gap-6'>
-          <form.AppField name='image'>
-            {(field) => {
-              const imageValue = (field.state.value as string) ?? ''
-              const preview = pendingPrimaryImage
-                ? pendingPrimaryImage.preview
-                : getPreview(imageValue, imagePreviewMap)
-
-              const handleFileSelect = async () => {
-                const input = document.createElement('input')
-                input.type = 'file'
-                input.accept = 'image/*'
-                input.onchange = async () => {
-                  const file = input.files?.[0]
-                  if (!file) return
-
-                  // Clear previous validation error
-                  setValidationError(null)
-
-                  // Validate the file
-                  const error = await validateImageFile(file)
-                  if (error) {
-                    setValidationError(error)
-                    return
-                  }
-
-                  // Create preview
-                  const previewUrl = URL.createObjectURL(file)
-                  setPendingPrimaryImage({file, preview: previewUrl})
-                }
-                input.click()
-              }
-
-              const handleSave = async () => {
-                if (!pendingPrimaryImage) return
-
-                // Clear any previous validation errors
-                setValidationError(null)
-
-                setIsConverting(true)
-                try {
-                  // Validate again before converting (in case file was modified)
-                  const error = await validateImageFile(
-                    pendingPrimaryImage.file,
-                  )
-                  if (error) {
-                    setValidationError(error)
-                    setIsConverting(false)
-                    return
-                  }
-
-                  // Convert to webp
-                  const converted = await convert(pendingPrimaryImage.file, {
-                    format: 'webp',
-                    quality: 0.8,
-                  })
-
-                  // Create a File object from the converted blob
-                  const webpFile = new File(
-                    [converted.blob],
-                    `${pendingPrimaryImage.file.name.replace(/\.[^/.]+$/, '')}.webp`,
-                    {type: 'image/webp'},
-                  )
-
-                  // Upload the converted file
-                  const {storageId, url} = await uploadFile(webpFile)
-
-                  // Update form field
-                  field.handleChange(storageId)
-
-                  // Update preview map
-                  setImagePreviewMap((prev) => ({
-                    ...prev,
-                    [storageId]: url ?? pendingPrimaryImage.preview,
-                  }))
-
-                  // Clean up pending state
-                  URL.revokeObjectURL(pendingPrimaryImage.preview)
-                  setPendingPrimaryImage(null)
-                  setValidationError(null)
-                } catch (error) {
-                  const errorMessage =
-                    error instanceof Error
-                      ? error.message
-                      : 'Failed to convert and upload image. Please try again.'
-                  setValidationError(errorMessage)
-                  console.error('Failed to convert and upload', error)
-                } finally {
-                  setIsConverting(false)
-                }
-              }
-
-              const handleCancel = () => {
-                if (pendingPrimaryImage) {
-                  URL.revokeObjectURL(pendingPrimaryImage.preview)
-                  setPendingPrimaryImage(null)
-                }
-                setValidationError(null)
-              }
-
-              return (
-                <div className='space-y-3 w-full flex-1'>
-                  <div className='flex items-center justify-between flex-1'>
-                    <label className='text-base font-medium tracking-tight dark:text-light-gray'>
-                      Primary Image
-                    </label>
-                    {pendingPrimaryImage ? (
-                      <div className='flex gap-1'>
-                        <Button
-                          size='sm'
-                          onPress={handleSave}
-                          className='dark:bg-blue-500 dark:text-white'
-                          isLoading={isConverting || isUploading}>
-                          Save Image
-                        </Button>
-                        <Button
-                          size='sm'
-                          variant='light'
-                          onPress={handleCancel}
-                          className='bg-light-gray/10 dark:bg-transparent'
-                          isDisabled={isConverting || isUploading}>
-                          Cancel
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        size='sm'
-                        variant='flat'
-                        className='dark:bg-blue-500 dark:text-white'
-                        onPress={handleFileSelect}>
-                        Select Image
-                      </Button>
-                    )}
-                  </div>
-
-                  <div
-                    className={cn(
-                      'rounded-xl size-72 md:size-100 relative overflow-hidden border border-dashed border-light-gray dark:border-dark-gray dark:bg-black/60',
-                      {
-                        'border-2 border-solid border-blue-500 dark:border-blue-500':
-                          primaryImageValue.trim(),
-                      },
-                    )}>
-                    {preview ? (
-                      <Image
-                        src={preview}
-                        alt='Product preview'
-                        radius='none'
-                        shadow='none'
-                        className='w-full h-full object-cover'
-                      />
-                    ) : (
-                      <div className='absolute inset-0 flex flex-col items-center justify-center gap-2 dark:text-light-gray'>
-                        <Icon
-                          name='image-plus-light'
-                          className='size-12 aspect-square opacity-50'
-                        />
-                        <span className='text-xs'>Select Primary Image</span>
-                      </div>
-                    )}
-                  </div>
-                  {validationError && (
-                    <div className='text-xs text-rose-500 flex space-x-1 bg-rose-50 w-fit py-1 px-2 rounded-lg'>
-                      <Icon name='alert-rhombus' className='size-4' />
-                      <span>{validationError}</span>
-                    </div>
-                  )}
+    <>
+      <FormSection id='media'>
+        <Header label='Media' />
+        <div className='grid gap-6'>
+          <div className='grid gap-6 lg:grid-cols-2'>
+            <div className='space-y-3'>
+              <div className='flex items-center justify-between'>
+                <label className='text-base font-medium tracking-tight dark:text-light-gray'>
+                  Primary Image
+                </label>
+                <div className='flex gap-2'>
+                  <Button
+                    size='sm'
+                    variant='flat'
+                    className='dark:bg-blue-500 dark:text-white'
+                    onPress={() => openLibrary('primary')}>
+                    Browse Tags
+                  </Button>
+                  {primaryImageValue ? (
+                    <Button
+                      size='sm'
+                      variant='light'
+                      className='bg-light-gray/10 dark:bg-transparent'
+                      onPress={clearPrimaryImage}>
+                      Clear
+                    </Button>
+                  ) : null}
                 </div>
-              )
-            }}
-          </form.AppField>
+              </div>
 
-          <form.AppField name='gallery'>
-            {(field) => {
-              const galleryValue = (field.state.value as string[]) ?? []
+              <button
+                type='button'
+                onClick={() => openLibrary('primary')}
+                className={cn(
+                  'rounded-xl size-72 md:size-100 relative overflow-hidden border border-dashed border-light-gray dark:border-dark-gray dark:bg-black/60 transition-colors text-left',
+                  {
+                    'border-2 border-solid border-blue-500 dark:border-blue-500':
+                      primaryImageValue.trim().length > 0,
+                  },
+                )}>
+                {primaryPreview ? (
+                  <Image
+                    src={primaryPreview}
+                    alt='Primary image preview'
+                    radius='none'
+                    shadow='none'
+                    className='w-full h-full object-cover'
+                  />
+                ) : (
+                  <div className='absolute inset-0 flex flex-col items-center justify-center gap-2 dark:text-light-gray'>
+                    <Icon
+                      name='image-plus-light'
+                      className='size-12 aspect-square opacity-50'
+                    />
+                    <span className='text-xs'>Choose Primary Image</span>
+                  </div>
+                )}
+              </button>
+            </div>
 
-              // Combine primary image (if exists) with gallery, avoiding duplicates
-              const displayImages = primaryImageValue
-                ? [
-                    primaryImageValue,
-                    ...galleryValue.filter((id) => id !== primaryImageValue),
-                  ]
-                : galleryValue
+            <div className='space-y-3'>
+              <div className='flex items-center justify-between'>
+                <label className='text-base font-medium tracking-tight dark:text-light-gray'>
+                  Gallery
+                </label>
+                <Button
+                  size='sm'
+                  variant='flat'
+                  className='dark:bg-black/15'
+                  onPress={() => openLibrary('gallery')}>
+                  Browse Tags
+                </Button>
+              </div>
 
-              const handleGalleryFileSelect = async () => {
-                const input = document.createElement('input')
-                input.type = 'file'
-                input.accept = 'image/*'
-                input.multiple = true
-                input.onchange = async () => {
-                  const files = input.files
-                  if (!files?.length) return
+              <div className='flex min-h-72 flex-wrap gap-4 rounded-xl border border-dashed border-light-gray p-4 dark:border-dark-gray dark:bg-black/60'>
+                {displayImages.map((storageId, index) => {
+                  const isPrimary =
+                    primaryImageValue.length > 0 &&
+                    storageId === primaryImageValue
+                  const preview = resolvePreview(storageId)
 
-                  // Clear previous validation errors
-                  setGalleryValidationErrors({})
+                  return (
+                    <div
+                      key={`${storageId}-${index}`}
+                      className={cn(
+                        'relative size-32 rounded-xl border-2 group',
+                        {
+                          'border-blue-500': isPrimary,
+                          'border-foreground/20 bg-background': !isPrimary,
+                        },
+                      )}>
+                      {isPrimary ? (
+                        <div className='absolute z-40 -top-2.5 right-1.5 rounded bg-blue-600 px-1.5 py-0 text-[8px] font-brk uppercase text-white'>
+                          Primary
+                        </div>
+                      ) : null}
 
-                  // Validate all files
-                  const validFiles: Array<{file: File; preview: string}> = []
-                  const errors: Record<number, string | null> = {}
+                      {preview ? (
+                        <Image
+                          src={preview}
+                          radius='none'
+                          alt={isPrimary ? 'Primary image' : 'Gallery image'}
+                          className='size-full rounded-[9px] object-cover'
+                        />
+                      ) : (
+                        <div className='flex size-full items-center justify-center rounded-xl text-dark-gray/50'>
+                          <Icon name='image-open-light' />
+                        </div>
+                      )}
 
-                  for (let i = 0; i < files.length; i++) {
-                    const file = files[i]
-                    const error = await validateImageFile(file)
-                    if (error) {
-                      errors[validFiles.length + i] = error
-                    } else {
-                      validFiles.push({
-                        file,
-                        preview: URL.createObjectURL(file),
-                      })
-                    }
-                  }
+                      {!isPrimary ? (
+                        <button
+                          type='button'
+                          onClick={() => toggleGalleryItem(storageId)}
+                          className='absolute right-1 top-1 z-20 rounded-full bg-black/50 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-500'>
+                          <Icon name='x' size={12} />
+                        </button>
+                      ) : null}
+                    </div>
+                  )
+                })}
 
-                  if (Object.keys(errors).length > 0) {
-                    setGalleryValidationErrors(errors)
-                  }
+                {displayImages.length === 0 ? (
+                  <button
+                    type='button'
+                    onClick={() => openLibrary('gallery')}
+                    className='flex w-full flex-col items-center justify-center py-8 text-light-gray'>
+                    <Icon
+                      name='image-open-light'
+                      className='mb-2 size-12 opacity-50'
+                    />
+                    <span className='text-xs'>
+                      Select tagged gallery images
+                    </span>
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </div>
 
-                  if (validFiles.length > 0) {
-                    setPendingGalleryImages((prev) => [...prev, ...validFiles])
-                  }
-                }
-                input.click()
-              }
+          <div className='rounded-xl border border-light-gray/60 bg-light-gray/5 p-4 dark:border-dark-gray/60 dark:bg-black/40'>
+            <p className='mb-3 text-xs font-medium uppercase tracking-[0.12em] text-dark-gray/60 dark:text-light-gray/70'>
+              Manual override
+            </p>
+            {renderFields(form, fields)}
+          </div>
 
-              const handleSaveGallery = async () => {
-                if (pendingGalleryImages.length === 0) return
+          {allSelectedImageIds.some((id) => !resolvePreview(id)) ? (
+            <p className='text-xs text-dark-gray/70 dark:text-light-gray/70'>
+              Some selected storage IDs are not in the tagged gallery index yet.
+            </p>
+          ) : null}
+        </div>
+      </FormSection>
 
-                // Clear any previous validation errors
-                setGalleryValidationErrors({})
+      <Drawer
+        placement='right'
+        isOpen={isLibraryOpen}
+        onOpenChange={setIsLibraryOpen}
+        size='5xl'>
+        <DrawerContent className='max-w-6xl bg-background p-0'>
+          <DrawerHeader className='border-b border-foreground/10'>
+            <div className='flex w-full items-center justify-between gap-3'>
+              <div className='space-y-0.5'>
+                <p className='text-sm font-semibold uppercase tracking-[0.08em] text-blue-500'>
+                  Media Library
+                </p>
+                <p className='text-sm text-foreground/70'>
+                  {libraryTarget === 'primary'
+                    ? 'Choose one image for the primary slot.'
+                    : 'Select or remove gallery images by clicking them.'}
+                </p>
+              </div>
+              <Button
+                size='sm'
+                variant='flat'
+                onPress={() => setIsLibraryOpen(false)}>
+                Done
+              </Button>
+            </div>
+          </DrawerHeader>
 
-                setIsConvertingGallery(true)
-                try {
-                  const uploads: string[] = []
-                  const newMap = {...galleryPreviewMap}
+          <div className='grid h-[calc(100vh-8rem)] grid-cols-1 gap-4 p-4 md:grid-cols-[260px_1fr]'>
+            <aside className='rounded-xl border border-foreground/10 bg-background/80 p-3'>
+              <div className='space-y-2'>
+                <label className='text-xs font-medium uppercase tracking-widest opacity-70'>
+                  Gallery Tags
+                </label>
+                <input
+                  value={tagSearch}
+                  onChange={(event) => setTagSearch(event.target.value)}
+                  placeholder='Search tags'
+                  className='w-full rounded-lg border border-foreground/20 bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500'
+                />
+              </div>
 
-                  for (const pendingImage of pendingGalleryImages) {
-                    // Validate again before converting (in case file was modified)
-                    const error = await validateImageFile(pendingImage.file)
-                    if (error) {
-                      setGalleryValidationErrors((prev) => ({
-                        ...prev,
-                        [pendingGalleryImages.indexOf(pendingImage)]: error,
-                      }))
-                      setIsConvertingGallery(false)
-                      return
-                    }
+              <div className='mt-3 max-h-[calc(100vh-16rem)] space-y-1 overflow-y-auto pr-1'>
+                {filteredTagGroups.map((group) => {
+                  const isActive = activeGroup?.tag === group.tag
+                  return (
+                    <button
+                      key={group.tag}
+                      type='button'
+                      onClick={() => setActiveTag(group.tag)}
+                      className={cn(
+                        'flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-sm transition-colors',
+                        isActive
+                          ? 'bg-blue-500/10 text-blue-500'
+                          : 'hover:bg-foreground/5',
+                      )}>
+                      <span className='truncate'>
+                        {titleCaseTag(group.tag)}
+                      </span>
+                      <span className='rounded bg-foreground/10 px-1.5 py-0.5 text-[11px]'>
+                        {group.total}
+                      </span>
+                    </button>
+                  )
+                })}
 
-                    // Convert to webp
-                    const converted = await convert(pendingImage.file, {
-                      format: 'webp',
-                      quality: 0.8,
-                    })
+                {filteredTagGroups.length === 0 ? (
+                  <div className='rounded-lg border border-dashed border-foreground/20 px-3 py-4 text-xs text-foreground/60'>
+                    No tagged gallery images found.
+                  </div>
+                ) : null}
+              </div>
+            </aside>
 
-                    // Create a File object from the converted blob
-                    const webpFile = new File(
-                      [converted.blob],
-                      `${pendingImage.file.name.replace(/\.[^/.]+$/, '')}.webp`,
-                      {type: 'image/webp'},
-                    )
-
-                    // Upload the converted file
-                    const {storageId, url} = await uploadFile(webpFile)
-                    uploads.push(storageId)
-                    newMap[storageId] = url ?? pendingImage.preview
-
-                    // Clean up preview URL
-                    URL.revokeObjectURL(pendingImage.preview)
-                  }
-
-                  // Read current gallery value from form state to avoid stale closures
-                  const currentGallery = (field.state.value as string[]) ?? []
-                  field.handleChange([...currentGallery, ...uploads])
-                  setGalleryPreviewMap(newMap)
-                  setPendingGalleryImages([])
-                  setGalleryValidationErrors({})
-                } catch (error) {
-                  const errorMessage =
-                    error instanceof Error
-                      ? error.message
-                      : 'Failed to convert and upload gallery images. Please try again.'
-                  console.error('Failed to convert and upload gallery', error)
-                  setGalleryValidationErrors({
-                    [-1]: errorMessage,
-                  })
-                } finally {
-                  setIsConvertingGallery(false)
-                }
-              }
-
-              const handleCancelGallery = () => {
-                // Clean up all preview URLs
-                pendingGalleryImages.forEach((img) => {
-                  URL.revokeObjectURL(img.preview)
-                })
-                setPendingGalleryImages([])
-                setGalleryValidationErrors({})
-              }
-
-              const handleRemovePending = (index: number) => {
-                const removed = pendingGalleryImages[index]
-                URL.revokeObjectURL(removed.preview)
-                setPendingGalleryImages((prev) =>
-                  prev.filter((_, i) => i !== index),
-                )
-              }
-
-              return (
-                <div className='space-y-3 w-full'>
-                  <div className='flex items-center justify-between'>
-                    <label className='text-base font-medium tracking-tight dark:text-light-gray'>
-                      Gallery
-                    </label>
-                    {pendingGalleryImages.length > 0 ? (
-                      <div className='flex gap-1'>
-                        <Button
-                          size='sm'
-                          color='primary'
-                          onPress={handleSaveGallery}
-                          className='dark:bg-blue-500 dark:text-white'
-                          isLoading={isConvertingGallery || isUploading}>
-                          Save Images
-                        </Button>
-                        <Button
-                          size='sm'
-                          variant='flat'
-                          onPress={handleCancelGallery}
-                          className='bg-light-gray/10'
-                          isDisabled={isConvertingGallery || isUploading}>
-                          Cancel
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        size='sm'
-                        variant='flat'
-                        className='dark:bg-black/15'
-                        onPress={handleGalleryFileSelect}>
-                        Add Images
-                      </Button>
-                    )}
+            <section className='rounded-xl border border-foreground/10 bg-background/80 p-3 md:p-4'>
+              {activeGroup ? (
+                <>
+                  <div className='mb-3 flex items-center justify-between'>
+                    <div>
+                      <h3 className='text-base font-semibold'>
+                        {titleCaseTag(activeGroup.tag)}
+                      </h3>
+                      <p className='text-xs opacity-70'>
+                        {activeGroup.total} tagged image
+                        {activeGroup.total === 1 ? '' : 's'}
+                      </p>
+                    </div>
+                    {preferredTagFromCategory &&
+                    preferredTagFromCategory === activeGroup.tag ? (
+                      <span className='rounded bg-blue-500/10 px-2 py-1 text-[11px] font-medium text-blue-500'>
+                        Matches category
+                      </span>
+                    ) : null}
                   </div>
 
-                  <div className='flex flex-wrap gap-4'>
-                    {/* Show primary image first if available */}
-                    {displayImages.map((storageId, index) => {
-                      const isPrimary =
-                        index === 0 &&
-                        primaryImageValue &&
-                        storageId === primaryImageValue
-                      const preview = getPreview(
-                        storageId,
-                        isPrimary ? imagePreviewMap : galleryPreviewMap,
-                      )
+                  <div className='grid max-h-[calc(100vh-16rem)] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 lg:grid-cols-4'>
+                    {activeGroup.items.map((item) => {
+                      const isSelected =
+                        libraryTarget === 'primary'
+                          ? item.storageId === primaryImageValue
+                          : galleryValue.includes(item.storageId)
+
                       return (
-                        <div
-                          key={storageId + index}
-                          className={`relative w-32 h-32 rounded-xl group ${
-                            isPrimary
-                              ? 'border-2 border-blue-500'
-                              : 'border-2 border-foreground/20 bg-background'
-                          } ${primaryImageValue ? 'flex' : 'hidden'}`}>
-                          {isPrimary && (
-                            <div className='absolute z-200 -top-2.5 right-1.5 px-1.5 py-0 text-[8px] font-brk uppercase bg-blue-600 text-white rounded'>
-                              Primary
-                            </div>
-                          )}
-                          {preview ? (
+                        <button
+                          key={item.storageId}
+                          type='button'
+                          onClick={() => selectLibraryImage(item.storageId)}
+                          className={cn(
+                            'group relative overflow-hidden rounded-xl border-2 text-left transition-all',
+                            {
+                              'border-blue-500 ring-2 ring-blue-500/40':
+                                isSelected,
+                              'border-foreground/20 hover:border-foreground/40':
+                                !isSelected,
+                            },
+                          )}>
+                          {item.url ? (
                             <Image
-                              src={preview}
+                              src={item.url}
+                              alt={item.caption ?? item.storageId}
                               radius='none'
-                              alt={isPrimary ? 'Primary image' : 'Gallery item'}
-                              className={cn(
-                                'w-full h-full object-cover rounded-xl overflow-hidden',
-                              )}
+                              className='aspect-square w-full object-cover'
                             />
                           ) : (
-                            <div className='w-full h-full flex items-center justify-center text-dark-gray/50 rounded-xl'>
+                            <div className='flex aspect-square w-full items-center justify-center bg-foreground/5 text-foreground/50'>
                               <Icon name='image-open-light' />
                             </div>
                           )}
 
-                          {!isPrimary && (
-                            <button
-                              type='button'
-                              onClick={() => {
-                                const currentGallery =
-                                  (field.state.value as string[]) ?? []
-                                const newVal = currentGallery.filter(
-                                  (id) => id !== storageId,
-                                )
-                                field.handleChange(newVal)
-                              }}
-                              className='absolute z-20 top-1 right-1 p-1 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500'>
-                              <Icon name='x' size={12} />
-                            </button>
-                          )}
-                        </div>
+                          <div className='absolute inset-x-0 bottom-0 truncate bg-black/50 px-2 py-1 text-[10px] text-white'>
+                            {item.caption?.trim() || item.storageId}
+                          </div>
+
+                          {isSelected ? (
+                            <div className='absolute left-1.5 top-1.5 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-medium uppercase text-white'>
+                              {libraryTarget === 'primary'
+                                ? 'Selected'
+                                : 'Added'}
+                            </div>
+                          ) : null}
+                        </button>
                       )
                     })}
-
-                    {/* Show pending gallery images */}
-                    {pendingGalleryImages.map((pendingImage, index) => (
-                      <div
-                        key={`pending-${index}`}
-                        className='relative w-32 h-32 rounded-xl border-2 border-dashed border-blue-500 bg-neutral-900 overflow-hidden group'>
-                        <Image
-                          src={pendingImage.preview}
-                          alt='Pending gallery item'
-                          className='w-full h-full object-cover opacity-70'
-                        />
-                        <div className='absolute inset-0 flex items-center justify-center bg-black/30'>
-                          <span className='text-xs text-white font-medium'>
-                            Pending
-                          </span>
-                        </div>
-                        <button
-                          type='button'
-                          onClick={() => handleRemovePending(index)}
-                          className='absolute top-1 right-1 p-1 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500'>
-                          <Icon name='x' size={12} />
-                        </button>
-                        {galleryValidationErrors[index] && (
-                          <div className='absolute bottom-0 left-0 right-0 bg-red-500/90 text-white text-xs p-1'>
-                            {galleryValidationErrors[index]}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-
-                    {/* Add Image Button */}
-                    {pendingGalleryImages.length === 0 && (
-                      <button
-                        type='button'
-                        onClick={handleGalleryFileSelect}
-                        className='w-32 h-32 rounded-lg border border-dashed border-light-gray dark:border-dark-gray bg-light-gray/10 dark:bg-black/60 flex items-center justify-center hover:bg-light-gray/20 dark:hover:bg-black/80 transition-colors'>
-                        <Icon
-                          name='image-plus-light'
-                          className='size-8 text-neutral-600 dark:text-light-gray opacity-50'
-                        />
-                      </button>
-                    )}
-
-                    {displayImages.length === 0 &&
-                      pendingGalleryImages.length === 0 && (
-                        <div className='w-full py-8 flex flex-col items-center justify-center dark:text-light-gray border border-dashed border-light-gray dark:border-dark-gray dark:bg-black/60 rounded-xl'>
-                          <Icon
-                            name='image-open-light'
-                            className='size-12 mb-2 opacity-50'
-                          />
-                          <span className='text-xs'>Gallery images</span>
-                        </div>
-                      )}
                   </div>
-
-                  {Object.keys(galleryValidationErrors).length > 0 && (
-                    <div className='space-y-1'>
-                      {Object.entries(galleryValidationErrors).map(
-                        ([index, error]) =>
-                          error && (
-                            <p key={index} className='text-xs text-rose-400'>
-                              {error}
-                            </p>
-                          ),
-                      )}
-                    </div>
-                  )}
+                </>
+              ) : (
+                <div className='flex h-full items-center justify-center rounded-lg border border-dashed border-foreground/20 text-sm text-foreground/60'>
+                  Choose a tag to view gallery images.
                 </div>
-              )
-            }}
-          </form.AppField>
-        </div>
-      </div>
-    </FormSection>
+              )}
+            </section>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </>
   )
 }
