@@ -1,5 +1,6 @@
 'use client'
 
+import {mapNumericFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -151,7 +152,6 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   <Drawer.Title className='text-base md:text-lg lg:text-2xl font-semibold tracking-normal font-okxs'>
                     In Cart
                   </Drawer.Title>
-                  <Icon name='play-solid' className='size-4 opacity-70' />
                   <Drawer.Description asChild>
                     <div className='flex items-center h-7 p-1'>
                       <span className='ml-1 font-okxs text-base md:text-lg lg:text-2xl px-2 opacity-70'>
@@ -184,7 +184,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                 </div>
               ) : (
                 <>
-                  <div className='space-y-3 px-4 mb-6'>
+                  <div className='px-4 mb-6'>
                     {cartItems.map((item) => {
                       const product = item.product
                       const denomination = item.denomination
@@ -196,10 +196,11 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                       return (
                         <div
                           key={`${product._id}-${item.denomination ?? 'default'}`}
-                          className='flex gap-3 p-3 rounded-xl border border-foreground/15 bg-card/50'>
+                          className='flex gap-3 p-3 first:rounded-t-2xl last:rounded-b-2xl border border-b-0 last:border-b border-foreground/15 bg-card/50'>
                           <div className='relative w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-muted'>
                             {hasImage ? (
                               <Image
+                                radius={'none'}
                                 src={productImageUrl ?? ''}
                                 alt={product.name ?? 'Product'}
                                 className='w-full h-full object-cover'
@@ -220,9 +221,11 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                   {product.name ?? 'Product'}
                                 </h3>
                                 {item.denomination != null && (
-                                  <p className='text-xs text-muted-foreground font-okxs'>
-                                    {item.denomination}
-                                    {product.unit ?? ''}
+                                  <p className='text-base text-muted-foreground font-okxs space-x-1'>
+                                    <span>
+                                      {mapNumericFractions[item.denomination]}
+                                    </span>
+                                    <span>{product.unit ?? ''}</span>
                                   </p>
                                 )}
                               </div>
@@ -340,7 +343,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                       <span className='text-color-muted font-medium'>
                         Total Items
                       </span>
-                      <span className='font-space font-medium text-lg'>
+                      <span className='font-okxs font-medium text-lg'>
                         {optimisticCartItemCount}
                       </span>
                     </div>
