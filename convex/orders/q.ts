@@ -96,6 +96,57 @@ export const getRecentOrders = query({
 })
 
 /**
+ * Get purchase summaries by user for admin customer tables.
+ * Includes only completed payments.
+ */
+export const getCustomerPurchaseSummaries = query({
+  args: {},
+  handler: async (ctx) => {
+    const orders = await ctx.db.query('orders').collect()
+    const summaries = new Map<
+      string,
+      {
+        totalSpentCents: number
+        latestPurchaseCents: number | null
+        latestPurchaseAt: number | null
+      }
+    >()
+
+    for (const order of orders) {
+      if (!order.userId || order.payment.status !== 'completed') {
+        continue
+      }
+
+      const userId = String(order.userId)
+      const paidAt =
+        order.payment.paidAt ?? order.createdAt ?? order._creationTime
+      const amountCents = order.totalCents ?? 0
+      const existing = summaries.get(userId)
+
+      if (!existing) {
+        summaries.set(userId, {
+          totalSpentCents: amountCents,
+          latestPurchaseCents: amountCents,
+          latestPurchaseAt: paidAt,
+        })
+        continue
+      }
+
+      existing.totalSpentCents += amountCents
+      if (
+        existing.latestPurchaseAt == null ||
+        paidAt > existing.latestPurchaseAt
+      ) {
+        existing.latestPurchaseAt = paidAt
+        existing.latestPurchaseCents = amountCents
+      }
+    }
+
+    return Object.fromEntries(summaries)
+  },
+})
+
+/**
  * Get order statistics for a user
  */
 export const getUserOrderStats = query({

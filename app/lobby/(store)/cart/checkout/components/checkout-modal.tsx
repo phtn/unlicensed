@@ -1,5 +1,6 @@
 'use client'
 
+import {AddressType} from '@/convex/users/d'
 import {Icon} from '@/lib/icons'
 import {
   Button,
@@ -9,7 +10,6 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@heroui/react'
-import {useEffect, useRef} from 'react'
 import {FormData, FormErrors} from '../types'
 import {BillingForm} from './billing-form'
 import {CashAppForm} from './cashapp-form'
@@ -27,6 +27,10 @@ interface CheckoutModalProps {
   orderError: Error | null
   orderId: string | null
   onInputChange: (field: keyof FormData, value: string | boolean) => void
+  onCreateNewShippingAddress: VoidFunction
+  shippingAddresses?: AddressType[]
+  selectedShippingAddressId: string | null
+  onSelectShippingAddress: (addressId: string) => void
   onPlaceOrder: () => void
 }
 
@@ -40,92 +44,12 @@ export function CheckoutModal({
   orderError,
   orderId,
   onInputChange,
+  onCreateNewShippingAddress,
+  shippingAddresses,
+  selectedShippingAddressId,
+  onSelectShippingAddress,
   onPlaceOrder,
 }: CheckoutModalProps) {
-  const didInitForOpenRef = useRef(false)
-
-  // Set default test values when modal opens and fields are empty (only on first open, so we don't overwrite user toggles)
-  useEffect(() => {
-    if (!isOpen || orderId) {
-      didInitForOpenRef.current = false
-      return
-    }
-
-    if (!didInitForOpenRef.current) {
-      didInitForOpenRef.current = true
-      onInputChange('useSameBilling', true)
-    }
-
-    // Only populate if fields are empty (check once when modal opens)
-    const hasEmptyFields =
-      !formData.contactEmail.trim() ||
-      !formData.contactPhone.trim() ||
-      !formData.firstName.trim() ||
-      !formData.lastName.trim() ||
-      !formData.addressLine1.trim() ||
-      !formData.city.trim() ||
-      !formData.state.trim() ||
-      !formData.zipCode.trim()
-
-    if (hasEmptyFields) {
-      // Set test values for empty fields
-      if (!formData.contactEmail.trim()) {
-        onInputChange('contactEmail', 'test@example.com')
-      }
-      if (!formData.contactPhone.trim()) {
-        onInputChange('contactPhone', '555-123-4567')
-      }
-      if (!formData.firstName.trim()) {
-        onInputChange('firstName', 'John')
-      }
-      if (!formData.lastName.trim()) {
-        onInputChange('lastName', 'Doe')
-      }
-      if (!formData.addressLine1.trim()) {
-        onInputChange('addressLine1', '123 Test Street')
-      }
-      if (!formData.addressLine2.trim()) {
-        onInputChange('addressLine2', 'Apt 4B')
-      }
-      if (!formData.city.trim()) {
-        onInputChange('city', 'Los Angeles')
-      }
-      if (!formData.state.trim()) {
-        onInputChange('state', 'CA')
-      }
-      if (!formData.zipCode.trim()) {
-        onInputChange('zipCode', '90001')
-      }
-      if (!formData.country.trim()) {
-        onInputChange('country', 'US')
-      }
-      if (!formData.billingFirstName.trim()) {
-        onInputChange('billingFirstName', 'John')
-      }
-      if (!formData.billingLastName.trim()) {
-        onInputChange('billingLastName', 'Doe')
-      }
-      if (!formData.billingAddressLine1.trim()) {
-        onInputChange('billingAddressLine1', '123 Test Street')
-      }
-      if (!formData.billingAddressLine2.trim()) {
-        onInputChange('billingAddressLine2', 'Apt 4B')
-      }
-      if (!formData.billingCity.trim()) {
-        onInputChange('billingCity', 'Los Angeles')
-      }
-      if (!formData.billingState.trim()) {
-        onInputChange('billingState', 'CA')
-      }
-      if (!formData.billingZipCode.trim()) {
-        onInputChange('billingZipCode', '90001')
-      }
-      if (!formData.billingCountry.trim()) {
-        onInputChange('billingCountry', 'US')
-      }
-    }
-  }, [isOpen, orderId, formData, onInputChange])
-
   return (
     <Modal
       isOpen={isOpen}
@@ -166,6 +90,10 @@ export function CheckoutModal({
                   formData={formData}
                   formErrors={formErrors}
                   onInputChange={onInputChange}
+                  onCreateNewAddress={onCreateNewShippingAddress}
+                  shippingAddresses={shippingAddresses}
+                  selectedAddressId={selectedShippingAddressId}
+                  onSelectSavedAddress={onSelectShippingAddress}
                 />
 
                 <BillingForm

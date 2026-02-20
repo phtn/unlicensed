@@ -1,6 +1,6 @@
 'use client'
 
-import {FormInput, renderFields} from '@/app/admin/_components/ui/fields'
+import {FormInput} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
@@ -210,25 +210,27 @@ export const Media = ({form, fields}: MediaProps) => {
       <FormSection id='media'>
         <Header label='Media' />
         <div className='grid gap-6'>
-          <div className='grid gap-6 lg:grid-cols-2'>
-            <div className='space-y-3'>
+          <div className='grid gap-4 lg:grid-cols-3'>
+            <div className='space-y-3 w-fit'>
               <div className='flex items-center justify-between'>
-                <label className='text-base font-medium tracking-tight dark:text-light-gray'>
+                <label className='text-base font-okxs font-medium tracking-tight dark:text-light-gray'>
                   Primary Image
                 </label>
                 <div className='flex gap-2'>
                   <Button
                     size='sm'
+                    radius='none'
                     variant='flat'
-                    className='dark:bg-blue-500 dark:text-white'
+                    endContent={<Icon name='image-open-light' />}
+                    className='dark:bg-blue-500 dark:text-white rounded-lg'
                     onPress={() => openLibrary('primary')}>
-                    Browse Tags
+                    Browse
                   </Button>
                   {primaryImageValue ? (
                     <Button
                       size='sm'
                       variant='light'
-                      className='bg-light-gray/10 dark:bg-transparent'
+                      className='bg-light-gray/0 dark:bg-transparent'
                       onPress={clearPrimaryImage}>
                       Clear
                     </Button>
@@ -260,13 +262,15 @@ export const Media = ({form, fields}: MediaProps) => {
                       name='image-plus-light'
                       className='size-12 aspect-square opacity-50'
                     />
-                    <span className='text-xs'>Choose Primary Image</span>
+                    <span className='text-xs font-okxs'>
+                      Select Primary Image
+                    </span>
                   </div>
                 )}
               </button>
             </div>
 
-            <div className='space-y-3'>
+            <div className='space-y-3 col-span-2'>
               <div className='flex items-center justify-between'>
                 <label className='text-base font-medium tracking-tight dark:text-light-gray'>
                   Gallery
@@ -276,7 +280,7 @@ export const Media = ({form, fields}: MediaProps) => {
                   variant='flat'
                   className='dark:bg-black/15'
                   onPress={() => openLibrary('gallery')}>
-                  Browse Tags
+                  Browse
                 </Button>
               </div>
 
@@ -344,13 +348,6 @@ export const Media = ({form, fields}: MediaProps) => {
                 ) : null}
               </div>
             </div>
-          </div>
-
-          <div className='rounded-xl border border-light-gray/60 bg-light-gray/5 p-4 dark:border-dark-gray/60 dark:bg-black/40'>
-            <p className='mb-3 text-xs font-medium uppercase tracking-[0.12em] text-dark-gray/60 dark:text-light-gray/70'>
-              Manual override
-            </p>
-            {renderFields(form, fields)}
           </div>
 
           {allSelectedImageIds.some((id) => !resolvePreview(id)) ? (

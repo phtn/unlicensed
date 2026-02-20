@@ -72,6 +72,10 @@ export default function CartPage() {
     api.users.q.getDefaultAddress,
     firebaseUser ? {fid: firebaseUser.uid, type: 'shipping'} : 'skip',
   )
+  const shippingAddresses = useQuery(
+    api.users.q.getUserAddresses,
+    firebaseUser ? {fid: firebaseUser.uid, type: 'shipping'} : 'skip',
+  )
 
   const defaultBillingAddress = useQuery(
     api.users.q.getDefaultAddress,
@@ -224,6 +228,7 @@ export default function CartPage() {
               onPlaceOrder={placeOrder}
               userEmail={userEmail}
               defaultAddress={defaultAddress || undefined}
+              shippingAddresses={shippingAddresses || undefined}
               defaultBillingAddress={defaultBillingAddress || undefined}
               userPhone={userPhone}
               cashAppUsername={convexUser?.cashAppUsername}

@@ -15,6 +15,7 @@ export interface CheckoutProps {
   onPlaceOrder: (params: PlaceOrderParams) => Promise<Id<'orders'> | null>
   userEmail: string
   defaultAddress?: AddressType
+  shippingAddresses?: AddressType[]
   defaultBillingAddress?: AddressType
   userPhone?: string
   cashAppUsername?: string

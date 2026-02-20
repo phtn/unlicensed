@@ -2,12 +2,14 @@
 
 import {DataTable} from '@/components/table-v2'
 import {ColumnConfig} from '@/components/table-v2/create-column'
+import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {formatPrice} from '@/utils/formatPrice'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useMemo} from 'react'
+import {orderNumberCell} from '../../ops/components'
 
 export const SalesDataTable = () => {
   const allOrders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
@@ -38,7 +40,8 @@ export const SalesDataTable = () => {
           id: 'orderNumber',
           header: 'Order #',
           accessorKey: 'orderNumber',
-          size: 140,
+          cell: orderNumberCell(),
+          size: 60,
         },
         {
           id: 'customer',
@@ -91,7 +94,7 @@ export const SalesDataTable = () => {
           id: 'items',
           header: 'Items',
           accessorKey: 'items',
-          size: 100,
+          size: 10,
           cell: ({row}) => (
             <span className='text-sm'>
               {row.original.items.reduce((sum, item) => sum + item.quantity, 0)}
@@ -100,13 +103,24 @@ export const SalesDataTable = () => {
         },
         {
           id: 'total',
-          header: 'Amount',
+          header: <ColHeader tip='Total Amount' symbol='Amount' center />,
           accessorKey: 'totalCents',
-          size: 120,
+          size: 100,
           cell: ({row}) => (
-            <span className='text-sm'>
-              ${formatPrice(row.original.totalCents)}
-            </span>
+            <div className='flex items-center justify-end pr-6'>
+              <p className='font-brk text-xs text-muted-foreground text-right mr-6'>
+                {formatPrice(row.original.totalCents)}
+              </p>
+            </div>
+          ),
+        },
+        {
+          id: 'method',
+          header: 'Method',
+          accessorKey: 'payment',
+          size: 100,
+          cell: ({row}) => (
+            <span className='text-sm'>{row.original.payment.method}</span>
           ),
         },
         {

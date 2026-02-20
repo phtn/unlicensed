@@ -18,6 +18,26 @@ import {isCheckoutDevMode} from './config'
 import {useOrderForm} from './hooks/use-order-form'
 import {CheckoutProps, FormData} from './types'
 
+const normalizeAddressValue = (value?: string) => value?.trim().toLowerCase() ?? ''
+
+const normalizeZipCode = (value?: string) =>
+  value?.replace(/\s+/g, '').toLowerCase() ?? ''
+
+const doesAddressMatchForm = (address: AddressType, formData: FormData) =>
+  normalizeAddressValue(address.firstName) ===
+    normalizeAddressValue(formData.firstName) &&
+  normalizeAddressValue(address.lastName) ===
+    normalizeAddressValue(formData.lastName) &&
+  normalizeAddressValue(address.addressLine1) ===
+    normalizeAddressValue(formData.addressLine1) &&
+  normalizeAddressValue(address.addressLine2) ===
+    normalizeAddressValue(formData.addressLine2) &&
+  normalizeAddressValue(address.city) === normalizeAddressValue(formData.city) &&
+  normalizeAddressValue(address.state) === normalizeAddressValue(formData.state) &&
+  normalizeZipCode(address.zipCode) === normalizeZipCode(formData.zipCode) &&
+  normalizeAddressValue(address.country || 'US') ===
+    normalizeAddressValue(formData.country || 'US')
+
 export function Checkout({
   subtotal,
   tax,
@@ -29,6 +49,7 @@ export function Checkout({
   onPlaceOrder,
   userEmail,
   defaultAddress,
+  shippingAddresses,
   defaultBillingAddress,
   userPhone,
   cashAppUsername,
@@ -172,6 +193,40 @@ export function Checkout({
     onOpen()
   }, [onOpen])
 
+  const handleCreateNewShippingAddress = useCallback(() => {
+    handleInputChange('firstName', '')
+    handleInputChange('lastName', '')
+    handleInputChange('addressLine1', '')
+    handleInputChange('addressLine2', '')
+    handleInputChange('city', '')
+    handleInputChange('state', '')
+    handleInputChange('zipCode', '')
+  }, [handleInputChange])
+
+  const handleSelectShippingAddress = useCallback(
+    (addressId: string) => {
+      const address = shippingAddresses?.find((item) => item.id === addressId)
+      if (!address) return
+
+      handleInputChange('firstName', address.firstName)
+      handleInputChange('lastName', address.lastName)
+      handleInputChange('addressLine1', address.addressLine1)
+      handleInputChange('addressLine2', address.addressLine2 ?? '')
+      handleInputChange('city', address.city)
+      handleInputChange('state', address.state)
+      handleInputChange('zipCode', address.zipCode)
+      handleInputChange('country', address.country || 'US')
+      if (address.phone) {
+        handleInputChange('contactPhone', address.phone)
+      }
+    },
+    [shippingAddresses, handleInputChange],
+  )
+
+  const selectedShippingAddressId =
+    shippingAddresses?.find((address) => doesAddressMatchForm(address, formData))
+      ?.id ?? null
+
   const handlePlaceOrder = useCallback(async () => {
     if (!validate()) {
       return
@@ -265,6 +320,10 @@ export function Checkout({
         orderError={orderError}
         orderId={orderId}
         onInputChange={handleInputChange}
+        onCreateNewShippingAddress={handleCreateNewShippingAddress}
+        shippingAddresses={shippingAddresses}
+        selectedShippingAddressId={selectedShippingAddressId}
+        onSelectShippingAddress={handleSelectShippingAddress}
         onPlaceOrder={handlePlaceOrder}
       />
 

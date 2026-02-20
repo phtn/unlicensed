@@ -39,6 +39,29 @@ export interface UsePlaceOrderResult {
   reset: VoidFunction
 }
 
+const supportsShippingAddress = (type: AddressType['type']) =>
+  type === 'shipping' || type === 'both'
+
+const supportsBillingAddress = (type: AddressType['type']) =>
+  type === 'billing' || type === 'both'
+
+const normalizeAddressPart = (value?: string) =>
+  value?.trim().toLowerCase() ?? ''
+
+const normalizeZipCode = (value?: string) =>
+  value?.replace(/\s+/g, '').toLowerCase() ?? ''
+
+const isSameAddress = (left: AddressType, right: AddressType) =>
+  normalizeAddressPart(left.addressLine1) ===
+    normalizeAddressPart(right.addressLine1) &&
+  normalizeAddressPart(left.addressLine2) ===
+    normalizeAddressPart(right.addressLine2) &&
+  normalizeAddressPart(left.city) === normalizeAddressPart(right.city) &&
+  normalizeAddressPart(left.state) === normalizeAddressPart(right.state) &&
+  normalizeZipCode(left.zipCode) === normalizeZipCode(right.zipCode) &&
+  normalizeAddressPart(left.country || 'US') ===
+    normalizeAddressPart(right.country || 'US')
+
 /**
  * Custom hook for placing orders from the cart/checkout page.
  *
@@ -219,15 +242,47 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
         // Note: We'll handle the redirect in the checkout component after order is created
 
         // Update user info if authenticated (save contact info and address)
-        if (isAuthenticated && user && userId && convexUser) {
+        if (isAuthenticated && user) {
           try {
+            const normalizedCashAppUsername = params.cashAppUsername?.trim()
+            const shouldUpdateCashAppUsername =
+              params.paymentMethod === 'cash_app' &&
+              !!normalizedCashAppUsername &&
+              convexUser?.cashAppUsername !== normalizedCashAppUsername
+
+            const nextEmail =
+              params.contactEmail || convexUser?.email || user.email || ''
+            const nextName =
+              convexUser?.name ||
+              user.displayName ||
+              user.email?.split('@')[0] ||
+              'Customer'
+            const nextPhotoUrl = convexUser?.photoUrl || user.photoURL
+
+            // Ensure the Convex user exists before saving addresses/contact updates.
+            if (
+              nextEmail &&
+              (!convexUser ||
+                convexUser.email !== nextEmail ||
+                shouldUpdateCashAppUsername)
+            ) {
+              await createOrUpdateUserMutation({
+                email: nextEmail,
+                name: nextName,
+                firebaseId: user.uid,
+                ...(nextPhotoUrl ? {photoUrl: nextPhotoUrl} : {}),
+                ...(shouldUpdateCashAppUsername && normalizedCashAppUsername
+                  ? {cashAppUsername: normalizedCashAppUsername}
+                  : {}),
+              })
+            }
+
             // Check if shipping address already exists
             const existingAddresses = savedAddresses || []
             const addressExists = existingAddresses.some(
               (addr) =>
-                addr.addressLine1 === params.shippingAddress.addressLine1 &&
-                addr.city === params.shippingAddress.city &&
-                addr.zipCode === params.shippingAddress.zipCode,
+                supportsShippingAddress(addr.type) &&
+                isSameAddress(addr, params.shippingAddress),
             )
 
             // Add shipping address if it doesn't exist
@@ -248,19 +303,18 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
             // Add billing address if different from shipping and doesn't exist
             if (
               params.billingAddress &&
-              params.billingAddress.addressLine1 !==
-                params.shippingAddress.addressLine1
+              !isSameAddress(params.billingAddress, params.shippingAddress)
             ) {
+              const billingAddress = params.billingAddress
               const billingAddressExists = existingAddresses.some(
                 (addr) =>
-                  addr.addressLine1 === params.billingAddress!.addressLine1 &&
-                  addr.city === params.billingAddress!.city &&
-                  addr.zipCode === params.billingAddress!.zipCode,
+                  supportsBillingAddress(addr.type) &&
+                  isSameAddress(addr, billingAddress),
               )
 
               if (!billingAddressExists) {
                 const billingAddressToSave: AddressType = {
-                  ...params.billingAddress,
+                  ...billingAddress,
                   id: `addr-${Date.now()}-billing`,
                   type: 'billing',
                 }
@@ -287,35 +341,6 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                   },
                 })
               }
-            }
-
-            // Update email if different from current
-            if (
-              params.contactEmail &&
-              convexUser.email !== params.contactEmail
-            ) {
-              await createOrUpdateUserMutation({
-                email: params.contactEmail,
-                name: convexUser.name,
-                firebaseId: user.uid,
-                photoUrl: convexUser.photoUrl,
-              })
-            }
-
-            // Update cashAppUsername if payment method is cashapp and username is provided
-            if (
-              params.paymentMethod === 'cash_app' &&
-              params.cashAppUsername &&
-              params.cashAppUsername.trim() &&
-              convexUser.cashAppUsername !== params.cashAppUsername.trim()
-            ) {
-              await createOrUpdateUserMutation({
-                email: convexUser.email,
-                name: convexUser.name,
-                firebaseId: user.uid,
-                photoUrl: convexUser.photoUrl,
-                cashAppUsername: params.cashAppUsername.trim(),
-              })
             }
           } catch (userUpdateError) {
             // Log error but don't fail the order placement

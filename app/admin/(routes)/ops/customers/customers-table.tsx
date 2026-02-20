@@ -5,7 +5,8 @@ import {ColumnConfig} from '@/components/table-v2/create-column'
 import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
-import {Chip, User} from '@heroui/react'
+import {formatPrice} from '@/utils/formatPrice'
+import {User} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useMemo} from 'react'
@@ -20,8 +21,29 @@ const formatDate = (timestamp?: number) => {
   })
 }
 
+type CustomerRow = Doc<'users'> & {
+  totalSpentCents: number
+  latestPurchaseCents: number | null
+}
+
 export const CustomersTable = () => {
   const customers = useQuery(api.users.q.getAllUsers, {limit: 100})
+  const customerPurchaseSummaries = useQuery(
+    api.orders.q.getCustomerPurchaseSummaries,
+  )
+
+  const data = useMemo<CustomerRow[]>(
+    () =>
+      (customers ?? []).map((customer) => {
+        const summary = customerPurchaseSummaries?.[String(customer._id)]
+        return {
+          ...customer,
+          totalSpentCents: summary?.totalSpentCents ?? 0,
+          latestPurchaseCents: summary?.latestPurchaseCents ?? null,
+        }
+      }),
+    [customerPurchaseSummaries, customers],
+  )
 
   const columns = useMemo(
     () =>
@@ -82,32 +104,41 @@ export const CustomersTable = () => {
           ),
         },
         {
-          id: 'spent',
-          header: <ColHeader tip='Total Spent($)' symbol='Spent' />,
-          accessorKey: 'email',
-          size: 200,
+          id: 'recent',
+          header: (
+            <ColHeader tip='Most Recent Purchase' symbol='Recent' center />
+          ),
+          accessorKey: 'latestPurchaseCents',
+          size: 80,
           cell: ({row}) => (
-            <p className='font-mono text-xs text-muted-foreground'>
-              {row.original.email || 'N/A'}
-            </p>
+            <div className='flex items-center justify-end pr-6'>
+              <p className='font-brk text-xs text-muted-foreground text-right'>
+                {row.original.latestPurchaseCents != null
+                  ? formatPrice(row.original.latestPurchaseCents)
+                  : 'N/A'}
+              </p>
+            </div>
           ),
         },
         {
-          id: 'latest',
-          header: <ColHeader tip='Latest Purchase' symbol='Latest' />,
-          accessorKey: 'email',
-          size: 100,
+          id: 'spent',
+          header: <ColHeader tip='Total Spent($)' symbol='Spent' center />,
+          accessorKey: 'totalSpentCents',
+          size: 80,
           cell: ({row}) => (
-            <p className='font-brk text-xs text-muted-foreground'>
-              {row.original.email || 'N/A'}
-            </p>
+            <div className='flex items-center justify-end pr-6'>
+              <p className='font-brk text-xs text-muted-foreground text-right'>
+                {formatPrice(row.original.totalSpentCents)}
+              </p>
+            </div>
           ),
         },
+
         {
           id: 'status',
-          header: <ColHeader tip='Account status' symbol='Status' />,
+          header: <ColHeader tip='Account status' symbol='Status' center />,
           accessorKey: 'accountStatus',
-          size: 64,
+          size: 80,
           cell: ({row}) => {
             const status = row.original.accountStatus ?? 'active'
             const normalized = status.toLowerCase()
@@ -115,13 +146,9 @@ export const CustomersTable = () => {
               normalized === 'suspended' || normalized === 'banned'
             const isWarning = normalized === 'pending'
             return (
-              <Chip
-                size='sm'
-                variant='flat'
-                color={isDanger ? 'danger' : isWarning ? 'warning' : 'success'}
-                className='capitalize'>
+              <div className='uppercase text-xs font-brk text-center'>
                 {status.replace(/_/g, ' ')}
-              </Chip>
+              </div>
             )
           },
         },
@@ -143,7 +170,7 @@ export const CustomersTable = () => {
             </p>
           ),
         },
-      ] as ColumnConfig<Doc<'users'>>[],
+      ] as ColumnConfig<CustomerRow>[],
     [],
   )
 
@@ -157,7 +184,7 @@ export const CustomersTable = () => {
     <div className='relative w-full max-w-full overflow-hidden'>
       <DataTable
         title='Customers'
-        data={customers}
+        data={data}
         loading={false}
         editingRowId={null}
         columnConfigs={columns}
