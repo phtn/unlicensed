@@ -25,6 +25,8 @@ export interface StoreProduct {
   effects: string[]
   terpenes: string[]
   featured: boolean
+  limited: boolean
+  onSale: boolean
   available: boolean
   stock: number
   /** Per-denomination inventory counts. Key = denomination as string (e.g. "0.125", "1", "3.5"). */

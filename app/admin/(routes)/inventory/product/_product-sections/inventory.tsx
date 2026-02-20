@@ -458,6 +458,18 @@ export const Inventory = ({form}: InventoryProps) => {
               )
             }}
           </form.Field>
+          <form.Field name='limited'>
+            {(field) => {
+              return (
+                <JunctionBox
+                  title='Limited'
+                  description='Product with limited qty.'
+                  checked={(field.state.value as boolean) ?? false}
+                  onUpdate={field.handleChange}
+                />
+              )
+            }}
+          </form.Field>
           <form.Field name='sale'>
             {(field) => {
               return (

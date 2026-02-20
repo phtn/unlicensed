@@ -72,6 +72,9 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
           )}
           <div className='absolute left-5 sm:left-4 top-5 sm:top-4 z-20 flex flex-col gap-2'>
             <HyperActivity c={product.featured}>
+              <HyperBadge variant='featured' size='sm' />
+            </HyperActivity>
+            <HyperActivity c={product.limited}>
               <HyperBadge variant='limited' size='sm' />
             </HyperActivity>
           </div>

@@ -82,8 +82,7 @@ function availableDenominationsCell(
           <span key={`${key}-${index}`}>
             <HoverCell label={label} content={content}>
               <div
-                className={`px-2 font-brk text-base flex items-center space-x-3 border rounded-sm ${stockClasses}`}
-              >
+                className={`px-2 font-brk text-base flex items-center space-x-3 border rounded-sm ${stockClasses}`}>
                 {label === '⅛' && (
                   <Icon
                     name='8th'
@@ -252,6 +251,20 @@ export const ProductsData = ({data}: ProductsDataProps) => {
             getMutationArgs: (row, newValue) => ({
               productId: row._id,
               onSale: newValue,
+            }),
+          }),
+          size: 40,
+        },
+        {
+          id: 'limited',
+          header: <ColHeader tip='Limited Quantity' symbol='ltd' center />,
+          accessorKey: 'limited',
+          cell: toggleCell('limited', api.products.m.toggleLimited, {
+            values: [true, false],
+            colors: ['primary', 'default'],
+            getMutationArgs: (row, newValue) => ({
+              productId: row._id,
+              limited: newValue,
             }),
           }),
           size: 40,

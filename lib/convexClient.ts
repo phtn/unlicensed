@@ -31,6 +31,8 @@ export type RawProduct = {
   effects?: string[]
   terpenes?: string[]
   featured?: boolean
+  limited?: boolean
+  onSale?: boolean
   available?: boolean
   stock?: number
   stockByDenomination?: Record<string, number>
@@ -101,6 +103,8 @@ export const adaptProduct = (product: RawProduct): StoreProduct => ({
   effects: product.effects ?? [],
   terpenes: product.terpenes ?? [],
   featured: product.featured ?? false,
+  limited: product.limited ?? false,
+  onSale: product.onSale ?? false,
   available: product.available ?? true,
   stock: getTotalStock(product),
   stockByDenomination: product.stockByDenomination,

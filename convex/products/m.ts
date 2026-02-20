@@ -82,7 +82,10 @@ const validateTierForCategory = (
   )
 }
 
-const validateBaseForCategory = (base: string | undefined, categorySlug?: string) => {
+const validateBaseForCategory = (
+  base: string | undefined,
+  categorySlug?: string,
+) => {
   if (!base) {
     return
   }
@@ -258,7 +261,8 @@ export const updateProduct = mutation({
       categoryChanged = nextCategorySlug !== product.categorySlug
     }
     const nextBaseFromFields = fields.base?.trim() || undefined
-    const baseChanged = fields.base !== undefined && nextBaseFromFields !== product.base
+    const baseChanged =
+      fields.base !== undefined && nextBaseFromFields !== product.base
     if (fields.base !== undefined) {
       updates.base = nextBaseFromFields
     }
@@ -364,12 +368,17 @@ export const updateProduct = mutation({
     if (fields.priceByDenomination !== undefined) {
       updates.priceByDenomination = fields.priceByDenomination
     }
-    const tierChanged = fields.tier !== undefined && fields.tier !== product.tier
+    const tierChanged =
+      fields.tier !== undefined && fields.tier !== product.tier
     if (fields.tier !== undefined) {
       updates.tier = fields.tier
     }
 
-    if (categoryChanged && fields.tier === undefined && product.tier !== undefined) {
+    if (
+      categoryChanged &&
+      fields.tier === undefined &&
+      product.tier !== undefined
+    ) {
       updates.tier = undefined
     }
 
@@ -382,7 +391,11 @@ export const updateProduct = mutation({
             : product.tier
       validateTierForCategory(nextTier, nextCategorySlug)
     }
-    if (categoryChanged && fields.base === undefined && product.base !== undefined) {
+    if (
+      categoryChanged &&
+      fields.base === undefined &&
+      product.base !== undefined
+    ) {
       updates.base = undefined
     }
     if (baseChanged || categoryChanged) {
@@ -472,6 +485,22 @@ export const toggleRewardEligibility = mutation({
     }
     await ctx.db.patch(args.productId, {
       eligibleForRewards: args.eligibleForRewards,
+    })
+    return {success: true}
+  },
+})
+export const toggleLimited = mutation({
+  args: {
+    productId: v.id('products'),
+    limited: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.productId)
+    if (!product) {
+      return {success: false, error: 'Product not found'}
+    }
+    await ctx.db.patch(args.productId, {
+      limited: args.limited,
     })
     return {success: true}
   },

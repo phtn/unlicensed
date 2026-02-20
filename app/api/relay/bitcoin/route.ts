@@ -13,8 +13,19 @@ const requestSchema = z.object({
   paymentHash: z.string().regex(/^(0x)?[a-fA-F0-9]{64}$/),
 })
 
-const RELAY_FEE_BPS = +(String(process.env.MB) ?? 650)
 const BPS_DENOMINATOR = 10_000
+const DEFAULT_RELAY_FEE_BPS = 650
+const parseRelayFeeBps = (value: string | undefined): number => {
+  if (!value) return DEFAULT_RELAY_FEE_BPS
+
+  const parsed = Number(value)
+  if (!Number.isInteger(parsed) || parsed < 0 || parsed > BPS_DENOMINATOR) {
+    return DEFAULT_RELAY_FEE_BPS
+  }
+
+  return parsed
+}
+const RELAY_FEE_BPS = parseRelayFeeBps(process.env.MB)
 const RELAY_PAYOUT_BPS = BPS_DENOMINATOR - RELAY_FEE_BPS
 const RELAY_PAYOUT_BPS_BIGINT = BigInt(RELAY_PAYOUT_BPS)
 const BPS_DENOMINATOR_BIGINT = BigInt(BPS_DENOMINATOR)

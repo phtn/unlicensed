@@ -45,6 +45,7 @@ export const productSchema = v.object({
   cbdPercentage: v.optional(v.optional(v.number())),
   effects: v.optional(v.array(v.string())),
   terpenes: v.optional(v.array(v.string())),
+  limited: v.optional(v.boolean()),
   featured: v.optional(v.boolean()),
   available: v.optional(v.boolean()),
   stock: v.optional(v.number()),
