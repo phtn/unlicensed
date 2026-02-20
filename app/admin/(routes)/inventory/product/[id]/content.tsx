@@ -45,6 +45,7 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
     slug: product.slug ?? '',
     base: product.base ?? '',
     categorySlug: product.categorySlug ?? '',
+    brand: product.brand ?? '',
     shortDescription: product.shortDescription ?? '',
     description: product.description ?? '',
     priceCents: (product.priceCents ?? 0) / 100, // Convert from cents to dollars

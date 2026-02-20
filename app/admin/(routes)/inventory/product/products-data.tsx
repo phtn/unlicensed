@@ -61,7 +61,7 @@ function availableDenominationsCell(
 
   return (
     <div className='font-brk text-sm flex items-center whitespace-nowrap gap-x-1 gap-y-0.5 px-4'>
-      {sortedDenoms.map((denom, index) => {
+      {denoms.map((denom, index) => {
         const key = String(denom)
         const label = mapNumericFractions[key] ?? key
         const price = priceByDenom[key]

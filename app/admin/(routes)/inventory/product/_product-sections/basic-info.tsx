@@ -2,8 +2,8 @@
 
 import {
   commonInputClassNames,
+  commonSelectClassNames,
   FormInput,
-  renderFields,
 } from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {Doc} from '@/convex/_generated/dataModel'
@@ -81,22 +81,14 @@ export const BasicInfo = ({
   const nameField = fields.find((field) => field.name === 'name')
   const slugField = fields.find((field) => field.name === 'slug')
   const baseField = fields.find((field) => field.name === 'base')
-  const basicFieldNames = useMemo(
-    () =>
-      new Set([
-        'categorySlug',
-        'subcategory',
-        'productType',
-        'brand',
-        'tier',
-        'batchId',
-      ]),
-    [],
+  const brandField = fields.find((field) => field.name === 'brand')
+  const categorySlugField = fields.find(
+    (field) => field.name === 'categorySlug',
   )
-  const basicFields = useMemo(
-    () => fields.filter((field) => basicFieldNames.has(field.name as string)),
-    [basicFieldNames, fields],
-  )
+  const subcategoryField = fields.find((field) => field.name === 'subcategory')
+  const productTypeField = fields.find((field) => field.name === 'productType')
+  const tierField = fields.find((field) => field.name === 'tier')
+  const batchIdField = fields.find((field) => field.name === 'batchId')
   const selectedCategory = useMemo(() => {
     if (!categorySlug) return null
     return availableCategories.find(
@@ -269,11 +261,120 @@ export const BasicInfo = ({
         </div>
 
         <div className='items-center grid md:grid-cols-3 gap-4 md:gap-2'>
-          {basicFields.length > 0 &&
-            renderFields(form, basicFields, selectCategories, {
-              productType: productTypeOptions,
-              tier: tierOptions,
-            })}
+          {categorySlugField?.type === 'select' && (
+            <form.AppField name='categorySlug'>
+              {(input) => (
+                <input.SelectField
+                  {...input}
+                  type='select'
+                  name='categorySlug'
+                  mode='single'
+                  label={categorySlugField.label}
+                  placeholder={categorySlugField.placeholder}
+                  isCategory
+                  className='w-full flex'
+                  classNames={{...commonSelectClassNames}}
+                  options={selectCategories}
+                />
+              )}
+            </form.AppField>
+          )}
+          {brandField && (
+            <form.AppField name='brand'>
+              {(input) => (
+                <div className='space-y-2 w-full'>
+                  <Input
+                    size='lg'
+                    label={brandField.label}
+                    value={String(input.state.value ?? '')}
+                    onChange={(e) => input.handleChange(e.target.value)}
+                    onBlur={input.handleBlur}
+                    placeholder={brandField.placeholder}
+                    variant='bordered'
+                    classNames={commonInputClassNames}
+                  />
+                  {input.state.meta.isTouched &&
+                    input.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {input.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                </div>
+              )}
+            </form.AppField>
+          )}
+          {subcategoryField?.type === 'select' && (
+            <form.AppField name='subcategory'>
+              {(input) => (
+                <input.SelectField
+                  {...input}
+                  type='select'
+                  name='subcategory'
+                  mode='single'
+                  label={subcategoryField.label}
+                  placeholder={subcategoryField.placeholder}
+                  classNames={{...commonSelectClassNames}}
+                  options={subcategoryOptions}
+                />
+              )}
+            </form.AppField>
+          )}
+          {productTypeField?.type === 'select' && (
+            <form.AppField name='productType'>
+              {(input) => (
+                <input.SelectField
+                  {...input}
+                  type='select'
+                  name='productType'
+                  mode='single'
+                  label={productTypeField.label}
+                  placeholder={productTypeField.placeholder}
+                  classNames={{...commonSelectClassNames}}
+                  options={productTypeOptions}
+                />
+              )}
+            </form.AppField>
+          )}
+          {tierField?.type === 'select' && (
+            <form.AppField name='tier'>
+              {(input) => (
+                <input.SelectField
+                  {...input}
+                  type='select'
+                  name='tier'
+                  mode='single'
+                  label={tierField.label}
+                  placeholder={tierField.placeholder}
+                  classNames={{...commonSelectClassNames}}
+                  options={tierOptions}
+                />
+              )}
+            </form.AppField>
+          )}
+          {batchIdField && (
+            <form.AppField name='batchId'>
+              {(input) => (
+                <div className='space-y-2 w-full'>
+                  <Input
+                    size='lg'
+                    label={batchIdField.label}
+                    value={String(input.state.value ?? '')}
+                    onChange={(e) => input.handleChange(e.target.value)}
+                    onBlur={input.handleBlur}
+                    placeholder={batchIdField.placeholder}
+                    variant='bordered'
+                    classNames={commonInputClassNames}
+                  />
+                  {input.state.meta.isTouched &&
+                    input.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {input.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                </div>
+              )}
+            </form.AppField>
+          )}
         </div>
       </div>
       <Modal

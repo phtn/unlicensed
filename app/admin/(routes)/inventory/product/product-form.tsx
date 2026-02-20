@@ -84,6 +84,12 @@ export const ProductForm = ({
         }
 
         const data = parsed.data
+        // Ensure brand is read from form state (TanStack Form can omit untouched fields from submit value)
+        const brandFromForm = form.getFieldValue('brand')
+        const brandValue =
+          typeof brandFromForm === 'string'
+            ? brandFromForm.trim() || undefined
+            : undefined
         const isVapeCategory = data.categorySlug === 'vapes'
         const parsedNetWeight =
           data.netWeight && data.netWeight.trim().length > 0
@@ -109,6 +115,7 @@ export const ProductForm = ({
           slug: ensureSlug(data.slug ?? '', data.name),
           base: data.base?.trim() || undefined,
           categorySlug: data.categorySlug,
+          brand: brandValue ?? data.brand?.trim() ?? undefined,
           shortDescription: data.shortDescription?.trim(),
           description: data.description?.trim(),
           priceCents: Math.round(data.priceCents * 100),
@@ -218,6 +225,55 @@ export const ProductForm = ({
   })
 
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
+
+  // Sync initialValues into form when editing (ensures brand and other fields show when returning to the form)
+  const lastSyncedProductId = useRef<Id<'products'> | null>(null)
+  useEffect(() => {
+    if (!isEditMode || !productId || !initialValues) return
+    if (lastSyncedProductId.current === productId) return
+    lastSyncedProductId.current = productId
+    form.setFieldValue('name', initialValues.name ?? '')
+    form.setFieldValue('slug', initialValues.slug ?? '')
+    form.setFieldValue('base', initialValues.base ?? '')
+    form.setFieldValue('categorySlug', initialValues.categorySlug ?? '')
+    form.setFieldValue('brand', initialValues.brand ?? '')
+    form.setFieldValue('shortDescription', initialValues.shortDescription ?? '')
+    form.setFieldValue('description', initialValues.description ?? '')
+    form.setFieldValue('priceCents', initialValues.priceCents ?? 0)
+    form.setFieldValue('batchId', initialValues.batchId ?? '')
+    form.setFieldValue('unit', initialValues.unit ?? '')
+    form.setFieldValue('availableDenominationsRaw', initialValues.availableDenominationsRaw ?? '')
+    form.setFieldValue('popularDenomination', initialValues.popularDenomination ?? [])
+    form.setFieldValue('thcPercentage', initialValues.thcPercentage ?? 0)
+    form.setFieldValue('cbdPercentage', initialValues.cbdPercentage ?? '')
+    form.setFieldValue('effects', initialValues.effects ?? [])
+    form.setFieldValue('terpenes', initialValues.terpenes ?? [])
+    form.setFieldValue('flavors', initialValues.flavors ?? [])
+    form.setFieldValue('featured', initialValues.featured ?? false)
+    form.setFieldValue('available', initialValues.available ?? false)
+    form.setFieldValue('eligibleForRewards', initialValues.eligibleForRewards ?? true)
+    form.setFieldValue('eligibleForDeals', initialValues.eligibleForDeals ?? false)
+    form.setFieldValue('onSale', initialValues.onSale ?? false)
+    form.setFieldValue('stock', initialValues.stock ?? 0)
+    form.setFieldValue('stockByDenomination', initialValues.stockByDenomination ?? {})
+    form.setFieldValue('rating', initialValues.rating ?? 0)
+    form.setFieldValue('image', initialValues.image ?? '')
+    form.setFieldValue('gallery', initialValues.gallery ?? [])
+    form.setFieldValue('consumption', initialValues.consumption ?? '')
+    form.setFieldValue('potencyLevel', initialValues.potencyLevel ?? 'medium')
+    form.setFieldValue('potencyProfile', initialValues.potencyProfile ?? '')
+    form.setFieldValue('lineage', initialValues.lineage ?? '')
+    form.setFieldValue('subcategory', initialValues.subcategory ?? '')
+    form.setFieldValue('productType', initialValues.productType ?? '')
+    form.setFieldValue('noseRating', initialValues.noseRating ?? 0)
+    form.setFieldValue('netWeight', initialValues.netWeight ?? '')
+    form.setFieldValue('netWeightUnit', initialValues.netWeightUnit ?? '')
+    form.setFieldValue('variants', initialValues.variants ?? [])
+    form.setFieldValue('priceByDenomination', initialValues.priceByDenomination ?? {})
+    form.setFieldValue('tier', initialValues.tier)
+    form.setFieldValue('eligibleForUpgrade', initialValues.eligibleForUpgrade ?? false)
+    form.setFieldValue('upgradePrice', initialValues.upgradePrice)
+  }, [isEditMode, productId, initialValues, form])
 
   // Auto-populate category from search params
   useEffect(() => {

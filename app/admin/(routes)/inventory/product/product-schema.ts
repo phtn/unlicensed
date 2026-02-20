@@ -276,7 +276,6 @@ export const productFields: FormInput<ProductFormValues>[] = [
     required: false,
     type: 'text',
     placeholder: 'Brand name',
-    defaultValue: '',
   },
   {
     name: 'tier',

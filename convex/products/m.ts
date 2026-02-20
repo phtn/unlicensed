@@ -176,6 +176,7 @@ export const createProduct = mutation({
       potencyLevel: args.potencyLevel,
       potencyProfile: args.potencyProfile,
       lineage: args.lineage,
+      brand: args.brand?.trim() || undefined,
       subcategory: args.subcategory?.trim() || undefined,
       productType: args.productType?.trim() || undefined,
       noseRating: args.noseRating,
@@ -352,6 +353,11 @@ export const updateProduct = mutation({
     }
     if (fields.lineage !== undefined) {
       updates.lineage = fields.lineage.trim() || undefined
+    }
+    if (fields.brand !== undefined && fields.brand !== null) {
+      // const brandStr =
+      //   typeof fields.brand === 'string' ? fields.brand.trim() : ''
+      updates.brand = fields.brand.trim() || undefined
     }
     if (fields.subcategory !== undefined) {
       updates.subcategory = fields.subcategory.trim() || undefined

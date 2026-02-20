@@ -394,8 +394,8 @@ export const renderFields = <T extends Record<string, unknown>>(
             const selectOptions =
               optionsByField?.[fieldName] ??
               (fieldName === 'categorySlug'
-                ? options ?? field.options ?? []
-                : field.options ?? [])
+                ? (options ?? field.options ?? [])
+                : (field.options ?? []))
 
             return (
               <input.SelectField
@@ -419,6 +419,7 @@ export const renderFields = <T extends Record<string, unknown>>(
                 type={field.type}
                 name={field.name as keyof T as string}
                 label={field.label}
+                defaultValue={field.defaultValue}
                 placeholder={field.placeholder}
               />
             )
@@ -460,8 +461,8 @@ export const FieldGroup = <T extends Record<string, unknown>>({
             const selectOptions =
               optionsByField?.[fieldName] ??
               (fieldName === 'categorySlug'
-                ? options ?? field.options ?? []
-                : field.options ?? [])
+                ? (options ?? field.options ?? [])
+                : (field.options ?? []))
 
             return (
               <input.SelectField
