@@ -273,7 +273,7 @@ export const BasicInfo = ({
                   placeholder={categorySlugField.placeholder}
                   isCategory
                   className='w-full flex'
-                  classNames={{...commonSelectClassNames}}
+                  classNames={commonSelectClassNames}
                   options={selectCategories}
                 />
               )}
@@ -345,7 +345,7 @@ export const BasicInfo = ({
                   mode='single'
                   label={tierField.label}
                   placeholder={tierField.placeholder}
-                  classNames={{...commonSelectClassNames}}
+                  classNames={commonSelectClassNames}
                   options={tierOptions}
                 />
               )}

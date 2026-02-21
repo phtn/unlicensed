@@ -13,10 +13,47 @@ import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Slider} from '@heroui/react'
+import {Button, Slider} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMemo} from 'react'
 import {mapNumericFractions} from './product-schema'
+
+function escapeCsvValue(value: unknown): string {
+  const s = value === null || value === undefined ? '' : String(value)
+  if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`
+  return s
+}
+
+function exportProductsToCsv(products: Doc<'products'>[]) {
+  const headers = [
+    '_id',
+    'name',
+    'categorySlug',
+    'tier',
+    'available',
+    'eligibleForDeals',
+    'featured',
+    'eligibleForRewards',
+    'onSale',
+    'limited',
+    'eligibleForUpgrade',
+    'lineage',
+    'noseRating',
+  ]
+  const rows = products.map((p) =>
+    headers
+      .map((h) => escapeCsvValue((p as Record<string, unknown>)[h]))
+      .join(','),
+  )
+  const csv = [headers.join(','), ...rows].join('\r\n')
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `products-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 function parseStockValue(value: unknown) {
   const stock =
@@ -314,7 +351,7 @@ export const ProductsData = ({data}: ProductsDataProps) => {
           ),
           accessorKey: 'noseRating',
           cell: textCell('noseRating'),
-          size: 20,
+          size: 40,
         },
         // {
         //   id: 'createdAt',
@@ -323,6 +360,21 @@ export const ProductsData = ({data}: ProductsDataProps) => {
         // },
       ] as ColumnConfig<Doc<'products'>>[],
     [],
+  )
+
+  const exportButton = useMemo(
+    () => (
+      <Button
+        size='sm'
+        radius='none'
+        variant='flat'
+        className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk'
+        onPress={() => exportProductsToCsv(data ?? [])}>
+        <Icon name='download' className='size-4' />
+        <span className='hidden sm:inline'>Export CSV</span>
+      </Button>
+    ),
+    [data],
   )
 
   return (
@@ -334,6 +386,7 @@ export const ProductsData = ({data}: ProductsDataProps) => {
           loading={!data}
           columnConfigs={columns}
           editingRowId={null}
+          rightToolbarLeft={exportButton}
         />
       )}
     </div>

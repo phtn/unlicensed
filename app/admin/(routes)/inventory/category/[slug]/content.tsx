@@ -69,14 +69,12 @@ const CategoryProductsContentInner = ({
           <Button
             as={Link}
             href={`/admin/inventory/category?slug=${categorySlug}&id=${category?._id}&tabId=edit`}
+            isIconOnly
             size='sm'
             variant='faded'
             onPress={handleEdit}
-            className='-space-x-1 text-indigo-500 dark:text-indigo-400 border-white dark:border-transparent bg-gray-100/80 dark:bg-gray-200/5'>
+            className='-space-x-1 text-zinc-600 dark:text-indigo-100 border-white dark:border-transparent bg-gray-100/80 dark:bg-gray-200/5'>
             <Icon name='pencil-fill' className='size-4' />
-            <span className='text-sm tracking-wide font-okxs'>
-              Edit Category
-            </span>
           </Button>
           <Button
             as={Link}
@@ -84,7 +82,7 @@ const CategoryProductsContentInner = ({
             size='sm'
             variant='bordered'
             href={`/admin/inventory/product?tabId=new&category=${categorySlug}`}
-            className='-space-x-1 text-blue-500 dark:text-blue-400 border-white dark:border-transparent bg-gray-100/80 dark:bg-gray-200/5'>
+            className='-space-x-1 text-zinc-600 dark:text-blue-100 border-white dark:border-transparent bg-gray-100/80 dark:bg-gray-200/5'>
             <Icon name='plus' className='size-4' />
             <span className='text-sm capitalize tracking-[0.010em] font-okxs'>
               Add {category?.name}

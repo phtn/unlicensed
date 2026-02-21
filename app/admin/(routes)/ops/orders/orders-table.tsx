@@ -236,7 +236,7 @@ export const OrdersTable = () => {
             : 0
 
           return (
-            <div className='flex w-full items-center justify-end gap-1'>
+            <div className='flex w-full items-center justify-end gap-1 pr-1'>
               <Badge
                 key={`orders-chat-badge-${String(order._id)}-${unreadCount}`}
                 content={
@@ -260,7 +260,7 @@ export const OrdersTable = () => {
                   onPress={() => {
                     void handleOpenCustomerChat(order)
                   }}>
-                  <Icon name='chat' className='size-4' />
+                  <Icon name='chat' className='size-4 opacity-80' />
                 </Button>
               </Badge>
               <Button

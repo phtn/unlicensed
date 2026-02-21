@@ -80,6 +80,7 @@ interface TableProps<T> {
   onDeleteSelected?: (ids: string[]) => void | Promise<void>
   deleteIdAccessor?: keyof T
   selectedItemId?: string | null
+  rightToolbarLeft?: ReactNode
 }
 
 function DataTableContent<T>({
@@ -91,6 +92,7 @@ function DataTableContent<T>({
   onDeleteSelected,
   deleteIdAccessor = 'id' as keyof T,
   selectedItemId,
+  rightToolbarLeft,
 }: TableProps<T>) {
   const {columnVisibility, setColumnVisibility} = useColumnVisibility()
 
@@ -406,6 +408,7 @@ function DataTableContent<T>({
             }
           />
           <RightTableToolbar
+            left={rightToolbarLeft}
             search={
               <Search
                 ref={inputRef}

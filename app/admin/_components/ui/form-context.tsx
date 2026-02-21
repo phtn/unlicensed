@@ -2,6 +2,7 @@ import {createFormHook, createFormHookContexts} from '@tanstack/react-form'
 import {
   NumberField,
   SelectField,
+  SelectWithCustomField,
   SwitchField,
   TextAreaField,
   TextField,
@@ -19,6 +20,7 @@ export const {useAppForm} = createFormHook({
     NumberField,
     TextAreaField,
     SelectField,
+    SelectWithCustomField,
     SwitchField,
   },
   formComponents: {},

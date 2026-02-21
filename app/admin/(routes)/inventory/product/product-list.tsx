@@ -50,7 +50,7 @@ const ProductItem = ({product, imageUrl}: ProductItemProps) => (
                     (a, b) => a + b,
                     0,
                   )
-                : product.stock ?? 'N/A'}
+                : (product.stock ?? 'N/A')}
             </span>
           </p>
         </div>
@@ -64,7 +64,7 @@ const ProductItem = ({product, imageUrl}: ProductItemProps) => (
         prefetch={true}
         href={`/admin/inventory/product?tabId=edit&id=${product._id}`}
         className='text-white font-semibold hover:bg-dark-gray bg-dark-gray'>
-        <Icon name='pencil-single-solid' className='size-5' />
+        <Icon name='pencil-fill' className='size-5' />
       </Button>
     </CardFooter>
   </Card>

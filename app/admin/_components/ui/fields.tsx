@@ -68,6 +68,8 @@ type TextFieldProps<T> = BaseFieldProps<T> & {
   type: 'text' | 'textarea' | 'number' | 'email' | 'password' | 'url' | 'tel'
 }
 
+export const SELECT_CUSTOM_OPTION_KEY = '__custom__'
+
 export type SelectOption = {
   key?: string
   value: string
@@ -79,6 +81,16 @@ type SelectFieldProps<T> = BaseFieldProps<T> & {
   mode?: 'single' | 'multiple'
   options: Array<SelectOption>
   isCategory?: boolean
+}
+
+export type SelectWithCustomFieldProps<T> = Omit<
+  SelectFieldProps<T>,
+  'mode' | 'isCategory'
+> & {
+  type: 'select'
+  allowCustom?: boolean
+  customOptionLabel?: string
+  customPlaceholder?: string
 }
 
 type CheckboxFieldProps<T> = BaseFieldProps<T> & {
@@ -332,6 +344,101 @@ export function SelectField<T>(
           )
         })}
       </Select>
+      {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+        <p className='text-xs text-rose-400'>
+          {field.state.meta.errors.join(', ')}
+        </p>
+      )}
+    </div>
+  )
+}
+
+export function SelectWithCustomField<T>(
+  props?: SelectWithCustomFieldProps<T> &
+    Pick<SelectProps, 'classNames' | 'selectionMode'>,
+) {
+  const field = useFieldContext<string>()
+  const options = props?.options ?? []
+  const allowCustom = props?.allowCustom ?? true
+  const customLabel = props?.customOptionLabel ?? 'Other'
+  const customPlaceholder = props?.customPlaceholder ?? 'Enter custom value'
+
+  const optionValues = new Set(options.map((o) => o.value))
+  const isCustomValue =
+    field.state.value != null &&
+    field.state.value !== '' &&
+    !optionValues.has(field.state.value)
+
+  const displayOptions: Array<SelectOption> = allowCustom
+    ? [...options, {value: SELECT_CUSTOM_OPTION_KEY, label: customLabel}]
+    : options
+
+  const selectedKey =
+    isCustomValue || field.state.value === SELECT_CUSTOM_OPTION_KEY
+      ? SELECT_CUSTOM_OPTION_KEY
+      : (field.state.value ?? '')
+
+  const handleSelectionChange = (keys: Set<React.Key> | 'all') => {
+    if (keys === 'all') return
+    const key = Array.from(keys)[0] as string | undefined
+    if (key === undefined || key === '') {
+      field.handleChange('')
+      return
+    }
+    if (key === SELECT_CUSTOM_OPTION_KEY) {
+      // Keep SELECT_CUSTOM_OPTION_KEY in state so showCustomInput stays true; input shows '' until user types
+      field.handleChange(
+        isCustomValue ? (field.state.value ?? '') : SELECT_CUSTOM_OPTION_KEY,
+      )
+      return
+    }
+    field.handleChange(key)
+  }
+
+  const showCustomInput =
+    allowCustom && (selectedKey === SELECT_CUSTOM_OPTION_KEY || isCustomValue)
+
+  return (
+    <div className='space-y-2'>
+      {showCustomInput ? (
+        <Input
+          size='lg'
+          label={props?.label}
+          aria-label={customLabel}
+          value={
+            isCustomValue
+              ? field.state.value
+              : field.state.value === SELECT_CUSTOM_OPTION_KEY
+                ? ''
+                : (field.state.value ?? '')
+          }
+          onChange={(e) => field.handleChange(e.target.value)}
+          onBlur={field.handleBlur}
+          placeholder={customPlaceholder}
+          classNames={commonInputClassNames}
+          variant='bordered'
+        />
+      ) : (
+        <Select
+          label={props?.label}
+          selectionMode={props?.selectionMode ?? 'single'}
+          selectedKeys={selectedKey ? new Set([selectedKey]) : new Set()}
+          onSelectionChange={handleSelectionChange}
+          onBlur={field.handleBlur}
+          placeholder={props?.placeholder}
+          variant='bordered'
+          classNames={{
+            ...commonInputClassNames,
+            ...commonSelectClassNames,
+            ...props?.classNames,
+          }}>
+          {displayOptions.map((option) => (
+            <CategorySelectItem key={option.value} textValue={option.label}>
+              {option.label}
+            </CategorySelectItem>
+          ))}
+        </Select>
+      )}
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
         <p className='text-xs text-rose-400'>
           {field.state.meta.errors.join(', ')}

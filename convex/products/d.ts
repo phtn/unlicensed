@@ -25,6 +25,7 @@ const productTier = v.union(
   v.literal('Sauce'),
   v.literal('Live Rosin'),
   v.literal('Cured Rosin'),
+  v.any(),
 )
 
 export type ProductTier = Infer<typeof productTier>
