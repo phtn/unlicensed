@@ -24,28 +24,88 @@ function escapeCsvValue(value: unknown): string {
   return s
 }
 
+/** Denomination keys used for per-denom price/stock columns in CSV */
+const DENOM_KEYS = ['0.125', '0.25', '0.5', '1', '2', '3', '3.5', '4', '5', '6', '7', '8']
+
+/** All product table fields (scalar + JSON-serialized). Order: identity, core, then denom columns, then rest. */
+const PRODUCT_CSV_FIELDS = [
+  '_id',
+  '_creationTime',
+  'name',
+  'slug',
+  'base',
+  'categoryId',
+  'categorySlug',
+  'shortDescription',
+  'description',
+  'priceCents',
+  'unit',
+  'availableDenominations',
+  'popularDenomination',
+  'thcPercentage',
+  'cbdPercentage',
+  'effects',
+  'terpenes',
+  'limited',
+  'featured',
+  'available',
+  'stock',
+  'stockByDenomination',
+  'priceByDenomination',
+  'rating',
+  'image',
+  'gallery',
+  'consumption',
+  'flavorNotes',
+  'potencyLevel',
+  'potencyProfile',
+  'weightGrams',
+  'brand',
+  'lineage',
+  'noseRating',
+  'variants',
+  'tier',
+  'eligibleForRewards',
+  'eligibleForDeals',
+  'onSale',
+  'eligibleDenominationForDeals',
+  'eligibleForUpgrade',
+  'upgradePrice',
+  'dealType',
+  'productType',
+  'netWeight',
+  'netWeightUnit',
+  'subcategory',
+  'batchId',
+  'archived',
+] as const
+
+function serializeCsvCell(value: unknown): string {
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'boolean') return value ? 'true' : 'false'
+  if (typeof value === 'number') return String(value)
+  if (typeof value === 'string') return escapeCsvValue(value)
+  return escapeCsvValue(JSON.stringify(value))
+}
+
 function exportProductsToCsv(products: Doc<'products'>[]) {
-  const headers = [
-    '_id',
-    'name',
-    'categorySlug',
-    'tier',
-    'available',
-    'eligibleForDeals',
-    'featured',
-    'eligibleForRewards',
-    'onSale',
-    'limited',
-    'eligibleForUpgrade',
-    'lineage',
-    'noseRating',
-  ]
-  const rows = products.map((p) =>
-    headers
-      .map((h) => escapeCsvValue((p as Record<string, unknown>)[h]))
-      .join(','),
-  )
-  const csv = [headers.join(','), ...rows].join('\r\n')
+  const denomHeaders = DENOM_KEYS.flatMap((k) => [`price_${k}`, `stock_${k}`])
+  const headers = [...PRODUCT_CSV_FIELDS, ...denomHeaders]
+  const rows = products.map((p) => {
+    const record = p as Record<string, unknown>
+    const mainCells = PRODUCT_CSV_FIELDS.map((h) =>
+      serializeCsvCell(record[h]),
+    )
+    const priceByDenom = (record.priceByDenomination as Record<string, number> | undefined) ?? {}
+    const stockByDenom = (record.stockByDenomination as Record<string, number> | undefined) ?? {}
+    const denomCells = DENOM_KEYS.flatMap((k) => [
+      serializeCsvCell(priceByDenom[k]),
+      serializeCsvCell(stockByDenom[k]),
+    ])
+    return [...mainCells, ...denomCells].join(',')
+  })
+  const headerRow = headers.join(',')
+  const csv = [headerRow, ...rows].join('\r\n')
   const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
