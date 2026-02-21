@@ -26,7 +26,7 @@ function isProviderStatusResponse(
 
 const ProvidersList = () => {
   const {handleApiCall, response} = useApiCall()
-  const defaultAccount = useQuery(api.paygateAccounts.q.getDefaultAccount)
+  const defaultAccount = useQuery(api.paygateAccounts.q.getDefaultAccount, {})
   const updateTopTenProviders = useMutation(
     api.paygateAccounts.m.updateTopTenProviders,
   )

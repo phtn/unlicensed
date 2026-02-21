@@ -2,10 +2,10 @@ import type {Metadata} from 'next'
 import {Content} from './content'
 
 export const metadata: Metadata = {
-  title: 'Paygate | Admin | RF',
-  description: 'Paygate payment gateway management.',
+  title: 'Paylex | Admin | RF',
+  description: 'Paylex payment gateway management.',
 }
 
-export default function PaymentsPage() {
+export default function PaylexPage() {
   return <Content />
 }

@@ -16,13 +16,26 @@ export const topTenProviderValidator = v.object({
 
 export type TopTenProvider = Infer<typeof topTenProviderValidator>
 
+/** Gateway identifier for multi-provider accounts (same process as PayGate) */
+export const gatewayValidator = v.union(
+  v.literal('paygate'),
+  v.literal('paylex'),
+  v.literal('rampex'),
+)
+
+export type Gateway = Infer<typeof gatewayValidator>
+
 /**
  * PayGate Account Schema
  *
  * Stores PayGate account credentials and metadata for wallet addresses.
  * The address_in is the Polygon wallet address used to identify the account.
+ * gateway distinguishes PayGate / Paylex / Rampex (same process, different providers).
  */
 export const paygateAccountSchema = v.object({
+  // Gateway (paygate | paylex | rampex). Omitted = paygate for backward compat.
+  gateway: v.optional(gatewayValidator),
+
   // Wallet address (Polygon USDC) - primary identifier
   addressIn: v.string(), // address_in from PayGate API (where payments are received)
   hexAddress: v.string(),

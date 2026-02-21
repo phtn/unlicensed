@@ -16,11 +16,13 @@ export const createAccount = mutation({
       )
     }
 
-    // Check if account with this address already exists
+    const gateway = args.gateway ?? 'paygate'
+
+    // Check if account with this address already exists for this gateway
     const existing = await ctx.db
       .query('paygateAccounts')
-      .withIndex('by_hexAddress', (q) =>
-        q.eq('hexAddress', args.hexAddress.toLowerCase()),
+      .withIndex('by_gateway_hexAddress', (q) =>
+        q.eq('gateway', gateway).eq('hexAddress', args.hexAddress.toLowerCase()),
       )
       .unique()
 
@@ -28,13 +30,14 @@ export const createAccount = mutation({
       throw new Error('Account with this wallet address already exists.')
     }
 
-    // If setting as default, unset other default accounts
+    // If setting as default, unset other default accounts for this gateway
     if (args.isDefault) {
       const currentDefaults = await ctx.db
         .query('paygateAccounts')
-        .withIndex('by_default', (q) => q.eq('isDefault', true))
+        .withIndex('by_gateway_default', (q) =>
+          q.eq('gateway', gateway).eq('isDefault', true),
+        )
         .collect()
-
       for (const account of currentDefaults) {
         await ctx.db.patch(account._id, {isDefault: false})
       }
@@ -43,6 +46,7 @@ export const createAccount = mutation({
     const now = Date.now()
     const accountId = await ctx.db.insert('paygateAccounts', {
       ...args,
+      gateway,
       hexAddress: args.hexAddress.toLowerCase(), // Normalize to lowercase
       isDefault: args.isDefault ?? false,
       enabled: args.enabled ?? true,
@@ -73,13 +77,15 @@ export const updateAccount = mutation({
       throw new Error('Account not found')
     }
 
-    // If setting as default, unset other default accounts
+    // If setting as default, unset other default accounts for this gateway
+    const gateway = account.gateway ?? 'paygate'
     if (args.isDefault && !account.isDefault) {
       const currentDefaults = await ctx.db
         .query('paygateAccounts')
-        .withIndex('by_default', (q) => q.eq('isDefault', true))
+        .withIndex('by_gateway_default', (q) =>
+          q.eq('gateway', gateway).eq('isDefault', true),
+        )
         .collect()
-
       for (const defaultAccount of currentDefaults) {
         if (defaultAccount._id !== args.id) {
           await ctx.db.patch(defaultAccount._id, {isDefault: false})

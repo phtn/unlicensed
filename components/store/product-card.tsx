@@ -1,11 +1,23 @@
+'use client'
+
 import {mapNumericFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
 import type {StoreProduct} from '@/app/types'
+import {Id} from '@/convex/_generated/dataModel'
+import {useCart} from '@/hooks/use-cart'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Card, CardBody, CardFooter, Image} from '@heroui/react'
+import {
+  Card,
+  CardBody,
+  CardFooter,
+  Image,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@heroui/react'
 import NextLink from 'next/link'
+import {useState} from 'react'
 import {HyperActivity} from '../expermtl/activity'
-import {TextFlip} from '../expermtl/text-flip'
 import {HyperBadge} from '../main/badge'
 
 type ProductCardProps = {
@@ -18,10 +30,12 @@ const formatPrice = (priceCents: number) => {
   return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
 }
 
-const priceWordsFromDenomination = (
+type PriceOption = {price: string; denom: string; denominationValue: number}
+
+const priceOptionsFromDenomination = (
   priceByDenomination: Record<string, number> | undefined,
   unit: string,
-): Array<{price: string; denom: string}> | null => {
+): PriceOption[] | null => {
   if (!priceByDenomination || Object.keys(priceByDenomination).length === 0) {
     return null
   }
@@ -31,15 +45,19 @@ const priceWordsFromDenomination = (
   return entries.map(([denom, cents]) => ({
     price: formatPrice(cents),
     denom: `${mapNumericFractions[denom]} ${unit}`,
+    denominationValue: Number(denom),
   }))
 }
 
 export const ProductCard = ({product, className}: ProductCardProps) => {
   const topEffects = product.effects.slice(0, 2)
-  const priceWords = priceWordsFromDenomination(
+  const priceOptions = priceOptionsFromDenomination(
     product.priceByDenomination,
     product.unit,
   )
+  const {addItem} = useCart()
+  const [popoverOpen, setPopoverOpen] = useState(false)
+  const productId = product._id as Id<'products'> | undefined
 
   return (
     <Card
@@ -88,17 +106,54 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
               </h3>
             </div>
             <div className=' flex items-center justify-end whitespace-nowrap text-base sm:text-lg font-okxs text-foreground shrink-0 w-fit'>
-              {priceWords ? (
-                <TextFlip
-                  words={priceWords.map(
-                    ({price, denom}) => `$${price} ∕ ${denom}`,
-                  )}
-                  direction='vertical'
-                  interval={4000}
-                  animationDuration={400}
-                  className='bg-transparent shadow-none min-w-0 w-fit'
-                  textClassName='font-okxs text-base sm:text-lg'
-                />
+              {priceOptions ? (
+                <Popover
+                  isOpen={popoverOpen}
+                  onOpenChange={setPopoverOpen}
+                  placement='top-end'
+                  showArrow>
+                  <PopoverTrigger>
+                    <button
+                      type='button'
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                      }}
+                      className='font-okxs h-7 text-base sm:text-base hover:bg-sidebar bg-transparent shadow-none min-w-0 w-fit text-left transition-opacity text-brand px-2 rounded-md'>
+                      Add to cart
+                      {/*{priceOptions.length === 1
+                        ? `$${priceOptions[0].price} ∕ ${priceOptions[0].denom}`
+                        : `From $${priceOptions[0].price}`}*/}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className='w-32 p-2'>
+                    <div className='flex flex-col gap-0.5 w-full'>
+                      {priceOptions.map((opt) => (
+                        <button
+                          key={opt.denominationValue}
+                          type='button'
+                          disabled={!productId}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            if (productId) {
+                              addItem(productId, 1, opt.denominationValue)
+                              setPopoverOpen(false)
+                            }
+                          }}
+                          className={cn(
+                            'flex items-center justify-between w-full rounded-lg p-2 text-sm transition-colors font-okxs font-medium',
+                            productId
+                              ? 'hover:bg-brand hover:text-white active:bg-default-200'
+                              : 'opacity-70 cursor-not-allowed',
+                          )}>
+                          <p className=''>${opt.price}</p>
+                          <p className=''>{opt.denom}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               ) : (
                 <>
                   <span className='font-thin opacity-70'>$</span>

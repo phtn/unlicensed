@@ -57,7 +57,9 @@ export const AffiliateAccountForm = ({
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const paygateAccounts = useQuery(api.paygateAccounts.q.listAccounts)
+  const paygateAccounts = useQuery(api.paygateAccounts.q.listAccounts, {
+    gateway: 'paygate',
+  })
   const {handleApiCall} = useApiCall()
 
   const getAccountWallet = useCallback(

@@ -84,7 +84,10 @@ export default defineSchema({
   paygateAccounts: defineTable(paygateAccountSchema)
     .index('by_address_in', ['addressIn'])
     .index('by_hexAddress', ['hexAddress'])
-    .index('by_default', ['isDefault']),
+    .index('by_default', ['isDefault'])
+    .index('by_gateway', ['gateway'])
+    .index('by_gateway_hexAddress', ['gateway', 'hexAddress'])
+    .index('by_gateway_default', ['gateway', 'isDefault']),
   affiliateAccounts: defineTable(affiliateAccountSchema).index(
     'by_wallet_address',
     ['walletAddress'],

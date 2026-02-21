@@ -20,7 +20,7 @@ export default function CardProvidersPage() {
   )
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const order = useQuery(api.orders.q.getById, {id: orderId})
-  const paygateAccount = useQuery(api.paygateAccounts.q.getDefaultAccount)
+  const paygateAccount = useQuery(api.paygateAccounts.q.getDefaultAccount, {})
 
   const providers = useMemo(
     () => paygateAccount?.topTenProviders ?? [],

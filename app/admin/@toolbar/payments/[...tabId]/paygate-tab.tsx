@@ -16,7 +16,9 @@ import {Suspense} from 'react'
 import {AffiliateTab} from './affiliate-tab'
 
 const PayGateTabInner = () => {
-  const accounts = useQuery(api.paygateAccounts.q.listAccounts)
+  const accounts = useQuery(api.paygateAccounts.q.listAccounts, {
+    gateway: 'paygate',
+  })
   // const isPayGateRoute =
   //   tabId === 'paygate' ||
   //   !tabId ||
