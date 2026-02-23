@@ -57,7 +57,7 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
             Personalize with Strain Finder
           </Button>
         </div>
-        <div className='relative grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+        <div className='relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8'>
           {productsWithImages.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}

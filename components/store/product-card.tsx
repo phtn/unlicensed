@@ -39,9 +39,10 @@ const priceOptionsFromDenomination = (
   if (!priceByDenomination || Object.keys(priceByDenomination).length === 0) {
     return null
   }
-  const entries = Object.entries(priceByDenomination).sort(
-    ([a], [b]) => Number(a) - Number(b),
-  )
+  const entries = Object.entries(priceByDenomination)
+    .filter(([, cents]) => cents > 0)
+    .sort(([a], [b]) => Number(a) - Number(b))
+  if (entries.length === 0) return null
   return entries.map(([denom, cents]) => ({
     price: formatPrice(cents),
     denom: `${mapNumericFractions[denom]} ${unit}`,
@@ -98,9 +99,9 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
           </div>
         </div>
 
-        <div className='flex flex-col gap-3 sm:gap-4 p-3 sm:px-6 h-16'>
+        <div className='flex flex-col gap-3 sm:gap-4 p-3 sm:pl-4 sm:pr-3 h-14 md:h-15'>
           <div className='flex items-start justify-between gap-2 h-full'>
-            <div className='space-y-1 sm:space-y-2 flex-1 min-w-0'>
+            <div className='flex-1 min-w-0'>
               <h3 className='text-base sm:text-lg font-okxs truncate capitalize'>
                 {product.slug.split('-').join(' ')}
               </h3>
@@ -119,14 +120,16 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
                         e.preventDefault()
                         e.stopPropagation()
                       }}
-                      className='font-okxs h-7 text-base sm:text-base hover:bg-sidebar bg-transparent shadow-none min-w-0 w-fit text-left transition-opacity text-brand px-2 rounded-md'>
-                      Add to cart
-                      {/*{priceOptions.length === 1
-                        ? `$${priceOptions[0].price} ∕ ${priceOptions[0].denom}`
-                        : `From $${priceOptions[0].price}`}*/}
+                      className='font-okxs h-7 text-base sm:text-base hover:bg-sidebar/80 bg-transparent shadow-none min-w-0 w-fit text-left transition-opacity text-brand px-2 rounded-md'>
+                      <span className='hidden md:flex tracking-tight'>
+                        Add to cart
+                      </span>
+                      <span className=' md:hidden flex items-center tracking-tight'>
+                        <Icon name='plus' className='size-4' /> Cart
+                      </span>
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className='w-32 p-2'>
+                  <PopoverContent className='w-36 p-2'>
                     <div className='flex flex-col gap-0.5 w-full'>
                       {priceOptions.map((opt) => (
                         <button
