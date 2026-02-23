@@ -7,7 +7,21 @@ import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
-import {Button, Card, CardBody, CardHeader} from '@heroui/react'
+import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Textarea,
+  useDisclosure,
+} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useRouter} from 'next/navigation'
@@ -20,10 +34,47 @@ import {EmailTemplateEditor} from './email-template-editor'
 interface EmailTemplateViewerProps {
   id: string
 }
+function parseRecipients(value: string): string[] {
+  return value
+    .split(/[\n,]+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+export type RecipientRow = { name: string; email: string }
+
+/** Parse pasted text into name/email rows. Separators: =, :, or , (one per line). */
+function parsePastedRecipients(text: string): RecipientRow[] {
+  const lines = text.split(/\r?\n/).map((s) => s.trim()).filter(Boolean)
+  return lines.map((line) => {
+    const sepMatch = line.match(/[=,:]/)
+    const idx = sepMatch ? line.indexOf(sepMatch[0]!) : -1
+    if (idx === -1) {
+      if (line.includes('@')) return { name: '', email: line }
+      return { name: line, email: '' }
+    }
+    const left = line.slice(0, idx).trim()
+    const right = line.slice(idx + 1).trim()
+    const hasAtLeft = left.includes('@')
+    const hasAtRight = right.includes('@')
+    if (hasAtRight && !hasAtLeft) return { name: left, email: right }
+    if (hasAtLeft && !hasAtRight) return { name: right, email: left }
+    return { name: left, email: right }
+  })
+}
+
 export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   const router = useRouter()
   const {user} = useAuthCtx()
   const [isEditing, setIsEditing] = useState(false)
+  const sendJobDisclosure = useDisclosure()
+  const [recipients, setRecipients] = useState<RecipientRow[]>([
+    { name: '', email: '' },
+  ])
+  const [sendCc, setSendCc] = useState('')
+  const [sendBcc, setSendBcc] = useState('')
+  const [isSending, setIsSending] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
 
   const emailSetting = useQuery(
     api.emailSettings.q.getEmailSetting,
@@ -72,6 +123,82 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
       })()
     })
   }, [id, deleteEmailSetting, navigateBackToList])
+
+  const handleSendJobOpen = useCallback(() => {
+    setRecipients([{ name: '', email: '' }])
+    setSendCc('')
+    setSendBcc('')
+    setSendError(null)
+    sendJobDisclosure.onOpen()
+  }, [sendJobDisclosure])
+
+  const setRecipient = useCallback((index: number, field: 'name' | 'email', value: string) => {
+    setRecipients((prev) =>
+      prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)),
+    )
+  }, [])
+
+  const addRecipientRow = useCallback(() => {
+    setRecipients((prev) => [...prev, { name: '', email: '' }])
+  }, [])
+
+  const removeRecipientRow = useCallback((index: number) => {
+    setRecipients((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev))
+  }, [])
+
+  const handlePasteRecipients = useCallback((e: React.ClipboardEvent) => {
+    const text = e.clipboardData.getData('text')
+    if (!text.trim()) return
+    e.preventDefault()
+    const parsed = parsePastedRecipients(text)
+    if (parsed.length > 0) {
+      setRecipients((prev) => [...prev, ...parsed])
+    }
+  }, [])
+
+  const handleSendJobSubmit = useCallback(async () => {
+    const toList = recipients.map((r) => r.email.trim()).filter(Boolean)
+    if (toList.length === 0) {
+      setSendError('Enter at least one recipient email.')
+      return
+    }
+    if (!emailSetting) return
+    setIsSending(true)
+    setSendError(null)
+    try {
+      const res = await fetch('/api/resend/send-job', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          to: toList,
+          cc:
+            parseRecipients(sendCc).length > 0
+              ? parseRecipients(sendCc)
+              : undefined,
+          bcc:
+            parseRecipients(sendBcc).length > 0
+              ? parseRecipients(sendBcc)
+              : undefined,
+          subject: emailSetting.subject ?? '',
+          html: emailSetting.html ?? undefined,
+          body: emailSetting.body ?? undefined,
+          from: emailSetting.from?.[0],
+        }),
+      })
+      const data = (await res.json()) as {ok: boolean; error?: string}
+      if (!data.ok) {
+        setSendError(data.error ?? 'Failed to send')
+        return
+      }
+      toast.success('Send job completed')
+      sendJobDisclosure.onClose()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to send'
+      setSendError(message)
+    } finally {
+      setIsSending(false)
+    }
+  }, [recipients, sendCc, sendBcc, emailSetting, sendJobDisclosure])
 
   if (!!isAdmin && !isAdmin) {
     return <AccessDenied />
@@ -143,6 +270,13 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             <span>Back to Templates</span>
           </Button>
           <div className='flex items-center gap-3 px-1'>
+            <Button
+              type='button'
+              variant='light'
+              onPress={handleSendJobOpen}
+              className='gap-1'>
+              Create Send
+            </Button>
             <Button
               type='button'
               variant='light'
@@ -239,27 +373,15 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                 <SectionHeader title='Template' />
                 <div className='py-6 space-y-3'>
                   <div>
-                    <p className='text-xs uppercase opacity-60 mb-1'>from</p>
-                    <p className='text-sm'></p>
-                  </div>
-                  <div>
-                    <p className='text-xs uppercase opacity-60 mb-1'>to</p>
+                    <p className='text-xs uppercase opacity-60 mb-1'>name</p>
                     <p className='text-sm'>
-                      {emailSetting.to?.join(', ') || 'dynamic'}
+                      {emailSetting.template
+                        ? (EMAIL_TEMPLATE_OPTIONS.find(
+                            (o) => o.id === emailSetting.template,
+                          )?.label ?? emailSetting.template)
+                        : 'No template'}
                     </p>
                   </div>
-                  {emailSetting.cc && emailSetting.cc.length > 0 && (
-                    <div>
-                      <p className='text-xs text-zinc-400 mb-1'>CC</p>
-                      <p className='text-sm'>{emailSetting.cc.join(', ')}</p>
-                    </div>
-                  )}
-                  {emailSetting.bcc && emailSetting.bcc.length > 0 && (
-                    <div>
-                      <p className='text-xs uppercase opacity-60 mb-1'>bcc</p>
-                      <p className='text-sm'>{emailSetting.bcc.join(', ')}</p>
-                    </div>
-                  )}
                 </div>
               </CardBody>
             </Card>
@@ -287,10 +409,10 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
           </div>
 
           {emailSetting.text && (
-            <Card className='dark:bg-background bg-greyed backdrop-blur-sm border border-zinc-800/50'>
+            <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
               <SectionHeader title='Plain Text' />
-              <div className='px-6 pb-6'>
-                <pre className='text-sm whitespace-pre-wrap font-mono bg-zinc-900/50 p-4 rounded-lg'>
+              <div className='p-2'>
+                <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
                   {emailSetting.text}
                 </pre>
               </div>
@@ -298,10 +420,10 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
           )}
 
           {emailSetting.body && (
-            <Card className='dark:bg-background bg-greyed backdrop-blur-sm border border-zinc-800/50'>
+            <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
               <SectionHeader title='Body Template' />
-              <div className='px-6 pb-6'>
-                <pre className='text-sm whitespace-pre-wrap font-mono bg-zinc-900/50 p-4 rounded-lg'>
+              <div className='p-2 max-h-20'>
+                <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
                   {emailSetting.body}
                 </pre>
               </div>
@@ -309,16 +431,126 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
           )}
 
           {emailSetting.html && (
-            <Card className='dark:bg-background bg-greyed backdrop-blur-sm border border-zinc-800/50'>
+            <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-700/50 p-4'>
               <SectionHeader title='HTML Template' />
-              <div className='px-6 pb-6'>
-                <pre className='text-sm whitespace-pre-wrap font-mono bg-zinc-900/50 p-4 rounded-lg overflow-x-auto'>
+              <div className='p-2 max-h-20'>
+                <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg overflow-x-auto'>
                   {emailSetting.html}
                 </pre>
               </div>
             </Card>
           )}
         </motion.div>
+
+        <Modal
+          isOpen={sendJobDisclosure.isOpen}
+          onOpenChange={sendJobDisclosure.onOpenChange}
+          placement='center'
+          size='lg'
+          scrollBehavior='inside'>
+          <ModalContent>
+            <ModalHeader className='font-figtree'>
+              Create a Send Job
+            </ModalHeader>
+            <ModalBody className='font-figtree'>
+              <p className='text-sm text-default-500'>
+                Paste recipients below or add rows. Use name=email, name:email,
+                or name,email (one per line).
+              </p>
+              <Textarea
+                placeholder={'Paste here: Alice=alice@example.com\nBob,bob@example.com'}
+                minRows={2}
+                classNames={{input: 'font-mono text-sm'}}
+                onPaste={handlePasteRecipients}
+                description='Paste to add rows automatically'
+              />
+              <div className='space-y-3'>
+                {recipients.map((row, index) => (
+                  <div
+                    key={index}
+                    className='flex flex-wrap items-end gap-2'>
+                    <Input
+                      label={index === 0 ? 'Name' : undefined}
+                      placeholder='Name'
+                      value={row.name}
+                      onValueChange={(v) => setRecipient(index, 'name', v)}
+                      classNames={{input: 'font-mono text-sm'}}
+                      aria-label={`Recipient ${index + 1} name`}
+                    />
+                    <Input
+                      label={index === 0 ? 'Email' : undefined}
+                      placeholder='email@example.com'
+                      value={row.email}
+                      onValueChange={(v) => setRecipient(index, 'email', v)}
+                      type='email'
+                      isRequired={index === 0}
+                      isInvalid={!!sendError && index === 0 && !row.email.trim()}
+                      errorMessage={
+                        sendError && index === 0 && !row.email.trim()
+                          ? sendError
+                          : undefined
+                      }
+                      classNames={{input: 'font-mono text-sm'}}
+                      aria-label={`Recipient ${index + 1} email`}
+                    />
+                    <Button
+                      type='button'
+                      size='sm'
+                      variant='light'
+                      color='danger'
+                      isIconOnly
+                      onPress={() => removeRecipientRow(index)}
+                      isDisabled={recipients.length === 1}
+                      aria-label={`Remove recipient ${index + 1}`}>
+                      <Icon name='trash' className='size-4' />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <Button
+                type='button'
+                size='sm'
+                variant='flat'
+                onPress={addRecipientRow}
+                className='gap-1'>
+                <Icon name='plus' className='size-4' />
+                Add another
+              </Button>
+              <Input
+                label='CC (optional)'
+                placeholder='cc@example.com'
+                value={sendCc}
+                onValueChange={setSendCc}
+                classNames={{input: 'font-mono text-sm'}}
+              />
+              <Input
+                label='BCC (optional)'
+                placeholder='bcc@example.com'
+                value={sendBcc}
+                onValueChange={setSendBcc}
+                classNames={{input: 'font-mono text-sm'}}
+              />
+              {sendError && recipients.some((r) => r.email.trim()) && (
+                <p className='text-sm text-danger'>{sendError}</p>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                variant='light'
+                onPress={sendJobDisclosure.onClose}
+                isDisabled={isSending}>
+                Cancel
+              </Button>
+              <Button
+                color='primary'
+                onPress={handleSendJobSubmit}
+                isLoading={isSending}
+                className='bg-dark-gray dark:bg-white dark:text-dark-table'>
+                Send
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       </main>
     </div>
   )

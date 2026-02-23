@@ -4,16 +4,16 @@ import type {EmailSettingsFormValues} from './email-settings-form-schema'
 type EmailSettingsDoc = Doc<'emailSettings'>
 
 export const defaultFormValues: EmailSettingsFormValues = {
-  title: 'Hi',
-  intent: 'activation',
+  title: 'Title',
+  intent: 'invoice',
   visible: true,
   type: 'transactional',
-  group: 'activation',
-  from: 'support@rapidfirenow.com',
-  to: 'phtn458@gmail.com',
+  group: 'invoice',
+  from: 'hello@rapidfirenow.com',
+  to: '',
   cc: '',
   bcc: '',
-  subject: 'test',
+  subject: 'Subject',
   text: '',
   body: '',
   html: '',
