@@ -216,7 +216,7 @@ export function PayAmount({
                 type='button'
                 disabled={!paymentRequestUri}
                 onClick={openQrModal}
-                className='relative btn btn-ghost btn-lg btn-circle bg-transparent backdrop-blur-lg hover:bg-transparent'>
+                className='hidden _relative btn btn-ghost btn-lg btn-circle bg-transparent backdrop-blur-lg hover:bg-transparent'>
                 <Icon
                   name='qrcode'
                   className={cn('size-4 md:size-6 text-white ', {

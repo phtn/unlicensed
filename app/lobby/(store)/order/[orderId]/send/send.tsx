@@ -6,40 +6,120 @@ import {
 } from '@/components/sepolia/search-params-context'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {useCopy} from '@/hooks/use-copy'
 import {useCrypto} from '@/hooks/use-crypto'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react/tabs'
+import {Button, Image, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useParams} from 'next/navigation'
-import {useMemo, useRef, useState} from 'react'
+import QRCode from 'qrcode'
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+
+const CRYPTO_WALLET_IDENTIFIER = 'crypto_wallet_addresses'
+
+type CryptoWalletAddresses = {
+  bitcoin: string
+  ethereum: string
+  polygon: string
+}
+
+/** Network keys that have wallet addresses in admin settings (used for indexing) */
+type SendPageNetwork = keyof CryptoWalletAddresses
+
+function parseCryptoWallets(value: unknown): CryptoWalletAddresses {
+  if (!value || typeof value !== 'object' || 'error' in value) {
+    return {bitcoin: '', ethereum: '', polygon: ''}
+  }
+  const wallets = value as Record<string, unknown>
+  return {
+    bitcoin: typeof wallets.bitcoin === 'string' ? wallets.bitcoin : '',
+    ethereum: typeof wallets.ethereum === 'string' ? wallets.ethereum : '',
+    polygon: typeof wallets.polygon === 'string' ? wallets.polygon : '',
+  }
+}
+
+function buildPaymentRequestUri(
+  network: SendPageNetwork,
+  wallets: CryptoWalletAddresses,
+): string | null {
+  const addr = wallets[network]
+  if (!addr?.trim()) return null
+  if (network === 'bitcoin') return `bitcoin:${addr}`
+  if (network === 'ethereum') return `ethereum:${addr}@1`
+  if (network === 'polygon') return `ethereum:${addr}@137`
+  return null
+}
 
 const CryptoSendContent = () => {
   const params = useParams()
   const orderId = params.orderId as Id<'orders'>
-  const order = useQuery(api.orders.q.getById, {id: orderId})
   const updatePayment = useMutation(api.orders.m.updatePayment)
   const {setParams} = useSearchParams()
   const {getBySymbol} = useCrypto()
   const [, setTo] = useState('')
   const [amount, setAmount] = useState('')
-  const [selected, setSelected] = useState<AllowedNetworks>('bitcoin')
+  const [selected, setSelected] = useState<SendPageNetwork>('bitcoin')
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
   const paymentSyncedTxHashRef = useRef<`0x${string}` | null>(null)
   const addressInputRef = useRef<HTMLInputElement>(null)
   const amountInputRef = useRef<HTMLInputElement>(null)
+
+  const cryptoSetting = useQuery(api.admin.q.getAdminByIdentStrict, {
+    identifier: CRYPTO_WALLET_IDENTIFIER,
+  })
+  const wallets = useMemo(
+    () => parseCryptoWallets(cryptoSetting),
+    [cryptoSetting],
+  )
+
+  const paymentRequestUri = useMemo(
+    () => buildPaymentRequestUri(selected, wallets),
+    [selected, wallets],
+  )
+
+  useEffect(() => {
+    if (!paymentRequestUri) {
+      startTransition(() => {
+        setQrDataUrl(null)
+      })
+      return
+    }
+    let cancelled = false
+    QRCode.toDataURL(paymentRequestUri, {margin: 2, width: 260})
+      .then((url) => {
+        if (!cancelled) setQrDataUrl(url)
+      })
+      .catch(() => {
+        if (!cancelled) setQrDataUrl(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [paymentRequestUri])
+
+  const walletAddress = wallets[selected]
+  const {copy, copied} = useCopy({timeout: 2000})
+  const copyAddress = useCallback(() => {
+    if (!walletAddress?.trim()) return
+    copy('Wallet Address', walletAddress.trim())
+  }, [copy, walletAddress])
 
   const ethPrice = useMemo(
     () => getBySymbol('ETH')?.price ?? null,
     [getBySymbol],
   )
 
-  // const defaultPaymentAmountUsd = useMemo(() => {
-  //   if (order == null || order === undefined) return undefined
-  //   return (order.totalCents / 100).toFixed(2)
-  // }, [order])
-
-  const networks: AllowedNetworks[] = ['bitcoin', 'ethereum', 'polygon']
+  const networks: SendPageNetwork[] = ['bitcoin', 'ethereum', 'polygon']
 
   return (
     <div className='relative z-100 md:-translate-x-2 md:w-3xl md:max-w-3xl md:mx-auto flex h-full'>
@@ -57,7 +137,9 @@ const CryptoSendContent = () => {
             </span>
             <span className='text-indigo-500'>Development In-progress...</span>
           </div>
-          <Tabs.Root defaultValue='bitcoin'>
+          <Tabs.Root
+            value={selected}
+            onValueChange={(v) => setSelected(v as SendPageNetwork)}>
             <Tabs.List className='relative z-0 flex gap-8 w-full '>
               {networks.map((tab) => (
                 <Tabs.Tab
@@ -79,23 +161,94 @@ const CryptoSendContent = () => {
               <Tabs.Indicator className='absolute top-1/2 left-0 z-[-1] w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-sm bg-linear-to-r from-slate-700/90 via-slate-900/90 to-origin dark:bg-dark-table dark:via-slate-800 dark:to-slate-800 transition-all duration-300 ease-in-out' />
             </Tabs.List>
             <Tabs.Panel value='bitcoin'>
-              <div className='flex items-center justify-center h-72 w-full rounded-lg border border-zinc-500 bg-zinc-200/20 mt-2'>
-                <Icon name='qrcode' />
-              </div>
-              <div className='py-1 flex items-center justify-between '>
-                <span className='font-brk'>Send to</span>
-                <span>Copy Addresss</span>
-                <Icon name='copy' />
-              </div>
+              <SendToPanel
+                qrDataUrl={qrDataUrl}
+                walletAddress={walletAddress}
+                copyFn={copyAddress}
+                isCopied={copied}
+              />
             </Tabs.Panel>
             <Tabs.Panel value='ethereum'>
-              <div>Ethereum</div>
+              <SendToPanel
+                qrDataUrl={qrDataUrl}
+                walletAddress={walletAddress}
+                copyFn={copyAddress}
+                isCopied={copied}
+              />
             </Tabs.Panel>
             <Tabs.Panel value='polygon'>
-              <div>Polygon</div>
+              <SendToPanel
+                qrDataUrl={qrDataUrl}
+                walletAddress={walletAddress}
+                copyFn={copyAddress}
+                isCopied={copied}
+              />
             </Tabs.Panel>
           </Tabs.Root>
         </motion.div>
+      </div>
+    </div>
+  )
+}
+
+function SendToPanel({
+  qrDataUrl,
+  walletAddress,
+  copyFn,
+  isCopied,
+}: {
+  qrDataUrl: string | null
+  walletAddress: string
+  copyFn: VoidFunction
+  isCopied: boolean
+}) {
+  const [txnHash, setTxnHash] = useState<string>()
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTxnHash(event.target.value)
+  }
+
+  return (
+    <div className='space-y-2'>
+      <div className='flex items-center justify-center h-72 w-full rounded-lg border border-zinc-500 bg-zinc-200/20 mt-2'>
+        {qrDataUrl ? (
+          <Image
+            radius='sm'
+            src={qrDataUrl}
+            alt='Payment QR code'
+            className='size-64 object-contain'
+          />
+        ) : (
+          <Icon name='qrcode' className='text-zinc-500 size-16' />
+        )}
+      </div>
+      <div
+        className={cn(
+          'py-1 flex w-full items-center justify-between rounded-sm transition-colors',
+          'hover:bg-white/5 disabled:opacity-50 disabled:pointer-events-none',
+        )}>
+        <span className='font-brk text-white/90'>Send to</span>
+        <span className='text-white/80 text-sm'>{walletAddress}</span>
+        <Icon
+          name={isCopied ? 'check' : 'copy'}
+          className='text-white/70 size-4'
+          onClick={copyFn}
+        />
+      </div>
+      <div className='flex items-center space-x-3'>
+        <label htmlFor='txn-hash' className='whitespace-nowrap font-brk'>
+          Txn Hash
+        </label>
+        <Input
+          id='txn-hash'
+          placeholder='0x...'
+          onChange={handleChange}
+          defaultValue={txnHash}
+        />
+      </div>
+      <div className='flex items-center justify-end py-3'>
+        <Button size='lg' disabled={!txnHash}>
+          Confirm Payment
+        </Button>
       </div>
     </div>
   )
@@ -158,7 +311,6 @@ const NetworkButtonRound = ({
         className={cn('font-brk opacity-80 text-sm text-white capitalize', {
           'opacity-100 text-dark-table max-w-[8ch]': selected,
         })}>
-        {/*{name === 'bitcoin' && !selected ? 'BTC' : name}*/}
         {name}
       </p>
     </motion.button>
