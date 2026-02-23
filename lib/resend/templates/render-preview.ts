@@ -73,7 +73,7 @@ const TEMPLATE_MAP: Record<EmailTemplateId, TemplateEntry> = {
       message: 'Enter the code below to access our shop:',
       ctaLabel: 'Shop Now',
       ctaUrl: 'https://rapidfirenow.com',
-      accessCode: 'CROWNS',
+      accessCode: 'RF2026',
     },
   },
   promotion: {

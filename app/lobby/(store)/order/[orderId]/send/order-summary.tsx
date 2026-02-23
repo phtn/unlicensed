@@ -26,7 +26,7 @@ export const OrderSummaryWidget = () => {
     () =>
       order?.items.map((item) => ({
         label: item.productName,
-        value: `$${formatPrice(order.totalCents)}`,
+        value: `$${formatPrice(item.unitPriceCents)}`,
       })),
     [order],
   )

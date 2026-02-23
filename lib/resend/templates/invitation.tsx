@@ -48,10 +48,12 @@ export const InvitationEmail = ({
           <Section>
             <Column>
               <Img
-                src={`${baseUrl}/static/rf-wordmark-flex.png`}
+                src={
+                  'https://res.cloudinary.com/dx0heqhhe/image/upload/v1771881178/rf-wordmark-flex_vrgct3.png'
+                }
                 width='auto'
                 height='42'
-                alt='RF Logo'
+                alt='RF Wordmark'
                 className='aspect-auto'
               />
             </Column>

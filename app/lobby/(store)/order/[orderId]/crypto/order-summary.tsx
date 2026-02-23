@@ -25,8 +25,8 @@ export const OrderSummaryWidget = () => {
   const data = useMemo(
     () =>
       order?.items.map((item) => ({
-        label: item.productName,
-        value: `$${formatPrice(order.totalCents)}`,
+        label: `${item.productName} x ${item.quantity}`,
+        value: `$${formatPrice(item.unitPriceCents * item.quantity)}`,
       })),
     [order],
   )
@@ -58,6 +58,10 @@ export const OrderSummaryWidget = () => {
             data
               ? [
                   ...data,
+                  {
+                    label: 'Total',
+                    value: `$${formatPrice(order?.totalCents ?? 0)}`,
+                  },
                   {
                     label: 'Payment Method',
                     value: pmmap[order?.payment.method ?? 'cash_app'],

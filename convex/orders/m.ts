@@ -81,6 +81,17 @@ export const createOrder = mutation({
     taxCents: v.optional(v.number()),
     shippingCents: v.optional(v.number()),
     discountCents: v.optional(v.number()),
+    // Optional: client-provided item prices (unitPriceCents, totalPriceCents = quantity × unitPriceCents × denomination)
+    itemPriceOverrides: v.optional(
+      v.array(
+        v.object({
+          productId: v.id('products'),
+          denomination: v.optional(v.number()),
+          unitPriceCents: v.number(),
+          totalPriceCents: v.number(),
+        }),
+      ),
+    ),
   },
   handler: async (ctx, args) => {
     let cart = null
@@ -111,8 +122,19 @@ export const createOrder = mutation({
       }
     }
 
-    // Build order items with product snapshots.
-    // Use db.get directly; cart stores Convex product IDs as-is.
+    const overrideMap = new Map<string, { unitPriceCents: number; totalPriceCents: number }>()
+    if (args.itemPriceOverrides?.length) {
+      for (const o of args.itemPriceOverrides) {
+        const key = `${o.productId}:${o.denomination ?? 1}`
+        overrideMap.set(key, {
+          unitPriceCents: o.unitPriceCents,
+          totalPriceCents: o.totalPriceCents,
+        })
+      }
+    }
+
+    // Build order items with product snapshots. Orders table "items" field must be complete:
+    // every item has unitPriceCents and totalPriceCents (totalPriceCents = quantity × unitPriceCents × denomination).
     const orderItems = await Promise.all(
       cart.items.map(async (cartItem) => {
         const product = await ctx.db.get(cartItem.productId)
@@ -120,10 +142,43 @@ export const createOrder = mutation({
           throw new Error(`Product ${cartItem.productId} not found`)
         }
 
-        const denomination = cartItem.denomination || 1
-        const unitPriceCents = product.priceCents ?? 0
-        const totalPriceCents =
-          unitPriceCents * denomination * cartItem.quantity
+        const denomination = cartItem.denomination ?? 1
+        const quantity = cartItem.quantity
+        const overrideKey = `${cartItem.productId}:${denomination}`
+        const override = overrideMap.get(overrideKey)
+
+        // Unit price in cents: prefer override, then priceByDenomination (per-denom price in cents), then priceCents (base price)
+        let unitPriceCents: number
+        let totalPriceCents: number
+        if (typeof override?.unitPriceCents === 'number') {
+          unitPriceCents = override.unitPriceCents
+          totalPriceCents =
+            typeof override?.totalPriceCents === 'number'
+              ? override.totalPriceCents
+              : unitPriceCents * quantity
+        } else {
+          const byDenom = product.priceByDenomination
+          const denomKey = String(denomination)
+          const priceFromDenom =
+            byDenom &&
+            Object.keys(byDenom).length > 0 &&
+            typeof byDenom[denomKey] === 'number'
+              ? byDenom[denomKey]
+              : null
+          if (priceFromDenom != null && priceFromDenom >= 0) {
+            // priceByDenomination is stored in cents; price is per unit of this denomination
+            unitPriceCents = priceFromDenom
+            totalPriceCents = unitPriceCents * quantity
+          } else {
+            // Fallback: base price in priceCents; total = base * denomination * quantity
+            unitPriceCents = typeof product.priceCents === 'number' ? product.priceCents : 0
+            totalPriceCents = unitPriceCents * denomination * quantity
+          }
+        }
+
+        const safeUnitPriceCents = Number(unitPriceCents) || 0
+        const safeTotalPriceCents =
+          Number(totalPriceCents) || safeUnitPriceCents * quantity
 
         // Convert storage ID to URL if needed
         let productImageUrl = ''
@@ -136,10 +191,10 @@ export const createOrder = mutation({
           productName: product.name ?? '',
           productSlug: product.slug ?? '',
           productImage: productImageUrl,
-          quantity: cartItem.quantity,
+          quantity,
           denomination: cartItem.denomination,
-          unitPriceCents,
-          totalPriceCents,
+          unitPriceCents: safeUnitPriceCents,
+          totalPriceCents: safeTotalPriceCents,
         }
       }),
     )

@@ -15,6 +15,56 @@ import {useAuth} from './use-auth'
 import {useCart} from './use-cart'
 import {useRefGen} from './use-ref-gen'
 
+/** Item price snapshot for order creation: unitPriceCents and totalPriceCents (quantity × unitPriceCents per sellable unit). */
+export type OrderItemPriceOverride = {
+  productId: Id<'products'>
+  denomination?: number
+  unitPriceCents: number
+  totalPriceCents: number
+}
+
+/** Match Convex createOrder logic: use priceByDenomination when available (cents), else priceCents base price. */
+function computeItemPricesFromCart(
+  cart: {
+    items: Array<{
+      productId: Id<'products'>
+      quantity: number
+      denomination?: number
+      product: {
+        priceCents?: number
+        priceByDenomination?: Record<string, number>
+      }
+    }>
+  },
+): OrderItemPriceOverride[] {
+  return cart.items.map((item) => {
+    const denomination = item.denomination ?? 1
+    const denomKey = String(denomination)
+    const byDenom = item.product.priceByDenomination
+    const priceFromDenom =
+      byDenom &&
+      Object.keys(byDenom).length > 0 &&
+      typeof byDenom[denomKey] === 'number'
+        ? byDenom[denomKey]
+        : null
+    let unitPriceCents: number
+    let totalPriceCents: number
+    if (priceFromDenom != null && priceFromDenom >= 0) {
+      unitPriceCents = priceFromDenom
+      totalPriceCents = unitPriceCents * item.quantity
+    } else {
+      unitPriceCents = item.product.priceCents ?? 0
+      totalPriceCents = unitPriceCents * denomination * item.quantity
+    }
+    return {
+      productId: item.productId,
+      denomination: item.denomination,
+      unitPriceCents,
+      totalPriceCents,
+    }
+  })
+}
+
 export interface PlaceOrderParams {
   shippingAddress: AddressType
   billingAddress?: AddressType
@@ -143,6 +193,19 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
         return null
       }
 
+      // When we have cart with products, ensure each item has unitPriceCents and totalPriceCents (totalPriceCents = quantity × unitPriceCents × denomination)
+      let itemPriceOverrides: OrderItemPriceOverride[] | undefined
+      if (cart?.items?.length && cart.items.every((i) => 'product' in i && i.product)) {
+        itemPriceOverrides = computeItemPricesFromCart(cart as Parameters<typeof computeItemPricesFromCart>[0])
+        const hasInvalid = itemPriceOverrides.some(
+          (o) => typeof o.unitPriceCents !== 'number' || typeof o.totalPriceCents !== 'number',
+        )
+        if (hasInvalid) {
+          setError(new Error('Cart item prices are invalid; please refresh and try again.'))
+          return null
+        }
+      }
+
       setIsLoading(true)
       setError(null)
       setOrderId(null)
@@ -216,6 +279,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 taxCents: params.taxCents,
                 shippingCents: params.shippingCents,
                 discountCents: params.discountCents,
+                itemPriceOverrides,
               }
             : {
                 uuid,
@@ -231,6 +295,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 taxCents: params.taxCents,
                 shippingCents: params.shippingCents,
                 discountCents: params.discountCents,
+                itemPriceOverrides,
               }
 
         // Create order

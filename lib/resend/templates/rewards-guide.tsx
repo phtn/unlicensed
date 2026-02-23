@@ -24,7 +24,9 @@ export const RewardsGuide = ({baseUrl}: RewardsGuideProps) => {
         <Row className='flex items-center'>
           <Column>
             <Img
-              src={`${baseUrl}/static/rf-logo-round-dark.png`}
+              src={
+                'https://res.cloudinary.com/dx0heqhhe/image/upload/v1771881181/rf-logo-round-dark_gxg9er.png'
+              }
               width='28'
               height='28'
               alt='Rewards'

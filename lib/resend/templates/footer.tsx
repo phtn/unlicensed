@@ -5,7 +5,7 @@ export const FooterEmailContent = ({baseUrl}: {baseUrl: string}) => {
       <Row>
         <Column align='center' className='block mt-10'>
           <Img
-            src={`${baseUrl}/static/rf-logo-round-latest.png`}
+            src={`https://res.cloudinary.com/dx0heqhhe/image/upload/v1771881183/rf-logo-round-latest_n1ylmo.png`}
             width='26'
             height='26'
             alt='RF Logo'
