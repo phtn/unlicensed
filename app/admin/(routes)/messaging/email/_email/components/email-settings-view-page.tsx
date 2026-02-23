@@ -3,11 +3,11 @@
 import {AccessDenied} from '@/app/admin/_components/ui/access-denied'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {api} from '@/convex/_generated/api'
-import type {Id} from '@/convex/_generated/dataModel'
+import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
-import {Button, Card, CardHeader} from '@heroui/react'
+import {Button, Card, CardBody, CardHeader} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useRouter} from 'next/navigation'
@@ -17,12 +17,18 @@ import type {EmailSettingsConvexArgs} from '../email-settings-form-schema'
 import {toFormValues, withViewTransition} from '../utils'
 import {EmailTemplateEditor} from './email-template-editor'
 
-export const EmailTemplateViewer = ({id}: {id: Id<'emailSettings'>}) => {
+interface EmailTemplateViewerProps {
+  id: string
+}
+export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   const router = useRouter()
   const {user} = useAuthCtx()
   const [isEditing, setIsEditing] = useState(false)
 
-  const emailSetting = useQuery(api.emailSettings.q.getEmailSetting, {id})
+  const emailSetting = useQuery(
+    api.emailSettings.q.getEmailSetting,
+    id ? {id: id as Id<'emailSettings'>} : 'skip',
+  )
   const updateEmailSetting = useMutation(api.emailSettings.m.update)
   const deleteEmailSetting = useMutation(api.emailSettings.m.remove)
 
@@ -36,14 +42,14 @@ export const EmailTemplateViewer = ({id}: {id: Id<'emailSettings'>}) => {
   const navigateBackToList = useCallback(() => {
     withViewTransition(() => {
       startTransition(() => {
-        router.push('/admin/configs/email')
+        router.push('/admin/messaging/email')
       })
     })
   }, [router])
 
   const handleSubmitEdit = useCallback(
     async (values: EmailSettingsConvexArgs) => {
-      await updateEmailSetting({id, ...values})
+      await updateEmailSetting({id: id as Id<'emailSettings'>, ...values})
       toast.success('Email setting updated')
       setIsEditing(false)
     },
@@ -56,7 +62,7 @@ export const EmailTemplateViewer = ({id}: {id: Id<'emailSettings'>}) => {
     startTransition(() => {
       ;(async () => {
         try {
-          await deleteEmailSetting({id})
+          await deleteEmailSetting({id: id as Id<'emailSettings'>})
           onSuccess('Email setting deleted')
           navigateBackToList()
         } catch (error) {
@@ -79,7 +85,7 @@ export const EmailTemplateViewer = ({id}: {id: Id<'emailSettings'>}) => {
           animate={{opacity: 1}}
           className='flex items-center gap-3 opacity-50'>
           <Icon name='spinners-ring' className='size-5' />
-          Loading email setting...
+          Loading email template...
         </motion.div>
       </div>
     )
@@ -103,7 +109,7 @@ export const EmailTemplateViewer = ({id}: {id: Id<'emailSettings'>}) => {
       <div className='min-h-screen'>
         <div className='hidden dark:fixed inset-0 overflow-hidden pointer-events-none'>
           <div className='absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl' />
-          <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl' />
+          <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-brand/10 rounded-full blur-3xl' />
         </div>
         <main className='relative'>
           <div className='overflow-hidden'>
@@ -146,6 +152,7 @@ export const EmailTemplateViewer = ({id}: {id: Id<'emailSettings'>}) => {
             </Button>
             <Button
               type='button'
+              color='danger'
               variant='light'
               onPress={handleDelete}
               className='text-mac-red hover:text-mac-red dark:text-red-400 dark:hover:text-red-500'>
@@ -158,16 +165,18 @@ export const EmailTemplateViewer = ({id}: {id: Id<'emailSettings'>}) => {
           initial={{opacity: 0, y: 20}}
           animate={{opacity: 1, y: 0}}
           className='space-y-0'>
-          <Card className='dark:bg-background bg-greyed/10 backdrop-blur-xl border border-greyed/15 rounded-t-4xl rounded-b-none shadow-none font-figtree'>
+          <Card
+            radius='none'
+            className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-t-2xl rounded-b-none shadow-none font-figtree h-28'>
             <CardHeader>
-              <div className='flex items-center gap-3 mb-0'>
+              <div className='flex items-center gap-3'>
                 <SectionHeader
                   title={emailSetting.title || 'Untitled Template'}
                 />
                 <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-cyan-100/50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-600/50 dark:border-cyan-500/30'>
                   {emailSetting.intent || 'general'}
                 </span>
-                <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-purple-100/50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 dark:border-purple-500/30'>
+                <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-brand/10 dark:bg-brand/10 text-brand dark:text-brand border border-brand/30 dark:border-brand/30'>
                   {emailSetting.type || 'default'}
                 </span>
                 {emailSetting.visible ? (
@@ -180,62 +189,100 @@ export const EmailTemplateViewer = ({id}: {id: Id<'emailSettings'>}) => {
                   </span>
                 )}
               </div>
+            </CardHeader>
+            <CardBody>
               <div className='text-base pt-2 font-figtree'>
-                <span className='text-xs uppercase mr-2'>subject:</span>
-                <span className='font-semibold'>
+                <span className='text-xs uppercase opacity-70 mr-2'>
+                  subject:
+                </span>
+                <span className='font-medium'>
                   {emailSetting.subject || 'No subject defined'}
                 </span>
               </div>
-            </CardHeader>
+            </CardBody>
           </Card>
 
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-0 font-figtree'>
-            <Card className='dark:bg-background bg-greyed/10 backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none md:rounded-bl-4xl shadow-none'>
-              <SectionHeader title='Recipients' />
-              <div className='px-6 pb-6 space-y-3'>
-                <div>
-                  <p className='text-xs uppercase opacity-50 mb-1'>from</p>
-                  <p className='text-sm'>
-                    {emailSetting.from?.join(', ') || 'Not set'}
-                  </p>
-                </div>
-                <div>
-                  <p className='text-xs uppercase opacity-50 mb-1'>to</p>
-                  <p className='text-sm'>
-                    {emailSetting.to?.join(', ') || 'Not set'}
-                  </p>
-                </div>
-                {emailSetting.cc && emailSetting.cc.length > 0 && (
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-0 font-figtree'>
+            <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none md:rounded-bl-4xl shadow-none'>
+              <CardBody>
+                <SectionHeader title='Recipients' />
+                <div className='py-6 space-y-3'>
                   <div>
-                    <p className='text-xs text-zinc-400 mb-1'>CC</p>
-                    <p className='text-sm'>{emailSetting.cc.join(', ')}</p>
+                    <p className='text-xs uppercase opacity-60 mb-1'>from</p>
+                    <p className='text-sm'>
+                      {emailSetting.from?.join(', ') || 'Not set'}
+                    </p>
                   </div>
-                )}
-                {emailSetting.bcc && emailSetting.bcc.length > 0 && (
                   <div>
-                    <p className='text-xs uppercase opacity-50 mb-1'>bcc</p>
-                    <p className='text-sm'>{emailSetting.bcc.join(', ')}</p>
+                    <p className='text-xs uppercase opacity-60 mb-1'>to</p>
+                    <p className='text-sm'>
+                      {emailSetting.to?.join(', ') || 'dynamic'}
+                    </p>
                   </div>
-                )}
-              </div>
+                  {emailSetting.cc && emailSetting.cc.length > 0 && (
+                    <div>
+                      <p className='text-xs text-zinc-400 mb-1'>CC</p>
+                      <p className='text-sm'>{emailSetting.cc.join(', ')}</p>
+                    </div>
+                  )}
+                  {emailSetting.bcc && emailSetting.bcc.length > 0 && (
+                    <div>
+                      <p className='text-xs uppercase opacity-60 mb-1'>bcc</p>
+                      <p className='text-sm'>{emailSetting.bcc.join(', ')}</p>
+                    </div>
+                  )}
+                </div>
+              </CardBody>
             </Card>
-
-            <Card className='dark:bg-background bg-greyed/10 backdrop-blur-xl border border-t-0 md:border-l-0 border-greyed/15 rounded-none rounded-b-4xl md:rounded-bl-none shadow-none'>
-              <SectionHeader title='Metadata' />
-              <div className='px-6 pb-6 space-y-3'>
-                {emailSetting.group && (
+            <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none shadow-none'>
+              <CardBody>
+                <SectionHeader title='Template' />
+                <div className='py-6 space-y-3'>
                   <div>
-                    <p className='text-xs uppercase opacity-50 mb-1'>Group</p>
-                    <p className='text-sm'>{emailSetting.group}</p>
+                    <p className='text-xs uppercase opacity-60 mb-1'>from</p>
+                    <p className='text-sm'></p>
                   </div>
-                )}
-                {emailSetting.intent && (
                   <div>
-                    <p className='text-xs uppercase opacity-50 mb-1'>Intent</p>
-                    <p className='text-sm'>{emailSetting.intent}</p>
+                    <p className='text-xs uppercase opacity-60 mb-1'>to</p>
+                    <p className='text-sm'>
+                      {emailSetting.to?.join(', ') || 'dynamic'}
+                    </p>
                   </div>
-                )}
-              </div>
+                  {emailSetting.cc && emailSetting.cc.length > 0 && (
+                    <div>
+                      <p className='text-xs text-zinc-400 mb-1'>CC</p>
+                      <p className='text-sm'>{emailSetting.cc.join(', ')}</p>
+                    </div>
+                  )}
+                  {emailSetting.bcc && emailSetting.bcc.length > 0 && (
+                    <div>
+                      <p className='text-xs uppercase opacity-60 mb-1'>bcc</p>
+                      <p className='text-sm'>{emailSetting.bcc.join(', ')}</p>
+                    </div>
+                  )}
+                </div>
+              </CardBody>
+            </Card>
+            <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-t-0 md:border-l-0 border-background rounded-none rounded-b-4xl md:rounded-bl-none shadow-none'>
+              <CardBody>
+                <SectionHeader title='Metadata' />
+                <div className='py-6 space-y-3'>
+                  {emailSetting.group && (
+                    <div>
+                      <p className='text-xs uppercase opacity-60 mb-1'>Group</p>
+                      <p className='text-sm'>{emailSetting.group}</p>
+                    </div>
+                  )}
+                  {emailSetting.intent && (
+                    <div>
+                      <p className='text-xs uppercase opacity-60 mb-1'>
+                        Intent
+                      </p>
+                      <p className='text-sm'>{emailSetting.intent}</p>
+                    </div>
+                  )}
+                </div>
+              </CardBody>
             </Card>
           </div>
 

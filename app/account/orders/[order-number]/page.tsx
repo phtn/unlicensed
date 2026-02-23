@@ -44,12 +44,11 @@ function getPaymentRoute(orderId: string, paymentMethod: string) {
   }
   if (
     paymentMethodValue === 'crypto_commerce' ||
-    paymentMethodValue === 'crypto_transfer' ||
     paymentMethodValue === 'crypto-payment'
   ) {
     return `/lobby/order/${orderId}/crypto`
   }
-  return `/lobby/order/${orderId}/crypto`
+  return `/lobby/order/${orderId}/send`
 }
 
 export default function OrderDetailPage() {

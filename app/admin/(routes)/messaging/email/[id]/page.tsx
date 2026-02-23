@@ -2,15 +2,14 @@ import {Content} from './content'
 
 interface Props {
   params: Promise<{
-    config: string
-    tabId: string
+    id: string
   }>
 }
 
 const Page = async ({params}: Props) => {
-  const {config, tabId} = await params
+  const {id} = await params
 
-  return <Content config={config} tabId={tabId} />
+  return <Content tabId={id} />
 }
 
 export default Page

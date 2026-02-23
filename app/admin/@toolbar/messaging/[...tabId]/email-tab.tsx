@@ -28,6 +28,12 @@ const EmailTabInner = () => {
       </MainTab>
       <ToolbarButtonWrapper>
         <SecondaryTab
+          id='templates'
+          href='/admin/messaging/email?tabId=templates'
+          icon='gallery-edit-bold'
+          label='Templates'
+        />
+        <SecondaryTab
           id='new'
           href='/admin/messaging/email?tabId=new'
           icon='plus'

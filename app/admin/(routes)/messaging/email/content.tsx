@@ -5,6 +5,7 @@ import {api} from '@/convex/_generated/api'
 import {useQuery} from 'convex/react'
 import {Suspense} from 'react'
 import {EmailTemplateList} from './_email'
+import {EmailTemplateDisplay} from './_email/components/email-template-display'
 import {EmailTemplateForm} from './_email/components/email-template-form'
 
 const EmailContentInner = () => {
@@ -14,6 +15,8 @@ const EmailContentInner = () => {
   switch (tabId) {
     case 'new':
       return <EmailTemplateForm />
+    case 'templates':
+      return <EmailTemplateDisplay />
     case 'edit':
       if (!id) {
         return (

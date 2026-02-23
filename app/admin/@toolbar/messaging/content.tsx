@@ -9,6 +9,7 @@ import {PageTitle} from '../../_components/ui/page-title'
 import {
   MainTab,
   PrimaryTab,
+  SecondaryTab,
   ToolbarButtonWrapper,
   ToolbarWrapper,
 } from '../components'
@@ -30,6 +31,12 @@ export const MessagingContent = () => {
         </ViewTransition>
       </MainTab>
       <ToolbarButtonWrapper>
+        <SecondaryTab
+          id='templates'
+          href='/admin/messaging/email?tabId=templates'
+          icon='gallery-edit-bold'
+          label='Templates'
+        />
         <PrimaryTab
           id='new'
           href='/admin/messaging/email?tabId=new'

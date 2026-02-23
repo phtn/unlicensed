@@ -74,6 +74,7 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   deploymentId,
+  serverExternalPackages: ['@react-email/render', '@react-email/components'],
   experimental: {
     serverActions: {
       allowedOrigins: serverActionAllowedOrigins,

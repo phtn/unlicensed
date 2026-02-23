@@ -17,6 +17,7 @@ export const defaultFormValues: EmailSettingsFormValues = {
   text: '',
   body: '',
   html: '',
+  template: '',
 }
 
 export const withViewTransition = (fn: () => void) => {
@@ -51,5 +52,6 @@ export const toFormValues = (
     text: setting.text ?? '',
     body: setting.body ?? '',
     html: setting.html ?? '',
+    template: setting.template ?? '',
   }
 }

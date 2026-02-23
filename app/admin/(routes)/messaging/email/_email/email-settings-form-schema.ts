@@ -52,6 +52,7 @@ export const emailSettingsFormSchema = z.object({
   text: z.string(),
   body: z.string(),
   html: z.string(),
+  template: z.string().trim(),
 })
 
 export type EmailSettingsFormValues = z.infer<typeof emailSettingsFormSchema>
@@ -75,6 +76,7 @@ export type EmailSettingsConvexArgs = {
   text?: string
   body?: string
   html?: string
+  template?: string
 }
 
 export const toEmailSettingsConvexArgs = (
@@ -99,5 +101,6 @@ export const toEmailSettingsConvexArgs = (
     text: emptyToUndefined(values.text),
     body: emptyToUndefined(values.body),
     html: emptyToUndefined(values.html),
+    template: emptyToUndefined(values.template),
   }
 }

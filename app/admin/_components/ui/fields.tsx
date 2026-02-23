@@ -463,7 +463,7 @@ export function SwitchField<T>(
           wrapper: 'group-data-[selected=true]:bg-amber-500',
         }}>
         <div className='flex flex-col gap-px'>
-          <span className='text-base font-semibold'>{props?.label}</span>
+          <span className='text-base font-medium'>{props?.label}</span>
           <span className='text-xs opacity-70'>{props?.description}</span>
         </div>
       </Switch>

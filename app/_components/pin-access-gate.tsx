@@ -171,7 +171,7 @@ export function PinAccessGate() {
                 <Link
                   href='/lobby'
                   onClick={handleRedirect}
-                  className='flex items-center space-x-4 text-brand underline underline-offset-6 decoration-zinc-100/30 hover:decoration-zinc-100/60 decoration-dotted decoration-0.5'>
+                  className='flex items-center space-x-4 bg-brand text-white py-1 px-2.5 rounded-md'>
                   <span>TO LOBBY</span>
                   <Icon
                     name={isRedirecting ? 'spinners-ring' : 'arrow-right'}

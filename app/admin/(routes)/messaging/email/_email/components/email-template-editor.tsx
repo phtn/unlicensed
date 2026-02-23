@@ -4,9 +4,10 @@ import {SelectOption} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {Icon} from '@/lib/icons'
+import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
 import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
-import {useMemo, useTransition} from 'react'
+import {Button, Select, SelectItem} from '@heroui/react'
+import {useCallback, useMemo, useState, useTransition} from 'react'
 import {toast} from 'react-hot-toast'
 import type {
   EmailSettingsConvexArgs,
@@ -24,6 +25,8 @@ interface EmailTemplateEditorProps {
   onSubmit: (values: EmailSettingsConvexArgs) => Promise<void>
 }
 
+const TEMPLATE_NONE = ''
+
 export const EmailTemplateEditor = ({
   initialValues,
   submitLabel,
@@ -31,6 +34,10 @@ export const EmailTemplateEditor = ({
   onSubmit,
 }: EmailTemplateEditorProps) => {
   const [isSaving, startSaving] = useTransition()
+  const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>(
+    () => initialValues.template ?? TEMPLATE_NONE,
+  )
+  const [isLoadingTemplate, startLoadingTemplate] = useTransition()
 
   const form = useAppForm({
     defaultValues: initialValues,
@@ -75,6 +82,45 @@ export const EmailTemplateEditor = ({
       },
     ],
     [],
+  )
+
+  const templateSelectOptions = useMemo(
+    () => [
+      { id: TEMPLATE_NONE, label: 'No template' },
+      ...EMAIL_TEMPLATE_OPTIONS,
+    ],
+    [],
+  )
+
+  const handleTemplateSelect = useCallback(
+    (key: React.Key | null) => {
+      const id = key === null || key === TEMPLATE_NONE ? '' : String(key)
+      setSelectedTemplateKey(id)
+      form.setFieldValue('template', id)
+      if (!id) return
+
+      startLoadingTemplate(() => {
+        ;(async () => {
+          try {
+            const res = await fetch(
+              `/api/resend/templates/${encodeURIComponent(id)}`,
+            )
+            if (!res.ok) {
+              const data = (await res.json()) as {error?: string}
+              toast.error(data?.error ?? 'Failed to load template')
+              return
+            }
+            const data = (await res.json()) as {html: string; subject: string}
+            form.setFieldValue('subject', data.subject)
+            form.setFieldValue('html', data.html)
+            toast.success('Template applied')
+          } catch {
+            toast.error('Failed to load template')
+          }
+        })()
+      })
+    },
+    [form],
   )
 
   return (
@@ -202,7 +248,7 @@ export const EmailTemplateEditor = ({
         <section>
           <SectionHeader title='Recipients' />
 
-          <div className='space-y-4'>
+          <div className='space-y-4 pt-2'>
             <form.AppField name='from'>
               {(fieldApi) => {
                 const errors = fieldApi.state.meta.errors
@@ -337,7 +383,29 @@ export const EmailTemplateEditor = ({
         <section>
           <SectionHeader title='Content' />
 
-          <div className='space-y-4'>
+          <div className='space-y-4 pt-2'>
+            <Select
+              label='Start from template'
+              placeholder='Choose a template (optional)'
+              variant='bordered'
+              selectedKeys={selectedTemplateKey ? [selectedTemplateKey] : []}
+              onSelectionChange={(keys) => {
+                const key = Array.from(keys)[0] ?? null
+                handleTemplateSelect(key)
+              }}
+              isDisabled={isLoadingTemplate}
+              classNames={{
+                trigger:
+                  'border border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 rounded-lg min-h-10',
+              }}
+              items={templateSelectOptions}>
+              {(item) => (
+                <SelectItem key={item.id} textValue={item.label}>
+                  {item.label}
+                </SelectItem>
+              )}
+            </Select>
+
             <form.AppField name='text'>
               {(fieldApi) => {
                 const errors = fieldApi.state.meta.errors
@@ -417,7 +485,7 @@ export const EmailTemplateEditor = ({
             </form.AppField>
           </div>
         </section>
-        <div className='flex items-center justify-between sticky bottom-0 px-6 py-4'>
+        <div className='flex items-center justify-between sticky bottom-0 px-4'>
           <form.AppField
             name='visible'
             validators={{
@@ -451,9 +519,9 @@ export const EmailTemplateEditor = ({
           </form.AppField>
           <div className='flex items-center justify-end gap-3'>
             <Button
-              variant='ghost'
+              variant='light'
               onPress={onCancel}
-              className='text-zinc-400 hover:text-white hover:bg-zinc-800'>
+              className='hover:bg-sidebar border-background'>
               Cancel
             </Button>
 
@@ -461,7 +529,7 @@ export const EmailTemplateEditor = ({
               type='submit'
               disabled={isSaving}
               className={cn(
-                'gap-2 text-white border-0 shadow-lg transition-all duration-200',
+                'gap-2 text-white border-0 shadow-lg',
                 'bg-linear-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 shadow-cyan-500/25 hover:shadow-cyan-500/40',
               )}>
               {isSaving ? 'Saving…' : submitLabel}

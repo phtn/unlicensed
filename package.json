@@ -16,6 +16,7 @@
     "version": "changeset version",
     "release": "changeset publish",
     "paygate": "bun run server/paygate-proxy/index.ts",
+    "prerender:emails": "bun run scripts/prerender-email-templates.ts",
     "fb:u": "firebase use rapidfirenow-web",
     "fb:dr": "firebase deploy --only firestore:rules"
   },
@@ -32,6 +33,7 @@
     "@origin-space/image-cropper": "^0.1.9",
     "@paper-design/shaders-react": "^0.0.70",
     "@radix-ui/react-scroll-area": "^1.2.10",
+    "@react-email/components": "^1.0.8",
     "@react-three/cannon": "^6.6.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
@@ -82,6 +84,7 @@
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
     "remark-toc": "^9.0.0",
+    "resend": "^6.9.2",
     "simplex-noise": "^4.0.3",
     "swipe-right-js": "^1.0.3",
     "swr": "^2.3.8",

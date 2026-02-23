@@ -1,0 +1,43 @@
+/**
+ * Email template registry for the admin template picker.
+ * Options only (no React components) so this file is safe to import on the client.
+ */
+
+export const EMAIL_TEMPLATE_OPTIONS = [
+  {id: 'welcome', label: 'Welcome', defaultSubject: 'Welcome to Rapid Fire'},
+  {
+    id: 'password-reset',
+    label: 'Password reset',
+    defaultSubject: 'Reset your Rapid Fire password',
+  },
+  {
+    id: 'order-confirmation',
+    label: 'Order confirmation',
+    defaultSubject: 'Order {{orderNumber}} confirmed',
+  },
+  {
+    id: 'payment-success',
+    label: 'Payment success',
+    defaultSubject: 'Payment received',
+  },
+  {
+    id: 'notification',
+    label: 'Notification',
+    defaultSubject: '{{title}}',
+  },
+  {
+    id: 'invitation',
+    label: 'Invitation',
+    defaultText: 'Rapid Fire',
+    defaultSubject: "You're invited.",
+  },
+  {id: 'promotion', label: 'Promotion', defaultSubject: '{{headline}}'},
+  {id: 'receipt', label: 'Receipt', defaultSubject: 'Your receipt.'},
+  {
+    id: 'product-discount',
+    label: 'Product discount',
+    defaultSubject: 'A discount just for you',
+  },
+] as const
+
+export type EmailTemplateId = (typeof EMAIL_TEMPLATE_OPTIONS)[number]['id']

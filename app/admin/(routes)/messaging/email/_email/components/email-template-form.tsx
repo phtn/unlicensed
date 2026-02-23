@@ -26,7 +26,7 @@ export const EmailTemplateForm = () => {
   const navigateBackToList = useCallback(() => {
     withViewTransition(() => {
       startTransition(() => {
-        router.push('/admin/configs/email')
+        router.push('/admin/messaging/email')
       })
     })
   }, [router])
@@ -48,7 +48,7 @@ export const EmailTemplateForm = () => {
     <div className='min-h-screen'>
       <div className='hidden dark:fixed inset-0 overflow-hidden pointer-events-none'>
         <div className='absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl' />
-        <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl' />
+        <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-brand/10 rounded-full blur-3xl' />
       </div>
       <main className='relative'>
         <div className='overflow-hidden'>

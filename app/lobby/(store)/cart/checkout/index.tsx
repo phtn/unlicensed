@@ -134,7 +134,6 @@ export function Checkout({
           const paymentMethod = String(order.payment.method)
           const isCryptoPaymentMethod =
             paymentMethod === 'crypto_commerce' ||
-            paymentMethod === 'crypto_transfer' ||
             paymentMethod === 'crypto-payment'
           console.log('[Checkout] Order payment method:', paymentMethod)
           startTransition(() => {
@@ -144,6 +143,8 @@ export function Checkout({
               redirectPath = `/lobby/order/${orderId}/cards`
             } else if (paymentMethod === 'cash_app') {
               redirectPath = `/lobby/order/${orderId}/cashapp`
+            } else if (paymentMethod === 'crypto_transfer') {
+              redirectPath = `/lobby/order/${orderId}/send`
             } else if (isCryptoPaymentMethod) {
               redirectPath = `/lobby/order/${orderId}/crypto`
             } else {
