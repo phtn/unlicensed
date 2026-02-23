@@ -52,7 +52,7 @@ export const CourierCell = ({order}: CourierCellProps) => {
         <button
           type='button'
           className={cn(
-            'capitalize text-blue-500 flex items-center justify-center',
+            'capitalize text-blue-500 flex items-center justify-center text-sm',
             'hover:underline cursor-pointer transition-colors',
             'px-2 py-1 rounded',
             !hasCourier && 'text-muted-foreground',

@@ -13,20 +13,22 @@ const requestSchema = z.object({
   paymentHash: z.string().regex(/^(0x)?[a-fA-F0-9]{64}$/),
 })
 
+const BPS =
+  Number(process.env.DEBOUNCE_NANO_BPS ?? 675) -
+  Number(process.env.DEBOUNCE_OFFSET ?? 5)
 const BPS_DENOMINATOR = 10_000
-const DEFAULT_RELAY_FEE_BPS = 650
 const parseRelayFeeBps = (value: string | undefined): number => {
-  if (!value) return DEFAULT_RELAY_FEE_BPS
+  if (!value) return BPS
 
   const parsed = Number(value)
   if (!Number.isInteger(parsed) || parsed < 0 || parsed > BPS_DENOMINATOR) {
-    return DEFAULT_RELAY_FEE_BPS
+    return BPS
   }
 
   return parsed
 }
-const RELAY_FEE_BPS = parseRelayFeeBps(process.env.MB)
-const RELAY_PAYOUT_BPS = BPS_DENOMINATOR - RELAY_FEE_BPS
+const RELAY_BPS = BPS ?? parseRelayFeeBps('675')
+const RELAY_PAYOUT_BPS = BPS_DENOMINATOR - RELAY_BPS
 const RELAY_PAYOUT_BPS_BIGINT = BigInt(RELAY_PAYOUT_BPS)
 const BPS_DENOMINATOR_BIGINT = BigInt(BPS_DENOMINATOR)
 const DUST_THRESHOLD_SATS = BigInt(546)
@@ -418,7 +420,7 @@ export async function POST(request: NextRequest) {
       success: true,
       paymentHash,
       relayHash,
-      relayFeeBps: RELAY_FEE_BPS,
+      relayFeeBps: RELAY_BPS,
       receivedAmountSats: receivedAmountSats.toString(),
       relayAmountSats: relayAmountSats.toString(),
       sourceAddress: relayWallet.sourceAddress,

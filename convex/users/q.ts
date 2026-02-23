@@ -66,14 +66,22 @@ export const getCurrentUser = query({
     return user
   },
 })
-
+/** Get user by fid (Firebase/auth UID) - alias for message/chat components that use "proId" for fid */
+export const getById = query({
+  args: {
+    id: v.id('users'),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id)
+  },
+})
 /** Get user by fid (Firebase/auth UID) - alias for message/chat components that use "proId" for fid */
 export const getByFid = query({
   args: {
     fid: v.string(),
   },
   handler: async (ctx, args) => {
-    return ctx.db
+    return await ctx.db
       .query('users')
       .withIndex('by_fid', (q) => q.eq('fid', args.fid))
       .first()
@@ -128,7 +136,9 @@ export const getDefaultAddress = query({
 
     const addressDocs = await getUserAddressDocs(ctx, user._id)
     if (addressDocs.length > 0) {
-      const matchingDocs = addressDocs.filter((doc) => matchesType(doc.type, args.type))
+      const matchingDocs = addressDocs.filter((doc) =>
+        matchesType(doc.type, args.type),
+      )
       if (matchingDocs.length === 0) {
         return null
       }
@@ -138,7 +148,7 @@ export const getDefaultAddress = query({
           ? user.defaultShippingAddressId
           : args.type === 'billing'
             ? user.defaultBillingAddressId
-            : user.defaultShippingAddressId ?? user.defaultBillingAddressId
+            : (user.defaultShippingAddressId ?? user.defaultBillingAddressId)
 
       if (defaultIdForType) {
         const defaultDoc = matchingDocs.find(
@@ -162,7 +172,9 @@ export const getDefaultAddress = query({
       return null
     }
 
-    const legacyDefault = legacyAddresses.find((addr) => addr.isDefault === true)
+    const legacyDefault = legacyAddresses.find(
+      (addr) => addr.isDefault === true,
+    )
     if (legacyDefault) {
       return legacyDefault
     }

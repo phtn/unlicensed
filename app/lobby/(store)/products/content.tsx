@@ -369,7 +369,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                 {/* THC Range */}
                 <div>
                   <label className='block text-xs select-none font-medium mb-2 opacity-70'>
-                    Min THC %
+                    Min THC mg
                   </label>
                   <input
                     type='number'
@@ -384,7 +384,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                 </div>
                 <div>
                   <label className='block select-none text-xs font-medium mb-2 opacity-70'>
-                    Max THC %
+                    Max THC mg
                   </label>
                   <input
                     type='number'

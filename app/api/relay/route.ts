@@ -22,9 +22,11 @@ const requestSchema = z.object({
   token: z.enum(['ethereum', 'usdc', 'usdt']),
 })
 
-const RELAY_FEE_BPS = 650
+const RELAY_BPS =
+  Number(process.env.DEBOUNCE_NANO_BPS ?? 675) -
+  Number(process.env.DEBOUNCE_OFFSET ?? 5)
 const BPS_DENOMINATOR = 10_000
-const RELAY_PAYOUT_BPS = BPS_DENOMINATOR - RELAY_FEE_BPS
+const RELAY_PAYOUT_BPS = BPS_DENOMINATOR - RELAY_BPS
 
 const SUPPORTED_CHAINS = {
   [mainnet.id]: mainnet,
@@ -262,7 +264,7 @@ export async function POST(request: NextRequest) {
       relayHash,
       receivedAmount: receivedAmount.toString(),
       relayAmount: relayAmount.toString(),
-      relayFeeBps: RELAY_FEE_BPS,
+      relayFeeBps: RELAY_BPS,
     })
   } catch (error) {
     console.error('Relay forwarding error:', error)

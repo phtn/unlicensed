@@ -13,7 +13,7 @@ import {
   Textarea,
   User,
 } from '@heroui/react'
-import {useMutation} from 'convex/react'
+import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {useEffect, useState} from 'react'
@@ -101,6 +101,11 @@ export function OrderDetailsForm({
     }
   }
 
+  const user = useQuery(
+    api.users.q.getById,
+    order.userId ? {id: order.userId} : 'skip',
+  )
+
   return (
     <div className='flex flex-col min-h-0'>
       {/* Header */}
@@ -138,7 +143,8 @@ export function OrderDetailsForm({
           </div>
           <User
             name={
-              <Link href={`/admin/ops/customers${order}`}>
+              <Link
+                href={`/admin/ops/customers/${user?.fid ?? user?.firebaseId}`}>
                 {order.contactEmail}
               </Link>
             }
