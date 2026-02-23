@@ -15,6 +15,7 @@ interface OrderSummaryCardProps {
   tax: number
   shipping: number
   total: number
+  showTaxRow?: boolean
   isAuthenticated: boolean
   isLoading: boolean
   isPending: boolean
@@ -34,6 +35,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   tax,
   shipping,
   total,
+  showTaxRow = true,
   isAuthenticated,
   isLoading,
   isPending,
@@ -44,7 +46,6 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   pointsBalance,
   onOpen,
   minimumOrderCents = 1000,
-  shippingFeeCents = 1000,
 }: OrderSummaryCardProps) {
   const handleOnChange = (value: FormData['paymentMethod']) => {
     onPaymentMethodChange(value)
@@ -73,14 +74,17 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   {formatPrice(subtotal)}
                 </span>
               </div>
-              <div className='flex justify-between font-okxs text-sm'>
-                <span className=''>Tax</span>
-
-                <span className=''>
-                  <span className='opacity-80'>$</span>
-                  {formatPrice(tax)}
-                </span>
-              </div>
+              <ViewTransition>
+                {showTaxRow && (
+                  <div className='flex justify-between font-okxs text-sm'>
+                    <span className=''>Tax</span>
+                    <span className=''>
+                      <span className='opacity-80'>$</span>
+                      {formatPrice(tax)}
+                    </span>
+                  </div>
+                )}
+              </ViewTransition>
               <div className='flex justify-between font-okxs text-sm'>
                 <span className=''>Shipping</span>
                 <span className=''>

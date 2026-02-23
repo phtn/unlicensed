@@ -254,3 +254,28 @@ export const getShippingConfig = query({
     }
   },
 })
+
+const DEFAULT_TAX_RATE_PERCENT = 10
+
+export const getTaxConfig = query({
+  args: {},
+  handler: async ({db}) => {
+    const setting = await db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'tax_config'))
+      .unique()
+
+    if (!setting?.value || typeof setting.value !== 'object') {
+      return {taxRatePercent: DEFAULT_TAX_RATE_PERCENT, active: true}
+    }
+
+    const v = setting.value as Record<string, unknown>
+    return {
+      taxRatePercent:
+        typeof v.taxRatePercent === 'number'
+          ? v.taxRatePercent
+          : DEFAULT_TAX_RATE_PERCENT,
+      active: typeof v.active === 'boolean' ? v.active : true,
+    }
+  },
+})

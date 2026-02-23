@@ -56,6 +56,7 @@ export default function CartPage() {
   } = useCartCheckoutQueryState()
 
   const shippingConfig = useQuery(api.admin.q.getShippingConfig, {})
+  const taxConfig = useQuery(api.admin.q.getTaxConfig, {})
 
   const shippingFeeCents =
     shippingConfig?.shippingFeeCents ?? DEFAULT_SHIPPING_FEE_CENTS
@@ -162,8 +163,11 @@ export default function CartPage() {
     }, 0)
   }, [cartItems])
 
-  // Derive values during render (simple expressions, no need for useMemo)
-  const tax = subtotal * 0.1 // 10% tax
+  // Derive values during render (tax from admin config; 0 when inactive)
+  const tax =
+    taxConfig?.active === true
+      ? Math.round(subtotal * (taxConfig.taxRatePercent / 100))
+      : 0
   const shipping = subtotal >= minimumOrderCents ? 0 : shippingFeeCents
   const total = subtotal + tax + shipping
 
@@ -220,6 +224,7 @@ export default function CartPage() {
             <Checkout
               tax={tax}
               total={total}
+              showTaxRow={taxConfig?.active ?? true}
               onOpen={isAuthenticated ? onCheckoutOpen : onAuthOpen}
               subtotal={subtotal}
               shipping={shipping}

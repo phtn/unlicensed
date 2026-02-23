@@ -5,6 +5,7 @@ import {CryptoContent} from './_components/crypto-content'
 import {OverviewContent} from './_components/overview-content'
 import {PaymentsSettings} from './_components/payments-settings'
 import {ShippingContent} from './_components/shipping-content'
+import {TaxContent} from './_components/tax-content'
 
 export const SettingsTabs = () => {
   const tabs = [
@@ -12,6 +13,7 @@ export const SettingsTabs = () => {
     {id: 'payments', label: 'Payments'},
     {id: 'crypto', label: 'Crypto'},
     {id: 'shipping', label: 'Shipping'},
+    {id: 'tax', label: 'Tax'},
     {id: 'assistant', label: 'Assistant'},
   ]
   return (
@@ -51,6 +53,11 @@ export const SettingsTabs = () => {
         className='relative flex min-h-32 flex-1 flex-col p-4'
         value='shipping'>
         <ShippingContent />
+      </Tabs.Panel>
+      <Tabs.Panel
+        className='relative flex min-h-32 flex-1 flex-col p-4'
+        value='tax'>
+        <TaxContent />
       </Tabs.Panel>
       <Tabs.Panel
         className='relative flex min-h-32 flex-1 flex-col p-4'

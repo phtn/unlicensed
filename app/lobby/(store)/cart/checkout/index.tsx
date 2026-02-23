@@ -43,6 +43,7 @@ export function Checkout({
   tax,
   shipping,
   total,
+  showTaxRow = true,
   isAuthenticated,
   onOpen,
   isLoading = false,
@@ -296,6 +297,7 @@ export function Checkout({
         tax={tax}
         shipping={shipping}
         total={total}
+        showTaxRow={showTaxRow}
         isAuthenticated={isAuthenticated}
         isLoading={isLoading}
         isPending={isPending || isFormPending}
