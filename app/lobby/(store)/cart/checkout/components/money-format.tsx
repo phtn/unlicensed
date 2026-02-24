@@ -10,7 +10,7 @@ export const MoneyFormat = ({value}: {value: number}) => {
         precision={1}
         stiffness={160}
         mass={0.2}
-        damping={160}
+        damping={180}
       />
     </span>
   )

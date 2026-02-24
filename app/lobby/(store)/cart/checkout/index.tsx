@@ -4,13 +4,7 @@ import {api} from '@/convex/_generated/api'
 import {AddressType} from '@/convex/users/d'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useTransition,
-} from 'react'
+import {useCallback, useEffect, useRef, useState, useTransition} from 'react'
 import {CheckoutModal} from './components/checkout-modal'
 import {DevelopmentModal} from './components/development-modal'
 import {OrderSummaryCard} from './components/order-summary-card'
@@ -18,7 +12,8 @@ import {isCheckoutDevMode} from './config'
 import {useOrderForm} from './hooks/use-order-form'
 import {CheckoutProps, FormData} from './types'
 
-const normalizeAddressValue = (value?: string) => value?.trim().toLowerCase() ?? ''
+const normalizeAddressValue = (value?: string) =>
+  value?.trim().toLowerCase() ?? ''
 
 const normalizeZipCode = (value?: string) =>
   value?.replace(/\s+/g, '').toLowerCase() ?? ''
@@ -32,8 +27,10 @@ const doesAddressMatchForm = (address: AddressType, formData: FormData) =>
     normalizeAddressValue(formData.addressLine1) &&
   normalizeAddressValue(address.addressLine2) ===
     normalizeAddressValue(formData.addressLine2) &&
-  normalizeAddressValue(address.city) === normalizeAddressValue(formData.city) &&
-  normalizeAddressValue(address.state) === normalizeAddressValue(formData.state) &&
+  normalizeAddressValue(address.city) ===
+    normalizeAddressValue(formData.city) &&
+  normalizeAddressValue(address.state) ===
+    normalizeAddressValue(formData.state) &&
   normalizeZipCode(address.zipCode) === normalizeZipCode(formData.zipCode) &&
   normalizeAddressValue(address.country || 'US') ===
     normalizeAddressValue(formData.country || 'US')
@@ -65,6 +62,12 @@ export function Checkout({
   onPaymentMethodUrlChange,
   minimumOrderCents,
   shippingFeeCents,
+  rewardsVariant,
+  computedRewards,
+  topUpSuggestions,
+  onAddTopUp,
+  nextVisitMultiplier,
+  estimatedPoints,
 }: CheckoutProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -226,8 +229,9 @@ export function Checkout({
   )
 
   const selectedShippingAddressId =
-    shippingAddresses?.find((address) => doesAddressMatchForm(address, formData))
-      ?.id ?? null
+    shippingAddresses?.find((address) =>
+      doesAddressMatchForm(address, formData),
+    )?.id ?? null
 
   const handlePlaceOrder = useCallback(async () => {
     if (!validate()) {
@@ -277,9 +281,20 @@ export function Checkout({
         subtotalCents: subtotal,
         taxCents: tax,
         shippingCents: shipping,
+        storeCreditCents: computedRewards
+          ? Math.round(computedRewards.cashBackAmount * 100)
+          : undefined,
       })
     })
-  }, [formData, validate, subtotal, tax, shipping, onPlaceOrder])
+  }, [
+    formData,
+    validate,
+    subtotal,
+    tax,
+    shipping,
+    computedRewards,
+    onPlaceOrder,
+  ])
 
   const handlePaymentMethodChange = useCallback(
     (value: FormData['paymentMethod']) => {
@@ -311,6 +326,12 @@ export function Checkout({
         onOpen={onOpen}
         minimumOrderCents={minimumOrderCents}
         shippingFeeCents={shippingFeeCents}
+        rewardsVariant={rewardsVariant}
+        computedRewards={computedRewards}
+        topUpSuggestions={topUpSuggestions}
+        onAddTopUp={onAddTopUp}
+        nextVisitMultiplier={nextVisitMultiplier}
+        estimatedPoints={estimatedPoints}
       />
 
       <CheckoutModal

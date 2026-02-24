@@ -78,6 +78,8 @@ export interface PlaceOrderParams {
   taxCents?: number
   shippingCents?: number
   discountCents?: number
+  /** Store credit (cash back) from checkout; added to user rewards when payment completes */
+  storeCreditCents?: number
 }
 
 export interface UsePlaceOrderResult {
@@ -279,6 +281,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 taxCents: params.taxCents,
                 shippingCents: params.shippingCents,
                 discountCents: params.discountCents,
+                storeCreditCents: params.storeCreditCents,
                 itemPriceOverrides,
               }
             : {
@@ -295,6 +298,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 taxCents: params.taxCents,
                 shippingCents: params.shippingCents,
                 discountCents: params.discountCents,
+                storeCreditCents: params.storeCreditCents,
                 itemPriceOverrides,
               }
 

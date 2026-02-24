@@ -81,6 +81,7 @@ export const createOrder = mutation({
     taxCents: v.optional(v.number()),
     shippingCents: v.optional(v.number()),
     discountCents: v.optional(v.number()),
+    storeCreditCents: v.optional(v.number()), // Store credit (cash back) from checkout; added to user rewards when payment completes
     // Optional: client-provided item prices (unitPriceCents, totalPriceCents = quantity × unitPriceCents × denomination)
     itemPriceOverrides: v.optional(
       v.array(
@@ -234,6 +235,9 @@ export const createOrder = mutation({
       contactPhone: args.contactPhone,
       payment,
       customerNotes: args.customerNotes,
+      ...(args.storeCreditCents != null && args.storeCreditCents > 0
+        ? {storeCreditCents: args.storeCreditCents}
+        : {}),
       createdAt: Date.now(),
       updatedAt: Date.now(),
     })

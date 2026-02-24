@@ -608,44 +608,50 @@ export const awardPointsFromOrder = internalMutation({
       if (!userRewards) throw new Error('Failed to create user rewards')
     }
 
-    // Filter order items to only include eligible products
-    // Validate productId from database before using in get()
-    const eligibleItems = await Promise.all(
-      order.items.map(async (item) => {
-        const product = await safeGet(ctx.db, 'products', item.productId)
-        // Product is eligible if eligibleForRewards is not explicitly false
-        const isEligible = product?.eligibleForRewards !== false
-        return { item, isEligible }
-      }),
-    )
+    // Use store credit from order when present (checkout-calculated cash back); otherwise compute from eligible spending + recency multiplier
+    const useStoreCredit =
+      order.storeCreditCents != null && order.storeCreditCents > 0
 
-    // Calculate eligible spending (sum of eligible items)
-    const eligibleSpendingCents = eligibleItems.reduce((sum, { item, isEligible }) => {
-      return isEligible ? sum + item.totalPriceCents : sum
-    }, 0)
+    let pointsEarned: number
+    let multiplier: number
 
-    // If no eligible spending, return 0 points
-    if (eligibleSpendingCents === 0) {
-      await ctx.db.patch(args.orderId, {
-        pointsEarned: 0,
-        pointsMultiplier: 1.0,
-        updatedAt: Date.now(),
-      })
-      return { pointsEarned: 0, multiplier: 1.0 }
+    if (useStoreCredit) {
+      // Store credit from checkout is in cents; availablePoints are dollar-equivalent
+      pointsEarned = order.storeCreditCents! / 100
+      multiplier = 1.0
+    } else {
+      // Filter order items to only include eligible products
+      const eligibleItems = await Promise.all(
+        order.items.map(async (item) => {
+          const product = await safeGet(ctx.db, 'products', item.productId)
+          const isEligible = product?.eligibleForRewards !== false
+          return { item, isEligible }
+        }),
+      )
+
+      const eligibleSpendingCents = eligibleItems.reduce(
+        (sum, { item, isEligible }) =>
+          isEligible ? sum + item.totalPriceCents : sum,
+        0,
+      )
+
+      if (eligibleSpendingCents === 0) {
+        await ctx.db.patch(args.orderId, {
+          pointsEarned: 0,
+          pointsMultiplier: 1.0,
+          updatedAt: Date.now(),
+        })
+        return { pointsEarned: 0, multiplier: 1.0 }
+      }
+
+      const daysSinceLastPayment = getDaysSinceLastPayment(
+        userRewards.lastPaymentDate,
+      )
+      multiplier = calculateRecencyMultiplier(daysSinceLastPayment)
+      pointsEarned = calculatePointsEarned(eligibleSpendingCents, multiplier)
     }
 
-    // Get days since last payment
-    const daysSinceLastPayment = getDaysSinceLastPayment(
-      userRewards.lastPaymentDate,
-    )
-
-    // Calculate multiplier
-    const multiplier = calculateRecencyMultiplier(daysSinceLastPayment)
-
-    // Calculate points earned
-    const pointsEarned = calculatePointsEarned(eligibleSpendingCents, multiplier)
-
-    // Update user rewards
+    // Update user rewards: add points to availablePoints and totalPoints
     const paymentDate = order.payment.paidAt ?? Date.now()
     const newTotalPoints = (userRewards.totalPoints ?? 0) + pointsEarned
     const newAvailablePoints = (userRewards.availablePoints ?? 0) + pointsEarned

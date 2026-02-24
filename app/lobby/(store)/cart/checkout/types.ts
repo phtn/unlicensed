@@ -2,7 +2,11 @@ import {Doc, Id} from '@/convex/_generated/dataModel'
 import {PaymentMethod} from '@/convex/orders/d'
 import {AddressType} from '@/convex/users/d'
 import {PlaceOrderParams} from '@/hooks/use-place-order'
-import {PointsBalance} from '../rewards-summary'
+import {NVMultiplier, PointsBalance} from '../rewards-summary'
+import type {ComputedRewards, RewardsCartItem} from './lib/rewards'
+
+/** Toggle which rewards panel shows in checkout: tier-based, points-based, or none. */
+export type RewardsVariant = 'tier' | 'points' | 'off'
 
 export interface CheckoutProps {
   subtotal: number
@@ -31,6 +35,15 @@ export interface CheckoutProps {
   onPaymentMethodUrlChange?: (method: PaymentMethod) => void
   minimumOrderCents?: number
   shippingFeeCents?: number
+  /** Toggle to swap rewards panel: 'tier' | 'points' | 'off' */
+  rewardsVariant?: RewardsVariant
+  /** For rewardsVariant === 'tier' */
+  computedRewards?: ComputedRewards | null
+  topUpSuggestions?: RewardsCartItem[]
+  onAddTopUp?: (item: RewardsCartItem) => void
+  /** For rewardsVariant === 'points' */
+  nextVisitMultiplier?: NVMultiplier | undefined
+  estimatedPoints?: number | null
 }
 
 export interface FormData {

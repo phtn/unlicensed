@@ -147,6 +147,27 @@ export const getCustomerPurchaseSummaries = query({
 })
 
 /**
+ * Whether the customer has ever completed a purchase (paid order).
+ * Use this to treat them as first-time vs returning buyer.
+ */
+export const isFirstTimeBuyer = query({
+  args: {
+    userId: v.id('users'),
+  },
+  handler: async (ctx, args) => {
+    const orders = await ctx.db
+      .query('orders')
+      .withIndex('by_user', (q) => q.eq('userId', args.userId))
+      .collect()
+
+    const hasCompletedPayment = orders.some(
+      (order) => order.payment.status === 'completed',
+    )
+    return !hasCompletedPayment
+  },
+})
+
+/**
  * Get order statistics for a user
  */
 export const getUserOrderStats = query({

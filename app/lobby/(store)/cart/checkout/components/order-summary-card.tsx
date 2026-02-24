@@ -5,10 +5,18 @@ import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody, Divider} from '@heroui/react'
 import {memo, ViewTransition} from 'react'
-import {PointsBalance} from '../../rewards-summary'
-import {FormData} from '../types'
-import {MoneyFormat} from './money-format'
+import {
+  type NVMultiplier,
+  PointsBalance,
+  RewardsSummary,
+} from '../../rewards-summary'
+import type {ComputedRewards, RewardsCartItem} from '../lib/rewards'
+import type {FormData, RewardsVariant} from '../types'
+import {CheckoutRewardsContent} from './checkout-rewards-content'
+import {CheckoutRewardsSummary} from './checkout-rewards-summary'
 import {PaymentMethods} from './payment-method'
+
+export type {RewardsVariant}
 
 interface OrderSummaryCardProps {
   subtotal: number
@@ -28,6 +36,21 @@ interface OrderSummaryCardProps {
   onOpen?: VoidFunction
   minimumOrderCents?: number
   shippingFeeCents?: number
+  /**
+   * Which rewards panel to show. Toggle this state to swap panels.
+   * - 'tier': tier-based (needs computedRewards)
+   * - 'points': points/multiplier (needs nextVisitMultiplier, estimatedPoints)
+   * - 'off': no panel
+   * When undefined, shows tier panel if computedRewards is provided, else off.
+   */
+  rewardsVariant?: RewardsVariant
+  /** For rewardsVariant === 'tier' */
+  computedRewards?: ComputedRewards | null
+  topUpSuggestions?: RewardsCartItem[]
+  onAddTopUp?: (item: RewardsCartItem) => void
+  /** For rewardsVariant === 'points' */
+  nextVisitMultiplier?: NVMultiplier | undefined
+  estimatedPoints?: number | null
 }
 
 export const OrderSummaryCard = memo(function OrderSummaryCard({
@@ -46,6 +69,12 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   pointsBalance,
   onOpen,
   minimumOrderCents = 1000,
+  rewardsVariant,
+  computedRewards,
+  topUpSuggestions,
+  onAddTopUp,
+  nextVisitMultiplier,
+  estimatedPoints,
 }: OrderSummaryCardProps) {
   const handleOnChange = (value: FormData['paymentMethod']) => {
     onPaymentMethodChange(value)
@@ -53,11 +82,38 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
 
   const isFreeShipping = shipping === 0
   const remainingForFreeShipping = minimumOrderCents - subtotal
-  const showShippingProgress = !isFreeShipping && remainingForFreeShipping > 0
-  const progressPercent = Math.min(100, (subtotal / minimumOrderCents) * 100)
+  const showTierProgress =
+    computedRewards?.nextTier != null &&
+    computedRewards.amountToNextTier != null &&
+    computedRewards.amountToNextTier > 0
+  const showSimpleShippingProgress =
+    !showTierProgress && !isFreeShipping && remainingForFreeShipping > 0
+  const progressPercent = showTierProgress
+    ? computedRewards.progressPctToNext
+    : Math.min(100, (subtotal / minimumOrderCents) * 100)
+
+  const effectiveVariant: RewardsVariant =
+    rewardsVariant ?? (computedRewards != null ? 'tier' : 'off')
+
+  const rewardsPanel =
+    effectiveVariant === 'tier' && computedRewards != null ? (
+      <CheckoutRewardsSummary
+        computedRewards={computedRewards}
+        topUpSuggestions={topUpSuggestions}
+        onAddTopUp={onAddTopUp}
+      />
+    ) : effectiveVariant === 'points' ? (
+      <RewardsSummary
+        nextVisitMultiplier={nextVisitMultiplier}
+        estimatedPoints={estimatedPoints ?? null}
+        pointsBalance={pointsBalance}
+        isAuthenticated={isAuthenticated}
+      />
+    ) : null
 
   return (
-    <div className='lg:sticky lg:top-24 h-fit'>
+    <div className='lg:sticky lg:top-24 h-fit space-y-4'>
+      <CheckoutRewardsContent>{rewardsPanel}</CheckoutRewardsContent>
       <Card
         shadow='none'
         className='dark:bg-dark-table/40 border border-foreground/20'>
@@ -94,13 +150,13 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                     </span>
                   ) : (
                     <>
-                      <span className='opacity-60'>$</span>
-                      {formatPrice(shipping)}
+                      <span className='opacity-80'>$</span>
+                      {computedRewards?.shippingCost}
                     </>
                   )}
                 </span>
               </div>
-              {showShippingProgress && (
+              {/*{(showTierProgress || showSimpleShippingProgress) && (
                 <div className='space-y-1.5 pt-1'>
                   <div className='h-1.5 bg-foreground/10 rounded-full overflow-hidden'>
                     <div
@@ -110,19 +166,30 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   </div>
                   <p className='space-x-1 font-okxs text-xs'>
                     <span className='text-muted-foreground'>Add</span>
-
-                    <MoneyFormat value={remainingForFreeShipping / 100} />
-
-                    <span className='text-muted-foreground'>
-                      more for free shipping
-                    </span>
+                    {showTierProgress && computedRewards ? (
+                      <>
+                        <MoneyFormat
+                          value={computedRewards.amountToNextTier ?? 0}
+                        />
+                        <span className='text-muted-foreground'>
+                          to unlock {computedRewards.nextTier?.label}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <MoneyFormat value={remainingForFreeShipping / 100} />
+                        <span className='text-muted-foreground'>
+                          more for free shipping
+                        </span>
+                      </>
+                    )}
                   </p>
                 </div>
-              )}
-              <div className='flex justify-between font-okxs text-sm dark:purple-300/10 rounded-md'>
+              )}*/}
+              {/*<div className='flex justify-between font-okxs text-sm dark:purple-300/10 rounded-md'>
                 <span className='text-foreground'>Reward Points</span>
                 <span className=''>${pointsBalance?.availablePoints ?? 0}</span>
-              </div>
+              </div>*/}
             </div>
           </ViewTransition>
           <Divider />

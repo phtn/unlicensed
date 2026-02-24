@@ -1,6 +1,7 @@
 'use client'
 
 import {AuthModal} from '@/components/auth/auth-modal'
+import ShimmerText from '@/components/expermtl/shimmer'
 import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
@@ -9,16 +10,17 @@ import {getUnitPriceCents} from '@/utils/cartPrice'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
-import {useEffect, useMemo, useTransition} from 'react'
+import {useEffect, useMemo, useState, useTransition} from 'react'
 import {CartEmptyState} from './CartEmptyState'
 import {CartItemsSection} from './CartItemsSection'
 import {CartPageHeader} from './CartPageHeader'
 import {Checkout} from './checkout'
+import {computeRewards} from './checkout/lib/rewards'
+import type {RewardsVariant} from './checkout/types'
 import {useCartCheckoutQueryState} from './hooks/use-cart-checkout-query-state'
 import {useCartDebugLog} from './hooks/use-cart-debug-log'
 import {useEmptyCartLoader} from './hooks/use-empty-cart-loader'
 import {useOptimisticCartItems} from './hooks/use-optimistic-cart-items'
-import {RewardsSummary} from './rewards-summary'
 import type {CartPageItem} from './types'
 
 const DEFAULT_SHIPPING_FEE_CENTS = 500
@@ -55,6 +57,9 @@ export default function CartPage() {
     onPaymentMethodChange,
   } = useCartCheckoutQueryState()
 
+  /** Toggle to swap rewards panel in checkout: 'tier' | 'points' | 'off' */
+  const [rewardsVariant, setRewardsVariant] = useState<RewardsVariant>('tier')
+
   const shippingConfig = useQuery(api.admin.q.getShippingConfig, {})
   const taxConfig = useQuery(api.admin.q.getTaxConfig, {})
 
@@ -81,6 +86,11 @@ export default function CartPage() {
   const defaultBillingAddress = useQuery(
     api.users.q.getDefaultAddress,
     firebaseUser ? {fid: firebaseUser.uid, type: 'billing'} : 'skip',
+  )
+
+  const isFirstTimeBuyer = useQuery(
+    api.orders.q.isFirstTimeBuyer,
+    convexUser?._id ? {userId: convexUser._id} : 'skip',
   )
 
   const rawCartDebug = useQuery(
@@ -193,6 +203,18 @@ export default function CartPage() {
     return points
   }, [subtotal, nextVisitMultiplier, isAuthenticated])
 
+  const rewardsItems = useMemo(
+    () =>
+      cartItems.map((item) => ({
+        category: item.product.categorySlug ?? 'Uncategorized',
+      })),
+    [cartItems],
+  )
+  const computedRewards = useMemo(
+    () => computeRewards(rewardsItems, subtotal / 100, false),
+    [rewardsItems, subtotal],
+  )
+
   if (!hasItems) {
     return (
       <CartEmptyState
@@ -214,13 +236,41 @@ export default function CartPage() {
             onRemoveItem={removeItem}
           />
 
-          <div className='space-y-6'>
-            <RewardsSummary
+          <div className='space-y-6 relative'>
+            <div className='absolute op-0 left-0'>
+              <ShimmerText surface='light' />
+            </div>
+            {/*<div className='flex flex-wrap items-center gap-2'>
+              <span className='text-sm text-muted-foreground'>
+                Rewards in checkout:
+              </span>
+              {(
+                [
+                  {value: 'points' as const, label: 'Points'},
+                  {value: 'tier' as const, label: 'Tier'},
+                  {value: 'off' as const, label: 'Off'},
+                ] as const
+              ).map(({value, label}) => (
+                <button
+                  key={value}
+                  type='button'
+                  onClick={() => setRewardsVariant(value)}
+                  className={`rounded-md px-2.5 py-1 text-sm font-medium transition-colors ${
+                    rewardsVariant === value
+                      ? 'bg-foreground text-background dark:bg-brand dark:text-white'
+                      : 'bg-foreground/10 text-foreground hover:bg-foreground/20'
+                  }`}>
+                  {label}
+                </button>
+              ))}
+            </div>*/}
+
+            {/*<RewardsSummary
               nextVisitMultiplier={nextVisitMultiplier}
               pointsBalance={pointsBalance}
               estimatedPoints={estimatedPoints}
               isAuthenticated={firebaseUser !== null}
-            />
+            />*/}
 
             <Checkout
               tax={tax}
@@ -249,6 +299,10 @@ export default function CartPage() {
               onPaymentMethodUrlChange={onPaymentMethodChange}
               minimumOrderCents={minimumOrderCents}
               shippingFeeCents={shippingFeeCents}
+              rewardsVariant={rewardsVariant}
+              computedRewards={computedRewards}
+              nextVisitMultiplier={nextVisitMultiplier}
+              estimatedPoints={estimatedPoints}
             />
           </div>
         </div>
