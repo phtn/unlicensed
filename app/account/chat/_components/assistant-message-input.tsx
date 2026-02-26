@@ -124,7 +124,7 @@ export function AssistantMessageInput({
         className={cn(
           'p-2.5 md:p-2 rounded-full transition-all shrink-0 touch-manipulation active:scale-95',
           currentValue.trim() && !isLoading
-            ? 'bg-dark-gray text-primary-foreground hover:bg-brand/90'
+            ? 'bg-dark-gray text-primary-foreground dark:bg-white dark:text-dark-table hover:bg-brand/90'
             : 'bg-sidebar text-foreground/30 cursor-not-allowed',
         )}>
         {isLoading ? (

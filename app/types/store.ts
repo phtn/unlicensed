@@ -22,6 +22,8 @@ export interface StoreProduct {
   popularDenomination: number[]
   thcPercentage: number
   cbdPercentage?: number
+  lineage?: string
+  noseRating?: number
   effects: string[]
   terpenes: string[]
   featured: boolean

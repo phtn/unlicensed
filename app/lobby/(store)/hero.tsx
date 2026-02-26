@@ -221,7 +221,7 @@ const Slide = ({
                 prefetch
                 onPress={toggle}
                 variant='light'
-                className='hidden border dark:border-dark-gray sm:flex items-center gap-2 dark:text-brand bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg font-polysans font-light'>
+                className='hidden border dark:border-dark-gray md:flex items-center gap-2 dark:text-brand bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg font-polysans font-light'>
                 <span className='tracking-tight'>Strain Finder</span>
                 <Icon
                   name={navigating ? 'spinners-ring' : 'search-magic'}

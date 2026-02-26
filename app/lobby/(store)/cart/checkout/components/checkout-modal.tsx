@@ -11,8 +11,6 @@ import {
   ModalHeader,
 } from '@heroui/react'
 import {FormData, FormErrors} from '../types'
-import {BillingForm} from './billing-form'
-import {CashAppForm} from './cashapp-form'
 import {ContactForm} from './contact-form'
 import {OrderStatusMessages} from './order-status-messages'
 import {ShippingForm} from './shipping-form'
@@ -79,13 +77,13 @@ export function CheckoutModal({
                   formErrors={formErrors}
                   onInputChange={onInputChange}
                 />
-                {formData.paymentMethod === 'cash_app' && (
+                {/*{formData.paymentMethod === 'cash_app' && (
                   <CashAppForm
                     formData={formData}
                     formErrors={formErrors}
                     onInputChange={onInputChange}
                   />
-                )}
+                )}*/}
                 <ShippingForm
                   formData={formData}
                   formErrors={formErrors}
@@ -96,11 +94,11 @@ export function CheckoutModal({
                   onSelectSavedAddress={onSelectShippingAddress}
                 />
 
-                <BillingForm
+                {/*<BillingForm
                   formData={formData}
                   formErrors={formErrors}
                   onInputChange={onInputChange}
-                />
+                />*/}
               </div>
             </ModalBody>
             <ModalFooter className='w-full h-32 flex items-center'>

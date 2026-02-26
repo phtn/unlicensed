@@ -149,7 +149,7 @@ export function AssistantMessageList({
         <div key={groupIndex} className='space-y-3 md:space-y-4'>
           {/* Date Separator */}
           <div className='flex items-center justify-center'>
-            <div className='px-2 md:px-3 py-1 rounded-full bg-muted/50 text-xs font-medium text-muted-foreground'>
+            <div className='px-2 md:px-3 py-1 rounded-full bg-sidebar/50 font-brk text-[8px] font-medium text-muted-foreground'>
               {formatDate(group.date)}
             </div>
           </div>
@@ -194,8 +194,8 @@ export function AssistantMessageList({
                     className={cn(
                       'rounded-2xl px-3 md:px-4 py-2',
                       isUser
-                        ? 'bg-dark-table text-white rounded-tr-sm'
-                        : 'bg-sidebar text-foreground rounded-tl-sm',
+                        ? 'bg-sidebar dark:bg-dark-table dark:text-white rounded-tr-sm'
+                        : 'bg-dark-table dark:bg-white dark:text-dark-table text-white rounded-tl-sm',
                       isLastInGroup &&
                         (isUser ? 'rounded-br-2xl' : 'rounded-bl-2xl'),
                     )}>

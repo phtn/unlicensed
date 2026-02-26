@@ -244,7 +244,7 @@ export const EmailTemplateDisplay = ({
                     title={`Preview: ${previewOption?.label ?? previewId}`}
                     srcDoc={previewHtml}
                     className='w-full min-h-[85vh] border-0 bg-white dark:bg-slate-900'
-                    sandbox='allow-same-origin'
+                    sandbox='allow-same-origin allow-scripts'
                   />
                 )}
               </div>

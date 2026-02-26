@@ -6,7 +6,6 @@ import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
 import {usePlaceOrder} from '@/hooks/use-place-order'
-import {getUnitPriceCents} from '@/utils/cartPrice'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
@@ -15,9 +14,14 @@ import {CartEmptyState} from './CartEmptyState'
 import {CartItemsSection} from './CartItemsSection'
 import {CartPageHeader} from './CartPageHeader'
 import {Checkout} from './checkout'
-import {computeRewards} from './checkout/lib/rewards'
 import type {RewardsVariant} from './checkout/types'
+import {getOrderRedirectPath} from './lib/order-redirect'
 import {useCartCheckoutQueryState} from './hooks/use-cart-checkout-query-state'
+import {
+  useCartRewards,
+  useCartTotals,
+  useEstimatedPoints,
+} from './hooks/use-cart-totals'
 import {useCartDebugLog} from './hooks/use-cart-debug-log'
 import {useEmptyCartLoader} from './hooks/use-empty-cart-loader'
 import {useOptimisticCartItems} from './hooks/use-optimistic-cart-items'
@@ -137,29 +141,14 @@ export default function CartPage() {
 
   // Fallback redirect when order is placed
   useEffect(() => {
-    if (orderId) {
-      const redirectTimer = setTimeout(() => {
-        startTransition(() => {
-          const paymentMethodValue = String(paymentMethod)
-          const isCryptoPaymentMethod =
-            paymentMethodValue === 'crypto_commerce' ||
-            paymentMethodValue === 'crypto-payment'
-          const redirectPath =
-            paymentMethodValue === 'cards'
-              ? `/lobby/order/${orderId}/cards`
-              : paymentMethodValue === 'cash_app'
-                ? `/lobby/order/${orderId}/cashapp`
-                : paymentMethodValue === 'crypto_transfer'
-                  ? `/lobby/order/${orderId}/send`
-                  : isCryptoPaymentMethod
-                    ? `/lobby/order/${orderId}/crypto`
-                    : `/lobby/order/${orderId}/send`
-          router.replace(redirectPath)
-        })
-      }, 5000)
-
-      return () => clearTimeout(redirectTimer)
-    }
+    if (!orderId) return
+    const redirectTimer = setTimeout(() => {
+      startTransition(() => {
+        const path = getOrderRedirectPath(orderId, String(paymentMethod))
+        router.replace(path)
+      })
+    }, 5000)
+    return () => clearTimeout(redirectTimer)
   }, [orderId, paymentMethod, router, startTransition])
 
   const showEmptyCartLoader = useEmptyCartLoader({
@@ -167,20 +156,11 @@ export default function CartPage() {
     hasItems,
   })
 
-  const subtotal = useMemo(() => {
-    return cartItems.reduce((total, item) => {
-      const unitCents = getUnitPriceCents(item.product, item.denomination)
-      return total + unitCents * item.quantity
-    }, 0)
-  }, [cartItems])
-
-  // Derive values during render (tax from admin config; 0 when inactive)
-  const tax =
-    taxConfig?.active === true
-      ? Math.round(subtotal * (taxConfig.taxRatePercent / 100))
-      : 0
-  const shipping = subtotal >= minimumOrderCents ? 0 : shippingFeeCents
-  const total = subtotal + tax + shipping
+  const {subtotal, tax, shipping, total} = useCartTotals({
+    cartItems,
+    taxConfig,
+    shippingConfig,
+  })
 
   // Get user's points balance and next visit multiplier
   const pointsBalance = useQuery(
@@ -193,27 +173,17 @@ export default function CartPage() {
     convexUser && convexUser._id ? {userId: convexUser._id} : 'skip',
   )
 
-  // Calculate estimated points (assuming all products are eligible)
-  // In reality, we'd need to check each product, but for UI purposes we'll estimate
-  const estimatedPoints = useMemo(() => {
-    if (!nextVisitMultiplier || !isAuthenticated) return null
-    // Convert subtotal from cents to dollars, then multiply by multiplier
-    // Points = (subtotal in dollars) × multiplier, rounded to nearest integer
-    const points = Math.round((subtotal / 100) * nextVisitMultiplier.multiplier)
-    return points
-  }, [subtotal, nextVisitMultiplier, isAuthenticated])
+  const estimatedPoints = useEstimatedPoints({
+    subtotal,
+    nextVisitMultiplier,
+    isAuthenticated,
+  })
 
-  const rewardsItems = useMemo(
-    () =>
-      cartItems.map((item) => ({
-        category: item.product.categorySlug ?? 'Uncategorized',
-      })),
-    [cartItems],
-  )
-  const computedRewards = useMemo(
-    () => computeRewards(rewardsItems, subtotal / 100, false),
-    [rewardsItems, subtotal],
-  )
+  const computedRewards = useCartRewards({
+    cartItems,
+    subtotal,
+    isFirstOrder: isFirstTimeBuyer ?? false,
+  })
 
   if (!hasItems) {
     return (
@@ -225,7 +195,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className='min-h-screen pt-16 sm:pt-10 md:pt-24 lg:pt-28 pb-10 px-2 md:px-4 sm:px-6 lg:px-8'>
+    <div className='min-h-screen pt-16 sm:pt-16 md:pt-16 lg:pt-20 xl:pt-24 2xl:pt-28 pb-10 px-2 md:px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
         <CartPageHeader isPending={isPending} />
 

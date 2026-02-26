@@ -1,6 +1,9 @@
 import {createClient} from '@/lib/resend'
 import {resendRequestSchema} from './types'
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 const toErrorMessage = (err: unknown): string => {
   if (err instanceof Error) return err.message
   if (typeof err === 'string') return err
@@ -36,7 +39,15 @@ const extractResendErrorDetails = (err: unknown): string => {
 }
 
 export const POST = async (req: Request) => {
-  const raw: unknown = await req.json()
+  let raw: unknown
+  try {
+    raw = await req.json()
+  } catch {
+    return Response.json(
+      {ok: false, error: 'Invalid JSON body'},
+      {status: 400},
+    )
+  }
   const parsed = resendRequestSchema.safeParse(raw)
   if (!parsed.success) {
     return Response.json(
@@ -47,7 +58,14 @@ export const POST = async (req: Request) => {
 
   const {to, subject, group, html, body, cc, bcc, attachments} = parsed.data
   const from = process.env.RESEND_FROM ?? 'hello@rapidfirenow.com'
-  const resend = createClient()
+  let resend: ReturnType<typeof createClient>
+  try {
+    resend = createClient()
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Resend is not configured'
+    console.error('[resend] createClient', err)
+    return Response.json({ok: false, error: message}, {status: 502})
+  }
 
   const priorityHeaders: Record<string, string> = {
     'X-Priority': '1',

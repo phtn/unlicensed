@@ -2,9 +2,20 @@ import {Resend} from 'resend'
 
 let client: Resend | null = null
 
-export const createClient = () => {
+/** Use RESEND_API_KEY in production, RESEND_API_KEY_TEST in dev/test. */
+function getResendApiKey(): string | undefined {
+  return process.env.RESEND_API_KEY ?? process.env.RESEND_API_KEY_TEST
+}
+
+export const createClient = (): Resend => {
   if (!client) {
-    client = new Resend(process.env.RESEND_API_KEY_TEST)
+    const apiKey = getResendApiKey()
+    if (!apiKey?.trim()) {
+      throw new Error(
+        'Resend API key is not configured. Set RESEND_API_KEY (production) or RESEND_API_KEY_TEST (dev).',
+      )
+    }
+    client = new Resend(apiKey.trim())
   }
   return client
 }

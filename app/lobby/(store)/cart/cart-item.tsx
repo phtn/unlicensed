@@ -1,3 +1,4 @@
+import {mapNumericFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
 import {ClassName} from '@/app/types'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {Id} from '@/convex/_generated/dataModel'
@@ -113,16 +114,15 @@ export const CartItem = memo(
                       className='flex items-center gap-2 flex-wrap'>
                       {item.denomination != null && (
                         <p className='font-okxs text-xs md:text-sm text-muted-foreground'>
-                          $
-                          <span>
-                            {itemPrice / 100}
-                          </span>
+                          $<span>{itemPrice / 100}</span>
                         </p>
                       )}
                       <span className='opacity-60'>/</span>
                       {item.denomination != null && (
                         <p className='font-okxs text-xs md:text-sm text-muted-foreground'>
-                          {item.denomination}
+                          <span className='mr-1'>
+                            {mapNumericFractions[item.denomination]}
+                          </span>
                           {item.product.unit ?? ''}
                         </p>
                       )}
@@ -191,9 +191,16 @@ export const CartItem = memo(
             <ModalBody>
               <p className='text-muted-foreground text-sm'>
                 Remove {item.product.name}
-                {item.denomination != null
-                  ? ` (${item.denomination}${item.product.unit ?? ''})`
-                  : ''}{' '}
+                {item.denomination != null ? (
+                  <span className='ml-1 text-foreground'>
+                    <span className='mr-1'>
+                      {mapNumericFractions[item.denomination]}
+                    </span>
+                    {item.product.unit ?? ''}
+                  </span>
+                ) : (
+                  ''
+                )}{' '}
                 from your cart?
               </p>
             </ModalBody>

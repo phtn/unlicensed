@@ -700,13 +700,13 @@ export function MessageInput({
               (message.trim() || attachments.length > 0) &&
                 !isSending &&
                 !uploading
-                ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md'
-                : 'bg-muted text-muted-foreground cursor-not-allowed',
+                ? 'bg-dark-gray text-primary-foreground dark:bg-white dark:text-dark-table hover:bg-brand/90'
+                : 'bg-sidebar text-foreground/30 cursor-not-allowed',
             )}>
             {isSending ? (
               <div className='size-5 border-2 border-current border-t-transparent rounded-full animate-spin' />
             ) : (
-              <Icon name='send-fill' className='size-5' />
+              <Icon name='arrow-up-fat' className='size-5' />
             )}
           </button>
         )}

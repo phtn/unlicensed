@@ -35,10 +35,10 @@ export function MessageBubbleTimestamp({
   onLike,
 }: MessageBubbleTimestampProps) {
   return (
-    <div className='relative w-full flex items-center gap-2 text-xs text-muted-foreground px-1'>
+    <div className='relative w-full flex items-center gap-2 text-xs text-muted-foreground px-2'>
       {isCurrentUser ? (
         <>
-          <div className='min-w-12 relative'>
+          <div className='min-w-12 relative flex items-center'>
             <ViewTransition
               name='chat-message-timestamp'
               enter='vt-enter'
@@ -46,7 +46,7 @@ export function MessageBubbleTimestamp({
               {isVisible ? (
                 <span
                   key='timestamp'
-                  className='font-brk absolute whitespace-nowrap top-0'>
+                  className='font-brk whitespace-nowrap px-1'>
                   {formatTimeCompact(createdAt)}
                 </span>
               ) : null}
@@ -65,7 +65,7 @@ export function MessageBubbleTimestamp({
           )}
         </>
       ) : (
-        <div className='w-full'>
+        <div className='w-full hidden'>
           {onLike && (
             <button
               onClick={(e) => {
@@ -84,13 +84,13 @@ export function MessageBubbleTimestamp({
               />
             </button>
           )}
-          <div className='min-w-12'>
+          <div className='min-w-12 px-1'>
             <ViewTransition
               name='chat-message-timestamp'
               enter='vt-enter'
               exit='vt-exit'>
               {isVisible ? (
-                <span key='timestamp' className='font-space'>
+                <span key='timestamp' className='font-space whitespace-nowrap'>
                   {formatTimeCompact(createdAt)}
                 </span>
               ) : null}

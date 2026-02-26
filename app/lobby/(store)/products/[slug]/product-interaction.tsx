@@ -132,12 +132,12 @@ export const ProductInteraction = ({
         quantityInCart={quantityInCart}
         denominationKey={currentDenominationKey}
       />
-      <div className='flex flex-col gap-4 p-4 sm:p-5 lg:p-6'>
-        <div className='space-y-4 sm:space-y-6'>
+      <div className='flex flex-col gap-4 p-4 sm:p-5 lg:p-6 border-t border-foreground/20'>
+        <div className='space-y-4 sm:space-y-4'>
           <h1 className='text-3xl lg:text-4xl xl:text-5xl capitalize font-bone font-light text-foreground leading-tight tracking-tight'>
             {product.name.split('-').join(' ')}
           </h1>
-          <p className='text-sm opacity-70 leading-relaxed'>
+          <p className='text-sm font-okxs opacity-70 leading-relaxed'>
             {product.description}
           </p>
         </div>
@@ -285,6 +285,18 @@ export const ProductInteraction = ({
       <div className='p-2 md:p-3'>
         <div className='bg-linear-to-r from-dark-gray/5 via-dark-gray/5 to-dark-gray/5 dark:bg-background/30 rounded-3xl gap-4 p-4 space-y-3'>
           <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
+            Lineage
+          </span>
+          <div className='flex flex-wrap items-center gap-2 py-3 border-b-[0.5px] border-dotted dark:border-light-gray/20'>
+            {product.lineage}
+          </div>
+          <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
+            Nose Rating
+          </span>
+          <div className='flex flex-wrap items-center gap-2 py-3 border-b-[0.5px] border-dotted dark:border-light-gray/20'>
+            {product.noseRating}
+          </div>
+          <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
             Terpenes
           </span>
           <div className='flex flex-wrap items-center gap-2 py-3 border-b-[0.5px] border-dotted dark:border-light-gray/20'>
@@ -312,23 +324,27 @@ export const ProductInteraction = ({
       </div>
 
       <div className='p-4 space-y-4'>
-        <h3 className='min-h-14'>
-          <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
-            Experience:
-          </span>
-          <span className='text-xs sm:text-sm opacity-70 text-color-muted leading-relaxed'>
-            {product.potencyProfile}
-          </span>
-        </h3>
+        {product.potencyProfile && (
+          <h3 className='min-h-14'>
+            <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
+              Experience:
+            </span>
+            <span className='text-xs sm:text-sm opacity-70 text-color-muted leading-relaxed'>
+              {product.potencyProfile}
+            </span>
+          </h3>
+        )}
 
-        <h3 className='min-h-14'>
-          <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
-            Consumption:
-          </span>
-          <span className='text-xs sm:text-sm opacity-70 text-color-muted leading-relaxed'>
-            {product.consumption}
-          </span>
-        </h3>
+        {product.consumption && (
+          <h3 className='min-h-14'>
+            <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
+              Consumption:
+            </span>
+            <span className='text-xs sm:text-sm opacity-70 text-color-muted leading-relaxed'>
+              {product.consumption}
+            </span>
+          </h3>
+        )}
       </div>
     </div>
   )
@@ -358,7 +374,7 @@ const ProductDetailStats = ({
           </span>
           <span className='text-xs md:text-sm lowercase'>mg</span>
         </span>
-        <span className='px-1 md:px-2 text-sm font-thin opacity-50'>|</span>
+        <span className='px-1 md:px-2 text-sm font-thin opacity-30'>|</span>
         <div className='flex items-center space-x-1'>
           <Icon
             name={pmap[product.potencyLevel]}

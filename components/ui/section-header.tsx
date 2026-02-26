@@ -15,11 +15,7 @@ export const SectionHeader = ({
   className,
 }: SectionHeaderProps) => {
   return (
-    <div
-      className={cn(
-        'flex flex-col items-center justify-center w-full',
-        className,
-      )}>
+    <div className={cn('flex flex-col justify-center w-full', className)}>
       {title && (
         <div
           className={cn('flex items-center justify-between w-full', {
@@ -35,7 +31,7 @@ export const SectionHeader = ({
       )}
       <ViewTransition>
         {description && (
-          <p className='text-sm text-foreground/60'>{description}</p>
+          <p className='text-left text-sm text-foreground/60'>{description}</p>
         )}
       </ViewTransition>
     </div>

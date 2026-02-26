@@ -1,7 +1,12 @@
 import {v} from 'convex/values'
 import {mutation} from '../_generated/server'
 import {safeGet} from '../utils/id_validation'
-import {paygateSettingsSchema, StatConfig, statConfigSchema} from './d'
+import {
+  paymentGatewayConfigsSchema,
+  paygateSettingsSchema,
+  StatConfig,
+  statConfigSchema,
+} from './d'
 
 const DEFAULT_STAT_CONFIGS: Array<StatConfig> = [
   {id: 'salesToday', label: 'Sales Today', visible: true, order: 0},
@@ -239,6 +244,58 @@ export const updatePayGateSettings = mutation({
         updatedAt: Date.now(),
       })
     }
+
+    return {success: true}
+  },
+})
+
+/**
+ * Update payment gateway configs (apiUrl, checkoutUrl per gateway, defaultGateway)
+ */
+export const updatePaymentGatewayConfigs = mutation({
+  args: {
+    configs: paymentGatewayConfigsSchema,
+  },
+  handler: async (ctx, {configs}) => {
+    let settings = await ctx.db.query('adminSettings').first()
+
+    if (!settings) {
+      await ctx.db.insert('adminSettings', {
+        value: {
+          paygate: configs.paygate,
+          paylex: configs.paylex,
+          rampex: configs.rampex,
+          defaultGateway: configs.defaultGateway,
+        },
+        updatedAt: Date.now(),
+      })
+      return {success: true}
+    }
+
+    const current = settings.value ?? {}
+    const nextPaygate =
+      configs.paygate !== undefined
+        ? {
+            ...(current.paygate && typeof current.paygate === 'object'
+              ? (current.paygate as Record<string, unknown>)
+              : {}),
+            ...configs.paygate,
+          }
+        : undefined
+    const nextValue = {
+      ...current,
+      ...(nextPaygate !== undefined && {paygate: nextPaygate}),
+      ...(configs.paylex !== undefined && {paylex: configs.paylex}),
+      ...(configs.rampex !== undefined && {rampex: configs.rampex}),
+      ...(configs.defaultGateway !== undefined && {
+        defaultGateway: configs.defaultGateway,
+      }),
+    }
+
+    await ctx.db.patch(settings._id, {
+      value: nextValue,
+      updatedAt: Date.now(),
+    })
 
     return {success: true}
   },

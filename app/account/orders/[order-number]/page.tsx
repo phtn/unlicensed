@@ -1,7 +1,6 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
-import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
@@ -54,15 +53,15 @@ function getPaymentRoute(orderId: string, paymentMethod: string) {
 export default function OrderDetailPage() {
   const params = useParams()
   const searchParams = useSearchParams()
-  const {user: firebaseUser} = useAuth()
+  // const {user: firebaseUser} = useAuth()
   const orderNumber = params['order-number'] as string
   const [showSuccessBanner, setShowSuccessBanner] = useState(false)
 
   // Get current user
-  const convexUser = useQuery(
-    api.users.q.getCurrentUser,
-    firebaseUser ? {fid: firebaseUser.uid} : 'skip',
-  )
+  // const convexUser = useQuery(
+  //   api.users.q.getCurrentUser,
+  //   firebaseUser ? {fid: firebaseUser.uid} : 'skip',
+  // )
 
   // Get order
   const order = useQuery(
@@ -234,11 +233,11 @@ export default function OrderDetailPage() {
               <CardBody className='p-6'>
                 <div className='flex items-center justify-between'>
                   <SectionTitle title='Payment' />
-                  <div className='font-okxs text-cashapp'>
+                  {/*<div className='font-okxs text-cashapp'>
                     {order.payment.method === 'cash_app'
                       ? '@' + convexUser?.cashAppUsername
                       : ''}
-                  </div>
+                  </div>*/}
                 </div>
                 <div className='space-y-2 font-okxs'>
                   <div className='flex justify-between'>

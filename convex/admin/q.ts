@@ -167,6 +167,19 @@ export const getAdminByIdentifier = query({
 })
 
 /**
+ * Get default payment gateway (paygate | paylex | rampex) for card checkout
+ */
+export const getPaymentDefaultGateway = query({
+  args: {},
+  handler: async ({db}): Promise<'paygate' | 'paylex' | 'rampex'> => {
+    const settings = await db.query('adminSettings').first()
+    const v = settings?.value?.defaultGateway
+    if (v === 'paygate' || v === 'paylex' || v === 'rampex') return v
+    return 'paygate'
+  },
+})
+
+/**
  * Get IPAPI geolocation setting
  * Returns whether IPAPI geolocation is enabled (defaults to false if not set)
  */

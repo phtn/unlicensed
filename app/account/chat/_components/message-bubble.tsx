@@ -172,10 +172,10 @@ export function MessageBubble({
           <div
             onClick={handleToggleTimestamp}
             className={cn(
-              'rounded-2xl px-3 md:px-4 py-2 shadow-sm cursor-pointer',
+              'rounded-2xl px-3 md:px-4 py-2 cursor-pointer',
               isCurrentUser
-                ? 'bg-dark-table text-white rounded-tr-sm'
-                : 'bg-sidebar text-foreground rounded-tl-sm',
+                ? 'bg-sidebar dark:bg-dark-table dark:text-white rounded-tr-sm'
+                : 'bg-dark-table dark:bg-white dark:text-dark-table text-white rounded-tl-sm',
               isLastInGroup &&
                 (isCurrentUser ? 'rounded-br-2xl' : 'rounded-bl-2xl'),
             )}>

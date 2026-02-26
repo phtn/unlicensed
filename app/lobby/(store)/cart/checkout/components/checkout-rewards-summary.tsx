@@ -1,6 +1,7 @@
 'use client'
 
 import ShimmerText from '@/components/expermtl/shimmer'
+import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Card, CardBody} from '@heroui/react'
 import {useTheme} from 'next-themes'
@@ -260,7 +261,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
                 <ShimmerText
                   surface='light'
                   variant='default'
-                  className={cn('text-base', {
+                  className={cn('text-sm font-polysans uppercase', {
                     'bg-dark-table': theme === 'light',
                   })}>
                   {r.nextTier.label}
@@ -290,8 +291,15 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
 
         {/* Bundle bonus hint */}
         {!r.isBundleBonusActive && (
-          <div className='mt-3 rounded-lg border border-dashed border-foreground/20 bg-foreground/[0.03] px-3 py-2 text-xs text-muted-foreground'>
-            💡 Add items from 2+ categories to earn +0.5% bundle bonus
+          <div className='flex items-center mt-2 space-x-2 rounded-lg border border-dashed border-foreground/20 bg-foreground/[0.03] px-3 py-2 text-xs text-muted-foreground'>
+            <Icon name='lightbulb-bold' className='size-4 text-yellow-200' />
+            <span>
+              Add items from 2+ categories to earn{' '}
+              <span className='font-okxs font-semibold dark:text-white'>
+                0.5%
+              </span>{' '}
+              bundle bonus
+            </span>
           </div>
         )}
 

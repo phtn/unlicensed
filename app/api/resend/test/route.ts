@@ -41,7 +41,14 @@ export async function POST(req: Request) {
 
   const {to, subject, html} = parsed.data
   const from = process.env.RESEND_FROM ?? 'hello@rapidfirenow.com'
-  const resend = createClient()
+  let resend: ReturnType<typeof createClient>
+  try {
+    resend = createClient()
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Resend is not configured'
+    console.error('[resend/test] createClient', err)
+    return Response.json({ok: false, error: message}, {status: 502})
+  }
 
   const headers: Record<string, string> = {
     'X-Priority': '1',

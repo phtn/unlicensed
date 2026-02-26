@@ -1,6 +1,9 @@
 import {api} from '@/convex/_generated/api'
 import type {Id} from '@/convex/_generated/dataModel'
-import {paygateConfig} from '@/lib/paygate/config'
+import {
+  getGatewayApiUrls,
+  type GatewayId,
+} from '@/lib/paygate/config'
 import {ConvexHttpClient} from 'convex/browser'
 import {NextRequest, NextResponse} from 'next/server'
 
@@ -32,21 +35,37 @@ const getString = (value: unknown): string | undefined => {
   return trimmed.length > 0 ? trimmed : undefined
 }
 
-const getPaygateApiUrls = async (): Promise<{apiUrl: string; checkoutUrl: string}> => {
-  const adminSettings = await convex.query(api.admin.q.getAdminSettings, {})
-  const valueRecord =
-    adminSettings?.value && typeof adminSettings.value === 'object'
-      ? (adminSettings.value as Record<string, unknown>)
-      : undefined
-  const paygateRecord =
-    valueRecord?.paygate && typeof valueRecord.paygate === 'object'
-      ? (valueRecord.paygate as Record<string, unknown>)
-      : undefined
+type GatewayUrlRecord = {apiUrl?: string; checkoutUrl?: string}
 
-  return {
-    apiUrl: getString(paygateRecord?.apiUrl) || paygateConfig.apiUrl,
-    checkoutUrl: getString(paygateRecord?.checkoutUrl) || paygateConfig.checkoutUrl,
-  }
+const getAdminValueRecord = async (): Promise<Record<string, unknown> | undefined> => {
+  const adminSettings = await convex.query(api.admin.q.getAdminSettings, {})
+  return adminSettings?.value && typeof adminSettings.value === 'object'
+    ? (adminSettings.value as Record<string, unknown>)
+    : undefined
+}
+
+const getAdminGatewayRecord = (
+  valueRecord: Record<string, unknown> | undefined,
+  gateway: GatewayId,
+): GatewayUrlRecord | null => {
+  const key = gateway
+  const record =
+    valueRecord?.[key] && typeof valueRecord[key] === 'object'
+      ? (valueRecord[key] as Record<string, unknown>)
+      : undefined
+  if (!record) return null
+  const apiUrl = getString(record.apiUrl)
+  const checkoutUrl = getString(record.checkoutUrl)
+  if (!apiUrl && !checkoutUrl) return null
+  return {apiUrl: apiUrl ?? undefined, checkoutUrl: checkoutUrl ?? undefined}
+}
+
+const getAdminDefaultGateway = (
+  valueRecord: Record<string, unknown> | undefined,
+): GatewayId => {
+  const v = valueRecord?.defaultGateway
+  if (v === 'paygate' || v === 'paylex' || v === 'rampex') return v
+  return 'paygate'
 }
 
 export async function POST(request: NextRequest) {
@@ -73,7 +92,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const account = await convex.query(api.paygateAccounts.q.getDefaultAccount, {})
+    const adminValue = await getAdminValueRecord()
+    const defaultGateway = getAdminDefaultGateway(adminValue)
+    const account = await convex.query(
+      api.paygateAccounts.q.getDefaultAccount,
+      {gateway: defaultGateway},
+    )
     if (!account) {
       return NextResponse.json(
         {error: 'Default PayGate account is not configured'},
@@ -109,7 +133,12 @@ export async function POST(request: NextRequest) {
     const currency = getString(body.currency) || 'USD'
     const amount = (order.totalCents / 100).toFixed(2)
 
-    const {apiUrl, checkoutUrl} = await getPaygateApiUrls()
+    // Use the account's gateway — each gateway (PayGate, Paylex, Rampex) has its own API;
+    // wallet addresses are registered per gateway. Using the wrong gateway's API causes
+    // "Provided wallet address is not allowed" because the wallet is unknown to that API.
+    const gateway = (account.gateway ?? 'paygate') as GatewayId
+    const adminGateway = getAdminGatewayRecord(adminValue, gateway)
+    const {apiUrl, checkoutUrl} = getGatewayApiUrls(gateway, adminGateway)
 
     const callbackUrl = new URL('/api/paygate/webhook', request.nextUrl.origin)
     callbackUrl.searchParams.set('order_id', order.orderNumber)
@@ -169,17 +198,17 @@ export async function POST(request: NextRequest) {
         gatewayId: walletData.ipn_token || order.payment.gatewayId,
         gateway: {
           ...(order.payment.gateway ?? {
-            name: 'paygate',
+            name: gateway,
             id: walletData.polygon_address_in || walletData.address_in,
             provider,
             status: 'processing',
           }),
-          name: order.payment.gateway?.name || 'paygate',
+          name: gateway,
           id:
             walletData.polygon_address_in ||
             walletData.address_in ||
             order.payment.gateway?.id ||
-            'paygate',
+            gateway,
           provider,
           status: 'processing',
           sessionId: walletData.ipn_token || order.payment.gateway?.sessionId,

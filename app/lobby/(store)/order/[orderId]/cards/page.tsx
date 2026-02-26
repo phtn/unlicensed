@@ -20,7 +20,11 @@ export default function CardProvidersPage() {
   )
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const order = useQuery(api.orders.q.getById, {id: orderId})
-  const paygateAccount = useQuery(api.paygateAccounts.q.getDefaultAccount, {})
+  const defaultGateway = useQuery(api.admin.q.getPaymentDefaultGateway, {})
+  const paygateAccount = useQuery(
+    api.paygateAccounts.q.getDefaultAccount,
+    {gateway: defaultGateway ?? 'paygate'},
+  )
 
   const providers = useMemo(
     () => paygateAccount?.topTenProviders ?? [],
@@ -67,7 +71,11 @@ export default function CardProvidersPage() {
     [order],
   )
 
-  if (order === undefined || paygateAccount === undefined) {
+  if (
+    order === undefined ||
+    defaultGateway === undefined ||
+    paygateAccount === undefined
+  ) {
     return (
       <div className='h-screen w-screen overflow-hidden pt-100 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
         <Loader />
@@ -105,6 +113,13 @@ export default function CardProvidersPage() {
                   <p className='text-xs md:text-sm uppercase tracking-[0.22em] font-pixel-line'>
                     Card Payment
                   </p>
+                  {process.env.NODE_ENV === 'development' && paygateAccount && (
+                    <span
+                      className='text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 font-mono'
+                      title='Default gateway used for checkout'>
+                      {paygateAccount.gateway ?? 'paygate'}
+                    </span>
+                  )}
                   <Icon name='applepay' className='size-4 md:size-9' />
                   <Icon name='googlepay' className='size-4 md:size-9' />
                 </div>

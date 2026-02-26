@@ -22,7 +22,11 @@ export default function PayPage() {
   const hasInitiated = useRef(false)
 
   const order = useQuery(api.orders.q.getById, {id: orderId})
-  const paygateAccount = useQuery(api.paygateAccounts.q.getDefaultAccount, {})
+  const defaultGateway = useQuery(api.admin.q.getPaymentDefaultGateway, {})
+  const paygateAccount = useQuery(
+    api.paygateAccounts.q.getDefaultAccount,
+    {gateway: defaultGateway ?? 'paygate'},
+  )
 
   const selectedProvider = useMemo(
     () => searchParams.get('provider')?.trim() || '',

@@ -14,13 +14,10 @@ const StoreLayout = ({children, navbar}: StoreLayoutProps) => {
     <RouteProtection>
       <NuqsAdapter>
         <div className='flex min-h-screen flex-col'>
-          {navbar != null ? (
-            <Fragment key='navbar'>{navbar}</Fragment>
-          ) : null}
+          {navbar != null ? <Fragment key='navbar'>{navbar}</Fragment> : null}
           <main key='main' className='relative flex-1'>
             {children}
           </main>
-          {/*<Footer />*/}
         </div>
       </NuqsAdapter>
     </RouteProtection>

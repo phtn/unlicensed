@@ -42,3 +42,44 @@ export const paygatePublicConfig = {
   apiUrl: process.env.NEXT_PUBLIC_PAYGATE_API_URL || 'https://api.paygate.to',
   checkoutUrl: process.env.NEXT_PUBLIC_PAYGATE_CHECKOUT_URL || 'https://checkout.paygate.to',
 } as const
+
+export type GatewayId = 'paygate' | 'paylex' | 'rampex'
+
+export type GatewayUrlRecord = {apiUrl?: string; checkoutUrl?: string}
+
+/** Server-side: get API URLs for the given gateway. Uses admin config when present, else env vars, else defaults. */
+export function getGatewayApiUrls(
+  gateway: GatewayId,
+  adminRecord?: GatewayUrlRecord | null,
+): {apiUrl: string; checkoutUrl: string} {
+  const useAdmin = (r: GatewayUrlRecord | null | undefined) => ({
+    apiUrl:
+      (r?.apiUrl?.trim() && r.apiUrl) || undefined,
+    checkoutUrl:
+      (r?.checkoutUrl?.trim() && r.checkoutUrl) || undefined,
+  })
+  const {apiUrl: adminApi, checkoutUrl: adminCheckout} = useAdmin(adminRecord)
+
+  switch (gateway) {
+    case 'paygate':
+      return {
+        apiUrl: adminApi || process.env.PAYGATE_API_URL || 'https://api.paygate.to',
+        checkoutUrl: adminCheckout || process.env.PAYGATE_CHECKOUT_URL || 'https://checkout.paygate.to',
+      }
+    case 'paylex':
+      return {
+        apiUrl: adminApi || process.env.PAYLEX_API_URL || 'https://api.paylex.to',
+        checkoutUrl: adminCheckout || process.env.PAYLEX_CHECKOUT_URL || 'https://checkout.paylex.to',
+      }
+    case 'rampex':
+      return {
+        apiUrl: adminApi || process.env.RAMPEX_API_URL || 'https://api.rampex.to',
+        checkoutUrl: adminCheckout || process.env.RAMPEX_CHECKOUT_URL || 'https://checkout.rampex.to',
+      }
+    default:
+      return {
+        apiUrl: process.env.PAYGATE_API_URL || 'https://api.paygate.to',
+        checkoutUrl: process.env.PAYGATE_CHECKOUT_URL || 'https://checkout.paygate.to',
+      }
+  }
+}

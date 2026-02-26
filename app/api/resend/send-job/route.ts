@@ -1,6 +1,9 @@
 import {createClient} from '@/lib/resend'
 import {uuidv7} from 'uuidv7'
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 const toErrorMessage = (err: unknown): string => {
   if (err instanceof Error) return err.message
   if (typeof err === 'string') return err
@@ -77,7 +80,14 @@ export async function POST(req: Request) {
   const {to, subject, html, body, cc, bcc} = parsed
   const from =
     parsed.from ?? process.env.RESEND_FROM ?? 'hello@rapidfirenow.com'
-  const resend = createClient()
+  let resend: ReturnType<typeof createClient>
+  try {
+    resend = createClient()
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Resend is not configured'
+    console.error('[resend/send-job] createClient', err)
+    return Response.json({ok: false, error: message}, {status: 502})
+  }
 
   const finalHtml = html ?? (body ? `<p>${body}</p>` : '<p></p>')
 
