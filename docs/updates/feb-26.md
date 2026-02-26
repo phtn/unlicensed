@@ -1,7 +1,8 @@
 ## Update
+- timestamp ⸬ Thu Feb 26, 2026  20:10:03 pm - +08:00 
 
 ---
-### 1. Rewards System Testing (DONE)
+### 1. Rewards System Testing (COMPLETED)
 
 
 tests/cart-computations.test.ts:
@@ -48,7 +49,7 @@ tests/cart-computations.test.ts:
  51 expect() calls
 
 ### 2. Admin Product Table Issue (NON-REPRODUCIBLE)
-* Column headers missing in admin product table - (status)
+* Column headers missing in admin product table
 
 Status:
 - Cannot be replicated or duplicated consistently even with the same configurations or parameters.
