@@ -63,6 +63,9 @@ Status:
 
 
 ### 4. Cards Payment Gateway (ON-GOING)
+- Paygate (COMPLETED)
+- Paylex (ONGOING)
+- Rampex (ONGOING)
 
 
 ### 5. General Modifications (COMPLETED)
