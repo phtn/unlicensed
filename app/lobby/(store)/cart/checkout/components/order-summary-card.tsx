@@ -83,17 +83,17 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   }
 
   const isFreeShipping = shipping === 0
-  const minOrder = minimumOrderCents ?? 1000
-  const remainingForFreeShipping = minOrder - subtotal
-  const showTierProgress =
-    computedRewards?.nextTier != null &&
-    computedRewards.amountToNextTier != null &&
-    computedRewards.amountToNextTier > 0
-  const showSimpleShippingProgress =
-    !showTierProgress && !isFreeShipping && remainingForFreeShipping > 0
-  const progressPercent = showTierProgress
-    ? computedRewards.progressPctToNext
-    : Math.min(100, (subtotal / minOrder) * 100)
+  // const minOrder = minimumOrderCents ?? 1000
+  // const remainingForFreeShipping = minOrder - subtotal
+  // const showTierProgress =
+  //   computedRewards?.nextTier != null &&
+  //   computedRewards.amountToNextTier != null &&
+  //   computedRewards.amountToNextTier > 0
+  // const showSimpleShippingProgress =
+  //   !showTierProgress && !isFreeShipping && remainingForFreeShipping > 0
+  // const progressPercent = showTierProgress
+  //   ? computedRewards.progressPctToNext
+  //   : Math.min(100, (subtotal / minOrder) * 100)
 
   const effectiveVariant: RewardsVariant =
     rewardsVariant ?? (computedRewards != null ? 'tier' : 'off')

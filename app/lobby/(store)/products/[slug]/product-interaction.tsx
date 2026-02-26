@@ -338,7 +338,7 @@ export const ProductInteraction = ({
         {product.consumption && (
           <h3 className='min-h-14'>
             <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
-              Consumption:
+              Smoke/Consumption:
             </span>
             <span className='text-xs sm:text-sm opacity-70 text-color-muted leading-relaxed'>
               {product.consumption}

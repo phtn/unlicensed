@@ -1,5 +1,6 @@
 'use client'
 
+import {mapNumericFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
 import FuzzyText from '@/components/FuzzyText'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
@@ -36,10 +37,19 @@ const CartHistoryItemCard = ({
   )
 
   const displayPrice = useMemo(() => {
-    const price = item.product.priceCents ?? 0
     const denomination = item.denomination ?? 1
-    return price * denomination
-  }, [item.product.priceCents, item.denomination])
+    const denomKey = String(denomination)
+    const byDenom = item.product.priceByDenomination
+    const priceFromDenom =
+      byDenom &&
+      Object.keys(byDenom).length > 0 &&
+      typeof byDenom[denomKey] === 'number'
+        ? byDenom[denomKey]
+        : null
+    return priceFromDenom != null && priceFromDenom >= 0
+      ? priceFromDenom
+      : (item.product.priceCents ?? 0) * denomination
+  }, [item])
 
   return (
     <Card
@@ -62,18 +72,18 @@ const CartHistoryItemCard = ({
             )}
           </div>
 
-          <div className='flex-1 min-w-0'>
-            <h4 className='font-medium text-sm truncate'>
-              {item.product.name}
-            </h4>
-            <div className='flex items-center gap-2 text-xs opacity-60'>
+          <div className='flex-1 min-w-0 text-sm md:text-base'>
+            <h4 className='font-medium truncate'>{item.product.name}</h4>
+            <div className='flex items-center gap-2 opacity-60 font-okxs'>
               {item.denomination && item.product.unit && (
                 <span>
-                  {item.denomination}
+                  <span className='mr-1'>
+                    {mapNumericFractions[item.denomination]}
+                  </span>
                   {item.product.unit}
                 </span>
               )}
-              <span className='font-space'>${formatPrice(displayPrice)}</span>
+              <span className=''>${formatPrice(displayPrice)}</span>
             </div>
           </div>
 
