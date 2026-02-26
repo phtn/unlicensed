@@ -233,7 +233,7 @@ export function ChatWindow({
         </div>
       }
       description={windowDescription}
-      descriptionStyle='ps-2 -mt-0.5'
+      descriptionStyle='ps-2'
       actions={
         isConversationMode && activeConversationFid ? (
           <Link

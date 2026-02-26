@@ -120,11 +120,13 @@ export function AssistantMessageList({
     return (
       <div className='flex h-full items-center justify-center'>
         <div className='text-center space-y-4 px-4 max-w-md'>
-          <Avatar src='/svg/rf-logo-round-204-latest.svg' />
           <div className='space-y-2'>
-            <h3 className='text-lg font-polysans font-medium'>
-              Hi! I&apos;m {ASSISTANT_NAME}
-            </h3>
+            <div className='flex items-center space-x-2 py-2'>
+              <Avatar src='/svg/rf-logo-round-204-latest.svg' />
+              <h3 className='text-lg font-polysans font-medium'>
+                Hi! I&apos;m {ASSISTANT_NAME}
+              </h3>
+            </div>
           </div>
           <div className='flex flex-wrap justify-center gap-2 pt-2'>
             {quickActions.map((suggestion) => (

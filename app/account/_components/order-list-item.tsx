@@ -81,7 +81,7 @@ const paymentMethodIconMap: Record<
   PaymentMethod,
   {icon: IconName; style: ClassName}
 > = {
-  cards: {icon: 'credit-card-2', style: 'text-primary'},
+  cards: {icon: 'credit-card-2', style: 'text-foreground'},
   crypto_commerce: {icon: 'ethereum', style: 'text-indigo-400'},
   crypto_transfer: {icon: 'polygon', style: 'text-sky-500'},
   cash_app: {icon: 'cashapp', style: 'text-cashapp'},

@@ -4,8 +4,8 @@ import {ArcCard, ArcHeader} from '@/components/expermtl/arc-card'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
-import {Icon} from '@/lib/icons'
 import {toggleChatDockWindow} from '@/lib/chat-dock'
+import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Chip, Divider} from '@heroui/react'
@@ -79,6 +79,7 @@ export const Content = () => {
   })
   const connectStaffForChat = useMutation(api.follows.m.connectStaffForChat)
   const sendMessage = useMutation(api.messages.m.sendMessage)
+  const sendAssistantMessage = useMutation(api.assistant.m.sendAssistantMessage)
 
   const [chatConnection, setChatConnection] = useState<{
     orderId: string
@@ -114,6 +115,11 @@ export const Content = () => {
           otherUserId: assignedRepFid,
         }
       : 'skip',
+  )
+
+  const assistantMessages = useQuery(
+    api.assistant.q.getAssistantMessages,
+    user?.uid ? {fid: user.uid} : 'skip',
   )
 
   const isOrderOwner = useMemo(() => {
@@ -220,9 +226,6 @@ export const Content = () => {
     user?.uid,
   ])
 
-  const REP_WELCOME_MESSAGE =
-    "Hi there!, we received your order. I'll be with you shortly and assist you in completing your order."
-
   const hasStarterMessage = useMemo(() => {
     if (!order || !currentUser || !conversationMessages) return false
     return conversationMessages.some(
@@ -232,14 +235,82 @@ export const Content = () => {
     )
   }, [conversationMessages, currentUser, order])
 
-  const hasRepWelcomeMessage = useMemo(() => {
-    if (!assignedRep || !conversationMessages) return false
-    return conversationMessages.some(
-      (message) =>
-        message.senderId === assignedRep._id &&
-        message.content.includes('we received your order'),
+  const expectedInitialMessage = useMemo(
+    () =>
+      initialMessageSeedTemplate.replace(
+        '{orderNumber}',
+        order?.orderNumber ?? '',
+      ),
+    [initialMessageSeedTemplate, order?.orderNumber],
+  )
+
+  const assistantLastMessageContent = useMemo(() => {
+    if (!assistantMessages?.length) return undefined
+    const fromAssistant = assistantMessages.filter(
+      (m) => m.role === 'assistant',
     )
-  }, [assignedRep, conversationMessages])
+    const last = fromAssistant[fromAssistant.length - 1]
+    return last?.content
+  }, [assistantMessages])
+
+  const shouldSendAssistantInitialMessage = useMemo(
+    () =>
+      !assistantMessages?.length ||
+      assistantLastMessageContent !== expectedInitialMessage,
+    [
+      assistantMessages?.length,
+      assistantLastMessageContent,
+      expectedInitialMessage,
+    ],
+  )
+
+  const seededAssistantOrderRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (
+      !order ||
+      !currentUser ||
+      !user?.uid ||
+      !isCashAppOrder ||
+      !isOrderOwner ||
+      !shouldSendAssistantInitialMessage
+    ) {
+      return
+    }
+    if (seededAssistantOrderRef.current === order._id) return
+
+    const assistantMessage = expectedInitialMessage
+    let cancelled = false
+
+    const seedAssistant = async () => {
+      try {
+        await sendAssistantMessage({
+          fid: user.uid,
+          content: assistantMessage,
+          isFromAssistant: true,
+        })
+        if (!cancelled) {
+          seededAssistantOrderRef.current = order._id
+        }
+      } catch (error) {
+        console.error('Failed to seed Cash App assistant message:', error)
+      }
+    }
+
+    seedAssistant()
+
+    return () => {
+      cancelled = true
+    }
+  }, [
+    expectedInitialMessage,
+    isCashAppOrder,
+    isOrderOwner,
+    order,
+    sendAssistantMessage,
+    shouldSendAssistantInitialMessage,
+    user?.uid,
+  ])
 
   useEffect(() => {
     if (
@@ -253,7 +324,7 @@ export const Content = () => {
     }
 
     if (!isOrderOwner) return
-    if (hasStarterMessage && hasRepWelcomeMessage) {
+    if (hasStarterMessage) {
       seededOrderRef.current = order._id
       return
     }
@@ -266,22 +337,13 @@ export const Content = () => {
 
     let cancelled = false
 
-    const seedConversation = async () => {
+    const seedRepConversation = async () => {
       try {
-        if (!hasStarterMessage) {
-          await sendMessage({
-            senderId: user.uid,
-            receiverId: assignedRepFid,
-            content: starterMessage,
-          })
-        }
-        if (!hasRepWelcomeMessage) {
-          await sendMessage({
-            senderId: assignedRepFid,
-            receiverId: user.uid,
-            content: REP_WELCOME_MESSAGE,
-          })
-        }
+        await sendMessage({
+          senderId: user.uid,
+          receiverId: assignedRepFid,
+          content: starterMessage,
+        })
         if (!cancelled) {
           seededOrderRef.current = order._id
         }
@@ -290,7 +352,7 @@ export const Content = () => {
       }
     }
 
-    seedConversation()
+    seedRepConversation()
 
     return () => {
       cancelled = true
@@ -299,7 +361,6 @@ export const Content = () => {
     assignedRepFid,
     conversationMessages,
     currentUser,
-    hasRepWelcomeMessage,
     hasStarterMessage,
     initialMessageSeedTemplate,
     isOrderOwner,
@@ -489,7 +550,7 @@ export const Content = () => {
               <span>Cash App Checkout</span>
             </div>
           }
-          description={order?.orderNumber}
+          description={`Order*: ${order?.orderNumber.substring(5)}`}
           iconStyle='text-emerald-300'
           status={<span className={paymentStatusStyle}>{paymentStatus}</span>}
         />
@@ -520,17 +581,13 @@ export const Content = () => {
               <p className='text-[11px] uppercase tracking-wide opacity-70'>
                 Order Total
               </p>
-              <p className='text-lg font-polysans leading-6'>
-                {orderTotalLabel}
-              </p>
+              <p className='text-lg font-okxs leading-6'>{orderTotalLabel}</p>
             </div>
             <div className='rounded-lg border border-foreground/15 bg-foreground/5 p-3'>
               <p className='text-[11px] uppercase tracking-wide opacity-70'>
                 Items
               </p>
-              <p className='text-lg font-polysans leading-6'>
-                {itemCountLabel}
-              </p>
+              <p className='text-lg font-okxs leading-6'>{itemCountLabel}</p>
             </div>
           </div>
         </div>
@@ -567,19 +624,13 @@ export const Content = () => {
           <Divider className='bg-foreground/15' />
           <div className='grid gap-2 text-xs'>
             <div className='flex items-start gap-2'>
-              <Icon
-                name='check-fill'
-                className='size-4 mt-0.5 text-emerald-300'
-              />
+              <Icon name='check-fill' className='size-4 text-emerald-300' />
               <span>
                 Confirm your Cash App username with our representatives.
               </span>
             </div>
             <div className='flex items-start gap-2'>
-              <Icon
-                name='check-fill'
-                className='size-4 mt-0.5 text-emerald-300'
-              />
+              <Icon name='check-fill' className='size-4 text-emerald-300' />
               <span>
                 Share any delivery notes or timing constraints for this order.
               </span>

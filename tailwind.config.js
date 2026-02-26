@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+/** @type {import('@react-email/components').TailwindConfig} */
 const config = {
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
