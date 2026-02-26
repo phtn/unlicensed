@@ -61,7 +61,10 @@ Status:
 - Auto-assign Rep Account with auto-generated initial chat.
 
 
-### 4. General Modifications
+### 4. Cards Payment Gateway (ON-GOING)
+
+
+### 5. General Modifications (COMPLETED)
 
 - Removed Billing form
 - Removed Cash App username input
@@ -69,6 +72,3 @@ Status:
 - Full Description in product detail page
 
 * Consider switching to "Smoke Description" - (PARTIAL)
-
-
-### 5. Cards Payments (ON-GOING)
