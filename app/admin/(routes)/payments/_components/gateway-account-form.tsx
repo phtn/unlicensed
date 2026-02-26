@@ -4,18 +4,18 @@ import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {Callout} from '@/components/ui/callout'
 import {api} from '@/convex/_generated/api'
-import type {Doc} from '@/convex/_generated/dataModel'
+import type {Id} from '@/convex/_generated/dataModel'
 import {useGateway} from '@/hooks/use-gateway'
 import {usePaste} from '@/hooks/use-paste'
 import {usePolygonAddressValidation} from '@/hooks/use-polygon-address-validation'
-import type {GatewayId} from '@/lib/paygate/gateway-config'
 import {Icon} from '@/lib/icons'
+import type {GatewayId} from '@/lib/paygate/gateway-config'
 import type {ApiResponse} from '@/lib/paygate/types'
 import {cn} from '@/lib/utils'
-import {Button, Card, CardBody} from '@heroui/react'
+import {Button, Card, CardBody, CardHeader} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
-import {useAction, useMutation} from 'convex/react'
-import {FunctionReference} from 'convex/server'
+import {useMutation, useQuery} from 'convex/react'
+import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
 import {
   SubmitEvent,
@@ -26,8 +26,8 @@ import {
   useState,
 } from 'react'
 import {z} from 'zod'
+import {CreateWalletResponseData} from '../types'
 import {CreateWalletResponse} from './create-wallet-response'
-import {CreateWalletResponseData} from './types'
 
 const paygateAccountSchema = z.object({
   hexAddress: z
@@ -63,7 +63,8 @@ function gatewayLabel(gateway: GatewayId): string {
 
 type GatewayAccountFormProps = {
   gateway: GatewayId
-  accountId?: Doc<'paygateAccounts'>['_id']
+  gatewayId?: Id<'gateways'>
+  hexAddress?: string
   initialValues?: PaygateAccountFormValues
   onCreated?: VoidFunction
   onUpdated?: VoidFunction
@@ -72,23 +73,20 @@ type GatewayAccountFormProps = {
 
 export const GatewayAccountForm = ({
   gateway,
-  accountId,
+  gatewayId,
+  hexAddress,
   initialValues,
   onCreated,
   onUpdated,
   onCancel,
 }: GatewayAccountFormProps) => {
-  const isEditMode = !!accountId
-  const createAccount = useMutation(api.paygateAccounts.m.createAccount)
-  const updateAccount = useMutation(api.paygateAccounts.m.updateAccount)
-  const syncAccount = useAction(
-    api.paygateAccounts.a
-      .syncAccountFromPayGate as unknown as FunctionReference<'action'>,
-  )
+  const isEditMode = !!hexAddress
+  const accounts = useQuery(api.gateways.q.listAccounts, {gateway})
+  const createAccount = useMutation(api.gateways.m.createAccount)
+  const updateAccount = useMutation(api.gateways.m.updateAccount)
   const {createWallet, loading: isSubmitting} = useGateway(gateway)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [isSyncing, setIsSyncing] = useState(false)
   const [walletResponse, setWalletResponse] = useState<ApiResponse | null>(null)
   const {paste, pasted} = usePaste()
 
@@ -119,18 +117,21 @@ export const GatewayAccountForm = ({
 
         const data = parsed.data
 
-        if (isEditMode && accountId) {
+        if (isEditMode && gatewayId && hexAddress) {
           await updateAccount({
-            id: accountId,
-            label: data.label,
-            callbackUrl: data.callbackUrl,
-            description: data.description,
-            isDefault: data.isDefault,
-            enabled: data.enabled,
+            gatewayId,
+            hexAddress,
+            account: {
+              label: data.label,
+              callbackUrl: data.callbackUrl,
+              description: data.description,
+              isDefault: data.isDefault,
+              enabled: data.enabled,
+            },
           })
           setStatus('success')
           onUpdated?.()
-        } else {
+        } else if (gatewayId) {
           const callbackUrl = data.callbackUrl || callbackUrlParam
           const apiResponse = await createWallet(data.hexAddress, callbackUrl)
 
@@ -149,20 +150,25 @@ export const GatewayAccountForm = ({
           const responseData = apiResponse.data as CreateWalletResponseData
 
           await createAccount({
-            gateway,
-            hexAddress: data.hexAddress,
-            addressIn: responseData.address_in,
-            polygonAddressIn: responseData.polygon_address_in,
-            callbackUrl: responseData.callback_url,
-            ipnToken: responseData.ipn_token,
-            label: data.label,
-            description: data.description,
-            isDefault: data.isDefault,
-            enabled: data.enabled,
+            gatewayId,
+            account: {
+              hexAddress: data.hexAddress,
+              addressIn: responseData.address_in,
+              polygonAddressIn: responseData.polygon_address_in,
+              callbackUrl: responseData.callback_url,
+              ipnToken: responseData.ipn_token,
+              label: data.label ?? '',
+              description: data.description,
+              isDefault: data.isDefault,
+              enabled: data.enabled,
+            },
           })
           form.reset()
           setStatus('success')
           onCreated?.()
+        } else {
+          setErrorMessage('Gateway not loaded. Please try again.')
+          setStatus('error')
         }
       } catch (error) {
         const message =
@@ -176,28 +182,6 @@ export const GatewayAccountForm = ({
       }
     },
   })
-
-  const handleSync = useCallback(async () => {
-    if (!accountId) return
-
-    setIsSyncing(true)
-    try {
-      const result = await syncAccount({accountId})
-      if (result.success) {
-        setStatus('success')
-      } else {
-        setErrorMessage(result.error || 'Failed to sync account data')
-        setStatus('error')
-      }
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'Failed to sync account data',
-      )
-      setStatus('error')
-    } finally {
-      setIsSyncing(false)
-    }
-  }, [accountId, syncAccount])
 
   const handlePasteAddress = useCallback(async () => {
     try {
@@ -250,11 +234,8 @@ export const GatewayAccountForm = ({
     }
   }, [callbackUrlParam, form, isEditMode])
 
-  useEffect(() => {
-    if (isEditMode) {
-      setWalletResponse(null)
-    }
-  }, [isEditMode])
+  const canSubmit =
+    !!gatewayId && (isEditMode ? !!hexAddress : addressValidation.isValid)
 
   const onSubmit = useCallback(
     (e: SubmitEvent<HTMLFormElement>) => {
@@ -264,20 +245,27 @@ export const GatewayAccountForm = ({
     [form],
   )
 
-  const showSync = gateway === 'paygate'
-
   return (
     <Card
       shadow='none'
       radius='none'
       className='md:rounded-lg dark:bg-dark-table/40 w-full sm:py-4'>
+      <CardHeader className='border-b border-sidebar pt-0'>
+        <SectionHeader
+          title={<Link href={`/admin/payments/${gateway}`}>{gateway}</Link>}>
+          <span className='font-okxs font-medium'>
+            {accounts?.length ?? 0}{' '}
+            <span className='opacity-70 font-normal'>accounts</span>
+          </span>
+        </SectionHeader>
+      </CardHeader>
       <CardBody className='px-3 sm:px-4 md:px-6 h-[calc(100svh-120px)] sm:h-[calc(100lvh-100px)] overflow-y-auto overflow-x-hidden'>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8'>
           <div>
             <div className='mb-3 sm:mb-4 space-y-3 sm:space-y-5'>
-              <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pt-0 sm:pt-4'>
+              <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pt-1'>
                 <SectionHeader
-                  title={isEditMode ? 'Edit Wallet' : 'Create Wallet'}>
+                  title={isEditMode ? 'Edit Account' : 'Create Account'}>
                   <a
                     href={
                       hexAddressValue
@@ -322,7 +310,7 @@ export const GatewayAccountForm = ({
 
               <Callout
                 type={
-                  addressValidation.isValid || walletResponse
+                  addressValidation.isValid || (!isEditMode && walletResponse)
                     ? 'custom'
                     : 'warning'
                 }
@@ -444,18 +432,6 @@ export const GatewayAccountForm = ({
                 </div>
 
                 <div className='flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-start gap-2 sm:gap-3 py-4 sm:py-6 md:py-8'>
-                  {isEditMode && accountId && showSync && (
-                    <Button
-                      type='button'
-                      variant='bordered'
-                      size='lg'
-                      onPress={handleSync}
-                      isLoading={isSyncing}
-                      className='w-full sm:w-auto touch-manipulation'>
-                      Sync from {gatewayLabel(gateway)}
-                    </Button>
-                  )}
-
                   {onCancel && (
                     <Button
                       type='button'
@@ -484,6 +460,7 @@ export const GatewayAccountForm = ({
                     }
                     disabled={
                       useStore(form.store, (state) => state.isSubmitting) ||
+                      !canSubmit ||
                       !addressValidation.isValid ||
                       addressValidation.isValidating
                     }>
@@ -496,7 +473,7 @@ export const GatewayAccountForm = ({
             </form>
           </div>
 
-          <CreateWalletResponse response={walletResponse} />
+          <CreateWalletResponse response={isEditMode ? null : walletResponse} />
         </div>
       </CardBody>
     </Card>

@@ -21,15 +21,20 @@ export default function CardProvidersPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const order = useQuery(api.orders.q.getById, {id: orderId})
   const defaultGateway = useQuery(api.admin.q.getPaymentDefaultGateway, {})
-  const paygateAccount = useQuery(
-    api.paygateAccounts.q.getDefaultAccount,
-    {gateway: defaultGateway ?? 'paygate'},
-  )
+  const paygateAccount = useQuery(api.paygateAccounts.q.getDefaultAccount, {
+    gateway: defaultGateway ?? 'paygate',
+  })
 
   const providers = useMemo(
     () => paygateAccount?.topTenProviders ?? [],
     [paygateAccount?.topTenProviders],
   )
+
+  const isValidWallet = useMemo(() => {
+    const addr = paygateAccount?.hexAddress
+    if (!addr) return false
+    return /^0x[a-fA-F0-9]{40}$/.test(addr.trim())
+  }, [paygateAccount?.hexAddress])
 
   const handleProviderSelect = useCallback(
     async (providerId: string) => {
@@ -50,9 +55,11 @@ export default function CardProvidersPage() {
           }),
         })
 
-        const data = (await response.json().catch(() => null)) as
-          | {success?: boolean; paymentUrl?: string; error?: string}
-          | null
+        const data = (await response.json().catch(() => null)) as {
+          success?: boolean
+          paymentUrl?: string
+          error?: string
+        } | null
 
         if (!response.ok || !data?.success || !data.paymentUrl) {
           throw new Error(data?.error || 'Unable to start PayGate checkout')
@@ -113,15 +120,33 @@ export default function CardProvidersPage() {
                   <p className='text-xs md:text-sm uppercase tracking-[0.22em] font-pixel-line'>
                     Card Payment
                   </p>
-                  {process.env.NODE_ENV === 'development' && paygateAccount && (
-                    <span
-                      className='text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 font-mono'
-                      title='Default gateway used for checkout'>
-                      {paygateAccount.gateway ?? 'paygate'}
-                    </span>
-                  )}
+
                   <Icon name='applepay' className='size-4 md:size-9' />
                   <Icon name='googlepay' className='size-4 md:size-9' />
+                  {process.env.NODE_ENV === 'development' && paygateAccount && (
+                    <span
+                      className='inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-700 dark:text-amber-400 font-mono'
+                      title={
+                        isValidWallet
+                          ? 'Default gateway used for checkout • Wallet address valid'
+                          : 'Default gateway used for checkout • Wallet address invalid'
+                      }>
+                      {paygateAccount.gateway ?? 'paygate'}
+                      {isValidWallet ? (
+                        <Icon
+                          name='check'
+                          className='size-3 text-emerald-600 dark:text-emerald-400'
+                          aria-hidden
+                        />
+                      ) : (
+                        <Icon
+                          name='x'
+                          className='size-3 text-red-600 dark:text-red-400'
+                          aria-hidden
+                        />
+                      )}
+                    </span>
+                  )}
                 </div>
                 <h1 className='text-base md:text-lg lg:text-2xl font-okxs'>
                   Select a payment provider

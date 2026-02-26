@@ -16,7 +16,7 @@ export const MainTab = ({href, children}: MainTab) => {
   return (
     <Link
       href={href}
-      prefetch={href !== ''}
+      prefetch={href !== 'auto'}
       className='flex items-center space-x-1 md:space-x-4 group'>
       {children}
     </Link>

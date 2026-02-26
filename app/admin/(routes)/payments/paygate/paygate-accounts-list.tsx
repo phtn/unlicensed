@@ -1,10 +1,11 @@
 'use client'
 
-import type {Doc} from '@/convex/_generated/dataModel'
-import {GatewayAccountsList} from './gateway-accounts-list'
+import {GatewayAccountsList} from '../_components/gateway-accounts-list'
 
 interface PaygateAccountsListProps {
-  onEdit?: (id: Doc<'paygateAccounts'>['_id']) => void
+  onEdit?: (id: `0x${string}`) => void
+  onRefresh?: (hexAddress: `0x${string}`) => void
+  onDelete?: (hexAddress: `0x${string}`) => void
 }
 
 /** PayGate-specific wrapper around shared GatewayAccountsList */

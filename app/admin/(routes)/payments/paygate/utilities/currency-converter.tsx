@@ -13,7 +13,7 @@ import {
   useState,
   useTransition,
 } from 'react'
-import {FiatCurrency} from '../types'
+import {FiatCurrency} from '../../types'
 
 interface ConverterFieldProps {
   className?: string

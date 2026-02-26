@@ -1,7 +1,6 @@
 'use client'
 
-import type {Doc} from '@/convex/_generated/dataModel'
-import {GatewayAccountForm} from './gateway-account-form'
+import {GatewayAccountForm} from '../_components/gateway-account-form'
 
 export type PaygateAccountFormValues = {
   hexAddress: string
@@ -14,7 +13,8 @@ export type PaygateAccountFormValues = {
 }
 
 type PaygateAccountFormProps = {
-  accountId?: Doc<'paygateAccounts'>['_id']
+  gatewayId?: import('@/convex/_generated/dataModel').Id<'gateways'>
+  hexAddress?: string
   initialValues?: PaygateAccountFormValues
   onCreated?: VoidFunction
   onUpdated?: VoidFunction

@@ -1,7 +1,7 @@
 'use client'
 
 import {ApiResponse} from '@/lib/paygate/types'
-import {ResponseDisplay} from './components'
+import {ResponseDisplay} from '../paygate/components'
 
 interface CreateWalletResponseProps {
   response: ApiResponse | null

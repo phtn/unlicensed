@@ -112,7 +112,7 @@ export const TopProviders = ({
                       : 'arrow-right'
                   }
                   className={cn(
-                    'transition-all duration-500 transform-gpu opacity-0 -translate-x-14 group-hover:translate-x-3 group-hover:opacity-100 group-hover:text-slate-100 dark:group-hover:text-slate-100 blur-sm group-hover:blur-none size-6 delay-75',
+                    'transition-all duration-500 transform-gpu opacity-0 -translate-x-14 group-hover:translate-x-3 group-hover:opacity-100 group-hover:text-foreground dark:group-hover:text-slate-100 blur-sm group-hover:blur-none size-6 delay-75',
                     {'size-5': selectedProviderId === provider.id},
                   )}
                 />

@@ -168,12 +168,22 @@ export const getAdminByIdentifier = query({
 
 /**
  * Get default payment gateway (paygate | paylex | rampex) for card checkout
+ * Reads from adminSettings with identifier 'payment-gateway'
  */
 export const getPaymentDefaultGateway = query({
   args: {},
   handler: async ({db}): Promise<'paygate' | 'paylex' | 'rampex'> => {
-    const settings = await db.query('adminSettings').first()
-    const v = settings?.value?.defaultGateway
+    const setting = await db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'payment-gateway'))
+      .unique()
+
+    const v = setting?.value &&
+      typeof setting.value === 'object' &&
+      'defaultGateway' in setting.value
+      ? setting.value.defaultGateway
+      : undefined
+
     if (v === 'paygate' || v === 'paylex' || v === 'rampex') return v
     return 'paygate'
   },

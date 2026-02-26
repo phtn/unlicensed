@@ -17,6 +17,7 @@ import {logSchema} from './logs/d'
 import {messageSchema} from './messages/d'
 import {notificationSchema} from './notifications/d'
 import {orderSchema} from './orders/d'
+import {gatewaySchema} from './gateways/d'
 import {paygateAccountSchema} from './paygateAccounts/d'
 import {productHoldSchema} from './productHolds/d'
 import {productSchema} from './products/d'
@@ -81,6 +82,10 @@ export default defineSchema({
     .index('by_title', ['title'])
     .index('by_intent', ['intent'])
     .index('by_group', ['group']),
+  gateways: defineTable(gatewaySchema)
+    .index('by_default', ['isDefault'])
+    .index('by_gateway', ['gateway'])
+    .index('by_gateway_default', ['gateway', 'isDefault']),
   paygateAccounts: defineTable(paygateAccountSchema)
     .index('by_address_in', ['addressIn'])
     .index('by_hexAddress', ['hexAddress'])

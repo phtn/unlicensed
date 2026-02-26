@@ -75,7 +75,10 @@ const order = {
 }
 
 const account = {
-  hexAddress: '0xmerchantwallet',
+  addressIn: 'encrypted-wallet-token',
+  polygonAddressIn: '0xpolygonwallet',
+  ipnToken: 'ipn_123',
+  callbackUrl: 'https://store.example/api/paygate/webhook',
   defaultProvider: 'moonpay',
   topTenProviders: [{id: 'moonpay', provider_name: 'MoonPay'}],
 }
@@ -135,7 +138,7 @@ describe('Pay with cards checkout route', () => {
   })
 
   test('returns 400 when requested provider is not pre-selected', async () => {
-    queryQueue.push(order, account)
+    queryQueue.push(order, adminSettings, account)
 
     const response = await post(
       createRequest({
@@ -149,27 +152,13 @@ describe('Pay with cards checkout route', () => {
     expect(payload).toEqual({
       error: 'Provider "rampnetwork" is not pre-selected',
     })
-    expect(queryCalls).toHaveLength(2)
+    expect(queryCalls).toHaveLength(3)
     expect(fetchCalls).toHaveLength(0)
     expect(mutationCalls).toHaveLength(0)
   })
 
-  test('initializes card checkout and stores processing payment state', async () => {
-    queryQueue.push(order, account, adminSettings)
-    fetchQueue.push(
-      new Response(
-        JSON.stringify({
-          address_in: 'encrypted-wallet',
-          polygon_address_in: '0xpolygonwallet',
-          callback_url: 'https://paygate.example/callback',
-          ipn_token: 'ipn_123',
-        }),
-        {
-          status: 200,
-          headers: {'Content-Type': 'application/json'},
-        },
-      ),
-    )
+  test('initializes card checkout using predefined account values (no wallet API call)', async () => {
+    queryQueue.push(order, adminSettings, account)
     mutationQueue.push(null)
 
     const response = await post(createRequest({orderId: order._id}))
@@ -178,22 +167,16 @@ describe('Pay with cards checkout route', () => {
     expect(response.status).toBe(200)
     expect(payload.success).toBe(true)
     expect(payload.provider).toBe('moonpay')
-    expect(String(payload.paymentUrl)).toContain(
+    expect(fetchCalls).toHaveLength(0)
+
+    const paymentUrl = String(payload.paymentUrl)
+    expect(paymentUrl).toContain(
       'https://checkout.proxy.example/process-payment.php?',
     )
-    expect(String(payload.paymentUrl)).toContain('provider=moonpay')
-
-    expect(fetchCalls).toHaveLength(1)
-    const walletRequestUrl = new URL(String(fetchCalls[0][0]))
-    expect(walletRequestUrl.origin).toBe('https://api.proxy.example')
-    expect(walletRequestUrl.pathname).toBe('/control/wallet.php')
-    expect(walletRequestUrl.searchParams.get('address')).toBe(account.hexAddress)
-    const callback = walletRequestUrl.searchParams.get('callback')
-    expect(callback).toBeTruthy()
-    const callbackUrl = new URL(callback!)
-    expect(callbackUrl.pathname).toBe('/api/paygate/webhook')
-    expect(callbackUrl.searchParams.get('order_doc_id')).toBe(order._id)
-    expect(callbackUrl.searchParams.get('provider')).toBe('moonpay')
+    expect(paymentUrl).toContain('provider=moonpay')
+    expect(paymentUrl).toContain(`address=${encodeURIComponent(account.addressIn)}`)
+    expect(paymentUrl).toContain('amount=125.00')
+    expect(paymentUrl).toContain(`email=${encodeURIComponent(order.contactEmail)}`)
 
     expect(mutationCalls).toHaveLength(1)
     const mutationArgs = mutationCalls[0][1] as {
@@ -215,25 +198,55 @@ describe('Pay with cards checkout route', () => {
       'provider=moonpay',
     )
     expect(mutationArgs.payment.gateway?.metadata?.provider).toBe('moonpay')
-    expect(mutationArgs.payment.gateway?.metadata?.ipnToken).toBe('ipn_123')
+    expect(mutationArgs.payment.gateway?.metadata?.ipnToken).toBe(
+      account.ipnToken,
+    )
+    expect(mutationArgs.payment.gateway?.metadata?.encryptedAddressIn).toBe(
+      account.addressIn,
+    )
+    expect(mutationArgs.payment.gateway?.metadata?.polygonAddressIn).toBe(
+      account.polygonAddressIn,
+    )
   })
 
-  test('returns 502 when wallet API response is missing address_in', async () => {
-    queryQueue.push(order, account, adminSettings)
-    fetchQueue.push(
-      new Response(JSON.stringify({ipn_token: 'ipn_123'}), {
-        status: 200,
-        headers: {'Content-Type': 'application/json'},
-      }),
-    )
+  test('normalizes double-encoded address_in to single encoding in payment URL', async () => {
+    const doubleEncodedAddress =
+      'er7V4AChAPTof%252F%252BVxW9tcAEtsGvW1%252Fvi2KhJ7RWCJPhjriKxRF6Qa%252FuojUrfY66vRMWKHYHjepT4rvqpD%252FFwVA%253D%253D'
+    const accountWithEncodedAddress = {
+      ...account,
+      addressIn: doubleEncodedAddress,
+    }
+    queryQueue.push(order, adminSettings, accountWithEncodedAddress)
+    mutationQueue.push(null)
 
     const response = await post(createRequest({orderId: order._id}))
     const payload = await response.json()
 
-    expect(response.status).toBe(502)
+    expect(response.status).toBe(200)
+    const paymentUrl = String(payload.paymentUrl)
+    expect(paymentUrl).toContain('address=')
+    expect(paymentUrl).not.toContain('%252F')
+    expect(paymentUrl).not.toContain('%253D')
+    expect(paymentUrl).toContain('%2F')
+    expect(paymentUrl).toContain('%3D')
+  })
+
+  test('returns 400 when account has no addressIn', async () => {
+    const accountWithoutAddressIn = {
+      ...account,
+      addressIn: '',
+      polygonAddressIn: account.polygonAddressIn,
+    }
+    queryQueue.push(order, adminSettings, accountWithoutAddressIn)
+
+    const response = await post(createRequest({orderId: order._id}))
+    const payload = await response.json()
+
+    expect(response.status).toBe(400)
     expect(payload).toEqual({
-      error: 'PayGate wallet response missing address_in',
+      error: 'PayGate account address_in is not configured',
     })
+    expect(fetchCalls).toHaveLength(0)
     expect(mutationCalls).toHaveLength(0)
   })
 })

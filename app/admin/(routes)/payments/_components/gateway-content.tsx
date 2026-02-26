@@ -2,10 +2,9 @@
 
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {api} from '@/convex/_generated/api'
-import type {Doc} from '@/convex/_generated/dataModel'
 import type {GatewayId} from '@/lib/paygate/gateway-config'
-import {useQuery} from 'convex/react'
-import {Suspense} from 'react'
+import {useMutation, useQuery} from 'convex/react'
+import {Suspense, useCallback} from 'react'
 import {GatewayAccountForm} from './gateway-account-form'
 import {GatewayAccountsList} from './gateway-accounts-list'
 
@@ -17,9 +16,10 @@ interface GatewayContentProps {
 const GatewayContentInner = ({gateway, basePath}: GatewayContentProps) => {
   const [tabId, setTabId, id, setId] = useAdminTabId()
 
+  const gatewayDoc = useQuery(api.gateways.q.getByGateway, {gateway})
   const editingAccount = useQuery(
-    api.paygateAccounts.q.getAccountById,
-    id && tabId === 'edit' ? {id: id as Doc<'paygateAccounts'>['_id']} : 'skip',
+    api.gateways.q.getAccount,
+    id && tabId === 'edit' ? {gateway, hexAddress: id} : 'skip',
   )
 
   const handleFormSuccess = () => {
@@ -27,8 +27,8 @@ const GatewayContentInner = ({gateway, basePath}: GatewayContentProps) => {
     setId(null)
   }
 
-  const handleEdit = (accountId: Doc<'paygateAccounts'>['_id']) => {
-    setId(accountId)
+  const handleEdit = (hexAddress: string) => {
+    setId(hexAddress)
     setTabId('edit')
   }
 
@@ -37,22 +37,40 @@ const GatewayContentInner = ({gateway, basePath}: GatewayContentProps) => {
     setId(null)
   }
 
+  const deleteAccount = useMutation(api.gateways.m.deleteAccount)
+
+  const handleDelete = useCallback(
+    async (hexAddress: string) => {
+      if (!gatewayDoc?._id) return
+      await deleteAccount({gatewayId: gatewayDoc._id, hexAddress})
+      handleFormSuccess()
+    },
+    [deleteAccount, gatewayDoc, handleFormSuccess],
+  )
+
+  const handleRefresh = useCallback((_hexAddress: string) => {
+    // TODO: Sync account data from gateway API
+  }, [])
+
   switch (tabId) {
     case 'new':
       return (
         <GatewayAccountForm
           gateway={gateway}
+          gatewayId={gatewayDoc?._id}
           onCancel={handleCancel}
         />
       )
     case 'edit':
-      if (!id || !editingAccount) {
+      if (!id || !editingAccount || !gatewayDoc) {
         return (
           <Suspense fallback={<div>Loading...</div>}>
             <GatewayAccountsList
               gateway={gateway}
               basePath={basePath}
               onEdit={handleEdit}
+              onRefresh={handleRefresh}
+              onDelete={handleDelete}
             />
           </Suspense>
         )
@@ -60,7 +78,8 @@ const GatewayContentInner = ({gateway, basePath}: GatewayContentProps) => {
       return (
         <GatewayAccountForm
           gateway={gateway}
-          accountId={editingAccount._id}
+          gatewayId={gatewayDoc._id}
+          hexAddress={editingAccount.hexAddress}
           initialValues={{
             hexAddress: editingAccount.hexAddress,
             addressIn: editingAccount.addressIn,
@@ -80,6 +99,8 @@ const GatewayContentInner = ({gateway, basePath}: GatewayContentProps) => {
             gateway={gateway}
             basePath={basePath}
             onEdit={handleEdit}
+            onRefresh={handleRefresh}
+            onDelete={handleDelete}
           />
         </Suspense>
       )

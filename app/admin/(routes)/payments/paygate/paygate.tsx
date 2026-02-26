@@ -2,26 +2,27 @@
 
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {api} from '@/convex/_generated/api'
-import type {Doc} from '@/convex/_generated/dataModel'
-import {useQuery} from 'convex/react'
-import {Suspense} from 'react'
+import {useMutation, useQuery} from 'convex/react'
+import {Suspense, useCallback} from 'react'
 import {PaygateAccountForm} from './paygate-account-form'
 import {PaygateAccountsList} from './paygate-accounts-list'
 
 const PayGateContentInner = () => {
   const [tabId, setTabId, id, setId] = useAdminTabId()
 
-  const editingAccount = useQuery(
-    api.paygateAccounts.q.getAccountById,
-    id && tabId === 'edit' ? {id: id as Doc<'paygateAccounts'>['_id']} : 'skip',
+  const gatewayDoc = useQuery(api.gateways.q.getByGateway, {gateway: 'paygate'})
+  const accounts = useQuery(
+    api.gateways.q.listAccounts,
+    tabId === 'edit' ? {gateway: 'paygate'} : 'skip',
   )
+  const editingAccount = accounts?.find((account) => account.hexAddress === id)
 
   const handleFormSuccess = () => {
     setTabId(null)
     setId(null)
   }
 
-  const handleEdit = (accountId: Doc<'paygateAccounts'>['_id']) => {
+  const handleEdit = (accountId: `0x${string}`) => {
     setId(accountId)
     setTabId('edit')
   }
@@ -30,6 +31,21 @@ const PayGateContentInner = () => {
     setTabId(null)
     setId(null)
   }
+
+  const deleteAccount = useMutation(api.gateways.m.deleteAccount)
+
+  const handleDelete = useCallback(
+    async (hexAddress: string) => {
+      if (!gatewayDoc?._id) return
+      await deleteAccount({gatewayId: gatewayDoc._id, hexAddress})
+      handleFormSuccess()
+    },
+    [deleteAccount, gatewayDoc, handleFormSuccess],
+  )
+
+  const handleRefresh = useCallback((_hexAddress: string) => {
+    // TODO: Sync account data from PayGate API
+  }, [])
 
   // Only handle PayGate-specific tabs (not affiliate tabs)
   // If tabId is affiliate or starts with affiliate, this component shouldn't handle it
@@ -42,21 +58,27 @@ const PayGateContentInner = () => {
     case 'new':
       return (
         <PaygateAccountForm
-          // onCreated={handleFormSuccess}
+          gatewayId={gatewayDoc?._id}
+          onCreated={handleFormSuccess}
           onCancel={handleCancel}
         />
       )
     case 'edit':
-      if (!id || !editingAccount) {
+      if (!id || !editingAccount || !gatewayDoc) {
         return (
           <Suspense fallback={<div>Loading...</div>}>
-            <PaygateAccountsList onEdit={handleEdit} />
+            <PaygateAccountsList
+              onEdit={handleEdit}
+              onRefresh={handleRefresh}
+              onDelete={handleDelete}
+            />
           </Suspense>
         )
       }
       return (
         <PaygateAccountForm
-          accountId={editingAccount._id}
+          gatewayId={gatewayDoc._id}
+          hexAddress={editingAccount.hexAddress}
           initialValues={{
             hexAddress: editingAccount.hexAddress,
             addressIn: editingAccount.addressIn,
@@ -72,7 +94,11 @@ const PayGateContentInner = () => {
     default:
       return (
         <Suspense fallback={<div>Loading...</div>}>
-          <PaygateAccountsList onEdit={handleEdit} />
+          <PaygateAccountsList
+            onEdit={handleEdit}
+            onRefresh={handleRefresh}
+            onDelete={handleDelete}
+          />
         </Suspense>
       )
   }

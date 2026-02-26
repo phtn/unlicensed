@@ -1,4 +1,4 @@
-import {FiatCurrency} from '@/app/admin/(routes)/payments/paygate/types'
+import {FiatCurrency} from '@/app/admin/(routes)/payments/types'
 import useSWR from 'swr'
 
 interface ConversionResponse {
@@ -20,11 +20,7 @@ const fetcher = async (url: string): Promise<ConversionResponse> => {
     throw new Error(`Conversion failed: ${response.statusText}`)
   }
   const data: ConversionResponse = await response.json()
-  if (
-    data.status === 'success' &&
-    data.value_coin &&
-    data.exchange_rate
-  ) {
+  if (data.status === 'success' && data.value_coin && data.exchange_rate) {
     return data
   }
   throw new Error('Invalid conversion response')
@@ -47,15 +43,11 @@ export function useCurrencyConversion(
     ? `https://api.paygate.to/control/convert.php?from=${encodeURIComponent(fromCurrency)}&value=${encodeURIComponent(amount)}`
     : null
 
-  const {data, error, isLoading} = useSWR<ConversionResponse>(
-    url,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      dedupingInterval: 300, // Debounce equivalent - dedupe requests within 300ms
-    },
-  )
+  const {data, error, isLoading} = useSWR<ConversionResponse>(url, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 300, // Debounce equivalent - dedupe requests within 300ms
+  })
 
   return {
     usdValue: data?.value_coin ?? null,

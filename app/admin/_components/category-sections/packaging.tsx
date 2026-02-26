@@ -187,11 +187,11 @@ export const Packaging = ({form}: PackagingProps) => {
                       <p className='text-sm opacity-80'>
                         Click on suggested denominations for{' '}
                         <span className='font-semibold'>
-                          {selectedUnits.map((u) => `"${u}"`).join(', ')}
+                          {selectedUnits.map((u) => `(${u})`).join(', ')}
                         </span>
                         :
                       </p>
-                      <div className='flex flex-wrap gap-1 md:gap-3 font-space font-semibold h-16'>
+                      <div className='flex flex-wrap gap-1 md:gap-3 font-okxs font-semibold h-16'>
                         {suggestions.map((suggestion) => {
                           const isSelected =
                             currentDenominations.includes(suggestion)
@@ -201,7 +201,7 @@ export const Packaging = ({form}: PackagingProps) => {
                               size='sm'
                               variant={isSelected ? 'light' : 'solid'}
                               className={cn(
-                                'cursor-pointer transition-all text-white',
+                                'cursor-pointer transition-all dark:text-white',
                                 {'': isSelected},
                               )}
                               onClick={() => handleSuggestionClick(suggestion)}>

@@ -1,8 +1,8 @@
 'use client'
 
-import {GatewayContent} from '../paygate/gateway-content'
 import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {Suspense} from 'react'
+import {GatewayContent} from '../_components/gateway-content'
 
 export const Content = () => (
   <MainWrapper className='border-t-0'>

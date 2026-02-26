@@ -1,9 +1,6 @@
 import {api} from '@/convex/_generated/api'
 import type {Id} from '@/convex/_generated/dataModel'
-import {
-  getGatewayApiUrls,
-  type GatewayId,
-} from '@/lib/paygate/config'
+import {getGatewayApiUrls, type GatewayId} from '@/lib/paygate/config'
 import {ConvexHttpClient} from 'convex/browser'
 import {NextRequest, NextResponse} from 'next/server'
 
@@ -11,14 +8,6 @@ type CheckoutRequest = {
   orderId?: string
   providerId?: string
   currency?: string
-}
-
-type WalletResponse = {
-  address_in?: string
-  polygon_address_in?: string
-  callback_url?: string
-  ipn_token?: string
-  error?: string
 }
 
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
@@ -35,9 +24,26 @@ const getString = (value: unknown): string | undefined => {
   return trimmed.length > 0 ? trimmed : undefined
 }
 
+/** Normalize address_in to raw form so URLSearchParams encodes once (avoids double encoding) */
+const normalizeAddressForUrl = (address: string): string => {
+  try {
+    let prev = address
+    let curr = decodeURIComponent(prev)
+    while (curr !== prev) {
+      prev = curr
+      curr = decodeURIComponent(prev)
+    }
+    return curr
+  } catch {
+    return address
+  }
+}
+
 type GatewayUrlRecord = {apiUrl?: string; checkoutUrl?: string}
 
-const getAdminValueRecord = async (): Promise<Record<string, unknown> | undefined> => {
+const getAdminValueRecord = async (): Promise<
+  Record<string, unknown> | undefined
+> => {
   const adminSettings = await convex.query(api.admin.q.getAdminSettings, {})
   return adminSettings?.value && typeof adminSettings.value === 'object'
     ? (adminSettings.value as Record<string, unknown>)
@@ -105,10 +111,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const merchantWallet = getString(account.hexAddress)
-    if (!merchantWallet) {
+    const addressIn = getString(account.addressIn)
+    if (!addressIn) {
       return NextResponse.json(
-        {error: 'PayGate merchant wallet is not configured'},
+        {error: 'PayGate account address_in is not configured'},
         {status: 400},
       )
     }
@@ -138,51 +144,15 @@ export async function POST(request: NextRequest) {
     // "Provided wallet address is not allowed" because the wallet is unknown to that API.
     const gateway = (account.gateway ?? 'paygate') as GatewayId
     const adminGateway = getAdminGatewayRecord(adminValue, gateway)
-    const {apiUrl, checkoutUrl} = getGatewayApiUrls(gateway, adminGateway)
+    const {checkoutUrl} = getGatewayApiUrls(gateway, adminGateway)
 
     const callbackUrl = new URL('/api/paygate/webhook', request.nextUrl.origin)
     callbackUrl.searchParams.set('order_id', order.orderNumber)
     callbackUrl.searchParams.set('order_doc_id', order._id)
     callbackUrl.searchParams.set('provider', provider)
 
-    const walletParams = new URLSearchParams({
-      address: merchantWallet,
-      callback: callbackUrl.toString(),
-    })
-
-    const walletResponse = await fetch(
-      `${apiUrl}/control/wallet.php?${walletParams.toString()}`,
-      {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-        },
-      },
-    )
-
-    const walletData = (await walletResponse.json().catch(() => null)) as
-      | WalletResponse
-      | null
-
-    if (!walletResponse.ok) {
-      return NextResponse.json(
-        {
-          error: 'Failed to create PayGate checkout wallet',
-          details: walletData?.error || 'Unexpected wallet API response',
-        },
-        {status: 502},
-      )
-    }
-
-    if (!walletData?.address_in) {
-      return NextResponse.json(
-        {error: walletData?.error || 'PayGate wallet response missing address_in'},
-        {status: 502},
-      )
-    }
-
     const paymentParams = new URLSearchParams({
-      address: walletData.address_in,
+      address: normalizeAddressForUrl(addressIn),
       amount,
       provider,
       email: order.contactEmail,
@@ -195,31 +165,32 @@ export async function POST(request: NextRequest) {
       payment: {
         ...order.payment,
         status: 'processing',
-        gatewayId: walletData.ipn_token || order.payment.gatewayId,
+        gatewayId: getString(account.ipnToken) || order.payment.gatewayId,
         gateway: {
           ...(order.payment.gateway ?? {
             name: gateway,
-            id: walletData.polygon_address_in || walletData.address_in,
+            id: getString(account.polygonAddressIn) || addressIn || gateway,
             provider,
             status: 'processing',
           }),
           name: gateway,
           id:
-            walletData.polygon_address_in ||
-            walletData.address_in ||
+            getString(account.polygonAddressIn) ||
+            addressIn ||
             order.payment.gateway?.id ||
             gateway,
           provider,
           status: 'processing',
-          sessionId: walletData.ipn_token || order.payment.gateway?.sessionId,
+          sessionId:
+            getString(account.ipnToken) || order.payment.gateway?.sessionId,
           paymentUrl,
           transactionId: order.payment.gateway?.transactionId,
           metadata: {
             ...(order.payment.gateway?.metadata ?? {}),
-            callbackUrl: walletData.callback_url || callbackUrl.toString(),
-            ipnToken: walletData.ipn_token,
-            encryptedAddressIn: walletData.address_in,
-            polygonAddressIn: walletData.polygon_address_in,
+            callbackUrl: callbackUrl.toString(),
+            ipnToken: getString(account.ipnToken),
+            encryptedAddressIn: addressIn,
+            polygonAddressIn: getString(account.polygonAddressIn),
             provider,
             checkoutInitializedAt: Date.now(),
           },
@@ -244,3 +215,16 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+// {
+//   "address_in": "er7V4AChAPTof%2F%2BVxW9tcAEtsGvW1%2Fvi2KhJ7RWCJPhjriKxRF6Qa%2FuojUrfY66vRMWKHYHjepT4rvqpD%2FFwVA%3D%3D",
+//   "polygon_address_in": "0x9CE298FDEf44518b7d833050f41A5E6E338c4C58",
+//   "callback_url": "http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fpaygate%2Fcallback",
+//   "ipn_token": "ZEE2cW95d2IyYks3UlR6dDVCazVRemNTM1V4TFljSm9mZVJVOGM3S0xUelRTd1RwMDVxdEZ2dHN4LXFkQldjMTdPbGhKRlNFTGFB"
+// }
+
+// er7V4AChAPTof%2F%2BVxW9tcAEtsGvW1%2Fvi2KhJ7RWCJPhjriKxRF6Qa%2FuojUrfY66vRMWKHYHjepT4rvqpD%2FFwVA%3D%3D
+// https://checkout.paygate.to/process-payment.php?address=er7V4AChAPTof%2F%2BVxW9tcAEtsGvW1%2Fvi2KhJ7RWCJPhjriKxRF6Qa%2FuojUrfY66vRMWKHYHjepT4rvqpD%2FFwVA%3D%3D&amount=100&provider=wert&email=phtn458%40gmail.com&currency=USD
+
+// er7V4AChAPTof%2F%2BVxW9tcAEtsGvW1%2Fvi2KhJ7RWCJPhjriKxRF6Qa%2FuojUrfY66vRMWKHYHjepT4rvqpD%2FFwVA%3D%3D
+// er7V4AChAPTof%252F%252BVxW9tcAEtsGvW1%252Fvi2KhJ7RWCJPhjriKxRF6Qa%252FuojUrfY66vRMWKHYHjepT4rvqpD%252FFwVA%253D%253D

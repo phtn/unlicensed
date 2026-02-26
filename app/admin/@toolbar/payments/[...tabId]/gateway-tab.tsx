@@ -6,11 +6,11 @@ import {
   ToolbarButtonWrapper,
 } from '@/app/admin/@toolbar/components'
 import {PageTitle} from '@/app/admin/_components/ui/page-title'
+import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import type {GatewayId} from '@/lib/paygate/gateway-config'
 import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
-import {AnimatedNumber} from '@/components/ui/animated-number'
 
 interface GatewayTabProps {
   gateway: GatewayId
@@ -19,7 +19,7 @@ interface GatewayTabProps {
 }
 
 export const GatewayTab = ({gateway, title, basePath}: GatewayTabProps) => {
-  const accounts = useQuery(api.paygateAccounts.q.listAccounts, {gateway})
+  const gateways = useQuery(api.gateways.q.list)
 
   return (
     <>
@@ -27,18 +27,18 @@ export const GatewayTab = ({gateway, title, basePath}: GatewayTabProps) => {
         <PageTitle>{title}</PageTitle>
         <span
           className={cn(
-            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
-            'bg-sidebar/50 dark:bg-sidebar/40 text-indigo-500',
+            'px-1 h-6 w-6 text-center dark:bg-dark-gray rounded-md font-space font-semibold',
+            'bg-dark-table dark:bg-sidebar/40 text-indigo-100',
           )}>
-          <AnimatedNumber value={accounts?.length ?? 0} />
+          <AnimatedNumber value={gateways?.length ?? 0} />
         </span>
       </MainTab>
       <ToolbarButtonWrapper>
         <PrimaryTab
           id='new'
           icon='plus'
-          label='Wallet'
-          href={`${basePath}?tabId=new`}
+          label='Account'
+          href={`${basePath}/${gateway}?tabId=new`}
         />
       </ToolbarButtonWrapper>
     </>

@@ -9,7 +9,7 @@ const PaymentsTabInner = () => {
     <>
       {/* Payments Main Tab */}
       <MainTab href='/admin/payments'>
-        <PageTitle>Payments</PageTitle>
+        <PageTitle>Payment Gateways</PageTitle>
       </MainTab>
     </>
   )

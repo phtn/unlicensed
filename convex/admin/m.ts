@@ -368,6 +368,51 @@ export const updateIpapiGeolocationEnabled = mutation({
   },
 })
 
+/**
+ * Update default gateway for identifier 'payment-gateway'
+ */
+export const updatePaymentGatewayDefault = mutation({
+  args: {
+    defaultGateway: v.union(
+      v.literal('paygate'),
+      v.literal('paylex'),
+      v.literal('rampex'),
+    ),
+  },
+  handler: async (ctx, {defaultGateway}) => {
+    const setting = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) =>
+        q.eq('identifier', 'payment-gateway'),
+      )
+      .unique()
+
+    const now = Date.now()
+    const nextValue = {
+      ...(setting?.value && typeof setting.value === 'object'
+        ? (setting.value as Record<string, unknown>)
+        : {}),
+      defaultGateway,
+    }
+
+    if (setting) {
+      await ctx.db.patch(setting._id, {
+        value: nextValue,
+        updatedAt: now,
+      })
+    } else {
+      await ctx.db.insert('adminSettings', {
+        identifier: 'payment-gateway',
+        value: nextValue,
+        updatedAt: now,
+        createdAt: now,
+      })
+    }
+
+    return {success: true}
+  },
+})
+
 export const updateAdminByIdentifier = mutation({
   args: {
     identifier: v.string(),

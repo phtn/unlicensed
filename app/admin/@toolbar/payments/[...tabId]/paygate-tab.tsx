@@ -29,12 +29,12 @@ const PayGateTabInner = () => {
 
   return (
     <>
-      <MainTab href='/admin/payments/paygate'>
-        <PageTitle>PayGate</PageTitle>
+      <MainTab href='/admin/payments'>
+        <PageTitle>Paygate Accounts</PageTitle>
         <span
           className={cn(
-            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
-            'bg-sidebar/50 dark:bg-sidebar/40 text-indigo-500',
+            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-table rounded-md font-space font-semibold',
+            'dark:bg-sidebar text-indigo-100',
           )}>
           <AnimatedNumber value={accounts?.length ?? 0} />
         </span>

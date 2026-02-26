@@ -3,20 +3,23 @@
 import {usePathname} from 'next/navigation'
 import {ToolbarWrapper} from '../../components'
 import {GatewayTab} from './gateway-tab'
-import {PayGateTab} from './paygate-tab'
 import {PaymentsTab} from './payments-tab'
 
 interface ContentProps {
   tabId: string
 }
 
-export const Content = ({}: ContentProps) => {
+export const Content = ({tabId}: ContentProps) => {
   const pathname = usePathname()
 
   if (pathname?.includes('/paygate')) {
     return (
       <ToolbarWrapper>
-        <PayGateTab />
+        <GatewayTab
+          gateway={'paygate'}
+          title={`Gateways`}
+          basePath='/admin/payments'
+        />
       </ToolbarWrapper>
     )
   }
