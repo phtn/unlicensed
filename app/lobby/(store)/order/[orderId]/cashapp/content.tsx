@@ -16,29 +16,7 @@ import {useEffect, useMemo, useRef, useState} from 'react'
 
 type StepState = 'complete' | 'active' | 'pending' | 'error'
 
-function scoreStaffForCashAppRep(staff: {
-  division?: string
-  position: string
-  accessRoles: string[]
-}) {
-  const division = (staff.division ?? '').toLowerCase()
-  const position = (staff.position ?? '').toLowerCase()
-  const roles = staff.accessRoles.map((role) => role.toLowerCase())
-
-  let score = 0
-  if (division.includes('payment') || division.includes('billing')) score += 6
-  if (
-    position.includes('payment') ||
-    position.includes('billing') ||
-    position.includes('support')
-  ) {
-    score += 4
-  }
-  if (roles.includes('admin') || roles.includes('manager')) score += 3
-  if (roles.includes('staff')) score += 1
-
-  return score
-}
+type SalesRepValue = {staffId?: string; initialMessageSeed?: string}
 
 function stepIconName(state: StepState) {
   if (state === 'complete') return 'check-fill'
@@ -96,7 +74,9 @@ export const Content = () => {
     api.users.q.getCurrentUser,
     user?.uid ? {fid: user.uid} : 'skip',
   )
-  const staff = useQuery(api.staff.q.getStaff)
+  const salesRepSetting = useQuery(api.admin.q.getAdminByIdentifier, {
+    identifier: 'sales-rep',
+  })
   const connectStaffForChat = useMutation(api.follows.m.connectStaffForChat)
   const sendMessage = useMutation(api.messages.m.sendMessage)
 
@@ -141,18 +121,22 @@ export const Content = () => {
     return order.userId === currentUser._id
   }, [currentUser, order])
 
-  const staffCandidates = useMemo(() => {
-    if (!staff) return []
+  const settingsValue = useMemo((): SalesRepValue | undefined => {
+    if (!salesRepSetting?.value || typeof salesRepSetting.value !== 'object')
+      return undefined
+    return salesRepSetting.value as SalesRepValue
+  }, [salesRepSetting])
 
-    return [...staff]
-      .filter((member) => member.active)
-      .sort((a, b) => {
-        const scoreDelta =
-          scoreStaffForCashAppRep(b) - scoreStaffForCashAppRep(a)
-        if (scoreDelta !== 0) return scoreDelta
-        return a.createdAt - b.createdAt
-      })
-  }, [staff])
+  const defaultSalesRepStaffId = useMemo((): Id<'staff'> | null => {
+    const staffId = settingsValue?.staffId
+    return staffId ? (staffId as Id<'staff'>) : null
+  }, [settingsValue])
+
+  const initialMessageSeedTemplate = useMemo(() => {
+    const template = settingsValue?.initialMessageSeed?.trim()
+    if (template) return template
+    return 'Cash App checkout request for order {orderNumber}. I selected Cash App and need a representative to continue payment in this chat.'
+  }, [settingsValue])
 
   const isCashAppOrder = order?.payment.method === 'cash_app'
   const noStaffConfigured =
@@ -161,8 +145,8 @@ export const Content = () => {
     !!user?.uid &&
     !!currentUser &&
     isOrderOwner &&
-    staff !== undefined &&
-    staffCandidates.length === 0
+    salesRepSetting !== undefined &&
+    !defaultSalesRepStaffId
 
   const canAttemptRepConnection =
     !!order &&
@@ -173,10 +157,11 @@ export const Content = () => {
     !assignedRepFid &&
     !isConnectingRep &&
     !connectionError &&
-    staffCandidates.length > 0
+    !!defaultSalesRepStaffId
 
   useEffect(() => {
-    if (!canAttemptRepConnection || !user?.uid) return
+    if (!canAttemptRepConnection || !user?.uid || !defaultSalesRepStaffId)
+      return
 
     let cancelled = false
 
@@ -188,33 +173,30 @@ export const Content = () => {
         error: null,
       })
 
-      let nextRepFid: string | null = null
-
-      for (const candidate of staffCandidates) {
-        try {
-          const result = await connectStaffForChat({
-            staffId: candidate._id,
-            currentUserFid: user.uid,
-          })
-          if (result.staffUserFid) {
-            nextRepFid = result.staffUserFid
-            break
-          }
-        } catch {
-          // Try next active staff member
-        }
-      }
-
-      if (cancelled) return
-
-      if (nextRepFid) {
-        setChatConnection({
-          orderId,
-          repFid: nextRepFid,
-          isConnecting: false,
-          error: null,
+      try {
+        const result = await connectStaffForChat({
+          staffId: defaultSalesRepStaffId,
+          currentUserFid: user.uid,
         })
-      } else {
+        if (cancelled) return
+        if (result.staffUserFid) {
+          setChatConnection({
+            orderId,
+            repFid: result.staffUserFid,
+            isConnecting: false,
+            error: null,
+          })
+        } else {
+          setChatConnection({
+            orderId,
+            repFid: null,
+            isConnecting: false,
+            error:
+              'Default sales representative is not available. Please try again shortly.',
+          })
+        }
+      } catch {
+        if (cancelled) return
         setChatConnection({
           orderId,
           repFid: null,
@@ -233,21 +215,31 @@ export const Content = () => {
   }, [
     canAttemptRepConnection,
     connectStaffForChat,
+    defaultSalesRepStaffId,
     orderId,
-    staffCandidates,
     user?.uid,
   ])
+
+  const REP_WELCOME_MESSAGE =
+    "Hi there!, we received your order. I'll be with you shortly and assist you in completing your order."
 
   const hasStarterMessage = useMemo(() => {
     if (!order || !currentUser || !conversationMessages) return false
     return conversationMessages.some(
       (message) =>
         message.senderId === currentUser._id &&
-        message.content.includes(
-          `Cash App checkout request for order ${order.orderNumber}`,
-        ),
+        message.content.includes(order.orderNumber),
     )
   }, [conversationMessages, currentUser, order])
+
+  const hasRepWelcomeMessage = useMemo(() => {
+    if (!assignedRep || !conversationMessages) return false
+    return conversationMessages.some(
+      (message) =>
+        message.senderId === assignedRep._id &&
+        message.content.includes('we received your order'),
+    )
+  }, [assignedRep, conversationMessages])
 
   useEffect(() => {
     if (
@@ -261,23 +253,35 @@ export const Content = () => {
     }
 
     if (!isOrderOwner) return
-    if (hasStarterMessage) {
+    if (hasStarterMessage && hasRepWelcomeMessage) {
       seededOrderRef.current = order._id
       return
     }
     if (seededOrderRef.current === order._id) return
 
-    const starterMessage = `Cash App checkout request for order ${order.orderNumber}. I selected Cash App and need a representative to continue payment in this chat.`
+    const starterMessage = initialMessageSeedTemplate.replace(
+      '{orderNumber}',
+      order.orderNumber,
+    )
 
     let cancelled = false
 
     const seedConversation = async () => {
       try {
-        await sendMessage({
-          senderId: user.uid,
-          receiverId: assignedRepFid,
-          content: starterMessage,
-        })
+        if (!hasStarterMessage) {
+          await sendMessage({
+            senderId: user.uid,
+            receiverId: assignedRepFid,
+            content: starterMessage,
+          })
+        }
+        if (!hasRepWelcomeMessage) {
+          await sendMessage({
+            senderId: assignedRepFid,
+            receiverId: user.uid,
+            content: REP_WELCOME_MESSAGE,
+          })
+        }
         if (!cancelled) {
           seededOrderRef.current = order._id
         }
@@ -295,7 +299,9 @@ export const Content = () => {
     assignedRepFid,
     conversationMessages,
     currentUser,
+    hasRepWelcomeMessage,
     hasStarterMessage,
+    initialMessageSeedTemplate,
     isOrderOwner,
     order,
     sendMessage,

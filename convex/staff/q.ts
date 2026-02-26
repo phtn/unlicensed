@@ -23,3 +23,13 @@ export const getStaffMember = query({
     return await ctx.db.get(args.id)
   },
 })
+
+export const getStaffByPosition = query({
+  args: {position: v.string()},
+  handler: async (ctx, args) => {
+    const all = await ctx.db.query('staff').collect()
+    return all.filter(
+      (s) => s.position?.toLowerCase() === args.position.toLowerCase(),
+    )
+  },
+})

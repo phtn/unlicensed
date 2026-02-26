@@ -34,11 +34,11 @@ export const Products = ({products, slug}: ProductsProps) => {
             <div className=''>
               <Tag text={slug} />
               <Title title={slug} subtitle={category?.highlight} />
-              <p className='hidden sm:flex text-sm sm:text-base lg:text-base opacity-60 mb-6 sm:mb-8 lg:mb-12 max-w-md leading-relaxed'>
+              <p className='hidden md:flex text-sm sm:text-base lg:text-base opacity-60 mb-6 sm:mb-8 lg:mb-12 max-w-md leading-relaxed'>
                 {category?.description}
               </p>
 
-              <div className='hidden sm:flex items-center gap-3 sm:gap-4 lg:gap-5 relative z-50 flex-wrap'>
+              <div className='hidden md:flex items-center gap-3 sm:gap-4 lg:gap-5 relative z-50 flex-wrap'>
                 <Button
                   size='lg'
                   as={Link}
@@ -64,12 +64,12 @@ export const Products = ({products, slug}: ProductsProps) => {
               </div>
             </div>
 
-            <div className='relative flex items-center justify-center lg:justify-end h-[40vh] sm:h-[45vh] lg:h-[50lvh] overflow-visible'>
+            <div className='relative flex items-center justify-center lg:justify-end h-[30vh] sm:h-[40vh] lg:h-[50lvh] overflow-visible'>
               <ViewTransition enter='auto'>
                 {heroImage ? (
                   <div
                     id='hero-image'
-                    className='h-80 md:h-120 w-full mask-[url("https://res.cloudinary.com/dx0heqhhe/image/upload/v1766560488/chevs_drc0jt.svg")] mask-cover bg-cover bg-center bg-no-repeat'
+                    className='h-60 md:h-120 w-full mask-[url("https://res.cloudinary.com/dx0heqhhe/image/upload/v1766560488/chevs_drc0jt.svg")] mask-cover bg-cover bg-center bg-no-repeat'
                     style={{backgroundImage: `url(${heroImage})`}}
                   />
                 ) : (
