@@ -66,7 +66,7 @@ export const Content = () => {
               isDefault={gateway.gateway === defaultGateway}
               accounts={gateway.accounts}
               href={
-                gateway.gateway
+                gateway.gateway === 'paygate'
                   ? `/admin/payments/${gateway.gateway}`
                   : undefined
               }

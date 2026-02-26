@@ -66,6 +66,7 @@ export const PayCard = ({
               size='sm'
               as={Link}
               variant='light'
+              disabled={checkboxValue !== 'paygate'}
               href={href ?? '#'}
               className='font-okxs opacity-40 hover:opacity-100 grow-0 overflow-hidden'>
               <span>Configure</span>
