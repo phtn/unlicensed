@@ -310,6 +310,7 @@ export const Content = () => {
     sendAssistantMessage,
     shouldSendAssistantInitialMessage,
     user?.uid,
+    currentUser,
   ])
 
   useEffect(() => {

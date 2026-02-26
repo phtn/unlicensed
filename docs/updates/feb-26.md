@@ -54,12 +54,15 @@ tests/cart-computations.test.ts:
 Status:
 - Cannot be replicated or duplicated consistently even with the same configurations or parameters.
 
-### 3. Order Confirmation & Chat Process (ON-GOING)
+### 3. Order Confirmation & Chat Process (COMPLETE)
 
 * Clarify how order confirmation page connects to chat rep or assistant 
 
 Status:
-- Auto-assign Rep Account with auto-generated initial chat.
+- Auto-assign Rep Account.
+- Initial Message Seed from AI Assistant
+  - Message: "Hi there!, we received your order. A Representative will be with you shortly and assist you in completing your order."
+  - Message seed is configurable in Admin Settings > Rep
 
 
 ### 4. Cards Payment Gateway (ON-GOING)
