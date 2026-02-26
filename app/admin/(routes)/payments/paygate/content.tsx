@@ -3,9 +3,9 @@
 import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {Suspense} from 'react'
+import {GatewayContent} from '../_components/gateway-content'
 import {AffiliateContent} from './affiliate/affiliate'
 import {UtilitiesContent} from './utilities/content'
-import {PayGateContent} from './paygate'
 
 const ContentInner = () => {
   const [tabId] = useAdminTabId()
@@ -29,7 +29,7 @@ const ContentInner = () => {
   // Default to PayGate content (includes paygate tab and default)
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <PayGateContent />
+      <GatewayContent gateway='paygate' basePath='/admin/payments/paygate' />
     </Suspense>
   )
 }

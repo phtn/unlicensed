@@ -41,7 +41,10 @@ export function computeSubtotal(
  * Computes tax in cents based on subtotal and tax config.
  * Returns 0 when tax is inactive.
  */
-export function computeTax(subtotal: number, taxConfig: TaxConfig | null): number {
+export function computeTax(
+  subtotal: number,
+  taxConfig: TaxConfig | null,
+): number {
   if (taxConfig?.active !== true) return 0
   const rate = taxConfig.taxRatePercent ?? 0
   return Math.round(subtotal * (rate / 100))
@@ -72,8 +75,8 @@ export function computeOrderTotals(
   const tax = computeTax(subtotal, taxConfig)
   const shipping = computeShipping(
     subtotal,
-    shippingConfig?.minimumOrderCents ?? 5000,
-    shippingConfig?.shippingFeeCents ?? 500,
+    shippingConfig?.minimumOrderCents ?? 9900,
+    shippingConfig?.shippingFeeCents ?? 1299,
   )
   const total = subtotal + tax + shipping
   return {subtotal, tax, shipping, total}

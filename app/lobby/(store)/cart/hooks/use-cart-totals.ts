@@ -60,6 +60,8 @@ interface UseCartRewardsParams {
   cartItems: CartPageItem[]
   subtotal: number
   isFirstOrder?: boolean
+  /** Admin-configured rewards; uses default when null/undefined */
+  config?: import('@/app/lobby/(store)/cart/checkout/lib/rewards').RewardsConfig | null
 }
 
 /**
@@ -69,10 +71,11 @@ export function useCartRewards({
   cartItems,
   subtotal,
   isFirstOrder = false,
+  config,
 }: UseCartRewardsParams) {
   return useMemo(
-    () => computeCartRewards(cartItems, subtotal, isFirstOrder),
-    [cartItems, subtotal, isFirstOrder],
+    () => computeCartRewards(cartItems, subtotal, isFirstOrder, config),
+    [cartItems, subtotal, isFirstOrder, config],
   )
 }
 

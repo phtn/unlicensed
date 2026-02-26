@@ -54,7 +54,7 @@ tests/cart-computations.test.ts:
 Status:
 - Cannot be replicated or duplicated consistently even with the same configurations or parameters.
 
-### 3. Order Confirmation & Chat Process (COMPLETE)
+### 3. Order Confirmation & Chat Process (COMPLETED)
 
 * Clarify how order confirmation page connects to chat rep or assistant 
 

@@ -1,9 +1,11 @@
 'use client'
 
 import ShimmerText from '@/components/expermtl/shimmer'
+import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Card, CardBody} from '@heroui/react'
+import {useQuery} from 'convex/react'
 import {useTheme} from 'next-themes'
 import {ViewTransition, memo, useState} from 'react'
 import {
@@ -163,11 +165,13 @@ export interface CheckoutRewardsSummaryProps {
 
 export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
   computedRewards: r,
-  config = REWARDS_CONFIG,
+  config: configProp,
   topUpSuggestions = [],
   onAddTopUp,
 }: CheckoutRewardsSummaryProps) {
   const {theme} = useTheme()
+  const adminConfig = useQuery(api.admin.q.getRewardsConfig, {})
+  const config: RewardsConfig = adminConfig ?? configProp ?? REWARDS_CONFIG
   return (
     <Card
       shadow='none'

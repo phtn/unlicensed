@@ -22,10 +22,10 @@ const GatewayContentInner = ({gateway, basePath}: GatewayContentProps) => {
     id && tabId === 'edit' ? {gateway, hexAddress: id} : 'skip',
   )
 
-  const handleFormSuccess = () => {
+  const handleFormSuccess = useCallback(() => {
     setTabId(null)
     setId(null)
-  }
+  }, [setTabId, setId])
 
   const handleEdit = (hexAddress: string) => {
     setId(hexAddress)
@@ -58,6 +58,11 @@ const GatewayContentInner = ({gateway, basePath}: GatewayContentProps) => {
         <GatewayAccountForm
           gateway={gateway}
           gatewayId={gatewayDoc?._id}
+          gatewayUrls={
+            gatewayDoc
+              ? {apiUrl: gatewayDoc.apiUrl, checkoutUrl: gatewayDoc.checkoutUrl}
+              : undefined
+          }
           onCancel={handleCancel}
         />
       )
@@ -80,13 +85,10 @@ const GatewayContentInner = ({gateway, basePath}: GatewayContentProps) => {
           gateway={gateway}
           gatewayId={gatewayDoc._id}
           hexAddress={editingAccount.hexAddress}
-          initialValues={{
-            hexAddress: editingAccount.hexAddress,
-            addressIn: editingAccount.addressIn,
-            label: editingAccount.label ?? '',
-            description: editingAccount.description ?? '',
-            isDefault: editingAccount.isDefault ?? false,
-            enabled: editingAccount.enabled ?? true,
+          initialValues={editingAccount}
+          gatewayUrls={{
+            apiUrl: gatewayDoc.apiUrl,
+            checkoutUrl: gatewayDoc.checkoutUrl,
           }}
           onUpdated={handleFormSuccess}
           onCancel={handleCancel}

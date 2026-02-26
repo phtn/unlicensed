@@ -8,6 +8,18 @@ export const list = query({
   },
 })
 
+export const getByName = query({
+  args: {
+    name: gatewayValidator,
+  },
+  handler: async ({db}, {name}) => {
+    return await db
+      .query('gateways')
+      .withIndex('by_gateway', (q) => q.eq('gateway', name))
+      .first()
+  },
+})
+
 export const listAccounts = query({
   args: {
     gateway: gatewayValidator,

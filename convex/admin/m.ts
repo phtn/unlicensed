@@ -1,5 +1,6 @@
 import {v} from 'convex/values'
 import {mutation} from '../_generated/server'
+import type {MutationCtx} from '../_generated/server'
 import {safeGet} from '../utils/id_validation'
 import {
   paymentGatewayConfigsSchema,
@@ -250,14 +251,16 @@ export const updatePayGateSettings = mutation({
 })
 
 /**
- * Update payment gateway configs (apiUrl, checkoutUrl per gateway, defaultGateway)
+ * Update payment gateway configs (apiUrl, checkoutUrl per gateway, defaultGateway).
+ * Syncs apiUrl/checkoutUrl to gateways table — canonical source for checkout URLs.
  */
 export const updatePaymentGatewayConfigs = mutation({
   args: {
     configs: paymentGatewayConfigsSchema,
   },
   handler: async (ctx, {configs}) => {
-    let settings = await ctx.db.query('adminSettings').first()
+    const settings = await ctx.db.query('adminSettings').first()
+    const now = Date.now()
 
     if (!settings) {
       await ctx.db.insert('adminSettings', {
@@ -267,8 +270,9 @@ export const updatePaymentGatewayConfigs = mutation({
           rampex: configs.rampex,
           defaultGateway: configs.defaultGateway,
         },
-        updatedAt: Date.now(),
+        updatedAt: now,
       })
+      await syncGatewayUrlsToGateways(ctx, configs, now)
       return {success: true}
     }
 
@@ -294,12 +298,44 @@ export const updatePaymentGatewayConfigs = mutation({
 
     await ctx.db.patch(settings._id, {
       value: nextValue,
-      updatedAt: Date.now(),
+      updatedAt: now,
     })
 
+    await syncGatewayUrlsToGateways(ctx, configs, now)
     return {success: true}
   },
 })
+
+/** Sync apiUrl/checkoutUrl from admin configs to gateways table. */
+async function syncGatewayUrlsToGateways(
+  ctx: MutationCtx,
+  configs: {
+    paygate?: {apiUrl?: string; checkoutUrl?: string}
+    paylex?: {apiUrl?: string; checkoutUrl?: string}
+    rampex?: {apiUrl?: string; checkoutUrl?: string}
+  },
+  now: number,
+): Promise<void> {
+  const entries = [
+    ['paygate', configs.paygate],
+    ['paylex', configs.paylex],
+    ['rampex', configs.rampex],
+  ] as const
+  for (const [gateway, cfg] of entries) {
+    if (!cfg || (cfg.apiUrl === undefined && cfg.checkoutUrl === undefined))
+      continue
+    const doc = await ctx.db
+      .query('gateways')
+      .withIndex('by_gateway', (q) => q.eq('gateway', gateway))
+      .first()
+    if (doc) {
+      const patch: Record<string, unknown> = {updatedAt: now}
+      if (cfg.apiUrl !== undefined) patch.apiUrl = cfg.apiUrl
+      if (cfg.checkoutUrl !== undefined) patch.checkoutUrl = cfg.checkoutUrl
+      await ctx.db.patch(doc._id, patch)
+    }
+  }
+}
 
 /**
  * Seed IPAPI geolocation setting (idempotent - safe to call multiple times)

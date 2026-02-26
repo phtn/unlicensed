@@ -17,7 +17,7 @@ export const usePaygate = () => {
     address: string,
     callback: string,
   ): Promise<ApiResponse> => {
-    const encodedCallback = encodeURIComponent(encodeURIComponent(callback))
+    const encodedCallback = encodeURIComponent(callback)
     const url = `${apiUrl}/control/wallet.php?address=${address}&callback=${encodedCallback}`
 
     try {
@@ -61,7 +61,7 @@ export const usePaygate = () => {
 
   // Handlers for each form
   const handleWalletSubmit = (address: string, callback: string) => {
-    const encodedCallback = encodeURIComponent(encodeURIComponent(callback))
+    const encodedCallback = encodeURIComponent(callback)
     const url = `${apiUrl}/control/wallet.php?address=${address}&callback=${encodedCallback}`
     handleApiCall(url)
   }
@@ -160,7 +160,7 @@ export const usePaygate = () => {
     callback: string,
     affiliateWallet?: string,
   ) => {
-    const encodedCallback = encodeURIComponent(encodeURIComponent(callback))
+    const encodedCallback = encodeURIComponent(callback)
     const params = new URLSearchParams({
       address,
       callback: encodedCallback,

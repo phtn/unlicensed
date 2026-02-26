@@ -11,35 +11,63 @@ import {cn} from '@/lib/utils'
 import {Card} from '@heroui/react'
 import {ViewTransition} from 'react'
 
-const SETTINGS_FEATURES = [
+interface SettingItem {
+  id: string
+  title: string
+  description: string
+  icon: IconName
+}
+
+const SETTINGS_FEATURES: Array<SettingItem> = [
+  {
+    id: 'access',
+    title: 'Access',
+    description: 'Halt Gate Access codes',
+    icon: 'finger-press-line',
+  },
   {
     id: 'payments',
     title: 'Payments',
     description:
       'Configure payment providers, gateways, and billing. Manage payouts, invoices, and payment methods.',
-    icon: 'credit-card' as const,
-    accent:
-      'from-emerald-600/10 to-emerald-800/5 dark:from-emerald-400/10 dark:to-emerald-600/5',
-    border: 'border-emerald-300/60 dark:border-emerald-600/40',
+    icon: 'credit-card',
+  },
+  {
+    id: 'crypto',
+    title: 'Crypto',
+    description: 'Manage crypto wallets.',
+    icon: 'wallet',
   },
   {
     id: 'shipping',
     title: 'Shipping',
     description:
       'Configure shipping fees and minimum purchase amount to cover shipping.',
-    icon: 'airplane-takeoff' as IconName,
-    accent:
-      'from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5',
-    border: 'border-slate-300/60 dark:border-slate-600/40',
+    icon: 'airplane-takeoff',
+  },
+  {
+    id: 'tax',
+    title: 'Tax',
+    description: 'Manage Tax configuration.',
+    icon: 'money-duotone',
+  },
+  {
+    id: 'rewarsd',
+    title: 'Rewarsd',
+    description: 'Manage Rewart Tiers.',
+    icon: 'coins',
+  },
+  {
+    id: 'rep',
+    title: 'Rep',
+    description: 'Assign Default Rep account and seed message.',
+    icon: 'user-fill',
   },
   {
     id: 'assistant',
-    title: 'Assistant',
+    title: 'AI',
     description: 'Configure AI assistat instructions and context.',
-    icon: 'phone' as IconName,
-    accent:
-      'from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5',
-    border: 'border-slate-300/60 dark:border-slate-600/40',
+    icon: 'phone',
   },
 ] as const
 
@@ -82,7 +110,7 @@ export const OverviewContent = () => {
         </h2>
         <Card
           shadow='none'
-          className='grid w-full bg-linear-to-br from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5 p-4'>
+          className='grid md:grid-cols-2 w-full bg-linear-to-br from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5 p-4'>
           {SETTINGS_FEATURES.map((feature, index) => (
             <ViewTransition key={feature.id}>
               <div

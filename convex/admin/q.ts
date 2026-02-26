@@ -302,3 +302,79 @@ export const getTaxConfig = query({
     }
   },
 })
+
+const DEFAULT_REWARDS_TIERS = [
+  {minSubtotal: 0, maxSubtotal: 98.99, shippingCost: 14.95, cashBackPct: 1.5, label: 'Starter'},
+  {minSubtotal: 99, maxSubtotal: 148.99, shippingCost: 4.99, cashBackPct: 2.0, label: 'Silver'},
+  {minSubtotal: 149, maxSubtotal: 248.99, shippingCost: 0, cashBackPct: 3.0, label: 'Gold'},
+  {minSubtotal: 249, maxSubtotal: null, shippingCost: 0, cashBackPct: 5.0, label: 'Platinum'},
+] as const
+
+const DEFAULT_BUNDLE_BONUS = {enabled: true, bonusPct: 0.5, minCategories: 2}
+const DEFAULT_FREE_SHIPPING_FIRST_ORDER = 49
+const DEFAULT_MIN_REDEMPTION = 5
+const DEFAULT_TOP_UP_PROXIMITY = 20
+
+export const getRewardsConfig = query({
+  args: {},
+  handler: async ({db}) => {
+    const setting = await db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'rewards_config'))
+      .unique()
+
+    if (!setting?.value || typeof setting.value !== 'object') {
+      return {
+        tiers: [...DEFAULT_REWARDS_TIERS],
+        bundleBonus: {...DEFAULT_BUNDLE_BONUS},
+        freeShippingFirstOrder: DEFAULT_FREE_SHIPPING_FIRST_ORDER,
+        minRedemption: DEFAULT_MIN_REDEMPTION,
+        topUpProximityThreshold: DEFAULT_TOP_UP_PROXIMITY,
+      }
+    }
+
+    const v = setting.value as Record<string, unknown>
+
+    const rawTiers = Array.isArray(v.tiers) ? v.tiers : []
+    const tiers = rawTiers.map((t: unknown) => {
+      const row = t && typeof t === 'object' ? (t as Record<string, unknown>) : {}
+      return {
+        minSubtotal: typeof row.minSubtotal === 'number' ? row.minSubtotal : 0,
+        maxSubtotal:
+          row.maxSubtotal === null || typeof row.maxSubtotal === 'number'
+            ? row.maxSubtotal
+            : 0,
+        shippingCost: typeof row.shippingCost === 'number' ? row.shippingCost : 0,
+        cashBackPct: typeof row.cashBackPct === 'number' ? row.cashBackPct : 0,
+        label: typeof row.label === 'string' ? row.label : 'Tier',
+      }
+    })
+    if (tiers.length === 0) {
+      tiers.push(...DEFAULT_REWARDS_TIERS)
+    }
+
+    const rawBundle = v.bundleBonus && typeof v.bundleBonus === 'object' ? (v.bundleBonus as Record<string, unknown>) : {}
+    const bundleBonus = {
+      enabled: typeof rawBundle.enabled === 'boolean' ? rawBundle.enabled : DEFAULT_BUNDLE_BONUS.enabled,
+      bonusPct: typeof rawBundle.bonusPct === 'number' ? rawBundle.bonusPct : DEFAULT_BUNDLE_BONUS.bonusPct,
+      minCategories: typeof rawBundle.minCategories === 'number' ? rawBundle.minCategories : DEFAULT_BUNDLE_BONUS.minCategories,
+    }
+
+    return {
+      tiers,
+      bundleBonus,
+      freeShippingFirstOrder:
+        typeof v.freeShippingFirstOrder === 'number'
+          ? v.freeShippingFirstOrder
+          : DEFAULT_FREE_SHIPPING_FIRST_ORDER,
+      minRedemption:
+        typeof v.minRedemption === 'number'
+          ? v.minRedemption
+          : DEFAULT_MIN_REDEMPTION,
+      topUpProximityThreshold:
+        typeof v.topUpProximityThreshold === 'number'
+          ? v.topUpProximityThreshold
+          : DEFAULT_TOP_UP_PROXIMITY,
+    }
+  },
+})

@@ -4,17 +4,23 @@ import {
 } from '@/lib/paygate/gateway-config'
 import type {ApiResponse} from '@/lib/paygate/types'
 
+/** Optional override from Convex gateway document. When provided, takes precedence over env/defaults. */
+export type GatewayUrlConfig = {apiUrl?: string; checkoutUrl?: string}
+
 /**
  * Hook for PayGate/Paylex/Rampex (same process). Returns createWallet using the gateway's API URL.
+ * Pass gatewayUrls from Convex (api.gateways.q.getByGateway) to use gateway-configured URLs.
  */
-export function useGateway(gateway: GatewayId) {
-  const {apiUrl} = getGatewayPublicConfig(gateway)
+export function useGateway(gateway: GatewayId, gatewayUrls?: GatewayUrlConfig) {
+  const fallback = getGatewayPublicConfig(gateway)
+  const apiUrl =
+    gatewayUrls?.apiUrl?.trim() || fallback.apiUrl
 
   const createWallet = async (
     address: string,
     callback: string,
   ): Promise<ApiResponse> => {
-    const encodedCallback = encodeURIComponent(encodeURIComponent(callback))
+    const encodedCallback = encodeURIComponent(callback)
     const url = `${apiUrl}/control/wallet.php?address=${address}&callback=${encodedCallback}`
 
     try {

@@ -13,19 +13,21 @@ export interface GatewayPublicConfig {
 const PAYGATE = {
   apiUrl: process.env.NEXT_PUBLIC_PAYGATE_API_URL || 'https://api.paygate.to',
   checkoutUrl:
-    process.env.NEXT_PUBLIC_PAYGATE_CHECKOUT_URL || 'https://checkout.paygate.to',
+    process.env.NEXT_PUBLIC_PAYGATE_CHECKOUT_URL ||
+    'https://checkout.paygate.to',
 } as const
 
 const PAYLEX = {
-  apiUrl: process.env.NEXT_PUBLIC_PAYLEX_API_URL || 'https://api.paylex.to',
+  apiUrl: process.env.NEXT_PUBLIC_PAYLEX_API_URL || 'https://api.paylex.org',
   checkoutUrl:
-    process.env.NEXT_PUBLIC_PAYLEX_CHECKOUT_URL || 'https://checkout.paylex.to',
+    process.env.NEXT_PUBLIC_PAYLEX_CHECKOUT_URL ||
+    'https://checkout.paylex.org',
 } as const
 
 const RAMPEX = {
-  apiUrl: process.env.NEXT_PUBLIC_RAMPEX_API_URL || 'https://api.rampex.to',
+  apiUrl: process.env.NEXT_PUBLIC_RAMPEX_API_URL || 'https://api.rampex.io',
   checkoutUrl:
-    process.env.NEXT_PUBLIC_RAMPEX_CHECKOUT_URL || 'https://checkout.rampex.to',
+    process.env.NEXT_PUBLIC_RAMPEX_CHECKOUT_URL || 'https://checkout.rampex.io',
 } as const
 
 export function getGatewayPublicConfig(

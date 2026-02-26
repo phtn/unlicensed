@@ -2,7 +2,8 @@
  * Pure rewards-related computations. Extracted for testability.
  */
 
-import {computeRewards} from '../checkout/lib/rewards'
+import type {RewardsConfig} from '../checkout/lib/rewards'
+import {computeRewards, REWARDS_CONFIG} from '../checkout/lib/rewards'
 import type {CartPageItem} from '../types'
 
 export interface RewardsItemInput {
@@ -41,13 +42,20 @@ export function computeEstimatedPoints(
 
 /**
  * Computes rewards (tier, cashback, shipping) from cart items and subtotal.
+ * Uses admin-configured RewardsConfig when provided, otherwise REWARDS_CONFIG.
  */
 export function computeCartRewards(
   cartItems: CartPageItem[],
   subtotalCents: number,
   isFirstOrder: boolean,
+  config?: RewardsConfig | null,
 ) {
   const rewardsItems = mapCartItemsToRewardsItems(cartItems)
   const subtotalDollars = subtotalCents / 100
-  return computeRewards(rewardsItems, subtotalDollars, isFirstOrder)
+  return computeRewards(
+    rewardsItems,
+    subtotalDollars,
+    isFirstOrder,
+    config ?? REWARDS_CONFIG,
+  )
 }

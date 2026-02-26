@@ -6,6 +6,7 @@ import {CryptoContent} from './_components/crypto-content'
 import {OverviewContent} from './_components/overview-content'
 import {PaymentsSettings} from './_components/payments-settings'
 import {RepContent} from './_components/rep-content'
+import {RewardsContent} from './_components/rewards-content'
 import {ShippingContent} from './_components/shipping-content'
 import {TaxContent} from './_components/tax-content'
 
@@ -17,6 +18,7 @@ export const SettingsTabs = () => {
     {id: 'crypto', label: 'Crypto'},
     {id: 'shipping', label: 'Shipping'},
     {id: 'tax', label: 'Tax'},
+    {id: 'rewards', label: 'Rewards'},
     {id: 'rep', label: 'Rep'},
     {id: 'assistant', label: 'Assistant'},
   ]
@@ -67,6 +69,11 @@ export const SettingsTabs = () => {
         className='relative flex min-h-32 flex-1 flex-col p-4'
         value='tax'>
         <TaxContent />
+      </Tabs.Panel>
+      <Tabs.Panel
+        className='relative flex min-h-32 flex-1 flex-col p-4'
+        value='rewards'>
+        <RewardsContent />
       </Tabs.Panel>
       <Tabs.Panel
         className='relative flex min-h-32 flex-1 flex-col p-4'

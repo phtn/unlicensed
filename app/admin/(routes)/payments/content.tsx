@@ -66,7 +66,7 @@ export const Content = () => {
               isDefault={gateway.gateway === defaultGateway}
               accounts={gateway.accounts}
               href={
-                gateway.gateway === 'paygate'
+                gateway.gateway
                   ? `/admin/payments/${gateway.gateway}`
                   : undefined
               }
@@ -78,7 +78,7 @@ export const Content = () => {
         </Activity>
         <Activity
           mode={
-            gateways !== undefined && gateways.length === 0
+            gateways !== undefined && gateways.length === 1
               ? 'visible'
               : 'hidden'
           }>

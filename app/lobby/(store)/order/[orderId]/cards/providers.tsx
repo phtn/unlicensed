@@ -8,11 +8,13 @@ interface TopProvidersProps {
   providers: Array<TopTenProvider>
   onSelectProvider: (providerId: string) => void
   selectedProviderId?: string | null
+  totalAmount: number
 }
 export const TopProviders = ({
   providers,
   onSelectProvider,
   selectedProviderId = null,
+  totalAmount,
 }: TopProvidersProps) => {
   const [hovered, setHovered] = useState<string | null>(null)
   const handleHover = useCallback(
@@ -38,20 +40,32 @@ export const TopProviders = ({
           onMouseLeave={handleHover(null)}
           onClick={handleSelect(provider.id)}
           aria-label={`Pay with ${provider.provider_name}`}
-          disabled={selectedProviderId !== null}
+          disabled={
+            selectedProviderId !== null ||
+            provider.minimum_amount > totalAmount / 100
+          }
           className='group relative text-left'>
           {/* Card */}
           <div
-            className='relative bg-linear-to-r from-alum/20 to-white dark:from-dark-table dark:to-dark-table/80 rounded-xl p-4 sm:p-8 md:p-10 h-full cursor-pointer
-                      border border-stone-900/50 outline-none
-                      transition-all duration-300
-                      group-hover:ring-1 group-hover:ring-primary/50
-                      group-focus-visible:ring-2 group-focus-visible:ring-primary
-                      group-disabled:opacity-70
-                      '>
+            className={cn(
+              'relative bg-linear-to-r from-alum/20 to-white dark:from-dark-table dark:to-dark-table/80 rounded-xl p-4 sm:p-8 md:p-10 h-full',
+              'group-hover:ring-1 group-hover:ring-primary/50 group-focus-visible:ring-2 group-focus-visible:ring-primary group-disabled:opacity-70',
+              'cursor-pointer border border-stone-900/50 outline-none transition-all duration-300',
+              {
+                'group-hover:ring-red-400 dark:group-hover:ring-red-400/50 to-red-100':
+                  provider.minimum_amount > totalAmount / 100,
+              },
+            )}>
             <div
-              className={`absolute top-0 left-8 md:left-10 h-1 w-16 transition-all duration-500 rounded-b-full
-                        opacity-50 border-b dark:border-background dark:bg-background`}
+              className={cn(
+                'absolute top-0 left-8 md:left-10 h-1 w-16 opacity-50',
+                'rounded-b-full border-b dark:border-background dark:bg-background',
+                'transition-all duration-500',
+                {
+                  'bg-red-400 dark:bg-red-400 border-b-red-400 opacity-80':
+                    provider.minimum_amount > totalAmount / 100,
+                },
+              )}
             />
             <div className='flex items-center space-x-1 md:space-x-4 lg:space-x-6 text-xl lg:text-5xl mb-3 transition-transform duration-500 group-hover:scale-101 group-hover:translate-y-0'>
               <div
@@ -83,9 +97,20 @@ export const TopProviders = ({
                     )}
                   </h3>
                 </div>
-                <p className='text-sm text-emerald-500 font-brk md:font-pixel-sqr font-thin leading-relaxed uppercase tracking-widest'>
-                  {provider.status}
-                </p>
+                <div className='flex items-center space-x-2 md:space-x-4'>
+                  <p className='text-sm text-emerald-600 dark:text-emerald-500 font-brk md:font-pixel-sqr font-thin leading-relaxed uppercase tracking-widest'>
+                    {provider.status}
+                  </p>
+                  <span className='opacity-30 text-sm'>|</span>
+                  <span
+                    className={cn('font-okxs text-base', {
+                      'text-red-500 dark:text-red-400':
+                        provider.minimum_amount > totalAmount / 100,
+                    })}>
+                    <span className={cn('opacity-50')}>Min</span> $
+                    {provider.minimum_amount}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -109,11 +134,17 @@ export const TopProviders = ({
                   name={
                     selectedProviderId === provider.id
                       ? 'spinners-ring'
-                      : 'arrow-right'
+                      : provider.minimum_amount > totalAmount / 100
+                        ? 'x'
+                        : 'arrow-right'
                   }
                   className={cn(
                     'transition-all duration-500 transform-gpu opacity-0 -translate-x-14 group-hover:translate-x-3 group-hover:opacity-100 group-hover:text-foreground dark:group-hover:text-slate-100 blur-sm group-hover:blur-none size-6 delay-75',
-                    {'size-5': selectedProviderId === provider.id},
+                    {
+                      'size-5': selectedProviderId === provider.id,
+                      'group-hover:text-red-500 dark:group-hover:text-red-400':
+                        provider.minimum_amount > totalAmount / 100,
+                    },
                   )}
                 />
                 <Icon

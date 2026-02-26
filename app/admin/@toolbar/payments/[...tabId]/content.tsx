@@ -1,5 +1,6 @@
 'use client'
 
+import {GatewayId} from '@/convex/gateways/d'
 import {usePathname} from 'next/navigation'
 import {ToolbarWrapper} from '../../components'
 import {GatewayTab} from './gateway-tab'
@@ -11,6 +12,17 @@ interface ContentProps {
 
 export const Content = ({tabId}: ContentProps) => {
   const pathname = usePathname()
+  if (tabId) {
+    return (
+      <ToolbarWrapper>
+        <GatewayTab
+          gateway={tabId as GatewayId}
+          title={`Gateways`}
+          basePath='/admin/payments'
+        />
+      </ToolbarWrapper>
+    )
+  }
 
   if (pathname?.includes('/paygate')) {
     return (
@@ -29,7 +41,7 @@ export const Content = ({tabId}: ContentProps) => {
       <ToolbarWrapper>
         <GatewayTab
           gateway='paylex'
-          title='Paylex'
+          title='Payment Gateways'
           basePath='/admin/payments/paylex'
         />
       </ToolbarWrapper>

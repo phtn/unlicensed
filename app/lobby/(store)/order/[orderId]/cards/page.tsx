@@ -21,20 +21,21 @@ export default function CardProvidersPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const order = useQuery(api.orders.q.getById, {id: orderId})
   const defaultGateway = useQuery(api.admin.q.getPaymentDefaultGateway, {})
-  const paygateAccount = useQuery(api.paygateAccounts.q.getDefaultAccount, {
+  const gateway = useQuery(api.gateways.q.getByName, {
+    name: defaultGateway ?? 'paygate',
+  })
+  const accounts = useQuery(api.gateways.q.listAccounts, {
     gateway: defaultGateway ?? 'paygate',
   })
+  const defaultAccount = accounts?.find((a) => a.isDefault)
 
-  const providers = useMemo(
-    () => paygateAccount?.topTenProviders ?? [],
-    [paygateAccount?.topTenProviders],
-  )
+  const providers = useMemo(() => gateway?.topTenProviders ?? [], [gateway])
 
   const isValidWallet = useMemo(() => {
-    const addr = paygateAccount?.hexAddress
+    const addr = defaultAccount?.hexAddress
     if (!addr) return false
     return /^0x[a-fA-F0-9]{40}$/.test(addr.trim())
-  }, [paygateAccount?.hexAddress])
+  }, [defaultAccount?.hexAddress])
 
   const handleProviderSelect = useCallback(
     async (providerId: string) => {
@@ -81,7 +82,7 @@ export default function CardProvidersPage() {
   if (
     order === undefined ||
     defaultGateway === undefined ||
-    paygateAccount === undefined
+    defaultAccount === undefined
   ) {
     return (
       <div className='h-screen w-screen overflow-hidden pt-100 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
@@ -107,7 +108,7 @@ export default function CardProvidersPage() {
     )
   }
 
-  const fallbackHref = `/lobby/order/${orderId}/pay`
+  const fallbackHref = `/lobby/order/${orderId}/cards`
 
   return (
     <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 dark:bg-black'>
@@ -123,7 +124,7 @@ export default function CardProvidersPage() {
 
                   <Icon name='applepay' className='size-4 md:size-9' />
                   <Icon name='googlepay' className='size-4 md:size-9' />
-                  {process.env.NODE_ENV === 'development' && paygateAccount && (
+                  {process.env.NODE_ENV === 'development' && defaultAccount && (
                     <span
                       className='inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-700 dark:text-amber-400 font-mono'
                       title={
@@ -131,7 +132,7 @@ export default function CardProvidersPage() {
                           ? 'Default gateway used for checkout • Wallet address valid'
                           : 'Default gateway used for checkout • Wallet address invalid'
                       }>
-                      {paygateAccount.gateway ?? 'paygate'}
+                      {gateway?.gateway ?? 'paygate'}
                       {isValidWallet ? (
                         <Icon
                           name='check'
@@ -181,6 +182,7 @@ export default function CardProvidersPage() {
         ) : (
           <TopProviders
             providers={providers}
+            totalAmount={order.totalCents}
             onSelectProvider={handleProviderSelect}
             selectedProviderId={selectedProviderId}
           />

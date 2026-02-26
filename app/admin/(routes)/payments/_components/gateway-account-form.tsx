@@ -5,6 +5,7 @@ import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {Callout} from '@/components/ui/callout'
 import {api} from '@/convex/_generated/api'
 import type {Id} from '@/convex/_generated/dataModel'
+import {GatewayWallet} from '@/convex/gateways/d'
 import {useGateway} from '@/hooks/use-gateway'
 import {usePaste} from '@/hooks/use-paste'
 import {usePolygonAddressValidation} from '@/hooks/use-polygon-address-validation'
@@ -43,11 +44,9 @@ const paygateAccountSchema = z.object({
   callbackUrl: z.url().optional(),
 })
 
-type PaygateAccountFormValues = z.infer<typeof paygateAccountSchema>
-
 const DEFAULT_CALLBACK_URL = 'https://rapidfirenow.com/api/paygate/webhook'
 
-const getDefaultValues = (): PaygateAccountFormValues => ({
+const getDefaultValues = (): GatewayWallet => ({
   hexAddress: '',
   addressIn: '',
   callbackUrl: DEFAULT_CALLBACK_URL,
@@ -55,6 +54,9 @@ const getDefaultValues = (): PaygateAccountFormValues => ({
   description: '',
   isDefault: false,
   enabled: true,
+  addressOut: '',
+  polygonAddressIn: '',
+  ipnToken: '',
 })
 
 function gatewayLabel(gateway: GatewayId): string {
@@ -65,7 +67,9 @@ type GatewayAccountFormProps = {
   gateway: GatewayId
   gatewayId?: Id<'gateways'>
   hexAddress?: string
-  initialValues?: PaygateAccountFormValues
+  initialValues?: GatewayWallet
+  /** Gateway URLs from Convex (api.gateways.q.getByGateway). Override for createWallet API calls. */
+  gatewayUrls?: {apiUrl?: string; checkoutUrl?: string}
   onCreated?: VoidFunction
   onUpdated?: VoidFunction
   onCancel?: VoidFunction
@@ -76,6 +80,7 @@ export const GatewayAccountForm = ({
   gatewayId,
   hexAddress,
   initialValues,
+  gatewayUrls,
   onCreated,
   onUpdated,
   onCancel,
@@ -84,7 +89,7 @@ export const GatewayAccountForm = ({
   const accounts = useQuery(api.gateways.q.listAccounts, {gateway})
   const createAccount = useMutation(api.gateways.m.createAccount)
   const updateAccount = useMutation(api.gateways.m.updateAccount)
-  const {createWallet, loading: isSubmitting} = useGateway(gateway)
+  const {createWallet, loading: isSubmitting} = useGateway(gateway, gatewayUrls)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [walletResponse, setWalletResponse] = useState<ApiResponse | null>(null)
@@ -148,6 +153,21 @@ export const GatewayAccountForm = ({
           }
 
           const responseData = apiResponse.data as CreateWalletResponseData
+          const hasRequiredFields =
+            typeof responseData === 'object' &&
+            responseData !== null &&
+            typeof responseData.address_in === 'string' &&
+            typeof responseData.polygon_address_in === 'string' &&
+            typeof responseData.callback_url === 'string' &&
+            typeof responseData.ipn_token === 'string'
+
+          if (!hasRequiredFields) {
+            setErrorMessage(
+              `Invalid response from ${gatewayLabel(gateway)}. Missing required wallet fields.`,
+            )
+            setStatus('error')
+            return
+          }
 
           await createAccount({
             gatewayId,

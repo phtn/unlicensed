@@ -13,8 +13,6 @@ export const topTenProviderValidator = v.object({
   minimum_amount: v.number(),
 })
 
-export type TopTenProvider = Infer<typeof topTenProviderValidator>
-
 export const gatewayValidator = v.union(
   v.literal('paygate'),
   v.literal('paylex'),
@@ -39,7 +37,6 @@ export const walletValidator = v.object({
   affiliateWallet: v.optional(v.string()), // Affiliate wallet address for commissions
   commissionRate: v.optional(v.number()), // Commission rate (e.g., 0.005 for 0.5%)
   affiliateEnabled: v.optional(v.boolean()), // Whether affiliate commissions are enabled
-
   // PayGate API fetched data
   accountStatus: v.optional(
     v.union(
@@ -53,10 +50,6 @@ export const walletValidator = v.object({
   isDefault: v.optional(v.boolean()),
   enabled: v.optional(v.boolean()),
 })
-
-export type GatewayWallet = Infer<typeof walletValidator>
-
-export type ApiKey = Infer<typeof apiKeyValidator>
 
 /**
  * Gateway Schema
@@ -90,6 +83,12 @@ export const gatewaySchema = v.object({
       v.literal('rejected'),
     ),
   ),
+
+  // Defaults
+
+  apiUrl: v.optional(v.string()),
+  checkoutUrl: v.optional(v.string()),
+  webhookSecret: v.optional(v.string()),
 
   // Account statistics (from PayGate API)
   totalTransactions: v.optional(v.number()),
@@ -125,3 +124,8 @@ export const gatewaySchema = v.object({
 })
 
 export type GatewayType = Infer<typeof gatewaySchema>
+export type TopTenProvider = Infer<typeof topTenProviderValidator>
+
+export type GatewayWallet = Infer<typeof walletValidator>
+export type ApiKey = Infer<typeof apiKeyValidator>
+export type GatewayId = Infer<typeof gatewayValidator>

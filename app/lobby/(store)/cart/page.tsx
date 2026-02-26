@@ -15,20 +15,20 @@ import {CartItemsSection} from './CartItemsSection'
 import {CartPageHeader} from './CartPageHeader'
 import {Checkout} from './checkout'
 import type {RewardsVariant} from './checkout/types'
-import {getOrderRedirectPath} from './lib/order-redirect'
 import {useCartCheckoutQueryState} from './hooks/use-cart-checkout-query-state'
+import {useCartDebugLog} from './hooks/use-cart-debug-log'
 import {
   useCartRewards,
   useCartTotals,
   useEstimatedPoints,
 } from './hooks/use-cart-totals'
-import {useCartDebugLog} from './hooks/use-cart-debug-log'
 import {useEmptyCartLoader} from './hooks/use-empty-cart-loader'
 import {useOptimisticCartItems} from './hooks/use-optimistic-cart-items'
+import {getOrderRedirectPath} from './lib/order-redirect'
 import type {CartPageItem} from './types'
 
-const DEFAULT_SHIPPING_FEE_CENTS = 500
-const DEFAULT_MINIMUM_ORDER_CENTS = 5000
+const DEFAULT_SHIPPING_FEE_CENTS = 1299
+const DEFAULT_MINIMUM_ORDER_CENTS = 9900
 
 export default function CartPage() {
   const router = useRouter()
@@ -66,6 +66,7 @@ export default function CartPage() {
 
   const shippingConfig = useQuery(api.admin.q.getShippingConfig, {})
   const taxConfig = useQuery(api.admin.q.getTaxConfig, {})
+  const rewardsConfig = useQuery(api.admin.q.getRewardsConfig, {})
 
   const shippingFeeCents =
     shippingConfig?.shippingFeeCents ?? DEFAULT_SHIPPING_FEE_CENTS
@@ -183,7 +184,15 @@ export default function CartPage() {
     cartItems,
     subtotal,
     isFirstOrder: isFirstTimeBuyer ?? false,
+    config: rewardsConfig ?? undefined,
   })
+
+  // Use rewards tier-based shipping (from checkout-rewards-summary) instead of shipping_config
+  const effectiveShipping =
+    computedRewards != null
+      ? Math.round(computedRewards.shippingCost * 100)
+      : shipping
+  const effectiveTotal = subtotal + tax + effectiveShipping
 
   if (!hasItems) {
     return (
@@ -244,11 +253,11 @@ export default function CartPage() {
 
             <Checkout
               tax={tax}
-              total={total}
+              total={effectiveTotal}
               showTaxRow={taxConfig?.active ?? true}
               onOpen={isAuthenticated ? onCheckoutOpen : onAuthOpen}
               subtotal={subtotal}
-              shipping={shipping}
+              shipping={effectiveShipping}
               isAuthenticated={isAuthenticated}
               isLoading={isPlacingOrder}
               onPlaceOrder={placeOrder}
@@ -271,6 +280,7 @@ export default function CartPage() {
               shippingFeeCents={shippingFeeCents}
               rewardsVariant={rewardsVariant}
               computedRewards={computedRewards}
+              rewardsConfig={rewardsConfig ?? undefined}
               nextVisitMultiplier={nextVisitMultiplier}
               estimatedPoints={estimatedPoints}
             />

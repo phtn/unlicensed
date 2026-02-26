@@ -64,6 +64,7 @@ export function Checkout({
   shippingFeeCents,
   rewardsVariant,
   computedRewards,
+  rewardsConfig,
   topUpSuggestions,
   onAddTopUp,
   nextVisitMultiplier,
@@ -328,6 +329,7 @@ export function Checkout({
         shippingFeeCents={shippingFeeCents}
         rewardsVariant={rewardsVariant}
         computedRewards={computedRewards}
+        rewardsConfig={rewardsConfig}
         topUpSuggestions={topUpSuggestions}
         onAddTopUp={onAddTopUp}
         nextVisitMultiplier={nextVisitMultiplier}

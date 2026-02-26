@@ -41,6 +41,31 @@ const normalizeAddressForUrl = (address: string): string => {
 
 type GatewayUrlRecord = {apiUrl?: string; checkoutUrl?: string}
 
+/** Ensure checkout base URL is valid and has no trailing slash (avoids double slashes in path). */
+const normalizeCheckoutBaseUrl = (url: string): string => {
+  const trimmed = url.trim()
+  if (!trimmed || (!trimmed.startsWith('http://') && !trimmed.startsWith('https://'))) {
+    throw new Error(
+      `Invalid gateway checkout URL: must be an absolute URL (https://...). Check Convex gateways table for gateway checkoutUrl.`,
+    )
+  }
+  return trimmed.endsWith('/') ? trimmed.slice(0, -1) : trimmed
+}
+
+/** Get gateway URLs from Convex gateways table (canonical source). Falls back to env/defaults via getGatewayApiUrls. */
+const getGatewayUrlRecord = async (
+  gateway: GatewayId,
+): Promise<GatewayUrlRecord | null> => {
+  const gatewayDoc = await convex.query(api.gateways.q.getByGateway, {
+    gateway,
+  })
+  if (!gatewayDoc) return null
+  const apiUrl = getString(gatewayDoc.apiUrl)
+  const checkoutUrl = getString(gatewayDoc.checkoutUrl)
+  if (!apiUrl && !checkoutUrl) return null
+  return {apiUrl: apiUrl ?? undefined, checkoutUrl: checkoutUrl ?? undefined}
+}
+
 const getAdminValueRecord = async (): Promise<
   Record<string, unknown> | undefined
 > => {
@@ -48,22 +73,6 @@ const getAdminValueRecord = async (): Promise<
   return adminSettings?.value && typeof adminSettings.value === 'object'
     ? (adminSettings.value as Record<string, unknown>)
     : undefined
-}
-
-const getAdminGatewayRecord = (
-  valueRecord: Record<string, unknown> | undefined,
-  gateway: GatewayId,
-): GatewayUrlRecord | null => {
-  const key = gateway
-  const record =
-    valueRecord?.[key] && typeof valueRecord[key] === 'object'
-      ? (valueRecord[key] as Record<string, unknown>)
-      : undefined
-  if (!record) return null
-  const apiUrl = getString(record.apiUrl)
-  const checkoutUrl = getString(record.checkoutUrl)
-  if (!apiUrl && !checkoutUrl) return null
-  return {apiUrl: apiUrl ?? undefined, checkoutUrl: checkoutUrl ?? undefined}
 }
 
 const getAdminDefaultGateway = (
@@ -143,8 +152,12 @@ export async function POST(request: NextRequest) {
     // wallet addresses are registered per gateway. Using the wrong gateway's API causes
     // "Provided wallet address is not allowed" because the wallet is unknown to that API.
     const gateway = (account.gateway ?? 'paygate') as GatewayId
-    const adminGateway = getAdminGatewayRecord(adminValue, gateway)
-    const {checkoutUrl} = getGatewayApiUrls(gateway, adminGateway)
+    const gatewayUrlRecord = await getGatewayUrlRecord(gateway)
+    const {checkoutUrl: rawCheckoutUrl} = getGatewayApiUrls(
+      gateway,
+      gatewayUrlRecord,
+    )
+    const checkoutUrl = normalizeCheckoutBaseUrl(rawCheckoutUrl)
 
     const callbackUrl = new URL('/api/paygate/webhook', request.nextUrl.origin)
     callbackUrl.searchParams.set('order_id', order.orderNumber)

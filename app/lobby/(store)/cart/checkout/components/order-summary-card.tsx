@@ -46,6 +46,7 @@ interface OrderSummaryCardProps {
   rewardsVariant?: RewardsVariant
   /** For rewardsVariant === 'tier' */
   computedRewards?: ComputedRewards | null
+  rewardsConfig?: import('../lib/rewards').RewardsConfig | null
   topUpSuggestions?: RewardsCartItem[]
   onAddTopUp?: (item: RewardsCartItem) => void
   /** For rewardsVariant === 'points' */
@@ -68,9 +69,10 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   onPlaceOrderClick,
   pointsBalance,
   onOpen,
-  minimumOrderCents = 1000,
+  minimumOrderCents,
   rewardsVariant,
   computedRewards,
+  rewardsConfig,
   topUpSuggestions,
   onAddTopUp,
   nextVisitMultiplier,
@@ -81,7 +83,8 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   }
 
   const isFreeShipping = shipping === 0
-  const remainingForFreeShipping = minimumOrderCents - subtotal
+  const minOrder = minimumOrderCents ?? 1000
+  const remainingForFreeShipping = minOrder - subtotal
   const showTierProgress =
     computedRewards?.nextTier != null &&
     computedRewards.amountToNextTier != null &&
@@ -90,7 +93,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
     !showTierProgress && !isFreeShipping && remainingForFreeShipping > 0
   const progressPercent = showTierProgress
     ? computedRewards.progressPctToNext
-    : Math.min(100, (subtotal / minimumOrderCents) * 100)
+    : Math.min(100, (subtotal / minOrder) * 100)
 
   const effectiveVariant: RewardsVariant =
     rewardsVariant ?? (computedRewards != null ? 'tier' : 'off')
@@ -99,6 +102,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
     effectiveVariant === 'tier' && computedRewards != null ? (
       <CheckoutRewardsSummary
         computedRewards={computedRewards}
+        config={rewardsConfig ?? undefined}
         topUpSuggestions={topUpSuggestions}
         onAddTopUp={onAddTopUp}
       />
@@ -151,7 +155,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   ) : (
                     <>
                       <span className='opacity-80'>$</span>
-                      {computedRewards?.shippingCost}
+                      {formatPrice(shipping)}
                     </>
                   )}
                 </span>

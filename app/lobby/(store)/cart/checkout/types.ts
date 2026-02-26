@@ -3,7 +3,11 @@ import {PaymentMethod} from '@/convex/orders/d'
 import {AddressType} from '@/convex/users/d'
 import {PlaceOrderParams} from '@/hooks/use-place-order'
 import {NVMultiplier, PointsBalance} from '../rewards-summary'
-import type {ComputedRewards, RewardsCartItem} from './lib/rewards'
+import type {
+  ComputedRewards,
+  RewardsCartItem,
+  RewardsConfig,
+} from './lib/rewards'
 
 /** Toggle which rewards panel shows in checkout: tier-based, points-based, or none. */
 export type RewardsVariant = 'tier' | 'points' | 'off'
@@ -33,12 +37,14 @@ export interface CheckoutProps {
   pointsBalance: PointsBalance | undefined
   paymentMethodFromUrl?: PaymentMethod
   onPaymentMethodUrlChange?: (method: PaymentMethod) => void
-  minimumOrderCents?: number
+  minimumOrderCents: number
   shippingFeeCents?: number
   /** Toggle to swap rewards panel: 'tier' | 'points' | 'off' */
   rewardsVariant?: RewardsVariant
   /** For rewardsVariant === 'tier' */
   computedRewards?: ComputedRewards | null
+  /** Admin-configured rewards; used for CheckoutRewardsSummary footer */
+  rewardsConfig?: RewardsConfig | null
   topUpSuggestions?: RewardsCartItem[]
   onAddTopUp?: (item: RewardsCartItem) => void
   /** For rewardsVariant === 'points' */

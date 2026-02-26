@@ -7,7 +7,7 @@
 
 import type {DefaultFunctionArgs, FunctionReference} from 'convex/server'
 import {v} from 'convex/values'
-import {internal} from '../_generated/api'
+import {api, internal} from '../_generated/api'
 import {action} from '../_generated/server'
 import type {AdminSettings} from '../admin/d'
 import type {OrderType} from './d'
@@ -102,19 +102,23 @@ export const initiatePayGatePayment = action({
       throw new Error('Order payment already processed')
     }
 
-    // Get admin settings for PayGate configuration
+    // Get gateway URLs from Convex gateways table (canonical source)
+    const gatewayDoc = await ctx.runQuery(api.gateways.q.getByGateway, {
+      gateway: 'paygate',
+    })
+    const apiUrl: string =
+      gatewayDoc?.apiUrl?.trim() || 'https://api.paygate.to'
+    const checkoutUrl: string =
+      gatewayDoc?.checkoutUrl?.trim() || 'https://checkout.paygate.to'
+
+    // Get admin settings for usdcWallet (legacy)
     const adminSettings: AdminSettings | null = await ctx.runQuery(
       internalApi.admin?.q
         ?.getAdminSettings as unknown as FunctionReference<'query'>,
       {},
     )
-    const paygateSettings = adminSettings?.value?.paygate
-
-    // Get PayGate configuration (admin settings override env vars)
-    const apiUrl: string = paygateSettings?.apiUrl || 'https://api.paygate.to'
-    const checkoutUrl: string =
-      paygateSettings?.checkoutUrl || 'https://checkout.paygate.to'
-    const usdcWallet: string = paygateSettings?.usdcWallet || ''
+    const paygateVal = (adminSettings?.value as {paygate?: {usdcWallet?: string}} | undefined)?.paygate
+    const usdcWallet: string = paygateVal?.usdcWallet?.trim() || ''
 
     // Validate PayGate configuration
     if (!usdcWallet || usdcWallet.trim() === '') {
@@ -381,16 +385,12 @@ export const checkPayGatePaymentStatus = action({
       throw new Error('Order does not have a PayGate session')
     }
 
-    // Get admin settings for PayGate configuration
-    const adminSettings: AdminSettings | null = await ctx.runQuery(
-      internalApi.admin?.q
-        ?.getAdminSettings as unknown as FunctionReference<'query'>,
-      {},
-    )
-    const paygateSettings = adminSettings?.value?.paygate
-
-    // Get PayGate API URL
-    const apiUrl: string = paygateSettings?.apiUrl || 'https://api.paygate.to'
+    // Get gateway URLs from Convex gateways table
+    const gatewayDoc = await ctx.runQuery(api.gateways.q.getByGateway, {
+      gateway: 'paygate',
+    })
+    const apiUrl: string =
+      gatewayDoc?.apiUrl?.trim() || 'https://api.paygate.to'
 
     // Check payment status via PayGate API
     const response: Response = await fetch(
