@@ -73,10 +73,6 @@ export const OrderSummaryWidget = () => {
                     label: 'Total',
                     value: `$${formatPrice(order?.totalCents ?? 0)}`,
                   },
-                  {
-                    label: 'Payment Method',
-                    value: pmmap[order?.payment.method ?? 'crypto_commerce'],
-                  },
                 ]
               : []
           }
