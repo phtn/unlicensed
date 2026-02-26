@@ -39,7 +39,7 @@ const ArcCard = ({
 
 interface ArcHeaderProps {
   title: ReactNode
-  description?: string
+  description?: ReactNode
   icon?: IconName
   iconStyle?: ClassName
   status?: ReactNode
@@ -63,7 +63,7 @@ const ArcHeader = ({
       {icon && (
         <Icon name={icon} className={cn('size-6 text-indigo-400', iconStyle)} />
       )}
-      <span className='opacity-60 font-brk'>{description}</span>
+      <div className='opacity-60 font-brk w-full'>{description}</div>
     </div>
   </div>
 )

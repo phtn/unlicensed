@@ -38,9 +38,16 @@ export const OrderSummaryWidget = () => {
           title={
             order?.payment.status === 'completed'
               ? 'Payment received!'
-              : 'Pay with Crypto.'
+              : pmmap[order?.payment.method ?? 'crypto_commerce']
           }
-          description={order?.orderNumber}
+          description={
+            <div className='flex items-center justify-between w-full'>
+              <div className='w-full'>{order?.orderNumber.substring(5)}</div>
+              <div className='flex-1 whitespace-nowrap text-sm px-1'>
+                {pmmap[order?.payment.method ?? 'crypto_commerce']}
+              </div>
+            </div>
+          }
           icon='hash'
           iconStyle='text-indigo-400'
           status={
@@ -59,12 +66,16 @@ export const OrderSummaryWidget = () => {
               ? [
                   ...data,
                   {
+                    label: 'Shipping',
+                    value: `$${formatPrice(order?.shippingCents ?? 0)}`,
+                  },
+                  {
                     label: 'Total',
                     value: `$${formatPrice(order?.totalCents ?? 0)}`,
                   },
                   {
                     label: 'Payment Method',
-                    value: pmmap[order?.payment.method ?? 'cash_app'],
+                    value: pmmap[order?.payment.method ?? 'crypto_commerce'],
                   },
                 ]
               : []

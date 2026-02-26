@@ -1,5 +1,6 @@
 import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react/tabs'
+import {AccessContent} from './_components/access-content'
 import {AssistantContent} from './_components/assistant-content'
 import {CryptoContent} from './_components/crypto-content'
 import {OverviewContent} from './_components/overview-content'
@@ -10,6 +11,7 @@ import {TaxContent} from './_components/tax-content'
 export const SettingsTabs = () => {
   const tabs = [
     {id: 'overview', label: 'Overview'},
+    {id: 'access', label: 'Access'},
     {id: 'payments', label: 'Payments'},
     {id: 'crypto', label: 'Crypto'},
     {id: 'shipping', label: 'Shipping'},
@@ -38,6 +40,11 @@ export const SettingsTabs = () => {
         className='relative flex min-h-32 flex-1 flex-col px-2 py-4'
         value='overview'>
         <OverviewContent />
+      </Tabs.Panel>
+      <Tabs.Panel
+        className='relative flex min-h-32 flex-1 flex-col p-4'
+        value='access'>
+        <AccessContent />
       </Tabs.Panel>
       <Tabs.Panel
         className='relative flex min-h-32 flex-1 flex-col p-4'

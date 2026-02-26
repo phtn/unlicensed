@@ -135,7 +135,7 @@ const CryptoSendContent = () => {
             <span className='hidden md:flex font-brk text-xs uppercase'>
               <span className='hidden md:flex mr-1'>Select</span>Network
             </span>
-            <span className='text-indigo-500'>Development In-progress...</span>
+            <span className='text-indigo-400'>Development In-progress...</span>
           </div>
           <Tabs.Root
             value={selected}

@@ -61,7 +61,7 @@ export const OverviewContent = () => {
             type='info'
             title='Function'
             description='Settings is the control center for administrative and operational preferences. Use the tabs above to switch between sections.'
-            customStyle='rounded-2xl border border-primary/20 bg-primary/5 dark:bg-primary/10'
+            customStyle='rounded-2xl border border-primary/0 bg-primary/5 dark:bg-primary/10'
           />
         </ViewTransition>
         <ViewTransition>

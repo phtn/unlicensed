@@ -273,9 +273,9 @@ export function PinAccessGate() {
             value={pin}
             onChange={handlePinChange}
             maxLength={pinLength}
-            autoComplete='off'
-            autoCorrect='off'
-            spellCheck={false}
+            autoComplete='false'
+            autoCorrect='false'
+            spellCheck='false'
             autoFocus
             placeholder='Access Code'
             className='w-full max-w-sm px-3 py-3 text-center text-xl font-brk tracking-[0.5em] bg-white/5 border-2 border-zinc-400/20 rounded-xl text-white placeholder:text-zinc-500 placeholder:text-sm focus:outline-none focus:border-zinc-200/60 focus:bg-white/10 transition-all uppercase'
