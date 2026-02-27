@@ -34,11 +34,6 @@ const normalizeBtcTxId = (h: string): string =>
 
 const normalizeAddress = (a: string): string => a.toLowerCase()
 
-interface EtherscanReceipt {
-  status?: string
-  to?: string
-}
-
 async function fetchViaEtherscan<T>(
   chainId: number,
   action: string,
@@ -186,8 +181,10 @@ async function verifyEvmTransaction(
 
 async function verifyBitcoinTransaction(
   txid: string,
-  _expectedRecipient?: string,
-): Promise<{success: true} | {success: false; error: string}> {
+  expectedRecipient?: string,
+): Promise<
+  {success: true; data: {from?: string}} | {success: false; error: string}
+> {
   const normalizedTxId = normalizeBtcTxId(txid)
 
   if (normalizedTxId.length !== 64) {
@@ -219,7 +216,7 @@ async function verifyBitcoinTransaction(
     }
   }
 
-  return {success: true}
+  return {success: true, data: {from: expectedRecipient}}
 }
 
 export async function POST(request: NextRequest) {

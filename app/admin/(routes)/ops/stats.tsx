@@ -177,7 +177,7 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
         </div>
         <div className='space-y-1'>
           <div className='flex items-baseline gap-2'>
-            <span className='text-2xl lg:text-2xl font-semibold tracking-tight font-space'>
+            <span className='text-2xl lg:text-2xl font-medium font-okxs'>
               {statValue.value}
             </span>
             {statValue.subtitle && (

@@ -1,22 +1,24 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
+import type {OrderStatus} from '@/convex/orders/d'
+import {useCopy} from '@/hooks/use-copy'
 import {Icon} from '@/lib/icons'
-import {Button, Card, Chip, ChipProps} from '@heroui/react'
-import {useQuery} from 'convex/react'
+import {Button, Card, Select, SelectItem} from '@heroui/react'
+import {useMutation, useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
+import {useCallback} from 'react'
 import {OrderDetailsForm} from '../order-details-form'
 
-const statusColorMap: Record<string, ChipProps['color']> = {
-  pending_payment: 'warning',
-  order_processing: 'primary',
-  awaiting_courier_pickup: 'secondary',
-  shipping: 'default',
-  resend: 'warning',
-  shipped: 'success',
-  delivered: 'success',
-  cancelled: 'danger',
-}
+const statusOptions: {value: OrderStatus; label: string}[] = [
+  {value: 'pending_payment', label: 'Pending Payment'},
+  {value: 'order_processing', label: 'Order Processing'},
+  {value: 'awaiting_courier_pickup', label: 'Awaiting Courier Pickup'},
+  {value: 'resend', label: 'Resend'},
+  {value: 'shipped', label: 'Shipped'},
+  {value: 'delivered', label: 'Delivered'},
+  {value: 'cancelled', label: 'Cancelled'},
+]
 
 interface ContentProps {
   orderNumber: string
@@ -25,6 +27,13 @@ interface ContentProps {
 export const Content = ({orderNumber}: ContentProps) => {
   const order = useQuery(api.orders.q.getOrderByNumber, {orderNumber})
   const router = useRouter()
+  const updateOrderStatus = useMutation(api.orders.m.updateOrderStatus)
+  const {copy, copied} = useCopy({timeout: 2000})
+
+  const handleCopyOrderNumber = useCallback(() => {
+    if (!order) return
+    copy('orderNumber', order.orderNumber.substring(5))
+  }, [order, copy])
 
   if (order === undefined) {
     return (
@@ -71,22 +80,40 @@ export const Content = ({orderNumber}: ContentProps) => {
           </Button>
           <div className='flex-1'>
             <h1 className='text-xl font-semibold'>Order Details</h1>
-            <p className='text-sm opacity-70 mt-0.5'>{order.orderNumber}</p>
+            <div className='flex items-center space-x-3'>
+              <p className='text-base opacity-70 mt-0.5 font-mono'>
+                {order.orderNumber.substring(5)}
+              </p>
+              <Icon
+                name={copied ? 'check' : 'copy'}
+                onClick={handleCopyOrderNumber}
+                className='size-4'
+              />
+            </div>
           </div>
-          <Chip
-            className='capitalize'
-            color={statusColorMap[order.orderStatus] || 'default'}
-            size='sm'
-            variant='flat'>
-            {order.orderStatus
-              .split('_')
-              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' ')}
-          </Chip>
+          {/* Status */}
+          <div className='min-w-sm'>
+            <Select
+              size='lg'
+              selectedKeys={[order.orderStatus]}
+              onSelectionChange={(keys) => {
+                const selected = Array.from(keys)[0] as OrderStatus
+                if (selected)
+                  updateOrderStatus({
+                    orderId: order._id,
+                    status: selected,
+                  })
+              }}
+              aria-label='Order status'>
+              {statusOptions.map((option) => (
+                <SelectItem key={option.value}>{option.label}</SelectItem>
+              ))}
+            </Select>
+          </div>
         </div>
 
         {/* Order Details Form */}
-        <Card shadow='sm' className='p-6'>
+        <Card shadow='none' className='p-6 border-none'>
           <OrderDetailsForm order={order} hideHeader />
         </Card>
       </div>

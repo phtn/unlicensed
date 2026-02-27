@@ -24,7 +24,7 @@ const ProgressBar = memo(function ProgressBar({pct}: {pct: number}) {
   return (
     <div className='h-2 overflow-hidden rounded-full bg-white/80 dark:bg-foreground/20 my-2.5'>
       <div
-        className='h-full rounded-full bg-linear-to-r from-brand via-brand to-brand/80 shadow-[0_0_8px_var(--color-brand)] transition-[width] duration-500 ease-[cubic-bezier(.4,0,.2,1)]'
+        className='h-full rounded-full bg-linear-to-r from-brand via-brand to-brand/80 shadow-[0_0_8px_var(--color-brand)] transition-[width] duration-500 ease-in-out'
         style={{width: `${pct}%`}}
       />
     </div>
@@ -295,7 +295,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
 
         {/* Bundle bonus hint */}
         {!r.isBundleBonusActive && (
-          <div className='flex items-center mt-2 space-x-2 rounded-lg border border-dashed border-foreground/20 bg-foreground/[0.03] px-3 py-2 text-xs text-muted-foreground'>
+          <div className='flex items-center mt-2 space-x-2 rounded-lg border border-dashed border-foreground/20 bg-foreground/3 px-3 py-2 text-xs text-muted-foreground'>
             <Icon name='lightbulb-bold' className='size-4 text-yellow-200' />
             <span>
               Add items from 2+ categories to earn{' '}
