@@ -1,5 +1,6 @@
 'use client'
 
+import {Order} from '@/app/admin/(routes)/ops/types'
 import {
   SearchParamsProvider,
   useSearchParams,
@@ -18,10 +19,10 @@ import {useParams} from 'next/navigation'
 import QRCode from 'qrcode'
 import {
   startTransition,
+  SubmitEvent,
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react'
 
@@ -66,13 +67,9 @@ const CryptoSendContent = () => {
   const updatePayment = useMutation(api.orders.m.updatePayment)
   const {setParams} = useSearchParams()
   const {getBySymbol} = useCrypto()
-  const [, setTo] = useState('')
-  const [amount, setAmount] = useState('')
   const [selected, setSelected] = useState<SendPageNetwork>('bitcoin')
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
-  const paymentSyncedTxHashRef = useRef<`0x${string}` | null>(null)
-  const addressInputRef = useRef<HTMLInputElement>(null)
-  const amountInputRef = useRef<HTMLInputElement>(null)
+  const order = useQuery(api.orders.q.getById, {id: orderId})
 
   const cryptoSetting = useQuery(api.admin.q.getAdminByIdentStrict, {
     identifier: CRYPTO_WALLET_IDENTIFIER,
@@ -166,6 +163,7 @@ const CryptoSendContent = () => {
                 walletAddress={walletAddress}
                 copyFn={copyAddress}
                 isCopied={copied}
+                order={order}
               />
             </Tabs.Panel>
             <Tabs.Panel value='ethereum'>
@@ -174,6 +172,7 @@ const CryptoSendContent = () => {
                 walletAddress={walletAddress}
                 copyFn={copyAddress}
                 isCopied={copied}
+                order={order}
               />
             </Tabs.Panel>
             <Tabs.Panel value='polygon'>
@@ -182,6 +181,7 @@ const CryptoSendContent = () => {
                 walletAddress={walletAddress}
                 copyFn={copyAddress}
                 isCopied={copied}
+                order={order}
               />
             </Tabs.Panel>
           </Tabs.Root>
@@ -191,24 +191,41 @@ const CryptoSendContent = () => {
   )
 }
 
+interface SendToPanelProps {
+  qrDataUrl: string | null
+  walletAddress: string
+  copyFn: VoidFunction
+  isCopied: boolean
+  order: Order | null | undefined
+}
+
 function SendToPanel({
   qrDataUrl,
   walletAddress,
   copyFn,
   isCopied,
-}: {
-  qrDataUrl: string | null
-  walletAddress: string
-  copyFn: VoidFunction
-  isCopied: boolean
-}) {
+  order,
+}: SendToPanelProps) {
   const [txnHash, setTxnHash] = useState<string>()
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTxnHash(event.target.value)
   }
 
+  const handleSubmit = useCallback(
+    (event: SubmitEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      if (!order) return
+      console.log({
+        orderNumber: order.orderNumber,
+        totalAmount: order.totalCents,
+        txnHash,
+      })
+    },
+    [order, txnHash],
+  )
+
   return (
-    <div className='space-y-2 w-full'>
+    <form onSubmit={handleSubmit} className='space-y-2 w-full'>
       <div className='flex items-center justify-center md:justify-start md:h-72 h-fit w-full rounded-lg border border-zinc-500 bg-zinc-200/20 mt-2 px-3 py-8 md:py-0'>
         {qrDataUrl ? (
           <div className='grid md:grid-cols-2 gap-8 md:gap-0 w-full place-items-center md:place-items-start'>
@@ -262,11 +279,11 @@ function SendToPanel({
         />
       </div>
       <div className='flex items-center justify-end py-3'>
-        <Button size='lg' disabled={!txnHash}>
+        <Button type='submit' size='lg' disabled={!txnHash}>
           Confirm Payment
         </Button>
       </div>
-    </div>
+    </form>
   )
 }
 
