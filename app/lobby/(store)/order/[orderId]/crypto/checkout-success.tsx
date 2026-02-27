@@ -27,7 +27,7 @@ export const CheckoutSuccess = ({
   transactionId,
 }: CheckoutSuccessProps) => {
   return (
-    <div className='relative w-full max-w-xl px-4'>
+    <div className='relative w-full max-w-2xl px-4'>
       <Confetti options={CONFETTI_OPTIONS} className='fixed inset-0 z-10' />
       <motion.div
         initial={{opacity: 0, scale: 0.95}}
@@ -44,7 +44,7 @@ export const CheckoutSuccess = ({
                 Payment Successful
               </p>
               <p className='font-brk text-xs uppercase tracking-wide text-emerald-100/75'>
-                Order {orderNumber}
+                Order * {orderNumber.substring(5)}
               </p>
             </div>
           </div>
@@ -62,7 +62,7 @@ export const CheckoutSuccess = ({
             <Button
               as={NextLink}
               href={`/account/orders/${orderNumber}`}
-              className='h-11 rounded-lg bg-emerald-300 text-black font-polysans font-semibold'>
+              className='h-11 rounded-lg bg-emerald-300 text-dark-table font-polysans font-semibold tracking-wider'>
               View Order
             </Button>
           </div>

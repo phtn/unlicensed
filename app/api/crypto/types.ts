@@ -80,3 +80,56 @@ export interface CryptoApiResponse {
   timestamp: string
   error?: string
 }
+
+export interface TxData {
+  id: string
+  from: string
+  to: string
+  value: string
+  gasUsed: string
+  gasPrice: string
+  status: string
+  blockNumber: string
+  contractAddress: string | null
+}
+
+export interface Tx {
+  blockHash: string
+  blockNumber: string
+  blockTimestamp: string
+  from: string
+  gas: string
+  gasPrice: string
+  maxFeePerGas: string
+  maxPriorityFeePerGas: string
+  hash: string
+  input: string
+  nonce: string
+  to: string
+  transactionIndex: string
+  value: string
+  type: string
+  accessList: unknown[]
+  chainId: string
+  v: string
+  r: string
+  s: string
+  yParity: string
+}
+
+export interface TxReceipt {
+  blockHash: string
+  blockNumber: string
+  contractAddress: null
+  cumulativeGasUsed: string
+  effectiveGasPrice: string
+  from: string
+  gasUsed: string
+  logs: unknown[]
+  logsBloom: string
+  status: string
+  to: string
+  transactionHash: string
+  transactionIndex: string
+  type: string
+}

@@ -1,16 +1,19 @@
 'use client'
 
 import {Order} from '@/app/admin/(routes)/ops/types'
+import {TxData} from '@/app/api/crypto/types'
 import {
   SearchParamsProvider,
   useSearchParams,
 } from '@/components/sepolia/search-params-context'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {ITxData} from '@/convex/orders/d'
 import {useCopy} from '@/hooks/use-copy'
 import {useCrypto} from '@/hooks/use-crypto'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {parseHexToInt} from '@/utils/formatPrice'
 import {Tabs} from '@base-ui/react/tabs'
 import {Button, Image, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
@@ -18,12 +21,14 @@ import {motion} from 'motion/react'
 import {useParams} from 'next/navigation'
 import QRCode from 'qrcode'
 import {
+  ChangeEvent,
   startTransition,
   SubmitEvent,
   useCallback,
   useEffect,
   useMemo,
   useState,
+  useTransition,
 } from 'react'
 
 const CRYPTO_WALLET_IDENTIFIER = 'crypto_wallet_addresses'
@@ -164,6 +169,9 @@ const CryptoSendContent = () => {
                 copyFn={copyAddress}
                 isCopied={copied}
                 order={order}
+                network='bitcoin'
+                orderId={orderId}
+                updatePayment={updatePayment}
               />
             </Tabs.Panel>
             <Tabs.Panel value='ethereum'>
@@ -173,6 +181,9 @@ const CryptoSendContent = () => {
                 copyFn={copyAddress}
                 isCopied={copied}
                 order={order}
+                network='ethereum'
+                orderId={orderId}
+                updatePayment={updatePayment}
               />
             </Tabs.Panel>
             <Tabs.Panel value='polygon'>
@@ -182,6 +193,9 @@ const CryptoSendContent = () => {
                 copyFn={copyAddress}
                 isCopied={copied}
                 order={order}
+                network='polygon'
+                orderId={orderId}
+                updatePayment={updatePayment}
               />
             </Tabs.Panel>
           </Tabs.Root>
@@ -191,12 +205,20 @@ const CryptoSendContent = () => {
   )
 }
 
+type UpdatePaymentFn = (args: {
+  orderId: Id<'orders'>
+  payment: Order['payment']
+}) => Promise<unknown>
+
 interface SendToPanelProps {
   qrDataUrl: string | null
   walletAddress: string
   copyFn: VoidFunction
   isCopied: boolean
   order: Order | null | undefined
+  network: SendPageNetwork
+  orderId: Id<'orders'>
+  updatePayment: UpdatePaymentFn
 }
 
 function SendToPanel({
@@ -205,23 +227,80 @@ function SendToPanel({
   copyFn,
   isCopied,
   order,
+  network,
+  orderId,
+  updatePayment,
 }: SendToPanelProps) {
-  const [txnHash, setTxnHash] = useState<string>()
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const [txnHash, setTxnHash] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setTxnHash(event.target.value)
-  }
+    setError(null)
+  }, [])
 
   const handleSubmit = useCallback(
     (event: SubmitEvent<HTMLFormElement>) => {
       event.preventDefault()
-      if (!order) return
-      console.log({
-        orderNumber: order.orderNumber,
-        totalAmount: order.totalCents,
-        txnHash,
+      const hash = txnHash.trim()
+      if (!hash || !order) return
+      if (order.payment.status === 'completed') {
+        setError('This order has already been paid')
+        return
+      }
+
+      startTransition(async () => {
+        setError(null)
+        try {
+          const res = await fetch('/api/crypto/verify-tx', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              txnHash: hash,
+              network,
+              expectedRecipient:
+                walletAddress.toLowerCase().trim() || undefined,
+            }),
+          })
+
+          const {success, error, data} = (await res.json()) as {
+            success: boolean
+            error?: string
+            data?: TxData
+          }
+
+          if (!res.ok || !success) {
+            setError(error ?? 'Transaction verification failed')
+            return
+          }
+
+          console.log({data, value: parseHexToInt(data?.value)})
+
+          await updatePayment({
+            orderId,
+            payment: {
+              ...order.payment,
+              status: 'completed',
+              transactionId: hash.startsWith('0x') ? hash : `0x${hash}`,
+              asset:
+                network === 'bitcoin'
+                  ? 'BTC'
+                  : network === 'polygon'
+                    ? 'MATIC'
+                    : 'ETH',
+              chain: network,
+              paidAt: Date.now(),
+              tx: data as ITxData,
+            },
+          })
+        } catch (err) {
+          setError('Failed to verify payment. Please try again.')
+          console.error('Payment verification error:', err)
+        }
       })
     },
-    [order, txnHash],
+    [order, txnHash, network, orderId, updatePayment, walletAddress],
   )
 
   return (
@@ -269,17 +348,26 @@ function SendToPanel({
       </div>
       <div className='flex items-center space-x-3'>
         <label htmlFor='txn-hash' className='whitespace-nowrap font-brk'>
-          Txn Hash
+          TxHash
         </label>
         <Input
           id='txn-hash'
-          placeholder='0x...'
+          placeholder={network === 'bitcoin' ? 'txid (64 hex chars)' : '0x...'}
+          value={txnHash}
           onChange={handleChange}
-          defaultValue={txnHash}
         />
       </div>
+      {error ? (
+        <p className='text-destructive text-sm' role='alert'>
+          {error}
+        </p>
+      ) : null}
       <div className='flex items-center justify-end py-3'>
-        <Button type='submit' size='lg' disabled={!txnHash}>
+        <Button
+          type='submit'
+          size='lg'
+          disabled={!txnHash.trim() || isPending}
+          isLoading={isPending}>
           Confirm Payment
         </Button>
       </div>
@@ -307,7 +395,7 @@ const NetworkButtonRound = ({
   selected,
 }: NetworkButtonRoundProps) => {
   return (
-    <motion.button
+    <motion.div
       initial={{opacity: 0}}
       animate={{opacity: 1}}
       exit={{opacity: 0}}
@@ -346,6 +434,6 @@ const NetworkButtonRound = ({
         })}>
         {name}
       </p>
-    </motion.button>
+    </motion.div>
   )
 }

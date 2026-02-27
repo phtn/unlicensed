@@ -22,6 +22,19 @@ export const paymentMethodSchema = v.union(
 
 export type PaymentMethod = Infer<typeof paymentMethodSchema>
 
+const tx = v.object({
+  from: v.optional(v.string()),
+  to: v.optional(v.string()),
+  value: v.optional(v.string()),
+  gasUsed: v.optional(v.string()),
+  gasPrice: v.optional(v.string()),
+  status: v.optional(v.string()),
+  blockNumber: v.optional(v.string()),
+  contractAddress: v.optional(v.string()),
+})
+
+export type ITxData = Infer<typeof tx>
+
 // Payment information schema
 export const paymentSchema = v.object({
   method: paymentMethodSchema,
@@ -56,6 +69,7 @@ export const paymentSchema = v.object({
       metadata: v.optional(v.record(v.string(), v.any())),
     }),
   ),
+  tx: v.optional(tx),
   // PayGate-specific fields
   // paygateSessionId: v.optional(v.string()), // PayGate session ID
   // paygatePaymentUrl: v.optional(v.string()), // PayGate payment URL for redirect
