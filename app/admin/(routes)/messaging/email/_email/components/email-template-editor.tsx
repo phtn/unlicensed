@@ -5,6 +5,7 @@ import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {Icon} from '@/lib/icons'
 import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
+import {getInvitationDefaultProps} from '@/lib/resend/templates/render-with-props'
 import {cn} from '@/lib/utils'
 import {Button, Select, SelectItem} from '@heroui/react'
 import {useCallback, useMemo, useState, useTransition} from 'react'
@@ -86,7 +87,7 @@ export const EmailTemplateEditor = ({
 
   const templateSelectOptions = useMemo(
     () => [
-      { id: TEMPLATE_NONE, label: 'No template' },
+      {id: TEMPLATE_NONE, label: 'No template'},
       ...EMAIL_TEMPLATE_OPTIONS,
     ],
     [],
@@ -97,13 +98,19 @@ export const EmailTemplateEditor = ({
       const id = key === null || key === TEMPLATE_NONE ? '' : String(key)
       setSelectedTemplateKey(id)
       form.setFieldValue('template', id)
+      if (id === 'invitation') {
+        form.setFieldValue(
+          'templateProps',
+          JSON.stringify(getInvitationDefaultProps(), null, 2),
+        )
+      }
       if (!id) return
 
       startLoadingTemplate(() => {
         ;(async () => {
           try {
             const res = await fetch(
-              `/api/resend/templates/${encodeURIComponent(id)}`,
+              `/api/resend/templates/${encodeURIComponent(id)}?live=1`,
             )
             if (!res.ok) {
               const data = (await res.json()) as {error?: string}
@@ -113,6 +120,12 @@ export const EmailTemplateEditor = ({
             const data = (await res.json()) as {html: string; subject: string}
             form.setFieldValue('subject', data.subject)
             form.setFieldValue('html', data.html)
+            if (id === 'invitation') {
+              form.setFieldValue(
+                'templateProps',
+                JSON.stringify(getInvitationDefaultProps(), null, 2),
+              )
+            }
             toast.success('Template applied')
           } catch {
             toast.error('Failed to load template')
@@ -406,7 +419,33 @@ export const EmailTemplateEditor = ({
               )}
             </Select>
 
-            <form.AppField name='text'>
+            {selectedTemplateKey === 'invitation' && (
+              <form.AppField name='templateProps'>
+                {(fieldApi) => (
+                  <fieldApi.TextAreaField
+                    {...fieldApi}
+                    name='templateProps'
+                    label='Invitation template props (JSON)'
+                    defaultValue={fieldApi.state.value}
+                    placeholder='{"title": "You are invited.", "message": "..."}'
+                    type='textarea'
+                    minRows={8}
+                    error={(() => {
+                      try {
+                        if (fieldApi.state.value) {
+                          JSON.parse(fieldApi.state.value)
+                        }
+                        return undefined
+                      } catch {
+                        return 'Invalid JSON'
+                      }
+                    })()}
+                  />
+                )}
+              </form.AppField>
+            )}
+
+            {/*<form.AppField name='text'>
               {(fieldApi) => {
                 const errors = fieldApi.state.meta.errors
                 const error =
@@ -430,7 +469,7 @@ export const EmailTemplateEditor = ({
                   />
                 )
               }}
-            </form.AppField>
+            </form.AppField>*/}
 
             <form.AppField name='body'>
               {(fieldApi) => {

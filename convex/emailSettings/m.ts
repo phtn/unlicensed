@@ -32,6 +32,7 @@ export const update = mutation({
     headers: v.optional(v.record(v.string(), v.string())),
     html: v.optional(v.string()),
     template: v.optional(v.string()),
+    templateProps: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const {id, ...data} = args

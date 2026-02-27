@@ -14,13 +14,10 @@ import {
   CardBody,
   CardHeader,
   Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
+  Progress,
+  Select,
+  SelectItem,
   Textarea,
-  useDisclosure,
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
@@ -34,32 +31,28 @@ import {EmailTemplateEditor} from './email-template-editor'
 interface EmailTemplateViewerProps {
   id: string
 }
-function parseRecipients(value: string): string[] {
-  return value
-    .split(/[\n,]+/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-}
-
-export type RecipientRow = { name: string; email: string }
+export type RecipientRow = {name: string; email: string}
 
 /** Parse pasted text into name/email rows. Separators: =, :, or , (one per line). */
 function parsePastedRecipients(text: string): RecipientRow[] {
-  const lines = text.split(/\r?\n/).map((s) => s.trim()).filter(Boolean)
+  const lines = text
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean)
   return lines.map((line) => {
     const sepMatch = line.match(/[=,:]/)
     const idx = sepMatch ? line.indexOf(sepMatch[0]!) : -1
     if (idx === -1) {
-      if (line.includes('@')) return { name: '', email: line }
-      return { name: line, email: '' }
+      if (line.includes('@')) return {name: '', email: line}
+      return {name: line, email: ''}
     }
     const left = line.slice(0, idx).trim()
     const right = line.slice(idx + 1).trim()
     const hasAtLeft = left.includes('@')
     const hasAtRight = right.includes('@')
-    if (hasAtRight && !hasAtLeft) return { name: left, email: right }
-    if (hasAtLeft && !hasAtRight) return { name: right, email: left }
-    return { name: left, email: right }
+    if (hasAtRight && !hasAtLeft) return {name: left, email: right}
+    if (hasAtLeft && !hasAtRight) return {name: right, email: left}
+    return {name: left, email: right}
   })
 }
 
@@ -67,14 +60,17 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   const router = useRouter()
   const {user} = useAuthCtx()
   const [isEditing, setIsEditing] = useState(false)
-  const sendJobDisclosure = useDisclosure()
-  const [recipients, setRecipients] = useState<RecipientRow[]>([
-    { name: '', email: '' },
-  ])
-  const [sendCc, setSendCc] = useState('')
-  const [sendBcc, setSendBcc] = useState('')
-  const [isSending, setIsSending] = useState(false)
-  const [sendError, setSendError] = useState<string | null>(null)
+  const [showMailingList, setShowMailingList] = useState(false)
+  const [showEmailBlast, setShowEmailBlast] = useState(false)
+  const [mailingListName, setMailingListName] = useState('')
+  const [recipients, setRecipients] = useState<RecipientRow[]>([])
+  const [selectedListId, setSelectedListId] = useState<string>('')
+  const [blastProgress, setBlastProgress] = useState<{
+    sent: number
+    total: number
+    sending: boolean
+    error?: string
+  } | null>(null)
 
   const emailSetting = useQuery(
     api.emailSettings.q.getEmailSetting,
@@ -82,6 +78,8 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   )
   const updateEmailSetting = useMutation(api.emailSettings.m.update)
   const deleteEmailSetting = useMutation(api.emailSettings.m.remove)
+  const createMailingList = useMutation(api.mailingLists.m.create)
+  const mailingLists = useQuery(api.mailingLists.q.list)
 
   const u = useQuery(
     api.users.q.getCurrentUser,
@@ -124,26 +122,31 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
     })
   }, [id, deleteEmailSetting, navigateBackToList])
 
-  const handleSendJobOpen = useCallback(() => {
-    setRecipients([{ name: '', email: '' }])
-    setSendCc('')
-    setSendBcc('')
-    setSendError(null)
-    sendJobDisclosure.onOpen()
-  }, [sendJobDisclosure])
-
-  const setRecipient = useCallback((index: number, field: 'name' | 'email', value: string) => {
-    setRecipients((prev) =>
-      prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)),
-    )
+  const toggleMailingList = useCallback(() => {
+    setShowMailingList((prev) => {
+      if (!prev) {
+        setRecipients([])
+        setMailingListName('')
+      }
+      return !prev
+    })
   }, [])
 
+  const setRecipient = useCallback(
+    (index: number, field: 'name' | 'email', value: string) => {
+      setRecipients((prev) =>
+        prev.map((r, i) => (i === index ? {...r, [field]: value} : r)),
+      )
+    },
+    [],
+  )
+
   const addRecipientRow = useCallback(() => {
-    setRecipients((prev) => [...prev, { name: '', email: '' }])
+    setRecipients((prev) => [...prev, {name: '', email: ''}])
   }, [])
 
   const removeRecipientRow = useCallback((index: number) => {
-    setRecipients((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev))
+    setRecipients((prev) => prev.filter((_, i) => i !== index))
   }, [])
 
   const handlePasteRecipients = useCallback((e: React.ClipboardEvent) => {
@@ -156,49 +159,112 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
     }
   }, [])
 
-  const handleSendJobSubmit = useCallback(async () => {
-    const toList = recipients.map((r) => r.email.trim()).filter(Boolean)
-    if (toList.length === 0) {
-      setSendError('Enter at least one recipient email.')
+  const handleCreateMailingList = useCallback(async () => {
+    const valid = recipients.filter((r) => r.email.trim())
+    if (valid.length === 0) {
+      toast.error('Add at least one recipient with an email.')
+      return
+    }
+    try {
+      await createMailingList({
+        name: mailingListName || 'Untitled',
+        recipients: valid,
+      })
+      toast.success(
+        `Mailing list "${mailingListName || 'Untitled'}" saved with ${valid.length} recipients`,
+      )
+      setShowMailingList(false)
+      setRecipients([])
+      setMailingListName('')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save list')
+    }
+  }, [recipients, mailingListName, createMailingList])
+
+  const toggleEmailBlast = useCallback(() => {
+    setShowEmailBlast((prev) => {
+      if (!prev) setBlastProgress(null)
+      return !prev
+    })
+  }, [])
+
+  const handleEmailBlastSend = useCallback(async () => {
+    const list = mailingLists?.find((l) => l._id === selectedListId)
+    if (!list || list.recipients.length === 0) {
+      toast.error('Select a mailing list with recipients.')
       return
     }
     if (!emailSetting) return
-    setIsSending(true)
-    setSendError(null)
-    try {
-      const res = await fetch('/api/resend/send-job', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          to: toList,
-          cc:
-            parseRecipients(sendCc).length > 0
-              ? parseRecipients(sendCc)
-              : undefined,
-          bcc:
-            parseRecipients(sendBcc).length > 0
-              ? parseRecipients(sendBcc)
-              : undefined,
+    const valid = list.recipients.filter((r) => r.email.trim())
+    if (valid.length === 0) {
+      toast.error('The selected list has no valid email addresses.')
+      return
+    }
+    setBlastProgress({sent: 0, total: valid.length, sending: true})
+    let sent = 0
+    const delay = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms))
+    for (let i = 0; i < valid.length; i++) {
+      if (i > 0) await delay(600)
+      const recipient = valid[i]!
+      try {
+        const useInvitation =
+          emailSetting.template === 'invitation' && emailSetting.templateProps
+        const body: Record<string, unknown> = {
           subject: emailSetting.subject ?? '',
-          html: emailSetting.html ?? undefined,
-          body: emailSetting.body ?? undefined,
           from: emailSetting.from?.[0],
-        }),
-      })
-      const data = (await res.json()) as {ok: boolean; error?: string}
-      if (!data.ok) {
-        setSendError(data.error ?? 'Failed to send')
+        }
+        if (useInvitation) {
+          body.template = 'invitation'
+          body.templateProps = emailSetting.templateProps
+          body.recipients = [{email: recipient.email, name: recipient.name}]
+        } else {
+          body.to = [recipient.email]
+          body.html = emailSetting.html ?? undefined
+          body.body = emailSetting.body ?? undefined
+        }
+        const res = await fetch('/api/resend/send-job', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(body),
+        })
+        const data = (await res.json()) as {ok: boolean; error?: string}
+        if (!data.ok) {
+          setBlastProgress((p) =>
+            p
+              ? {
+                  ...p,
+                  sent,
+                  sending: false,
+                  error: `${recipient.email}: ${data.error ?? 'Failed'}`,
+                }
+              : null,
+          )
+          toast.error(`Blast stopped at ${recipient.email}: ${data.error}`)
+          return
+        }
+        sent++
+        setBlastProgress((p) =>
+          p ? {...p, sent} : null,
+        )
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Network error'
+        setBlastProgress((p) =>
+          p
+            ? {...p, sent, sending: false, error: `${recipient.email}: ${msg}`}
+            : null,
+        )
+        toast.error(`Blast failed at ${recipient.email}`)
         return
       }
-      toast.success('Send job completed')
-      sendJobDisclosure.onClose()
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to send'
-      setSendError(message)
-    } finally {
-      setIsSending(false)
     }
-  }, [recipients, sendCc, sendBcc, emailSetting, sendJobDisclosure])
+    setBlastProgress((p) => (p ? {...p, sending: false} : null))
+    toast.success(`Email blast complete: ${sent} of ${valid.length} sent`)
+  }, [
+    mailingLists,
+    selectedListId,
+    emailSetting,
+  ])
 
   if (!!isAdmin && !isAdmin) {
     return <AccessDenied />
@@ -260,7 +326,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
       </div>
 
       <main className='relative px-4 sm:px-6 lg:px-8 py-4 border-t-[0.33px] bg-linear-to-b from-zinc-200/20 dark:from-zinc-300/10 to-5% to-zinc-200/10 dark:to-zinc-300/10 zinc-200'>
-        <div className='mb-6 flex items-center justify-between'>
+        <div className='mb-4 flex items-center justify-between'>
           <Button
             type='button'
             variant='light'
@@ -273,9 +339,16 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             <Button
               type='button'
               variant='light'
-              onPress={handleSendJobOpen}
+              onPress={toggleMailingList}
               className='gap-1'>
-              Create Send
+              Create Mailing List
+            </Button>
+            <Button
+              type='button'
+              variant='light'
+              onPress={toggleEmailBlast}
+              className='gap-1'>
+              Create Email Blast
             </Button>
             <Button
               type='button'
@@ -408,149 +481,225 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             </Card>
           </div>
 
-          {emailSetting.text && (
-            <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
-              <SectionHeader title='Plain Text' />
-              <div className='p-2'>
-                <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
-                  {emailSetting.text}
-                </pre>
-              </div>
-            </Card>
-          )}
+          <div className='mt-2 flex items-center space-x-4'>
+            {emailSetting.text && (
+              <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
+                <SectionHeader title='Plain Text' />
+                <div className='p-2'>
+                  <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
+                    {emailSetting.text}
+                  </pre>
+                </div>
+              </Card>
+            )}
 
-          {emailSetting.body && (
-            <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
-              <SectionHeader title='Body Template' />
-              <div className='p-2 max-h-20'>
-                <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
-                  {emailSetting.body}
-                </pre>
-              </div>
-            </Card>
-          )}
+            {emailSetting.body && (
+              <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
+                <SectionHeader title='Body Template' />
+                <div className='p-2 max-h-10'>
+                  <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
+                    {emailSetting.body}
+                  </pre>
+                </div>
+              </Card>
+            )}
 
-          {emailSetting.html && (
-            <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-700/50 p-4'>
-              <SectionHeader title='HTML Template' />
-              <div className='p-2 max-h-20'>
-                <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg overflow-x-auto'>
-                  {emailSetting.html}
-                </pre>
-              </div>
-            </Card>
-          )}
+            {emailSetting.html && (
+              <Card className='hidden dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-700/50 p-4 mt-2'>
+                <SectionHeader title='HTML Template' />
+                <div className='p-2 max-h-12 hidden'>
+                  <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg overflow-x-auto'>
+                    {emailSetting.html}
+                  </pre>
+                </div>
+              </Card>
+            )}
+          </div>
         </motion.div>
 
-        <Modal
-          isOpen={sendJobDisclosure.isOpen}
-          onOpenChange={sendJobDisclosure.onOpenChange}
-          placement='center'
-          size='lg'
-          scrollBehavior='inside'>
-          <ModalContent>
-            <ModalHeader className='font-figtree'>
-              Create a Send Job
-            </ModalHeader>
-            <ModalBody className='font-figtree'>
-              <p className='text-sm text-default-500'>
-                Paste recipients below or add rows. Use name=email, name:email,
-                or name,email (one per line).
-              </p>
-              <Textarea
-                placeholder={'Paste here: Alice=alice@example.com\nBob,bob@example.com'}
-                minRows={2}
-                classNames={{input: 'font-mono text-sm'}}
-                onPaste={handlePasteRecipients}
-                description='Paste to add rows automatically'
-              />
-              <div className='space-y-3'>
-                {recipients.map((row, index) => (
-                  <div
-                    key={index}
-                    className='flex flex-wrap items-end gap-2'>
-                    <Input
-                      label={index === 0 ? 'Name' : undefined}
-                      placeholder='Name'
-                      value={row.name}
-                      onValueChange={(v) => setRecipient(index, 'name', v)}
-                      classNames={{input: 'font-mono text-sm'}}
-                      aria-label={`Recipient ${index + 1} name`}
-                    />
-                    <Input
-                      label={index === 0 ? 'Email' : undefined}
-                      placeholder='email@example.com'
-                      value={row.email}
-                      onValueChange={(v) => setRecipient(index, 'email', v)}
-                      type='email'
-                      isRequired={index === 0}
-                      isInvalid={!!sendError && index === 0 && !row.email.trim()}
-                      errorMessage={
-                        sendError && index === 0 && !row.email.trim()
-                          ? sendError
-                          : undefined
+        {showEmailBlast && (
+          <motion.div
+            initial={{opacity: 0, height: 0}}
+            animate={{opacity: 1, height: 'auto'}}
+            className='mt-4'>
+            <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
+              <CardHeader>
+                <SectionHeader
+                  title='Create Email Blast'
+                  description='Select a mailing list and send using this template. Emails are sent one recipient at a time.'
+                />
+              </CardHeader>
+              <CardBody className='space-y-4'>
+                <Select
+                  label='Mailing list'
+                  placeholder='Select a list'
+                  selectedKeys={selectedListId ? [selectedListId] : []}
+                  onSelectionChange={(keys) => {
+                    const k = Array.from(keys)[0]
+                    setSelectedListId(typeof k === 'string' ? k : '')
+                  }}
+                  isDisabled={!mailingLists?.length}
+                  classNames={{trigger: 'font-mono'}}>
+                  {(mailingLists ?? []).map((list) => (
+                    <SelectItem
+                      key={list._id}
+                      textValue={`${list.name} (${list.recipients.length})`}>
+                      {list.name} — {list.recipients.length} recipients
+                    </SelectItem>
+                  ))}
+                </Select>
+                {blastProgress && (
+                  <div className='space-y-2'>
+                    <Progress
+                      value={
+                        blastProgress.total > 0
+                          ? (blastProgress.sent / blastProgress.total) * 100
+                          : 0
                       }
-                      classNames={{input: 'font-mono text-sm'}}
-                      aria-label={`Recipient ${index + 1} email`}
+                      color='primary'
+                      showValueLabel
+                      valueLabel={`${blastProgress.sent} / ${blastProgress.total}`}
+                      className='max-w-full'
                     />
+                    {blastProgress.error && (
+                      <p className='text-sm text-danger'>{blastProgress.error}</p>
+                    )}
+                  </div>
+                )}
+                <div className='flex justify-end gap-2'>
+                  <Button variant='light' onPress={toggleEmailBlast}>
+                    Cancel
+                  </Button>
+                  <Button
+                    color='primary'
+                    onPress={handleEmailBlastSend}
+                    isDisabled={
+                      !selectedListId ||
+                      !!blastProgress?.sending ||
+                      !mailingLists?.some((l) => l._id === selectedListId)
+                    }
+                    isLoading={!!blastProgress?.sending}
+                    className='bg-dark-gray dark:bg-white dark:text-dark-table'>
+                    Send Blast
+                  </Button>
+                </div>
+              </CardBody>
+            </Card>
+          </motion.div>
+        )}
+
+        {showMailingList && (
+          <motion.div
+            initial={{opacity: 0, height: 0}}
+            animate={{opacity: 1, height: 'auto'}}
+            exit={{opacity: 0, height: 0}}
+            className='mt-4'>
+            <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
+              <CardHeader className='flex items-center justify-between'>
+                <SectionHeader
+                  title='Create Mailing List'
+                  description='Paste names and emails below (one per line). Use name=email, name:email, or name,email.'
+                />
+                <Input
+                  label='List name (optional)'
+                  placeholder='My mailing list'
+                  value={mailingListName}
+                  onValueChange={setMailingListName}
+                  classNames={{input: 'font-mono text-sm'}}
+                />
+              </CardHeader>
+              <CardBody className='space-y-4'>
+                <div className='flex items-start space-x-4'>
+                  <Textarea
+                    placeholder='PASTE Name and Email on any of these formats: Alice=alice@example.com | Bob: bob@example.com | Carol, carol@example.com'
+                    minRows={1}
+                    classNames={{input: 'font-mono text-sm'}}
+                    onPaste={handlePasteRecipients}
+                  />
+                  <div className='flex items-center gap-3'>
+                    {recipients.length > 0 && (
+                      <span className='text-sm text-default-500'>
+                        {recipients.length} recipient
+                        {recipients.length !== 1 ? 's' : ''}
+                      </span>
+                    )}
                     <Button
                       type='button'
-                      size='sm'
-                      variant='light'
-                      color='danger'
-                      isIconOnly
-                      onPress={() => removeRecipientRow(index)}
-                      isDisabled={recipients.length === 1}
-                      aria-label={`Remove recipient ${index + 1}`}>
-                      <Icon name='trash' className='size-4' />
+                      size='md'
+                      variant='flat'
+                      onPress={addRecipientRow}
+                      className='gap-1'>
+                      <Icon name='plus' className='size-4' />
+                      Add row
                     </Button>
                   </div>
-                ))}
-              </div>
-              <Button
-                type='button'
-                size='sm'
-                variant='flat'
-                onPress={addRecipientRow}
-                className='gap-1'>
-                <Icon name='plus' className='size-4' />
-                Add another
-              </Button>
-              <Input
-                label='CC (optional)'
-                placeholder='cc@example.com'
-                value={sendCc}
-                onValueChange={setSendCc}
-                classNames={{input: 'font-mono text-sm'}}
-              />
-              <Input
-                label='BCC (optional)'
-                placeholder='bcc@example.com'
-                value={sendBcc}
-                onValueChange={setSendBcc}
-                classNames={{input: 'font-mono text-sm'}}
-              />
-              {sendError && recipients.some((r) => r.email.trim()) && (
-                <p className='text-sm text-danger'>{sendError}</p>
-              )}
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                variant='light'
-                onPress={sendJobDisclosure.onClose}
-                isDisabled={isSending}>
-                Cancel
-              </Button>
-              <Button
-                color='primary'
-                onPress={handleSendJobSubmit}
-                isLoading={isSending}
-                className='bg-dark-gray dark:bg-white dark:text-dark-table'>
-                Send
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+                </div>
+
+                <div
+                  className='rounded-lg border border-greyed/15 bg-default-50 dark:bg-default-100/5 h-64 overflow-y-scroll'
+                  style={{contentVisibility: 'auto'}}>
+                  <div className='divide-y divide-greyed/10 min-w-0'>
+                    {recipients.length === 0 ? (
+                      <div className='px-4 py-2 text-center text-sm text-default-400'>
+                        Paste or add recipients above
+                      </div>
+                    ) : (
+                      recipients.map((row, index) => (
+                        <div
+                          key={index}
+                          className='flex items-center gap-2 px-3 py-1.5 min-h-0 hover:bg-default-100/50 dark:hover:bg-default-50/30 transition-colors'>
+                          <input
+                            type='text'
+                            placeholder='Name'
+                            value={row.name}
+                            onChange={(e) =>
+                              setRecipient(index, 'name', e.target.value)
+                            }
+                            className='flex-1 min-w-0 text-sm font-mono bg-transparent border-none outline-none py-1 placeholder:text-default-400'
+                            aria-label={`Recipient ${index + 1} name`}
+                          />
+                          <span className='text-default-400 shrink-0'>|</span>
+                          <input
+                            type='email'
+                            placeholder='email@example.com'
+                            value={row.email}
+                            onChange={(e) =>
+                              setRecipient(index, 'email', e.target.value)
+                            }
+                            className='flex-1 min-w-0 text-sm font-mono bg-transparent border-none outline-none py-1 placeholder:text-default-400'
+                            aria-label={`Recipient ${index + 1} email`}
+                          />
+                          <Button
+                            type='button'
+                            size='sm'
+                            variant='light'
+                            color='danger'
+                            isIconOnly
+                            onPress={() => removeRecipientRow(index)}
+                            aria-label={`Remove recipient ${index + 1}`}
+                            className='shrink-0'>
+                            <Icon name='trash' className='size-4' />
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+                <div className='flex justify-end gap-2'>
+                  <Button variant='light' onPress={toggleMailingList}>
+                    Cancel
+                  </Button>
+                  <Button
+                    color='primary'
+                    onPress={handleCreateMailingList}
+                    className='bg-dark-gray dark:bg-white dark:text-dark-table'>
+                    Create Mailing List
+                  </Button>
+                </div>
+              </CardBody>
+            </Card>
+          </motion.div>
+        )}
       </main>
     </div>
   )

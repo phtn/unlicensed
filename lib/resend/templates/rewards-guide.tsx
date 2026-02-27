@@ -13,8 +13,8 @@ interface RewardsGuideProps {
 }
 export const RewardsGuide = ({baseUrl}: RewardsGuideProps) => {
   const cashbackTiers = [
-    {id: '1', subtotal: 'under $99.00', shipping: '$14.95', cashback: '1.5%'},
-    {id: '2', subtotal: '$99 - $148.99', shipping: '$4.99', cashback: '2%'},
+    {id: '1', subtotal: 'under $99.00', shipping: '$12.99', cashback: '1.5%'},
+    {id: '2', subtotal: '$99 - $148.99', shipping: '$3.99', cashback: '2%'},
     {id: '3', subtotal: '$149 - $248.99', shipping: 'FREE', cashback: '3%'},
     {id: '4', subtotal: '$249 and above', shipping: 'FREE', cashback: '5%'},
   ]

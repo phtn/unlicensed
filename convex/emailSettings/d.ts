@@ -17,6 +17,7 @@ export const emailSettingsSchema = v.object({
   headers: v.optional(v.record(v.string(), v.string())),
   html: v.optional(v.string()),
   template: v.optional(v.string()),
+  templateProps: v.optional(v.string()),
   attachments: v.optional(
     v.array(v.object({filename: v.string(), contentBase64: v.string()})),
   ),

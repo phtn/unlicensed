@@ -43,8 +43,8 @@ export const InvitationEmail = ({
     <Preview>{title}</Preview>
     <Tailwind>
       <Head />
-      <Body className='bg-[#f6f8fc] py-8 font-sans text-[#0f172a]'>
-        <Container className='mx-auto max-w-140 rounded-2xl bg-white px-8 py-10 shadow-[0_8px_40px_rgba(15,23,42,0.08)]'>
+      <Body className='bg-white py-[32px] font-sans text-[#0f172a]'>
+        <Container className='mx-auto max-w-140 rounded-2xl bg-white px-[32px] py-[40px]'>
           <Section>
             <Column>
               <Img
@@ -58,15 +58,16 @@ export const InvitationEmail = ({
               />
             </Column>
           </Section>
-          <Section className='mb-8 rounded-xl bg-linear-to-r from-cyan-500 to-blue-600 px-6 py-6'>
+          <Section className='mb-[32px] rounded-xl bg-linear-to-r from-cyan-500 to-blue-600 px-[24px] py-[28px]'>
             <Text className='m-0 text-[12px] uppercase tracking-[0.12em] opacity-65'>
-              vip only
+              VIP only
             </Text>
-            <Text className='m-0 mt-2 text-[28px] leading-9 font-polysans font-semibold'>
+            <Text className='m-0 mt-[4px] text-[24px] leading-9 font-polysans font-semibold'>
               {title}
             </Text>
-            <Text className='m-0 mt-3 text-[12px] font-okxs leading-5.5 opacity-90'>
-              Hi {recipientName},
+            <Text className='m-0 mt-[6px] text-[12px] font-okxs leading-5.5 opacity-90'>
+              Hi{' '}
+              <Text className='capitalize font-semibold'>{recipientName}</Text>,
               {inviterName
                 ? ` ${inviterName}'re excited to invite you to the official launch of Rapid Fire, our brand new online store!
               We’re proud to finally open our virtual doors and share our collection with you.`
@@ -74,26 +75,26 @@ export const InvitationEmail = ({
             </Text>
           </Section>
 
-          <Section className='rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-5 py-4'>
+          <Section className='flex items-center flex-center rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-[10px] py-[8px]'>
             <Text className='m-0 text-[14px] leading-5.5 text-[#334155] whitespace-pre-wrap'>
               {message}
             </Text>
             {accessCode ? (
-              <Text className='m-0 mt-3 text-[13px] leading-5 text-[#64748b]'>
+              <Text className='m-0 mt-[6px] text-[13px] leading-5 text-[#64748b]'>
                 Access Code: {accessCode}
               </Text>
             ) : null}
           </Section>
 
-          <Section className='text-center mt-7'>
+          <Section className='text-center mt-[14px]'>
             <Button
               href={ctaUrl}
-              className='inline-block rounded-full bg-[#0f172a] px-6 py-3 text-[14px] font-semibold text-white no-underline'>
+              className='inline-block bg-[#0f172a] px-[12px] py-[6px] text-[14px] font-semibold text-white no-underline w-full'>
               {ctaLabel}
             </Button>
           </Section>
 
-          <Hr className='my-7 border-[#e2e8f0]' />
+          <Hr className='my-[14px] border-[#e2e8f0]' />
           <RewardsGuide baseUrl={baseUrl} />
           <FooterEmailContent baseUrl={baseUrl} />
         </Container>

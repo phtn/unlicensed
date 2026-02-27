@@ -11,6 +11,7 @@ import {categorySchema} from './categories/d'
 import {checkoutLogSchema} from './checkoutLogs/d'
 import {courierSchema} from './couriers/d'
 import {emailSettingsSchema} from './emailSettings/d'
+import {mailingListSchema} from './mailingLists/d'
 import {fileSchema} from './files/upload'
 import {followSchema} from './follows/d'
 import {logSchema} from './logs/d'
@@ -82,6 +83,9 @@ export default defineSchema({
     .index('by_title', ['title'])
     .index('by_intent', ['intent'])
     .index('by_group', ['group']),
+  mailingLists: defineTable(mailingListSchema).index('by_created_at', [
+    'createdAt',
+  ]),
   gateways: defineTable(gatewaySchema)
     .index('by_default', ['isDefault'])
     .index('by_gateway', ['gateway'])

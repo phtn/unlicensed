@@ -1,3 +1,7 @@
+import {
+  parseInvitationTemplateProps,
+  renderInvitationTemplate,
+} from '@/lib/resend/templates/render-with-props'
 import {createClient} from '@/lib/resend'
 import {uuidv7} from 'uuidv7'
 
@@ -26,14 +30,19 @@ const extractResendErrorDetails = (err: unknown): string => {
   return `${message ?? 'Resend error'}${parts ? ` (${parts})` : ''}`
 }
 
+type RecipientInput = string | {email: string; name?: string}
+
 function parseBody(raw: unknown): {
   to: string[]
+  recipients?: {email: string; name: string}[]
   subject: string
   html?: string
   body?: string
   from?: string
   cc?: string[]
   bcc?: string[]
+  template?: string
+  templateProps?: string
 } | null {
   if (!raw || typeof raw !== 'object') return null
   const o = raw as Record<string, unknown>
@@ -45,11 +54,27 @@ function parseBody(raw: unknown): {
     : typeof toRaw === 'string' && toRaw.trim()
       ? [toRaw.trim()]
       : []
-  if (toArr.length === 0) return null
+  const recipientsRaw = o.recipients
+  const recipients =
+    Array.isArray(recipientsRaw) &&
+    recipientsRaw.every(
+      (r) =>
+        r &&
+        typeof r === 'object' &&
+        typeof (r as {email?: unknown}).email === 'string',
+    )
+      ? (recipientsRaw as {email: string; name?: string}[]).map((r) => ({
+          email: r.email.trim(),
+          name: typeof r.name === 'string' ? r.name.trim() : '',
+        }))
+      : undefined
+  const hasRecipients = toArr.length > 0 || (recipients?.length ?? 0) > 0
+  if (!hasRecipients) return null
   const subject = typeof o.subject === 'string' ? o.subject.trim() : ''
   if (!subject) return null
   return {
     to: toArr,
+    recipients,
     subject,
     html: typeof o.html === 'string' ? o.html : undefined,
     body: typeof o.body === 'string' ? o.body : undefined,
@@ -64,6 +89,9 @@ function parseBody(raw: unknown): {
           (x): x is string => typeof x === 'string' && x.trim().length > 0,
         )
       : undefined,
+    template: typeof o.template === 'string' ? o.template.trim() : undefined,
+    templateProps:
+      typeof o.templateProps === 'string' ? o.templateProps : undefined,
   }
 }
 
@@ -77,7 +105,8 @@ export async function POST(req: Request) {
     )
   }
 
-  const {to, subject, html, body, cc, bcc} = parsed
+  const {to, recipients, subject, html, body, cc, bcc, template, templateProps} =
+    parsed
   const from =
     parsed.from ?? process.env.RESEND_FROM ?? 'hello@rapidfirenow.com'
   let resend: ReturnType<typeof createClient>
@@ -89,16 +118,43 @@ export async function POST(req: Request) {
     return Response.json({ok: false, error: message}, {status: 502})
   }
 
-  const finalHtml = html ?? (body ? `<p>${body}</p>` : '<p></p>')
+  const useInvitationComponent =
+    template === 'invitation' && recipients && recipients.length > 0
+  const invitationProps = useInvitationComponent
+    ? parseInvitationTemplateProps(templateProps)
+    : null
+  const fallbackHtml = html ?? (body ? `<p>${body}</p>` : '<p></p>')
+
+  const recipientList: {email: string; name: string}[] =
+    (recipients?.length ?? 0) > 0 ? recipients! : to.map((e) => ({email: e, name: ''}))
 
   const ids: string[] = []
 
-  for (const recipient of to) {
+  for (const recipient of recipientList) {
     const headers: Record<string, string> = {
       'X-Priority': '1',
       'X-MSMail-Priority': 'High',
       Importance: 'high',
       'X-Entity-Ref-ID': uuidv7(),
+    }
+
+    let htmlToSend: string
+    if (useInvitationComponent && invitationProps) {
+      try {
+        htmlToSend = await renderInvitationTemplate({
+          ...invitationProps,
+          recipientName: recipient.name || recipient.email.split('@')[0] || 'there',
+        })
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Render failed'
+        console.error('[resend/send-job] renderInvitationTemplate', err)
+        return Response.json(
+          {ok: false, error: `Template render failed: ${message}`},
+          {status: 500},
+        )
+      }
+    } else {
+      htmlToSend = fallbackHtml
     }
 
     const payload: {
@@ -111,9 +167,9 @@ export async function POST(req: Request) {
       bcc?: string[]
     } = {
       from,
-      to: recipient,
+      to: recipient.email,
       subject,
-      html: finalHtml,
+      html: htmlToSend,
       headers,
     }
     if (cc && cc.length > 0) payload.cc = cc
