@@ -123,24 +123,24 @@ const CryptoSendContent = () => {
 
   return (
     <div className='relative z-100 md:-translate-x-2 md:w-3xl md:max-w-3xl md:mx-auto flex h-full'>
-      <div className='w-full relative bg-linear-to-br drop-shadow-xl drop-shadow-dark-table/50 from-zinc-900 via-zinc-950 to-zinc-950 overflow-hidden rounded-lg'>
+      <div className='w-full relative bg-linear-to-br from-zinc-900 via-zinc-950 to-zinc-950 overflow-hidden rounded-lg'>
         <motion.div
           initial={{opacity: 0, scale: 0.85}}
           animate={{opacity: 1, scale: 1}}
           exit={{opacity: 0, scale: 0.6}}
           transition={{duration: 0.2}}
           className='flex flex-col space-y-6 md:justify-between px-3 py-8 border-b-[0.33px] border-white/0 w-full'>
-          <div className='flex items-center space-x-0.5 md:space-x-4 text-white/80 ps-2'>
+          <div className='flex items-center space-x-2 md:space-x-4 text-white/80 ps-2'>
             <Icon name='network' className='text-white/70 md:size-6 size-6' />
-            <span className='hidden md:flex font-brk text-xs uppercase'>
-              <span className='hidden md:flex mr-1'>Select</span>Network
+            <span className='flex font-brk text-sm uppercase'>
+              <span className='flex mr-1'>Select</span>Network
             </span>
-            <span className='text-indigo-400'>Development In-progress...</span>
+            {/*<span className='text-indigo-400'>Development In-progress...</span>*/}
           </div>
           <Tabs.Root
             value={selected}
             onValueChange={(v) => setSelected(v as SendPageNetwork)}>
-            <Tabs.List className='relative z-0 flex gap-8 w-full '>
+            <Tabs.List className='relative z-0 flex justify-around md:justify-start gap-8 w-full mb-4 md:mb-0'>
               {networks.map((tab) => (
                 <Tabs.Tab
                   key={tab}
@@ -208,22 +208,38 @@ function SendToPanel({
   }
 
   return (
-    <div className='space-y-2'>
-      <div className='flex items-center justify-center h-72 w-full rounded-lg border border-zinc-500 bg-zinc-200/20 mt-2'>
+    <div className='space-y-2 w-full'>
+      <div className='flex items-center justify-center md:justify-start md:h-72 h-fit w-full rounded-lg border border-zinc-500 bg-zinc-200/20 mt-2 px-3 py-8 md:py-0'>
         {qrDataUrl ? (
-          <Image
-            radius='sm'
-            src={qrDataUrl}
-            alt='Payment QR code'
-            className='size-64 object-contain'
-          />
+          <div className='grid md:grid-cols-2 gap-8 md:gap-0 w-full place-items-center md:place-items-start'>
+            <Image
+              radius='sm'
+              src={qrDataUrl}
+              alt='Payment QR code'
+              className='md:size-64 size-full aspect-square mx-auto object-contain shrink-0'
+            />
+            <div className='w-full place-items-center'>
+              <p className='font-semibold text-lg text-center w-full'>
+                Sending Crypto as Payment Guide
+              </p>
+              <ol className='list-decimal pl-2 mt-3'>
+                <li>Select network/chain</li>
+                <li>Open your crypto wallet</li>
+                <li>Scan the QR code from your wallet</li>
+                <li>Or copy the wallet address</li>
+                <li>Copy the total amount to pay</li>
+                <li>Paste the transaction hash below.</li>
+                <li>Press {`"Confirm Payment"`}.</li>
+              </ol>
+            </div>
+          </div>
         ) : (
           <Icon name='qrcode' className='text-zinc-500 size-16' />
         )}
       </div>
       <div
         className={cn(
-          'py-1 flex w-full items-center justify-between rounded-sm transition-colors',
+          'py-1 flex w-full items-center justify-between rounded-sm transition-colors mt-4 md:mt-2',
           'hover:bg-white/5 disabled:opacity-50 disabled:pointer-events-none',
         )}>
         <span className='font-brk text-white/90'>Send to</span>
@@ -281,7 +297,7 @@ const NetworkButtonRound = ({
       onClick={onSelect}
       // disabled={name === 'bitcoin'}
       className={cn(
-        'relative flex items-center justify-center w-auto h-7 px-2.5 rounded-full overflow-hidden space-x-1 mx-2',
+        'relative flex items-center justify-center w-auto h-7 px-2.5 rounded-full overflow-hidden space-x-1 md:mx-2',
         {
           'bg-white': selected,
           'hover:bg-white/2 ': !selected,

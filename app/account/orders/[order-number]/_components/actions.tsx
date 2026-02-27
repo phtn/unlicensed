@@ -2,26 +2,32 @@ import {OrderStatus} from '@/convex/orders/d'
 import {Icon} from '@/lib/icons'
 import {Button} from '@heroui/react'
 import Link from 'next/link'
-import {useMemo} from 'react'
+import {Activity, useMemo} from 'react'
 
 interface Props {
   status: OrderStatus
   href: string
+  isMobile?: boolean
 }
 
-export const Actions = ({status, href}: Props) => {
+export const Actions = ({status, href, isMobile}: Props) => {
   const action = useMemo(() => {
     switch (status) {
       case 'pending_payment':
         return (
           <Button
-            size='md'
+            size={'md'}
             as={Link}
             href={href}
             radius='none'
             color='success'
             className='border-none bg-success/80 rounded-lg font-okxs font-semibold dark:text-white text-base'>
-            <span className='drop-shadow-xs'>Complete Payment</span>
+            <Activity mode={isMobile ? 'hidden' : 'visible'}>
+              <span className='drop-shadow-xs'>Complete Payment</span>
+            </Activity>
+            <Activity mode={isMobile ? 'visible' : 'hidden'}>
+              <span className='drop-shadow-xs'>Pay</span>
+            </Activity>
           </Button>
         )
       case 'cancelled':
@@ -45,7 +51,7 @@ export const Actions = ({status, href}: Props) => {
       default:
         return null
     }
-  }, [status, href])
+  }, [status, href, isMobile])
 
   return <div className='flex flex-col gap-4'>{action}</div>
 }
