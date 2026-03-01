@@ -339,8 +339,8 @@ export function BundleBuilder({
   return (
     <Card className='rounded-3xl border border-foreground/20 overflow-hidden'>
       <CardHeader className='flex flex-col items-start gap-2'>
-        <div className='flex flex-wrap items-center justify-between gap-2 w-full'>
-          <h2 className='font-polysans text-xl font-semibold'>
+        <div className='flex items-center justify-between w-full'>
+          <h2 className='font-polysans text-lg md:text-xl font-semibold'>
             {config.title}
           </h2>
           {config.variations.length > 1 && (
@@ -370,10 +370,13 @@ export function BundleBuilder({
                       size='md'
                       variant={variationIndex === i ? 'solid' : 'flat'}
                       onPress={() => setVariationIndex(i)}
-                      className={cn('rounded-full text-base bg-transparent', {
-                        'bg-dark-table text-white dark:bg-white dark:text-dark-table':
-                          variationIndex === i,
-                      })}>
+                      className={cn(
+                        'rounded-full text-sm md:text-base bg-transparent',
+                        {
+                          'bg-dark-table text-white dark:bg-white dark:text-dark-table':
+                            variationIndex === i,
+                        },
+                      )}>
                       <span>
                         <span>
                           {v.totalUnits} x{' '}
@@ -401,7 +404,7 @@ export function BundleBuilder({
           <span
             className={
               isComplete
-                ? 'font-medium text-success'
+                ? 'font-medium text-terpenes'
                 : 'font-medium text-foreground/70'
             }>
             {totalSelected} / {variation.totalUnits} selected
@@ -506,9 +509,10 @@ export function BundleBuilder({
           />
         )}
 
-        <div className='mt-4 flex items-center justify-between border-t border-foreground/10 pt-4'>
+        <div className='mt-4 flex items-center justify-between pt-4'>
           <span className='font-semibold'>
-            Subtotal: ${(subtotalCents / 100).toFixed(2)}
+            <span className='font-medium opacity-80'>Subtotal:</span> $
+            {(subtotalCents / 100).toFixed(2)}
           </span>
           <ViewTransition>
             <Button

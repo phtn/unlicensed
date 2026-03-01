@@ -22,7 +22,7 @@ import {MoneyFormat} from './money-format'
 
 const ProgressBar = memo(function ProgressBar({pct}: {pct: number}) {
   return (
-    <div className='h-2 overflow-hidden rounded-full bg-white/80 dark:bg-foreground/20 my-2.5'>
+    <div className='h-2 overflow-hidden rounded-full bg-white/80 dark:bg-foreground/20 mb-2 md:my-2.5'>
       <div
         className='h-full rounded-full bg-linear-to-r from-brand via-brand to-brand/80 shadow-[0_0_8px_var(--color-brand)] transition-[width] duration-500 ease-in-out'
         style={{width: `${pct}%`}}
@@ -76,7 +76,7 @@ const FutureMilestones = memo(function FutureMilestones({
     .join('  ·  ')
 
   return (
-    <div className='mt-2.5'>
+    <div className='mt-2.5 overflow-scroll'>
       <button
         type='button'
         onClick={() => setOpen((v) => !v)}
@@ -176,7 +176,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
     <Card
       shadow='none'
       className='overflow-hidden border border-foreground/20 bg-gradient-to-br from-sidebar to-slate-400/[0.06] dark:from-foreground/5 dark:to-foreground/10'>
-      <CardBody className='relative space-y-4 p-5'>
+      <CardBody className='relative space-y-4 p-5 overflow-hidden'>
         {/* Decorative glow */}
         <div
           className='pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-purple-500/10 dark:bg-purple-400/10 blur-xl'
@@ -184,11 +184,11 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
         />
 
         {/* Tier row */}
-        <div className='flex items-center justify-between'>
+        <div className='flex items-center justify-between overflow-hidden'>
           <span className='text-[13px] opacity-80'>
             You&apos;re getting right now
           </span>
-          <div className='flex items-center gap-1 md:gap-2'>
+          <div className='flex items-center gap-1 md:gap-2 overflow-hidden'>
             <TierBadge label={r.currentTier.label} active />
             {r.isBundleBonusActive && (
               <span className='flex rounded-full bg-amber-950 dark:bg-slate-950 px-2 py-0.5 text-[11px] font-semibold text-white'>
@@ -200,8 +200,8 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
         </div>
 
         {/* Current benefit */}
-        <div className='relative rounded-xl bg-foreground/5 p-4 overflow-hidden'>
-          <div className="absolute w-500 scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
+        <div className='relative rounded-xl bg-foreground/5 p-4 overflow-hidden w-full'>
+          <div className="absolute _md:max-w-500 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none" />
           <div className='flex items-center justify-around'>
             <div className='text-center'>
               <div className='text-lg font-bold text-foreground dark:text-foreground'>
@@ -251,7 +251,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
 
         {/* Next milestone */}
         {r.nextTier && r.amountToNextTier !== null && (
-          <div>
+          <div className=' '>
             <div className='flex items-baseline justify-between'>
               <span className='text-[13px] text-muted-foreground'>
                 Add{' '}
@@ -261,7 +261,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
                 to unlock:
               </span>
 
-              <span className='text-sm'>
+              <span className='text-sm w-fit'>
                 <ShimmerText
                   surface='light'
                   variant='default'
@@ -295,14 +295,13 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
 
         {/* Bundle bonus hint */}
         {!r.isBundleBonusActive && (
-          <div className='flex items-center mt-2 space-x-2 rounded-lg border border-dashed border-foreground/20 bg-foreground/3 px-3 py-2 text-xs text-muted-foreground'>
-            <Icon name='lightbulb-bold' className='size-4 text-yellow-200' />
+          <div className='flex items-center mt-2 space-x-3 rounded-lg border border-dashed border-foreground/20 bg-foreground/3 px-3 py-2 text-xs text-muted-foreground'>
+            <Icon name='lightbulb-bold' className='size-5 text-yellow-200' />
             <span>
-              Add items from 2+ categories to earn{' '}
+              Add items from 2+ categories to earn <br />
               <span className='font-okxs font-semibold dark:text-white'>
-                0.5%
-              </span>{' '}
-              bundle bonus
+                0.5%<span className='ml-1 font-medium'>bundle bonus</span>
+              </span>
             </span>
           </div>
         )}
@@ -318,7 +317,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
         )}
 
         {r.isFirstOrder && (
-          <p className='mt-3.5 mb-0 text-[11px] text-muted-foreground/80'>
+          <p className='mt-3.5 mb-0 text-[11px] text-muted-foreground/80 max-w-xl overflow-scroll'>
             * First order: free discreet shipping on orders over{' '}
             {formatRewardsCurrency(config.freeShippingFirstOrder)}. Min.
             redemption: {formatRewardsCurrency(config.minRedemption)} store

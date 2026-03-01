@@ -98,18 +98,18 @@ export const CartItem = memo(
             className,
           )}>
           <CardBody>
-            <div className='flex gap-4'>
-              <div className='relative size-20 md:w-28 md:h-28 shrink-0 rounded-lg overflow-hidden'>
+            <div className='flex min-w-0 gap-3 md:gap-4'>
+              <div className='relative size-24 md:w-28 md:h-28 shrink-0 rounded-lg overflow-hidden'>
                 <Image
                   src={productImageUrl ?? undefined}
                   alt={item.product.name}
                   className='w-full h-full object-cover'
                 />
               </div>
-              <div className='flex-1 flex flex-col gap-3 py-1'>
-                <div className='flex justify-between items-start'>
-                  <div>
-                    <h3 className='font-okxs font-semibold text-xl'>
+              <div className='flex-1 min-w-0 flex flex-col gap-1 md:gap-3 py-1'>
+                <div className='flex min-w-0 justify-between items-start'>
+                  <div className='min-w-0'>
+                    <h3 className='font-okxs font-semibold text-base md:text-xl truncate'>
                       {item.product.name}
                     </h3>
                     <div

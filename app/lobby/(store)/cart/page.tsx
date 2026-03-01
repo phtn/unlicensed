@@ -204,53 +204,23 @@ export default function CartPage() {
   }
 
   return (
-    <div className='min-h-screen pt-16 sm:pt-16 md:pt-16 lg:pt-20 xl:pt-24 2xl:pt-28 pb-10 px-2 md:px-4 sm:px-6 lg:px-8'>
-      <div className='max-w-7xl mx-auto'>
+    <div className='min-h-screen w-full min-w-0 overflow-x-hidden pt-16 sm:pt-16 md:pt-16 lg:pt-20 xl:pt-24 2xl:pt-28 pb-10 px-4 sm:px-6 md:px-6 lg:px-8'>
+      <div className='max-w-7xl mx-auto w-full min-w-0'>
         <CartPageHeader isPending={isPending} />
 
-        <div className='grid gap-8 lg:grid-cols-[1fr_400px]'>
-          <CartItemsSection
+        <div className='grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]'>
+          <div className='min-w-0'>
+            <CartItemsSection
             cartItems={cartItems}
             onUpdateItem={updateItem}
             onRemoveItem={removeItem}
           />
+          </div>
 
-          <div className='space-y-6 relative'>
-            <div className='absolute op-0 left-0'>
+          <div className='min-w-0 space-y-6 relative'>
+            <div className='absolute top-0 left-0'>
               <ShimmerText surface='light' />
             </div>
-            {/*<div className='flex flex-wrap items-center gap-2'>
-              <span className='text-sm text-muted-foreground'>
-                Rewards in checkout:
-              </span>
-              {(
-                [
-                  {value: 'points' as const, label: 'Points'},
-                  {value: 'tier' as const, label: 'Tier'},
-                  {value: 'off' as const, label: 'Off'},
-                ] as const
-              ).map(({value, label}) => (
-                <button
-                  key={value}
-                  type='button'
-                  onClick={() => setRewardsVariant(value)}
-                  className={`rounded-md px-2.5 py-1 text-sm font-medium transition-colors ${
-                    rewardsVariant === value
-                      ? 'bg-foreground text-background dark:bg-brand dark:text-white'
-                      : 'bg-foreground/10 text-foreground hover:bg-foreground/20'
-                  }`}>
-                  {label}
-                </button>
-              ))}
-            </div>*/}
-
-            {/*<RewardsSummary
-              nextVisitMultiplier={nextVisitMultiplier}
-              pointsBalance={pointsBalance}
-              estimatedPoints={estimatedPoints}
-              isAuthenticated={firebaseUser !== null}
-            />*/}
-
             <Checkout
               tax={tax}
               total={effectiveTotal}
