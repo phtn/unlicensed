@@ -80,10 +80,8 @@ const FutureMilestones = memo(function FutureMilestones({
       <button
         type='button'
         onClick={() => setOpen((v) => !v)}
-        className='flex items-center gap-1 border-none bg-transparent p-0 text-xs text-muted-foreground cursor-pointer'>
-        <span className='max-w-[64ch] truncate'>
-          More perks ahead: {summary}
-        </span>
+        className='w-full flex items-center gap-1 border-none bg-transparent p-0 text-sm font-medium cursor-pointer'>
+        <span className=''>More perks ahead! Free shipping & Cash back</span>
         <span
           className='transition-transform duration-200'
           style={{transform: open ? 'rotate(180deg)' : 'none'}}
@@ -93,15 +91,15 @@ const FutureMilestones = memo(function FutureMilestones({
       </button>
       <ViewTransition>
         {open && (
-          <div className='mt-2 flex flex-col gap-1.5 rounded-lg bg-foreground/5 p-3'>
+          <div className='mt-2 flex flex-col gap-1.5 rounded-lg bg-foreground/5 p-2 md:p-3'>
             {tiers.map((t) => (
               <div
                 key={t.minSubtotal}
                 className='flex justify-between text-[13px] text-muted-foreground'>
-                <span className='text-base'>
-                  {t.label} – {formatRewardsCurrency(t.minSubtotal)}+
+                <span className='text-sm md:text-base'>
+                  {t.label} {formatRewardsCurrency(t.minSubtotal)}+
                 </span>
-                <span className='text-base'>
+                <span className='text-sm md:text-base'>
                   {t.shippingCost === 0
                     ? 'Free shipping'
                     : `${formatRewardsCurrency(t.shippingCost)} ship`}{' '}
@@ -176,7 +174,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
     <Card
       shadow='none'
       className='overflow-hidden border border-foreground/20 bg-gradient-to-br from-sidebar to-slate-400/[0.06] dark:from-foreground/5 dark:to-foreground/10'>
-      <CardBody className='relative space-y-4 p-5 overflow-hidden'>
+      <CardBody className='relative space-y-4 p-3 md:p-5 overflow-hidden'>
         {/* Decorative glow */}
         <div
           className='pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-purple-500/10 dark:bg-purple-400/10 blur-xl'
