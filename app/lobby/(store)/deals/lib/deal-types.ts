@@ -74,7 +74,7 @@ export const BUNDLE_CONFIGS: Record<BundleType, BundleConfig> = {
     id: 'extracts-3g',
     title: '3 x 1g Mix & Match',
     description: 'Pick 3 extracts, 1g each',
-    categorySlugs: ['concentrates'],
+    categorySlugs: ['extracts'],
     variations: [{totalUnits: 3, denominationPerUnit: 1, unitLabel: 'g'}],
     maxPerStrain: 1,
   },

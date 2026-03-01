@@ -74,7 +74,6 @@ export const Content = () => {
   }, [brandCounts])
 
   const featuredBrands = enhancedBrands.filter((b) => b.featured)
-  const regularBrands = enhancedBrands.filter((b) => !b.featured)
 
   return (
     <div className='min-h-screen pt-16 sm:pt-20 md:pt-24 lg:pt-28 xl:pt-28 pb-16 sm:pb-20 lg:pb-24 px-4 sm:px-6 overflow-x-hidden bg-background'>
@@ -200,19 +199,19 @@ export const Content = () => {
 
           {/* Asymmetric Grid Layout */}
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8'>
-            {regularBrands.map((brand, index) => (
+            {enhancedBrands.map((brand, index) => (
               <Link
                 key={brand.slug}
                 href={`/lobby/products?brand=${brand.slug}`}
                 prefetch
                 className={cn(
-                  'group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-sidebar/40 dark:bg-sidebar border border-foreground/10 dark:border-dark-gray/50 transition-all duration-500 hover:border-foreground/30 hover:shadow-xl',
+                  'group relative overflow-hidden rounded-2xl sm:rounded-3xl dark:bg-sidebar border border-foreground/10 dark:border-dark-gray/50 transition-all duration-500 hover:border-foreground/30 hover:shadow-xl',
                   // Create visual interest with varying heights
                   index % 3 === 0 && 'sm:row-span-1',
                   index % 3 === 1 && 'sm:row-span-1',
                   index % 3 === 2 && 'sm:row-span-1',
                 )}>
-                <div className='relative flex flex-col p-6 sm:p-8 min-h-50 sm:min-h-62.5'>
+                <div className='relative flex flex-col p-6 bg-foreground sm:p-8 min-h-50 sm:min-h-62.5'>
                   {/* Background Accent */}
                   <div className='absolute top-0 right-0 w-32 h-32 bg-brand/5 dark:bg-brand/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500' />
 
@@ -231,7 +230,7 @@ export const Content = () => {
                   {/* Brand Info */}
                   <div className='relative z-10 flex-1 flex flex-col justify-between'>
                     <div>
-                      <h3 className='text-xl sm:text-2xl font-polysans font-bold mb-2 sm:mb-3 capitalize'>
+                      <h3 className='text-xl sm:text-2xl text-brand font-polysans font-bold mb-2 sm:mb-3 capitalize'>
                         {brand.name}
                       </h3>
                       {brand.description && (
@@ -243,12 +242,12 @@ export const Content = () => {
 
                     {/* Product Count */}
                     <div className='flex items-center justify-between pt-4 border-t border-foreground/10 dark:border-dark-gray/30'>
-                      <span className='text-xs opacity-60 font-medium'>
+                      <span className='text-sm text-white opacity-60 font-okxs'>
                         {brand.productCount} Products
                       </span>
                       <Icon
                         name='arrow-right'
-                        className='size-4 text-brand group-hover:translate-x-1 transition-transform duration-300'
+                        className='size-4 text-white group-hover:translate-x-1 transition-transform duration-300'
                       />
                     </div>
                   </div>
@@ -300,6 +299,15 @@ export const Content = () => {
                 }
                 className='border dark:border-light-gray/40 sm:flex items-center gap-2 font-polysans font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-base lg:text-lg'>
                 <span className='tracking-tight'>Advanced Search</span>
+              </Button>
+              <Button
+                as={Link}
+                href='/lobby/deals'
+                prefetch
+                size='lg'
+                endContent={<Icon name='box-bold' className=' text-white' />}
+                className='bg-terpenes opacity-100 text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base'>
+                <span className='drop-shadow-xs'>Find Deals</span>
               </Button>
             </div>
           </div>

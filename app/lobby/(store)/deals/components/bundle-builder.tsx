@@ -523,9 +523,20 @@ export function BundleBuilder({
   return (
     <Card className='rounded-3xl border border-foreground/20 overflow-hidden'>
       <CardHeader className='flex flex-col items-start gap-2'>
-        <div className='flex items-center justify-between w-full'>
-          <h2 className='pl-1 font-polysans text-lg md:text-xl font-semibold'>
-            {config.title}
+        <div className='flex items-center justify-between w-full min-h-12 md:min-h-14'>
+          <h2 className='pl-1 space-x-4 font-polysans text-lg md:text-xl font-semibold'>
+            <span>{config.title}</span>
+            {config.variations.length > 1 && (
+              <div className='flex items-center space-x-2 md:space-x-3'>
+                {config.categorySlugs.map((slug) => (
+                  <span
+                    key={slug}
+                    className='font-okxs capitalize font-medium md:text-lg text-base px-2.5 py-1 rounded-full bg-sidebar border border-dark-table/20'>
+                    {slug}
+                  </span>
+                ))}
+              </div>
+            )}
           </h2>
           {config.variations.length > 1 && (
             <div className='flex p-1 rounded-full bg-sidebar dark:bg-dark-table'>
