@@ -1,25 +1,25 @@
 import {Id} from '@/convex/_generated/dataModel'
-import {CartItemType} from '@/convex/cart/d'
+import {type ProductCartItem, CartItemType} from '@/convex/cart/d'
 
 const VERSION = 'v1'
 export const LOCAL_STORAGE_CART_KEY = `hyfe_cart_items:${VERSION}`
 export const LOCAL_STORAGE_CART_UPDATED_EVENT = 'hyfe_cart_updated'
 
-export type LocalStorageCartItem = CartItemType
+export type LocalStorageCartItem = ProductCartItem
 
 /**
- * Get cart items from local storage
+ * Get cart items from local storage (product items only; bundles not supported for guests)
  */
 export const getLocalStorageCartItems = (): LocalStorageCartItem[] => {
   if (typeof window === 'undefined') return []
   try {
     const stored = localStorage.getItem(LOCAL_STORAGE_CART_KEY)
     if (!stored) return []
-    const items = JSON.parse(stored) as LocalStorageCartItem[]
-    // Validate items structure
+    const items = JSON.parse(stored) as CartItemType[]
     return items.filter(
-      (item) =>
-        item.productId &&
+      (item): item is ProductCartItem =>
+        'productId' in item &&
+        !('bundleType' in item) &&
         typeof item.quantity === 'number' &&
         item.quantity > 0,
     )
@@ -74,7 +74,6 @@ export const addToLocalStorageCart = (
     setLocalStorageCartItems(newItems)
     return newItems
   } else {
-    // Add new item
     const newItems: LocalStorageCartItem[] = [
       ...items,
       {

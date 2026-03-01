@@ -1,10 +1,10 @@
 'use client'
 
+import {useDealsQueryState} from '@/app/lobby/(store)/deals/hooks/use-deals-query-state'
 import {
   BUNDLE_CONFIGS,
   type BundleType,
 } from '@/app/lobby/(store)/deals/lib/deal-types'
-import {useDealsQueryState} from '@/app/lobby/(store)/deals/hooks/use-deals-query-state'
 import type {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
@@ -30,7 +30,8 @@ const DEAL_BUNDLE_IDS: BundleType[] = [
 ]
 
 const DEFAULT_VARIATION_BY_BUNDLE: Partial<Record<BundleType, number>> = {
-  'build-your-own-oz': BUNDLE_CONFIGS['build-your-own-oz'].defaultVariationIndex ?? 0,
+  'build-your-own-oz':
+    BUNDLE_CONFIGS['build-your-own-oz'].defaultVariationIndex ?? 0,
 }
 
 function ControlledBundleBuilder({
@@ -41,12 +42,21 @@ function ControlledBundleBuilder({
   setBundleState,
 }: {
   bundleId: BundleType
-  buildProps: {config: (typeof BUNDLE_CONFIGS)[BundleType]; products: StoreProduct[]}
+  buildProps: {
+    config: (typeof BUNDLE_CONFIGS)[BundleType]
+    products: StoreProduct[]
+  }
   debug: boolean
-  bundleState: {variationIndex: number; selections: Map<string, {productId: Id<'products'>; quantity: number}>}
+  bundleState: {
+    variationIndex: number
+    selections: Map<string, {productId: Id<'products'>; quantity: number}>
+  }
   setBundleState: (
     id: BundleType,
-    u: {variationIndex?: number; selections?: Map<string, {productId: Id<'products'>; quantity: number}>},
+    u: {
+      variationIndex?: number
+      selections?: Map<string, {productId: Id<'products'>; quantity: number}>
+    },
   ) => void
 }) {
   const {config, products} = buildProps
@@ -135,15 +145,15 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
     [prerollsQuery, initialProductsByCategory],
   )
 
-  const productsByCategory = useMemo(
-    () => ({
-      flower,
-      extracts,
-      edibles: [...edibles, ...prerolls],
-      'pre-rolls': prerolls,
-    }),
-    [flower, extracts, edibles, prerolls],
-  )
+  // const productsByCategory = useMemo(
+  //   () => ({
+  //     flower,
+  //     extracts,
+  //     edibles: [...edibles, ...prerolls],
+  //     'pre-rolls': prerolls,
+  //   }),
+  //   [flower, extracts, edibles, prerolls],
+  // )
 
   const imageIds = useMemo(
     () =>

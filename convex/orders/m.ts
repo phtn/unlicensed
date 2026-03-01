@@ -3,6 +3,7 @@ import type {Id} from '../_generated/dataModel'
 import {internal} from '../_generated/api'
 import type {MutationCtx} from '../_generated/server'
 import {internalMutation, mutation} from '../_generated/server'
+import {isProductCartItem} from '../cart/d'
 import {addressSchema} from '../users/d'
 import {
   orderStatusSchema,
@@ -109,7 +110,31 @@ export const createOrder = mutation({
       throw new Error('Cart is empty or not found')
     }
 
+    // Flatten cart items: product items as-is, bundle items expanded to their line items
+    const flatItems: Array<{
+      productId: Id<'products'>
+      quantity: number
+      denomination?: number
+    }> = []
     for (const item of cart.items) {
+      if (isProductCartItem(item)) {
+        flatItems.push({
+          productId: item.productId,
+          quantity: item.quantity,
+          denomination: item.denomination,
+        })
+      } else if ('bundleItems' in item && Array.isArray(item.bundleItems)) {
+        for (const bi of item.bundleItems) {
+          flatItems.push({
+            productId: bi.productId,
+            quantity: bi.quantity,
+            denomination: bi.denomination,
+          })
+        }
+      }
+    }
+
+    for (const item of flatItems) {
       const stock = await getProductStockForOrder(ctx, item.productId, item.denomination)
       const heldTotal = await getHeldQuantityForOrder(ctx, item.productId, item.denomination)
       const ourHold = await getOurHoldForOrder(ctx, cart._id, item.productId, item.denomination)
@@ -137,7 +162,7 @@ export const createOrder = mutation({
     // Build order items with product snapshots. Orders table "items" field must be complete:
     // every item has unitPriceCents and totalPriceCents (totalPriceCents = quantity × unitPriceCents × denomination).
     const orderItems = await Promise.all(
-      cart.items.map(async (cartItem) => {
+      flatItems.map(async (cartItem) => {
         const product = await ctx.db.get(cartItem.productId)
         if (!product) {
           throw new Error(`Product ${cartItem.productId} not found`)

@@ -2,6 +2,7 @@ import {v} from 'convex/values'
 import type {MutationCtx} from '../_generated/server'
 import {mutation} from '../_generated/server'
 import type {Id} from '../_generated/dataModel'
+import {isProductCartItem} from './d'
 
 const HOLD_DURATION_MS = 5 * 60 * 1000 // 5 minutes
 
@@ -91,12 +92,15 @@ export const addToCart = mutation({
 
     const existingItemIndex = cart.items.findIndex(
       (item) =>
+        isProductCartItem(item) &&
         item.productId === args.productId &&
         item.denomination === args.denomination,
     )
+    const existingItem =
+      existingItemIndex >= 0 ? cart.items[existingItemIndex] : null
     const newLineQuantity =
-      existingItemIndex >= 0
-        ? cart.items[existingItemIndex].quantity + args.quantity
+      existingItem && isProductCartItem(existingItem)
+        ? existingItem.quantity + args.quantity
         : args.quantity
 
     const stock = await getProductStock(ctx, args.productId, args.denomination)
@@ -137,9 +141,12 @@ export const addToCart = mutation({
 
     const newItems = [...cart.items]
     if (existingItemIndex >= 0) {
-      newItems[existingItemIndex] = {
-        ...newItems[existingItemIndex],
-        quantity: newItems[existingItemIndex].quantity + args.quantity,
+      const curr = newItems[existingItemIndex]
+      if (isProductCartItem(curr)) {
+        newItems[existingItemIndex] = {
+          ...curr,
+          quantity: curr.quantity + args.quantity,
+        }
       }
     } else {
       newItems.push({
@@ -148,6 +155,166 @@ export const addToCart = mutation({
         denomination: args.denomination,
       })
     }
+
+    await ctx.db.patch(cart._id, {
+      items: newItems,
+      updatedAt: Date.now(),
+    })
+
+    return cart._id
+  },
+})
+
+const bundleLineItemSchema = v.object({
+  productId: v.id('products'),
+  quantity: v.number(),
+  denomination: v.number(),
+})
+
+export const addBundleToCart = mutation({
+  args: {
+    userId: v.optional(v.union(v.id('users'), v.null())),
+    cartId: v.optional(v.id('carts')),
+    bundleType: v.string(),
+    variationIndex: v.number(),
+    bundleItems: v.array(bundleLineItemSchema),
+  },
+  handler: async (ctx, args) => {
+    let cart = null
+
+    if (args.cartId) {
+      cart = await ctx.db.get(args.cartId)
+      if (!cart) throw new Error('Cart not found')
+    } else if (args.userId !== undefined && args.userId !== null) {
+      cart = await ctx.db
+        .query('carts')
+        .withIndex('by_user', (q) => q.eq('userId', args.userId ?? null))
+        .unique()
+    }
+
+    if (!cart) {
+      const cartId = await ctx.db.insert('carts', {
+        userId: args.userId ?? null,
+        items: [],
+        updatedAt: Date.now(),
+      })
+      cart = await ctx.db.get(cartId)
+      if (!cart) throw new Error('Failed to create cart')
+    }
+
+    for (const bi of args.bundleItems) {
+      const stock = await getProductStock(ctx, bi.productId, bi.denomination)
+      const heldTotal = await getHeldQuantity(ctx, bi.productId, bi.denomination)
+      const ourHold = await getOurHold(ctx, cart._id, bi.productId, bi.denomination)
+      const available = stock - heldTotal + (ourHold?.quantity ?? 0)
+      if (available < bi.quantity) {
+        throw new Error(
+          'Not enough stock for this product and size. Try a lower quantity or another size.',
+        )
+      }
+    }
+
+    const addQty = new Map<string, number>()
+    for (const bi of args.bundleItems) {
+      const key = `${bi.productId}-${bi.denomination}`
+      addQty.set(key, (addQty.get(key) ?? 0) + bi.quantity)
+    }
+
+    const expiresAt = Date.now() + HOLD_DURATION_MS
+    const cartHolds = await ctx.db
+      .query('productHolds')
+      .withIndex('by_cart', (q) => q.eq('cartId', cart._id))
+      .collect()
+
+    for (const [key, addQuantity] of addQty) {
+      const sepIdx = key.indexOf('-')
+      const productId = key.slice(0, sepIdx) as Id<'products'>
+      const denomination = Number(key.slice(sepIdx + 1))
+      const existingHold = cartHolds.find(
+        (h) =>
+          h.productId === productId && h.denomination === denomination,
+      )
+      const newQty = (existingHold?.quantity ?? 0) + addQuantity
+      if (existingHold) {
+        await ctx.db.patch(existingHold._id, {quantity: newQty, expiresAt})
+      } else {
+        await ctx.db.insert('productHolds', {
+          cartId: cart._id,
+          productId,
+          denomination,
+          quantity: addQuantity,
+          expiresAt,
+        })
+      }
+    }
+
+    const newItems = [
+      ...cart.items,
+      {
+        bundleType: args.bundleType,
+        variationIndex: args.variationIndex,
+        bundleItems: args.bundleItems,
+      },
+    ]
+
+    await ctx.db.patch(cart._id, {
+      items: newItems,
+      updatedAt: Date.now(),
+    })
+
+    return cart._id
+  },
+})
+
+export const removeBundleFromCart = mutation({
+  args: {
+    userId: v.optional(v.union(v.id('users'), v.null())),
+    cartId: v.optional(v.id('carts')),
+    itemIndex: v.number(),
+  },
+  handler: async (ctx, args) => {
+    let cart = null
+
+    if (args.cartId) {
+      cart = await ctx.db.get(args.cartId)
+    } else if (args.userId !== undefined && args.userId !== null) {
+      cart = await ctx.db
+        .query('carts')
+        .withIndex('by_user', (q) => q.eq('userId', args.userId ?? null))
+        .unique()
+    }
+
+    if (!cart) throw new Error('Cart not found')
+
+    const item = cart.items[args.itemIndex]
+    if (!item || !('bundleType' in item) || !('bundleItems' in item)) {
+      throw new Error('Bundle item not found at index')
+    }
+
+    const holds = await ctx.db
+      .query('productHolds')
+      .withIndex('by_cart', (q) => q.eq('cartId', cart._id))
+      .collect()
+
+    for (const bi of item.bundleItems) {
+      const hold = holds.find(
+        (h) =>
+          h.productId === bi.productId && h.denomination === bi.denomination,
+      )
+      if (hold) {
+        const newQty = hold.quantity - bi.quantity
+        if (newQty <= 0) {
+          await ctx.db.delete(hold._id)
+        } else {
+          await ctx.db.patch(hold._id, {
+            quantity: newQty,
+            expiresAt: Date.now() + HOLD_DURATION_MS,
+          })
+        }
+      }
+    }
+
+    const newItems = cart.items.filter((_, i) => i !== args.itemIndex)
 
     await ctx.db.patch(cart._id, {
       items: newItems,
@@ -181,16 +348,21 @@ export const updateCartUserId = mutation({
       const mergedItems = [...existingUserCart.items]
 
       for (const item of cart.items) {
-        const existingItemIndex = mergedItems.findIndex(
-          (existing) =>
-            existing.productId === item.productId &&
-            existing.denomination === item.denomination,
-        )
+        if (isProductCartItem(item)) {
+          const existingItemIndex = mergedItems.findIndex(
+            (existing) =>
+              isProductCartItem(existing) &&
+              existing.productId === item.productId &&
+              existing.denomination === item.denomination,
+          )
 
-        if (existingItemIndex >= 0) {
-          mergedItems[existingItemIndex] = {
-            ...mergedItems[existingItemIndex],
-            quantity: mergedItems[existingItemIndex].quantity + item.quantity,
+          if (existingItemIndex >= 0 && isProductCartItem(mergedItems[existingItemIndex])) {
+            mergedItems[existingItemIndex] = {
+              ...mergedItems[existingItemIndex],
+              quantity: mergedItems[existingItemIndex].quantity + item.quantity,
+            }
+          } else {
+            mergedItems.push(item)
           }
         } else {
           mergedItems.push(item)
@@ -214,28 +386,48 @@ export const updateCartUserId = mutation({
       await ctx.db.delete(args.cartId)
 
       // Create/update holds for the user's cart (merged items) with 5-min expiry
+      const quantityByProductDenom = new Map<string, number>()
+      for (const item of mergedItems) {
+        if (isProductCartItem(item)) {
+          const key = `${item.productId}-${item.denomination ?? 'def'}`
+          quantityByProductDenom.set(
+            key,
+            (quantityByProductDenom.get(key) ?? 0) + item.quantity,
+          )
+        } else {
+          for (const bi of item.bundleItems) {
+            const key = `${bi.productId}-${bi.denomination}`
+            quantityByProductDenom.set(
+              key,
+              (quantityByProductDenom.get(key) ?? 0) + bi.quantity,
+            )
+          }
+        }
+      }
       const expiresAt = Date.now() + HOLD_DURATION_MS
       const existingHolds = await ctx.db
         .query('productHolds')
         .withIndex('by_cart', (q) => q.eq('cartId', existingUserCart._id))
         .collect()
-      for (const item of mergedItems) {
+      for (const [key, quantity] of quantityByProductDenom) {
+        const sepIdx = key.indexOf('-')
+        const productIdStr = key.slice(0, sepIdx)
+        const denomStr = key.slice(sepIdx + 1)
+        const productId = productIdStr as Id<'products'>
+        const denomination = denomStr === 'def' ? undefined : Number(denomStr)
         const existing = existingHolds.find(
           (h) =>
-            h.productId === item.productId &&
-            h.denomination === item.denomination,
+            h.productId === productId &&
+            (h.denomination ?? undefined) === (denomination ?? undefined),
         )
         if (existing) {
-          await ctx.db.patch(existing._id, {
-            quantity: item.quantity,
-            expiresAt,
-          })
+          await ctx.db.patch(existing._id, {quantity, expiresAt})
         } else {
           await ctx.db.insert('productHolds', {
             cartId: existingUserCart._id,
-            productId: item.productId,
-            denomination: item.denomination,
-            quantity: item.quantity,
+            productId,
+            denomination,
+            quantity,
             expiresAt,
           })
         }
@@ -278,6 +470,7 @@ export const updateCartItem = mutation({
 
     const itemIndex = cart.items.findIndex(
       (item) =>
+        isProductCartItem(item) &&
         item.productId === args.productId &&
         item.denomination === args.denomination,
     )
@@ -389,6 +582,7 @@ export const removeFromCart = mutation({
     const newItems = cart.items.filter(
       (item) =>
         !(
+          isProductCartItem(item) &&
           item.productId === args.productId &&
           item.denomination === args.denomination
         ),

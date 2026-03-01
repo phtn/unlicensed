@@ -21,3 +21,25 @@ export function getUnitPriceCents(
   }
   return (product.priceCents ?? 0) * denom
 }
+
+/** Bundle total: avg price for bundle amount across products, rounded up to nearest $5 */
+export function getBundleTotalCents(
+  products: Array<{
+    priceCents?: number
+    priceByDenomination?: Record<string, number>
+  }>,
+  denom: number,
+  bundleAmount: number,
+): number {
+  if (products.length === 0) return 0
+  let sumCents = 0
+  for (const p of products) {
+    const direct = getUnitPriceCents(p, bundleAmount)
+    const derived =
+      denom > 0 ? getUnitPriceCents(p, denom) * (bundleAmount / denom) : 0
+    const priceCents = direct > 0 ? direct : derived
+    sumCents += priceCents
+  }
+  const avgCents = sumCents / products.length
+  return Math.ceil(avgCents / 500) * 500
+}

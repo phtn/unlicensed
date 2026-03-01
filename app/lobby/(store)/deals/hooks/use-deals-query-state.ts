@@ -2,7 +2,7 @@
 
 import type {Id} from '@/convex/_generated/dataModel'
 import {parseAsInteger, parseAsString, useQueryStates} from 'nuqs'
-import {useCallback, useMemo, useRef} from 'react'
+import {useCallback, useEffect, useMemo, useRef} from 'react'
 import type {BundleType} from '../lib/deal-types'
 import {
   BUNDLE_PARAM_KEYS,
@@ -54,7 +54,9 @@ export function useDealsQueryState(
   }, [raw, defaultVariationByBundle])
 
   const stateRef = useRef(state)
-  stateRef.current = state
+  useEffect(() => {
+    stateRef.current = state
+  }, [state])
 
   const setBundleState = useCallback(
     (

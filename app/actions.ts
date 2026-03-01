@@ -1,7 +1,7 @@
 'use server'
 
 import {Id} from '@/convex/_generated/dataModel'
-import {CartItemType} from '@/convex/cart/d'
+import {type ProductCartItem, CartItemType} from '@/convex/cart/d'
 import {cookies} from 'next/headers'
 
 interface CookieOptions {
@@ -81,15 +81,16 @@ export const deleteCookie = async (type: CookieType) => {
 // Guest Cart Server Actions
 
 /**
- * Get guest cart items from cookie
+ * Get guest cart items from cookie (product items only; bundles not supported for guests)
  */
-export const getGuestCartItems = async (): Promise<CartItemType[]> => {
+export const getGuestCartItems = async (): Promise<ProductCartItem[]> => {
   const items = await getCookie('guestCart')
   if (!items) return []
   // Validate items structure
   return items.filter(
-    (item) =>
-      item.productId &&
+    (item): item is ProductCartItem =>
+      'productId' in item &&
+      !('bundleType' in item) &&
       typeof item.quantity === 'number' &&
       item.quantity > 0,
   )
@@ -110,7 +111,7 @@ export const addGuestCartItem = async (
       item.denomination === denomination,
   )
 
-  let newItems: CartItemType[]
+  let newItems: ProductCartItem[]
   if (existingIndex >= 0) {
     // Update quantity
     newItems = [...items]

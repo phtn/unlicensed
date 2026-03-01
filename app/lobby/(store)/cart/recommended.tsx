@@ -4,7 +4,10 @@ import {REWARDS_CONFIG} from '@/app/lobby/(store)/cart/checkout/lib/rewards'
 import type {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Doc, Id} from '@/convex/_generated/dataModel'
-import {useCart} from '@/hooks/use-cart'
+import {
+  isProductCartItemWithProduct,
+  useCart,
+} from '@/hooks/use-cart'
 import {adaptProduct, RawProduct} from '@/lib/convexClient'
 import {getUnitPriceCents} from '@/utils/cartPrice'
 import {formatPrice} from '@/utils/formatPrice'
@@ -44,15 +47,24 @@ export const RecommendedProducts = memo(() => {
   // Get product IDs and category slugs already in cart
   const cartProductIds = useMemo(() => {
     if (!cart?.items) return new Set<Id<'products'>>()
-    return new Set(cart.items.map((item) => item.product._id))
+    return new Set(
+      cart.items.flatMap((item) => {
+        if (isProductCartItemWithProduct(item)) return [item.product._id]
+        return item.bundleItemsWithProducts.map((bi) => bi.productId)
+      }),
+    )
   }, [cart])
 
   const cartCategorySlugs = useMemo(() => {
     if (!cart?.items) return new Set<string>()
     return new Set(
-      cart.items
-        .map((item) => item.product.categorySlug)
-        .filter((s): s is string => !!s),
+      cart.items.flatMap((item) => {
+        if (isProductCartItemWithProduct(item))
+          return item.product.categorySlug ? [item.product.categorySlug] : []
+        return item.bundleItemsWithProducts
+          .map((bi) => bi.product.categorySlug)
+          .filter((s): s is string => !!s)
+      }),
     )
   }, [cart])
 

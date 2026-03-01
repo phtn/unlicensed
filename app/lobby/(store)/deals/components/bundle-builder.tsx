@@ -9,11 +9,16 @@ import {
   type BundleVariation,
   type PendingBundleItem,
 } from '@/app/lobby/(store)/deals/lib/deal-types'
+import {serializeSelections} from '@/app/lobby/(store)/deals/searchParams'
 import type {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {usePendingDeals} from '@/ctx/pending-deals'
-import {useCart} from '@/hooks/use-cart'
+import {
+  type CartItemWithProduct,
+  isProductCartItemWithProduct,
+  useCart,
+} from '@/hooks/use-cart'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Badge, Button, Card, CardBody, CardHeader, Image} from '@heroui/react'
@@ -26,7 +31,6 @@ import {
   useTransition,
   ViewTransition,
 } from 'react'
-import {serializeSelections} from '@/app/lobby/(store)/deals/searchParams'
 import {DealsBundleDebug} from './deals-bundle-debug'
 import {Stepper} from './stepper'
 
@@ -62,8 +66,6 @@ function filterProductsForVariation(
   availableMap: Record<string, number>,
 ): StoreProduct[] {
   const denom = variation.denominationPerUnit
-  const key = String(denom)
-  const lowThreshold = config.lowStockThreshold
 
   return products.filter((p) => {
     const hasDenom = p.availableDenominations?.includes(denom) ?? false
@@ -96,19 +98,24 @@ interface BundleBuilderProps {
 
 /** Build map of productId-denomination -> quantity in cart */
 function cartQtyByProductDenom(
-  cart: {
-    items: Array<{
-      productId: Id<'products'>
-      quantity: number
-      denomination?: number
-    }>
-  } | null,
+  cart: {items: CartItemWithProduct[]} | null,
 ): Record<string, number> {
   if (!cart?.items?.length) return {}
   const map: Record<string, number> = {}
   for (const item of cart.items) {
-    const key = `${item.productId}-${item.denomination ?? 'default'}`
-    map[key] = (map[key] ?? 0) + item.quantity
+    if (isProductCartItemWithProduct(item)) {
+      const key = `${item.productId}-${item.denomination ?? 'default'}`
+      map[key] = (map[key] ?? 0) + item.quantity
+    } else if ('bundleItems' in item && Array.isArray(item.bundleItems)) {
+      for (const bi of item.bundleItems as Array<{
+        productId: Id<'products'>
+        quantity: number
+        denomination: number
+      }>) {
+        const key = `${bi.productId}-${bi.denomination}`
+        map[key] = (map[key] ?? 0) + bi.quantity
+      }
+    }
   }
   return map
 }
@@ -123,7 +130,7 @@ export function BundleBuilder({
   onVariationChange,
   onSelectionsChange,
 }: BundleBuilderProps) {
-  const {addItem, cart} = useCart()
+  const {addItem, addBundle, cart, isAuthenticated} = useCart()
   const pendingCtx = usePendingDeals()
   const isControlled =
     controlledVariationIndex !== undefined && onVariationChange != null
@@ -241,14 +248,30 @@ export function BundleBuilder({
     const map = new Map<string, {productId: Id<'products'>; quantity: number}>()
     if (!cart?.items?.length) return map
     for (const item of cart.items) {
-      if (!productIdSet.has(String(item.productId))) continue
-      const itemDenom = item.denomination
-      if (itemDenom === undefined) continue
-      if (!equivalentDenoms.has(itemDenom)) continue
-      const key = String(item.productId)
-      const existing = map.get(key)
-      const qty = (existing?.quantity ?? 0) + item.quantity
-      if (qty > 0) map.set(key, {productId: item.productId, quantity: qty})
+      if (isProductCartItemWithProduct(item)) {
+        if (!productIdSet.has(String(item.productId))) continue
+        const itemDenom = item.denomination
+        if (itemDenom === undefined) continue
+        if (!equivalentDenoms.has(itemDenom)) continue
+        const key = String(item.productId)
+        const existing = map.get(key)
+        const qty = (existing?.quantity ?? 0) + item.quantity
+        if (qty > 0) map.set(key, {productId: item.productId, quantity: qty})
+      } else if ('bundleItems' in item && Array.isArray(item.bundleItems)) {
+        const bundleItems = item.bundleItems as Array<{
+          productId: Id<'products'>
+          quantity: number
+          denomination: number
+        }>
+        for (const bi of bundleItems) {
+          if (!productIdSet.has(String(bi.productId))) continue
+          if (!equivalentDenoms.has(bi.denomination)) continue
+          const key = String(bi.productId)
+          const existing = map.get(key)
+          const qty = (existing?.quantity ?? 0) + bi.quantity
+          if (qty > 0) map.set(key, {productId: bi.productId, quantity: qty})
+        }
+      }
     }
     return map
   }, [cart, equivalentDenoms, productIdSet])
@@ -263,7 +286,7 @@ export function BundleBuilder({
   )
 
   const cartCountByVariationIndex = useMemo(() => {
-    return config.variations.map((v) => {
+    return config.variations.map((v, vi) => {
       const equiv = getEquivalentDenominations(
         v.denominationPerUnit,
         v.unitLabel,
@@ -271,14 +294,45 @@ export function BundleBuilder({
       let count = 0
       if (!cart?.items?.length) return count
       for (const item of cart.items) {
-        if (!productIdSet.has(String(item.productId))) continue
-        if (item.denomination === undefined) continue
-        if (!equiv.has(item.denomination)) continue
-        count += item.quantity
+        if (isProductCartItemWithProduct(item)) {
+          if (!productIdSet.has(String(item.productId))) continue
+          if (item.denomination === undefined) continue
+          if (!equiv.has(item.denomination)) continue
+          count += item.quantity
+        } else if (
+          'bundleType' in item &&
+          item.bundleType === config.id &&
+          'variationIndex' in item &&
+          item.variationIndex === vi
+        ) {
+          count += 1
+        }
       }
       return count
     })
-  }, [cart, config.variations, productIdSet])
+  }, [cart, config.id, config.variations, productIdSet])
+
+  /** Bundle already in cart: users may only add one of each bundle at a time */
+  const bundleAlreadyInCart = useMemo(() => {
+    if (!cart?.items?.length) return false
+    if (isAuthenticated) {
+      return cart.items.some(
+        (item) =>
+          'bundleType' in item &&
+          item.bundleType === config.id &&
+          'variationIndex' in item &&
+          item.variationIndex === variationIndex,
+      )
+    }
+    return totalFromCart >= variation.totalUnits
+  }, [
+    cart,
+    config.id,
+    isAuthenticated,
+    totalFromCart,
+    variation.totalUnits,
+    variationIndex,
+  ])
 
   useEffect(() => {
     if (selectionsFromCart.size === 0) return
@@ -290,8 +344,7 @@ export function BundleBuilder({
       })
     }
     // Only sync from cart when cart has items; empty cart must not overwrite URL state (preserves on refresh)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- selections/setSelections intentionally excluded to avoid loops
-  }, [selectionsFromCart])
+  }, [selectionsFromCart, selections, setSelections])
 
   const effectiveMaxPerProduct = useCallback(
     (product: StoreProduct) => {
@@ -382,11 +435,26 @@ export function BundleBuilder({
   )
 
   const handleAddToCart = useCallback(() => {
-    if (!isComplete) return
+    if (!isComplete || bundleAlreadyInCart) return
     startTransition(async () => {
-      for (const [, v] of selections) {
-        for (let i = 0; i < v.quantity; i++) {
-          await addItem(v.productId, 1, denom)
+      if (isAuthenticated && addBundle) {
+        const bundleItems = Array.from(selections.entries())
+          .filter(([, v]) => v.quantity > 0)
+          .map(([, v]) => ({
+            productId: v.productId,
+            quantity: v.quantity,
+            denomination: denom,
+          }))
+        await addBundle({
+          bundleType: config.id,
+          variationIndex,
+          bundleItems,
+        })
+      } else {
+        for (const [, v] of selections) {
+          for (let i = 0; i < v.quantity; i++) {
+            await addItem(v.productId, 1, denom)
+          }
         }
       }
       setSelections(new Map())
@@ -394,9 +462,13 @@ export function BundleBuilder({
     })
   }, [
     addItem,
+    addBundle,
+    bundleAlreadyInCart,
     config.id,
     denom,
+    isAuthenticated,
     isComplete,
+    variationIndex,
     selections,
     clearPendingDeal,
     setSelections,
@@ -439,7 +511,14 @@ export function BundleBuilder({
       unitLabel: variation.unitLabel,
       bundleAmount,
     }
-  }, [selections, productMap, denom, variation.totalUnits, variation.denominationPerUnit, variation.unitLabel])
+  }, [
+    selections,
+    productMap,
+    denom,
+    variation.totalUnits,
+    variation.denominationPerUnit,
+    variation.unitLabel,
+  ])
 
   return (
     <Card className='rounded-3xl border border-foreground/20 overflow-hidden'>
@@ -631,7 +710,7 @@ export function BundleBuilder({
               {isComplete && (
                 <span
                   className={cn({
-                    'line-through decoration-orange-600 decoration-dotted decoration-1 font-light opacity-50 text-base':
+                    'line-through decoration-dark-table dark:decoration-zinc-700 decoration-1 font-light opacity-50 text-base':
                       isComplete,
                   })}>
                   ${(subtotalCents / 100).toFixed(2)}
@@ -653,10 +732,12 @@ export function BundleBuilder({
                   : null}
               </span>
               {isComplete && (
-                <div className='flex items-center justify-centerbg-sidebar dark:bg-white rounded-md px-1'>
-                  <span className='dark:text-terpenes text-sm font-normal'>
-                    <span className='text-xs tracking-tight'>saved</span>
-                    <span className='font-medium ml-1'>
+                <div className='flex items-center justify-center bg-terpenes dark:bg-white rounded-md px-1 md:px-2 md:py-0.5'>
+                  <span className='dark:text-terpenes text-white text-sm font-normal md:font-medium'>
+                    <span className='text-xs tracking-tight md:tracking-normal'>
+                      Saved
+                    </span>
+                    <span className='font-medium md:font-semibold ml-1'>
                       $
                       {(
                         (subtotalCents -
@@ -675,7 +756,7 @@ export function BundleBuilder({
               size='lg'
               radius='none'
               onPress={handleAddToCart}
-              isDisabled={!isComplete || isPending}
+              isDisabled={!isComplete || isPending || bundleAlreadyInCart}
               className='bg-terpenes rounded-lg px-3.5'
               startContent={
                 isPending ? (
@@ -684,7 +765,11 @@ export function BundleBuilder({
                   <Icon name='box-bold' className='size-5' />
                 )
               }>
-              {isComplete ? 'Add to cart' : 'Complete bundle'}
+              {bundleAlreadyInCart
+                ? 'Bundle already in cart'
+                : isComplete
+                  ? 'Add to cart'
+                  : 'Complete bundle'}
             </Button>
           </ViewTransition>
         </div>

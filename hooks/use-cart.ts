@@ -30,7 +30,7 @@ import {useAuth} from './use-auth'
  * - Authenticated: Uses Convex queries which automatically subscribe and update
  * - Unauthenticated: Uses localStorage + LOCAL_STORAGE_CART_UPDATED_EVENT for sync across instances
  */
-type CartItemWithProduct = {
+type ProductCartItemWithProduct = {
   productId: Id<'products'>
   quantity: number
   denomination?: number
@@ -38,6 +38,36 @@ type CartItemWithProduct = {
     _id: Id<'products'>
     _creationTime: number
   }
+}
+
+type BundleCartItemWithProducts = {
+  bundleType: string
+  variationIndex: number
+  bundleItems: Array<{
+    productId: Id<'products'>
+    quantity: number
+    denomination: number
+  }>
+  bundleItemsWithProducts: Array<{
+    productId: Id<'products'>
+    quantity: number
+    denomination: number
+    product: ProductType & {_id: Id<'products'>; _creationTime: number}
+  }>
+}
+
+export type CartItemWithProduct = ProductCartItemWithProduct | BundleCartItemWithProducts
+
+export function isProductCartItemWithProduct(
+  item: CartItemWithProduct,
+): item is ProductCartItemWithProduct {
+  return 'product' in item && !('bundleType' in item)
+}
+
+export function isBundleCartItemWithProducts(
+  item: CartItemWithProduct,
+): item is BundleCartItemWithProducts {
+  return 'bundleType' in item && 'bundleItemsWithProducts' in item
 }
 
 type CartWithProducts = {
@@ -55,10 +85,20 @@ interface UseCartResult {
     quantity?: number,
     denomination?: number,
   ) => Promise<Id<'carts'>>
+  addBundle: (params: {
+    bundleType: string
+    variationIndex: number
+    bundleItems: Array<{
+      productId: Id<'products'>
+      quantity: number
+      denomination: number
+    }>
+  }) => Promise<Id<'carts'>>
   removeItem: (
     productId: Id<'products'>,
     denomination?: number,
   ) => Promise<void>
+  removeBundle: (itemIndex: number) => Promise<void>
   updateItem: (
     productId: Id<'products'>,
     quantity: number,
@@ -154,20 +194,20 @@ export const useCart = (): UseCartResult => {
     if (guestCartProducts === undefined) return null
 
     const productMap = new Map(guestCartProducts.map((p) => [p._id, p]))
-    const items: CartItemWithProduct[] = guestCartItems
-      .map((item) => {
-        const product = productMap.get(item.productId)
-        if (!product) return null
-        return {
+    const items: CartItemWithProduct[] = guestCartItems.flatMap((item) => {
+      const product = productMap.get(item.productId)
+      if (!product) return []
+      return [
+        {
           ...item,
           product: {
             ...product,
             _id: product._id,
             _creationTime: product._creationTime,
           },
-        }
-      })
-      .filter((item): item is CartItemWithProduct => item !== null)
+        },
+      ]
+    })
 
     return {
       _id: 'guest-cart' as Id<'carts'>,
@@ -199,8 +239,10 @@ export const useCart = (): UseCartResult => {
 
   // Mutations (only used for authenticated users)
   const addToCartMutation = useMutation(api.cart.m.addToCart)
+  const addBundleToCartMutation = useMutation(api.cart.m.addBundleToCart)
   const updateCartItemMutation = useMutation(api.cart.m.updateCartItem)
   const removeFromCartMutation = useMutation(api.cart.m.removeFromCart)
+  const removeBundleFromCartMutation = useMutation(api.cart.m.removeBundleFromCart)
   const clearCartMutation = useMutation(api.cart.m.clearCart)
 
   // When user authenticates, merge guest cart into Convex cart
@@ -316,6 +358,30 @@ export const useCart = (): UseCartResult => {
     [isAuthenticated, userId, addToCartMutation],
   )
 
+  // Add bundle to cart (authenticated users only; guests fall back to adding products individually)
+  const addBundle = useCallback(
+    async (params: {
+      bundleType: string
+      variationIndex: number
+      bundleItems: Array<{
+        productId: Id<'products'>
+        quantity: number
+        denomination: number
+      }>
+    }) => {
+      if (!isAuthenticated || !userId) {
+        throw new Error('Must be authenticated to add bundles')
+      }
+      return addBundleToCartMutation({
+        userId,
+        bundleType: params.bundleType,
+        variationIndex: params.variationIndex,
+        bundleItems: params.bundleItems,
+      })
+    },
+    [isAuthenticated, userId, addBundleToCartMutation],
+  )
+
   // Update item in cart
   const updateItem = useCallback(
     async (
@@ -338,6 +404,15 @@ export const useCart = (): UseCartResult => {
       }
     },
     [isAuthenticated, userId, updateCartItemMutation],
+  )
+
+  // Remove bundle from cart (authenticated users only)
+  const removeBundle = useCallback(
+    async (itemIndex: number) => {
+      if (!isAuthenticated || !userId) return
+      await removeBundleFromCartMutation({userId, itemIndex})
+    },
+    [isAuthenticated, userId, removeBundleFromCartMutation],
   )
 
   // Remove item from cart
@@ -417,8 +492,10 @@ export const useCart = (): UseCartResult => {
     cart,
     cartItemCount,
     addItem,
+    addBundle,
     updateItem,
     removeItem,
+    removeBundle,
     clear,
     isLoading,
     isAuthenticated,

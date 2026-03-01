@@ -9,8 +9,11 @@ timestamp ⸬ Sun Mar 01, 2026  18:16:09 pm - +08:00
 ### 2. Deals (Bundle Builder) (ONGOING)
 - Page Layout Constructed
 - Components (Initial Implementation)
-- Mechanics (Initial Implementation)
+- Mechanics (On-Going Implementation)
   - Products Query Deals Eligibility (COMPLETE)
   - Add Bundle to Cart (COMPLETE)
   - Cart Quantity Tracking (COMPLETE)
-- Testing (Not Started)
+  - Computation for bundle (Average of Bundle Denomination or *derived*, ceiled to the nearest $5) (COMPLETED)
+  - Bundle Price and Savings Display (COMPLETED)
+  - Cart Drawer Bundle Component (COMPLETED)
+- Testing (Started)

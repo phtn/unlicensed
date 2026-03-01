@@ -2,6 +2,7 @@ import type {Id} from '../_generated/dataModel'
 import type {QueryCtx} from '../_generated/server'
 import {v} from 'convex/values'
 import {query} from '../_generated/server'
+import {isProductCartItem} from './d'
 
 /** Fetch product by ID. Uses db.get; cart stores Convex Id as-is. */
 async function fetchProduct(ctx: QueryCtx, productId: Id<'products'>) {
@@ -36,9 +37,26 @@ export const getCart = query({
     try {
       const itemsWithProducts = await Promise.all(
         cart.items.map(async (item) => {
-          const product = await fetchProduct(ctx, item.productId)
-          if (!product) return null
-          return { ...item, product }
+          if (isProductCartItem(item)) {
+            const product = await fetchProduct(ctx, item.productId)
+            if (!product) return null
+            return { ...item, product }
+          } else {
+            const bundleProducts = await Promise.all(
+              item.bundleItems.map(async (bi) => {
+                const product = await fetchProduct(ctx, bi.productId)
+                return product ? { ...bi, product } : null
+              }),
+            )
+            const validProducts = bundleProducts.filter(
+              (p): p is NonNullable<typeof p> => p !== null,
+            )
+            if (validProducts.length !== item.bundleItems.length) return null
+            return {
+              ...item,
+              bundleItemsWithProducts: validProducts,
+            }
+          }
         }),
       )
       const validItems = itemsWithProducts.filter(
@@ -100,6 +118,9 @@ export const getCartItemCount = query({
       return 0
     }
 
-    return cart.items.reduce((total, item) => total + item.quantity, 0)
+    return cart.items.reduce((total, item) => {
+      if (isProductCartItem(item)) return total + item.quantity
+      return total + 1
+    }, 0)
   },
 })

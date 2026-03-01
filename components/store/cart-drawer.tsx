@@ -7,16 +7,25 @@ import {
 import {AuthModal} from '@/components/auth/auth-modal'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
-import {useCart} from '@/hooks/use-cart'
+import {
+  type CartItemWithProduct,
+  isProductCartItemWithProduct,
+  useCart,
+} from '@/hooks/use-cart'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
-import {getUnitPriceCents} from '@/utils/cartPrice'
+import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
 import {formatPrice} from '@/utils/formatPrice'
 import {Avatar, Button, Image, useDisclosure} from '@heroui/react'
 import {useRouter} from 'next/navigation'
 import {useMemo, useOptimistic, useTransition} from 'react'
+import {
+  BUNDLE_CONFIGS,
+  type BundleType,
+} from '@/app/lobby/(store)/deals/lib/deal-types'
 import {Drawer} from 'vaul'
 import {DrawerFooter} from '../ui/drawer'
+import {BundleCartItem} from './bundle-cart-item'
 import {EmptyCart} from './empty-cart'
 import {SuggestedCartItems} from './suggested-cart-items'
 
@@ -28,6 +37,7 @@ type OptimisticAction =
       denomination?: number
     }
   | {type: 'remove'; productId: Id<'products'>; denomination?: number}
+  | {type: 'removeBundle'; itemIndex: number}
 
 interface CartDrawerProps {
   open: boolean
@@ -39,6 +49,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     cart,
     updateItem,
     removeItem,
+    removeBundle,
     isLoading,
     cartItemCount,
     isAuthenticated,
@@ -52,21 +63,21 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  // Build cart items from server cart
-  const baseCartItems = useMemo(() => {
+  // Build cart items from server cart (preserve full structure for product + bundle)
+  const baseCartItems = useMemo<CartItemWithProduct[]>(() => {
     if (cart && cart.items && Array.isArray(cart.items)) {
-      return cart.items.map((item) => ({
-        product: item.product,
-        quantity: item.quantity,
-        denomination: item.denomination,
-      }))
+      return cart.items
     }
     return []
   }, [cart])
 
-  // Get all product image IDs for URL resolution
+  // Get all product image IDs for URL resolution (product items only)
   const productImageIds = useMemo(
-    () => baseCartItems.map((item) => item.product?.image).filter(Boolean),
+    () =>
+      baseCartItems
+        .filter(isProductCartItemWithProduct)
+        .map((item) => item.product?.image)
+        .filter(Boolean),
     [baseCartItems],
   )
 
@@ -80,6 +91,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
       switch (action.type) {
         case 'update': {
           return currentItems.map((item) =>
+            isProductCartItemWithProduct(item) &&
             item.product._id === action.productId &&
             (item.denomination ?? undefined) ===
               (action.denomination ?? undefined)
@@ -91,11 +103,15 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
           return currentItems.filter(
             (item) =>
               !(
+                isProductCartItemWithProduct(item) &&
                 item.product._id === action.productId &&
                 (item.denomination ?? undefined) ===
                   (action.denomination ?? undefined)
               ),
           )
+        }
+        case 'removeBundle': {
+          return currentItems.filter((_, i) => i !== action.itemIndex)
         }
         default:
           return currentItems
@@ -121,13 +137,26 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
 
   // Calculate optimistic cart item count
   const optimisticCartItemCount = useMemo(() => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0)
+    return cartItems.reduce((total, item) => {
+      if (isProductCartItemWithProduct(item)) return total + item.quantity
+      return total + 1
+    }, 0)
   }, [cartItems])
 
   const subtotal = useMemo(() => {
     return cartItems.reduce((total, item) => {
-      const unitCents = getUnitPriceCents(item.product, item.denomination)
-      return total + unitCents * item.quantity
+      if (isProductCartItemWithProduct(item)) {
+        const unitCents = getUnitPriceCents(item.product, item.denomination)
+        return total + unitCents * item.quantity
+      }
+      const config = BUNDLE_CONFIGS[item.bundleType as BundleType]
+      const variation = config?.variations[item.variationIndex]
+      if (!variation) return total
+      const denom = variation.denominationPerUnit
+      const bundleAmount = variation.totalUnits * denom
+      const products = item.bundleItemsWithProducts.map((bi) => bi.product)
+      const bundleCents = getBundleTotalCents(products, denom, bundleAmount)
+      return total + bundleCents
     }, 0)
   }, [cartItems])
 
@@ -188,17 +217,18 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
               ) : (
                 <>
                   <div className='px-4 mb-6'>
-                    {cartItems.map((item) => {
-                      const product = item.product
-                      const denomination = item.denomination
-                      const itemPrice = getUnitPriceCents(product, denomination)
-                      const totalPrice = itemPrice * item.quantity
-                      const productImageUrl = resolveUrl(product.image ?? '')
-                      const hasImage = Boolean(product.image && productImageUrl)
+                    {cartItems.map((item, index) => {
+                      if (isProductCartItemWithProduct(item)) {
+                        const product = item.product
+                        const denomination = item.denomination
+                        const itemPrice = getUnitPriceCents(product, denomination)
+                        const totalPrice = itemPrice * item.quantity
+                        const productImageUrl = resolveUrl(product.image ?? '')
+                        const hasImage = Boolean(product.image && productImageUrl)
 
-                      return (
-                        <div
-                          key={`${product._id}-${item.denomination ?? 'default'}`}
+                        return (
+                          <div
+                            key={`${product._id}-${item.denomination ?? 'default'}`}
                           className='flex gap-3 p-3 first:rounded-t-2xl last:rounded-b-2xl border border-b-0 last:border-b border-foreground/15 bg-card/50'>
                           <div className='relative w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-muted'>
                             {hasImage ? (
@@ -341,6 +371,25 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                             </div>
                           </div>
                         </div>
+                        )
+                      }
+
+                      return (
+                        <BundleCartItem
+                          key={`bundle-${item.bundleType}-${index}`}
+                          item={item}
+                          itemIndex={index}
+                          onRemove={async (idx) => {
+                            startTransition(async () => {
+                              applyOptimisticCartAction({
+                                type: 'removeBundle',
+                                itemIndex: idx,
+                              })
+                              await removeBundle(idx)
+                            })
+                          }}
+                          isPending={isPending}
+                        />
                       )
                     })}
                   </div>

@@ -11,7 +11,11 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {PotencyLevel} from '@/convex/products/d'
 import {useAuthCtx} from '@/ctx/auth'
-import {useCart} from '@/hooks/use-cart'
+import {
+  type CartItemWithProduct,
+  isProductCartItemWithProduct,
+  useCart,
+} from '@/hooks/use-cart'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Badge, Button, Tooltip, useDisclosure} from '@heroui/react'
@@ -78,7 +82,10 @@ export const ProductInteraction = ({
   const quantityInCart = useMemo(() => {
     if (!resolvedProductId || !cart?.items) return 0
     return cart.items
-      .filter((item) => item.productId === resolvedProductId)
+      .filter(
+        (item): item is Extract<CartItemWithProduct, { productId: Id<'products'>; quantity: number }> =>
+          isProductCartItemWithProduct(item) && item.productId === resolvedProductId,
+      )
       .reduce((sum, item) => sum + item.quantity, 0)
   }, [cart, resolvedProductId])
 

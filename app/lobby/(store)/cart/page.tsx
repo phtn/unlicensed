@@ -4,7 +4,10 @@ import {AuthModal} from '@/components/auth/auth-modal'
 import ShimmerText from '@/components/expermtl/shimmer'
 import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
-import {useCart} from '@/hooks/use-cart'
+import {
+  isProductCartItemWithProduct,
+  useCart,
+} from '@/hooks/use-cart'
 import {usePlaceOrder} from '@/hooks/use-place-order'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
@@ -112,13 +115,14 @@ export default function CartPage() {
   }, [convexUser?.contact?.phone, defaultAddress?.phone])
 
   const serverCartItems = useMemo<CartPageItem[]>(() => {
-    return (
-      cart?.items.map((item) => ({
+    if (!cart?.items) return []
+    return cart.items
+      .filter(isProductCartItemWithProduct)
+      .map((item) => ({
         product: item.product,
         quantity: item.quantity,
         denomination: item.denomination,
-      })) ?? []
-    )
+      }))
   }, [cart?.items])
 
   const {cartItems, updateItem, removeItem, clearCartWithHistory} =
