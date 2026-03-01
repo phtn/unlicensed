@@ -20,7 +20,7 @@ import {User} from 'firebase/auth'
 interface UserDropdownProps {
   user: User
   loading: boolean
-  isAdmin: boolean
+  isStaff: boolean
   onLogout: VoidFunction
   onThemeToggle: VoidFunction
 }
@@ -28,7 +28,7 @@ interface UserDropdownProps {
 export const UserDropdown = ({
   user,
   loading,
-  isAdmin,
+  isStaff,
   onLogout,
   onThemeToggle,
 }: UserDropdownProps) => {
@@ -65,6 +65,7 @@ export const UserDropdown = ({
           href='/account'
           key='profile'
           variant='flat'
+          textValue='account'
           classNames={{
             title: 'text-foreground/90 font-polysans',
             base: 'hover:bg-alum/0 bg-background/0 dark:hover:bg-alum/10 dark:bg-white focus-visible:ring-1 outline-none',
@@ -95,6 +96,7 @@ export const UserDropdown = ({
             key='quick-links'
             as={'div'}
             variant='light'
+            textValue='notifications'
             startContent={
               <JustTheTip
                 id='updates'
@@ -106,7 +108,7 @@ export const UserDropdown = ({
               />
             }
             endContent={
-              isAdmin && (
+              isStaff && (
                 <JustTheTip
                   id='admin'
                   as={Link}

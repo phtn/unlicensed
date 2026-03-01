@@ -56,34 +56,31 @@ export function CheckoutModal({
       radius='sm'
       scrollBehavior='inside'
       className=''
-      classNames={{wrapper: 'mt-12 md:mt-10', body: 'p-2 md:p-4'}}
+      classNames={{
+        wrapper: 'h-[calc(100vh-0rem)] mt-12 md:mt-10 z-9999',
+        body: 'h-full p-2 md:p-4',
+        backdrop: 'bg-black/50',
+      }}
       placement='top'>
       <ModalContent className='overflow-hidden dark:bg-dark-table'>
         {(onClose) => (
           <>
-            <ModalHeader className='flex flex-col justify-center gap-1 text-base md:text-lg font-semibold bg-foreground dark:bg-foreground/60 text-background h-12 mb-1'>
+            <ModalHeader className='flex flex-col justify-center gap-1 text-base md:text-lg font-medium md:font-semibold bg-foreground dark:bg-foreground/60 text-background h-9 md:h-12 mb-1'>
               Confirm Shipping & Billing Info
             </ModalHeader>
-            <ModalBody>
+            <ModalBody className='h-full'>
               <OrderStatusMessages
                 isPending={isPending}
                 orderError={orderError}
                 orderId={orderId}
               />
 
-              <div className='space-y-8'>
+              <div className='space-y-4 md:space-y-8'>
                 <ContactForm
                   formData={formData}
                   formErrors={formErrors}
                   onInputChange={onInputChange}
                 />
-                {/*{formData.paymentMethod === 'cash_app' && (
-                  <CashAppForm
-                    formData={formData}
-                    formErrors={formErrors}
-                    onInputChange={onInputChange}
-                  />
-                )}*/}
                 <ShippingForm
                   formData={formData}
                   formErrors={formErrors}
@@ -93,22 +90,15 @@ export function CheckoutModal({
                   selectedAddressId={selectedShippingAddressId}
                   onSelectSavedAddress={onSelectShippingAddress}
                 />
-
-                {/*<BillingForm
-                  formData={formData}
-                  formErrors={formErrors}
-                  onInputChange={onInputChange}
-                />*/}
               </div>
             </ModalBody>
-            <ModalFooter className='w-full h-32 flex items-center'>
+            <ModalFooter className='w-full px-1.5 md:px-4 h-16 md:h-20 flex items-center bg-alum/40 border-t border-dark-table/40 dark:bg-foreground/60'>
               <Button
                 size='lg'
                 radius='none'
                 variant='light'
                 onPress={onClose}
-                className='px-12 rounded-lg dark:hover:bg-white/5'
-                fullWidth
+                className='w-full rounded-lg text-dark-table dark:hover:bg-white/5'
                 isDisabled={isLoading || isPending}>
                 Cancel
               </Button>
@@ -117,7 +107,7 @@ export function CheckoutModal({
                 radius='none'
                 color='primary'
                 variant='solid'
-                className='rounded-lg bg-black font-polysans font-normal dark:text-white disabled:opacity-50'
+                className='w-full rounded-lg bg-black font-polysans font-normal dark:text-white disabled:opacity-50'
                 fullWidth
                 onPress={onPlaceOrder}
                 endContent={

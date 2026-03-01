@@ -34,6 +34,12 @@ export function AdminAccessGuard({children}: AdminAccessGuardProps) {
     return staff.accessRoles.includes('admin')
   }, [staff])
 
+  const isStaff = useMemo(() => {
+    if (!staff) return false
+    if (!staff.active) return false
+    return true
+  }, [staff])
+
   const shouldRedirectHome = useMemo(() => {
     if (!authResolved) return false
     if (!user) return true
@@ -67,7 +73,7 @@ export function AdminAccessGuard({children}: AdminAccessGuardProps) {
   }
 
   // If we're redirecting, keep UI minimal.
-  if (shouldRedirectHome || isPending) {
+  if (shouldRedirectHome || isPending || !isStaff) {
     return (
       <main suppressHydrationWarning className='px-4 w-full'>
         <p>Redirecting...</p>

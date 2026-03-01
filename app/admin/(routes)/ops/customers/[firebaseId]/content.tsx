@@ -1,15 +1,30 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
+import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError, onSuccess} from '@/ctx/toast'
+import {
+  isBundleCartItemWithProducts,
+  isProductCartItemWithProduct,
+} from '@/hooks/use-cart'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Avatar, Button, Card, Chip, Textarea} from '@heroui/react'
+import {
+  Avatar,
+  Button,
+  Card,
+  Chip,
+  Image,
+  Textarea,
+  Tooltip,
+} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {useCallback, useEffect, useMemo, useState} from 'react'
+import {mapNumericFractions} from '../../../inventory/product/product-schema'
 
 interface ContentProps {
   firebaseId: string
@@ -46,8 +61,26 @@ export const Content = ({firebaseId}: ContentProps) => {
     api.orders.q.getUserOrders,
     customer?._id ? {userId: customer._id, limit: 15} : 'skip',
   )
+  const cart = useQuery(
+    api.cart.q.getCart,
+    customer?._id ? {userId: customer._id} : 'skip',
+  )
   const customerId = customer?._id
   const customerNotes = customer?.notes ?? ''
+  const productImageIds = useMemo(
+    () =>
+      (cart?.items ?? []).flatMap((item) => {
+        if (isProductCartItemWithProduct(item) && item.product?.image)
+          return [item.product.image]
+        if (isBundleCartItemWithProducts(item))
+          return item.bundleItemsWithProducts
+            .map((bi) => bi.product?.image)
+            .filter((id): id is Id<'_storage'> => !!id)
+        return []
+      }),
+    [cart?.items],
+  )
+  const resolveUrl = useStorageUrls(productImageIds)
   const customerChatFid = customer?.fid ?? customer?.firebaseId ?? null
   const hasExistingConversation = useMemo(() => {
     if (!customerChatFid || !conversations) return false
@@ -152,7 +185,7 @@ export const Content = ({firebaseId}: ContentProps) => {
 
   return (
     <main className='min-h-screen px-4 pb-16'>
-      <div className='space-y-6 mt-4'>
+      <div className='space-y-0 mt-4'>
         <div className='flex items-center gap-4'>
           <Button
             prefetch
@@ -224,9 +257,9 @@ export const Content = ({firebaseId}: ContentProps) => {
           </div>
         </div>
         <div className='h-2 bg-sidebar' />
-        <div className='grid md:grid-cols-2 gap-2'>
-          <div className='space-y-4'>
-            <Card shadow='none' className='p-2 space-y-5'>
+        <div className='grid md:grid-cols-2 gap-x-2'>
+          <div className='space-y-4 py-4'>
+            <Card shadow='none' className='px-2 space-y-4'>
               <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 <div className='space-y-1'>
                   <p className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
@@ -287,16 +320,15 @@ export const Content = ({firebaseId}: ContentProps) => {
                 </p>
               )}
             </Card>
-            <Card shadow='none' className='py-6 px-2 space-y-4'>
+            <Card shadow='none' className='py-4 px-2'>
               <h2 className='text-base font-semibold'>Shipping Accounts</h2>
-
               <p className='text-sm text-muted-foreground'>
                 No Shipping accounts link to customer&apos;s orders on file.
               </p>
             </Card>
             {/* Remarks */}
-            <div>
-              <label className='text-sm font-medium mb-2 block'>
+            <div className='py-4 px-2'>
+              <label className='text-base font-semibold mb-2 block'>
                 Internal Remarks
               </label>
               <Textarea
@@ -318,6 +350,86 @@ export const Content = ({firebaseId}: ContentProps) => {
                   Save notes
                 </Button>
               </div>
+            </div>
+            <div id='in-cart-items' className='py-4 px-2'>
+              <h2 className='text-base font-semibold'>In-Cart</h2>
+              {cart === undefined ? (
+                <p className='text-sm text-muted-foreground'>Loading cart...</p>
+              ) : !cart?.items?.length ? (
+                <p className='text-sm text-muted-foreground'>Cart is empty.</p>
+              ) : (
+                <div className='grid grid-cols-9 gap-1'>
+                  {cart.items.map((item, i) => {
+                    if (isProductCartItemWithProduct(item)) {
+                      const p = item.product
+                      const imageUrl = p?.image
+                        ? (resolveUrl(p.image) ?? undefined)
+                        : undefined
+                      const hasImage = Boolean(p?.image && imageUrl)
+                      return (
+                        <Tooltip
+                          key={item.productId}
+                          content={
+                            <div className='flex items-center space-x-1'>
+                              <span>{p?.name}</span>
+                              <span>
+                                {item.denomination &&
+                                  mapNumericFractions[item.denomination]}{' '}
+                                {p?.unit}
+                              </span>
+                              <span>x {item?.quantity}</span>
+                            </div>
+                          }>
+                          <div
+                            key={`${item.productId}-${item.denomination ?? 'd'}-${i}`}
+                            className='aspect-square flex flex-col overflow-hidden rounded-lg border border-divider'>
+                            <div className='relative flex-1 min-h-0 bg-muted'>
+                              {hasImage ? (
+                                <Image
+                                  radius='none'
+                                  src={imageUrl ?? ''}
+                                  alt={p?.name ?? 'Product'}
+                                  className='size-full object-cover'
+                                />
+                              ) : (
+                                <div className='size-full flex items-center justify-center'>
+                                  <Icon
+                                    name='bag-solid'
+                                    className='size-6 text-muted-foreground'
+                                  />
+                                </div>
+                              )}
+                            </div>
+                            <div className='flex items-center justify-between gap-1 p-1 text-xs'>
+                              <span className='truncate font-medium'>
+                                {p?.name ?? 'Product'}
+                              </span>
+                              <div className='flex size-5 shrink-0 items-center justify-center rounded-full bg-alum text-[10px]'>
+                                {item.quantity}
+                              </div>
+                            </div>
+                          </div>
+                        </Tooltip>
+                      )
+                    }
+                    if (isBundleCartItemWithProducts(item)) {
+                      const label =
+                        item.bundleType?.replace(/_/g, ' ') ?? 'Bundle'
+                      return (
+                        <div
+                          key={`bundle-${i}`}
+                          className='flex items-center justify-between rounded-lg border border-divider p-2 text-sm'>
+                          <span className='font-medium truncate'>{label}</span>
+                          <span className='text-muted-foreground shrink-0'>
+                            ×1
+                          </span>
+                        </div>
+                      )
+                    }
+                    return null
+                  })}
+                </div>
+              )}
             </div>
           </div>
           <div className='px-4 border-l border-sidebar'>

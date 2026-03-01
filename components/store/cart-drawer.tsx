@@ -4,6 +4,10 @@ import {
   mapNumericFractions,
   mapNumericGrams,
 } from '@/app/admin/(routes)/inventory/product/product-schema'
+import {
+  BUNDLE_CONFIGS,
+  type BundleType,
+} from '@/app/lobby/(store)/deals/lib/deal-types'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -19,10 +23,6 @@ import {formatPrice} from '@/utils/formatPrice'
 import {Avatar, Button, Image, useDisclosure} from '@heroui/react'
 import {useRouter} from 'next/navigation'
 import {useMemo, useOptimistic, useTransition} from 'react'
-import {
-  BUNDLE_CONFIGS,
-  type BundleType,
-} from '@/app/lobby/(store)/deals/lib/deal-types'
 import {Drawer} from 'vaul'
 import {DrawerFooter} from '../ui/drawer'
 import {BundleCartItem} from './bundle-cart-item'
@@ -196,14 +196,24 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   </Drawer.Description>
                 </div>
 
-                {user && (
-                  <Avatar
+                <div className='flex items-center mr-4 space-x-2 md:space-x-4'>
+                  {user && (
+                    <Avatar
+                      size='sm'
+                      src={user.photoURL ?? undefined}
+                      name={user.displayName ?? user.email ?? undefined}
+                      className=''
+                    />
+                  )}
+                  <Button
                     size='sm'
-                    src={user.photoURL ?? undefined}
-                    fallback={user.email?.substring(0, 2)}
-                    className='mb-4 mr-4'
-                  />
-                )}
+                    isIconOnly
+                    variant='flat'
+                    onPress={() => onOpenChange(false)}
+                    radius='full'>
+                    <Icon name='x' className='size-4' />
+                  </Button>
+                </div>
               </div>
               {isStillLoading ? (
                 <div className='flex items-center justify-center py-12'>
@@ -221,86 +231,121 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                       if (isProductCartItemWithProduct(item)) {
                         const product = item.product
                         const denomination = item.denomination
-                        const itemPrice = getUnitPriceCents(product, denomination)
+                        const itemPrice = getUnitPriceCents(
+                          product,
+                          denomination,
+                        )
                         const totalPrice = itemPrice * item.quantity
                         const productImageUrl = resolveUrl(product.image ?? '')
-                        const hasImage = Boolean(product.image && productImageUrl)
+                        const hasImage = Boolean(
+                          product.image && productImageUrl,
+                        )
 
                         return (
                           <div
                             key={`${product._id}-${item.denomination ?? 'default'}`}
-                          className='flex gap-3 p-3 first:rounded-t-2xl last:rounded-b-2xl border border-b-0 last:border-b border-foreground/15 bg-card/50'>
-                          <div className='relative w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-muted'>
-                            {hasImage ? (
-                              <Image
-                                radius={'none'}
-                                src={productImageUrl ?? ''}
-                                alt={product.name ?? 'Product'}
-                                className='w-full h-full object-cover'
-                              />
-                            ) : (
-                              <div className='w-full h-full flex items-center justify-center'>
-                                <Icon
-                                  name='bag-solid'
-                                  className='size-6 text-muted-foreground'
+                            className='flex gap-3 p-3 first:rounded-t-2xl last:rounded-b-2xl border border-b-0 last:border-b border-foreground/15 bg-card/50'>
+                            <div className='relative w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-muted'>
+                              {hasImage ? (
+                                <Image
+                                  radius={'none'}
+                                  src={productImageUrl ?? ''}
+                                  alt={product.name ?? 'Product'}
+                                  className='w-full h-full object-cover'
                                 />
-                              </div>
-                            )}
-                          </div>
-                          <div className='flex-1 min-w-0 flex flex-col justify-between gap-1'>
-                            <div className='flex items-start justify-between gap-2'>
-                              <div className='min-w-0 flex items-center space-x-4'>
-                                <h3 className='font-medium font-okxs text-base tracking-tight truncate'>
-                                  {product.name ?? 'Product'}
-                                </h3>
-                                {item.denomination != null && (
-                                  <p className='text-base text-muted-foreground font-okxs space-x-1'>
-                                    <span>
-                                      {mapNumericFractions[item.denomination]}
-                                    </span>
-                                    <span>{product.unit ?? ''}</span>
-                                    {item.product.unit !== 'g' &&
-                                      mapNumericGrams[item.denomination] && (
-                                        <span className='ml-1 text-sm md:text-base font-light tracking-tight'>
-                                          <span className='opacity-50 font-brk'>
-                                            (
-                                          </span>
-                                          {mapNumericGrams[item.denomination]} g
-                                          <span className='opacity-50 font-brk'>
-                                            )
-                                          </span>
-                                        </span>
-                                      )}
-                                  </p>
-                                )}
-                              </div>
-                              <p className='font-okxs font-medium text-lg shrink-0'>
-                                ${formatPrice(totalPrice)}
-                              </p>
+                              ) : (
+                                <div className='w-full h-full flex items-center justify-center'>
+                                  <Icon
+                                    name='bag-solid'
+                                    className='size-6 text-muted-foreground'
+                                  />
+                                </div>
+                              )}
                             </div>
-                            <div className='flex items-center justify-between'>
-                              <div className='flex items-center gap-1'>
-                                <Button
-                                  isIconOnly
-                                  size='sm'
-                                  radius='none'
-                                  variant='flat'
-                                  isDisabled={isPending}
-                                  className='min-w-7 w-7 h-7 aspect-square rounded-sm'
-                                  onPress={() => {
-                                    const newQty = item.quantity - 1
-                                    startTransition(async () => {
-                                      if (newQty < 1) {
-                                        applyOptimisticCartAction({
-                                          type: 'remove',
-                                          productId: product._id,
-                                          denomination: item.denomination,
-                                        })
-                                        await removeItem(
-                                          product._id,
-                                          item.denomination,
-                                        )
-                                      } else {
+                            <div className='flex-1 min-w-0 flex flex-col justify-between gap-1'>
+                              <div className='flex items-start justify-between gap-2'>
+                                <div className='min-w-0 flex items-center space-x-4'>
+                                  <h3 className='font-medium font-okxs text-base tracking-tight truncate'>
+                                    {product.name ?? 'Product'}
+                                  </h3>
+                                  {item.denomination != null && (
+                                    <p className='text-base text-muted-foreground font-okxs space-x-1'>
+                                      <span>
+                                        {mapNumericFractions[item.denomination]}
+                                      </span>
+                                      <span>{product.unit ?? ''}</span>
+                                      {item.product.unit !== 'g' &&
+                                        mapNumericGrams[item.denomination] && (
+                                          <span className='ml-1 text-sm md:text-base font-light tracking-tight'>
+                                            <span className='opacity-50 font-brk'>
+                                              (
+                                            </span>
+                                            {mapNumericGrams[item.denomination]}{' '}
+                                            g
+                                            <span className='opacity-50 font-brk'>
+                                              )
+                                            </span>
+                                          </span>
+                                        )}
+                                    </p>
+                                  )}
+                                </div>
+                                <p className='font-okxs font-medium text-lg shrink-0'>
+                                  ${formatPrice(totalPrice)}
+                                </p>
+                              </div>
+                              <div className='flex items-center justify-between'>
+                                <div className='flex items-center gap-1'>
+                                  <Button
+                                    isIconOnly
+                                    size='sm'
+                                    radius='none'
+                                    variant='flat'
+                                    isDisabled={isPending}
+                                    className='min-w-7 w-7 h-7 aspect-square rounded-sm'
+                                    onPress={() => {
+                                      const newQty = item.quantity - 1
+                                      startTransition(async () => {
+                                        if (newQty < 1) {
+                                          applyOptimisticCartAction({
+                                            type: 'remove',
+                                            productId: product._id,
+                                            denomination: item.denomination,
+                                          })
+                                          await removeItem(
+                                            product._id,
+                                            item.denomination,
+                                          )
+                                        } else {
+                                          applyOptimisticCartAction({
+                                            type: 'update',
+                                            productId: product._id,
+                                            quantity: newQty,
+                                            denomination: item.denomination,
+                                          })
+                                          await updateItem(
+                                            product._id,
+                                            newQty,
+                                            item.denomination,
+                                          )
+                                        }
+                                      })
+                                    }}>
+                                    <Icon name='minus' className='size-3.5' />
+                                  </Button>
+                                  <span className='font-okxs text-lg font-semibold w-8 text-center'>
+                                    {item.quantity}
+                                  </span>
+                                  <Button
+                                    isIconOnly
+                                    size='sm'
+                                    radius='none'
+                                    variant='flat'
+                                    isDisabled={isPending}
+                                    className='min-w-7 w-7 h-7 aspect-square rounded-sm'
+                                    onPress={() => {
+                                      const newQty = item.quantity + 1
+                                      startTransition(async () => {
                                         applyOptimisticCartAction({
                                           type: 'update',
                                           productId: product._id,
@@ -312,65 +357,36 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                           newQty,
                                           item.denomination,
                                         )
-                                      }
-                                    })
-                                  }}>
-                                  <Icon name='minus' className='size-3.5' />
-                                </Button>
-                                <span className='font-okxs text-lg font-semibold w-8 text-center'>
-                                  {item.quantity}
-                                </span>
+                                      })
+                                    }}>
+                                    <Icon name='plus' className='size-3.5' />
+                                  </Button>
+                                </div>
                                 <Button
-                                  isIconOnly
                                   size='sm'
                                   radius='none'
-                                  variant='flat'
+                                  isIconOnly
+                                  variant='light'
+                                  className='min-w-8 w-8 h-7 aspect-square rounded-sm text-muted-foreground opacity-80 hover:opacity-100'
                                   isDisabled={isPending}
-                                  className='min-w-7 w-7 h-7 aspect-square rounded-sm'
                                   onPress={() => {
-                                    const newQty = item.quantity + 1
                                     startTransition(async () => {
                                       applyOptimisticCartAction({
-                                        type: 'update',
+                                        type: 'remove',
                                         productId: product._id,
-                                        quantity: newQty,
                                         denomination: item.denomination,
                                       })
-                                      await updateItem(
+                                      await removeItem(
                                         product._id,
-                                        newQty,
                                         item.denomination,
                                       )
                                     })
                                   }}>
-                                  <Icon name='plus' className='size-3.5' />
+                                  <Icon name='trash' className='size-6' />
                                 </Button>
                               </div>
-                              <Button
-                                size='sm'
-                                radius='none'
-                                isIconOnly
-                                variant='light'
-                                className='min-w-8 w-8 h-7 aspect-square rounded-sm text-muted-foreground opacity-80 hover:opacity-100'
-                                isDisabled={isPending}
-                                onPress={() => {
-                                  startTransition(async () => {
-                                    applyOptimisticCartAction({
-                                      type: 'remove',
-                                      productId: product._id,
-                                      denomination: item.denomination,
-                                    })
-                                    await removeItem(
-                                      product._id,
-                                      item.denomination,
-                                    )
-                                  })
-                                }}>
-                                <Icon name='trash' className='size-6' />
-                              </Button>
                             </div>
                           </div>
-                        </div>
                         )
                       }
 

@@ -47,8 +47,8 @@ export const Nav = ({children}: NavProps) => {
     api.staff.q.getStaffByEmail,
     user?.email ? {email: user.email} : 'skip',
   )
-  const isAdmin = useMemo(
-    () => !!staff && staff.active && staff.accessRoles.includes('admin'),
+  const isStaff = useMemo(
+    () => !!staff && staff.active && staff.accessRoles.length > 0,
     [staff],
   )
 
@@ -163,7 +163,7 @@ export const Nav = ({children}: NavProps) => {
               <UserDropdown
                 loading={authLoading}
                 user={user}
-                isAdmin={isAdmin}
+                isStaff={isStaff}
                 onThemeToggle={handleToggleTheme}
                 onLogout={handleLogout}
               />

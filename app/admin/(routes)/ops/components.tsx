@@ -85,7 +85,7 @@ export const statusCell = () => {
     return (
       <div
         className={cn(
-          'flex items-center uppercase justify-center rounded-sm w-fit py-1 font-brk shadow-none',
+          'flex min-h-6 items-center uppercase justify-center rounded-sm w-fit px-2 py-1 font-brk shadow-none',
           color,
         )}>
         <select
@@ -201,7 +201,7 @@ export const paymentMethodCell = () => {
         <div className='flex items-center justify-center'>
           <span
             className={cn(
-              'inline-flex w-36 items-center justify-start gap-2.5 rounded-sm px-2 py-1 font-brk text-[11px] uppercase tracking-wide',
+              'inline-flex w-44 items-center justify-start gap-2.5 rounded-sm px-2 py-1 font-brk text-[11px] uppercase tracking-wide',
               paymentMethodClassMap[localMethod],
               {'gap-1': isEditable},
             )}>
@@ -340,8 +340,8 @@ type OrderPaymentMethod = Order['payment']['method']
 
 const paymentMethodSelectionLabelMap: Record<OrderPaymentMethod, string> = {
   cards: 'Cards',
-  crypto_transfer: 'Send',
-  crypto_commerce: 'Crypto',
+  crypto_transfer: 'Send Crypto',
+  crypto_commerce: 'Pay Crypto',
   cash_app: 'Cash App',
 }
 
@@ -361,9 +361,9 @@ const paymentMethodOptions: Array<{value: OrderPaymentMethod; label: string}> =
 
 const paymentMethodLabelMap: Record<OrderPaymentMethod, string> = {
   cards: 'Cards',
-  crypto_transfer: 'Send',
-  crypto_commerce: 'Crypto',
-  cash_app: 'Cashapp',
+  crypto_transfer: 'Send Crypto',
+  crypto_commerce: 'Pay Crypto',
+  cash_app: 'Cash App',
 }
 
 const paymentMethodIconMap: Record<OrderPaymentMethod, IconName> = {
