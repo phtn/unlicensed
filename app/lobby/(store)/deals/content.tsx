@@ -219,7 +219,7 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
         <span className=''>Development In-progress</span>
       </div>
       <div className='max-w-7xl mx-auto'>
-        <header className='mb-10'>
+        <header className='ml-4 md:ml-0 mb-10'>
           <h1 className='font-polysans text-3xl sm:text-4xl font-bold tracking-tight'>
             Deals & Bundles
           </h1>
