@@ -1,7 +1,7 @@
 ## Build Your Own Oz
 ---
 ### Variations:
-- 8 x 1/8s
+- 8 x 1/8
 - 4 x 1/4s
 - Limit to 2 unit per bundle
 - When 1/8 stock is low (3), limit to 1 per bundle

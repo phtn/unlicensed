@@ -10,4 +10,7 @@ timestamp ⸬ Sun Mar 01, 2026  18:16:09 pm - +08:00
 - Page Layout Constructed
 - Components (Initial Implementation)
 - Mechanics (Initial Implementation)
+  - Products Query Deals Eligibility (COMPLETE)
+  - Add Bundle to Cart (COMPLETE)
+  - Cart Quantity Tracking (COMPLETE)
 - Testing (Not Started)

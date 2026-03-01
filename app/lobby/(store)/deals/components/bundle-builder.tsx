@@ -16,7 +16,7 @@ import {usePendingDeals} from '@/ctx/pending-deals'
 import {useCart} from '@/hooks/use-cart'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Card, CardBody, CardHeader, Image} from '@heroui/react'
+import {Badge, Button, Card, CardBody, CardHeader, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {
   useCallback,
@@ -28,6 +28,23 @@ import {
 } from 'react'
 import {DealsBundleDebug} from './deals-bundle-debug'
 import {Stepper} from './stepper'
+
+/** Denominations equivalent to the given one (e.g. 0.125 oz = 3.5g for flower) */
+function getEquivalentDenominations(
+  denom: number,
+  unitLabel: string,
+): Set<number> {
+  const equiv = new Set<number>([denom])
+  if (unitLabel === 'oz') {
+    const gram = mapNumericGrams[String(denom)]
+    if (gram) equiv.add(Number(gram))
+    if (denom === 3.5) equiv.add(0.125)
+    if (denom === 7) equiv.add(0.25)
+    if (denom === 14) equiv.add(0.5)
+    if (denom === 28) equiv.add(1)
+  }
+  return equiv
+}
 
 function getUnitPriceCents(
   product: StoreProduct,
@@ -66,13 +83,32 @@ interface BundleBuilderProps {
   debug?: boolean
 }
 
+/** Build map of productId-denomination -> quantity in cart */
+function cartQtyByProductDenom(
+  cart: {
+    items: Array<{
+      productId: Id<'products'>
+      quantity: number
+      denomination?: number
+    }>
+  } | null,
+): Record<string, number> {
+  if (!cart?.items?.length) return {}
+  const map: Record<string, number> = {}
+  for (const item of cart.items) {
+    const key = `${item.productId}-${item.denomination ?? 'default'}`
+    map[key] = (map[key] ?? 0) + item.quantity
+  }
+  return map
+}
+
 export function BundleBuilder({
   config,
   products,
   productIds,
   debug = false,
 }: BundleBuilderProps) {
-  const {addItem} = useCart()
+  const {addItem, cart} = useCart()
   const pendingCtx = usePendingDeals()
   const [variationIndex, setVariationIndex] = useState(
     config.defaultVariationIndex ?? 0,
@@ -120,11 +156,86 @@ export function BundleBuilder({
   const maxPerStrain = config.maxPerStrain
   const lowThreshold = config.lowStockThreshold
 
+  const rawCartQtyMap = useMemo(() => cartQtyByProductDenom(cart), [cart])
+
+  const productIdSet = useMemo(
+    () => new Set(productIds.map(String)),
+    [productIds],
+  )
+
+  const equivalentDenoms = useMemo(
+    () => getEquivalentDenominations(denom, variation.unitLabel),
+    [denom, variation.unitLabel],
+  )
+
+  const cartQtyMap = useMemo(() => {
+    const out: Record<string, number> = {}
+    for (const equiv of equivalentDenoms) {
+      for (const [key, qty] of Object.entries(rawCartQtyMap)) {
+        if (key.endsWith(`-${equiv}`)) {
+          const productId = key.slice(0, -String(equiv).length - 1)
+          const canonicalKey = `${productId}-${denom}`
+          out[canonicalKey] = (out[canonicalKey] ?? 0) + qty
+        }
+      }
+    }
+    return out
+  }, [rawCartQtyMap, equivalentDenoms, denom])
+
+  const selectionsFromCart = useMemo(() => {
+    const map = new Map<string, {productId: Id<'products'>; quantity: number}>()
+    if (!cart?.items?.length) return map
+    for (const item of cart.items) {
+      if (!productIdSet.has(String(item.productId))) continue
+      const itemDenom = item.denomination
+      if (itemDenom === undefined) continue
+      if (!equivalentDenoms.has(itemDenom)) continue
+      const key = String(item.productId)
+      const existing = map.get(key)
+      const qty = (existing?.quantity ?? 0) + item.quantity
+      if (qty > 0) map.set(key, {productId: item.productId, quantity: qty})
+    }
+    return map
+  }, [cart, equivalentDenoms, productIdSet])
+
+  const totalFromCart = useMemo(
+    () =>
+      Array.from(selectionsFromCart.values()).reduce(
+        (sum, v) => sum + v.quantity,
+        0,
+      ),
+    [selectionsFromCart],
+  )
+
+  const cartCountByVariationIndex = useMemo(() => {
+    return config.variations.map((v) => {
+      const equiv = getEquivalentDenominations(
+        v.denominationPerUnit,
+        v.unitLabel,
+      )
+      let count = 0
+      if (!cart?.items?.length) return count
+      for (const item of cart.items) {
+        if (!productIdSet.has(String(item.productId))) continue
+        if (item.denomination === undefined) continue
+        if (!equiv.has(item.denomination)) continue
+        count += item.quantity
+      }
+      return count
+    })
+  }, [cart, config.variations, productIdSet])
+
+  useEffect(() => {
+    setSelections(selectionsFromCart)
+  }, [selectionsFromCart])
+
   const effectiveMaxPerProduct = useCallback(
     (product: StoreProduct) => {
       const availKey = `${product._id}-${denom}`
       const available = availableMap ? availableMap[availKey] : 0
-      if (available <= 0) return 0
+      const inCart = cartQtyMap[availKey] ?? 0
+      const remaining = Math.max(0, available - inCart)
+      if (remaining <= 0) return 0
       if (
         lowThreshold !== undefined &&
         denom === 0.125 &&
@@ -132,9 +243,9 @@ export function BundleBuilder({
       ) {
         return 1
       }
-      return Math.min(maxPerStrain, available)
+      return Math.min(maxPerStrain, remaining)
     },
-    [availableMap, denom, lowThreshold, maxPerStrain],
+    [availableMap, cartQtyMap, denom, lowThreshold, maxPerStrain],
   )
 
   const {setPendingDeal, clearPendingDeal} = pendingCtx ?? {}
@@ -234,37 +345,59 @@ export function BundleBuilder({
           </h2>
           {config.variations.length > 1 && (
             <div className='flex p-1 rounded-full bg-sidebar dark:bg-dark-table'>
-              {config.variations.map((v, i) => (
-                <Button
-                  key={i}
-                  size='md'
-                  variant={variationIndex === i ? 'solid' : 'flat'}
-                  onPress={() => setVariationIndex(i)}
-                  className={cn('rounded-full text-base bg-transparent', {
-                    'bg-dark-table text-white dark:bg-white dark:text-dark-table':
-                      variationIndex === i,
-                  })}>
-                  <span>
-                    <span>
-                      {v.totalUnits} x{' '}
-                      {mapNumericFractions[v.denominationPerUnit]} {v.unitLabel}
-                    </span>
-                    {mapNumericGrams[v.denominationPerUnit] &&
-                      v.unitLabel !== 'g' && (
-                        <span className='ml-2 font-light'>
-                          <span className='font-brk opacity-50'>(</span>
-                          {mapNumericGrams[v.denominationPerUnit]}g
-                          <span className='font-brk opacity-50'>)</span>
+              {config.variations.map((v, i) => {
+                const variationCartCount = cartCountByVariationIndex[i] ?? 0
+                return (
+                  <Badge
+                    key={i}
+                    content={
+                      variationCartCount > 0 ? (
+                        <span className='text-sm font-okxs'>
+                          {variationCartCount}
                         </span>
-                      )}
-                  </span>
-                </Button>
-              ))}
+                      ) : null
+                    }
+                    className={cn('shrink-0 hidden', {
+                      flex: variationCartCount > 0,
+                    })}
+                    classNames={{
+                      badge: [
+                        'min-w-5 size-6 rounded-full bg-brand text-white flex items-center justify-center',
+                      ],
+                    }}
+                    placement='top-right'>
+                    <Button
+                      size='md'
+                      variant={variationIndex === i ? 'solid' : 'flat'}
+                      onPress={() => setVariationIndex(i)}
+                      className={cn('rounded-full text-base bg-transparent', {
+                        'bg-dark-table text-white dark:bg-white dark:text-dark-table':
+                          variationIndex === i,
+                      })}>
+                      <span>
+                        <span>
+                          {v.totalUnits} x{' '}
+                          {mapNumericFractions[v.denominationPerUnit]}{' '}
+                          {v.unitLabel}
+                        </span>
+                        {mapNumericGrams[v.denominationPerUnit] &&
+                          v.unitLabel !== 'g' && (
+                            <span className='ml-2 font-light'>
+                              <span className='font-brk opacity-50'>(</span>
+                              {mapNumericGrams[v.denominationPerUnit]}g
+                              <span className='font-brk opacity-50'>)</span>
+                            </span>
+                          )}
+                      </span>
+                    </Button>
+                  </Badge>
+                )
+              })}
             </div>
           )}
         </div>
         <p className='text-muted-foreground'>{config.description}</p>
-        <div className='flex items-center gap-2 text-sm'>
+        <div className='flex items-center gap-4'>
           <span
             className={
               isComplete
@@ -273,6 +406,13 @@ export function BundleBuilder({
             }>
             {totalSelected} / {variation.totalUnits} selected
           </span>
+          {totalFromCart > 0 && (
+            <span
+              id='from-cart'
+              className='bg-brand text-white rounded-md px-2.5 py-1 text-sm'>
+              {totalFromCart} {totalFromCart === 1 ? 'item' : 'items'} from cart
+            </span>
+          )}
         </div>
       </CardHeader>
       <CardBody className='pt-0'>
@@ -282,17 +422,38 @@ export function BundleBuilder({
             const qty = selections.get(String(pid))?.quantity ?? 0
             const max = effectiveMaxPerProduct(product)
             const price = getUnitPriceCents(product, denom)
+            const inCart = (cartQtyMap[`${pid}-${denom}`] ?? 0) > 0
 
             return (
               <div
                 key={product._id}
                 className='flex items-center gap-3 rounded-2xl border border-foreground/10 p-3'>
                 {product.image && (
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    className='size-14 shrink-0 rounded-xl object-cover'
-                  />
+                  <Badge
+                    isOneChar
+                    content={
+                      inCart ? (
+                        <Icon
+                          name='bag-solid'
+                          className='size-4 text-brand dark:text-white'
+                        />
+                      ) : null
+                    }
+                    className={cn('shrink-0 hidden', {flex: inCart})}
+                    classNames={{
+                      badge: [
+                        inCart &&
+                          'rounded-lg bg-white dark:bg-brand dark:border-2 size-6 border-sidebar border-1 dark:border-brand shadow-xs',
+                        '',
+                      ],
+                    }}
+                    placement='top-right'>
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      className='size-14 shrink-0 rounded-xl object-cover'
+                    />
+                  </Badge>
                 )}
                 <div className='min-w-0 flex-1'>
                   <p className='truncate font-medium text-sm md:text-base'>
