@@ -5,6 +5,14 @@ import type {BundleConfig, BundleVariation} from '@/app/lobby/(store)/deals/lib/
 import type {Id} from '@/convex/_generated/dataModel'
 import {cn} from '@/lib/utils'
 
+function getUnitPriceCents(
+  product: StoreProduct,
+  denomination: number,
+): number {
+  const key = String(denomination)
+  return product.priceByDenomination?.[key] ?? product.priceCents ?? 0
+}
+
 export type ProductFilterReason =
   | {included: true}
   | {included: false; reason: string}
@@ -50,6 +58,8 @@ export interface DealsBundleDebugProps {
   pairs: Array<{productId: Id<'products'>; denomination: number}>
   availableMap: Record<string, number> | undefined
   filteredProducts: StoreProduct[]
+  /** Selected products for bundle total calculation */
+  selectedProducts?: StoreProduct[]
 }
 
 export function DealsBundleDebug({
@@ -61,6 +71,7 @@ export function DealsBundleDebug({
   pairs,
   availableMap,
   filteredProducts,
+  selectedProducts = [],
 }: DealsBundleDebugProps) {
   const denom = variation.denominationPerUnit
   const productsWithoutId = products.filter((p) => p._id == null)
@@ -145,6 +156,85 @@ export function DealsBundleDebug({
             denom={denom}, totalUnits={variation.totalUnits},{' '}
             unitLabel={variation.unitLabel}
           </p>
+        </section>
+
+        {/* Bundle total calculation — selected items only, all configs */}
+        <section>
+          <h4 className='mb-1 font-semibold text-foreground'>
+            Bundle total calculation
+          </h4>
+          <p className='mb-2 text-muted-foreground'>
+            Avg of {variation.totalUnits * variation.denominationPerUnit}{' '}
+            {variation.unitLabel} price per selected item → round up to nearest
+            $5
+          </p>
+          {selectedProducts.length === 0 ? (
+            <p className='text-amber-600'>Select items to see calculation</p>
+          ) : (
+            <table className='w-full table-auto'>
+              <tbody>
+                {selectedProducts.map((p) => {
+                  const bundleAmount =
+                    variation.totalUnits * variation.denominationPerUnit
+                  const direct = getUnitPriceCents(p, bundleAmount)
+                  const derived =
+                    denom > 0
+                      ? getUnitPriceCents(p, denom) * (bundleAmount / denom)
+                      : 0
+                  const priceCents = direct > 0 ? direct : derived
+                  return (
+                    <tr key={p._id ?? p.slug}>
+                      <td className='text-muted-foreground'>
+                        {p.name ?? p.slug}
+                      </td>
+                      <td className='text-right'>
+                        ${(priceCents / 100).toFixed(2)}/{bundleAmount}{' '}
+                        {variation.unitLabel}
+                        {direct === 0 && derived > 0 && (
+                          <span className='ml-1 text-amber-600'>
+                            (derived)
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+                {(() => {
+                  const bundleAmount =
+                    variation.totalUnits * variation.denominationPerUnit
+                  let sumCents = 0
+                  for (const p of selectedProducts) {
+                    const direct = getUnitPriceCents(p, bundleAmount)
+                    const derived =
+                      denom > 0
+                        ? getUnitPriceCents(p, denom) * (bundleAmount / denom)
+                        : 0
+                    sumCents += direct > 0 ? direct : derived
+                  }
+                  const avgCents = sumCents / selectedProducts.length
+                  const bundleTotalCents = Math.ceil(avgCents / 500) * 500
+                  return (
+                    <>
+                      <tr className='border-t border-foreground/10'>
+                        <td className='pt-1 font-medium'>avg</td>
+                        <td className='text-right pt-1'>
+                          ${(avgCents / 100).toFixed(2)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className='font-medium text-terpenes'>
+                          bundle total (↑ nearest $5)
+                        </td>
+                        <td className='text-right font-medium text-terpenes'>
+                          ${(bundleTotalCents / 100).toFixed(2)}
+                        </td>
+                      </tr>
+                    </>
+                  )
+                })()}
+              </tbody>
+            </table>
+          )}
         </section>
 
         {/* Per-product reasons */}

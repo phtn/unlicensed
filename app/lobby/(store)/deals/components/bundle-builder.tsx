@@ -26,6 +26,7 @@ import {
   useTransition,
   ViewTransition,
 } from 'react'
+import {serializeSelections} from '@/app/lobby/(store)/deals/searchParams'
 import {DealsBundleDebug} from './deals-bundle-debug'
 import {Stepper} from './stepper'
 
@@ -81,6 +82,16 @@ interface BundleBuilderProps {
   products: StoreProduct[]
   productIds: Id<'products'>[]
   debug?: boolean
+  /** Controlled: variation index from URL/parent */
+  variationIndex?: number
+  /** Controlled: selections from URL/parent */
+  selections?: Map<string, {productId: Id<'products'>; quantity: number}>
+  /** Controlled: called when variation changes */
+  onVariationChange?: (index: number) => void
+  /** Controlled: called when selections change */
+  onSelectionsChange?: (
+    selections: Map<string, {productId: Id<'products'>; quantity: number}>,
+  ) => void
 }
 
 /** Build map of productId-denomination -> quantity in cart */
@@ -107,16 +118,60 @@ export function BundleBuilder({
   products,
   productIds,
   debug = false,
+  variationIndex: controlledVariationIndex,
+  selections: controlledSelections,
+  onVariationChange,
+  onSelectionsChange,
 }: BundleBuilderProps) {
   const {addItem, cart} = useCart()
   const pendingCtx = usePendingDeals()
-  const [variationIndex, setVariationIndex] = useState(
+  const isControlled =
+    controlledVariationIndex !== undefined && onVariationChange != null
+  const isSelectionsControlled =
+    controlledSelections !== undefined && onSelectionsChange != null
+
+  const [internalVariationIndex, setInternalVariationIndex] = useState(
     config.defaultVariationIndex ?? 0,
   )
-  const [selections, setSelections] = useState<
+  const [internalSelections, setInternalSelections] = useState<
     Map<string, {productId: Id<'products'>; quantity: number}>
   >(new Map())
   const [isPending, startTransition] = useTransition()
+
+  const variationIndex = Math.max(
+    0,
+    Math.min(
+      isControlled ? controlledVariationIndex! : internalVariationIndex,
+      config.variations.length - 1,
+    ),
+  )
+  const selections = isSelectionsControlled
+    ? controlledSelections!
+    : internalSelections
+
+  const setVariationIndex = useCallback(
+    (index: number | ((prev: number) => number)) => {
+      const next = typeof index === 'function' ? index(variationIndex) : index
+      if (isControlled) onVariationChange?.(next)
+      else setInternalVariationIndex(next)
+    },
+    [isControlled, onVariationChange, variationIndex],
+  )
+
+  const setSelections = useCallback(
+    (
+      updater:
+        | Map<string, {productId: Id<'products'>; quantity: number}>
+        | ((
+            prev: Map<string, {productId: Id<'products'>; quantity: number}>,
+          ) => Map<string, {productId: Id<'products'>; quantity: number}>),
+    ) => {
+      const next = typeof updater === 'function' ? updater(selections) : updater
+      if (isSelectionsControlled) onSelectionsChange?.(next)
+      else setInternalSelections(next)
+    },
+    [isSelectionsControlled, onSelectionsChange, selections],
+  )
 
   const variation = config.variations[variationIndex]
   const denom = variation.denominationPerUnit
@@ -226,7 +281,16 @@ export function BundleBuilder({
   }, [cart, config.variations, productIdSet])
 
   useEffect(() => {
-    setSelections(selectionsFromCart)
+    if (selectionsFromCart.size === 0) return
+    const fromCart = serializeSelections(selectionsFromCart)
+    const current = serializeSelections(selections)
+    if (fromCart !== current) {
+      startTransition(() => {
+        setSelections(selectionsFromCart)
+      })
+    }
+    // Only sync from cart when cart has items; empty cart must not overwrite URL state (preserves on refresh)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- selections/setSelections intentionally excluded to avoid loops
   }, [selectionsFromCart])
 
   const effectiveMaxPerProduct = useCallback(
@@ -237,15 +301,15 @@ export function BundleBuilder({
       const remaining = Math.max(0, available - inCart)
       if (remaining <= 0) return 0
       if (
+        config.id === 'build-your-own-oz' &&
         lowThreshold !== undefined &&
-        denom === 0.125 &&
         available <= lowThreshold
       ) {
         return 1
       }
       return Math.min(maxPerStrain, remaining)
     },
-    [availableMap, cartQtyMap, denom, lowThreshold, maxPerStrain],
+    [availableMap, cartQtyMap, config.id, denom, lowThreshold, maxPerStrain],
   )
 
   const {setPendingDeal, clearPendingDeal} = pendingCtx ?? {}
@@ -298,21 +362,24 @@ export function BundleBuilder({
         return next
       })
     },
-    [effectiveMaxPerProduct, selections],
+    [effectiveMaxPerProduct, selections, setSelections],
   )
 
-  const handleDecrement = useCallback((productId: Id<'products'>) => {
-    const key = String(productId)
-    setSelections((prev) => {
-      const next = new Map(prev)
-      const cur = next.get(key)
-      if (!cur) return prev
-      const newQty = cur.quantity - 1
-      if (newQty <= 0) next.delete(key)
-      else next.set(key, {productId, quantity: newQty})
-      return next
-    })
-  }, [])
+  const handleDecrement = useCallback(
+    (productId: Id<'products'>) => {
+      const key = String(productId)
+      setSelections((prev) => {
+        const next = new Map(prev)
+        const cur = next.get(key)
+        if (!cur) return prev
+        const newQty = cur.quantity - 1
+        if (newQty <= 0) next.delete(key)
+        else next.set(key, {productId, quantity: newQty})
+        return next
+      })
+    },
+    [setSelections],
+  )
 
   const handleAddToCart = useCallback(() => {
     if (!isComplete) return
@@ -325,7 +392,15 @@ export function BundleBuilder({
       setSelections(new Map())
       clearPendingDeal?.(config.id)
     })
-  }, [addItem, config.id, denom, isComplete, selections, clearPendingDeal])
+  }, [
+    addItem,
+    config.id,
+    denom,
+    isComplete,
+    selections,
+    clearPendingDeal,
+    setSelections,
+  ])
 
   const subtotalCents = useMemo(() => {
     let sum = 0
@@ -335,6 +410,36 @@ export function BundleBuilder({
     }
     return sum
   }, [selections, productMap, denom])
+
+  /** Bundle total: avg price for full bundle amount (e.g. 4oz for mix-match-4oz) across selected items, rounded up to nearest $5 */
+  const bundleTotalDisplay = useMemo(() => {
+    const selectedProducts: StoreProduct[] = []
+    for (const [, v] of selections) {
+      if (v.quantity <= 0) continue
+      const p = productMap.get(String(v.productId))
+      if (p) selectedProducts.push(p)
+    }
+    if (selectedProducts.length === 0) return null
+    const bundleAmount = variation.totalUnits * variation.denominationPerUnit
+    let sumCents = 0
+    for (const p of selectedProducts) {
+      const direct = getUnitPriceCents(p, bundleAmount)
+      const derived =
+        denom > 0 ? getUnitPriceCents(p, denom) * (bundleAmount / denom) : 0
+      const priceCents = direct > 0 ? direct : derived
+      sumCents += priceCents
+    }
+    const avgCents = sumCents / selectedProducts.length
+    if (avgCents <= 0) return null
+    const bundleTotalCents = Math.ceil(avgCents / 500) * 500
+    return {
+      bundleTotalCents,
+      avgCents,
+      selectedProducts,
+      unitLabel: variation.unitLabel,
+      bundleAmount,
+    }
+  }, [selections, productMap, denom, variation.totalUnits, variation.denominationPerUnit, variation.unitLabel])
 
   return (
     <Card className='rounded-3xl border border-foreground/20 overflow-hidden'>
@@ -472,6 +577,7 @@ export function BundleBuilder({
                       onIncrement={() => handleIncrement(pid, product)}
                       onDecrement={() => handleDecrement(pid)}
                       disabled={isPending}
+                      isComplete={isComplete}
                     />
                   </div>
                   <p className='text-muted-foreground'>
@@ -514,14 +620,55 @@ export function BundleBuilder({
             pairs={pairs}
             availableMap={availableMap}
             filteredProducts={filteredProducts}
+            selectedProducts={bundleTotalDisplay?.selectedProducts ?? []}
           />
         )}
 
         <div className='mt-4 flex items-center justify-between pt-4 px-3 md:px-0'>
-          <span className='font-semibold'>
-            <span className='font-medium opacity-80'>Total:</span> $
-            {(subtotalCents / 100).toFixed(2)}
-          </span>
+          <div className='flex flex-col md:flex-row md:items-center space-x-2'>
+            <span className='font-medium opacity-80 md:text-base text-sm'>
+              Total:{' '}
+              {isComplete && (
+                <span
+                  className={cn({
+                    'line-through decoration-orange-600 decoration-dotted decoration-1 font-light opacity-50 text-base':
+                      isComplete,
+                  })}>
+                  ${(subtotalCents / 100).toFixed(2)}
+                </span>
+              )}
+            </span>
+            <div className='font-semibold flex items-center space-x-1'>
+              <span
+                className={cn({
+                  hidden: isComplete,
+                })}>
+                ${(subtotalCents / 100).toFixed(2)}
+              </span>
+              <span
+                id='bundle-total'
+                className='text-terpenes font-semibold text-lg'>
+                {bundleTotalDisplay && isComplete
+                  ? ` $${(bundleTotalDisplay.bundleTotalCents / 100).toFixed(2)} `
+                  : null}
+              </span>
+              {isComplete && (
+                <div className='flex items-center justify-centerbg-sidebar dark:bg-white rounded-md px-1'>
+                  <span className='dark:text-terpenes text-sm font-normal'>
+                    <span className='text-xs tracking-tight'>saved</span>
+                    <span className='font-medium ml-1'>
+                      $
+                      {(
+                        (subtotalCents -
+                          (bundleTotalDisplay?.bundleTotalCents ?? 0)) /
+                        100
+                      ).toFixed(0)}
+                    </span>
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
           <ViewTransition>
             <Button
               color='primary'

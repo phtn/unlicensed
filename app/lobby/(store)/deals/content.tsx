@@ -4,6 +4,7 @@ import {
   BUNDLE_CONFIGS,
   type BundleType,
 } from '@/app/lobby/(store)/deals/lib/deal-types'
+import {useDealsQueryState} from '@/app/lobby/(store)/deals/hooks/use-deals-query-state'
 import type {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
@@ -12,7 +13,7 @@ import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {useQuery} from 'convex/react'
 import {useSearchParams} from 'next/navigation'
-import {useMemo} from 'react'
+import {useCallback, useMemo} from 'react'
 import {BundleBuilder} from './components/bundle-builder'
 
 interface DealsContentProps {
@@ -28,9 +29,61 @@ const DEAL_BUNDLE_IDS: BundleType[] = [
   'edibles-prerolls-10',
 ]
 
+const DEFAULT_VARIATION_BY_BUNDLE: Partial<Record<BundleType, number>> = {
+  'build-your-own-oz': BUNDLE_CONFIGS['build-your-own-oz'].defaultVariationIndex ?? 0,
+}
+
+function ControlledBundleBuilder({
+  bundleId,
+  buildProps,
+  debug,
+  bundleState,
+  setBundleState,
+}: {
+  bundleId: BundleType
+  buildProps: {config: (typeof BUNDLE_CONFIGS)[BundleType]; products: StoreProduct[]}
+  debug: boolean
+  bundleState: {variationIndex: number; selections: Map<string, {productId: Id<'products'>; quantity: number}>}
+  setBundleState: (
+    id: BundleType,
+    u: {variationIndex?: number; selections?: Map<string, {productId: Id<'products'>; quantity: number}>},
+  ) => void
+}) {
+  const {config, products} = buildProps
+  const productIds = products
+    .map((p) => p._id)
+    .filter((id): id is Id<'products'> => id != null)
+
+  const onVariationChange = useCallback(
+    (index: number) => setBundleState(bundleId, {variationIndex: index}),
+    [setBundleState, bundleId],
+  )
+  const onSelectionsChange = useCallback(
+    (selections: Map<string, {productId: Id<'products'>; quantity: number}>) =>
+      setBundleState(bundleId, {selections}),
+    [setBundleState, bundleId],
+  )
+
+  return (
+    <BundleBuilder
+      config={config}
+      products={products}
+      productIds={productIds}
+      debug={debug}
+      variationIndex={bundleState.variationIndex}
+      selections={bundleState.selections}
+      onVariationChange={onVariationChange}
+      onSelectionsChange={onSelectionsChange}
+    />
+  )
+}
+
 export function DealsContent({initialProductsByCategory}: DealsContentProps) {
   const searchParams = useSearchParams()
   const debug = searchParams.get('debug') === '1'
+  const {state: dealsState, setBundleState} = useDealsQueryState(
+    DEFAULT_VARIATION_BY_BUNDLE,
+  )
 
   const flowerQuery = useQuery(api.products.q.listProducts, {
     categorySlug: 'flower',
@@ -166,21 +219,16 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
         </header>
 
         <div className='space-y-10'>
-          {DEAL_BUNDLE_IDS.map((id) => {
-            const {config, products} = buildProps[id]
-            const productIds = products
-              .map((p) => p._id)
-              .filter((id): id is Id<'products'> => id != null)
-            return (
-              <BundleBuilder
-                key={id}
-                config={config}
-                products={products}
-                productIds={productIds}
-                debug={debug}
-              />
-            )
-          })}
+          {DEAL_BUNDLE_IDS.map((bundleId) => (
+            <ControlledBundleBuilder
+              key={bundleId}
+              bundleId={bundleId}
+              buildProps={buildProps[bundleId]}
+              debug={debug}
+              bundleState={dealsState[bundleId]}
+              setBundleState={setBundleState}
+            />
+          ))}
         </div>
       </div>
     </div>

@@ -13,6 +13,7 @@ interface StepperProps {
   disabled?: boolean
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  isComplete: boolean
 }
 
 export function Stepper({
@@ -24,6 +25,7 @@ export function Stepper({
   disabled = false,
   size = 'md',
   className,
+  isComplete,
 }: StepperProps) {
   const canDecrement = value > min
   const canIncrement = value < max
@@ -73,7 +75,7 @@ export function Stepper({
           sizeClasses[size],
           !canIncrement && 'opacity-40 cursor-not-allowed',
         )}
-        isDisabled={!canIncrement || disabled}
+        isDisabled={!canIncrement || disabled || isComplete}
         onPress={onIncrement}
         aria-label='Increase quantity'>
         <Icon name='plus' className='size-4' />
