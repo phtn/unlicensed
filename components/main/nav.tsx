@@ -95,15 +95,17 @@ export const Nav = ({children}: NavProps) => {
                 Strain Finder
               </div>
             ) : (
-              <Link
-                href={'/lobby/category'}
-                className='hidden group text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-polysans font-semibold space-x-1'>
-                <Icon
-                  name='play-solid'
-                  className='size-4 rotate-45 group-hover:text-white group-hover:opacity-100 opacity-80'
-                />
-                <span>Shop</span>
-              </Link>
+              <>
+                <Link
+                  href={'/lobby/category'}
+                  className='hidden group text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-polysans font-semibold space-x-1'>
+                  <Icon
+                    name='play-solid'
+                    className='size-4 rotate-45 group-hover:text-white group-hover:opacity-100 opacity-80'
+                  />
+                  <span>Shop</span>
+                </Link>
+              </>
             )}
             {children}
           </nav>

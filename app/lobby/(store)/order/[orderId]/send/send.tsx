@@ -13,7 +13,6 @@ import {useCopy} from '@/hooks/use-copy'
 import {useCrypto} from '@/hooks/use-crypto'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {parseHexToInt} from '@/utils/formatPrice'
 import {Tabs} from '@base-ui/react/tabs'
 import {Button, Image, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
@@ -172,6 +171,7 @@ const CryptoSendContent = () => {
                 network='bitcoin'
                 orderId={orderId}
                 updatePayment={updatePayment}
+                getBySymbol={getBySymbol}
               />
             </Tabs.Panel>
             <Tabs.Panel value='ethereum'>
@@ -184,6 +184,7 @@ const CryptoSendContent = () => {
                 network='ethereum'
                 orderId={orderId}
                 updatePayment={updatePayment}
+                getBySymbol={getBySymbol}
               />
             </Tabs.Panel>
             <Tabs.Panel value='polygon'>
@@ -196,6 +197,7 @@ const CryptoSendContent = () => {
                 network='polygon'
                 orderId={orderId}
                 updatePayment={updatePayment}
+                getBySymbol={getBySymbol}
               />
             </Tabs.Panel>
           </Tabs.Root>
@@ -219,6 +221,7 @@ interface SendToPanelProps {
   network: SendPageNetwork
   orderId: Id<'orders'>
   updatePayment: UpdatePaymentFn
+  getBySymbol: (symbol: string) => {price: number} | null
 }
 
 function SendToPanel({
@@ -230,6 +233,7 @@ function SendToPanel({
   network,
   orderId,
   updatePayment,
+  getBySymbol,
 }: SendToPanelProps) {
   const [txnHash, setTxnHash] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -253,6 +257,25 @@ function SendToPanel({
       startTransition(async () => {
         setError(null)
         try {
+          const tokenPrice =
+            network === 'ethereum'
+              ? getBySymbol('ETH')?.price
+              : network === 'polygon'
+                ? getBySymbol('POL')?.price ?? getBySymbol('MATIC')?.price
+                : null
+          const expectedValueWei =
+            order &&
+            tokenPrice != null &&
+            (network === 'ethereum' || network === 'polygon')
+              ? (
+                  BigInt(
+                    Math.floor(
+                      (order.totalCents / 100 / tokenPrice) * 1e18,
+                    ),
+                  )
+                ).toString()
+              : undefined
+
           const res = await fetch('/api/crypto/verify-tx', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -261,6 +284,7 @@ function SendToPanel({
               network,
               expectedRecipient:
                 walletAddress.toLowerCase().trim() || undefined,
+              expectedValueWei,
             }),
           })
 
@@ -274,8 +298,6 @@ function SendToPanel({
             setError(error ?? 'Transaction verification failed')
             return
           }
-
-          console.log({data, value: parseHexToInt(data?.value)})
 
           await updatePayment({
             orderId,
@@ -300,7 +322,15 @@ function SendToPanel({
         }
       })
     },
-    [order, txnHash, network, orderId, updatePayment, walletAddress],
+    [
+      order,
+      txnHash,
+      network,
+      orderId,
+      updatePayment,
+      walletAddress,
+      getBySymbol,
+    ],
   )
 
   return (

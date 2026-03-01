@@ -1,6 +1,9 @@
 'use client'
 
-import {mapNumericFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
+import {
+  mapNumericFractions,
+  mapNumericGrams,
+} from '@/app/admin/(routes)/inventory/product/product-schema'
 import FuzzyText from '@/components/FuzzyText'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
@@ -81,6 +84,14 @@ const CartHistoryItemCard = ({
                     {mapNumericFractions[item.denomination]}
                   </span>
                   {item.product.unit}
+                  {item.product.unit !== 'g' &&
+                    mapNumericGrams[item.denomination] && (
+                      <span className='ml-1 text-sm md:text-base font-light tracking-tight'>
+                        <span className='opacity-50 font-brk'>(</span>
+                        {mapNumericGrams[item.denomination]} g
+                        <span className='opacity-50 font-brk'>)</span>
+                      </span>
+                    )}
                 </span>
               )}
               <span className=''>${formatPrice(displayPrice)}</span>

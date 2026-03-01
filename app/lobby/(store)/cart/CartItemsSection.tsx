@@ -1,3 +1,4 @@
+import {PendingDealsSection} from '@/app/lobby/(store)/deals/components/pending-deals-section'
 import {cn} from '@/lib/utils'
 import {getUnitPriceCents} from '@/utils/cartPrice'
 import {CartItem} from './cart-item'
@@ -22,6 +23,7 @@ export function CartItemsSection({
   return (
     <div className='md:h-[70lvh] h-fit bg-linear-to-b dark:from-dark-table/40 via-transparent to-transparent rounded-3xl overflow-hidden flex flex-col'>
       <div className='flex-1 overflow-y-auto rounded-3xl'>
+        <PendingDealsSection />
         {cartItems.map((item) => {
           const product = item.product
           const itemPrice = getUnitPriceCents(product, item.denomination)

@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Rapid Fire',
     short_name: 'Rapid Fire',
     description:
-      'Discover elevated THC flower, edibles, concentrates, and drinks curated for modern rituals.',
+      'Discover elevated THC flower, edibles, extracts, vapes, and pre-rolls curated for modern rituals.',
     start_url: '/',
     display: 'standalone',
     background_color: '#1a1a1a',
@@ -14,17 +14,17 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ['shopping', 'lifestyle'],
     icons: [
       {
-        src: '/icons/icon-192x192.png',
+        src: '/svg/rf-logo-round-204-latest.svg',
         sizes: '192x192',
+        type: 'image/svg+xml',
+      },
+      {
+        src: '/static/rf-logo-round-latest.png',
+        sizes: '180x180',
         type: 'image/png',
       },
       {
-        src: '/icons/icon-512x512.png',
-        sizes: '512x512',
-        type: 'image/png',
-      },
-      {
-        src: '/svg/rf-icon-2.svg',
+        src: '/svg/rf-logo-round-latest.svg',
         sizes: 'any',
         type: 'image/svg+xml',
       },

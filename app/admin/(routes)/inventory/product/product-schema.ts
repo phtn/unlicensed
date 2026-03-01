@@ -559,3 +559,19 @@ export const mapNumericFractions: Record<string, string> = {
 }
 
 export const productTiers = allProductTiers
+
+export const mapNumericGrams: Record<string, string> = {
+  0.125: '3.5',
+  0.25: '7',
+  0.5: '14',
+  1: '28',
+  2: '56',
+  3: '',
+  4: '',
+  5: '',
+  6: '',
+  7: '',
+  8: '',
+  9: '',
+  10: '',
+}

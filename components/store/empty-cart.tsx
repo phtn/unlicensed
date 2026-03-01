@@ -1,5 +1,6 @@
 'use client'
 
+import {PendingDealsSection} from '@/app/lobby/(store)/deals/components/pending-deals-section'
 import {CartHistory} from '@/app/lobby/(store)/cart/cart-history'
 import {Button} from '@heroui/react'
 import Link from 'next/link'
@@ -22,7 +23,8 @@ export const EmptyCart = ({onPress}: EmptyCartProps) => {
   }
 
   return (
-    <div className='w-full md:max-w-2xl mb-4'>
+    <div className='w-full md:max-w-2xl mb-4 space-y-6'>
+      <PendingDealsSection />
       <div className='text-center space-y-4'>
         <div className='hidden _flex items-center justify-center space-x-2'>
           <Button

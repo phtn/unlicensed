@@ -116,6 +116,6 @@
     "sharp": "^0.34.5",
     "snyk": "^1.1303.0",
     "tailwindcss": "^4.2.1",
-    "typescript": "^5"
+    "typescript": "5.9.3"
   }
 }

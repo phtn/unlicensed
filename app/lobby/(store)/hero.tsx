@@ -217,12 +217,12 @@ const Slide = ({
               <Button
                 size='lg'
                 as={Link}
-                href={'/lobby/strain-finder'}
+                href={'/lobby/deals'}
                 prefetch
                 onPress={toggle}
                 variant='light'
-                className='hidden border dark:border-dark-gray md:flex items-center gap-2 dark:text-brand bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg font-polysans font-light'>
-                <span className='tracking-tight'>Strain Finder</span>
+                className='hidden border dark:border-dark-gray md:flex items-center gap-2 dark:text-terpenes bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg font-polysans font-light'>
+                <span className='tracking-tight'>Find Deals</span>
                 <Icon
                   name={navigating ? 'spinners-ring' : 'search-magic'}
                   className={cn('size-3 sm:w-4 sm:h-4 dark:text-white', {

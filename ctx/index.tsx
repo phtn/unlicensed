@@ -7,6 +7,7 @@ import {ConvexProvider} from 'convex/react'
 import {createContext, useContext, useMemo, type ReactNode} from 'react'
 import {AuthCtxProvider} from './auth'
 import {CartAnimationProvider} from './cart-animation'
+import {PendingDealsProvider} from './pending-deals'
 import {PinAccessProvider} from './pin-access'
 import {Toasts} from './toast'
 
@@ -26,7 +27,9 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
         enableColorScheme
         defaultTheme='dark'
         disableTransitionOnChange>
-        <AuthCtxProvider>{children}</AuthCtxProvider>
+        <AuthCtxProvider>
+          <PendingDealsProvider>{children}</PendingDealsProvider>
+        </AuthCtxProvider>
         <Toasts />
       </ThemeProvider>
     </HeroUIProvider>

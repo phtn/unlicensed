@@ -1,4 +1,7 @@
-import {mapNumericFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
+import {
+  mapNumericFractions,
+  mapNumericGrams,
+} from '@/app/admin/(routes)/inventory/product/product-schema'
 import {ClassName} from '@/app/types'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {Id} from '@/convex/_generated/dataModel'
@@ -119,11 +122,19 @@ export const CartItem = memo(
                       )}
                       <span className='opacity-60'>/</span>
                       {item.denomination != null && (
-                        <p className='font-okxs text-xs md:text-sm text-muted-foreground'>
+                        <p className='font-okxs text-sm md:text-base text-muted-foreground'>
                           <span className='mr-1'>
                             {mapNumericFractions[item.denomination]}
                           </span>
                           {item.product.unit ?? ''}
+                          {item.product.unit !== 'g' &&
+                            mapNumericGrams[item.denomination] && (
+                              <span className='ml-1 text-sm md:text-base font-light'>
+                                <span className='opacity-50 font-brk'>(</span>
+                                {mapNumericGrams[item.denomination]} g
+                                <span className='opacity-50 font-brk'>)</span>
+                              </span>
+                            )}
                         </p>
                       )}
                     </div>
@@ -197,6 +208,14 @@ export const CartItem = memo(
                       {mapNumericFractions[item.denomination]}
                     </span>
                     {item.product.unit ?? ''}
+                    {item.product.unit !== 'g' &&
+                      mapNumericGrams[item.denomination] && (
+                        <span className='ml-1 text-sm md:text-base font-light tracking-tight'>
+                          <span className='opacity-50 font-brk'>(</span>
+                          {mapNumericGrams[item.denomination]} g
+                          <span className='opacity-50 font-brk'>)</span>
+                        </span>
+                      )}
                   </span>
                 ) : (
                   ''

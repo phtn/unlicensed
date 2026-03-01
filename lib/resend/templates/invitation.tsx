@@ -59,15 +59,16 @@ export const InvitationEmail = ({
             </Column>
           </Section>
           <Section className='mb-[32px] rounded-xl bg-linear-to-r from-cyan-500 to-blue-600 px-[24px] py-[28px]'>
-            <Text className='m-0 text-[12px] uppercase tracking-[0.12em] opacity-65'>
+            <Text className='my-3 text-[12px] uppercase tracking-[0.12em] opacity-65'>
               VIP only
             </Text>
             <Text className='m-0 mt-[4px] text-[24px] leading-9 font-polysans font-semibold'>
               {title}
             </Text>
             <Text className='m-0 mt-[6px] text-[12px] font-okxs leading-5.5 opacity-90'>
-              Hi{' '}
-              <Text className='capitalize font-semibold'>{recipientName}</Text>,
+              <Text className='capitalize font-semibold'>
+                Hi {recipientName}!
+              </Text>
               {inviterName
                 ? ` ${inviterName}'re excited to invite you to the official launch of Rapid Fire, our brand new online store!
               We’re proud to finally open our virtual doors and share our collection with you.`

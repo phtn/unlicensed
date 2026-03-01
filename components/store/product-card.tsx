@@ -1,6 +1,9 @@
 'use client'
 
-import {mapNumericFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
+import {
+  mapNumericFractions,
+  mapNumericGrams,
+} from '@/app/admin/(routes)/inventory/product/product-schema'
 import type {StoreProduct} from '@/app/types'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
@@ -30,7 +33,12 @@ const formatPrice = (priceCents: number) => {
   return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
 }
 
-type PriceOption = {price: string; denom: string; denominationValue: number}
+type PriceOption = {
+  price: string
+  denom: string
+  denominationValue: number
+  gramValue: string
+}
 
 const priceOptionsFromDenomination = (
   priceByDenomination: Record<string, number> | undefined,
@@ -47,6 +55,10 @@ const priceOptionsFromDenomination = (
     price: formatPrice(cents),
     denom: `${mapNumericFractions[denom]} ${unit}`,
     denominationValue: Number(denom),
+    gramValue:
+      unit === 'g' || mapNumericGrams[denom] === ''
+        ? ''
+        : `${mapNumericGrams[denom]} g`,
   }))
 }
 
@@ -129,7 +141,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
                       </span>
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className='w-36 p-2'>
+                  <PopoverContent className='w-40 md:w-52 p-2'>
                     <div className='flex flex-col gap-0.5 w-full'>
                       {priceOptions.map((opt) => (
                         <button
@@ -145,13 +157,22 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
                             }
                           }}
                           className={cn(
-                            'flex items-center justify-between w-full rounded-lg p-2 text-sm transition-colors font-okxs font-medium',
+                            'flex items-center justify-between w-full rounded-lg p-2 text-sm md:text-base transition-colors font-okxs font-medium',
                             productId
                               ? 'hover:bg-brand hover:text-white active:bg-default-200'
                               : 'opacity-70 cursor-not-allowed',
                           )}>
                           <p className=''>${opt.price}</p>
-                          <p className=''>{opt.denom}</p>
+                          <p className=''>
+                            <span>{opt.denom}</span>
+                            {opt.gramValue && (
+                              <span className='font-light ml-2'>
+                                <span className='opacity-50 font-brk'>(</span>
+                                {opt.gramValue}
+                                <span className='opacity-50 font-brk'>)</span>
+                              </span>
+                            )}
+                          </p>
                         </button>
                       ))}
                     </div>

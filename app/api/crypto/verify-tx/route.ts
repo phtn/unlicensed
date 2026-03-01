@@ -16,6 +16,8 @@ const requestSchema = z.object({
   network: z.enum(['ethereum', 'polygon', 'bitcoin']),
   /** Optional: expected recipient address (for EVM) or source address (for BTC) */
   expectedRecipient: z.string().optional(),
+  /** Optional: minimum tx value in wei (EVM only). Ensures payment meets order total. */
+  expectedValueWei: z.string().optional(),
 })
 
 const EVM_CHAINS = {
@@ -34,20 +36,35 @@ const normalizeBtcTxId = (h: string): string =>
 
 const normalizeAddress = (a: string): string => a.toLowerCase()
 
-async function fetchViaEtherscan<T>(
-  chainId: number,
+type ScanApiConfig = {
+  base: string
+  chainId: number
+  apiKey: string
+}
+
+function getScanApiConfig(
+  network: 'ethereum' | 'polygon',
+): ScanApiConfig | null {
+  const apiKey = process.env.ETHERSCAN_API_KEY
+  if (!apiKey) return null
+  return {
+    base: ETHERSCAN_API_BASE,
+    chainId: CHAIN_IDS[network],
+    apiKey,
+  }
+}
+
+async function fetchViaScanApi<T>(
+  config: ScanApiConfig,
   action: string,
   txhash: string,
 ): Promise<T | null> {
-  const apiKey = process.env.ETHERSCAN_API_KEY
-  if (!apiKey) return null
-
-  const url = new URL(ETHERSCAN_API_BASE)
-  url.searchParams.set('chainid', String(chainId))
+  const url = new URL(config.base)
+  url.searchParams.set('chainid', String(config.chainId))
   url.searchParams.set('module', 'proxy')
   url.searchParams.set('action', action)
   url.searchParams.set('txhash', txhash)
-  url.searchParams.set('apikey', apiKey)
+  url.searchParams.set('apikey', config.apiKey)
 
   const res = await fetch(url.toString(), {cache: 'no-store'})
   if (!res.ok) return null
@@ -57,10 +74,16 @@ async function fetchViaEtherscan<T>(
   return json.result ?? null
 }
 
-async function verifyEvmViaEtherscan(
+function parseValueToBigInt(value: string | undefined): bigint {
+  if (!value) return BigInt(0)
+  return BigInt(value)
+}
+
+async function verifyEvmViaScanApi(
   hash: string,
   network: 'ethereum' | 'polygon',
   expectedRecipient?: string,
+  expectedValueWei?: string,
 ): Promise<
   | {
       success: true
@@ -69,20 +92,17 @@ async function verifyEvmViaEtherscan(
   | {success: false; error: string}
   | null
 > {
-  const apiKey = process.env.ETHERSCAN_API_KEY
-  if (!apiKey) return null
-
-  const chainId = CHAIN_IDS[network]
+  const config = getScanApiConfig(network)
+  if (!config) return null
 
   const [receipt, transaction] = await Promise.all([
-    fetchViaEtherscan<TxReceipt>(chainId, 'eth_getTransactionReceipt', hash),
-    fetchViaEtherscan<Tx>(chainId, 'eth_getTransactionByHash', hash),
+    fetchViaScanApi<TxReceipt>(config, 'eth_getTransactionReceipt', hash),
+    fetchViaScanApi<Tx>(config, 'eth_getTransactionByHash', hash),
   ])
 
   if (!receipt || !transaction) {
     return null
   }
-  console.log(transaction, receipt)
 
   if (!receipt.status || receipt.status !== '0x1') {
     return {
@@ -97,6 +117,18 @@ async function verifyEvmViaEtherscan(
       return {
         success: false,
         error: 'Transaction recipient does not match expected wallet address',
+      }
+    }
+  }
+
+  if (expectedValueWei) {
+    const txValue = parseValueToBigInt(transaction.value)
+    const minValue = parseValueToBigInt(expectedValueWei)
+    if (txValue < minValue) {
+      return {
+        success: false,
+        error:
+          'Transaction value is less than the order total. Please ensure you sent the correct amount.',
       }
     }
   }
@@ -121,6 +153,7 @@ async function verifyEvmViaViem(
   hash: `0x${string}`,
   network: 'ethereum' | 'polygon',
   expectedRecipient?: string,
+  expectedValueWei?: string,
 ): Promise<{success: true} | {success: false; error: string}> {
   const chain = EVM_CHAINS[network]
   const publicClient = createPublicClient({
@@ -152,6 +185,21 @@ async function verifyEvmViaViem(
     }
   }
 
+  if (expectedValueWei && transaction?.value !== undefined) {
+    const txValue =
+      typeof transaction.value === 'bigint'
+        ? transaction.value
+        : parseValueToBigInt(String(transaction.value))
+    const minValue = parseValueToBigInt(expectedValueWei)
+    if (txValue < minValue) {
+      return {
+        success: false,
+        error:
+          'Transaction value is less than the order total. Please ensure you sent the correct amount.',
+      }
+    }
+  }
+
   return {success: true}
 }
 
@@ -159,6 +207,7 @@ async function verifyEvmTransaction(
   txnHash: string,
   network: 'ethereum' | 'polygon',
   expectedRecipient?: string,
+  expectedValueWei?: string,
 ): Promise<{success: true} | {success: false; error: string}> {
   const hash = normalizeEvmHash(txnHash)
 
@@ -166,17 +215,18 @@ async function verifyEvmTransaction(
     return {success: false, error: 'Invalid EVM transaction hash format'}
   }
 
-  const etherscanResult = await verifyEvmViaEtherscan(
+  const scanApiResult = await verifyEvmViaScanApi(
     hash,
     network,
     expectedRecipient,
+    expectedValueWei,
   )
 
-  if (etherscanResult !== null) {
-    return etherscanResult
+  if (scanApiResult !== null) {
+    return scanApiResult
   }
 
-  return verifyEvmViaViem(hash, network, expectedRecipient)
+  return verifyEvmViaViem(hash, network, expectedRecipient, expectedValueWei)
 }
 
 async function verifyBitcoinTransaction(
@@ -229,7 +279,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({success: false, error: message}, {status: 400})
     }
 
-    const {txnHash, network, expectedRecipient} = parsed.data
+    const {txnHash, network, expectedRecipient, expectedValueWei} = parsed.data
 
     const result =
       network === 'bitcoin'
@@ -238,6 +288,7 @@ export async function POST(request: NextRequest) {
             txnHash.trim(),
             network,
             expectedRecipient?.trim(),
+            expectedValueWei,
           )
 
     if (!result.success) {

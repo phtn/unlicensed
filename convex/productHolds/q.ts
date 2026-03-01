@@ -44,3 +44,62 @@ export const getAvailableQuantity = query({
     return Math.max(0, stock - held)
   },
 })
+
+const productDenomPair = v.object({
+  productId: v.id('products'),
+  denomination: v.optional(v.number()),
+})
+
+/**
+ * Returns available quantities for multiple product/denomination pairs.
+ * Use for deal builders with many products.
+ */
+export const getAvailableQuantities = query({
+  args: {
+    pairs: v.array(productDenomPair),
+  },
+  handler: async (ctx, args) => {
+    const result: Record<string, number> = {}
+    const now = Date.now()
+
+    for (const {productId, denomination} of args.pairs) {
+      const product = await ctx.db.get(productId)
+      if (!product) {
+        result[`${productId}-${denomination ?? 'default'}`] = 0
+        continue
+      }
+
+      const denomKey =
+        denomination !== undefined ? String(denomination) : null
+      let stock: number
+      if (product.stockByDenomination != null && denomKey != null) {
+        stock = product.stockByDenomination[denomKey] ?? 0
+      } else if (product.stockByDenomination != null) {
+        stock = Object.values(product.stockByDenomination).reduce(
+          (a, b) => a + b,
+          0,
+        )
+      } else {
+        stock = product.stock ?? 0
+      }
+
+      const holds = await ctx.db
+        .query('productHolds')
+        .withIndex('by_product_denom', (q) =>
+          q.eq('productId', productId).eq('denomination', denomination),
+        )
+        .collect()
+
+      const held = holds
+        .filter((h) => h.expiresAt > now)
+        .reduce((sum, h) => sum + h.quantity, 0)
+
+      result[`${productId}-${denomination ?? 'default'}`] = Math.max(
+        0,
+        stock - held,
+      )
+    }
+
+    return result
+  },
+})

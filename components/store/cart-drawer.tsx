@@ -1,6 +1,9 @@
 'use client'
 
-import {mapNumericFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
+import {
+  mapNumericFractions,
+  mapNumericGrams,
+} from '@/app/admin/(routes)/inventory/product/product-schema'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -226,6 +229,18 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                       {mapNumericFractions[item.denomination]}
                                     </span>
                                     <span>{product.unit ?? ''}</span>
+                                    {item.product.unit !== 'g' &&
+                                      mapNumericGrams[item.denomination] && (
+                                        <span className='ml-1 text-sm md:text-base font-light tracking-tight'>
+                                          <span className='opacity-50 font-brk'>
+                                            (
+                                          </span>
+                                          {mapNumericGrams[item.denomination]} g
+                                          <span className='opacity-50 font-brk'>
+                                            )
+                                          </span>
+                                        </span>
+                                      )}
                                   </p>
                                 )}
                               </div>

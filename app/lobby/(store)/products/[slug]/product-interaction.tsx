@@ -1,6 +1,9 @@
 'use client'
 
-import {mapFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
+import {
+  mapNumericFractions,
+  mapNumericGrams,
+} from '@/app/admin/(routes)/inventory/product/product-schema'
 import {StoreCategory, StoreProduct} from '@/app/types'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {ProductProfile} from '@/components/ui/product-profile'
@@ -75,9 +78,9 @@ export const ProductInteraction = ({
   const quantityInCart = useMemo(() => {
     if (!resolvedProductId || !cart?.items) return 0
     return cart.items
-      .filter((item) => item.product._id === resolvedProductId)
+      .filter((item) => item.productId === resolvedProductId)
       .reduce((sum, item) => sum + item.quantity, 0)
-  }, [cart?.items, resolvedProductId])
+  }, [cart, resolvedProductId])
 
   const handleDenominationChange = (index: number) => () => {
     setSelectedDenomination(index)
@@ -219,10 +222,17 @@ export const ProductInteraction = ({
                           className={cn(
                             'relative font-okxs text-base md:text-lg font-medium whitespace-nowrap portrait:px-0',
                           )}>
-                          {product.unit === 'oz'
-                            ? (mapFractions[`${denomination}${product.unit}`] ??
-                              `${denomination}${product.unit}`)
-                            : `${denomination}${product.unit}`}
+                          <span>{`${mapNumericFractions[denomination]} ${product.unit}`}</span>
+                          <span>
+                            {product.unit !== 'g' &&
+                              mapNumericGrams[denomination] && (
+                                <span className='ml-1 text-sm md:text-base font-light tracking-tight'>
+                                  <span className='opacity-50 font-brk'>(</span>
+                                  {mapNumericGrams[denomination]} g
+                                  <span className='opacity-50 font-brk'>)</span>
+                                </span>
+                              )}
+                          </span>
                         </span>
                       </Button>
                     </Badge>
@@ -264,9 +274,10 @@ export const ProductInteraction = ({
                 size='lg'
                 variant='solid'
                 isDisabled={isPending || quantityInCart < 1}
+                // isDisabled={isPending}
                 onPress={handleCheckoutPress}
                 className='w-full sm:flex-1 h-14 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
-                <span>Checkout</span>
+                <span>Checkout - {quantityInCart}</span>
               </Button>
             ) : (
               <Button
