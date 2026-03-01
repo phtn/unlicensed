@@ -101,7 +101,7 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
     eligibleForDeals: true,
   })
   const extractsQuery = useQuery(api.products.q.listProducts, {
-    categorySlug: 'concentrates',
+    categorySlug: 'extracts',
     limit: 50,
     eligibleForDeals: true,
   })

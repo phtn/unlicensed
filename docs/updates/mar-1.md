@@ -16,4 +16,5 @@ timestamp ⸬ Sun Mar 01, 2026  18:16:09 pm - +08:00
   - Computation for bundle (Average of Bundle Denomination or *derived*, ceiled to the nearest $5) (COMPLETED)
   - Bundle Price and Savings Display (COMPLETED)
   - Cart Drawer Bundle Component (COMPLETED)
+  - Deals Configurable in Admin (ONGOING)
 - Testing (Started)

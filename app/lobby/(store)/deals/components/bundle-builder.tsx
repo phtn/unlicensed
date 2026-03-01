@@ -717,7 +717,7 @@ export function BundleBuilder({
                 </span>
               )}
             </span>
-            <div className='font-semibold flex items-center space-x-1'>
+            <div className='font-semibold flex items-center space-x-1 md:space-x-2'>
               <span
                 className={cn({
                   hidden: isComplete,
