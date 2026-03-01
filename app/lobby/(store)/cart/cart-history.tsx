@@ -100,7 +100,8 @@ const CartHistoryItemCard = ({
 
           <div className='flex items-end'>
             <Button
-              size='sm'
+              size='md'
+              radius='none'
               variant='solid'
               color='primary'
               isDisabled={isAdding}
@@ -111,7 +112,7 @@ const CartHistoryItemCard = ({
                   className='size-4 -mr-2'
                 />
               }
-              className='font-polysans dark:bg-white dark:text-dark-gray font-medium text-sm'>
+              className='font-polysans bg-brand dark:bg-white dark:text-dark-gray font-medium text-base rounded-lg'>
               Add
             </Button>
             <Button
@@ -183,8 +184,8 @@ export const CartHistory = ({onItemAdded}: CartHistoryProps) => {
   }
 
   return (
-    <div className='w-full max-w-xl mx-auto py-6'>
-      <div className='flex items-center justify-between mb-8'>
+    <div className='w-full md:max-w-xl max-w-lg px-5 mx-autopy-6'>
+      <div className='flex items-center justify-between mb-4 md:mb-8'>
         <h2 className='font-polysans'>Your cart history</h2>
         <Button
           size='sm'
@@ -210,7 +211,7 @@ export const CartHistory = ({onItemAdded}: CartHistoryProps) => {
           </span>
         </Button>
       </div>
-      <div className='space-y-2'>
+      <div className='space-y-4 md:space-y-2'>
         {historyItems.map((item) => {
           const itemKey = `${item.productId}-${item.denomination ?? 'default'}`
           return (

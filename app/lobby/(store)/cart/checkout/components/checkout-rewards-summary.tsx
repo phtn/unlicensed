@@ -67,14 +67,6 @@ const FutureMilestones = memo(function FutureMilestones({
 
   if (tiers.length === 0) return null
 
-  const summary = tiers
-    .map((t) =>
-      t.shippingCost === 0
-        ? `Free shipping at ${formatRewardsCurrency(t.minSubtotal)} • ${t.cashBackPct}% cash back`
-        : `${t.cashBackPct}% back at ${formatRewardsCurrency(t.minSubtotal)}`,
-    )
-    .join('  ·  ')
-
   return (
     <div className='mt-2.5 overflow-scroll'>
       <button
@@ -173,7 +165,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
   return (
     <Card
       shadow='none'
-      className='overflow-hidden border border-foreground/20 bg-gradient-to-br from-sidebar to-slate-400/[0.06] dark:from-foreground/5 dark:to-foreground/10'>
+      className='overflow-hidden border border-foreground/20 bg-linear-to-br from-sidebar to-slate-400/6 dark:from-foreground/5 dark:to-foreground/10'>
       <CardBody className='relative space-y-4 p-3 md:p-5 overflow-hidden'>
         {/* Decorative glow */}
         <div
