@@ -36,7 +36,7 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
   return (
     <section
       id='featured'
-      className='mx-auto w-full md:max-w-7xl md:pt-16 lg:pt-24 px-4 sm:px-6 lg:px-8 bg-background'>
+      className='mx-auto w-full md:max-w-7xl md:pt-16 lg:pt-24 px-2 sm:px-4 md:px-6 lg:px-8 bg-background'>
       <div className='flex flex-col gap-10'>
         <div className='flex flex-wrap items-center justify-between gap-4 relative'>
           <div className='space-y-1'>
@@ -57,7 +57,7 @@ export const FeaturedProducts = ({featuredProducts}: FeaturedProductsProps) => {
             Personalize with Strain Finder
           </Button>
         </div>
-        <div className='relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8'>
+        <div className='relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6 lg:gap-8'>
           {productsWithImages.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}

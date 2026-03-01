@@ -3,6 +3,7 @@ import type {StoreCategory, StoreProduct} from '@/app/types'
 import {NewHome} from '@/components/base44/home'
 import {QuickScroll} from '@/components/base44/quick-scroll'
 import {AboutUs} from '@/components/main/about-us'
+import {HyperBadge} from '@/components/main/badge'
 import {api} from '@/convex/_generated/api'
 import {adaptCategory, adaptProduct} from '@/lib/convexClient'
 import type {BuildType} from '@/lib/flags'
@@ -11,6 +12,7 @@ import {useMemo} from 'react'
 import {FullCollection} from './collection'
 import {FeaturedProducts} from './featured'
 import {StrainFinderMini} from './strain-finder'
+import { DealsLink } from './deals'
 
 interface StorefrontPageProps {
   initialCategories: StoreCategory[]
@@ -59,6 +61,7 @@ export const Content = ({
       <NewHome />
       <FeaturedProducts featuredProducts={featuredProducts} />
       <FullCollection products={products} categories={categories} />
+      <DealsLink />
       <QuickScroll href='#finder' />
       <StrainFinderMini categories={categories.slice(0, 4)} />
       <AboutUs />

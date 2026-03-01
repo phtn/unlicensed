@@ -51,7 +51,7 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
   return (
     <section
       id='collection'
-      className='pt-24 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 bg-background'>
+      className='pt-24 mx-auto w-full max-w-7xl px-2 sm:px-4 md:px-6 lg:px-8 bg-background'>
       <div className='flex flex-col gap-20'>
         <div className='flex flex-wrap items-center justify-between gap-4'>
           <div className='space-y-1'>
@@ -86,7 +86,7 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
                   <span>{items.length} picks</span>
                 </div>
               </div>
-              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8'>
+              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6 lg:gap-8'>
                 {items.map((product) => (
                   <ProductCard key={product.slug} product={product} />
                 ))}

@@ -15,7 +15,7 @@ const badgeVariants = cva(
         sale: 'bg-[#bebebe] text-dark-gray border-transparent shadow-lg shadow-[#cdcdcd]/40 hover:shadow-[#dedede]/60',
         limited:
           'bg-limited text-dark-gray border-dark-gray/50 shadow-lg shadow-limited/40 hover:shadow-limited/60',
-        deal: 'border-[0.5px] border-white bg-deal text-white shadow-lg shadow-deal/40 [a&]:hover:bg-deal/90 focus-visible:ring-deal/20 dark:focus-visible:ring-deal/40 dark:bg-deal/60',
+        deal: 'border-1 border-white bg-terpenes font-polysans text-white shadow-lg shadow-tepenes/40 [a&]:hover:bg-tepenes/90 focus-visible:ring-tepenes/20 dark:focus-visible:ring-tepenes/40 dark:bg-tepenes/60',
         secondary:
           'border-transparent bg-secondary text-dark-gray [a&]:hover:bg-secondary/90',
         rare: 'border-transparent bg-rare dark:bg-rare shadow-lg shadow-rare/40 text-white [a&]:hover:bg-rare/90 focus-visible:ring-rare/20 dark:focus-visible:ring-rare/40 dark:bg-rare/60',

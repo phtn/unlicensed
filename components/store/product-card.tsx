@@ -55,10 +55,7 @@ const priceOptionsFromDenomination = (
     price: formatPrice(cents),
     denom: `${mapNumericFractions[denom]} ${unit}`,
     denominationValue: Number(denom),
-    gramValue:
-      unit === 'g' || mapNumericGrams[denom] === ''
-        ? ''
-        : `${mapNumericGrams[denom]} g`,
+    gramValue: unit !== 'oz' ? '' : `${mapNumericGrams[denom]} g`,
   }))
 }
 
@@ -78,21 +75,20 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
       href={`/lobby/products/${product.slug.toLocaleLowerCase()}`}
       radius='none'
       isPressable
-      disableRipple={false}
       shadow='sm'
       className={cn(
-        'group h-full transition-all duration-300 hover:-translate-y-1.5 rounded-3xl',
+        'group h-full transition-all duration-300 hover:-translate-y-1.5 md:rounded-3xl rounded-2xl',
         className,
       )}>
       <CardBody className='flex flex-col p-0'>
-        <div className='flex justify-center items-center relative overflow-hidden sm:rounded-t-3xl'>
+        <div className='flex justify-center items-center relative overflow-hidden sm:rounded-t-3xl rounded-t-2xl'>
           <div className='absolute size-full overflow-hidden inset-0 z-10 bg-linear-to-t from-foreground/10 via-transparent to-transparent opacity-0 border-b-[0.33px] border-transparent group-hover:border-foreground/40 transition-all duration-300 group-hover:opacity-100' />
           {product.image ? (
             <Image
               src={product.image}
               alt={product.name}
               shadow='none'
-              className='w-full rounded-t-3xl rounded-b-xl object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
+              className='w-full md:rounded-t-3xl rounded-t-2xl rounded-b-xl object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
               isLoading={!product.image}
               loading='eager'
             />
@@ -111,7 +107,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
           </div>
         </div>
 
-        <div className='flex flex-col gap-3 sm:gap-4 p-3 sm:pl-4 sm:pr-3 h-14 md:h-15'>
+        <div className='flex flex-col gap-3 sm:gap-4 p-3 sm:pl-4 sm:pr-3 h-13 md:h-15'>
           <div className='flex items-start justify-between gap-2 h-full'>
             <div className='flex-1 min-w-0'>
               <h3 className='text-base sm:text-lg font-okxs truncate capitalize'>
@@ -123,7 +119,9 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
                 <Popover
                   isOpen={popoverOpen}
                   onOpenChange={setPopoverOpen}
-                  placement='top-end'
+                  placement='top'
+                  offset={12}
+                  crossOffset={4}
                   showArrow>
                   <PopoverTrigger>
                     <button
@@ -132,16 +130,16 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
                         e.preventDefault()
                         e.stopPropagation()
                       }}
-                      className='font-okxs h-7 text-base sm:text-base hover:bg-sidebar/80 bg-transparent shadow-none min-w-0 w-fit text-left transition-opacity text-brand px-2 rounded-md'>
+                      className='font-okxs h-7 text-base sm:text-base hover:bg-sidebar/80 bg-sidebar/50 md:bg-transparent shadow-none min-w-0 w-fit text-left transition-opacity text-brand px-2 rounded-md'>
                       <span className='hidden md:flex tracking-tight'>
                         Add to cart
                       </span>
                       <span className=' md:hidden flex items-center tracking-tight'>
-                        <Icon name='plus' className='size-4' /> Cart
+                        <Icon name='plus' className='size-4' />
                       </span>
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className='w-40 md:w-52 p-2'>
+                  <PopoverContent className='w-44 md:w-52 p-1.5 md:p-2 dark:border-sidebar dark:bg-dark-table'>
                     <div className='flex flex-col gap-0.5 w-full'>
                       {priceOptions.map((opt) => (
                         <button
@@ -163,10 +161,10 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
                               : 'opacity-70 cursor-not-allowed',
                           )}>
                           <p className=''>${opt.price}</p>
-                          <p className=''>
+                          <p>
                             <span>{opt.denom}</span>
                             {opt.gramValue && (
-                              <span className='font-light ml-2'>
+                              <span className='font-light ml-1 md:ml-2'>
                                 <span className='opacity-50 font-brk'>(</span>
                                 {opt.gramValue}
                                 <span className='opacity-50 font-brk'>)</span>

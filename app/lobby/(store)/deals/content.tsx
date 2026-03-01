@@ -150,7 +150,7 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
   }, [productsWithImages])
 
   return (
-    <div className='min-h-screen pt-16 sm:pt-20 md:pt-24 lg:pt-26 pb-16 px-4 sm:px-6 lg:px-8'>
+    <div className='min-h-screen pt-16 sm:pt-20 md:pt-24 lg:pt-26 pb-16 px-2 sm:px-4 md:px-6 lg:px-8'>
       <div className='h-16 w-full bg-indigo-400 mb-8 flex items-center justify-center text-xl text-white font-okxs space-x-2 md:rounded-lg'>
         <Icon name='code' />
         <span className=''>Development In-progress</span>
@@ -160,9 +160,8 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
           <h1 className='font-polysans text-3xl sm:text-4xl font-bold tracking-tight'>
             Deals & Bundles
           </h1>
-          <p className='mt-2 text-muted-foreground'>
-            <span className='hidden'>Save more when you mix and match. </span>
-            Build custom bundles with our stepper and add to cart when complete.
+          <p className='mt-2 text-sm md:text-base text-muted-foreground'>
+            Save more when you mix and match custom bundles.{' '}
           </p>
         </header>
 
