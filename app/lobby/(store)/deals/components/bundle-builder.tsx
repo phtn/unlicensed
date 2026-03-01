@@ -9,20 +9,20 @@ import {
   type BundleVariation,
   type PendingBundleItem,
 } from '@/app/lobby/(store)/deals/lib/deal-types'
-import {serializeSelections} from '@/app/lobby/(store)/deals/searchParams'
-import type {StoreProduct} from '@/app/types'
-import {api} from '@/convex/_generated/api'
-import {Id} from '@/convex/_generated/dataModel'
-import {usePendingDeals} from '@/ctx/pending-deals'
+import { serializeSelections } from '@/app/lobby/(store)/deals/searchParams'
+import type { StoreProduct } from '@/app/types'
+import { api } from '@/convex/_generated/api'
+import { Id } from '@/convex/_generated/dataModel'
+import { usePendingDeals } from '@/ctx/pending-deals'
 import {
   type CartItemWithProduct,
   isProductCartItemWithProduct,
   useCart,
 } from '@/hooks/use-cart'
-import {Icon} from '@/lib/icons'
-import {cn} from '@/lib/utils'
-import {Badge, Button, Card, CardBody, CardHeader, Image} from '@heroui/react'
-import {useQuery} from 'convex/react'
+import { Icon } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+import { Badge, Button, Card, CardBody, CardHeader, Image } from '@heroui/react'
+import { useQuery } from 'convex/react'
 import {
   useCallback,
   useEffect,
@@ -31,8 +31,8 @@ import {
   useTransition,
   ViewTransition,
 } from 'react'
-import {DealsBundleDebug} from './deals-bundle-debug'
-import {Stepper} from './stepper'
+import { DealsBundleDebug } from './deals-bundle-debug'
+import { Stepper } from './stepper'
 
 /** Denominations equivalent to the given one (e.g. 0.125 oz = 3.5g for flower) */
 function getEquivalentDenominations(
@@ -87,18 +87,18 @@ interface BundleBuilderProps {
   /** Controlled: variation index from URL/parent */
   variationIndex?: number
   /** Controlled: selections from URL/parent */
-  selections?: Map<string, {productId: Id<'products'>; quantity: number}>
+  selections?: Map<string, { productId: Id<'products'>; quantity: number }>
   /** Controlled: called when variation changes */
   onVariationChange?: (index: number) => void
   /** Controlled: called when selections change */
   onSelectionsChange?: (
-    selections: Map<string, {productId: Id<'products'>; quantity: number}>,
+    selections: Map<string, { productId: Id<'products'>; quantity: number }>,
   ) => void
 }
 
 /** Build map of productId-denomination -> quantity in cart */
 function cartQtyByProductDenom(
-  cart: {items: CartItemWithProduct[]} | null,
+  cart: { items: CartItemWithProduct[] } | null,
 ): Record<string, number> {
   if (!cart?.items?.length) return {}
   const map: Record<string, number> = {}
@@ -130,7 +130,7 @@ export function BundleBuilder({
   onVariationChange,
   onSelectionsChange,
 }: BundleBuilderProps) {
-  const {addItem, addBundle, cart, isAuthenticated} = useCart()
+  const { addItem, addBundle, cart, isAuthenticated } = useCart()
   const pendingCtx = usePendingDeals()
   const isControlled =
     controlledVariationIndex !== undefined && onVariationChange != null
@@ -141,7 +141,7 @@ export function BundleBuilder({
     config.defaultVariationIndex ?? 0,
   )
   const [internalSelections, setInternalSelections] = useState<
-    Map<string, {productId: Id<'products'>; quantity: number}>
+    Map<string, { productId: Id<'products'>; quantity: number }>
   >(new Map())
   const [isPending, startTransition] = useTransition()
 
@@ -168,10 +168,10 @@ export function BundleBuilder({
   const setSelections = useCallback(
     (
       updater:
-        | Map<string, {productId: Id<'products'>; quantity: number}>
+        | Map<string, { productId: Id<'products'>; quantity: number }>
         | ((
-            prev: Map<string, {productId: Id<'products'>; quantity: number}>,
-          ) => Map<string, {productId: Id<'products'>; quantity: number}>),
+          prev: Map<string, { productId: Id<'products'>; quantity: number }>,
+        ) => Map<string, { productId: Id<'products'>; quantity: number }>),
     ) => {
       const next = typeof updater === 'function' ? updater(selections) : updater
       if (isSelectionsControlled) onSelectionsChange?.(next)
@@ -245,7 +245,7 @@ export function BundleBuilder({
   }, [rawCartQtyMap, equivalentDenoms, denom])
 
   const selectionsFromCart = useMemo(() => {
-    const map = new Map<string, {productId: Id<'products'>; quantity: number}>()
+    const map = new Map<string, { productId: Id<'products'>; quantity: number }>()
     if (!cart?.items?.length) return map
     for (const item of cart.items) {
       if (isProductCartItemWithProduct(item)) {
@@ -256,7 +256,7 @@ export function BundleBuilder({
         const key = String(item.productId)
         const existing = map.get(key)
         const qty = (existing?.quantity ?? 0) + item.quantity
-        if (qty > 0) map.set(key, {productId: item.productId, quantity: qty})
+        if (qty > 0) map.set(key, { productId: item.productId, quantity: qty })
       } else if ('bundleItems' in item && Array.isArray(item.bundleItems)) {
         const bundleItems = item.bundleItems as Array<{
           productId: Id<'products'>
@@ -269,7 +269,7 @@ export function BundleBuilder({
           const key = String(bi.productId)
           const existing = map.get(key)
           const qty = (existing?.quantity ?? 0) + bi.quantity
-          if (qty > 0) map.set(key, {productId: bi.productId, quantity: qty})
+          if (qty > 0) map.set(key, { productId: bi.productId, quantity: qty })
         }
       }
     }
@@ -365,7 +365,7 @@ export function BundleBuilder({
     [availableMap, cartQtyMap, config.id, denom, lowThreshold, maxPerStrain],
   )
 
-  const {setPendingDeal, clearPendingDeal} = pendingCtx ?? {}
+  const { setPendingDeal, clearPendingDeal } = pendingCtx ?? {}
   const syncPending = useCallback(() => {
     if (!setPendingDeal || !clearPendingDeal) return
     const items: PendingBundleItem[] = []
@@ -427,7 +427,7 @@ export function BundleBuilder({
         if (!cur) return prev
         const newQty = cur.quantity - 1
         if (newQty <= 0) next.delete(key)
-        else next.set(key, {productId, quantity: newQty})
+        else next.set(key, { productId, quantity: newQty })
         return next
       })
     },
@@ -524,14 +524,15 @@ export function BundleBuilder({
     <Card className='rounded-3xl border border-foreground/20 overflow-hidden'>
       <CardHeader className='flex flex-col items-start gap-2'>
         <div className='flex items-center justify-between w-full min-h-12 md:min-h-14'>
-          <h2 className='pl-1 space-x-4 font-polysans text-lg md:text-xl font-semibold'>
+          <h2 className='flex items-center pl-1 space-x-4 font-polysans text-lg md:text-xl font-semibold'>
             <span>{config.title}</span>
-            {config.variations.length > 1 && (
+            {config.variations.length === 1 && (
               <div className='flex items-center space-x-2 md:space-x-3'>
                 {config.categorySlugs.map((slug) => (
                   <span
                     key={slug}
-                    className='font-okxs capitalize font-medium md:text-lg text-base px-2.5 py-1 rounded-full bg-sidebar border border-dark-table/20'>
+                    className='font-okxs capitalize font-medium md:text-lg text-base px-2.5 py-1 rounded-full bg-sidebar border border-dark-table/20'
+                  >
                     {slug}
                   </span>
                 ))}
@@ -560,7 +561,8 @@ export function BundleBuilder({
                         'min-w-5 size-6 rounded-full bg-brand text-white flex items-center justify-center',
                       ],
                     }}
-                    placement='top-right'>
+                    placement='top-right'
+                  >
                     <Button
                       size='md'
                       variant={variationIndex === i ? 'solid' : 'flat'}
@@ -571,7 +573,8 @@ export function BundleBuilder({
                           'bg-dark-table text-white dark:bg-white dark:text-dark-table px-2.5':
                             variationIndex === i,
                         },
-                      )}>
+                      )}
+                    >
                       <span>
                         <span>
                           {v.totalUnits} x{' '}
@@ -604,13 +607,15 @@ export function BundleBuilder({
               isComplete
                 ? 'font-medium text-terpenes'
                 : 'font-medium text-foreground/70'
-            }>
+            }
+          >
             {totalSelected} / {variation.totalUnits} selected
           </span>
           {totalFromCart > 0 && (
             <span
               id='from-cart'
-              className='bg-brand text-white rounded-md px-2.5 py-1 text-sm'>
+              className='bg-brand text-white rounded-md px-2.5 py-1 text-sm'
+            >
               {totalFromCart} {totalFromCart === 1 ? 'item' : 'items'} from cart
             </span>
           )}
@@ -628,7 +633,8 @@ export function BundleBuilder({
             return (
               <div
                 key={product._id}
-                className='flex items-center gap-3 md:rounded-2xl border-b first:border-t md:border border-foreground/10 p-2 md:p-3'>
+                className='flex items-center gap-3 md:rounded-2xl border-b first:border-t md:border border-foreground/10 p-2 md:p-3'
+              >
                 {product.image && (
                   <Badge
                     isOneChar
@@ -640,15 +646,16 @@ export function BundleBuilder({
                         />
                       ) : null
                     }
-                    className={cn('shrink-0 hidden', {flex: inCart})}
+                    className={cn('shrink-0 hidden', { flex: inCart })}
                     classNames={{
                       badge: [
                         inCart &&
-                          'rounded-md md:rounded-lg bg-white dark:bg-brand dark:border-2 size-5 md:size-6 border-sidebar border-1 dark:border-brand shadow-xs',
+                        'rounded-md md:rounded-lg bg-white dark:bg-brand dark:border-2 size-5 md:size-6 border-sidebar border-1 dark:border-brand shadow-xs',
                         '',
                       ],
                     }}
-                    placement='top-right'>
+                    placement='top-right'
+                  >
                     <Image
                       src={product.image}
                       alt={product.name}
@@ -723,7 +730,8 @@ export function BundleBuilder({
                   className={cn({
                     'line-through decoration-dark-table dark:decoration-zinc-700 decoration-1 font-light opacity-50 text-base':
                       isComplete,
-                  })}>
+                  })}
+                >
                   ${(subtotalCents / 100).toFixed(2)}
                 </span>
               )}
@@ -732,12 +740,14 @@ export function BundleBuilder({
               <span
                 className={cn({
                   hidden: isComplete,
-                })}>
+                })}
+              >
                 ${(subtotalCents / 100).toFixed(2)}
               </span>
               <span
                 id='bundle-total'
-                className='text-terpenes font-semibold text-lg'>
+                className='text-terpenes font-semibold text-lg'
+              >
                 {bundleTotalDisplay && isComplete
                   ? ` $${(bundleTotalDisplay.bundleTotalCents / 100).toFixed(2)} `
                   : null}
@@ -775,7 +785,8 @@ export function BundleBuilder({
                 ) : (
                   <Icon name='box-bold' className='size-5' />
                 )
-              }>
+              }
+            >
               {bundleAlreadyInCart
                 ? 'Bundle already in cart'
                 : isComplete
