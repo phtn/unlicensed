@@ -11,6 +11,7 @@ export type BundleType =
 export interface BundleVariation {
   totalUnits: number
   denominationPerUnit: number
+  denominationLabel?: string
   unitLabel: string
 }
 
@@ -33,11 +34,22 @@ export const BUNDLE_CONFIGS: Record<BundleType, BundleConfig> = {
   'build-your-own-oz': {
     id: 'build-your-own-oz',
     title: 'Build Your Own Oz',
-    description: '8 x ⅛ oz or 4 x ¼ oz — mix strains your way',
+    description:
+      'Select 8 of ⅛ oz (3.5g) or 4 of ¼ oz (7g) — mix strains your way',
     categorySlugs: ['flower'],
     variations: [
-      {totalUnits: 8, denominationPerUnit: 3.5, unitLabel: '⅛ oz'},
-      {totalUnits: 4, denominationPerUnit: 7, unitLabel: '¼ oz'},
+      {
+        totalUnits: 8,
+        denominationPerUnit: 0.125,
+        denominationLabel: '⅛',
+        unitLabel: 'oz',
+      },
+      {
+        totalUnits: 4,
+        denominationPerUnit: 0.25,
+        denominationLabel: '¼',
+        unitLabel: 'oz',
+      },
     ],
     defaultVariationIndex: 0,
     maxPerStrain: 2,
@@ -49,7 +61,12 @@ export const BUNDLE_CONFIGS: Record<BundleType, BundleConfig> = {
     description: 'Pick up to 4 oz, 1 oz max per strain',
     categorySlugs: ['flower'],
     variations: [
-      {totalUnits: 4, denominationPerUnit: 28, unitLabel: '1 oz'},
+      {
+        totalUnits: 4,
+        denominationPerUnit: 1,
+        denominationLabel: '1',
+        unitLabel: 'oz',
+      },
     ],
     maxPerStrain: 1,
   },
@@ -58,19 +75,15 @@ export const BUNDLE_CONFIGS: Record<BundleType, BundleConfig> = {
     title: '3 x 1g Mix & Match',
     description: 'Pick 3 extracts, 1g each',
     categorySlugs: ['concentrates'],
-    variations: [
-      {totalUnits: 3, denominationPerUnit: 1, unitLabel: '1g'},
-    ],
+    variations: [{totalUnits: 3, denominationPerUnit: 1, unitLabel: 'g'}],
     maxPerStrain: 1,
   },
   'extracts-7g': {
     id: 'extracts-7g',
     title: '7 x 1g Mix & Match',
     description: 'Pick 7 extracts, 1g each',
-    categorySlugs: ['concentrates'],
-    variations: [
-      {totalUnits: 7, denominationPerUnit: 1, unitLabel: '1g'},
-    ],
+    categorySlugs: ['extracts'],
+    variations: [{totalUnits: 7, denominationPerUnit: 1, unitLabel: 'g'}],
     maxPerStrain: 1,
   },
   'edibles-prerolls-5': {
@@ -78,9 +91,7 @@ export const BUNDLE_CONFIGS: Record<BundleType, BundleConfig> = {
     title: '5 x 1 Unit Mix & Match',
     description: 'Pick 5 edibles or pre-rolls',
     categorySlugs: ['edibles', 'pre-rolls'],
-    variations: [
-      {totalUnits: 5, denominationPerUnit: 1, unitLabel: '1 unit'},
-    ],
+    variations: [{totalUnits: 5, denominationPerUnit: 1, unitLabel: 'unit'}],
     maxPerStrain: 1,
   },
   'edibles-prerolls-10': {
@@ -88,9 +99,7 @@ export const BUNDLE_CONFIGS: Record<BundleType, BundleConfig> = {
     title: '10 x 1 Unit Mix & Match',
     description: 'Pick 10 edibles or pre-rolls',
     categorySlugs: ['edibles', 'pre-rolls'],
-    variations: [
-      {totalUnits: 10, denominationPerUnit: 1, unitLabel: '1 unit'},
-    ],
+    variations: [{totalUnits: 10, denominationPerUnit: 1, unitLabel: 'unit'}],
     maxPerStrain: 1,
   },
 }

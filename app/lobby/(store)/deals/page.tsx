@@ -9,16 +9,32 @@ export const metadata: Metadata = {
 }
 
 export default async function DealsPage() {
-  const [flower, concentrates, edibles, prerolls] = await Promise.all([
-    fetchProducts({categorySlug: 'flower', limit: 50}),
-    fetchProducts({categorySlug: 'concentrates', limit: 50}),
-    fetchProducts({categorySlug: 'edibles', limit: 50}),
-    fetchProducts({categorySlug: 'pre-rolls', limit: 50}),
+  const [flower, extracts, edibles, prerolls] = await Promise.all([
+    fetchProducts({
+      categorySlug: 'flower',
+      limit: 50,
+      eligibleForDeals: true,
+    }),
+    fetchProducts({
+      categorySlug: 'concentrates',
+      limit: 50,
+      eligibleForDeals: true,
+    }),
+    fetchProducts({
+      categorySlug: 'edibles',
+      limit: 50,
+      eligibleForDeals: true,
+    }),
+    fetchProducts({
+      categorySlug: 'pre-rolls',
+      limit: 50,
+      eligibleForDeals: true,
+    }),
   ])
 
   const initialProductsByCategory = {
     flower,
-    concentrates,
+    extracts,
     edibles,
     'pre-rolls': prerolls,
   }

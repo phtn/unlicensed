@@ -7,6 +7,7 @@ export const listProducts = query({
   args: {
     categorySlug: v.optional(v.string()),
     limit: v.optional(v.number()),
+    eligibleForDeals: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const limit = args.limit ?? 50
@@ -18,11 +19,12 @@ export const listProducts = query({
           )
       : ctx.db.query('products')
 
-    const products = await baseQuery.collect()
-    return sortProducts(products.filter((p) => p.archived !== true)).slice(
-      0,
-      limit,
-    )
+    let products = await baseQuery.collect()
+    products = products.filter((p) => p.archived !== true)
+    if (args.eligibleForDeals === true) {
+      products = products.filter((p) => p.eligibleForDeals === true)
+    }
+    return sortProducts(products).slice(0, limit)
   },
 })
 

@@ -1,6 +1,10 @@
 'use client'
 
 import {
+  mapNumericFractions,
+  mapNumericGrams,
+} from '@/app/admin/(routes)/inventory/product/product-schema'
+import {
   type BundleConfig,
   type BundleVariation,
   type PendingBundleItem,
@@ -11,6 +15,7 @@ import {Id} from '@/convex/_generated/dataModel'
 import {usePendingDeals} from '@/ctx/pending-deals'
 import {useCart} from '@/hooks/use-cart'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {Button, Card, CardBody, CardHeader, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {
@@ -21,6 +26,7 @@ import {
   useTransition,
   ViewTransition,
 } from 'react'
+import {DealsBundleDebug} from './deals-bundle-debug'
 import {Stepper} from './stepper'
 
 function getUnitPriceCents(
@@ -57,12 +63,14 @@ interface BundleBuilderProps {
   config: BundleConfig
   products: StoreProduct[]
   productIds: Id<'products'>[]
+  debug?: boolean
 }
 
 export function BundleBuilder({
   config,
   products,
   productIds,
+  debug = false,
 }: BundleBuilderProps) {
   const {addItem} = useCart()
   const pendingCtx = usePendingDeals()
@@ -119,7 +127,7 @@ export function BundleBuilder({
       if (available <= 0) return 0
       if (
         lowThreshold !== undefined &&
-        denom === 3.5 &&
+        denom === 0.125 &&
         available <= lowThreshold
       ) {
         return 1
@@ -225,21 +233,37 @@ export function BundleBuilder({
             {config.title}
           </h2>
           {config.variations.length > 1 && (
-            <div className='flex gap-1'>
+            <div className='flex p-1 rounded-full bg-sidebar dark:bg-dark-table'>
               {config.variations.map((v, i) => (
                 <Button
                   key={i}
-                  size='sm'
-                  variant={variationIndex === i ? 'solid' : 'bordered'}
+                  size='md'
+                  variant={variationIndex === i ? 'solid' : 'flat'}
                   onPress={() => setVariationIndex(i)}
-                  className='rounded-full'>
-                  {v.totalUnits} x {v.unitLabel}
+                  className={cn('rounded-full text-base bg-transparent', {
+                    'bg-dark-table text-white dark:bg-white dark:text-dark-table':
+                      variationIndex === i,
+                  })}>
+                  <span>
+                    <span>
+                      {v.totalUnits} x{' '}
+                      {mapNumericFractions[v.denominationPerUnit]} {v.unitLabel}
+                    </span>
+                    {mapNumericGrams[v.denominationPerUnit] &&
+                      v.unitLabel !== 'g' && (
+                        <span className='ml-2 font-light'>
+                          <span className='font-brk opacity-50'>(</span>
+                          {mapNumericGrams[v.denominationPerUnit]}g
+                          <span className='font-brk opacity-50'>)</span>
+                        </span>
+                      )}
+                  </span>
                 </Button>
               ))}
             </div>
           )}
         </div>
-        <p className='text-sm text-muted-foreground'>{config.description}</p>
+        <p className='text-muted-foreground'>{config.description}</p>
         <div className='flex items-center gap-2 text-sm'>
           <span
             className={
@@ -271,9 +295,23 @@ export function BundleBuilder({
                   />
                 )}
                 <div className='min-w-0 flex-1'>
-                  <p className='truncate font-medium text-sm'>{product.name}</p>
-                  <p className='text-xs text-muted-foreground'>
-                    ${(price / 100).toFixed(2)} / {variation.unitLabel}
+                  <p className='truncate font-medium text-sm md:text-base'>
+                    {product.name}
+                  </p>
+                  <p className='text-muted-foreground'>
+                    <span>
+                      ${(price / 100).toFixed(2)} /{' '}
+                      {mapNumericFractions[variation.denominationPerUnit]}{' '}
+                      {variation.unitLabel}
+                    </span>
+                    {mapNumericGrams[variation.denominationPerUnit] &&
+                      variation.unitLabel === 'oz' && (
+                        <span className='text-sm ml-2'>
+                          · <span className='font-brk opacity-50'>(</span>
+                          {mapNumericGrams[variation.denominationPerUnit]} g
+                          <span className='font-brk opacity-50'>)</span>
+                        </span>
+                      )}
                   </p>
                 </div>
                 <Stepper
@@ -294,6 +332,19 @@ export function BundleBuilder({
           </p>
         )}
 
+        {debug && (
+          <DealsBundleDebug
+            bundleId={config.id}
+            config={config}
+            variation={variation}
+            products={products}
+            productIds={productIds}
+            pairs={pairs}
+            availableMap={availableMap}
+            filteredProducts={filteredProducts}
+          />
+        )}
+
         <div className='mt-4 flex items-center justify-between border-t border-foreground/10 pt-4'>
           <span className='font-semibold'>
             Subtotal: ${(subtotalCents / 100).toFixed(2)}
@@ -301,13 +352,16 @@ export function BundleBuilder({
           <ViewTransition>
             <Button
               color='primary'
+              size='lg'
+              radius='none'
               onPress={handleAddToCart}
               isDisabled={!isComplete || isPending}
+              className='bg-terpenes rounded-lg'
               startContent={
                 isPending ? (
                   <Icon name='spinners-ring' className='size-4' />
                 ) : (
-                  <Icon name='bag-solid' className='size-4' />
+                  <Icon name='box-bold' className='size-5' />
                 )
               }>
               {isComplete ? 'Add bundle to cart' : 'Complete bundle to add'}

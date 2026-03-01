@@ -207,6 +207,7 @@ export const fetchCategories = cache(_fetchCategories)
 const _fetchProducts = async (options?: {
   categorySlug?: string
   limit?: number
+  eligibleForDeals?: boolean
 }): Promise<StoreProduct[]> => {
   const client = getClient()
   if (!client) {
@@ -218,6 +219,7 @@ const _fetchProducts = async (options?: {
     const products = (await client.query(api.products.q.listProducts, {
       categorySlug: options?.categorySlug,
       limit: options?.limit,
+      eligibleForDeals: options?.eligibleForDeals,
     })) as RawProduct[]
     return products.map(adaptProduct)
   } catch (error) {

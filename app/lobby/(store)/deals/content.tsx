@@ -11,6 +11,7 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {useQuery} from 'convex/react'
+import {useSearchParams} from 'next/navigation'
 import {useMemo} from 'react'
 import {BundleBuilder} from './components/bundle-builder'
 
@@ -28,21 +29,28 @@ const DEAL_BUNDLE_IDS: BundleType[] = [
 ]
 
 export function DealsContent({initialProductsByCategory}: DealsContentProps) {
+  const searchParams = useSearchParams()
+  const debug = searchParams.get('debug') === '1'
+
   const flowerQuery = useQuery(api.products.q.listProducts, {
     categorySlug: 'flower',
     limit: 50,
+    eligibleForDeals: true,
   })
-  const concentratesQuery = useQuery(api.products.q.listProducts, {
+  const extractsQuery = useQuery(api.products.q.listProducts, {
     categorySlug: 'concentrates',
     limit: 50,
+    eligibleForDeals: true,
   })
   const ediblesQuery = useQuery(api.products.q.listProducts, {
     categorySlug: 'edibles',
     limit: 50,
+    eligibleForDeals: true,
   })
   const prerollsQuery = useQuery(api.products.q.listProducts, {
     categorySlug: 'pre-rolls',
     limit: 50,
+    eligibleForDeals: true,
   })
 
   const flower = useMemo(
@@ -52,12 +60,12 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
       [],
     [flowerQuery, initialProductsByCategory],
   )
-  const concentrates = useMemo(
+  const extracts = useMemo(
     () =>
-      concentratesQuery?.map(adaptProduct) ??
-      initialProductsByCategory['concentrates'] ??
+      extractsQuery?.map(adaptProduct) ??
+      initialProductsByCategory['extracts'] ??
       [],
-    [concentratesQuery, initialProductsByCategory],
+    [extractsQuery, initialProductsByCategory],
   )
   const edibles = useMemo(
     () =>
@@ -77,19 +85,19 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
   const productsByCategory = useMemo(
     () => ({
       flower,
-      concentrates,
+      extracts,
       edibles: [...edibles, ...prerolls],
       'pre-rolls': prerolls,
     }),
-    [flower, concentrates, edibles, prerolls],
+    [flower, extracts, edibles, prerolls],
   )
 
   const imageIds = useMemo(
     () =>
-      [...flower, ...concentrates, ...edibles, ...prerolls]
+      [...flower, ...extracts, ...edibles, ...prerolls]
         .map((p) => p.image)
         .filter((id): id is NonNullable<typeof id> => id != null),
-    [flower, concentrates, edibles, prerolls],
+    [flower, extracts, edibles, prerolls],
   )
   const resolveUrl = useStorageUrls(imageIds)
 
@@ -102,11 +110,11 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
       })
     return {
       flower: resolve(flower),
-      concentrates: resolve(concentrates),
+      extracts: resolve(extracts),
       edibles: resolve([...edibles, ...prerolls]),
       prerolls: resolve(prerolls),
     }
-  }, [flower, concentrates, edibles, prerolls, resolveUrl])
+  }, [flower, extracts, edibles, prerolls, resolveUrl])
 
   const buildProps = useMemo(() => {
     const byType: Record<
@@ -123,11 +131,11 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
       },
       'extracts-3g': {
         config: BUNDLE_CONFIGS['extracts-3g'],
-        products: productsWithImages.concentrates,
+        products: productsWithImages.extracts,
       },
       'extracts-7g': {
         config: BUNDLE_CONFIGS['extracts-7g'],
-        products: productsWithImages.concentrates,
+        products: productsWithImages.extracts,
       },
       'edibles-prerolls-5': {
         config: BUNDLE_CONFIGS['edibles-prerolls-5'],
@@ -143,9 +151,9 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
 
   return (
     <div className='min-h-screen pt-16 sm:pt-20 md:pt-24 lg:pt-26 pb-16 px-4 sm:px-6 lg:px-8'>
-      <div className='h-16 w-full bg-indigo-400 mb-8 flex items-center justify-center text-xl font-okxs space-x-2'>
+      <div className='h-16 w-full bg-indigo-400 mb-8 flex items-center justify-center text-xl text-white font-okxs space-x-2 md:rounded-lg'>
         <Icon name='code' />
-        <span>Development In-progress</span>
+        <span className=''>Development In-progress</span>
       </div>
       <div className='max-w-7xl mx-auto'>
         <header className='mb-10'>
@@ -153,8 +161,8 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
             Deals & Bundles
           </h1>
           <p className='mt-2 text-muted-foreground'>
-            Save more when you mix and match. Build custom bundles with our
-            stepper and add to cart when complete.
+            <span className='hidden'>Save more when you mix and match. </span>
+            Build custom bundles with our stepper and add to cart when complete.
           </p>
         </header>
 
@@ -170,6 +178,7 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
                 config={config}
                 products={products}
                 productIds={productIds}
+                debug={debug}
               />
             )
           })}
