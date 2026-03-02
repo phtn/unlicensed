@@ -233,8 +233,12 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
             variant='solid'
             className='w-full font-polysans text-lg font-semibold bg-foreground dark:bg-brand text-white h-14 mb-2'
             onPress={onPlaceOrderClick}
-            isDisabled={!isAuthenticated || isLoading || isPending}
-            isLoading={isLoading || isPending}>
+            isDisabled={!isAuthenticated || isLoading || isPending || !!orderId}
+            endContent={
+              isLoading || isPending || orderId ? (
+                <Icon name='spinners-ring' className='size-4' />
+              ) : null
+            }>
             <span className='drop-shadow-sm'>
               {orderId ? 'Order Placed!' : 'Place Order'}
             </span>

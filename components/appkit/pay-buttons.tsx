@@ -40,7 +40,7 @@ export const PayButtons = ({
       <motion.div
         whileHover={{scale: isPayDisabled ? 1 : 1.02}}
         whileTap={{scale: 0.98}}
-        className='mt-8 mx-4'>
+        className='mt-8 mx-2 md:mx-4'>
         {showReceiptButton ? (
           <button
             onClick={onViewReceipt}
@@ -55,7 +55,7 @@ export const PayButtons = ({
             onClick={onPay}
             disabled={isPayDisabled}
             className={cn(
-              'flex items-center justify-center w-full mx-auto h-14 text-lg font-semibold bg-linear-to-r from-slate-500/80 via-slate-600 to-slate-500/80 text-white border-0 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed rounded-xs',
+              'flex items-center justify-center w-full mx-auto h-14 text-lg font-semibold bg-linear-to-r from-slate-500/80 via-slate-600 to-slate-500/80 text-white border-0 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed rounded-sm',
               {
                 'hover:from-slate-500 hover:to-slate-400': enablePayHoverStyles,
               },

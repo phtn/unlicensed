@@ -79,7 +79,7 @@ export const OrderSummaryWidget = () => {
         />
 
         <ArcCallout
-          className='font-brk opacity-80'
+          className='font-brk ps-4'
           icon={order?.payment.transactionId ? 'hash' : 'info'}
           value={
             (order?.payment.transactionId &&
@@ -103,18 +103,6 @@ export const OrderSummaryWidget = () => {
             </div>
           </ArcMessage>
         </div>
-        {/*<ArcActionBar>
-          <ArcButtonLeft
-            icon='chevron-left'
-            label='View Order'
-            href={order ? `/account/orders/${order.orderNumber}` : '#'}
-          />
-          <ArcButtonRight
-            icon='chat-rounded'
-            label='Open Chat'
-            href={order ? `/account/chat/${order._id}` : '#'}
-          />
-        </ArcActionBar>*/}
       </ArcCard>
     </main>
   )

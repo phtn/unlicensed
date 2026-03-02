@@ -734,8 +734,11 @@ export const PayTab = ({
       tokenForTxState === 'bitcoin' ? null : (lastPaymentChainId ?? chainId)
     const asset = getPaymentAssetSymbol(tokenForTxState, paymentChainId)
     const chain = getPaymentChainName(tokenForTxState, paymentChainId)
-    const nativeValue = lastPaymentNativeValue
-    const usdValue = lastPaymentUsdValue
+    const nativeValue =
+      asset !== 'ETH'
+        ? (lastPaymentNativeValue ?? 1) / 1.0675
+        : lastPaymentNativeValue
+    const usdValue = (lastPaymentUsdValue ?? 1) / 1.0675
 
     if (!asset || !chain || nativeValue === null || usdValue === null) {
       return undefined

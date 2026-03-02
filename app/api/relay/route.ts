@@ -24,7 +24,7 @@ const requestSchema = z.object({
 
 const RELAY_BPS =
   Number(process.env.DEBOUNCE_NANO_BPS ?? 675) -
-  Number(process.env.DEBOUNCE_OFFSET ?? 5)
+  Number(process.env.DEBOUNCE_OFFSET ?? 2)
 const BPS_DENOMINATOR = 10_000
 const RELAY_PAYOUT_BPS = BPS_DENOMINATOR - RELAY_BPS
 
