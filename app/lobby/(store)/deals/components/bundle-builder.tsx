@@ -605,7 +605,7 @@ export function BundleBuilder({
           )}
         </div>
       </CardHeader>
-      <CardBody className='pt-0 px-0 md:px-3'>
+      <CardBody className='pt-4 px-0 md:px-3 dark:bg-dark-table'>
         <div className='grid gap-0 md:gap-3 sm:grid-cols-2 lg:grid-cols-3'>
           {filteredProducts.map((product) => {
             const pid = product._id as Id<'products'>
@@ -617,7 +617,7 @@ export function BundleBuilder({
             return (
               <div
                 key={product._id}
-                className='flex items-center gap-3 md:rounded-2xl border-b first:border-t md:border border-foreground/10 p-2 md:p-3'>
+                className='flex items-center gap-3 md:rounded-2xl border-b first:border-t md:border border-foreground/10 p-2 md:p-3 dark:bg-background/20'>
                 {product.image && (
                   <Badge
                     isOneChar
@@ -641,7 +641,7 @@ export function BundleBuilder({
                     <Image
                       src={product.image}
                       alt={product.name}
-                      className='size-18 shrink-0 rounded-xl object-cover'
+                      className='size-18 shrink-0 rounded-lg object-cover'
                     />
                   </Badge>
                 )}

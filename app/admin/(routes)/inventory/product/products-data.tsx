@@ -13,7 +13,7 @@ import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Slider} from '@heroui/react'
+import {Button} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMemo} from 'react'
 import {mapNumericFractions} from './product-schema'
@@ -25,7 +25,20 @@ function escapeCsvValue(value: unknown): string {
 }
 
 /** Denomination keys used for per-denom price/stock columns in CSV */
-const DENOM_KEYS = ['0.125', '0.25', '0.5', '1', '2', '3', '3.5', '4', '5', '6', '7', '8']
+const DENOM_KEYS = [
+  '0.125',
+  '0.25',
+  '0.5',
+  '1',
+  '2',
+  '3',
+  '3.5',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+]
 
 /** All product table fields (scalar + JSON-serialized). Order: identity, core, then denom columns, then rest. */
 const PRODUCT_CSV_FIELDS = [
@@ -93,11 +106,11 @@ function exportProductsToCsv(products: Doc<'products'>[]) {
   const headers = [...PRODUCT_CSV_FIELDS, ...denomHeaders]
   const rows = products.map((p) => {
     const record = p as Record<string, unknown>
-    const mainCells = PRODUCT_CSV_FIELDS.map((h) =>
-      serializeCsvCell(record[h]),
-    )
-    const priceByDenom = (record.priceByDenomination as Record<string, number> | undefined) ?? {}
-    const stockByDenom = (record.stockByDenomination as Record<string, number> | undefined) ?? {}
+    const mainCells = PRODUCT_CSV_FIELDS.map((h) => serializeCsvCell(record[h]))
+    const priceByDenom =
+      (record.priceByDenomination as Record<string, number> | undefined) ?? {}
+    const stockByDenom =
+      (record.stockByDenomination as Record<string, number> | undefined) ?? {}
     const denomCells = DENOM_KEYS.flatMap((k) => [
       serializeCsvCell(priceByDenom[k]),
       serializeCsvCell(stockByDenom[k]),
@@ -145,12 +158,12 @@ function availableDenominationsCell(
   const denoms = row.availableDenominations ?? []
   const priceByDenom = row.priceByDenomination ?? {}
   const stockByDenom = row.stockByDenomination ?? {}
-  const sortedDenoms = [...denoms].sort((a, b) => {
-    const stockA = parseStockValue(stockByDenom[String(a)])
-    const stockB = parseStockValue(stockByDenom[String(b)])
-    if (stockA === stockB) return a - b
-    return stockA - stockB
-  })
+  // const sortedDenoms = [...denoms].sort((a, b) => {
+  //   const stockA = parseStockValue(stockByDenom[String(a)])
+  //   const stockB = parseStockValue(stockByDenom[String(b)])
+  //   if (stockA === stockB) return a - b
+  //   return stockA - stockB
+  // })
 
   if (denoms.length === 0) {
     return <span className='font-brk text-sm opacity-60'>····</span>
@@ -209,32 +222,32 @@ function availableDenominationsCell(
   )
 }
 
-function noseRatingCell(ctx: CellContext<Doc<'products'>, unknown>) {
-  const rawValue = ctx.row.original.noseRating
-  const value =
-    typeof rawValue === 'number' && Number.isFinite(rawValue)
-      ? Math.max(0, Math.min(10, Math.round(rawValue)))
-      : 0
+// function noseRatingCell(ctx: CellContext<Doc<'products'>, unknown>) {
+//   const rawValue = ctx.row.original.noseRating
+//   const value =
+//     typeof rawValue === 'number' && Number.isFinite(rawValue)
+//       ? Math.max(0, Math.min(10, Math.round(rawValue)))
+//       : 0
 
-  return (
-    <div className='flex items-center justify-center'>
-      <Slider
-        aria-label='Nose rating'
-        orientation='vertical'
-        minValue={0}
-        maxValue={10}
-        step={1}
-        value={value}
-        isDisabled
-        hideValue
-        size='sm'
-        classNames={{
-          base: 'h-16 w-6',
-        }}
-      />
-    </div>
-  )
-}
+//   return (
+//     <div className='flex items-center justify-center'>
+//       <Slider
+//         aria-label='Nose rating'
+//         orientation='vertical'
+//         minValue={0}
+//         maxValue={10}
+//         step={1}
+//         value={value}
+//         isDisabled
+//         hideValue
+//         size='sm'
+//         classNames={{
+//           base: 'h-16 w-6',
+//         }}
+//       />
+//     </div>
+//   )
+// }
 
 interface ProductsDataProps {
   data: Doc<'products'>[] | undefined

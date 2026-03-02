@@ -18,6 +18,7 @@ import {
   Space_Grotesk,
 } from 'next/font/google'
 import {headers} from 'next/headers'
+import {GlobalAuthModal} from '@/components/auth/global-auth-modal'
 import {AgeConfirmationModal} from './_components/age-confirmation-modal'
 import {ConditionalNavbar} from './_components/conditional-navbar'
 import {EmailLinkHandler} from './_components/email-link-handler'
@@ -193,6 +194,7 @@ export default async function RootLayout({
         <DynamicWagmiContext cookies={cookies}>
           <ProvidersCtxProvider>
             <EmailLinkHandler />
+            <GlobalAuthModal />
             <ScreenDimensionsTracker />
             <AgeConfirmationModal />
             {/*<GoogleOneTap />*/}

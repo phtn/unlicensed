@@ -3,6 +3,7 @@ import {
   GoogleAuthProvider,
   isSignInWithEmailLink,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   sendSignInLinkToEmail,
   signInWithCredential,
   signInWithEmailAndPassword,
@@ -71,6 +72,11 @@ export const loginWithGoogleCredential = async (
   return userCredential
 }
 
+export const sendPasswordReset = async (email: string) => {
+  if (!auth) throw new Error('Firebase auth not initialized')
+  await sendPasswordResetEmail(auth, email)
+}
+
 export const sendEmailLink = async (
   email: string,
   actionCodeSettings: ActionCodeSettings,
@@ -82,6 +88,31 @@ export const sendEmailLink = async (
   // Store email in localStorage for later use when user clicks the link
   if (typeof window !== 'undefined') {
     window.localStorage.setItem('emailForSignIn', email)
+  }
+}
+
+/**
+ * Fallback: detect Firebase email link params in URL when isSignInWithEmailLink
+ * returns false (e.g. redirect quirks, hash vs query). Checks for oobCode and
+ * mode=signIn in query or hash.
+ */
+export function hasEmailLinkParams(url: string): boolean {
+  try {
+    const hasParams = (s: string) => {
+      const params = new URLSearchParams(s)
+      const oob = params.get('oobCode')
+      return params.get('mode') === 'signIn' && oob != null && oob.length > 0
+    }
+    const q = url.indexOf('?')
+    const h = url.indexOf('#')
+    if (q !== -1) {
+      const query = h !== -1 ? url.slice(q + 1, h) : url.slice(q + 1)
+      if (hasParams(query)) return true
+    }
+    if (h !== -1 && hasParams(url.slice(h + 1))) return true
+    return false
+  } catch {
+    return false
   }
 }
 

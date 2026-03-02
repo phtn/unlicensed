@@ -1,14 +1,21 @@
 import {parseAsInteger, parseAsString} from 'nuqs'
-import type {BundleType} from './lib/deal-types'
 
-/** Short URL-safe keys per bundle */
-export const BUNDLE_PARAM_KEYS: Record<BundleType, {v: string; s: string}> = {
+/** Short URL-safe keys for known deal ids (backward compatible). */
+const LEGACY_PARAM_KEYS: Record<string, {v: string; s: string}> = {
   'build-your-own-oz': {v: 'byozo_v', s: 'byozo_s'},
   'mix-match-4oz': {v: 'mm4oz_v', s: 'mm4oz_s'},
   'extracts-3g': {v: 'ex3g_v', s: 'ex3g_s'},
   'extracts-7g': {v: 'ex7g_v', s: 'ex7g_s'},
   'edibles-prerolls-5': {v: 'ed5_v', s: 'ed5_s'},
   'edibles-prerolls-10': {v: 'ed10_v', s: 'ed10_s'},
+}
+
+/** URL param keys for a deal id (short for legacy, prefixed for others). */
+export function getParamKeysForDealId(id: string): {v: string; s: string} {
+  const legacy = LEGACY_PARAM_KEYS[id]
+  if (legacy) return legacy
+  const slug = id.replace(/-/g, '_').slice(0, 16)
+  return {v: `d_${slug}_v`, s: `d_${slug}_s`}
 }
 
 /** Parse "id1:2,id2:1" into Map<productId, quantity> */

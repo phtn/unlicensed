@@ -3,6 +3,7 @@ import {Tabs} from '@base-ui/react/tabs'
 import {AccessContent} from './_components/access-content'
 import {AssistantContent} from './_components/assistant-content'
 import {CryptoContent} from './_components/crypto-content'
+import {DealsContent} from './_components/deals-content'
 import {OverviewContent} from './_components/overview-content'
 import {PaymentsSettings} from './_components/payments-settings'
 import {RepContent} from './_components/rep-content'
@@ -19,12 +20,13 @@ export const SettingsTabs = () => {
     {id: 'shipping', label: 'Shipping'},
     {id: 'tax', label: 'Tax'},
     {id: 'rewards', label: 'Rewards'},
+    {id: 'deals', label: 'Deals'},
     {id: 'rep', label: 'Rep'},
     {id: 'assistant', label: 'Assistant'},
   ]
   return (
     <Tabs.Root defaultValue='overview'>
-      <Tabs.List className='relative z-0 flex gap-1'>
+      <Tabs.List className='relative z-0 flex gap-3'>
         {tabs.map((tab) => (
           <Tabs.Tab
             key={tab.id}
@@ -38,7 +40,7 @@ export const SettingsTabs = () => {
             {tab.label}
           </Tabs.Tab>
         ))}
-        <Tabs.Indicator className='absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-sm bg-linear-to-r from-slate-700/90 via-slate-900/90 to-origin dark:bg-dark-table dark:via-slate-800 dark:to-slate-800 transition-all duration-300 ease-in-out' />
+        <Tabs.Indicator className='absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-sm bg-linear-to-r from-slate-600/90 via-slate-900/90 to-origin dark:via-slate-600 dark:to-dark-table transition-all duration-300 ease-in-out' />
       </Tabs.List>
       <Tabs.Panel
         className='relative flex min-h-32 flex-1 flex-col px-2 py-4'
@@ -74,6 +76,11 @@ export const SettingsTabs = () => {
         className='relative flex min-h-32 flex-1 flex-col p-4'
         value='rewards'>
         <RewardsContent />
+      </Tabs.Panel>
+      <Tabs.Panel
+        className='relative flex min-h-32 flex-1 flex-col p-4'
+        value='deals'>
+        <DealsContent />
       </Tabs.Panel>
       <Tabs.Panel
         className='relative flex min-h-32 flex-1 flex-col p-4'

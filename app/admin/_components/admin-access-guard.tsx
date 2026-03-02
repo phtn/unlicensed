@@ -50,7 +50,7 @@ export function AdminAccessGuard({children}: AdminAccessGuardProps) {
   useEffect(() => {
     if (!shouldRedirectHome) return
     startTransition(() => {
-      router.replace('/')
+      router.replace('/lobby')
     })
   }, [router, shouldRedirectHome, startTransition])
   const nonce = uuidv7()

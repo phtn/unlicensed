@@ -3,6 +3,16 @@ import {Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
 import {safeGet} from '../utils/id_validation'
 
+export const listProductSlugs = query({
+  args: {},
+  handler: async (ctx) => {
+    const products = await ctx.db.query('products').collect()
+    return products
+      .map((p) => p.slug)
+      .filter((s): s is string => typeof s === 'string' && s.length > 0)
+  },
+})
+
 export const listProducts = query({
   args: {
     categorySlug: v.optional(v.string()),

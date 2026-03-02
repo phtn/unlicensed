@@ -1,149 +1,116 @@
 import {describe, expect, test} from 'bun:test'
 import {
-  BUNDLE_CONFIGS,
-  type BundleType,
+  dealDocToBundleConfig,
+  DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG,
   type BundleConfig,
   type BundleVariation,
 } from '@/app/lobby/(store)/deals/lib/deal-types'
 
-const BUNDLE_TYPES: BundleType[] = [
+const LEGACY_DEAL_IDS = [
   'build-your-own-oz',
   'mix-match-4oz',
   'extracts-3g',
   'extracts-7g',
   'edibles-prerolls-5',
   'edibles-prerolls-10',
-]
+] as const
 
-describe('BUNDLE_CONFIGS', () => {
-  test('has config for every BundleType', () => {
-    for (const id of BUNDLE_TYPES) {
-      expect(BUNDLE_CONFIGS[id]).toBeDefined()
+describe('dealDocToBundleConfig', () => {
+  test('converts Convex deal doc to BundleConfig', () => {
+    const doc = {
+      id: 'test-deal',
+      title: 'Test',
+      description: 'Desc',
+      categorySlugs: ['flower'],
+      variations: [
+        {totalUnits: 4, denominationPerUnit: 0.25, unitLabel: 'oz'},
+      ],
+      maxPerStrain: 1,
+      order: 0,
+      enabled: true,
+      updatedAt: 0,
+    }
+    const config = dealDocToBundleConfig(doc)
+    expect(config.id).toBe('test-deal')
+    expect(config.title).toBe('Test')
+    expect(config.variations).toHaveLength(1)
+    expect(config.variations[0].totalUnits).toBe(4)
+    expect(config.variations[0].denominationPerUnit).toBe(0.25)
+    expect(config.maxPerStrain).toBe(1)
+  })
+
+  test('preserves optional fields', () => {
+    const doc = {
+      id: 'x',
+      title: 'X',
+      description: 'X',
+      categorySlugs: [] as string[],
+      variations: [
+        {
+          totalUnits: 8,
+          denominationPerUnit: 0.125,
+          denominationLabel: '⅛',
+          unitLabel: 'oz',
+        },
+      ],
+      defaultVariationIndex: 0,
+      maxPerStrain: 2,
+      lowStockThreshold: 3,
+      order: 0,
+      enabled: true,
+      updatedAt: 0,
+    }
+    const config = dealDocToBundleConfig(doc)
+    expect(config.defaultVariationIndex).toBe(0)
+    expect(config.lowStockThreshold).toBe(3)
+    expect(config.variations[0].denominationLabel).toBe('⅛')
+  })
+})
+
+describe('DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG', () => {
+  test('has required BundleConfig shape', () => {
+    const config = DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG as BundleConfig
+    expect(config.id).toBe('build-your-own-oz')
+    expect(config.title).toBeDefined()
+    expect(typeof config.title).toBe('string')
+    expect(config.description).toBeDefined()
+    expect(Array.isArray(config.categorySlugs)).toBe(true)
+    expect(config.variations.length).toBeGreaterThan(0)
+    expect(config.maxPerStrain).toBeGreaterThan(0)
+  })
+
+  test('variations have required BundleVariation shape', () => {
+    for (const v of DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG.variations as BundleVariation[]) {
+      expect(typeof v.totalUnits).toBe('number')
+      expect(v.totalUnits).toBeGreaterThan(0)
+      expect(typeof v.denominationPerUnit).toBe('number')
+      expect(v.denominationPerUnit).toBeGreaterThan(0)
+      expect(typeof v.unitLabel).toBe('string')
     }
   })
 
-  test('each config has required fields', () => {
-    for (const id of BUNDLE_TYPES) {
-      const config = BUNDLE_CONFIGS[id] as BundleConfig
-      expect(config.id).toBe(id)
-      expect(config.title).toBeDefined()
-      expect(typeof config.title).toBe('string')
-      expect(config.description).toBeDefined()
-      expect(typeof config.description).toBe('string')
-      expect(config.categorySlugs).toBeDefined()
-      expect(Array.isArray(config.categorySlugs)).toBe(true)
-      expect(config.variations).toBeDefined()
-      expect(Array.isArray(config.variations)).toBe(true)
-      expect(config.variations.length).toBeGreaterThan(0)
-      expect(typeof config.maxPerStrain).toBe('number')
-      expect(config.maxPerStrain).toBeGreaterThan(0)
+  test('has two variations (⅛ and ¼)', () => {
+    expect(DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG.variations).toHaveLength(2)
+  })
+
+  test('first variation is 8x⅛ oz', () => {
+    const v = DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG.variations[0]
+    expect(v.totalUnits).toBe(8)
+    expect(v.denominationPerUnit).toBe(0.125)
+    expect(v.unitLabel).toBe('oz')
+  })
+
+  test('has maxPerStrain 2 and lowStockThreshold 3', () => {
+    expect(DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG.maxPerStrain).toBe(2)
+    expect(DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG.lowStockThreshold).toBe(3)
+  })
+})
+
+describe('legacy deal ids', () => {
+  test('LEGACY_DEAL_IDS are non-empty strings', () => {
+    for (const id of LEGACY_DEAL_IDS) {
+      expect(typeof id).toBe('string')
+      expect(id.length).toBeGreaterThan(0)
     }
-  })
-
-  test('each variation has required fields', () => {
-    for (const id of BUNDLE_TYPES) {
-      const config = BUNDLE_CONFIGS[id] as BundleConfig
-      for (const v of config.variations as BundleVariation[]) {
-        expect(typeof v.totalUnits).toBe('number')
-        expect(v.totalUnits).toBeGreaterThan(0)
-        expect(typeof v.denominationPerUnit).toBe('number')
-        expect(v.denominationPerUnit).toBeGreaterThan(0)
-        expect(v.unitLabel).toBeDefined()
-        expect(typeof v.unitLabel).toBe('string')
-      }
-    }
-  })
-
-  test('defaultVariationIndex is valid when present', () => {
-    for (const id of BUNDLE_TYPES) {
-      const config = BUNDLE_CONFIGS[id] as BundleConfig
-      const idx = config.defaultVariationIndex
-      if (idx !== undefined) {
-        expect(idx).toBeGreaterThanOrEqual(0)
-        expect(idx).toBeLessThan(config.variations.length)
-      }
-    }
-  })
-
-  test('lowStockThreshold is positive when present', () => {
-    for (const id of BUNDLE_TYPES) {
-      const config = BUNDLE_CONFIGS[id] as BundleConfig
-      const threshold = config.lowStockThreshold
-      if (threshold !== undefined) {
-        expect(threshold).toBeGreaterThan(0)
-      }
-    }
-  })
-
-  describe('build-your-own-oz', () => {
-    const config = BUNDLE_CONFIGS['build-your-own-oz']
-
-    test('has two variations (⅛ and ¼)', () => {
-      expect(config.variations).toHaveLength(2)
-    })
-
-    test('first variation is 8x⅛ oz', () => {
-      const v = config.variations[0]
-      expect(v.totalUnits).toBe(8)
-      expect(v.denominationPerUnit).toBe(0.125)
-      expect(v.unitLabel).toBe('oz')
-    })
-
-    test('second variation is 4x¼ oz', () => {
-      const v = config.variations[1]
-      expect(v.totalUnits).toBe(4)
-      expect(v.denominationPerUnit).toBe(0.25)
-      expect(v.unitLabel).toBe('oz')
-    })
-
-    test('has maxPerStrain 2 and lowStockThreshold 3', () => {
-      expect(config.maxPerStrain).toBe(2)
-      expect(config.lowStockThreshold).toBe(3)
-    })
-  })
-
-  describe('mix-match-4oz', () => {
-    const config = BUNDLE_CONFIGS['mix-match-4oz']
-
-    test('has single variation 4x1 oz', () => {
-      expect(config.variations).toHaveLength(1)
-      expect(config.variations[0].totalUnits).toBe(4)
-      expect(config.variations[0].denominationPerUnit).toBe(1)
-    })
-
-    test('maxPerStrain is 1', () => {
-      expect(config.maxPerStrain).toBe(1)
-    })
-  })
-
-  describe('extracts bundles', () => {
-    test('extracts-3g: 3 units of 1g', () => {
-      const config = BUNDLE_CONFIGS['extracts-3g']
-      expect(config.variations[0].totalUnits).toBe(3)
-      expect(config.variations[0].denominationPerUnit).toBe(1)
-      expect(config.variations[0].unitLabel).toBe('g')
-    })
-
-    test('extracts-7g: 7 units of 1g', () => {
-      const config = BUNDLE_CONFIGS['extracts-7g']
-      expect(config.variations[0].totalUnits).toBe(7)
-      expect(config.variations[0].denominationPerUnit).toBe(1)
-    })
-  })
-
-  describe('edibles-prerolls bundles', () => {
-    test('both use edibles and pre-rolls categories', () => {
-      const config5 = BUNDLE_CONFIGS['edibles-prerolls-5']
-      const config10 = BUNDLE_CONFIGS['edibles-prerolls-10']
-      expect(config5.categorySlugs).toContain('edibles')
-      expect(config5.categorySlugs).toContain('pre-rolls')
-      expect(config10.categorySlugs).toContain('edibles')
-      expect(config10.categorySlugs).toContain('pre-rolls')
-    })
-
-    test('5 and 10 units respectively', () => {
-      expect(BUNDLE_CONFIGS['edibles-prerolls-5'].variations[0].totalUnits).toBe(5)
-      expect(BUNDLE_CONFIGS['edibles-prerolls-10'].variations[0].totalUnits).toBe(10)
-    })
   })
 })

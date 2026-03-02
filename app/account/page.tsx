@@ -8,7 +8,7 @@ import {RecentOrders} from './_components/recent-orders'
 import {RewardPoints} from './_components/reward-points'
 
 export default function AccountPage() {
-  const {user, orders, rewards, pointsBalance} = useAccount()
+  const {user, orders, pointsBalance} = useAccount()
 
   // Loading State (Initial page load only)
   const isLoading = !user

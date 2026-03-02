@@ -58,6 +58,12 @@ const SETTINGS_FEATURES: Array<SettingItem> = [
     icon: 'coins',
   },
   {
+    id: 'deals',
+    title: 'Deals',
+    description: 'Configure store deals and mix-and-match bundles.',
+    icon: 'tag',
+  },
+  {
     id: 'rep',
     title: 'Rep',
     description: 'Assign Default Rep account and seed message.',

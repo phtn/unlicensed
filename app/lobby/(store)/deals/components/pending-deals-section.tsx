@@ -1,11 +1,12 @@
 'use client'
 
-import {BUNDLE_CONFIGS} from '@/app/lobby/(store)/deals/lib/deal-types'
+import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
 import {usePendingDeals} from '@/ctx/pending-deals'
 import {Button} from '@heroui/react'
 import Link from 'next/link'
 
 export function PendingDealsSection() {
+  const {configs} = useDealConfigs()
   const pendingCtx = usePendingDeals()
   if (!pendingCtx) return null
 
@@ -22,7 +23,7 @@ export function PendingDealsSection() {
       </p>
       <ul className='mt-3 space-y-2'>
         {pendingDeals.map((deal) => {
-          const config = BUNDLE_CONFIGS[deal.bundleType]
+          const config = configs[deal.bundleType]
           const totalCents = deal.items.reduce(
             (s, i) => s + i.priceCents * i.quantity,
             0,
@@ -32,7 +33,7 @@ export function PendingDealsSection() {
               key={deal.bundleType}
               className='flex items-center justify-between gap-2 text-sm min-w-0'>
               <span className='min-w-0 truncate'>
-                {config.title} — {deal.totalSelected}/{deal.requiredTotal}{' '}
+                {config?.title ?? deal.bundleType} — {deal.totalSelected}/{deal.requiredTotal}{' '}
                 selected (${(totalCents / 100).toFixed(2)})
               </span>
               <Button

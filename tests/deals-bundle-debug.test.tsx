@@ -1,7 +1,7 @@
 import {describe, expect, test} from 'bun:test'
 import {render, screen} from './test-utils'
 import {DealsBundleDebug} from '@/app/lobby/(store)/deals/components/deals-bundle-debug'
-import {BUNDLE_CONFIGS} from '@/app/lobby/(store)/deals/lib/deal-types'
+import {DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG} from '@/app/lobby/(store)/deals/lib/deal-types'
 import type {StoreProduct} from '@/app/types'
 import type {Id} from '@/convex/_generated/dataModel'
 
@@ -18,7 +18,7 @@ function mkProduct(overrides: Partial<StoreProduct> = {}): StoreProduct {
 }
 
 describe('DealsBundleDebug', () => {
-  const config = BUNDLE_CONFIGS['build-your-own-oz']
+  const config = DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG
   const variation = config.variations[0]
   const products: StoreProduct[] = [
     mkProduct({_id: 'p1' as Id<'products'>}),

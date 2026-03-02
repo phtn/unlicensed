@@ -3,6 +3,7 @@ import {activitySchema} from './activities/d'
 import {activityViewSchema} from './activityViews/d'
 import {addressRecordSchema} from './addresses/d'
 import {adminSettingsSchema} from './admin/d'
+import {dealSchema} from './deals/d'
 import {affiliateAccountSchema} from './affiliateAccounts/d'
 import {archivedConversationSchema} from './archives/d'
 import {blogSchema} from './blogs/d'
@@ -21,6 +22,7 @@ import {orderSchema} from './orders/d'
 import {gatewaySchema} from './gateways/d'
 import {paygateAccountSchema} from './paygateAccounts/d'
 import {productHoldSchema} from './productHolds/d'
+import {productImportSchema} from './productImports/d'
 import {productSchema} from './products/d'
 import {rewardTierSchema, userRewardsSchema} from './rewards/d'
 import {staffSchema} from './staff/d'
@@ -40,6 +42,9 @@ export default defineSchema({
       searchField: 'name',
       filterFields: ['categorySlug'],
     }),
+  productImports: defineTable(productImportSchema).index('by_created_at', [
+    'createdAt',
+  ]),
   staff: defineTable(staffSchema).index('by_email', ['email']),
   users: defineTable(userSchema)
     .index('by_fid', ['fid'])
@@ -71,6 +76,10 @@ export default defineSchema({
   adminSettings: defineTable(adminSettingsSchema).index('by_identifier', [
     'identifier',
   ]),
+  deals: defineTable(dealSchema)
+    .index('by_deal_slug', ['id'])
+    .index('by_order', ['order'])
+    .index('by_enabled_order', ['enabled', 'order']),
   couriers: defineTable(courierSchema)
     .index('by_code', ['code'])
     .index('by_active', ['active']),

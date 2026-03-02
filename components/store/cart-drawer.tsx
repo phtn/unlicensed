@@ -1,9 +1,6 @@
 'use client'
 
-import {
-  BUNDLE_CONFIGS,
-  type BundleType,
-} from '@/app/lobby/(store)/deals/lib/deal-types'
+import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -52,6 +49,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     isAuthenticated,
   } = useCart()
   const {user} = useAuthCtx()
+  const {configs} = useDealConfigs()
   const {
     isOpen: isAuthOpen,
     onOpen: onAuthOpen,
@@ -146,7 +144,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
         const unitCents = getUnitPriceCents(item.product, item.denomination)
         return total + unitCents * item.quantity
       }
-      const config = BUNDLE_CONFIGS[item.bundleType as BundleType]
+      const config = configs[item.bundleType]
       const variation = config?.variations[item.variationIndex]
       if (!variation) return total
       const denom = variation.denominationPerUnit
@@ -155,7 +153,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
       const bundleCents = getBundleTotalCents(products, denom, bundleAmount)
       return total + bundleCents
     }, 0)
-  }, [cartItems])
+  }, [cartItems, configs])
 
   const handleCartCheckout = () => {
     if (!user) {

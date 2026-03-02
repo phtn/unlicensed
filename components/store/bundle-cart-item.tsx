@@ -1,8 +1,7 @@
 'use client'
 
 import {mapNumericFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
-import type {BundleType} from '@/app/lobby/(store)/deals/lib/deal-types'
-import {BUNDLE_CONFIGS} from '@/app/lobby/(store)/deals/lib/deal-types'
+import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
@@ -41,7 +40,8 @@ export function BundleCartItem({
   onRemove,
   isPending = false,
 }: BundleCartItemProps) {
-  const config = BUNDLE_CONFIGS[item.bundleType as BundleType]
+  const {configs} = useDealConfigs()
+  const config = configs[item.bundleType]
   const variation = config?.variations[item.variationIndex]
 
   const productImageIds = useMemo(

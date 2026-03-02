@@ -15,11 +15,17 @@ interface AuthProviderProps {
   children: ReactNode
 }
 
+export interface CompleteEmailLinkState {
+  href: string
+}
+
 interface AuthCtxValues {
   user: User | null
   isAuthModalOpen: boolean
   setAuthModalOpen: (isOpen: boolean) => void
   closeAuthModal: () => void
+  completeEmailLink: CompleteEmailLinkState | null
+  setCompleteEmailLink: (state: CompleteEmailLinkState | null) => void
 }
 
 const AuthCtx = createContext<AuthCtxValues | null>(null)
@@ -27,6 +33,8 @@ const AuthCtx = createContext<AuthCtxValues | null>(null)
 const AuthCtxProvider = ({children}: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [completeEmailLink, setCompleteEmailLink] =
+    useState<CompleteEmailLinkState | null>(null)
 
   useEffect(() => {
     const unsubscribe = auth?.onAuthStateChanged((user) => {
@@ -44,9 +52,14 @@ const AuthCtxProvider = ({children}: AuthProviderProps) => {
       user,
       isAuthModalOpen,
       setAuthModalOpen: setIsAuthModalOpen,
-      closeAuthModal: () => setIsAuthModalOpen(false),
+      closeAuthModal: () => {
+        setIsAuthModalOpen(false)
+        setCompleteEmailLink(null)
+      },
+      completeEmailLink,
+      setCompleteEmailLink,
     }),
-    [user, isAuthModalOpen],
+    [user, isAuthModalOpen, completeEmailLink],
   )
   return <AuthCtx value={value}>{children}</AuthCtx>
 }

@@ -7,7 +7,7 @@ import {startTransition, useEffect, useState, type ReactNode} from 'react'
 const RFAC_COOKIE_NAME = 'rf-ac'
 
 /**
- * Check if rfac cookie is set (client-side)
+ * Check if rfac cookie is set (client-side only)
  */
 function hasRfacCookie(): boolean {
   if (typeof document === 'undefined') return false
@@ -28,22 +28,23 @@ interface RouteProtectionProps {
 
 export function RouteProtection({children}: RouteProtectionProps) {
   const router = useRouter()
-  const [hasAccess] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return hasRfacCookie()
-  })
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null)
+
+  // Re-check cookie on client after mount so redirect always runs when missing
+  useEffect(() => {
+    setHasAccess(hasRfacCookie())
+  }, [])
 
   useEffect(() => {
-    // If cookie is not set, redirect to root
-    if (!hasAccess) {
-      startTransition(() => {
-        router.replace('/')
-      })
-    }
+    if (hasAccess === null) return
+    if (hasAccess) return
+    startTransition(() => {
+      router.replace('/lobby')
+    })
   }, [hasAccess, router])
 
-  // If cookie is not set, show loading while redirecting
-  if (!hasAccess) {
+  // If cookie is not set or not yet resolved, show loading while redirecting
+  if (hasAccess !== true) {
     return (
       <div className='fixed inset-0 z-9998 flex items-center justify-center bg-zinc-950'>
         <div className='text-white/50 font-brk tracking-widest'>

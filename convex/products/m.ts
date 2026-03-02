@@ -1,8 +1,9 @@
 import {v} from 'convex/values'
 import {ensureSlug} from '../../lib/slug'
 import {internal} from '../_generated/api'
+import {MutationCtx} from '../_generated/server'
 import {mutation} from '../_generated/server'
-import {productSchema} from './d'
+import {productSchema, type ProductType} from './d'
 
 const FLOWER_TIERS = new Set(['B', 'A', 'AA', 'AAA', 'AAAA', 'RARE'])
 const EXTRACT_TIERS = new Set([
@@ -105,96 +106,105 @@ const validateBaseForCategory = (
   )
 }
 
+const sanitizeArray = (values: Array<string> | undefined) =>
+  values &&
+  values.map((value) => value.trim()).filter((value) => value.length > 0)
+
+const numericArray = (values?: Array<number>) =>
+  values?.filter((value) => Number.isFinite(value)) ?? undefined
+
+async function buildProductInsertDoc(
+  ctx: MutationCtx,
+  args: ProductType,
+): Promise<{slug: string; doc: Record<string, unknown>}> {
+  if (!args.name) {
+    throw new Error('Product name is required')
+  }
+  const slug = ensureSlug(args.slug ?? '', args.name)
+
+  const existing = await ctx.db
+    .query('products')
+    .withIndex('by_slug', (q) => q.eq('slug', slug))
+    .unique()
+
+  if (existing) {
+    throw new Error(`Product with slug "${slug}" already exists.`)
+  }
+
+  if (!args.categorySlug) {
+    throw new Error('Category slug is required')
+  }
+
+  const category = await ctx.db
+    .query('categories')
+    .withIndex('by_slug', (q) => q.eq('slug', args.categorySlug!))
+    .unique()
+
+  if (!category) {
+    throw new Error(`Category "${args.categorySlug}" not found.`)
+  }
+
+  const base = args.base?.trim() || undefined
+
+  validateTierForCategory(args.tier, category.slug ?? args.categorySlug)
+  validateBaseForCategory(base, category.slug ?? args.categorySlug)
+
+  const doc = {
+    name: args.name ?? '',
+    slug,
+    base,
+    categoryId: category._id,
+    categorySlug: category.slug ?? '',
+    shortDescription: args.shortDescription,
+    description: args.description,
+    priceCents: args.priceCents,
+    batchId: args.batchId?.trim() || undefined,
+    unit: args.unit,
+    availableDenominations: numericArray(args.availableDenominations),
+    popularDenomination: args.popularDenomination,
+    thcPercentage: args.thcPercentage,
+    cbdPercentage: args.cbdPercentage,
+    effects: sanitizeArray(args.effects),
+    terpenes: sanitizeArray(args.terpenes),
+    featured: args.featured,
+    available: args.available,
+    stock: args.stock,
+    stockByDenomination: args.stockByDenomination,
+    rating: args.rating,
+    image: args.image,
+    gallery: args.gallery,
+    consumption: args.consumption,
+    flavorNotes: sanitizeArray(args.flavorNotes),
+    potencyLevel: args.potencyLevel,
+    potencyProfile: args.potencyProfile,
+    lineage: args.lineage,
+    brand: args.brand?.trim() || undefined,
+    subcategory: args.subcategory?.trim() || undefined,
+    productType: args.productType?.trim() || undefined,
+    noseRating: args.noseRating,
+    weightGrams: args.weightGrams,
+    netWeight: args.netWeight,
+    netWeightUnit: args.netWeightUnit?.trim() || undefined,
+    variants: args.variants,
+    priceByDenomination: args.priceByDenomination,
+    eligibleForRewards: args.eligibleForRewards,
+    eligibleForDeals: args.eligibleForDeals,
+    onSale: args.onSale,
+    tier: args.tier,
+    eligibleForUpgrade: args.eligibleForUpgrade,
+    upgradePrice: args.upgradePrice,
+    archived: false,
+  }
+  return {slug, doc}
+}
+
 export const createProduct = mutation({
   args: productSchema,
   handler: async (ctx, args) => {
-    if (!args.name) {
-      throw new Error('Product name is required')
-    }
-    const slug = ensureSlug(args.slug ?? '', args.name)
+    const {slug, doc} = await buildProductInsertDoc(ctx, args)
 
-    const existing = await ctx.db
-      .query('products')
-      .withIndex('by_slug', (q) => q.eq('slug', slug))
-      .unique()
+    const productId = await ctx.db.insert('products', doc)
 
-    if (existing) {
-      throw new Error(`Product with slug "${slug}" already exists.`)
-    }
-
-    if (!args.categorySlug) {
-      throw new Error('Category slug is required')
-    }
-
-    const category = await ctx.db
-      .query('categories')
-      .withIndex('by_slug', (q) => q.eq('slug', args.categorySlug!))
-      .unique()
-
-    if (!category) {
-      throw new Error(`Category "${args.categorySlug}" not found.`)
-    }
-
-    const base = args.base?.trim() || undefined
-
-    validateTierForCategory(args.tier, category.slug ?? args.categorySlug)
-    validateBaseForCategory(base, category.slug ?? args.categorySlug)
-
-    const sanitizeArray = (values: Array<string> | undefined) =>
-      values &&
-      values.map((value) => value.trim()).filter((value) => value.length > 0)
-
-    const numericArray = (values?: Array<number>) =>
-      values?.filter((value) => Number.isFinite(value)) ?? undefined
-
-    const productId = await ctx.db.insert('products', {
-      name: args.name ?? '',
-      slug,
-      base,
-      categoryId: category._id,
-      categorySlug: category.slug ?? '',
-      shortDescription: args.shortDescription,
-      description: args.description,
-      priceCents: args.priceCents,
-      batchId: args.batchId?.trim() || undefined,
-      unit: args.unit,
-      availableDenominations: numericArray(args.availableDenominations),
-      popularDenomination: args.popularDenomination,
-      thcPercentage: args.thcPercentage,
-      cbdPercentage: args.cbdPercentage,
-      effects: sanitizeArray(args.effects),
-      terpenes: sanitizeArray(args.terpenes),
-      featured: args.featured,
-      available: args.available,
-      stock: args.stock,
-      stockByDenomination: args.stockByDenomination,
-      rating: args.rating,
-      image: args.image,
-      gallery: args.gallery,
-      consumption: args.consumption,
-      flavorNotes: sanitizeArray(args.flavorNotes),
-      potencyLevel: args.potencyLevel,
-      potencyProfile: args.potencyProfile,
-      lineage: args.lineage,
-      brand: args.brand?.trim() || undefined,
-      subcategory: args.subcategory?.trim() || undefined,
-      productType: args.productType?.trim() || undefined,
-      noseRating: args.noseRating,
-      weightGrams: args.weightGrams,
-      netWeight: args.netWeight,
-      netWeightUnit: args.netWeightUnit?.trim() || undefined,
-      variants: args.variants,
-      priceByDenomination: args.priceByDenomination,
-      eligibleForRewards: args.eligibleForRewards,
-      eligibleForDeals: args.eligibleForDeals,
-      onSale: args.onSale,
-      tier: args.tier,
-      eligibleForUpgrade: args.eligibleForUpgrade,
-      upgradePrice: args.upgradePrice,
-      archived: false,
-    })
-
-    // Log product created activity
     await ctx.scheduler.runAfter(0, internal.activities.m.logProductActivity, {
       type: 'product_created',
       productId,
@@ -576,5 +586,71 @@ export const archiveProduct = mutation({
     return await ctx.db.patch(product._id, {
       archived: true,
     })
+  },
+})
+
+export const seedProductsFromCsv = mutation({
+  args: {
+    title: v.string(),
+    uploadedBy: v.string(),
+    products: v.array(productSchema),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now()
+    const importId = await ctx.db.insert('productImports', {
+      title: args.title,
+      uploadedBy: args.uploadedBy,
+      createdAt: now,
+      rowCount: args.products.length,
+      successCount: 0,
+      errorCount: 0,
+    })
+
+    let successCount = 0
+    const errors: Array<{
+      rowIndex: number
+      slug?: string
+      message: string
+    }> = []
+
+    for (let rowIndex = 0; rowIndex < args.products.length; rowIndex++) {
+      const row = args.products[rowIndex]
+      try {
+        const {slug, doc} = await buildProductInsertDoc(ctx, row)
+        const productId = await ctx.db.insert('products', doc)
+        await ctx.scheduler.runAfter(
+          0,
+          internal.activities.m.logProductActivity,
+          {
+            type: 'product_created',
+            productId,
+            productName: row.name?.trim() ?? '',
+            productSlug: slug,
+          },
+        )
+        successCount++
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e)
+        const slug =
+          row?.name != null
+            ? ensureSlug((row.slug as string) ?? '', String(row.name))
+            : undefined
+        errors.push({rowIndex, slug, message})
+      }
+    }
+
+    const errorCount = errors.length
+    await ctx.db.patch(importId, {
+      successCount,
+      errorCount,
+      ...(errors.length > 0 ? {errors} : {}),
+    })
+
+    return {
+      importId,
+      successCount,
+      errorCount,
+      errors,
+    }
   },
 })

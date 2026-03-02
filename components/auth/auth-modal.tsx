@@ -1,8 +1,14 @@
 'use client'
 
 import {useAuthCtx} from '@/ctx/auth'
-import {useToggle} from '@/hooks/use-toggle'
-import {loginWithGoogle, sendEmailLink} from '@/lib/firebase/auth'
+import {
+  loginWithEmail,
+  loginWithEmailLink,
+  loginWithGoogle,
+  sendEmailLink,
+  sendPasswordReset,
+  signupWithEmail,
+} from '@/lib/firebase/auth'
 import {auth} from '@/lib/firebase/config'
 import {parseFirebaseAuthError} from '@/lib/firebase/parseAuthError'
 import {Icon} from '@/lib/icons'
@@ -20,8 +26,8 @@ import {
 import type {ActionCodeSettings} from 'firebase/auth'
 import {
   ChangeEvent,
-  FormEvent,
   InputHTMLAttributes,
+  SubmitEvent,
   useEffect,
   useMemo,
   useState,
@@ -39,12 +45,23 @@ export const AuthModal = ({
   onClose,
   mode = 'login',
 }: AuthModalProps) => {
-  const {setAuthModalOpen, user} = useAuthCtx()
-  const [isLogin] = useState(mode === 'login')
+  const {
+    setAuthModalOpen,
+    user,
+    completeEmailLink,
+    setCompleteEmailLink,
+    closeAuthModal,
+  } = useAuthCtx()
+  const [isLogin, setIsLogin] = useState(mode === 'login')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [emailSent, setEmailSent] = useState(false)
+  const [resetEmailSent, setResetEmailSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [emailForLink, setEmailForLink] = useState('')
+  const [emailLinkError, setEmailLinkError] = useState<string | null>(null)
   const hasActiveSession = Boolean(user ?? auth?.currentUser)
   const canOpen = isOpen && !hasActiveSession
 
@@ -67,27 +84,91 @@ export const AuthModal = ({
     }
   }, [setAuthModalOpen])
 
-  const handleSubmit = async (e: FormEvent) => {
+  const passwordsMatch = password === confirmPassword
+  const emailTrimmed = email.trim()
+  const signUpValid =
+    emailTrimmed &&
+    password &&
+    confirmPassword &&
+    password.length >= 6 &&
+    passwordsMatch
+  const signInValid = Boolean(emailTrimmed && password)
+
+  const handleEmailPasswordSubmit = async (e: SubmitEvent) => {
     e.preventDefault()
     setError(null)
-    setLoading(true)
 
-    try {
-      if (isLogin && email) {
-        // Configure where the email link should redirect
-        const actionCodeSettings: ActionCodeSettings = {
-          url: window.location.origin,
-          handleCodeInApp: true,
-        }
-
-        await sendEmailLink(email, actionCodeSettings)
-        setEmailSent(true)
-        // Don't close modal immediately - show success message
-        // The user needs to check their email
+    if (isLogin) {
+      if (!signInValid) return
+      setLoading(true)
+      try {
+        await loginWithEmail(email.trim(), password)
+        setAuthModalOpen(false)
+        onClose()
+      } catch (err) {
+        setError(parseFirebaseAuthError(err))
+      } finally {
+        setLoading(false)
       }
+      return
+    }
+
+    // Sign-up: enforce confirm password and length before calling Firebase
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
+    if (!email.trim()) {
+      setError('Please enter your email.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await signupWithEmail(email.trim(), password)
+      setAuthModalOpen(false)
+      onClose()
     } catch (err) {
       setError(parseFirebaseAuthError(err))
-      setEmailSent(false)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleForgotPassword = async () => {
+    if (!email?.trim()) {
+      setError('Enter your email above, then click Forgot password.')
+      return
+    }
+    setError(null)
+    setLoading(true)
+    try {
+      await sendPasswordReset(email.trim())
+      setResetEmailSent(true)
+    } catch (err) {
+      setError(parseFirebaseAuthError(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSendEmailLink = async () => {
+    if (!email) return
+    setError(null)
+    setLoading(true)
+    try {
+      const actionCodeSettings: ActionCodeSettings = {
+        url: `${window.location.origin}/auth/email-link`,
+        handleCodeInApp: true,
+      }
+      await sendEmailLink(email, actionCodeSettings)
+      setEmailSent(true)
+    } catch (err) {
+      setError(parseFirebaseAuthError(err))
     } finally {
       setLoading(false)
     }
@@ -109,11 +190,41 @@ export const AuthModal = ({
   }
 
   const handleClose = () => {
+    setPassword('')
+    setConfirmPassword('')
+    setResetEmailSent(false)
+    setEmailForLink('')
+    setEmailLinkError(null)
+    if (completeEmailLink) {
+      window.history.replaceState({}, '', window.location.origin)
+      setCompleteEmailLink(null)
+    }
     setAuthModalOpen(false)
     onClose()
   }
 
-  const {on: isEmail, toggle: toggleEmail} = useToggle()
+  const handleCompleteEmailLink = async () => {
+    if (!completeEmailLink) return
+    const trimmed = emailForLink.trim()
+    if (!trimmed) {
+      setEmailLinkError('Please enter your email address.')
+      return
+    }
+    setEmailLinkError(null)
+    setLoading(true)
+    try {
+      await loginWithEmailLink(trimmed, completeEmailLink.href)
+      window.history.replaceState({}, '', window.location.origin)
+      setCompleteEmailLink(null)
+      closeAuthModal()
+      onClose()
+    } catch (err) {
+      setEmailLinkError(parseFirebaseAuthError(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const emailLink = useMemo(() => `https://${email.split('@').pop()}`, [email])
 
   return (
@@ -126,26 +237,55 @@ export const AuthModal = ({
         wrapper: 'z-[20000]',
       }}
       hideCloseButton>
-      <ModalContent className='md:rounded-4xl rounded-3xl dark:border-brand border-light-gray/80 w-96 overflow-hidden'>
+      <ModalContent className='md:rounded-4xl rounded-3xl dark:border-brand border-light-gray/80 w-96 h-120 overflow-hidden flex flex-col'>
         <div className='absolute h-160 w-160 aspect-auto -top-24 md:-top-28 -left-16 flex items-center'>
           <ImageDither image={'/svg/rf-logo-hot-pink-2.svg'} />
           <DitherPhoto />
         </div>
-        <ModalHeader className='relative z-10 tracking-tight flex justify-between items-start'>
-          <div className='bg-black/20 backdrop-blur-2xl text-white px-2 rounded-lg w-fit'>
+        <ModalHeader className='relative z-10 tracking-tight flex justify-between items-start shrink-0'>
+          <div className='bg-black/20 backdrop-blur-2xl text-white text-sm rounded-lg w-fit p-0.5 flex'>
             {emailSent ? (
               <a
                 rel='noopener noreferrer'
                 href={emailLink}
                 target='_blank'
-                className='font-polysans font-normal text-sm flex items-center'>
+                className='font-polysans font-normal text-sm flex items-center px-4 py-2'>
                 <span>Check Your Email</span>
                 <Icon name='arrow-right' className='size-6 -rotate-20 ml-1' />
               </a>
-            ) : isLogin ? (
-              'Sign in'
+            ) : resetEmailSent ? (
+              <span className='px-4 py-2'>Check your email</span>
             ) : (
-              'Create Account'
+              <>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setError(null)
+                    setIsLogin(true)
+                  }}
+                  className={cn(
+                    'px-4 py-2 rounded-md font-medium transition-colors',
+                    isLogin
+                      ? 'bg-white/20 text-white'
+                      : 'text-white/70 hover:text-white',
+                  )}>
+                  Sign in
+                </button>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setError(null)
+                    setIsLogin(false)
+                  }}
+                  className={cn(
+                    'px-4 py-2 rounded-md font-medium transition-colors',
+                    !isLogin
+                      ? 'bg-white/20 text-white'
+                      : 'text-white/70 hover:text-white',
+                  )}>
+                  Create account
+                </button>
+              </>
             )}
           </div>
           <Button
@@ -158,128 +298,270 @@ export const AuthModal = ({
             <Icon name='x' className='size-5' />
           </Button>
         </ModalHeader>
-        <form onSubmit={handleSubmit}>
-          <ModalBody>
-            {emailSent ? (
-              <div className='relative z-50 bg-foreground/50 rounded-xl backdrop-blur-3xl flex flex-col items-center justify-center h-80 space-y-4 text-center px-0 md:px-4'>
-                <Icon
-                  name='email'
-                  className='size-16 -rotate-10 text-featured'
-                />
-                <p className='text-white text-sm'>
-                  We&apos;ve sent a sign-in link to{' '}
-                  <strong className='text-featured font-polysans tracking-wide'>
-                    {email}
-                  </strong>
-                </p>
-                <p className='text-white/70 text-xs line-clamp-2 max-w-[25ch]'>
-                  Click the link in your email to sign in. The link will expire
-                  in 1 hour.
-                </p>
-                <Button
-                  size='sm'
-                  variant='light'
-                  onPress={() => {
-                    setEmailSent(false)
-                    setEmail('')
-                    setError(null)
-                  }}
-                  className='text-white/80 hover:text-white'>
-                  Use a different email
-                </Button>
-              </div>
-            ) : (
-              <div
-                onClick={toggleEmail}
-                className='flex items-center h-80 justify-center'></div>
-            )}
-            {error && (
-              <div className='absolute w-full flex items-center justify-center left-0 z-300 px-2'>
-                <div className='bg-red-50 w-full rounded-lg p-4 space-y-4'>
-                  <div className='text-red-700 text-sm font-brk font-medium uppercase'>
-                    Authentication Error (!)
+        <ModalBody className='flex-1 min-h-0 overflow-auto' />
+        <form
+          onSubmit={handleEmailPasswordSubmit}
+          className='relative z-10 flex flex-col shrink-0 mt-auto'>
+          {emailSent ? (
+            <div className='relative z-50 bg-foreground/50 dark:bg-background/50 rounded-xl backdrop-blur-3xl flex flex-col items-center justify-center py-6 px-4 space-y-4 text-center'>
+              <Icon
+                name='mail-send-fill'
+                className='size-12 -rotate-10 text-featured'
+              />
+              <p className='text-white text-sm'>
+                We&apos;ve sent a sign-in link to{' '}
+                <strong className='text-featured font-polysans tracking-wide'>
+                  {email}
+                </strong>
+              </p>
+              <p className='text-white/70 text-xs line-clamp-2 max-w-[25ch]'>
+                Click the link in your email to sign in. The link will expire in
+                1 hour.
+              </p>
+              <Button
+                size='sm'
+                variant='light'
+                onPress={() => {
+                  setEmailSent(false)
+                  setEmail('')
+                  setError(null)
+                }}
+                className='text-white/80 hover:text-white'>
+                Use a different email
+              </Button>
+            </div>
+          ) : resetEmailSent ? (
+            <div className='bg-foreground/50 rounded-xl backdrop-blur-3xl flex flex-col items-center justify-center py-6 px-4 space-y-4 text-center'>
+              <Icon name='email' className='size-16 -rotate-10 text-featured' />
+              <p className='text-white text-sm'>
+                Password reset link sent to{' '}
+                <strong className='text-featured font-polysans tracking-wide'>
+                  {email}
+                </strong>
+              </p>
+              <Button
+                size='sm'
+                variant='light'
+                onPress={() => {
+                  setResetEmailSent(false)
+                  setError(null)
+                }}
+                className='text-white/80 hover:text-white'>
+                Back to sign in
+              </Button>
+            </div>
+          ) : (
+            <>
+              {error && (
+                <div className='px-2 pb-2'>
+                  <div className='bg-red-50 dark:bg-red-950/80 rounded-lg p-3'>
+                    <div className='text-red-700 dark:text-red-300 text-xs'>
+                      {error}
+                    </div>
                   </div>
-                  <div className='text-red-600 text-xs'>{error}</div>
                 </div>
-              </div>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            {!emailSent && isEmail ? (
-              <div className='flex items-start justify-between space-x-2 w-full py-2'>
-                <Input
-                  size='lg'
-                  fullWidth
-                  type='email'
-                  inputMode='email'
-                  value={email}
-                  onChange={(e) => {
-                    e.preventDefault()
-                    setEmail(e.target.value)
-                  }}
-                  className='placeholder:text-white text-white! dark:text-white! flex w-full'
-                  classNames={{
-                    inputWrapper:
-                      'bg-black/80! dark:bg-black/80 backdrop-blur-2xl w-full text-white!',
-                    input:
-                      'bg-black/80 selection:bg-featured focus-within:bg-black/80 placeholder:text-white text-white! dark:text-white! w-full text-xl',
-                    errorMessage:
-                      'p-2 bg-red-500/10 max-w-[25ch] rounded trucate text-foreground',
-                  }}
-                  startContent={
-                    <Icon
-                      onClick={toggleEmail}
-                      name={email === '' ? 'email' : 'x'}
-                      className={cn('size-6', {'size-6': email === ''})}
+              )}
+              <ModalFooter className='flex flex-col gap-3 w-full py-2 pt-0'>
+                <div className='flex flex-col'>
+                  <Input
+                    size='lg'
+                    fullWidth
+                    radius='none'
+                    type='email'
+                    inputMode='email'
+                    placeholder='Email'
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete='email'
+                    className='placeholder:text-white text-white! dark:text-white!'
+                    classNames={{
+                      inputWrapper:
+                        'bg-black/80! dark:bg-black/80 backdrop-blur-2xl text-white! rounded-t-md!',
+                      input:
+                        'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
+                    }}
+                  />
+                  <Input
+                    size='lg'
+                    fullWidth
+                    radius='none'
+                    type='password'
+                    placeholder='Password'
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete={isLogin ? 'current-password' : 'new-password'}
+                    className={cn(
+                      'placeholder:text-white text-white! dark:text-white!',
+                      isLogin && 'rounded-b-md',
+                    )}
+                    classNames={{
+                      inputWrapper: [
+                        'bg-black/70! dark:bg-black/80 backdrop-blur-2xl text-white!',
+                        isLogin && 'rounded-b-md!',
+                      ],
+                      input:
+                        'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
+                    }}
+                  />
+                  {!isLogin && (
+                    <Input
+                      size='lg'
+                      fullWidth
+                      radius='none'
+                      type='password'
+                      placeholder='Confirm password'
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      autoComplete='new-password'
+                      isInvalid={confirmPassword.length > 0 && !passwordsMatch}
+                      errorMessage={
+                        confirmPassword.length > 0 && !passwordsMatch
+                          ? 'Passwords do not match'
+                          : undefined
+                      }
+                      className={cn(
+                        'placeholder:text-white text-white! dark:text-white! rounded-b-md',
+                        confirmPassword &&
+                          !passwordsMatch &&
+                          'border-b-2 border-red-500',
+                      )}
+                      classNames={{
+                        inputWrapper: [
+                          'bg-black/50! dark:bg-black/80 backdrop-blur-2xl text-white!',
+                          'rounded-b-md',
+                        ],
+                        input:
+                          'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
+                        errorMessage: 'text-red-400 text-xs pt-1 px-1',
+                      }}
                     />
-                  }
-                />
+                  )}
+                </div>
+                {isLogin && (
+                  <div className='flex justify-end -mt-1 mr-2'>
+                    <button
+                      type='button'
+                      onClick={handleForgotPassword}
+                      disabled={loading}
+                      className='text-xs text-white hover:text-white underline underline-offset-2 disabled:opacity-50'>
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
                 <Button
                   size='lg'
-                  isIconOnly
+                  radius='none'
                   type='submit'
                   variant='solid'
-                  disabled={email === '' || loading}
+                  disabled={
+                    isLogin ? !signInValid || loading : !signUpValid || loading
+                  }
                   className={cn(
-                    'bg-black/80 backdrop-blur-2xl flex-1 text-white',
-                    {'bg-black/50': email === '' || loading},
+                    'bg-black/80 backdrop-blur-2xl w-full text-white rounded-lg',
+                    {
+                      'bg-black/50':
+                        (isLogin && !signInValid) ||
+                        (!isLogin && !signUpValid) ||
+                        loading,
+                    },
                   )}>
-                  <Icon
-                    name={loading ? 'spinners-ring' : 'send-fill'}
-                    className={cn('size-5', {
-                      'text-orange-400': loading,
-                    })}
-                  />
-                </Button>
-              </div>
-            ) : !emailSent ? (
-              <div className='flex items-center justify-between space-x-2 w-full py-2'>
-                <Button
-                  size='lg'
-                  type='button'
-                  variant='flat'
-                  onPress={toggleEmail}
-                  startContent={<Icon name='email' className='size-5' />}
-                  className='bg-black/80 backdrop-blur-2xl w-fit font-okxs font-medium text-sm text-white'>
-                  Email
-                </Button>
-                <Button
-                  size='lg'
-                  type='button'
-                  variant='solid'
-                  className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-fit text-white'
-                  onPress={handleGoogleLogin}
-                  startContent={
+                  {loading ? (
                     <Icon
-                      name={loading ? 'spinners-ring' : 'google'}
-                      className='size-5'
+                      name='spinners-ring'
+                      className='size-5 text-orange-400'
                     />
-                  }>
-                  Continue with Google
+                  ) : isLogin ? (
+                    'Sign in'
+                  ) : (
+                    'Create account'
+                  )}
                 </Button>
-              </div>
-            ) : null}
-          </ModalFooter>
+                <div className='flex items-center gap-4 w-full'>
+                  <Divider className='flex-1' />
+                  <span className='text-xs text-white/60 font-light'>or</span>
+                  <Divider className='flex-1' />
+                </div>
+                {completeEmailLink ? (
+                  <div className='flex w-full flex-col gap-2'>
+                    <Input
+                      size='lg'
+                      fullWidth
+                      radius='none'
+                      type='email'
+                      inputMode='email'
+                      placeholder='Email you used for the sign-in link'
+                      value={emailForLink}
+                      onChange={(e) => setEmailForLink(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === 'Enter' &&
+                        (e.preventDefault(), handleCompleteEmailLink())
+                      }
+                      autoComplete='email'
+                      isInvalid={Boolean(emailLinkError)}
+                      errorMessage={emailLinkError ?? undefined}
+                      classNames={{
+                        inputWrapper:
+                          'bg-black/80! dark:bg-black/80 backdrop-blur-2xl text-white! rounded-md!',
+                        input:
+                          'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
+                        errorMessage: 'text-red-400 text-xs pt-1 px-1',
+                      }}
+                    />
+                    <Button
+                      size='lg'
+                      type='button'
+                      radius='none'
+                      variant='flat'
+                      onPress={handleCompleteEmailLink}
+                      disabled={loading}
+                      className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-full text-white rounded-lg'
+                      startContent={
+                        loading ? (
+                          <Icon
+                            name='spinners-ring'
+                            className='size-5 text-orange-400'
+                          />
+                        ) : null
+                      }>
+                      Continue
+                    </Button>
+                  </div>
+                ) : (
+                  <div className='flex gap-2'>
+                    <Button
+                      size='lg'
+                      type='button'
+                      radius='none'
+                      variant='flat'
+                      onPress={handleSendEmailLink}
+                      disabled={!email || loading}
+                      startContent={
+                        <Icon name='mail-send-fill' className='size-5' />
+                      }
+                      className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-full text-white rounded-lg'>
+                      Email Link
+                    </Button>
+                    <Button
+                      size='lg'
+                      type='button'
+                      radius='none'
+                      variant='flat'
+                      onPress={handleGoogleLogin}
+                      disabled={loading}
+                      className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-full text-white rounded-lg'
+                      startContent={
+                        <Icon
+                          name={loading ? 'spinners-ring' : 'google'}
+                          className='size-5'
+                        />
+                      }>
+                      Google
+                    </Button>
+                  </div>
+                )}
+              </ModalFooter>
+            </>
+          )}
         </form>
       </ModalContent>
     </Modal>
@@ -299,7 +581,7 @@ interface SignInFieldProps {
 }
 export const InputFields = ({fields}: SignInFieldProps) => {
   return (
-    <div className='hidden space-y-3'>
+    <div className='hidden space-y-1'>
       {fields.map((field, index) => (
         <Input
           key={index}
@@ -313,7 +595,7 @@ export const InputFields = ({fields}: SignInFieldProps) => {
         />
       ))}
 
-      <div className='flex items-center gap-4'>
+      <div className='flex items-center gap-1'>
         <Divider className='flex-1' />
         <span className='text-xs text-color-muted font-light'>OR</span>
         <Divider className='flex-1' />

@@ -1,10 +1,8 @@
 'use client'
 
+import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
 import {useDealsQueryState} from '@/app/lobby/(store)/deals/hooks/use-deals-query-state'
-import {
-  BUNDLE_CONFIGS,
-  type BundleType,
-} from '@/app/lobby/(store)/deals/lib/deal-types'
+import type {BundleConfig, BundleType} from '@/app/lobby/(store)/deals/lib/deal-types'
 import type {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
@@ -20,18 +18,13 @@ interface DealsContentProps {
   initialProductsByCategory: Record<string, StoreProduct[]>
 }
 
-const DEAL_BUNDLE_IDS: BundleType[] = [
-  'build-your-own-oz',
-  'mix-match-4oz',
-  'extracts-3g',
-  'extracts-7g',
-  'edibles-prerolls-5',
-  'edibles-prerolls-10',
-]
-
-const DEFAULT_VARIATION_BY_BUNDLE: Partial<Record<BundleType, number>> = {
-  'build-your-own-oz':
-    BUNDLE_CONFIGS['build-your-own-oz'].defaultVariationIndex ?? 0,
+function getDefaultVariationByBundle(configs: Record<string, BundleConfig>): Partial<Record<BundleType, number>> {
+  const out: Partial<Record<BundleType, number>> = {}
+  for (const [id, config] of Object.entries(configs)) {
+    const idx = config.defaultVariationIndex ?? 0
+    if (config.variations[idx]) out[id] = idx
+  }
+  return out
 }
 
 function ControlledBundleBuilder({
@@ -43,7 +36,7 @@ function ControlledBundleBuilder({
 }: {
   bundleId: BundleType
   buildProps: {
-    config: (typeof BUNDLE_CONFIGS)[BundleType]
+    config: BundleConfig
     products: StoreProduct[]
   }
   debug: boolean
@@ -91,8 +84,15 @@ function ControlledBundleBuilder({
 export function DealsContent({initialProductsByCategory}: DealsContentProps) {
   const searchParams = useSearchParams()
   const debug = searchParams.get('debug') === '1'
+  const {configs, configsList, isLoading: dealsLoading} = useDealConfigs()
+  const dealIds = useMemo(() => configsList.map((c) => c.id), [configsList])
+  const defaultVariationByBundle = useMemo(
+    () => getDefaultVariationByBundle(configs),
+    [configs],
+  )
   const {state: dealsState, setBundleState} = useDealsQueryState(
-    DEFAULT_VARIATION_BY_BUNDLE,
+    defaultVariationByBundle,
+    dealIds,
   )
 
   const flowerQuery = useQuery(api.products.q.listProducts, {
@@ -180,37 +180,21 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
   }, [flower, extracts, edibles, prerolls, resolveUrl])
 
   const buildProps = useMemo(() => {
-    const byType: Record<
-      BundleType,
-      {config: (typeof BUNDLE_CONFIGS)[BundleType]; products: StoreProduct[]}
-    > = {
-      'build-your-own-oz': {
-        config: BUNDLE_CONFIGS['build-your-own-oz'],
-        products: productsWithImages.flower,
-      },
-      'mix-match-4oz': {
-        config: BUNDLE_CONFIGS['mix-match-4oz'],
-        products: productsWithImages.flower,
-      },
-      'extracts-3g': {
-        config: BUNDLE_CONFIGS['extracts-3g'],
-        products: productsWithImages.extracts,
-      },
-      'extracts-7g': {
-        config: BUNDLE_CONFIGS['extracts-7g'],
-        products: productsWithImages.extracts,
-      },
-      'edibles-prerolls-5': {
-        config: BUNDLE_CONFIGS['edibles-prerolls-5'],
-        products: productsWithImages.edibles,
-      },
-      'edibles-prerolls-10': {
-        config: BUNDLE_CONFIGS['edibles-prerolls-10'],
-        products: productsWithImages.edibles,
-      },
+    const byType: Record<string, {config: BundleConfig; products: StoreProduct[]}> = {}
+    for (const config of configsList) {
+      const slugs = config.categorySlugs
+      const products =
+        slugs.includes('flower')
+          ? productsWithImages.flower
+          : slugs.includes('extracts')
+            ? productsWithImages.extracts
+            : slugs.includes('edibles') || slugs.includes('pre-rolls')
+              ? productsWithImages.edibles
+              : []
+      byType[config.id] = {config, products}
     }
     return byType
-  }, [productsWithImages])
+  }, [configsList, productsWithImages])
 
   return (
     <div className='min-h-screen pt-16 sm:pt-20 md:pt-24 lg:pt-26 pb-16 px-2 sm:px-4 md:px-6 lg:px-8'>
@@ -228,18 +212,22 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
           </p>
         </header>
 
-        <div className='space-y-10'>
-          {DEAL_BUNDLE_IDS.map((bundleId) => (
-            <ControlledBundleBuilder
-              key={bundleId}
-              bundleId={bundleId}
-              buildProps={buildProps[bundleId]}
-              debug={debug}
-              bundleState={dealsState[bundleId]}
-              setBundleState={setBundleState}
-            />
-          ))}
-        </div>
+        {dealsLoading ? (
+          <p className='text-sm text-muted-foreground'>Loading deals…</p>
+        ) : (
+          <div className='space-y-10'>
+            {configsList.map((config) => (
+              <ControlledBundleBuilder
+                key={config.id}
+                bundleId={config.id}
+                buildProps={buildProps[config.id]}
+                debug={debug}
+                bundleState={dealsState[config.id]}
+                setBundleState={setBundleState}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

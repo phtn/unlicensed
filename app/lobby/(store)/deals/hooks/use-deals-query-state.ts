@@ -5,7 +5,7 @@ import {parseAsInteger, parseAsString, useQueryStates} from 'nuqs'
 import {useCallback, useEffect, useMemo, useRef} from 'react'
 import type {BundleType} from '../lib/deal-types'
 import {
-  BUNDLE_PARAM_KEYS,
+  getParamKeysForDealId,
   parseSelectionsString,
   serializeSelections,
 } from '../searchParams'
@@ -17,29 +17,34 @@ export interface BundleState {
   selections: SelectionsMap
 }
 
-export type DealsState = Record<BundleType, BundleState>
+export type DealsState = Record<string, BundleState>
 
-const DEALS_PARSERS = Object.fromEntries(
-  Object.values(BUNDLE_PARAM_KEYS).flatMap((keys) => [
-    [keys.v, parseAsInteger.withDefault(0)] as const,
-    [keys.s, parseAsString.withDefault('')] as const,
-  ]),
-)
+function buildDealsParsers(dealIds: string[]) {
+  const entries: Array<[string, ReturnType<typeof parseAsInteger.withDefault> | ReturnType<typeof parseAsString.withDefault>]> = []
+  for (const id of dealIds) {
+    const keys = getParamKeysForDealId(id)
+    entries.push([keys.v, parseAsInteger.withDefault(0)])
+    entries.push([keys.s, parseAsString.withDefault('')])
+  }
+  return Object.fromEntries(entries)
+}
 
 export function useDealsQueryState(
   defaultVariationByBundle: Partial<Record<BundleType, number>>,
+  dealIds: string[],
 ) {
-  const [raw, setRaw] = useQueryStates(DEALS_PARSERS, {
+  const parsers = useMemo(() => buildDealsParsers(dealIds), [dealIds])
+  const [raw, setRaw] = useQueryStates(parsers, {
     shallow: true,
   })
 
   const state = useMemo((): DealsState => {
-    const result = {} as DealsState
-    for (const [bundleId, keys] of Object.entries(BUNDLE_PARAM_KEYS) as Array<
-      [BundleType, {v: string; s: string}]
-    >) {
-      const v = raw[keys.v] ?? defaultVariationByBundle[bundleId] ?? 0
-      const sRaw = raw[keys.s] ?? ''
+    const result: DealsState = {}
+    for (const bundleId of dealIds) {
+      const keys = getParamKeysForDealId(bundleId)
+      const vRaw = raw[keys.v] ?? defaultVariationByBundle[bundleId] ?? 0
+      const variationIndex = typeof vRaw === 'number' ? vRaw : 0
+      const sRaw = String(raw[keys.s] ?? '')
       const parsed = parseSelectionsString(sRaw)
       const selections = new Map<
         string,
@@ -48,10 +53,10 @@ export function useDealsQueryState(
       for (const [id, val] of parsed) {
         selections.set(id, {productId: id as Id<'products'>, quantity: val.quantity})
       }
-      result[bundleId] = {variationIndex: v, selections}
+      result[bundleId] = {variationIndex, selections}
     }
     return result
-  }, [raw, defaultVariationByBundle])
+  }, [raw, defaultVariationByBundle, dealIds])
 
   const stateRef = useRef(state)
   useEffect(() => {
@@ -65,8 +70,11 @@ export function useDealsQueryState(
         | Partial<BundleState>
         | ((prev: BundleState) => Partial<BundleState>),
     ) => {
-      const keys = BUNDLE_PARAM_KEYS[bundleId]
-      const prev = stateRef.current[bundleId]
+      const keys = getParamKeysForDealId(bundleId)
+      const prev = stateRef.current[bundleId] ?? {
+        variationIndex: 0,
+        selections: new Map(),
+      }
       const next =
         typeof update === 'function' ? {...prev, ...update(prev)} : {...prev, ...update}
       setRaw({
