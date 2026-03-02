@@ -725,7 +725,9 @@ export const PayTab = ({
   const activeIsConfirming = localIsConfirming || isConfirming
   const activeHash = localHash || hash
   const activeReceipt = localReceipt || receipt
-  const paymentSuccessContext = useMemo<PaymentSuccessContext | undefined>(() => {
+  const paymentSuccessContext = useMemo<
+    PaymentSuccessContext | undefined
+  >(() => {
     if (!tokenForTxState) return undefined
 
     const paymentChainId =
