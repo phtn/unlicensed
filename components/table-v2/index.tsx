@@ -435,9 +435,9 @@ function DataTableContent<T>({
                             key={header.id + id}
                             style={{width: `${header.getSize()}px`}}
                             className={cn(
-                              'sticky top-0 z-20 bg-light-gray/10 md:h-10 h-8 uppercase overflow-hidden',
+                              'sticky top-0 z-20 bg-light-gray md:h-10 h-8 uppercase overflow-hidden',
                               'font-oksx font-semibold tracking-tighter text-white md:tracking-tight text-xs md:text-sm',
-                              'dark:text-zinc-400 dark:bg-dark-table/30',
+                              'dark:text-zinc-300 dark:bg-dark-table',
                             )}>
                             <ColumnSort
                               flexRender={flexRender}

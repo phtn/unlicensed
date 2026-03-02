@@ -1,7 +1,7 @@
 'use client'
 
-import {PendingDealsSection} from '@/app/lobby/(store)/deals/components/pending-deals-section'
 import {CartHistory} from '@/app/lobby/(store)/cart/cart-history'
+import {PendingDealsSection} from '@/app/lobby/(store)/deals/components/pending-deals-section'
 import {Button} from '@heroui/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'

@@ -4,10 +4,7 @@ import {AuthModal} from '@/components/auth/auth-modal'
 import ShimmerText from '@/components/expermtl/shimmer'
 import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
-import {
-  isProductCartItemWithProduct,
-  useCart,
-} from '@/hooks/use-cart'
+import {isProductCartItemWithProduct, useCart} from '@/hooks/use-cart'
 import {usePlaceOrder} from '@/hooks/use-place-order'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
@@ -116,14 +113,12 @@ export default function CartPage() {
 
   const serverCartItems = useMemo<CartPageItem[]>(() => {
     if (!cart?.items) return []
-    return cart.items
-      .filter(isProductCartItemWithProduct)
-      .map((item) => ({
-        product: item.product,
-        quantity: item.quantity,
-        denomination: item.denomination,
-      }))
-  }, [cart?.items])
+    return cart.items.filter(isProductCartItemWithProduct).map((item) => ({
+      product: item.product,
+      quantity: item.quantity,
+      denomination: item.denomination,
+    }))
+  }, [cart])
 
   const {cartItems, updateItem, removeItem, clearCartWithHistory} =
     useOptimisticCartItems({
@@ -161,7 +156,7 @@ export default function CartPage() {
     hasItems,
   })
 
-  const {subtotal, tax, shipping, total} = useCartTotals({
+  const {subtotal, tax, shipping} = useCartTotals({
     cartItems,
     taxConfig,
     shippingConfig,
@@ -198,7 +193,7 @@ export default function CartPage() {
       : shipping
   const effectiveTotal = subtotal + tax + effectiveShipping
 
-  if (!hasItems) {
+  if (!hasItems && isLoading) {
     return (
       <CartEmptyState
         isLoading={isLoading}
@@ -215,10 +210,10 @@ export default function CartPage() {
         <div className='grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]'>
           <div className='min-w-0'>
             <CartItemsSection
-            cartItems={cartItems}
-            onUpdateItem={updateItem}
-            onRemoveItem={removeItem}
-          />
+              cartItems={cartItems}
+              onUpdateItem={updateItem}
+              onRemoveItem={removeItem}
+            />
           </div>
 
           <div className='min-w-0 space-y-6 relative'>

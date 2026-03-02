@@ -88,7 +88,7 @@ const paymentMethodIconMap: Record<
 }
 
 export const mmap: Record<PaymentMethod, string> = {
-  cards: 'Credit/Debit Card/Ewallet',
+  cards: 'Cards',
   crypto_transfer: 'Send Crypto',
   crypto_commerce: 'Pay with Crypto',
   cash_app: 'Cash App',

@@ -315,7 +315,7 @@ export const createColumns = <T,>(
           <div className='w-full flex justify-center'>
             <Icon
               name='chevron-down'
-              className='size-4 dark:text-cyan-200/80 text-mac-blue/50'
+              className='size-4 dark:text-cyan-200/80 text-blue-50'
             />
           </div>
         ),

@@ -184,7 +184,7 @@ export const CartHistory = ({onItemAdded}: CartHistoryProps) => {
   }
 
   return (
-    <div className='w-full md:max-w-xl max-w-lg px-5 mx-autopy-6'>
+    <div className='w-full max-w-2xl px-6 mx-autopy-6'>
       <div className='flex items-center justify-between mb-4 md:mb-8'>
         <h2 className='font-polysans'>Your cart history</h2>
         <Button
@@ -211,7 +211,7 @@ export const CartHistory = ({onItemAdded}: CartHistoryProps) => {
           </span>
         </Button>
       </div>
-      <div className='space-y-4 md:space-y-2'>
+      <div className='space-y-4 md:space-y-3'>
         {historyItems.map((item) => {
           const itemKey = `${item.productId}-${item.denomination ?? 'default'}`
           return (

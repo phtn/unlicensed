@@ -85,7 +85,7 @@ export const statusCell = () => {
     return (
       <div
         className={cn(
-          'flex min-h-6 items-center uppercase justify-center rounded-sm w-fit px-2 py-1 font-brk shadow-none',
+          'flex min-h-8 items-center uppercase justify-center rounded-sm w-fit px-1 font-brk shadow-none',
           color,
         )}>
         <select
