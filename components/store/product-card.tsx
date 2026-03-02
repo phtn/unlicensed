@@ -1,9 +1,6 @@
 'use client'
 
-import {
-  mapNumericFractions,
-  mapNumericGrams,
-} from '@/app/admin/(routes)/inventory/product/product-schema'
+import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import type {StoreProduct} from '@/app/types'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
@@ -37,7 +34,6 @@ type PriceOption = {
   price: string
   denom: string
   denominationValue: number
-  gramValue: string
 }
 
 const priceOptionsFromDenomination = (
@@ -53,9 +49,8 @@ const priceOptionsFromDenomination = (
   if (entries.length === 0) return null
   return entries.map(([denom, cents]) => ({
     price: formatPrice(cents),
-    denom: `${mapNumericFractions[denom]} ${unit}`,
+    denom: formatDenominationDisplay(denom, unit),
     denominationValue: Number(denom),
-    gramValue: unit !== 'oz' ? '' : `${mapNumericGrams[denom]} g`,
   }))
 }
 
@@ -161,16 +156,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
                               : 'opacity-70 cursor-not-allowed',
                           )}>
                           <p className=''>${opt.price}</p>
-                          <p>
-                            <span>{opt.denom}</span>
-                            {opt.gramValue && (
-                              <span className='font-light ml-1 md:ml-2'>
-                                <span className='opacity-50 font-brk'>(</span>
-                                {opt.gramValue}
-                                <span className='opacity-50 font-brk'>)</span>
-                              </span>
-                            )}
-                          </p>
+                          <p>{opt.denom}</p>
                         </button>
                       ))}
                     </div>

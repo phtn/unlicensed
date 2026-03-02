@@ -23,7 +23,7 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
       as={Link}
       href={`/account/orders/${orderNumber}`}
       className='w-full rounded-lg border dark:border-dark-table border-dark-table/40 dark:bg-dark-table bg-content/50 dark:hover:bg-dark-table/70'>
-      <CardBody className='p-5'>
+      <CardBody className='p-3 md:p-5'>
         <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
           <div className='flex items-start gap-8 flex-1 min-w-0'>
             <div className='p-4 rounded-lg bg-linear-to-br from-default-100 to-default-500/10 hidden sm:flex shrink-0'>
@@ -36,7 +36,7 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
                 </h3>
               </div>
               <div className='flex items-center gap-6 text-sm text-default-500 flex-wrap'>
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-2 whitespace-nowrap'>
                   <span className='font-brk font-normal'>
                     {formatTimestamp(createdAt)}
                   </span>

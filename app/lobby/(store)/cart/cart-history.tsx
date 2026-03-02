@@ -1,9 +1,6 @@
 'use client'
 
-import {
-  mapNumericFractions,
-  mapNumericGrams,
-} from '@/app/admin/(routes)/inventory/product/product-schema'
+import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import FuzzyText from '@/components/FuzzyText'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
@@ -80,18 +77,10 @@ const CartHistoryItemCard = ({
             <div className='flex items-center gap-2 opacity-60 font-okxs'>
               {item.denomination && item.product.unit && (
                 <span>
-                  <span className='mr-1'>
-                    {mapNumericFractions[item.denomination]}
-                  </span>
-                  {item.product.unit}
-                  {item.product.unit !== 'g' &&
-                    mapNumericGrams[item.denomination] && (
-                      <span className='ml-1 text-sm md:text-base font-light tracking-tight'>
-                        <span className='opacity-50 font-brk'>(</span>
-                        {mapNumericGrams[item.denomination]} g
-                        <span className='opacity-50 font-brk'>)</span>
-                      </span>
-                    )}
+                  {formatDenominationDisplay(
+                    item.denomination,
+                    item.product.unit,
+                  )}
                 </span>
               )}
               <span className=''>${formatPrice(displayPrice)}</span>

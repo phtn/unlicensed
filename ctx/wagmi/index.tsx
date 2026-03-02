@@ -154,7 +154,7 @@ export const modal = createAppKit({
   defaultNetwork: mainnet,
   metadata: metadata,
   features: {
-    analytics: true,
+    analytics: false, // set true when Reown Cloud domain allowlist is configured
     emailShowWallets: true,
   },
   themeMode: 'dark',

@@ -1,9 +1,6 @@
 'use client'
 
-import {
-  mapNumericFractions,
-  mapNumericGrams,
-} from '@/app/admin/(routes)/inventory/product/product-schema'
+import {mapNumericGrams} from '@/app/admin/(routes)/inventory/product/product-schema'
 import {
   type BundleConfig,
   type BundleVariation,
@@ -21,6 +18,7 @@ import {
 } from '@/hooks/use-cart'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {Badge, Button, Card, CardBody, CardHeader, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {
@@ -531,7 +529,7 @@ export function BundleBuilder({
                 {config.categorySlugs.map((slug) => (
                   <span
                     key={slug}
-                    className='font-okxs capitalize font-medium md:text-lg text-base px-2.5 py-1 rounded-full bg-sidebar border border-dark-table/20'>
+                    className='font-okxs capitalize font-medium md:text-lg text-base px-2.5 py-1 rounded-full bg-sidebar border border-dark-table/20 whitespace-nowrap'>
                     {slug}
                   </span>
                 ))}
@@ -573,20 +571,11 @@ export function BundleBuilder({
                         },
                       )}>
                       <span>
-                        <span>
-                          {v.totalUnits} x{' '}
-                          {mapNumericFractions[v.denominationPerUnit]}{' '}
-                          {v.unitLabel}
-                        </span>
-                        {mapNumericGrams[v.denominationPerUnit] &&
-                          v.unitLabel !== 'g' &&
-                          variationIndex === i && (
-                            <span className='ml-2 font-light'>
-                              <span className='font-brk opacity-50'>(</span>
-                              {mapNumericGrams[v.denominationPerUnit]}g
-                              <span className='font-brk opacity-50'>)</span>
-                            </span>
-                          )}
+                        {v.totalUnits} x{' '}
+                        {formatDenominationDisplay(
+                          v.denominationPerUnit,
+                          v.unitLabel,
+                        )}
                       </span>
                     </Button>
                   </Badge>
@@ -610,7 +599,7 @@ export function BundleBuilder({
           {totalFromCart > 0 && (
             <span
               id='from-cart'
-              className='bg-brand text-white rounded-md px-2.5 py-1 text-sm'>
+              className='bg-brand text-white rounded-md px-4 py-1 text-sm'>
               {totalFromCart} {totalFromCart === 1 ? 'item' : 'items'} from cart
             </span>
           )}
@@ -652,7 +641,7 @@ export function BundleBuilder({
                     <Image
                       src={product.image}
                       alt={product.name}
-                      className='size-16 shrink-0 rounded-xl object-cover'
+                      className='size-18 shrink-0 rounded-xl object-cover'
                     />
                   </Badge>
                 )}
@@ -670,23 +659,17 @@ export function BundleBuilder({
                       isComplete={isComplete}
                     />
                   </div>
-                  <p className='text-muted-foreground'>
+                  <p className='md:text-base text-sm text-muted-foreground'>
                     <span>
                       ${(price / 100).toFixed(2)}{' '}
                       <br className='md:hidden flex' />
                       <span className='md:pt-0 -pt-2'>
-                        {mapNumericFractions[variation.denominationPerUnit]}{' '}
-                        {variation.unitLabel}
+                        {formatDenominationDisplay(
+                          variation.denominationPerUnit,
+                          variation.unitLabel,
+                        )}
                       </span>
                     </span>
-                    {mapNumericGrams[variation.denominationPerUnit] &&
-                      variation.unitLabel === 'oz' && (
-                        <span className='text-sm ml-2'>
-                          · <span className='font-brk opacity-50'>(</span>
-                          {mapNumericGrams[variation.denominationPerUnit]} g
-                          <span className='font-brk opacity-50'>)</span>
-                        </span>
-                      )}
                   </p>
                 </div>
               </div>

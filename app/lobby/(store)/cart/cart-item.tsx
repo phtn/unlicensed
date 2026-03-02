@@ -1,7 +1,3 @@
-import {
-  mapNumericFractions,
-  mapNumericGrams,
-} from '@/app/admin/(routes)/inventory/product/product-schema'
 import {ClassName} from '@/app/types'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {Id} from '@/convex/_generated/dataModel'
@@ -9,6 +5,7 @@ import {ProductType} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {
   Button,
   Card,
@@ -114,32 +111,24 @@ export const CartItem = memo(
                     </h3>
                     <div
                       id='price-per-denom'
-                      className='flex items-center gap-2 flex-wrap'>
+                      className='flex items-center gap-2 flex-wrap mt-1'>
                       {item.denomination != null && (
-                        <p className='font-okxs text-xs md:text-sm text-muted-foreground'>
+                        <p className='font-okxs text-sm md:text-base text-muted-foreground'>
                           $<span>{itemPrice / 100}</span>
                         </p>
                       )}
-                      <span className='opacity-60'>/</span>
+                      <span className='opacity-40'>/</span>
                       {item.denomination != null && (
                         <p className='font-okxs text-sm md:text-base text-muted-foreground'>
-                          <span className='mr-1'>
-                            {mapNumericFractions[item.denomination]}
-                          </span>
-                          {item.product.unit ?? ''}
-                          {item.product.unit !== 'g' &&
-                            mapNumericGrams[item.denomination] && (
-                              <span className='ml-1 text-sm md:text-base font-light'>
-                                <span className='opacity-50 font-brk'>(</span>
-                                {mapNumericGrams[item.denomination]} g
-                                <span className='opacity-50 font-brk'>)</span>
-                              </span>
-                            )}
+                          {formatDenominationDisplay(
+                            item.denomination,
+                            item.product.unit ?? '',
+                          )}
                         </p>
                       )}
                     </div>
                   </div>
-                  <p className='font-medium text-xl font-okxs'>
+                  <p className='font-medium text-xl font-okxs mr-1'>
                     $
                     <AnimatedNumber
                       mass={1.2}
@@ -148,7 +137,7 @@ export const CartItem = memo(
                     />
                   </p>
                 </div>
-                <div className='flex items-center justify-between mt-auto'>
+                <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-1'>
                     <Button
                       isIconOnly
@@ -204,18 +193,10 @@ export const CartItem = memo(
                 Remove {item.product.name}
                 {item.denomination != null ? (
                   <span className='ml-1 text-foreground'>
-                    <span className='mr-1'>
-                      {mapNumericFractions[item.denomination]}
-                    </span>
-                    {item.product.unit ?? ''}
-                    {item.product.unit !== 'g' &&
-                      mapNumericGrams[item.denomination] && (
-                        <span className='ml-1 text-sm md:text-base font-light tracking-tight'>
-                          <span className='opacity-50 font-brk'>(</span>
-                          {mapNumericGrams[item.denomination]} g
-                          <span className='opacity-50 font-brk'>)</span>
-                        </span>
-                      )}
+                    {formatDenominationDisplay(
+                      item.denomination,
+                      item.product.unit ?? '',
+                    )}
                   </span>
                 ) : (
                   ''

@@ -1,10 +1,6 @@
 'use client'
 
 import {
-  mapNumericFractions,
-  mapNumericGrams,
-} from '@/app/admin/(routes)/inventory/product/product-schema'
-import {
   BUNDLE_CONFIGS,
   type BundleType,
 } from '@/app/lobby/(store)/deals/lib/deal-types'
@@ -19,6 +15,7 @@ import {
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
+import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {formatPrice} from '@/utils/formatPrice'
 import {Avatar, Button, Image, useDisclosure} from '@heroui/react'
 import {useRouter} from 'next/navigation'
@@ -196,7 +193,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   </Drawer.Description>
                 </div>
 
-                <div className='flex items-center mr-4 space-x-2 md:space-x-4'>
+                <div className='flex items-center mb-4 mr-4 space-x-4 md:space-x-6'>
                   {user && (
                     <Avatar
                       size='sm'
@@ -244,8 +241,8 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                         return (
                           <div
                             key={`${product._id}-${item.denomination ?? 'default'}`}
-                            className='flex gap-3 p-3 first:rounded-t-2xl last:rounded-b-2xl border border-b-0 last:border-b border-foreground/15 bg-card/50'>
-                            <div className='relative w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-muted'>
+                            className='flex gap-3 p-1 md:p-3 first:rounded-t-2xl last:rounded-b-2xl border border-b-0 last:border-b border-foreground/15 bg-card/50'>
+                            <div className='relative w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-muted'>
                               {hasImage ? (
                                 <Image
                                   radius={'none'}
@@ -264,29 +261,16 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                             </div>
                             <div className='flex-1 min-w-0 flex flex-col justify-between gap-1'>
                               <div className='flex items-start justify-between gap-2'>
-                                <div className='min-w-0 flex items-center space-x-4'>
-                                  <h3 className='font-medium font-okxs text-base tracking-tight truncate'>
+                                <div className='min-w-0'>
+                                  <h3 className='font-medium font-okxs text-base truncate'>
                                     {product.name ?? 'Product'}
                                   </h3>
                                   {item.denomination != null && (
-                                    <p className='text-base text-muted-foreground font-okxs space-x-1'>
-                                      <span>
-                                        {mapNumericFractions[item.denomination]}
-                                      </span>
-                                      <span>{product.unit ?? ''}</span>
-                                      {item.product.unit !== 'g' &&
-                                        mapNumericGrams[item.denomination] && (
-                                          <span className='ml-1 text-sm md:text-base font-light tracking-tight'>
-                                            <span className='opacity-50 font-brk'>
-                                              (
-                                            </span>
-                                            {mapNumericGrams[item.denomination]}{' '}
-                                            g
-                                            <span className='opacity-50 font-brk'>
-                                              )
-                                            </span>
-                                          </span>
-                                        )}
+                                    <p className='text-base text-muted-foreground font-okxs'>
+                                      {formatDenominationDisplay(
+                                        item.denomination,
+                                        product.unit ?? '',
+                                      )}
                                     </p>
                                   )}
                                 </div>
@@ -333,7 +317,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                     }}>
                                     <Icon name='minus' className='size-3.5' />
                                   </Button>
-                                  <span className='font-okxs text-lg font-semibold w-8 text-center'>
+                                  <span className='font-okxs text-base font-medium w-8 text-center'>
                                     {item.quantity}
                                   </span>
                                   <Button

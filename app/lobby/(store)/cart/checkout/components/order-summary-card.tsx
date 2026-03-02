@@ -69,7 +69,6 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   onPlaceOrderClick,
   pointsBalance,
   onOpen,
-  minimumOrderCents,
   rewardsVariant,
   computedRewards,
   rewardsConfig,
@@ -83,18 +82,6 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   }
 
   const isFreeShipping = shipping === 0
-  // const minOrder = minimumOrderCents ?? 1000
-  // const remainingForFreeShipping = minOrder - subtotal
-  // const showTierProgress =
-  //   computedRewards?.nextTier != null &&
-  //   computedRewards.amountToNextTier != null &&
-  //   computedRewards.amountToNextTier > 0
-  // const showSimpleShippingProgress =
-  //   !showTierProgress && !isFreeShipping && remainingForFreeShipping > 0
-  // const progressPercent = showTierProgress
-  //   ? computedRewards.progressPctToNext
-  //   : Math.min(100, (subtotal / minOrder) * 100)
-
   const effectiveVariant: RewardsVariant =
     rewardsVariant ?? (computedRewards != null ? 'tier' : 'off')
 
@@ -121,31 +108,31 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
       <Card
         shadow='none'
         className='min-w-0 overflow-hidden dark:bg-dark-table/40 border border-foreground/20'>
-        <CardBody className='relative space-y-4 p-4 sm:p-4 md:p-6 lg:p-8'>
+        <CardBody className='relative space-y-4 p-4 sm:p-5'>
           <div className="absolute w-500 h-full scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
           <h2 className='text-2xl font-normal font-bone'>Order Summary</h2>
-          <Divider />
+          <Divider className='opacity-60' />
           <ViewTransition>
             <div className='space-y-2 font-sans'>
-              <div className='flex justify-between font-okxs text-sm'>
+              <div className='flex justify-between font-okxs text-sm md:text-base'>
                 <span className=''>Subtotal</span>
                 <span className=''>
-                  <span className='opacity-80'>$</span>
+                  <span className=''>$</span>
                   {formatPrice(subtotal)}
                 </span>
               </div>
               <ViewTransition>
                 {showTaxRow && (
-                  <div className='flex justify-between font-okxs text-sm'>
+                  <div className='flex justify-between font-okxs text-sm md:text-base'>
                     <span className=''>Tax</span>
                     <span className=''>
-                      <span className='opacity-80'>$</span>
+                      <span className=''>$</span>
                       {formatPrice(tax)}
                     </span>
                   </div>
                 )}
               </ViewTransition>
-              <div className='flex justify-between font-okxs text-sm'>
+              <div className='flex justify-between font-okxs text-sm md:text-base'>
                 <span className=''>Shipping</span>
                 <span className=''>
                   {isFreeShipping ? (
@@ -154,49 +141,15 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                     </span>
                   ) : (
                     <>
-                      <span className='opacity-80'>$</span>
+                      <span className=''>$</span>
                       {formatPrice(shipping)}
                     </>
                   )}
                 </span>
               </div>
-              {/*{(showTierProgress || showSimpleShippingProgress) && (
-                <div className='space-y-1.5 pt-1'>
-                  <div className='h-1.5 bg-foreground/10 rounded-full overflow-hidden'>
-                    <div
-                      className='h-full bg-brand rounded-full transition-all duration-300'
-                      style={{width: `${progressPercent}%`}}
-                    />
-                  </div>
-                  <p className='space-x-1 font-okxs text-xs'>
-                    <span className='text-muted-foreground'>Add</span>
-                    {showTierProgress && computedRewards ? (
-                      <>
-                        <MoneyFormat
-                          value={computedRewards.amountToNextTier ?? 0}
-                        />
-                        <span className='text-muted-foreground'>
-                          to unlock {computedRewards.nextTier?.label}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <MoneyFormat value={remainingForFreeShipping / 100} />
-                        <span className='text-muted-foreground'>
-                          more for free shipping
-                        </span>
-                      </>
-                    )}
-                  </p>
-                </div>
-              )}*/}
-              {/*<div className='flex justify-between font-okxs text-sm dark:purple-300/10 rounded-md'>
-                <span className='text-foreground'>Reward Points</span>
-                <span className=''>${pointsBalance?.availablePoints ?? 0}</span>
-              </div>*/}
             </div>
           </ViewTransition>
-          <Divider />
+          <Divider className='opacity-60' />
           <div className='flex justify-between font-medium font-okxs'>
             <span className=''>Total</span>
             <span className='font-medium'>${formatPrice(total)}</span>
@@ -205,7 +158,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
           {/* Payment Method Selection */}
           {isAuthenticated && (
             <>
-              <Divider />
+              <Divider className='opacity-60' />
               <div className='py-5'>
                 <PaymentMethods
                   value={paymentMethod}

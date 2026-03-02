@@ -57,7 +57,7 @@ export function CheckoutModal({
       scrollBehavior='inside'
       className=''
       classNames={{
-        wrapper: 'h-[calc(100vh-0rem)] mt-12 md:mt-10 z-9999',
+        wrapper: 'h-[calc(100lvh)] mt-12 md:mt-10 z-9999',
         body: 'h-full p-2 md:p-4',
         backdrop: 'bg-black/50',
       }}
@@ -68,7 +68,7 @@ export function CheckoutModal({
             <ModalHeader className='flex flex-col justify-center gap-1 text-base md:text-lg font-medium md:font-semibold bg-foreground dark:bg-foreground/60 text-background h-9 md:h-12 mb-1'>
               Confirm Shipping & Billing Info
             </ModalHeader>
-            <ModalBody className='h-full'>
+            <ModalBody className='h-full pb-6'>
               <OrderStatusMessages
                 isPending={isPending}
                 orderError={orderError}

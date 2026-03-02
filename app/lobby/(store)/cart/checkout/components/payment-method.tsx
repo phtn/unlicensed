@@ -27,7 +27,7 @@ interface PaymentMethodProps {
 
 // Hoist to module scope to avoid recreation on every render (5.5, 7.2)
 const ID_TO_PAYMENT_METHOD: Record<string, PaymentMethodType> = {
-  card: 'cards',
+  cards: 'cards',
   crypto: 'crypto_commerce',
   'cash-app': 'cash_app',
 }
@@ -57,11 +57,11 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
   method: IPaymentMethod
 }) {
   return (
-    <div className='h-14 flex gap-2 md:gap-3 md:p-2'>
+    <div className='h-14 flex gap-2 md:gap-3 px-2 md:p-2'>
       <Icon name={method.icon} className={cn('shrink-0 size-4 mt-1')} />
       <div className='flex flex-col w-full md:space-y-0.5 h-14'>
         <div className='flex items-center justify-between w-full h-8 md:h-7'>
-          <div className='flex items-center space-x-2 whitespace-nowrap text-base md:text-lg tracking-tight font-medium '>
+          <div className='flex items-center space-x-2 whitespace-nowrap text-base md:text-lg tracking-tight font-medium'>
             <span>{method.label}</span>
             {method.id === 'cards' ? (
               <div className='flex items-center space-x-1'>
@@ -119,7 +119,7 @@ function SelectedValueContent({
           </div>
         </div>
       </div>
-      <div className='flex-1 text-[8px] font-brk uppercase font-normal px-1.5 py-px md:whitespace-nowrap leading-3'>
+      <div className='flex-1 text-[8px] font-brk uppercase font-normal px-2.5 py-px md:whitespace-nowrap leading-3'>
         {data.tag}
       </div>
     </div>
@@ -194,7 +194,7 @@ export const PaymentMethods = memo(function PaymentMethods({
           classNames={{
             wrapper: 'placeholder:text-dark-gray',
             base: 'data-[selected=true]:bg-brand/12 dark:data-[selected=true]:bg-brand gap-0 px-1 py-2',
-            selectedIcon: 'p-0 size-2 mb-7 md:mb-4',
+            selectedIcon: 'p-0 size-3 mb-7 md:mb-4 mr-2',
           }}>
           <PaymentMethodOptionRow method={method} />
         </SelectItem>
