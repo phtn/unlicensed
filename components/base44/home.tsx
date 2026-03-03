@@ -3,25 +3,50 @@ import {useMobile} from '@/hooks/use-mobile'
 import {Button} from '@heroui/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import {useEffect, useRef, useState} from 'react'
 
 export const NewHome = () => {
   const isMobile = useMobile()
+  const heroImageWrapRef = useRef<HTMLDivElement>(null)
+  const [heroImageHeight, setHeroImageHeight] = useState<number | null>(null)
+
+  useEffect(() => {
+    const el = heroImageWrapRef.current
+    if (!el) return
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const h = entry.contentRect.height
+        if (typeof h === 'number' && h > 0) setHeroImageHeight(h)
+      }
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [isMobile])
 
   return (
-    <div className='relative bg-linear-to-b dark:from-black dark:to-[#1f1f1f]/80 from-background to-white'>
-      <Image
-        alt='hero-image'
-        width={isMobile ? 513 : 2752}
-        height={isMobile ? 635 : 1536}
-        className='absolute top-0 left-0 w-screen h-auto aspect-auto'
-        src={
-          isMobile
-            ? 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772559002/hero-mobile_unh1to.webp'
-            : 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772552114/hero-image_ivcsbu.webp'
-        }
-      />
+    <div
+      className='relative bg-linear-to-b bg-background dark:bg-black'
+      style={
+        heroImageHeight != null ? {minHeight: heroImageHeight} : undefined
+      }>
+      <div ref={heroImageWrapRef} className='absolute top-0 left-0 w-full'>
+        <Image
+          id='hero-image'
+          alt='hero-image'
+          width={isMobile ? 513 : 2752}
+          height={isMobile ? 635 : 1536}
+          className='absolute top-0 left-0 md:min-w-7xl w-screen h-auto aspect-auto'
+          src={
+            isMobile
+              ? 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772559002/hero-mobile_unh1to.webp'
+              : 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772552114/hero-image_ivcsbu.webp'
+          }
+        />
+      </div>
 
       <Highlights
+        isMobile={isMobile}
+        heroImageHeight={heroImageHeight}
         slides={[
           {
             id: 'id',
@@ -41,7 +66,7 @@ export const NewHome = () => {
         radius='none'
         href='/lobby/category'
         variant='solid'
-        className='absolute bottom-20 left-1/2 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white  _dark:bg-white'>
+        className='absolute top-[100lvw] md:top-[75lvh] left-1/2 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white  _dark:bg-white'>
         Shop Now
       </Button>
     </div>

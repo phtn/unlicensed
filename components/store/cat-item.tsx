@@ -16,7 +16,7 @@ export const CategoryItem = (item: CategoryItemProps) => {
     <Card
       as={Link}
       prefetch
-      radius='sm'
+      radius='none'
       isPressable
       shadow='none'
       key={item._id}

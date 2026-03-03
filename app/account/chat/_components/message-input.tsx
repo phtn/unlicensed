@@ -727,6 +727,6 @@ export const chatInputClassNames: InputProps['classNames'] = {
   input:
     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-dark-table/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
-    'border shadow-none rounded-xl border-dark-table/40 dark:border-black/10 bg-sidebar dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-16 w-full',
+    'border shadow-none rounded-xl border-dark-table/40 dark:border-black/10 bg-sidebar dark:bg-black/60 dark:hover:bg-black/40 dark:data-focus-visible:bg-white data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-16 w-full',
   innerWrapper: 'ps-2',
 }

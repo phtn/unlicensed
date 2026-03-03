@@ -32,10 +32,18 @@ export interface Highlight {
 
 interface HomepageCarouselProps {
   slides: Highlight[]
+  isMobile: boolean
+  /** Measured height of the hero image (from NewHome); used so content below does not overlap or fall short. */
+  heroImageHeight?: number | null
   className?: string
 }
 
-export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
+export const Highlights = ({
+  slides = [],
+  isMobile,
+  heroImageHeight,
+  className,
+}: HomepageCarouselProps) => {
   const [emblaRef, emblaApi] = useEmblaCarousel(
     {
       loop: true,
@@ -111,10 +119,16 @@ export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
     <div
       ref={containerRef}
       className={cn(
-        'relative md:max-w-7xl mx-auto pt-6 md:pt-24 h-[56lvh] md:h-[80lvh]',
+        'relative md:max-w-7xl mx-auto _pt-16 _md:pt-24 md:h-[80lvh]',
         'cursor-grab active:cursor-grabbing',
+        {' h-[60lvh]': isMobile},
         className,
       )}
+      style={
+        heroImageHeight != null && heroImageHeight > 0
+          ? {minHeight: heroImageHeight}
+          : undefined
+      }
       role='region'
       aria-roledescription='carousel'
       aria-label='Featured products carousel'>

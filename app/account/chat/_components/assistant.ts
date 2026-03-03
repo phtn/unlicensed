@@ -2,7 +2,7 @@
 export const ASSISTANT_PRO_ID = 'fire-g-001'
 export const ASSISTANT_EMAIL = 'support@rapidfirenow.com'
 export const ASSISTANT_NAME = 'Rapid Assistant'
-export const ASSISTANT_AVATAR = '/svg/rf-logo-round-24-latest.svg'
+export const ASSISTANT_AVATAR = '/svg/rf-logo-round-204-latest.svg'
 export const ASSISTANT_USERNAME = 'fire-assist'
 
 export interface AssistantMessage {

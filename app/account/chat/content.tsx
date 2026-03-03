@@ -44,6 +44,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const scrollButtonAnchorRef = useRef<HTMLDivElement>(null)
   const shouldAutoScrollRef = useRef(true) // Track if we should auto-scroll
   const previousMessagesLengthRef = useRef(0)
 
@@ -351,6 +352,11 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
     router.push('/account/chat')
   }
 
+  const scrollToBottom = useCallback(() => {
+    shouldAutoScrollRef.current = true
+    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'})
+  }, [])
+
   const handleArchiveConversation = useCallback(
     async (otherUserId: string, otherUserProId: string) => {
       if (!user?.uid) return
@@ -533,10 +539,16 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                   messages={assistantChat.messages}
                   isLoading={assistantChat.isLoading}
                   onQuickAction={sendAssistantQuickAction}
+                  scrollAreaRef={scrollAreaRef}
+                  scrollButtonAnchorRef={scrollButtonAnchorRef}
+                  onScrollToBottom={scrollToBottom}
                 />
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
+
+            {/* Scroll-to-bottom button anchor (above input) */}
+            <div ref={scrollButtonAnchorRef} className='relative min-h-0 shrink-0' />
 
             {/* Assistant Message Input */}
             <div
@@ -613,6 +625,9 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                   messages={messages}
                   currentUserProId={user?.uid ?? ''}
                   otherUserProId={selectedUserProId ?? ''}
+                  scrollAreaRef={scrollAreaRef}
+                  scrollButtonAnchorRef={scrollButtonAnchorRef}
+                  onScrollToBottom={scrollToBottom}
                   onOptimisticLike={(messageId, userId) => {
                     startTransition(() => {
                       addOptimisticUpdate({
@@ -635,6 +650,9 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
+
+            {/* Scroll-to-bottom button anchor (above input) */}
+            <div ref={scrollButtonAnchorRef} className='relative min-h-0 shrink-0' />
 
             {/* Message Input */}
             <div

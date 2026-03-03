@@ -1,9 +1,6 @@
 'use client'
 
-import {
-  mapNumericFractions,
-  mapNumericGrams,
-} from '@/app/admin/(routes)/inventory/product/product-schema'
+import {mapNumericGrams} from '@/app/admin/(routes)/inventory/product/product-schema'
 import {StoreCategory, StoreProduct} from '@/app/types'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {ProductProfile} from '@/components/ui/product-profile'
@@ -83,8 +80,14 @@ export const ProductInteraction = ({
     if (!resolvedProductId || !cart?.items) return 0
     return cart.items
       .filter(
-        (item): item is Extract<CartItemWithProduct, { productId: Id<'products'>; quantity: number }> =>
-          isProductCartItemWithProduct(item) && item.productId === resolvedProductId,
+        (
+          item,
+        ): item is Extract<
+          CartItemWithProduct,
+          {productId: Id<'products'>; quantity: number}
+        > =>
+          isProductCartItemWithProduct(item) &&
+          item.productId === resolvedProductId,
       )
       .reduce((sum, item) => sum + item.quantity, 0)
   }, [cart, resolvedProductId])
@@ -136,7 +139,7 @@ export const ProductInteraction = ({
   )
 
   return (
-    <div className='space-y-0 lg:min-h-[78lvh] rounded-3xl md:rounded-tl-none border border-foreground/20 bg-hue dark:bg-dark-table/50 backdrop-blur-xl w-full overflow-hidden'>
+    <div className='space-y-0 lg:min-h-[78lvh] rounded-xs md:rounded-tl-none border border-foreground/20 bg-hue dark:bg-dark-table/50 backdrop-blur-xl w-full overflow-hidden'>
       <ProductDetailStats
         product={product}
         quantityInCart={quantityInCart}
@@ -217,9 +220,10 @@ export const ProductInteraction = ({
                       }}>
                       <Button
                         size='sm'
+                        radius='none'
                         onPress={handleDenominationChange(i)}
                         className={cn(
-                          'cursor-pointer bg-sidebar rounded-full border border-foreground/20 portrait:px-px',
+                          'cursor-pointer bg-sidebar rounded-none border border-foreground/20 portrait:px-px',
                           {
                             'bg-dark-gray dark:bg-white dark:border-foreground text-white dark:text-dark-gray md:hover:bg-black dark:md:hover:bg-brand dark:md:hover:text-white md:hover:text-brand':
                               selectedDenomination === i,
@@ -229,14 +233,11 @@ export const ProductInteraction = ({
                           className={cn(
                             'relative font-okxs text-base md:text-lg font-medium whitespace-nowrap portrait:px-0',
                           )}>
-                          <span>{`${mapNumericFractions[denomination]} ${product.unit}`}</span>
                           <span>
                             {product.unit !== 'g' &&
                               mapNumericGrams[denomination] && (
                                 <span className='ml-1 text-sm md:text-base font-light tracking-tight'>
-                                  <span className='opacity-50 font-brk'>(</span>
                                   {mapNumericGrams[denomination]} g
-                                  <span className='opacity-50 font-brk'>)</span>
                                 </span>
                               )}
                           </span>
@@ -261,6 +262,7 @@ export const ProductInteraction = ({
               size='lg'
               color='primary'
               variant='solid'
+              radius='none'
               disableRipple
               className='w-full h-14 font-polysans font-medium text-base md:text-lg bg-linear-to-r from-brand via-brand to-brand flex items-center'
               onPress={handleAddToCart}
@@ -280,17 +282,19 @@ export const ProductInteraction = ({
               <Button
                 size='lg'
                 variant='solid'
+                radius='none'
                 isDisabled={isPending || quantityInCart < 1}
                 // isDisabled={isPending}
                 onPress={handleCheckoutPress}
                 className='w-full sm:flex-1 h-14 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
-                <span>Checkout - {quantityInCart}</span>
+                <span>Checkout</span>
               </Button>
             ) : (
               <Button
                 size='lg'
                 variant='solid'
                 onPress={handleCheckoutPress}
+                radius='none'
                 className='w-full sm:flex-1 h-14 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
                 <span>Sign in</span>
               </Button>
@@ -301,7 +305,7 @@ export const ProductInteraction = ({
       </div>
 
       <div className='p-2 md:p-3'>
-        <div className='bg-linear-to-r from-dark-gray/5 via-dark-gray/5 to-dark-gray/5 dark:bg-background/30 rounded-3xl gap-4 p-4 space-y-3'>
+        <div className='bg-linear-to-r from-dark-gray/5 via-dark-gray/5 to-dark-gray/5 dark:bg-background/30 rounded-xs gap-4 p-4 space-y-3'>
           <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
             Lineage
           </span>

@@ -6,6 +6,7 @@ import DOMPurify from 'dompurify'
 import {marked} from 'marked'
 import {useMemo} from 'react'
 import {ASSISTANT_NAME, type AssistantMessage} from './assistant'
+import {ScrollToBottomButton} from './scroll-to-bottom-button'
 
 function escapeHtml(text: string) {
   return text
@@ -51,12 +52,18 @@ interface AssistantMessageListProps {
   messages: AssistantMessage[]
   isLoading: boolean
   onQuickAction?: (suggestion: string) => void
+  scrollAreaRef?: React.RefObject<HTMLDivElement | null>
+  scrollButtonAnchorRef?: React.RefObject<HTMLDivElement | null>
+  onScrollToBottom?: () => void
 }
 
 export function AssistantMessageList({
   messages,
   isLoading,
   onQuickAction,
+  scrollAreaRef,
+  scrollButtonAnchorRef,
+  onScrollToBottom,
 }: AssistantMessageListProps) {
   // Group messages by date
   const groupedMessages = useMemo(() => {
@@ -173,17 +180,17 @@ export function AssistantMessageList({
               <div
                 key={message.id}
                 className={cn(
-                  'flex gap-2 items-end relative',
-                  isUser && 'flex-row-reverse',
+                  'flex items-end relative',
+                  isUser ? 'justify-end' : 'gap-2',
                 )}>
-                {/* Avatar */}
-                <div className='w-7 md:w-8 shrink-0'>
-                  {showAvatar && !isUser ? (
-                    <Avatar src='/svg/rf-logo-round-204-latest.svg' />
-                  ) : showAvatar && isUser ? (
-                    <Avatar className='size-7 md:size-8 border-2 border-background'></Avatar>
-                  ) : null}
-                </div>
+                {/* Avatar - only for assistant (left side) */}
+                {!isUser && (
+                  <div className='w-7 md:w-8 shrink-0'>
+                    {showAvatar ? (
+                      <Avatar src='/svg/rf-logo-round-204-latest.svg' />
+                    ) : null}
+                  </div>
+                )}
 
                 {/* Message Bubble */}
                 <div
@@ -250,6 +257,17 @@ export function AssistantMessageList({
               </span>
             </div>
           </div>
+        )}
+
+      {/* Scroll-to-bottom button (portaled above message input) */}
+      {scrollAreaRef &&
+        scrollButtonAnchorRef &&
+        onScrollToBottom && (
+          <ScrollToBottomButton
+            scrollAreaRef={scrollAreaRef}
+            scrollButtonAnchorRef={scrollButtonAnchorRef}
+            onScrollToBottom={onScrollToBottom}
+          />
         )}
     </div>
   )

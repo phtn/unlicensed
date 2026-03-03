@@ -11,6 +11,7 @@ import {useGroupedMessages, useLastReadMessageId} from './message-list-hooks'
 import {ImageModal} from './message-list-image-modal'
 import type {Attachment, MessageListProps} from './message-list-types'
 import {withViewTransitionAndTransition} from './message-list-utils'
+import {ScrollToBottomButton} from './scroll-to-bottom-button'
 
 export function MessageList({
   messages,
@@ -18,6 +19,9 @@ export function MessageList({
   otherUserProId,
   onOptimisticLike,
   onOptimisticUnlike,
+  scrollAreaRef,
+  scrollButtonAnchorRef,
+  onScrollToBottom,
 }: MessageListProps) {
   const {user} = useAuthCtx()
   const likeMessage = useMutation(api.messages.m.likeMessage)
@@ -213,6 +217,17 @@ export function MessageList({
           setIsDownloading={setIsDownloading}
         />
       ))}
+
+      {/* Scroll-to-bottom button (portaled above message input) */}
+      {scrollAreaRef &&
+        scrollButtonAnchorRef &&
+        onScrollToBottom && (
+          <ScrollToBottomButton
+            scrollAreaRef={scrollAreaRef}
+            scrollButtonAnchorRef={scrollButtonAnchorRef}
+            onScrollToBottom={onScrollToBottom}
+          />
+        )}
     </div>
   )
 }

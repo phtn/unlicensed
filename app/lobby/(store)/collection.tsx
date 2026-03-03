@@ -1,7 +1,6 @@
 import {StoreCategory, StoreProduct} from '@/app/types'
 import {ProductCard} from '@/components/store/product-card'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {Button} from '@heroui/react'
 import {useMemo} from 'react'
 
 interface CollectionProps {
@@ -56,17 +55,9 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
         <div className='flex flex-wrap items-center justify-between gap-4'>
           <div className='space-y-1'>
             <h2 className='text-3xl font-polysans font-semibold tracking-tight sm:text-5xl'>
-              Fire Collection
+              <span className='text-brand'>Fire</span> Collection
             </h2>
           </div>
-          <Button
-            as='a'
-            href='#finder'
-            radius='full'
-            variant='flat'
-            className='border border-(--surface-outline) bg-(--surface-highlight) text-sm font-semibold text-foreground transition hover:bg-(--surface-muted)'>
-            Personalize with Strain Finder
-          </Button>
         </div>
         {collections.map(({category, items}) => (
           <section

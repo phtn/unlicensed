@@ -28,6 +28,9 @@ export interface MessageListProps {
   otherUserProId: string
   onOptimisticLike?: (messageId: Id<'messages'>, userId: Id<'users'>) => void
   onOptimisticUnlike?: (messageId: Id<'messages'>, userId: Id<'users'>) => void
+  scrollAreaRef?: React.RefObject<HTMLDivElement | null>
+  scrollButtonAnchorRef?: React.RefObject<HTMLDivElement | null>
+  onScrollToBottom?: () => void
 }
 
 export interface MessageGroup {

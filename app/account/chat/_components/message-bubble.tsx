@@ -44,10 +44,6 @@ export function MessageBubble({
   setIsDownloading,
 }: MessageBubbleProps) {
   const isCurrentUser = message.senderId === currentUser._id
-  const displayUser = isCurrentUser ? currentUser : otherUser
-  // const displayName =
-  //   displayUser?.displayName || displayUser?.email || 'Unknown User'
-  // const initials = displayName[0]?.toUpperCase() || 'U'
 
   const isLiked = message.likes?.some((like) => like.userId === currentUser._id)
   const likesCount = message.likes?.length || 0
@@ -95,15 +91,20 @@ export function MessageBubble({
   return (
     <div
       className={cn(
-        'flex gap-2 items-end relative',
-        isCurrentUser && 'flex-row-reverse',
+        'flex items-end relative',
+        isCurrentUser ? 'justify-end' : 'gap-2',
       )}>
-      {/* Avatar - only show for first message in a group */}
-      <div className='hidden w-7 md:w-8 shrink-0'>
-        {showAvatar && displayUser ? (
-          <Avatar src={displayUser.avatarUrl ?? undefined} />
-        ) : null}
-      </div>
+      {/* Avatar - only for other user, first message in group */}
+      {!isCurrentUser && (
+        <div className='w-7 md:w-8 shrink-0'>
+          {showAvatar && otherUser ? (
+            <Avatar
+              src={otherUser.avatarUrl ?? undefined}
+              name={otherUser.displayName ?? undefined}
+            />
+          ) : null}
+        </div>
+      )}
 
       {/* Message Bubble */}
       {isAudioOnly && audioAttachments ? (

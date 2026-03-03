@@ -1,15 +1,13 @@
 'use client'
 import type {StoreCategory, StoreProduct} from '@/app/types'
 import {NewHome} from '@/components/base44/home'
-import {AboutUs} from '@/components/main/about-us'
 import {api} from '@/convex/_generated/api'
 import {adaptCategory, adaptProduct} from '@/lib/convexClient'
 import type {BuildType} from '@/lib/flags'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 import {FullCollection} from './collection'
-import {DealsLink} from './deals'
-import {FeaturedProducts} from './featured'
+import {DealsMini} from './deals/components/deals-mini'
 
 interface StorefrontPageProps {
   initialCategories: StoreCategory[]
@@ -40,26 +38,10 @@ export const Content = ({
 
   return (
     <div className='space-y-12 sm:space-y-24 md:space-y-40 overflow-x-hidden'>
-      {/*{(delay !== undefined && delay > 0) || buildType !== 'production' ? (
-        <div className='fixed bottom-4 right-4 z-50 flex flex-col gap-2'>
-          {delay !== undefined && delay > 0 && (
-            <div className='rounded-lg bg-blue-500/90 text-white px-4 py-2 text-sm font-medium shadow-lg backdrop-blur-sm'>
-              ⏱️ Delay: {delay}ms
-            </div>
-          )}
-          {buildType && buildType !== 'production' && (
-            <div
-              className={`rounded-lg ${buildTypeColors[buildType]} text-white px-4 py-2 text-sm font-medium shadow-lg backdrop-blur-sm uppercase tracking-wider`}>
-              {buildType}
-            </div>
-          )}
-        </div>
-      ) : null}*/}
       <NewHome />
-      <FeaturedProducts featuredProducts={featuredProducts} />
+      {/*<FeaturedProducts featuredProducts={featuredProducts} />*/}
       <FullCollection products={products} categories={categories} />
-      <DealsLink />
-      <AboutUs />
+      <DealsMini categories={categories} />
     </div>
   )
 }

@@ -68,22 +68,24 @@ export const Content = ({initialCategories}: ContentProps) => {
               <div className='hidden sm:flex items-center gap-3 sm:gap-4 lg:gap-5 relative z-50 flex-wrap'>
                 <Button
                   as={Link}
-                  href={'/lobby/strain-finder'}
+                  href={'/lobby/brands'}
                   prefetch
+                  radius='none'
                   size='lg'
                   className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-brand hover:text-white text-white font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
-                  <span className='drop-shadow-xs'>Strain Finder</span>
+                  <span className='drop-shadow-xs'>Shop by Brand</span>
                 </Button>
                 <Button
                   size='lg'
                   as={Link}
-                  href={'/lobby/brands'}
                   prefetch
+                  radius='none'
                   variant='light'
-                  className='hidden border dark:border-dark-gray sm:flex items-center gap-2 dark:text-brand font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
-                  <span className='tracking-tight'>Shop by Brand</span>
+                  href={'/lobby/deals'}
+                  className='hidden border dark:border-light-gray/80 sm:flex items-center gap-2 dark:text-terpenes font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
+                  <span className='tracking-tight'>Find Deals</span>
                   <Icon
-                    name='arrow-right'
+                    name='search-magic'
                     className='w-3 h-3 sm:w-4 sm:h-4 dark:text-white'
                   />
                 </Button>
@@ -133,9 +135,9 @@ export const Content = ({initialCategories}: ContentProps) => {
                 key={category.slug}
                 href={`/lobby/category/${category.slug}`}
                 prefetch={true}
-                className='group/item cursor-pointer w-full border-x border-b border-dark-gray/50 rounded-2xl sm:rounded-3xl'>
+                className='group/item cursor-pointer w-full border-x border-b border-dark-gray/50 rounded-xs'>
                 {/* Category Image */}
-                <div className='relative flex items-center justify-center bg-transparent rounded-t-2xl sm:rounded-t-3xl overflow-hidden h-fig sm:h-64 lg:h-72'>
+                <div className='relative flex items-center justify-center bg-transparent rounded-xs overflow-hidden h-fig sm:h-64 lg:h-72'>
                   {category.heroImage ? (
                     <Image
                       src={resolveUrl(category.heroImage) as string}

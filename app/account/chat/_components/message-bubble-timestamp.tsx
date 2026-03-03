@@ -4,7 +4,6 @@ import type {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimeCompact} from '@/utils/date'
-import {Avatar} from '@heroui/react'
 import {ViewTransition} from 'react'
 
 interface User {
@@ -37,33 +36,20 @@ export function MessageBubbleTimestamp({
   return (
     <div className='relative w-full flex items-center gap-2 text-xs text-muted-foreground px-2'>
       {isCurrentUser ? (
-        <>
-          <div className='min-w-12 relative flex items-center'>
-            <ViewTransition
-              name='chat-message-timestamp'
-              enter='vt-enter'
-              exit='vt-exit'>
-              {isVisible ? (
-                <span
-                  key='timestamp'
-                  className='font-brk whitespace-nowrap px-1'>
-                  {formatTimeCompact(createdAt)}
-                </span>
-              ) : null}
-            </ViewTransition>
-          </div>
-          {isLastRead && otherUser && (
-            <Avatar
-              src={otherUser.avatarUrl ?? undefined}
-              fallback={
-                otherUser.displayName?.[0]?.toUpperCase() ??
-                otherUser.email?.[0]?.toUpperCase() ??
-                'U'
-              }
-              className='size-4 md:size-6 border border-foreground/50 shrink-0'
-            />
-          )}
-        </>
+        <div className='min-w-12 relative flex items-center'>
+          <ViewTransition
+            name='chat-message-timestamp'
+            enter='vt-enter'
+            exit='vt-exit'>
+            {isVisible ? (
+              <span
+                key='timestamp'
+                className='font-brk whitespace-nowrap px-1'>
+                {formatTimeCompact(createdAt)}
+              </span>
+            ) : null}
+          </ViewTransition>
+        </div>
       ) : (
         <div className='w-full hidden'>
           {onLike && (

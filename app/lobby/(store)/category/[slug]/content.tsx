@@ -81,20 +81,22 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                 <Button
                   size='lg'
                   as={Link}
-                  href={'/lobby/brands'}
                   prefetch
-                  className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-brand hover:text-white text-white font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
+                  radius='none'
+                  href={'/lobby/brands'}
+                  className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand rounded-xs dark:hover:text-white bg-brand hover:text-white text-white font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                   <span className='drop-shadow-xs'>Shop by Brand</span>
                 </Button>
                 <Button
                   size='lg'
                   as={Link}
-                  href={'/lobby/strain-finder'}
                   prefetch
-                  onPress={toggle}
+                  radius='none'
                   variant='light'
-                  className='hidden border dark:border-dark-gray sm:flex items-center gap-2 dark:text-brand font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
-                  <span className='tracking-tight'>Strain Finder</span>
+                  onPress={toggle}
+                  href={'/lobby/strain-finder'}
+                  className='hidden border dark:border-light-gray/80 sm:flex rounded-xs items-center gap-2 dark:text-terpenes font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
+                  <span className='tracking-tight'>Find Deals</span>
                   <Icon
                     name={navigating ? 'spinners-ring' : 'search-magic'}
                     className='w-3 h-3 sm:w-4 sm:h-4 dark:text-white'

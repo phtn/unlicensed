@@ -9,7 +9,7 @@ interface ProductsProps {
 export const Products = ({products}: ProductsProps) => {
   return (
     <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
-      <div className='max-w-7xl mx-auto rounded-[3.5rem] md:p-6 bg-sidebar/40 dark:bg-transparent dark:md:bg-sidebar'>
+      <div className='max-w-7xl mx-auto'>
         <Activity mode={products.length === 0 ? 'visible' : 'hidden'}>
           <EmptyCategory />
         </Activity>

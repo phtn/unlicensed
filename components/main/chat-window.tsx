@@ -14,6 +14,7 @@ import {DialogWindow} from '@/components/ui/window'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {Avatar, Select, SelectItem} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
@@ -192,7 +193,19 @@ export function ChatWindow({
     <DialogWindow
       open={open}
       onOpenChange={handleWindowOpenChange}
-      className='left-auto right-4 w-[min(calc(100vw-2.5rem),34rem)] translate-x-0 bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] md:right-8 md:bottom-[calc(env(safe-area-inset-bottom)+8rem)] rounded-3xl border-dark-table md:min-h-180'
+      className={cn(
+        'left-auto right-4 w-[min(calc(100vw-2.5rem),34rem)] translate-x-0 rounded-3xl border-dark-table',
+        // From navbar bottom (h-14 lg:h-16 xl:h-20 2xl:h-24) to above chat dock (5.25rem / 8rem)
+        'top-14 lg:top-16 xl:top-20 2xl:top-24',
+        'bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] md:right-8 md:bottom-[calc(env(safe-area-inset-bottom)+8rem)]',
+        'min-h-48',
+        // height = viewport minus top (navbar) minus bottom (above dock)
+        'h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-5.25rem)] max-h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-5.25rem)]',
+        'md:h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-8rem)] md:max-h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-8rem)]',
+        'lg:h-[calc(100vh-4rem-env(safe-area-inset-bottom)-8rem)] lg:max-h-[calc(100vh-4rem-env(safe-area-inset-bottom)-8rem)]',
+        'xl:h-[calc(100vh-5rem-env(safe-area-inset-bottom)-8rem)] xl:max-h-[calc(100vh-5rem-env(safe-area-inset-bottom)-8rem)]',
+        '2xl:h-[calc(100vh-6rem-env(safe-area-inset-bottom)-8rem)] 2xl:max-h-[calc(100vh-6rem-env(safe-area-inset-bottom)-8rem)]',
+      )}
       title={
         <div className='w-1/2 min-w-0'>
           <Select
@@ -210,19 +223,30 @@ export function ChatWindow({
             variant='flat'
             classNames={{
               trigger:
-                'min-h-8 h-8 bg-sidebar/40 shadow-none data-[hover=true]:bg-sidebar',
-              value: 'text-sm font-semibold',
+                'min-h-8 h-8 w-full bg-sidebar/40 shadow-none data-[hover=true]:bg-sidebar',
+              value:
+                'text-sm md:text-base font-medium font-clash ring-brand outline-brand',
               popoverContent: '-mt-1',
+              listbox: 'px-2',
+              innerWrapper: 'ps-1',
             }}
             aria-label='Select conversation'>
             {(item) => (
-              <SelectItem key={item.key} textValue={item.label}>
+              <SelectItem
+                key={item.key}
+                textValue={item.label}
+                className='hover:bg-sidebar!'>
                 <div className='flex items-center gap-2'>
                   <Avatar
                     alt={item.label}
-                    className='shrink-0'
+                    className='shrink-0 bg-sidebar dark:bg-dark-table'
                     name={item.label}
                     size='sm'
+                    fallback={
+                      <span className='font-polysans font-semibold text-xl text-brand'>
+                        {item.label.substring(0, 1).toUpperCase()}
+                      </span>
+                    }
                     src={item.avatarUrl ?? undefined}
                   />
                   <span>{item.label}</span>
@@ -233,7 +257,7 @@ export function ChatWindow({
         </div>
       }
       description={windowDescription}
-      descriptionStyle='ps-2'
+      descriptionStyle='mt-1.5 ps-2 font-pixel-grid font-medium tracking-wide'
       actions={
         isConversationMode && activeConversationFid ? (
           <Link
@@ -245,13 +269,14 @@ export function ChatWindow({
           <button
             type='button'
             onClick={assistantChat.clearMessages}
-            className='rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-sidebar hover:text-foreground'>
+            className='rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-sidebar hover:text-foreground font-okxs'>
             Clear
           </button>
         ) : null
       }>
-      <div className='flex h-full min-h-0 flex-col border-t border-foreground/20 w-full'>
-        <ScrollArea className='min-h-0 flex-1'>
+      <div className='flex h-full min-h-0 flex-col border-t border-foreground/20 dark:border-dark-table w-full bg-sidebar'>
+        <ScrollArea className='min-h-0 flex-1 relative'>
+          <div className="absolute w-full h-full inset-0 bg-[url('/svg/noise.svg')] opacity-10 scale-100 pointer-events-none" />
           <div className='px-3 py-3 pb-6'>
             {isConversationMode ? (
               user?.uid && activeConversationFid ? (
@@ -277,7 +302,7 @@ export function ChatWindow({
         </ScrollArea>
 
         <div
-          className='shrink-0 border-t border-border/40 bg-background/90 p-3'
+          className='shrink-0 border-t border-foreground/20 dark:border-dark-table bg-background/90 p-3'
           style={{paddingBottom: 'max(12px, env(safe-area-inset-bottom))'}}>
           {isConversationMode ? (
             user?.uid && activeConversationFid ? (

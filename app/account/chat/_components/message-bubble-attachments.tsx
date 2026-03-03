@@ -20,7 +20,7 @@ export function MessageBubbleAttachments({
 }: MessageBubbleAttachmentsProps) {
   const bgClass =
     variant === 'standalone'
-      ? 'bg-background/30 hover:bg-background/40'
+      ? 'bg-background hover:bg-background/60'
       : 'bg-background/20 hover:bg-background/30'
 
   return (

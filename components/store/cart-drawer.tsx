@@ -239,8 +239,8 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                         return (
                           <div
                             key={`${product._id}-${item.denomination ?? 'default'}`}
-                            className='flex gap-3 p-1 md:p-3 first:rounded-t-2xl last:rounded-b-2xl border border-b-0 last:border-b border-foreground/15 bg-card/50'>
-                            <div className='relative w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-muted'>
+                            className='flex gap-3 p-1 md:p-3 first:rounded-t-lg last:rounded-b-lg border border-b-0 last:border-b border-foreground/15 bg-card/50'>
+                            <div className='relative w-20 h-20 shrink-0 rounded-xs overflow-hidden bg-muted'>
                               {hasImage ? (
                                 <Image
                                   radius={'none'}
@@ -284,7 +284,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                     radius='none'
                                     variant='flat'
                                     isDisabled={isPending}
-                                    className='min-w-7 w-7 h-7 aspect-square rounded-sm'
+                                    className='min-w-7 w-7 h-7 aspect-square rounded-xs'
                                     onPress={() => {
                                       const newQty = item.quantity - 1
                                       startTransition(async () => {
@@ -324,7 +324,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                     radius='none'
                                     variant='flat'
                                     isDisabled={isPending}
-                                    className='min-w-7 w-7 h-7 aspect-square rounded-sm'
+                                    className='min-w-7 w-7 h-7 aspect-square rounded-xs'
                                     onPress={() => {
                                       const newQty = item.quantity + 1
                                       startTransition(async () => {
@@ -414,7 +414,8 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   <div className='mx-auto mb-3 px-4'>
                     <Button
                       size='lg'
-                      className='w-full sm:flex-1 h-15 font-polysans font-normal text-lg bg-foreground/95 text-white dark:text-dark-gray'
+                      radius='none'
+                      className='w-full sm:flex-1 h-15 font-polysans font-normal text-lg bg-foreground/95 text-white dark:text-dark-gray rounded-xs'
                       onPress={handleCartCheckout}>
                       <span className='font-bold font-polysans text-lg'>
                         {user ? 'Checkout' : 'Sign in'}

@@ -74,7 +74,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
       disableAnimation
       shadow='sm'
       className={cn(
-        'group h-full transition-all duration-300 hover:-translate-y-0.5 rounded-xs dark:bg-black',
+        'group h-full transition-all duration-300 hover:-translate-y-0.5 rounded-xs dark:bg-black bg-sidebar',
         className,
       )}>
       <CardBody className='flex flex-col p-0'>
@@ -115,40 +115,42 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
               {selectedOption ? `$${selectedOption.price}` : '—'}
             </div>
           </div>
-          <div
-            id='denom-options'
-            className='flex h-8 border-t gap-x-1.5'
-            onClick={(e) => e.preventDefault()}
-            onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
-            role='group'
-            aria-label='Select denomination'>
-            {firstThreeOptions.map((opt, i) => (
-              <button
-                key={opt.denominationValue}
-                type='button'
-                className={cn(
-                  'flex-1 flex justify-center items-center text-xs font-okxs transition-colors dark:bg-dark-table hover:bg-dark-table/40',
-                  selectedIndex === i
-                    ? 'dark:bg-white text-brand'
-                    : 'hover:bg-dark-table/50 ',
-                )}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setSelectedIndex(i)
-                }}>
-                {opt.denom}
-              </button>
-            ))}
+          <div className=' bg-dark-table dark:bg-black w-full flex flex-col'>
+            <div
+              id='denom-options'
+              className='flex h-8 mt-1.5 gap-x-1.5'
+              onClick={(e) => e.preventDefault()}
+              onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+              role='group'
+              aria-label='Select denomination'>
+              {firstThreeOptions.map((opt, i) => (
+                <button
+                  key={opt.denominationValue}
+                  type='button'
+                  className={cn(
+                    'flex-1 flex justify-center items-center text-xs md:text-sm text-white font-okxs transition-colors bg-sidebar/50 dark:bg-dark-table ',
+                    selectedIndex === i
+                      ? 'dark:bg-white/90 bg-white text-brand hover:bg-sidebar/80 dark:hover:bg-white/75'
+                      : 'hover:bg-white/85 hover:text-brand dark:hover:bg-white/80',
+                  )}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setSelectedIndex(i)
+                  }}>
+                  {opt.denom}
+                </button>
+              ))}
+            </div>
+            <Button
+              radius='none'
+              variant='shadow'
+              className='bg-brand text-white rounded-xs mt-1.25'
+              isDisabled={!productId || !selectedOption}
+              onClick={handleAddToCart}>
+              Add to Cart
+            </Button>
           </div>
-          <Button
-            radius='none'
-            variant='shadow'
-            className='bg-brand text-white rounded-xs mt-2'
-            isDisabled={!productId || !selectedOption}
-            onClick={handleAddToCart}>
-            Add to Cart
-          </Button>
 
           <div className='hidden _flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs uppercase tracking-wide text-color-muted'>
             <span className='pill-surface rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs text-foreground/80'>
