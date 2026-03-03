@@ -12,6 +12,14 @@ import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {Activity, useMemo} from 'react'
 
+const CATEGORY_ORDER: string[] = [
+  'flower',
+  'extracts',
+  'vapes',
+  'pre-rolls',
+  'edibles',
+]
+
 interface ContentProps {
   initialCategories: StoreCategory[]
 }
@@ -21,10 +29,14 @@ export const Content = ({initialCategories}: ContentProps) => {
 
   const categories = useMemo(() => {
     const nextCategories = categoriesQuery?.map(adaptCategory)
-    if (nextCategories && nextCategories.length > 0) {
-      return nextCategories
-    }
-    return initialCategories
+    const raw = nextCategories?.length ? nextCategories : initialCategories
+    return [...raw].sort((a, b) => {
+      const i = CATEGORY_ORDER.indexOf(a.slug)
+      const j = CATEGORY_ORDER.indexOf(b.slug)
+      const orderA = i === -1 ? CATEGORY_ORDER.length : i
+      const orderB = j === -1 ? CATEGORY_ORDER.length : j
+      return orderA - orderB
+    })
   }, [initialCategories, categoriesQuery])
 
   // Get all heroImage storage IDs for URL resolution

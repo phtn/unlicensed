@@ -2,7 +2,7 @@ import type {StoreCategory, StoreProduct, StoreProductDetail} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {categoriesSeed, productsSeed} from '@/convex/init'
-import {PotencyLevel} from '@/convex/products/d'
+import {PotencyLevel, ProductTier} from '@/convex/products/d'
 import {getTotalStock} from '@/lib/productStock'
 import {ConvexHttpClient} from 'convex/browser'
 import {cache} from 'react'
@@ -48,6 +48,7 @@ export type RawProduct = {
   weightGrams?: number
   brand?: string
   grower?: string
+  tier?: ProductTier
   _id?: Id<'products'>
   _creationTime?: number
 }
@@ -119,6 +120,7 @@ export const adaptProduct = (product: RawProduct): StoreProduct => ({
   weightGrams: product.weightGrams,
   brand: product.brand,
   grower: product.grower,
+  productTier: product.tier,
   _id: product._id,
   _creationTime: product._creationTime,
 })

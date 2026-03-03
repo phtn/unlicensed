@@ -23,7 +23,7 @@ export interface Highlight {
   imageAlt: string
   title: ReactNode
   description: string
-  ctaText: string
+  ctaText?: string
   ctaHref: string
   tag?: string
   product?: StoreProduct & {selectedVariant?: unknown}
@@ -111,7 +111,7 @@ export const Highlights = ({slides = [], className}: HomepageCarouselProps) => {
     <div
       ref={containerRef}
       className={cn(
-        'relative md:max-w-7xl mx-auto pt-6 md:pt-24 h-[80lvh] md:h-[80lvh]',
+        'relative md:max-w-7xl mx-auto pt-6 md:pt-24 h-[56lvh] md:h-[80lvh]',
         'cursor-grab active:cursor-grabbing',
         className,
       )}
@@ -207,29 +207,33 @@ const Slide = ({
               {description}
             </p>
             <div className='flex items-center md:gap-4 lg:gap-5 relative z-100'>
-              <Button
-                as={Link}
-                href={ctaHref}
-                variant='solid'
-                className='hidden md:flex dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-brand font-polysans font-light hover:text-white text-white px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg hover:opacity-100'>
-                {ctaText}
-              </Button>
-              <Button
-                size='lg'
-                as={Link}
-                href={'/lobby/deals'}
-                prefetch
-                onPress={toggle}
-                variant='light'
-                className='hidden border dark:border-dark-gray md:flex items-center gap-2 dark:text-terpenes bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg font-polysans font-light'>
-                <span className='tracking-tight'>Find Deals</span>
-                <Icon
-                  name={navigating ? 'spinners-ring' : 'search-magic'}
-                  className={cn('size-3 sm:w-4 sm:h-4 dark:text-white', {
-                    'sm:size-4': !navigating,
-                  })}
-                />
-              </Button>
+              {ctaText && (
+                <Button
+                  as={Link}
+                  href={ctaHref}
+                  variant='solid'
+                  className='hidden md:flex dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-brand font-polysans font-light hover:text-white text-white px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg hover:opacity-100'>
+                  {ctaText}
+                </Button>
+              )}
+              {ctaText && (
+                <Button
+                  size='lg'
+                  as={Link}
+                  href={'/lobby/deals'}
+                  prefetch
+                  onPress={toggle}
+                  variant='light'
+                  className='hidden border dark:border-dark-gray md:flex items-center gap-2 dark:text-terpenes bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg font-polysans font-light'>
+                  <span className='tracking-tight'>Find Deals</span>
+                  <Icon
+                    name={navigating ? 'spinners-ring' : 'search-magic'}
+                    className={cn('size-3 sm:w-4 sm:h-4 dark:text-white', {
+                      'sm:size-4': !navigating,
+                    })}
+                  />
+                </Button>
+              )}
             </div>
           </div>
 

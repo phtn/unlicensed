@@ -23,6 +23,7 @@ interface NavProps {
 
 export const Nav = ({children}: NavProps) => {
   const {user, loading: authLoading} = useAuth()
+  const pathname = usePathname()
   const {setTheme, theme} = useTheme()
   const {cartItemCount} = useCart()
   const {isOpen, onOpen, onClose} = useDisclosure()
@@ -67,13 +68,20 @@ export const Nav = ({children}: NavProps) => {
 
   return (
     <div>
-      <header className='fixed z-9999 top-0 left-0 right-0 bg-black backdrop-blur-sm h-12 lg:h-16 xl:h-20 2xl:h-24'>
+      <header
+        className={cn(
+          'fixed z-9999 top-0 left-0 right-0 bg-linear-to-b from-black/15 via-black/10 to-transparent h-14 lg:h-16 xl:h-20 2xl:h-24',
+          {
+            ' to-black/5 backdrop-blur-px':
+              pathname.split('/').pop() !== 'lobby',
+          },
+        )}>
         <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 flex items-center justify-between h-full'>
           <Link
             href={'/lobby'}
             onMouseEnter={handleHomeMouseEnter}
             onMouseLeave={handleHomeMouseLeave}
-            className='group relative flex items-center justify-start md:w-36 h-10 md:h-12 overflow-hidden pl-1 text-white hover:text-brand shadow-inner active:text-brand'>
+            className='group relative flex items-center justify-start md:w-36 h-10 md:h-12 overflow-hidden pl-1 text-white hover:text-brand active:text-brand'>
             <motion.div
               initial={{y: 12, opacity: 0, scale: 0}}
               animate={{
@@ -82,12 +90,14 @@ export const Nav = ({children}: NavProps) => {
                 scale: hovered ? 0.8 : 0,
               }}
               exit={{y: -12, opacity: 0, scale: 0}}
-              className='hidden md:flex absolute size-7 md:size-8 bg-white aspect-square rounded-full'
+              className='hidden md:flex absolute size-7 md:size-10 bg-white aspect-square rounded-full'
             />
-            <Icon
-              name='rapid-fire-logo'
-              className='h-8 md:h-8 w-auto relative'
-            />
+            <div className=' bg-black/10 group-hover:backdrop-blur-none rounded-full'>
+              <Icon
+                name='rapid-fire-logo'
+                className='h-8 md:h-10 w-auto relative'
+              />
+            </div>
           </Link>
           <nav className={cn('flex items-center justify-center w-fit')}>
             {route === 'strain-finder' ? (
@@ -100,10 +110,12 @@ export const Nav = ({children}: NavProps) => {
                   href={'/lobby/category'}
                   className='hidden group text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-polysans font-semibold space-x-1'>
                   <Icon
-                    name='play-solid'
-                    className='size-4 rotate-45 group-hover:text-white group-hover:opacity-100 opacity-80'
+                    name='down-caret'
+                    className='size-2 group-hover:text-white group-hover:opacity-100 opacity-60'
                   />
-                  <span>Shop</span>
+                  <span className='group-hover:drop-shadow-sm dark:drop-shadow-black'>
+                    Shop
+                  </span>
                 </Link>
               </>
             )}
@@ -147,13 +159,14 @@ export const Nav = ({children}: NavProps) => {
               className='px-[0.5px]'
               classNames={{
                 badge:
-                  'aspect-square size-6 text-base translate-x-2.5 -translate-y-1 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-background/90 shadow-md backdrop-blur-2xl bg-brand/80',
+                  'aspect-square size-6 text-base translate-x-2.5 -translate-y-1 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-white/90 shadow-sm shadow-black/50 backdrop-blur-2xl bg-brand/80',
               }}
               shape='rectangle'>
               <Button
                 isIconOnly
                 data-cart-icon
-                className='capitalize bg-black'
+                className='capitalize'
+                variant='light'
                 onPress={onCartDrawerOpen}>
                 <Icon name='bag-solid' className='size-6 text-white' />
               </Button>

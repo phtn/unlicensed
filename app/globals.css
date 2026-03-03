@@ -46,7 +46,18 @@
   font-weight: 400;
   font-style: normal;
 }
-
+@font-face {
+  font-family: 'ClashGrotesk';
+  src: url('/fonts/ClashGrotesk-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Monaco';
+  src: url('/fonts/Monaco.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
 @theme inline {
   --radius: 0.625rem;
   --color-background: var(--background);
@@ -75,6 +86,9 @@
   --font-polysans: 'PolySans', Arial, Helvetica, sans-serif;
   --font-neusans: 'NeuSans', Arial, Helvetica, sans-serif;
   --font-okxs: 'Okxs', Helvetica, sans-serif;
+  --font-clash: 'ClashGrotesk', Helvetica, sans-serif;
+  --font-monaco: 'Monaco', Helvetica, sans-serif;
+
   /* Effects, Flavors, Terpenes */
   --color-flavors: oklch(0.783 0.168 66.2);
   --color-terpenes: var(--terpenes);

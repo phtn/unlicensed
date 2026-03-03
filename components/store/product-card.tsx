@@ -1,24 +1,14 @@
 'use client'
 
-import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import type {StoreProduct} from '@/app/types'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {
-  Card,
-  CardBody,
-  CardFooter,
-  Image,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@heroui/react'
+import {formatDenominationDisplay} from '@/utils/formatDenomination'
+import {Button, Card, CardBody, CardFooter, Image} from '@heroui/react'
 import NextLink from 'next/link'
-import {useState} from 'react'
-import {HyperActivity} from '../expermtl/activity'
-import {HyperBadge} from '../main/badge'
+import {MouseEvent, useState} from 'react'
 
 type ProductCardProps = {
   product: StoreProduct
@@ -60,30 +50,43 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
     product.priceByDenomination,
     product.unit,
   )
+  const firstThreeOptions = priceOptions?.slice(0, 3) ?? []
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const selectedOption =
+    firstThreeOptions[Math.min(selectedIndex, firstThreeOptions.length - 1)] ??
+    firstThreeOptions[0] ??
+    null
   const {addItem} = useCart()
-  const [popoverOpen, setPopoverOpen] = useState(false)
   const productId = product._id as Id<'products'> | undefined
+
+  const handleAddToCart = (e: MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!productId || !selectedOption) return
+    addItem(productId, 1, selectedOption.denominationValue)
+  }
 
   return (
     <Card
       as={NextLink}
       href={`/lobby/products/${product.slug.toLocaleLowerCase()}`}
       radius='none'
-      isPressable
+      disableAnimation
       shadow='sm'
       className={cn(
-        'group h-full transition-all duration-300 hover:-translate-y-1.5 md:rounded-3xl rounded-2xl',
+        'group h-full transition-all duration-300 hover:-translate-y-0.5 rounded-xs dark:bg-black',
         className,
       )}>
       <CardBody className='flex flex-col p-0'>
-        <div className='flex justify-center items-center relative overflow-hidden sm:rounded-t-3xl rounded-t-2xl'>
-          <div className='absolute size-full overflow-hidden inset-0 z-10 bg-linear-to-t from-foreground/10 via-transparent to-transparent opacity-0 border-b-[0.33px] border-transparent group-hover:border-foreground/40 transition-all duration-300 group-hover:opacity-100' />
+        <div className='flex justify-center items-center relative overflow-hidden rounded-xs'>
+          <div className='absolute size-full overflow-hidden inset-0 z-10 transition-all duration-300' />
           {product.image ? (
             <Image
               src={product.image}
               alt={product.name}
+              radius='none'
               shadow='none'
-              className='w-full md:rounded-t-3xl rounded-t-2xl rounded-b-xl object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
+              className='w-full rounded-t-xs rounded-b-sm object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
               isLoading={!product.image}
               loading='eager'
             />
@@ -92,84 +95,60 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
               <Icon name='spinners-ring' />
             </div>
           )}
-          <div className='absolute left-5 sm:left-4 top-5 sm:top-4 z-20 flex flex-col gap-2'>
-            <HyperActivity c={product.featured}>
-              <HyperBadge variant='featured' size='sm' />
-            </HyperActivity>
-            <HyperActivity c={product.limited}>
-              <HyperBadge variant='limited' size='sm' />
-            </HyperActivity>
-          </div>
         </div>
 
-        <div className='flex flex-col gap-3 sm:gap-4 p-3 sm:pl-4 sm:pr-3 h-13 md:h-15'>
-          <div className='flex items-start justify-between gap-2 h-full'>
+        <div className='flex flex-col'>
+          <div className='flex items-center justify-between gap-2 p-2 h-16'>
             <div className='flex-1 min-w-0'>
-              <h3 className='text-base sm:text-lg font-okxs truncate capitalize'>
-                {product.slug.split('-').join(' ')}
+              <h3 className='text-sm md:text-base font-okxs truncate capitalize leading-3.5'>
+                {product.name}
               </h3>
-            </div>
-            <div className=' flex items-center justify-end whitespace-nowrap text-base sm:text-lg font-okxs text-foreground shrink-0 w-fit'>
-              {priceOptions ? (
-                <Popover
-                  isOpen={popoverOpen}
-                  onOpenChange={setPopoverOpen}
-                  placement='top'
-                  offset={12}
-                  crossOffset={4}
-                  showArrow>
-                  <PopoverTrigger>
-                    <button
-                      type='button'
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                      }}
-                      className='font-okxs h-7 text-base sm:text-base hover:bg-sidebar/80 bg-sidebar/50 md:bg-transparent shadow-none min-w-0 w-fit text-left transition-opacity text-brand px-2 rounded-md'>
-                      <span className='hidden md:flex tracking-tight'>
-                        Add to cart
-                      </span>
-                      <span className=' md:hidden flex items-center tracking-tight'>
-                        <Icon name='plus' className='size-4' />
-                      </span>
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className='w-44 md:w-52 p-1.5 md:p-2 dark:border-sidebar dark:bg-dark-table'>
-                    <div className='flex flex-col gap-0.5 w-full'>
-                      {priceOptions.map((opt) => (
-                        <button
-                          key={opt.denominationValue}
-                          type='button'
-                          disabled={!productId}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            if (productId) {
-                              addItem(productId, 1, opt.denominationValue)
-                              setPopoverOpen(false)
-                            }
-                          }}
-                          className={cn(
-                            'flex items-center justify-between w-full rounded-lg p-2 text-sm md:text-base transition-colors font-okxs font-medium',
-                            productId
-                              ? 'hover:bg-brand hover:text-white active:bg-default-200'
-                              : 'opacity-70 cursor-not-allowed',
-                          )}>
-                          <p className=''>${opt.price}</p>
-                          <p>{opt.denom}</p>
-                        </button>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              ) : (
-                <>
-                  <span className='font-thin opacity-70'>$</span>
-                  {formatPrice(product.priceCents)}
-                </>
+              {product.productTier != null && product.productTier !== '' && (
+                <span className='min-h-6 text-xs md:text-sm font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum'>
+                  {product.productTier ?? '_'}
+                </span>
               )}
             </div>
+            <div
+              id='denom-price'
+              className='text-2xl h-auto aspect-square flex items-center justify-end text-brand overflow-hidden grow-0'>
+              {selectedOption ? `$${selectedOption.price}` : '—'}
+            </div>
           </div>
+          <div
+            id='denom-options'
+            className='flex h-8 border-t gap-x-1.5'
+            onClick={(e) => e.preventDefault()}
+            onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+            role='group'
+            aria-label='Select denomination'>
+            {firstThreeOptions.map((opt, i) => (
+              <button
+                key={opt.denominationValue}
+                type='button'
+                className={cn(
+                  'flex-1 flex justify-center items-center text-xs font-okxs transition-colors dark:bg-dark-table hover:bg-dark-table/40',
+                  selectedIndex === i
+                    ? 'dark:bg-white text-brand'
+                    : 'hover:bg-dark-table/50 ',
+                )}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setSelectedIndex(i)
+                }}>
+                {opt.denom}
+              </button>
+            ))}
+          </div>
+          <Button
+            radius='none'
+            variant='shadow'
+            className='bg-brand text-white rounded-xs mt-2'
+            isDisabled={!productId || !selectedOption}
+            onClick={handleAddToCart}>
+            Add to Cart
+          </Button>
 
           <div className='hidden _flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs uppercase tracking-wide text-color-muted'>
             <span className='pill-surface rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs text-foreground/80'>

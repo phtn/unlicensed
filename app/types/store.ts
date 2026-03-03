@@ -1,5 +1,5 @@
 import {Id} from '@/convex/_generated/dataModel'
-import {PotencyLevel} from '@/convex/products/d'
+import {PotencyLevel, ProductTier} from '@/convex/products/d'
 
 export interface StoreCategory {
   slug: string
@@ -42,6 +42,7 @@ export interface StoreProduct {
   flavorNotes: string[]
   potencyLevel: PotencyLevel
   potencyProfile?: string
+  productTier?: ProductTier
   weightGrams?: number
   brand?: string
   grower?: string
