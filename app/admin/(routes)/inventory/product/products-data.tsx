@@ -1,7 +1,7 @@
 'use client'
 
-import {DataTable} from '@/components/table-v2'
 import type {TableToolbarContext} from '@/components/table-v2'
+import {DataTable} from '@/components/table-v2'
 import {
   HoverCell,
   linkText,
@@ -22,7 +22,7 @@ import {
   DropdownTrigger,
 } from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
-import {useMemo} from 'react'
+import {useCallback, useMemo} from 'react'
 import {mapNumericFractions} from './product-schema'
 
 function escapeCsvValue(value: unknown): string {
@@ -442,39 +442,44 @@ export const ProductsData = ({data}: ProductsDataProps) => {
     [],
   )
 
-  const exportToolbar = useMemo(
-    () => (context: TableToolbarContext<Doc<'products'>>) => (
-      <Dropdown>
-        <DropdownTrigger>
-          <Button
-            size='sm'
-            radius='none'
-            variant='flat'
-            className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk'
-            endContent={<Icon name='chevron-down' className='size-4' />}>
-            <Icon name='download' className='size-4' />
-            <span className='hidden sm:inline'>Export CSV</span>
-          </Button>
-        </DropdownTrigger>
-        <DropdownMenu
-          aria-label='Export CSV options'
-          onAction={(key) => {
-            if (key === 'all') exportProductsToCsv(data ?? [])
-            if (key === 'current') exportProductsToCsv(context.getFilteredData())
-          }}>
-          <DropdownItem key='all' description='Export all products'>
-            Export all
-          </DropdownItem>
-          <DropdownItem
-            key='current'
-            description='Export only products matching current search and filters'>
-            Export current list
-          </DropdownItem>
-        </DropdownMenu>
-      </Dropdown>
-    ),
+  const ExportCsvToolbar = useCallback(
+    (context: TableToolbarContext<Doc<'products'>>) => {
+      return (
+        <Dropdown>
+          <DropdownTrigger>
+            <Button
+              size='sm'
+              radius='none'
+              variant='flat'
+              className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk'
+              endContent={<Icon name='chevron-down' className='size-4' />}>
+              <Icon name='download' className='size-4' />
+              <span className='hidden sm:inline'>Export CSV</span>
+            </Button>
+          </DropdownTrigger>
+          <DropdownMenu
+            aria-label='Export CSV options'
+            onAction={(key) => {
+              if (key === 'all') exportProductsToCsv(data ?? [])
+              if (key === 'current')
+                exportProductsToCsv(context.getFilteredData())
+            }}>
+            <DropdownItem key='all' description='Export all products'>
+              Export all
+            </DropdownItem>
+            <DropdownItem
+              key='current'
+              description='Export only products matching current search and filters'>
+              Export current list
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+      )
+    },
     [data],
   )
+
+  const exportToolbar = useMemo(() => ExportCsvToolbar, [ExportCsvToolbar])
 
   return (
     <div className='relative w-full max-w-full overflow-hidden'>
