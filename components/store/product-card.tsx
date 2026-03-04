@@ -26,6 +26,7 @@ type PriceOption = {
   denominationValue: number
 }
 
+/** Builds price options; 1 oz is displayed as "Oz" (no space), other oz/units via formatDenominationDisplay. */
 const priceOptionsFromDenomination = (
   priceByDenomination: Record<string, number> | undefined,
   unit: string,

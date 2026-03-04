@@ -40,7 +40,7 @@ export const NewHome = () => {
           alt='hero-image'
           width={isMobile ? 1168 : 2752}
           height={isMobile ? 1536 : 1136}
-          className='absolute top-0 left-0 w-screen h-auto portrait:aspect-4/5 sm:aspect-4/5 md:aspect-video!'
+          className='absolute top-0 left-0 w-screen h-auto aspect-4/5 sm:w-full sm:aspect-auto bg-cover'
           src={
             isMobile
               ? // 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772559002/hero-mobile_unh1to.webp'
@@ -49,9 +49,24 @@ export const NewHome = () => {
           }
         />
       </div>
-      <div className='flex justify-end w-fit px-4 sticky z-9999 top-4 left-4 bg-black/50 text-orange-200'>
-        Image Height: {heroImageHeight}
-      </div>
+      {/*<div className='flex justify-end w-fit px-4 sticky z-9999 top-14 left-4 bg-black/50 text-orange-200'>
+        <div className='h-32'>
+          <p>Image Height: {heroImageHeight}</p>
+          <p className='hidden sm:flex space-x-4'>
+            <span className='sm:text-emerald-500 sm:flex md:hidden'>S</span>
+            <span className='sm:hidden md:flex lg:hidden md:text-indigo-400'>
+              M
+            </span>
+            <span className='md:hidden lg:flex xl:hidden  md:text-pink-400'>
+              L
+            </span>
+            <span className='sm:hidden xl:flex 2xl:hidden md:text-white'>
+              X
+            </span>
+            <span className='2xl:flex md:text-orange-300'>2</span>
+          </p>
+        </div>
+      </div>*/}
       <Highlights
         isMobile={isMobile}
         heroImageHeight={heroImageHeight}
@@ -74,7 +89,7 @@ export const NewHome = () => {
         radius='none'
         href='/lobby/category'
         variant='solid'
-        className='absolute top-1/2 translate-y-24 lg:-translate-y-4/5 left-1/2 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white  _dark:bg-white'>
+        className='absolute top-1/2 translate-y-24 md:-translate-y-1/6 lg:-translate-y-4/3 left-1/2 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white  _dark:bg-white'>
         Shop Now
       </Button>
     </div>

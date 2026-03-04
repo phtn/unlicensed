@@ -125,8 +125,8 @@ export const Highlights = ({
         className,
       )}
       style={
-        heroImageHeight != null && heroImageHeight > 0
-          ? {minHeight: heroImageHeight}
+        heroImageHeight != null && heroImageHeight > 0 && !isMobile
+          ? {height: heroImageHeight}
           : undefined
       }
       role='region'
