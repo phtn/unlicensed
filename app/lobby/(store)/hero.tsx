@@ -119,9 +119,9 @@ export const Highlights = ({
     <div
       ref={containerRef}
       className={cn(
-        'relative md:max-w-7xl mx-auto _pt-16 _md:pt-24 md:h-[80lvh]',
+        'relative md:max-w-7xl mx-auto',
         'cursor-grab active:cursor-grabbing',
-        {' h-[60lvh]': isMobile},
+        // {' h-[60lvh]': isMobile},
         className,
       )}
       style={

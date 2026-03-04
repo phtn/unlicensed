@@ -2,6 +2,7 @@
 import type {StoreCategory, StoreProduct} from '@/app/types'
 import {NewHome} from '@/components/base44/home'
 import {api} from '@/convex/_generated/api'
+import {useScrollY} from '@/hooks/use-scroll-y'
 import {adaptCategory, adaptProduct} from '@/lib/convexClient'
 import type {BuildType} from '@/lib/flags'
 import {useQuery} from 'convex/react'
@@ -20,6 +21,7 @@ export const Content = ({
   initialCategories,
   initialProducts,
 }: StorefrontPageProps) => {
+  const scrollY = useScrollY()
   const categoriesQuery = useQuery(api.categories.q.listCategories, {})
   const productsQuery = useQuery(api.products.q.listProducts, {})
   const categories = useMemo(
@@ -30,16 +32,10 @@ export const Content = ({
     () => productsQuery?.map(adaptProduct) ?? initialProducts,
     [productsQuery, initialProducts],
   )
-  // const isMobile = useMobile()
-  const featuredProducts = useMemo(
-    () => products.filter((item) => item.featured).slice(0, 4),
-    [products],
-  )
 
   return (
-    <div className='space-y-12 sm:space-y-24 md:space-y-40 overflow-x-hidden'>
+    <div className='overflow-x-hidden' data-scroll-y={scrollY}>
       <NewHome />
-      {/*<FeaturedProducts featuredProducts={featuredProducts} />*/}
       <FullCollection products={products} categories={categories} />
       <DealsMini categories={categories} />
     </div>

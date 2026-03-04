@@ -16,34 +16,42 @@ export const NewHome = () => {
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const h = entry.contentRect.height
-        if (typeof h === 'number' && h > 0) setHeroImageHeight(h)
+        const boxSize = entry.borderBoxSize
+        setHeroImageHeight(boxSize[0].inlineSize ?? 0)
+        console.log('entry', boxSize[0].inlineSize, 'h', h)
+        // if (typeof h === 'number' && h > 0) setHeroImageHeight(h)
       }
     })
     observer.observe(el)
     return () => observer.disconnect()
-  }, [isMobile])
+  }, [])
 
   return (
     <div
       className='relative bg-linear-to-b bg-background dark:bg-black'
       style={
-        heroImageHeight != null ? {minHeight: heroImageHeight} : undefined
+        heroImageHeight != null ? {minHeight: heroImageHeight + 40} : undefined
       }>
-      <div ref={heroImageWrapRef} className='absolute top-0 left-0 w-full'>
+      <div
+        ref={heroImageWrapRef}
+        className='absolute h-fit top-0 left-0 w-full min-h-screen'>
         <Image
           id='hero-image'
           alt='hero-image'
-          width={isMobile ? 513 : 2752}
-          height={isMobile ? 635 : 1536}
-          className='absolute top-0 left-0 md:min-w-7xl w-screen h-auto aspect-auto'
+          width={isMobile ? 1168 : 2752}
+          height={isMobile ? 1536 : 1136}
+          className='absolute top-0 left-0 w-screen h-auto portrait:aspect-4/5 sm:aspect-4/5 md:aspect-video!'
           src={
             isMobile
-              ? 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772559002/hero-mobile_unh1to.webp'
+              ? // 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772559002/hero-mobile_unh1to.webp'
+                'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772603013/hero-mobile-v2_vaiesj.webp'
               : 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772552114/hero-image_ivcsbu.webp'
           }
         />
       </div>
-
+      <div className='flex justify-end w-fit px-4 sticky z-9999 top-4 left-4 bg-black/50 text-orange-200'>
+        Image Height: {heroImageHeight}
+      </div>
       <Highlights
         isMobile={isMobile}
         heroImageHeight={heroImageHeight}
@@ -66,7 +74,7 @@ export const NewHome = () => {
         radius='none'
         href='/lobby/category'
         variant='solid'
-        className='absolute top-[100lvw] md:top-[75lvh] left-1/2 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white  _dark:bg-white'>
+        className='absolute top-1/2 translate-y-24 lg:-translate-y-4/5 left-1/2 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white  _dark:bg-white'>
         Shop Now
       </Button>
     </div>

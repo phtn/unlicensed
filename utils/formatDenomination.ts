@@ -19,7 +19,10 @@ export function formatDenominationDisplay(
   if (unit === 'oz' && value < 1 && grams) {
     return `${grams} g`
   }
-  if (unit === 'oz' && value >= 1) {
+  if (unit === 'oz' && value === 1) {
+    return 'Oz'
+  }
+  if (unit === 'oz' && value > 1) {
     return `${fraction} oz`
   }
   return `${fraction} ${unit}`

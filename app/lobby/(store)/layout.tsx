@@ -1,22 +1,18 @@
 'use client'
 
 import {NuqsAdapter} from 'nuqs/adapters/next/app'
-import {Fragment, type ReactNode} from 'react'
+import {type ReactNode} from 'react'
+import {MainPage} from './main'
 
 type StoreLayoutProps = {
-  children: ReactNode
-  navbar?: React.ReactNode
+  navbar?: ReactNode
+  children?: ReactNode
 }
 
 const StoreLayout = ({children, navbar}: StoreLayoutProps) => {
   return (
     <NuqsAdapter>
-      <div key='store-layout' className='flex min-h-screen flex-col'>
-        {navbar != null ? <Fragment key='navbar'>{navbar}</Fragment> : null}
-        <main key='main' className='relative flex-1'>
-          {children}
-        </main>
-      </div>
+      <MainPage navbar={navbar}>{children}</MainPage>
     </NuqsAdapter>
   )
 }

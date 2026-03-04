@@ -5,6 +5,8 @@ import {CartDrawer} from '@/components/store/cart-drawer'
 import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
 import {useCart} from '@/hooks/use-cart'
+import {useMobile} from '@/hooks/use-mobile'
+import {useScrollY} from '@/hooks/use-scroll-y'
 import {logout} from '@/lib/firebase/auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
@@ -22,8 +24,11 @@ interface NavProps {
 }
 
 export const Nav = ({children}: NavProps) => {
+  const scrollY = useScrollY()
   const {user, loading: authLoading} = useAuth()
+  const isMobile = useMobile()
   const pathname = usePathname()
+  const inStoreLobby = pathname.split('/').pop() === 'lobby'
   const {setTheme, theme} = useTheme()
   const {cartItemCount} = useCart()
   const {isOpen, onOpen, onClose} = useDisclosure()
@@ -70,12 +75,13 @@ export const Nav = ({children}: NavProps) => {
     <div>
       <header
         className={cn(
-          'fixed z-9999 top-0 left-0 right-0 bg-linear-to-b from-white to-transparent dark:from-black/15 dark:via-black/10 dark:to-transparent h-14 lg:h-16 xl:h-20 2xl:h-24',
+          'fixed z-9999 top-0 left-0 right-0 bg-linear-to-b from-transparent to-transparent dark:from-black/15 dark:via-black/10 dark:to-transparent h-14 lg:h-16 xl:h-20 2xl:h-24',
           {
-            ' dark:to-black/5 backdrop-blur-px':
-              pathname.split('/').pop() !== 'lobby',
+            ' dark:to-black/5 dark:backdrop-blur-px': !inStoreLobby,
+            'bg-white/70 backdrop-blur-md': scrollY >= 710,
           },
-        )}>
+        )}
+        data-scroll-y={scrollY}>
         <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 flex items-center justify-between h-full'>
           <Link
             href={'/lobby'}
@@ -92,10 +98,24 @@ export const Nav = ({children}: NavProps) => {
               exit={{y: -12, opacity: 0, scale: 0}}
               className='hidden md:flex absolute size-7 md:size-10 bg-white aspect-square rounded-full'
             />
-            <div className=' dark:bg-black/10 group-hover:backdrop-blur-none rounded-full'>
+            <div
+              className={cn(
+                'dark:bg-black/10 group-hover:backdrop-blur-none rounded-full',
+                {
+                  // 'bg-brand': inStoreLobby && scrollY >= 400,
+                },
+              )}>
               <Icon
                 name='rapid-fire-logo'
-                className='h-8 md:h-10 w-auto relative dark:text-white text-brand'
+                style={{
+                  color:
+                    !isMobile && scrollY >= 710
+                      ? '#373945'
+                      : scrollY <= 400
+                        ? undefined
+                        : '#373945',
+                }}
+                className={cn('h-8 md:h-10 w-auto relative text-white')}
               />
             </div>
           </Link>
@@ -108,7 +128,17 @@ export const Nav = ({children}: NavProps) => {
               <>
                 <Link
                   href={'/lobby/category'}
-                  className='hidden group text-sm lg:text-lg dark:text-gray-100 text-dark-table  hover:text-brand md:flex items-center font-polysans font-semibold space-x-1'>
+                  className={cn(
+                    'hidden group text-sm lg:text-lg text-gray-100  hover:text-brand md:flex items-center font-polysans font-semibold space-x-1',
+                  )}
+                  style={{
+                    color:
+                      !isMobile && scrollY >= 710
+                        ? '#373945'
+                        : scrollY <= 400
+                          ? undefined
+                          : '#373945',
+                  }}>
                   <Icon
                     name='down-caret'
                     className='size-2 group-hover:text-white group-hover:opacity-100 opacity-60'
@@ -166,11 +196,20 @@ export const Nav = ({children}: NavProps) => {
                 isIconOnly
                 data-cart-icon
                 className='capitalize'
+                // style={{color: scrollY >= 710 ? '#373945' : undefined}}
                 variant='light'
                 onPress={onCartDrawerOpen}>
                 <Icon
                   name='bag-solid'
-                  className='size-6 dark:text-white text-dark-table'
+                  className={cn('size-6 text-white')}
+                  style={{
+                    color:
+                      !isMobile && scrollY >= 710
+                        ? '#373945'
+                        : scrollY <= 400
+                          ? undefined
+                          : '#373945',
+                  }}
                 />
               </Button>
             </Badge>
