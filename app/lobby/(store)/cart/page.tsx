@@ -1,5 +1,6 @@
 'use client'
 
+import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {api} from '@/convex/_generated/api'
 import type {Id} from '@/convex/_generated/dataModel'
@@ -9,9 +10,8 @@ import {
   isProductCartItemWithProduct,
   useCart,
 } from '@/hooks/use-cart'
-import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
-import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
 import {usePlaceOrder} from '@/hooks/use-place-order'
+import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
@@ -69,7 +69,7 @@ export default function CartPage() {
   } = useCartCheckoutQueryState()
 
   /** Toggle to swap rewards panel in checkout: 'tier' | 'points' | 'off' */
-  const [rewardsVariant, setRewardsVariant] = useState<RewardsVariant>('tier')
+  const [rewardsVariant] = useState<RewardsVariant>('tier')
 
   const shippingConfig = useQuery(api.admin.q.getShippingConfig, {})
   const taxConfig = useQuery(api.admin.q.getTaxConfig, {})
@@ -145,10 +145,15 @@ export default function CartPage() {
               0,
             )
         const products = item.bundleItemsWithProducts.map((bi) => bi.product)
-        const bundleTotalCents = getBundleTotalCents(products, denom, bundleAmount)
+        const bundleTotalCents = getBundleTotalCents(
+          products,
+          denom,
+          bundleAmount,
+        )
         let sumUnitQty = 0
         for (const bi of item.bundleItemsWithProducts) {
-          sumUnitQty += getUnitPriceCents(bi.product, bi.denomination) * bi.quantity
+          sumUnitQty +=
+            getUnitPriceCents(bi.product, bi.denomination) * bi.quantity
         }
         item.bundleItemsWithProducts.forEach((bi, lineIdx) => {
           const lineUnitQty =
@@ -274,7 +279,7 @@ export default function CartPage() {
         <CartPageHeader isPending={isPending} />
 
         <div className='grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]'>
-          <div className='min-w-0'>
+          <div className='min-w-0 rounded-xs'>
             <CartItemsSection
               cartItems={cartItems}
               onUpdateItem={updateItem}

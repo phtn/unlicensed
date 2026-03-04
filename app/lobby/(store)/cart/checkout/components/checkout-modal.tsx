@@ -53,7 +53,7 @@ export function CheckoutModal({
       isOpen={isOpen}
       onClose={onClose}
       size='2xl'
-      radius='sm'
+      radius='none'
       scrollBehavior='inside'
       className=''
       classNames={{
@@ -98,7 +98,7 @@ export function CheckoutModal({
                 radius='none'
                 variant='light'
                 onPress={onClose}
-                className='w-full rounded-lg text-dark-table dark:hover:bg-white/5'
+                className='w-full rounded-xs text-dark-table dark:hover:bg-white/5'
                 isDisabled={isLoading || isPending}>
                 Cancel
               </Button>
@@ -107,7 +107,7 @@ export function CheckoutModal({
                 radius='none'
                 color='primary'
                 variant='solid'
-                className='w-full rounded-lg bg-black font-polysans font-normal dark:text-white disabled:opacity-50'
+                className='w-full rounded-xs bg-black font-polysans font-normal dark:text-white disabled:opacity-50'
                 fullWidth
                 onPress={onPlaceOrder}
                 endContent={

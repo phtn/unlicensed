@@ -13,7 +13,7 @@ export const ProfileCard = ({user}: ProfileCardProps) => {
     <Card
       shadow='none'
       radius='none'
-      className='relative border border-foreground/20 rounded-4xl dark:bg-dark-table/40'>
+      className='relative border border-foreground/20 rounded-xs dark:bg-dark-table/40'>
       <ProfileBackground />
       <CardBody className='p-6 min-h-80'>
         <div className='flex flex-col items-center text-center space-y-5 justify-center'>

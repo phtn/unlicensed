@@ -32,6 +32,7 @@ export const RewardsSummary = memo(function RewardsSummary({
   return (
     <div className='lg:top-24 h-fit'>
       <Card
+        radius='none'
         shadow='none'
         className='dark:bg-dark-table/40 border border-foreground/20'>
         <CardBody className='space-y-4 px-4 md:px-8 py-5'>

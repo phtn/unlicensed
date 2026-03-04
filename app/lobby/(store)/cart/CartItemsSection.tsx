@@ -21,8 +21,8 @@ export function CartItemsSection({
   onRemoveItem,
 }: CartItemsSectionProps) {
   return (
-    <div className='min-w-0 md:h-[80lvh] h-fit bg-linear-to-b dark:from-dark-table/40 via-transparent to-transparent rounded-3xl overflow-hidden flex flex-col'>
-      <div className='flex-1 min-w-0 overflow-x-hidden overflow-y-auto rounded-3xl w-full'>
+    <div className='min-w-0 md:h-[80lvh] h-fit bg-linear-to-b dark:from-dark-table/40 via-transparent to-transparent rounded-none overflow-hidden flex flex-col'>
+      <div className='flex-1 min-w-0 overflow-x-hidden overflow-y-auto rounded-xs w-full'>
         <PendingDealsSection cartItems={cartItems} />
         {cartItems.map((item) => {
           const product = item.product

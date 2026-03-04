@@ -77,8 +77,9 @@ export const Nav = ({children}: NavProps) => {
         className={cn(
           'fixed z-9999 top-0 left-0 right-0 bg-linear-to-b from-transparent to-transparent dark:from-black/15 dark:via-black/10 dark:to-transparent h-14 lg:h-16 xl:h-20 2xl:h-24',
           {
-            ' dark:to-black/5 dark:backdrop-blur-px': !inStoreLobby,
             'bg-white/70 backdrop-blur-md': scrollY >= 710,
+            ' dark:bg-black/70 dark:text-white dark:backdrop-blur-px bg-white/70 backdrop-blur-3xl':
+              !inStoreLobby,
           },
         )}
         data-scroll-y={scrollY}>
@@ -115,7 +116,10 @@ export const Nav = ({children}: NavProps) => {
                         ? undefined
                         : '#373945',
                 }}
-                className={cn('h-8 md:h-10 w-auto relative text-white')}
+                className={cn('h-8 md:h-10 w-auto relative text-white', {
+                  'text-dark-table dark:text-white dark:group-hover:text-brand':
+                    !inStoreLobby,
+                })}
               />
             </div>
           </Link>
@@ -128,9 +132,6 @@ export const Nav = ({children}: NavProps) => {
               <>
                 <Link
                   href={'/lobby/category'}
-                  className={cn(
-                    'hidden group text-sm lg:text-lg text-gray-100  hover:text-brand md:flex items-center font-polysans font-semibold space-x-1',
-                  )}
                   style={{
                     color:
                       !isMobile && scrollY >= 710
@@ -138,7 +139,11 @@ export const Nav = ({children}: NavProps) => {
                         : scrollY <= 400
                           ? undefined
                           : '#373945',
-                  }}>
+                  }}
+                  className={cn(
+                    'hidden group text-sm lg:text-lg text-gray-100  hover:text-brand md:flex items-center font-polysans font-semibold space-x-1',
+                    {'text-dark-table dark:text-white': !inStoreLobby},
+                  )}>
                   <Icon
                     name='down-caret'
                     className='size-2 group-hover:text-white group-hover:opacity-100 opacity-60'
@@ -201,7 +206,6 @@ export const Nav = ({children}: NavProps) => {
                 onPress={onCartDrawerOpen}>
                 <Icon
                   name='bag-solid'
-                  className={cn('size-6 text-white')}
                   style={{
                     color:
                       !isMobile && scrollY >= 710
@@ -210,6 +214,9 @@ export const Nav = ({children}: NavProps) => {
                           ? undefined
                           : '#373945',
                   }}
+                  className={cn('size-6 text-white', {
+                    'text-dark-table dark:text-white': !inStoreLobby,
+                  })}
                 />
               </Button>
             </Badge>

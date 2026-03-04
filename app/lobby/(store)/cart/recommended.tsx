@@ -4,10 +4,7 @@ import {REWARDS_CONFIG} from '@/app/lobby/(store)/cart/checkout/lib/rewards'
 import type {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Doc, Id} from '@/convex/_generated/dataModel'
-import {
-  isProductCartItemWithProduct,
-  useCart,
-} from '@/hooks/use-cart'
+import {isProductCartItemWithProduct, useCart} from '@/hooks/use-cart'
 import {adaptProduct, RawProduct} from '@/lib/convexClient'
 import {getUnitPriceCents} from '@/utils/cartPrice'
 import {formatPrice} from '@/utils/formatPrice'
@@ -192,11 +189,12 @@ const RecommendedCard = memo(function RecommendedCard({
 
   return (
     <Card
-      className='rounded-xl bg-linear-to-l from-featured/15 via-light-gray/10 to-transparent dark:bg-dark-gray/15'
-      shadow='none'>
+      shadow='none'
+      radius='none'
+      className='rounded-none bg-linear-to-l from-featured/15 via-light-gray/10 to-transparent dark:bg-dark-gray/15'>
       <CardBody className='p-0 md:p-6'>
         <div className='flex min-w-0 gap-4 items-center'>
-          <div className='relative w-24 h-24 aspect-square shrink-0 rounded-xl overflow-hidden'>
+          <div className='relative w-24 h-24 aspect-square shrink-0 overflow-hidden'>
             {productImage ? (
               <Image
                 radius='none'

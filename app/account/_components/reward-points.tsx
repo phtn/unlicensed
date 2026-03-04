@@ -14,6 +14,7 @@ export const RewardPoints = ({pointsBalance}: RewardPointsProps) => {
   return (
     <Card
       shadow='none'
+      radius='none'
       className='border border-foreground/20 bg-linear-to-br from-teal-500/10 via-orange-100/10 to-orange-200/10 backdrop-blur-sm dark:bg-dark-table/20'>
       <CardBody className='p-6 space-y-6'>
         <div className='flex items-center justify-between'>
@@ -22,7 +23,7 @@ export const RewardPoints = ({pointsBalance}: RewardPointsProps) => {
           </h3>
         </div>
 
-        <div className='flex items-end justify-between bg-brand px-4 py-4 rounded-xl'>
+        <div className='flex items-end justify-between bg-brand px-4 py-4'>
           <div className=''>
             <Icon name='coins' className='size-14 dark:text-purple-100' />
           </div>

@@ -103,11 +103,12 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
     ) : null
 
   return (
-    <div className='lg:sticky lg:top-20 h-fit space-y-8 md:space-y-10'>
+    <div className='lg:sticky lg:top-20 h-fit space-y-0'>
       <CheckoutRewardsContent>{rewardsPanel}</CheckoutRewardsContent>
       <Card
         shadow='none'
-        className='min-w-0 overflow-hidden dark:bg-dark-table/40 border border-foreground/20'>
+        radius='none'
+        className='min-w-0 overflow-hidden dark:bg-dark-table/40 border border-foreground/20 border-t-0'>
         <CardBody className='relative space-y-4 p-4 sm:p-5'>
           <div className="absolute w-500 h-full scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
           <h2 className='text-2xl font-normal font-bone'>Order Summary</h2>
@@ -182,7 +183,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
           )}
           <Button
             size='lg'
-            radius='md'
+            radius='none'
             variant='solid'
             className='w-full font-polysans text-lg font-semibold bg-foreground dark:bg-brand text-white h-14 mb-2'
             onPress={onPlaceOrderClick}

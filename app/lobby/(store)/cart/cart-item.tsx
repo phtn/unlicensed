@@ -111,15 +111,16 @@ export const CartItem = memo(
           shadow='none'
           radius='none'
           className={cn(
-            'border border-b-0 last:border-b border-foreground/50 bg-white dark:bg-background dark:border-foreground/50 border-dashed first:rounded-t-3xl last:rounded-b-3xl',
+            'border border-b-0 last:border-b border-foreground/50 bg-white dark:bg-background dark:border-foreground/50 border-dashed first:rounded-t-xs last:rounded-b-xs',
             className,
           )}>
           <CardBody>
             <div className='flex min-w-0 gap-3 md:gap-4'>
-              <div className='relative size-24 md:w-28 md:h-28 shrink-0 rounded-lg overflow-hidden'>
+              <div className='relative size-24 md:w-28 md:h-28 shrink-0 overflow-hidden'>
                 <Image
                   src={productImageUrl ?? undefined}
                   alt={item.product.name}
+                  radius='none'
                   className='w-full h-full object-cover'
                 />
               </div>
@@ -166,7 +167,7 @@ export const CartItem = memo(
                           size='sm'
                           radius='none'
                           variant='flat'
-                          className='h-7 w-8 rounded-sm'
+                          className='h-7 w-8 rounded-xs'
                           onPress={() => handleQuantityChange(quantity - 1)}>
                           <Icon name='minus' className='size-4' />
                         </Button>
@@ -180,7 +181,7 @@ export const CartItem = memo(
                           size='sm'
                           radius='none'
                           variant='flat'
-                          className='h-7 w-8 rounded-sm'
+                          className='h-7 w-8 rounded-xs'
                           onPress={() => handleQuantityChange(quantity + 1)}>
                           <Icon name='plus' className='size-4' />
                         </Button>

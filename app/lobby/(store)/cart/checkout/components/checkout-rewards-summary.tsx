@@ -165,6 +165,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
   return (
     <Card
       shadow='none'
+      radius='none'
       className='overflow-hidden border border-foreground/20 bg-linear-to-br from-sidebar to-slate-400/6 dark:from-foreground/5 dark:to-foreground/10'>
       <CardBody className='relative space-y-4 p-3 md:p-5 overflow-hidden'>
         {/* Decorative glow */}

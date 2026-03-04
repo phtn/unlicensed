@@ -2,6 +2,7 @@ import {StoreCategory} from '@/app/types'
 import {Icon} from '@/lib/icons'
 import {Button, Link} from '@heroui/react'
 import NextLink from 'next/link'
+import {ViewTransition} from 'react'
 
 interface Props {
   categories: StoreCategory[]
@@ -10,26 +11,32 @@ interface Props {
 export const DealsMini = ({categories}: Props) => {
   return (
     <section
-      id='finder'
+      id='deals-bundle'
+      aria-labelledby='deals-bundle-heading'
       className='mx-auto w-full md:max-w-7xl py-12 sm:py-16 md:py-20 px-2 sm:px-4'>
       <div className='relative rounded-[36px] bg-slate-200 dark:bg-dark-table/50 border border-foreground/20 sm:px-12 sm:py-16 transition-colors px-6 py-10'>
         <div className="absolute w-full inset-0 bg-[url('/svg/noise.svg')] opacity-10 scale-100 pointer-events-none rounded-[36px]" />
         <div className='grid gap-12 lg:grid-cols-5 lg:items-center'>
           <div className='space-y-10 lg:col-span-3'>
             <div className='flex font-polysans font-thin bg-black text-base text-white px-4 py-1.5 rounded-full w-fit'>
-              FIND BEST DEALS
+              DEALS & BUNDLES
             </div>
-            <h2 className='text-4xl font-medium text-foreground tracking-tight sm:text-4xl max-w-[24ch] font-polysans py-12 sm:py-1'>
-              Describe the <span className='text-terpenes'>feeling</span> you’re
-              after. We&apos;ll design your tasting flight.
+            <h2
+              id='deals-bundle-heading'
+              className='text-4xl font-medium text-foreground tracking-tight sm:text-4xl max-w-[28ch] font-polysans py-12 sm:py-1'>
+              Build your own Oz. {' '}
+              <span className='text-terpenes'>Mix & match</span> strains, save
+              more.
             </h2>
             <p className='hidden md:flex text-base opacity-60 max-w-[54ch]'>
-              Find the products you’re looking for and create your own Oz.
+              Save more when you mix and match custom bundles — choose your
+              size, pick your strains.
             </p>
 
-            <Button
-              as={NextLink}
-              size='lg'
+            <ViewTransition enter='auto'>
+              <Button
+                as={NextLink}
+                size='lg'
               radius='full'
               disableRipple
               variant='solid'
@@ -44,13 +51,14 @@ export const DealsMini = ({categories}: Props) => {
                 </span>
               </div>
             </Button>
+            </ViewTransition>
           </div>
           <div className='hidden md:grid gap-4 sm:grid-cols-2 lg:col-span-2'>
             {categories.map((category) => (
-              <Link
-                href={`/lobby/category/${category.slug}`}
-                key={category.slug}
-                className='group relative overflow-hidden rounded-3xl border border-foreground/10 dark:bg-black bg-slate-500/15 p-5 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:bg-panel/40'>
+              <ViewTransition key={category.slug} enter='auto'>
+                <Link
+                  href={`/lobby/category/${category.slug}`}
+                  className='group relative overflow-hidden rounded-3xl border border-foreground/10 dark:bg-black bg-slate-500/15 p-5 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:bg-panel/40'>
                 <div className='flex flex-col gap-3'>
                   <span className='text-xs uppercase font-polysans font-semibold opacity-80 dark:text-light-gray text-dark-gray'>
                     {category.slug}
@@ -63,7 +71,8 @@ export const DealsMini = ({categories}: Props) => {
                 <span className='absolute right-4 top-4 text-xs font-semibold text-color-muted transition group-hover:text-foreground dark:text-brand text-dark-gray'>
                   <Icon name='chevron-right' className='size-4' />
                 </span>
-              </Link>
+                </Link>
+              </ViewTransition>
             ))}
           </div>
         </div>

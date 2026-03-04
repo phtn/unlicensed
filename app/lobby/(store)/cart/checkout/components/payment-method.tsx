@@ -45,7 +45,7 @@ const SELECT_CLASS_NAMES = {
   trigger:
     'min-h-14 p-2 md:ps-3 bg-white dark:bg-zinc-500/10 border border-foreground/40 placeholder:text-foreground',
   listboxWrapper:
-    'border-[0.5px] dark:border-foreground/40 rounded-xl outline-none focus-visible:outline-none px-0',
+    'border-[0.5px] dark:border-foreground/40 rounded-sm outline-none focus-visible:outline-none px-0',
   listbox: 'outline-none focus-visible:outline-none px-1.5',
   selectorIcon: 'translate-x-2',
 } as SelectProps['classNames']
@@ -171,6 +171,7 @@ export const PaymentMethods = memo(function PaymentMethods({
   return (
     <Select
       classNames={SELECT_CLASS_NAMES}
+      className='rounded-none'
       selectedKeys={selectedKeys}
       isMultiline={true}
       multiple={false}

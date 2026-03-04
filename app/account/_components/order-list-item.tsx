@@ -22,7 +22,7 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
       key={orderNumber}
       as={Link}
       href={`/account/orders/${orderNumber}`}
-      className='w-full rounded-lg border dark:border-dark-table border-dark-table/40 dark:bg-dark-table bg-content/50 dark:hover:bg-dark-table/70'>
+      className='w-full rounded-xs border dark:border-dark-table border-dark-table/40 dark:bg-dark-table bg-content/50 dark:hover:bg-dark-table/70'>
       <CardBody className='p-3 md:p-5'>
         <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
           <div className='flex items-start gap-8 flex-1 min-w-0'>

@@ -41,8 +41,8 @@ export const UserDropdown = ({
     <Dropdown
       placement='bottom-end'
       classNames={{
-        content: 'bg-sidebar dark:bg-white backdrop-blur-xl rounded-xl',
-        base: 'rounded-md',
+        content: 'bg-sidebar dark:bg-white backdrop-blur-xl rounded-sm',
+        base: 'rounded-sm',
       }}>
       <DropdownTrigger disabled={loading}>
         {loading ? (
