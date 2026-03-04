@@ -17,6 +17,7 @@ import {useTheme} from 'next-themes'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {useCallback, useMemo, useState} from 'react'
+import {NavMenu} from '../expermtl/nav-menu'
 import {UserDropdown} from './user-dropdown'
 
 interface NavProps {
@@ -123,7 +124,12 @@ export const Nav = ({children}: NavProps) => {
               />
             </div>
           </Link>
-          <nav className={cn('flex items-center justify-center w-fit')}>
+
+          <nav
+            className={cn('flex items-center justify-center w-fit space-x-4')}>
+            <div>
+              <NavMenu isMobile={isMobile} inStoreLobby={inStoreLobby} />
+            </div>
             {route === 'strain-finder' ? (
               <div className='hidden md:flex font-polysans font-normal bg-white text-base text-black px-4 py-0.5 rounded-full'>
                 Strain Finder
@@ -144,10 +150,10 @@ export const Nav = ({children}: NavProps) => {
                     'hidden group text-sm lg:text-lg text-gray-100  hover:text-brand md:flex items-center font-polysans font-semibold space-x-1',
                     {'text-dark-table dark:text-white': !inStoreLobby},
                   )}>
-                  <Icon
+                  {/*<Icon
                     name='down-caret'
                     className='size-2 group-hover:text-white group-hover:opacity-100 opacity-60'
-                  />
+                  />*/}
                   <span className='group-hover:drop-shadow-sm dark:drop-shadow-black'>
                     Shop
                   </span>

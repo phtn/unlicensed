@@ -49,6 +49,7 @@ export type RawProduct = {
   brand?: string
   grower?: string
   tier?: ProductTier
+  subcategory?: string
   _id?: Id<'products'>
   _creationTime?: number
 }
@@ -121,6 +122,7 @@ export const adaptProduct = (product: RawProduct): StoreProduct => ({
   brand: product.brand,
   grower: product.grower,
   productTier: product.tier,
+  subcategory: product.subcategory,
   _id: product._id,
   _creationTime: product._creationTime,
 })

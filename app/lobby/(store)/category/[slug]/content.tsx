@@ -13,6 +13,7 @@ import {Icon} from '@/lib/icons'
 import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
+import {parseAsString, useQueryState} from 'nuqs'
 import {useMemo, ViewTransition} from 'react'
 
 interface ContentProps {
@@ -21,6 +22,15 @@ interface ContentProps {
 }
 
 export const Content = ({initialProducts, slug}: ContentProps) => {
+  const [tier, setTier] = useQueryState(
+    'tier',
+    parseAsString.withDefault(''),
+  )
+  const [subcategory, setSubcategory] = useQueryState(
+    'subcategory',
+    parseAsString.withDefault(''),
+  )
+
   const productsQuery = useQuery(api.products.q.listProducts, {
     categorySlug: slug,
     limit: 20,
@@ -28,11 +38,13 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
 
   const products = useMemo(() => {
     const nextProducts = productsQuery?.map(adaptProduct)
-    if (nextProducts && nextProducts.length > 0) {
-      return nextProducts
-    }
-    return initialProducts
-  }, [initialProducts, productsQuery])
+    const base = nextProducts && nextProducts.length > 0 ? nextProducts : initialProducts
+    return base.filter((p) => {
+      if (tier && p.productTier !== tier) return false
+      if (subcategory && p.subcategory !== subcategory) return false
+      return true
+    })
+  }, [initialProducts, productsQuery, tier, subcategory])
 
   // Get all image IDs from products (only storageIds, not URLs or null)
   const imageIds = useMemo(() => products.map((p) => p.image), [products])
@@ -84,7 +96,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   prefetch
                   radius='none'
                   href={'/lobby/brands'}
-                  className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand rounded-xs dark:hover:text-white bg-brand hover:text-white text-white font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
+                  className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand rounded-xs dark:hover:text-white bg-brand hover:text-white text-white font-clash font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                   <span className='drop-shadow-xs'>Shop by Brand</span>
                 </Button>
                 <Button

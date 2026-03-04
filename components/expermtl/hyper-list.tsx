@@ -15,7 +15,9 @@ interface HyperListProps<T> {
   children?: ReactNode
   direction?: 'up' | 'down' | 'left' | 'right'
   delay?: number
+  duration?: number
   disableAnimation?: boolean
+  withExitAnimation?: boolean
 }
 
 export const HyperList = <T extends object>(props: HyperListProps<T>) => {
@@ -32,6 +34,8 @@ export const HyperList = <T extends object>(props: HyperListProps<T>) => {
     orderBy = 'updated_at',
     reversed = false,
     disableAnimation = false,
+    withExitAnimation = false,
+    duration = 0.5,
   } = props
 
   const baseContainerStyle = useMemo(() => {
@@ -92,9 +96,28 @@ export const HyperList = <T extends object>(props: HyperListProps<T>) => {
           initial={disableAnimation ? false : direction}
           variants={variants}
           animate={{opacity: 1, ...animate}}
+          exit={
+            withExitAnimation
+              ? (() => {
+                  const slideOut =
+                    direction === 'down'
+                      ? {y: 40}
+                      : direction === 'up'
+                        ? {y: -40}
+                        : direction === 'left'
+                          ? {x: -20}
+                          : {x: 20}
+                  return {
+                    opacity: 0,
+                    transition: {duration: 0.2, ease: 'easeIn'},
+                    ...slideOut,
+                  }
+                })()
+              : undefined
+          }
           transition={{
             type: 'spring',
-            visualDuration: 0.5,
+            visualDuration: duration,
             bounce: 0.5,
             delay: j * 0.05 + delay,
           }}
@@ -109,9 +132,11 @@ export const HyperList = <T extends object>(props: HyperListProps<T>) => {
       keyId,
       animate,
       variants,
+      duration,
       direction,
       baseItemStyle,
       disableAnimation,
+      withExitAnimation,
     ],
   )
 
@@ -125,14 +150,17 @@ export const HyperList = <T extends object>(props: HyperListProps<T>) => {
     [orderBy],
   )
 
+  const sorted = useMemo(
+    () => slicedData?.slice().sort(sortFn) ?? [],
+    [slicedData, sortFn],
+  )
+
   return (
-    <AnimatePresence>
-      <ScrollArea>
-        {children}
-        <ul className={baseContainerStyle}>
-          {slicedData?.sort(sortFn).map(render)}
-        </ul>
-      </ScrollArea>
-    </AnimatePresence>
+    <ScrollArea>
+      {children}
+      <ul className={baseContainerStyle}>
+        <AnimatePresence mode='sync'>{sorted.map(render)}</AnimatePresence>
+      </ul>
+    </ScrollArea>
   )
 }

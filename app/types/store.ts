@@ -43,6 +43,7 @@ export interface StoreProduct {
   potencyLevel: PotencyLevel
   potencyProfile?: string
   productTier?: ProductTier
+  subcategory?: string
   weightGrams?: number
   brand?: string
   grower?: string
