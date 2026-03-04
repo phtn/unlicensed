@@ -70,9 +70,9 @@ export const Nav = ({children}: NavProps) => {
     <div>
       <header
         className={cn(
-          'fixed z-9999 top-0 left-0 right-0 bg-linear-to-b from-black/15 via-black/10 to-transparent h-14 lg:h-16 xl:h-20 2xl:h-24',
+          'fixed z-9999 top-0 left-0 right-0 bg-linear-to-b from-white to-transparent dark:from-black/15 dark:via-black/10 dark:to-transparent h-14 lg:h-16 xl:h-20 2xl:h-24',
           {
-            ' to-black/5 backdrop-blur-px':
+            ' dark:to-black/5 backdrop-blur-px':
               pathname.split('/').pop() !== 'lobby',
           },
         )}>
@@ -81,7 +81,7 @@ export const Nav = ({children}: NavProps) => {
             href={'/lobby'}
             onMouseEnter={handleHomeMouseEnter}
             onMouseLeave={handleHomeMouseLeave}
-            className='group relative flex items-center justify-start md:w-36 h-10 md:h-12 overflow-hidden pl-1 text-white hover:text-brand active:text-brand'>
+            className='group relative flex items-center justify-start md:w-36 h-10 md:h-12 overflow-hidden pl-1  dark:text-white text-dark-table hover:text-brand active:text-brand'>
             <motion.div
               initial={{y: 12, opacity: 0, scale: 0}}
               animate={{
@@ -92,10 +92,10 @@ export const Nav = ({children}: NavProps) => {
               exit={{y: -12, opacity: 0, scale: 0}}
               className='hidden md:flex absolute size-7 md:size-10 bg-white aspect-square rounded-full'
             />
-            <div className=' bg-black/10 group-hover:backdrop-blur-none rounded-full'>
+            <div className=' dark:bg-black/10 group-hover:backdrop-blur-none rounded-full'>
               <Icon
                 name='rapid-fire-logo'
-                className='h-8 md:h-10 w-auto relative'
+                className='h-8 md:h-10 w-auto relative dark:text-white text-brand'
               />
             </div>
           </Link>
@@ -108,7 +108,7 @@ export const Nav = ({children}: NavProps) => {
               <>
                 <Link
                   href={'/lobby/category'}
-                  className='hidden group text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-polysans font-semibold space-x-1'>
+                  className='hidden group text-sm lg:text-lg dark:text-gray-100 text-dark-table  hover:text-brand md:flex items-center font-polysans font-semibold space-x-1'>
                   <Icon
                     name='down-caret'
                     className='size-2 group-hover:text-white group-hover:opacity-100 opacity-60'
@@ -159,7 +159,7 @@ export const Nav = ({children}: NavProps) => {
               className='px-[0.5px]'
               classNames={{
                 badge:
-                  'aspect-square size-6 text-base translate-x-2.5 -translate-y-1 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-white/90 shadow-sm shadow-black/50 backdrop-blur-2xl bg-brand/80',
+                  'aspect-square size-6 text-base translate-x-2.5 -translate-y-1 rounded-xs flex items-center justify-center rounded-sm border-0.5 dark:border-white/90 shadow-sm shadow-dark-table/50 backdrop-blur-2xl bg-brand',
               }}
               shape='rectangle'>
               <Button
@@ -168,7 +168,10 @@ export const Nav = ({children}: NavProps) => {
                 className='capitalize'
                 variant='light'
                 onPress={onCartDrawerOpen}>
-                <Icon name='bag-solid' className='size-6 text-white' />
+                <Icon
+                  name='bag-solid'
+                  className='size-6 dark:text-white text-dark-table'
+                />
               </Button>
             </Badge>
 

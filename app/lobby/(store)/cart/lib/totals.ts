@@ -25,6 +25,7 @@ export interface OrderTotals {
 
 /**
  * Computes subtotal in cents from cart items.
+ * Uses lineTotalCents when set (bundle lines with discount); otherwise unit price × quantity.
  * Injects getUnitPriceCents for testability (default uses real implementation).
  */
 export function computeSubtotal(
@@ -32,6 +33,7 @@ export function computeSubtotal(
   getUnitPrice: typeof getUnitPriceCents = getUnitPriceCents,
 ): number {
   return items.reduce((total, item) => {
+    if (item.lineTotalCents != null) return total + item.lineTotalCents
     const unitCents = getUnitPrice(item.product, item.denomination)
     return total + unitCents * item.quantity
   }, 0)

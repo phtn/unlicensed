@@ -21,16 +21,19 @@ export function CartItemsSection({
   onRemoveItem,
 }: CartItemsSectionProps) {
   return (
-    <div className='min-w-0 md:h-[70lvh] h-fit bg-linear-to-b dark:from-dark-table/40 via-transparent to-transparent rounded-3xl overflow-hidden flex flex-col'>
+    <div className='min-w-0 md:h-[80lvh] h-fit bg-linear-to-b dark:from-dark-table/40 via-transparent to-transparent rounded-3xl overflow-hidden flex flex-col'>
       <div className='flex-1 min-w-0 overflow-x-hidden overflow-y-auto rounded-3xl w-full'>
-        <PendingDealsSection />
+        <PendingDealsSection cartItems={cartItems} />
         {cartItems.map((item) => {
           const product = item.product
-          const itemPrice = getUnitPriceCents(product, item.denomination)
+          const itemPrice =
+            item.lineTotalCents != null
+              ? Math.round(item.lineTotalCents / item.quantity)
+              : getUnitPriceCents(product, item.denomination)
 
           return (
             <CartItem
-              key={`${product._id}-${item.denomination ?? 'default'}`}
+              key={`${product._id}-${item.denomination ?? 'default'}-${item.bundleCartItemIndex ?? 'p'}-${item.bundleLineIndex ?? ''}`}
               item={item}
               itemPrice={itemPrice}
               onUpdate={onUpdateItem}

@@ -263,7 +263,7 @@ const SidebarTrigger = memo(function SidebarTrigger({
     <button
       {...props}
       className={cn(
-        'rounded-lg -translate-y-px rotate-180 border-none text-foreground hover:text-foreground group md:hover:bg-light-gray/30 md:bg-light-table/20 md:dark:bg-light-table/5 size-7 flex items-center justify-center px-2',
+        'rounded-sm -translate-y-px border-none text-foreground hover:text-foreground group md:hover:bg-sidebar/40 md:bg-light-table/20 md:dark:bg-light-table/5 h-6 w-6.5 flex items-center justify-center px-1.5',
         className,
         {
           'rotate-0': isOpen,
@@ -271,9 +271,9 @@ const SidebarTrigger = memo(function SidebarTrigger({
       )}
       onClick={toggleSidebar}>
       <Icon
-        name='pull-left'
+        name='sidebar-simple'
         className={cn(
-          'size-6 opacity-90 dark:opacity-70 group-hover:opacity-100',
+          'size-5 opacity-90 dark:opacity-70 group-hover:opacity-100',
         )}
       />
       <span className='sr-only'>Toggle Sidebar</span>

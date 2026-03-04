@@ -1,6 +1,7 @@
 'use client'
 
 import {DataTable} from '@/components/table-v2'
+import type {TableToolbarContext} from '@/components/table-v2'
 import {
   HoverCell,
   linkText,
@@ -13,7 +14,13 @@ import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button} from '@heroui/react'
+import {
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMemo} from 'react'
 import {mapNumericFractions} from './product-schema'
@@ -435,17 +442,36 @@ export const ProductsData = ({data}: ProductsDataProps) => {
     [],
   )
 
-  const exportButton = useMemo(
-    () => (
-      <Button
-        size='sm'
-        radius='none'
-        variant='flat'
-        className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk'
-        onPress={() => exportProductsToCsv(data ?? [])}>
-        <Icon name='download' className='size-4' />
-        <span className='hidden sm:inline'>Export CSV</span>
-      </Button>
+  const exportToolbar = useMemo(
+    () => (context: TableToolbarContext<Doc<'products'>>) => (
+      <Dropdown>
+        <DropdownTrigger>
+          <Button
+            size='sm'
+            radius='none'
+            variant='flat'
+            className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk'
+            endContent={<Icon name='chevron-down' className='size-4' />}>
+            <Icon name='download' className='size-4' />
+            <span className='hidden sm:inline'>Export CSV</span>
+          </Button>
+        </DropdownTrigger>
+        <DropdownMenu
+          aria-label='Export CSV options'
+          onAction={(key) => {
+            if (key === 'all') exportProductsToCsv(data ?? [])
+            if (key === 'current') exportProductsToCsv(context.getFilteredData())
+          }}>
+          <DropdownItem key='all' description='Export all products'>
+            Export all
+          </DropdownItem>
+          <DropdownItem
+            key='current'
+            description='Export only products matching current search and filters'>
+            Export current list
+          </DropdownItem>
+        </DropdownMenu>
+      </Dropdown>
     ),
     [data],
   )
@@ -459,7 +485,7 @@ export const ProductsData = ({data}: ProductsDataProps) => {
           loading={!data}
           columnConfigs={columns}
           editingRowId={null}
-          rightToolbarLeft={exportButton}
+          rightToolbarLeft={exportToolbar}
         />
       )}
     </div>

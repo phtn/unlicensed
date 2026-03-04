@@ -1,15 +1,21 @@
 'use client'
 
 import {AuthModal} from '@/components/auth/auth-modal'
-import ShimmerText from '@/components/expermtl/shimmer'
 import {api} from '@/convex/_generated/api'
+import type {Id} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
-import {isProductCartItemWithProduct, useCart} from '@/hooks/use-cart'
+import {
+  isBundleCartItemWithProducts,
+  isProductCartItemWithProduct,
+  useCart,
+} from '@/hooks/use-cart'
+import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
+import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
 import {usePlaceOrder} from '@/hooks/use-place-order'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
-import {useEffect, useMemo, useState, useTransition} from 'react'
+import {useCallback, useEffect, useMemo, useState, useTransition} from 'react'
 import {CartEmptyState} from './CartEmptyState'
 import {CartItemsSection} from './CartItemsSection'
 import {CartPageHeader} from './CartPageHeader'
@@ -36,6 +42,7 @@ export default function CartPage() {
     cart,
     updateItem: baseUpdateItem,
     removeItem: baseRemoveItem,
+    removeBundle,
     clear,
     isLoading,
     isAuthenticated,
@@ -111,20 +118,79 @@ export default function CartPage() {
     return convexUser?.contact?.phone || defaultAddress?.phone || ''
   }, [convexUser?.contact?.phone, defaultAddress?.phone])
 
+  const {configs: dealConfigs} = useDealConfigs()
+
   const serverCartItems = useMemo<CartPageItem[]>(() => {
     if (!cart?.items) return []
-    return cart.items.filter(isProductCartItemWithProduct).map((item) => ({
-      product: item.product,
-      quantity: item.quantity,
-      denomination: item.denomination,
-    }))
-  }, [cart])
+    const productItems: CartPageItem[] = []
+    const bundleItems: CartPageItem[] = []
+    cart.items.forEach((item, idx) => {
+      if (isProductCartItemWithProduct(item)) {
+        productItems.push({
+          product: item.product,
+          quantity: item.quantity,
+          denomination: item.denomination,
+        })
+      } else if (isBundleCartItemWithProducts(item)) {
+        const config = dealConfigs[item.bundleType]
+        const variation = config?.variations[item.variationIndex]
+        const denom =
+          variation?.denominationPerUnit ??
+          item.bundleItemsWithProducts[0]?.denomination ??
+          0.125
+        const bundleAmount = variation
+          ? variation.totalUnits * variation.denominationPerUnit
+          : item.bundleItemsWithProducts.reduce(
+              (s, bi) => s + bi.denomination * bi.quantity,
+              0,
+            )
+        const products = item.bundleItemsWithProducts.map((bi) => bi.product)
+        const bundleTotalCents = getBundleTotalCents(products, denom, bundleAmount)
+        let sumUnitQty = 0
+        for (const bi of item.bundleItemsWithProducts) {
+          sumUnitQty += getUnitPriceCents(bi.product, bi.denomination) * bi.quantity
+        }
+        item.bundleItemsWithProducts.forEach((bi, lineIdx) => {
+          const lineUnitQty =
+            getUnitPriceCents(bi.product, bi.denomination) * bi.quantity
+          const lineTotalCents =
+            sumUnitQty > 0
+              ? Math.round((bundleTotalCents * lineUnitQty) / sumUnitQty)
+              : 0
+          bundleItems.push({
+            product: bi.product,
+            quantity: bi.quantity,
+            denomination: bi.denomination,
+            bundleCartItemIndex: idx,
+            bundleLineIndex: lineIdx,
+            lineTotalCents,
+          })
+        })
+      }
+    })
+    return [...productItems, ...bundleItems]
+  }, [cart, dealConfigs])
+
+  const onRemoveItem = useCallback(
+    async (
+      productId: Id<'products'>,
+      denomination?: number,
+      bundleCartItemIndex?: number,
+    ) => {
+      if (bundleCartItemIndex !== undefined) {
+        await removeBundle(bundleCartItemIndex)
+      } else {
+        await baseRemoveItem(productId, denomination)
+      }
+    },
+    [baseRemoveItem, removeBundle],
+  )
 
   const {cartItems, updateItem, removeItem, clearCartWithHistory} =
     useOptimisticCartItems({
       serverCartItems,
       onUpdateItem: baseUpdateItem,
-      onRemoveItem: baseRemoveItem,
+      onRemoveItem,
       onClearCart: clear,
     })
 
@@ -216,44 +282,42 @@ export default function CartPage() {
             />
           </div>
 
-          <div className='min-w-0 space-y-6 relative'>
-            <div className='absolute top-0 left-0'>
+          {/*<div className='absolute top-0 left-0'>
               <ShimmerText surface='light' />
-            </div>
-            <Checkout
-              tax={tax}
-              total={effectiveTotal}
-              showTaxRow={taxConfig?.active ?? true}
-              onOpen={isAuthenticated ? onCheckoutOpen : onAuthOpen}
-              subtotal={subtotal}
-              shipping={effectiveShipping}
-              isAuthenticated={isAuthenticated}
-              isLoading={isPlacingOrder}
-              onPlaceOrder={placeOrder}
-              userEmail={userEmail}
-              defaultAddress={defaultAddress || undefined}
-              shippingAddresses={shippingAddresses || undefined}
-              defaultBillingAddress={defaultBillingAddress || undefined}
-              userPhone={userPhone}
-              cashAppUsername={convexUser?.cashAppUsername}
-              convexUser={convexUser || undefined}
-              orderError={orderError}
-              orderId={orderId}
-              onCheckoutClose={onCheckoutClose}
-              isCheckoutOpen={isCheckoutOpen}
-              onClearCart={clearCartWithHistory}
-              pointsBalance={pointsBalance}
-              paymentMethodFromUrl={paymentMethod}
-              onPaymentMethodUrlChange={onPaymentMethodChange}
-              minimumOrderCents={minimumOrderCents}
-              shippingFeeCents={shippingFeeCents}
-              rewardsVariant={rewardsVariant}
-              computedRewards={computedRewards}
-              rewardsConfig={rewardsConfig ?? undefined}
-              nextVisitMultiplier={nextVisitMultiplier}
-              estimatedPoints={estimatedPoints}
-            />
-          </div>
+            </div>*/}
+          <Checkout
+            tax={tax}
+            total={effectiveTotal}
+            showTaxRow={taxConfig?.active ?? true}
+            onOpen={isAuthenticated ? onCheckoutOpen : onAuthOpen}
+            subtotal={subtotal}
+            shipping={effectiveShipping}
+            isAuthenticated={isAuthenticated}
+            isLoading={isPlacingOrder}
+            onPlaceOrder={placeOrder}
+            userEmail={userEmail}
+            defaultAddress={defaultAddress || undefined}
+            shippingAddresses={shippingAddresses || undefined}
+            defaultBillingAddress={defaultBillingAddress || undefined}
+            userPhone={userPhone}
+            cashAppUsername={convexUser?.cashAppUsername}
+            convexUser={convexUser || undefined}
+            orderError={orderError}
+            orderId={orderId}
+            onCheckoutClose={onCheckoutClose}
+            isCheckoutOpen={isCheckoutOpen}
+            onClearCart={clearCartWithHistory}
+            pointsBalance={pointsBalance}
+            paymentMethodFromUrl={paymentMethod}
+            onPaymentMethodUrlChange={onPaymentMethodChange}
+            minimumOrderCents={minimumOrderCents}
+            shippingFeeCents={shippingFeeCents}
+            rewardsVariant={rewardsVariant}
+            computedRewards={computedRewards}
+            rewardsConfig={rewardsConfig ?? undefined}
+            nextVisitMultiplier={nextVisitMultiplier}
+            estimatedPoints={estimatedPoints}
+          />
         </div>
       </div>
       <AuthModal isOpen={isAuthOpen} onClose={onAuthClose} mode='login' />

@@ -1,6 +1,7 @@
 /**
  * CSV import for products: parse export-format CSV and validate rows.
  * Matches the export format from products-data.tsx (PRODUCT_CSV_FIELDS + denom columns).
+ * _id and _creationTime are accepted in the CSV (from export) but omitted on insert; Convex creates them.
  */
 
 const DENOM_KEYS = [
@@ -73,6 +74,9 @@ const PRODUCT_CSV_FIELDS = [
 const DENOM_HEADERS = DENOM_KEYS.flatMap((k) => [`price_${k}`, `stock_${k}`])
 export const EXPECTED_CSV_HEADERS = [...PRODUCT_CSV_FIELDS, ...DENOM_HEADERS]
 
+/** CSV columns that are not sent on insert (created by Convex). Shown in export but omitted in preview/import. */
+export const OMIT_FROM_IMPORT_HEADERS = new Set(['_id', '_creationTime'])
+
 /** Parse a single CSV line respecting quoted fields (handles "" as escape). */
 function parseCsvLine(line: string): string[] {
   const result: string[] = []
@@ -96,6 +100,7 @@ function parseCsvLine(line: string): string[] {
         }
       }
       result.push(value)
+      if (line[i] === ',') i++
     } else {
       let value = ''
       while (i < line.length && line[i] !== ',') {
@@ -211,8 +216,13 @@ function rawRowToProduct(
     gallery: Array.isArray(gallery) ? gallery : undefined,
     consumption: get('consumption') || undefined,
     flavorNotes: Array.isArray(flavorNotes) ? flavorNotes : undefined,
-    potencyLevel:
-      (get('potencyLevel') as 'mild' | 'medium' | 'high') || undefined,
+    potencyLevel: (() => {
+      const plRaw = get('potencyLevel').trim()
+      const plLower = plRaw.toLowerCase()
+      return plLower === 'mild' || plLower === 'medium' || plLower === 'high'
+        ? (plLower as 'mild' | 'medium' | 'high')
+        : undefined
+    })(),
     potencyProfile: get('potencyProfile') || undefined,
     weightGrams: parseNum(get('weightGrams')),
     brand: get('brand') || undefined,
@@ -228,7 +238,14 @@ function rawRowToProduct(
       : undefined,
     eligibleForUpgrade: parseBool(get('eligibleForUpgrade')),
     upgradePrice: parseNum(get('upgradePrice')),
-    dealType: get('dealType') as 'withinTier' | 'acrossTiers' | undefined,
+    dealType: (() => {
+      const raw = get('dealType').trim().toLowerCase()
+      return raw === 'withintier' || raw === 'acrosstiers'
+        ? (raw === 'withintier'
+            ? ('withinTier' as const)
+            : ('acrossTiers' as const))
+        : undefined
+    })(),
     productType: get('productType') || undefined,
     netWeight: parseNum(get('netWeight')),
     netWeightUnit: get('netWeightUnit') || undefined,
@@ -271,7 +288,7 @@ export function parseProductsCsv(csvText: string): ParseResult {
       raw[h] = values[j] ?? ''
     })
     const product = rawRowToProduct(raw, denomHeaders)
-    const errors = validateRow(product, i)
+    const errors = validateRow(product, i, raw)
     rows.push({
       rowIndex: i,
       raw,
@@ -288,8 +305,14 @@ export function parseProductsCsv(csvText: string): ParseResult {
   }
 }
 
+const VALID_DEAL_TYPES_LOWER = new Set(['withintier', 'acrosstiers'])
+
 /** Client-side row validation (required fields, types). Does not check category existence or slug conflict. */
-function validateRow(product: Record<string, unknown>, rowIndex: number): string[] {
+function validateRow(
+  product: Record<string, unknown>,
+  rowIndex: number,
+  raw: Record<string, string>,
+): string[] {
   const errors: string[] = []
   const name = product.name
   if (name == null || String(name).trim().length < 2) {
@@ -319,13 +342,12 @@ function validateRow(product: Record<string, unknown>, rowIndex: number): string
   ) {
     errors.push('noseRating must be between 0 and 10')
   }
-  const potencyLevel = product.potencyLevel
+  const dealTypeRaw = (raw.dealType ?? '').trim()
   if (
-    potencyLevel != null &&
-    potencyLevel !== '' &&
-    !['mild', 'medium', 'high'].includes(String(potencyLevel))
+    dealTypeRaw !== '' &&
+    !VALID_DEAL_TYPES_LOWER.has(dealTypeRaw.toLowerCase())
   ) {
-    errors.push('potencyLevel must be mild, medium, or high')
+    errors.push('dealType must be withinTier or acrossTiers')
   }
   return errors
 }

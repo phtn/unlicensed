@@ -70,6 +70,10 @@ import {
 } from './toolbar'
 import {ViewStyleGroup} from './view-style-group'
 
+export interface TableToolbarContext<T> {
+  getFilteredData: () => T[]
+}
+
 interface TableProps<T> {
   data: T[]
   title?: string
@@ -80,7 +84,7 @@ interface TableProps<T> {
   onDeleteSelected?: (ids: string[]) => void | Promise<void>
   deleteIdAccessor?: keyof T
   selectedItemId?: string | null
-  rightToolbarLeft?: ReactNode
+  rightToolbarLeft?: ReactNode | ((context: TableToolbarContext<T>) => ReactNode)
 }
 
 function DataTableContent<T>({
@@ -328,6 +332,14 @@ function DataTableContent<T>({
   // Derive selectedRows during render (simple nullish coalescing)
   const selectedRows = selectedRowModel ?? []
 
+  const toolbarLeftContent =
+    typeof rightToolbarLeft === 'function'
+      ? rightToolbarLeft({
+          getFilteredData: () =>
+            table.getFilteredRowModel().rows.map((r) => r.original),
+        })
+      : rightToolbarLeft
+
   const isMobile = useMobile()
 
   // Listen for '/' keypress to focus search input
@@ -408,7 +420,7 @@ function DataTableContent<T>({
             }
           />
           <RightTableToolbar
-            left={rightToolbarLeft}
+            left={toolbarLeftContent}
             search={
               <Search
                 ref={inputRef}

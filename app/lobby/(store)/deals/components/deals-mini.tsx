@@ -40,7 +40,7 @@ export const DealsMini = ({categories}: Props) => {
                   <Icon name='arrow-down' className='rotate-115 size-8' />
                 </div>
                 <span className='px-4 text-base md:text-lg font-light font-brk'>
-                  START BUNDLE BUILDER
+                  Bundle Builder
                 </span>
               </div>
             </Button>

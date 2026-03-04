@@ -1,4 +1,5 @@
 import {ClassName} from '@/app/types'
+import {HyperBadge} from '@/components/main/badge'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {Id} from '@/convex/_generated/dataModel'
 import {ProductType} from '@/convex/products/d'
@@ -27,6 +28,8 @@ interface CartItemProps {
     }
     quantity: number
     denomination?: number
+    bundleCartItemIndex?: number
+    bundleLineIndex?: number
   }
   itemPrice: number
   onUpdate: (
@@ -34,7 +37,12 @@ interface CartItemProps {
     quantity: number,
     denomination?: number,
   ) => Promise<void>
-  onRemove: (productId: Id<'products'>, denomination?: number) => Promise<void>
+  onRemove: (
+    productId: Id<'products'>,
+    denomination?: number,
+    bundleCartItemIndex?: number,
+    bundleLineIndex?: number,
+  ) => Promise<void>
   className?: ClassName
 }
 
@@ -59,12 +67,19 @@ export const CartItem = memo(
       [resolveUrl, item.product.image],
     )
 
+    const isBundleLine = item.bundleCartItemIndex !== undefined
+
     const handleQuantityChange = async (newQuantity: number) => {
       if (newQuantity < 1) {
         startTransition(async () => {
-          await onRemove(item.product._id, item.denomination)
+          await onRemove(
+            item.product._id,
+            item.denomination,
+            item.bundleCartItemIndex,
+            item.bundleLineIndex,
+          )
         })
-      } else {
+      } else if (!isBundleLine) {
         setQuantity(newQuantity) // Optimistic update
         startTransition(async () => {
           await onUpdate(item.product._id, newQuantity, item.denomination)
@@ -80,7 +95,12 @@ export const CartItem = memo(
 
     const handleConfirmRemove = () => {
       startTransition(async () => {
-        await onRemove(item.product._id, item.denomination)
+        await onRemove(
+          item.product._id,
+          item.denomination,
+          item.bundleCartItemIndex,
+          item.bundleLineIndex,
+        )
         onClose()
       })
     }
@@ -139,29 +159,42 @@ export const CartItem = memo(
                 </div>
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-1'>
-                    <Button
-                      isIconOnly
-                      size='sm'
-                      radius='none'
-                      variant='flat'
-                      className='h-7 w-8 rounded-sm'
-                      onPress={() => handleQuantityChange(quantity - 1)}>
-                      <Icon name='minus' className='size-4' />
-                    </Button>
+                    {!isBundleLine ? (
+                      <>
+                        <Button
+                          isIconOnly
+                          size='sm'
+                          radius='none'
+                          variant='flat'
+                          className='h-7 w-8 rounded-sm'
+                          onPress={() => handleQuantityChange(quantity - 1)}>
+                          <Icon name='minus' className='size-4' />
+                        </Button>
 
-                    <p className='font-okxs font-medium text-lg w-10 text-center'>
-                      <AnimatedNumber value={quantity} />
-                    </p>
+                        <p className='font-okxs font-medium text-lg w-10 text-center'>
+                          <AnimatedNumber value={quantity} />
+                        </p>
 
-                    <Button
-                      isIconOnly
-                      size='sm'
-                      radius='none'
-                      variant='flat'
-                      className='h-7 w-8 rounded-sm'
-                      onPress={() => handleQuantityChange(quantity + 1)}>
-                      <Icon name='plus' className='size-4' />
-                    </Button>
+                        <Button
+                          isIconOnly
+                          size='sm'
+                          radius='none'
+                          variant='flat'
+                          className='h-7 w-8 rounded-sm'
+                          onPress={() => handleQuantityChange(quantity + 1)}>
+                          <Icon name='plus' className='size-4' />
+                        </Button>
+                      </>
+                    ) : (
+                      <p className='font-okxs font-medium text-lg w-10 text-center'>
+                        <AnimatedNumber value={quantity} />
+                      </p>
+                    )}
+                    {isBundleLine && (
+                      <HyperBadge variant='deal' size='sm'>
+                        Bundle
+                      </HyperBadge>
+                    )}
                   </div>
                   <Button
                     size='sm'

@@ -1,13 +1,16 @@
 'use client'
 
-import {PrimaryTab, ToolbarButtonWrapper} from '@/app/admin/@toolbar/components'
+import {
+  MainTab,
+  PrimaryTab,
+  ToolbarButtonWrapper,
+} from '@/app/admin/@toolbar/components'
 import {PageTitle} from '@/app/admin/_components/ui/page-title'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
-import Link from 'next/link'
 import {Suspense} from 'react'
 
 const CategoryContentInner = () => {
@@ -17,10 +20,7 @@ const CategoryContentInner = () => {
 
   return (
     <>
-      <Link
-        href='/admin/inventory/category'
-        prefetch
-        className='flex items-center space-x-4 group'>
+      <MainTab href='/admin/inventory/category'>
         <PageTitle>Categories</PageTitle>
         <span
           className={cn(
@@ -32,7 +32,7 @@ const CategoryContentInner = () => {
           )}>
           <AnimatedNumber value={categories?.length ?? 0} />
         </span>
-      </Link>
+      </MainTab>
       <ToolbarButtonWrapper>
         <PrimaryTab
           id='new'

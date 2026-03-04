@@ -1,17 +1,10 @@
-'use client'
-
 import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react'
-import {ImageOptimizer} from './image-optimizer'
-import {ProductCsvUpload} from './product-csv-upload'
+import {BasicSettings} from './_product-settings/basic'
 
-const tabs = [
-  {id: 'image-opt', label: 'Image Optimizer'},
-  {id: 'product-csv', label: 'Product CSV Import'},
-]
-
-export const Content = () => {
+export const ProductSettings = () => {
+  const tabs = [{id: 'basic', label: 'Basic'}]
   return (
     <MainWrapper className='md:p-4'>
       <Tabs.Root defaultValue='image-opt'>
@@ -33,13 +26,8 @@ export const Content = () => {
         </Tabs.List>
         <Tabs.Panel
           className='relative flex min-h-32 flex-1 flex-col px-2 py-4'
-          value='image-opt'>
-          <ImageOptimizer />
-        </Tabs.Panel>
-        <Tabs.Panel
-          className='relative flex min-h-32 min-w-0 flex-1 flex-col overflow-hidden px-2 py-4'
-          value='product-csv'>
-          <ProductCsvUpload />
+          value='basic'>
+          <BasicSettings />
         </Tabs.Panel>
       </Tabs.Root>
     </MainWrapper>

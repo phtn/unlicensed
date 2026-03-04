@@ -103,7 +103,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
     ) : null
 
   return (
-    <div className='lg:sticky lg:top-24 h-fit space-y-4'>
+    <div className='lg:sticky lg:top-20 h-fit space-y-8 md:space-y-10'>
       <CheckoutRewardsContent>{rewardsPanel}</CheckoutRewardsContent>
       <Card
         shadow='none'

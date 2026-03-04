@@ -18,6 +18,8 @@ type OptimisticAction =
       type: 'remove'
       productId: Id<'products'>
       denomination?: number
+      bundleCartItemIndex?: number
+      bundleLineIndex?: number
     }
 
 interface UseOptimisticCartItemsParams {
@@ -47,12 +49,18 @@ export function useOptimisticCartItems({
           )
         }
         case 'remove': {
+          if (action.bundleCartItemIndex !== undefined) {
+            return currentItems.filter(
+              (item) => item.bundleCartItemIndex !== action.bundleCartItemIndex,
+            )
+          }
           return currentItems.filter(
             (item) =>
               !(
                 item.product._id === action.productId &&
                 (item.denomination ?? undefined) ===
-                  (action.denomination ?? undefined)
+                  (action.denomination ?? undefined) &&
+                item.bundleCartItemIndex === undefined
               ),
           )
         }
@@ -80,13 +88,25 @@ export function useOptimisticCartItems({
   )
 
   const removeItem = useCallback(
-    async (productId: Id<'products'>, denomination?: number) => {
+    async (
+      productId: Id<'products'>,
+      denomination?: number,
+      bundleCartItemIndex?: number,
+      bundleLineIndex?: number,
+    ) => {
       setOptimisticCartItems({
         type: 'remove',
         productId,
         denomination,
+        bundleCartItemIndex,
+        bundleLineIndex,
       })
-      await onRemoveItem(productId, denomination)
+      await onRemoveItem(
+        productId,
+        denomination,
+        bundleCartItemIndex,
+        bundleLineIndex,
+      )
     },
     [onRemoveItem, setOptimisticCartItems],
   )

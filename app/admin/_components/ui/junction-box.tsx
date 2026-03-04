@@ -1,3 +1,4 @@
+import {ClassName} from '@/app/types'
 import {cn} from '@/lib/utils'
 import {Card, Switch} from '@heroui/react'
 import {useCallback} from 'react'
@@ -7,12 +8,14 @@ interface JunctionBoxProps {
   onUpdate: (value: boolean) => void
   checked: boolean
   description?: string
+  className?: ClassName
 }
 export const JunctionBox = ({
   title,
   checked,
   onUpdate,
   description,
+  className,
 }: JunctionBoxProps) => {
   const handleCardToggle = useCallback(
     () => onUpdate(!checked),
@@ -25,7 +28,10 @@ export const JunctionBox = ({
       isPressable
       disableRipple
       onPress={handleCardToggle}
-      className='flex flex-col gap-2 pt-3 pb-4 pl-4 pr-3 rounded-lg bg-alum/20 dark:bg-background/30'>
+      className={cn(
+        'flex flex-col gap-2 pt-3 pb-4 pl-4 pr-3 rounded-lg bg-alum/20 dark:bg-background/30',
+        className,
+      )}>
       <div className='flex items-center justify-between font-okxs w-full'>
         <h2 className='text-lg font-polysans font-medium'>{title}</h2>
         <div onClick={(event) => event.stopPropagation()}>

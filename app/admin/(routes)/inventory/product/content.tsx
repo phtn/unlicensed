@@ -5,9 +5,9 @@ import {api} from '@/convex/_generated/api'
 import {useQuery} from 'convex/react'
 import {Suspense} from 'react'
 import {EditProductContent} from './[id]/content'
-import {BadgeList} from './badges'
 import {NewProduct} from './new-product'
 import {ProductList} from './product-list'
+import {ProductSettings} from './product-settings'
 import {ProductsData} from './products-data'
 
 const ProductsContentInner = () => {
@@ -15,8 +15,8 @@ const ProductsContentInner = () => {
   const [tabId, , id] = useAdminTabId()
 
   switch (tabId) {
-    case 'badges':
-      return <BadgeList />
+    case 'settings':
+      return <ProductSettings />
     case 'new':
       return <NewProduct />
     case 'edit':

@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  MainTab,
   PrimaryTab,
   SecondaryTab,
   ToolbarButtonWrapper,
@@ -11,34 +12,30 @@ import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
-import Link from 'next/link'
 import {Suspense} from 'react'
 
 const ProductContentInner = () => {
   const products = useQuery(api.products.q.listProducts, {limit: 100})
   const [tabId] = useAdminTabId()
-  const isProductRoute = tabId !== 'badges' && tabId !== 'new'
+  const isProductRoute = tabId !== 'settings' && tabId !== 'new'
 
   return (
     <>
-      <Link
-        href='/admin/inventory/product'
-        prefetch
-        className='flex items-center space-x-4 group'>
+      <MainTab href='/admin/inventory/product'>
         <PageTitle>Products</PageTitle>
         <span
           className={cn(
-            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
-            {'bg-blue-500 dark:bg-blue-500 text-white': isProductRoute},
+            'px-1 h-6 w-8 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-sm font-space font-semibold',
+            {'bg-white dark:bg-white/10 text-blue-500': isProductRoute},
           )}>
           <AnimatedNumber value={products?.length ?? 0} />
         </span>
-      </Link>
+      </MainTab>
       <ToolbarButtonWrapper>
         <SecondaryTab
-          id='badges'
-          href='/admin/inventory/product?tabId=badges'
-          label='Badges'
+          id='settings'
+          href='/admin/inventory/product?tabId=settings'
+          label='settings'
         />
         <PrimaryTab
           id='new'
