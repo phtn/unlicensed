@@ -84,12 +84,12 @@ export const Nav = ({children}: NavProps) => {
           },
         )}
         data-scroll-y={scrollY}>
-        <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 flex items-center justify-between h-full'>
+        <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 flex items-center justify-start md:justify-between h-full'>
           <Link
             href={'/lobby'}
             onMouseEnter={handleHomeMouseEnter}
             onMouseLeave={handleHomeMouseLeave}
-            className='group relative flex items-center justify-start md:w-36 h-10 md:h-12 overflow-hidden pl-1  dark:text-white text-dark-table hover:text-brand active:text-brand'>
+            className='group relative flex items-center justify-start min-w-12 md:w-36 h-10 md:h-12 overflow-hidden pl-1  dark:text-white text-dark-table hover:text-brand active:text-brand'>
             <motion.div
               initial={{y: 12, opacity: 0, scale: 0}}
               animate={{
@@ -126,10 +126,17 @@ export const Nav = ({children}: NavProps) => {
           </Link>
 
           <nav
-            className={cn('flex items-center justify-center w-fit space-x-4')}>
-            <div>
-              <NavMenu isMobile={isMobile} inStoreLobby={inStoreLobby} />
+            className={cn(
+              'flex items-center justify-center md:w-fit w-full space-x-4',
+            )}>
+            <div className='portrait:flex-1 portrait:px-2'>
+              <NavMenu
+                scrollY={scrollY}
+                isMobile={isMobile}
+                inStoreLobby={inStoreLobby}
+              />
             </div>
+            <div className='sm:hidden portrait:flex portrait:w-full' />
             {route === 'strain-finder' ? (
               <div className='hidden md:flex font-polysans font-normal bg-white text-base text-black px-4 py-0.5 rounded-full'>
                 Strain Finder
@@ -150,10 +157,6 @@ export const Nav = ({children}: NavProps) => {
                     'hidden group text-sm lg:text-lg text-gray-100  hover:text-brand md:flex items-center font-polysans font-semibold space-x-1',
                     {'text-dark-table dark:text-white': !inStoreLobby},
                   )}>
-                  {/*<Icon
-                    name='down-caret'
-                    className='size-2 group-hover:text-white group-hover:opacity-100 opacity-60'
-                  />*/}
                   <span className='group-hover:drop-shadow-sm dark:drop-shadow-black'>
                     Shop
                   </span>

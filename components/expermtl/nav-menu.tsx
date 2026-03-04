@@ -97,9 +97,10 @@ const MOCK_SUB_ITEMS_BY_SLUG: Partial<Record<string, NavMenuSubItem[]>> = {
 interface NavMenuProps {
   isMobile?: boolean
   inStoreLobby?: boolean
+  scrollY: number
 }
 
-export const NavMenu = ({isMobile, inStoreLobby}: NavMenuProps) => {
+export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
   const categoriesQuery = useQuery(api.categories.q.listCategories)
 
   const categories = useMemo(() => {
@@ -126,10 +127,21 @@ export const NavMenu = ({isMobile, inStoreLobby}: NavMenuProps) => {
               ' dark:data-[state=open]:text-white',
               {
                 'text-dark-table hover:bg-dark-table bg-sidebar py-1 size-6.5':
-                  isMobile,
+                  isMobile && !inStoreLobby,
               },
             )}>
-            <Icon name='details' className='size-5 md:size-6 shrink-0' />
+            <Icon
+              name='details'
+              className='size-5 md:size-6 shrink-0'
+              style={{
+                color:
+                  !isMobile || (inStoreLobby && scrollY >= 710)
+                    ? '#373945'
+                    : scrollY <= 400
+                      ? undefined
+                      : '#373945',
+              }}
+            />
           </NavigationMenuTrigger>
           <NavigationMenuContent
             dropdown
