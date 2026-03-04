@@ -1,17 +1,17 @@
 # Updates ⸬ Wed Mar 04, 2026  05:53:45 am - +08:00
 ---
 
-### 1. Landing Page Refresh (STARTED):
+### 1. Landing Page Refresh (ONGOING):
    - Per Desig team spec.
 
-### 2. Product Card Enhancement (STARTED):
+### 2. Product Card Enhancement (UPDATED):
    - Redesign product cards to include product names, prices, and tiers clearly.
    - Implement hover effects to display product details.
 
-### 3. Navigation Pane Update: (STARTED)
+### 3. Navigation Pane Update: (ONGOING)
    - Refine the navigation structure for clarity and ease of use, including proper categorization and subcategories.
 
-### 4. Filtering Options Implementation: (NOT STARTED)
+### 4. Filtering Options Implementation: (STARTED)
    - Add filtering capabilities to sort products by category, tier, and subcategory.
 
 ### 5. Home Page Redesign: (COMPLETED)

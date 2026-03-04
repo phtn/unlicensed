@@ -87,12 +87,12 @@ export const InnerMenu = ({items, subItemsBySlug = {}}: InnerMenuProps) => {
             <button
               type='button'
               className={cn(
-                'group/cat flex h-auto w-full items-center justify-between border border-border/60 text-left text-sm font-semibold shadow-sm transition-colors duration-150 ease-out',
-                'hover:border-border hover:text-accent-foreground hover:shadow-xs px-6 py-4 md:py-3',
+                'group/cat flex h-auto w-full items-center justify-between text-left text-sm font-semibold transition-colors duration-150 ease-out',
+                'hover:border-border hover:text-accent-foreground px-6 py-0 md:py-3 shadow data-active:border data-active:border-sidebar',
                 'focus-visible:ring-2 focus-visible:ring-ring/50 rounded-none dark:bg-black dark:text-white',
                 'border-none dark:data-active:text-white bg-sidebar/30',
                 active === item.slug &&
-                  'border-border shadow bg-transparent dark:bg-transparent!',
+                  'border-border bg-transparent dark:bg-transparent!',
               )}
               onMouseEnter={(e) => {
                 setActiveSlug(item.slug)
@@ -122,7 +122,7 @@ export const InnerMenu = ({items, subItemsBySlug = {}}: InnerMenuProps) => {
 
         <div
           id='indicator'
-          className='absolute top-1/2 left-0 z-[-1] h-10 w-(--hovered-category-width) translate-x-(--hovered-category-left) -translate-y-1/2 bg-sidebar dark:bg-dark-table transition-all duration-200 ease-in-out hidden md:block'
+          className='absolute top-1/2 left-0 z-[-1] w-(--hovered-category-width) translate-x-(--hovered-category-left) -translate-y-1/2 bg-sidebar dark:bg-dark-table transition-all duration-200 ease-in-out hidden md:block h-full!'
         />
       </ul>
 

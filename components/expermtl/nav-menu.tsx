@@ -132,10 +132,12 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
             )}>
             <Icon
               name='details'
-              className='size-5 md:size-6 shrink-0'
+              className={cn('size-5 md:size-6 shrink-0 text-white', {
+                'text-dark-table dark:text-white': !inStoreLobby,
+              })}
               style={{
                 color:
-                  !isMobile || (inStoreLobby && scrollY >= 710)
+                  !isMobile && scrollY >= 710
                     ? '#373945'
                     : scrollY <= 400
                       ? undefined
