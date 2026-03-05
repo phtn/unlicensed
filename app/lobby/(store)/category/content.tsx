@@ -129,7 +129,7 @@ export const Content = ({initialCategories}: ContentProps) => {
               </div>
             </div>
           </Activity>
-          <div className='grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 w-full'>
+          <div className='grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-4 md:gap-6 w-full'>
             {categories.map((category) => (
               <Link
                 key={category.slug}

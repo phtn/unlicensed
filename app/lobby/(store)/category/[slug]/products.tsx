@@ -13,7 +13,7 @@ export const Products = ({products}: ProductsProps) => {
         <Activity mode={products.length === 0 ? 'visible' : 'hidden'}>
           <EmptyCategory />
         </Activity>
-        <div className='grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-6 w-full'>
+        <div className='grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-6 w-full'>
           {products.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}

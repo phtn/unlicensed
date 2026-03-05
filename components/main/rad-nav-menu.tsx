@@ -71,7 +71,7 @@ export const InnerMenu = ({items, subItemsBySlug = {}}: InnerMenuProps) => {
       <ul
         ref={listRef}
         className={cn(
-          'flex list-none flex-col gap-2 p-0 shrink-0 border border-border/60 rounded-xs overflow-hidden md:border-0 md:rounded-none md:overflow-visible',
+          'flex list-none flex-col gap-6 p-0 shrink-0 border border-border/60 rounded-xs overflow-hidden md:border-0 md:rounded-none md:overflow-visible',
           'w-34 min-h-0 md:w-full md:flex-row md:flex-nowrap md:gap-3',
           'relative',
         )}
@@ -88,7 +88,7 @@ export const InnerMenu = ({items, subItemsBySlug = {}}: InnerMenuProps) => {
               type='button'
               className={cn(
                 'group/cat flex h-auto w-full items-center justify-between text-left text-sm font-semibold transition-colors duration-150 ease-out',
-                'hover:border-border hover:text-accent-foreground px-6 py-0 md:py-3 shadow data-active:border data-active:border-sidebar',
+                'hover:border-border hover:text-accent-foreground px-6 py-0 md:py-3 data-active:border data-active:border-sidebar',
                 'focus-visible:ring-2 focus-visible:ring-ring/50 rounded-none dark:bg-black dark:text-white',
                 'border-none dark:data-active:text-white bg-sidebar/30',
                 active === item.slug &&

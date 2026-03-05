@@ -13,6 +13,7 @@ import {useQuery} from 'convex/react'
 import {useMemo, useState} from 'react'
 import {SectionHeader} from '../ui/section-header'
 import {CartCollection} from './cart-collection'
+import {ProductCard} from './product-card'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -63,19 +64,18 @@ export const SuggestedCartItems = ({onClose}: {onClose: VoidFunction}) => {
   if (!featuredRaw && !previousRaw) return null
 
   return (
-    <div className='flex flex-col h-full gap-6 border-t border-foreground/15 w-full'>
+    <div className='flex flex-col h-full gap-6 border-t border-foreground/15'>
       {/* Featured Section */}
       {featured.length > 0 && (
         <div className=''>
-          <SectionHeader title='Featured Drops' className='p-4 w-full' />
-          <div className='flex w-full overflow-x-auto pr-6 gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3'>
+          <SectionHeader title='Featured Drops' className='p-4' />
+          <div className='flex w-md md:w-xl overflow-x-auto gap-1 md:gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3 pr-10'>
             {featured.map((product) => (
-              <SuggestedItem
+              <div
                 key={product._id}
-                product={product}
-                imageUrl={resolveUrl(product.image ?? '') ?? ''}
-                onAdd={handleAddToCart(product._id)}
-              />
+                className='snap-start min-w-50 max-w-50 bg-surface-highlight/50 rounded-xs overflow-hidden border border-foreground/10 flex flex-col group md:hover:border-foreground/20'>
+                <ProductCard product={product} />
+              </div>
             ))}
           </div>
         </div>
@@ -86,17 +86,15 @@ export const SuggestedCartItems = ({onClose}: {onClose: VoidFunction}) => {
 
       {/* Previous Section */}
       {previous.length > 0 && (
-        <div className='space-y-3'>
+        <div className='space-y-3 w-3xl'>
           <SectionHeader title='Buy Again' className='px-4 w-md' />
 
-          <div className='flex w-full overflow-x-auto pr-6 gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3'>
+          <div className='flex w-md md:w-xl overflow-x-auto gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3 pr-10'>
             {previous.map((product) => (
-              <SuggestedItem
-                key={product._id}
-                product={product}
-                imageUrl={resolveUrl(product.image ?? '') ?? ''}
-                onAdd={handleAddToCart(product._id)}
-              />
+              <ProductCard key={product._id} product={product} />
+              //   imageUrl={resolveUrl(product.image ?? '') ?? ''}
+              //   onAdd={handleAddToCart(product._id)}
+              // />
             ))}
           </div>
         </div>
@@ -123,7 +121,7 @@ const SuggestedItem = ({product, imageUrl, onAdd}: ISuggestedItem) => {
   }
 
   return (
-    <div className='snap-start min-w-64 max-w-64 bg-surface-highlight/50 rounded-2xl overflow-hidden border border-foreground/10 flex flex-col group md:hover:border-foreground/20'>
+    <div className='snap-start min-w-64 max-w-64 bg-surface-highlight/50 rounded-xs overflow-hidden border border-foreground/10 flex flex-col group md:hover:border-foreground/20'>
       {imageUrl ? (
         <Image
           src={imageUrl}

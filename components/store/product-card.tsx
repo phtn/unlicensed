@@ -75,7 +75,7 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
       disableAnimation
       shadow='sm'
       className={cn(
-        'group h-full transition-all duration-300 hover:-translate-y-0.5 rounded-xs dark:bg-black bg-sidebar',
+        'group h-full transition-all duration-300 hover:-translate-y-0.5 rounded-xs dark:bg-black bg-sidebar min-w-48',
         className,
       )}>
       <CardBody className='flex flex-col p-0'>
@@ -87,12 +87,12 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
               alt={product.name}
               radius='none'
               shadow='none'
-              className='w-full rounded-t-xs rounded-b-sm object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
+              className='min-w-48 rounded-t-xs rounded-b-sm object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
               isLoading={!product.image}
               loading='eager'
             />
           ) : (
-            <div className='w-auto h-40 min-h-40 aspect-square flex items-center justify-center'>
+            <div className='w-auto h-48 min-h-48 aspect-square flex items-center justify-center'>
               <Icon name='spinners-ring' />
             </div>
           )}

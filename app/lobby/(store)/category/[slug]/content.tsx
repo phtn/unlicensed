@@ -22,10 +22,7 @@ interface ContentProps {
 }
 
 export const Content = ({initialProducts, slug}: ContentProps) => {
-  const [tier, setTier] = useQueryState(
-    'tier',
-    parseAsString.withDefault(''),
-  )
+  const [tier, setTier] = useQueryState('tier', parseAsString.withDefault(''))
   const [subcategory, setSubcategory] = useQueryState(
     'subcategory',
     parseAsString.withDefault(''),
@@ -38,7 +35,8 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
 
   const products = useMemo(() => {
     const nextProducts = productsQuery?.map(adaptProduct)
-    const base = nextProducts && nextProducts.length > 0 ? nextProducts : initialProducts
+    const base =
+      nextProducts && nextProducts.length > 0 ? nextProducts : initialProducts
     return base.filter((p) => {
       if (tier && p.productTier !== tier) return false
       if (subcategory && p.subcategory !== subcategory) return false
@@ -144,11 +142,12 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                 Browse Category
               </h2>
             </div>
-            <div className='w-full md:w-fit flex items-center justify-between gap-2'>
+            <div className='w-full md:w-fit flex items-center justify-between gap-1 md:gap-2'>
               <Button
                 size='sm'
                 as={Link}
                 href={`/lobby/deals`}
+                radius='none'
                 prefetch
                 className='bg-terpenes opacity-100 text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tight md:tracking-normal'>
                 <span className='drop-shadow-xs'>Deals</span>
@@ -162,6 +161,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     as={Link}
                     href={`/lobby/category/${cat.slug}`}
                     prefetch
+                    radius='none'
                     className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tighter'>
                     <span className='drop-shadow-xs'>{cat.name}</span>
                   </Button>
@@ -173,6 +173,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
       <div className='flex justify-center w-full px-4 md:hidden pb-20'>
         <Button
           size='lg'
+          radius='none'
           as={Link}
           href={'/lobby/brands'}
           fullWidth
