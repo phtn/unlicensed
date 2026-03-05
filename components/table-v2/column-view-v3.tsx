@@ -146,7 +146,7 @@ export const ColumnView = <T,>({
   )
 }
 
-function ArrowSvg(props: ComponentProps<'svg'>) {
+function _ArrowSvg(props: ComponentProps<'svg'>) {
   return (
     <svg width='20' height='10' viewBox='0 0 20 10' fill='none' {...props}>
       <path
@@ -173,7 +173,7 @@ function ChevronDownIcon(props: ComponentProps<'svg'>) {
   )
 }
 
-function CheckIcon(props: ComponentProps<'svg'>) {
+function _CheckIcon(props: ComponentProps<'svg'>) {
   return (
     <svg
       fill='currentcolor'

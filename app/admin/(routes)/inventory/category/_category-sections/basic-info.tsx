@@ -3,9 +3,12 @@
 import {ensureSlug} from '@/lib/slug'
 import {Input} from '@heroui/react'
 import {useState} from 'react'
+import {
+  commonInputClassNames,
+  FormInput,
+} from '../../../../_components/ui/fields'
+import {useAppForm} from '../../../../_components/ui/form-context'
 import {CategoryFormValues} from '../category-schema'
-import {commonInputClassNames, FormInput} from '../ui/fields'
-import {useAppForm} from '../ui/form-context'
 import {FormSection, Header} from './components'
 
 interface BasicInfoProps {

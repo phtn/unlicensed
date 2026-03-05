@@ -137,12 +137,13 @@ export const Content = ({initialCategories}: ContentProps) => {
                 prefetch={true}
                 className='group/item cursor-pointer w-full border-x border-b border-dark-gray/50 rounded-xs'>
                 {/* Category Image */}
-                <div className='relative flex items-center justify-center bg-transparent rounded-xs overflow-hidden h-fig sm:h-64 lg:h-72'>
+                <div className='relative flex items-center justify-center bg-transparent rounded-xs overflow-hidden'>
                   {category.heroImage ? (
                     <Image
                       src={resolveUrl(category.heroImage) as string}
                       alt={category.name}
-                      className='mask mask-parallelogram size-50 aspect-square shrink-0 object-cover w-full h-full'
+                      radius='none'
+                      className='mask mask-parallelogram size-48 aspect-square shrink-0 object-cover w-full h-full'
                       loading='lazy'
                     />
                   ) : (
@@ -150,24 +151,12 @@ export const Content = ({initialCategories}: ContentProps) => {
                       <Icon name='image' className='w-16 h-16 opacity-40' />
                     </div>
                   )}
-                  <div
-                    className={`absolute inset-0 bg-linear-to-br from-black/40 via-transparent to-transparent group-hover/item:from-black/60 transition-opacity duration-300`}></div>
-
-                  {/* Category Badge */}
-                  <div className='absolute top-3 sm:top-4 right-3 sm:right-4'>
-                    <div className='bg-foreground/10 backdrop-blur-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-full'>
-                      <Icon
-                        name='arrow-right'
-                        className='size-4 sm:size-5 text-white group-hover/item:translate-x-1 transition-transform duration-300'
-                      />
-                    </div>
-                  </div>
                 </div>
 
                 {/* Card Content */}
                 <div className='w-full p-3 sm:p-4'>
                   <div className='flex-1 min-w-0'>
-                    <h4 className='flex items-center justify-center text-lg sm:text-base lg:text-lg font-polysans font-semibold mb-1'>
+                    <h4 className='flex items-center justify-center text-lg sm:text-base lg:text-lg font-clash font-semibold mb-1'>
                       <span className='capitalize truncate'>
                         {category.name}
                       </span>

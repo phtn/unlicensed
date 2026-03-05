@@ -53,7 +53,7 @@ export class CashAppClient {
       }
 
       // Convert cents to dollars for Square API
-      const amountInDollars = (request.amountCents / 100).toFixed(2)
+      const _amountInDollars = (request.amountCents / 100).toFixed(2)
 
       // Square Payments API endpoint
       const endpoint = `${SQUARE_API_BASE}/v2/payments`

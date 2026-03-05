@@ -29,7 +29,7 @@ export const ViewStyleGroup = () => {
   )
 }
 
-function AlignLeftIcon(props: React.ComponentProps<'svg'>) {
+function _AlignLeftIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       width='16'
@@ -46,7 +46,7 @@ function AlignLeftIcon(props: React.ComponentProps<'svg'>) {
   )
 }
 
-function AlignCenterIcon(props: React.ComponentProps<'svg'>) {
+function _AlignCenterIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       width='16'
@@ -63,7 +63,7 @@ function AlignCenterIcon(props: React.ComponentProps<'svg'>) {
   )
 }
 
-function AlignRightIcon(props: React.ComponentProps<'svg'>) {
+function _AlignRightIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       width='16'

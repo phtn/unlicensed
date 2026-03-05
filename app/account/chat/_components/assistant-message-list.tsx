@@ -53,7 +53,7 @@ interface AssistantMessageListProps {
   isLoading: boolean
   onQuickAction?: (suggestion: string) => void
   scrollAreaRef?: React.RefObject<HTMLDivElement | null>
-  scrollButtonAnchorRef?: React.RefObject<HTMLDivElement | null>
+  scrollButtonAnchorEl?: HTMLDivElement | null
   onScrollToBottom?: () => void
 }
 
@@ -62,7 +62,7 @@ export function AssistantMessageList({
   isLoading,
   onQuickAction,
   scrollAreaRef,
-  scrollButtonAnchorRef,
+  scrollButtonAnchorEl,
   onScrollToBottom,
 }: AssistantMessageListProps) {
   // Group messages by date
@@ -261,11 +261,11 @@ export function AssistantMessageList({
 
       {/* Scroll-to-bottom button (portaled above message input) */}
       {scrollAreaRef &&
-        scrollButtonAnchorRef &&
+        scrollButtonAnchorEl &&
         onScrollToBottom && (
           <ScrollToBottomButton
             scrollAreaRef={scrollAreaRef}
-            scrollButtonAnchorRef={scrollButtonAnchorRef}
+            scrollButtonAnchorEl={scrollButtonAnchorEl}
             onScrollToBottom={onScrollToBottom}
           />
         )}

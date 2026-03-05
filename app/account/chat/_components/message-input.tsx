@@ -599,6 +599,7 @@ export function MessageInput({
               key={index}
               className='relative group overflow-hidden rounded-lg border border-border/40 bg-muted/20'>
               {attachment.fileType.startsWith('image/') && attachment.url ? (
+                // eslint-disable-next-line @next/next/no-img-element -- chat attachment URLs may be external
                 <img
                   src={attachment.url}
                   alt={attachment.fileName}

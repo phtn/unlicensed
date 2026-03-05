@@ -55,8 +55,10 @@ export const statusOptions = [
 export const InventoryTable = () => {
   const products = useQuery(api.products.q.listProducts, {limit: 100})
   const categoriesData = useQuery(api.categories.q.listCategories)
-  // Derive categories during render (simple nullish coalescing)
-  const categories = categoriesData ?? []
+  const categories = useMemo(
+    () => categoriesData ?? [],
+    [categoriesData],
+  )
   const {selectedProduct, setSelectedProduct} = useProductDetails()
   const {open, setOpen} = useSettingsPanel()
   const selectedProductId = selectedProduct?._id
@@ -146,7 +148,8 @@ export const InventoryTable = () => {
         }
       }
     }
-  }, [columnWidths, getColumnWidth, hoveredColumn, columns, showCheckboxes])
+   
+  }, [columnWidths, getColumnWidth, hoveredColumn, showCheckboxes, tableRef])
 
   const [filterValue, setFilterValue] = useState('')
   const [selectedRow, setSelectedRow] = useState<Id<'products'> | null>(null)
@@ -334,13 +337,10 @@ export const InventoryTable = () => {
       case 'unit':
         return textCell(product.unit ?? '')
       case 'stock': {
+        const denom = product.stockByDenomination
         const total =
-          product.stockByDenomination &&
-          Object.keys(product.stockByDenomination).length > 0
-            ? Object.values(product.stockByDenomination).reduce(
-                (a, b) => a + b,
-                0,
-              )
+          denom && Object.keys(denom).length > 0
+            ? (Object.values(denom) as number[]).reduce((a, b) => a + b, 0)
             : product.stock
         return (
           <div className='flex flex-col items-center'>

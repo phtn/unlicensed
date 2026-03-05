@@ -50,6 +50,7 @@ export function ImageModal({
         </button>
       </div>
       <div className='h-full w-full flex items-center justify-center p-4'>
+        {/* eslint-disable-next-line @next/next/no-img-element -- modal full-size image */}
         <img
           src={url}
           alt={fileName}

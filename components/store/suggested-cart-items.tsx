@@ -20,7 +20,7 @@ const formatPrice = (priceCents: number) => {
   return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
 }
 
-export const SuggestedCartItems = ({onClose}: {onClose: VoidFunction}) => {
+export const SuggestedCartItems = () => {
   const {user} = useAuth()
   const {addItem} = useCart()
 
@@ -52,7 +52,7 @@ export const SuggestedCartItems = ({onClose}: {onClose: VoidFunction}) => {
 
   const resolveUrl = useStorageUrls(allImageIds)
 
-  const handleAddToCart =
+  const _handleAddToCart =
     (productId: Id<'products'> | undefined) => async () => {
       if (productId) {
         await addItem(productId, 1)
@@ -69,12 +69,15 @@ export const SuggestedCartItems = ({onClose}: {onClose: VoidFunction}) => {
       {featured.length > 0 && (
         <div className=''>
           <SectionHeader title='Featured Drops' className='p-4' />
-          <div className='flex w-md md:w-xl overflow-x-auto gap-1 md:gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3 pr-10'>
+          <div className='flex w-md md:w-2xl overflow-x-auto gap-1 md:gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3 pr-10'>
             {featured.map((product) => (
               <div
                 key={product._id}
                 className='snap-start min-w-50 max-w-50 bg-surface-highlight/50 rounded-xs overflow-hidden border border-foreground/10 flex flex-col group md:hover:border-foreground/20'>
-                <ProductCard product={product} />
+                <ProductCard
+                  product={product}
+                  imageUrl={resolveUrl(product.image ?? '') ?? undefined}
+                />
               </div>
             ))}
           </div>
@@ -89,12 +92,13 @@ export const SuggestedCartItems = ({onClose}: {onClose: VoidFunction}) => {
         <div className='space-y-3 w-3xl'>
           <SectionHeader title='Buy Again' className='px-4 w-md' />
 
-          <div className='flex w-md md:w-xl overflow-x-auto gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3 pr-10'>
+          <div className='flex w-md md:w-2xl overflow-x-auto gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3 pr-10'>
             {previous.map((product) => (
-              <ProductCard key={product._id} product={product} />
-              //   imageUrl={resolveUrl(product.image ?? '') ?? ''}
-              //   onAdd={handleAddToCart(product._id)}
-              // />
+              <ProductCard
+                key={product._id}
+                product={product}
+                imageUrl={resolveUrl(product.image ?? '') ?? undefined}
+              />
             ))}
           </div>
         </div>
@@ -108,6 +112,8 @@ interface ISuggestedItem {
   imageUrl: string
   onAdd: () => Promise<void> | undefined
 }
+// Used in commented JSX; keep for future use
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- reserved for SuggestedItem UI
 const SuggestedItem = ({product, imageUrl, onAdd}: ISuggestedItem) => {
   const [isAdding, setIsAdding] = useState(false)
 

@@ -211,7 +211,7 @@ const TextAnimate: FC<Props> = ({
   // const isInView = useInView(ref, { once: true })
 
   // Escape curly braces in text to prevent JSX interpretation issues
-  const escapeText = (str: string) => {
+  const _escapeText = (str: string) => {
     return str.replace(/{/g, '&#123;').replace(/}/g, '&#125;')
   }
 

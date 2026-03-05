@@ -2,8 +2,8 @@
 
 import {cn} from '@/lib/utils'
 import {Chip, Input, Select, SelectItem, Textarea} from '@heroui/react'
+import {commonInputClassNames} from '../../../../_components/ui/fields'
 import {CategoryFormApi} from '../category-schema'
-import {commonInputClassNames} from '../ui/fields'
 import {FormSection, Header} from './components'
 
 const UNIT_SUGGESTIONS = [

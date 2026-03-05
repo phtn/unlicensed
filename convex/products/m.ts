@@ -31,6 +31,22 @@ const EXTRACT_AND_EDIBLE_BASES = new Set([
 ])
 const PRE_ROLL_BASES = new Set(['Flower', 'Infused'])
 
+type AttributeEntry = { name: string; slug: string }
+
+function allowedSetFromAttributeEntries(
+  entries: AttributeEntry[] | undefined,
+): Set<string> | null {
+  if (!entries?.length) return null
+  const set = new Set<string>()
+  for (const e of entries) {
+    const n = e.name?.trim()
+    const s = e.slug?.trim()
+    if (n) set.add(n)
+    if (s) set.add(s)
+  }
+  return set.size > 0 ? set : null
+}
+
 const categoryContains = (
   categorySlug: string,
   candidates: readonly string[],
@@ -67,13 +83,15 @@ const getAllowedBaseSetForCategory = (categorySlug?: string) => {
 const validateTierForCategory = (
   tier: string | undefined,
   categorySlug?: string,
+  categoryTiers?: AttributeEntry[],
 ) => {
   if (!tier) {
     return
   }
 
-  const allowedTierSet = getAllowedTierSetForCategory(categorySlug)
-  if (allowedTierSet.has(tier)) {
+  const fromEntries = allowedSetFromAttributeEntries(categoryTiers)
+  const allowedTierSet = fromEntries ?? getAllowedTierSetForCategory(categorySlug)
+  if (allowedTierSet.has(tier.trim())) {
     return
   }
 
@@ -83,26 +101,61 @@ const validateTierForCategory = (
   )
 }
 
+/** If categoryBases is non-empty, use it; else derive from slug. */
+const getAllowedBaseSetForCategoryWithOverrides = (
+  categorySlug?: string,
+  categoryBases?: AttributeEntry[],
+): Set<string> | null => {
+  const fromEntries = allowedSetFromAttributeEntries(categoryBases)
+  if (fromEntries) return fromEntries
+  return getAllowedBaseSetForCategory(categorySlug)
+}
+
 const validateBaseForCategory = (
   base: string | undefined,
   categorySlug?: string,
+  categoryBases?: AttributeEntry[],
 ) => {
   if (!base) {
     return
   }
 
-  const allowedBaseSet = getAllowedBaseSetForCategory(categorySlug)
+  const allowedBaseSet = getAllowedBaseSetForCategoryWithOverrides(
+    categorySlug,
+    categoryBases,
+  )
   if (!allowedBaseSet) {
     return
   }
 
-  if (allowedBaseSet.has(base)) {
+  if (allowedBaseSet.has(base.trim())) {
     return
   }
 
   const allowedBases = Array.from(allowedBaseSet).join(', ')
   throw new Error(
     `Base "${base}" is invalid for category "${categorySlug ?? 'unknown'}". Allowed base values: ${allowedBases}.`,
+  )
+}
+
+const validateBrandForCategory = (
+  brand: string | undefined,
+  categoryBrands?: AttributeEntry[],
+) => {
+  if (!brand) {
+    return
+  }
+  if (!categoryBrands || categoryBrands.length === 0) {
+    return
+  }
+  const allowed = allowedSetFromAttributeEntries(categoryBrands)
+  if (!allowed) return
+  if (allowed.has(brand.trim())) {
+    return
+  }
+  const allowedBrands = Array.from(allowed).join(', ')
+  throw new Error(
+    `Brand "${brand}" is invalid. Allowed brands for this category: ${allowedBrands}.`,
   )
 }
 
@@ -146,8 +199,17 @@ async function buildProductInsertDoc(
 
   const base = args.base?.trim() || undefined
 
-  validateTierForCategory(args.tier, category.slug ?? args.categorySlug)
-  validateBaseForCategory(base, category.slug ?? args.categorySlug)
+  validateTierForCategory(
+    args.tier,
+    category.slug ?? args.categorySlug,
+    category.tiers,
+  )
+  validateBaseForCategory(
+    base,
+    category.slug ?? args.categorySlug,
+    category.bases,
+  )
+  validateBrandForCategory(args.brand?.trim(), category.brands)
 
   const doc = {
     name: args.name ?? '',
@@ -398,6 +460,14 @@ export const updateProduct = mutation({
       updates.tier = undefined
     }
 
+    const categoryForValidation =
+      nextCategorySlug
+        ? await ctx.db
+            .query('categories')
+            .withIndex('by_slug', (q) => q.eq('slug', nextCategorySlug))
+            .unique()
+        : null
+
     if (tierChanged || categoryChanged) {
       const nextTier =
         fields.tier !== undefined
@@ -405,7 +475,11 @@ export const updateProduct = mutation({
           : categoryChanged
             ? undefined
             : product.tier
-      validateTierForCategory(nextTier, nextCategorySlug)
+      validateTierForCategory(
+        nextTier,
+        nextCategorySlug,
+        categoryForValidation?.tiers,
+      )
     }
     if (
       categoryChanged &&
@@ -414,6 +488,7 @@ export const updateProduct = mutation({
     ) {
       updates.base = undefined
     }
+
     if (baseChanged || categoryChanged) {
       const nextBase =
         fields.base !== undefined
@@ -421,7 +496,17 @@ export const updateProduct = mutation({
           : categoryChanged
             ? undefined
             : product.base
-      validateBaseForCategory(nextBase, nextCategorySlug)
+      validateBaseForCategory(
+        nextBase,
+        nextCategorySlug,
+        categoryForValidation?.bases,
+      )
+    }
+    if (fields.brand !== undefined && fields.brand !== null) {
+      validateBrandForCategory(
+        fields.brand.trim() || undefined,
+        categoryForValidation?.brands,
+      )
     }
     if (fields.eligibleForDeals !== undefined) {
       updates.eligibleForDeals = fields.eligibleForDeals

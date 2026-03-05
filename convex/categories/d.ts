@@ -1,5 +1,13 @@
 import {Infer, v} from 'convex/values'
 
+/** Attribute value with display name and URL/query-friendly slug (auto-generated from name, editable). */
+export const attributeEntrySchema = v.object({
+  name: v.string(),
+  slug: v.string(),
+})
+
+export type AttributeEntry = Infer<typeof attributeEntrySchema>
+
 export const categorySchema = {
   name: v.string(),
   slug: v.optional(v.string()),
@@ -7,11 +15,17 @@ export const categorySchema = {
   heroImage: v.optional(v.id('_storage')),
   highlight: v.optional(v.string()),
   benefits: v.optional(v.array(v.string())),
-  productTypes: v.optional(v.array(v.string())),
-  subcategories: v.optional(v.array(v.string())),
+  productTypes: v.optional(v.array(attributeEntrySchema)),
+  subcategories: v.optional(v.array(attributeEntrySchema)),
   denominations: v.optional(v.array(v.number())),
   units: v.optional(v.array(v.string())),
   visible: v.optional(v.boolean()),
+  /** Tier options for this category (e.g. B, A, AA for flower; Distillate, Live Resin for vape). */
+  tiers: v.optional(v.array(attributeEntrySchema)),
+  /** Allowed base options for products in this category. */
+  bases: v.optional(v.array(attributeEntrySchema)),
+  /** Allowed brand options for products in this category. */
+  brands: v.optional(v.array(attributeEntrySchema)),
 }
 export const category = v.object({
   ...categorySchema,

@@ -38,11 +38,11 @@ function gpfm(
 const mnemonic =
   'pottery avocado bar sign wolf enforce orient baby stage leg garbage click'
 
-const ethKey = gpfm(mnemonic, 'ethereum')
+const _ethKey = gpfm(mnemonic, 'ethereum')
 const btcKey = gpfm(mnemonic, 'bitcoin_segwit')
-const btcLeg = gpfm(mnemonic, 'bitcoin_legacy')
-const solKey = gpfm(mnemonic, 'solana')
-const ethAccount2 = gpfm(mnemonic, 'ethereum', 1)
+const _btcLeg = gpfm(mnemonic, 'bitcoin_legacy')
+const _solKey = gpfm(mnemonic, 'solana')
+const _ethAccount2 = gpfm(mnemonic, 'ethereum', 1)
 
 // console.log('ETH Private Key:', ethKey)
 // console.log('BTC Legacy Key:', btcLeg)

@@ -23,7 +23,7 @@ export const Filter = <T,>({
   columns,
   activeFilterColumns = [],
   onFilterColumnsChange,
-  isMobile,
+  isMobile: _isMobile,
 }: Props<T>) => {
   const baseId = useId()
 

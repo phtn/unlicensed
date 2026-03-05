@@ -12,7 +12,7 @@ interface HyperCardProps extends HTMLAttributes<HTMLDivElement> {
 export const HyperWrap = ({
   children,
   className,
-  light = false,
+  light: _light = false,
 }: HyperCardProps) => {
   return (
     <Card

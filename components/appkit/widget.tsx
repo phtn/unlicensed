@@ -60,7 +60,7 @@ export const CryptoWidget = () => {
 
   const [sendTabKey, setSendTabKey] = useState(0)
   const [showPreview, setShowPreview] = useState(false)
-  const [localError, setLocalError] = useState<string | null>(null)
+  const [_localError, setLocalError] = useState<string | null>(null)
   const [, startTransition] = useTransition()
   const [balance, setBalance] = useState<{ value: bigint; symbol: string; decimals: number } | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)

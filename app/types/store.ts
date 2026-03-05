@@ -1,9 +1,18 @@
 import {Id} from '@/convex/_generated/dataModel'
-import {PotencyLevel, ProductTier} from '@/convex/products/d'
+import {PotencyLevel} from '@/convex/products/d'
 
+export interface IAttribute {
+  name?: string
+  slug?: string
+}
 export interface StoreCategory {
   slug: string
   name: string
+  tiers: IAttribute[]
+  subcategories?: IAttribute[]
+  productTypes?: IAttribute[]
+  brands?: IAttribute[]
+  bases?: IAttribute[]
   description: string
   heroImage: string
   highlight?: string
@@ -42,7 +51,7 @@ export interface StoreProduct {
   flavorNotes: string[]
   potencyLevel: PotencyLevel
   potencyProfile?: string
-  productTier?: ProductTier
+  productTier?: string
   subcategory?: string
   weightGrams?: number
   brand?: string

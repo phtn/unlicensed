@@ -1,6 +1,14 @@
 import {z} from 'zod'
-import {FormInput} from './ui/fields'
-import {useAppForm} from './ui/form-context'
+import {FormInput} from '../../../_components/ui/fields'
+import {useAppForm} from '../../../_components/ui/form-context'
+
+/** Attribute value with display name and URL/query-friendly slug. */
+export const attributeEntrySchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  slug: z.string().min(1, 'Slug is required'),
+})
+
+export type AttributeEntry = z.infer<typeof attributeEntrySchema>
 
 export const categorySchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -12,8 +20,11 @@ export const categorySchema = z.object({
   highlight: z.string().optional(),
   benefitsRaw: z.string().optional(),
   unitsRaw: z.string().optional(),
-  productTypesRaw: z.string().optional(),
-  subcategoriesRaw: z.string().optional(),
+  productTypes: z.array(attributeEntrySchema).default([]),
+  subcategories: z.array(attributeEntrySchema).default([]),
+  tiers: z.array(attributeEntrySchema).default([]),
+  bases: z.array(attributeEntrySchema).default([]),
+  brands: z.array(attributeEntrySchema).default([]),
   denominationsRaw: z.string().optional(),
   visible: z.boolean().default(false),
 })
@@ -51,7 +62,7 @@ const parseCommaList = (value?: string): string[] | undefined => {
   return values.length > 0 ? values : undefined
 }
 
-export {parseList, parseNumbers, parseCommaList}
+export {parseCommaList, parseList, parseNumbers}
 
 export const categoryFields: FormInput<CategoryFormValues>[] = [
   {
@@ -119,22 +130,6 @@ export const categoryFields: FormInput<CategoryFormValues>[] = [
     defaultValue: '',
   },
   {
-    name: 'productTypesRaw',
-    label: 'Product Types',
-    required: false,
-    type: 'text',
-    placeholder: 'e.g., Disposable, Cartridge, Pod',
-    defaultValue: '',
-  },
-  {
-    name: 'subcategoriesRaw',
-    label: 'Subcategories',
-    required: false,
-    type: 'text',
-    placeholder: 'e.g., Sativa, Hybrid, Indica',
-    defaultValue: '',
-  },
-  {
     name: 'denominationsRaw',
     label: 'Denominations',
     required: false,
@@ -146,7 +141,11 @@ export const categoryFields: FormInput<CategoryFormValues>[] = [
 ]
 
 export const defaultValues = categoryFields
-  .map((f) => ({
-    [f.name]: f.defaultValue,
-  }))
-  .reduce((acc, obj) => ({...acc, ...obj}), {}) as CategoryFormValues
+  .map((f) => ({ [f.name]: f.defaultValue }))
+  .reduce((acc, obj) => ({ ...acc, ...obj }), {
+    productTypes: [] as AttributeEntry[],
+    subcategories: [] as AttributeEntry[],
+    tiers: [] as AttributeEntry[],
+    bases: [] as AttributeEntry[],
+    brands: [] as AttributeEntry[],
+  }) as CategoryFormValues

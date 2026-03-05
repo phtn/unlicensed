@@ -49,7 +49,7 @@ const formatColumnId = (id: string): string => {
     .join(' ')
 }
 
-export const ColumnView = <T,>({cols, isMobile}: Props<T>) => {
+export const ColumnView = <T,>({cols, isMobile: _isMobile}: Props<T>) => {
   // Filter columns where enableHiding is true (default is true, so filter out false)
   const hideableColumns = useMemo(() => {
     return cols.filter((col) => col.getCanHide())

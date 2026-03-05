@@ -230,6 +230,7 @@ export const DataTable = <T,>({
 
   const columns = createColumns(columnConfigs, actionConfig, selectOn)
 
+   
   const table = useReactTable({
     data: _data,
     columns,
@@ -298,6 +299,7 @@ export const DataTable = <T,>({
   const tableRows = table.getRowModel().rows
   const selectedRows = useMemo(
     () => table.getSelectedRowModel().rows ?? [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- table is unstable, rowSelection drives updates
     [rowSelection],
   )
 

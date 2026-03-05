@@ -32,7 +32,7 @@ export function DevelopmentModeModal({
       hideCloseButton={true}
       placement='center'>
       <ModalContent className='overflow-hidden dark:bg-dark-table'>
-        {(onClose) => (
+        {(_onClose) => (
           <>
             <ModalHeader className='flex flex-col justify-center gap-1 text-lg font-semibold tracking-tight bg-foreground dark:bg-foreground/60 text-background h-12 mb-1'>
               Development Mode

@@ -16,6 +16,13 @@ export const commonInputClassNames = {
     'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-lg p-2 outline-none min-h-18 w-full',
   innerWrapper: 'px-1',
 }
+export const narrowInputClassNames = {
+  input:
+    'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
+  inputWrapper:
+    'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-md p-2 outline-none min-h-10 w-full',
+  innerWrapper: 'px-1',
+}
 
 export const commonSelectClassNames = {
   value: 'placeholder:text-slate-400/80 py-4 mt-2',

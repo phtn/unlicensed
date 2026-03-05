@@ -48,7 +48,7 @@ const GatewayContentInner = ({gateway, basePath}: GatewayContentProps) => {
     [deleteAccount, gatewayDoc, handleFormSuccess],
   )
 
-  const handleRefresh = useCallback((_hexAddress: string) => {
+  const handleRefresh = useCallback((_address: string) => {
     // TODO: Sync account data from gateway API
   }, [])
 

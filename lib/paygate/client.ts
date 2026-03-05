@@ -5,7 +5,7 @@
  * No API keys required - just configure your USDC Polygon wallet address.
  */
 
-import {paygateConfig, paygatePublicConfig} from './config'
+import {paygateConfig, paygatePublicConfig as _paygatePublicConfig} from './config'
 import type {
   PayGatePaymentRequest,
   PayGatePaymentResponse,

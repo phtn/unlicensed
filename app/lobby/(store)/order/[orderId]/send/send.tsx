@@ -69,7 +69,7 @@ const CryptoSendContent = () => {
   const params = useParams()
   const orderId = params.orderId as Id<'orders'>
   const updatePayment = useMutation(api.orders.m.updatePayment)
-  const {setParams} = useSearchParams()
+  const {setParams: _setParams} = useSearchParams()
   const {getBySymbol} = useCrypto()
   const [selected, setSelected] = useState<SendPageNetwork>('bitcoin')
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
@@ -115,7 +115,7 @@ const CryptoSendContent = () => {
     copy('Wallet Address', walletAddress.trim())
   }, [copy, walletAddress])
 
-  const ethPrice = useMemo(
+  const _ethPrice = useMemo(
     () => getBySymbol('ETH')?.price ?? null,
     [getBySymbol],
   )

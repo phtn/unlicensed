@@ -1,17 +1,23 @@
+type ProductPriceLike = {
+  priceCents?: number
+  priceByDenomination?: Record<string, number>
+}
+
 /**
  * Unit price in cents for one unit of the selected denomination.
  * Uses priceByDenomination when available (values in dollars), otherwise
  * falls back to priceCents * denomination.
+ * Accepts Convex Doc<'products'>, StoreProduct, or any object with price fields.
  */
 export function getUnitPriceCents(
-  product: {
-    priceCents?: number
-    priceByDenomination?: Record<string, number>
-  },
+  product: unknown,
   denomination: number | undefined,
 ): number {
+  const p = (product != null && typeof product === 'object'
+    ? product
+    : {}) as ProductPriceLike
   const denom = denomination ?? 1
-  const byDenom = product.priceByDenomination
+  const byDenom = p.priceByDenomination
   if (byDenom && Object.keys(byDenom).length > 0) {
     const key = String(denom)
     const priceDollars = byDenom[key]
@@ -19,15 +25,12 @@ export function getUnitPriceCents(
       return Math.round(priceDollars)
     }
   }
-  return (product.priceCents ?? 0) * denom
+  return (p.priceCents ?? 0) * denom
 }
 
 /** Bundle total: avg price for bundle amount across products, rounded up to nearest $5 */
 export function getBundleTotalCents(
-  products: Array<{
-    priceCents?: number
-    priceByDenomination?: Record<string, number>
-  }>,
+  products: Array<unknown>,
   denom: number,
   bundleAmount: number,
 ): number {

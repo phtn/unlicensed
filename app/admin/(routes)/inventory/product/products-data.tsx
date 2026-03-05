@@ -22,6 +22,7 @@ import {
   DropdownTrigger,
 } from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
+import {useQuery} from 'convex/react'
 import {useCallback, useMemo} from 'react'
 import {mapNumericFractions} from './product-schema'
 
@@ -178,7 +179,7 @@ function availableDenominationsCell(
 
   return (
     <div className='font-brk text-sm flex items-center whitespace-nowrap gap-x-1 gap-y-0.5 px-4'>
-      {denoms.map((denom, index) => {
+      {denoms.map((denom: number, index: number) => {
         const key = String(denom)
         const label = mapNumericFractions[key] ?? key
         const price = priceByDenom[key]
@@ -260,6 +261,14 @@ interface ProductsDataProps {
   data: Doc<'products'>[] | undefined
 }
 export const ProductsData = ({data}: ProductsDataProps) => {
+  const categories = useQuery(api.categories.q.listCategories)
+  const categorySlugs = useMemo(
+    () =>
+      (categories ?? [])
+        .map((c) => c.slug)
+        .filter((s): s is string => typeof s === 'string' && s.length > 0),
+    [categories],
+  )
   const columns = useMemo(
     () =>
       [
@@ -290,6 +299,7 @@ export const ProductsData = ({data}: ProductsDataProps) => {
           accessorKey: 'categorySlug',
           cell: linkText('categorySlug', '/admin/inventory/category/'),
           size: 100,
+          meta: {filterOptions: categorySlugs},
         },
         {
           id: 'tier',
@@ -439,7 +449,7 @@ export const ProductsData = ({data}: ProductsDataProps) => {
         //   accessorKey: 'createdAt',
         // },
       ] as ColumnConfig<Doc<'products'>>[],
-    [],
+    [categorySlugs],
   )
 
   const ExportCsvToolbar = useCallback(
@@ -490,6 +500,7 @@ export const ProductsData = ({data}: ProductsDataProps) => {
           loading={!data}
           columnConfigs={columns}
           editingRowId={null}
+          defaultPageSize={25}
           rightToolbarLeft={exportToolbar}
         />
       )}

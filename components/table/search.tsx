@@ -61,7 +61,8 @@ export const Search = forwardRef<HTMLInputElement, Props<string | number>>(
     useEffect(() => {
       document.addEventListener('keydown', onKeyDown, true)
       return () => document.removeEventListener('keydown', onKeyDown, true)
-    }, [onKeyDown])
+       
+    }, [])
 
     return (
       <div className='relative'>

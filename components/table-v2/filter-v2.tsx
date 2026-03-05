@@ -27,7 +27,10 @@ export const Filter = <T,>({
   // Subscribe to filters search param so the component re-renders when the URL changes
   const columnFiltersParser = useMemo(() => createColumnFiltersParser(), [])
   const [columnFiltersParam] = useQueryState('filters', columnFiltersParser)
-  const filtersFromUrl = (columnFiltersParam ?? []) as ColumnFiltersState
+  const filtersFromUrl = useMemo(
+    () => (columnFiltersParam ?? []) as ColumnFiltersState,
+    [columnFiltersParam],
+  )
 
   // Get filterable columns (exclude select and actions columns)
   const filterableColumns = useMemo(
@@ -56,9 +59,18 @@ export const Filter = <T,>({
       const filterInUrl = filtersFromUrl.find((f) => f.id === column.id)
       const selectedValues = (filterInUrl?.value ??
         column.getFilterValue()) as (string | number | boolean)[]
+      const meta = column.columnDef.meta as
+        | {filterOptions?: (string | number | boolean)[]}
+        | undefined
+      const metaFilterOptions = meta?.filterOptions
+      const uniqueValues = Array.isArray(metaFilterOptions)
+        ? [...metaFilterOptions].sort((a, b) =>
+            String(a).localeCompare(String(b)),
+          )
+        : Array.from(facetedValues.keys()).toSorted()
       return {
         column,
-        uniqueValues: Array.from(facetedValues.keys()).toSorted(),
+        uniqueValues,
         valueCounts: facetedValues as Map<string | number | boolean, number>,
         selectedValues: Array.isArray(selectedValues) ? selectedValues : [],
       }

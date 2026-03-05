@@ -136,8 +136,7 @@ export const Media = ({form}: MediaProps) => {
   }, [activeTag, filteredTagGroups])
 
   const openLibrary = useCallback(() => {
-    const nextTag =
-      preferredTagFromCategory ?? allTaggedGroups[0]?.tag ?? null
+    const nextTag = preferredTagFromCategory ?? allTaggedGroups[0]?.tag ?? null
     setTagSearch('')
     setActiveTag(nextTag)
     setIsLibraryOpen(true)

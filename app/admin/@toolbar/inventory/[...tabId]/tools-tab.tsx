@@ -9,9 +9,9 @@ import Link from 'next/link'
 import {Suspense} from 'react'
 
 const ToolsContentInner = () => {
-  const categories = useQuery(api.categories.q.listCategories)
+  const _categories = useQuery(api.categories.q.listCategories)
   const [tabId] = useAdminTabId()
-  const isCategoryRoute = tabId !== 'new'
+  const _isCategoryRoute = tabId !== 'new'
 
   return (
     <>

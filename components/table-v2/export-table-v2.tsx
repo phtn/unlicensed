@@ -25,8 +25,8 @@ interface IMenuItem {
   disabled?: boolean
 }
 
-export const ExportTable = <T,>({table, loading}: Props<T>) => {
-  const {copy} = useCopy({timeout: 2000})
+export const ExportTable = <T,>({table: _table, loading}: Props<T>) => {
+  const {copy: _copy} = useCopy({timeout: 2000})
   const exportOptions = useMemo(
     () =>
       [

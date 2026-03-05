@@ -1,8 +1,9 @@
 import type {StoreCategory, StoreProduct, StoreProductDetail} from '@/app/types'
+import type {IAttribute} from '@/app/types/store'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {categoriesSeed, productsSeed} from '@/convex/init'
-import {PotencyLevel, ProductTier} from '@/convex/products/d'
+import {PotencyLevel} from '@/convex/products/d'
 import {getTotalStock} from '@/lib/productStock'
 import {ConvexHttpClient} from 'convex/browser'
 import {cache} from 'react'
@@ -10,6 +11,11 @@ import {cache} from 'react'
 export type RawCategory = {
   slug?: string
   name: string
+  tiers?: IAttribute[]
+  subcategories?: IAttribute[]
+  productTypes?: IAttribute[]
+  brands?: IAttribute[]
+  bases?: IAttribute[]
   description?: string
   heroImage?: string
   highlight?: string | null
@@ -48,7 +54,7 @@ export type RawProduct = {
   weightGrams?: number
   brand?: string
   grower?: string
-  tier?: ProductTier
+  tier?: string
   subcategory?: string
   _id?: Id<'products'>
   _creationTime?: number
@@ -80,6 +86,11 @@ const getClient = () => {
 export const adaptCategory = (category: RawCategory): StoreCategory => ({
   slug: category.slug ?? '',
   name: category.name ?? '',
+  tiers: category.tiers ?? [],
+  subcategories: category.subcategories ?? [],
+  productTypes: category.productTypes ?? [],
+  brands: category.brands ?? [],
+  bases: category.bases ?? [],
   description: category.description ?? '',
   heroImage: category.heroImage ?? '',
   highlight: category.highlight ?? undefined,
@@ -120,7 +131,6 @@ export const adaptProduct = (product: RawProduct): StoreProduct => ({
   potencyProfile: product.potencyProfile,
   weightGrams: product.weightGrams,
   brand: product.brand,
-  grower: product.grower,
   productTier: product.tier,
   subcategory: product.subcategory,
   _id: product._id,
@@ -261,3 +271,65 @@ const _fetchProductDetail = async (
 }
 
 export const fetchProductDetail = cache(_fetchProductDetail)
+
+// const MOCK_SUB_ITEMS_BY_SLUG: Partial<Record<string, NavMenuSubItem[]>> = {
+//   flower: [
+//     {id: 'b', label: 'B', href: '/lobby/category/flower?tier=B'},
+//     {id: 'a', label: 'A', href: '/lobby/category/flower?tier=A'},
+//     {id: 'aa', label: 'AA', href: '/lobby/category/flower?tier=AA'},
+//     {id: 'aaa', label: 'AAA', href: '/lobby/category/flower?tier=AAA'},
+//     {id: 'aaaa', label: 'AAAA', href: '/lobby/category/flower?tier=AAAA'},
+//     {id: 'rare', label: 'RARE', href: '/lobby/category/flower?tier=RARE'},
+//   ],
+//   extracts: [
+//     {
+//       id: 'cured_resin',
+//       label: 'Cured Resin',
+//       href: '/lobby/category/extracts?tier=cured_resin',
+//     },
+//     {
+//       id: 'fresh_frozen',
+//       label: 'Fresh Frozen',
+//       href: '/lobby/category/extracts?tier=fresh_frozen',
+//     },
+//     {
+//       id: 'solventless',
+//       label: 'Solventless',
+//       href: '/lobby/category/extracts?tier=solventless',
+//     },
+//   ],
+//   vapes: [
+//     {
+//       id: 'distillate',
+//       label: 'Distillate',
+//       href: '/lobby/category/vapes?tier=distillate',
+//     },
+//     {
+//       id: 'cured_resin',
+//       label: 'Cured Resin',
+//       href: '/lobby/category/vapes?tier=cured_resin',
+//     },
+//     {
+//       id: 'fresh_frozen',
+//       label: 'Fresh Frozen',
+//       href: '/lobby/category/vapes?tier=fresh_frozen',
+//     },
+//     {
+//       id: 'solventless',
+//       label: 'Solventless',
+//       href: '/lobby/category/vapes?tier=solventless',
+//     },
+//   ],
+//   'pre-rolls': [
+//     {
+//       id: 'flower',
+//       label: 'Flower',
+//       href: '/lobby/category/pre-rolls?tier=flower',
+//     },
+//     {
+//       id: 'infused',
+//       label: 'Infused',
+//       href: '/lobby/category/pre-rolls?tier=infused',
+//     },
+//   ],
+// }

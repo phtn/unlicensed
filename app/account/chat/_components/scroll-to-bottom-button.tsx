@@ -14,14 +14,14 @@ function getDistanceFromBottom(viewport: Element): number {
 
 interface ScrollToBottomButtonProps {
   scrollAreaRef: React.RefObject<HTMLDivElement | null>
-  scrollButtonAnchorRef: React.RefObject<HTMLDivElement | null>
+  scrollButtonAnchorEl: HTMLDivElement | null
   onScrollToBottom: () => void
   scrollThreshold?: number
 }
 
 export function ScrollToBottomButton({
   scrollAreaRef,
-  scrollButtonAnchorRef,
+  scrollButtonAnchorEl,
   onScrollToBottom,
   scrollThreshold = SCROLL_THRESHOLD_PX,
 }: ScrollToBottomButtonProps) {
@@ -49,8 +49,7 @@ export function ScrollToBottomButton({
     onScrollToBottom()
   }, [onScrollToBottom])
 
-  const anchor = scrollButtonAnchorRef.current
-  if (!showButton || !anchor) return null
+  if (!showButton || !scrollButtonAnchorEl) return null
 
   const button = (
     <div className='flex justify-center pb-2'>
@@ -64,5 +63,5 @@ export function ScrollToBottomButton({
     </div>
   )
 
-  return createPortal(button, anchor)
+  return createPortal(button, scrollButtonAnchorEl)
 }

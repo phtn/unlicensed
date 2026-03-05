@@ -2,7 +2,7 @@
 
 import {Typewrite} from '@/components/expermtl/typewrite'
 import {useRouter} from 'next/navigation'
-import {startTransition, useEffect, useState, type ReactNode} from 'react'
+import {startTransition, useEffect, useSyncExternalStore, type ReactNode} from 'react'
 
 const RFAC_COOKIE_NAME = 'rf-ac'
 
@@ -22,29 +22,33 @@ function hasRfacCookie(): boolean {
   return false
 }
 
+function subscribeToClientMount(callback: () => void): () => void {
+  if (typeof document === 'undefined') return () => {}
+  callback()
+  return () => {}
+}
+
 interface RouteProtectionProps {
   children: ReactNode
 }
 
 export function RouteProtection({children}: RouteProtectionProps) {
   const router = useRouter()
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null)
+  const hasAccess = useSyncExternalStore(
+    subscribeToClientMount,
+    hasRfacCookie,
+    () => false,
+  )
 
-  // Re-check cookie on client after mount so redirect always runs when missing
   useEffect(() => {
-    setHasAccess(hasRfacCookie())
-  }, [])
-
-  useEffect(() => {
-    if (hasAccess === null) return
     if (hasAccess) return
     startTransition(() => {
       router.replace('/lobby')
     })
   }, [hasAccess, router])
 
-  // If cookie is not set or not yet resolved, show loading while redirecting
-  if (hasAccess !== true) {
+  // If cookie is not set or not yet resolved (SSR), show loading while redirecting
+  if (!hasAccess) {
     return (
       <div className='fixed inset-0 z-9998 flex items-center justify-center bg-zinc-950'>
         <div className='text-white/50 font-brk tracking-widest'>

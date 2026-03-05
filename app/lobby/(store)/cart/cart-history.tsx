@@ -1,6 +1,5 @@
 'use client'
 
-import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import FuzzyText from '@/components/FuzzyText'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
@@ -10,6 +9,7 @@ import {
 } from '@/hooks/use-cart-history'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
+import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody, Image} from '@heroui/react'
 import {useMemo, useState, useTransition} from 'react'
@@ -54,10 +54,11 @@ const CartHistoryItemCard = ({
   return (
     <Card
       shadow='none'
-      className='bg-linear-to-r from-foreground/5 via-transparent to-transparent border border-foreground/10 rounded-xl overflow-visible'>
-      <CardBody className='p-3 relative overflow-visible'>
+      radius='none'
+      className='bg-linear-to-r from-foreground/5 via-transparent to-transparent border border-foreground/10 overflow-visible'>
+      <CardBody className='relative overflow-visible'>
         <div className='flex gap-3 items-center'>
-          <div className='relative size-14 shrink-0 rounded-lg overflow-hidden'>
+          <div className='relative size-14 shrink-0 overflow-hidden'>
             {productImageUrl ? (
               <Image
                 radius='none'
@@ -72,9 +73,11 @@ const CartHistoryItemCard = ({
             )}
           </div>
 
-          <div className='flex-1 min-w-0 text-sm md:text-base'>
-            <h4 className='font-medium truncate'>{item.product.name}</h4>
-            <div className='flex items-center gap-2 opacity-60 font-okxs'>
+          <div className='flex-1 min-w-0 gap-1'>
+            <h4 className='font-medium truncate text-base md:text-lg'>
+              {item.product.name}
+            </h4>
+            <div className='flex items-center gap-2 opacity-60 font-okxs text-sm md:text-base'>
               {item.denomination && item.product.unit && (
                 <span>
                   {formatDenominationDisplay(
@@ -101,7 +104,7 @@ const CartHistoryItemCard = ({
                   className='size-4 -mr-2'
                 />
               }
-              className='font-polysans bg-brand dark:bg-white dark:text-dark-gray font-medium text-base rounded-lg'>
+              className='font-clash bg-brand dark:bg-white dark:text-dark-gray font-medium text-base mt-4'>
               Add
             </Button>
             <Button

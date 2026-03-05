@@ -29,7 +29,7 @@ export interface MessageListProps {
   onOptimisticLike?: (messageId: Id<'messages'>, userId: Id<'users'>) => void
   onOptimisticUnlike?: (messageId: Id<'messages'>, userId: Id<'users'>) => void
   scrollAreaRef?: React.RefObject<HTMLDivElement | null>
-  scrollButtonAnchorRef?: React.RefObject<HTMLDivElement | null>
+  scrollButtonAnchorEl?: HTMLDivElement | null
   onScrollToBottom?: () => void
 }
 

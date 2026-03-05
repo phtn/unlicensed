@@ -66,7 +66,7 @@ export function EmailLinkHandler() {
     // Defer so we're definitely on client and URL is final (e.g. after hydration)
     const t = setTimeout(run, 0)
     return () => clearTimeout(t)
-  }, [])
+  }, [setAuthModalOpen, setCompleteEmailLink])
 
   if (status === 'idle' || status === 'done') return null
 

@@ -38,7 +38,7 @@ export const ReceiptEmail = ({
   invoiceDate,
   orderNumber,
   total,
-  shippingAddress,
+  shippingAddress: _shippingAddress,
   lineItems,
 }: ReceiptEmailProps) => (
   <Html>

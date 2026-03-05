@@ -87,7 +87,7 @@ function CheckIcon(props: React.ComponentProps<'svg'>) {
   )
 }
 
-const SelectTool = () => (
+const _SelectTool = () => (
   <Select.Root defaultValue='Helvetica'>
     <Toolbar.Button
       render={<Select.Trigger />}

@@ -2,42 +2,58 @@ import {FormInput, SelectOption} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {z} from 'zod'
 
-export const flowerProductTiers = [
-  'B',
-  'A',
-  'AA',
-  'AAA',
-  'AAAA',
-  'RARE',
-] as const
+type AttributeEntry = { name: string; slug: string }
 
-export const extractProductTiers = [
-  'Cured Resin',
-  'Fresh Frozen',
-  'Live Resin',
-  'Full Melt',
-  'Half Melt',
-] as const
+/** Legacy: tier as string[]. New: tier as AttributeEntry[]. */
+function tierEntries(
+  categorySlug: string | undefined,
+  categories: Array<{
+    slug?: string
+    _id: string
+    tiers?: string[] | AttributeEntry[]
+  }>,
+): AttributeEntry[] {
+  if (!categorySlug || !categories.length) return []
+  const cat = categories.find((c) => (c.slug ?? c._id) === categorySlug)
+  const raw = cat?.tiers
+  if (!raw?.length) return []
+  const first = raw[0]
+  if (typeof first === 'string') {
+    return (raw as string[]).map((s) => ({
+      name: s,
+      slug: s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+    }))
+  }
+  return raw as AttributeEntry[]
+}
 
-export const vapeProductTiers = [
-  'Distillate',
-  'Live Resin',
-  'Cured Resin',
-  'Liquid Diamonds',
-  'Sauce',
-  'Live Rosin',
-  'Cured Rosin',
-] as const
+/** Resolve a stored value (name or slug) to the option slug for selects. */
+export function resolveAttributeValue(
+  value: string | undefined,
+  options: SelectOption[],
+): string | undefined {
+  if (!value?.trim()) return undefined
+  const v = value.trim()
+  const byValue = options.find((o) => o.value === v)
+  if (byValue) return byValue.value
+  const byLabel = options.find((o) => o.label === v)
+  return byLabel?.value ?? (options.some((o) => o.value === v) ? v : undefined)
+}
 
-export const allProductTiers = [
-  ...flowerProductTiers,
-  ...extractProductTiers,
-  'Distillate',
-  'Liquid Diamonds',
-  'Sauce',
-  'Live Rosin',
-  'Cured Rosin',
-] as const
+/** Returns tier select options: value = slug (for querying), label = name. */
+export function getProductTierOptionsByCategory(
+  categorySlug: string | undefined,
+  categories: Array<{
+    slug?: string
+    _id: string
+    tiers?: string[] | AttributeEntry[]
+  }>,
+): SelectOption[] {
+  return tierEntries(categorySlug, categories).map((e) => ({
+    value: e.slug,
+    label: e.name,
+  }))
+}
 
 export const extractAndEdibleProductBases = [
   'Distillate',
@@ -52,53 +68,80 @@ export const preRollProductBases = ['Flower', 'Infused'] as const
 const categoryContains = (
   categorySlug: string,
   candidates: readonly string[],
-) => candidates.some((candidate) => categorySlug.includes(candidate))
+) => candidates.some((c) => (categorySlug ?? '').includes(c))
 
-export const getProductTierValuesByCategory = (categorySlug?: string) => {
-  const normalized = categorySlug?.toLowerCase().trim() ?? ''
-
-  if (categoryContains(normalized, ['extract', 'concentrate'])) {
-    return extractProductTiers
-  }
-
-  if (categoryContains(normalized, ['vape', 'cart', 'cartridge'])) {
-    return vapeProductTiers
-  }
-
-  return flowerProductTiers
+type CategoryForOptions = {
+  slug?: string
+  _id: string
+  bases?: string[] | AttributeEntry[]
+  brands?: string[] | AttributeEntry[]
 }
 
-export const getProductTierOptionsByCategory = (
+function baseEntries(
   categorySlug?: string,
-): SelectOption[] =>
-  getProductTierValuesByCategory(categorySlug).map((tier) => ({
-    value: tier,
-    label: tier,
-  }))
+  categories?: CategoryForOptions[],
+): AttributeEntry[] {
+  if (!categorySlug || !categories?.length) return []
+  const cat = categories.find((c) => (c.slug ?? c._id) === categorySlug)
+  const raw = cat?.bases
+  if (!raw?.length) return []
+  const first = raw[0]
+  if (typeof first === 'string') {
+    return (raw as string[]).map((s) => ({
+      name: s,
+      slug: s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+    }))
+  }
+  return raw as AttributeEntry[]
+}
 
-export const getProductBaseValuesByCategory = (
+/** When category has bases configured, use them (value=slug, label=name); else derive from slug. */
+export const getProductBaseOptionsByCategory = (
   categorySlug?: string,
-): readonly string[] => {
+  categories?: CategoryForOptions[],
+): SelectOption[] => {
+  const entries = baseEntries(categorySlug, categories)
+  if (entries.length > 0) {
+    return entries.map((e) => ({ value: e.slug, label: e.name }))
+  }
   const normalized = categorySlug?.toLowerCase().trim() ?? ''
-
   if (categoryContains(normalized, ['extract', 'concentrate', 'edible'])) {
-    return extractAndEdibleProductBases
+    return extractAndEdibleProductBases.map((b) => ({ value: b, label: b }))
   }
-
   if (categoryContains(normalized, ['pre-roll', 'preroll', 'pre roll'])) {
-    return preRollProductBases
+    return preRollProductBases.map((b) => ({ value: b, label: b }))
   }
-
   return []
 }
 
-export const getProductBaseOptionsByCategory = (
-  categorySlug?: string,
-): SelectOption[] =>
-  getProductBaseValuesByCategory(categorySlug).map((base) => ({
-    value: base,
-    label: base,
+function brandEntries(
+  categorySlug: string | undefined,
+  categories: Array<{ slug?: string; _id: string; brands?: string[] | AttributeEntry[] }>,
+): AttributeEntry[] {
+  if (!categorySlug || !categories.length) return []
+  const cat = categories.find((c) => (c.slug ?? c._id) === categorySlug)
+  const raw = cat?.brands
+  if (!raw?.length) return []
+  const first = raw[0]
+  if (typeof first === 'string') {
+    return (raw as string[]).map((s) => ({
+      name: s,
+      slug: s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+    }))
+  }
+  return raw as AttributeEntry[]
+}
+
+/** Returns brand select options: value = slug, label = name. */
+export const getProductBrandOptionsByCategory = (
+  categorySlug: string | undefined,
+  categories: Array<{ slug?: string; _id: string; brands?: string[] | AttributeEntry[] }>,
+): SelectOption[] => {
+  return brandEntries(categorySlug, categories).map((e) => ({
+    value: e.slug,
+    label: e.name,
   }))
+}
 
 export const productSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -179,7 +222,7 @@ export const productSchema = z.object({
       }),
     )
     .optional(),
-  tier: z.enum(allProductTiers).optional(),
+  tier: z.string().optional(),
   eligibleForUpgrade: z.boolean().optional(),
   upgradePrice: z
     .number()
@@ -254,14 +297,6 @@ export const productFields: FormInput<ProductFormValues>[] = [
     defaultValue: '',
   },
   {
-    name: 'subcategory',
-    label: 'Subcategory',
-    required: false,
-    type: 'text',
-    placeholder: 'Cartridge, Disposable, Pod',
-    defaultValue: '',
-  },
-  {
     name: 'productType',
     label: 'Product Type',
     required: false,
@@ -274,16 +309,28 @@ export const productFields: FormInput<ProductFormValues>[] = [
     name: 'brand',
     label: 'Brand',
     required: false,
-    type: 'text',
-    placeholder: 'Brand name',
+    type: 'select',
+    mode: 'single',
+    options: [], // Populated from category brands in BasicInfo
+    placeholder: 'Select brand',
+    defaultValue: '',
   },
   {
     name: 'tier',
     label: 'Tier',
     required: false,
     type: 'select',
-    options: allProductTiers.map((tier) => ({value: tier, label: tier})),
+    options: [], // Filled from Convex adminSettings (productTiers) in BasicInfo
     placeholder: 'Select tier',
+    defaultValue: '',
+  },
+  {
+    name: 'subcategory',
+    label: 'Subcategory',
+    required: false,
+    type: 'select',
+    options: [], // Populated from category subcategories in BasicInfo
+    placeholder: 'Cartridge, Disposable, Pod',
     defaultValue: '',
   },
   {
@@ -558,8 +605,6 @@ export const mapNumericFractions: Record<string, string> = {
   9: '9',
   10: '10',
 }
-
-export const productTiers = allProductTiers
 
 export const mapNumericGrams: Record<string, string> = {
   0.125: '3.5',

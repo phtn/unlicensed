@@ -1,8 +1,8 @@
 'use client'
 
 import {Input, Textarea} from '@heroui/react'
+import {commonInputClassNames} from '../../../../_components/ui/fields'
 import {CategoryFormApi} from '../category-schema'
-import {commonInputClassNames} from '../ui/fields'
 import {FormSection, Header} from './components'
 
 interface DetailsProps {

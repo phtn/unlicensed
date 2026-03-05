@@ -142,9 +142,9 @@ export const CustomersTable = () => {
           cell: ({row}) => {
             const status = row.original.accountStatus ?? 'active'
             const normalized = status.toLowerCase()
-            const isDanger =
+            const _isDanger =
               normalized === 'suspended' || normalized === 'banned'
-            const isWarning = normalized === 'pending'
+            const _isWarning = normalized === 'pending'
             return (
               <div className='uppercase text-xs font-brk text-center'>
                 {status.replace(/_/g, ' ')}

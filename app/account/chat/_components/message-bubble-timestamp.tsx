@@ -28,8 +28,8 @@ export function MessageBubbleTimestamp({
   createdAt,
   isCurrentUser,
   isVisible,
-  isLastRead,
-  otherUser,
+  isLastRead: _isLastRead,
+  otherUser: _otherUser,
   isLiked,
   onLike,
 }: MessageBubbleTimestampProps) {

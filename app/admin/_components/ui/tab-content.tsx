@@ -1,4 +1,5 @@
 import {ClassName} from '@/app/types'
+import {ScrollArea} from '@/components/ui/scroll-area'
 import {cn} from '@/lib/utils'
 import {ReactNode} from 'react'
 
@@ -26,16 +27,17 @@ export const TabContentContainer = ({
       {/* Header */}
       <header className='flex items-start justify-between'>
         <div className='space-y-1'>
-          <h1 className='font-okxs text-xl tracking-tight text-foreground'>
+          <div className=' text-lg tracking-tight font-polysans md:font-medium w-full'>
             {title}
-          </h1>
+          </div>
+
           {description && (
             <p className='max-w-xl text-sm text-default-500'>{description}</p>
           )}
         </div>
         <div>{extraHeader}</div>
       </header>
-      {children}
+      <ScrollArea>{children}</ScrollArea>
     </div>
   )
 }

@@ -149,7 +149,7 @@ export function ConversationList({
           conversation.otherUser?.name ??
           conversation.otherUser?.email?.split('@')[0] ??
           'Unknown User'
-        const initials = displayName[0]?.toUpperCase() || 'U'
+        const _initials = displayName[0]?.toUpperCase() || 'U'
         const isUnread = conversation.unreadCount > 0
 
         // Check if last message has attachments and determine type

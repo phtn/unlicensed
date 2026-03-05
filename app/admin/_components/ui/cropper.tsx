@@ -6,7 +6,7 @@ import {cn} from '@/lib/utils'
 
 function Cropper({
   className,
-  initialCroppedAreaPixels,
+  initialCroppedAreaPixels: _initialCroppedAreaPixels,
   ...props
 }: React.ComponentProps<typeof CropperPrimitive.Root> & {
   initialCroppedAreaPixels?: {

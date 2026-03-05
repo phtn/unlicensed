@@ -20,7 +20,7 @@ export function MessageList({
   onOptimisticLike,
   onOptimisticUnlike,
   scrollAreaRef,
-  scrollButtonAnchorRef,
+  scrollButtonAnchorEl,
   onScrollToBottom,
 }: MessageListProps) {
   const {user} = useAuthCtx()
@@ -220,11 +220,11 @@ export function MessageList({
 
       {/* Scroll-to-bottom button (portaled above message input) */}
       {scrollAreaRef &&
-        scrollButtonAnchorRef &&
+        scrollButtonAnchorEl &&
         onScrollToBottom && (
           <ScrollToBottomButton
             scrollAreaRef={scrollAreaRef}
-            scrollButtonAnchorRef={scrollButtonAnchorRef}
+            scrollButtonAnchorEl={scrollButtonAnchorEl}
             onScrollToBottom={onScrollToBottom}
           />
         )}

@@ -22,6 +22,7 @@ import {useStore} from '@tanstack/react-store'
 import {useEffect, useMemo, useState} from 'react'
 import {
   getProductBaseOptionsByCategory,
+  getProductBrandOptionsByCategory,
   getProductTierOptionsByCategory,
   ProductFormValues,
 } from '../product-schema'
@@ -67,10 +68,7 @@ export const BasicInfo = ({
     return field?.type === 'select' ? field.options : []
   }, [fields])
 
-  const defaultTierOptions = useMemo(() => {
-    const field = fields.find((entry) => entry.name === 'tier')
-    return field?.type === 'select' ? field.options : []
-  }, [fields])
+  const _defaultTierOptions = useMemo(() => [], [])
 
   const defaultBaseOptions = useMemo(() => {
     const field = fields.find((entry) => entry.name === 'base')
@@ -97,28 +95,51 @@ export const BasicInfo = ({
   }, [availableCategories, categorySlug])
 
   const subcategoryOptions = useMemo(() => {
-    if (!selectedCategory?.subcategories) return []
-    return [...new Set(selectedCategory.subcategories.map((s) => s.trim()))]
-      .filter((s) => s.length > 0)
-      .map((s) => ({value: s, label: s}))
+    const raw = selectedCategory?.subcategories
+    if (!raw?.length) return []
+    const first = raw[0]
+    if (typeof first === 'string') {
+      const strings = raw as unknown as string[]
+      return [...new Set(strings.map((s) => s.trim()))]
+        .filter((s) => s.length > 0)
+        .map((s) => ({ value: s, label: s }))
+    }
+    return (raw as { name: string; slug: string }[]).map((e) => ({
+      value: e.slug,
+      label: e.name,
+    }))
   }, [selectedCategory])
 
   const productTypeOptions = useMemo(() => {
-    if (!selectedCategory?.productTypes) return defaultProductTypeOptions
-    return [...new Set(selectedCategory.productTypes.map((s) => s.trim()))]
-      .filter((s) => s.length > 0)
-      .map((s) => ({value: s, label: s}))
+    const raw = selectedCategory?.productTypes
+    if (!raw?.length) return defaultProductTypeOptions
+    const first = raw[0]
+    if (typeof first === 'string') {
+      const strings = raw as unknown as string[]
+      return [...new Set(strings.map((s) => s.trim()))]
+        .filter((s) => s.length > 0)
+        .map((s) => ({ value: s, label: s }))
+    }
+    return (raw as { name: string; slug: string }[]).map((e) => ({
+      value: e.slug,
+      label: e.name,
+    }))
   }, [defaultProductTypeOptions, selectedCategory])
 
-  const tierOptions = useMemo(() => {
-    if (!categorySlug) return defaultTierOptions
-    return getProductTierOptionsByCategory(categorySlug)
-  }, [categorySlug, defaultTierOptions])
+  const tierOptions = useMemo(
+    () => getProductTierOptionsByCategory(categorySlug, categories ?? []),
+    [categorySlug, categories],
+  )
 
   const baseOptions = useMemo(() => {
     if (!categorySlug) return defaultBaseOptions
-    return getProductBaseOptionsByCategory(categorySlug)
-  }, [categorySlug, defaultBaseOptions])
+    return getProductBaseOptionsByCategory(categorySlug, categories ?? [])
+  }, [categorySlug, categories, defaultBaseOptions])
+
+  const brandOptions = useMemo(
+    () => getProductBrandOptionsByCategory(categorySlug, categories ?? []),
+    [categorySlug, categories],
+  )
 
   useEffect(() => {
     const currentProductType =
@@ -127,6 +148,7 @@ export const BasicInfo = ({
       (form.getFieldValue('subcategory') as string) ?? ''
     const currentTier = (form.getFieldValue('tier') as string) ?? ''
     const currentBase = (form.getFieldValue('base') as string) ?? ''
+    const currentBrand = (form.getFieldValue('brand') as string) ?? ''
 
     if (
       currentProductType &&
@@ -157,8 +179,17 @@ export const BasicInfo = ({
     ) {
       form.setFieldValue('base', '')
     }
+
+    if (
+      brandOptions.length > 0 &&
+      currentBrand &&
+      !brandOptions.some((option) => option.value === currentBrand)
+    ) {
+      form.setFieldValue('brand', '')
+    }
   }, [
     baseOptions,
+    brandOptions,
     form,
     productTypeOptions,
     selectedCategory,
@@ -279,42 +310,18 @@ export const BasicInfo = ({
               )}
             </form.AppField>
           )}
-          {brandField && (
+          {brandField?.type === 'select' && (
             <form.AppField name='brand'>
-              {(input) => (
-                <div className='space-y-2 w-full'>
-                  <Input
-                    size='lg'
-                    label={brandField.label}
-                    value={String(input.state.value ?? '')}
-                    onChange={(e) => input.handleChange(e.target.value)}
-                    onBlur={input.handleBlur}
-                    placeholder={brandField.placeholder}
-                    variant='bordered'
-                    classNames={commonInputClassNames}
-                  />
-                  {input.state.meta.isTouched &&
-                    input.state.meta.errors.length > 0 && (
-                      <p className='text-xs text-rose-400'>
-                        {input.state.meta.errors.join(', ')}
-                      </p>
-                    )}
-                </div>
-              )}
-            </form.AppField>
-          )}
-          {subcategoryField?.type === 'select' && (
-            <form.AppField name='subcategory'>
               {(input) => (
                 <input.SelectField
                   {...input}
                   type='select'
-                  name='subcategory'
+                  name='brand'
                   mode='single'
-                  label={subcategoryField.label}
-                  placeholder={subcategoryField.placeholder}
+                  label={brandField.label}
+                  placeholder={brandField.placeholder}
                   classNames={{...commonSelectClassNames}}
-                  options={subcategoryOptions}
+                  options={brandOptions}
                 />
               )}
             </form.AppField>
@@ -347,6 +354,22 @@ export const BasicInfo = ({
                   placeholder={tierField.placeholder}
                   classNames={commonSelectClassNames}
                   options={tierOptions}
+                />
+              )}
+            </form.AppField>
+          )}
+          {subcategoryField?.type === 'select' && (
+            <form.AppField name='subcategory'>
+              {(input) => (
+                <input.SelectField
+                  {...input}
+                  type='select'
+                  name='subcategory'
+                  mode='single'
+                  label={subcategoryField.label}
+                  placeholder={subcategoryField.placeholder}
+                  classNames={{...commonSelectClassNames}}
+                  options={subcategoryOptions}
                 />
               )}
             </form.AppField>

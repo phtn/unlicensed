@@ -386,10 +386,10 @@ export const editableStatusCell = <T,>(
 ) => {
   const EditableStatusComponent = (ctx: CellContext<T, unknown>) => {
     const [isUpdating, setIsUpdating] = useState(false)
-    const patchMutation = useMutation(api.orders.m.updateOrderStatus)
+    const _patchMutation = useMutation(api.orders.m.updateOrderStatus)
     const value = ctx.row.getValue(prop as string) as boolean
     // Access _id from the row data (Convex adds this automatically)
-    const id = (ctx.row.original as {_id: Id<'orders'>})._id
+    const _id = (ctx.row.original as {_id: Id<'orders'>})._id
 
     const handleToggle = useCallback(async () => {
       setIsUpdating(true)
@@ -495,7 +495,7 @@ export const toggleCell = <T, V>(
     labels = [String(values[0]), String(values[1])],
     colors = ['primary', 'default'],
     getMutationArgs,
-    className,
+    className: _className,
   } = config
 
   const ToggleCellComponent = (ctx: CellContext<T, unknown>) => {
@@ -507,8 +507,8 @@ export const toggleCell = <T, V>(
     // Determine which value is current and which to toggle to
     const isFirstValue = currentValue === values[0]
     const newValue = isFirstValue ? values[1] : values[0]
-    const currentLabel = isFirstValue ? labels[0] : labels[1]
-    const currentColor: SwitchProps['color'] = isFirstValue
+    const _currentLabel = isFirstValue ? labels[0] : labels[1]
+    const _currentColor: SwitchProps['color'] = isFirstValue
       ? colors[0]
       : colors[1]
 

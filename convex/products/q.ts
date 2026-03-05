@@ -1,5 +1,5 @@
 import {v} from 'convex/values'
-import {Id} from '../_generated/dataModel'
+import type {Doc, Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
 import {safeGet} from '../utils/id_validation'
 
@@ -19,7 +19,7 @@ export const listProducts = query({
     limit: v.optional(v.number()),
     eligibleForDeals: v.optional(v.boolean()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Doc<'products'>[]> => {
     const limit = args.limit ?? 50
     const baseQuery = args.categorySlug
       ? ctx.db
@@ -110,7 +110,7 @@ export const getProductByName = query({
 
 const sortProducts = <T extends {featured?: boolean; name?: string}>(
   items: T[],
-) => {
+): T[] => {
   return [...items].sort((a, b) => {
     const aFeatured = a.featured ?? false
     const bFeatured = b.featured ?? false

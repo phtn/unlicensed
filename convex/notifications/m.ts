@@ -47,7 +47,7 @@ export const createNotification = mutation({
     if (sendTokens.length > 0 && !hasDeclined) {
       const actor =
         args.type === 'message' ? await ctx.db.get(args.actorId) : null
-      const url =
+      const _url =
         args.actionUrl ??
         (args.type === 'message' && actor?.fid
           ? `/account/chat/${actor.fid}`

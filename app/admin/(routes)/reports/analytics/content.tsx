@@ -10,8 +10,8 @@ import {InsightsPage} from './insights'
 
 const ReportsContentInner = () => {
   const [tabId] = useAdminTabId()
-  const isMobile = useMobile()
-  const {on: fullTable, toggle: toggleFullTable} = useToggle()
+  const _isMobile = useMobile()
+  const {on: _fullTable, toggle: _toggleFullTable} = useToggle()
 
   switch (tabId) {
     case 'insights':

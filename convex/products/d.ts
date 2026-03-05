@@ -8,27 +8,25 @@ const potencyLevel = v.union(
 
 export type PotencyLevel = Infer<typeof potencyLevel>
 
-const productTier = v.union(
-  v.literal('B'),
-  v.literal('A'),
-  v.literal('AA'),
-  v.literal('AAA'),
-  v.literal('AAAA'),
-  v.literal('RARE'),
-  v.literal('Cured Resin'),
-  v.literal('Fresh Frozen'),
-  v.literal('Live Resin'),
-  v.literal('Full Melt'),
-  v.literal('Half Melt'),
-  v.literal('Distillate'),
-  v.literal('Liquid Diamonds'),
-  v.literal('Sauce'),
-  v.literal('Live Rosin'),
-  v.literal('Cured Rosin'),
-  v.any(),
-)
-
-export type ProductTier = Infer<typeof productTier>
+// const productTier = v.union(
+//   v.literal('B'),
+//   v.literal('A'),
+//   v.literal('AA'),
+//   v.literal('AAA'),
+//   v.literal('AAAA'),
+//   v.literal('RARE'),
+//   v.literal('Cured Resin'),
+//   v.literal('Fresh Frozen'),
+//   v.literal('Live Resin'),
+//   v.literal('Full Melt'),
+//   v.literal('Half Melt'),
+//   v.literal('Distillate'),
+//   v.literal('Liquid Diamonds'),
+//   v.literal('Sauce'),
+//   v.literal('Live Rosin'),
+//   v.literal('Cured Rosin'),
+//   v.any(),
+// )
 
 export const productSchema = v.object({
   name: v.optional(v.string()),
@@ -72,7 +70,7 @@ export const productSchema = v.object({
       }),
     ),
   ),
-  tier: v.optional(productTier),
+  tier: v.optional(v.string()),
   eligibleForRewards: v.optional(v.boolean()), // Whether this product is eligible for rewards points
   eligibleForDeals: v.optional(v.boolean()), // Whether this product is eligible for rewards points
   onSale: v.optional(v.boolean()),

@@ -12,6 +12,8 @@ import {MouseEvent, useState} from 'react'
 
 type ProductCardProps = {
   product: StoreProduct
+  /** Resolved image URL; when provided, used instead of product.image (e.g. when product.image is a storage ID) */
+  imageUrl?: string | null
   className?: string
 }
 
@@ -45,7 +47,12 @@ const priceOptionsFromDenomination = (
   }))
 }
 
-export const ProductCard = ({product, className}: ProductCardProps) => {
+export const ProductCard = ({
+  product,
+  imageUrl: imageUrlProp,
+  className,
+}: ProductCardProps) => {
+  const imageSrc = imageUrlProp ?? product.image
   const topEffects = product.effects.slice(0, 2)
   const priceOptions = priceOptionsFromDenomination(
     product.priceByDenomination,
@@ -81,14 +88,14 @@ export const ProductCard = ({product, className}: ProductCardProps) => {
       <CardBody className='flex flex-col p-0'>
         <div className='flex justify-center items-center relative overflow-hidden rounded-xs'>
           <div className='absolute size-full overflow-hidden inset-0 z-10 transition-all duration-300' />
-          {product.image ? (
+          {imageSrc ? (
             <Image
-              src={product.image}
+              src={imageSrc}
               alt={product.name}
               radius='none'
               shadow='none'
               className='min-w-48 rounded-t-xs rounded-b-sm object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
-              isLoading={!product.image}
+              isLoading={!imageSrc}
               loading='eager'
             />
           ) : (

@@ -356,7 +356,7 @@ export const GoogleOneTap = ({disabled: disabledProp, onAuthSuccess: onAuthSucce
   }
   // Show user info and sign out button when authenticated
   if (user) {
-    const handleSignOut = async () => {
+    const _handleSignOut = async () => {
       try {
         await signOut(auth)
         console.log('User signed out successfully')

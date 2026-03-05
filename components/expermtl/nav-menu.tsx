@@ -3,7 +3,7 @@ import {adaptCategory} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {useQuery} from 'convex/react'
-import {useMemo} from 'react'
+import {useMemo, useState} from 'react'
 import {InnerMenu, type NavMenuSubItem} from '../main/rad-nav-menu'
 import {
   NavigationMenu,
@@ -20,79 +20,6 @@ const CATEGORY_ORDER: string[] = [
   'pre-rolls',
   'edibles',
 ]
-// 2. Tier:
-// Flower: B, A, AA, AAA, AAAA, RARE
-// Extract: Cured Resin, Fresh Frozen, Solventless
-// Vape: Distillate, Cured Resin, Fresh Frozen, Solventless
-// Pre Roll: Flower, Infused
-
-// 3. Subcategory:
-// Vape: Cartridge, Disposable, Pod
-// Extract: Badder, Sugar, Shatter, Diamonds, Sauce, Crumble, Wax, Ice Water Hash, Static Hash, Rosin
-// Pre Roll: Single Pack, Multi Pack
-// Flower: Regular, Smalls
-/** Mock submenu links per category for experimental nav. */
-const MOCK_SUB_ITEMS_BY_SLUG: Partial<Record<string, NavMenuSubItem[]>> = {
-  flower: [
-    {id: 'b', label: 'B', href: '/lobby/category/flower?tier=B'},
-    {id: 'a', label: 'A', href: '/lobby/category/flower?tier=A'},
-    {id: 'aa', label: 'AA', href: '/lobby/category/flower?tier=AA'},
-    {id: 'aaa', label: 'AAA', href: '/lobby/category/flower?tier=AAA'},
-    {id: 'aaaa', label: 'AAAA', href: '/lobby/category/flower?tier=AAAA'},
-    {id: 'rare', label: 'RARE', href: '/lobby/category/flower?tier=RARE'},
-  ],
-  extracts: [
-    {
-      id: 'cured_resin',
-      label: 'Cured Resin',
-      href: '/lobby/category/extracts?tier=cured_resin',
-    },
-    {
-      id: 'fresh_frozen',
-      label: 'Fresh Frozen',
-      href: '/lobby/category/extracts?tier=fresh_frozen',
-    },
-    {
-      id: 'solventless',
-      label: 'Solventless',
-      href: '/lobby/category/extracts?tier=solventless',
-    },
-  ],
-  vapes: [
-    {
-      id: 'distillate',
-      label: 'Distillate',
-      href: '/lobby/category/vapes?tier=distillate',
-    },
-    {
-      id: 'cured_resin',
-      label: 'Cured Resin',
-      href: '/lobby/category/vapes?tier=cured_resin',
-    },
-    {
-      id: 'fresh_frozen',
-      label: 'Fresh Frozen',
-      href: '/lobby/category/vapes?tier=fresh_frozen',
-    },
-    {
-      id: 'solventless',
-      label: 'Solventless',
-      href: '/lobby/category/vapes?tier=solventless',
-    },
-  ],
-  'pre-rolls': [
-    {
-      id: 'flower',
-      label: 'Flower',
-      href: '/lobby/category/pre-rolls?tier=flower',
-    },
-    {
-      id: 'infused',
-      label: 'Infused',
-      href: '/lobby/category/pre-rolls?tier=infused',
-    },
-  ],
-}
 
 interface NavMenuProps {
   isMobile?: boolean
@@ -100,7 +27,10 @@ interface NavMenuProps {
   scrollY: number
 }
 
+const NAV_MENU_VALUE = 'shop'
+
 export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
+  const [openValue, setOpenValue] = useState('')
   const categoriesQuery = useQuery(api.categories.q.listCategories)
 
   const categories = useMemo(() => {
@@ -115,10 +45,26 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
     })
   }, [categoriesQuery])
 
+  const subItems = useMemo((): Partial<Record<string, NavMenuSubItem[]>> => {
+    const acc: Partial<Record<string, NavMenuSubItem[]>> = {}
+    for (const c of categories) {
+      acc[c.slug] = (c.tiers ?? []).map((t) => ({
+        id: `${c.slug}-${(t.slug ?? '').replace(/-/g, '')}`,
+        href: `/lobby/category/${c.slug}?tier=${t.slug ?? ''}`,
+        label: t.name ?? '',
+      }))
+    }
+    return acc
+  }, [categories])
+
   return (
-    <NavigationMenu viewport={false} className='flex'>
+    <NavigationMenu
+      viewport={false}
+      className='flex'
+      value={openValue}
+      onValueChange={setOpenValue}>
       <NavigationMenuList className='gap-0'>
-        <NavigationMenuItem>
+        <NavigationMenuItem value={NAV_MENU_VALUE}>
           <NavigationMenuTrigger
             className={cn(
               'rounded-none bg-transparent px-3 py-2 text-sm font-semibold',
@@ -134,15 +80,18 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
               name='details'
               className={cn('size-5 md:size-6 shrink-0 text-white', {
                 'text-dark-table dark:text-white': !inStoreLobby,
+                'text-dark-table dark:text-white .':
+                  !isMobile && scrollY >= 710,
+                'text-dark-table dark:text-white _': isMobile && scrollY >= 400,
               })}
-              style={{
-                color:
-                  !isMobile && scrollY >= 710
-                    ? '#373945'
-                    : scrollY <= 400
-                      ? undefined
-                      : '#373945',
-              }}
+              // style={{
+              //   color:
+              //     !isMobile && scrollY >= 710
+              //       ? '#373945'
+              //       : scrollY <= 400
+              //         ? undefined
+              //         : '#373945',
+              // }}
             />
           </NavigationMenuTrigger>
           <NavigationMenuContent
@@ -150,7 +99,8 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
             className='min-w-[18rem] py-3 px-3 dark:bg-black! bg-white! opacity-100! rounded-none!'>
             <InnerMenu
               items={categories}
-              subItemsBySlug={MOCK_SUB_ITEMS_BY_SLUG}
+              subItemsBySlug={subItems}
+              onClose={() => setOpenValue('')}
             />
           </NavigationMenuContent>
         </NavigationMenuItem>

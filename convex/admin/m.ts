@@ -8,6 +8,7 @@ import {
   StatConfig,
   statConfigSchema,
 } from './d'
+import {DEFAULT_PRODUCT_TIERS_AS_ARRAY} from './productTiersDefaults'
 
 const DEFAULT_STAT_CONFIGS: Array<StatConfig> = [
   {id: 'salesToday', label: 'Sales Today', visible: true, order: 0},
@@ -65,6 +66,34 @@ export const ensureStatConfigsSeeded = mutation({
     })
 
     return {success: true, message: 'Created new statConfigs'}
+  },
+})
+
+/**
+ * Ensure productTiers are seeded (idempotent - safe to call multiple times).
+ * Seeds adminSettings with identifier 'productTiers'; runtime source of truth is this setting, not app code.
+ */
+export const ensureProductTiersSeeded = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const existing = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'productTiers'))
+      .unique()
+
+    if (existing) {
+      return {success: true, message: 'productTiers already exist'}
+    }
+
+    await ctx.db.insert('adminSettings', {
+      identifier: 'productTiers',
+      value: {productTiers: DEFAULT_PRODUCT_TIERS_AS_ARRAY},
+      updatedAt: Date.now(),
+      createdAt: Date.now(),
+      createdBy: 'ensureProductTiersSeeded',
+    })
+
+    return {success: true, message: 'Created new productTiers'}
   },
 })
 

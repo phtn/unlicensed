@@ -11,7 +11,7 @@ async function handleRequest(request) {
   let url
   try {
     url = new URL(request.url)
-  } catch (error) {
+  } catch {
     return new Response('Invalid URL', { status: 400 })
   }
 

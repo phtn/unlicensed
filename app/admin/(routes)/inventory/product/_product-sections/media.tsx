@@ -43,7 +43,7 @@ const titleCaseTag = (value: string) =>
     .map((part) => part[0]?.toUpperCase() + part.slice(1))
     .join(' ')
 
-export const Media = ({form, fields}: MediaProps) => {
+export const Media = ({form, fields: _fields}: MediaProps) => {
   const [isLibraryOpen, setIsLibraryOpen] = useState(false)
   const [libraryTarget, setLibraryTarget] =
     useState<MediaLibraryTarget>('primary')

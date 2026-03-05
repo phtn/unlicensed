@@ -285,7 +285,9 @@ export const createColumns = <T,>(
       filterFn: config.filterFn ?? filterFn,
       enableHiding: config.enableHiding ?? true,
       enableSorting: config.enableSorting ?? true,
-      ...config.meta,
+      ...(config.meta && Object.keys(config.meta).length > 0
+        ? {meta: config.meta}
+        : {}),
     }
 
     // Apply cell renderer if provided

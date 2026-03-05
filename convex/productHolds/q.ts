@@ -22,7 +22,7 @@ export const getAvailableQuantity = query({
     if (product.stockByDenomination != null && denomKey != null) {
       stock = product.stockByDenomination[denomKey] ?? 0
     } else if (product.stockByDenomination != null) {
-      stock = Object.values(product.stockByDenomination).reduce(
+      stock = (Object.values(product.stockByDenomination) as number[]).reduce(
         (a, b) => a + b,
         0,
       )
@@ -75,7 +75,7 @@ export const getAvailableQuantities = query({
       if (product.stockByDenomination != null && denomKey != null) {
         stock = product.stockByDenomination[denomKey] ?? 0
       } else if (product.stockByDenomination != null) {
-        stock = Object.values(product.stockByDenomination).reduce(
+        stock = (Object.values(product.stockByDenomination) as number[]).reduce(
           (a, b) => a + b,
           0,
         )

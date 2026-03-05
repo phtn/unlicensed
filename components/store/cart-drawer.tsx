@@ -217,7 +217,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
               ) : !hasItems && !isPending ? (
                 <div className='flex flex-col h-fit'>
                   <EmptyCart onPress={() => onOpenChange(false)} />
-                  <SuggestedCartItems onClose={() => onOpenChange(false)} />
+                  <SuggestedCartItems />
                 </div>
               ) : (
                 <>

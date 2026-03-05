@@ -30,13 +30,6 @@ export const OrderStatusBadge = ({status}: Props) => {
     }
   }
 
-  function formatStatus(status: string) {
-    return status
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ')
-  }
-
   return (
     <Chip
       color={getStatusColor(status) as ChipProps['color']}

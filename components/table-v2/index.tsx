@@ -52,11 +52,11 @@ import {Filter} from './filter-v2'
 import {HyperWrap} from './hyper-wrap'
 import {PageControl, Paginator} from './pagination-v2'
 import {
+  createPaginationParser,
   createColumnFiltersParser,
   createColumnVisibilityParser,
   createRowSelectionParser,
   createSortingParser,
-  paginationParser,
   searchParser,
   selectModeParser,
 } from './parsers-v2'
@@ -84,7 +84,11 @@ interface TableProps<T> {
   onDeleteSelected?: (ids: string[]) => void | Promise<void>
   deleteIdAccessor?: keyof T
   selectedItemId?: string | null
-  rightToolbarLeft?: ReactNode | ((context: TableToolbarContext<T>) => ReactNode)
+  /** Default rows per page when no URL param is set. Defaults to 15. */
+  defaultPageSize?: number
+  rightToolbarLeft?:
+    | ReactNode
+    | ((context: TableToolbarContext<T>) => ReactNode)
 }
 
 function DataTableContent<T>({
@@ -96,11 +100,16 @@ function DataTableContent<T>({
   onDeleteSelected,
   deleteIdAccessor = 'id' as keyof T,
   selectedItemId,
+  defaultPageSize = 15,
   rightToolbarLeft,
 }: TableProps<T>) {
   const {columnVisibility, setColumnVisibility} = useColumnVisibility()
 
-  const [pagination, setPagination] = useQueryStates(paginationParser)
+  const paginationParserInstance = useMemo(
+    () => createPaginationParser(defaultPageSize),
+    [defaultPageSize],
+  )
+  const [pagination, setPagination] = useQueryStates(paginationParserInstance)
   const [globalFilter, setGlobalFilter] = useQueryState(
     'search',
     searchParser.withDefault(''),
@@ -125,9 +134,9 @@ function DataTableContent<T>({
   const paginationState: PaginationState = useMemo(
     () => ({
       pageIndex: pagination.pageIndex ?? 0,
-      pageSize: pagination.pageSize ?? 15,
+      pageSize: pagination.pageSize ?? defaultPageSize,
     }),
-    [pagination.pageIndex, pagination.pageSize],
+    [pagination.pageIndex, pagination.pageSize, defaultPageSize],
   )
 
   const columnFilters: ColumnFiltersState = useMemo(
@@ -230,6 +239,7 @@ function DataTableContent<T>({
     [columnConfigs, actionConfig, selectOn],
   )
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table API is not memoization-safe
   const table = useReactTable({
     data,
     columns,

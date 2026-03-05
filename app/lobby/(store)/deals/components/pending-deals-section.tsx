@@ -42,6 +42,7 @@ export function PendingDealsSection({cartItems = []}: PendingDealsSectionProps) 
       if (cartItems.length > 0 && cartCoversDeal(cartItems, deal)) return false
       return true
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pendingCtx?.pendingDeals is the reactive value
   }, [pendingCtx?.pendingDeals, cartItems])
 
   if (!pendingCtx || visibleDeals.length === 0) return null

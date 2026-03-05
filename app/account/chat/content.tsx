@@ -44,7 +44,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const scrollButtonAnchorRef = useRef<HTMLDivElement>(null)
+  const [scrollButtonAnchorEl, setScrollButtonAnchorEl] =
+    useState<HTMLDivElement | null>(null)
   const shouldAutoScrollRef = useRef(true) // Track if we should auto-scroll
   const previousMessagesLengthRef = useRef(0)
 
@@ -540,7 +541,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                   isLoading={assistantChat.isLoading}
                   onQuickAction={sendAssistantQuickAction}
                   scrollAreaRef={scrollAreaRef}
-                  scrollButtonAnchorRef={scrollButtonAnchorRef}
+                  scrollButtonAnchorEl={scrollButtonAnchorEl}
                   onScrollToBottom={scrollToBottom}
                 />
                 <div ref={messagesEndRef} />
@@ -548,7 +549,10 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
             </ScrollArea>
 
             {/* Scroll-to-bottom button anchor (above input) */}
-            <div ref={scrollButtonAnchorRef} className='relative min-h-0 shrink-0' />
+            <div
+              ref={setScrollButtonAnchorEl}
+              className='relative min-h-0 shrink-0'
+            />
 
             {/* Assistant Message Input */}
             <div
@@ -626,7 +630,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                   currentUserProId={user?.uid ?? ''}
                   otherUserProId={selectedUserProId ?? ''}
                   scrollAreaRef={scrollAreaRef}
-                  scrollButtonAnchorRef={scrollButtonAnchorRef}
+                  scrollButtonAnchorEl={scrollButtonAnchorEl}
                   onScrollToBottom={scrollToBottom}
                   onOptimisticLike={(messageId, userId) => {
                     startTransition(() => {
@@ -652,7 +656,10 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
             </ScrollArea>
 
             {/* Scroll-to-bottom button anchor (above input) */}
-            <div ref={scrollButtonAnchorRef} className='relative min-h-0 shrink-0' />
+            <div
+              ref={setScrollButtonAnchorEl}
+              className='relative min-h-0 shrink-0'
+            />
 
             {/* Message Input */}
             <div

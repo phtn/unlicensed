@@ -327,7 +327,7 @@ export const SendTab = ({
   }
 
   // Get actual balance
-  const actualBalance = useMemo(() => {
+  const _actualBalance = useMemo(() => {
     if (!balance) return null
     return Number.parseFloat(formatUnits(balance.value, balance.decimals))
   }, [balance])
@@ -413,7 +413,7 @@ export const SendTab = ({
       : selectedToken === 'usdt'
         ? isUsdtConfirming
         : _isConfirming
-  const hash =
+  const _txHash =
     selectedToken === 'usdc'
       ? usdcHash
       : selectedToken === 'usdt'

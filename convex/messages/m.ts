@@ -127,12 +127,12 @@ export const sendMessage = mutation({
     const hasDeclined = receiverProfile?.fcm?.hasDeclined === true
     const sendTokens = tokens.length > 0 ? tokens : token ? [token] : []
     if (sendTokens.length > 0 && !hasDeclined) {
-      const senderName =
+      const _senderName =
         sender.name ?? sender.email.split('@')[0] ?? 'New message'
-      const body =
+      const _body =
         args.content.trim() ||
         (args.attachments?.length ? 'Sent an attachment' : 'New message')
-      const url = `/account/chat/${sender.fid}`
+      const _url = `/account/chat/${sender.fid}`
 
       // for (const token of sendTokens) {
       //   await ctx.scheduler.runAfter(0, api.push.a.sendToToken, {

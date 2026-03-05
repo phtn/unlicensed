@@ -1,4 +1,3 @@
-import type {Id} from '../_generated/dataModel'
 import {Infer, v} from 'convex/values'
 
 /** Single product line (non-bundle) */

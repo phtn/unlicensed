@@ -63,7 +63,7 @@ export interface DealsBundleDebugProps {
 }
 
 export function DealsBundleDebug({
-  bundleId,
+  bundleId: _bundleId,
   config,
   variation,
   products,

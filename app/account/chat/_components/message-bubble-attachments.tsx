@@ -43,6 +43,7 @@ export function MessageBubbleAttachments({
                 bgClass,
               )}>
               {attachment.url ? (
+                // eslint-disable-next-line @next/next/no-img-element -- chat attachment URLs may be external
                 <img
                   src={attachment.url}
                   alt={attachment.fileName}

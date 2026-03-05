@@ -34,8 +34,13 @@ function getPreviewColumns(
 
 export function ProductCsvUpload() {
   const {user} = useAuthCtx()
-  const existingSlugs = useQuery(api.products.q.listProductSlugs) ?? []
-  const categories = useQuery(api.categories.q.listCategories) ?? []
+  const existingSlugsData = useQuery(api.products.q.listProductSlugs)
+  const categoriesData = useQuery(api.categories.q.listCategories)
+  const existingSlugs = useMemo(
+    () => existingSlugsData ?? [],
+    [existingSlugsData],
+  )
+  const categories = useMemo(() => categoriesData ?? [], [categoriesData])
   const existingSlugSet = useMemo(() => new Set(existingSlugs), [existingSlugs])
   const validCategorySlugs = useMemo(
     () => new Set(categories.map((c) => c.slug).filter(Boolean)),

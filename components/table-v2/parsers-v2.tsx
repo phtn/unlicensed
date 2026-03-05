@@ -7,11 +7,13 @@ import type {
   VisibilityState,
 } from '@tanstack/react-table'
 
-// Pagination parser
-export const paginationParser = {
+// Pagination parser factory (default page size 15 for backward compatibility)
+export const createPaginationParser = (defaultPageSize = 15) => ({
   pageIndex: parseAsInteger.withDefault(0),
-  pageSize: parseAsInteger.withDefault(15),
-}
+  pageSize: parseAsInteger.withDefault(defaultPageSize),
+})
+
+export const paginationParser = createPaginationParser(15)
 
 // Search parser
 export const searchParser = parseAsString.withDefault('')

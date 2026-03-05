@@ -3,7 +3,7 @@
 import {
   FormSection,
   Header,
-} from '@/app/admin/_components/category-sections/components'
+} from '@/app/admin/(routes)/inventory/category/_category-sections/components'
 import {
   courierFields,
   CourierFormApi,

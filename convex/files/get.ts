@@ -6,7 +6,7 @@ export const get = query({
     storageId: v.id('_storage'),
     author: v.id('users'),
   },
-  handler: async (ctx, {author, storageId}) => {
+  handler: async (ctx, {author: _author, storageId}) => {
     return await ctx.storage.getUrl(storageId)
   },
 })

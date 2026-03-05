@@ -416,7 +416,7 @@ export const Content = () => {
     return null
   }, [connectionError, setupState])
 
-  const chatMessage = useMemo(() => {
+  const _chatMessage = useMemo(() => {
     if (setupState === 'ready') {
       const repName =
         assignedRep?.name ?? assignedRep?.email?.split('@')[0] ?? 'a rep'
@@ -440,7 +440,7 @@ export const Content = () => {
     return 'Preparing your checkout handoff...'
   }, [assignedRep?.email, assignedRep?.name, setupError, setupState])
 
-  const chatCalloutType = useMemo(() => {
+  const _chatCalloutType = useMemo(() => {
     if (setupState === 'ready') return 'success' as const
     if (setupState === 'connecting' || setupState === 'idle')
       return 'info' as const

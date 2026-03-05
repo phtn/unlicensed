@@ -24,7 +24,10 @@ async function getProductStockForOrder(
     return product.stockByDenomination[key] ?? 0
   }
   if (product.stockByDenomination != null) {
-    return Object.values(product.stockByDenomination).reduce((a, b) => a + b, 0)
+    return (Object.values(product.stockByDenomination) as number[]).reduce(
+      (a, b) => a + b,
+      0,
+    )
   }
   return product.stock ?? 0
 }

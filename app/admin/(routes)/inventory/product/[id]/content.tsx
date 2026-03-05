@@ -1,11 +1,17 @@
 'use client'
 
 import {ProductForm} from '@/app/admin/(routes)/inventory/product/product-form'
+import {
+  getProductBaseOptionsByCategory,
+  getProductBrandOptionsByCategory,
+  getProductTierOptionsByCategory,
+  ProductFormValues,
+  resolveAttributeValue,
+} from '@/app/admin/(routes)/inventory/product/product-schema'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
-import {ProductFormValues} from '../product-schema'
 
 interface EditProductContentProps {
   id: string
@@ -39,13 +45,56 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
     )
   }
 
-  // Convert product data to form values
+  const categoriesList = categories ?? []
+  const selectedCat = categoriesList.find(
+    (c) => c.slug === (product.categorySlug ?? ''),
+  )
+  const tierOptions = getProductTierOptionsByCategory(
+    product.categorySlug ?? '',
+    categoriesList,
+  )
+  const baseOptions = getProductBaseOptionsByCategory(
+    product.categorySlug ?? '',
+    categoriesList,
+  )
+  const brandOptions = getProductBrandOptionsByCategory(
+    product.categorySlug ?? '',
+    categoriesList,
+  )
+  const subcategoryOptions =
+    selectedCat?.subcategories?.length &&
+    typeof selectedCat.subcategories[0] === 'object'
+      ? (selectedCat.subcategories as { name: string; slug: string }[]).map(
+          (e) => ({ value: e.slug, label: e.name }),
+        )
+      : (selectedCat?.subcategories as string[] | undefined)?.map((s) => ({
+          value: s,
+          label: s,
+        })) ?? []
+  const productTypeOptions =
+    selectedCat?.productTypes?.length &&
+    typeof selectedCat.productTypes[0] === 'object'
+      ? (selectedCat.productTypes as { name: string; slug: string }[]).map(
+          (e) => ({ value: e.slug, label: e.name }),
+        )
+      : (selectedCat?.productTypes as string[] | undefined)?.map((s) => ({
+          value: s,
+          label: s,
+        })) ?? []
+
+  // Convert product data to form values (resolve tier/base/brand to slug when category uses attribute entries)
   const initialValues: ProductFormValues = {
     name: product.name ?? '',
     slug: product.slug ?? '',
-    base: product.base ?? '',
+    base:
+      resolveAttributeValue(product.base ?? '', baseOptions) ??
+      product.base ??
+      '',
     categorySlug: product.categorySlug ?? '',
-    brand: product.brand ?? '',
+    brand:
+      resolveAttributeValue(product.brand ?? '', brandOptions) ??
+      product.brand ??
+      '',
     shortDescription: product.shortDescription ?? '',
     description: product.description ?? '',
     priceCents: (product.priceCents ?? 0) / 100, // Convert from cents to dollars
@@ -72,12 +121,18 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
     potencyLevel: product.potencyLevel ?? 'medium',
     potencyProfile: product.potencyProfile ?? '',
     lineage: product.lineage ?? '',
-    subcategory: product.subcategory ?? '',
-    productType: product.productType ?? '',
+    subcategory:
+      resolveAttributeValue(product.subcategory ?? '', subcategoryOptions) ??
+      product.subcategory ??
+      '',
+    productType:
+      resolveAttributeValue(product.productType ?? '', productTypeOptions) ??
+      product.productType ??
+      '',
     noseRating: product.noseRating ?? 0,
     netWeight: product.netWeight?.toString() ?? '',
     netWeightUnit: product.netWeightUnit ?? '',
-    variants: product.variants?.map((v) => ({
+    variants: product.variants?.map((v: {label: string; price: number}) => ({
       label: v.label,
       price: v.price / 100,
     })),
@@ -92,14 +147,17 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
           )
         : product.variants?.length
           ? Object.fromEntries(
-              product.variants.map((v) => {
+              product.variants.map((v: {label: string; price: number}) => {
                 const match = v.label.match(/^(\d+\.?\d*)/)
                 const key = match?.[1] ?? v.label
                 return [key, (v.price ?? 0) / 100]
               }),
             )
           : {},
-    tier: product.tier,
+    tier:
+      resolveAttributeValue(product.tier ?? '', tierOptions) ??
+      product.tier ??
+      undefined,
     eligibleForUpgrade: product.eligibleForUpgrade ?? false,
     upgradePrice:
       product.upgradePrice != null ? product.upgradePrice / 100 : undefined,

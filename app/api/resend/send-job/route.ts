@@ -30,7 +30,7 @@ const extractResendErrorDetails = (err: unknown): string => {
   return `${message ?? 'Resend error'}${parts ? ` (${parts})` : ''}`
 }
 
-type RecipientInput = string | {email: string; name?: string}
+type _RecipientInput = string | {email: string; name?: string}
 
 function parseBody(raw: unknown): {
   to: string[]

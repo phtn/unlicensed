@@ -33,16 +33,31 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     limit: 20,
   })
 
-  const products = useMemo(() => {
+  const baseProducts = useMemo(() => {
     const nextProducts = productsQuery?.map(adaptProduct)
-    const base =
-      nextProducts && nextProducts.length > 0 ? nextProducts : initialProducts
-    return base.filter((p) => {
+    return nextProducts && nextProducts.length > 0 ? nextProducts : initialProducts
+  }, [initialProducts, productsQuery])
+
+  const products = useMemo(() => {
+    return baseProducts.filter((p) => {
       if (tier && p.productTier !== tier) return false
       if (subcategory && p.subcategory !== subcategory) return false
       return true
     })
-  }, [initialProducts, productsQuery, tier, subcategory])
+  }, [baseProducts, tier, subcategory])
+
+  const filterOptions = useMemo(() => {
+    const tiers = new Set<string>()
+    const subcategories = new Set<string>()
+    for (const p of baseProducts) {
+      if (p.productTier) tiers.add(p.productTier)
+      if (p.subcategory) subcategories.add(p.subcategory)
+    }
+    return {
+      tiers: Array.from(tiers).sort(),
+      subcategories: Array.from(subcategories).sort(),
+    }
+  }, [baseProducts])
 
   // Get all image IDs from products (only storageIds, not URLs or null)
   const imageIds = useMemo(() => products.map((p) => p.image), [products])
@@ -133,6 +148,66 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
           </div>
         </div>
       </section>
+
+      {(filterOptions.tiers.length > 0 || filterOptions.subcategories.length > 0) && (
+        <section className='px-4 sm:px-6 pb-4'>
+          <div className='max-w-7xl mx-auto flex flex-wrap items-center gap-3'>
+            {filterOptions.tiers.length > 0 && (
+              <div className='flex flex-wrap items-center gap-2'>
+                <span className='text-sm font-medium text-muted-foreground'>
+                  Tier:
+                </span>
+                <Button
+                  size='sm'
+                  radius='none'
+                  variant={tier === '' ? 'solid' : 'flat'}
+                  className='min-w-0'
+                  onPress={() => setTier('')}>
+                  All
+                </Button>
+                {filterOptions.tiers.map((t) => (
+                  <Button
+                    key={t}
+                    size='sm'
+                    radius='none'
+                    variant={tier === t ? 'solid' : 'flat'}
+                    className='min-w-0 capitalize'
+                    onPress={() => setTier(t)}>
+                    {t}
+                  </Button>
+                ))}
+              </div>
+            )}
+            {filterOptions.subcategories.length > 0 && (
+              <div className='flex flex-wrap items-center gap-2'>
+                <span className='text-sm font-medium text-muted-foreground'>
+                  Subcategory:
+                </span>
+                <Button
+                  size='sm'
+                  radius='none'
+                  variant={subcategory === '' ? 'solid' : 'flat'}
+                  className='min-w-0'
+                  onPress={() => setSubcategory('')}>
+                  All
+                </Button>
+                {filterOptions.subcategories.map((s) => (
+                  <Button
+                    key={s}
+                    size='sm'
+                    radius='none'
+                    variant={subcategory === s ? 'solid' : 'flat'}
+                    className='min-w-0 capitalize'
+                    onPress={() => setSubcategory(s)}>
+                    {s}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       <Products products={productsWithImages} />
       <section className='py-12 sm:py-16 lg:py-20 px-4 sm:px-6 max-w-7xl mx-auto'>
         <div className='flex flex-col gap-20'>

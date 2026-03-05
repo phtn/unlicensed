@@ -50,7 +50,7 @@ export function ChatWindow({
     api.messages.q.getConversations,
     user?.uid ? {fid: user.uid} : 'skip',
   )
-  const otherUser = useQuery(
+  const _otherUser = useQuery(
     api.users.q.getByFid,
     activeConversationFid ? {fid: activeConversationFid} : 'skip',
   )

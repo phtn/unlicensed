@@ -33,7 +33,6 @@ export const Nav = ({children}: NavProps) => {
   const {setTheme, theme} = useTheme()
   const {cartItemCount} = useCart()
   const {isOpen, onOpen, onClose} = useDisclosure()
-  const route = usePathname().split('/').pop()
   const {
     isOpen: isCartDrawerOpen,
     onOpen: onCartDrawerOpen,
@@ -78,8 +77,10 @@ export const Nav = ({children}: NavProps) => {
         className={cn(
           'fixed z-9999 top-0 left-0 right-0 bg-linear-to-b from-transparent to-transparent dark:from-black/15 dark:via-black/10 dark:to-transparent h-14 lg:h-16 xl:h-20 2xl:h-24',
           {
-            'bg-white/70 backdrop-blur-md': scrollY >= 710,
-            ' dark:bg-black/70 dark:text-white dark:backdrop-blur-px bg-white/70 backdrop-blur-3xl':
+            'bg-white/70 dark:bg-black/70 backdrop-blur-md': scrollY >= 710,
+            'bg-white/70 dark:bg-black/70 backdrop-blur-md ':
+              isMobile && scrollY >= 400,
+            'dark:bg-black/70 dark:text-white dark:backdrop-blur-px bg-white/70 backdrop-blur-3xl':
               !inStoreLobby,
           },
         )}
@@ -98,28 +99,21 @@ export const Nav = ({children}: NavProps) => {
                 scale: hovered ? 0.8 : 0,
               }}
               exit={{y: -12, opacity: 0, scale: 0}}
-              className='hidden md:flex absolute size-7 md:size-10 bg-white aspect-square rounded-full'
+              className='hidden md:flex absolute size-7 md:size-10 bg-white dark:bg-brand aspect-square rounded-full'
             />
             <div
               className={cn(
                 'dark:bg-black/10 group-hover:backdrop-blur-none rounded-full',
-                {
-                  // 'bg-brand': inStoreLobby && scrollY >= 400,
-                },
               )}>
               <Icon
                 name='rapid-fire-logo'
-                style={{
-                  color:
-                    !isMobile && scrollY >= 710
-                      ? '#373945'
-                      : scrollY <= 400
-                        ? undefined
-                        : '#373945',
-                }}
                 className={cn('h-8 md:h-10 w-auto relative text-white', {
                   'text-dark-table dark:text-white dark:group-hover:text-brand':
                     !inStoreLobby,
+                  'text-dark-table dark:text-white .':
+                    !isMobile && scrollY >= 710,
+                  'text-dark-table dark:text-white _':
+                    isMobile && scrollY >= 400,
                 })}
               />
             </div>
@@ -137,32 +131,22 @@ export const Nav = ({children}: NavProps) => {
               />
             </div>
             <div className='sm:hidden portrait:flex portrait:w-full' />
-            {route === 'strain-finder' ? (
-              <div className='hidden md:flex font-polysans font-normal bg-white text-base text-black px-4 py-0.5 rounded-full'>
-                Strain Finder
-              </div>
-            ) : (
-              <>
-                <Link
-                  href={'/lobby/category'}
-                  style={{
-                    color:
-                      !isMobile && scrollY >= 710
-                        ? '#373945'
-                        : scrollY <= 400
-                          ? undefined
-                          : '#373945',
-                  }}
-                  className={cn(
-                    'hidden group text-sm lg:text-lg text-gray-100  hover:text-brand md:flex items-center font-polysans font-semibold space-x-1',
-                    {'text-dark-table dark:text-white': !inStoreLobby},
-                  )}>
-                  <span className='group-hover:drop-shadow-sm dark:drop-shadow-black'>
-                    Shop
-                  </span>
-                </Link>
-              </>
-            )}
+            <Link
+              href={'/lobby/category'}
+              className={cn(
+                'hidden group text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-clash font-semibold space-x-1',
+                {
+                  'text-dark-table dark:text-white': !inStoreLobby,
+                  'text-dark-table dark:text-white .':
+                    !isMobile && scrollY >= 710,
+                  'text-dark-table dark:text-white _':
+                    isMobile && scrollY >= 400,
+                },
+              )}>
+              <span className='group-hover:drop-shadow-sm dark:drop-shadow-black'>
+                Shop
+              </span>
+            </Link>
             {children}
           </nav>
           <div className='flex w-fit gap-5 md:w-36 items-center justify-between'>

@@ -2,7 +2,7 @@
 
 import {motion, Variants} from 'motion/react'
 import type {HTMLAttributes, ReactNode} from 'react'
-import {createElement, ElementType, useEffect, useState} from 'react'
+import {createElement, ElementType, useEffect, useMemo, useState} from 'react'
 
 import {cn} from '@/lib/utils'
 
@@ -114,7 +114,10 @@ export const Typewrite = ({
   const [isDeleting, setIsDeleting] = useState(false)
   const [currentTextIndex, setCurrentTextIndex] = useState(0)
 
-  const texts = Array.isArray(text) ? text : [text]
+  const texts = useMemo(
+    () => (Array.isArray(text) ? text : [text]),
+    [text],
+  )
   const Tag: ElementType = as ?? 'div'
 
   useEffect(() => {

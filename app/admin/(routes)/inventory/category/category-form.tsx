@@ -9,24 +9,27 @@ import {Button, Switch} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useCallback, useEffect, useRef, useState} from 'react'
+import {useAppForm} from '../../../_components/ui/form-context'
+import {Attributes} from './_category-sections/attributes'
+import {BasicInfo} from './_category-sections/basic-info'
+import {Details} from './_category-sections/details'
+import {Media} from './_category-sections/media'
+import {Packaging} from './_category-sections/packaging'
 import {
   categoryFields,
   CategoryFormApi,
   CategoryFormValues,
   categorySchema,
   defaultValues,
-  parseCommaList,
   parseList,
   parseNumbers,
-} from '../../../_components/category-schema'
-import {BasicInfo} from '../../../_components/category-sections/basic-info'
-import {Details} from '../../../_components/category-sections/details'
-import {Media} from '../../../_components/category-sections/media'
-import {Packaging} from '../../../_components/category-sections/packaging'
-import {useAppForm} from '../../../_components/ui/form-context'
+} from './category-schema'
+
+type CategoryType = import('@/convex/categories/d').CategoryType
 
 type CategoryFormProps = {
   categoryId?: Id<'categories'>
+  category?: CategoryType | null
   initialValues?: CategoryFormValues
   onCreated?: VoidFunction
   onUpdated?: VoidFunction
@@ -36,11 +39,13 @@ const SECTIONS = [
   {id: 'basic-info', label: 'Basic Info', icon: 'file'},
   {id: 'media', label: 'Media', icon: 'image'},
   {id: 'packaging', label: 'Packaging', icon: 'box'},
+  {id: 'attributes', label: 'Attributes', icon: 'sliders'},
   {id: 'details', label: 'Details', icon: 'align-left'},
 ] as const
 
 export const CategoryForm = ({
   categoryId,
+  category,
   initialValues,
   onCreated,
   onUpdated,
@@ -89,8 +94,11 @@ export const CategoryForm = ({
                 .map((u) => u.trim())
                 .filter((u) => u.length > 0)
             : undefined,
-          productTypes: parseCommaList(data.productTypesRaw),
-          subcategories: parseCommaList(data.subcategoriesRaw),
+          productTypes: data.productTypes ?? [],
+          subcategories: data.subcategories ?? [],
+          tiers: data.tiers ?? [],
+          bases: data.bases ?? [],
+          brands: data.brands ?? [],
           denominations: parseNumbers(data.denominationsRaw),
         }
 
@@ -147,11 +155,11 @@ export const CategoryForm = ({
       form.setFieldValue('highlight', initialValues.highlight ?? '')
       form.setFieldValue('benefitsRaw', initialValues.benefitsRaw ?? '')
       form.setFieldValue('unitsRaw', initialValues.unitsRaw ?? '')
-      form.setFieldValue('productTypesRaw', initialValues.productTypesRaw ?? '')
-      form.setFieldValue(
-        'subcategoriesRaw',
-        initialValues.subcategoriesRaw ?? '',
-      )
+      form.setFieldValue('productTypes', initialValues.productTypes ?? [])
+      form.setFieldValue('subcategories', initialValues.subcategories ?? [])
+      form.setFieldValue('tiers', initialValues.tiers ?? [])
+      form.setFieldValue('bases', initialValues.bases ?? [])
+      form.setFieldValue('brands', initialValues.brands ?? [])
       form.setFieldValue(
         'denominationsRaw',
         initialValues.denominationsRaw ?? '',
@@ -295,6 +303,10 @@ export const CategoryForm = ({
 
           <div id='packaging'>
             <Packaging form={form as CategoryFormApi} />
+          </div>
+
+          <div id='attributes' className=''>
+            <Attributes form={form as CategoryFormApi} category={category ?? null} />
           </div>
 
           <div id='details'>

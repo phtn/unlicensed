@@ -1,8 +1,26 @@
 import {v} from 'convex/values'
-import {ensureSlug} from '../../lib/slug'
+import {ensureSlug, slugify} from '../../lib/slug'
 import {internal} from '../_generated/api'
 import {mutation} from '../_generated/server'
-import {categorySchema} from './d'
+import type {AttributeEntry} from './d'
+import {attributeEntrySchema, categorySchema} from './d'
+
+function normalizeAttributeEntries(
+  entries: Array<{name: string; slug?: string}> | undefined,
+): AttributeEntry[] {
+  if (!entries?.length) return []
+  return entries
+    .map((e) => {
+      const name = typeof e.name === 'string' ? e.name.trim() : ''
+      if (!name) return null
+      const slug =
+        typeof e.slug === 'string' && e.slug.trim()
+          ? slugify(e.slug.trim())
+          : slugify(name)
+      return {name, slug: slug || slugify(name)}
+    })
+    .filter((e): e is AttributeEntry => e !== null && e.slug.length > 0)
+}
 
 export const create = mutation({
   args: categorySchema,
@@ -21,12 +39,11 @@ export const create = mutation({
     const benefits = (args.benefits ?? [])
       .map((benefit) => benefit.trim())
       .filter((benefit) => benefit.length > 0)
-    const productTypes = (args.productTypes ?? [])
-      .map((type) => type.trim())
-      .filter((type) => type.length > 0)
-    const subcategories = (args.subcategories ?? [])
-      .map((subcategory) => subcategory.trim())
-      .filter((subcategory) => subcategory.length > 0)
+    const productTypes = normalizeAttributeEntries(args.productTypes)
+    const subcategories = normalizeAttributeEntries(args.subcategories)
+    const tiers = normalizeAttributeEntries(args.tiers)
+    const bases = normalizeAttributeEntries(args.bases)
+    const brands = normalizeAttributeEntries(args.brands)
 
     const categoryId = await ctx.db.insert('categories', {
       ...args,
@@ -34,6 +51,9 @@ export const create = mutation({
       benefits,
       productTypes: productTypes.length > 0 ? productTypes : undefined,
       subcategories: subcategories.length > 0 ? subcategories : undefined,
+      tiers: tiers.length > 0 ? tiers : undefined,
+      bases: bases.length > 0 ? bases : undefined,
+      brands: brands.length > 0 ? brands : undefined,
     })
 
     // Log category created activity
@@ -76,19 +96,20 @@ export const update = mutation({
     const benefits = (args.benefits ?? [])
       .map((benefit) => benefit.trim())
       .filter((benefit) => benefit.length > 0)
-    const productTypes = (args.productTypes ?? [])
-      .map((type) => type.trim())
-      .filter((type) => type.length > 0)
-    const subcategories = (args.subcategories ?? [])
-      .map((subcategory) => subcategory.trim())
-      .filter((subcategory) => subcategory.length > 0)
-
+    const productTypes = normalizeAttributeEntries(args.productTypes)
+    const subcategories = normalizeAttributeEntries(args.subcategories)
+    const tiers = normalizeAttributeEntries(args.tiers)
+    const bases = normalizeAttributeEntries(args.bases)
+    const brands = normalizeAttributeEntries(args.brands)
     const {categoryId, ...updateData} = args
     await ctx.db.patch(categoryId, {
       ...updateData,
       benefits,
       productTypes: productTypes.length > 0 ? productTypes : undefined,
       subcategories: subcategories.length > 0 ? subcategories : undefined,
+      tiers: tiers.length > 0 ? tiers : undefined,
+      bases: bases.length > 0 ? bases : undefined,
+      brands: brands.length > 0 ? brands : undefined,
       slug,
     })
 
@@ -101,5 +122,23 @@ export const update = mutation({
     })
 
     return args.categoryId
+  },
+})
+
+export const updateTiers = mutation({
+  args: {
+    categoryId: v.id('categories'),
+    tiers: v.array(attributeEntrySchema),
+  },
+  handler: async (ctx, {categoryId, tiers}) => {
+    const category = await ctx.db.get(categoryId)
+    if (!category) {
+      throw new Error('Category not found')
+    }
+    const normalized = normalizeAttributeEntries(tiers)
+    await ctx.db.patch(categoryId, {
+      tiers: normalized.length > 0 ? normalized : undefined,
+    })
+    return categoryId
   },
 })

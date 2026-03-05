@@ -1,11 +1,30 @@
 'use client'
 
 import {CategoryForm} from '@/app/admin/(routes)/inventory/category/category-form'
-import {CategoryFormValues} from '@/app/admin/_components/category-schema'
+import type {AttributeEntry} from '@/app/admin/(routes)/inventory/category/category-schema'
+import {
+  CategoryFormValues,
+  defaultValues,
+} from '@/app/admin/(routes)/inventory/category/category-schema'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
+import {slugify} from '@/lib/slug'
+
+function toAttributeEntries(
+  val: string[] | { name: string; slug: string }[] | undefined,
+): AttributeEntry[] {
+  if (!val?.length) return []
+  const first = val[0]
+  if (typeof first === 'string') {
+    return (val as string[]).map((s) => ({
+      name: s.trim(),
+      slug: slugify(s) || s.toLowerCase().replace(/\s+/g, '-'),
+    }))
+  }
+  return val as AttributeEntry[]
+}
 
 interface EditCategoryContentProps {
   id: Id<'categories'>
@@ -38,8 +57,9 @@ export const EditCategory = ({id}: EditCategoryContentProps) => {
     )
   }
 
-  // Convert category data to form values
+  // Convert category data to form values (support legacy string[] from DB)
   const initialValues: CategoryFormValues = {
+    ...defaultValues,
     name: category.name ?? '',
     slug: category.slug ?? '',
     description: category.description ?? '',
@@ -48,8 +68,11 @@ export const EditCategory = ({id}: EditCategoryContentProps) => {
     highlight: category.highlight ?? '',
     benefitsRaw: category.benefits?.join('\n') ?? '',
     unitsRaw: category.units?.join(', ') ?? '',
-    productTypesRaw: category.productTypes?.join(', ') ?? '',
-    subcategoriesRaw: category.subcategories?.join(', ') ?? '',
+    productTypes: toAttributeEntries(category.productTypes),
+    subcategories: toAttributeEntries(category.subcategories),
+    tiers: toAttributeEntries(category.tiers),
+    bases: toAttributeEntries(category.bases),
+    brands: toAttributeEntries(category.brands),
     denominationsRaw: category.denominations?.join(', ') ?? '',
   }
 
@@ -62,6 +85,7 @@ export const EditCategory = ({id}: EditCategoryContentProps) => {
     <CategoryForm
       key={category._id}
       categoryId={category._id}
+      category={category}
       initialValues={initialValues}
       onUpdated={handleUpdated}
     />

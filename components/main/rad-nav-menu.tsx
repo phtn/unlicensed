@@ -5,7 +5,15 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {AnimatePresence, motion} from 'motion/react'
 import Link from 'next/link'
-import {useCallback, useLayoutEffect, useMemo, useRef, useState} from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {HyperList} from '../expermtl/hyper-list'
 
 export interface NavMenuCategory {
@@ -28,19 +36,31 @@ const VIEWPORT_TRANSITION = {
   transition: {duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94]},
 } as const
 
+const NavMenuCloseContext = createContext<(() => void) | null>(null)
+
 interface InnerMenuProps {
   items: Array<NavMenuCategory>
   /** Optional submenu per category. Key = category slug. Empty/missing = no submenu yet. */
   subItemsBySlug?: Partial<Record<string, NavMenuSubItem[]>>
+  /** Called when a tier/sub-item link is clicked; use to close the menu. */
+  onClose?: () => void
 }
 
-export const InnerMenu = ({items, subItemsBySlug = {}}: InnerMenuProps) => {
+export const InnerMenu = ({
+  items,
+  subItemsBySlug = {},
+  onClose,
+}: InnerMenuProps) => {
   const [activeSlug, setActiveSlug] = useState<string | null>(() =>
     items.length ? items[0].slug : null,
   )
   const listRef = useRef<HTMLUListElement>(null)
   const active = activeSlug ?? items[0]?.slug ?? null
   const activeItem = items.find((i) => i.slug === active)
+  const closeContextValue = useMemo(
+    () => onClose ?? null,
+    [onClose],
+  )
 
   const setIndicatorToButton = useCallback((button: HTMLElement | null) => {
     const ul = listRef.current
@@ -62,11 +82,12 @@ export const InnerMenu = ({items, subItemsBySlug = {}}: InnerMenuProps) => {
   if (!items.length) return null
 
   return (
-    <div
-      className='flex w-full flex-row gap-2 md:flex-col md:gap-2'
-      onMouseLeave={() => setActiveSlug(active)}
-      role='navigation'
-      aria-label='Categories'>
+    <NavMenuCloseContext.Provider value={closeContextValue}>
+      <div
+        className='flex w-full flex-row gap-2 md:flex-col md:gap-2'
+        onMouseLeave={() => setActiveSlug(active)}
+        role='navigation'
+        aria-label='Categories'>
       {/* Category triggers: column on mobile (left), single row on desktop (top) */}
       <ul
         ref={listRef}
@@ -147,6 +168,7 @@ export const InnerMenu = ({items, subItemsBySlug = {}}: InnerMenuProps) => {
         </AnimatePresence>
       </div>
     </div>
+    </NavMenuCloseContext.Provider>
   )
 }
 
@@ -186,6 +208,7 @@ function CategoryViewportContent({
         component={SubItem}
         direction={isMobile ? 'right' : 'down'}
         container='flex flex-col md:flex-row gap-1.5 md:gap-0.5'
+        itemStyle=' md:first:ps-4'
         withExitAnimation
         duration={0.2}
       />
@@ -193,10 +216,12 @@ function CategoryViewportContent({
   )
 }
 
-const SubItem = (item: NavMenuSubItem) => {
+function SubItem(item: NavMenuSubItem) {
+  const onClose = useContext(NavMenuCloseContext)
   return (
     <Link
       href={item.href ?? '#'}
+      onClick={() => onClose?.()}
       className={cn(
         'flex shrink-0 items-center px-3 py-2 outline-none border-b-2 border-b-transparent',
         'dark:hover:bg-dark-table/50 hover:border-brand capitalize group',

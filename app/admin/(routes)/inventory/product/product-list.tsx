@@ -44,9 +44,9 @@ const ProductItem = ({product, imageUrl}: ProductItemProps) => (
           <p className='text-tiny text-white'>
             Stock:{' '}
             <span className='text-blue-400 text-sm font-medium tracking-tight'>
-              {product.stockByDenomination &&
+              {              product.stockByDenomination &&
               Object.keys(product.stockByDenomination).length > 0
-                ? Object.values(product.stockByDenomination).reduce(
+                ? (Object.values(product.stockByDenomination) as number[]).reduce(
                     (a, b) => a + b,
                     0,
                   )

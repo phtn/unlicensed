@@ -1,6 +1,11 @@
 import {v} from 'convex/values'
 import {query} from '../_generated/server'
 import type {AdminSettings} from './d'
+import {
+  DEFAULT_PRODUCT_TIERS_AS_ARRAY,
+  distributeFlatTiers,
+  tiersObjectToArray,
+} from './productTiersDefaults'
 
 /**
  * Get admin settings
@@ -85,21 +90,55 @@ export const getAdminByIdentifier = query({
   },
   handler: async ({db}, {identifier}): Promise<AdminSettings | null> => {
     // Try to find by identifier first
-    const setting = await db
+    let setting = await db
       .query('adminSettings')
       .withIndex('by_identifier', (q) => q.eq('identifier', identifier))
       .unique()
+
+    if (!setting) {
+      // Fall back to first document when identifier wasn't set on existing docs
+      setting = await db.query('adminSettings').first() ?? null
+    }
+
+    // Normalize productTiers to stored format: [{ flower: [] }, { extract: [] }, { vape: [] }]
+    if (setting && identifier === 'productTiers') {
+      const raw = setting.value?.productTiers
+      let productTiers: typeof DEFAULT_PRODUCT_TIERS_AS_ARRAY
+      if (Array.isArray(raw) && raw.length > 0 && typeof raw[0] === 'string') {
+        productTiers = tiersObjectToArray(distributeFlatTiers(raw as string[]))
+      } else if (
+        raw &&
+        typeof raw === 'object' &&
+        !Array.isArray(raw) &&
+        ('flower' in raw || 'extract' in raw || 'vape' in raw)
+      ) {
+        productTiers = tiersObjectToArray(raw as Record<string, string[]>)
+      } else {
+        productTiers = (Array.isArray(raw) ? raw : DEFAULT_PRODUCT_TIERS_AS_ARRAY) as typeof DEFAULT_PRODUCT_TIERS_AS_ARRAY
+      }
+      return {
+        ...setting,
+        value: {
+          ...setting.value,
+          productTiers,
+        },
+      }
+    }
 
     if (setting) {
       return setting
     }
 
-    // If not found by identifier, fall back to first adminSettings document
-    // This handles the case where identifier field wasn't set on existing documents
-    const fallbackAdmin = await db.query('adminSettings').first()
-
-    if (fallbackAdmin) {
-      return fallbackAdmin
+    // No adminSettings at all: in-memory default for productTiers
+    if (identifier === 'productTiers') {
+      return {
+        value: {
+          productTiers: DEFAULT_PRODUCT_TIERS_AS_ARRAY,
+        },
+        updatedAt: Date.now(),
+        createdAt: Date.now(),
+        createdBy: 'dev-admin',
+      }
     }
 
     // If no adminSettings exist at all, return default configs for 'statConfigs' identifier

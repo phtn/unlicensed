@@ -24,7 +24,7 @@ export function CashAppForm({
     [onInputChange],
   )
 
-  const handlePhoneChange = useCallback(
+  const _handlePhoneChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       onInputChange('contactPhone', e.target.value)
     },
