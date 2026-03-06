@@ -66,3 +66,19 @@ export const TitleV3 = ({title, subtitle, titleStyle}: TitleProps) => {
     </h2>
   )
 }
+export const TitleV4 = ({title, subtitle, titleStyle}: TitleProps) => {
+  return (
+    <h2 className='flex flex-col tracking-tighter leading-tight md:mb-8'>
+      <div
+        className={cn(
+          'font-clash font-bold text-3xl md:text-5xl lg:text-6xl line-clamp-2 capitalize',
+          titleStyle,
+        )}>
+        {title}
+      </div>
+      <span className='mt-3 relative flex font-clash font-normal text-muted-foreground text-lg sm:text-xl md:text-2xl capitalize'>
+        {subtitle}
+      </span>
+    </h2>
+  )
+}

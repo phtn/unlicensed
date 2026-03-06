@@ -15,6 +15,7 @@ export const listProductSlugs = query({
 
 export const listProducts = query({
   args: {
+    brand: v.optional(v.string()),
     categorySlug: v.optional(v.string()),
     limit: v.optional(v.number()),
     eligibleForDeals: v.optional(v.boolean()),
@@ -31,6 +32,12 @@ export const listProducts = query({
 
     let products = await baseQuery.collect()
     products = products.filter((p) => p.archived !== true)
+    if (args.brand) {
+      const normalizedBrand = normalizeBrandValue(args.brand)
+      products = products.filter(
+        (p) => normalizeBrandValue(p.brand) === normalizedBrand,
+      )
+    }
     if (args.eligibleForDeals === true) {
       products = products.filter((p) => p.eligibleForDeals === true)
     }
@@ -107,6 +114,9 @@ export const getProductByName = query({
     return product ?? null
   },
 })
+
+const normalizeBrandValue = (brand?: string) =>
+  (brand ?? '').trim().toLowerCase().replace(/\s+/g, '-')
 
 const sortProducts = <T extends {featured?: boolean; name?: string}>(
   items: T[],

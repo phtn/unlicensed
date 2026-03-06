@@ -462,6 +462,7 @@ export const Content = () => {
               ? ('complete' as StepState)
               : ('error' as StepState),
         },
+
         {
           title: 'Pending Payment',
           description:
@@ -635,6 +636,10 @@ export const Content = () => {
               <span>
                 Share any delivery notes or timing constraints for this order.
               </span>
+            </div>
+            <div className='flex items-start gap-2'>
+              <Icon name='info' className='size-4 text-emerald-300' />
+              <span>8% fee is will be added to your total order amount.</span>
             </div>
           </div>
         </div>

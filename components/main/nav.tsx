@@ -107,14 +107,17 @@ export const Nav = ({children}: NavProps) => {
               )}>
               <Icon
                 name='rapid-fire-logo'
-                className={cn('h-8 md:h-10 w-auto relative text-white', {
-                  'text-dark-table dark:text-white dark:group-hover:text-brand':
-                    !inStoreLobby,
-                  'text-dark-table dark:text-white .':
-                    !isMobile && scrollY >= 710,
-                  'text-dark-table dark:text-white _':
-                    isMobile && scrollY >= 400,
-                })}
+                className={cn(
+                  'h-8 md:h-10 w-auto relative text-white dark:group-hover:text-white',
+                  {
+                    'text-dark-table dark:text-white dark:group-hover:text-white':
+                      !inStoreLobby,
+                    'text-dark-table dark:text-white .':
+                      !isMobile && scrollY >= 710,
+                    'text-dark-table dark:text-white _':
+                      isMobile && scrollY >= 400,
+                  },
+                )}
               />
             </div>
           </Link>

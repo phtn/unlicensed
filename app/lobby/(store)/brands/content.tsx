@@ -1,13 +1,18 @@
 'use client'
 
+import {StoreProduct} from '@/app/types'
 import {Tag} from '@/components/base44/tag'
-import {Title} from '@/components/base44/title'
+import {Title, TitleV4} from '@/components/base44/title'
+import {ProductCard} from '@/components/store/product-card'
 import {api} from '@/convex/_generated/api'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
+import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
+import {parseAsString, useQueryState} from 'nuqs'
 import {Activity, useMemo} from 'react'
 
 interface Brand {
@@ -16,6 +21,10 @@ interface Brand {
   icon: string
   description?: string
   featured?: boolean
+}
+
+interface EnhancedBrand extends Brand {
+  productCount: number
 }
 
 const brands: Brand[] = [
@@ -50,7 +59,15 @@ const brands: Brand[] = [
 ]
 
 export const Content = () => {
+  const [selectedBrandId, setSelectedBrandId] = useQueryState(
+    'id',
+    parseAsString.withDefault(''),
+  )
   const productsQuery = useQuery(api.products.q.listProducts, {limit: 100})
+  const selectedBrandProductsQuery = useQuery(
+    api.products.q.listProducts,
+    selectedBrandId ? {brand: selectedBrandId, limit: 24} : 'skip',
+  )
 
   // Group products by brand and count them
   const brandCounts = useMemo(() => {
@@ -66,7 +83,7 @@ export const Content = () => {
   }, [productsQuery])
 
   // Enhance brands with product counts
-  const enhancedBrands = useMemo(() => {
+  const enhancedBrands = useMemo<EnhancedBrand[]>(() => {
     return brands.map((brand) => ({
       ...brand,
       productCount: brandCounts.get(brand.slug) || 0,
@@ -74,9 +91,123 @@ export const Content = () => {
   }, [brandCounts])
 
   const featuredBrands = enhancedBrands.filter((b) => b.featured)
+  const selectedBrand =
+    enhancedBrands.find((brand) => brand.slug === selectedBrandId) ?? null
+  const selectedBrandProducts = useMemo<StoreProduct[]>(() => {
+    return selectedBrandProductsQuery?.map(adaptProduct) ?? []
+  }, [selectedBrandProductsQuery])
+  const isSelectedBrandLoading =
+    selectedBrandId !== '' && selectedBrandProductsQuery === undefined
+  const selectedBrandImageIds = useMemo(
+    () =>
+      selectedBrandProducts
+        .map((product) => product.image)
+        .filter(
+          (image): image is string => !!image && !image.startsWith('http'),
+        ),
+    [selectedBrandProducts],
+  )
+  const resolveSelectedBrandImage = useStorageUrls(selectedBrandImageIds)
+  const selectedBrandProductsWithImages = useMemo(
+    () =>
+      selectedBrandProducts.map((product) => {
+        if (!product.image) {
+          return product
+        }
+
+        const resolvedUrl = resolveSelectedBrandImage(product.image)
+        const imageUrl =
+          resolvedUrl && resolvedUrl.startsWith('http')
+            ? resolvedUrl
+            : product.image.startsWith('http')
+              ? product.image
+              : null
+
+        return {
+          ...product,
+          image: imageUrl,
+        }
+      }),
+    [selectedBrandProducts, resolveSelectedBrandImage],
+  )
+
+  const toggleBrand = (brandSlug: string) => {
+    void setSelectedBrandId(brandSlug === selectedBrandId ? null : brandSlug)
+  }
 
   return (
     <div className='min-h-screen pt-16 sm:pt-20 md:pt-24 lg:pt-28 xl:pt-28 pb-16 sm:pb-20 lg:pb-24 px-4 sm:px-6 overflow-x-hidden bg-background'>
+      {selectedBrand && (
+        <section className='px-4 sm:px-6 pb-10 sm:pb-14 lg:pb-16'>
+          <div className='max-w-7xl mx-auto'>
+            <div className='mb-6 sm:mb-8 flex flex-col gap-4'>
+              <div className='space-y-4'>
+                <Tag text={selectedBrand.name} />
+                <TitleV4
+                  title={`${selectedBrand.name}`}
+                  subtitle={`Found ${selectedBrandProductsWithImages.length} products`}
+                />
+              </div>
+              <div className='flex flex-wrap items-center gap-3'>
+                <Button
+                  size='lg'
+                  as={Link}
+                  radius='none'
+                  href={`/lobby/products?brand=${selectedBrand.slug}`}
+                  prefetch
+                  endContent={
+                    <Icon
+                      name='arrow-right'
+                      className='dark:text-brand text-white'
+                    />
+                  }
+                  className='dark:bg-white opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base'>
+                  <span className='drop-shadow-xs'>View all products</span>
+                </Button>
+                <Button
+                  size='lg'
+                  variant='light'
+                  radius='none'
+                  onPress={() => void setSelectedBrandId(null)}
+                  className='border dark:border-light-gray/40 font-polysans font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-base lg:text-lg'>
+                  <span className='tracking-tight'>Clear selection</span>
+                </Button>
+              </div>
+            </div>
+
+            {isSelectedBrandLoading && (
+              <div className='rounded-lg border border-foreground/10 dark:border-dark-gray/40 bg-sidebar/30 px-6 py-16 text-center'>
+                <div className='flex items-center justify-center gap-3 text-sm sm:text-base opacity-70'>
+                  <Icon name='spinners-ring' className='size-4 animate-spin' />
+                  <span>Loading {selectedBrand.name} products...</span>
+                </div>
+              </div>
+            )}
+
+            {selectedBrandProductsWithImages.length > 0 && (
+              <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-6'>
+                {selectedBrandProductsWithImages.map((product) => (
+                  <ProductCard
+                    key={product._id ?? product.slug}
+                    product={product}
+                    imageUrl={product.image}
+                  />
+                ))}
+              </div>
+            )}
+
+            {!isSelectedBrandLoading &&
+              selectedBrandProductsWithImages.length === 0 && (
+                <div className='rounded-lg border border-foreground/10 dark:border-dark-gray/40 bg-sidebar/30 px-6 py-16 text-center'>
+                  <p className='text-sm sm:text-base opacity-70'>
+                    No products are currently available for {selectedBrand.name}
+                    .
+                  </p>
+                </div>
+              )}
+          </div>
+        </section>
+      )}
       {/* Hero Section - Asymmetric Layout */}
       <section className='relative'>
         <div className='max-w-7xl mx-auto'>
@@ -97,12 +228,15 @@ export const Content = () => {
           {/* Featured Brands - Large Showcase */}
           <div className='grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 mb-12 sm:mb-16'>
             {featuredBrands.map((brand, index) => (
-              <Link
+              <button
+                type='button'
                 key={brand.slug}
-                href={`/lobby/products?brand=${brand.slug}`}
-                prefetch
+                onClick={() => toggleBrand(brand.slug)}
+                aria-pressed={selectedBrandId === brand.slug}
                 className={cn(
                   'group relative overflow-hidden rounded-3xl sm:rounded-4xl bg-sidebar/40 dark:bg-sidebar border border-foreground/10 dark:border-dark-gray/50 transition-all duration-500 hover:border-foreground/30 hover:shadow-2xl',
+                  selectedBrandId === brand.slug &&
+                    'border-brand shadow-2xl shadow-brand/10',
                   index === 0 && 'lg:row-span-2',
                 )}>
                 <div
@@ -159,7 +293,7 @@ export const Content = () => {
                   {/* Hover Effect Overlay */}
                   <div className='absolute inset-0 bg-linear-to-br from-brand/0 via-brand/0 to-brand/0 group-hover:from-brand/5 group-hover:via-brand/3 group-hover:to-brand/5 transition-all duration-500 rounded-3xl sm:rounded-4xl' />
                 </div>
-              </Link>
+              </button>
             ))}
           </div>
         </div>
@@ -200,18 +334,21 @@ export const Content = () => {
           {/* Asymmetric Grid Layout */}
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8'>
             {enhancedBrands.map((brand, index) => (
-              <Link
+              <button
+                type='button'
                 key={brand.slug}
-                href={`/lobby/products?brand=${brand.slug}`}
-                prefetch
+                onClick={() => toggleBrand(brand.slug)}
+                aria-pressed={selectedBrandId === brand.slug}
                 className={cn(
-                  'group relative overflow-hidden rounded-2xl sm:rounded-3xl dark:bg-sidebar border border-foreground/10 dark:border-dark-gray/50 transition-all duration-500 hover:border-foreground/30 hover:shadow-xl',
+                  'group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-foreground/10 dark:border-dark-gray/50 transition-all duration-500 hover:border-foreground/30 hover:shadow-xl',
+                  selectedBrandId === brand.slug &&
+                    'border-brand shadow-xl shadow-brand/10',
                   // Create visual interest with varying heights
                   index % 3 === 0 && 'sm:row-span-1',
                   index % 3 === 1 && 'sm:row-span-1',
                   index % 3 === 2 && 'sm:row-span-1',
                 )}>
-                <div className='relative flex flex-col p-6 bg-foreground sm:p-8 min-h-50 sm:min-h-62.5'>
+                <div className='relative flex flex-col p-6 dark:bg-background bg-foreground sm:p-8 min-h-50 sm:min-h-62.5'>
                   {/* Background Accent */}
                   <div className='absolute top-0 right-0 w-32 h-32 bg-brand/5 dark:bg-brand/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500' />
 
@@ -255,7 +392,7 @@ export const Content = () => {
                   {/* Hover Effect */}
                   <div className='absolute inset-0 bg-linear-to-br from-brand/0 to-brand/0 group-hover:from-brand/5 group-hover:to-brand/3 transition-all duration-500 rounded-2xl sm:rounded-3xl' />
                 </div>
-              </Link>
+              </button>
             ))}
           </div>
         </div>
