@@ -212,7 +212,7 @@ export function ProductCsvUpload() {
             className={cn(
               'border-2 border-dashed transition-colors duration-200',
               isDragging
-                ? 'border-primary bg-primary/5 dark:bg-primary/10'
+                ? 'border-primary bg-primary/0 dark:bg-white dark:text-dark-table'
                 : 'border-default-200 hover:border-default-300 dark:border-default-100 dark:hover:border-default-200',
             )}>
             <label
@@ -229,25 +229,10 @@ export function ProductCsvUpload() {
               />
               {!fileName ? (
                 <>
-                  <div
-                    className={cn(
-                      'flex size-12 items-center justify-center rounded-xl transition-colors',
-                      isDragging
-                        ? 'bg-primary/20'
-                        : 'bg-default-100 dark:bg-default-50/20',
-                    )}>
-                    <Icon
-                      name='upload'
-                      className={cn(
-                        'size-6',
-                        isDragging ? 'text-primary' : 'text-default-500',
-                      )}
-                    />
-                  </div>
                   <span className='text-center text-sm font-medium text-default-600 dark:text-default-400'>
                     Drop CSV here or click to choose
                   </span>
-                  <span className='inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm'>
+                  <span className='inline-flex h-10 items-center justify-center rounded-sm dark:bg-white bg-sidebar dark:text-dark-table/70 px-8 text-sm font-semibold tracking-wide'>
                     Choose CSV file
                   </span>
                 </>

@@ -199,16 +199,20 @@ export const Nav = ({children}: NavProps) => {
                 onPress={onCartDrawerOpen}>
                 <Icon
                   name='bag-solid'
-                  style={{
-                    color:
-                      !isMobile && scrollY >= 710
-                        ? '#373945'
-                        : scrollY <= 400
-                          ? undefined
-                          : '#373945',
-                  }}
+                  // style={{
+                  //   color:
+                  //     !isMobile && scrollY >= 710
+                  //       ? '#373945'
+                  //       : scrollY <= 400
+                  //         ? undefined
+                  //         : '#373945',
+                  // }}
                   className={cn('size-6 text-white', {
                     'text-dark-table dark:text-white': !inStoreLobby,
+                    'text-dark-table dark:text-white .':
+                      !isMobile && scrollY >= 710,
+                    'text-dark-table dark:text-white _':
+                      isMobile && scrollY >= 400,
                   })}
                 />
               </Button>

@@ -174,6 +174,46 @@ export const DealsContent = () => {
   const categories = useQuery(api.categories.q.listCategories)
   const createDeal = useMutation(api.deals.m.create)
   const updateDeal = useMutation(api.deals.m.update)
+  const toggleDealEnabled = useMutation(
+    api.deals.m.update,
+  ).withOptimisticUpdate((localStore, {id, patch}) => {
+    if (patch.enabled === undefined) return
+
+    const adminDeals = localStore.getQuery(api.deals.q.listForAdmin, {})
+    const targetDeal = adminDeals?.find((deal) => deal.id === id)
+
+    if (adminDeals) {
+      localStore.setQuery(
+        api.deals.q.listForAdmin,
+        {},
+        adminDeals.map((deal) =>
+          deal.id === id ? {...deal, enabled: patch.enabled!} : deal,
+        ),
+      )
+    }
+
+    const storeDeals = localStore.getQuery(api.deals.q.listForStore, {})
+    if (!storeDeals) return
+
+    if (!patch.enabled) {
+      localStore.setQuery(
+        api.deals.q.listForStore,
+        {},
+        storeDeals.filter((deal) => deal.id !== id),
+      )
+      return
+    }
+
+    if (storeDeals.some((deal) => deal.id === id) || !targetDeal) return
+
+    localStore.setQuery(
+      api.deals.q.listForStore,
+      {},
+      [...storeDeals, {...targetDeal, enabled: true}].toSorted(
+        (a, b) => a.order - b.order,
+      ),
+    )
+  })
   const removeDeal = useMutation(api.deals.m.remove)
   const reorderDeals = useMutation(api.deals.m.reorder)
   const seedDefaults = useMutation(api.deals.m.seedDefaults)
@@ -250,14 +290,16 @@ export const DealsContent = () => {
   }, [form, editingId, createDeal, updateDeal, uid, closeModal])
 
   const handleToggleEnabled = useCallback(
-    (deal: Deal, enabled: boolean) => {
+    (deal: Deal) => (enabled: boolean) => {
       startTransition(() => {
-        updateDeal({id: deal.id, patch: {enabled}, updatedBy: uid}).catch(
-          () => {},
-        )
+        toggleDealEnabled({
+          id: deal.id,
+          patch: {enabled},
+          updatedBy: uid,
+        }).catch(() => {})
       })
     },
-    [updateDeal, uid],
+    [toggleDealEnabled, uid],
   )
 
   const handleDelete = useCallback(() => {
@@ -307,39 +349,45 @@ export const DealsContent = () => {
 
   if (isLoading) {
     return (
-      <div className='flex w-full flex-col gap-4'>
-        <SectionHeader title='Deals & Bundles' />
-        <p className='text-sm text-foreground/60'>Loading…</p>
+      <div className='flex w-full'>
+        <SectionHeader title='Deals & Bundles' description={''}>
+          <Button size='md' disabled variant='light'>
+            <Icon name='spinner-dots' className='mr-1 size-5 opacity-80' />
+          </Button>
+        </SectionHeader>
       </div>
     )
   }
 
   return (
-    <div className='flex w-full flex-col gap-6'>
-      <SectionHeader
-        title='Deals & Bundles'
-        description='Configure store deals and mix-and-match bundles. Only enabled deals appear on the Deals page.'>
-        <div className='flex gap-2'>
-          {deals.length === 0 && (
+    <div className='flex w-full flex-col space-y-2'>
+      <div className='flex items-start w-full min-h-20'>
+        <SectionHeader
+          title='Deals & Bundles'
+          description='Configure store deals and mix-and-match bundles. Only enabled deals appear on the Deals page.'>
+          <div className='flex'>
+            {deals.length === 0 && (
+              <Button
+                size='md'
+                variant='flat'
+                onPress={handleSeedDefaults}
+                isLoading={isSeeding}
+                color='secondary'>
+                Seed default deals
+              </Button>
+            )}
             <Button
-              size='sm'
-              variant='flat'
-              onPress={handleSeedDefaults}
-              isLoading={isSeeding}
-              color='secondary'>
-              Seed default deals
+              size='md'
+              radius='none'
+              color='primary'
+              onPress={openAdd}
+              className='bg-dark-table dark:bg-white dark:text-dark-table rounded-lg'>
+              <Icon name='plus' className='mr-1 size-5' />
+              <span>Add Deal</span>
             </Button>
-          )}
-          <Button
-            size='md'
-            radius='none'
-            color='primary'
-            onPress={openAdd}
-            className='bg-dark-table dark:bg-white dark:text-dark-table rounded-lg'>
-            Add Deal
-          </Button>
-        </div>
-      </SectionHeader>
+          </div>
+        </SectionHeader>
+      </div>
 
       <section className='flex flex-col gap-4'>
         <div className='flex items-baseline justify-between'>
@@ -364,8 +412,9 @@ export const DealsContent = () => {
             {deals.map((deal, i) => (
               <Card
                 key={deal.id}
+                radius='none'
                 shadow='none'
-                className='border border-default-200/80 rounded-xl overflow-hidden transition-colors hover:border-default-300/80'>
+                className='border border-alum/30 rounded-xs overflow-hidden transition-colors hover:border-default-300/80'>
                 <CardBody className='p-0'>
                   <div className='flex items-start justify-between gap-3 p-4 pb-3'>
                     <div className='flex min-w-0 flex-1 items-start gap-3'>
@@ -374,39 +423,52 @@ export const DealsContent = () => {
                           <h4 className='font-semibold text-foreground truncate'>
                             {deal.title}
                           </h4>
-                          <p className='mt-0.5 text-xs md:text-sm text-foreground/60 line-clamp-2'>
-                            {deal.description}
-                          </p>
+                          <div className='flex items-center space-x-1 ml-3 mt-0.5 text-xs md:text-sm text-foreground/50 line-clamp-2'>
+                            <Icon name='book-open' className='size-4.5' />
+                            <span className='text-foreground/80'>
+                              {deal.description}
+                            </span>
+                          </div>
                         </div>
                         <div className='mt-2 flex flex-wrap items-center gap-1.5'>
-                          <span className='rounded bg-default-200/50 px-1.5 py-0.5 font-mono text-[10px] text-foreground/70'>
-                            {deal.id}
-                          </span>
-                          <span className='text-[10px] text-foreground/50'>
+                          <div className='flex items-center space-x-1'>
+                            <span className='font-ios text-xs uppercase opacity-40'>
+                              ID:
+                            </span>
+                            <span className='rounded py-1 font-mono text-[10px] text-terpenes'>
+                              {deal.id}
+                            </span>
+                          </div>
+                          <span className='ml-3 text-[10px] text-foreground/60 tracking-wide'>
                             max {deal.maxPerStrain} per strain
                           </span>
                         </div>
                       </div>
                       <Switch
                         size='sm'
-                        classNames={{wrapper: 'mt-0.5'}}
+                        classNames={{
+                          wrapper: [
+                            'mt-0.5',
+                            deal.enabled ? 'bg-terpenes!' : '',
+                          ],
+                        }}
                         isSelected={deal.enabled}
-                        onValueChange={(v) => handleToggleEnabled(deal, v)}
+                        onValueChange={handleToggleEnabled(deal)}
                         aria-label={`${deal.enabled ? 'Disable' : 'Enable'} ${deal.title}`}
                       />
                     </div>
                   </div>
-                  <div className='flex items-center justify-between border-t border-default-200/60'>
+                  <div className='flex items-center justify-between border-t border-default-200/60 bg-alum/15'>
                     <div className='flex items-center space-x-3 px-4'>
                       {deal.categorySlugs.map((s) => (
                         <span
                           key={s}
-                          className='rounded bg-blue-400/10 px-1.5 py-0.5 text-[10px] text-blue-200'>
+                          className='rounded-lg bg-terpenes/5 border border-foreground/25 px-2 py-0.5 text-[10px] text-foreground/60'>
                           {s}
                         </span>
                       ))}
                     </div>
-                    <div className='flex items-center justify-end gap-1 bg-default-100/30 dark:bg-default-50/20 px-4 py-2'>
+                    <div className='flex items-center justify-end gap-1 px-4 py-2 font-okxs '>
                       <Button
                         size='sm'
                         isIconOnly
@@ -415,17 +477,18 @@ export const DealsContent = () => {
                         aria-label='Move up'
                         isDisabled={i === 0}
                         onPress={() => handleMove(i, -1)}
-                        className='min-w-8 rounded-md'>
+                        className='min-w-8 rounded-sm'>
                         <Icon name='arrow-up' className='size-4' />
                       </Button>
                       <Button
                         size='sm'
                         variant='light'
+                        radius='none'
                         isIconOnly
                         aria-label='Move down'
                         isDisabled={i === deals.length - 1}
                         onPress={() => handleMove(i, 1)}
-                        className='min-w-8'>
+                        className='min-w-8 rounded-sm'>
                         <Icon name='arrow-down' className='size-4' />
                       </Button>
                       <div className='mx-3 w-px my-2 self-stretch bg-default-200' />
@@ -433,7 +496,7 @@ export const DealsContent = () => {
                         size='sm'
                         radius='none'
                         variant='flat'
-                        className='rounded-md'
+                        className='rounded-sm dark:bg-white/10 hover:bg-dark-table dark:hover:bg-white active:bg-dark-table dark:active:bg-white dark:active:text-dark-table hover:opacity-100! hover:text-white dark:hover:text-dark-table'
                         onPress={() => openEdit(deal)}>
                         Edit
                       </Button>
@@ -441,7 +504,7 @@ export const DealsContent = () => {
                         size='sm'
                         radius='none'
                         variant='light'
-                        className='rounded-md text-red-300 hover:bg-red-600/20 dark:hover:bg-red-500/10'
+                        className='rounded-sm text-red-400 dark:text-red-300 hover:bg-red-600/10! dark:hover:bg-red-500/10'
                         onPress={() => setDeleteConfirmId(deal.id)}>
                         Delete
                       </Button>

@@ -1,6 +1,7 @@
 import {ClassName} from '@/app/types'
 import {cn} from '@/lib/utils'
 import {ReactNode, ViewTransition} from 'react'
+import {Typewrite} from '../expermtl/typewrite'
 
 interface SectionHeaderProps {
   title?: ReactNode
@@ -31,7 +32,11 @@ export const SectionHeader = ({
       )}
       <ViewTransition>
         {description && (
-          <p className='text-left text-sm text-foreground/60'>{description}</p>
+          <Typewrite
+            text={description as string}
+            speed={2}
+            showCursor={false}
+            className='text-left text-sm text-foreground/60'></Typewrite>
         )}
       </ViewTransition>
     </div>

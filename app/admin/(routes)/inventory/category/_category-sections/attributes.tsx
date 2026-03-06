@@ -1,11 +1,10 @@
 'use client'
 
-import type {AttributeEntry} from '@/app/admin/(routes)/inventory/category/category-schema'
 import type {CategoryType} from '@/convex/categories/d'
 import {Icon} from '@/lib/icons'
 import {slugify} from '@/lib/slug'
 import {Accordion, AccordionItem, Button, Input} from '@heroui/react'
-import {useState} from 'react'
+import {useMemo, useState} from 'react'
 import {narrowInputClassNames} from '../../../../_components/ui/fields'
 import type {CategoryFormApi} from '../category-schema'
 import {FormSection, Header} from './components'
@@ -23,6 +22,37 @@ interface AttributeEntryListFieldProps {
   namePlaceholder?: string
   slugPlaceholder?: string
   emptyLabel: string
+}
+
+interface AttributeAccordionTitleProps {
+  form: CategoryFormApi
+  fieldName: AttributeFieldName
+  title: string
+}
+
+function AttributeAccordionTitle({
+  form,
+  fieldName,
+  title,
+}: AttributeAccordionTitleProps) {
+  return (
+    <form.AppField name={fieldName}>
+      {(field) => {
+        const count = ((field.state.value as AttributeEntry[]) ?? []).length
+
+        return (
+          <div className='flex w-full items-center justify-between gap-3'>
+            <div className='flex items-center space-x-2'>
+              <span>{title}</span>
+              <span className='inline-flex min-w-7 items-center justify-center rounded-xs px-2 py-0.5 text-sm md:text-base font-medium text-dark-gray/80 dark:text-light-gray/80'>
+                {count}
+              </span>
+            </div>
+          </div>
+        )
+      }}
+    </form.AppField>
+  )
 }
 
 function AttributeEntryListField({
@@ -116,27 +146,27 @@ function AttributeEntryListField({
                 className='flex-1'
               />
               <Button
-                size='sm'
+                size='md'
                 radius='none'
                 variant='solid'
                 color='primary'
-                className='rounded-sm dark:bg-white dark:text-dark-table shrink-0'
+                className='rounded-xs bg-dark-table dark:bg-white dark:text-dark-table shrink-0'
                 onPress={handleAdd}
                 isDisabled={!nameInput.trim()}>
                 Add
               </Button>
             </div>
             {entries.length > 0 ? (
-              <ul className='flex flex-wrap space-x-2'>
+              <ul className='flex flex-wrap space-x-2 gap-y-2'>
                 {entries.map((entry, index) => (
                   <li
                     key={`${entry.slug}-${index}`}
-                    className='flex flex-wrap items-center gap-2 rounded-lg bg-dark-gray/10 dark:bg-dark-table px-3 py-1 w-fit'>
-                    <span>{entry.name}</span>
+                    className='flex flex-wrap items-center gap-2 rounded-lg bg-dark-gray/10 dark:bg-white/10 px-3 py-1 w-fit'>
+                    <span className='ps-1'>{entry.name}</span>
                     <button
                       type='button'
                       onClick={() => handleRemove(index)}
-                      className='rounded p-1.5 text-muted-foreground hover:bg-dark-gray/20 hover:text-rose-500 dark:hover:bg-sidebar'
+                      className='rounded ml-1 text-muted-foreground  hover:text-rose-500 dark:hover:text-rose-400'
                       aria-label={`Remove ${entry.name}`}>
                       <Icon name='x' className='size-4' />
                     </button>
@@ -155,73 +185,171 @@ function AttributeEntryListField({
   )
 }
 
+interface AttributeEntry {
+  name: AttributeFieldName
+  slug: string
+  label: string
+  emptyLabel: string
+}
+
 interface AttributesProps {
   form: CategoryFormApi
   category: CategoryType | null
 }
 
 export const Attributes = ({form, category: _category}: AttributesProps) => {
+  const attributes = useMemo(
+    () =>
+      [
+        {
+          name: 'tiers',
+          label: 'Tiers',
+          emptyLabel: 'No tiers set for this category',
+        },
+        {
+          name: 'productTypes',
+          label: 'Types',
+          emptyLabel: 'No product types configured',
+        },
+        {
+          name: 'bases',
+          label: 'Base',
+          emptyLabel: 'No base options configured',
+        },
+        {
+          name: 'subcategories',
+          label: 'Subcategory',
+          emptyLabel: 'No subcategories configured',
+        },
+        {
+          name: 'brands',
+          label: 'Brand',
+          emptyLabel: 'No brands configured',
+        },
+      ] as Array<AttributeEntry>,
+    [],
+  )
   return (
     <FormSection id='attributes' position='middle'>
       <Header label='Attributes' />
       <Accordion
         variant='bordered'
-        className='rounded-lg border border-gray-300 dark:border-origin px-0'
+        className='rounded-lg bg-sidebar/50 border border-gray-300 dark:border-origin px-0'
         itemClasses={{
-          base: 'py-0 bg-sidebar',
+          base: 'py-0 overflow-hidden',
           title: 'font-medium tracking-tight',
           trigger: 'py-3 px-4',
           content: 'pb-4 pt-0 px-4',
+          titleWrapper: '',
         }}>
-        <AccordionItem key='tiers' aria-label='tiers' title='Tiers'>
+        {attributes.map((attribute) => (
+          <AccordionItem
+            key={attribute.name}
+            aria-label={attribute.name}
+            title={
+              <AttributeAccordionTitle
+                form={form}
+                fieldName={attribute.name}
+                title={attribute.label}
+              />
+            }
+            className='dark:data-open:bg-sidebar data-open:bg-white rounded-t-lg'>
+            <AttributeEntryListField
+              form={form}
+              fieldName={attribute.name}
+              emptyLabel={attribute.emptyLabel}
+            />
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </FormSection>
+  )
+}
+
+/*
+<AccordionItem
+          key='tiers'
+          aria-label='tiers'
+          title={
+            <AttributeAccordionTitle
+              form={form}
+              fieldName='tiers'
+              title='Tiers'
+            />
+          }
+          className='dark:data-open:bg-sidebar data-open:bg-white rounded-t-lg'>
           <AttributeEntryListField
             form={form}
             fieldName='tiers'
-            namePlaceholder='Name'
-            slugPlaceholder='Slug'
             emptyLabel='No tiers set for this category'
           />
         </AccordionItem>
-        <AccordionItem key='types' aria-label='types' title='Types'>
+        <AccordionItem
+          key='types'
+          aria-label='types'
+          title={
+            <AttributeAccordionTitle
+              form={form}
+              fieldName='productTypes'
+              title='Types'
+            />
+          }
+          className='data-open:bg-sidebar'>
           <AttributeEntryListField
             form={form}
             fieldName='productTypes'
-            namePlaceholder='e.g. Disposable, Cartridge, Pod'
-            slugPlaceholder='e.g. disposable, cartridge (auto from name)'
             emptyLabel='No product types configured'
           />
         </AccordionItem>
-        <AccordionItem key='base' aria-label='base' title='Base'>
+        <AccordionItem
+          key='base'
+          aria-label='base'
+          title={
+            <AttributeAccordionTitle
+              form={form}
+              fieldName='bases'
+              title='Base'
+            />
+          }
+          className='data-open:bg-sidebar'>
           <AttributeEntryListField
             form={form}
             fieldName='bases'
-            namePlaceholder='e.g. Flower, Infused, Distillate'
-            slugPlaceholder='e.g. flower, infused (auto from name)'
             emptyLabel='No base options configured'
           />
         </AccordionItem>
         <AccordionItem
           key='subcategory'
           aria-label='subcategory'
-          title='Subcategory'>
+          title={
+            <AttributeAccordionTitle
+              form={form}
+              fieldName='subcategories'
+              title='Subcategory'
+            />
+          }
+          className='data-open:bg-sidebar'>
           <AttributeEntryListField
             form={form}
             fieldName='subcategories'
-            namePlaceholder='e.g. Sativa, Hybrid, Indica'
-            slugPlaceholder='e.g. sativa, hybrid (auto from name)'
             emptyLabel='No subcategories configured'
           />
         </AccordionItem>
-        <AccordionItem key='brand' aria-label='brand' title='Brand'>
+        <AccordionItem
+          key='brand'
+          aria-label='brand'
+          title={
+            <AttributeAccordionTitle
+              form={form}
+              fieldName='brands'
+              title='Brand'
+            />
+          }
+          className='data-open:bg-sidebar'>
           <AttributeEntryListField
             form={form}
             fieldName='brands'
-            namePlaceholder='e.g. Brand A, House Brand'
-            slugPlaceholder='e.g. brand-a (auto from name)'
             emptyLabel='No brands configured'
           />
         </AccordionItem>
-      </Accordion>
-    </FormSection>
-  )
-}
+*/

@@ -101,8 +101,8 @@ export const UserDropdown = ({
               <JustTheTip
                 id='updates'
                 icon='bell'
-                tip='updates'
-                offset={6}
+                tip='alerts'
+                offset={1}
                 as={'div'}
                 onPress={undefined}
               />
@@ -143,7 +143,7 @@ export const UserDropdown = ({
                   id='messages'
                   icon='chat'
                   tip='messages'
-                  offset={6}
+                  offset={1}
                   as={Link}
                   href='/account/chat'
                 />
@@ -153,7 +153,7 @@ export const UserDropdown = ({
                 id='theme-toggle'
                 icon='toggle-theme'
                 tip='theme'
-                offset={6}
+                offset={1}
                 onPress={onThemeToggle}
               />
             </div>
@@ -199,7 +199,7 @@ const JustTheTip = ({
   as,
   href,
   tip,
-  offset = 6,
+  offset = 1,
 }: JustTheTipProps) => {
   return (
     <Tooltip
@@ -207,7 +207,7 @@ const JustTheTip = ({
       content={tip}
       offset={offset}
       radius='none'
-      className='font-okxs text-base max-h-7 text-white border border-white/60 dark:border-background/60 rounded-sm shadow-xl px-2 bg-dark-table'>
+      className='font-okxs text-sm max-h-7 text-white dark:border border-white/60 dark:border-background/60 rounded-sm shadow-xl px-2 bg-dark-table'>
       <Button
         as={as}
         isIconOnly

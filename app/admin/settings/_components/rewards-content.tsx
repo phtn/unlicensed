@@ -9,6 +9,7 @@ import type {
 import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
+import {Icon} from '@/lib/icons'
 import {
   Button,
   Card,
@@ -23,12 +24,7 @@ import {
   ModalHeader,
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {
-  startTransition,
-  useCallback,
-  useState,
-  ViewTransition,
-} from 'react'
+import {startTransition, useCallback, useState, ViewTransition} from 'react'
 
 type TierFormState = {
   minSubtotal: string
@@ -109,14 +105,15 @@ function BundleAndThresholdsSection({
   }, [config, bundleForm, freeShipFirst, minRedemption, topUpThreshold, onSave])
 
   return (
-    <section className='flex flex-col gap-4 mt-2'>
-      <h3 className='text-sm font-medium uppercase tracking-wider text-foreground/70'>
+    <section className='flex flex-col gap-4 mt-6'>
+      <h3 className='text-sm font-semibold uppercase tracking-wider text-foreground/70'>
         Bundle Bonus & Thresholds
       </h3>
       <Checkbox
         isSelected={bundleForm.enabled}
+        className='font-clash font-normal'
         onValueChange={(v) => setBundleForm((f) => ({...f, enabled: v}))}>
-        Bundle bonus enabled
+        Bonus Enabled
       </Checkbox>
       <div className='max-w-4xl grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3'>
         <div className='flex flex-col gap-2'>
@@ -340,29 +337,36 @@ export const RewardsContent = () => {
 
   if (isLoading) {
     return (
-      <div className='flex w-full flex-col gap-4'>
-        <SectionHeader title='Rewards Config' />
-        <p className='text-sm text-foreground/60'>Loading…</p>
+      <div className='flex w-full'>
+        <SectionHeader title='Rewards Manager'>
+          <Button disabled variant='light'>
+            <Icon name='spinner-dots' className='mr-1 size-5 opacity-80' />
+          </Button>
+        </SectionHeader>
       </div>
     )
   }
 
   return (
-    <div className='flex w-full flex-col gap-6'>
-      <SectionHeader
-        title='Rewards Config'
-        description='Configure tier-based shipping, cash back, and bundle bonus. Matches the structure used in checkout.'>
-        <Button
-          size='sm'
-          color='primary'
-          onPress={openAddTier}
-          className='bg-dark-table dark:bg-white dark:text-dark-table'>
-          Add Tier
-        </Button>
-      </SectionHeader>
+    <div className='flex w-full flex-col space-y-2'>
+      <div className='flex items-start w-full min-h-20'>
+        <SectionHeader
+          title='Rewards Manager'
+          description='Configure tier-based shipping, cash back, and bundle bonus. Matches the structure used in checkout.'>
+          <Button
+            size='md'
+            radius='none'
+            color='primary'
+            onPress={openAddTier}
+            className='bg-dark-table dark:bg-white dark:text-dark-table rounded-lg'>
+            <Icon name='plus' className='mr-1 size-5' />
+            <span>Add Tier</span>
+          </Button>
+        </SectionHeader>
+      </div>
 
       <section className='flex flex-col gap-4 mt-2'>
-        <h3 className='text-sm font-medium uppercase tracking-wider text-foreground/70'>
+        <h3 className='text-sm font-semibold uppercase tracking-wider text-foreground/70'>
           Shipping & Cash Back Tiers
         </h3>
         <div className='grid md:grid-cols-2 gap-3'>
@@ -370,12 +374,16 @@ export const RewardsContent = () => {
             <Card
               key={i}
               shadow='none'
-              className='border border-default-200/50'>
+              radius='none'
+              className='border border-alum/30 rounded-xs overflow-hidden transition-colors bg-dark-table/40'>
               <CardBody className='flex flex-row flex-wrap items-center justify-between gap-4 p-4'>
                 <div>
                   <div className='flex items-center gap-2'>
                     <span className='font-medium'>{tier.label}</span>
-                    <Chip size='sm' variant='flat'>
+                    <Chip
+                      size='sm'
+                      variant='flat'
+                      className='bg-sidebar/80 dark:bg-white/5'>
                       ${tier.minSubtotal}
                       {tier.maxSubtotal !== null
                         ? ` – $${tier.maxSubtotal}`
@@ -394,16 +402,17 @@ export const RewardsContent = () => {
                 <div className='flex gap-2'>
                   <Button
                     size='sm'
+                    radius='none'
                     variant='flat'
+                    className='rounded-sm'
                     onPress={() => openEditTier(i)}>
                     Edit
                   </Button>
                   <Button
                     size='sm'
-                    color='danger'
-                    variant='flat'
+                    variant='light'
                     onPress={() => setDeleteTierIndex(i)}
-                    className='dark:text-red-100'
+                    className='rounded-sm text-red-400 dark:text-red-300 hover:bg-red-600/10! dark:hover:bg-red-500/10'
                     isDisabled={config.tiers.length <= 1}>
                     Delete
                   </Button>

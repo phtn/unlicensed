@@ -61,12 +61,20 @@ export const Content = ({firebaseId}: ContentProps) => {
     api.orders.q.getUserOrders,
     customer?._id ? {userId: customer._id, limit: 15} : 'skip',
   )
+  const pointsBalance = useQuery(
+    api.rewards.q.getUserPointsBalance,
+    customer?._id ? {userId: customer._id} : 'skip',
+  )
   const cart = useQuery(
     api.cart.q.getCart,
     customer?._id ? {userId: customer._id} : 'skip',
   )
   const customerId = customer?._id
   const customerNotes = customer?.notes ?? ''
+  const storeCreditLabel =
+    pointsBalance === undefined
+      ? 'Loading rewards...'
+      : `$${formatPrice(Math.round((pointsBalance.availablePoints ?? 0) * 100))}`
   const productImageIds = useMemo(
     () =>
       (cart?.items ?? []).flatMap((item) => {
@@ -185,7 +193,7 @@ export const Content = ({firebaseId}: ContentProps) => {
 
   return (
     <main className='min-h-screen px-4 pb-16'>
-      <div className='space-y-0 mt-4'>
+      <div className='space-y-2 mt-4'>
         <div className='flex items-center gap-4'>
           <Button
             prefetch
@@ -227,13 +235,18 @@ export const Content = ({firebaseId}: ContentProps) => {
                 <div className='flex items-center space-x-6'>
                   {customer.contact?.phone && (
                     <div className='flex items-center space-x-1'>
-                      <Icon name='phone' className='size-4.5 opacity-80' />
-                      <p className='text-sm text-mac-blue'>
-                        {customer.contact?.phone}
-                      </p>
+                      <Icon name='phone' className='size-3.5 opacity-80' />
+                      <p className='text-sm'>{customer.contact?.phone}</p>
                     </div>
                   )}
 
+                  <div className='flex items-center space-x-1'>
+                    <Icon
+                      name='mail-send-fill'
+                      className='size-3.5 opacity-80'
+                    />
+                    <p className='text-sm'>{customer.email}</p>
+                  </div>
                   <Button
                     radius='none'
                     variant='solid'
@@ -242,15 +255,14 @@ export const Content = ({firebaseId}: ContentProps) => {
                     isDisabled={isOpeningChat || !customerChatFid}
                     onPress={handleOpenChat}
                     className='flex items-center bg-transparent border-none text-sm space-x-1 hover:bg-sidebar rounded-md'
-                    startContent={
-                      <Icon name='chat' className='size-4.5 cursor-pointer' />
+                    endContent={
+                      <Icon
+                        name='chat'
+                        className='size-3.5 cursor-pointer opacity-80'
+                      />
                     }>
-                    <span className='-ml-2'>chat</span>
+                    <span className='-mr-1'>chat</span>
                   </Button>
-                  <div className='flex items-center space-x-1'>
-                    <Icon name='mail-send-fill' className='size-4.5' />
-                    <p className='text-sm opacity-80'>{customer.email}</p>
-                  </div>
                 </div>
               </div>
             </div>
@@ -263,7 +275,7 @@ export const Content = ({firebaseId}: ContentProps) => {
               <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 <div className='space-y-1'>
                   <p className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
-                    Firebase ID
+                    FID
                   </p>
                   <p className='font-mono text-xs'>
                     {customer.firebaseId ?? 'N/A'}
@@ -271,21 +283,23 @@ export const Content = ({firebaseId}: ContentProps) => {
                 </div>
                 <div className='space-y-1'>
                   <p className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
-                    FID
+                    UID
                   </p>
-                  <p className='font-mono text-xs'>{customer.fid ?? 'N/A'}</p>
+                  <p className='font-mono text-xs'>{customer._id ?? 'N/A'}</p>
                 </div>
                 <div className='space-y-1'>
                   <p className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
-                    Created
+                    Joined
                   </p>
                   <p className='text-sm'>{formatDate(customer.createdAt)}</p>
                 </div>
                 <div className='space-y-1'>
                   <p className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
-                    Last Updated
+                    Rewards Points
                   </p>
-                  <p className='text-sm'>{formatDate(customer.updatedAt)}</p>
+                  <p id='store-credit' className='text-sm'>
+                    {storeCreditLabel}
+                  </p>
                 </div>
               </div>
             </Card>
