@@ -4,7 +4,8 @@ import {cn} from '@/lib/utils'
 import {Avatar} from '@heroui/react'
 import DOMPurify from 'dompurify'
 import {marked} from 'marked'
-import {useMemo} from 'react'
+import {useRouter} from 'next/navigation'
+import {useCallback, useMemo} from 'react'
 import {ASSISTANT_NAME, type AssistantMessage} from './assistant'
 import {ScrollToBottomButton} from './scroll-to-bottom-button'
 
@@ -17,7 +18,32 @@ function escapeHtml(text: string) {
     .replaceAll("'", '&#039;')
 }
 
+function getSafeAssistantHref(href: string): string | null {
+  if (!href) return null
+
+  if (href.startsWith('/') || href.startsWith('#')) {
+    return href
+  }
+
+  if (href.startsWith('mailto:') || href.startsWith('tel:')) {
+    return href
+  }
+
+  try {
+    const url = new URL(href)
+    if (url.protocol === 'http:' || url.protocol === 'https:') {
+      return url.toString()
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
 function AssistantMarkdown({content}: {content: string}) {
+  const router = useRouter()
+
   const sanitizedHtml = useMemo(() => {
     const parsed = marked.parse(content, {
       gfm: true,
@@ -30,8 +56,53 @@ function AssistantMarkdown({content}: {content: string}) {
     return DOMPurify.sanitize(rawHtml, {USE_PROFILES: {html: true}})
   }, [content])
 
+  const handleLinkClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const target = event.target
+      if (!(target instanceof Element)) return
+
+      const anchor = target.closest('a')
+      if (!(anchor instanceof HTMLAnchorElement)) return
+
+      const href = anchor.getAttribute('href')
+      if (!href) return
+
+      const safeHref = getSafeAssistantHref(href)
+      if (!safeHref) return
+
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (safeHref.startsWith('#')) {
+        const destination = document.querySelector(safeHref)
+        destination?.scrollIntoView({behavior: 'smooth', block: 'start'})
+        return
+      }
+
+      if (
+        safeHref.startsWith('/') ||
+        safeHref.startsWith(window.location.origin)
+      ) {
+        const nextHref = safeHref.startsWith('/')
+          ? safeHref
+          : safeHref.slice(window.location.origin.length) || '/'
+        router.push(nextHref)
+        return
+      }
+
+      if (safeHref.startsWith('mailto:') || safeHref.startsWith('tel:')) {
+        window.location.href = safeHref
+        return
+      }
+
+      window.open(safeHref, '_blank', 'noopener,noreferrer')
+    },
+    [router],
+  )
+
   return (
     <div
+      onClick={handleLinkClick}
       className={cn(
         'text-sm md:text-base leading-relaxed wrap-break-words',
         // basic markdown styling without relying on typography plugin
@@ -40,7 +111,7 @@ function AssistantMarkdown({content}: {content: string}) {
         '[&_li]:my-1',
         '[&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-black/10 [&_pre]:p-3',
         '[&_code]:rounded [&_code]:bg-black/10 [&_code]:px-1 [&_code]:py-0.5',
-        '[&_a]:underline [&_a]:underline-offset-2 [&_a]:wrap-break-word',
+        '[&_a]:cursor-pointer [&_a]:underline [&_a]:underline-offset-2 [&_a]:wrap-break-word',
         '[&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:text-muted-foreground',
       )}
       dangerouslySetInnerHTML={{__html: sanitizedHtml}}
