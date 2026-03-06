@@ -1015,7 +1015,7 @@ export const PayTab = ({
       animate={{opacity: 1, y: 0}}
       exit={{opacity: 0, y: -10}}
       transition={{layout: {duration: 0.3, ease: 'easeInOut'}}}
-      className='space-y-0 w-full p-1 md:p-4 pb-10 md:h-160 rounded-lg border-2 border-white/20 flex flex-col'>
+      className='space-y-0 w-full p-1 md:p-4 pb-10 md:h-160 flex flex-col'>
       <div>
         {paymentAmountUsd && payableUsdValue !== null && !activeReceipt && (
           <PayAmount
@@ -1077,11 +1077,11 @@ export const PayTab = ({
                   bitcoin: bitcoinPrice,
                 }}
                 nativeSymbol={nativeSymbol}
-                listHeightClassName='h-56'
+                listHeightClassName='h-54'
                 onTokenSelect={handleTokenSelect}
               />
             ) : (
-              <div className='relative h-28 overflow-hidden flex items-center justify-center text-white/60 text-sm'>
+              <div className='relative h-24 overflow-hidden flex items-center justify-center text-foreground/60 text-sm'>
                 <motion.div className='space-y-3 sm:space-y-4 opacity-60 bg-blend-lighten blur-3xl w-full h-full absolute -top-1 right-0 bg-top-right' />
                 <p className=' line-clamp-2 max-w-[18ch] text-center font-okxs'>
                   No tokens with balance found on this network
@@ -1105,7 +1105,7 @@ export const PayTab = ({
         </AnimatePresence>
       </div>
 
-      <div className='mt-auto pb-4'>
+      <div className='mt-auto pb-6'>
         <PayButtons
           showReceiptButton={
             !!activeReceipt && activeReceipt.status === 'success' && !!onReset

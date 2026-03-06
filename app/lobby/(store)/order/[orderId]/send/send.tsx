@@ -30,7 +30,7 @@ import {
   useTransition,
 } from 'react'
 
-const CRYPTO_WALLET_IDENTIFIER = 'crypto_wallet_addresses'
+const CRYPTO_WALLET_IDENTIFIER = 'crypto_wallet_relay'
 
 type CryptoWalletAddresses = {
   bitcoin: string
@@ -124,15 +124,15 @@ const CryptoSendContent = () => {
 
   return (
     <div className='relative z-100 md:-translate-x-2 md:w-3xl md:max-w-3xl md:mx-auto flex h-full'>
-      <div className='w-full relative bg-linear-to-br from-zinc-900 via-zinc-950 to-zinc-950 overflow-hidden rounded-lg'>
+      <div className='w-full relative bg-linear-to-br dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-950 overflow-hidden rounded-lg'>
         <motion.div
           initial={{opacity: 0, scale: 0.85}}
           animate={{opacity: 1, scale: 1}}
           exit={{opacity: 0, scale: 0.6}}
           transition={{duration: 0.2}}
-          className='flex flex-col space-y-6 md:justify-between px-3 py-8 border-b-[0.33px] border-white/0 w-full'>
-          <div className='flex items-center space-x-2 md:space-x-4 text-white/80 ps-2'>
-            <Icon name='network' className='text-white/70 md:size-6 size-6' />
+          className='flex flex-col space-y-6 md:justify-between px-3 py-6 w-full'>
+          <div className='flex items-center space-x-2 md:space-x-4 ps-2'>
+            <Icon name='network' className='opacity-70 md:size-6 size-6' />
             <span className='flex font-brk text-sm uppercase'>
               <span className='flex mr-1'>Select</span>Network
             </span>
@@ -141,13 +141,13 @@ const CryptoSendContent = () => {
           <Tabs.Root
             value={selected}
             onValueChange={(v) => setSelected(v as SendPageNetwork)}>
-            <Tabs.List className='relative z-0 flex justify-around md:justify-start gap-8 w-full mb-4 md:mb-0'>
+            <Tabs.List className='relative z-0 flex justify-around md:justify-start gap-8 w-full mb-4 md:mb-6'>
               {networks.map((tab) => (
                 <Tabs.Tab
                   key={tab}
                   className={cn(
                     'flex h-8 items-center justify-center border-0 break-keep whitespace-nowrap',
-                    'text-sm font-medium data-active:text-white font-okxs',
+                    'text-sm font-medium font-okxs text-dark-table dark:text-white/80',
                     'outline-none select-none before:inset-x-0 before:inset-y-1 before:rounded-sm',
                     'transition-colors duration-100 delay-100',
                   )}
@@ -261,18 +261,14 @@ function SendToPanel({
             network === 'ethereum'
               ? getBySymbol('ETH')?.price
               : network === 'polygon'
-                ? getBySymbol('POL')?.price ?? getBySymbol('MATIC')?.price
+                ? (getBySymbol('POL')?.price ?? getBySymbol('MATIC')?.price)
                 : null
           const expectedValueWei =
             order &&
             tokenPrice != null &&
             (network === 'ethereum' || network === 'polygon')
-              ? (
-                  BigInt(
-                    Math.floor(
-                      (order.totalCents / 100 / tokenPrice) * 1e18,
-                    ),
-                  )
+              ? BigInt(
+                  Math.floor((order.totalCents / 100 / tokenPrice) * 1e18),
                 ).toString()
               : undefined
 
@@ -334,8 +330,8 @@ function SendToPanel({
   )
 
   return (
-    <form onSubmit={handleSubmit} className='space-y-2 w-full'>
-      <div className='flex items-center justify-center md:justify-start md:h-72 h-fit w-full rounded-lg border border-zinc-500 bg-zinc-200/20 mt-2 px-3 py-8 md:py-0'>
+    <form onSubmit={handleSubmit} className='space-y-2 w-full mt-4'>
+      <div className='flex items-center justify-center md:justify-start md:h-72 h-fit w-full rounded-lg bg-zinc-200/20 dark:bg-dark-table/50 px-3 py-8 md:py-0'>
         {qrDataUrl ? (
           <div className='grid md:grid-cols-2 gap-8 md:gap-0 w-full place-items-center md:place-items-start'>
             <Image
@@ -345,17 +341,18 @@ function SendToPanel({
               className='md:size-64 size-full aspect-square mx-auto object-contain shrink-0'
             />
             <div className='w-full place-items-center'>
-              <p className='font-semibold text-lg text-center w-full'>
-                Sending Crypto as Payment Guide
+              <p className='font-semibold text-lg text-center md:text-start w-full'>
+                Send Crypto Guide
               </p>
-              <ol className='list-decimal pl-2 mt-3'>
+              <ol className='list-decimal pl-1 mt-3'>
                 <li>Select network/chain</li>
                 <li>Open your crypto wallet</li>
                 <li>Scan the QR code from your wallet</li>
-                <li>Or copy the wallet address</li>
-                <li>Copy the total amount to pay</li>
-                <li>Paste the transaction hash below.</li>
-                <li>Press {`"Confirm Payment"`}.</li>
+                <li>Enter Total amount to pay</li>
+                <li>Send your crypto payment</li>
+                <li>Obtain send transaction hash</li>
+                <li>Paste transaction hash below</li>
+                <li>Press {`"Verify Payment"`}.</li>
               </ol>
             </div>
           </div>
@@ -365,14 +362,14 @@ function SendToPanel({
       </div>
       <div
         className={cn(
-          'py-1 flex w-full items-center justify-between rounded-sm transition-colors mt-4 md:mt-2',
+          'py-2 flex w-full items-center justify-between transition-colors mt-4 md:my-4 border-b border-sidebar',
           'hover:bg-white/5 disabled:opacity-50 disabled:pointer-events-none',
         )}>
-        <span className='font-brk text-white/90'>Send to</span>
-        <span className='text-white/80 text-sm'>{walletAddress}</span>
+        <span className='font-brk dark:text-white/90'>Send to</span>
+        <span className='dark:text-white/80 text-sm'>{walletAddress}</span>
         <Icon
           name={isCopied ? 'check' : 'copy'}
-          className='text-white/70 size-4'
+          className='dark:text-white/70 size-4'
           onClick={copyFn}
         />
       </div>
@@ -383,8 +380,10 @@ function SendToPanel({
         <Input
           id='txn-hash'
           placeholder={network === 'bitcoin' ? 'txid (64 hex chars)' : '0x...'}
+          radius='none'
           value={txnHash}
           onChange={handleChange}
+          className='rounded-sm'
         />
       </div>
       {error ? (
@@ -394,11 +393,12 @@ function SendToPanel({
       ) : null}
       <div className='flex items-center justify-end py-3'>
         <Button
-          type='submit'
           size='lg'
+          type='submit'
+          radius='none'
           disabled={!txnHash.trim() || isPending}
           isLoading={isPending}>
-          Confirm Payment
+          Verify Payment
         </Button>
       </div>
     </form>
@@ -432,9 +432,9 @@ const NetworkButtonRound = ({
       onClick={onSelect}
       // disabled={name === 'bitcoin'}
       className={cn(
-        'relative flex items-center justify-center w-auto h-7 px-2.5 rounded-full overflow-hidden space-x-1 md:mx-2',
+        'relative flex items-center justify-center w-auto h-8 px-2.5 rounded-full overflow-hidden space-x-1 md:mx-2',
         {
-          'bg-white': selected,
+          'dark:bg-white bg-dark-table text-white': selected,
           'hover:bg-white/2 ': !selected,
           'cursor-pointer': true,
         },
@@ -449,18 +449,18 @@ const NetworkButtonRound = ({
                 ? 'polygon'
                 : 'ethereum'
         }
-        className={cn('text-slate-300 size-4', {
-          'size-4': selected,
+        className={cn('dark:text-slate-300 size-4 rounded-full', {
+          'size-4 aspect-square shrink-0': selected,
           'text-rose-400': name === 'sepolia' && selected,
-          'text-polygon': name === 'polygon' && selected,
-          'text-ethereum': name === 'ethereum' && selected,
-          'text-rose-300': name === 'amoy' && selected,
-          'text-bitcoin': name === 'bitcoin' && selected,
+          'dark:text-polygon text-purple-400': name === 'polygon' && selected,
+          'text-ethereum dark:text-ethereum': name === 'ethereum' && selected,
+          'text-rose-300 ': name === 'amoy' && selected,
+          'text-bitcoin dark:text-bitcoint': name === 'bitcoin' && selected,
         })}
       />
       <p
-        className={cn('font-brk opacity-80 text-sm text-white capitalize', {
-          'opacity-100 text-dark-table max-w-[8ch]': selected,
+        className={cn('font-brk opacity-80 text-sm capitalize', {
+          'opacity-100 max-w-[8ch]': selected,
         })}>
         {name}
       </p>

@@ -29,6 +29,7 @@ export type {WelcomeEmailProps} from './templates/welcome'
 export type {InvitationEmailProps} from './templates/invitation'
 export type {PromotionEmailProps} from './templates/promotion'
 export type {ProductDiscountEmailProps} from './templates/product-discount'
+export type {FirstOrderEmailProps} from './templates/first-order'
 export {
   OrderConfirmationEmail,
   PaymentSuccessEmail,
@@ -38,4 +39,5 @@ export {
   InvitationEmail,
   PromotionEmail,
   ProductDiscountEmail,
+  FirstOrderEmail,
 } from './templates'

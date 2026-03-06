@@ -31,9 +31,9 @@ export const NetworkSelector = ({
         animate={{opacity: 1, scale: 1}}
         exit={{opacity: 0, scale: 0.6}}
         transition={{duration: 0.2}}
-        className='flex flex-col md:space-x-8 md:justify-between px-1 md:px-3 py-4 md:py-6 border-b-[0.33px] border-white/0 w-full'>
-        <div className='flex items-center space-x-0.5 md:space-x-2 text-white/80 ps-1 md:ps-2 pb-3'>
-          <Icon name='network' className='text-white/70 size-4 md:size-5' />
+        className='flex flex-col md:space-x-8 md:justify-between px-1 md:px-3 py-6 md:py-6 border-b-[0.33px] border-white/0 w-full'>
+        <div className='flex items-center space-x-0.5 md:space-x-2 opacity-80 ps-1 md:ps-2 pb-3'>
+          <Icon name='network' className='opacity-70 size-4 md:size-5' />
           <span className='flex font-brk text-xs uppercase'>
             Select Network
           </span>
@@ -73,7 +73,8 @@ const NetworkButtonRound = ({
       className={cn(
         'relative flex items-center justify-center w-auto h-7 px-2 rounded-full overflow-hidden space-x-1 mx-2',
         {
-          'bg-white': selected,
+          'dark:bg-white dark:text-dark-table bg-dark-table text-white':
+            selected,
           'hover:bg-white/2 ': !selected,
           'cursor-pointer': true,
         },
@@ -88,18 +89,18 @@ const NetworkButtonRound = ({
                 ? 'polygon'
                 : 'ethereum'
         }
-        className={cn('text-slate-300 size-4', {
+        className={cn('dark:text-slate-300 size-4', {
           'size-4': selected,
           'text-rose-400': name === 'sepolia' && selected,
-          'text-polygon': name === 'polygon' && selected,
-          'text-ethereum': name === 'ethereum' && selected,
-          'text-rose-300': name === 'amoy' && selected,
-          'text-bitcoin': name === 'bitcoin' && selected,
+          'dark:text-polygon text-purple-400': name === 'polygon' && selected,
+          'text-ethereum dark:bg-ethereum': name === 'ethereum' && selected,
+          'text-rose-300 dark:text-amoy': name === 'amoy' && selected,
+          'text-bitcoin dark:text-bitcoin': name === 'bitcoin' && selected,
         })}
       />
       <p
-        className={cn('font-brk opacity-80 text-sm text-white capitalize', {
-          'opacity-100 text-dark-table max-w-[8ch]': selected,
+        className={cn('font-brk opacity-80 text-sm capitalize', {
+          'opacity-100 max-w-[8ch]': selected,
         })}>
         {/*{name === 'bitcoin' && !selected ? 'BTC' : name}*/}
         {name}

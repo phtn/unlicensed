@@ -38,6 +38,11 @@ export const EMAIL_TEMPLATE_OPTIONS = [
     label: 'Product discount',
     defaultSubject: 'A discount just for you',
   },
+  {
+    id: 'first-order',
+    label: 'First order',
+    defaultSubject: 'Claim $25 off your first order',
+  },
 ] as const
 
 export type EmailTemplateId = (typeof EMAIL_TEMPLATE_OPTIONS)[number]['id']

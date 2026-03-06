@@ -48,10 +48,7 @@ const CryptoPayContent = () => {
   }, [setParams])
 
   const handlePaymentSuccess = useCallback(
-    async (
-      transactionHash: `0x${string}`,
-      context?: PaymentSuccessContext,
-    ) => {
+    async (transactionHash: `0x${string}`, context?: PaymentSuccessContext) => {
       if (!order || order.payment.status === 'completed') return
       if (paymentSyncedTxHashRef.current === transactionHash) return
 
@@ -79,8 +76,8 @@ const CryptoPayContent = () => {
   )
 
   return (
-    <div className='relative z-100 md:-translate-x-2 md:w-3xl md:max-w-3xl md:mx-auto flex h-full'>
-      <div className='w-full relative bg-linear-to-br drop-shadow-xl drop-shadow-dark-table/50 from-zinc-900 via-zinc-950 to-zinc-950 overflow-hidden rounded-lg'>
+    <div className='relative z-100 md:w-3xl md:max-w-3xl md:mx-auto flex h-full bg-sidebar'>
+      <div className='w-full relative bg-linear-to-br dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-950 overflow-hidden rounded-lg'>
         <PayTab
           onSend={() => undefined}
           onPaymentSuccess={handlePaymentSuccess}

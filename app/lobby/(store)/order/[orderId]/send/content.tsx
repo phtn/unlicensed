@@ -77,8 +77,8 @@ export const Content = () => {
   const hasCompletedPayment = isPaymentCompleted(order.payment.status)
 
   return (
-    <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-black'>
-      <div className='relative md:mx-auto md:max-w-7xl min-h-[36rem] md:min-h-[40rem] overflow-hidden'>
+    <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-background'>
+      <div className='relative md:mx-auto md:max-w-7xl min-h-[36rem] md:min-h-[40rem] overflow-hidden mt-4'>
         <AnimatePresence initial={false} mode='sync'>
           {!hasCompletedPayment ? (
             <motion.div
@@ -87,7 +87,7 @@ export const Content = () => {
               animate={{opacity: 1, y: 0}}
               exit={{opacity: 0, y: -110}}
               transition={{duration: 0.5, ease: [0.22, 1, 0.36, 1]}}
-              className='md:flex'>
+              className='md:flex gap-8'>
               <OrderSummaryWidget />
               <CryptoSend />
             </motion.div>

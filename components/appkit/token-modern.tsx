@@ -64,7 +64,7 @@ export const TokenModern = ({
       </div>
       <div className='font-okxs flex items-center justify-between w-full'>
         <div className='text-left -space-y-px'>
-          <p className='text-white font-medium'>
+          <p className='dark:text-white font-medium'>
             {tickerSymbol(
               token === 'ethereum'
                 ? nativeSymbol === 'matic'
@@ -78,19 +78,19 @@ export const TokenModern = ({
               // Fallback to UsdcBalance component if balance not provided
               <UsdcBalance compact />
             ) : (
-              <span className='font-okxs font-normal text-indigo-100 text-sm opacity-90'>
+              <span className='font-okxs font-normal dark:text-indigo-100 text-sm opacity-90'>
                 {formattedBalance}
               </span>
             )}
           </p>
           <div className='hidden _flex items-center space-x-2'>
-            <span className='text-slate-300/50 font-okxs font-medium text-xs px-0.5 uppercase'>
+            <span className='dark:text-slate-300/50 font-okxs font-medium text-xs px-0.5 uppercase'>
               {token === 'ethereum' && nativeSymbol ? nativeSymbol : token} · 1
               = ${price?.toLocaleString('en-US', {maximumFractionDigits: 2})}
             </span>
           </div>
         </div>
-        <div className='text-right text-white'>
+        <div className='text-right dark:text-white'>
           {showBalance && (
             <p
               className={`lg:text-2xl md:text-xl text-lg font-okxs px-2 leading-none`}>
@@ -114,7 +114,7 @@ export const TokenModern = ({
                   exit={{opacity: 0.5, y: 5}}
                   transition={{ease: 'easeOut'}}
                   className={cn(
-                    'text-[8px] uppercase text-red-300 font-brk tracking-widest whitespace-nowrap',
+                    'text-[8px] uppercase text-red-400 font-brk tracking-widest whitespace-nowrap',
                     {'text-red-100': isSelected},
                   )}>
                   Low balance

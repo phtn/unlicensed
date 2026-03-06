@@ -1,5 +1,6 @@
 import {renderTemplate} from '@/lib/resend'
 import type {ComponentType} from 'react'
+import {FirstOrderEmail} from './first-order'
 import {InvitationEmail} from './invitation'
 import {NotificationEmail} from './notification'
 import {OrderConfirmationEmail} from './order-confirmation'
@@ -129,6 +130,38 @@ const TEMPLATE_MAP: Record<EmailTemplateId, TemplateEntry> = {
       validUntil: '{{validUntil}}',
       ctaLabel: '{{ctaLabel}}',
       ctaUrl: '{{ctaUrl}}',
+    },
+  },
+  'first-order': {
+    Component: FirstOrderEmail as ComponentType<object>,
+    defaultProps: {
+      eyebrow: 'From the team behind Platinum Seedbank',
+      discountText: '$25 OFF',
+      discountLabel: 'First order',
+      headline: 'Fresh. California. Delivered',
+      body:
+        'Welcome to our new shop built by the team behind Platinum Seedbank. CA-sourced menu + fresh, fast delivery.',
+      ctaLabel: 'CLAIM $25 & SHOP',
+      ctaUrl: 'https://rapidfirenow.com/lobby',
+      discountCode: 'RF25',
+      codeNote:
+        'Freshness guaranteed • Secure & frictionless checkout • 21+ only',
+      benefits: [
+        'Cannabis Cup Winning Growers',
+        'California Quality',
+        'Delivery Guaranteed',
+        'Earn Cash Back',
+        'Pay Your Way (Card • Apple Pay • Google Pay • Crypto • Cash App)',
+      ],
+      shopLinks: [
+        {label: 'Flowers', url: 'https://rapidfirenow.com/lobby'},
+        {label: 'Vapes', url: 'https://rapidfirenow.com/lobby'},
+        {label: 'Extracts', url: 'https://rapidfirenow.com/lobby'},
+        {label: 'Edibles', url: 'https://rapidfirenow.com/lobby'},
+        {label: 'Pre Rolls', url: 'https://rapidfirenow.com/lobby'},
+      ],
+      secondaryCtaLabel: 'California Brands',
+      secondaryCtaUrl: 'https://rapidfirenow.com/lobby',
     },
   },
 }

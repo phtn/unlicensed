@@ -203,7 +203,7 @@ export function PayAmount({
         className='mt-3'>
         <div className='p-1 md:p-4 border-b decoration-1 decoation-dotted border-white/10 space-y-1'>
           <div className='flex items-center space-x-0'>
-            <h3 className='px-2 font-brk text-xs md:text-sm uppercase opacity-70 text-slate-300'>
+            <h3 className='px-2 font-brk text-xs md:text-sm uppercase opacity-70 dark:text-slate-300'>
               You pay
             </h3>
           </div>
@@ -219,8 +219,8 @@ export function PayAmount({
                 className='hidden _relative btn btn-ghost btn-lg btn-circle bg-transparent backdrop-blur-lg hover:bg-transparent'>
                 <Icon
                   name='qrcode'
-                  className={cn('size-4 md:size-6 text-white ', {
-                    'text-slate-300/50': !paymentRequestUri,
+                  className={cn('size-4 md:size-6 dark:text-white ', {
+                    'dark:text-slate-300/50': !paymentRequestUri,
                   })}
                 />
               </button>
@@ -230,7 +230,7 @@ export function PayAmount({
                 <motion.div className='relative flex items-center justify-center h-6 w-6 aspect-square'>
                   <Icon
                     name='cash'
-                    className='absolute size-4 md:size-6 text-white'
+                    className='absolute size-4 md:size-6 dark:text-white'
                   />
                 </motion.div>
               </button>
@@ -257,7 +257,7 @@ export function PayAmount({
 
 export const MoneyFormat = ({value}: {value: number}) => {
   return (
-    <span className='text-white text-2xl font-okxs'>
+    <span className='dark:text-white text-2xl font-okxs'>
       $
       <AnimatedNumber
         value={value}

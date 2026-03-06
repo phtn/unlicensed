@@ -97,7 +97,7 @@ export const getAdminByIdentifier = query({
 
     if (!setting) {
       // Fall back to first document when identifier wasn't set on existing docs
-      setting = await db.query('adminSettings').first() ?? null
+      setting = (await db.query('adminSettings').first()) ?? null
     }
 
     // Normalize productTiers to stored format: [{ flower: [] }, { extract: [] }, { vape: [] }]
@@ -114,7 +114,9 @@ export const getAdminByIdentifier = query({
       ) {
         productTiers = tiersObjectToArray(raw as Record<string, string[]>)
       } else {
-        productTiers = (Array.isArray(raw) ? raw : DEFAULT_PRODUCT_TIERS_AS_ARRAY) as typeof DEFAULT_PRODUCT_TIERS_AS_ARRAY
+        productTiers = (
+          Array.isArray(raw) ? raw : DEFAULT_PRODUCT_TIERS_AS_ARRAY
+        ) as typeof DEFAULT_PRODUCT_TIERS_AS_ARRAY
       }
       return {
         ...setting,
@@ -217,11 +219,12 @@ export const getPaymentDefaultGateway = query({
       .withIndex('by_identifier', (q) => q.eq('identifier', 'payment-gateway'))
       .unique()
 
-    const v = setting?.value &&
+    const v =
+      setting?.value &&
       typeof setting.value === 'object' &&
       'defaultGateway' in setting.value
-      ? setting.value.defaultGateway
-      : undefined
+        ? setting.value.defaultGateway
+        : undefined
 
     if (v === 'paygate' || v === 'paylex' || v === 'rampex') return v
     return 'paygate'
@@ -343,10 +346,34 @@ export const getTaxConfig = query({
 })
 
 const DEFAULT_REWARDS_TIERS = [
-  {minSubtotal: 0, maxSubtotal: 98.99, shippingCost: 14.95, cashBackPct: 1.5, label: 'Starter'},
-  {minSubtotal: 99, maxSubtotal: 148.99, shippingCost: 4.99, cashBackPct: 2.0, label: 'Silver'},
-  {minSubtotal: 149, maxSubtotal: 248.99, shippingCost: 0, cashBackPct: 3.0, label: 'Gold'},
-  {minSubtotal: 249, maxSubtotal: null, shippingCost: 0, cashBackPct: 5.0, label: 'Platinum'},
+  {
+    minSubtotal: 0,
+    maxSubtotal: 98.99,
+    shippingCost: 12.99,
+    cashBackPct: 1.5,
+    label: 'Starter',
+  },
+  {
+    minSubtotal: 99,
+    maxSubtotal: 148.99,
+    shippingCost: 3.99,
+    cashBackPct: 2.0,
+    label: 'Silver',
+  },
+  {
+    minSubtotal: 149,
+    maxSubtotal: 248.99,
+    shippingCost: 0,
+    cashBackPct: 3.0,
+    label: 'Gold',
+  },
+  {
+    minSubtotal: 249,
+    maxSubtotal: null,
+    shippingCost: 0,
+    cashBackPct: 5.0,
+    label: 'Platinum',
+  },
 ] as const
 
 const DEFAULT_BUNDLE_BONUS = {enabled: true, bonusPct: 0.5, minCategories: 2}
@@ -376,14 +403,16 @@ export const getRewardsConfig = query({
 
     const rawTiers = Array.isArray(v.tiers) ? v.tiers : []
     const tiers = rawTiers.map((t: unknown) => {
-      const row = t && typeof t === 'object' ? (t as Record<string, unknown>) : {}
+      const row =
+        t && typeof t === 'object' ? (t as Record<string, unknown>) : {}
       return {
         minSubtotal: typeof row.minSubtotal === 'number' ? row.minSubtotal : 0,
         maxSubtotal:
           row.maxSubtotal === null || typeof row.maxSubtotal === 'number'
             ? row.maxSubtotal
             : 0,
-        shippingCost: typeof row.shippingCost === 'number' ? row.shippingCost : 0,
+        shippingCost:
+          typeof row.shippingCost === 'number' ? row.shippingCost : 0,
         cashBackPct: typeof row.cashBackPct === 'number' ? row.cashBackPct : 0,
         label: typeof row.label === 'string' ? row.label : 'Tier',
       }
@@ -392,11 +421,23 @@ export const getRewardsConfig = query({
       tiers.push(...DEFAULT_REWARDS_TIERS)
     }
 
-    const rawBundle = v.bundleBonus && typeof v.bundleBonus === 'object' ? (v.bundleBonus as Record<string, unknown>) : {}
+    const rawBundle =
+      v.bundleBonus && typeof v.bundleBonus === 'object'
+        ? (v.bundleBonus as Record<string, unknown>)
+        : {}
     const bundleBonus = {
-      enabled: typeof rawBundle.enabled === 'boolean' ? rawBundle.enabled : DEFAULT_BUNDLE_BONUS.enabled,
-      bonusPct: typeof rawBundle.bonusPct === 'number' ? rawBundle.bonusPct : DEFAULT_BUNDLE_BONUS.bonusPct,
-      minCategories: typeof rawBundle.minCategories === 'number' ? rawBundle.minCategories : DEFAULT_BUNDLE_BONUS.minCategories,
+      enabled:
+        typeof rawBundle.enabled === 'boolean'
+          ? rawBundle.enabled
+          : DEFAULT_BUNDLE_BONUS.enabled,
+      bonusPct:
+        typeof rawBundle.bonusPct === 'number'
+          ? rawBundle.bonusPct
+          : DEFAULT_BUNDLE_BONUS.bonusPct,
+      minCategories:
+        typeof rawBundle.minCategories === 'number'
+          ? rawBundle.minCategories
+          : DEFAULT_BUNDLE_BONUS.minCategories,
     }
 
     return {

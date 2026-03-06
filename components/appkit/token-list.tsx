@@ -106,7 +106,7 @@ export const Tokens = ({
                 'relative w-full flex items-start justify-between py-3 px-4 transition-colors duration-75',
                 'transition-colors duration-75 cursor-pointer rounded-xl',
                 {
-                  'bg-brand': selectedToken === token,
+                  'bg-brand text-white': selectedToken === token,
                 },
               )}>
               <div className='flex items-center gap-3 flex-1 min-w-0'>

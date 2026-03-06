@@ -32,8 +32,8 @@ export const OrderSummaryWidget = () => {
   )
 
   return (
-    <main className='bg-black md:w-3xl z-80'>
-      <ArcCard className='md:h-150 scale-y-95 md:rounded-sm rounded-lg'>
+    <main className='md:w-3xl z-80'>
+      <ArcCard className='md:h-150 md:rounded-sm rounded-lg'>
         <ArcHeader
           title={
             order?.payment.status === 'completed'
@@ -60,6 +60,8 @@ export const OrderSummaryWidget = () => {
             </span>
           }
         />
+
+        <div className='mt-2'>Summary</div>
         <ArcLineItems
           data={
             data
@@ -70,8 +72,16 @@ export const OrderSummaryWidget = () => {
                     value: `$${formatPrice(order?.shippingCents ?? 0)}`,
                   },
                   {
-                    label: 'Total',
+                    label: 'Subtotal',
                     value: `$${formatPrice(order?.totalCents ?? 0)}`,
+                  },
+                  {
+                    label: 'Processing Fee',
+                    value: `$${formatPrice((order?.totalCents ?? 0) * 0.0675)}`,
+                  },
+                  {
+                    label: 'Total',
+                    value: `$${formatPrice((order?.totalCents ?? 0) * 1.0675)}`,
                   },
                 ]
               : []

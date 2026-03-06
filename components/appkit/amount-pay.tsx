@@ -41,7 +41,7 @@ export const AmountPayInput = ({
               }
             }}
             className='text-xs md:hover:text-indigo-300 transition-colors'>
-            <span className='uppercase font-okxs font-bold text-indigo-200'>
+            <span className='uppercase font-okxs font-bold dark:text-indigo-200'>
               Max
             </span>{' '}
             <span className='font-okxs'>
@@ -59,7 +59,7 @@ export const AmountPayInput = ({
       <div className='relative rounded-2xl border border-zinc-700 overflow-hidden bg-zinc-900/50'>
         <div className='relative px-4 py-4'>
           <div className='flex items-center gap-2'>
-            <span className='text-white/40 text-lg'>$</span>
+            <span className='dark:text-white/40 text-lg'>$</span>
             <input
               id='pay-amount'
               type='number'
@@ -72,7 +72,7 @@ export const AmountPayInput = ({
             />
           </div>
           {tokenAmount && (
-            <div className='mt-2 text-sm text-white/50'>
+            <div className='mt-2 text-sm dark:text-white/50'>
               ≈{' '}
               {tokenAmount.toLocaleString('en-US', {
                 minimumFractionDigits: 2,

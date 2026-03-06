@@ -32,8 +32,8 @@ export const OrderSummaryWidget = () => {
   )
 
   return (
-    <main className='bg-black md:w-3xl z-80'>
-      <ArcCard className='md:h-150 scale-y-95 md:rounded-sm rounded-lg'>
+    <main className='dark:bg-black md:w-3xl z-80'>
+      <ArcCard className='md:h-150 md:rounded-sm rounded-lg'>
         <ArcHeader
           title={
             order?.payment.status === 'completed'
