@@ -3,9 +3,11 @@
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
+import type {AttributeEntry} from '@/convex/categories/d'
 import type {Deal} from '@/convex/deals/d'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {
   Button,
   Card,
@@ -20,7 +22,13 @@ import {
   Switch,
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {startTransition, useCallback, useState, ViewTransition} from 'react'
+import {
+  startTransition,
+  useCallback,
+  useMemo,
+  useState,
+  ViewTransition,
+} from 'react'
 
 type VariationForm = {
   totalUnits: string
@@ -34,11 +42,147 @@ type DealFormState = {
   title: string
   description: string
   categorySlugs: string[]
+  excludedTiers: string[]
+  excludedSubcategories: string[]
+  excludedProductTypes: string[]
+  excludedBases: string[]
+  excludedBrands: string[]
   variations: VariationForm[]
   defaultVariationIndex: string
   maxPerStrain: string
   lowStockThreshold: string
   enabled: boolean
+}
+
+type DealExclusionField =
+  | 'excludedTiers'
+  | 'excludedSubcategories'
+  | 'excludedProductTypes'
+  | 'excludedBases'
+  | 'excludedBrands'
+
+type CategoryAttributeKey =
+  | 'tiers'
+  | 'subcategories'
+  | 'productTypes'
+  | 'bases'
+  | 'brands'
+
+const DEAL_EXCLUSION_CONFIG: Array<{
+  field: DealExclusionField
+  categoryKey: CategoryAttributeKey
+  label: string
+}> = [
+  {
+    field: 'excludedTiers',
+    categoryKey: 'tiers',
+    label: 'Tier',
+  },
+  {
+    field: 'excludedSubcategories',
+    categoryKey: 'subcategories',
+    label: 'Subcategory',
+  },
+  {
+    field: 'excludedProductTypes',
+    categoryKey: 'productTypes',
+    label: 'Product Type',
+  },
+  {
+    field: 'excludedBases',
+    categoryKey: 'bases',
+    label: 'Base',
+  },
+  {
+    field: 'excludedBrands',
+    categoryKey: 'brands',
+    label: 'Brands',
+  },
+]
+
+function collectAttributeOptions(
+  categories: Array<{
+    slug?: string
+    tiers?: AttributeEntry[]
+    subcategories?: AttributeEntry[]
+    productTypes?: AttributeEntry[]
+    bases?: AttributeEntry[]
+    brands?: AttributeEntry[]
+  }>,
+  key: CategoryAttributeKey,
+): AttributeEntry[] {
+  const map = new Map<string, AttributeEntry>()
+  categories.forEach((category) => {
+    ;(category[key] ?? []).forEach((entry) => {
+      if (!map.has(entry.slug)) {
+        map.set(entry.slug, entry)
+      }
+    })
+  })
+  return Array.from(map.values())
+}
+
+function pruneDealExclusions(
+  form: DealFormState,
+  categories: Array<{
+    slug?: string
+    tiers?: AttributeEntry[]
+    subcategories?: AttributeEntry[]
+    productTypes?: AttributeEntry[]
+    bases?: AttributeEntry[]
+    brands?: AttributeEntry[]
+  }>,
+): DealFormState {
+  const selectedCategories = categories.filter((category) =>
+    form.categorySlugs.includes(category.slug ?? ''),
+  )
+
+  const allowedByField = {
+    excludedTiers: new Set(
+      collectAttributeOptions(selectedCategories, 'tiers').map(
+        (entry) => entry.slug,
+      ),
+    ),
+    excludedSubcategories: new Set(
+      collectAttributeOptions(selectedCategories, 'subcategories').map(
+        (entry) => entry.slug,
+      ),
+    ),
+    excludedProductTypes: new Set(
+      collectAttributeOptions(selectedCategories, 'productTypes').map(
+        (entry) => entry.slug,
+      ),
+    ),
+    excludedBases: new Set(
+      collectAttributeOptions(selectedCategories, 'bases').map(
+        (entry) => entry.slug,
+      ),
+    ),
+    excludedBrands: new Set(
+      collectAttributeOptions(selectedCategories, 'brands').map(
+        (entry) => entry.slug,
+      ),
+    ),
+  } satisfies Record<DealExclusionField, Set<string>>
+
+  return {
+    ...form,
+    excludedTiers: form.excludedTiers.filter((value) =>
+      allowedByField.excludedTiers.has(value),
+    ),
+    excludedSubcategories: form.excludedSubcategories.filter((value) =>
+      allowedByField.excludedSubcategories.has(value),
+    ),
+    excludedProductTypes: form.excludedProductTypes.filter((value) =>
+      allowedByField.excludedProductTypes.has(value),
+    ),
+    excludedBases: form.excludedBases.filter((value) =>
+      allowedByField.excludedBases.has(value),
+    ),
+    excludedBrands: form.excludedBrands.filter((value) =>
+      allowedByField.excludedBrands.has(value),
+    ),
+  }
 }
 
 function emptyVariation(): VariationForm {
@@ -79,6 +223,11 @@ function dealToForm(deal: Deal): DealFormState {
     title: deal.title,
     description: deal.description,
     categorySlugs: [...deal.categorySlugs],
+    excludedTiers: [...(deal.excludedTiers ?? [])],
+    excludedSubcategories: [...(deal.excludedSubcategories ?? [])],
+    excludedProductTypes: [...(deal.excludedProductTypes ?? [])],
+    excludedBases: [...(deal.excludedBases ?? [])],
+    excludedBrands: [...(deal.excludedBrands ?? [])],
     variations: deal.variations.map((v) => ({
       totalUnits: String(v.totalUnits),
       denominationPerUnit: String(v.denominationPerUnit),
@@ -99,6 +248,11 @@ function emptyForm(editId?: string): DealFormState {
     title: '',
     description: '',
     categorySlugs: [],
+    excludedTiers: [],
+    excludedSubcategories: [],
+    excludedProductTypes: [],
+    excludedBases: [],
+    excludedBrands: [],
     variations: [emptyVariation()],
     defaultVariationIndex: '0',
     maxPerStrain: '1',
@@ -112,6 +266,11 @@ type DealInsert = {
   title: string
   description: string
   categorySlugs: string[]
+  excludedTiers: string[]
+  excludedSubcategories: string[]
+  excludedProductTypes: string[]
+  excludedBases: string[]
+  excludedBrands: string[]
   variations: Array<{
     totalUnits: number
     denominationPerUnit: number
@@ -159,6 +318,11 @@ function formToDealPatch(form: DealFormState): DealInsert | null {
     title: form.title.trim(),
     description: form.description.trim(),
     categorySlugs: form.categorySlugs.filter(Boolean),
+    excludedTiers: form.excludedTiers.filter(Boolean),
+    excludedSubcategories: form.excludedSubcategories.filter(Boolean),
+    excludedProductTypes: form.excludedProductTypes.filter(Boolean),
+    excludedBases: form.excludedBases.filter(Boolean),
+    excludedBrands: form.excludedBrands.filter(Boolean),
     variations,
     defaultVariationIndex,
     maxPerStrain,
@@ -267,6 +431,11 @@ export const DealsContent = () => {
                 title: patch.title,
                 description: patch.description,
                 categorySlugs: patch.categorySlugs,
+                excludedTiers: patch.excludedTiers,
+                excludedSubcategories: patch.excludedSubcategories,
+                excludedProductTypes: patch.excludedProductTypes,
+                excludedBases: patch.excludedBases,
+                excludedBrands: patch.excludedBrands,
                 variations: patch.variations,
                 defaultVariationIndex: patch.defaultVariationIndex,
                 maxPerStrain: patch.maxPerStrain,
@@ -336,14 +505,52 @@ export const DealsContent = () => {
     })
   }, [seedDefaults, uid])
 
-  const toggleCategory = useCallback((slug: string) => {
-    setForm((f) => ({
-      ...f,
-      categorySlugs: f.categorySlugs.includes(slug)
-        ? f.categorySlugs.filter((s) => s !== slug)
-        : [...f.categorySlugs, slug],
-    }))
-  }, [])
+  const toggleCategory = useCallback(
+    (slug: string) => {
+      setForm((current) => {
+        const nextForm = {
+          ...current,
+          categorySlugs: current.categorySlugs.includes(slug)
+            ? current.categorySlugs.filter((s) => s !== slug)
+            : [...current.categorySlugs, slug],
+        }
+        return pruneDealExclusions(nextForm, categories ?? [])
+      })
+    },
+    [categories],
+  )
+
+  const toggleExclusion = useCallback(
+    (field: DealExclusionField, value: string) => {
+      setForm((current) => ({
+        ...current,
+        [field]: current[field].includes(value)
+          ? current[field].filter((item) => item !== value)
+          : [...current[field], value],
+      }))
+    },
+    [],
+  )
+
+  const selectedCategories = useMemo(
+    () =>
+      (categories ?? []).filter((category) =>
+        form.categorySlugs.includes(category.slug ?? ''),
+      ),
+    [categories, form.categorySlugs],
+  )
+
+  const exclusionOptions = useMemo(
+    () =>
+      DEAL_EXCLUSION_CONFIG.map((config) => ({
+        ...config,
+        options: collectAttributeOptions(
+          selectedCategories,
+          config.categoryKey,
+        ),
+      })),
+    [selectedCategories],
+  )
 
   const isLoading = deals === undefined
 
@@ -573,20 +780,29 @@ export const DealsContent = () => {
             />
 
             {/* Categories */}
-            <div className='space-y-3'>
+            <div className='space-y-5'>
               <div>
-                <p className='text-sm font-medium text-foreground'>
-                  Product categories
+                <p className='text-base font-medium text-foreground'>
+                  Product Categories
                 </p>
                 <p className='text-xs text-foreground/55'>
                   Which category slugs this deal applies to.
                 </p>
               </div>
-              <div className='flex flex-wrap gap-3'>
+              <div className='flex flex-wrap gap-5'>
                 {(categories ?? []).map((c) => (
                   <Checkbox
                     key={c._id}
-                    classNames={{label: 'text-sm'}}
+                    color='default'
+                    classNames={{
+                      label: 'text-sm py-0 pe-3 font-medium capitalize',
+                      base:
+                        form.categorySlugs.includes(c.slug ?? '') &&
+                        'bg-terpenes rounded-full',
+                      wrapper:
+                        form.categorySlugs.includes(c.slug ?? '') &&
+                        'bg-terpenes! rounded-full',
+                    }}
                     isSelected={form.categorySlugs.includes(c.slug ?? '')}
                     onValueChange={() => toggleCategory(c.slug ?? '')}>
                     {c.slug ?? c.name}
@@ -600,10 +816,60 @@ export const DealsContent = () => {
               </div>
             </div>
 
-            {/* Variations */}
-            <div className='space-y-3'>
+            {/* Exclusions */}
+            <div className='space-y-3 p-4 dark:bg-dark-table/40'>
               <div>
-                <p className='text-sm font-medium text-foreground'>
+                <p className='text-base font-medium text-foreground'>
+                  Exclusions
+                </p>
+                <p className='text-xs text-foreground/55'>
+                  Exclude specific tiers, subcategories, product types, bases,
+                  or brands from this deal.
+                </p>
+              </div>
+              <div className='space-y-6'>
+                {exclusionOptions.map(({field, label, options}) => (
+                  <div key={field} className='space-y-2'>
+                    <p className='text-xs font-bold uppercase tracking-wide text-foreground/60'>
+                      {label}
+                    </p>
+                    {options.length > 0 ? (
+                      <div className={cn('flex flex-wrap gap-5')}>
+                        {options.map((option) => (
+                          <Checkbox
+                            key={`${field}-${option.slug}`}
+                            color='default'
+                            classNames={{
+                              label: 'text-sm py-0 pe-3 font-medium',
+                              base:
+                                form[field].includes(option.slug) &&
+                                'bg-terpenes rounded-full',
+                              wrapper:
+                                form[field].includes(option.slug) &&
+                                'bg-terpenes! rounded-full',
+                            }}
+                            isSelected={form[field].includes(option.slug)}
+                            onValueChange={() =>
+                              toggleExclusion(field, option.slug)
+                            }>
+                            {option.name}
+                          </Checkbox>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className='text-xs text-foreground/55'>
+                        Select categories with configured {label.toLowerCase()}.
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Variations */}
+            <div className='space-y-5'>
+              <div>
+                <p className='text-base font-medium text-foreground'>
                   Variations
                 </p>
                 <p className='text-xs text-foreground/55'>
@@ -611,11 +877,11 @@ export const DealsContent = () => {
                   required.
                 </p>
               </div>
-              <div className='space-y-3'>
+              <div className='space-y-5'>
                 {form.variations.map((v, idx) => (
                   <div
                     key={idx}
-                    className='rounded-lg border border-default-200/80 bg-default-50/30 dark:bg-default-100/5 p-4'>
+                    className='relative rounded-lg border border-default-200/80 bg-default-50/30 dark:bg-default-100/5 p-4'>
                     <div className='grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4'>
                       <Input
                         label='Total units'
@@ -673,23 +939,21 @@ export const DealsContent = () => {
                         classNames={commonInputClassNames}
                       />
                     </div>
-                    <div className='mt-3 flex justify-end'>
-                      <Button
-                        size='sm'
-                        color='danger'
-                        variant='light'
-                        isDisabled={form.variations.length <= 1}
-                        onPress={() =>
-                          setForm((f) => ({
-                            ...f,
-                            variations: f.variations.filter(
-                              (_, i) => i !== idx,
-                            ),
-                          }))
-                        }>
-                        Remove variation
-                      </Button>
-                    </div>
+                    <Button
+                      size='sm'
+                      color='default'
+                      variant='flat'
+                      isIconOnly
+                      className='absolute -top-4 -right-2 hover:text-danger'
+                      isDisabled={form.variations.length <= 1}
+                      onPress={() =>
+                        setForm((f) => ({
+                          ...f,
+                          variations: f.variations.filter((_, i) => i !== idx),
+                        }))
+                      }>
+                      <Icon name='x' />
+                    </Button>
                   </div>
                 ))}
                 <Button
@@ -708,7 +972,7 @@ export const DealsContent = () => {
 
             {/* Rules */}
             <div className='space-y-3'>
-              <p className='text-sm font-medium text-foreground'>Rules</p>
+              <p className='text-base font-medium text-foreground'>Rules</p>
               <div className='grid gap-4 sm:grid-cols-3'>
                 <Input
                   label='Default variation'

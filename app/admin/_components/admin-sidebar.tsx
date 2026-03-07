@@ -286,6 +286,11 @@ const data: Record<string, NavGroup[]> = {
           icon: 't',
         },
         {
+          title: 'Archives',
+          url: '/admin/inventory/archives',
+          icon: 'archive',
+        },
+        {
           title: 'Tools',
           url: '/admin/inventory/tools',
           icon: 'gallery-edit-bold',

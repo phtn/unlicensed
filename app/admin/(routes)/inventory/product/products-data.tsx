@@ -109,7 +109,10 @@ function serializeCsvCell(value: unknown): string {
   return escapeCsvValue(JSON.stringify(value))
 }
 
-function exportProductsToCsv(products: Doc<'products'>[]) {
+function exportProductsToCsv(
+  products: Doc<'products'>[],
+  filenamePrefix = 'products',
+) {
   const denomHeaders = DENOM_KEYS.flatMap((k) => [`price_${k}`, `stock_${k}`])
   const headers = [...PRODUCT_CSV_FIELDS, ...denomHeaders]
   const rows = products.map((p) => {
@@ -131,7 +134,7 @@ function exportProductsToCsv(products: Doc<'products'>[]) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `products-${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `${filenamePrefix}-${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   URL.revokeObjectURL(url)
 }
@@ -259,8 +262,14 @@ function availableDenominationsCell(
 
 interface ProductsDataProps {
   data: Doc<'products'>[] | undefined
+  title?: string
+  exportFilePrefix?: string
 }
-export const ProductsData = ({data}: ProductsDataProps) => {
+export const ProductsData = ({
+  data,
+  title = 'Products',
+  exportFilePrefix = 'products',
+}: ProductsDataProps) => {
   const categories = useQuery(api.categories.q.listCategories)
   const categorySlugs = useMemo(
     () =>
@@ -470,9 +479,10 @@ export const ProductsData = ({data}: ProductsDataProps) => {
           <DropdownMenu
             aria-label='Export CSV options'
             onAction={(key) => {
-              if (key === 'all') exportProductsToCsv(data ?? [])
+              if (key === 'all')
+                exportProductsToCsv(data ?? [], exportFilePrefix)
               if (key === 'current')
-                exportProductsToCsv(context.getFilteredData())
+                exportProductsToCsv(context.getFilteredData(), exportFilePrefix)
             }}>
             <DropdownItem key='all' description='Export all products'>
               Export all
@@ -486,7 +496,7 @@ export const ProductsData = ({data}: ProductsDataProps) => {
         </Dropdown>
       )
     },
-    [data],
+    [data, exportFilePrefix],
   )
 
   const exportToolbar = useMemo(() => ExportCsvToolbar, [ExportCsvToolbar])
@@ -495,7 +505,7 @@ export const ProductsData = ({data}: ProductsDataProps) => {
     <div className='relative w-full max-w-full overflow-hidden'>
       {data && (
         <DataTable
-          title={'Products'}
+          title={title}
           data={data}
           loading={!data}
           columnConfigs={columns}

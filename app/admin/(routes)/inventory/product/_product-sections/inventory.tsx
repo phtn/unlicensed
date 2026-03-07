@@ -408,7 +408,7 @@ export const Inventory = ({form}: InventoryProps) => {
           <span className='font-polysans font-medium'>Statuses</span>
         </div>
 
-        <div className='grid md:grid-cols-4 items-center gap-6 py-4'>
+        <div className='grid md:grid-cols-4 items-center gap-4 py-4'>
           <form.Field name='available'>
             {(field) => {
               return (

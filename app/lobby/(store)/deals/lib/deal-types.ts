@@ -15,6 +15,11 @@ export interface BundleConfig {
   title: string
   description: string
   categorySlugs: string[]
+  excludedTiers?: string[]
+  excludedSubcategories?: string[]
+  excludedProductTypes?: string[]
+  excludedBases?: string[]
+  excludedBrands?: string[]
   variations: BundleVariation[]
   defaultVariationIndex?: number
   maxPerStrain: number
@@ -48,28 +53,36 @@ export const DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG: BundleConfig = {
 }
 
 /** Converts a Convex deal document to BundleConfig for store/cart usage. */
-export function dealDocToBundleConfig(
-  doc: {
-    id: string
-    title: string
-    description: string
-    categorySlugs: string[]
-    variations: Array<{
-      totalUnits: number
-      denominationPerUnit: number
-      denominationLabel?: string
-      unitLabel: string
-    }>
-    defaultVariationIndex?: number
-    maxPerStrain: number
-    lowStockThreshold?: number
-  },
-): BundleConfig {
+export function dealDocToBundleConfig(doc: {
+  id: string
+  title: string
+  description: string
+  categorySlugs: string[]
+  excludedTiers?: string[]
+  excludedSubcategories?: string[]
+  excludedProductTypes?: string[]
+  excludedBases?: string[]
+  excludedBrands?: string[]
+  variations: Array<{
+    totalUnits: number
+    denominationPerUnit: number
+    denominationLabel?: string
+    unitLabel: string
+  }>
+  defaultVariationIndex?: number
+  maxPerStrain: number
+  lowStockThreshold?: number
+}): BundleConfig {
   return {
     id: doc.id,
     title: doc.title,
     description: doc.description,
     categorySlugs: doc.categorySlugs,
+    excludedTiers: doc.excludedTiers ?? [],
+    excludedSubcategories: doc.excludedSubcategories ?? [],
+    excludedProductTypes: doc.excludedProductTypes ?? [],
+    excludedBases: doc.excludedBases ?? [],
+    excludedBrands: doc.excludedBrands ?? [],
     variations: doc.variations,
     defaultVariationIndex: doc.defaultVariationIndex,
     maxPerStrain: doc.maxPerStrain,

@@ -293,12 +293,12 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
 
   if (isEditing) {
     return (
-      <div className='min-h-screen'>
+      <div className='min-h-screen overflow-y-auto'>
         <div className='hidden dark:fixed inset-0 overflow-hidden pointer-events-none'>
           <div className='absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl' />
           <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-brand/10 rounded-full blur-3xl' />
         </div>
-        <main className='relative'>
+        <main className='relative overflow-y-auto'>
           <div className='overflow-hidden'>
             <EmailTemplateEditor
               initialValues={toFormValues(emailSetting)}
@@ -313,13 +313,13 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   }
 
   return (
-    <div className='min-h-screen'>
+    <div className='min-h-screen overflow-y-auto'>
       <div className='fixed inset-0 overflow-hidden pointer-events-none'>
         <div className='absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl' />
         <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl' />
       </div>
 
-      <main className='relative px-4 sm:px-6 lg:px-8 py-4 border-t-[0.33px] bg-linear-to-b from-zinc-200/20 dark:from-zinc-300/10 to-5% to-zinc-200/10 dark:to-zinc-300/10 zinc-200'>
+      <main className='relative overflow-y-auto px-4 sm:px-6 lg:px-8 py-4 border-t-[0.33px] bg-linear-to-b from-zinc-200/20 dark:from-zinc-300/10 to-5% to-zinc-200/10 dark:to-zinc-300/10 zinc-200'>
         <div className='mb-4 flex items-center justify-between'>
           <Button
             type='button'

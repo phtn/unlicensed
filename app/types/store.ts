@@ -51,6 +51,8 @@ export interface StoreProduct {
   flavorNotes: string[]
   potencyLevel: PotencyLevel
   potencyProfile?: string
+  base?: string
+  productType?: string
   productTier?: string
   subcategory?: string
   weightGrams?: number

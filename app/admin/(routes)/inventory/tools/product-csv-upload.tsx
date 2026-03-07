@@ -358,7 +358,7 @@ export function ProductCsvUpload() {
             <Card
               radius='lg'
               shadow='none'
-              className='flex h-[min(55vh,480px)] min-h-[200px] min-w-0 max-w-full flex-col overflow-hidden border border-default-200/80 dark:border-default-100/50'>
+              className='flex h-[min(55vh,480px)] min-h-50 min-w-0 max-w-full flex-col overflow-hidden border border-default-200/80 dark:border-default-100/50'>
               <div className='min-h-0 w-full flex-1 overflow-x-auto overflow-y-auto'>
                 <table className='min-w-full table-fixed text-sm'>
                   <thead className='sticky top-0 z-10 bg-default-100/95 dark:bg-default-100/10 backdrop-blur supports-backdrop-filter:bg-default-100/80'>
@@ -367,7 +367,7 @@ export function ProductCsvUpload() {
                         (col) => (
                           <th
                             key={col}
-                            className='max-w-[140px] truncate whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest opacity-60'>
+                            className='max-w-35 truncate whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest opacity-60'>
                             {col}
                           </th>
                         ),
@@ -481,7 +481,7 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
         return (
           <td
             key={col}
-            className='max-w-[140px] truncate whitespace-nowrap px-4 py-2.5 text-default-600'
+            className='max-w-35 truncate whitespace-nowrap px-4 py-2.5 text-default-600'
             title={display}>
             {display}
           </td>

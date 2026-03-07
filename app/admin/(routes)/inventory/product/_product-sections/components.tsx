@@ -22,7 +22,7 @@ export const FormSection = ({
         'dark:bg-dark-table/40 px-4 pb-4 border-x border-t border-gray-300 dark:border-origin',
         {
           'rounded-sm': position === 'top',
-          'border-b rounded-b-2xl': position === 'bottom',
+          'border-b rounded-b-sm': position === 'bottom',
         },
       )}>
       {children}

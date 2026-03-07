@@ -86,7 +86,7 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
                   <span>{items.length} picks</span>
                 </div>
               </div>
-              <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+              <div className='flex space-x-4 w-screen overflow-scroll sm:w-full sm:grid sm:gap-6 sm:grid-cols-2 lg:grid-cols-3'>
                 {items.map((product) => (
                   <ProductCard key={product.slug} product={product} />
                 ))}

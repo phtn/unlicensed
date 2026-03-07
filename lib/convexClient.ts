@@ -52,6 +52,8 @@ export type RawProduct = {
   potencyLevel?: PotencyLevel
   potencyProfile?: string
   weightGrams?: number
+  base?: string
+  productType?: string
   brand?: string
   grower?: string
   tier?: string
@@ -129,6 +131,8 @@ export const adaptProduct = (product: RawProduct): StoreProduct => ({
   flavorNotes: product.flavorNotes ?? [],
   potencyLevel: product.potencyLevel ?? 'mild',
   potencyProfile: product.potencyProfile,
+  base: product.base,
+  productType: product.productType,
   weightGrams: product.weightGrams,
   brand: product.brand,
   productTier: product.tier,

@@ -13,8 +13,8 @@ export const Details = ({form}: DetailsProps) => {
   return (
     <FormSection id='details' position='bottom'>
       <Header label='Additional Details' />
-      <div className='grid gap-6'>
-        <div className='flex items-center space-x-6 w-full'>
+      <div className='grid gap-4'>
+        <div className='flex items-center space-x-4 w-full'>
           <form.AppField name='description'>
             {(field) => {
               const descValue = (field.state.value as string) ?? ''

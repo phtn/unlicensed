@@ -7,7 +7,6 @@ import {Suspense} from 'react'
 const PaymentsTabInner = () => {
   return (
     <>
-      {/* Payments Main Tab */}
       <MainTab href='/admin/payments'>
         <PageTitle>Payment Gateways</PageTitle>
       </MainTab>

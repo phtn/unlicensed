@@ -16,12 +16,7 @@ export const NetworkSelector = ({
   onSelectNetwork,
 }: NetworkSelectorProps) => {
   const network_list = useMemo(() => {
-    const networks: AllowedNetworks[] = [
-      'bitcoin',
-      'ethereum',
-      'polygon',
-      'sepolia',
-    ]
+    const networks: AllowedNetworks[] = ['bitcoin', 'ethereum', 'polygon']
 
     return networks.map((net) => ({
       name: net,

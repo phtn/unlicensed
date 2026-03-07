@@ -1,9 +1,11 @@
 'use client'
 
+import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody, Divider} from '@heroui/react'
+import {useQuery} from 'convex/react'
 import {memo, ViewTransition} from 'react'
 import {
   type NVMultiplier,
@@ -84,6 +86,34 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   const isFreeShipping = shipping === 0
   const effectiveVariant: RewardsVariant =
     rewardsVariant ?? (computedRewards != null ? 'tier' : 'off')
+  const cardsProcessingFeeSetting = useQuery(
+    api.admin.q.getAdminByIdentStrict,
+    {
+      identifier: 'cards_processing_fee',
+    },
+  )
+  const cardsProcessingFeePercent =
+    cardsProcessingFeeSetting &&
+    typeof cardsProcessingFeeSetting === 'object' &&
+    !('error' in cardsProcessingFeeSetting) &&
+    typeof cardsProcessingFeeSetting.percent === 'number'
+      ? cardsProcessingFeeSetting.percent
+      : 0
+  const cardsProcessingFeeEnabled =
+    cardsProcessingFeeSetting &&
+    typeof cardsProcessingFeeSetting === 'object' &&
+    !('error' in cardsProcessingFeeSetting) &&
+    typeof cardsProcessingFeeSetting.enabled === 'boolean'
+      ? cardsProcessingFeeSetting.enabled
+      : false
+  const isCardsFeeApplied =
+    paymentMethod === 'cards' && cardsProcessingFeeEnabled
+  const processingFee = isCardsFeeApplied
+    ? Math.round(subtotal * (cardsProcessingFeePercent / 100))
+    : 0
+  const displayTotal = isCardsFeeApplied
+    ? subtotal + processingFee + shipping
+    : total
 
   const rewardsPanel =
     effectiveVariant === 'tier' && computedRewards != null ? (
@@ -122,6 +152,20 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   {formatPrice(subtotal)}
                 </span>
               </div>
+              {isCardsFeeApplied && processingFee > 0 && (
+                <div className='flex justify-between font-okxs text-sm md:text-base'>
+                  <span className=''>
+                    <span className='mr-2'>Processing Fee</span>
+                    <span className='font-ios opacity-40'>(</span>
+                    <span>{cardsProcessingFeePercent}%</span>
+                    <span className='font-ios opacity-40'>)</span>
+                  </span>
+                  <span className=''>
+                    <span className=''>$</span>
+                    {formatPrice(processingFee)}
+                  </span>
+                </div>
+              )}
               <ViewTransition>
                 {showTaxRow && (
                   <div className='flex justify-between font-okxs text-sm md:text-base'>
@@ -153,19 +197,14 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
           <Divider className='opacity-60' />
           <div className='flex justify-between font-medium font-okxs'>
             <span className=''>Total</span>
-            <span className='font-medium'>${formatPrice(total)}</span>
+            <span className='font-medium'>${formatPrice(displayTotal)}</span>
           </div>
 
           {/* Payment Method Selection */}
           {isAuthenticated && (
             <>
               <Divider className='opacity-60' />
-              <div className='py-5'>
-                <PaymentMethods
-                  value={paymentMethod}
-                  onChange={handleOnChange}
-                />
-              </div>
+              <PaymentMethods value={paymentMethod} onChange={handleOnChange} />
             </>
           )}
 

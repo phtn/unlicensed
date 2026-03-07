@@ -39,8 +39,8 @@ export const Packaging = ({form}: PackagingProps) => {
   return (
     <FormSection id='packaging' position='middle'>
       <Header label='Packaging' />
-      <div className='grid grid-cols-1 sm:grid-cols-1 gap-6 w-full'>
-        <div className='flex items-center space-x-6 w-full'>
+      <div className='grid grid-cols-1 sm:grid-cols-1 w-full'>
+        <div className='flex items-center space-x-4 w-full space-y-4'>
           <form.AppField name='unitsRaw'>
             {(field) => {
               const unitsValue = (field.state.value as string) ?? ''
@@ -51,7 +51,7 @@ export const Packaging = ({form}: PackagingProps) => {
               const selectedKeys = new Set(selectedUnits)
 
               return (
-                <div className='space-y-2 w-full'>
+                <div className='space-y-4 w-full'>
                   <Select
                     label='Units'
                     selectionMode='multiple'
@@ -170,7 +170,7 @@ export const Packaging = ({form}: PackagingProps) => {
               }
 
               return (
-                <div className='space-y-2 w-full'>
+                <div className='w-full'>
                   <Textarea
                     label='Denominations'
                     value={denominationsValue}
@@ -183,7 +183,7 @@ export const Packaging = ({form}: PackagingProps) => {
                     classNames={commonInputClassNames}
                   />
                   {selectedUnits.length > 0 && suggestions.length > 0 && (
-                    <div className='space-y-1 h-full'>
+                    <div className='space-y-4 h-full'>
                       <p className='text-sm opacity-80'>
                         Click on suggested denominations for{' '}
                         <span className='font-semibold'>
@@ -223,58 +223,6 @@ export const Packaging = ({form}: PackagingProps) => {
                       (e.g., 1, 3.5, 7, 14, 28)
                     </p>
                   )}
-                  {field.state.meta.isTouched &&
-                    field.state.meta.errors.length > 0 && (
-                      <p className='text-xs text-rose-400'>
-                        {field.state.meta.errors.join(', ')}
-                      </p>
-                    )}
-                </div>
-              )
-            }}
-          </form.AppField>
-        </div>
-
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          <form.AppField name='productTypesRaw'>
-            {(field) => {
-              const value = (field.state.value as string) ?? ''
-              return (
-                <div className='space-y-2 w-full'>
-                  <Input
-                    label='Product Types'
-                    value={value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder='Comma-separated (e.g., Disposable, Cartridge, Pod)'
-                    variant='bordered'
-                    classNames={commonInputClassNames}
-                  />
-                  {field.state.meta.isTouched &&
-                    field.state.meta.errors.length > 0 && (
-                      <p className='text-xs text-rose-400'>
-                        {field.state.meta.errors.join(', ')}
-                      </p>
-                    )}
-                </div>
-              )
-            }}
-          </form.AppField>
-
-          <form.AppField name='subcategoriesRaw'>
-            {(field) => {
-              const value = (field.state.value as string) ?? ''
-              return (
-                <div className='space-y-2 w-full'>
-                  <Input
-                    label='Subcategories'
-                    value={value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder='Comma-separated (e.g., Sativa, Hybrid, Indica)'
-                    variant='bordered'
-                    classNames={commonInputClassNames}
-                  />
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
                       <p className='text-xs text-rose-400'>

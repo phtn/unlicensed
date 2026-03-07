@@ -2,6 +2,7 @@
 
 import {ToolbarWrapper} from '../../components'
 import {InventoryContent} from '../content'
+import {ArchivesContent} from './archives-tab'
 import {CategoryContent} from './category-tab'
 import {ProductContent} from './product-tab'
 import {ToolsContent} from './tools-tab'
@@ -22,6 +23,12 @@ export const Content = ({tabId}: ContentProps) => {
       return (
         <ToolbarWrapper>
           <ProductContent />
+        </ToolbarWrapper>
+      )
+    case 'archives':
+      return (
+        <ToolbarWrapper>
+          <ArchivesContent />
         </ToolbarWrapper>
       )
     case 'tools':

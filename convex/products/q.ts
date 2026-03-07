@@ -8,6 +8,7 @@ export const listProductSlugs = query({
   handler: async (ctx) => {
     const products = await ctx.db.query('products').collect()
     return products
+      .filter((p) => p.archived !== true)
       .map((p) => p.slug)
       .filter((s): s is string => typeof s === 'string' && s.length > 0)
   },
@@ -42,6 +43,29 @@ export const listProducts = query({
       products = products.filter((p) => p.eligibleForDeals === true)
     }
     return sortProducts(products).slice(0, limit)
+  },
+})
+
+export const listArchivedProducts = query({
+  args: {
+    categorySlug: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args): Promise<Doc<'products'>[]> => {
+    const limit = args.limit ?? 50
+    const baseQuery = args.categorySlug
+      ? ctx.db
+          .query('products')
+          .withIndex('by_category', (q) =>
+            q.eq('categorySlug', args.categorySlug!),
+          )
+      : ctx.db.query('products')
+
+    const products = await baseQuery.collect()
+    return sortProducts(products.filter((p) => p.archived === true)).slice(
+      0,
+      limit,
+    )
   },
 })
 

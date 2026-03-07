@@ -87,6 +87,7 @@ export const productSchema = v.object({
   batchId: v.optional(v.string()),
   archived: v.optional(v.boolean()),
   highMargins: v.optional(v.array(v.string())),
+  brandCollaborators: v.optional(v.array(v.string())),
 })
 
 export type ProductType = Infer<typeof productSchema>

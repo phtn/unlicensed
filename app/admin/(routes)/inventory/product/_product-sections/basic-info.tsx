@@ -102,9 +102,9 @@ export const BasicInfo = ({
       const strings = raw as unknown as string[]
       return [...new Set(strings.map((s) => s.trim()))]
         .filter((s) => s.length > 0)
-        .map((s) => ({ value: s, label: s }))
+        .map((s) => ({value: s, label: s}))
     }
-    return (raw as { name: string; slug: string }[]).map((e) => ({
+    return (raw as {name: string; slug: string}[]).map((e) => ({
       value: e.slug,
       label: e.name,
     }))
@@ -118,9 +118,9 @@ export const BasicInfo = ({
       const strings = raw as unknown as string[]
       return [...new Set(strings.map((s) => s.trim()))]
         .filter((s) => s.length > 0)
-        .map((s) => ({ value: s, label: s }))
+        .map((s) => ({value: s, label: s}))
     }
-    return (raw as { name: string; slug: string }[]).map((e) => ({
+    return (raw as {name: string; slug: string}[]).map((e) => ({
       value: e.slug,
       label: e.name,
     }))
@@ -215,7 +215,7 @@ export const BasicInfo = ({
         </Header>
       </div>
       <div className='grid gap-6 w-full'>
-        <div className='grid gap-4 md:grid-cols-3 md:gap-2 items-start w-full'>
+        <div className='grid gap-4 md:grid-cols-3 items-start w-full'>
           {nameField && (
             <form.AppField name='name'>
               {(input) => (
@@ -291,7 +291,7 @@ export const BasicInfo = ({
           )}
         </div>
 
-        <div className='items-center grid md:grid-cols-3 gap-4 md:gap-2'>
+        <div className='items-center grid md:grid-cols-3 gap-4'>
           {categorySlugField?.type === 'select' && (
             <form.AppField name='categorySlug'>
               {(input) => (

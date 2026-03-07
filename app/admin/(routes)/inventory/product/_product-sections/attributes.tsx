@@ -26,8 +26,8 @@ export const Attributes = ({form}: AttributesProps) => {
   return (
     <FormSection id='attributes'>
       <Header label='Attributes & Profile' />
-      <div className='grid gap-6'>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 items-center'>
+      <div className='grid'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 items-center'>
           <form.AppField name='potencyLevel'>
             {(field) => (
               <SelectField
@@ -88,7 +88,7 @@ export const Attributes = ({form}: AttributesProps) => {
           </form.Field>
         </div>
 
-        <div className='grid grid-cols-1 sm:grid-cols-3 w-full gap-6'>
+        <div className='grid grid-cols-1 sm:grid-cols-3 w-full gap-4'>
           <form.Field name='terpenes'>
             {(field) => (
               <div className='space-y-2 w-full'>
@@ -137,7 +137,7 @@ export const Attributes = ({form}: AttributesProps) => {
           </form.Field>
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mt-4'>
           <form.Field name='lineage'>
             {(field) => {
               const value = (field.state.value as string) ?? ''

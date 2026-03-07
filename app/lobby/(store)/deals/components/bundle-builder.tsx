@@ -57,6 +57,10 @@ function getUnitPriceCents(
   return product.priceByDenomination?.[key] ?? product.priceCents ?? 0
 }
 
+function normalizeDealAttributeValue(value?: string): string {
+  return (value ?? '').trim().toLowerCase().replace(/\s+/g, '-')
+}
+
 function filterProductsForVariation(
   products: StoreProduct[],
   variation: BundleVariation,
@@ -64,6 +68,21 @@ function filterProductsForVariation(
   availableMap: Record<string, number>,
 ): StoreProduct[] {
   const denom = variation.denominationPerUnit
+  const excludedTiers = new Set(
+    (config.excludedTiers ?? []).map(normalizeDealAttributeValue),
+  )
+  const excludedSubcategories = new Set(
+    (config.excludedSubcategories ?? []).map(normalizeDealAttributeValue),
+  )
+  const excludedProductTypes = new Set(
+    (config.excludedProductTypes ?? []).map(normalizeDealAttributeValue),
+  )
+  const excludedBases = new Set(
+    (config.excludedBases ?? []).map(normalizeDealAttributeValue),
+  )
+  const excludedBrands = new Set(
+    (config.excludedBrands ?? []).map(normalizeDealAttributeValue),
+  )
 
   return products.filter((p) => {
     const hasDenom = p.availableDenominations?.includes(denom) ?? false
@@ -72,6 +91,15 @@ function filterProductsForVariation(
     const availKey = `${p._id}-${denom}`
     const available = availableMap[availKey] ?? 0
     if (available <= 0) return false
+
+    if (excludedTiers.has(normalizeDealAttributeValue(p.productTier)))
+      return false
+    if (excludedSubcategories.has(normalizeDealAttributeValue(p.subcategory)))
+      return false
+    if (excludedProductTypes.has(normalizeDealAttributeValue(p.productType)))
+      return false
+    if (excludedBases.has(normalizeDealAttributeValue(p.base))) return false
+    if (excludedBrands.has(normalizeDealAttributeValue(p.brand))) return false
 
     return true
   })

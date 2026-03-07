@@ -136,12 +136,7 @@ const CryptoSendContent = () => {
     [getBySymbol],
   )
 
-  const networks: SendPageNetwork[] = [
-    'bitcoin',
-    'ethereum',
-    'sepolia',
-    'polygon',
-  ]
+  const networks: SendPageNetwork[] = ['bitcoin', 'ethereum', 'polygon']
 
   return (
     <div className='relative z-100 md:-translate-x-2 md:w-3xl md:max-w-3xl md:mx-auto flex h-full'>

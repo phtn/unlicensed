@@ -27,7 +27,7 @@ export const NetWeight = ({form}: NetWeightProps) => {
   return (
     <FormSection id='net-weight'>
       <Header label='Packaging Specs' />
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         <form.Field name='netWeight'>
           {(field) => {
             const value = (field.state.value as string) ?? ''

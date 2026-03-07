@@ -13,7 +13,7 @@ export const Details = ({form}: DetailsProps) => {
   return (
     <FormSection id='details' position='bottom'>
       <Header label='Description & Details' />
-      <div className='grid gap-6'>
+      <div className='grid gap-4'>
         <form.Field name='shortDescription'>
           {(field) => {
             const shortDescValue = (field.state.value as string) ?? ''
