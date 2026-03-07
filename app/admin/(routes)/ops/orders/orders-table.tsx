@@ -152,7 +152,7 @@ export const OrdersTable = () => {
         header: (
           <ColHeader
             tip='Courier and account'
-            symbol='Courier · Account'
+            symbol='Shipping Account · Courier'
             center
           />
         ),

@@ -422,11 +422,10 @@ export default function OrderDetailPage() {
               order.orderStatus !== 'delivered' &&
               order.orderStatus !== 'cancelled' && (
                 <Button
-                  color='danger'
                   size='md'
                   radius='none'
-                  variant='solid'
-                  className='bg-danger/80 rounded-lg font-okxs font-semibold dark:text-white text-base'>
+                  variant='light'
+                  className='rounded-xs font-okxs font-semibold dark:text-danger text-base'>
                   Cancel Order
                 </Button>
               )}

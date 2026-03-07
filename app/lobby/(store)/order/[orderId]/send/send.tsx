@@ -434,7 +434,8 @@ const NetworkButtonRound = ({
       className={cn(
         'relative flex items-center justify-center w-auto h-8 px-2.5 rounded-full overflow-hidden space-x-1 md:mx-2',
         {
-          'dark:bg-white bg-dark-table text-white': selected,
+          'dark:bg-white bg-dark-table dark:text-dark-table text-white':
+            selected,
           'hover:bg-white/2 ': !selected,
           'cursor-pointer': true,
         },

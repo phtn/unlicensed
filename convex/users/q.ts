@@ -203,3 +203,65 @@ export const getAllUsers = query({
     return sorted.slice(0, limit)
   },
 })
+
+export const getCustomerShippingAddressSummaries = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 100
+    const users = await ctx.db.query('users').collect()
+    const sortedUsers = users.sort((a, b) => {
+      if (a.createdAt && b.createdAt) {
+        return b.createdAt - a.createdAt
+      }
+      return a.name.localeCompare(b.name)
+    })
+
+    const limitedUsers = sortedUsers.slice(0, limit)
+    const summaries = await Promise.all(
+      limitedUsers.map(async (user) => {
+        const addressDocs = await getUserAddressDocs(ctx, user._id)
+        if (addressDocs.length > 0) {
+          const shippingDocs = addressDocs.filter((doc) =>
+            matchesType(doc.type, 'shipping'),
+          )
+
+          if (shippingDocs.length > 0) {
+            const defaultDoc = user.defaultShippingAddressId
+              ? shippingDocs.find(
+                  (doc) => String(doc._id) === user.defaultShippingAddressId,
+                )
+              : undefined
+            const flaggedDefault = shippingDocs.find(
+              (doc) => doc.isDefault === true,
+            )
+            const selectedDoc = defaultDoc ?? flaggedDefault ?? shippingDocs[0]
+
+            return [
+              String(user._id),
+              {
+                state: selectedDoc?.state ?? '',
+              },
+            ] as const
+          }
+        }
+
+        const legacyAddresses = getLegacyAddresses(user, 'shipping')
+        const legacyDefault = legacyAddresses.find(
+          (address) => address.isDefault === true,
+        )
+        const selectedLegacy = legacyDefault ?? legacyAddresses[0]
+
+        return [
+          String(user._id),
+          {
+            state: selectedLegacy?.state ?? '',
+          },
+        ] as const
+      }),
+    )
+
+    return Object.fromEntries(summaries)
+  },
+})

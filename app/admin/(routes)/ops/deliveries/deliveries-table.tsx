@@ -260,6 +260,7 @@ export const DeliveriesTable = () => {
             )
           },
         },
+
         {
           id: 'shipTo',
           header: <ColHeader tip='' symbol='Ship To' />,
@@ -276,10 +277,10 @@ export const DeliveriesTable = () => {
         },
         {
           id: 'courier',
-          header: <ColHeader tip='Courier' symbol='Courier' center />,
+          header: <ColHeader tip='Shipping Account' symbol='Shipping' center />,
           accessorKey: 'courier',
           cell: courierCell(),
-          size: 100,
+          size: 160,
         },
         {
           id: 'tracking',
@@ -287,7 +288,7 @@ export const DeliveriesTable = () => {
             <ColHeader tip='Tracking number + carrier' symbol='Tracking' />
           ),
           accessorKey: 'shipping',
-          size: 220,
+          size: 200,
           cell: ({row}) => <TrackingEditableCell row={row} />,
         },
         {
@@ -296,12 +297,19 @@ export const DeliveriesTable = () => {
             <ColHeader tip='ETA + shipped date' symbol='Est Delivery' center />
           ),
           accessorKey: 'shipping',
-          size: 80,
+          size: 120,
           cell: ({row}) => <EstimatedDeliveryEditableCell row={row} />,
         },
         {
           id: 'total',
-          header: <ColHeader tip='Order total' symbol='Total' center />,
+          header: (
+            <ColHeader
+              tip='Order total'
+              symbol='Total'
+              right
+              className='mr-4'
+            />
+          ),
           accessorKey: 'totalCents',
           size: 100,
           cell: ({row}) => (

@@ -228,6 +228,30 @@ export const getVIPUsers = query({
 })
 
 /**
+ * Get rewards point balances for all users, keyed by user id
+ */
+export const getCustomerPointsSummaries = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 200
+    const rewards = await ctx.db.query('userRewards').take(limit)
+
+    return Object.fromEntries(
+      rewards.map((reward) => [
+        String(reward.userId),
+        {
+          availablePoints: reward.availablePoints ?? 0,
+          totalPoints: reward.totalPoints ?? 0,
+          redeemedPoints: reward.redeemedPoints ?? 0,
+        },
+      ]),
+    )
+  },
+})
+
+/**
  * Get top customers by spending
  */
 export const getTopCustomers = query({

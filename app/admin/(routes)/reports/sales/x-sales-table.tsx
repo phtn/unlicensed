@@ -5,11 +5,19 @@ import {ColumnConfig} from '@/components/table-v2/create-column'
 import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
+import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useMemo} from 'react'
-import {orderNumberCell} from '../../ops/components'
+import {orderNumberCell, paymentMethodCell} from '../../ops/components'
+import {Order} from '../../ops/types'
+
+const formatStatus = (status: Order['orderStatus']) =>
+  status
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 
 export const SalesDataTable = () => {
   const allOrders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
@@ -83,52 +91,56 @@ export const SalesDataTable = () => {
           id: 'status',
           header: 'Status',
           accessorKey: 'orderStatus',
-          size: 180,
+          size: 160,
           cell: ({row}) => (
-            <span className='text-xs uppercase tracking-wide'>
-              {row.original.orderStatus.replaceAll('_', ' ')}
-            </span>
+            <div className='flex'>
+              <span
+                className={cn(
+                  'inline-flex items-center rounded-sm px-2 py-1.5 font-mono text-xs uppercase tracking-wide',
+                  statusColorMap[row.original.orderStatus],
+                )}>
+                {formatStatus(row.original.orderStatus)}
+              </span>
+            </div>
           ),
         },
         {
           id: 'items',
-          header: 'Items',
           accessorKey: 'items',
-          size: 10,
+          header: <ColHeader tip='Items' symbol='Items' center />,
+          size: 64,
           cell: ({row}) => (
-            <span className='text-sm'>
+            <div className='text-sm text-center w-full'>
               {row.original.items.reduce((sum, item) => sum + item.quantity, 0)}
-            </span>
+            </div>
           ),
         },
         {
           id: 'total',
           header: <ColHeader tip='Total Amount' symbol='Amount' center />,
           accessorKey: 'totalCents',
-          size: 100,
+          size: 120,
           cell: ({row}) => (
             <div className='flex items-center justify-end pr-6'>
-              <p className='font-brk text-xs text-muted-foreground text-right mr-6'>
-                {formatPrice(row.original.totalCents)}
+              <p className='font-brk text-sm text-muted-foreground text-right mr-6'>
+                ${formatPrice(row.original.totalCents)}
               </p>
             </div>
           ),
         },
         {
           id: 'method',
-          header: 'Method',
+          header: 'Payment Method',
           accessorKey: 'payment',
-          size: 100,
-          cell: ({row}) => (
-            <span className='text-sm'>{row.original.payment.method}</span>
-          ),
+          size: 80,
+          cell: paymentMethodCell(),
         },
         {
           id: 'createdAt',
           header: 'Created',
           accessorKey: 'createdAt',
           cell: ({row}) => (
-            <span className='text-xs text-muted-foreground'>
+            <span className='px-4 text-sm text-muted-foreground'>
               {new Date(
                 row.original.createdAt ?? row.original._creationTime,
               ).toLocaleString('en-US', {
@@ -157,4 +169,22 @@ export const SalesDataTable = () => {
       />
     </div>
   )
+}
+
+const statusColorMap: Record<Order['orderStatus'], string> = {
+  pending_payment:
+    'bg-zinc-300/30 text-zinc-700 dark:bg-zinc-500/30 dark:text-zinc-300',
+  order_processing:
+    'bg-sky-500/20 text-sky-800 dark:bg-sky-400/25 dark:text-sky-200',
+  awaiting_courier_pickup:
+    'bg-orange-500/20 text-orange-800 dark:bg-orange-400/25 dark:text-orange-200',
+  shipped:
+    'bg-emerald-500/20 text-emerald-800 dark:bg-emerald-400/25 dark:text-emerald-200',
+  delivered:
+    'bg-green-500/20 text-green-800 dark:bg-green-400/25 dark:text-green-200',
+  // shipping:
+  //   'bg-indigo-500/20 text-indigo-800 dark:bg-indigo-400/25 dark:text-indigo-200',
+  resend: 'bg-rose-500/20 text-rose-800 dark:bg-rose-400/25 dark:text-rose-200',
+
+  cancelled: 'bg-red-500/20 text-red-800 dark:bg-red-400/25 dark:text-red-200',
 }

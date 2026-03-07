@@ -1,11 +1,11 @@
 'use client'
 
-import { api } from '@/convex/_generated/api'
-import type { Doc } from '@/convex/_generated/dataModel'
-import { cn } from '@/lib/utils'
-import { Popover, PopoverContent, PopoverTrigger } from '@heroui/react'
-import { useMutation, useQuery } from 'convex/react'
-import { useState } from 'react'
+import {api} from '@/convex/_generated/api'
+import type {Doc} from '@/convex/_generated/dataModel'
+import {cn} from '@/lib/utils'
+import {Popover, PopoverContent, PopoverTrigger} from '@heroui/react'
+import {useMutation, useQuery} from 'convex/react'
+import {useState} from 'react'
 
 type Order = Doc<'orders'>
 
@@ -13,10 +13,10 @@ interface CourierAccountCellProps {
   order: Order
 }
 
-export const CourierAccountCell = ({ order }: CourierAccountCellProps) => {
+export const CourierAccountCell = ({order}: CourierAccountCellProps) => {
   const courier = useQuery(
     api.couriers.q.getCourierById,
-    order.courier ? { id: order.courier } : 'skip',
+    order.courier ? {id: order.courier} : 'skip',
   )
   const updateCourierAccount = useMutation(api.orders.m.updateCourierAccount)
   const [isOpen, setIsOpen] = useState(false)
@@ -47,16 +47,15 @@ export const CourierAccountCell = ({ order }: CourierAccountCellProps) => {
   }
 
   const displayText = !hasCourier
-    ? 'Select Account'
-    : (selectedAccount?.label ?? 'Select account')
+    ? 'Select Courier'
+    : (selectedAccount?.label ?? 'Select Courier')
 
   return (
     <Popover
       isOpen={isOpen}
       onOpenChange={setIsOpen}
       placement='bottom-start'
-      showArrow
-    >
+      showArrow>
       <PopoverTrigger>
         <button
           type='button'
@@ -64,11 +63,10 @@ export const CourierAccountCell = ({ order }: CourierAccountCellProps) => {
             'flex items-center justify-center px-2 py-1 rounded text-sm transition-colors',
             'hover:underline',
             !hasCourier && 'text-muted-foreground',
-            hasCourier && 'text-cyan-500',
+            hasCourier && 'text-cyan-600',
             (isSaving || isLoading) && 'opacity-50 cursor-not-allowed',
           )}
-          disabled={isSaving || isLoading || !hasCourier}
-        >
+          disabled={isSaving || isLoading || !hasCourier}>
           {isLoading ? '...' : displayText}
         </button>
       </PopoverTrigger>
@@ -76,7 +74,7 @@ export const CourierAccountCell = ({ order }: CourierAccountCellProps) => {
         <div className='flex flex-col gap-1'>
           {!hasCourier && (
             <div className='px-3 py-2 text-sm text-muted-foreground'>
-              Assign a courier first
+              Assign Shipping Account first
             </div>
           )}
           {hasCourier && !isLoading && !hasAccounts && (
@@ -95,8 +93,7 @@ export const CourierAccountCell = ({ order }: CourierAccountCellProps) => {
                   !order.courierAccountId && 'bg-default-100 font-medium',
                   isSaving && 'opacity-50 cursor-not-allowed',
                 )}
-                disabled={isSaving}
-              >
+                disabled={isSaving}>
                 Unassign
               </button>
               {accounts.map((account) => (
@@ -108,11 +105,10 @@ export const CourierAccountCell = ({ order }: CourierAccountCellProps) => {
                     'text-left px-3 py-2 rounded-lg text-sm transition-colors',
                     'hover:bg-default-100',
                     order.courierAccountId === account.id &&
-                    'bg-default-100 font-medium',
+                      'bg-default-100 font-medium',
                     isSaving && 'opacity-50 cursor-not-allowed',
                   )}
-                  disabled={isSaving}
-                >
+                  disabled={isSaving}>
                   <div className='flex flex-col'>
                     <span>{account.label}</span>
                     <span className='text-xs text-muted-foreground truncate'>

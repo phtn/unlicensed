@@ -52,9 +52,9 @@ import {Filter} from './filter-v2'
 import {HyperWrap} from './hyper-wrap'
 import {PageControl, Paginator} from './pagination-v2'
 import {
-  createPaginationParser,
   createColumnFiltersParser,
   createColumnVisibilityParser,
+  createPaginationParser,
   createRowSelectionParser,
   createSortingParser,
   searchParser,
@@ -457,8 +457,8 @@ function DataTableContent<T>({
                             key={header.id + id}
                             style={{width: `${header.getSize()}px`}}
                             className={cn(
-                              'sticky top-0 z-20 bg-light-gray md:h-10 h-8 uppercase overflow-hidden',
-                              'font-oksx font-semibold tracking-tighter text-white md:tracking-tight text-xs md:text-sm',
+                              'sticky top-0 z-20 bg-[#eceef2] md:h-8 h-8 uppercase overflow-hidden',
+                              'font-oksx font-semibold tracking-tighter text-dark-table/80 dark:text-white md:tracking-tight text-xs md:text-sm',
                               'dark:text-zinc-300 dark:bg-dark-table',
                             )}>
                             <ColumnSort

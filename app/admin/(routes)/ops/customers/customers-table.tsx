@@ -24,25 +24,45 @@ const formatDate = (timestamp?: number) => {
 type CustomerRow = Doc<'users'> & {
   totalSpentCents: number
   latestPurchaseCents: number | null
+  rewardsPoints: number
+  shippingState: string
 }
 
 export const CustomersTable = () => {
   const customers = useQuery(api.users.q.getAllUsers, {limit: 100})
+  const customerShippingAddressSummaries = useQuery(
+    api.users.q.getCustomerShippingAddressSummaries,
+    {limit: 100},
+  )
   const customerPurchaseSummaries = useQuery(
     api.orders.q.getCustomerPurchaseSummaries,
+  )
+  const customerPointsSummaries = useQuery(
+    api.rewards.q.getCustomerPointsSummaries,
+    {limit: 200},
   )
 
   const data = useMemo<CustomerRow[]>(
     () =>
       (customers ?? []).map((customer) => {
         const summary = customerPurchaseSummaries?.[String(customer._id)]
+        const shippingSummary =
+          customerShippingAddressSummaries?.[String(customer._id)]
+        const pointsSummary = customerPointsSummaries?.[String(customer._id)]
         return {
           ...customer,
           totalSpentCents: summary?.totalSpentCents ?? 0,
           latestPurchaseCents: summary?.latestPurchaseCents ?? null,
+          rewardsPoints: pointsSummary?.availablePoints ?? 0,
+          shippingState: shippingSummary?.state ?? 'N/A',
         }
       }),
-    [customerPurchaseSummaries, customers],
+    [
+      customerPointsSummaries,
+      customerPurchaseSummaries,
+      customerShippingAddressSummaries,
+      customers,
+    ],
   )
 
   const columns = useMemo(
@@ -104,12 +124,23 @@ export const CustomersTable = () => {
           ),
         },
         {
+          id: 'state',
+          header: <ColHeader tip='Shipping address state' symbol='State' />,
+          accessorKey: 'shippingState',
+          size: 60,
+          cell: ({row}) => (
+            <p className='font-mono text-xs text-muted-foreground uppercase'>
+              {row.original.shippingState}
+            </p>
+          ),
+        },
+        {
           id: 'recent',
           header: (
             <ColHeader tip='Most Recent Purchase' symbol='Recent' center />
           ),
           accessorKey: 'latestPurchaseCents',
-          size: 80,
+          size: 70,
           cell: ({row}) => (
             <div className='flex items-center justify-end pr-6'>
               <p className='font-brk text-xs text-muted-foreground text-right'>
@@ -124,11 +155,26 @@ export const CustomersTable = () => {
           id: 'spent',
           header: <ColHeader tip='Total Spent($)' symbol='Spent' center />,
           accessorKey: 'totalSpentCents',
-          size: 80,
+          size: 70,
           cell: ({row}) => (
             <div className='flex items-center justify-end pr-6'>
               <p className='font-brk text-xs text-muted-foreground text-right'>
                 {formatPrice(row.original.totalSpentCents)}
+              </p>
+            </div>
+          ),
+        },
+        {
+          id: 'rewardsPoints',
+          header: (
+            <ColHeader tip='Available rewards points' symbol='Points' center />
+          ),
+          accessorKey: 'rewardsPoints',
+          size: 70,
+          cell: ({row}) => (
+            <div className='flex items-center justify-end pr-6'>
+              <p className='font-brk text-xs text-muted-foreground text-right'>
+                {row.original.rewardsPoints.toLocaleString('en-US')}
               </p>
             </div>
           ),
@@ -138,7 +184,7 @@ export const CustomersTable = () => {
           id: 'status',
           header: <ColHeader tip='Account status' symbol='Status' center />,
           accessorKey: 'accountStatus',
-          size: 80,
+          size: 100,
           cell: ({row}) => {
             const status = row.original.accountStatus ?? 'active'
             const normalized = status.toLowerCase()
