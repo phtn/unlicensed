@@ -139,8 +139,7 @@ const TEMPLATE_MAP: Record<EmailTemplateId, TemplateEntry> = {
       discountText: '$25 OFF',
       discountLabel: 'First order',
       headline: 'Fresh. California. Delivered',
-      body:
-        'Welcome to our new shop built by the team behind Platinum Seedbank. CA-sourced menu + fresh, fast delivery.',
+      body: 'Welcome to our new shop built by the team behind Platinum Seedbank. CA-sourced menu + fresh, fast delivery.',
       ctaLabel: 'CLAIM $25 & SHOP',
       ctaUrl: 'https://rapidfirenow.com/lobby',
       discountCode: 'RF25',
@@ -154,14 +153,26 @@ const TEMPLATE_MAP: Record<EmailTemplateId, TemplateEntry> = {
         'Pay Your Way (Card • Apple Pay • Google Pay • Crypto • Cash App)',
       ],
       shopLinks: [
-        {label: 'Flowers', url: 'https://rapidfirenow.com/lobby'},
-        {label: 'Vapes', url: 'https://rapidfirenow.com/lobby'},
-        {label: 'Extracts', url: 'https://rapidfirenow.com/lobby'},
-        {label: 'Edibles', url: 'https://rapidfirenow.com/lobby'},
-        {label: 'Pre Rolls', url: 'https://rapidfirenow.com/lobby'},
+        {
+          label: 'Flowers',
+          url: 'https://rapidfirenow.com/lobby/category/flower',
+        },
+        {label: 'Vapes', url: 'https://rapidfirenow.com/lobby/category/vapes'},
+        {
+          label: 'Extracts',
+          url: 'https://rapidfirenow.com/lobby/category/extracts',
+        },
+        {
+          label: 'Edibles',
+          url: 'https://rapidfirenow.com/lobby/category/edibles',
+        },
+        {
+          label: 'Pre Rolls',
+          url: 'https://rapidfirenow.com/lobby/category/pre-rolls',
+        },
       ],
       secondaryCtaLabel: 'California Brands',
-      secondaryCtaUrl: 'https://rapidfirenow.com/lobby',
+      secondaryCtaUrl: 'https://rapidfirenow.com/lobby/brands',
     },
   },
 }

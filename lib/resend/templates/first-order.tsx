@@ -92,7 +92,7 @@ export const FirstOrderEmail = ({
                 height='46'
                 className='mx-auto'
               />
-              <Text className='m-0 mt-5 text-center text-[12px] font-semibold tracking-[0.08em] uppercase text-[#d4d4d8]'>
+              <Text className='m-0 mt-5  text-center text-sm font-semibold tracking-[0.08em] uppercase text-[#d4d4d8]'>
                 {eyebrow}
               </Text>
             </Section>
@@ -108,29 +108,34 @@ export const FirstOrderEmail = ({
               <Text className='m-0 font-clash text-[32px] leading-[1] font-extrabold tracking-[-0.04em] text-white'>
                 {discountText}
               </Text>
-              <Text className='m-0 mt-2 text-[14px] font-semibold tracking-[0.1em] uppercase text-white'>
+              <Text className='m-0 mt-2 text-[14px] font-semibold font-monaco tracking-widest uppercase text-white'>
                 {discountLabel}
               </Text>
             </Section>
 
             <Section className='mt-10 text-center'>
-              <Text className='m-0 text-[28px] leading-[1.2] font-semibold text-white'>
+              <Text className='m-0 text-[28px] font-clash leading-[1.2] font-semibold text-white'>
                 {headline}
               </Text>
-              <Text className='mx-auto mt-4 max-w-[390px] text-[15px] leading-[1.65] text-[#d4d4d8]'>
+              <Text className='mx-auto mt-4 max-w-[390px] text-base leading-[1.65] text-[#d4d4d8]'>
                 {body}
               </Text>
             </Section>
 
             <Section
-              className='mx-auto mt-8 rounded-[18px] px-4 py-4 text-center'
+              id='bannr'
+              className='mx-auto mt-8 px-12 py-8 text-center'
               style={{
-                background: 'linear-gradient(90deg, #c51883 0%, #ef4eaf 100%)',
-                boxShadow: '0 12px 24px rgba(197, 24, 131, 0.28)',
+                background:
+                  'url(https://res.cloudinary.com/dx0heqhhe/image/upload/v1772877814/banner_pmpknc.svg)',
+                // boxShadow: '0 12px 24px rgba(197, 24, 131, 0.28)',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: 'contain',
+                backgroundPosition: 'center',
               }}>
               <Button
                 href={ctaUrl}
-                className='block w-full text-[18px] font-extrabold tracking-[-0.03em] text-white no-underline'>
+                className='block w-full text-[18px] font-extrabold tracking-[-0.03em] text-white no-underline font-okxs'>
                 {ctaLabel}
               </Button>
             </Section>
@@ -139,7 +144,7 @@ export const FirstOrderEmail = ({
               <Text className='m-0 text-[14px] font-semibold text-[#f472b6]'>
                 Use code {discountCode} at checkout
               </Text>
-              <Text className='m-0 mt-1 text-[12px] leading-[1.6] text-[#d4d4d8]'>
+              <Text className='font-monaco m-0 mt-1 text-[12px] leading-[1.6] text-[#d4d4d8]'>
                 {codeNote}
               </Text>
             </Section>
@@ -148,9 +153,9 @@ export const FirstOrderEmail = ({
               {benefits.map((benefit) => (
                 <Text
                   key={benefit}
-                  className='m-0 mt-3 text-[15px] leading-[1.5] text-white'>
+                  className='m-0 mt-3 text-[15px] font-monaco leading-normal text-white'>
                   <span style={{color: '#ec4899', paddingRight: '10px'}}>
-                    ★
+                    🞄
                   </span>
                   {benefit}
                 </Text>
@@ -158,7 +163,7 @@ export const FirstOrderEmail = ({
             </Section>
 
             <Section className='mt-10 text-center'>
-              <Text className='m-0 text-[18px] font-semibold text-white'>
+              <Text className='m-0 text-[18px] font-clash font-semibold text-white'>
                 Shop Now
               </Text>
             </Section>
