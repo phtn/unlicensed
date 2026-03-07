@@ -1,5 +1,7 @@
+import {api} from '@/convex/_generated/api'
 import {getUsdcAddress, isUsdcSupportedChain} from '@/lib/usdc'
 import {getUsdtAddress, isUsdtSupportedChain} from '@/lib/usdt'
+import {ConvexHttpClient} from 'convex/browser'
 import {NextRequest, NextResponse} from 'next/server'
 import {
   createPublicClient,
@@ -27,6 +29,7 @@ const RELAY_BPS =
   Number(process.env.DEBOUNCE_OFFSET ?? 2)
 const BPS_DENOMINATOR = 10_000
 const RELAY_PAYOUT_BPS = BPS_DENOMINATOR - RELAY_BPS
+const CRYPTO_WALLET_DESTINATION_IDENTIFIER = 'crypto_wallet_destination'
 
 const SUPPORTED_CHAINS = {
   [mainnet.id]: mainnet,
@@ -54,6 +57,63 @@ const getRequiredAddress = (
     throw new Error(`${name} is missing or invalid`)
   }
   return value as Address
+}
+
+const convexUrl =
+  process.env.NEXT_PUBLIC_CONVEX_URL ?? process.env.CONVEX_URL ?? null
+
+const convex = convexUrl ? new ConvexHttpClient(convexUrl) : null
+
+type CryptoWalletDestinations = {
+  ethereum?: string
+  polygon?: string
+  sepolia?: string
+}
+
+const parseCryptoWalletDestinations = (
+  value: unknown,
+): CryptoWalletDestinations => {
+  if (!value || typeof value !== 'object' || 'error' in value) {
+    return {}
+  }
+
+  const wallets = value as Record<string, unknown>
+  return {
+    ethereum:
+      typeof wallets.ethereum === 'string' ? wallets.ethereum : undefined,
+    polygon: typeof wallets.polygon === 'string' ? wallets.polygon : undefined,
+    sepolia: typeof wallets.sepolia === 'string' ? wallets.sepolia : undefined,
+  }
+}
+
+const resolveDestinationKey = (
+  chainId: number,
+): keyof CryptoWalletDestinations => {
+  if (chainId === polygon.id || chainId === polygonAmoy.id) return 'polygon'
+  if (chainId === sepolia.id) return 'sepolia'
+  return 'ethereum'
+}
+
+const getAdminRelayDestination = async (chainId: number): Promise<Address> => {
+  if (!convex) {
+    throw new Error('Convex URL is not configured')
+  }
+
+  const setting = await convex.query(api.admin.q.getAdminByIdentStrict, {
+    identifier: CRYPTO_WALLET_DESTINATION_IDENTIFIER,
+  })
+  const wallets = parseCryptoWalletDestinations(setting)
+  const key = resolveDestinationKey(chainId)
+  const destination =
+    wallets[key] ??
+    (key === 'sepolia' ? wallets.ethereum : undefined) ??
+    (key === 'polygon' ? wallets.ethereum : undefined) ??
+    undefined
+
+  return getRequiredAddress(
+    destination,
+    `${CRYPTO_WALLET_DESTINATION_IDENTIFIER}.${key}`,
+  )
 }
 
 export async function POST(request: NextRequest) {
@@ -109,10 +169,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const relayDestination = getRequiredAddress(
-      process.env.EVM_DESTINATION_ADDRESS,
-      'EVM_DESTINATION_ADDRESS',
-    )
+    const relayDestination = await getAdminRelayDestination(chainId)
 
     const publicClient = createPublicClient({
       chain,

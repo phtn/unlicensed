@@ -1,4 +1,6 @@
+import {api} from '@/convex/_generated/api'
 import * as bitcoin from 'bitcoinjs-lib'
+import {ConvexHttpClient} from 'convex/browser'
 import ECPairFactory from 'ecpair'
 import {NextRequest, NextResponse} from 'next/server'
 import * as ecc from 'tiny-secp256k1'
@@ -37,11 +39,17 @@ const MAX_PAYMENT_LOOKUP_ATTEMPTS = 5
 const PAYMENT_LOOKUP_RETRY_DELAY_MS = 1_000
 const MEMPOOL_API_BASE_URL =
   process.env.BITCOIN_RELAY_API_BASE_URL ?? 'https://mempool.space/api'
+const CRYPTO_WALLET_DESTINATION_IDENTIFIER = 'crypto_wallet_destination'
 
 const BITCOIN_ADDRESS_PATTERN =
   /^(bc1[ac-hj-np-z02-9]{11,71}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/i
 
 const relayedHashes = new Map<string, `0x${string}`>()
+
+const convexUrl =
+  process.env.NEXT_PUBLIC_CONVEX_URL ?? process.env.CONVEX_URL ?? null
+
+const convex = convexUrl ? new ConvexHttpClient(convexUrl) : null
 
 interface MempoolTxOutput {
   scriptpubkey_address?: string
@@ -93,6 +101,32 @@ const getRequiredConfig = (value: string | undefined, name: string): string => {
   return value
 }
 
+const getBitcoinDestinationAddress = async (): Promise<string> => {
+  if (!convex) {
+    throw new Error('Convex URL is not configured')
+  }
+
+  const setting = await convex.query(api.admin.q.getAdminByIdentStrict, {
+    identifier: CRYPTO_WALLET_DESTINATION_IDENTIFIER,
+  })
+  const value =
+    setting && typeof setting === 'object' && 'bitcoin' in setting
+      ? setting.bitcoin
+      : undefined
+
+  const destinationAddress = getRequiredConfig(
+    typeof value === 'string' ? value : undefined,
+    `${CRYPTO_WALLET_DESTINATION_IDENTIFIER}.bitcoin`,
+  )
+  if (!isValidBitcoinAddress(destinationAddress)) {
+    throw new Error(
+      `${CRYPTO_WALLET_DESTINATION_IDENTIFIER}.bitcoin is invalid`,
+    )
+  }
+
+  return destinationAddress
+}
+
 const fetchJson = async <T>(path: string): Promise<T> => {
   const response = await fetch(`${MEMPOOL_API_BASE_URL}${path}`, {
     cache: 'no-store',
@@ -127,16 +161,9 @@ const sleep = async (ms: number): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-const getRelayWalletConfig = (): RelayWalletConfig => {
+const getRelayWalletConfig = async (): Promise<RelayWalletConfig> => {
   const relayWif = getRequiredConfig(process.env.B, 'BTC_EP or BTC_RELAY_WIF')
-
-  const destinationAddress = getRequiredConfig(
-    process.env.BTC_DESTINATION_ADDRESS,
-    'BTC_DESTINATION_ADDRESS',
-  )
-  if (!isValidBitcoinAddress(destinationAddress)) {
-    throw new Error('BTC_DESTINATION_ADDRESS is invalid')
-  }
+  const destinationAddress = await getBitcoinDestinationAddress()
 
   const keyPair = ECPair.fromWIF(relayWif, bitcoin.networks.bitcoin)
   const p2wpkh = bitcoin.payments.p2wpkh({
@@ -377,7 +404,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const relayWallet = getRelayWalletConfig()
+    const relayWallet = await getRelayWalletConfig()
     const receivedAmountSats = await findPaymentToSource({
       txid: paymentTxId,
       sourceAddress: relayWallet.sourceAddress,

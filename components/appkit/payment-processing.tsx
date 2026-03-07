@@ -49,7 +49,7 @@ export const PaymentProcessing = ({
             </p>
           </div>
         </div>
-        <div className='mt-6 pt-4 border-t border-white/10 border-dashed space-y-3'>
+        <div className='hidden mt-6 pt-4 border-t border-white/10 border-dashed space-y-3'>
           <div className='flex items-center justify-between'>
             <span className='text-sm font-polysans font-medium uppercase text-white opacity-70'>
               Amount

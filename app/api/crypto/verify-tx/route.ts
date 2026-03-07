@@ -1,19 +1,20 @@
 import {NextRequest, NextResponse} from 'next/server'
 import {createPublicClient, http} from 'viem'
-import {mainnet, polygon} from 'viem/chains'
+import {mainnet, polygon, sepolia} from 'viem/chains'
 import {z} from 'zod'
 import {Tx, TxData, TxReceipt} from '../types'
 
 export const runtime = 'nodejs'
 
 const ETHERSCAN_API_BASE = 'https://api.etherscan.io/v2/api'
-const CHAIN_IDS = {ethereum: 1, polygon: 137} as const
+const CHAIN_IDS = {ethereum: 1, polygon: 137, sepolia: 11155111} as const
+type EvmNetwork = keyof typeof CHAIN_IDS
 
 const requestSchema = z.object({
   txnHash: z
     .string()
     .min(64, 'Transaction hash must be at least 64 characters'),
-  network: z.enum(['ethereum', 'polygon', 'bitcoin']),
+  network: z.enum(['ethereum', 'polygon', 'bitcoin', 'sepolia']),
   /** Optional: expected recipient address (for EVM) or source address (for BTC) */
   expectedRecipient: z.string().optional(),
   /** Optional: minimum tx value in wei (EVM only). Ensures payment meets order total. */
@@ -23,6 +24,7 @@ const requestSchema = z.object({
 const EVM_CHAINS = {
   ethereum: mainnet,
   polygon,
+  sepolia,
 } as const
 
 const MEMPOOL_API_BASE_URL =
@@ -42,9 +44,7 @@ type ScanApiConfig = {
   apiKey: string
 }
 
-function getScanApiConfig(
-  network: 'ethereum' | 'polygon',
-): ScanApiConfig | null {
+function getScanApiConfig(network: EvmNetwork): ScanApiConfig | null {
   const apiKey = process.env.ETHERSCAN_API_KEY
   if (!apiKey) return null
   return {
@@ -81,7 +81,7 @@ function parseValueToBigInt(value: string | undefined): bigint {
 
 async function verifyEvmViaScanApi(
   hash: string,
-  network: 'ethereum' | 'polygon',
+  network: EvmNetwork,
   expectedRecipient?: string,
   expectedValueWei?: string,
 ): Promise<
@@ -151,7 +151,7 @@ async function verifyEvmViaScanApi(
 
 async function verifyEvmViaViem(
   hash: `0x${string}`,
-  network: 'ethereum' | 'polygon',
+  network: EvmNetwork,
   expectedRecipient?: string,
   expectedValueWei?: string,
 ): Promise<{success: true} | {success: false; error: string}> {
@@ -205,7 +205,7 @@ async function verifyEvmViaViem(
 
 async function verifyEvmTransaction(
   txnHash: string,
-  network: 'ethereum' | 'polygon',
+  network: EvmNetwork,
   expectedRecipient?: string,
   expectedValueWei?: string,
 ): Promise<{success: true} | {success: false; error: string}> {

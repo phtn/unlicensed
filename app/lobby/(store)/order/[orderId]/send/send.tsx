@@ -21,11 +21,13 @@ import {useParams} from 'next/navigation'
 import QRCode from 'qrcode'
 import {
   ChangeEvent,
+  type RefObject,
   startTransition,
   SubmitEvent,
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
 } from 'react'
@@ -36,6 +38,7 @@ type CryptoWalletAddresses = {
   bitcoin: string
   ethereum: string
   polygon: string
+  sepolia: string
 }
 
 /** Network keys that have wallet addresses in admin settings (used for indexing) */
@@ -43,25 +46,37 @@ type SendPageNetwork = keyof CryptoWalletAddresses
 
 function parseCryptoWallets(value: unknown): CryptoWalletAddresses {
   if (!value || typeof value !== 'object' || 'error' in value) {
-    return {bitcoin: '', ethereum: '', polygon: ''}
+    return {bitcoin: '', ethereum: '', polygon: '', sepolia: ''}
   }
   const wallets = value as Record<string, unknown>
   return {
     bitcoin: typeof wallets.bitcoin === 'string' ? wallets.bitcoin : '',
     ethereum: typeof wallets.ethereum === 'string' ? wallets.ethereum : '',
     polygon: typeof wallets.polygon === 'string' ? wallets.polygon : '',
+    sepolia: typeof wallets.sepolia === 'string' ? wallets.sepolia : '',
   }
+}
+
+function getWalletAddressForNetwork(
+  network: SendPageNetwork,
+  wallets: CryptoWalletAddresses,
+): string {
+  if (network === 'sepolia') {
+    return wallets.sepolia || wallets.ethereum
+  }
+  return wallets[network]
 }
 
 function buildPaymentRequestUri(
   network: SendPageNetwork,
   wallets: CryptoWalletAddresses,
 ): string | null {
-  const addr = wallets[network]
+  const addr = getWalletAddressForNetwork(network, wallets)
   if (!addr?.trim()) return null
   if (network === 'bitcoin') return `bitcoin:${addr}`
   if (network === 'ethereum') return `ethereum:${addr}@1`
   if (network === 'polygon') return `ethereum:${addr}@137`
+  if (network === 'sepolia') return `ethereum:${addr}@11155111`
   return null
 }
 
@@ -87,6 +102,7 @@ const CryptoSendContent = () => {
     () => buildPaymentRequestUri(selected, wallets),
     [selected, wallets],
   )
+  const relayedPaymentHashRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!paymentRequestUri) {
@@ -108,7 +124,7 @@ const CryptoSendContent = () => {
     }
   }, [paymentRequestUri])
 
-  const walletAddress = wallets[selected]
+  const walletAddress = getWalletAddressForNetwork(selected, wallets)
   const {copy, copied} = useCopy({timeout: 2000})
   const copyAddress = useCallback(() => {
     if (!walletAddress?.trim()) return
@@ -120,11 +136,16 @@ const CryptoSendContent = () => {
     [getBySymbol],
   )
 
-  const networks: SendPageNetwork[] = ['bitcoin', 'ethereum', 'polygon']
+  const networks: SendPageNetwork[] = [
+    'bitcoin',
+    'ethereum',
+    'sepolia',
+    'polygon',
+  ]
 
   return (
     <div className='relative z-100 md:-translate-x-2 md:w-3xl md:max-w-3xl md:mx-auto flex h-full'>
-      <div className='w-full relative bg-linear-to-br dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-950 overflow-hidden rounded-lg'>
+      <div className='w-full relative bg-linear-to-br dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-950 overflow-hidden'>
         <motion.div
           initial={{opacity: 0, scale: 0.85}}
           animate={{opacity: 1, scale: 1}}
@@ -172,6 +193,7 @@ const CryptoSendContent = () => {
                 orderId={orderId}
                 updatePayment={updatePayment}
                 getBySymbol={getBySymbol}
+                relayedPaymentHashRef={relayedPaymentHashRef}
               />
             </Tabs.Panel>
             <Tabs.Panel value='ethereum'>
@@ -185,6 +207,7 @@ const CryptoSendContent = () => {
                 orderId={orderId}
                 updatePayment={updatePayment}
                 getBySymbol={getBySymbol}
+                relayedPaymentHashRef={relayedPaymentHashRef}
               />
             </Tabs.Panel>
             <Tabs.Panel value='polygon'>
@@ -198,6 +221,21 @@ const CryptoSendContent = () => {
                 orderId={orderId}
                 updatePayment={updatePayment}
                 getBySymbol={getBySymbol}
+                relayedPaymentHashRef={relayedPaymentHashRef}
+              />
+            </Tabs.Panel>
+            <Tabs.Panel value='sepolia'>
+              <SendToPanel
+                qrDataUrl={qrDataUrl}
+                walletAddress={walletAddress}
+                copyFn={copyAddress}
+                isCopied={copied}
+                order={order}
+                network='sepolia'
+                orderId={orderId}
+                updatePayment={updatePayment}
+                getBySymbol={getBySymbol}
+                relayedPaymentHashRef={relayedPaymentHashRef}
               />
             </Tabs.Panel>
           </Tabs.Root>
@@ -222,6 +260,24 @@ interface SendToPanelProps {
   orderId: Id<'orders'>
   updatePayment: UpdatePaymentFn
   getBySymbol: (symbol: string) => {price: number} | null
+  relayedPaymentHashRef: RefObject<string | null>
+}
+
+function toOrderTxData(data?: TxData): ITxData | undefined {
+  if (!data) {
+    return undefined
+  }
+
+  return {
+    from: data.from,
+    to: data.to,
+    value: data.value,
+    gasUsed: data.gasUsed,
+    gasPrice: data.gasPrice,
+    status: data.status,
+    blockNumber: data.blockNumber,
+    contractAddress: data.contractAddress ?? undefined,
+  }
 }
 
 function SendToPanel({
@@ -234,6 +290,7 @@ function SendToPanel({
   orderId,
   updatePayment,
   getBySymbol,
+  relayedPaymentHashRef,
 }: SendToPanelProps) {
   const [txnHash, setTxnHash] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -260,9 +317,11 @@ function SendToPanel({
           const tokenPrice =
             network === 'ethereum'
               ? getBySymbol('ETH')?.price
-              : network === 'polygon'
-                ? (getBySymbol('POL')?.price ?? getBySymbol('MATIC')?.price)
-                : null
+              : network === 'sepolia'
+                ? getBySymbol('ETH')?.price
+                : network === 'polygon'
+                  ? (getBySymbol('POL')?.price ?? getBySymbol('MATIC')?.price)
+                  : null
           const expectedValueWei =
             order &&
             tokenPrice != null &&
@@ -309,11 +368,59 @@ function SendToPanel({
                     : 'ETH',
               chain: network,
               paidAt: Date.now(),
-              tx: data as ITxData,
+              tx: toOrderTxData(data),
             },
           })
+
+          const normalizedHash = hash.startsWith('0x') ? hash : `0x${hash}`
+          if (relayedPaymentHashRef.current !== normalizedHash) {
+            relayedPaymentHashRef.current = normalizedHash
+
+            const relayResponse =
+              network === 'bitcoin'
+                ? await fetch('/api/relay/bitcoin', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                      paymentHash: normalizedHash,
+                    }),
+                  })
+                : await fetch('/api/relay', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                      paymentHash: normalizedHash,
+                      chainId:
+                        network === 'sepolia'
+                          ? 11155111
+                          : network === 'polygon'
+                            ? 137
+                            : 1,
+                      token: 'ethereum',
+                    }),
+                  })
+
+            if (!relayResponse.ok) {
+              relayedPaymentHashRef.current = null
+              const payload = (await relayResponse
+                .json()
+                .catch(() => null)) as {
+                error?: string
+                message?: string
+              } | null
+              throw new Error(
+                payload?.error ??
+                  payload?.message ??
+                  'Relay forwarding failed after payment verification.',
+              )
+            }
+          }
         } catch (err) {
-          setError('Failed to verify payment. Please try again.')
+          setError(
+            err instanceof Error
+              ? err.message
+              : 'Failed to verify payment. Please try again.',
+          )
           console.error('Payment verification error:', err)
         }
       })
@@ -326,6 +433,7 @@ function SendToPanel({
       updatePayment,
       walletAddress,
       getBySymbol,
+      relayedPaymentHashRef,
     ],
   )
 
