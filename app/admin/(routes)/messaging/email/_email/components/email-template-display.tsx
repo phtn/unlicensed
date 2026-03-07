@@ -48,14 +48,14 @@ export const EmailTemplateDisplay = ({
     try {
       const res = await fetch('/api/resend/test', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           to: email,
           subject: previewSubject,
           html: previewHtml,
         }),
       })
-      const data = (await res.json()) as { ok?: boolean; error?: string }
+      const data = (await res.json()) as {ok?: boolean; error?: string}
       if (res.ok && data.ok) {
         toast.success('Test email sent')
       } else {
@@ -124,7 +124,9 @@ export const EmailTemplateDisplay = ({
         if (cancelled || !data) return
         if (typeof data.html === 'string') {
           setPreviewHtml(data.html)
-          setPreviewSubject(typeof data.subject === 'string' ? data.subject : '')
+          setPreviewSubject(
+            typeof data.subject === 'string' ? data.subject : '',
+          )
           setPreviewVersion((v) => v + 1)
         } else if (!cancelled) {
           setPreviewError('No preview content returned')

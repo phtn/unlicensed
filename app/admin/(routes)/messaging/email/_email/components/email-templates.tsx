@@ -63,14 +63,14 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
         <div className='absolute bottom-0 right-1/4 w-120 h-120 bg-purple-500/5 rounded-full blur-3xl' />
       </div>
 
-      <main className='relative px-2 sm:px-3 lg:px-4'>
+      <main className='relative px-2 sm:px-3 lg:px-4 space-y-4'>
         <AnimatePresence mode='wait'>
           {templates.length === 0 ? (
             <motion.div
               initial={{opacity: 0, y: 20}}
               animate={{opacity: 1, y: 0}}
               exit={{opacity: 0, y: -20}}
-              className='rounded-3xl h-[calc(100lvh-140px)] md:h-auto md:rounded-3xl bg-slate-100 dark:bg-dark-table/60 border border-foreground/20 sm:px-8 sm:pt-8 transition-colors p-4'>
+              className='rounded-xs h-[calc(100lvh-140px)] md:h-auto bg-slate-100 dark:bg-dark-table/60 border border-foreground/20 sm:px-8 sm:pt-8 transition-colors p-4'>
               {/*<div className='w-12 h-12 rounded-xl bg-linear-to-br from-cyan-600/10 to-purple-200/10 border border-foreground/20 flex items-center justify-center shrink-0'></div>*/}
               <div className='flex items-center space-x-4'>
                 <Icon
@@ -108,8 +108,8 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
                     animate={{opacity: 1, y: 0}}
                     transition={{delay: index * 0.05}}
                     className='group relative cursor-pointer'>
-                    <div className='absolute inset-0 bg-linear-to-r from-cyan-500/5 to-purple-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
-                    <div className='relative dark:bg-background bg-greyed/10 backdrop-blur-xl border border-greyed/15 rounded-4xl p-5 hover:border-zinc-700/50 transition-all duration-300'>
+                    <div className='absolute inset-0 bg-linear-to-r from-cyan-500/5 to-purple-500/5 rounded-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+                    <div className='relative dark:bg-background bg-greyed/10 backdrop-blur-xl border border-greyed/15 p-5 hover:border-zinc-700/50 transition-all duration-300'>
                       <div className='flex items-start justify-between gap-4'>
                         <div className='flex items-start gap-4 flex-1'>
                           <div className='w-12 h-12 rounded-xl bg-linear-to-br from-cyan-600/10 to-purple-200/10 border border-foreground/20 flex items-center justify-center shrink-0'>

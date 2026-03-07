@@ -244,9 +244,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
           return
         }
         sent++
-        setBlastProgress((p) =>
-          p ? {...p, sent} : null,
-        )
+        setBlastProgress((p) => (p ? {...p, sent} : null))
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Network error'
         setBlastProgress((p) =>
@@ -260,11 +258,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
     }
     setBlastProgress((p) => (p ? {...p, sending: false} : null))
     toast.success(`Email blast complete: ${sent} of ${valid.length} sent`)
-  }, [
-    mailingLists,
-    selectedListId,
-    emailSetting,
-  ])
+  }, [mailingLists, selectedListId, emailSetting])
 
   if (!!isAdmin && !isAdmin) {
     return <AccessDenied />
@@ -348,7 +342,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
               variant='light'
               onPress={toggleEmailBlast}
               className='gap-1'>
-              Create Email Blast
+              Send Email Blast
             </Button>
             <Button
               type='button'
@@ -562,7 +556,9 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       className='max-w-full'
                     />
                     {blastProgress.error && (
-                      <p className='text-sm text-danger'>{blastProgress.error}</p>
+                      <p className='text-sm text-danger'>
+                        {blastProgress.error}
+                      </p>
                     )}
                   </div>
                 )}

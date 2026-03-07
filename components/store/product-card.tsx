@@ -112,7 +112,7 @@ export const ProductCard = ({
                 {product.name}
               </h3>
               {product.productTier != null && product.productTier !== '' && (
-                <span className='min-h-6 text-xs md:text-sm font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum'>
+                <span className='min-h-6 text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum uppercase'>
                   {product.productTier ?? '_'}
                 </span>
               )}
