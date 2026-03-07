@@ -434,7 +434,7 @@ const ProductDetailStats = ({
           </Badge>
         </Tooltip>
       ) : (
-        <span className='text-[9px] w-16 md:w-20 text-sm whitespace-nowrap capitalize'>
+        <span className='opacity-0 text-[9px] w-16 md:w-20 text-sm whitespace-nowrap capitalize'>
           <span className='font-polysans font-semibold text-base'>
             {product.stockByDenomination?.[denominationKey] ??
               product.stock ??

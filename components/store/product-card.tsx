@@ -89,7 +89,7 @@ export const ProductCard = ({
       disableAnimation
       shadow='sm'
       className={cn(
-        'group h-full transition-all duration-300 hover:-translate-y-0.5 rounded-xs dark:bg-black bg-sidebar min-w-56 max-w-56 md:min-w-48 md:max-w-64',
+        'group h-full transition-all duration-300 hover:-translate-y-0.5 rounded-xs dark:bg-black bg-sidebar min-w-48 max-w-48',
         className,
       )}>
       <CardBody className='flex flex-col p-0'>
