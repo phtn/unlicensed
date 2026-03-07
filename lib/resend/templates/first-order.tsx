@@ -48,11 +48,14 @@ const DEFAULT_BENEFITS = [
 ]
 
 const DEFAULT_SHOP_LINKS: FirstOrderShopLink[] = [
-  {label: 'Flowers', url: 'https://rapidfirenow.com/lobby'},
-  {label: 'Vapes', url: 'https://rapidfirenow.com/lobby'},
-  {label: 'Extracts', url: 'https://rapidfirenow.com/lobby'},
-  {label: 'Edibles', url: 'https://rapidfirenow.com/lobby'},
-  {label: 'Pre Rolls', url: 'https://rapidfirenow.com/lobby'},
+  {label: 'Flowers', url: 'https://rapidfirenow.com/lobby/category/flower'},
+  {label: 'Vapes', url: 'https://rapidfirenow.com/lobby/category/vapes'},
+  {label: 'Extracts', url: 'https://rapidfirenow.com/lobby/category/extracts'},
+  {label: 'Edibles', url: 'https://rapidfirenow.com/lobby/category/edibles'},
+  {
+    label: 'Pre Rolls',
+    url: 'https://rapidfirenow.com/lobby/category/pre-rolls',
+  },
 ]
 
 export const FirstOrderEmail = ({
@@ -102,7 +105,7 @@ export const FirstOrderEmail = ({
                 borderRadius: '20px 20px 80px 80px',
                 boxShadow: '0 10px 28px rgba(228, 58, 164, 0.25)',
               }}>
-              <Text className='m-0 text-[32px] leading-[1] font-extrabold tracking-[-0.04em] text-white'>
+              <Text className='m-0 font-clash text-[32px] leading-[1] font-extrabold tracking-[-0.04em] text-white'>
                 {discountText}
               </Text>
               <Text className='m-0 mt-2 text-[14px] font-semibold tracking-[0.1em] uppercase text-white'>
@@ -122,8 +125,7 @@ export const FirstOrderEmail = ({
             <Section
               className='mx-auto mt-8 rounded-[18px] px-4 py-4 text-center'
               style={{
-                background:
-                  'linear-gradient(90deg, #c51883 0%, #ef4eaf 100%)',
+                background: 'linear-gradient(90deg, #c51883 0%, #ef4eaf 100%)',
                 boxShadow: '0 12px 24px rgba(197, 24, 131, 0.28)',
               }}>
               <Button
@@ -147,7 +149,9 @@ export const FirstOrderEmail = ({
                 <Text
                   key={benefit}
                   className='m-0 mt-3 text-[15px] leading-[1.5] text-white'>
-                  <span style={{color: '#ec4899', paddingRight: '10px'}}>★</span>
+                  <span style={{color: '#ec4899', paddingRight: '10px'}}>
+                    ★
+                  </span>
                   {benefit}
                 </Text>
               ))}

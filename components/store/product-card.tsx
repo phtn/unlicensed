@@ -118,7 +118,7 @@ export const ProductCard = ({
               <h3 className='text-sm md:text-base font-okxs truncate capitalize leading-3.5'>
                 {product.name}
               </h3>
-              <div className='flex items-center space-x-2'>
+              <div className='flex items-center space-x-1 whitespace-nowrap'>
                 {product.productTier != null && product.productTier !== '' && (
                   <span className='min-h-6 text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum uppercase'>
                     {product.productTier ?? ''}
