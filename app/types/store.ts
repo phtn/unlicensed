@@ -60,6 +60,9 @@ export interface StoreProduct {
   grower?: string
   _id?: Id<'products'>
   _creationTime?: number
+  netWeight?: number
+  netWeightUnit?: string
+  batchId?: string
 }
 
 export interface StoreProductDetail {

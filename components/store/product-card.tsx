@@ -64,6 +64,13 @@ export const ProductCard = ({
     firstThreeOptions[Math.min(selectedIndex, firstThreeOptions.length - 1)] ??
     firstThreeOptions[0] ??
     null
+  const netWeightLabel =
+    product.netWeight != null || product.netWeightUnit
+      ? [product.netWeight, product.netWeightUnit]
+          .filter((value) => value != null && value !== '')
+          .join(' ')
+      : ''
+  const batchIdLabel = product.batchId?.trim() ?? ''
   const {addItem} = useCart()
   const productId = product._id as Id<'products'> | undefined
 
@@ -111,11 +118,29 @@ export const ProductCard = ({
               <h3 className='text-sm md:text-base font-okxs truncate capitalize leading-3.5'>
                 {product.name}
               </h3>
-              {product.productTier != null && product.productTier !== '' && (
-                <span className='min-h-6 text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum uppercase'>
-                  {product.productTier ?? '_'}
-                </span>
-              )}
+              <div className='flex items-center space-x-2'>
+                {product.productTier != null && product.productTier !== '' && (
+                  <span className='min-h-6 text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum uppercase'>
+                    {product.productTier ?? ''}
+                  </span>
+                )}
+                {netWeightLabel && (
+                  <span className='min-h-6 text-xs opacity-50'>&middot;</span>
+                )}
+                {netWeightLabel && (
+                  <span className='min-h-6 text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum lowercase'>
+                    {netWeightLabel}
+                  </span>
+                )}
+                {batchIdLabel && (
+                  <span className='min-h-6 text-xs opacity-50'>&middot;</span>
+                )}
+                {batchIdLabel && (
+                  <span className='min-h-6 text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum uppercase'>
+                    {batchIdLabel}
+                  </span>
+                )}
+              </div>
             </div>
             <div
               id='denom-price'

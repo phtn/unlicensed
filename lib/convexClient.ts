@@ -58,6 +58,9 @@ export type RawProduct = {
   grower?: string
   tier?: string
   subcategory?: string
+  netWeight?: number
+  netWeightUnit?: string
+  batchId?: string
   _id?: Id<'products'>
   _creationTime?: number
 }
@@ -134,6 +137,9 @@ export const adaptProduct = (product: RawProduct): StoreProduct => ({
   base: product.base,
   productType: product.productType,
   weightGrams: product.weightGrams,
+  netWeight: product.netWeight,
+  netWeightUnit: product.netWeightUnit,
+  batchId: product.batchId,
   brand: Array.isArray(product.brand)
     ? product.brand
     : product.brand

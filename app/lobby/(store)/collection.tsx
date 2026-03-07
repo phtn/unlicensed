@@ -68,7 +68,7 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
               <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
                 <div>
                   <h3 className='capitalize text-xl font-clash text-foreground sm:text-3xl'>
-                    {category.name} {items.length}
+                    {category.name}
                   </h3>
                 </div>
                 <div className='flex items-center gap-3 text-xs uppercase tracking-[0.35em] text-color-muted'>
