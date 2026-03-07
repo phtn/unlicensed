@@ -39,15 +39,16 @@ export function Stepper({
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-1 rounded-full border border-foreground/20 bg-sidebar mt-1',
+        'inline-flex items-center gap-1 bg-sidebar mt-0',
         className,
       )}>
       <Button
         isIconOnly
         size={size}
+        radius='none'
         variant='light'
         className={cn(
-          'min-w-0 rounded-l-full rounded-r-none',
+          'min-w-0 rounded-none!',
           sizeClasses[size],
           !canDecrement && 'opacity-40 cursor-not-allowed',
         )}

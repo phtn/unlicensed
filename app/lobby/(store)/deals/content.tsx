@@ -2,7 +2,10 @@
 
 import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
 import {useDealsQueryState} from '@/app/lobby/(store)/deals/hooks/use-deals-query-state'
-import type {BundleConfig, BundleType} from '@/app/lobby/(store)/deals/lib/deal-types'
+import type {
+  BundleConfig,
+  BundleType,
+} from '@/app/lobby/(store)/deals/lib/deal-types'
 import type {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
@@ -18,7 +21,9 @@ interface DealsContentProps {
   initialProductsByCategory: Record<string, StoreProduct[]>
 }
 
-function getDefaultVariationByBundle(configs: Record<string, BundleConfig>): Partial<Record<BundleType, number>> {
+function getDefaultVariationByBundle(
+  configs: Record<string, BundleConfig>,
+): Partial<Record<BundleType, number>> {
   const out: Partial<Record<BundleType, number>> = {}
   for (const [id, config] of Object.entries(configs)) {
     const idx = config.defaultVariationIndex ?? 0
@@ -180,17 +185,19 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
   }, [flower, extracts, edibles, prerolls, resolveUrl])
 
   const buildProps = useMemo(() => {
-    const byType: Record<string, {config: BundleConfig; products: StoreProduct[]}> = {}
+    const byType: Record<
+      string,
+      {config: BundleConfig; products: StoreProduct[]}
+    > = {}
     for (const config of configsList) {
       const slugs = config.categorySlugs
-      const products =
-        slugs.includes('flower')
-          ? productsWithImages.flower
-          : slugs.includes('extracts')
-            ? productsWithImages.extracts
-            : slugs.includes('edibles') || slugs.includes('pre-rolls')
-              ? productsWithImages.edibles
-              : []
+      const products = slugs.includes('flower')
+        ? productsWithImages.flower
+        : slugs.includes('extracts')
+          ? productsWithImages.extracts
+          : slugs.includes('edibles') || slugs.includes('pre-rolls')
+            ? productsWithImages.edibles
+            : []
       byType[config.id] = {config, products}
     }
     return byType
@@ -198,11 +205,11 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
 
   return (
     <div className='min-h-screen pt-16 sm:pt-20 md:pt-24 lg:pt-26 pb-16 px-2 sm:px-4 md:px-6 lg:px-8'>
-      <div className='h-16 w-full bg-indigo-400 mb-8 flex items-center justify-center text-xl text-white font-okxs space-x-2 md:rounded-lg'>
+      <div className='hidden _flex items-center justify-center h-16 w-full bg-indigo-400 mb-8 text-xl text-white font-okxs space-x-2 md:rounded-lg'>
         <Icon name='code' />
         <span className=''>Development In-progress</span>
       </div>
-      <div className='max-w-7xl mx-auto'>
+      <div className='max-w-7xl mx-auto pt-16'>
         <header className='ml-4 md:ml-0 mb-10'>
           <h1 className='font-polysans text-3xl sm:text-4xl font-bold tracking-tight'>
             Deals & Bundles

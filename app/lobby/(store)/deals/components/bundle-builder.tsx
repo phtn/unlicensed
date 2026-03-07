@@ -552,7 +552,7 @@ export function BundleBuilder({
   ])
 
   return (
-    <Card className='rounded-3xl border border-foreground/20 overflow-hidden'>
+    <Card className='rounded-none! border border-foreground/20 overflow-hidden'>
       <CardHeader className='flex flex-col items-start gap-2'>
         <div className='flex items-center justify-between w-full min-h-12 md:min-h-14'>
           <h2 className='flex items-center pl-1 space-x-4 font-polysans text-lg md:text-xl font-semibold'>
@@ -570,7 +570,7 @@ export function BundleBuilder({
             )}
           </h2>
           {config.variations.length > 1 && (
-            <div className='flex p-1 rounded-full bg-sidebar dark:bg-dark-table'>
+            <div className='flex bg-sidebar dark:bg-dark-table'>
               {config.variations.map((v, i) => {
                 const variationCartCount = cartCountByVariationIndex[i] ?? 0
                 return (
@@ -597,7 +597,7 @@ export function BundleBuilder({
                       variant={variationIndex === i ? 'solid' : 'flat'}
                       onPress={() => setVariationIndex(i)}
                       className={cn(
-                        'rounded-full text-sm md:text-base bg-transparent px-1',
+                        'rounded-none! text-sm md:text-base bg-transparent px-2',
                         {
                           'bg-dark-table text-white dark:bg-white dark:text-dark-table px-2.5':
                             variationIndex === i,
@@ -632,7 +632,7 @@ export function BundleBuilder({
           {totalFromCart > 0 && (
             <span
               id='from-cart'
-              className='bg-brand text-white rounded-md px-4 py-1 text-sm'>
+              className='bg-brand text-white rounded-xs px-4 py-1 text-sm'>
               {totalFromCart} {totalFromCart === 1 ? 'item' : 'items'} from cart
             </span>
           )}
@@ -650,7 +650,7 @@ export function BundleBuilder({
             return (
               <div
                 key={product._id}
-                className='flex items-center gap-3 md:rounded-2xl border-b first:border-t md:border border-foreground/10 p-2 md:p-3 dark:bg-background/20'>
+                className='flex items-center gap-3 md:rounded-none border-b first:border-t md:border border-foreground/10 p-2 dark:bg-background/20'>
                 {product.image && (
                   <Badge
                     isOneChar
@@ -674,7 +674,7 @@ export function BundleBuilder({
                     <Image
                       src={product.image}
                       alt={product.name}
-                      className='size-18 shrink-0 rounded-lg object-cover'
+                      className='size-18 shrink-0 rounded-none! object-cover'
                     />
                   </Badge>
                 )}
@@ -693,8 +693,11 @@ export function BundleBuilder({
                     />
                   </div>
                   <p className='md:text-base text-sm text-muted-foreground'>
-                    <span>
-                      ${(price / 100).toFixed(2)}{' '}
+                    <div className='md:flex md:items-center md:space-x-2 whitespace-nowrap'>
+                      <span className='text-foreground/80'>
+                        ${(price / 100).toFixed(2)}
+                      </span>{' '}
+                      <span className='md:flex hidden'>&middot;</span>
                       <br className='md:hidden flex' />
                       <span className='md:pt-0 -pt-2'>
                         {formatDenominationDisplay(
@@ -702,7 +705,7 @@ export function BundleBuilder({
                           variation.unitLabel,
                         )}
                       </span>
-                    </span>
+                    </div>
                   </p>
                 </div>
               </div>
@@ -784,7 +787,7 @@ export function BundleBuilder({
               radius='none'
               onPress={handleAddToCart}
               isDisabled={!isComplete || isPending || bundleAlreadyInCart}
-              className='bg-terpenes rounded-lg px-3.5'
+              className='bg-terpenes rounded-none! px-3.5'
               startContent={
                 isPending ? (
                   <Icon name='spinners-ring' className='size-4' />
