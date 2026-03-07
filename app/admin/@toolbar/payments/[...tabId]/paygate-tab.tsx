@@ -19,14 +19,7 @@ const PayGateTabInner = () => {
   const accounts = useQuery(api.paygateAccounts.q.listAccounts, {
     gateway: 'paygate',
   })
-  // const isPayGateRoute =
-  //   tabId === 'paygate' ||
-  //   !tabId ||
-  //   (tabId !== 'affiliate' &&
-  //     !tabId.startsWith('affiliate') &&
-  //     tabId !== 'utilities' &&
-  //     !tabId.startsWith('utilities'))
-
+  const [tabId] = useAdminTabId()
   return (
     <>
       <MainTab href='/admin/payments'>

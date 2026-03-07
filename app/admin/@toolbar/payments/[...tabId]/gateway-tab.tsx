@@ -3,6 +3,7 @@
 import {
   MainTab,
   PrimaryTab,
+  SecondaryTab,
   ToolbarButtonWrapper,
 } from '@/app/admin/@toolbar/components'
 import {PageTitle} from '@/app/admin/_components/ui/page-title'
@@ -34,10 +35,16 @@ export const GatewayTab = ({gateway, title, basePath}: GatewayTabProps) => {
         </span>
       </MainTab>
       <ToolbarButtonWrapper>
+        <SecondaryTab
+          id='utilities'
+          icon='bolt'
+          label='Utilities'
+          href={`${basePath}/${gateway}?tabId=utilities`}
+        />
         <PrimaryTab
           id='new'
           icon='plus'
-          label='Account'
+          label='Wallet'
           href={`${basePath}/${gateway}?tabId=new`}
         />
       </ToolbarButtonWrapper>

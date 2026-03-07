@@ -56,7 +56,7 @@ export interface StoreProduct {
   productTier?: string
   subcategory?: string
   weightGrams?: number
-  brand?: string
+  brand?: string[]
   grower?: string
   _id?: Id<'products'>
   _creationTime?: number

@@ -1,8 +1,7 @@
 import {v} from 'convex/values'
 import {ensureSlug} from '../../lib/slug'
 import {internal} from '../_generated/api'
-import {MutationCtx} from '../_generated/server'
-import {mutation} from '../_generated/server'
+import {mutation, MutationCtx} from '../_generated/server'
 import {productSchema, type ProductType} from './d'
 
 const FLOWER_TIERS = new Set(['B', 'A', 'AA', 'AAA', 'AAAA', 'RARE'])
@@ -31,7 +30,7 @@ const EXTRACT_AND_EDIBLE_BASES = new Set([
 ])
 const PRE_ROLL_BASES = new Set(['Flower', 'Infused'])
 
-type AttributeEntry = { name: string; slug: string }
+type AttributeEntry = {name: string; slug: string}
 
 function allowedSetFromAttributeEntries(
   entries: AttributeEntry[] | undefined,
@@ -90,7 +89,8 @@ const validateTierForCategory = (
   }
 
   const fromEntries = allowedSetFromAttributeEntries(categoryTiers)
-  const allowedTierSet = fromEntries ?? getAllowedTierSetForCategory(categorySlug)
+  const allowedTierSet =
+    fromEntries ?? getAllowedTierSetForCategory(categorySlug)
   if (allowedTierSet.has(tier.trim())) {
     return
   }
@@ -139,10 +139,10 @@ const validateBaseForCategory = (
 }
 
 const validateBrandForCategory = (
-  brand: string | undefined,
+  brands: string[] | undefined,
   categoryBrands?: AttributeEntry[],
 ) => {
-  if (!brand) {
+  if (!brands || brands.length === 0) {
     return
   }
   if (!categoryBrands || categoryBrands.length === 0) {
@@ -150,13 +150,14 @@ const validateBrandForCategory = (
   }
   const allowed = allowedSetFromAttributeEntries(categoryBrands)
   if (!allowed) return
-  if (allowed.has(brand.trim())) {
-    return
+  for (const brand of brands) {
+    if (!allowed.has(brand.trim())) {
+      const allowedBrands = Array.from(allowed).join(', ')
+      throw new Error(
+        `Brand "${brand}" is invalid. Allowed brands for this category: ${allowedBrands}.`,
+      )
+    }
   }
-  const allowedBrands = Array.from(allowed).join(', ')
-  throw new Error(
-    `Brand "${brand}" is invalid. Allowed brands for this category: ${allowedBrands}.`,
-  )
 }
 
 const sanitizeArray = (values: Array<string> | undefined) =>
@@ -209,7 +210,7 @@ async function buildProductInsertDoc(
     category.slug ?? args.categorySlug,
     category.bases,
   )
-  validateBrandForCategory(args.brand?.trim(), category.brands)
+  validateBrandForCategory(sanitizeArray(args.brand), category.brands)
 
   const doc = {
     name: args.name ?? '',
@@ -240,7 +241,7 @@ async function buildProductInsertDoc(
     potencyLevel: args.potencyLevel,
     potencyProfile: args.potencyProfile,
     lineage: args.lineage,
-    brand: args.brand?.trim() || undefined,
+    brand: sanitizeArray(args.brand),
     subcategory: args.subcategory?.trim() || undefined,
     productType: args.productType?.trim() || undefined,
     noseRating: args.noseRating,
@@ -427,9 +428,7 @@ export const updateProduct = mutation({
       updates.lineage = fields.lineage.trim() || undefined
     }
     if (fields.brand !== undefined && fields.brand !== null) {
-      // const brandStr =
-      //   typeof fields.brand === 'string' ? fields.brand.trim() : ''
-      updates.brand = fields.brand.trim() || undefined
+      updates.brand = sanitizeArray(fields.brand)
     }
     if (fields.subcategory !== undefined) {
       updates.subcategory = fields.subcategory.trim() || undefined
@@ -460,13 +459,12 @@ export const updateProduct = mutation({
       updates.tier = undefined
     }
 
-    const categoryForValidation =
-      nextCategorySlug
-        ? await ctx.db
-            .query('categories')
-            .withIndex('by_slug', (q) => q.eq('slug', nextCategorySlug))
-            .unique()
-        : null
+    const categoryForValidation = nextCategorySlug
+      ? await ctx.db
+          .query('categories')
+          .withIndex('by_slug', (q) => q.eq('slug', nextCategorySlug))
+          .unique()
+      : null
 
     if (tierChanged || categoryChanged) {
       const nextTier =
@@ -504,7 +502,7 @@ export const updateProduct = mutation({
     }
     if (fields.brand !== undefined && fields.brand !== null) {
       validateBrandForCategory(
-        fields.brand.trim() || undefined,
+        sanitizeArray(fields.brand),
         categoryForValidation?.brands,
       )
     }

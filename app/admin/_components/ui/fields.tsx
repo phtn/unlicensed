@@ -30,6 +30,12 @@ export const commonSelectClassNames = {
     'border h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
   mainWrapper: 'py-4',
 }
+export const multiSelectClassNames = {
+  value: 'placeholder:text-slate-400/80 py-2',
+  trigger:
+    'border h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
+  mainWrapper: 'py-4',
+}
 
 type BaseFieldProps<T> = {
   name: keyof T // Required for FormInput type, but can be omitted when used inside AppField
@@ -253,10 +259,11 @@ export function SelectField<T>(
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
         variant='bordered'
-        isMultiline={isMultiple}
         classNames={{
           ...commonInputClassNames,
-          ...commonSelectClassNames,
+          ...(props?.mode === 'multiple'
+            ? multiSelectClassNames
+            : commonSelectClassNames),
           ...props?.classNames,
         }}
         renderValue={
@@ -269,7 +276,7 @@ export function SelectField<T>(
                 }
 
                 return (
-                  <div className='flex flex-wrap gap-x-2'>
+                  <div className='flex items-center gap-2 overflow-x-auto whitespace-nowrap py-0.5 pr-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
                     {items.map((item) => {
                       const optionValue = item.key
                         ? getOptionValue(item.key)
@@ -284,10 +291,11 @@ export function SelectField<T>(
 
                       return (
                         <Chip
-                          variant='bordered'
+                          variant='dot'
                           {...chipProps}
                           key={item.key}
-                          size='sm'>
+                          size='md'
+                          className='shrink-0 border-1'>
                           <span className='text-foreground'>
                             {item.textValue}
                           </span>

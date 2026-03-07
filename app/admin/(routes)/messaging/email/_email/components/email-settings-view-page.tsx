@@ -1,6 +1,11 @@
 'use client'
 
 import {AccessDenied} from '@/app/admin/_components/ui/access-denied'
+import {
+  commonInputClassNames,
+  commonSelectClassNames,
+  narrowInputClassNames,
+} from '@/app/admin/_components/ui/fields'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
@@ -22,7 +27,7 @@ import {
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useRouter} from 'next/navigation'
-import {startTransition, useCallback, useState} from 'react'
+import {startTransition, useCallback, useRef, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import type {EmailSettingsConvexArgs} from '../email-settings-form-schema'
 import {toFormValues, withViewTransition} from '../utils'
@@ -56,6 +61,84 @@ function parsePastedRecipients(text: string): RecipientRow[] {
   })
 }
 
+function normalizeCsvHeader(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+}
+
+function parseCsvRow(line: string): string[] {
+  const cells: string[] = []
+  let current = ''
+  let inQuotes = false
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i]
+    const next = line[i + 1]
+
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        current += '"'
+        i++
+      } else {
+        inQuotes = !inQuotes
+      }
+      continue
+    }
+
+    if (char === ',' && !inQuotes) {
+      cells.push(current.trim())
+      current = ''
+      continue
+    }
+
+    current += char
+  }
+
+  cells.push(current.trim())
+  return cells
+}
+
+function parseCsvRecipients(text: string): RecipientRow[] {
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  if (lines.length < 2) return []
+
+  const headers = parseCsvRow(lines[0] ?? '').map(normalizeCsvHeader)
+  const emailIndex = headers.findIndex((header) => header === 'email')
+  const nameIndex = headers.findIndex((header) =>
+    ['name', 'fullname'].includes(header),
+  )
+  const firstNameIndex = headers.findIndex((header) =>
+    ['firstname', 'first'].includes(header),
+  )
+  const lastNameIndex = headers.findIndex((header) =>
+    ['lastname', 'last'].includes(header),
+  )
+
+  if (emailIndex === -1) return []
+
+  return lines.slice(1).reduce<RecipientRow[]>((rows, line) => {
+    const cells = parseCsvRow(line)
+    const email = cells[emailIndex]?.trim() ?? ''
+    if (!email) return rows
+
+    const explicitName = nameIndex >= 0 ? (cells[nameIndex]?.trim() ?? '') : ''
+    const firstName =
+      firstNameIndex >= 0 ? (cells[firstNameIndex]?.trim() ?? '') : ''
+    const lastName =
+      lastNameIndex >= 0 ? (cells[lastNameIndex]?.trim() ?? '') : ''
+    const name = explicitName || [firstName, lastName].filter(Boolean).join(' ')
+
+    rows.push({name, email})
+    return rows
+  }, [])
+}
+
 export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   const router = useRouter()
   const {user} = useAuthCtx()
@@ -71,6 +154,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
     sending: boolean
     error?: string
   } | null>(null)
+  const csvInputRef = useRef<HTMLInputElement | null>(null)
 
   const emailSetting = useQuery(
     api.emailSettings.q.getEmailSetting,
@@ -180,6 +264,32 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
       toast.error(err instanceof Error ? err.message : 'Failed to save list')
     }
   }, [recipients, mailingListName, createMailingList])
+
+  const handleCsvImport = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+
+      try {
+        const text = await file.text()
+        const parsed = parseCsvRecipients(text)
+        if (parsed.length === 0) {
+          toast.error(
+            'No valid recipients found. CSV must include email and name, or email with first and last name columns.',
+          )
+          return
+        }
+        setRecipients((prev) => [...prev, ...parsed])
+        toast.success(`Imported ${parsed.length} recipients from CSV`)
+      } catch (error) {
+        console.error(error)
+        toast.error('Failed to import CSV')
+      } finally {
+        e.target.value = ''
+      }
+    },
+    [],
+  )
 
   const toggleEmailBlast = useCallback(() => {
     setShowEmailBlast((prev) => {
@@ -362,340 +472,366 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
           </div>
         </div>
 
-        <motion.div
-          initial={{opacity: 0, y: 20}}
-          animate={{opacity: 1, y: 0}}
-          className='space-y-0'>
-          <Card
-            radius='none'
-            className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-t-2xl rounded-b-none shadow-none font-figtree h-28'>
-            <CardHeader>
-              <div className='flex items-center gap-3'>
-                <SectionHeader
-                  title={emailSetting.title || 'Untitled Template'}
-                />
-                <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-cyan-100/50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-600/50 dark:border-cyan-500/30'>
-                  {emailSetting.intent || 'general'}
-                </span>
-                <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-brand/10 dark:bg-brand/10 text-brand dark:text-brand border border-brand/30 dark:border-brand/30'>
-                  {emailSetting.type || 'default'}
-                </span>
-                {emailSetting.visible ? (
-                  <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-emerald-100/50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 dark:border-emerald-500/30'>
-                    Active
-                  </span>
-                ) : (
-                  <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20'>
-                    Inactive
-                  </span>
-                )}
-              </div>
-            </CardHeader>
-            <CardBody>
-              <div className='text-base pt-2 font-figtree'>
-                <span className='text-xs uppercase opacity-70 mr-2'>
-                  subject:
-                </span>
-                <span className='font-medium'>
-                  {emailSetting.subject || 'No subject defined'}
-                </span>
-              </div>
-            </CardBody>
-          </Card>
-
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-0 font-figtree'>
-            <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none md:rounded-bl-4xl shadow-none'>
-              <CardBody>
-                <SectionHeader title='Recipients' />
-                <div className='py-6 space-y-3'>
-                  <div>
-                    <p className='text-xs uppercase opacity-60 mb-1'>from</p>
-                    <p className='text-sm'>
-                      {emailSetting.from?.join(', ') || 'Not set'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className='text-xs uppercase opacity-60 mb-1'>to</p>
-                    <p className='text-sm'>
-                      {emailSetting.to?.join(', ') || 'dynamic'}
-                    </p>
-                  </div>
-                  {emailSetting.cc && emailSetting.cc.length > 0 && (
-                    <div>
-                      <p className='text-xs text-zinc-400 mb-1'>CC</p>
-                      <p className='text-sm'>{emailSetting.cc.join(', ')}</p>
-                    </div>
-                  )}
-                  {emailSetting.bcc && emailSetting.bcc.length > 0 && (
-                    <div>
-                      <p className='text-xs uppercase opacity-60 mb-1'>bcc</p>
-                      <p className='text-sm'>{emailSetting.bcc.join(', ')}</p>
-                    </div>
-                  )}
-                </div>
-              </CardBody>
-            </Card>
-            <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none shadow-none'>
-              <CardBody>
-                <SectionHeader title='Template' />
-                <div className='py-6 space-y-3'>
-                  <div>
-                    <p className='text-xs uppercase opacity-60 mb-1'>name</p>
-                    <p className='text-sm'>
-                      {emailSetting.template
-                        ? (EMAIL_TEMPLATE_OPTIONS.find(
-                            (o) => o.id === emailSetting.template,
-                          )?.label ?? emailSetting.template)
-                        : 'No template'}
-                    </p>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-            <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-t-0 md:border-l-0 border-background rounded-none rounded-b-4xl md:rounded-bl-none shadow-none'>
-              <CardBody>
-                <SectionHeader title='Metadata' />
-                <div className='py-6 space-y-3'>
-                  {emailSetting.group && (
-                    <div>
-                      <p className='text-xs uppercase opacity-60 mb-1'>Group</p>
-                      <p className='text-sm'>{emailSetting.group}</p>
-                    </div>
-                  )}
-                  {emailSetting.intent && (
-                    <div>
-                      <p className='text-xs uppercase opacity-60 mb-1'>
-                        Intent
-                      </p>
-                      <p className='text-sm'>{emailSetting.intent}</p>
-                    </div>
-                  )}
-                </div>
-              </CardBody>
-            </Card>
-          </div>
-
-          <div className='mt-2 flex items-center space-x-4'>
-            {emailSetting.text && (
-              <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
-                <SectionHeader title='Plain Text' />
-                <div className='p-2'>
-                  <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
-                    {emailSetting.text}
-                  </pre>
-                </div>
-              </Card>
-            )}
-
-            {emailSetting.body && (
-              <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
-                <SectionHeader title='Body Template' />
-                <div className='p-2 max-h-10'>
-                  <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
-                    {emailSetting.body}
-                  </pre>
-                </div>
-              </Card>
-            )}
-
-            {emailSetting.html && (
-              <Card className='hidden dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-700/50 p-4 mt-2'>
-                <SectionHeader title='HTML Template' />
-                <div className='p-2 max-h-12 hidden'>
-                  <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg overflow-x-auto'>
-                    {emailSetting.html}
-                  </pre>
-                </div>
-              </Card>
-            )}
-          </div>
-        </motion.div>
-
-        {showEmailBlast && (
+        <div className='h-[calc(84lvh)] overflow-scroll'>
           <motion.div
-            initial={{opacity: 0, height: 0}}
-            animate={{opacity: 1, height: 'auto'}}
-            className='mt-4'>
-            <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
+            initial={{opacity: 0, y: 20}}
+            animate={{opacity: 1, y: 0}}
+            className=''>
+            <Card
+              radius='none'
+              className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-t-2xl rounded-b-none shadow-none font-figtree h-28'>
               <CardHeader>
-                <SectionHeader
-                  title='Create Email Blast'
-                  description='Select a mailing list and send using this template. Emails are sent one recipient at a time.'
-                />
+                <div className='flex items-center gap-3'>
+                  <SectionHeader
+                    title={emailSetting.title || 'Untitled Template'}
+                  />
+                  <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-cyan-100/50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-600/50 dark:border-cyan-500/30'>
+                    {emailSetting.intent || 'general'}
+                  </span>
+                  <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-brand/10 dark:bg-brand/10 text-brand dark:text-brand border border-brand/30 dark:border-brand/30'>
+                    {emailSetting.type || 'default'}
+                  </span>
+                  {emailSetting.visible ? (
+                    <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-emerald-100/50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 dark:border-emerald-500/30'>
+                      Active
+                    </span>
+                  ) : (
+                    <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20'>
+                      Inactive
+                    </span>
+                  )}
+                </div>
               </CardHeader>
-              <CardBody className='space-y-4'>
-                <Select
-                  label='Mailing list'
-                  placeholder='Select a list'
-                  selectedKeys={selectedListId ? [selectedListId] : []}
-                  onSelectionChange={(keys) => {
-                    const k = Array.from(keys)[0]
-                    setSelectedListId(typeof k === 'string' ? k : '')
-                  }}
-                  isDisabled={!mailingLists?.length}
-                  classNames={{trigger: 'font-mono'}}>
-                  {(mailingLists ?? []).map((list) => (
-                    <SelectItem
-                      key={list._id}
-                      textValue={`${list.name} (${list.recipients.length})`}>
-                      {list.name} — {list.recipients.length} recipients
-                    </SelectItem>
-                  ))}
-                </Select>
-                {blastProgress && (
-                  <div className='space-y-2'>
-                    <Progress
-                      value={
-                        blastProgress.total > 0
-                          ? (blastProgress.sent / blastProgress.total) * 100
-                          : 0
-                      }
-                      color='primary'
-                      showValueLabel
-                      valueLabel={`${blastProgress.sent} / ${blastProgress.total}`}
-                      className='max-w-full'
-                    />
-                    {blastProgress.error && (
-                      <p className='text-sm text-danger'>
-                        {blastProgress.error}
-                      </p>
-                    )}
-                  </div>
-                )}
-                <div className='flex justify-end gap-2'>
-                  <Button variant='light' onPress={toggleEmailBlast}>
-                    Cancel
-                  </Button>
-                  <Button
-                    color='primary'
-                    onPress={handleEmailBlastSend}
-                    isDisabled={
-                      !selectedListId ||
-                      !!blastProgress?.sending ||
-                      !mailingLists?.some((l) => l._id === selectedListId)
-                    }
-                    isLoading={!!blastProgress?.sending}
-                    className='bg-dark-gray dark:bg-white dark:text-dark-table'>
-                    Send Blast
-                  </Button>
+              <CardBody>
+                <div className='text-base pt-2 font-figtree'>
+                  <span className='text-xs uppercase opacity-70 mr-2'>
+                    subject:
+                  </span>
+                  <span className='font-medium'>
+                    {emailSetting.subject || 'No subject defined'}
+                  </span>
                 </div>
               </CardBody>
             </Card>
-          </motion.div>
-        )}
 
-        {showMailingList && (
-          <motion.div
-            initial={{opacity: 0, height: 0}}
-            animate={{opacity: 1, height: 'auto'}}
-            exit={{opacity: 0, height: 0}}
-            className='mt-4'>
-            <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
-              <CardHeader className='flex items-center justify-between'>
-                <SectionHeader
-                  title='Create Mailing List'
-                  description='Paste names and emails below (one per line). Use name=email, name:email, or name,email.'
-                />
-                <Input
-                  label='List name (optional)'
-                  placeholder='My mailing list'
-                  value={mailingListName}
-                  onValueChange={setMailingListName}
-                  classNames={{input: 'font-mono text-sm'}}
-                />
-              </CardHeader>
-              <CardBody className='space-y-4'>
-                <div className='flex items-start space-x-4'>
-                  <Textarea
-                    placeholder='PASTE Name and Email on any of these formats: Alice=alice@example.com | Bob: bob@example.com | Carol, carol@example.com'
-                    minRows={1}
-                    classNames={{input: 'font-mono text-sm'}}
-                    onPaste={handlePasteRecipients}
-                  />
-                  <div className='flex items-center gap-3'>
-                    {recipients.length > 0 && (
-                      <span className='text-sm text-default-500'>
-                        {recipients.length} recipient
-                        {recipients.length !== 1 ? 's' : ''}
-                      </span>
+            <div className='grid grid-cols-1 md:grid-cols-3 font-figtree'>
+              <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none md:rounded-bl-4xl shadow-none'>
+                <CardBody>
+                  <SectionHeader title='Recipients' />
+                  <div className='pt-6 space-y-3'>
+                    <div>
+                      <p className='text-xs uppercase opacity-60 mb-1'>from</p>
+                      <p className='text-sm'>
+                        {emailSetting.from?.join(', ') || 'Not set'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className='text-xs uppercase opacity-60 mb-1'>to</p>
+                      <p className='text-sm'>
+                        {emailSetting.to?.join(', ') || 'dynamic'}
+                      </p>
+                    </div>
+                    {emailSetting.cc && emailSetting.cc.length > 0 && (
+                      <div>
+                        <p className='text-xs text-zinc-400 mb-1'>CC</p>
+                        <p className='text-sm'>{emailSetting.cc.join(', ')}</p>
+                      </div>
                     )}
+                    {emailSetting.bcc && emailSetting.bcc.length > 0 && (
+                      <div>
+                        <p className='text-xs uppercase opacity-60 mb-1'>bcc</p>
+                        <p className='text-sm'>{emailSetting.bcc.join(', ')}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardBody>
+              </Card>
+              <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none shadow-none'>
+                <CardBody>
+                  <SectionHeader title='Template' />
+                  <div className='pt-6 space-y-3'>
+                    <div>
+                      <p className='text-xs uppercase opacity-60 mb-1'>name</p>
+                      <p className='text-sm'>
+                        {emailSetting.template
+                          ? (EMAIL_TEMPLATE_OPTIONS.find(
+                              (o) => o.id === emailSetting.template,
+                            )?.label ?? emailSetting.template)
+                          : 'No template'}
+                      </p>
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+              <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-t-0 md:border-l-0 border-background rounded-none rounded-b-4xl md:rounded-bl-none shadow-none'>
+                <CardBody>
+                  <SectionHeader title='Metadata' />
+                  <div className='pt-6 space-y-3'>
+                    {emailSetting.group && (
+                      <div>
+                        <p className='text-xs uppercase opacity-60 mb-1'>
+                          Group
+                        </p>
+                        <p className='text-sm'>{emailSetting.group}</p>
+                      </div>
+                    )}
+                    {emailSetting.intent && (
+                      <div>
+                        <p className='text-xs uppercase opacity-60 mb-1'>
+                          Intent
+                        </p>
+                        <p className='text-sm'>{emailSetting.intent}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardBody>
+              </Card>
+            </div>
+
+            <div className='mt-2 flex items-center space-x-4'>
+              {emailSetting.text && (
+                <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
+                  <SectionHeader title='Plain Text' />
+                  <div className='p-2'>
+                    <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
+                      {emailSetting.text}
+                    </pre>
+                  </div>
+                </Card>
+              )}
+
+              {emailSetting.body && (
+                <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
+                  <SectionHeader title='Body Template' />
+                  <div className='p-2 max-h-10'>
+                    <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
+                      {emailSetting.body}
+                    </pre>
+                  </div>
+                </Card>
+              )}
+
+              {emailSetting.html && (
+                <Card className='hidden dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-700/50 p-4 mt-2'>
+                  <SectionHeader title='HTML Template' />
+                  <div className='p-2 max-h-12 hidden'>
+                    <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg overflow-x-auto'>
+                      {emailSetting.html}
+                    </pre>
+                  </div>
+                </Card>
+              )}
+            </div>
+          </motion.div>
+
+          {showEmailBlast && (
+            <motion.div
+              initial={{opacity: 0, height: 0}}
+              animate={{opacity: 1, height: 'auto'}}
+              className='mt-4'>
+              <Card
+                shadow='none'
+                className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
+                <CardHeader>
+                  <SectionHeader
+                    title='Send Email Blast'
+                    description='Select a mailing list and send using this template. Emails are sent one recipient at a time.'
+                  />
+                </CardHeader>
+                <CardBody className='space-y-4'>
+                  <Select
+                    label='Mailing list'
+                    placeholder='Select a list'
+                    selectedKeys={selectedListId ? [selectedListId] : []}
+                    onSelectionChange={(keys) => {
+                      const k = Array.from(keys)[0]
+                      setSelectedListId(typeof k === 'string' ? k : '')
+                    }}
+                    isDisabled={!mailingLists?.length}
+                    classNames={commonSelectClassNames}>
+                    {(mailingLists ?? []).map((list) => (
+                      <SelectItem
+                        key={list._id}
+                        textValue={`${list.name} (${list.recipients.length})`}>
+                        {list.name} — {list.recipients.length} recipients
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  {blastProgress && (
+                    <div className='space-y-2'>
+                      <Progress
+                        value={
+                          blastProgress.total > 0
+                            ? (blastProgress.sent / blastProgress.total) * 100
+                            : 0
+                        }
+                        color='primary'
+                        showValueLabel
+                        valueLabel={`${blastProgress.sent} / ${blastProgress.total}`}
+                        className='max-w-full'
+                      />
+                      {blastProgress.error && (
+                        <p className='text-sm text-danger'>
+                          {blastProgress.error}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  <div className='flex justify-end gap-2'>
+                    <Button variant='light' onPress={toggleEmailBlast}>
+                      Cancel
+                    </Button>
                     <Button
-                      type='button'
-                      size='md'
-                      variant='flat'
-                      onPress={addRecipientRow}
-                      className='gap-1'>
-                      <Icon name='plus' className='size-4' />
-                      Add row
+                      color='primary'
+                      radius='none'
+                      onPress={handleEmailBlastSend}
+                      isDisabled={
+                        !selectedListId ||
+                        !!blastProgress?.sending ||
+                        !mailingLists?.some((l) => l._id === selectedListId)
+                      }
+                      isLoading={!!blastProgress?.sending}
+                      className='rounded-lg bg-dark-gray dark:bg-white dark:text-dark-table'>
+                      Send Blast
                     </Button>
                   </div>
-                </div>
+                </CardBody>
+              </Card>
+            </motion.div>
+          )}
 
-                <div
-                  className='rounded-lg border border-greyed/15 bg-default-50 dark:bg-default-100/5 h-64 overflow-y-scroll'
-                  style={{contentVisibility: 'auto'}}>
-                  <div className='divide-y divide-greyed/10 min-w-0'>
-                    {recipients.length === 0 ? (
-                      <div className='px-4 py-2 text-center text-sm text-default-400'>
-                        Paste or add recipients above
-                      </div>
-                    ) : (
-                      recipients.map((row, index) => (
-                        <div
-                          key={index}
-                          className='flex items-center gap-2 px-3 py-1.5 min-h-0 hover:bg-default-100/50 dark:hover:bg-default-50/30 transition-colors'>
-                          <input
-                            type='text'
-                            placeholder='Name'
-                            value={row.name}
-                            onChange={(e) =>
-                              setRecipient(index, 'name', e.target.value)
-                            }
-                            className='flex-1 min-w-0 text-sm font-mono bg-transparent border-none outline-none py-1 placeholder:text-default-400'
-                            aria-label={`Recipient ${index + 1} name`}
-                          />
-                          <span className='text-default-400 shrink-0'>|</span>
-                          <input
-                            type='email'
-                            placeholder='email@example.com'
-                            value={row.email}
-                            onChange={(e) =>
-                              setRecipient(index, 'email', e.target.value)
-                            }
-                            className='flex-1 min-w-0 text-sm font-mono bg-transparent border-none outline-none py-1 placeholder:text-default-400'
-                            aria-label={`Recipient ${index + 1} email`}
-                          />
-                          <Button
-                            type='button'
-                            size='sm'
-                            variant='light'
-                            color='danger'
-                            isIconOnly
-                            onPress={() => removeRecipientRow(index)}
-                            aria-label={`Remove recipient ${index + 1}`}
-                            className='shrink-0'>
-                            <Icon name='trash' className='size-4' />
-                          </Button>
-                        </div>
-                      ))
-                    )}
+          {showMailingList && (
+            <motion.div
+              initial={{opacity: 0, height: 0}}
+              animate={{opacity: 1, height: 'auto'}}
+              exit={{opacity: 0, height: 0}}
+              className='mt-6'>
+              <Card
+                shadow='none'
+                className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
+                <CardHeader className='flex items-center justify-between'>
+                  <SectionHeader
+                    title='Create Mailing List'
+                    description='Paste names and emails below (one per line). Use name=email, name:email, or name,email.'
+                  />
+                  <Input
+                    label='List name (optional)'
+                    placeholder='My mailing list'
+                    value={mailingListName}
+                    onValueChange={setMailingListName}
+                    classNames={commonInputClassNames}
+                  />
+                </CardHeader>
+                <CardBody className='space-y-4'>
+                  <input
+                    ref={csvInputRef}
+                    type='file'
+                    accept='.csv,text/csv'
+                    className='hidden'
+                    onChange={handleCsvImport}
+                  />
+                  <div className='flex items-start space-x-3'>
+                    <Textarea
+                      placeholder='PASTE Name and Email on any of these formats: Alice=alice@example.com | Bob: bob@example.com | Carol, carol@example.com'
+                      minRows={1}
+                      classNames={narrowInputClassNames}
+                      onPaste={handlePasteRecipients}
+                    />
+                    <div className='flex items-center gap-3'>
+                      {recipients.length > 0 && (
+                        <span className='text-sm text-default-500'>
+                          {recipients.length} recipient
+                          {recipients.length !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                      <Button
+                        type='button'
+                        radius='none'
+                        variant='flat'
+                        onPress={addRecipientRow}
+                        className='gap-1 rounded-lg'>
+                        <Icon name='plus' className='size-4' />
+                        Add row
+                      </Button>
+                      <Button
+                        type='button'
+                        radius='none'
+                        variant='solid'
+                        onPress={() => csvInputRef.current?.click()}
+                        className='gap-1 rounded-lg bg-dark-table text-white dark:bg-white dark:text-dark-table'>
+                        <Icon name='arrow-up' className='size-4' />
+                        Import CSV
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                <div className='flex justify-end gap-2'>
-                  <Button variant='light' onPress={toggleMailingList}>
-                    Cancel
-                  </Button>
-                  <Button
-                    color='primary'
-                    onPress={handleCreateMailingList}
-                    className='bg-dark-gray dark:bg-white dark:text-dark-table'>
-                    Create Mailing List
-                  </Button>
-                </div>
-              </CardBody>
-            </Card>
-          </motion.div>
-        )}
+
+                  <div
+                    className='rounded-lg border border-greyed/15 bg-default-50 dark:bg-default-100/5 h-64 overflow-y-scroll'
+                    style={{contentVisibility: 'auto'}}>
+                    <div className='divide-y divide-greyed/10 min-w-0'>
+                      {recipients.length === 0 ? (
+                        <div className='px-4 py-2 text-center text-sm text-default-400'>
+                          Paste or add recipients above
+                        </div>
+                      ) : (
+                        recipients.map((row, index) => (
+                          <div
+                            key={index}
+                            className='flex items-center gap-2 px-3 py-1.5 min-h-0 hover:bg-default-100/50 dark:hover:bg-default-50/30 transition-colors'>
+                            <input
+                              type='text'
+                              placeholder='Name'
+                              value={row.name}
+                              onChange={(e) =>
+                                setRecipient(index, 'name', e.target.value)
+                              }
+                              className='flex-1 min-w-0 text-sm font-mono bg-transparent border-none outline-none py-1 placeholder:text-default-400'
+                              aria-label={`Recipient ${index + 1} name`}
+                            />
+                            <span className='text-default-400 shrink-0'>|</span>
+                            <input
+                              type='email'
+                              placeholder='email@example.com'
+                              value={row.email}
+                              onChange={(e) =>
+                                setRecipient(index, 'email', e.target.value)
+                              }
+                              className='flex-1 min-w-0 text-sm font-mono bg-transparent border-none outline-none py-1 placeholder:text-default-400'
+                              aria-label={`Recipient ${index + 1} email`}
+                            />
+                            <Button
+                              type='button'
+                              size='sm'
+                              variant='light'
+                              color='danger'
+                              isIconOnly
+                              onPress={() => removeRecipientRow(index)}
+                              aria-label={`Remove recipient ${index + 1}`}
+                              className='shrink-0'>
+                              <Icon name='trash' className='size-4' />
+                            </Button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                  <div className='flex justify-end gap-2'>
+                    <Button variant='light' onPress={toggleMailingList}>
+                      Cancel
+                    </Button>
+                    <Button
+                      color='primary'
+                      radius='none'
+                      onPress={handleCreateMailingList}
+                      className='rounded-lg bg-dark-gray dark:bg-white dark:text-dark-table'>
+                      Create Mailing List
+                    </Button>
+                  </div>
+                </CardBody>
+              </Card>
+            </motion.div>
+          )}
+        </div>
       </main>
     </div>
   )

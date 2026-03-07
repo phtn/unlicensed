@@ -68,16 +68,18 @@ export const Content = () => {
     api.products.q.listProducts,
     selectedBrandId ? {brand: selectedBrandId, limit: 24} : 'skip',
   )
+  const getProductBrands = (brands?: string | string[]) =>
+    Array.isArray(brands) ? brands : brands ? [brands] : []
 
   // Group products by brand and count them
   const brandCounts = useMemo(() => {
     if (!productsQuery) return new Map<string, number>()
     const counts = new Map<string, number>()
     productsQuery.forEach((product) => {
-      if (product.brand) {
-        const brandSlug = product.brand.toLowerCase().replace(/\s+/g, '-')
+      getProductBrands(product.brand).forEach((brand) => {
+        const brandSlug = brand.toLowerCase().replace(/\s+/g, '-')
         counts.set(brandSlug, (counts.get(brandSlug) || 0) + 1)
-      }
+      })
     })
     return counts
   }, [productsQuery])
@@ -145,7 +147,15 @@ export const Content = () => {
                 <Tag text={selectedBrand.name} />
                 <TitleV4
                   title={`${selectedBrand.name}`}
-                  subtitle={`Found ${selectedBrandProductsWithImages.length} products`}
+                  subtitle={
+                    <div>
+                      Found <span className='opacity-50 font-ios ml-2'>(</span>
+                      {selectedBrandProductsWithImages.length}
+                      <span className='opacity-50 font-ios mr-2'>)</span>{' '}
+                      product
+                      {selectedBrandProductsWithImages.length !== 1 ? 's' : ''}
+                    </div>
+                  }
                 />
               </div>
               <div className='flex flex-wrap items-center gap-3'>
@@ -154,15 +164,8 @@ export const Content = () => {
                   as={Link}
                   radius='none'
                   href={`/lobby/products?brand=${selectedBrand.slug}`}
-                  prefetch
-                  endContent={
-                    <Icon
-                      name='arrow-right'
-                      className='dark:text-brand text-white'
-                    />
-                  }
                   className='dark:bg-white opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base'>
-                  <span className='drop-shadow-xs'>View all products</span>
+                  <span className='drop-shadow-xs'>All Products</span>
                 </Button>
                 <Button
                   size='lg'

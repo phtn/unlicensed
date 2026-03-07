@@ -86,13 +86,16 @@ export const Content = ({initialProducts}: ContentProps) => {
       : initialProducts
   }, [initialProducts, productsQuery])
 
+  const getProductBrands = (brands?: string | string[]) =>
+    Array.isArray(brands) ? brands : brands ? [brands] : []
+
   // Get unique values for filters
   const uniqueBrands = useMemo(() => {
     const brands = new Set<string>()
     allProducts.forEach((p) => {
-      if (p.brand) {
-        brands.add(p.brand.toLowerCase())
-      }
+      getProductBrands(p.brand).forEach((productBrand) => {
+        brands.add(productBrand.toLowerCase())
+      })
     })
     return Array.from(brands).toSorted()
   }, [allProducts])
@@ -111,8 +114,10 @@ export const Content = ({initialProducts}: ContentProps) => {
 
     // Filter by brand
     if (brand) {
-      filtered = filtered.filter(
-        (p) => p.brand?.toLowerCase() === brand.toLowerCase(),
+      filtered = filtered.filter((p) =>
+        getProductBrands(p.brand).some(
+          (productBrand) => productBrand.toLowerCase() === brand.toLowerCase(),
+        ),
       )
     }
 

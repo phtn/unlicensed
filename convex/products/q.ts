@@ -35,8 +35,8 @@ export const listProducts = query({
     products = products.filter((p) => p.archived !== true)
     if (args.brand) {
       const normalizedBrand = normalizeBrandValue(args.brand)
-      products = products.filter(
-        (p) => normalizeBrandValue(p.brand) === normalizedBrand,
+      products = products.filter((p) =>
+        normalizeBrandValues(p.brand).includes(normalizedBrand),
       )
     }
     if (args.eligibleForDeals === true) {
@@ -141,6 +141,11 @@ export const getProductByName = query({
 
 const normalizeBrandValue = (brand?: string) =>
   (brand ?? '').trim().toLowerCase().replace(/\s+/g, '-')
+
+const normalizeBrandValues = (brands?: string | string[]) =>
+  (Array.isArray(brands) ? brands : brands ? [brands] : [])
+    .map(normalizeBrandValue)
+    .filter((brand) => brand.length > 0)
 
 const sortProducts = <T extends {featured?: boolean; name?: string}>(
   items: T[],

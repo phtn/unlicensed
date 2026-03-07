@@ -7,6 +7,7 @@ import {
   getProductTierOptionsByCategory,
   ProductFormValues,
   resolveAttributeValue,
+  resolveAttributeValues,
 } from '@/app/admin/(routes)/inventory/product/product-schema'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
@@ -64,23 +65,23 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
   const subcategoryOptions =
     selectedCat?.subcategories?.length &&
     typeof selectedCat.subcategories[0] === 'object'
-      ? (selectedCat.subcategories as { name: string; slug: string }[]).map(
-          (e) => ({ value: e.slug, label: e.name }),
+      ? (selectedCat.subcategories as {name: string; slug: string}[]).map(
+          (e) => ({value: e.slug, label: e.name}),
         )
-      : (selectedCat?.subcategories as string[] | undefined)?.map((s) => ({
+      : ((selectedCat?.subcategories as string[] | undefined)?.map((s) => ({
           value: s,
           label: s,
-        })) ?? []
+        })) ?? [])
   const productTypeOptions =
     selectedCat?.productTypes?.length &&
     typeof selectedCat.productTypes[0] === 'object'
-      ? (selectedCat.productTypes as { name: string; slug: string }[]).map(
-          (e) => ({ value: e.slug, label: e.name }),
+      ? (selectedCat.productTypes as {name: string; slug: string}[]).map(
+          (e) => ({value: e.slug, label: e.name}),
         )
-      : (selectedCat?.productTypes as string[] | undefined)?.map((s) => ({
+      : ((selectedCat?.productTypes as string[] | undefined)?.map((s) => ({
           value: s,
           label: s,
-        })) ?? []
+        })) ?? [])
 
   // Convert product data to form values (resolve tier/base/brand to slug when category uses attribute entries)
   const initialValues: ProductFormValues = {
@@ -91,10 +92,7 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
       product.base ??
       '',
     categorySlug: product.categorySlug ?? '',
-    brand:
-      resolveAttributeValue(product.brand ?? '', brandOptions) ??
-      product.brand ??
-      '',
+    brand: resolveAttributeValues(product.brand ?? [], brandOptions),
     shortDescription: product.shortDescription ?? '',
     description: product.description ?? '',
     priceCents: (product.priceCents ?? 0) / 100, // Convert from cents to dollars

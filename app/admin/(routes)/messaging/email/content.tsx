@@ -28,7 +28,7 @@ const EmailContentInner = () => {
       return <EmailTemplateForm />
     default:
       return (
-        <div className=''>
+        <div className='overflow-scroll'>
           <EmailTemplateList templates={templates} />
         </div>
       )

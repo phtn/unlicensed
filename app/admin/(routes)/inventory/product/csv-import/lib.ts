@@ -131,7 +131,10 @@ function parseJsonArrayOrRecord(value: string): unknown {
   if (!value || value.trim() === '') return undefined
   try {
     const parsed = JSON.parse(value) as unknown
-    if (Array.isArray(parsed) || (parsed !== null && typeof parsed === 'object'))
+    if (
+      Array.isArray(parsed) ||
+      (parsed !== null && typeof parsed === 'object')
+    )
       return parsed
     return undefined
   } catch {
@@ -164,14 +167,16 @@ function rawRowToProduct(
   const availableDenoms = parseJsonArrayOrRecord(
     get('availableDenominations'),
   ) as number[] | undefined
-  const popularDenom = parseJsonArrayOrRecord(
-    get('popularDenomination'),
-  ) as number[] | undefined
+  const popularDenom = parseJsonArrayOrRecord(get('popularDenomination')) as
+    | number[]
+    | undefined
   const effects = parseJsonArrayOrRecord(get('effects')) as string[] | undefined
-  const terpenes = parseJsonArrayOrRecord(get('terpenes')) as string[] | undefined
-  const flavorNotes = parseJsonArrayOrRecord(
-    get('flavorNotes'),
-  ) as string[] | undefined
+  const terpenes = parseJsonArrayOrRecord(get('terpenes')) as
+    | string[]
+    | undefined
+  const flavorNotes = parseJsonArrayOrRecord(get('flavorNotes')) as
+    | string[]
+    | undefined
   const gallery = parseJsonArrayOrRecord(get('gallery')) as
     | (string | unknown)[]
     | undefined
@@ -181,6 +186,9 @@ function rawRowToProduct(
   const eligibleDenomDeals = parseJsonArrayOrRecord(
     get('eligibleDenominationForDeals'),
   ) as number[] | undefined
+  const parsedBrand = parseJsonArrayOrRecord(get('brand')) as
+    | string[]
+    | undefined
 
   return {
     name: get('name') || undefined,
@@ -225,7 +233,11 @@ function rawRowToProduct(
     })(),
     potencyProfile: get('potencyProfile') || undefined,
     weightGrams: parseNum(get('weightGrams')),
-    brand: get('brand') || undefined,
+    brand: Array.isArray(parsedBrand)
+      ? parsedBrand
+      : get('brand')
+        ? [get('brand')]
+        : undefined,
     lineage: get('lineage') || undefined,
     noseRating: parseNum(get('noseRating')),
     variants: Array.isArray(variants) ? variants : undefined,
@@ -241,9 +253,9 @@ function rawRowToProduct(
     dealType: (() => {
       const raw = get('dealType').trim().toLowerCase()
       return raw === 'withintier' || raw === 'acrosstiers'
-        ? (raw === 'withintier'
-            ? ('withinTier' as const)
-            : ('acrossTiers' as const))
+        ? raw === 'withintier'
+          ? ('withinTier' as const)
+          : ('acrossTiers' as const)
         : undefined
     })(),
     productType: get('productType') || undefined,
@@ -323,7 +335,10 @@ function validateRow(
     errors.push('Category (categorySlug) is required')
   }
   const priceCents = product.priceCents
-  if (priceCents != null && (typeof priceCents !== 'number' || priceCents < 0)) {
+  if (
+    priceCents != null &&
+    (typeof priceCents !== 'number' || priceCents < 0)
+  ) {
     errors.push('priceCents must be a non-negative number')
   }
   if (
@@ -369,9 +384,7 @@ export function applySlugConflicts(
   for (const row of rows) {
     const name = row.product.name
     const slugRaw = (row.product.slug as string) ?? ''
-    const slug = slugRaw
-      ? slugify(slugRaw)
-      : slugify(String(name ?? ''))
+    const slug = slugRaw ? slugify(slugRaw) : slugify(String(name ?? ''))
     if (slug && existingSlugs.has(slug)) {
       row.conflict = 'slug'
       if (!row.errors.includes(`Slug "${slug}" already exists`)) {

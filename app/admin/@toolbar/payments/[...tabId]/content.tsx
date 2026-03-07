@@ -12,6 +12,8 @@ interface ContentProps {
 
 export const Content = ({tabId}: ContentProps) => {
   const pathname = usePathname()
+  const route = pathname?.split('/').pop()
+
   if (tabId) {
     return (
       <ToolbarWrapper>
@@ -24,7 +26,7 @@ export const Content = ({tabId}: ContentProps) => {
     )
   }
 
-  if (pathname?.includes('/paygate')) {
+  if (route === 'paygate') {
     return (
       <ToolbarWrapper>
         <GatewayTab

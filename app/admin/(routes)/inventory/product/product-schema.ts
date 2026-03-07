@@ -2,7 +2,7 @@ import {FormInput, SelectOption} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {z} from 'zod'
 
-type AttributeEntry = { name: string; slug: string }
+type AttributeEntry = {name: string; slug: string}
 
 /** Legacy: tier as string[]. New: tier as AttributeEntry[]. */
 function tierEntries(
@@ -21,7 +21,10 @@ function tierEntries(
   if (typeof first === 'string') {
     return (raw as string[]).map((s) => ({
       name: s,
-      slug: s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      slug: s
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, ''),
     }))
   }
   return raw as AttributeEntry[]
@@ -38,6 +41,25 @@ export function resolveAttributeValue(
   if (byValue) return byValue.value
   const byLabel = options.find((o) => o.label === v)
   return byLabel?.value ?? (options.some((o) => o.value === v) ? v : undefined)
+}
+
+export function resolveAttributeValues(
+  values: string[] | string | undefined,
+  options: SelectOption[],
+): string[] {
+  const rawValues = Array.isArray(values)
+    ? values
+    : values?.trim()
+      ? [values]
+      : []
+
+  return [
+    ...new Set(
+      rawValues
+        .map((value) => resolveAttributeValue(value, options) ?? value)
+        .filter((value): value is string => !!value?.trim()),
+    ),
+  ]
 }
 
 /** Returns tier select options: value = slug (for querying), label = name. */
@@ -89,7 +111,10 @@ function baseEntries(
   if (typeof first === 'string') {
     return (raw as string[]).map((s) => ({
       name: s,
-      slug: s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      slug: s
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, ''),
     }))
   }
   return raw as AttributeEntry[]
@@ -102,21 +127,25 @@ export const getProductBaseOptionsByCategory = (
 ): SelectOption[] => {
   const entries = baseEntries(categorySlug, categories)
   if (entries.length > 0) {
-    return entries.map((e) => ({ value: e.slug, label: e.name }))
+    return entries.map((e) => ({value: e.slug, label: e.name}))
   }
   const normalized = categorySlug?.toLowerCase().trim() ?? ''
   if (categoryContains(normalized, ['extract', 'concentrate', 'edible'])) {
-    return extractAndEdibleProductBases.map((b) => ({ value: b, label: b }))
+    return extractAndEdibleProductBases.map((b) => ({value: b, label: b}))
   }
   if (categoryContains(normalized, ['pre-roll', 'preroll', 'pre roll'])) {
-    return preRollProductBases.map((b) => ({ value: b, label: b }))
+    return preRollProductBases.map((b) => ({value: b, label: b}))
   }
   return []
 }
 
 function brandEntries(
   categorySlug: string | undefined,
-  categories: Array<{ slug?: string; _id: string; brands?: string[] | AttributeEntry[] }>,
+  categories: Array<{
+    slug?: string
+    _id: string
+    brands?: string[] | AttributeEntry[]
+  }>,
 ): AttributeEntry[] {
   if (!categorySlug || !categories.length) return []
   const cat = categories.find((c) => (c.slug ?? c._id) === categorySlug)
@@ -126,7 +155,10 @@ function brandEntries(
   if (typeof first === 'string') {
     return (raw as string[]).map((s) => ({
       name: s,
-      slug: s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      slug: s
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, ''),
     }))
   }
   return raw as AttributeEntry[]
@@ -135,7 +167,11 @@ function brandEntries(
 /** Returns brand select options: value = slug, label = name. */
 export const getProductBrandOptionsByCategory = (
   categorySlug: string | undefined,
-  categories: Array<{ slug?: string; _id: string; brands?: string[] | AttributeEntry[] }>,
+  categories: Array<{
+    slug?: string
+    _id: string
+    brands?: string[] | AttributeEntry[]
+  }>,
 ): SelectOption[] => {
   return brandEntries(categorySlug, categories).map((e) => ({
     value: e.slug,
@@ -148,7 +184,7 @@ export const productSchema = z.object({
   slug: z.string().optional(),
   base: z.string().optional(),
   categorySlug: z.string().min(1, 'Select a category.'),
-  brand: z.string().optional(),
+  brand: z.array(z.string()).optional(),
   productTier: z.string().optional(),
   subcategory: z.string().optional(),
   shortDescription: z.optional(
@@ -310,10 +346,10 @@ export const productFields: FormInput<ProductFormValues>[] = [
     label: 'Brand',
     required: false,
     type: 'select',
-    mode: 'single',
+    mode: 'multiple',
     options: [], // Populated from category brands in BasicInfo
-    placeholder: 'Select brand',
-    defaultValue: '',
+    placeholder: 'Select brands',
+    defaultValue: [],
   },
   {
     name: 'tier',
@@ -564,6 +600,7 @@ export const defaultValues: ProductFormValues = {
   tier: undefined,
   lineage: undefined,
   productType: undefined,
+  brand: [] as string[],
   noseRating: undefined,
   onSale: false,
   eligibleForUpgrade: false,

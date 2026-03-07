@@ -99,7 +99,12 @@ function filterProductsForVariation(
     if (excludedProductTypes.has(normalizeDealAttributeValue(p.productType)))
       return false
     if (excludedBases.has(normalizeDealAttributeValue(p.base))) return false
-    if (excludedBrands.has(normalizeDealAttributeValue(p.brand))) return false
+    if (
+      (p.brand ?? []).some((brand) =>
+        excludedBrands.has(normalizeDealAttributeValue(brand)),
+      )
+    )
+      return false
 
     return true
   })

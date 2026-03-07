@@ -54,7 +54,7 @@ export type RawProduct = {
   weightGrams?: number
   base?: string
   productType?: string
-  brand?: string
+  brand?: string | string[]
   grower?: string
   tier?: string
   subcategory?: string
@@ -134,7 +134,11 @@ export const adaptProduct = (product: RawProduct): StoreProduct => ({
   base: product.base,
   productType: product.productType,
   weightGrams: product.weightGrams,
-  brand: product.brand,
+  brand: Array.isArray(product.brand)
+    ? product.brand
+    : product.brand
+      ? [product.brand]
+      : undefined,
   productTier: product.tier,
   subcategory: product.subcategory,
   _id: product._id,

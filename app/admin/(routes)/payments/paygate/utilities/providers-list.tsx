@@ -110,7 +110,7 @@ const ProvidersList = () => {
   const canSelect = defaultAccount != null
 
   return (
-    <div className='dark:text-white space-y-4 py-4'>
+    <div className='dark:text-white py-4'>
       <SectionHeader title='Providers'>{data.length}</SectionHeader>
       {accountLoading && (
         <p className='text-small text-default-500'>Loading account…</p>
@@ -126,7 +126,7 @@ const ProvidersList = () => {
           /{TOP_TEN_MAX} selected).
         </p>
       )}
-      <div className='w-full flex flex-col border-t border-x border-sidebar'>
+      <div className='w-full grid grid-cols-2 md:grid-cols-3 gap-2 mt-4'>
         {data.map((item) => (
           <ProviderItem
             key={item.id}
@@ -162,13 +162,13 @@ const ProviderItem = ({
       shadow='none'
       radius='none'
       className={cn(
-        'border-b border-sidebar w-full transition-colors',
+        'border border-sidebar w-full transition-colors p-2',
         isSelected && 'ring-2 ring-primary ring-inset bg-primary/5',
       )}>
       <button
         type='button'
         className={cn(
-          'w-full text-left outline-none',
+          'w-full outline-none',
           !disabled &&
             'cursor-pointer hover:bg-default-100 active:bg-default-200 rounded-none',
         )}
@@ -180,26 +180,29 @@ const ProviderItem = ({
             ? undefined
             : `${item.provider_name}, ${item.status}. ${isSelected ? 'In top 10. Click to remove.' : 'Click to add to top 10.'}`
         }>
-        <CardHeader className='flex items-center justify-between px-2 w-full pointer-events-none'>
-          <div className='flex items-center flex-1 space-x-2'>
-            {isSelected && (
-              <span className='text-primary text-sm font-medium' title='Top 10'>
-                ★
-              </span>
-            )}
-            <span
-              className={cn('text-sm', {
-                'text-emerald-500': item.status === 'active',
-                'text-flavors': item.status === 'redirected',
-                'text-danger': item.status === 'unstable',
-              })}>
-              ⬤
-            </span>
+        <CardHeader className='flex w-full justify-between text-left px-2 pointer-events-none'>
+          <div className=''>
             <span className='font-medium'>{item.provider_name}</span>
+            <div className='flex items-center space-x-2'>
+              <span
+                className={cn('text-xs', {
+                  'text-emerald-500': item.status === 'active',
+                  'text-flavors': item.status === 'redirected',
+                  'text-danger': item.status === 'unstable',
+                })}>
+                ⬤
+              </span>
+              <span className='w-24'>{item.status}</span>
+            </div>
           </div>
-          <div className={cn('flex justify-end space-x-4')}>
-            <div className='font-brk font-foreground!'>
-              {item.minimum_amount} {item.minimum_currency}
+
+          <div className='flex items-start justify-end'>
+            <div className='text-sm font-ios'>
+              <p>
+                {item.minimum_amount}{' '}
+                <span className='font-light'>{item.minimum_currency}</span>
+              </p>
+              <p className='text-xs text-center'>minimum</p>
             </div>
             <div
               className={cn(
@@ -209,9 +212,7 @@ const ProviderItem = ({
                   'text-flavors': item.status === 'redirected',
                   'text-danger': item.status === 'unstable',
                 },
-              )}>
-              <span className='w-24'>{item.status}</span>
-            </div>
+              )}></div>
           </div>
         </CardHeader>
       </button>

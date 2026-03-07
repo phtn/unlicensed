@@ -138,6 +138,34 @@ export const Attributes = ({form}: AttributesProps) => {
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mt-4'>
+          <form.Field name='tags'>
+            {(field) => {
+              const value = (field.state.value as string) ?? ''
+              return (
+                <div className='space-y-2'>
+                  <Input
+                    label='Tags · Keywords'
+                    type='text'
+                    value={value}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      field.handleChange(e.target.value)
+                    }
+                    onBlur={field.handleBlur}
+                    placeholder='limited, kush, afghan'
+                    variant='bordered'
+                    size='lg'
+                    classNames={commonInputClassNames}
+                  />
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {field.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                </div>
+              )
+            }}
+          </form.Field>
           <form.Field name='lineage'>
             {(field) => {
               const value = (field.state.value as string) ?? ''

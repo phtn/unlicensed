@@ -69,6 +69,12 @@ export const BasicInfo = ({
   }, [fields])
 
   const _defaultTierOptions = useMemo(() => [], [])
+  const defaultBatchId = useMemo(() => {
+    const now = new Date()
+    const year = String(now.getFullYear()).slice(-2)
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    return `${year}${month}`
+  }, [])
 
   const defaultBaseOptions = useMemo(() => {
     const field = fields.find((entry) => entry.name === 'base')
@@ -148,7 +154,8 @@ export const BasicInfo = ({
       (form.getFieldValue('subcategory') as string) ?? ''
     const currentTier = (form.getFieldValue('tier') as string) ?? ''
     const currentBase = (form.getFieldValue('base') as string) ?? ''
-    const currentBrand = (form.getFieldValue('brand') as string) ?? ''
+    const currentBrand = (form.getFieldValue('brand') as string[]) ?? []
+    const currentBatchId = (form.getFieldValue('batchId') as string) ?? ''
 
     if (
       currentProductType &&
@@ -180,16 +187,22 @@ export const BasicInfo = ({
       form.setFieldValue('base', '')
     }
 
-    if (
-      brandOptions.length > 0 &&
-      currentBrand &&
-      !brandOptions.some((option) => option.value === currentBrand)
-    ) {
-      form.setFieldValue('brand', '')
+    if (currentBrand.length > 0) {
+      const validBrands = currentBrand.filter((brand) =>
+        brandOptions.some((option) => option.value === brand),
+      )
+      if (validBrands.length !== currentBrand.length) {
+        form.setFieldValue('brand', validBrands)
+      }
+    }
+
+    if (!currentBatchId.trim()) {
+      form.setFieldValue('batchId', defaultBatchId)
     }
   }, [
     baseOptions,
     brandOptions,
+    defaultBatchId,
     form,
     productTypeOptions,
     selectedCategory,
@@ -317,7 +330,7 @@ export const BasicInfo = ({
                   {...input}
                   type='select'
                   name='brand'
-                  mode='single'
+                  mode='multiple'
                   label={brandField.label}
                   placeholder={brandField.placeholder}
                   classNames={{...commonSelectClassNames}}

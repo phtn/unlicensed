@@ -7,11 +7,11 @@ import {PayGateProviders} from './providers-list'
 export const UtilitiesContent = () => {
   return (
     <MainWrapper>
-      <div className='h-[calc(100lvh-64px)] md:h-full overflow-scroll grid grid-cols-1 md:grid-cols-2 gap-4 px-4 md:px-0'>
-        <div className='w-full min-w-0'>
+      <div className='h-[calc(100lvh-64px)] md:h-full overflow-scroll grid grid-cols-1 md:grid-cols-3 gap-4 px-4 md:px-0'>
+        <div className='w-full min-w-0 '>
           <CurrencyConverter />
         </div>
-        <div className='w-full min-w-0'>
+        <div className='w-full min-w-0 col-span-2'>
           <PayGateProviders />
         </div>
       </div>

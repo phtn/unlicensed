@@ -59,7 +59,7 @@ export const productSchema = v.object({
   potencyLevel: v.optional(potencyLevel),
   potencyProfile: v.optional(v.string()),
   weightGrams: v.optional(v.number()),
-  brand: v.optional(v.string()),
+  brand: v.optional(v.array(v.string())),
   lineage: v.optional(v.string()),
   noseRating: v.optional(v.number()),
   variants: v.optional(
@@ -88,6 +88,7 @@ export const productSchema = v.object({
   archived: v.optional(v.boolean()),
   highMargins: v.optional(v.array(v.string())),
   brandCollaborators: v.optional(v.array(v.string())),
+  tags: v.optional(v.array(v.string())),
 })
 
 export type ProductType = Infer<typeof productSchema>
