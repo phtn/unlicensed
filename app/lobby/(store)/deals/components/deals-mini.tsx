@@ -13,7 +13,7 @@ export const DealsMini = ({categories}: Props) => {
     <section
       id='deals-bundle'
       aria-labelledby='deals-bundle-heading'
-      className='mx-auto w-full md:max-w-7xl py-12 sm:py-16 md:py-20 px-2 sm:px-4'>
+      className='mx-auto w-full md:max-w-7xl lg:-translate-y-1/2 py-12 sm:py-16 md:py-20 px-2 sm:px-4'>
       <div className='relative rounded-[36px] bg-slate-200 dark:bg-dark-table/50 border border-foreground/20 sm:px-12 sm:py-16 transition-colors px-6 py-10'>
         <div className="absolute w-full inset-0 bg-[url('/svg/noise.svg')] opacity-10 scale-100 pointer-events-none rounded-[36px]" />
         <div className='grid gap-12 lg:grid-cols-5 lg:items-center'>
