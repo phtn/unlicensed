@@ -118,7 +118,7 @@ export const Inventory = ({form}: InventoryProps) => {
   }
 
   return (
-    <FormSection id='inventory'>
+    <FormSection>
       <Header label='Inventory' />
       <div className='w-full space-y-8'>
         <div className='grid grid-cols-1 md:grid-cols-6 md:gap-x-6 gap-y-6 w-full'>

@@ -233,7 +233,7 @@ export const Nav = ({children}: NavProps) => {
               <Icon
                 name='user'
                 onClick={onOpen}
-                className='text-white size-5'
+                className='dark:text-white size-5'
               />
             )}
           </div>

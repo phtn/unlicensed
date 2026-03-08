@@ -24,7 +24,7 @@ export const Attributes = ({form}: AttributesProps) => {
   const isVapeCategory = categorySlug === 'vapes'
 
   return (
-    <FormSection id='attributes'>
+    <FormSection>
       <Header label='Attributes & Profile' />
       <div className='grid'>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4 items-center'>

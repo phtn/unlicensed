@@ -1,6 +1,7 @@
 import {v} from 'convex/values'
 import {ensureSlug} from '../../lib/slug'
 import {internal} from '../_generated/api'
+import type {Id} from '../_generated/dataModel'
 import {mutation, MutationCtx} from '../_generated/server'
 import {productSchema, type ProductType} from './d'
 
@@ -166,6 +167,37 @@ const sanitizeArray = (values: Array<string> | undefined) =>
 
 const numericArray = (values?: Array<number>) =>
   values?.filter((value) => Number.isFinite(value)) ?? undefined
+
+const ARCHIVED_SLUG_SUFFIX_PATTERN = /--archived-\d+(?:-\d+)?$/
+
+async function buildArchivedSlug(
+  ctx: MutationCtx,
+  productId: Id<'products'>,
+  slug: string | undefined,
+  name: string | undefined,
+): Promise<string> {
+  const baseSlug = (slug ?? '').trim() || ensureSlug('', name ?? 'product')
+  const normalizedBaseSlug = baseSlug.replace(ARCHIVED_SLUG_SUFFIX_PATTERN, '')
+  const timestamp = Date.now()
+
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const archivedSlug =
+      attempt === 0
+        ? `${normalizedBaseSlug}--archived-${timestamp}`
+        : `${normalizedBaseSlug}--archived-${timestamp}-${attempt}`
+
+    const existing = await ctx.db
+      .query('products')
+      .withIndex('by_slug', (q) => q.eq('slug', archivedSlug))
+      .unique()
+
+    if (!existing || existing._id === productId) {
+      return archivedSlug
+    }
+  }
+
+  throw new Error('Failed to generate a unique archived slug.')
+}
 
 async function buildProductInsertDoc(
   ctx: MutationCtx,
@@ -666,8 +698,16 @@ export const archiveProduct = mutation({
     const product = await ctx.db.get(args.productId)
     if (!product) return null
 
+    const archivedSlug = await buildArchivedSlug(
+      ctx,
+      product._id,
+      product.slug,
+      product.name,
+    )
+
     return await ctx.db.patch(product._id, {
       archived: true,
+      slug: archivedSlug,
     })
   },
 })

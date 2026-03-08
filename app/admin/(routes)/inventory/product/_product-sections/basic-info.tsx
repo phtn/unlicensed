@@ -211,7 +211,7 @@ export const BasicInfo = ({
   ])
 
   return (
-    <FormSection id='basic-info' position='top'>
+    <FormSection position='top'>
       <div className='flex items-center'>
         <Header label='Basic Information'>
           <Button

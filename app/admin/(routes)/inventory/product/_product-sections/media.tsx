@@ -207,7 +207,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
 
   return (
     <>
-      <FormSection id='media'>
+      <FormSection>
         <Header label='Media' />
         <div className='grid gap-6'>
           <div className='grid gap-4 lg:grid-cols-3'>

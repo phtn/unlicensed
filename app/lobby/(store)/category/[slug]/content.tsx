@@ -35,7 +35,9 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
 
   const baseProducts = useMemo(() => {
     const nextProducts = productsQuery?.map(adaptProduct)
-    return nextProducts && nextProducts.length > 0 ? nextProducts : initialProducts
+    return nextProducts && nextProducts.length > 0
+      ? nextProducts
+      : initialProducts
   }, [initialProducts, productsQuery])
 
   const products = useMemo(() => {
@@ -119,7 +121,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   radius='none'
                   variant='light'
                   onPress={toggle}
-                  href={'/lobby/strain-finder'}
+                  href={'/lobby/deals'}
                   className='hidden border dark:border-light-gray/80 sm:flex rounded-xs items-center gap-2 dark:text-terpenes font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                   <span className='tracking-tight'>Find Deals</span>
                   <Icon
@@ -149,7 +151,8 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         </div>
       </section>
 
-      {(filterOptions.tiers.length > 0 || filterOptions.subcategories.length > 0) && (
+      {(filterOptions.tiers.length > 0 ||
+        filterOptions.subcategories.length > 0) && (
         <section className='px-4 sm:px-6 pb-4'>
           <div className='max-w-7xl mx-auto flex flex-wrap items-center gap-3'>
             {filterOptions.tiers.length > 0 && (

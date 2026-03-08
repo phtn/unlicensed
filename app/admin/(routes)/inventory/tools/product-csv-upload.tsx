@@ -20,6 +20,23 @@ import {
   type ParseResult,
 } from '../product/csv-import/lib'
 
+const CSV_DENOMINATION_KEYS = [
+  '0.125',
+  '0.25',
+  '0.5',
+  '1',
+  '2',
+  '3',
+  '3.5',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+] as const
+
+const DEFAULT_PRODUCT_IMAGE_STORAGE_ID = 'kg24p8cjdd0rr1fnsjzspxxa1182b51r'
+
 /** CSV column order for preview: #, ...file headers (excluding _id, _creationTime), Status */
 function getPreviewColumns(
   fileParseResult: ParseResult | null,
@@ -30,6 +47,190 @@ function getPreviewColumns(
     (displayRows.length > 0 ? Object.keys(displayRows[0].raw) : [])
   const visible = headers.filter((h) => !OMIT_FROM_IMPORT_HEADERS.has(h))
   return ['#', ...visible, 'Status']
+}
+
+function parseDenominationMapCell(
+  value: string | undefined,
+): Record<string, number> {
+  if (!value?.trim()) return {}
+
+  try {
+    const parsed = JSON.parse(value) as unknown
+    if (
+      parsed == null ||
+      typeof parsed !== 'object' ||
+      Array.isArray(parsed)
+    ) {
+      return {}
+    }
+
+    return Object.fromEntries(
+      Object.entries(parsed).flatMap(([key, rawValue]) => {
+        const normalizedKey = key.trim()
+        const numericValue =
+          typeof rawValue === 'number'
+            ? rawValue
+            : typeof rawValue === 'string'
+              ? Number(rawValue)
+              : Number.NaN
+
+        if (!normalizedKey || !Number.isFinite(numericValue)) {
+          return []
+        }
+
+        return [[normalizedKey, numericValue]]
+      }),
+    )
+  } catch {
+    return {}
+  }
+}
+
+function sortDenominationKeys(keys: Iterable<string>): string[] {
+  const uniqueKeys = [...new Set(Array.from(keys).map((key) => key.trim()))]
+    .filter(Boolean)
+    .sort((a, b) => {
+      const aKnownIndex = CSV_DENOMINATION_KEYS.indexOf(
+        a as (typeof CSV_DENOMINATION_KEYS)[number],
+      )
+      const bKnownIndex = CSV_DENOMINATION_KEYS.indexOf(
+        b as (typeof CSV_DENOMINATION_KEYS)[number],
+      )
+
+      if (aKnownIndex !== -1 && bKnownIndex !== -1) {
+        return aKnownIndex - bKnownIndex
+      }
+
+      const aNum = Number(a)
+      const bNum = Number(b)
+      if (Number.isFinite(aNum) && Number.isFinite(bNum) && aNum !== bNum) {
+        return aNum - bNum
+      }
+
+      return a.localeCompare(b, undefined, {numeric: true})
+    })
+
+  return uniqueKeys
+}
+
+function seedDenominationColumnsFromMaps(
+  parseResult: ParseResult,
+): ParseResult {
+  if (!parseResult.ok || parseResult.rows.length === 0) {
+    return parseResult
+  }
+
+  const denominationKeys = new Set<string>()
+
+  const rows = parseResult.rows.map((row) => {
+    const priceByDenominationFromCell = parseDenominationMapCell(
+      row.raw.priceByDenomination,
+    )
+    const stockByDenominationFromCell = parseDenominationMapCell(
+      row.raw.stockByDenomination,
+    )
+
+    for (const key of Object.keys(priceByDenominationFromCell)) {
+      denominationKeys.add(key)
+    }
+    for (const key of Object.keys(stockByDenominationFromCell)) {
+      denominationKeys.add(key)
+    }
+
+    const nextRaw = {...row.raw}
+    for (const [key, value] of Object.entries(priceByDenominationFromCell)) {
+      const column = `price_${key}`
+      if (!nextRaw[column]?.trim()) {
+        nextRaw[column] = String(value)
+      }
+    }
+    for (const [key, value] of Object.entries(stockByDenominationFromCell)) {
+      const column = `stock_${key}`
+      if (!nextRaw[column]?.trim()) {
+        nextRaw[column] = String(value)
+      }
+    }
+
+    const parsedProductPriceByDenomination =
+      row.product.priceByDenomination != null &&
+      typeof row.product.priceByDenomination === 'object' &&
+      !Array.isArray(row.product.priceByDenomination)
+        ? (row.product.priceByDenomination as Record<string, number>)
+        : {}
+
+    const parsedProductStockByDenomination =
+      row.product.stockByDenomination != null &&
+      typeof row.product.stockByDenomination === 'object' &&
+      !Array.isArray(row.product.stockByDenomination)
+        ? (row.product.stockByDenomination as Record<string, number>)
+        : {}
+
+    const mergedPriceByDenomination = {
+      ...priceByDenominationFromCell,
+      ...parsedProductPriceByDenomination,
+    }
+    const mergedStockByDenomination = {
+      ...stockByDenominationFromCell,
+      ...parsedProductStockByDenomination,
+    }
+
+    return {
+      ...row,
+      raw: nextRaw,
+      product: {
+        ...row.product,
+        priceByDenomination:
+          Object.keys(mergedPriceByDenomination).length > 0
+            ? mergedPriceByDenomination
+            : undefined,
+        stockByDenomination:
+          Object.keys(mergedStockByDenomination).length > 0
+            ? mergedStockByDenomination
+            : undefined,
+      },
+    }
+  })
+
+  const seededHeaders = sortDenominationKeys(denominationKeys).flatMap((key) => [
+    `price_${key}`,
+    `stock_${key}`,
+  ])
+  const headers = [
+    ...parseResult.headers,
+    ...seededHeaders.filter((header) => !parseResult.headers.includes(header)),
+  ]
+
+  return {...parseResult, headers, rows}
+}
+
+function seedDefaultImage(parseResult: ParseResult): ParseResult {
+  if (!parseResult.ok || parseResult.rows.length === 0) {
+    return parseResult
+  }
+
+  const rows = parseResult.rows.map((row) => {
+    if (row.raw.image?.trim() || String(row.product.image ?? '').trim()) {
+      return row
+    }
+
+    return {
+      ...row,
+      raw: {
+        ...row.raw,
+        image: DEFAULT_PRODUCT_IMAGE_STORAGE_ID,
+      },
+      product: {
+        ...row.product,
+        image: DEFAULT_PRODUCT_IMAGE_STORAGE_ID,
+      },
+    }
+  })
+
+  const headers = parseResult.headers.includes('image')
+    ? parseResult.headers
+    : [...parseResult.headers, 'image']
+
+  return {...parseResult, headers, rows}
 }
 
 export function ProductCsvUpload() {
@@ -88,7 +289,9 @@ export function ProductCsvUpload() {
   const uploaderEmail = user?.email ?? ''
 
   const processFile = useCallback((text: string, name: string) => {
-    const result = parseProductsCsv(text)
+    const result = seedDefaultImage(
+      seedDenominationColumnsFromMaps(parseProductsCsv(text)),
+    )
     setFileParseResult(result)
     setFileName(name)
     if (result.ok) {

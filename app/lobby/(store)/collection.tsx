@@ -1,6 +1,7 @@
 import {StoreCategory, StoreProduct} from '@/app/types'
 import {ProductCard} from '@/components/store/product-card'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
+import Link from 'next/link'
 import {useMemo} from 'react'
 
 interface CollectionProps {
@@ -13,12 +14,17 @@ const buildCategoryCollections = (
   products: StoreProduct[],
 ) =>
   categories
-    .map((category) => ({
-      category,
-      items: products
-        .filter((product) => product.categorySlug === category.slug)
-        .slice(0, 10),
-    }))
+    .map((category) => {
+      const categoryProducts = products.filter(
+        (product) => product.categorySlug === category.slug,
+      )
+
+      return {
+        category,
+        items: categoryProducts.slice(0, 10),
+        totalCount: categoryProducts.length,
+      }
+    })
     .filter((section) => section.items.length > 0)
 
 export const FullCollection = ({products, categories}: CollectionProps) => {
@@ -59,7 +65,7 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
             </h2>
           </div>
         </div>
-        {collections.map(({category, items}) => (
+        {collections.map(({category, items, totalCount}) => (
           <section
             key={category.slug}
             id={`category-${category.slug}`}
@@ -71,11 +77,13 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
                     {category.name}
                   </h3>
                 </div>
-                <div className='flex items-center gap-3 text-xs uppercase tracking-[0.35em] text-color-muted'>
-                  <span>Curated selection</span>
+                <Link
+                  href={`/lobby/category/${category.slug}`}
+                  className='flex items-center gap-3 text-xs uppercase tracking-[0.35em] text-color-muted transition-opacity hover:opacity-70'>
+                  <span>View all</span>
                   <span className='h-px w-10 bg-foreground/30' />
-                  <span>{items.length} picks</span>
-                </div>
+                  <span>{totalCount}</span>
+                </Link>
               </div>
               <div className='flex space-x-3 pe-4 w-screen overflow-x-scroll md:pe-0 md:w-full md:grid-cols-5 md:gap-4'>
                 {items.map((product) => (

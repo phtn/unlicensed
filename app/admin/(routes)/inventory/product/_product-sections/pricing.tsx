@@ -112,7 +112,7 @@ export const Pricing = ({
     form.setFieldValue('priceByDenomination', nextPrices)
   }, [selectedCategory, form, isEditMode])
   return (
-    <FormSection id='pricing'>
+    <FormSection>
       <Header label='Pricing' />
       <div className='grid gap-6'>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>

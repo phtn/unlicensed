@@ -3,19 +3,16 @@ import {Card, CardHeader} from '@heroui/react'
 import {ReactNode} from 'react'
 
 interface FormSectionProps {
-  id: string
   position?: 'top' | 'middle' | 'bottom'
   children?: ReactNode
 }
 
 export const FormSection = ({
-  id,
   position = 'middle',
   children,
 }: FormSectionProps) => {
   return (
     <Card
-      id={id}
       radius='none'
       shadow='none'
       className={cn(
