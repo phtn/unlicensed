@@ -14,6 +14,7 @@ import {
 } from '../../rewards-summary'
 import type {ComputedRewards, RewardsCartItem} from '../lib/rewards'
 import type {FormData, RewardsVariant} from '../types'
+import {CashBackRedemption} from './cash-back-redemption'
 import {CheckoutRewardsContent} from './checkout-rewards-content'
 import {CheckoutRewardsSummary} from './checkout-rewards-summary'
 import {PaymentMethods} from './payment-method'
@@ -54,6 +55,10 @@ interface OrderSummaryCardProps {
   /** For rewardsVariant === 'points' */
   nextVisitMultiplier?: NVMultiplier | undefined
   estimatedPoints?: number | null
+  cashBackBalanceCents?: number
+  appliedCashBackCents?: number
+  isUsingCashBack?: boolean
+  onCashBackToggle?: (nextValue: boolean) => void
 }
 
 export const OrderSummaryCard = memo(function OrderSummaryCard({
@@ -78,6 +83,10 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   onAddTopUp,
   nextVisitMultiplier,
   estimatedPoints,
+  cashBackBalanceCents = 0,
+  appliedCashBackCents = 0,
+  isUsingCashBack = false,
+  onCashBackToggle,
 }: OrderSummaryCardProps) {
   const handleOnChange = (value: FormData['paymentMethod']) => {
     onPaymentMethodChange(value)
@@ -111,9 +120,8 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   const processingFee = isCardsFeeApplied
     ? Math.round(subtotal * (cardsProcessingFeePercent / 100))
     : 0
-  const displayTotal = isCardsFeeApplied
-    ? subtotal + processingFee + shipping
-    : total
+  const totalBeforeCashBack = total + processingFee
+  const displayTotal = Math.max(0, totalBeforeCashBack - appliedCashBackCents)
 
   const rewardsPanel =
     effectiveVariant === 'tier' && computedRewards != null ? (
@@ -192,6 +200,12 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   )}
                 </span>
               </div>
+              {appliedCashBackCents > 0 && (
+                <div className='flex justify-between font-okxs text-sm md:text-base text-emerald-600 dark:text-emerald-400'>
+                  <span>Cash back applied</span>
+                  <span>- ${formatPrice(appliedCashBackCents)}</span>
+                </div>
+              )}
             </div>
           </ViewTransition>
           <Divider className='opacity-60' />
@@ -199,6 +213,16 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
             <span className=''>Total</span>
             <span className='font-medium'>${formatPrice(displayTotal)}</span>
           </div>
+
+          {isAuthenticated && onCashBackToggle && (
+            <CashBackRedemption
+              availableBalanceCents={cashBackBalanceCents}
+              appliedBalanceCents={appliedCashBackCents}
+              subtotalCents={subtotal}
+              isEnabled={isUsingCashBack}
+              onToggle={onCashBackToggle}
+            />
+          )}
 
           {/* Payment Method Selection */}
           {isAuthenticated && (

@@ -80,6 +80,8 @@ export interface PlaceOrderParams {
   discountCents?: number
   /** Store credit (cash back) from checkout; added to user rewards when payment completes */
   storeCreditCents?: number
+  /** Cash back redeemed on this order; deducted from available balance when payment completes */
+  redeemedStoreCreditCents?: number
 }
 
 export interface UsePlaceOrderResult {
@@ -282,6 +284,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 shippingCents: params.shippingCents,
                 discountCents: params.discountCents,
                 storeCreditCents: params.storeCreditCents,
+                redeemedStoreCreditCents: params.redeemedStoreCreditCents,
                 itemPriceOverrides,
               }
             : {
@@ -299,6 +302,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 shippingCents: params.shippingCents,
                 discountCents: params.discountCents,
                 storeCreditCents: params.storeCreditCents,
+                redeemedStoreCreditCents: params.redeemedStoreCreditCents,
                 itemPriceOverrides,
               }
 

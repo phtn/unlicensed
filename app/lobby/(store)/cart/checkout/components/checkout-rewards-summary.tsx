@@ -205,9 +205,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
                 )}
               </div>
               <div className='text-[11px] text-muted-foreground'>
-                {r.isFirstOrder && r.shippingCost === 0
-                  ? 'discreet shipping*'
-                  : 'Shipping'}
+                Shipping
               </div>
             </div>
             <div className='h-full w-px bg-foreground/20' />
@@ -263,18 +261,13 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
                 </ShimmerText>
               </span>
             </div>
-            <ProgressBar pct={r.progressPctToNext} />
-            <div className='flex items-center gap-3 text-[13px] font-bold text-foreground dark:text-foreground'>
-              <span>
-                {r.nextTier.shippingCost === 0
-                  ? '✦ Free shipping'
-                  : `✦ ${formatRewardsCurrency(r.nextTier.shippingCost)} shipping`}
-              </span>
-              <span>+</span>
-              <span>
-                {r.nextTier.cashBackPct}% <span className=''>Cash back</span>
-              </span>
+            <div className='text-xs font-semibold text-foreground/90 dark:text-foreground'>
+              {r.nextTier.shippingCost === 0
+                ? 'Free shipping'
+                : `${formatRewardsCurrency(r.nextTier.shippingCost)} shipping`}{' '}
+              + {r.nextTier.cashBackPct}% Cash back
             </div>
+            <ProgressBar pct={r.progressPctToNext} />
           </div>
         )}
 
@@ -289,10 +282,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
           <div className='flex items-center mt-2 space-x-3 rounded-lg border border-dashed border-foreground/20 bg-foreground/3 px-3 py-2 text-xs text-muted-foreground'>
             <Icon name='lightbulb-bold' className='size-5 text-yellow-200' />
             <span>
-              Add items from 2+ categories to earn <br />
-              <span className='font-okxs font-semibold dark:text-white'>
-                0.5%<span className='ml-1 font-medium'>bundle bonus</span>
-              </span>
+              Pick from 2+ categories to earn additional 0.5% cash back
             </span>
           </div>
         )}
@@ -309,10 +299,8 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
 
         {r.isFirstOrder && (
           <p className='mt-3.5 mb-0 text-[11px] text-muted-foreground/80 max-w-xl overflow-scroll'>
-            * First order: free discreet shipping on orders over{' '}
-            {formatRewardsCurrency(config.freeShippingFirstOrder)}. Min.
-            redemption: {formatRewardsCurrency(config.minRedemption)} store
-            credit.
+            Free shipping on your first order over{' '}
+            {formatRewardsCurrency(config.freeShippingFirstOrder)}
           </p>
         )}
       </CardBody>

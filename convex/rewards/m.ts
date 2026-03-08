@@ -653,12 +653,22 @@ export const awardPointsFromOrder = internalMutation({
 
     // Update user rewards: add points to availablePoints and totalPoints
     const paymentDate = order.payment.paidAt ?? Date.now()
+    const redeemedPoints = Math.max(
+      0,
+      (order.redeemedStoreCreditCents ?? 0) / 100,
+    )
+    const redeemedApplied = Math.min(
+      userRewards.availablePoints ?? 0,
+      redeemedPoints,
+    )
     const newTotalPoints = (userRewards.totalPoints ?? 0) + pointsEarned
-    const newAvailablePoints = (userRewards.availablePoints ?? 0) + pointsEarned
+    const newAvailablePoints =
+      (userRewards.availablePoints ?? 0) - redeemedApplied + pointsEarned
 
     await ctx.db.patch(userRewards._id, {
       totalPoints: newTotalPoints,
-      availablePoints: newAvailablePoints,
+      availablePoints: Math.max(0, newAvailablePoints),
+      redeemedPoints: (userRewards.redeemedPoints ?? 0) + redeemedApplied,
       lastPaymentDate: paymentDate,
       updatedAt: Date.now(),
     })
@@ -770,4 +780,3 @@ export const deductPointsFromRefund = internalMutation({
     return { pointsDeducted: actualDeduction }
   },
 })
-

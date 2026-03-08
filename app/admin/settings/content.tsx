@@ -5,7 +5,7 @@ import {SettingsTabs} from './tabs'
 
 export const Content = () => {
   return (
-    <MainWrapper className='md:p-4'>
+    <MainWrapper className='px-3 py-3 sm:px-4 sm:py-4 md:p-4'>
       <SettingsTabs />
     </MainWrapper>
   )

@@ -9,8 +9,11 @@ import {CheckoutModal} from './components/checkout-modal'
 import {DevelopmentModal} from './components/development-modal'
 import {OrderSummaryCard} from './components/order-summary-card'
 import {isCheckoutDevMode} from './config'
+import {useCashBackRedemption} from '../hooks/use-cash-back-redemption'
 import {useOrderForm} from './hooks/use-order-form'
 import {CheckoutProps, FormData} from './types'
+
+const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
 
 const normalizeAddressValue = (value?: string) =>
   value?.trim().toLowerCase() ?? ''
@@ -75,6 +78,7 @@ export function Checkout({
   const [showDevModal, setShowDevModal] = useState(false)
   const hasShownDevModalRef = useRef(false)
   const isDevMode = isCheckoutDevMode()
+  const {isCashBackEnabled, setCashBackEnabled} = useCashBackRedemption()
 
   // Query the order to get the actual payment method stored in the order
   const order = useQuery(api.orders.q.getById, orderId ? {id: orderId} : 'skip')
@@ -268,6 +272,15 @@ export function Checkout({
           country: formData.billingCountry || 'US', // Default to US if not set
         }
 
+    const availableCashBackCents = Math.max(
+      0,
+      Math.round((pointsBalance?.availablePoints ?? 0) * 100),
+    )
+    const redeemedStoreCreditCents =
+      isCashBackEnabled && subtotal >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
+        ? Math.min(availableCashBackCents, total)
+        : 0
+
     startTransition(async () => {
       await onPlaceOrder({
         shippingAddress,
@@ -282,6 +295,8 @@ export function Checkout({
         subtotalCents: subtotal,
         taxCents: tax,
         shippingCents: shipping,
+        discountCents: redeemedStoreCreditCents,
+        redeemedStoreCreditCents,
         storeCreditCents: computedRewards
           ? Math.round(computedRewards.cashBackAmount * 100)
           : undefined,
@@ -293,6 +308,9 @@ export function Checkout({
     subtotal,
     tax,
     shipping,
+    total,
+    pointsBalance?.availablePoints,
+    isCashBackEnabled,
     computedRewards,
     onPlaceOrder,
   ])
@@ -306,6 +324,14 @@ export function Checkout({
   )
 
   const shouldShowModal = isCheckoutOpen
+  const availableCashBackCents = Math.max(
+    0,
+    Math.round((pointsBalance?.availablePoints ?? 0) * 100),
+  )
+  const appliedCashBackCents =
+    isCashBackEnabled && subtotal >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
+      ? Math.min(availableCashBackCents, total)
+      : 0
 
   return (
     <>
@@ -334,6 +360,10 @@ export function Checkout({
         onAddTopUp={onAddTopUp}
         nextVisitMultiplier={nextVisitMultiplier}
         estimatedPoints={estimatedPoints}
+        cashBackBalanceCents={availableCashBackCents}
+        appliedCashBackCents={appliedCashBackCents}
+        isUsingCashBack={isCashBackEnabled}
+        onCashBackToggle={setCashBackEnabled}
       />
 
       <CheckoutModal

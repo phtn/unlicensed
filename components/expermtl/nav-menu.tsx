@@ -71,10 +71,6 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
               'text-gray-100 hover:text-white',
               'dark:text-white',
               ' dark:data-[state=open]:text-white',
-              {
-                'text-dark-table hover:bg-dark-table bg-sidebar py-1 size-6.5':
-                  !inStoreLobby,
-              },
             )}>
             <Icon
               name='details'

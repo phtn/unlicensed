@@ -25,15 +25,18 @@ export const SettingsTabs = () => {
     {id: 'assistant', label: 'Assistant'},
   ]
   return (
-    <Tabs.Root defaultValue='overview'>
-      <Tabs.List className='relative z-0 flex gap-3'>
+    <Tabs.Root
+      defaultValue='overview'
+      className='flex min-w-0 flex-col gap-3 sm:gap-4'>
+      <div className='-mx-3 overflow-x-auto px-3 sm:mx-0 sm:px-0'>
+        <Tabs.List className='relative z-0 inline-flex min-w-max gap-2 pb-1 sm:flex sm:min-w-0 sm:flex-wrap sm:gap-3'>
         {tabs.map((tab) => (
           <Tabs.Tab
             key={tab.id}
             className={cn(
-              'flex h-8 items-center justify-center border-0 px-2 break-keep whitespace-nowrap',
+              'flex h-9 shrink-0 items-center justify-center rounded-md border-0 px-3 break-keep whitespace-nowrap',
               'text-sm font-medium data-active:text-white font-okxs',
-              'outline-none select-none before:inset-x-0 before:inset-y-1 before:rounded-sm',
+              'outline-none select-none before:inset-x-0 before:inset-y-1 before:rounded-md',
               'transition-colors duration-100 delay-100',
             )}
             value={tab.id}>
@@ -41,54 +44,55 @@ export const SettingsTabs = () => {
           </Tabs.Tab>
         ))}
         <Tabs.Indicator className='absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-sm bg-linear-to-r from-slate-600/90 via-slate-900/90 to-origin dark:via-slate-600 dark:to-dark-table transition-all duration-300 ease-in-out' />
-      </Tabs.List>
+        </Tabs.List>
+      </div>
       <Tabs.Panel
-        className='relative flex min-h-32 flex-1 flex-col px-2 py-4'
+        className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:px-2 sm:py-4'
         value='overview'>
         <OverviewContent />
       </Tabs.Panel>
       <Tabs.Panel
-        className='relative flex min-h-32 flex-1 flex-col p-4'
+        className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:p-4'
         value='access'>
         <AccessContent />
       </Tabs.Panel>
       <Tabs.Panel
-        className='relative flex min-h-32 flex-1 flex-col p-4'
+        className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:p-4'
         value='payments'>
         <PaymentsSettings />
       </Tabs.Panel>
       <Tabs.Panel
-        className='relative flex min-h-32 flex-1 flex-col p-4'
+        className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:p-4'
         value='crypto'>
         <CryptoContent />
       </Tabs.Panel>
       <Tabs.Panel
-        className='relative flex min-h-32 flex-1 flex-col p-4'
+        className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:p-4'
         value='shipping'>
         <ShippingContent />
       </Tabs.Panel>
       <Tabs.Panel
-        className='relative flex min-h-32 flex-1 flex-col p-4'
+        className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:p-4'
         value='tax'>
         <TaxContent />
       </Tabs.Panel>
       <Tabs.Panel
-        className='relative flex min-h-32 flex-1 flex-col p-4'
+        className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:p-4'
         value='rewards'>
         <RewardsContent />
       </Tabs.Panel>
       <Tabs.Panel
-        className='relative flex min-h-32 flex-1 flex-col p-4'
+        className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:p-4'
         value='deals'>
         <DealsContent />
       </Tabs.Panel>
       <Tabs.Panel
-        className='relative flex min-h-32 flex-1 flex-col p-4'
+        className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:p-4'
         value='rep'>
         <RepContent />
       </Tabs.Panel>
       <Tabs.Panel
-        className='relative flex min-h-32 flex-1 flex-col p-4'
+        className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:p-4'
         value='assistant'>
         <AssistantContent />
       </Tabs.Panel>

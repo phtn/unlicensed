@@ -86,6 +86,7 @@ export const createOrder = mutation({
     shippingCents: v.optional(v.number()),
     discountCents: v.optional(v.number()),
     storeCreditCents: v.optional(v.number()), // Store credit (cash back) from checkout; added to user rewards when payment completes
+    redeemedStoreCreditCents: v.optional(v.number()), // Cash back redeemed on this order; deducted from availablePoints when payment completes
     // Optional: client-provided item prices (unitPriceCents, totalPriceCents = quantity × unitPriceCents × denomination)
     itemPriceOverrides: v.optional(
       v.array(
@@ -265,6 +266,10 @@ export const createOrder = mutation({
       customerNotes: args.customerNotes,
       ...(args.storeCreditCents != null && args.storeCreditCents > 0
         ? {storeCreditCents: args.storeCreditCents}
+        : {}),
+      ...(args.redeemedStoreCreditCents != null &&
+      args.redeemedStoreCreditCents > 0
+        ? {redeemedStoreCreditCents: args.redeemedStoreCreditCents}
         : {}),
       createdAt: Date.now(),
       updatedAt: Date.now(),

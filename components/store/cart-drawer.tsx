@@ -1,7 +1,10 @@
 'use client'
 
 import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
+import {CashBackRedemption} from '@/app/lobby/(store)/cart/checkout/components/cash-back-redemption'
+import {useCashBackRedemption} from '@/app/lobby/(store)/cart/hooks/use-cash-back-redemption'
 import {AuthModal} from '@/components/auth/auth-modal'
+import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {
@@ -15,6 +18,7 @@ import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {formatPrice} from '@/utils/formatPrice'
 import {Avatar, Button, Image, useDisclosure} from '@heroui/react'
+import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
 import {useMemo, useOptimistic, useTransition} from 'react'
 import {Drawer} from 'vaul'
@@ -38,6 +42,8 @@ interface CartDrawerProps {
   onOpenChange: (open: boolean) => void
 }
 
+const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
+
 export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   const {
     cart,
@@ -57,6 +63,15 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   } = useDisclosure()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const {isCashBackEnabled, setCashBackEnabled} = useCashBackRedemption()
+  const convexUser = useQuery(
+    api.users.q.getCurrentUser,
+    user ? {fid: user.uid} : 'skip',
+  )
+  const pointsBalance = useQuery(
+    api.rewards.q.getUserPointsBalance,
+    convexUser?._id ? {userId: convexUser._id} : 'skip',
+  )
 
   // Build cart items from server cart (preserve full structure for product + bundle)
   const baseCartItems = useMemo<CartItemWithProduct[]>(() => {
@@ -154,6 +169,15 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
       return total + bundleCents
     }, 0)
   }, [cartItems, configs])
+  const availableCashBackCents = Math.max(
+    0,
+    Math.round((pointsBalance?.availablePoints ?? 0) * 100),
+  )
+  const appliedCashBackCents =
+    isCashBackEnabled && subtotal >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
+      ? Math.min(availableCashBackCents, subtotal)
+      : 0
+  const discountedSubtotal = Math.max(0, subtotal - appliedCashBackCents)
 
   const handleCartCheckout = () => {
     if (!user) {
@@ -399,6 +423,31 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                       </span>
                       <span className='font-medium text-lg'>
                         ${formatPrice(subtotal)}
+                      </span>
+                    </div>
+                    {isAuthenticated && (
+                      <CashBackRedemption
+                        availableBalanceCents={availableCashBackCents}
+                        appliedBalanceCents={appliedCashBackCents}
+                        subtotalCents={subtotal}
+                        isEnabled={isCashBackEnabled}
+                        onToggle={setCashBackEnabled}
+                      />
+                    )}
+                    {appliedCashBackCents > 0 && (
+                      <div className='flex justify-between text-emerald-600 dark:text-emerald-400'>
+                        <span className='font-medium'>Cash back applied</span>
+                        <span className='font-medium text-lg'>
+                          -${formatPrice(appliedCashBackCents)}
+                        </span>
+                      </div>
+                    )}
+                    <div className='flex justify-between'>
+                      <span className='text-color-muted font-medium'>
+                        {appliedCashBackCents > 0 ? 'Due today' : 'Current total'}
+                      </span>
+                      <span className='font-medium text-lg'>
+                        ${formatPrice(discountedSubtotal)}
                       </span>
                     </div>
                     <div className='flex justify-between'>

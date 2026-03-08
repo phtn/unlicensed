@@ -148,6 +148,7 @@ export const orderSchema = v.object({
   pointsEarned: v.optional(v.number()), // Points awarded for this order
   pointsMultiplier: v.optional(v.number()), // Multiplier used when awarding points
   storeCreditCents: v.optional(v.number()), // Store credit (cash back) calculated at checkout; added to user availablePoints when payment completes
+  redeemedStoreCreditCents: v.optional(v.number()), // Cash back redeemed on this order; deducted from availablePoints when payment completes
 
   // Timestamps
   createdAt: v.optional(v.number()),

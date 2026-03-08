@@ -36,6 +36,7 @@ const CSV_DENOMINATION_KEYS = [
 ] as const
 
 const DEFAULT_PRODUCT_IMAGE_STORAGE_ID = 'kg24p8cjdd0rr1fnsjzspxxa1182b51r'
+const DEFAULT_DENOMINATION_STOCK = 100
 
 /** CSV column order for preview: #, ...file headers (excluding _id, _creationTime), Status */
 function getPreviewColumns(
@@ -233,6 +234,55 @@ function seedDefaultImage(parseResult: ParseResult): ParseResult {
   return {...parseResult, headers, rows}
 }
 
+function seedDefaultDenominationStock(parseResult: ParseResult): ParseResult {
+  if (!parseResult.ok || parseResult.rows.length === 0) {
+    return parseResult
+  }
+
+  const rows = parseResult.rows.map((row) => {
+    const parsedProductStockByDenomination =
+      row.product.stockByDenomination != null &&
+      typeof row.product.stockByDenomination === 'object' &&
+      !Array.isArray(row.product.stockByDenomination)
+        ? (row.product.stockByDenomination as Record<string, number>)
+        : {}
+
+    const nextRaw = {...row.raw}
+    const nextStockByDenomination = {...parsedProductStockByDenomination}
+
+    for (const key of CSV_DENOMINATION_KEYS) {
+      const column = `stock_${key}`
+      const rawValue = nextRaw[column]?.trim()
+
+      if (!rawValue) {
+        nextRaw[column] = String(DEFAULT_DENOMINATION_STOCK)
+      }
+
+      if (nextStockByDenomination[key] === undefined) {
+        nextStockByDenomination[key] = DEFAULT_DENOMINATION_STOCK
+      }
+    }
+
+    return {
+      ...row,
+      raw: nextRaw,
+      product: {
+        ...row.product,
+        stockByDenomination: nextStockByDenomination,
+      },
+    }
+  })
+
+  const headers = [
+    ...parseResult.headers,
+    ...CSV_DENOMINATION_KEYS.map((key) => `stock_${key}`).filter(
+      (header) => !parseResult.headers.includes(header),
+    ),
+  ]
+
+  return {...parseResult, headers, rows}
+}
+
 export function ProductCsvUpload() {
   const {user} = useAuthCtx()
   const existingSlugsData = useQuery(api.products.q.listProductSlugs)
@@ -290,7 +340,9 @@ export function ProductCsvUpload() {
 
   const processFile = useCallback((text: string, name: string) => {
     const result = seedDefaultImage(
-      seedDenominationColumnsFromMaps(parseProductsCsv(text)),
+      seedDefaultDenominationStock(
+        seedDenominationColumnsFromMaps(parseProductsCsv(text)),
+      ),
     )
     setFileParseResult(result)
     setFileName(name)

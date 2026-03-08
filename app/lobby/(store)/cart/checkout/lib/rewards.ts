@@ -60,7 +60,7 @@ export const REWARDS_CONFIG: RewardsConfig = {
       maxSubtotal: 98.99,
       shippingCost: 12.99,
       cashBackPct: 1.5,
-      label: 'Starter',
+      label: 'Bronze',
     },
     {
       minSubtotal: 99,

@@ -89,7 +89,7 @@ export const ProductCard = ({
       disableAnimation
       shadow='sm'
       className={cn(
-        'group h-full transition-all duration-300 hover:-translate-y-0.5 rounded-xs dark:bg-black bg-sidebar min-w-48 max-w-48',
+        'group h-full transition-all duration-300 hover:-translate-y-0.5 rounded-xs dark:bg-black bg-sidebar min-w-48 max-w-48 xl:min-w-76',
         className,
       )}>
       <CardBody className='flex flex-col p-0'>
@@ -101,7 +101,7 @@ export const ProductCard = ({
               alt={product.name}
               radius='none'
               shadow='none'
-              className='min-w-48 rounded-t-xs rounded-b-sm object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
+              className='min-w-48 xl:min-w-64 rounded-t-xs rounded-b-sm object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
               isLoading={!imageSrc}
               loading='eager'
             />

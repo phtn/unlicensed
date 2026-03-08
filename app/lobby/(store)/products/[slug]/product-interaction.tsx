@@ -1,6 +1,5 @@
 'use client'
 
-import {mapNumericGrams} from '@/app/admin/(routes)/inventory/product/product-schema'
 import {StoreCategory, StoreProduct} from '@/app/types'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {ProductProfile} from '@/components/ui/product-profile'
@@ -15,6 +14,7 @@ import {
 } from '@/hooks/use-cart'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {Badge, Button, Tooltip, useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
@@ -30,6 +30,18 @@ import {
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
   return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
+}
+
+const formatProductDenominationLabel = (
+  denomination: number,
+  unit: string,
+  categorySlug: string,
+) => {
+  if (categorySlug === 'vapes') {
+    return `${denomination} units`
+  }
+
+  return formatDenominationDisplay(denomination, unit)
 }
 
 interface ProductInteractionProps {
@@ -234,12 +246,11 @@ export const ProductInteraction = ({
                             'relative font-okxs text-base md:text-lg font-medium whitespace-nowrap portrait:px-0',
                           )}>
                           <span>
-                            {product.unit !== 'g' &&
-                              mapNumericGrams[denomination] && (
-                                <span className='ml-1 text-sm md:text-base font-light tracking-tight'>
-                                  {mapNumericGrams[denomination]} g
-                                </span>
-                              )}
+                            {formatProductDenominationLabel(
+                              denomination,
+                              product.unit ?? '',
+                              product.categorySlug ?? '',
+                            )}
                           </span>
                         </span>
                       </Button>
