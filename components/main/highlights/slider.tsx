@@ -16,13 +16,13 @@ export interface Slide {
 }
 
 export const Slider = ({
-  id,
-  tag,
-  title,
-  description,
   imageUrl,
-  ctaHref,
-  ctaText,
+  // id,
+  // tag,
+  // title,
+  // description,
+  // ctaHref,
+  // ctaText,
   // product,
   // variantOptions,
 }: Slide) => {

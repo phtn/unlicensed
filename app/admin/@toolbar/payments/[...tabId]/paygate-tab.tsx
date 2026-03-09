@@ -19,7 +19,6 @@ const PayGateTabInner = () => {
   const accounts = useQuery(api.paygateAccounts.q.listAccounts, {
     gateway: 'paygate',
   })
-  const [tabId] = useAdminTabId()
   return (
     <>
       <MainTab href='/admin/payments'>
