@@ -104,7 +104,7 @@ const nextConfig: NextConfig = {
       "img-src 'self' data: blob: https: images.unsplash.com res.cloudinary.com *.reown.com *.rapidfirenow.com",
       "font-src 'self' data: *.reown.com",
       "connect-src 'self' *.convex.cloud wss://*.convex.cloud *.paygate.to *.paylex.org *.rampex.io *.firebaseio.com *.googleapis.com *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.alchemy.com *.g.alchemy.com *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com *.coinbase.com api.web3modal.org *.rapidfirenow.com mempool.space *.walletconnect.org wss://relay.walletconnect.org",
-      "frame-src 'self' accounts.google.com *.paygate.to *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com *.walletconnect.org  *.coinbase.com *.rapidfirenow.com",
+      "frame-src 'self' accounts.google.com *.paygate.to *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com *.walletconnect.org  *.coinbase.com *.rapidfirenow.com *.youtube.com",
       "worker-src 'self' blob:",
       "object-src 'none'",
       "base-uri 'self'",
