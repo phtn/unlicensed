@@ -137,8 +137,11 @@ export const OrdersTable = () => {
         id: 'totalCents',
         header: <ColHeader tip='Total Amount' symbol='Amount' center />,
         accessorKey: 'totalCents',
-        cell: priceCell('totalCents', (v) => formatPrice(+v)),
-        size: 120,
+        cell: priceCell(
+          'totalCents',
+          (v) => formatPrice(+v),
+          'text-right w-24! md:w-32!',
+        ),
       },
       {
         id: 'method',

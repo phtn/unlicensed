@@ -13,7 +13,7 @@ import {EditCategory} from './edit-category'
 import {NewCategory} from './new-category'
 
 const CategoriesContentInner = () => {
-  const categories = useQuery(api.categories.q.listCategories)
+  const categories = useQuery(api.categories.q.listCategoriesForAdmin)
   const [tabId, , id] = useAdminTabId()
   const [slug] = useQueryState('slug', parseAsString.withDefault(''))
 
@@ -36,7 +36,7 @@ const CategoriesContentInner = () => {
       return <EditCategory id={id as unknown as Id<'categories'>} />
     default:
       return (
-        <MainWrapper className='border-t-0'>
+        <MainWrapper className='_border-t-0 '>
           <CategoryList categories={categories} />
         </MainWrapper>
       )

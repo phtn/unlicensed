@@ -12,6 +12,34 @@ export const listCategories = query({
   },
 })
 
+export const listCategoriesForAdmin = query({
+  args: {},
+  handler: async (ctx) => {
+    const categories = await ctx.db.query('categories').collect()
+
+    const categoriesWithStats = await Promise.all(
+      categories.map(async (category) => {
+        const categorySlug = category.slug
+        const productCount = categorySlug
+          ? (
+              await ctx.db
+                .query('products')
+                .withIndex('by_category', (q) => q.eq('categorySlug', categorySlug))
+                .collect()
+            ).filter((product) => product.archived !== true).length
+          : 0
+
+        return {
+          ...category,
+          productCount,
+        }
+      }),
+    )
+
+    return categoriesWithStats.sort((a, b) => a.name.localeCompare(b.name))
+  },
+})
+
 export const getCategoryById = query({
   args: {
     id: v.id('categories'),

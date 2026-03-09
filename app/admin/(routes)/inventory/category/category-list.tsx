@@ -1,67 +1,381 @@
 'use client'
 
+import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {Doc} from '@/convex/_generated/dataModel'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {Card, Image} from '@heroui/react'
+import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
+import {Button, Card, Chip, Image} from '@heroui/react'
+import {formatDistanceToNow} from 'date-fns'
 import Link from 'next/link'
-import {parseAsString, useQueryState} from 'nuqs'
-import {useCallback, useMemo} from 'react'
+import {startTransition, useState} from 'react'
+
+type CategoryListItem = Doc<'categories'> & {
+  productCount: number
+}
 
 interface CurrentCategoriesProps {
-  categories: Array<Doc<'categories'>> | undefined
+  categories: CategoryListItem[] | undefined
+}
+
+type CategoryStat = {
+  label: string
+  value: number
+}
+
+type CategoryFilter = 'active' | 'inactive'
+
+const countItems = (items?: unknown[]) => items?.length ?? 0
+
+const isCategoryActive = (category: CategoryListItem) =>
+  category.visible !== false
+
+const buildStats = (category: CategoryListItem): CategoryStat[] => {
+  // const merchandisingOptions =
+  //   countItems(category.tiers) +
+  //   countItems(category.bases) +
+  //   countItems(category.brands) +
+  //   countItems(category.units) +
+  //   countItems(category.denominations)
+
+  return [
+    {label: 'Products', value: category.productCount},
+    {label: 'Tiers', value: countItems(category.tiers)},
+    {label: 'Types', value: countItems(category.productTypes)},
+    {label: 'Base', value: countItems(category.bases)},
+    {label: 'Subcategory', value: countItems(category.subcategories)},
+    {label: 'Brands', value: countItems(category.brands)},
+  ]
+}
+
+const buildPreviewTags = (category: CategoryListItem) => {
+  const labels = [
+    ...(category.productTypes ?? []).map((item) => item.name),
+    ...(category.subcategories ?? []).map((item) => item.name),
+    ...(category.tiers ?? []).map((item) => item.name),
+    ...(category.bases ?? []).map((item) => item.name),
+    ...(category.brands ?? []).map((item) => item.name),
+  ]
+
+  return [
+    ...new Set(labels.map((label) => label.trim()).filter(Boolean)),
+  ].slice(0, 4)
+}
+
+const buildWarnings = (category: CategoryListItem) => {
+  const warnings: string[] = []
+
+  if (!category.heroImage) warnings.push('No hero image')
+  if (!category.highlight && !category.description) warnings.push('No summary')
+  if (category.productCount === 0) warnings.push('No products')
+
+  return warnings.slice(0, 3)
+}
+
+const CategoryCard = ({
+  category,
+  heroImageUrl,
+}: {
+  category: CategoryListItem
+  heroImageUrl: string | null
+}) => {
+  const categoryHref = category.slug
+    ? `/admin/inventory/category?slug=${category.slug}`
+    : `/admin/inventory/category?tabId=edit&id=${category._id}`
+  const previewTags = buildPreviewTags(category)
+  const warnings = buildWarnings(category)
+  const stats = buildStats(category)
+  const summary =
+    category.highlight?.trim() ||
+    category.description?.trim() ||
+    'Missing a short summary for this category.'
+
+  return (
+    <Card
+      shadow='none'
+      className='h-full overflow-hidden border border-black/10 bg-white/80 hover:border-emerald-500/20 hover:bg-white dark:border-white/10 dark:bg-dark-table/45 dark:hover:border-emerald-400/30 dark:hover:bg-dark-table/60 transition-colors duration-300'>
+      <div className='relative h-36 overflow-hidden bg-linear-to-br from-emerald-500/15 via-sky-500/10 to-transparent'>
+        {heroImageUrl ? (
+          <Image
+            removeWrapper
+            alt={`${category.name} hero`}
+            src={heroImageUrl}
+            className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
+          />
+        ) : (
+          <div className='flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_55%),linear-gradient(135deg,rgba(15,23,42,0.04),transparent)] dark:bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.2),transparent_55%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]'>
+            <div className='flex size-14 items-center justify-center rounded-2xl border border-white/40 bg-white/70 text-2xl font-semibold uppercase text-emerald-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-black/20 dark:text-emerald-300'>
+              {category.name.slice(0, 1)}
+            </div>
+          </div>
+        )}
+        <h4 className='absolute top-4 left-4 z-100 truncate text-3xl font-semibold tracking-tight text-white'>
+          {category.name}
+        </h4>
+        <div className='absolute inset-0 bg-linear-to-t from-white via-white/20 to-transparent dark:from-[#0a0c10] dark:via-[#0a0c10]/25' />
+
+        <div className='absolute left-3 top-3 flex flex-wrap gap-2'>
+          <Chip
+            size='sm'
+            variant='flat'
+            className={cn(
+              'border px-2 text-[11px] font-semibold rounded-md!',
+              category.visible === false
+                ? 'border-amber-500/20 bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                : 'border-emerald-500/20 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
+            )}>
+            {category.visible === false ? 'Hidden' : 'Live'}
+          </Chip>
+          <Chip
+            size='sm'
+            variant='flat'
+            className='border border-black/10 bg-white/85 px-2 text-[11px] font-semibold text-neutral-700 backdrop-blur dark:border-white/10 dark:bg-black/40 dark:text-neutral-200'>
+            {category.productCount} products
+          </Chip>
+        </div>
+
+        <div className='absolute right-3 top-3 flex size-9 items-center justify-center rounded-full border border-black/10 bg-white/80 text-neutral-700 backdrop-blur dark:border-white/10 dark:bg-black/35 dark:text-white/85'>
+          <Icon name='circle-in' className='size-4' />
+        </div>
+      </div>
+
+      <div className='flex h-[calc(100%-9rem)] flex-col gap-1 p-4'>
+        <div className=''>
+          <div className='flex items-start justify-between gap-2'>
+            <div className='min-w-0'>
+              <p className='truncate text-xs text-neutral-500 font-ios'>
+                /{category.slug ?? 'Missing slug'}
+              </p>
+            </div>
+            <div className='flex items-center space-x-2'>
+              <div className='flex h-7 gap-2 items-center rounded-md bg-slate-500/10 px-2 py-1 font-clash text-sm text-slate-700 dark:text-slate-300'>
+                <Link
+                  href={`/admin/inventory/category?id=${category._id}&tabId=edit`}
+                  className='group block h-full touch-pan-y'>
+                  Edit
+                </Link>
+              </div>
+              <div className='flex h-7 gap-2 items-center rounded-md bg-emerald-500/10 px-2 py-1 font-clash text-sm text-emerald-700 dark:text-emerald-300'>
+                <Link
+                  href={categoryHref}
+                  className='group block h-full touch-pan-y'>
+                  Open
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <p className='line-clamp-2 min-h-8 text-sm leading-5 text-neutral-600 dark:text-neutral-300'>
+            {summary}
+          </p>
+        </div>
+
+        <dl className='grid grid-cols-3 gap-2'>
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className='rounded-md border border-black/5 bg-neutral-50/80 px-3 py-1 dark:border-white/10 dark:bg-white/5 space-y-1'>
+              <dt className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
+                {stat.label}
+              </dt>
+              <dd className='text-lg font-medium tracking-tight text-foreground'>
+                {stat.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className='hidden space-y-2'>
+          <div className='flex flex-wrap gap-2'>
+            {previewTags.length > 0 ? (
+              previewTags.map((tag) => (
+                <Chip
+                  key={tag}
+                  size='sm'
+                  variant='flat'
+                  className='bg-sky-400/10 rounded-md! h-6 text-xs text-sky-700 dark:text-sky-300'>
+                  {tag}
+                </Chip>
+              ))
+            ) : (
+              <p className='text-xs text-neutral-500'>
+                No category options configured yet.
+              </p>
+            )}
+          </div>
+
+          {warnings.length > 0 ? (
+            <div className='flex flex-wrap gap-2'>
+              {warnings.map((warning) => (
+                <Chip
+                  key={warning}
+                  size='sm'
+                  variant='flat'
+                  className='bg-amber-500/10 text-xs text-amber-700 dark:text-amber-300'>
+                  {warning}
+                </Chip>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        <div className='mt-auto flex items-center justify-between gap-3 pt-3 text-xs text-neutral-500 font-ios'>
+          <span>
+            Created{' '}
+            {formatDistanceToNow(category._creationTime, {addSuffix: true})}
+          </span>
+          <span className='font-ios text-foreground transition-colors group-hover:text-emerald-600 dark:group-hover:text-emerald-300'></span>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+const CategorySkeleton = () => {
+  return (
+    <div className='overflow-hidden rounded-3xl border border-black/5 bg-white/60 dark:border-white/10 dark:bg-dark-table/40'>
+      <div className='h-36 animate-pulse bg-neutral-200/80 dark:bg-white/8' />
+      <div className='space-y-3 p-4'>
+        <div className='space-y-2'>
+          <div className='h-5 w-2/3 animate-pulse rounded-full bg-neutral-200 dark:bg-white/8' />
+          <div className='h-3 w-1/3 animate-pulse rounded-full bg-neutral-100 dark:bg-white/5' />
+        </div>
+        <div className='h-10 animate-pulse rounded-2xl bg-neutral-100 dark:bg-white/5' />
+        <div className='grid grid-cols-2 gap-2'>
+          {Array.from({length: 4}).map((_, index) => (
+            <div
+              key={index}
+              className='h-16 animate-pulse rounded-2xl bg-neutral-100 dark:bg-white/5'
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export const CategoryList = ({categories}: CurrentCategoriesProps) => {
-  const [, setSlug] = useQueryState('slug', parseAsString.withDefault(''))
-  const heroImages = useMemo(
-    () => categories?.map((item) => item.heroImage) ?? [],
-    [categories],
-  )
+  const [activeFilter, setActiveFilter] = useState<CategoryFilter>('active')
+  const heroImages = categories?.map((category) => category.heroImage) ?? []
   const resolveUrl = useStorageUrls(heroImages)
 
-  const handleCategoryClick = useCallback(
-    (s: string) => () => {
-      console.log('[SLUG]', s)
-      setSlug(s)
-    },
-    [setSlug],
+  if (categories === undefined) {
+    return (
+      <section className='space-y-4 px-2 pb-6'>
+        <div className='space-y-1'>
+          <h3 className='text-2xl font-semibold tracking-tight'>Categories</h3>
+          <p className='text-sm text-neutral-500'>
+            Loading category health, imagery, and product counts.
+          </p>
+        </div>
+        <div className='h-[90lvh] overflow-auto grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
+          {Array.from({length: 6}).map((_, index) => (
+            <CategorySkeleton key={index} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  const totalCategories = categories.length
+  const activeCategories = categories.filter(isCategoryActive)
+  const inactiveCategories = categories.filter(
+    (category) => !isCategoryActive(category),
   )
+  const liveCategories = activeCategories.length
+  const filteredCategories =
+    activeFilter === 'active' ? activeCategories : inactiveCategories
+
+  const filterOptions: Array<{
+    id: CategoryFilter
+    label: string
+    count: number
+  }> = [
+    {id: 'active', label: 'Active', count: activeCategories.length},
+    {id: 'inactive', label: 'Inactive', count: inactiveCategories.length},
+  ]
 
   return (
-    <section>
-      <h3 className='text-2xl tracking-tighter font-semibold py-2 hidden'>
-        Active Categories
-      </h3>
-      {categories?.length === 0 ? (
+    <section className='space-y-4 px-2 pb-6'>
+      <div className='flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between'>
+        <SectionHeader
+          title={
+            <div className='flex items-center space-x-2'>
+              <Icon
+                name='circ'
+                className={cn('size-3 text-red-700 dark:text-red-300', {
+                  'text-emerald-700 dark:text-emerald-300':
+                    activeFilter === 'active',
+                })}
+              />
+              <span>
+                {activeFilter === 'active' ? 'Active' : 'Inactive'} Categories
+              </span>
+            </div>
+          }
+          description={``}>
+          <div className='flex gap-2 text-xs'>
+            <Chip
+              size='sm'
+              variant='flat'
+              className='bg-emerald-500/10 font-okxs text-emerald-700 dark:text-emerald-300'>
+              {liveCategories} Live
+            </Chip>
+            <Chip
+              size='sm'
+              variant='flat'
+              className='bg-orange-500/10 text-orange-700 dark:text-orange-200'>
+              {totalCategories - liveCategories} Hidden
+            </Chip>
+          </div>
+        </SectionHeader>
+      </div>
+
+      <div className='flex flex-wrap gap-2'>
+        {filterOptions.map((filter) => (
+          <Button
+            key={filter.id}
+            size='sm'
+            radius='none'
+            variant={activeFilter === filter.id ? 'solid' : 'flat'}
+            className={cn(
+              'text-sm h-6! gap-1.5 rounded-md',
+              activeFilter === filter.id
+                ? 'bg-neutral-900 text-white dark:bg-white dark:text-black'
+                : 'bg-black/5 text-neutral-700 dark:bg-white/8 dark:text-neutral-200',
+            )}
+            onPress={() => {
+              startTransition(() => {
+                setActiveFilter(filter.id)
+              })
+            }}>
+            {filter.label} <span className='font-ios opacity-50'>(</span>
+            <span>{filter.count}</span>
+            <span className='font-ios opacity-50'>)</span>
+          </Button>
+        ))}
+      </div>
+
+      {categories.length === 0 ? (
         <p className='mt-3 text-sm text-neutral-500'>
           No categories yet. Create one above to get started.
         </p>
+      ) : filteredCategories.length === 0 ? (
+        <p className='mt-3 text-sm text-neutral-500'>
+          No {activeFilter} categories found.
+        </p>
       ) : (
-        <ul className='grid gap-3 grid-cols-2 md:grid-cols-3'>
-          {categories?.map((category) => (
-            <li key={category._id} className=''>
-              <Card
-                as={Link}
-                href={`/admin/inventory/category?slug=${category.slug}`}
-                onPress={handleCategoryClick(category.slug!)}
-                className='p-4 hover:bg-neutral-50 min-h-64 dark:hover:bg-dark-table/30 dark:bg-dark-table/40 transition-colors cursor-pointer '>
-                <div className='flex items-start w-full h-8 space-x-4'>
-                  <Image
-                    isLoading={!resolveUrl(category.heroImage!)}
-                    alt={category.name + '-image'}
-                    src={resolveUrl(category.heroImage!) ?? undefined}
-                    className='portrait:w-28 portrait:aspect-square w-24 h-auto shrink-0 aspect-square!'
-                  />
-                  <div className='flex items-start justify-between md:w-full h-12'>
-                    <h4 className='capitalize text-xl font-polysans font-medium'>
-                      {category.name}
-                    </h4>
-                    <p className='portrait:hidden text-xs italic text-neutral-500'>
-                      {category.slug}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+        <ul className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
+          {filteredCategories.map((category) => (
+            <li
+              key={category._id}
+              className='[content-visibility:auto] [contain-intrinsic-size:28rem]'>
+              <CategoryCard
+                category={category}
+                heroImageUrl={
+                  category.heroImage ? resolveUrl(category.heroImage) : null
+                }
+              />
             </li>
           ))}
         </ul>

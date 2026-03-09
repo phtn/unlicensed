@@ -50,7 +50,7 @@ export const WrappedContent = ({
 
   return (
     <Wrapper ref={swipeAreaRef} isPanelExpanded={isExpanded}>
-      <div className='ps-2 pe-3 sm:px-4 space-x-1 md:space-x-4 flex items-center justify-between min-w-0'>
+      <div className='px-4 space-x-1 md:space-x-4 flex items-center justify-between min-w-0'>
         <SidebarTrigger />
         {toolbar}
         {withPanel && (
@@ -78,6 +78,7 @@ export const Wrapper = forwardRef<HTMLDivElement, WrapperProps>(
           'flex-1 min-w-0 w-full border border-dark-gray/40 dark:border-dark-table/40 bg-white dark:bg-origin',
           'drop-shadow-md md:overflow-hidden',
           'md:rounded-xl whitespace-nowrap',
+          'px-4',
           {'': isPanelExpanded},
         )}
         ref={ref}>

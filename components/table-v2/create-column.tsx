@@ -12,6 +12,7 @@ import {
 import {AnimatePresence, motion} from 'motion/react'
 import {useQueryState} from 'nuqs'
 import {type ChangeEvent, type ReactNode, useMemo} from 'react'
+import {getFilterMatchTokens, getFilterValueToken} from './filter-utils'
 import {createRowSelectionParser} from './parsers-v2'
 import {RowActions} from './row-actions'
 
@@ -60,14 +61,16 @@ export const filterFn = <T,>(
   // Handle array filter values (from multi-select filter component)
   if (Array.isArray(filterValue)) {
     if (filterValue.length === 0) return true
-    const rowValueStr = String(value)
-    const normalizedRowValue = normalizeText(rowValueStr)
+    const rowTokens = getFilterMatchTokens(value)
+    const normalizedRowTokens = rowTokens.map((token) => normalizeText(token))
     return filterValue.some((fv) => {
-      const normalizedFilterValue = normalizeText(String(fv))
+      const normalizedFilterValue = normalizeText(getFilterValueToken(fv))
       return (
-        normalizedFilterValue === normalizedRowValue ||
-        rowValueStr.toLowerCase().includes(normalizedFilterValue) ||
-        fv === value
+        normalizedRowTokens.some(
+          (token) =>
+            token === normalizedFilterValue ||
+            token.includes(normalizedFilterValue),
+        ) || fv === value
       )
     })
   }
@@ -90,10 +93,13 @@ export const multiSelectFilterFn = <T,>(
 ): boolean => {
   if (!filterValue?.length) return true
   const rowValue = row.getValue(columnId)
-  const rowValueStr = String(rowValue)
+  const rowTokens = getFilterMatchTokens(rowValue)
 
   // Check if filter includes the row value (as string or original type)
-  return filterValue.some((fv) => String(fv) === rowValueStr || fv === rowValue)
+  return filterValue.some((fv) => {
+    const filterToken = getFilterValueToken(fv)
+    return rowTokens.includes(filterToken) || fv === rowValue
+  })
 }
 
 // Generic filter function for exact match filtering (group/category filters)
@@ -108,14 +114,19 @@ export const groupFilter = <T,>(
   // Handle array filter values (from multi-select filter component)
   if (Array.isArray(filterValue)) {
     if (filterValue.length === 0) return true
-    // Compare both normalized strings and original values
-    const valueStr = String(value)
-    return filterValue.some((fv) => String(fv) === valueStr || fv === value)
+    const rowTokens = getFilterMatchTokens(value)
+    return filterValue.some((fv) => {
+      const filterToken = getFilterValueToken(fv)
+      return rowTokens.includes(filterToken) || fv === value
+    })
   }
 
   // Handle single value exact match
   if (filterValue == null || filterValue === '') return true
-  return value === filterValue || String(value) === String(filterValue)
+  const filterToken = getFilterValueToken(filterValue)
+  return (
+    value === filterValue || getFilterMatchTokens(value).includes(filterToken)
+  )
 }
 
 /**

@@ -1,12 +1,16 @@
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Checkbox} from '@base-ui/react'
+import {Button as BaseButton, Checkbox} from '@base-ui/react'
 import {Popover} from '@base-ui/react/popover'
-import {Select, SelectItem} from '@heroui/react'
 import type {ColumnFiltersState} from '@tanstack/react-table'
 import {Column} from '@tanstack/react-table'
 import {useQueryState} from 'nuqs'
 import {useId, useMemo} from 'react'
+import {
+  getColumnHeaderText,
+  getFilterValueLabel,
+  getFilterValueToken,
+} from './filter-utils'
 import {createColumnFiltersParser} from './parsers-v2'
 
 interface Props<T> {
@@ -16,6 +20,14 @@ interface Props<T> {
   onRemoveFilterColumn?: (columnId: string) => void
   isMobile: boolean
 }
+
+type FilterOption = {
+  count: number
+  label: string
+  rawValue: unknown
+  token: string
+}
+
 export const Filter = <T,>({
   columns,
   activeFilterColumns = [],
@@ -24,7 +36,6 @@ export const Filter = <T,>({
 }: Props<T>) => {
   const baseId = useId()
 
-  // Subscribe to filters search param so the component re-renders when the URL changes
   const columnFiltersParser = useMemo(() => createColumnFiltersParser(), [])
   const [columnFiltersParam] = useQueryState('filters', columnFiltersParser)
   const filtersFromUrl = useMemo(
@@ -32,7 +43,6 @@ export const Filter = <T,>({
     [columnFiltersParam],
   )
 
-  // Get filterable columns (exclude select and actions columns)
   const filterableColumns = useMemo(
     () =>
       columns.filter(
@@ -42,7 +52,6 @@ export const Filter = <T,>({
     [columns],
   )
 
-  // Get available columns (not currently being filtered)
   const availableColumns = useMemo(
     () =>
       filterableColumns.filter(
@@ -52,7 +61,6 @@ export const Filter = <T,>({
     [filterableColumns, activeFilterColumns],
   )
 
-  // Get all active filters data - selectedValues from URL param so UI stays in sync with URL
   const activeFiltersData = useMemo(() => {
     return activeFilterColumns.map((column) => {
       const facetedValues = column.getFacetedUniqueValues()
@@ -60,24 +68,51 @@ export const Filter = <T,>({
       const selectedValues = (filterInUrl?.value ??
         column.getFilterValue()) as (string | number | boolean)[]
       const meta = column.columnDef.meta as
-        | {filterOptions?: (string | number | boolean)[]}
+        | {filterOptions?: unknown[]}
         | undefined
       const metaFilterOptions = meta?.filterOptions
-      const uniqueValues = Array.isArray(metaFilterOptions)
-        ? [...metaFilterOptions].sort((a, b) =>
-            String(a).localeCompare(String(b)),
-          )
-        : Array.from(facetedValues.keys()).toSorted()
+
+      const countByToken = new Map<string, number>()
+      const rawValueByToken = new Map<string, unknown>()
+
+      for (const [rawValue, count] of facetedValues.entries()) {
+        const token = getFilterValueToken(rawValue)
+        countByToken.set(token, (countByToken.get(token) ?? 0) + count)
+        if (!rawValueByToken.has(token)) {
+          rawValueByToken.set(token, rawValue)
+        }
+      }
+
+      const optionSource = Array.isArray(metaFilterOptions)
+        ? metaFilterOptions
+        : Array.from(rawValueByToken.values())
+
+      const uniqueValues = optionSource
+        .map((rawValue) => {
+          const token = getFilterValueToken(rawValue)
+          return {
+            rawValue,
+            token,
+            label: getFilterValueLabel(rawValue),
+            count: countByToken.get(token) ?? 0,
+          } satisfies FilterOption
+        })
+        .filter(
+          (option, index, options) =>
+            option.token.length > 0 &&
+            options.findIndex((candidate) => candidate.token === option.token) ===
+              index,
+        )
+        .sort((a, b) => a.label.localeCompare(b.label))
+
       return {
         column,
-        uniqueValues,
-        valueCounts: facetedValues as Map<string | number | boolean, number>,
         selectedValues: Array.isArray(selectedValues) ? selectedValues : [],
+        uniqueValues,
       }
     })
   }, [activeFilterColumns, filtersFromUrl])
 
-  // Calculate total active filter count - reactive to filter changes
   const totalActiveFilters = useMemo(() => {
     return activeFiltersData.reduce((total, filterData) => {
       return total + filterData.selectedValues.length
@@ -94,22 +129,12 @@ export const Filter = <T,>({
     onRemoveFilterColumn?.(columnId)
   }
 
-  const formatLabel = (value: unknown) => {
-    if (typeof value === 'boolean') {
-      return value ? 'Active' : 'Inactive'
-    }
-    if (typeof value === 'string' && value.length === 0) {
-      return 'Empty'
-    }
-    return String(value)
-  }
-
   return (
     <Popover.Root>
       <Popover.Trigger
-        className='md:flex hidden'
+        className='hidden md:flex'
         render={
-          <Button
+          <BaseButton
             className={cn(
               'relative flex h-7.5 items-center justify-center rounded-sm space-x-2 px-3.5 text-sm select-none transition-colors duration-75',
               'data-pressed:bg-gray-100 dark:data-pressed:bg-dark-table/50 ',
@@ -119,7 +144,7 @@ export const Filter = <T,>({
               'focus-visible:bg-none focus-visible:outline-1 focus-visible:-outline-offset-1',
             )}>
             {totalActiveFilters > 0 ? (
-              <span className='bg-indigo-500 dark:bg-indigo-400 text-white w-5 -ml-1 rounded-sm font-okxs font-semibold'>
+              <span className='bg-indigo-500 font-okxs -ml-1 w-5 rounded-sm font-semibold text-white dark:bg-indigo-400'>
                 {totalActiveFilters > 99 ? '99+' : totalActiveFilters}
               </span>
             ) : (
@@ -128,175 +153,154 @@ export const Filter = <T,>({
                 className={cn('size-4 dark:opacity-80')}
               />
             )}
-            <span className='capitalize hidden md:flex text-sm opacity-90 font-brk'>
+            <span className='hidden text-sm font-brk capitalize opacity-90 md:flex'>
               Filter
             </span>
-          </Button>
-        }></Popover.Trigger>
+          </BaseButton>
+        }
+      />
       <Popover.Portal>
         <Popover.Positioner
           sideOffset={4}
-          align={'end'}
+          align='end'
           collisionAvoidance={{side: 'flip', align: 'none'}}
           positionMethod='fixed'>
-          <Popover.Popup className='w-54 p-2 border border-dark-table/15 bg-sidebar dark:bg-dark-table rounded-2xl'>
-            <div>
-              {/* Add Filter Section */}
-              {availableColumns.length > 0 && (
-                <>
-                  <div className='mb-2'>
-                    <Select
-                      placeholder='Add Columns'
-                      selectedKeys={new Set()}
-                      onSelectionChange={(keys) => {
-                        const key = keys === 'all' ? null : Array.from(keys)[0]
-                        if (key) handleColumnAdd(String(key))
-                      }}
-                      variant='bordered'
-                      classNames={{
-                        trigger:
-                          'w-full h-9 border-none min-h-9 rounded-lg shadow-none font-okxs opacity-100 dark:hover:bg-origin/60 dark:bg-origin/40',
-                        value: 'text-sm font-okxs font-semibold opacity-100',
-                      }}
-                      popoverProps={{
-                        classNames: {
-                          content: 'z-60 min-w-64 p-2 m-1 rounded-2xl',
-                          base: 'p-1',
-                        },
-                      }}>
-                      {availableColumns.map((column) => (
-                        <SelectItem
-                          key={column.id}
-                          className='capitalize outline-none '
-                          textValue={
-                            typeof column.columnDef.header === 'string'
-                              ? column.columnDef.header
-                              : column.id
-                          }>
-                          {typeof column.columnDef.header === 'string'
-                            ? column.columnDef.header
-                            : column.id}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                  </div>
-                </>
-              )}
+          <Popover.Popup className='w-64 rounded-xl border border-dark-gray/30 bg-sidebar p-1 dark:bg-dark-table dark:text-zinc-200'>
+            {availableColumns.length > 0 ? (
+              <>
+                <div className='flex items-center border-b border-dashed border-dark-gray/25 px-4 py-1 dark:border-zinc-800'>
+                  <span className='text-sm font-okxs font-medium capitalize'>
+                    Add filter
+                  </span>
+                </div>
+                <div className='p-2'>
+                  {availableColumns.map((column) => (
+                    <button
+                      key={column.id}
+                      type='button'
+                      onClick={() => handleColumnAdd(column.id)}
+                      className={cn(
+                        'flex h-8 w-full items-center justify-between rounded-sm px-3 text-left text-xs',
+                        'text-origin hover:bg-dark-table/10 dark:text-white dark:hover:bg-origin/40 dark:hover:text-orange-300',
+                      )}>
+                      <span>{getColumnHeaderText(column)}</span>
+                      <Icon name='plus' className='size-4' />
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : null}
 
-              {/* Active Filters */}
-              {activeFiltersData.map((filterData, columnIndex) => (
-                <div key={filterData.column.id} className=' mb-4 last:mb-0'>
-                  {/* Filter Header */}
-                  <div className='flex items-center justify-between px-0 py-1.5 w-full'>
-                    <div className='flex items-center space-x-2 text-sm font-medium'>
-                      <Icon
-                        name='minus-square-fill'
-                        className='size-4 text-indigo-500 dark:text-indigo-400'
-                      />
-                      <span className='font-okxs font-medium capitalize'>
-                        {typeof filterData.column.columnDef.header === 'string'
-                          ? filterData.column.columnDef.header
-                          : filterData.column.id}
-                      </span>
+            {activeFiltersData.length > 0 ? (
+              <div
+                className={cn('space-y-3 p-2', {
+                  'border-t border-dashed border-dark-gray/25 dark:border-zinc-800':
+                    availableColumns.length > 0,
+                })}>
+                {activeFiltersData.map((filterData, columnIndex) => (
+                  <div key={filterData.column.id}>
+                    <div className='mb-2 flex items-center justify-between px-2 py-1'>
+                      <div className='flex items-center space-x-2 text-sm font-medium'>
+                        <Icon
+                          name='minus-square-fill'
+                          className='size-4 text-indigo-500 dark:text-indigo-400'
+                        />
+                        <span className='font-okxs font-medium capitalize'>
+                          {getColumnHeaderText(filterData.column)}
+                        </span>
+                      </div>
+                      <BaseButton
+                        onClick={() => handleColumnRemove(filterData.column.id)}
+                        className='h-6 w-6 p-0 text-muted-foreground hover:text-destructive'>
+                        <Icon name='x' className='size-3' />
+                      </BaseButton>
                     </div>
-                    <Button
-                      onClick={() => handleColumnRemove(filterData.column.id)}
-                      className='h-6 w-3 p-0 text-muted-foreground hover:text-destructive'>
-                      <Icon name='x' className='size-3' />
-                    </Button>
-                  </div>
 
-                  {/* Filter Values */}
-                  <div className='max-h-32 overflow-y-auto [scrollbar-gutter:stable]'>
-                    {filterData.uniqueValues.map((value, i) => {
-                      const id = `v-${baseId}-${columnIndex}-${i}`
-                      // Normalize value to string for consistent comparison
-                      const vStr = String(value)
-                      const labelText = formatLabel(value)
-                      const count = filterData.valueCounts.get(value) ?? 0
-                      // Check if this value is in the selected filters
-                      const isChecked = filterData.selectedValues.some(
-                        (selected) => {
-                          // Compare normalized strings for consistency
-                          return String(selected) === vStr || selected === value
-                        },
-                      )
+                    <div className='max-h-40 overflow-y-auto [scrollbar-gutter:stable]'>
+                      {filterData.uniqueValues.map((option, index) => {
+                        const id = `v-${baseId}-${columnIndex}-${index}`
+                        const isChecked = filterData.selectedValues.some(
+                          (selected) =>
+                            getFilterValueToken(selected) === option.token,
+                        )
 
-                      return (
-                        <div
-                          key={id}
-                          className={cn(
-                            'flex h-8 ml-5 px-1.5 font-brk items-center hover:bg-dark-table/10 dark:hover:bg-origin/30 rounded-sm',
-                            {
-                              'bg-indigo-500 dark:bg-origin/80 hover:bg-indigo-400 dark:hover:bg-origin/50 text-white dark:text-indigo-400 opacity-100':
-                                isChecked,
-                            },
-                          )}>
-                          <Checkbox.Root
-                            id={id}
-                            checked={isChecked}
-                            onCheckedChange={(checked) => {
-                              const column = activeFilterColumns.find(
-                                (col) => col.id === filterData.column.id,
-                              )
-                              if (!column) return
-
-                              const currentFilter = column.getFilterValue() as (
-                                | string
-                                | number
-                                | boolean
-                              )[]
-                              const newFilterValue = currentFilter
-                                ? [...currentFilter]
-                                : []
-
-                              if (!!checked) {
-                                // Add value if not already present (check both string and original value)
-                                const alreadyExists = newFilterValue.some(
-                                  (fv) => String(fv) === vStr || fv === value,
-                                )
-                                if (!alreadyExists) {
-                                  // Store as string for consistency
-                                  newFilterValue.push(vStr)
-                                }
-                              } else {
-                                // Remove value if present (check both string and original value)
-                                const index = newFilterValue.findIndex(
-                                  (fv) => String(fv) === vStr || fv === value,
-                                )
-                                if (index > -1) {
-                                  newFilterValue.splice(index, 1)
-                                }
-                              }
-
-                              column.setFilterValue(
-                                newFilterValue.length
-                                  ? newFilterValue
-                                  : undefined,
-                              )
-                            }}
-                          />
-                          <label
-                            htmlFor={id}
+                        return (
+                          <div
+                            key={id}
                             className={cn(
-                              'flex grow justify-between gap-2 font-brk text-xs',
+                              'ml-5 flex h-8 items-center rounded-sm px-1.5 font-brk hover:bg-dark-table/10 dark:hover:bg-origin/30',
+                              {
+                                'bg-indigo-500 text-white opacity-100 hover:bg-indigo-400 dark:bg-origin/80 dark:text-indigo-400 dark:hover:bg-origin/50':
+                                  isChecked,
+                              },
                             )}>
-                            <span className='truncate'>{labelText}</span>
-                            <span className='text-xs shrink-0'>{count}</span>
-                          </label>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              ))}
+                            <Checkbox.Root
+                              id={id}
+                              checked={isChecked}
+                              onCheckedChange={(checked) => {
+                                const column = activeFilterColumns.find(
+                                  (col) => col.id === filterData.column.id,
+                                )
+                                if (!column) return
 
-              {activeFilterColumns.length === 0 && (
-                <div className='px-2 py-2 font-brk text-center text-xs opacity-60'>
-                  no active filters
-                </div>
-              )}
-            </div>
+                                const currentFilter = column.getFilterValue() as (
+                                  | string
+                                  | number
+                                  | boolean
+                                )[]
+                                const nextFilterValue = currentFilter
+                                  ? [...currentFilter]
+                                  : []
+
+                                if (checked) {
+                                  const exists = nextFilterValue.some(
+                                    (value) =>
+                                      getFilterValueToken(value) === option.token,
+                                  )
+                                  if (!exists) {
+                                    nextFilterValue.push(option.token)
+                                  }
+                                } else {
+                                  const nextIndex = nextFilterValue.findIndex(
+                                    (value) =>
+                                      getFilterValueToken(value) === option.token,
+                                  )
+                                  if (nextIndex > -1) {
+                                    nextFilterValue.splice(nextIndex, 1)
+                                  }
+                                }
+
+                                column.setFilterValue(
+                                  nextFilterValue.length > 0
+                                    ? nextFilterValue
+                                    : undefined,
+                                )
+                              }}
+                            />
+                            <label
+                              htmlFor={id}
+                              className='flex grow justify-between gap-2 font-brk text-xs'>
+                              <span className='truncate'>{option.label}</span>
+                              <span className='shrink-0 text-xs'>
+                                {option.count}
+                              </span>
+                            </label>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                className={cn('px-2 py-3 text-center font-brk text-xs opacity-60', {
+                  'border-t border-dashed border-dark-gray/25 dark:border-zinc-800':
+                    availableColumns.length > 0,
+                })}>
+                no active filters
+              </div>
+            )}
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>

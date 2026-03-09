@@ -5,6 +5,7 @@ import {Button} from '@base-ui/react'
 import {Menu} from '@base-ui/react/menu'
 import {Column, VisibilityState} from '@tanstack/react-table'
 import {ComponentProps, useCallback, useMemo} from 'react'
+import {getColumnHeaderText} from './filter-utils'
 
 interface Props<T> {
   cols: Column<T, unknown>[]
@@ -14,40 +15,7 @@ interface Props<T> {
   ) => void
 }
 
-// Helper function to extract header text from column definition
-const getColumnHeaderText = <T,>(column: Column<T, unknown>): string => {
-  const header = column.columnDef.header
-
-  // If header is a string, use it directly
-  if (typeof header === 'string') {
-    return header
-  }
-
-  // If header is a function, try to extract meaningful text
-  if (typeof header === 'function') {
-    // For function headers, use the column ID as fallback
-    // Convert camelCase or kebab-case to readable format
-    return formatColumnId(column.id)
-  }
-
-  // For ReactNode headers, use formatted column ID
-  return formatColumnId(column.id)
-}
-
-// Format column ID to readable text (e.g., "createdAt" -> "Created At")
-const formatColumnId = (id: string): string => {
-  return id
-    .replace(/([A-Z])/g, ' $1') // Add space before capital letters
-    .replace(/[-_]/g, ' ') // Replace hyphens and underscores with spaces
-    .trim()
-    .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ')
-}
-export const ColumnView = <T,>({
-  cols,
-  onColumnVisibilityChange,
-}: Props<T>) => {
+export const ColumnView = <T,>({cols, onColumnVisibilityChange}: Props<T>) => {
   // Filter columns where enableHiding is true (default is true, so filter out false)
   const hideableColumns = useMemo(() => {
     return cols.filter((col) => col.getCanHide())
@@ -97,7 +65,7 @@ export const ColumnView = <T,>({
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner align='start' className='outline-none' sideOffset={2}>
-          <Menu.Popup className='origin-(--transform-origin) w-64 rounded-xl py-1 bg-sidebar dark:bg-dark-table dark:text-zinc-200  outline-gray-200 border border-dark-gray/30 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0 dark:shadow-none'>
+          <Menu.Popup className='origin-(--transform-origin) w-64 rounded-xl py-1 bg-sidebar dark:bg-dark-table dark:text-zinc-200  outline-gray-200 border border-dark-gray/30 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0 dark:shadow-none'>
             <div className='flex items-center border-b border-dashed border-dark-gray/25 dark:border-zinc-800 px-4 py-1 capitalize'>
               <span className='text-sm font-okxs font-medium'>
                 Toggle columns
@@ -130,15 +98,6 @@ export const ColumnView = <T,>({
                 )
               })}
             </div>
-            {/*<Button
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                hideableColumns.forEach((col) => col.toggleVisibility(true))
-              }}
-              className='hidden w-full tracking-tight font-medium font-figtree hover:bg-mac-blue/50 dark:hover:bg-origin/20 hover:border-origin dark:hover:border-origin/80 h-10'>
-              Reset
-            </Button>*/}
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>

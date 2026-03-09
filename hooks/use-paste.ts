@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef, useState} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 
 interface UsePasteOptions {
   timeout?: number
@@ -12,33 +12,24 @@ interface UsePasteReturn {
   error: Error | null
 }
 
-export function usePaste({timeout = 2000}: UsePasteOptions = {}): UsePasteReturn {
+export function usePaste({
+  timeout = 2000,
+}: UsePasteOptions = {}): UsePasteReturn {
   const [pastedText, setPastedText] = useState<string | null>(null)
   const [isPasting, setIsPasting] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [pasted, setPasted] = useState(false)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [pasteCount, setPasteCount] = useState(0)
 
   const paste = useCallback(async (): Promise<string | null> => {
     setIsPasting(true)
     setError(null)
 
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-
     try {
       const text = await navigator.clipboard.readText()
       setPastedText(text)
       setPasted(true)
-
-      // Set timeout to reset pasted state
-      timeoutRef.current = setTimeout(() => {
-        setPasted(false)
-        timeoutRef.current = null
-      }, timeout)
+      setPasteCount((count) => count + 1)
 
       return text
     } catch (err) {
@@ -50,16 +41,19 @@ export function usePaste({timeout = 2000}: UsePasteOptions = {}): UsePasteReturn
     } finally {
       setIsPasting(false)
     }
-  }, [timeout])
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
   }, [])
+
+  useEffect(() => {
+    if (!pasteCount) {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setPasted(false)
+    }, timeout)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [pasteCount, timeout])
 
   return {paste, pastedText, isPasting, pasted, error}
 }

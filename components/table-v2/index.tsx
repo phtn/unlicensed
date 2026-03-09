@@ -387,48 +387,50 @@ function DataTableContent<T>({
   return (
     <div className={cn('text-foreground w-full duration-500 ease-in-out')}>
       <div className='h-[94lvh] inset-0 dark:inset-0 pb-8 min-w-0 overflow-hidden'>
-        <div className='flex h-auto shrink flex-wrap items-center justify-between gap-2 md:h-10.5 md:flex-nowrap md:gap-0'>
-          <LeftTableToolbar
-            select={
-              <SelectToggle
-                on={selectOn}
-                toggleFn={selectToggle}
-                rows={selectedRows}
-              />
-            }
-            deleteRow={
-              onDeleteSelected && (
-                <DeleteButton
+        <div className='flex h-auto shrink items-center justify-between gap-2 md:h-10.5 md:flex-nowrap md:gap-0'>
+          <div className=' flex items-center'>
+            <LeftTableToolbar
+              select={
+                <SelectToggle
+                  on={selectOn}
+                  toggleFn={selectToggle}
                   rows={selectedRows}
-                  onDelete={async (ids) => {
-                    await onDeleteSelected(ids)
-                    setRowSelectionParam({})
-                  }}
-                  idAccessor={deleteIdAccessor}
-                  disabled={loading}
                 />
-              )
-            }
-            views={<ViewStyleGroup />}
-          />
-          <CenterTableToolbar
-            filter={
-              <Filter
-                columns={allCols}
-                activeFilterColumns={activeFilterColumns}
-                onAddFilterColumn={handleAddFilterColumn}
-                onRemoveFilterColumn={handleRemoveFilterColumn}
-                isMobile={isMobile}
-              />
-            }
-            view={
-              <ColumnView
-                cols={allCols}
-                isMobile={isMobile}
-                onColumnVisibilityChange={setColumnVisibility}
-              />
-            }
-          />
+              }
+              deleteRow={
+                onDeleteSelected && (
+                  <DeleteButton
+                    rows={selectedRows}
+                    onDelete={async (ids) => {
+                      await onDeleteSelected(ids)
+                      setRowSelectionParam({})
+                    }}
+                    idAccessor={deleteIdAccessor}
+                    disabled={loading}
+                  />
+                )
+              }
+              views={<ViewStyleGroup />}
+            />
+            <CenterTableToolbar
+              filter={
+                <Filter
+                  columns={allCols}
+                  activeFilterColumns={activeFilterColumns}
+                  onAddFilterColumn={handleAddFilterColumn}
+                  onRemoveFilterColumn={handleRemoveFilterColumn}
+                  isMobile={isMobile}
+                />
+              }
+              view={
+                <ColumnView
+                  cols={allCols}
+                  isMobile={isMobile}
+                  onColumnVisibilityChange={setColumnVisibility}
+                />
+              }
+            />
+          </div>
           <RightTableToolbar
             left={toolbarLeftContent}
             search={
@@ -458,7 +460,7 @@ function DataTableContent<T>({
                             style={{width: `${header.getSize()}px`}}
                             className={cn(
                               'sticky top-0 z-20 bg-[#eceef2] md:h-8 h-8 uppercase overflow-hidden',
-                              'font-oksx font-semibold tracking-tighter text-dark-table/80 dark:text-white md:tracking-tight text-xs md:text-sm',
+                              'font-clash font-medium tracking-tight text-dark-table/80 dark:text-white md:tracking-tight text-xs md:text-sm',
                               'dark:text-zinc-300 dark:bg-dark-table',
                             )}>
                             <ColumnSort
