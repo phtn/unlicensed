@@ -10,6 +10,7 @@ import {adaptCategory, adaptProduct} from '@/lib/convexClient'
 import type {BuildType} from '@/lib/flags'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
+import {AllBrands} from './brands/all-brands'
 import {FullCollection} from './collection'
 import {DealsMini} from './deals/components/deals-mini'
 
@@ -65,6 +66,7 @@ export const Content = ({
         </div>
       </MarkSection>
       <FullCollection products={products} categories={categories} />
+      <AllBrands />
       <CtaSection />
       <DealsMini />
     </div>

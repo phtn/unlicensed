@@ -17,24 +17,57 @@ export interface EnhancedBrand extends Brand {
   productCount: number
 }
 
-interface AllBrandsProps {
-  allBrands: EnhancedBrand[]
-}
+export const brands: EnhancedBrand[] = [
+  {
+    name: 'CBX',
+    slug: 'cbx',
+    icon: '/svg/cbx.svg',
+    description: 'Premium quality meets exceptional craftsmanship',
+    featured: true,
+    productCount: 0,
+  },
+  {
+    name: 'Wizard Trees',
+    slug: 'wizard-trees',
+    icon: '/svg/wizard-trees.svg',
+    description: 'Magical strains for the discerning connoisseur',
+    featured: true,
+    productCount: 2,
+  },
+  {
+    name: 'Jungle Boys',
+    slug: 'jungle-boys',
+    icon: '/svg/jungle-boys.svg',
+    description: 'Cultivated excellence from seed to harvest',
+    featured: false,
+    productCount: 1,
+  },
+  {
+    name: 'Heirbloom',
+    slug: 'heirbloom',
+    icon: '/svg/heirbloom.svg',
+    description: 'Legacy genetics, modern innovation',
+    featured: false,
+    productCount: 0,
+  },
+]
 
-export const AllBrands = ({allBrands}: AllBrandsProps) => {
+export const AllBrands = () => {
   return (
-    <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
+    <section className='px-4 sm:px-6 py-20 sm:py-24 lg:pb-32'>
       <div className='max-w-7xl mx-auto'>
         <div className='mb-8 sm:mb-12'>
-          <h2 className='text-xl sm:text-2xl lg:text-3xl font-clash font-bold mb-2'>
-            All <span className='text-brand'>Brands</span>
-          </h2>
+          <div className='space-y-1'>
+            <h2 className='text-3xl font-clash font-semibold tracking-tight sm:text-5xl'>
+              <span className='text-brand'>All</span> Brands
+            </h2>
+          </div>
           <p className='text-sm sm:text-base opacity-60'>
             Explore our complete collection of trusted partners
           </p>
         </div>
 
-        <Activity mode={allBrands.length === 0 ? 'visible' : 'hidden'}>
+        <Activity mode={brands.length === 0 ? 'visible' : 'hidden'}>
           <div className='max-w-7xl mx-auto pt-20'>
             <div className='flex flex-col items-center justify-center gap-4 px-6 py-24 text-center'>
               <Title
@@ -56,7 +89,7 @@ export const AllBrands = ({allBrands}: AllBrandsProps) => {
 
         {/* Asymmetric Grid Layout */}
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8'>
-          {allBrands.map((brand, index) => (
+          {brands.map((brand, index) => (
             <Link
               href={`/lobby/brands?id=${brand.slug}`}
               key={brand.slug}
@@ -89,11 +122,11 @@ export const AllBrands = ({allBrands}: AllBrandsProps) => {
                     {/*<h3 className='text-xl sm:text-2xl text-brand font-polysans font-bold mb-2 sm:mb-3 capitalize'>
                             {brand.name}
                           </h3>*/}
-                    {brand.description && (
+                    {/*{brand.description && (
                       <p className='text-xs sm:text-sm opacity-70 mb-4 leading-relaxed line-clamp-2'>
                         {brand.description}
                       </p>
-                    )}
+                    )}*/}
                   </div>
 
                   {/* Product Count */}

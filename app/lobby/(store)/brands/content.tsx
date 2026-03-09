@@ -15,38 +15,7 @@ import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
 import {Activity, useMemo} from 'react'
-import type {Brand, EnhancedBrand} from './all-brands'
-
-const brands: Brand[] = [
-  {
-    name: 'CBX',
-    slug: 'cbx',
-    icon: '/svg/cbx.svg',
-    description: 'Premium quality meets exceptional craftsmanship',
-    featured: true,
-  },
-  {
-    name: 'Wizard Trees',
-    slug: 'wizard-trees',
-    icon: '/svg/wizard-trees.svg',
-    description: 'Magical strains for the discerning connoisseur',
-    featured: true,
-  },
-  {
-    name: 'Jungle Boys',
-    slug: 'jungle-boys',
-    icon: '/svg/jungle-boys.svg',
-    description: 'Cultivated excellence from seed to harvest',
-    featured: false,
-  },
-  {
-    name: 'Heirbloom',
-    slug: 'heirbloom',
-    icon: '/svg/heirbloom.svg',
-    description: 'Legacy genetics, modern innovation',
-    featured: false,
-  },
-]
+import {type EnhancedBrand, brands} from './all-brands'
 
 export const Content = () => {
   const [selectedBrandId, setSelectedBrandId] = useQueryState(
