@@ -78,7 +78,7 @@ export const Content = () => {
 
   return (
     <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-background'>
-      <div className='relative md:mx-auto md:max-w-7xl min-h-[36rem] md:min-h-[40rem] overflow-hidden mt-4'>
+      <div className='relative md:mx-auto md:max-w-7xl min-h-144 md:min-h-160 overflow-hidden mt-4'>
         <AnimatePresence initial={false} mode='sync'>
           {!hasCompletedPayment ? (
             <motion.div
@@ -98,7 +98,7 @@ export const Content = () => {
               animate={{opacity: 1, y: 0}}
               exit={{opacity: 0, y: '100%'}}
               transition={{duration: 0.55, ease: [0.22, 1, 0.36, 1]}}
-              className='absolute inset-0 z-20 flex items-center justify-center'>
+              className='absolute inset-0 z-20 h-100 flex items-center justify-center'>
               <CheckoutSuccess
                 orderNumber={order.orderNumber}
                 transactionId={order.payment.transactionId}

@@ -375,7 +375,7 @@ export const RewardsContent = () => {
               key={i}
               shadow='none'
               radius='none'
-              className='border border-alum/30 rounded-xs overflow-hidden transition-colors bg-dark-table/40'>
+              className='border border-alum/30 rounded-xs overflow-hidden transition-colors bg-alum/20 dark:bg-dark-table/40'>
               <CardBody className='flex flex-row flex-wrap items-center justify-between gap-4 p-4'>
                 <div>
                   <div className='flex items-center gap-2'>

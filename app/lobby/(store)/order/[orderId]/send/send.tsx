@@ -33,6 +33,7 @@ import {
 } from 'react'
 
 const CRYPTO_WALLET_IDENTIFIER = 'crypto_wallet_relay'
+const CRYPTO_TOKEN_RELAY_IDENTIFIER = 'crypto-wallet-relay'
 
 type CryptoWalletAddresses = {
   bitcoin: string
@@ -40,6 +41,10 @@ type CryptoWalletAddresses = {
   polygon: string
   sepolia: string
 }
+
+type RelayWalletAddresses = Record<string, string>
+
+type ManualPaymentToken = 'bitcoin' | 'ethereum' | 'usdc' | 'usdt'
 
 /** Network keys that have wallet addresses in admin settings (used for indexing) */
 type SendPageNetwork = keyof CryptoWalletAddresses
@@ -80,11 +85,197 @@ function buildPaymentRequestUri(
   return null
 }
 
+function parseRelayWallets(value: unknown): RelayWalletAddresses {
+  if (!value || typeof value !== 'object' || 'error' in value) {
+    return {}
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).flatMap(([key, entry]) =>
+      typeof entry === 'string' && entry.trim()
+        ? [[key.toLowerCase(), entry.trim()]]
+        : [],
+    ),
+  )
+}
+
+function resolvePaymentToken(
+  network: SendPageNetwork,
+  asset: string | null | undefined,
+  tokenSelected: string | null | undefined,
+): ManualPaymentToken {
+  if (network === 'bitcoin') return 'bitcoin'
+
+  const candidate = (asset ?? tokenSelected ?? '').trim().toLowerCase()
+  if (candidate === 'usdc') return 'usdc'
+  if (candidate === 'usdt') return 'usdt'
+
+  return 'ethereum'
+}
+
+function getStableRelayKeys(
+  network: Exclude<SendPageNetwork, 'bitcoin'>,
+  token: Extract<ManualPaymentToken, 'usdc' | 'usdt'>,
+): string[] {
+  if (network === 'ethereum') {
+    return [`eth${token}`, `ethereum${token}`]
+  }
+
+  if (network === 'polygon') {
+    return [`polygon${token}`, `matic${token}`, `poly${token}`]
+  }
+
+  return [`sepolia${token}`]
+}
+
+function getExpectedRecipientAddress(
+  network: SendPageNetwork,
+  paymentToken: ManualPaymentToken,
+  walletAddress: string,
+  relayWallets: RelayWalletAddresses,
+): string {
+  if (
+    network === 'bitcoin' ||
+    paymentToken === 'bitcoin' ||
+    paymentToken === 'ethereum'
+  ) {
+    return walletAddress
+  }
+
+  for (const key of getStableRelayKeys(network, paymentToken)) {
+    const relayAddress = relayWallets[key]
+    if (relayAddress) {
+      return relayAddress
+    }
+  }
+
+  return walletAddress
+}
+
+function getExpectedValueBaseUnits(args: {
+  network: SendPageNetwork
+  paymentToken: ManualPaymentToken
+  orderTotalCents: number
+  getBySymbol: (symbol: string) => {price: number} | null
+}): string | undefined {
+  const {network, paymentToken, orderTotalCents, getBySymbol} = args
+
+  if (paymentToken === 'usdc' || paymentToken === 'usdt') {
+    return (BigInt(orderTotalCents) * BigInt(10_000)).toString()
+  }
+
+  const tokenPrice =
+    network === 'ethereum' || network === 'sepolia'
+      ? getBySymbol('ETH')?.price
+      : network === 'polygon'
+        ? (getBySymbol('POL')?.price ?? getBySymbol('MATIC')?.price)
+        : null
+
+  if (
+    tokenPrice == null ||
+    !Number.isFinite(tokenPrice) ||
+    (network !== 'ethereum' && network !== 'polygon' && network !== 'sepolia')
+  ) {
+    return undefined
+  }
+
+  return BigInt(
+    Math.floor((orderTotalCents / 100 / tokenPrice) * 1e18),
+  ).toString()
+}
+
+function getPaymentAssetSymbol(
+  network: SendPageNetwork,
+  paymentToken: ManualPaymentToken,
+): string {
+  if (paymentToken === 'bitcoin') return 'BTC'
+  if (paymentToken === 'usdc') return 'USDC'
+  if (paymentToken === 'usdt') return 'USDT'
+  return network === 'polygon' ? 'MATIC' : 'ETH'
+}
+
+type VerificationRequest = {
+  txnHash: string
+  network: SendPageNetwork
+  paymentToken: ManualPaymentToken
+  expectedRecipient: string
+  expectedValueWei?: string
+}
+
+type VerificationResponse = {
+  success: boolean
+  error?: string
+  data?: TxData
+}
+
+function buildVerificationCandidates(args: {
+  network: SendPageNetwork
+  initialToken: ManualPaymentToken
+  walletAddress: string
+  relayWallets: RelayWalletAddresses
+}): Array<{
+  paymentToken: ManualPaymentToken
+  expectedRecipient: string
+}> {
+  const {network, initialToken, walletAddress, relayWallets} = args
+  const orderedTokens =
+    network === 'bitcoin'
+      ? (['bitcoin'] as const)
+      : initialToken === 'ethereum'
+        ? (['ethereum', 'usdc', 'usdt'] as const)
+        : ([initialToken, 'usdc', 'usdt', 'ethereum'] as const)
+
+  const seen = new Set<string>()
+
+  return orderedTokens.flatMap((candidateToken) => {
+    const recipient = getExpectedRecipientAddress(
+      network,
+      candidateToken,
+      walletAddress,
+      relayWallets,
+    )
+    const key = `${candidateToken}:${recipient.toLowerCase()}`
+    if (seen.has(key)) return []
+    seen.add(key)
+    return [{paymentToken: candidateToken, expectedRecipient: recipient}]
+  })
+}
+
+async function verifyTransactionCandidate({
+  txnHash,
+  network,
+  paymentToken,
+  expectedRecipient,
+  expectedValueWei,
+}: VerificationRequest): Promise<VerificationResponse> {
+  const res = await fetch('/api/crypto/verify-tx', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      txnHash,
+      network,
+      paymentToken: paymentToken === 'bitcoin' ? undefined : paymentToken,
+      expectedRecipient: expectedRecipient.toLowerCase().trim() || undefined,
+      expectedValueWei,
+    }),
+  })
+
+  const payload = (await res.json()) as VerificationResponse
+  if (!res.ok) {
+    return {
+      success: false,
+      error: payload.error ?? 'Transaction verification failed',
+    }
+  }
+
+  return payload
+}
+
 const CryptoSendContent = () => {
   const params = useParams()
   const orderId = params.orderId as Id<'orders'>
   const updatePayment = useMutation(api.orders.m.updatePayment)
-  const {setParams: _setParams} = useSearchParams()
+  const {params: searchParams} = useSearchParams()
   const {getBySymbol} = useCrypto()
   const [selected, setSelected] = useState<SendPageNetwork>('bitcoin')
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
@@ -96,6 +287,13 @@ const CryptoSendContent = () => {
   const wallets = useMemo(
     () => parseCryptoWallets(cryptoSetting),
     [cryptoSetting],
+  )
+  const relaySetting = useQuery(api.admin.q.getAdminByIdentStrict, {
+    identifier: CRYPTO_TOKEN_RELAY_IDENTIFIER,
+  })
+  const relayWallets = useMemo(
+    () => parseRelayWallets(relaySetting),
+    [relaySetting],
   )
 
   const paymentRequestUri = useMemo(
@@ -189,6 +387,8 @@ const CryptoSendContent = () => {
                 updatePayment={updatePayment}
                 getBySymbol={getBySymbol}
                 relayedPaymentHashRef={relayedPaymentHashRef}
+                relayWallets={relayWallets}
+                tokenSelected={searchParams.tokenSelected}
               />
             </Tabs.Panel>
             <Tabs.Panel value='ethereum'>
@@ -203,6 +403,8 @@ const CryptoSendContent = () => {
                 updatePayment={updatePayment}
                 getBySymbol={getBySymbol}
                 relayedPaymentHashRef={relayedPaymentHashRef}
+                relayWallets={relayWallets}
+                tokenSelected={searchParams.tokenSelected}
               />
             </Tabs.Panel>
             <Tabs.Panel value='polygon'>
@@ -217,6 +419,8 @@ const CryptoSendContent = () => {
                 updatePayment={updatePayment}
                 getBySymbol={getBySymbol}
                 relayedPaymentHashRef={relayedPaymentHashRef}
+                relayWallets={relayWallets}
+                tokenSelected={searchParams.tokenSelected}
               />
             </Tabs.Panel>
             <Tabs.Panel value='sepolia'>
@@ -231,6 +435,8 @@ const CryptoSendContent = () => {
                 updatePayment={updatePayment}
                 getBySymbol={getBySymbol}
                 relayedPaymentHashRef={relayedPaymentHashRef}
+                relayWallets={relayWallets}
+                tokenSelected={searchParams.tokenSelected}
               />
             </Tabs.Panel>
           </Tabs.Root>
@@ -256,6 +462,8 @@ interface SendToPanelProps {
   updatePayment: UpdatePaymentFn
   getBySymbol: (symbol: string) => {price: number} | null
   relayedPaymentHashRef: RefObject<string | null>
+  relayWallets: RelayWalletAddresses
+  tokenSelected: string | null
 }
 
 function toOrderTxData(data?: TxData): ITxData | undefined {
@@ -286,10 +494,16 @@ function SendToPanel({
   updatePayment,
   getBySymbol,
   relayedPaymentHashRef,
+  relayWallets,
+  tokenSelected,
 }: SendToPanelProps) {
   const [txnHash, setTxnHash] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const paymentToken = useMemo(
+    () => resolvePaymentToken(network, order?.payment.asset, tokenSelected),
+    [network, order?.payment.asset, tokenSelected],
+  )
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setTxnHash(event.target.value)
@@ -309,43 +523,42 @@ function SendToPanel({
       startTransition(async () => {
         setError(null)
         try {
-          const tokenPrice =
-            network === 'ethereum'
-              ? getBySymbol('ETH')?.price
-              : network === 'sepolia'
-                ? getBySymbol('ETH')?.price
-                : network === 'polygon'
-                  ? (getBySymbol('POL')?.price ?? getBySymbol('MATIC')?.price)
-                  : null
-          const expectedValueWei =
-            order &&
-            tokenPrice != null &&
-            (network === 'ethereum' || network === 'polygon')
-              ? BigInt(
-                  Math.floor((order.totalCents / 100 / tokenPrice) * 1e18),
-                ).toString()
-              : undefined
+          const verificationCandidates = buildVerificationCandidates({
+            network,
+            initialToken: paymentToken,
+            walletAddress,
+            relayWallets,
+          })
+          let verifiedToken = paymentToken
+          let verificationData: TxData | undefined
+          let verificationError = 'Transaction verification failed'
 
-          const res = await fetch('/api/crypto/verify-tx', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
+          for (const candidate of verificationCandidates) {
+            const result = await verifyTransactionCandidate({
               txnHash: hash,
               network,
-              expectedRecipient:
-                walletAddress.toLowerCase().trim() || undefined,
-              expectedValueWei,
-            }),
-          })
+              paymentToken: candidate.paymentToken,
+              expectedRecipient: candidate.expectedRecipient,
+              expectedValueWei: getExpectedValueBaseUnits({
+                network,
+                paymentToken: candidate.paymentToken,
+                orderTotalCents: order.totalCents,
+                getBySymbol,
+              }),
+            })
 
-          const {success, error, data} = (await res.json()) as {
-            success: boolean
-            error?: string
-            data?: TxData
+            if (result.success) {
+              verifiedToken = candidate.paymentToken
+              verificationData = result.data
+              verificationError = ''
+              break
+            }
+
+            verificationError = result.error ?? verificationError
           }
 
-          if (!res.ok || !success) {
-            setError(error ?? 'Transaction verification failed')
+          if (verificationError) {
+            setError(verificationError)
             return
           }
 
@@ -355,15 +568,10 @@ function SendToPanel({
               ...order.payment,
               status: 'completed',
               transactionId: hash.startsWith('0x') ? hash : `0x${hash}`,
-              asset:
-                network === 'bitcoin'
-                  ? 'BTC'
-                  : network === 'polygon'
-                    ? 'MATIC'
-                    : 'ETH',
+              asset: getPaymentAssetSymbol(network, verifiedToken),
               chain: network,
               paidAt: Date.now(),
-              tx: toOrderTxData(data),
+              tx: toOrderTxData(verificationData),
             },
           })
 
@@ -391,7 +599,7 @@ function SendToPanel({
                           : network === 'polygon'
                             ? 137
                             : 1,
-                      token: 'ethereum',
+                      token: verifiedToken,
                     }),
                   })
 
@@ -426,9 +634,11 @@ function SendToPanel({
       network,
       orderId,
       updatePayment,
-      walletAddress,
+      paymentToken,
       getBySymbol,
       relayedPaymentHashRef,
+      walletAddress,
+      relayWallets,
     ],
   )
 

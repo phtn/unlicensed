@@ -1,5 +1,5 @@
 import {NextRequest, NextResponse} from 'next/server'
-import {createPublicClient, http} from 'viem'
+import {createPublicClient, decodeFunctionData, http, parseAbi} from 'viem'
 import {mainnet, polygon, sepolia} from 'viem/chains'
 import {z} from 'zod'
 import {Tx, TxData, TxReceipt} from '../types'
@@ -9,15 +9,17 @@ export const runtime = 'nodejs'
 const ETHERSCAN_API_BASE = 'https://api.etherscan.io/v2/api'
 const CHAIN_IDS = {ethereum: 1, polygon: 137, sepolia: 11155111} as const
 type EvmNetwork = keyof typeof CHAIN_IDS
+type EvmPaymentToken = 'ethereum' | 'usdc' | 'usdt'
 
 const requestSchema = z.object({
   txnHash: z
     .string()
     .min(64, 'Transaction hash must be at least 64 characters'),
   network: z.enum(['ethereum', 'polygon', 'bitcoin', 'sepolia']),
-  /** Optional: expected recipient address (for EVM) or source address (for BTC) */
+  paymentToken: z.enum(['ethereum', 'usdc', 'usdt']).optional(),
+  /** Optional: expected transfer recipient (for EVM) or source address (for BTC). */
   expectedRecipient: z.string().optional(),
-  /** Optional: minimum tx value in wei (EVM only). Ensures payment meets order total. */
+  /** Optional: minimum payment amount in base units for the selected token. */
   expectedValueWei: z.string().optional(),
 })
 
@@ -29,6 +31,9 @@ const EVM_CHAINS = {
 
 const MEMPOOL_API_BASE_URL =
   process.env.BITCOIN_RELAY_API_BASE_URL ?? 'https://mempool.space/api'
+const ERC20_TRANSFER_ABI = parseAbi([
+  'function transfer(address to, uint256 amount) returns (bool)',
+])
 
 const normalizeEvmHash = (h: string): `0x${string}` =>
   h.startsWith('0x') ? (h as `0x${string}`) : (`0x${h}` as `0x${string}`)
@@ -79,9 +84,113 @@ function parseValueToBigInt(value: string | undefined): bigint {
   return BigInt(value)
 }
 
+function verifyEvmTransfer(args: {
+  txTo?: string | null
+  txInput?: string
+  txValue?: string
+  paymentToken: EvmPaymentToken
+  expectedRecipient?: string
+  expectedValueWei?: string
+}):
+  | {
+      success: true
+      recipient: string | null
+      value: string
+      contractAddress: string | null
+    }
+  | {success: false; error: string} {
+  const {
+    txTo,
+    txInput,
+    txValue,
+    paymentToken,
+    expectedRecipient,
+    expectedValueWei,
+  } = args
+
+  if (paymentToken === 'usdc' || paymentToken === 'usdt') {
+    if (!txInput) {
+      return {
+        success: false,
+        error: 'Transaction details unavailable for token transfer verification',
+      }
+    }
+
+    try {
+      const decoded = decodeFunctionData({
+        abi: ERC20_TRANSFER_ABI,
+        data: txInput as `0x${string}`,
+      })
+      const [transferTo, transferAmount] = decoded.args as [string, bigint]
+
+      if (
+        expectedRecipient &&
+        normalizeAddress(transferTo) !== normalizeAddress(expectedRecipient)
+      ) {
+        return {
+          success: false,
+          error: 'Transaction recipient does not match expected wallet address',
+        }
+      }
+
+      if (
+        expectedValueWei &&
+        transferAmount < parseValueToBigInt(expectedValueWei)
+      ) {
+        return {
+          success: false,
+          error:
+            'Transaction value is less than the order total. Please ensure you sent the correct amount.',
+        }
+      }
+
+      return {
+        success: true,
+        recipient: transferTo,
+        value: transferAmount.toString(),
+        contractAddress: txTo ?? null,
+      }
+    } catch {
+      return {
+        success: false,
+        error: 'Unable to decode token transfer input data',
+      }
+    }
+  }
+
+  if (expectedRecipient && txTo) {
+    if (normalizeAddress(txTo) !== normalizeAddress(expectedRecipient)) {
+      return {
+        success: false,
+        error: 'Transaction recipient does not match expected wallet address',
+      }
+    }
+  }
+
+  if (expectedValueWei) {
+    const minValue = parseValueToBigInt(expectedValueWei)
+    const paymentValue = parseValueToBigInt(txValue)
+    if (paymentValue < minValue) {
+      return {
+        success: false,
+        error:
+          'Transaction value is less than the order total. Please ensure you sent the correct amount.',
+      }
+    }
+  }
+
+  return {
+    success: true,
+    recipient: txTo ?? null,
+    value: txValue ?? '0',
+    contractAddress: null,
+  }
+}
+
 async function verifyEvmViaScanApi(
   hash: string,
   network: EvmNetwork,
+  paymentToken: EvmPaymentToken,
   expectedRecipient?: string,
   expectedValueWei?: string,
 ): Promise<
@@ -112,39 +221,32 @@ async function verifyEvmViaScanApi(
   }
 
   const txTo = transaction.to ?? receipt.to
-  if (expectedRecipient && txTo) {
-    if (normalizeAddress(txTo) !== normalizeAddress(expectedRecipient)) {
-      return {
-        success: false,
-        error: 'Transaction recipient does not match expected wallet address',
-      }
-    }
-  }
+  const verifiedTransfer = verifyEvmTransfer({
+    txTo,
+    txInput: transaction.input,
+    txValue: transaction.value,
+    paymentToken,
+    expectedRecipient,
+    expectedValueWei,
+  })
 
-  if (expectedValueWei) {
-    const txValue = parseValueToBigInt(transaction.value)
-    const minValue = parseValueToBigInt(expectedValueWei)
-    if (txValue < minValue) {
-      return {
-        success: false,
-        error:
-          'Transaction value is less than the order total. Please ensure you sent the correct amount.',
-      }
-    }
+  if (!verifiedTransfer.success) {
+    return verifiedTransfer
   }
 
   return {
     success: true,
     data: {
       id: hash,
-      to: txTo,
-      value: transaction.value,
+      to: verifiedTransfer.recipient ?? txTo,
+      value: verifiedTransfer.value,
       gasUsed: receipt.gasUsed.toString(),
       gasPrice: transaction.gasPrice.toString(),
       status: receipt.status,
       from: receipt.from,
       blockNumber: receipt.blockNumber.toString(),
-      contractAddress: receipt.contractAddress,
+      contractAddress:
+        verifiedTransfer.contractAddress ?? receipt.contractAddress,
     },
   }
 }
@@ -152,9 +254,16 @@ async function verifyEvmViaScanApi(
 async function verifyEvmViaViem(
   hash: `0x${string}`,
   network: EvmNetwork,
+  paymentToken: EvmPaymentToken,
   expectedRecipient?: string,
   expectedValueWei?: string,
-): Promise<{success: true} | {success: false; error: string}> {
+): Promise<
+  | {
+      success: true
+      data: TxData
+    }
+  | {success: false; error: string}
+> {
   const chain = EVM_CHAINS[network]
   const publicClient = createPublicClient({
     chain,
@@ -174,41 +283,51 @@ async function verifyEvmViaViem(
     return {success: false, error: 'Transaction failed or was reverted'}
   }
 
-  if (expectedRecipient && transaction?.to) {
-    if (
-      normalizeAddress(transaction.to) !== normalizeAddress(expectedRecipient)
-    ) {
-      return {
-        success: false,
-        error: 'Transaction recipient does not match expected wallet address',
-      }
-    }
+  const txTo = transaction?.to ?? receipt.to
+  const verifiedTransfer = verifyEvmTransfer({
+    txTo,
+    txInput: transaction?.input,
+    txValue:
+      transaction?.value !== undefined ? String(transaction.value) : undefined,
+    paymentToken,
+    expectedRecipient,
+    expectedValueWei,
+  })
+
+  if (!verifiedTransfer.success) {
+    return verifiedTransfer
   }
 
-  if (expectedValueWei && transaction?.value !== undefined) {
-    const txValue =
-      typeof transaction.value === 'bigint'
-        ? transaction.value
-        : parseValueToBigInt(String(transaction.value))
-    const minValue = parseValueToBigInt(expectedValueWei)
-    if (txValue < minValue) {
-      return {
-        success: false,
-        error:
-          'Transaction value is less than the order total. Please ensure you sent the correct amount.',
-      }
-    }
+  return {
+    success: true,
+    data: {
+      id: hash,
+      from: transaction?.from ?? receipt.from,
+      to: verifiedTransfer.recipient ?? txTo ?? '',
+      value: verifiedTransfer.value,
+      gasUsed: receipt.gasUsed.toString(),
+      gasPrice:
+        transaction?.gasPrice !== undefined ? String(transaction.gasPrice) : '0',
+      status: receipt.status,
+      blockNumber: receipt.blockNumber.toString(),
+      contractAddress: verifiedTransfer.contractAddress,
+    },
   }
-
-  return {success: true}
 }
 
 async function verifyEvmTransaction(
   txnHash: string,
   network: EvmNetwork,
+  paymentToken: EvmPaymentToken,
   expectedRecipient?: string,
   expectedValueWei?: string,
-): Promise<{success: true} | {success: false; error: string}> {
+): Promise<
+  | {
+      success: true
+      data: TxData
+    }
+  | {success: false; error: string}
+> {
   const hash = normalizeEvmHash(txnHash)
 
   if (hash.length !== 66) {
@@ -218,6 +337,7 @@ async function verifyEvmTransaction(
   const scanApiResult = await verifyEvmViaScanApi(
     hash,
     network,
+    paymentToken,
     expectedRecipient,
     expectedValueWei,
   )
@@ -226,7 +346,13 @@ async function verifyEvmTransaction(
     return scanApiResult
   }
 
-  return verifyEvmViaViem(hash, network, expectedRecipient, expectedValueWei)
+  return verifyEvmViaViem(
+    hash,
+    network,
+    paymentToken,
+    expectedRecipient,
+    expectedValueWei,
+  )
 }
 
 async function verifyBitcoinTransaction(
@@ -279,7 +405,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({success: false, error: message}, {status: 400})
     }
 
-    const {txnHash, network, expectedRecipient, expectedValueWei} = parsed.data
+    const {
+      txnHash,
+      network,
+      paymentToken = 'ethereum',
+      expectedRecipient,
+      expectedValueWei,
+    } = parsed.data
 
     const result =
       network === 'bitcoin'
@@ -287,6 +419,7 @@ export async function POST(request: NextRequest) {
         : await verifyEvmTransaction(
             txnHash.trim(),
             network,
+            paymentToken,
             expectedRecipient?.trim(),
             expectedValueWei,
           )
