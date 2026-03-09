@@ -37,13 +37,13 @@ export const FireManifesto = () => {
     <section className='px-4 pb-10 sm:px-6 md:pb-14'>
       <div className='mx-auto max-w-7xl'>
         <div className='relative overflow-hidden rounded-xs border border-r-0 border-foreground/10 bg-linear-to-r from-dark-table via-brand/30 to-black px-1 py-1 text-white'>
-          <div className='rounded-sm bg-black/75 px-6 py-8 backdrop-blur-md md:px-8 md:py-10'>
-            <div className='grid gap-8 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:gap-10'>
+          <div className='rounded-sm bg-black/75 px-4 py-6 backdrop-blur-md sm:px-6 sm:py-8 md:px-8 md:py-10'>
+            <div className='grid gap-6 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:gap-10'>
               <div className='space-y-4'>
-                <p className='font-clash text-brand text-sm uppercase tracking-[0.32em]'>
+                <p className='font-clash text-brand text-xs uppercase tracking-[0.24em] sm:text-sm sm:tracking-[0.32em]'>
                   Why Rapid Fire
                 </p>
-                <h2 className='max-w-[10ch] font-bone text-4xl tracking-tight sm:text-5xl md:text-6xl'>
+                <h2 className='max-w-[11ch] font-bone text-3xl tracking-tight sm:text-5xl md:text-6xl'>
                   The standard behind the menu.
                 </h2>
                 <p className='max-w-sm text-sm leading-6 text-white/62'>
@@ -53,12 +53,12 @@ export const FireManifesto = () => {
                 </p>
               </div>
 
-              <div className='grid gap-3'>
+              <div className='grid gap-3 sm:gap-4'>
                 {MANIFESTO_PARAGRAPHS.map((paragraph, index) => (
                   <article
                     key={index}
-                    className='border border-foreground/10 bg-background/5 p-5 sm:p-6'>
-                    <p className='max-w-4xl font-clash text-base leading-7 text-white/82 sm:text-lg sm:leading-8 [&_strong]:font-semibold [&_strong]:text-white'>
+                    className='border border-foreground/10 bg-background/5 p-4 sm:p-6'>
+                    <p className='max-w-4xl text-sm leading-6 text-white/82 sm:text-base sm:leading-7 md:text-lg md:leading-8 [&_strong]:font-semibold [&_strong]:text-white'>
                       {paragraph}
                     </p>
                   </article>

@@ -15,7 +15,7 @@ export const Content = () => {
       <FireManifesto />
       <section className='px-4 pb-6 sm:px-6 md:pb-10'>
         <div className='mx-auto max-w-7xl overflow-hidden rounded-xs border border-foreground/10 bg-black'>
-          <div className='aspect-video w-full'>
+          <div className='aspect-video w-full min-h-[220px] sm:min-h-0'>
             <iframe
               src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}`}
               title='Rapid Fire YouTube video'
