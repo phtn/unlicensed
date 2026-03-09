@@ -233,7 +233,13 @@ export const Nav = ({children}: NavProps) => {
               <Icon
                 name='user'
                 onClick={onOpen}
-                className='dark:text-white size-5'
+                className={cn('size-6 text-white', {
+                  'text-dark-table dark:text-white': !inStoreLobby,
+                  'text-dark-table dark:text-white .':
+                    !isMobile && scrollY >= 710,
+                  'text-dark-table dark:text-white _':
+                    isMobile && scrollY >= 400,
+                })}
               />
             )}
           </div>

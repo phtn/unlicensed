@@ -40,13 +40,13 @@ export function ImageDither({image}: ImageDitherProps) {
       colorFront='#EEEEEE'
       colorHighlight='#FC81FE'
       originalColors
-      type='2x2'
+      type='4x4'
       size={1.8}
       colorSteps={4}
       image={image}
-      scale={1}
+      scale={0.8}
       fit='cover'
-      className='size-full absolute'
+      className='size-full absolute opacity-10'
     />
   )
 }

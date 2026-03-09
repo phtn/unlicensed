@@ -276,7 +276,7 @@ export const AuthModal = ({
           <DitherPhoto />
         </div>
         <ModalHeader className='relative z-10 tracking-tight flex justify-between items-start shrink-0'>
-          <div className='bg-black/40 backdrop-blur-2xl text-white text-sm rounded-lg w-fit p-0.5 flex'>
+          <div className='bg-black backdrop-blur-2xl text-white text-sm rounded-xs w-full whitespace-nowrap flex'>
             {emailSent ? (
               <a
                 rel='noopener noreferrer'
@@ -294,9 +294,9 @@ export const AuthModal = ({
                   type='button'
                   onClick={() => switchAuthView('login')}
                   className={cn(
-                    'px-4 py-2 rounded-md font-medium transition-colors',
+                    'px-4 py-2 rounded-xs font-medium transition-colors',
                     activeView === 'login'
-                      ? 'bg-white/20 text-white'
+                      ? 'bg-black/40 text-white'
                       : 'text-white/70 hover:text-white',
                   )}>
                   Sign in
@@ -305,9 +305,9 @@ export const AuthModal = ({
                   type='button'
                   onClick={() => switchAuthView('signup')}
                   className={cn(
-                    'px-4 py-2 rounded-md font-medium transition-colors',
+                    'px-4 py-2 rounded-xs font-medium transition-colors',
                     activeView === 'signup'
-                      ? 'bg-white/20 text-white'
+                      ? 'bg-black/40 text-white'
                       : 'text-white/70 hover:text-white',
                   )}>
                   Create account
@@ -316,12 +316,12 @@ export const AuthModal = ({
                   type='button'
                   onClick={() => switchAuthView('email-link')}
                   className={cn(
-                    'px-4 py-2 rounded-md font-medium transition-colors',
+                    'px-4 py-2 rounded-xs font-medium transition-colors',
                     activeView === 'email-link'
-                      ? 'bg-white/20 text-white'
+                      ? 'bg-black/40 text-white'
                       : 'text-white/70 hover:text-white',
                   )}>
-                  Email link
+                  Send Email link
                 </button>
               </>
             )}
@@ -404,7 +404,7 @@ export const AuthModal = ({
                   </div>
                 </div>
               )}
-              <ModalFooter className='flex flex-col gap-3 w-full py-2 pt-0'>
+              <ModalFooter className='flex flex-col gap-3 w-full pb-4 pt-2'>
                 <div className='flex flex-col'>
                   <Input
                     size='lg'
@@ -420,7 +420,7 @@ export const AuthModal = ({
                     classNames={{
                       inputWrapper: cn(
                         'bg-black/80! dark:bg-black/80 backdrop-blur-2xl text-white!',
-                        isEmailLinkView ? 'rounded-md!' : 'rounded-t-md!',
+                        isEmailLinkView ? 'rounded-xs!' : 'rounded-t-md!',
                       ),
                       input:
                         'ps-3 placeholder:text-white text-white! dark:text-white!',
@@ -504,7 +504,7 @@ export const AuthModal = ({
                   variant='solid'
                   disabled={primaryActionDisabled}
                   className={cn(
-                    'bg-black/80 backdrop-blur-2xl w-full text-white rounded-xs',
+                    'bg-brand backdrop-blur-2xl w-full text-white rounded-xs',
                     {
                       'bg-black/50': primaryActionDisabled,
                     },
