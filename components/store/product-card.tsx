@@ -2,13 +2,13 @@
 
 import type {StoreProduct} from '@/app/types'
 import {Id} from '@/convex/_generated/dataModel'
-import {useCart} from '@/hooks/use-cart'
+import {useAddCartItem} from '@/hooks/use-add-cart-item'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {Button, Card, CardBody, CardFooter, Image} from '@heroui/react'
 import NextLink from 'next/link'
-import {MouseEvent, useState} from 'react'
+import {memo, MouseEvent, useMemo, useState} from 'react'
 
 type ProductCardProps = {
   product: StoreProduct
@@ -47,16 +47,17 @@ const priceOptionsFromDenomination = (
   }))
 }
 
-export const ProductCard = ({
+const ProductCardComponent = ({
   product,
   imageUrl: imageUrlProp,
   className,
 }: ProductCardProps) => {
   const imageSrc = imageUrlProp ?? product.image
   const topEffects = product.effects.slice(0, 2)
-  const priceOptions = priceOptionsFromDenomination(
-    product.priceByDenomination,
-    product.unit,
+  const priceOptions = useMemo(
+    () =>
+      priceOptionsFromDenomination(product.priceByDenomination, product.unit),
+    [product.priceByDenomination, product.unit],
   )
   const firstThreeOptions = priceOptions?.slice(0, 3) ?? []
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -71,8 +72,9 @@ export const ProductCard = ({
           .join(' ')
       : ''
   const batchIdLabel = product.batchId?.trim() ?? ''
-  const {addItem} = useCart()
+  const addItem = useAddCartItem()
   const productId = product._id as Id<'products'> | undefined
+  const productHref = `/lobby/products/${product.slug.toLocaleLowerCase()}`
 
   const handleAddToCart = (e: MouseEvent) => {
     e.preventDefault()
@@ -84,14 +86,15 @@ export const ProductCard = ({
   return (
     <Card
       as={NextLink}
-      href={`/lobby/products/${product.slug.toLocaleLowerCase()}`}
+      href={productHref}
       radius='none'
       disableAnimation
       shadow='sm'
       className={cn(
         'group h-full transition-all duration-300 rounded-xs dark:bg-black bg-sidebar min-w-48 max-w-48 sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
         className,
-      )}>
+      )}
+    >
       <CardBody className='flex flex-col p-0'>
         <div className='flex justify-center items-center relative overflow-hidden rounded-xs'>
           <div className='absolute size-full overflow-hidden inset-0 z-10 transition-all duration-300' />
@@ -103,7 +106,7 @@ export const ProductCard = ({
               shadow='none'
               className='min-w-48 xl:min-w-64 rounded-t-xs rounded-b-sm object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
               isLoading={!imageSrc}
-              loading='eager'
+              loading='lazy'
             />
           ) : (
             <div className='w-auto h-48 min-h-48 aspect-square flex items-center justify-center'>
@@ -151,7 +154,8 @@ export const ProductCard = ({
             </div>
             <div
               id='denom-price'
-              className='text-2xl h-auto aspect-square flex items-center justify-end text-brand overflow-hidden grow-0'>
+              className='text-2xl h-auto aspect-square flex items-center justify-end text-brand overflow-hidden grow-0'
+            >
               {selectedOption ? `$${selectedOption.price}` : '—'}
             </div>
           </div>
@@ -162,7 +166,8 @@ export const ProductCard = ({
               onClick={(e) => e.preventDefault()}
               onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
               role='group'
-              aria-label='Select denomination'>
+              aria-label='Select denomination'
+            >
               {firstThreeOptions.map((opt, i) => (
                 <button
                   key={opt.denominationValue}
@@ -177,7 +182,8 @@ export const ProductCard = ({
                     e.preventDefault()
                     e.stopPropagation()
                     setSelectedIndex(i)
-                  }}>
+                  }}
+                >
                   {opt.denom}
                 </button>
               ))}
@@ -187,7 +193,8 @@ export const ProductCard = ({
               variant='shadow'
               className='bg-brand text-white rounded-xs mt-1.25'
               isDisabled={!productId || !selectedOption}
-              onClick={handleAddToCart}>
+              onClick={handleAddToCart}
+            >
               Add to Cart
             </Button>
           </div>
@@ -202,7 +209,8 @@ export const ProductCard = ({
             {topEffects.map((effect) => (
               <span
                 key={effect}
-                className='rounded-full bg-[#21A179] _pill-surface px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs capitalize tracking-tight opacity-80 font-space'>
+                className='rounded-full bg-[#21A179] _pill-surface px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs capitalize tracking-tight opacity-80 font-space'
+              >
                 {effect}
               </span>
             ))}
@@ -222,3 +230,7 @@ export const ProductCard = ({
     </Card>
   )
 }
+
+ProductCardComponent.displayName = 'ProductCard'
+
+export const ProductCard = memo(ProductCardComponent)

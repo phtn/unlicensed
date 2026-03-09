@@ -8,24 +8,14 @@ import {api} from '@/convex/_generated/api'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
+import {resolveProductImage} from '@/lib/resolve-product-image'
 import {cn} from '@/lib/utils'
 import {Button, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
 import {Activity, useMemo} from 'react'
-
-interface Brand {
-  name: string
-  slug: string
-  icon: string
-  description?: string
-  featured?: boolean
-}
-
-interface EnhancedBrand extends Brand {
-  productCount: number
-}
+import type {Brand, EnhancedBrand} from './all-brands'
 
 const brands: Brand[] = [
   {
@@ -110,28 +100,6 @@ export const Content = () => {
     [selectedBrandProducts],
   )
   const resolveSelectedBrandImage = useStorageUrls(selectedBrandImageIds)
-  const selectedBrandProductsWithImages = useMemo(
-    () =>
-      selectedBrandProducts.map((product) => {
-        if (!product.image) {
-          return product
-        }
-
-        const resolvedUrl = resolveSelectedBrandImage(product.image)
-        const imageUrl =
-          resolvedUrl && resolvedUrl.startsWith('http')
-            ? resolvedUrl
-            : product.image.startsWith('http')
-              ? product.image
-              : null
-
-        return {
-          ...product,
-          image: imageUrl,
-        }
-      }),
-    [selectedBrandProducts, resolveSelectedBrandImage],
-  )
 
   const toggleBrand = (brandSlug: string) => {
     void setSelectedBrandId(brandSlug === selectedBrandId ? null : brandSlug)
@@ -150,10 +118,10 @@ export const Content = () => {
                   subtitle={
                     <div>
                       Found <span className='opacity-50 font-ios ml-2'>(</span>
-                      {selectedBrandProductsWithImages.length}
+                      {selectedBrandProducts.length}
                       <span className='opacity-50 font-ios mr-2'>)</span>{' '}
                       product
-                      {selectedBrandProductsWithImages.length !== 1 ? 's' : ''}
+                      {selectedBrandProducts.length !== 1 ? 's' : ''}
                     </div>
                   }
                 />
@@ -187,27 +155,28 @@ export const Content = () => {
               </div>
             )}
 
-            {selectedBrandProductsWithImages.length > 0 && (
+            {selectedBrandProducts.length > 0 && (
               <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-6'>
-                {selectedBrandProductsWithImages.map((product) => (
+                {selectedBrandProducts.map((product) => (
                   <ProductCard
                     key={product._id ?? product.slug}
                     product={product}
-                    imageUrl={product.image}
+                    imageUrl={resolveProductImage(
+                      product.image,
+                      resolveSelectedBrandImage,
+                    )}
                   />
                 ))}
               </div>
             )}
 
-            {!isSelectedBrandLoading &&
-              selectedBrandProductsWithImages.length === 0 && (
-                <div className='rounded-lg border border-foreground/10 dark:border-dark-gray/40 bg-sidebar/30 px-6 py-16 text-center'>
-                  <p className='text-sm sm:text-base opacity-70'>
-                    No products are currently available for {selectedBrand.name}
-                    .
-                  </p>
-                </div>
-              )}
+            {!isSelectedBrandLoading && selectedBrandProducts.length === 0 && (
+              <div className='rounded-lg border border-foreground/10 dark:border-dark-gray/40 bg-sidebar/30 px-6 py-16 text-center'>
+                <p className='text-sm sm:text-base opacity-70'>
+                  No products are currently available for {selectedBrand.name}.
+                </p>
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -215,21 +184,23 @@ export const Content = () => {
       <section className='relative'>
         <div className='max-w-7xl mx-auto'>
           {/* Header */}
-          <div className='mb-12 sm:mb-16 lg:mb-20'>
-            <Tag text='Brands' />
-            <Title
-              title='Curated Excellence'
-              subtitle='Partner Brands We Trust'
-            />
-            <p className='hidden text-sm sm:text-base lg:text-lg opacity-60 mt-6 sm:mt-8 max-w-2xl leading-relaxed'>
-              Each brand in our collection represents a commitment to quality,
-              innovation, and the highest standards of cultivation. Discover the
-              stories behind the names that define excellence.
-            </p>
-          </div>
+          <Activity mode={selectedBrandId ? 'hidden' : 'visible'}>
+            <div className={cn('mb-12 sm:mb-16 lg:mb-20')}>
+              <Tag text='Brands' />
+              <Title
+                title='Curated Excellence'
+                subtitle='Partner Brands We Trust'
+              />
+              <p className='hidden text-sm sm:text-base lg:text-lg opacity-60 mt-6 sm:mt-8 max-w-2xl leading-relaxed'>
+                Each brand in our collection represents a commitment to quality,
+                innovation, and the highest standards of cultivation. Discover
+                the stories behind the names that define excellence.
+              </p>
+            </div>
+          </Activity>
 
           {/* Featured Brands - Large Showcase */}
-          <div className='grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 mb-12 sm:mb-16'>
+          <div className='hidden _grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 mb-12 sm:mb-16'>
             {featuredBrands.map((brand, index) => (
               <button
                 type='button'
@@ -267,9 +238,9 @@ export const Content = () => {
                   {/* Brand Info */}
                   <div className='relative z-10 flex-1 flex flex-col justify-between'>
                     <div>
-                      <h3 className='text-2xl sm:text-3xl lg:text-4xl font-polysans font-bold mb-3 sm:mb-4 capitalize'>
+                      {/*<h3 className='text-2xl sm:text-3xl lg:text-4xl font-polysans font-bold mb-3 sm:mb-4 capitalize'>
                         {brand.name}
-                      </h3>
+                      </h3>*/}
                       {brand.description && (
                         <p className='text-sm sm:text-base opacity-70 mb-4 sm:mb-6 leading-relaxed max-w-md'>
                           {brand.description}
@@ -306,8 +277,8 @@ export const Content = () => {
       <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
         <div className='max-w-7xl mx-auto'>
           <div className='mb-8 sm:mb-12'>
-            <h2 className='text-xl sm:text-2xl lg:text-3xl font-polysans font-bold mb-2'>
-              All Brands
+            <h2 className='text-xl sm:text-2xl lg:text-3xl font-clash font-bold mb-2'>
+              All <span>Brands</span>
             </h2>
             <p className='text-sm sm:text-base opacity-60'>
               Explore our complete collection of trusted partners
@@ -370,14 +341,14 @@ export const Content = () => {
                   {/* Brand Info */}
                   <div className='relative z-10 flex-1 flex flex-col justify-between'>
                     <div>
-                      <h3 className='text-xl sm:text-2xl text-brand font-polysans font-bold mb-2 sm:mb-3 capitalize'>
+                      {/*<h3 className='text-xl sm:text-2xl text-brand font-polysans font-bold mb-2 sm:mb-3 capitalize'>
                         {brand.name}
-                      </h3>
-                      {brand.description && (
+                      </h3>*/}
+                      {/*{brand.description && (
                         <p className='text-xs sm:text-sm opacity-70 mb-4 leading-relaxed line-clamp-2'>
                           {brand.description}
                         </p>
-                      )}
+                      )}*/}
                     </div>
 
                     {/* Product Count */}
@@ -404,7 +375,7 @@ export const Content = () => {
       {/* CTA Section */}
       <section className='py-12 sm:py-16 lg:py-20 px-4 sm:px-6'>
         <div className='max-w-4xl mx-auto text-center'>
-          <div className='rounded-3xl sm:rounded-4xl bg-sidebar/40 dark:bg-sidebar border border-foreground/10 dark:border-dark-gray/50 p-8 sm:p-12 lg:p-16'>
+          <div className='bg-sidebar/40 dark:bg-sidebar border border-foreground/10 dark:border-dark-gray/50 p-8 sm:p-12 lg:p-16'>
             <h2 className='text-xl sm:text-3xl lg:text-4xl font-polysans font-bold mb-4 sm:mb-6 portrait:max-w-[15ch]'>
               Looking for something specific?
             </h2>
@@ -416,6 +387,7 @@ export const Content = () => {
               <Button
                 as={Link}
                 href='/lobby'
+                radius='none'
                 prefetch
                 size='lg'
                 className='dark:bg-white opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base'>
@@ -425,6 +397,7 @@ export const Content = () => {
               <Button
                 size='lg'
                 as={Link}
+                radius='none'
                 href={'/lobby/products'}
                 prefetch
                 variant='light'
@@ -437,6 +410,7 @@ export const Content = () => {
               <Button
                 as={Link}
                 href='/lobby/deals'
+                radius='none'
                 prefetch
                 size='lg'
                 endContent={<Icon name='box-bold' className=' text-white' />}

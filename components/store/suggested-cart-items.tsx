@@ -3,9 +3,7 @@
 import {FeaturedProducts} from '@/app/lobby/(store)/featured'
 import {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
-import {Id} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
-import {useCart} from '@/hooks/use-cart'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
@@ -22,7 +20,6 @@ const formatPrice = (priceCents: number) => {
 
 export const SuggestedCartItems = () => {
   const {user} = useAuth()
-  const {addItem} = useCart()
 
   // Fetch featured products
   const featuredRaw = useQuery(api.products.q.getFeaturedProducts, {limit: 5})
@@ -47,17 +44,10 @@ export const SuggestedCartItems = () => {
     return [
       ...featured.map((p) => p.image),
       ...previous.map((p) => p.image),
-    ].filter(Boolean)
+    ].filter((image): image is string => !!image && !image.startsWith('http'))
   }, [featured, previous])
 
   const resolveUrl = useStorageUrls(allImageIds)
-
-  const _handleAddToCart =
-    (productId: Id<'products'> | undefined) => async () => {
-      if (productId) {
-        await addItem(productId, 1)
-      }
-    }
 
   // If loading or both empty, we can just return null or loading state
   // But EmptyCart handles the main empty message.
@@ -73,7 +63,8 @@ export const SuggestedCartItems = () => {
             {featured.map((product) => (
               <div
                 key={product._id}
-                className='snap-start min-w-50 max-w-50 bg-surface-highlight/50 rounded-xs overflow-hidden border border-foreground/10 flex flex-col group md:hover:border-foreground/20'>
+                className='snap-start min-w-50 max-w-50 bg-surface-highlight/50 rounded-xs overflow-hidden border border-foreground/10 flex flex-col group md:hover:border-foreground/20'
+              >
                 <ProductCard
                   product={product}
                   imageUrl={resolveUrl(product.image ?? '') ?? undefined}
@@ -155,7 +146,8 @@ const SuggestedItem = ({product, imageUrl, onAdd}: ISuggestedItem) => {
           variant='flat'
           className='w-full h-8 min-h-0 text-xs font-semibold font-space bg-foreground/5 hover:bg-foreground/10'
           isLoading={isAdding}
-          onPress={handleAdd}>
+          onPress={handleAdd}
+        >
           Add
         </Button>
       </div>

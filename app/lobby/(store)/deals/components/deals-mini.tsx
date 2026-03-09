@@ -22,7 +22,7 @@ export const DealsMini = () => {
             </div>
             <h2
               id='deals-bundle-heading'
-              className='text-4xl font-medium text-foreground tracking-tight sm:text-4xl max-w-[28ch] font-polysans py-12 sm:py-1'>
+              className='md:text-5xl font-medium text-foreground sm:text-4xl max-w-[28ch] font-clash py-12 sm:py-1'>
               Build your own Oz.{' '}
               <span className='text-terpenes'>Mix & Match</span> your way, and
               get more out of flexible bulk savings.

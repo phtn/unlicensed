@@ -1,6 +1,7 @@
 import {StoreCategory, StoreProduct} from '@/app/types'
 import {ProductCard} from '@/components/store/product-card'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
+import {resolveProductImage} from '@/lib/resolve-product-image'
 import {Button} from '@heroui/react'
 import {useMemo} from 'react'
 
@@ -23,35 +24,26 @@ const buildCategoryCollections = (
     .filter((section) => section.items.length > 0)
 
 export const FullCollection = ({products, categories}: CollectionProps) => {
-  // Get all image IDs from products (only storageIds, not URLs or null)
-  const imageIds = useMemo(() => products?.map((p) => p.image), [products])
-
-  // Resolve URLs for all images
+  const imageIds = useMemo(
+    () =>
+      products
+        .filter(
+          (product) => !!product.image && !product.image.startsWith('http'),
+        )
+        .map((product) => product.image),
+    [products],
+  )
   const resolveUrl = useStorageUrls(imageIds)
-
-  // Update products with resolved image URLs
-  const productsWithImages = useMemo(() => {
-    return products?.map((product) => {
-      if (!product.image) {
-        return product
-      }
-      // Otherwise, resolve the storageId to a URL
-      const resolvedUrl = resolveUrl(product.image)
-      return {
-        ...product,
-        image: resolvedUrl,
-      }
-    })
-  }, [products, resolveUrl])
   const collections = useMemo(
-    () => buildCategoryCollections(categories, productsWithImages),
-    [categories, productsWithImages],
+    () => buildCategoryCollections(categories, products),
+    [categories, products],
   )
 
   return (
     <section
       id='collection'
-      className='pt-24 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 bg-background'>
+      className='pt-24 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 bg-background'
+    >
       <div className='flex flex-col gap-20'>
         <div className='hidden _flex flex-wrap items-center justify-between gap-4'>
           <div className='space-y-1'>
@@ -64,7 +56,8 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
             href='#finder'
             radius='full'
             variant='flat'
-            className='border border-(--surface-outline) bg-(--surface-highlight) text-sm font-semibold text-foreground transition hover:bg-(--surface-muted)'>
+            className='border border-(--surface-outline) bg-(--surface-highlight) text-sm font-semibold text-foreground transition hover:bg-(--surface-muted)'
+          >
             Personalize with Strain Finder
           </Button>
         </div>
@@ -72,7 +65,8 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
           <section
             key={category.slug}
             id={`category-${category.slug}`}
-            className='mx-auto w-full max-w-7xl'>
+            className='mx-auto w-full max-w-7xl'
+          >
             <div className='flex flex-col gap-8 rounded-3xl transition-colors'>
               <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
                 <div>
@@ -88,7 +82,11 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
               </div>
               <div className='flex space-x-4 w-screen overflow-scroll sm:w-full sm:grid sm:gap-6 sm:grid-cols-2 lg:grid-cols-3'>
                 {items.map((product) => (
-                  <ProductCard key={product.slug} product={product} />
+                  <ProductCard
+                    key={product.slug}
+                    product={product}
+                    imageUrl={resolveProductImage(product.image, resolveUrl)}
+                  />
                 ))}
               </div>
             </div>

@@ -5,7 +5,9 @@ import {QuickScroll} from '@/components/base44/quick-scroll'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useMobile} from '@/hooks/use-mobile'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProductDetail, type RawProductDetail} from '@/lib/convexClient'
+import {resolveProductImage} from '@/lib/resolve-product-image'
 import {useQuery} from 'convex/react'
 import {notFound} from 'next/navigation'
 import {useMemo, useRef} from 'react'
@@ -38,6 +40,35 @@ export const ProductDetailContent = ({
     return adaptProductDetail(detailQuery as RawProductDetail)
   }, [detailQuery, initialDetail])
 
+  const product = detail?.product
+  // const category = detail?.category
+  // const related = detail?.related ?? []
+  const productId = (detailQuery?.product?._id ?? product?._id) as
+    | Id<'products'>
+    | undefined
+  const mediaIds = useMemo(
+    () =>
+      product
+        ? [product.image, ...product.gallery].filter(
+            (image): image is string => !!image && !image.startsWith('http'),
+          )
+        : [],
+    [product],
+  )
+  const resolveMediaUrl = useStorageUrls(mediaIds)
+  const primaryImageUrl = product
+    ? resolveProductImage(product.image, resolveMediaUrl)
+    : undefined
+  const galleryImages = useMemo(
+    () =>
+      product
+        ? product.gallery
+            .map((image) => resolveProductImage(image, resolveMediaUrl))
+            .filter((image): image is string => !!image)
+        : [],
+    [product, resolveMediaUrl],
+  )
+
   if (detail === null) {
     notFound()
   }
@@ -46,27 +77,25 @@ export const ProductDetailContent = ({
     return null
   }
 
-  const product = detail.product
-  const category = detail.category
-  const related = detail.related
-  const productId = (detailQuery?.product?._id ?? product._id) as
-    | Id<'products'>
-    | undefined
+  const resolvedProduct = detail.product
+  const resolvedCategory = detail.category
+  const resolvedRelated = detail.related
 
   return (
     <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-12 sm:py-16 lg:py-20 overflow-x-hidden w-full'>
       <div className='md:mx-auto lg:max-w-7xl max-w-screen p-2 sm:pt-4 md:pt-6 2xl:pt-8 sm:px-6 lg:px-0'>
-        <Crumbs product={product} />
+        <Crumbs product={resolvedProduct} />
         <div className='mt-2 sm:mt-8 lg:mt-6 grid gap-6 sm:gap-8 lg:gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
           <Gallery
-            product={product}
+            product={resolvedProduct}
             imageRef={galleryImageRef}
-            productId={productId}
+            primaryImageUrl={primaryImageUrl}
+            galleryImages={galleryImages}
             isMobile={isMobile}
           />
           <ProductInteraction
-            product={product}
-            category={category}
+            product={resolvedProduct}
+            category={resolvedCategory}
             productId={productId}
             isMobile={isMobile}
           />
@@ -78,7 +107,9 @@ export const ProductDetailContent = ({
         className='border-b-[0.33px] border-foreground/20 border-dotted bg-transparent'
       />
 
-      {related.length > 0 ? <RelatedProducts products={related} /> : null}
+      {resolvedRelated.length > 0 ? (
+        <RelatedProducts products={resolvedRelated} />
+      ) : null}
     </div>
   )
 }

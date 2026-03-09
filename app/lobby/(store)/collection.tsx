@@ -1,6 +1,7 @@
 import {StoreCategory, StoreProduct} from '@/app/types'
 import {ProductCard} from '@/components/store/product-card'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
+import {resolveProductImage} from '@/lib/resolve-product-image'
 import Link from 'next/link'
 import {useMemo} from 'react'
 
@@ -28,35 +29,26 @@ const buildCategoryCollections = (
     .filter((section) => section.items.length > 0)
 
 export const FullCollection = ({products, categories}: CollectionProps) => {
-  // Get all image IDs from products (only storageIds, not URLs or null)
-  const imageIds = useMemo(() => products?.map((p) => p.image), [products])
-
-  // Resolve URLs for all images
+  const imageIds = useMemo(
+    () =>
+      products
+        .filter(
+          (product) => !!product.image && !product.image.startsWith('http'),
+        )
+        .map((product) => product.image),
+    [products],
+  )
   const resolveUrl = useStorageUrls(imageIds)
-
-  // Update products with resolved image URLs
-  const productsWithImages = useMemo(() => {
-    return products?.map((product) => {
-      if (!product.image) {
-        return product
-      }
-      // Otherwise, resolve the storageId to a URL
-      const resolvedUrl = resolveUrl(product.image)
-      return {
-        ...product,
-        image: resolvedUrl,
-      }
-    })
-  }, [products, resolveUrl])
   const collections = useMemo(
-    () => buildCategoryCollections(categories, productsWithImages),
-    [categories, productsWithImages],
+    () => buildCategoryCollections(categories, products),
+    [categories, products],
   )
 
   return (
     <section
       id='collection'
-      className='mx-auto w-full pt-16 md:max-w-7xl px-2 sm:px-4 md:px-6 xl:px-0 bg-background'>
+      className='mx-auto w-full pt-16 md:max-w-7xl px-2 sm:px-4 md:px-6 xl:px-0 bg-background'
+    >
       <div className='flex flex-col gap-20'>
         <div className='flex flex-wrap items-center justify-between gap-4'>
           <div className='space-y-1'>
@@ -69,7 +61,8 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
           <section
             key={category.slug}
             id={`category-${category.slug}`}
-            className='mx-auto w-full max-w-7xl'>
+            className='mx-auto w-full max-w-7xl'
+          >
             <div className='flex flex-col gap-8 rounded-3xl transition-colors'>
               <div className='flex gap-4 items-center justify-between'>
                 <div>
@@ -79,7 +72,8 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
                 </div>
                 <Link
                   href={`/lobby/category/${category.slug}`}
-                  className='flex items-center gap-3 text-xs uppercase tracking-[0.35em] text-color-muted transition-opacity hover:opacity-70'>
+                  className='flex items-center gap-3 text-xs uppercase tracking-[0.35em] text-color-muted transition-opacity hover:opacity-70'
+                >
                   <span>View all</span>
                   <span className='h-px w-10 bg-foreground/30' />
                   <span>{totalCount}</span>
@@ -87,7 +81,11 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
               </div>
               <div className='flex space-x-3 pe-4 w-screen overflow-x-scroll md:pe-0 md:w-full md:grid-cols-5 md:gap-4'>
                 {items.map((product) => (
-                  <ProductCard key={product.slug} product={product} />
+                  <ProductCard
+                    key={product.slug}
+                    product={product}
+                    imageUrl={resolveProductImage(product.image, resolveUrl)}
+                  />
                 ))}
               </div>
             </div>

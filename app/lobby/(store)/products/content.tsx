@@ -9,6 +9,7 @@ import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
+import {resolveProductImage} from '@/lib/resolve-product-image'
 import {Button, Select, SelectItem, SharedSelection} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {
@@ -235,27 +236,6 @@ export const Content = ({initialProducts}: ContentProps) => {
 
   const resolveUrl = useStorageUrls(imageIds)
 
-  // Update products with resolved image URLs. Never pass a Convex storage ID
-  // to <img src> — when unresolved it becomes a relative URL and 404s.
-  const productsWithImages = useMemo(() => {
-    return filteredProducts.map((product) => {
-      if (!product.image) {
-        return product
-      }
-      const resolvedUrl = resolveUrl(product.image)
-      const imageUrl =
-        resolvedUrl && resolvedUrl.startsWith('http')
-          ? resolvedUrl
-          : product.image.startsWith('http')
-            ? product.image
-            : undefined
-      return {
-        ...product,
-        image: imageUrl ?? null,
-      }
-    })
-  }, [filteredProducts, resolveUrl])
-
   // Clear all filters
   const clearFilters = async () => {
     await Promise.all([
@@ -414,7 +394,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                       Brand: {brand}
                       <button
                         onClick={() => setBrand(null)}
-                        className='hover:opacity-70'>
+                        className='hover:opacity-70'
+                      >
                         <Icon name='x' className='size-3' />
                       </button>
                     </span>
@@ -425,7 +406,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                       <span className='font-semibold'>{category}</span>
                       <button
                         onClick={() => setCategory(null)}
-                        className='hover:opacity-70'>
+                        className='hover:opacity-70'
+                      >
                         <Icon name='x' className='size-3' />
                       </button>
                     </span>
@@ -435,7 +417,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                       Potency: <span className='font-semibold'>{potency}</span>
                       <button
                         onClick={() => setPotency(null)}
-                        className='hover:opacity-70'>
+                        className='hover:opacity-70'
+                      >
                         <Icon name='x' className='size-3' />
                       </button>
                     </span>
@@ -445,7 +428,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                   size='sm'
                   variant='light'
                   onPress={clearFilters}
-                  className='text-xs'>
+                  className='text-xs'
+                >
                   Clear All
                 </Button>
               </div>
@@ -459,13 +443,12 @@ export const Content = ({initialProducts}: ContentProps) => {
         <div className='max-w-7xl mx-auto'>
           <div className='mb-6 flex items-center justify-between'>
             <p className='text-sm opacity-60'>
-              {productsWithImages.length} product
-              {productsWithImages.length !== 1 ? 's' : ''} found
+              {filteredProducts.length} product
+              {filteredProducts.length !== 1 ? 's' : ''} found
             </p>
           </div>
 
-          <Activity
-            mode={productsWithImages.length === 0 ? 'visible' : 'hidden'}>
+          <Activity mode={filteredProducts.length === 0 ? 'visible' : 'hidden'}>
             <div className='max-w-7xl mx-auto pt-20'>
               <div className='flex flex-col items-center justify-center gap-4 px-6 py-24 text-center'>
                 <Title
@@ -486,7 +469,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                     size='lg'
                     variant='light'
                     onPress={clearFilters}
-                    className='mt-4'>
+                    className='mt-4'
+                  >
                     Clear Filters
                   </Button>
                 )}
@@ -495,8 +479,12 @@ export const Content = ({initialProducts}: ContentProps) => {
           </Activity>
 
           <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8'>
-            {productsWithImages.map((product) => (
-              <ProductCard key={product._id} product={product} />
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product._id}
+                product={product}
+                imageUrl={resolveProductImage(product.image, resolveUrl)}
+              />
             ))}
           </div>
         </div>
@@ -551,11 +539,13 @@ const FilterSelector = ({
             'rounded-lg bg-background dark:bg-dark-table dark:text-white',
           value: 'ml-2 mb-4 capitalize',
           label: selectChanged ? 'hidden' : 'block',
-        }}>
+        }}
+      >
         {data.map((b) => (
           <SelectItem
             key={typeof b === 'string' ? b : b.slug}
-            className='ml-2 capitalize'>
+            className='ml-2 capitalize'
+          >
             {typeof b === 'string' ? b : b.name}
           </SelectItem>
         ))}

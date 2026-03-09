@@ -10,12 +10,13 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {useToggle} from '@/hooks/use-toggle'
 import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
+import {resolveProductImage} from '@/lib/resolve-product-image'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
-import {useMemo, ViewTransition} from 'react'
+import {useCallback, useMemo, ViewTransition} from 'react'
 
 interface ContentProps {
   slug: string
@@ -62,27 +63,21 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     }
   }, [baseProducts])
 
-  // Get all image IDs from products (only storageIds, not URLs or null)
-  const imageIds = useMemo(() => products.map((p) => p.image), [products])
-
-  // Resolve URLs for all images
+  const imageIds = useMemo(
+    () =>
+      products
+        .filter(
+          (product) => !!product.image && !product.image.startsWith('http'),
+        )
+        .map((product) => product.image),
+    [products],
+  )
   const resolveUrl = useStorageUrls(imageIds)
-
-  // Update products with resolved image URLs
-  const productsWithImages = useMemo(() => {
-    return products.map((product) => {
-      // If image is null or already a URL, keep it as-is
-      if (!product.image) {
-        return product
-      }
-      // Otherwise, resolve the storageId to a URL
-      const resolvedUrl = resolveUrl(product.image)
-      return {
-        ...product,
-        image: resolvedUrl,
-      }
-    })
-  }, [products, resolveUrl])
+  const getImageUrl = useCallback(
+    (image: string | null | undefined) =>
+      resolveProductImage(image, resolveUrl),
+    [resolveUrl],
+  )
 
   const category = useQuery(api.categories.q.getCategoryBySlug, {slug})
   const categories = useQuery(api.categories.q.listCategories)
@@ -112,7 +107,8 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   prefetch
                   radius='none'
                   href={'/lobby/brands'}
-                  className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand rounded-xs dark:hover:text-white bg-brand hover:text-white text-white font-clash font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
+                  className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand rounded-xs dark:hover:text-white bg-brand hover:text-white text-white font-clash font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'
+                >
                   <span className='drop-shadow-xs'>Shop by Brand</span>
                 </Button>
                 <Button
@@ -123,7 +119,8 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   variant='light'
                   onPress={toggle}
                   href={'/lobby/deals'}
-                  className='hidden border dark:border-light-gray/80 sm:flex rounded-xs items-center gap-2 dark:text-terpenes font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
+                  className='hidden border dark:border-light-gray/80 sm:flex rounded-xs items-center gap-2 dark:text-terpenes font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'
+                >
                   <span className='tracking-tight'>Find Deals</span>
                   <Icon
                     name={navigating ? 'spinners-ring' : 'search-magic'}
@@ -170,7 +167,8 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   className={cn('min-w-0 h-6 font-bold uppercase', {
                     'bg-brand text-white': tier === '',
                   })}
-                  onPress={() => setTier('')}>
+                  onPress={() => setTier('')}
+                >
                   All
                 </Button>
                 {filterOptions.tiers.map((t) => (
@@ -182,7 +180,8 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     className={cn('min-w-0 h-6 font-semibold uppercase', {
                       'bg-brand text-white': tier === t,
                     })}
-                    onPress={() => setTier(t)}>
+                    onPress={() => setTier(t)}
+                  >
                     {t}
                   </Button>
                 ))}
@@ -198,7 +197,8 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   radius='none'
                   variant={subcategory === '' ? 'solid' : 'flat'}
                   className='min-w-0'
-                  onPress={() => setSubcategory('')}>
+                  onPress={() => setSubcategory('')}
+                >
                   All
                 </Button>
                 {filterOptions.subcategories.map((s) => (
@@ -208,7 +208,8 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     radius='none'
                     variant={subcategory === s ? 'solid' : 'flat'}
                     className='min-w-0 capitalize'
-                    onPress={() => setSubcategory(s)}>
+                    onPress={() => setSubcategory(s)}
+                  >
                     {s}
                   </Button>
                 ))}
@@ -218,7 +219,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         </section>
       )}
 
-      <Products products={productsWithImages} />
+      <Products products={products} getImageUrl={getImageUrl} />
       <section className='py-12 sm:py-16 lg:py-20 px-4 sm:px-6 max-w-7xl mx-auto'>
         <div className='flex flex-col gap-20'>
           <div className='flex flex-wrap items-center justify-between gap-4'>
@@ -234,7 +235,8 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                 href={`/lobby/deals`}
                 radius='none'
                 prefetch
-                className='bg-terpenes opacity-100 text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tight md:tracking-normal'>
+                className='bg-terpenes opacity-100 text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tight md:tracking-normal'
+              >
                 <span className='drop-shadow-xs'>Deals</span>
               </Button>
               {categories
@@ -247,7 +249,8 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     href={`/lobby/category/${cat.slug}`}
                     prefetch
                     radius='none'
-                    className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tighter'>
+                    className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tighter'
+                  >
                     <span className='drop-shadow-xs'>{cat.name}</span>
                   </Button>
                 ))}
@@ -262,7 +265,8 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
           as={Link}
           href={'/lobby/brands'}
           fullWidth
-          className='dark:bg-white h-14 opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-4 sm:px-8 py-2 sm:py-3 text-lg'>
+          className='dark:bg-white h-14 opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-4 sm:px-8 py-2 sm:py-3 text-lg'
+        >
           <span className='drop-shadow-xs'>Shop by Brand</span>
         </Button>
       </div>

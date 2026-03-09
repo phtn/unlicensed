@@ -181,10 +181,6 @@ export const listGallery = query({
       if (typeof item === 'string') {
         // Check if it's already a URL or a storage ID string
         if (item.startsWith('http') || item.startsWith('data:')) {
-          // Already a URL string
-          console.log(
-            `[listGallery] Item is already a URL: ${item.substring(0, 50)}...`,
-          )
           gallery.push(item)
         } else {
           // Storage ID as string - convert to URL
@@ -192,6 +188,7 @@ export const listGallery = query({
             const image = await ctx.storage.getUrl(item as Id<'_storage'>)
             // getUrl can return null if storage ID is invalid
             if (image) {
+              gallery.push(image)
               continue
             } else {
               console.warn(
@@ -213,6 +210,7 @@ export const listGallery = query({
           const image = await ctx.storage.getUrl(item)
           // getUrl can return null if storage ID is invalid
           if (image) {
+            gallery.push(image)
             continue
           } else {
             console.warn(
