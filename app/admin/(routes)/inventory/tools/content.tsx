@@ -17,24 +17,24 @@ export const Content = () => {
   const tabs = useMemo(
     () =>
       [
-        {id: 'fire-collection', label: 'Fire Collection'},
         {id: 'image-opt', label: 'Image Optimizer'},
         {id: 'product-csv', label: 'Product CSV Import'},
+        {id: 'fire-collection', label: 'Fire Collection'},
       ] as Array<ToolTabs>,
     [],
   )
 
   const pmap = useMemo(() => {
     return {
-      'fire-collection': <FireCollectionManager />,
       'image-opt': <ImageOptimizer />,
       'product-csv': <ProductCsvUpload />,
+      'fire-collection': <FireCollectionManager />,
     } as Record<ToolTabs['id'], ReactNode>
   }, [])
 
   return (
     <MainWrapper className='md:p-4'>
-      <Tabs.Root defaultValue='fire-collection'>
+      <Tabs.Root defaultValue='image-opt'>
         <Tabs.List className='relative z-0 flex gap-1 px-2'>
           {tabs.map((tab) => (
             <Tabs.Tab

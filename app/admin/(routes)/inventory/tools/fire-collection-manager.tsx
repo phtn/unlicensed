@@ -1,6 +1,7 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
+import {ScrollArea} from '@/components/ui/scroll-area'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -8,13 +9,7 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {Button, Image, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import {useDeferredValue, useEffect, useMemo, useRef, useState} from 'react'
 
 const MAX_LIBRARY_RESULTS = 24
 
@@ -98,8 +93,7 @@ const ProductTile = ({
       isLoading={isBusy}
       isDisabled={disabled}
       onPress={() => onAction(String(product._id))}
-      className='min-w-24 rounded-lg bg-sidebar px-4 font-okxs text-xs uppercase tracking-[0.25em] text-foreground'
-    >
+      className='min-w-24 rounded-lg bg-sidebar px-4 font-okxs text-xs uppercase tracking-[0.25em] text-foreground'>
       {actionLabel}
     </Button>
   </article>
@@ -107,7 +101,9 @@ const ProductTile = ({
 
 export const FireCollectionManager = () => {
   const {user} = useAuthCtx()
-  const updateFireCollection = useMutation(api.admin.m.updateFireCollectionProducts)
+  const updateFireCollection = useMutation(
+    api.admin.m.updateFireCollectionProducts,
+  )
   const fireCollectionConfig = useQuery(api.admin.q.getFireCollectionConfig, {})
   const libraryProducts = useQuery(api.products.q.listProducts, {limit: 500})
   const [query, setQuery] = useState('')
@@ -127,15 +123,16 @@ export const FireCollectionManager = () => {
 
   const imageIds = useMemo(
     () =>
-      [...(selectedProducts ?? []), ...(libraryProducts ?? [])]
-        .flatMap((product) => {
+      [...(selectedProducts ?? []), ...(libraryProducts ?? [])].flatMap(
+        (product) => {
           if (!product.image) {
             return []
           }
 
           const imageId = String(product.image)
           return imageId.startsWith('http') ? [] : [imageId]
-        }),
+        },
+      ),
     [libraryProducts, selectedProducts],
   )
   const resolveUrl = useStorageUrls(imageIds)
@@ -160,7 +157,10 @@ export const FireCollectionManager = () => {
     }
   }, [])
 
-  const persistProductIds = async (nextProductIds: string[], productId: string) => {
+  const persistProductIds = async (
+    nextProductIds: string[],
+    productId: string,
+  ) => {
     setActiveProductId(productId)
     setStatus(null)
 
@@ -201,7 +201,9 @@ export const FireCollectionManager = () => {
           </div>
           <div className='flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.28em] text-foreground/45'>
             <span>{selectedIds.length} selected</span>
-            {status === 'saved' && <span className='text-emerald-500'>Saved</span>}
+            {status === 'saved' && (
+              <span className='text-emerald-500'>Saved</span>
+            )}
             {status === 'error' && (
               <span className='text-destructive'>Save failed</span>
             )}
@@ -217,7 +219,7 @@ export const FireCollectionManager = () => {
       </div>
 
       <div className='grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]'>
-        <section className='rounded-3xl border border-foreground/10 bg-background/70 p-5'>
+        <section className='flex min-h-0 flex-col rounded-3xl border border-foreground/10 bg-background/70 p-5'>
           <div className='flex items-center justify-between gap-3'>
             <h3 className='text-sm font-okxs uppercase tracking-[0.3em] text-foreground/50'>
               Current Row
@@ -227,39 +229,43 @@ export const FireCollectionManager = () => {
             </span>
           </div>
 
-          <div className='mt-4 flex flex-col gap-3'>
-            {selectedIds.length === 0 && (
-              <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
-                No products selected yet.
-              </div>
-            )}
+          <ScrollArea className='mt-4 max-h-[28.1rem] pr-3 xl:flex-1'>
+            <div className='flex flex-col gap-3'>
+              {selectedIds.length === 0 && (
+                <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
+                  No products selected yet.
+                </div>
+              )}
 
-            {selectedIds.length > 0 && selectedProducts === undefined && (
-              <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
-                Loading current collection...
-              </div>
-            )}
+              {selectedIds.length > 0 && selectedProducts === undefined && (
+                <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
+                  Loading current collection...
+                </div>
+              )}
 
-            {(selectedProducts ?? []).map((product) => (
-              <ProductTile
-                key={product._id}
-                product={product}
-                imageUrl={resolveProductImage(product.image, resolveUrl)}
-                actionLabel='Remove'
-                disabled={activeProductId !== null}
-                isBusy={activeProductId === String(product._id)}
-                onAction={(productId) =>
-                  persistProductIds(
-                    selectedIds.filter((selectedId) => selectedId !== productId),
-                    productId,
-                  )
-                }
-              />
-            ))}
-          </div>
+              {(selectedProducts ?? []).map((product) => (
+                <ProductTile
+                  key={product._id}
+                  product={product}
+                  imageUrl={resolveProductImage(product.image, resolveUrl)}
+                  actionLabel='Remove'
+                  disabled={activeProductId !== null}
+                  isBusy={activeProductId === String(product._id)}
+                  onAction={(productId) =>
+                    persistProductIds(
+                      selectedIds.filter(
+                        (selectedId) => selectedId !== productId,
+                      ),
+                      productId,
+                    )
+                  }
+                />
+              ))}
+            </div>
+          </ScrollArea>
         </section>
 
-        <section className='rounded-3xl border border-foreground/10 bg-background/70 p-5'>
+        <section className='flex min-h-0 flex-col rounded-3xl border border-foreground/10 bg-background/70 p-5'>
           <div className='flex items-center justify-between gap-3'>
             <h3 className='text-sm font-okxs uppercase tracking-[0.3em] text-foreground/50'>
               Product Library
@@ -269,33 +275,36 @@ export const FireCollectionManager = () => {
             </span>
           </div>
 
-          <div className='mt-4 flex flex-col gap-3'>
-            {libraryProducts === undefined && (
-              <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
-                Loading products...
-              </div>
-            )}
+          <ScrollArea className='mt-4 max-h-[36.1rem] pr-3 xl:flex-1'>
+            <div className='flex flex-col gap-3'>
+              {libraryProducts === undefined && (
+                <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
+                  Loading products...
+                </div>
+              )}
 
-            {libraryProducts !== undefined && availableProducts.length === 0 && (
-              <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
-                No products match the current search.
-              </div>
-            )}
+              {libraryProducts !== undefined &&
+                availableProducts.length === 0 && (
+                  <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
+                    No products match the current search.
+                  </div>
+                )}
 
-            {availableProducts.map((product) => (
-              <ProductTile
-                key={product._id}
-                product={product}
-                imageUrl={resolveProductImage(product.image, resolveUrl)}
-                actionLabel='Add'
-                disabled={activeProductId !== null}
-                isBusy={activeProductId === String(product._id)}
-                onAction={(productId) =>
-                  persistProductIds([...selectedIds, productId], productId)
-                }
-              />
-            ))}
-          </div>
+              {availableProducts.map((product) => (
+                <ProductTile
+                  key={product._id}
+                  product={product}
+                  imageUrl={resolveProductImage(product.image, resolveUrl)}
+                  actionLabel='Add'
+                  disabled={activeProductId !== null}
+                  isBusy={activeProductId === String(product._id)}
+                  onAction={(productId) =>
+                    persistProductIds([...selectedIds, productId], productId)
+                  }
+                />
+              ))}
+            </div>
+          </ScrollArea>
         </section>
       </div>
     </section>
