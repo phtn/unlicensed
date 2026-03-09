@@ -1,33 +1,30 @@
 'use client'
 
-import {StoreCategory, StoreProduct} from '@/app/types'
-import {Tag} from '@/components/base44/tag'
-import {TitleV3} from '@/components/base44/title'
+import {StoreProduct} from '@/app/types'
+import {FireCollection} from '@/components/store/fire-collection'
 import {api} from '@/convex/_generated/api'
-import {adaptCategory, adaptProduct} from '@/lib/convexClient'
+import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useMemo} from 'react'
-import {FullCollection} from './collection'
 
-export const Content = ({
-  initialCategories,
+export const FireCollectionContent = ({
   initialProducts,
 }: {
-  initialCategories: StoreCategory[]
   initialProducts: StoreProduct[]
 }) => {
-  const categoriesQuery = useQuery(api.categories.q.listCategories, {})
-  const productsQuery = useQuery(api.products.q.listProducts, {})
-  const categories = useMemo(
-    () => categoriesQuery?.map(adaptCategory) ?? initialCategories,
-    [categoriesQuery, initialCategories],
+  const fireCollectionConfig = useQuery(api.admin.q.getFireCollectionConfig, {})
+  const configuredProducts = useQuery(
+    api.products.q.getProductsByIds,
+    fireCollectionConfig && fireCollectionConfig.productIds.length > 0
+      ? {productIds: fireCollectionConfig.productIds}
+      : 'skip',
   )
   const products = useMemo(
-    () => productsQuery?.map(adaptProduct) ?? initialProducts,
-    [productsQuery, initialProducts],
+    () => configuredProducts?.map(adaptProduct) ?? initialProducts,
+    [configuredProducts, initialProducts],
   )
 
   return (
@@ -35,24 +32,14 @@ export const Content = ({
       {/* Hero Section - Asymmetric Layout */}
       <section className='relative'>
         <div className='max-w-7xl mx-auto'>
-          {/* Header */}
-          <div className='mb-12 sm:mb-16 lg:mb-20'>
-            <Tag text='Collection' />
-            <TitleV3 title='Fire Collection' subtitle='' />
-            <p className='hidden text-sm sm:text-base lg:text-lg opacity-60 mt-6 sm:mt-8 max-w-2xl leading-relaxed'>
-              Each brand in our collection represents a commitment to quality,
-              innovation, and the highest standards of cultivation. Discover the
-              stories behind the names that define excellence.
-            </p>
-          </div>
 
           {/* Featured Brands - Large Showcase */}
-          <FullCollection products={products} categories={categories ?? []} />
+          <FireCollection products={products} />
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className='py-12 sm:py-16 lg:py-20 px-4 sm:px-6'>
+      <section className='hidden py-12 sm:py-16 lg:py-20 px-4 sm:px-6'>
         <div className='max-w-4xl mx-auto text-center'>
           <div className='rounded-3xl sm:rounded-4xl bg-sidebar/40 dark:bg-sidebar border border-foreground/10 dark:border-dark-gray/50 p-8 sm:p-12 lg:p-16'>
             <h2 className='text-xl sm:text-3xl lg:text-4xl font-polysans font-bold mb-4 sm:mb-6 portrait:max-w-[15ch]'>
@@ -97,3 +84,5 @@ export const Content = ({
     </div>
   )
 }
+
+export const Content = FireCollectionContent

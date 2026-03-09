@@ -1,11 +1,14 @@
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import Link from 'next/link'
+import {useState} from 'react'
 
 export interface MiniCardProps {
   id: string
   title: string
   description: string
   icon: IconName
+  href?: string
 }
 
 export const MiniCard = ({id, title, description, icon}: MiniCardProps) => {
@@ -34,23 +37,35 @@ export const MiniCardV2 = ({
   description,
   icon,
   dark,
+  href,
 }: MiniCardProps & {dark?: boolean}) => {
+  const [clicked, setClicked] = useState(false)
   return (
-    <div
-      key={id}
-      className={cn(
-        'flex items-center space-x-4 text-white! bg-brand group p-6 rounded-xs',
-        {'bg-black dark:bg-sidebar': dark},
-      )}>
-      <Icon name={icon} className='size-12' aria-hidden />
-      <div className=''>
-        <h3 className='text-lg md:text-2xl font-cv font-semibold text-white'>
-          {title}
-        </h3>
-        <p className='mt-1 text-sm opacity-80 group-hover:opacity-100'>
-          {description}
-        </p>
+    <Link
+      onClick={() => setClicked(!clicked)}
+      prefetch='auto'
+      href={href as string}
+      className='cursor-pointer'>
+      <div
+        key={id}
+        className={cn(
+          'flex items-center space-x-6 text-white! bg-brand group p-5 rounded-xs',
+          {'bg-black dark:bg-sidebar': dark},
+        )}>
+        <Icon
+          name={clicked ? 'spinners-ring' : icon}
+          className='size-10'
+          aria-hidden
+        />
+        <div className=''>
+          <h3 className='text-lg md:text-xl font-cv font-semibold text-white'>
+            {title}
+          </h3>
+          <p className='mt-1 text-sm opacity-80 group-hover:opacity-100'>
+            {description}
+          </p>
+        </div>
       </div>
-    </div>
+    </Link>
   )
 }

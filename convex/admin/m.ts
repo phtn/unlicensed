@@ -511,3 +511,47 @@ export const updateAdminByIdentifier = mutation({
     return {success: true}
   },
 })
+
+export const updateFireCollectionProducts = mutation({
+  args: {
+    productIds: v.array(v.string()),
+    uid: v.optional(v.string()),
+  },
+  handler: async (ctx, {productIds, uid}) => {
+    const setting = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'fireCollection'))
+      .unique()
+
+    const now = Date.now()
+    const normalizedProductIds = Array.from(
+      new Set(
+        productIds
+          .map((productId) => productId.trim())
+          .filter((productId) => productId.length > 0),
+      ),
+    )
+
+    const value = {productIds: normalizedProductIds}
+
+    if (!setting) {
+      await ctx.db.insert('adminSettings', {
+        identifier: 'fireCollection',
+        value,
+        updatedAt: now,
+        createdAt: now,
+        createdBy: uid,
+      })
+
+      return {success: true}
+    }
+
+    await ctx.db.patch(setting._id, {
+      value,
+      updatedAt: now,
+      updatedBy: uid,
+    })
+
+    return {success: true}
+  },
+})

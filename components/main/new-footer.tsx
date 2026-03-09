@@ -23,6 +23,11 @@ export function NewFooter() {
             About
           </Link>
           <Link
+            href='/docs'
+            className='text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white'>
+            FAQs
+          </Link>
+          <Link
             href='/purchase-agreement'
             className='text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white'>
             Agreement

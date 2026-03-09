@@ -4,6 +4,7 @@ import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react'
 import {ReactNode, useMemo} from 'react'
+import {FireCollectionManager} from './fire-collection-manager'
 import {ImageOptimizer} from './image-optimizer'
 import {ProductCsvUpload} from './product-csv-upload'
 
@@ -16,6 +17,7 @@ export const Content = () => {
   const tabs = useMemo(
     () =>
       [
+        {id: 'fire-collection', label: 'Fire Collection'},
         {id: 'image-opt', label: 'Image Optimizer'},
         {id: 'product-csv', label: 'Product CSV Import'},
       ] as Array<ToolTabs>,
@@ -24,6 +26,7 @@ export const Content = () => {
 
   const pmap = useMemo(() => {
     return {
+      'fire-collection': <FireCollectionManager />,
       'image-opt': <ImageOptimizer />,
       'product-csv': <ProductCsvUpload />,
     } as Record<ToolTabs['id'], ReactNode>
@@ -31,7 +34,7 @@ export const Content = () => {
 
   return (
     <MainWrapper className='md:p-4'>
-      <Tabs.Root defaultValue='image-opt'>
+      <Tabs.Root defaultValue='fire-collection'>
         <Tabs.List className='relative z-0 flex gap-1 px-2'>
           {tabs.map((tab) => (
             <Tabs.Tab

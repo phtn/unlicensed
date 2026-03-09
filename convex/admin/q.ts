@@ -288,6 +288,30 @@ export const getAdminByIdentStrict = query({
   },
 })
 
+export const getFireCollectionConfig = query({
+  args: {},
+  handler: async ({db}) => {
+    const setting = await db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'fireCollection'))
+      .unique()
+
+    const rawProductIds =
+      setting?.value &&
+      typeof setting.value === 'object' &&
+      'productIds' in setting.value &&
+      Array.isArray(setting.value.productIds)
+        ? setting.value.productIds
+        : []
+
+    const productIds = rawProductIds.filter(
+      (value): value is string => typeof value === 'string' && value.length > 0,
+    )
+
+    return {productIds}
+  },
+})
+
 const DEFAULT_SHIPPING_FEE_CENTS = 500 // $5
 const DEFAULT_MINIMUM_ORDER_CENTS = 5000 // $50 for free shipping
 

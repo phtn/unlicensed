@@ -286,6 +286,35 @@ const _fetchProductDetail = async (
 
 export const fetchProductDetail = cache(_fetchProductDetail)
 
+const _fetchFireCollectionProducts = async (): Promise<StoreProduct[]> => {
+  const client = getClient()
+  if (!client) {
+    return []
+  }
+
+  try {
+    const config = (await client.query(api.admin.q.getFireCollectionConfig, {})) as
+      | {productIds?: string[]}
+      | null
+    const productIds = Array.isArray(config?.productIds) ? config.productIds : []
+
+    if (productIds.length === 0) {
+      return []
+    }
+
+    const products = (await client.query(api.products.q.getProductsByIds, {
+      productIds,
+    })) as RawProduct[]
+
+    return products.map(adaptProduct)
+  } catch (error) {
+    console.warn('Falling back to empty fire collection', error)
+    return []
+  }
+}
+
+export const fetchFireCollectionProducts = cache(_fetchFireCollectionProducts)
+
 // const MOCK_SUB_ITEMS_BY_SLUG: Partial<Record<string, NavMenuSubItem[]>> = {
 //   flower: [
 //     {id: 'b', label: 'B', href: '/lobby/category/flower?tier=B'},

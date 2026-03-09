@@ -1,28 +1,28 @@
-import { GlobalAuthModal } from '@/components/auth/global-auth-modal'
-import { ProvidersCtxProvider } from '@/ctx'
-import { DynamicWagmiContext } from '@/ctx/wagmi/dynamic'
+import {GlobalAuthModal} from '@/components/auth/global-auth-modal'
+import {ProvidersCtxProvider} from '@/ctx'
+import {DynamicWagmiContext} from '@/ctx/wagmi/dynamic'
 import {
-    GeistPixelCircle,
-    GeistPixelGrid,
-    GeistPixelLine,
-    GeistPixelSquare,
-    GeistPixelTriangle,
+  GeistPixelCircle,
+  GeistPixelGrid,
+  GeistPixelLine,
+  GeistPixelSquare,
+  GeistPixelTriangle,
 } from 'geist/font/pixel'
-import type { Metadata, Viewport } from 'next'
+import type {Metadata, Viewport} from 'next'
 import {
-    Bakbak_One as BakbakOne,
-    Figtree,
-    Fugaz_One,
-    Geist,
-    Geist_Mono,
-    Nunito_Sans as NunitoSans,
-    Space_Grotesk,
+  Bakbak_One as BakbakOne,
+  Figtree,
+  Fugaz_One,
+  Geist,
+  Geist_Mono,
+  Nunito_Sans as NunitoSans,
+  Space_Grotesk,
 } from 'next/font/google'
-import { headers } from 'next/headers'
-import { AgeConfirmationModal } from './_components/age-confirmation-modal'
-import { ConditionalNavbar } from './_components/conditional-navbar'
-import { EmailLinkHandler } from './_components/email-link-handler'
-import { ScreenDimensionsTracker } from './_components/screen-dimensions-tracker'
+import {headers} from 'next/headers'
+import {AgeConfirmationModal} from './_components/age-confirmation-modal'
+import {ConditionalNavbar} from './_components/conditional-navbar'
+import {EmailLinkHandler} from './_components/email-link-handler'
+import {ScreenDimensionsTracker} from './_components/screen-dimensions-tracker'
 import './globals.css'
 
 const figtree = Figtree({
@@ -197,7 +197,6 @@ export default async function RootLayout({
             <GlobalAuthModal />
             <ScreenDimensionsTracker />
             <AgeConfirmationModal />
-            {/*<GoogleOneTap />*/}
             <ConditionalNavbar navbar={navbar} />
             {children}
           </ProvidersCtxProvider>

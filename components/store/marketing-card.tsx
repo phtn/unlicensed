@@ -1,7 +1,4 @@
-import {Icon, IconName} from '@/lib/icons'
-import {cn} from '@/lib/utils'
-
-import {ComponentProps, ReactNode} from 'react'
+import {ReactNode} from 'react'
 
 interface MarkSectionProps {
   title: string
@@ -24,42 +21,9 @@ export const MarkSection = ({
           {description}
         </p>
       </div>
-      <div className='overflow-hidden bg-white dark:bg-black h-72 md:h-96'>
+      <div className='overflow-hidden bg-white dark:bg-black h-72 md:h-80'>
         {children}
       </div>
-    </div>
-  )
-}
-
-type FeatureType = {
-  title: string
-  icon: IconName
-  description: string
-}
-export function FeatureCard({
-  feature,
-  className,
-  ...props
-}: ComponentProps<'div'> & {
-  feature: FeatureType
-}) {
-  return (
-    <div
-      className={cn(
-        'relative overflow-hidden bg-linear-to-r from-background/90 via-background/80 to-alum/5 p-6',
-        className,
-      )}
-      {...props}>
-      <Icon
-        name={feature.icon}
-        aria-hidden
-        className='size-6 text-foreground/75'
-        strokeWidth={1}
-      />
-      <h3 className='mt-10 text-sm md:text-base'>{feature.title}</h3>
-      <p className='relative z-20 mt-2 font-light opacity-70 text-xs'>
-        {feature.description}
-      </p>
     </div>
   )
 }

@@ -1,8 +1,8 @@
 'use client'
 
 import {CtaSection} from '@/components/main/cta-section'
-import {FaqSection} from '@/components/main/faqs-section'
 import {NewFooter} from '@/components/main/new-footer'
+import {FireManifesto} from './fire-manifesto'
 import {Principles} from './principles'
 import {QuickLinks} from './quick-links'
 
@@ -12,6 +12,7 @@ export const Content = () => {
   return (
     <main className='relative overflow-x-hidden bg-background pt-16 text-foreground md:pt-24'>
       <Principles />
+      <FireManifesto />
       <section className='px-4 pb-6 sm:px-6 md:pb-10'>
         <div className='mx-auto max-w-7xl overflow-hidden rounded-xs border border-foreground/10 bg-black'>
           <div className='aspect-video w-full'>
@@ -26,7 +27,6 @@ export const Content = () => {
           </div>
         </div>
       </section>
-      <FaqSection />
       <CtaSection />
       <QuickLinks />
       <div className='flex-1 h-64' />

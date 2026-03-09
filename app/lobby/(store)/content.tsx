@@ -1,18 +1,16 @@
 'use client'
+import {FireManifesto} from '@/app/about/fire-manifesto'
 import type {StoreCategory, StoreProduct} from '@/app/types'
 import {NewHome} from '@/components/base44/home'
 import {CtaSection} from '@/components/main/cta-section'
 import {MiniCardV2, type MiniCardProps} from '@/components/main/mini-card'
 import {MarkSection} from '@/components/store/marketing-card'
-import {api} from '@/convex/_generated/api'
 import {useScrollY} from '@/hooks/use-scroll-y'
-import {adaptCategory, adaptProduct} from '@/lib/convexClient'
 import type {BuildType} from '@/lib/flags'
-import {useQuery} from 'convex/react'
-import {useMemo} from 'react'
 import {AllBrands} from './brands/all-brands'
-import {FullCollection} from './collection'
+import {FireCollectionContent} from './collection/content'
 import {DealsMini} from './deals/components/deals-mini'
+import {GridFour} from './grid-four'
 
 interface StorefrontPageProps {
   initialCategories: StoreCategory[]
@@ -22,20 +20,20 @@ interface StorefrontPageProps {
 }
 
 export const Content = ({
-  initialCategories,
+  // initialCategories,
   initialProducts,
 }: StorefrontPageProps) => {
   const scrollY = useScrollY()
-  const categoriesQuery = useQuery(api.categories.q.listCategories, {})
-  const productsQuery = useQuery(api.products.q.listProducts, {})
-  const categories = useMemo(
-    () => categoriesQuery?.map(adaptCategory) ?? initialCategories,
-    [categoriesQuery, initialCategories],
-  )
-  const products = useMemo(
-    () => productsQuery?.map(adaptProduct) ?? initialProducts,
-    [productsQuery, initialProducts],
-  )
+  // const categoriesQuery = useQuery(api.categories.q.listCategories, {})
+  // const productsQuery = useQuery(api.products.q.listProducts, {})
+  // const categories = useMemo(
+  //   () => categoriesQuery?.map(adaptCategory) ?? initialCategories,
+  //   [categoriesQuery, initialCategories],
+  // )
+  // const products = useMemo(
+  //   () => productsQuery?.map(adaptProduct) ?? initialProducts,
+  //   [productsQuery, initialProducts],
+  // )
 
   const ctas: Array<MiniCardProps> = [
     {
@@ -43,12 +41,14 @@ export const Content = ({
       title: 'Shop & Earn Cash back',
       description: 'Browse our products and earn cash back on every purchase.',
       icon: 'coins',
+      href: '/lobby/category',
     },
     {
       id: '02',
       title: 'Browse Mix & Match Deals',
       description: 'Explore our deals bundle builder.',
       icon: 'tag',
+      href: '/lobby/deals',
     },
   ]
 
@@ -65,8 +65,10 @@ export const Content = ({
           ))}
         </div>
       </MarkSection>
-      <FullCollection products={products} categories={categories} />
+      <GridFour />
+      <FireCollectionContent initialProducts={initialProducts} />
       <AllBrands />
+      <FireManifesto />
       <CtaSection />
       <DealsMini />
     </div>
