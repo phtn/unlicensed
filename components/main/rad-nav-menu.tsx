@@ -57,10 +57,7 @@ export const InnerMenu = ({
   const listRef = useRef<HTMLUListElement>(null)
   const active = activeSlug ?? items[0]?.slug ?? null
   const activeItem = items.find((i) => i.slug === active)
-  const closeContextValue = useMemo(
-    () => onClose ?? null,
-    [onClose],
-  )
+  const closeContextValue = useMemo(() => onClose ?? null, [onClose])
 
   const setIndicatorToButton = useCallback((button: HTMLElement | null) => {
     const ul = listRef.current
@@ -88,86 +85,86 @@ export const InnerMenu = ({
         onMouseLeave={() => setActiveSlug(active)}
         role='navigation'
         aria-label='Categories'>
-      {/* Category triggers: column on mobile (left), single row on desktop (top) */}
-      <ul
-        ref={listRef}
-        className={cn(
-          'flex list-none flex-col gap-6 p-0 shrink-0 border border-border/60 rounded-xs overflow-hidden md:border-0 md:rounded-none md:overflow-visible',
-          'w-34 min-h-0 md:w-full md:flex-row md:flex-nowrap md:gap-3',
-          'relative',
-        )}
-        role='list'
-        style={
-          {
-            '--hovered-category-left': '0px',
-            '--hovered-category-width': '0px',
-          } as React.CSSProperties
-        }>
-        {items.map((item) => (
-          <li key={item.slug} className='list-none md:shrink-0'>
-            <button
-              type='button'
-              className={cn(
-                'group/cat flex h-auto w-full items-center justify-between text-left text-sm font-semibold transition-colors duration-150 ease-out',
-                'hover:border-border hover:text-accent-foreground px-6 py-0 md:py-3 data-active:border data-active:border-sidebar',
-                'focus-visible:ring-2 focus-visible:ring-ring/50 rounded-none dark:bg-black dark:text-white',
-                'border-none dark:data-active:text-white bg-sidebar/30',
-                active === item.slug &&
-                  'border-border bg-transparent dark:bg-transparent!',
-              )}
-              onMouseEnter={(e) => {
-                setActiveSlug(item.slug)
-                setIndicatorToButton(e.currentTarget)
-              }}
-              onFocus={(e) => {
-                setActiveSlug(item.slug)
-                setIndicatorToButton(e.currentTarget)
-              }}
-              aria-current={active === item.slug ? 'true' : undefined}
-              data-active={active === item.slug || undefined}>
-              <span className='truncate capitalize text-base font-clash'>
-                {item.name}
-              </span>
-              <Icon
-                name='down-caret'
-                className={cn(
-                  'size-3.5 shrink-0 opacity-40 translate-x-0.5 -translate-y-0.5 transition-transform duration-300 ease-out scale-50 -rotate-45 md:rotate-0',
-                  active === item.slug &&
-                    'scale-75 md:scale-90 opacity-100 text-brand translate-y-0.0',
-                )}
-                aria-hidden
-              />
-            </button>
-          </li>
-        ))}
-
-        <div
-          id='indicator'
-          className='absolute top-1/2 left-0 z-[-1] w-(--hovered-category-width) translate-x-(--hovered-category-left) -translate-y-1/2 bg-sidebar dark:bg-dark-table transition-all duration-200 ease-in-out hidden md:block h-full!'
-        />
-      </ul>
-
-      {/* Single viewport: one category's content at a time — right column on mobile, below categories on desktop */}
-      <div
-        className='flex min-h-32 min-w-0 flex-1 overflow-hidden rounded-xs border border-border/60 md:py-2 md:pl-2 pr-2.5 dark:bg-alum/60 md:min-h-0 md:min-w-40'
-        role='region'
-        aria-label='Category links'>
-        <AnimatePresence mode='wait' initial={false}>
-          {activeItem && (
-            <motion.div
-              key={activeItem.slug}
-              {...VIEWPORT_TRANSITION}
-              className='flex list-none flex-col gap-0.5 md:px-1 py-0.5  w-full'
-              role='presentation'>
-              <CategoryViewportContent
-                item={activeItem}
-                subItems={subItemsBySlug[activeItem.slug]}
-              />
-            </motion.div>
+        {/* Category triggers: column on mobile (left), single row on desktop (top) */}
+        <ul
+          ref={listRef}
+          className={cn(
+            'flex list-none flex-col gap-6 p-0 shrink-0 border border-border/60 rounded-xs overflow-hidden md:border-0 md:rounded-none md:overflow-visible',
+            'w-34 min-h-0 md:w-full md:flex-row md:flex-nowrap md:gap-3',
+            'relative',
           )}
-        </AnimatePresence>
+          role='list'
+          style={
+            {
+              '--hovered-category-left': '0px',
+              '--hovered-category-width': '0px',
+            } as React.CSSProperties
+          }>
+          {items.map((item) => (
+            <li key={item.slug} className='list-none md:shrink-0'>
+              <button
+                type='button'
+                className={cn(
+                  'group/cat flex h-auto w-full items-center justify-between text-left text-sm font-semibold transition-colors duration-150 ease-out',
+                  'hover:border-border hover:text-accent-foreground px-6 py-0 md:py-3 data-active:border data-active:border-sidebar',
+                  'focus-visible:ring-2 focus-visible:ring-ring/50 rounded-none dark:bg-black dark:text-white',
+                  'border-none dark:data-active:text-white bg-sidebar/30',
+                  active === item.slug &&
+                    'border-border bg-transparent dark:bg-transparent!',
+                )}
+                onMouseEnter={(e) => {
+                  setActiveSlug(item.slug)
+                  setIndicatorToButton(e.currentTarget)
+                }}
+                onFocus={(e) => {
+                  setActiveSlug(item.slug)
+                  setIndicatorToButton(e.currentTarget)
+                }}
+                aria-current={active === item.slug ? 'true' : undefined}
+                data-active={active === item.slug || undefined}>
+                <span className='truncate capitalize text-base font-clash'>
+                  {item.name}
+                </span>
+                <Icon
+                  name='down-caret'
+                  className={cn(
+                    'size-3.5 shrink-0 opacity-40 translate-x-0.5 -translate-y-0.5 transition-transform duration-300 ease-out scale-50 -rotate-45 md:rotate-0',
+                    active === item.slug &&
+                      'scale-75 md:scale-90 opacity-100 text-brand translate-y-0.0',
+                  )}
+                  aria-hidden
+                />
+              </button>
+            </li>
+          ))}
+
+          <div
+            id='indicator'
+            className='absolute top-1/2 left-0 z-[-1] w-(--hovered-category-width) translate-x-(--hovered-category-left) -translate-y-1/2 bg-sidebar dark:bg-dark-table transition-all duration-200 ease-in-out hidden md:block h-full!'
+          />
+        </ul>
+
+        {/* Single viewport: one category's content at a time — right column on mobile, below categories on desktop */}
+        <div
+          className='flex min-h-32 min-w-0 flex-1 overflow-hidden rounded-xs border border-border/60 md:py-2 md:pl-2 pr-2.5 dark:bg-dark-table/40 md:min-h-0 md:min-w-40'
+          role='region'
+          aria-label='Category links'>
+          <AnimatePresence mode='wait' initial={false}>
+            {activeItem && (
+              <motion.div
+                key={activeItem.slug}
+                {...VIEWPORT_TRANSITION}
+                className='flex list-none flex-col gap-0.5 md:px-1 py-0.5  w-full'
+                role='presentation'>
+                <CategoryViewportContent
+                  item={activeItem}
+                  subItems={subItemsBySlug[activeItem.slug]}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
     </NavMenuCloseContext.Provider>
   )
 }
@@ -197,22 +194,15 @@ function CategoryViewportContent({
   )
 
   return (
-    <>
-      <div
-        className='my-1 border-t border-border/60'
-        role='separator'
-        aria-hidden
-      />
-      <HyperList
-        data={allSubItems}
-        component={SubItem}
-        direction={isMobile ? 'right' : 'down'}
-        container='flex flex-col md:flex-row gap-1.5 md:gap-0.5'
-        itemStyle=' md:first:ps-4'
-        withExitAnimation
-        duration={0.2}
-      />
-    </>
+    <HyperList
+      data={allSubItems}
+      component={SubItem}
+      direction={isMobile ? 'right' : 'down'}
+      container='flex flex-col md:flex-row gap-1.5 md:gap-0.5'
+      itemStyle=' md:first:ps-4'
+      withExitAnimation
+      duration={0.2}
+    />
   )
 }
 

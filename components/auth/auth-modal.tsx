@@ -40,6 +40,8 @@ interface AuthModalProps {
   mode?: 'login' | 'signup'
 }
 
+type AuthView = 'login' | 'signup' | 'email-link'
+
 export const AuthModal = ({
   isOpen,
   onClose,
@@ -52,7 +54,9 @@ export const AuthModal = ({
     setCompleteEmailLink,
     closeAuthModal,
   } = useAuthCtx()
-  const [isLogin, setIsLogin] = useState(mode === 'login')
+  const [authView, setAuthView] = useState<AuthView>(
+    mode === 'signup' ? 'signup' : 'login',
+  )
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -77,6 +81,11 @@ export const AuthModal = ({
     }
   }, [hasActiveSession, isOpen, onClose, setAuthModalOpen])
 
+  useEffect(() => {
+    if (!isOpen || completeEmailLink) return
+    setAuthView(mode === 'signup' ? 'signup' : 'login')
+  }, [completeEmailLink, isOpen, mode])
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -84,6 +93,9 @@ export const AuthModal = ({
     }
   }, [setAuthModalOpen])
 
+  const isLogin = authView === 'login'
+  const isEmailLinkView = authView === 'email-link'
+  const activeView = completeEmailLink ? 'email-link' : authView
   const passwordsMatch = password === confirmPassword
   const emailTrimmed = email.trim()
   const signUpValid =
@@ -93,6 +105,19 @@ export const AuthModal = ({
     password.length >= 6 &&
     passwordsMatch
   const signInValid = Boolean(emailTrimmed && password)
+  const primaryActionDisabled = isEmailLinkView
+    ? !emailTrimmed || loading
+    : isLogin
+      ? !signInValid || loading
+      : !signUpValid || loading
+
+  const switchAuthView = (view: AuthView) => {
+    setError(null)
+    setEmailLinkError(null)
+    setResetEmailSent(false)
+    setEmailSent(false)
+    setAuthView(view)
+  }
 
   const handleEmailPasswordSubmit = async (e: SubmitEvent) => {
     e.preventDefault()
@@ -157,7 +182,11 @@ export const AuthModal = ({
   }
 
   const handleSendEmailLink = async () => {
-    if (!email) return
+    const trimmedEmail = email.trim()
+    if (!trimmedEmail) {
+      setError('Please enter your email.')
+      return
+    }
     setError(null)
     setLoading(true)
     try {
@@ -165,7 +194,8 @@ export const AuthModal = ({
         url: `${window.location.origin}/auth/email-link`,
         handleCodeInApp: true,
       }
-      await sendEmailLink(email, actionCodeSettings)
+      await sendEmailLink(trimmedEmail, actionCodeSettings)
+      setEmail(trimmedEmail)
       setEmailSent(true)
     } catch (err) {
       setError(parseFirebaseAuthError(err))
@@ -193,8 +223,11 @@ export const AuthModal = ({
     setPassword('')
     setConfirmPassword('')
     setResetEmailSent(false)
+    setEmailSent(false)
     setEmailForLink('')
     setEmailLinkError(null)
+    setError(null)
+    setAuthView(mode === 'signup' ? 'signup' : 'login')
     if (completeEmailLink) {
       window.history.replaceState({}, '', window.location.origin)
       setCompleteEmailLink(null)
@@ -237,13 +270,13 @@ export const AuthModal = ({
         wrapper: 'z-[20000]',
       }}
       hideCloseButton>
-      <ModalContent className='md:rounded-4xl rounded-3xl dark:border-brand border-light-gray/80 w-96 h-120 overflow-hidden flex flex-col'>
+      <ModalContent className='rounded-xs dark:border-brand border-light-gray/80 w-96 h-120 overflow-hidden flex flex-col'>
         <div className='absolute h-160 w-160 aspect-auto -top-24 md:-top-28 -left-16 flex items-center'>
           <ImageDither image={'/svg/rf-logo-hot-pink-2.svg'} />
           <DitherPhoto />
         </div>
         <ModalHeader className='relative z-10 tracking-tight flex justify-between items-start shrink-0'>
-          <div className='bg-black/20 backdrop-blur-2xl text-white text-sm rounded-lg w-fit p-0.5 flex'>
+          <div className='bg-black/40 backdrop-blur-2xl text-white text-sm rounded-lg w-fit p-0.5 flex'>
             {emailSent ? (
               <a
                 rel='noopener noreferrer'
@@ -259,13 +292,10 @@ export const AuthModal = ({
               <>
                 <button
                   type='button'
-                  onClick={() => {
-                    setError(null)
-                    setIsLogin(true)
-                  }}
+                  onClick={() => switchAuthView('login')}
                   className={cn(
                     'px-4 py-2 rounded-md font-medium transition-colors',
-                    isLogin
+                    activeView === 'login'
                       ? 'bg-white/20 text-white'
                       : 'text-white/70 hover:text-white',
                   )}>
@@ -273,17 +303,25 @@ export const AuthModal = ({
                 </button>
                 <button
                   type='button'
-                  onClick={() => {
-                    setError(null)
-                    setIsLogin(false)
-                  }}
+                  onClick={() => switchAuthView('signup')}
                   className={cn(
                     'px-4 py-2 rounded-md font-medium transition-colors',
-                    !isLogin
+                    activeView === 'signup'
                       ? 'bg-white/20 text-white'
                       : 'text-white/70 hover:text-white',
                   )}>
                   Create account
+                </button>
+                <button
+                  type='button'
+                  onClick={() => switchAuthView('email-link')}
+                  className={cn(
+                    'px-4 py-2 rounded-md font-medium transition-colors',
+                    activeView === 'email-link'
+                      ? 'bg-white/20 text-white'
+                      : 'text-white/70 hover:text-white',
+                  )}>
+                  Email link
                 </button>
               </>
             )}
@@ -300,19 +338,24 @@ export const AuthModal = ({
         </ModalHeader>
         <ModalBody className='flex-1 min-h-0 overflow-auto' />
         <form
-          onSubmit={handleEmailPasswordSubmit}
+          onSubmit={
+            isEmailLinkView
+              ? (e) => {
+                  e.preventDefault()
+                  void handleSendEmailLink()
+                }
+              : handleEmailPasswordSubmit
+          }
           className='relative z-10 flex flex-col shrink-0 mt-auto'>
           {emailSent ? (
-            <div className='relative z-50 bg-foreground/50 dark:bg-background/50 rounded-xl backdrop-blur-3xl flex flex-col items-center justify-center py-6 px-4 space-y-4 text-center'>
+            <div className='relative z-50 bg-foreground/50 dark:bg-background/50 rounded-xs backdrop-blur-3xl flex flex-col items-center justify-center py-6 px-4 space-y-4 text-center'>
               <Icon
                 name='mail-send-fill'
-                className='size-12 -rotate-10 text-featured'
+                className='size-12 -rotate-8 text-featured'
               />
               <p className='text-white text-sm'>
                 We&apos;ve sent a sign-in link to{' '}
-                <strong className='text-featured font-polysans tracking-wide'>
-                  {email}
-                </strong>
+                <strong className='font-clash tracking-wide'>{email}</strong>
               </p>
               <p className='text-white/70 text-xs line-clamp-2 max-w-[25ch]'>
                 Click the link in your email to sign in. The link will expire in
@@ -375,35 +418,41 @@ export const AuthModal = ({
                     autoComplete='email'
                     className='placeholder:text-white text-white! dark:text-white!'
                     classNames={{
-                      inputWrapper:
-                        'bg-black/80! dark:bg-black/80 backdrop-blur-2xl text-white! rounded-t-md!',
+                      inputWrapper: cn(
+                        'bg-black/80! dark:bg-black/80 backdrop-blur-2xl text-white!',
+                        isEmailLinkView ? 'rounded-md!' : 'rounded-t-md!',
+                      ),
                       input:
-                        'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
+                        'ps-3 placeholder:text-white text-white! dark:text-white!',
                     }}
                   />
-                  <Input
-                    size='lg'
-                    fullWidth
-                    radius='none'
-                    type='password'
-                    placeholder='Password'
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete={isLogin ? 'current-password' : 'new-password'}
-                    className={cn(
-                      'placeholder:text-white text-white! dark:text-white!',
-                      isLogin && 'rounded-b-md',
-                    )}
-                    classNames={{
-                      inputWrapper: [
-                        'bg-black/70! dark:bg-black/80 backdrop-blur-2xl text-white!',
-                        isLogin && 'rounded-b-md!',
-                      ],
-                      input:
-                        'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
-                    }}
-                  />
-                  {!isLogin && (
+                  {!isEmailLinkView && (
+                    <Input
+                      size='lg'
+                      fullWidth
+                      radius='none'
+                      type='password'
+                      placeholder='Password'
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete={
+                        isLogin ? 'current-password' : 'new-password'
+                      }
+                      className={cn(
+                        'placeholder:text-white text-white! dark:text-white!',
+                        isLogin && 'rounded-b-md',
+                      )}
+                      classNames={{
+                        inputWrapper: [
+                          'bg-black/70! dark:bg-black/80 backdrop-blur-2xl text-white!',
+                          isLogin && 'rounded-b-md!',
+                        ],
+                        input:
+                          'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
+                      }}
+                    />
+                  )}
+                  {!isLogin && !isEmailLinkView && (
                     <Input
                       size='lg'
                       fullWidth
@@ -437,13 +486,13 @@ export const AuthModal = ({
                     />
                   )}
                 </div>
-                {isLogin && (
+                {isLogin && !isEmailLinkView && (
                   <div className='flex justify-end -mt-1 mr-2'>
                     <button
                       type='button'
                       onClick={handleForgotPassword}
                       disabled={loading}
-                      className='text-xs text-white hover:text-white underline underline-offset-2 disabled:opacity-50'>
+                      className='text-xs text-white hover:text-primary bg-black/15 px-3 py-1 dark:hover:text-white underline underline-offset-2 disabled:opacity-50'>
                       Forgot password?
                     </button>
                   </div>
@@ -453,16 +502,11 @@ export const AuthModal = ({
                   radius='none'
                   type='submit'
                   variant='solid'
-                  disabled={
-                    isLogin ? !signInValid || loading : !signUpValid || loading
-                  }
+                  disabled={primaryActionDisabled}
                   className={cn(
-                    'bg-black/80 backdrop-blur-2xl w-full text-white rounded-lg',
+                    'bg-black/80 backdrop-blur-2xl w-full text-white rounded-xs',
                     {
-                      'bg-black/50':
-                        (isLogin && !signInValid) ||
-                        (!isLogin && !signUpValid) ||
-                        loading,
+                      'bg-black/50': primaryActionDisabled,
                     },
                   )}>
                   {loading ? (
@@ -470,6 +514,8 @@ export const AuthModal = ({
                       name='spinners-ring'
                       className='size-5 text-orange-400'
                     />
+                  ) : isEmailLinkView ? (
+                    'Send email link'
                   ) : isLogin ? (
                     'Sign in'
                   ) : (
@@ -527,20 +573,7 @@ export const AuthModal = ({
                     </Button>
                   </div>
                 ) : (
-                  <div className='flex gap-2'>
-                    <Button
-                      size='lg'
-                      type='button'
-                      radius='none'
-                      variant='flat'
-                      onPress={handleSendEmailLink}
-                      disabled={!email || loading}
-                      startContent={
-                        <Icon name='mail-send-fill' className='size-5' />
-                      }
-                      className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-full text-white rounded-lg'>
-                      Email Link
-                    </Button>
+                  <div className='flex w-full'>
                     <Button
                       size='lg'
                       type='button'
@@ -548,14 +581,14 @@ export const AuthModal = ({
                       variant='flat'
                       onPress={handleGoogleLogin}
                       disabled={loading}
-                      className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-full text-white rounded-lg'
+                      className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-full text-white rounded-xs'
                       startContent={
                         <Icon
                           name={loading ? 'spinners-ring' : 'google'}
                           className='size-5'
                         />
                       }>
-                      Google
+                      Continue with Google
                     </Button>
                   </div>
                 )}

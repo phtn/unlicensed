@@ -84,6 +84,7 @@ export const createOrder = mutation({
     subtotalCents: v.optional(v.number()),
     taxCents: v.optional(v.number()),
     shippingCents: v.optional(v.number()),
+    processingFeeCents: v.optional(v.number()),
     discountCents: v.optional(v.number()),
     storeCreditCents: v.optional(v.number()), // Store credit (cash back) from checkout; added to user rewards when payment completes
     redeemedStoreCreditCents: v.optional(v.number()), // Cash back redeemed on this order; deducted from availablePoints when payment completes
@@ -236,9 +237,15 @@ export const createOrder = mutation({
 
     const taxCents = args.taxCents ?? Math.round(subtotalCents * 0.1) // 10% tax
     const shippingCents = args.shippingCents ?? (subtotalCents > 5000 ? 0 : 500) // Free shipping over $50
+    const processingFeeCents = args.processingFeeCents ?? 0
     const discountCents = args.discountCents ?? 0
 
-    const totalCents = subtotalCents + taxCents + shippingCents - discountCents
+    const totalCents =
+      subtotalCents +
+      taxCents +
+      shippingCents +
+      processingFeeCents -
+      discountCents
 
     // Create payment object
     const payment = {
@@ -256,6 +263,8 @@ export const createOrder = mutation({
       subtotalCents,
       taxCents,
       shippingCents,
+      processingFeeCents:
+        processingFeeCents > 0 ? processingFeeCents : undefined,
       discountCents: discountCents > 0 ? discountCents : undefined,
       totalCents,
       shippingAddress: args.shippingAddress,

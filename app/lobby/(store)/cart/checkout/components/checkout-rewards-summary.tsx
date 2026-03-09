@@ -20,11 +20,18 @@ import {MoneyFormat} from './money-format'
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+const TIER_AURA_CLASSNAME: Record<string, string> = {
+  Bronze: 'bg-amber-700/12 dark:bg-amber-500/14',
+  Silver: 'bg-slate-400/14 dark:bg-slate-200/12',
+  Gold: 'bg-yellow-400/16 dark:bg-yellow-300/14',
+  Platinum: 'bg-cyan-400/16 dark:bg-cyan-300/14',
+}
+
 const ProgressBar = memo(function ProgressBar({pct}: {pct: number}) {
   return (
-    <div className='h-2 overflow-hidden rounded-full bg-white/80 dark:bg-foreground/20 mb-2 md:my-2.5'>
+    <div className='h-2 overflow-hidden rounded-full bg-foreground/5 dark:bg-foreground/20 mb-2 md:my-2.5'>
       <div
-        className='h-full rounded-full bg-linear-to-r from-brand via-brand to-brand/80 shadow-[0_0_8px_var(--color-brand)] transition-[width] duration-500 ease-in-out'
+        className='h-full rounded-full bg-linear-to-r from-pink-500/80 via-pink-500/90 to-brand shadow-[0_0_8px_var(--color-brand)] transition-[width] duration-500 ease-in-out'
         style={{width: `${pct}%`}}
       />
     </div>
@@ -57,21 +64,23 @@ const TierBadge = memo(function TierBadge({
 })
 
 interface FutureMilestonesProps {
+  open: boolean
+  onToggle: VoidFunction
   tiers: RewardsTier[]
 }
 
 const FutureMilestones = memo(function FutureMilestones({
+  open,
+  onToggle,
   tiers,
 }: FutureMilestonesProps) {
-  const [open, setOpen] = useState(false)
-
   if (tiers.length === 0) return null
 
   return (
     <div className='mt-2.5 overflow-scroll'>
       <button
         type='button'
-        onClick={() => setOpen((v) => !v)}
+        onClick={onToggle}
         className='w-full flex items-center gap-1 border-none bg-transparent p-0 text-sm font-medium cursor-pointer'>
         <span className=''>More perks ahead! Free shipping & Cash back</span>
         <span
@@ -81,7 +90,7 @@ const FutureMilestones = memo(function FutureMilestones({
           ▾
         </span>
       </button>
-      <ViewTransition>
+      <ViewTransition enter='auto' exit='auto'>
         {open && (
           <div className='mt-2 flex flex-col gap-1.5 rounded-lg bg-foreground/5 p-2 md:p-3'>
             {tiers.map((t) => (
@@ -160,17 +169,26 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
   onAddTopUp,
 }: CheckoutRewardsSummaryProps) {
   const {theme} = useTheme()
+  const [isFutureMilestonesOpen, setIsFutureMilestonesOpen] = useState(false)
   const adminConfig = useQuery(api.admin.q.getRewardsConfig, {})
   const config: RewardsConfig = adminConfig ?? configProp ?? REWARDS_CONFIG
+  const tierAuraClassName =
+    TIER_AURA_CLASSNAME[r.currentTier.label] ??
+    'bg-purple-500/10 dark:bg-purple-400/10'
+
   return (
     <Card
       shadow='none'
       radius='none'
-      className='overflow-hidden border border-foreground/20 bg-linear-to-br from-sidebar to-slate-400/6 dark:from-foreground/5 dark:to-foreground/10'>
+      className='overflow-hidden border border-foreground/20 bg-linear-to-br from-sidebar to-slate-400/6 dark:from-foreground/5 dark:to-foreground/10 transition-all duration-200 will-change-transform'>
       <CardBody className='relative space-y-4 p-3 md:p-5 overflow-hidden'>
         {/* Decorative glow */}
         <div
-          className='pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-purple-500/10 dark:bg-purple-400/10 blur-xl'
+          id='tier-aura'
+          className={cn(
+            'pointer-events-none absolute z-800 opacity-80 -right-16 -top-16 h-64 w-64 rounded-full blur-3xl transition-colors duration-500',
+            tierAuraClassName,
+          )}
           aria-hidden
         />
 
@@ -191,7 +209,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
         </div>
 
         {/* Current benefit */}
-        <div className='relative rounded-xl bg-foreground/5 p-4 overflow-hidden w-full'>
+        <div className='relative min-h-[62px] z-900 rounded-xl dark:bg-[#515155] bg-[#e2e3e7] p-4 overflow-hidden w-full'>
           <div className="absolute _md:max-w-500 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none" />
           <div className='flex items-center justify-around'>
             <div className='text-center'>
@@ -204,9 +222,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
                   formatRewardsCurrency(r.shippingCost)
                 )}
               </div>
-              <div className='text-[11px] text-muted-foreground'>
-                Shipping
-              </div>
+              <div className='text-[11px] text-muted-foreground'>Shipping</div>
             </div>
             <div className='h-full w-px bg-foreground/20' />
             <div className='text-center'>
@@ -261,7 +277,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
                 </ShimmerText>
               </span>
             </div>
-            <div className='text-xs font-semibold text-foreground/90 dark:text-foreground'>
+            <div className='text-sm font-semibold text-foreground/90 dark:text-foreground'>
               {r.nextTier.shippingCost === 0
                 ? 'Free shipping'
                 : `${formatRewardsCurrency(r.nextTier.shippingCost)} shipping`}{' '}
@@ -279,15 +295,24 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
 
         {/* Bundle bonus hint */}
         {!r.isBundleBonusActive && (
-          <div className='flex items-center mt-2 space-x-3 rounded-lg border border-dashed border-foreground/20 bg-foreground/3 px-3 py-2 text-xs text-muted-foreground'>
-            <Icon name='lightbulb-bold' className='size-5 text-yellow-200' />
+          <div className='flex items-center mt-2 space-x-3 rounded-lg border border-dashed border-foreground/20 bg-foreground/3 px-3 py-2 text-xs sm:text-sm text-muted-foreground'>
+            <Icon
+              name='lightbulb-bold'
+              className='size-5 dark:text-yellow-200'
+            />
             <span>
               Pick from 2+ categories to earn additional 0.5% cash back
             </span>
           </div>
         )}
 
-        <FutureMilestones tiers={r.futureTiers} />
+        <ViewTransition>
+          <FutureMilestones
+            open={isFutureMilestonesOpen}
+            onToggle={() => setIsFutureMilestonesOpen((open) => !open)}
+            tiers={r.futureTiers}
+          />
+        </ViewTransition>
 
         {r.isNearThreshold && r.amountToNextTier !== null && onAddTopUp && (
           <TopUpSuggestions

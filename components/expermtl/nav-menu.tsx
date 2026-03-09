@@ -67,10 +67,10 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
         <NavigationMenuItem value={NAV_MENU_VALUE}>
           <NavigationMenuTrigger
             className={cn(
-              'rounded-none bg-transparent px-3 py-2 text-sm font-semibold',
-              'text-gray-100 hover:text-white',
-              'dark:text-white',
-              ' dark:data-[state=open]:text-white',
+              'rounded-none px-3 py-2 text-sm font-semibold',
+              // 'text-gray-100 hover:text-white',
+              // 'dark:text-white',
+              // 'active:bg-transparent dark:data-[state=open]:text-white',
             )}>
             <Icon
               name='details'
@@ -92,7 +92,7 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
           </NavigationMenuTrigger>
           <NavigationMenuContent
             dropdown
-            className='min-w-[18rem] py-3 px-3 dark:bg-black! bg-white! opacity-100! rounded-none!'>
+            className='min-w-[18rem] py-3 px-3 dark:bg-black! bg-white! opacity-100! rounded-none! shadow dark:border-black border-zinc-400'>
             <InnerMenu
               items={categories}
               subItemsBySlug={subItems}

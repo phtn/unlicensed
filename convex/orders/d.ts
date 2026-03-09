@@ -122,6 +122,7 @@ export const orderSchema = v.object({
   subtotalCents: v.number(), // Sum of all item prices
   taxCents: v.number(), // Tax amount
   shippingCents: v.number(), // Shipping cost
+  processingFeeCents: v.optional(v.number()), // Hidden checkout fee applied to crypto payment methods
   discountCents: v.optional(v.number()), // Discount/coupon amount
   totalCents: v.number(), // Final total
 

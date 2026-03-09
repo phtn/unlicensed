@@ -16,6 +16,14 @@ import {useEffect, useMemo, useRef, useState} from 'react'
 
 type StepState = 'complete' | 'active' | 'pending' | 'error'
 
+const PAYMENT_CONFIRMED_ORDER_STATUSES = new Set([
+  'order_processing',
+  'awaiting_courier_pickup',
+  'shipped',
+  'delivered',
+  'resend',
+])
+
 type SalesRepValue = {staffId?: string; initialMessageSeed?: string}
 
 function stepIconName(state: StepState) {
@@ -145,6 +153,10 @@ export const Content = () => {
   }, [settingsValue])
 
   const isCashAppOrder = order?.payment.method === 'cash_app'
+  const isPaymentConfirmed =
+    !!order &&
+    (order.payment.status === 'completed' ||
+      PAYMENT_CONFIRMED_ORDER_STATUSES.has(order.orderStatus))
   const noStaffConfigured =
     !!order &&
     isCashAppOrder &&
@@ -464,15 +476,19 @@ export const Content = () => {
         },
 
         {
-          title: 'Pending Payment',
+          title: isPaymentConfirmed ? 'Payment Confirmed' : 'Pending Payment',
           description:
-            setupState === 'ready'
+            isPaymentConfirmed
+              ? 'Payment confirmed and your order is now processing.'
+              : setupState === 'ready'
               ? `Connected with ${assignedRep?.name ?? assignedRep?.email?.split('@')[0] ?? 'your rep'}.`
               : setupState === 'no_rep'
                 ? 'No active representative could be connected.'
                 : 'Selecting the next available representative.',
           state:
-            setupState === 'ready'
+            isPaymentConfirmed
+              ? ('complete' as StepState)
+              : setupState === 'ready'
               ? ('complete' as StepState)
               : setupState === 'no_rep'
                 ? ('error' as StepState)
@@ -508,6 +524,7 @@ export const Content = () => {
       assignedRep?.email,
       assignedRep?.name,
       isCashAppOrder,
+      isPaymentConfirmed,
       order,
       // hasStarterMessage,
       setupState,
@@ -515,14 +532,16 @@ export const Content = () => {
   )
 
   const paymentStatus =
-    setupState === 'ready'
+    isPaymentConfirmed
+      ? 'Payment Confirmed'
+      : setupState === 'ready'
       ? 'Rep Connected'
       : setupState === 'connecting'
         ? 'Pending Payment'
         : 'Pending Payment'
 
   const paymentStatusStyle =
-    setupState === 'ready'
+    isPaymentConfirmed || setupState === 'ready'
       ? 'font-brk text-emerald-300 tracking-wide uppercase text-xs bg-emerald-500/10 border border-emerald-400/30 py-1 px-1.5 rounded-sm'
       : 'font-brk text-foreground tracking-wide uppercase text-xs bg-orange-500/10 border border-orange-400/30 py-1 px-1.5 rounded-sm'
 

@@ -89,7 +89,7 @@ export const ProductCard = ({
       disableAnimation
       shadow='sm'
       className={cn(
-        'group h-full transition-all duration-300 hover:-translate-y-0.5 rounded-xs dark:bg-black bg-sidebar min-w-48 max-w-48 xl:min-w-76',
+        'group h-full transition-all duration-300 hover:-translate-y-0.5 rounded-xs dark:bg-black bg-sidebar min-w-48 max-w-48 sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
         className,
       )}>
       <CardBody className='flex flex-col p-0'>
@@ -115,29 +115,36 @@ export const ProductCard = ({
         <div className='flex flex-col'>
           <div className='flex items-center justify-between gap-2 p-2 h-16'>
             <div className='flex-1 min-w-0'>
-              <h3 className='text-sm md:text-base font-okxs truncate capitalize leading-3.5'>
+              <h3 className='text-sm md:text-base font-okxs truncate capitalize leading-5'>
                 {product.name}
               </h3>
               <div className='flex items-center space-x-1 whitespace-nowrap'>
                 {product.productTier != null && product.productTier !== '' && (
                   <span className='min-h-6 text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum uppercase'>
                     {product.productTier ?? ''}
+                    <span className='min-h-6 text-xs px-2 opacity-50 font-bold'>
+                      &middot;
+                    </span>
                   </span>
                 )}
+
                 {netWeightLabel && (
-                  <span className='min-h-6 text-xs opacity-50'>&middot;</span>
-                )}
-                {netWeightLabel && (
-                  <span className='min-h-6 text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum lowercase'>
+                  <span className='min-h-6 text-xs md:text-xs font-okxs font-normal opacity-60 dark:opacity-100 dark:text-alum lowercase'>
                     {netWeightLabel}
+                    {batchIdLabel && (
+                      <span className='min-h-6 text-xs px-2 opacity-50 font-bold'>
+                        &middot;
+                      </span>
+                    )}
                   </span>
                 )}
+
                 {batchIdLabel && (
-                  <span className='min-h-6 text-xs opacity-50'>&middot;</span>
-                )}
-                {batchIdLabel && (
-                  <span className='min-h-6 text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum uppercase'>
+                  <span className='min-h-6 text-xs md:text-xs font-okxs font-normal opacity-60 dark:opacity-100 dark:text-alum uppercase'>
                     {batchIdLabel}
+                    {/*<span className='min-h-6 text-xs px-2 opacity-50 font-bold'>
+                      &middot;
+                    </span>*/}
                   </span>
                 )}
               </div>

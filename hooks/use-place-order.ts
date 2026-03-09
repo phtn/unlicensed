@@ -77,6 +77,7 @@ export interface PlaceOrderParams {
   subtotalCents?: number
   taxCents?: number
   shippingCents?: number
+  processingFeeCents?: number
   discountCents?: number
   /** Store credit (cash back) from checkout; added to user rewards when payment completes */
   storeCreditCents?: number
@@ -282,6 +283,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 subtotalCents: params.subtotalCents,
                 taxCents: params.taxCents,
                 shippingCents: params.shippingCents,
+                processingFeeCents: params.processingFeeCents,
                 discountCents: params.discountCents,
                 storeCreditCents: params.storeCreditCents,
                 redeemedStoreCreditCents: params.redeemedStoreCreditCents,
@@ -300,6 +302,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 subtotalCents: params.subtotalCents,
                 taxCents: params.taxCents,
                 shippingCents: params.shippingCents,
+                processingFeeCents: params.processingFeeCents,
                 discountCents: params.discountCents,
                 storeCreditCents: params.storeCreditCents,
                 redeemedStoreCreditCents: params.redeemedStoreCreditCents,

@@ -79,6 +79,12 @@ export function Checkout({
   const hasShownDevModalRef = useRef(false)
   const isDevMode = isCheckoutDevMode()
   const {isCashBackEnabled, setCashBackEnabled} = useCashBackRedemption()
+  const cardsProcessingFeeSetting = useQuery(
+    api.admin.q.getAdminByIdentStrict,
+    {
+      identifier: 'cards_processing_fee',
+    },
+  )
 
   // Query the order to get the actual payment method stored in the order
   const order = useQuery(api.orders.q.getById, orderId ? {id: orderId} : 'skip')
@@ -108,6 +114,37 @@ export function Checkout({
     convexUser,
     initialPaymentMethod: paymentMethodFromUrl,
   })
+  const processingFeePercent =
+    cardsProcessingFeeSetting &&
+    typeof cardsProcessingFeeSetting === 'object' &&
+    !('error' in cardsProcessingFeeSetting) &&
+    typeof cardsProcessingFeeSetting.percent === 'number'
+      ? cardsProcessingFeeSetting.percent
+      : 0
+  const processingFeeEnabled =
+    cardsProcessingFeeSetting &&
+    typeof cardsProcessingFeeSetting === 'object' &&
+    !('error' in cardsProcessingFeeSetting) &&
+    typeof cardsProcessingFeeSetting.enabled === 'boolean'
+      ? cardsProcessingFeeSetting.enabled
+      : false
+  const availableCashBackCents = Math.max(
+    0,
+    Math.round((pointsBalance?.availablePoints ?? 0) * 100),
+  )
+  const appliedCashBackCents =
+    isCashBackEnabled && subtotal >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
+      ? Math.min(availableCashBackCents, total)
+      : 0
+  const isCryptoProcessingFeeApplied =
+    processingFeeEnabled &&
+    (formData.paymentMethod === 'crypto_transfer' ||
+      formData.paymentMethod === 'crypto_commerce')
+  const discountedSubtotalCents = Math.max(0, subtotal - appliedCashBackCents)
+  const processingFeeCents = isCryptoProcessingFeeApplied
+    ? Math.round(discountedSubtotalCents * (processingFeePercent / 100))
+    : 0
+  const totalWithProcessingFee = total + processingFeeCents
 
   useEffect(() => {
     // Wait for both orderId and order to be loaded before redirecting
@@ -272,15 +309,6 @@ export function Checkout({
           country: formData.billingCountry || 'US', // Default to US if not set
         }
 
-    const availableCashBackCents = Math.max(
-      0,
-      Math.round((pointsBalance?.availablePoints ?? 0) * 100),
-    )
-    const redeemedStoreCreditCents =
-      isCashBackEnabled && subtotal >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
-        ? Math.min(availableCashBackCents, total)
-        : 0
-
     startTransition(async () => {
       await onPlaceOrder({
         shippingAddress,
@@ -295,8 +323,9 @@ export function Checkout({
         subtotalCents: subtotal,
         taxCents: tax,
         shippingCents: shipping,
-        discountCents: redeemedStoreCreditCents,
-        redeemedStoreCreditCents,
+        processingFeeCents,
+        discountCents: appliedCashBackCents,
+        redeemedStoreCreditCents: appliedCashBackCents,
         storeCreditCents: computedRewards
           ? Math.round(computedRewards.cashBackAmount * 100)
           : undefined,
@@ -308,9 +337,8 @@ export function Checkout({
     subtotal,
     tax,
     shipping,
-    total,
-    pointsBalance?.availablePoints,
-    isCashBackEnabled,
+    processingFeeCents,
+    appliedCashBackCents,
     computedRewards,
     onPlaceOrder,
   ])
@@ -324,22 +352,13 @@ export function Checkout({
   )
 
   const shouldShowModal = isCheckoutOpen
-  const availableCashBackCents = Math.max(
-    0,
-    Math.round((pointsBalance?.availablePoints ?? 0) * 100),
-  )
-  const appliedCashBackCents =
-    isCashBackEnabled && subtotal >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
-      ? Math.min(availableCashBackCents, total)
-      : 0
-
   return (
     <>
       <OrderSummaryCard
         subtotal={subtotal}
         tax={tax}
         shipping={shipping}
-        total={total}
+        total={totalWithProcessingFee}
         showTaxRow={showTaxRow}
         isAuthenticated={isAuthenticated}
         isLoading={isLoading}

@@ -1015,7 +1015,7 @@ export const PayTab = ({
       animate={{opacity: 1, y: 0}}
       exit={{opacity: 0, y: -10}}
       transition={{layout: {duration: 0.3, ease: 'easeInOut'}}}
-      className='space-y-0 w-full p-1 md:p-4 pb-10 md:h-160 flex flex-col'>
+      className='space-y-0 w-full p-1 md:p-4 md:h-160 flex flex-col border border-l-0 border-foreground/20'>
       <div>
         {paymentAmountUsd && payableUsdValue !== null && !activeReceipt && (
           <PayAmount

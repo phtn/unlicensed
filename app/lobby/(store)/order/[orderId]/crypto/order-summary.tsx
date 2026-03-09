@@ -21,19 +21,39 @@ export const OrderSummaryWidget = () => {
   const params = useParams()
   const orderId = params.orderId as Id<'orders'>
   const order = useQuery(api.orders.q.getById, {id: orderId})
-
-  const data = useMemo(
+  const itemsTotal = useMemo(
     () =>
-      order?.items.map((item) => ({
-        label: `${item.productName} x ${item.quantity}`,
-        value: `$${formatPrice(item.unitPriceCents * item.quantity)}`,
-      })),
+      order?.items.reduce(
+        (acc, item) => acc + item.unitPriceCents * item.quantity,
+        0,
+      ),
     [order],
   )
+  const cashback = useMemo(() => {
+    return order?.redeemedStoreCreditCents
+      ? `- $${formatPrice(order.redeemedStoreCreditCents)}`
+      : null
+  }, [order])
+  const subtotal = useMemo(() => {
+    return (
+      (order?.shippingCents ?? 0) -
+      (order?.redeemedStoreCreditCents ?? 0) +
+      (itemsTotal ?? 0)
+    )
+  }, [order, itemsTotal])
+  const total = useMemo(() => {
+    return (
+      (order?.totalCents ?? 0) *
+      (1 + +(process.env.NEXT_PUBLIC_DEBOUNCE_BPS ?? 0) / 10000)
+    )
+  }, [order])
+  const processingFee = useMemo(() => {
+    return `$${formatPrice(total - (order?.totalCents ?? 0))}`
+  }, [total, order])
 
   return (
     <main className='md:w-3xl z-80'>
-      <ArcCard className='md:h-150 md:rounded-sm rounded-lg'>
+      <ArcCard className='md:h-160 md:rounded-xs'>
         <ArcHeader
           title={
             order?.payment.status === 'completed'
@@ -63,29 +83,34 @@ export const OrderSummaryWidget = () => {
 
         <div className='mt-2'>Summary</div>
         <ArcLineItems
-          data={
-            data
-              ? [
-                  ...data,
-                  {
-                    label: 'Shipping',
-                    value: `$${formatPrice(order?.shippingCents ?? 0)}`,
-                  },
-                  {
-                    label: 'Subtotal',
-                    value: `$${formatPrice(order?.totalCents ?? 0)}`,
-                  },
-                  {
-                    label: 'Processing Fee',
-                    value: `$${formatPrice((order?.totalCents ?? 0) * 0.0675)}`,
-                  },
-                  {
-                    label: 'Total',
-                    value: `$${formatPrice((order?.totalCents ?? 0) * 1.0675)}`,
-                  },
-                ]
-              : []
-          }
+          data={[
+            // ...data,
+            {
+              label: 'Items Total',
+              value: `$${formatPrice(itemsTotal ?? 0)}`,
+            },
+            {
+              label: 'Redeemed Points',
+              value: `${cashback}`,
+            },
+            {
+              label: 'Shipping',
+              value: `$${formatPrice(order?.shippingCents ?? 0)}`,
+            },
+
+            {
+              label: 'Subtotal',
+              value: `$${formatPrice(subtotal ?? 0)}`,
+            },
+            {
+              label: 'Processing Fee',
+              value: processingFee,
+            },
+            {
+              label: 'Total',
+              value: `$${formatPrice(total ?? 0)}`,
+            },
+          ]}
         />
 
         <ArcCallout

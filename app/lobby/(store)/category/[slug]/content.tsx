@@ -10,6 +10,7 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {useToggle} from '@/hooks/use-toggle'
 import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
@@ -94,7 +95,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
 
   return (
     <div className='min-h-screen overflow-x-hidden'>
-      <section className='pt-6 sm:pt-8 md:pt-10 lg:pt-14 xl:pt-24 2xl:pt-28 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 bg-background'>
+      <section className='pt-6 sm:pt-8 md:pt-10 lg:pt-14 xl:pt-24 2xl:pt-28 pb-4 sm:pb-16 lg:pb-20 px-4 sm:px-6 bg-background'>
         <div className='max-w-7xl mx-auto overflow-hidden'>
           <div className='grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center'>
             <div className=''>
@@ -132,17 +133,19 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
               </div>
             </div>
 
-            <div className='relative flex items-center justify-center lg:justify-end h-[30vh] sm:h-[40vh] lg:h-[50lvh] overflow-visible'>
-              <ViewTransition enter='auto'>
+            <div className='relative items-center justify-center lg:justify-end flex flex-col sm:flex-row md:h-[40vh] lg:h-[50lvh] overflow-visible'>
+              <ViewTransition enter='auto' exit='auto'>
                 {heroImage ? (
                   <div
                     id='hero-image'
-                    className='h-60 md:h-120 w-full mask-[url("https://res.cloudinary.com/dx0heqhhe/image/upload/v1766560488/chevs_drc0jt.svg")] mask-cover bg-cover bg-center bg-no-repeat'
+                    className='hidden md:flex md:h-120 w-full mask-[url("https://res.cloudinary.com/dx0heqhhe/image/upload/v1766560488/chevs_drc0jt.svg")] mask-cover bg-cover bg-center bg-no-repeat'
                     style={{backgroundImage: `url(${heroImage})`}}
                   />
                 ) : (
-                  <div className='size-full flex justify-center'>
-                    <Loader />
+                  <div className='w-full h-96 flex items-center justify-center'>
+                    <div className='scale-40'>
+                      <Loader className='scale=20' />
+                    </div>
                   </div>
                 )}
               </ViewTransition>
@@ -156,15 +159,17 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         <section className='px-4 sm:px-6 pb-4'>
           <div className='max-w-7xl mx-auto flex flex-wrap items-center gap-3'>
             {filterOptions.tiers.length > 0 && (
-              <div className='flex flex-wrap items-center gap-2'>
-                <span className='text-sm font-medium text-muted-foreground'>
-                  Tier:
+              <div className='flex flex-wrap items-center gap-1'>
+                <span className='text-sm font-clash font-semibold mr-2'>
+                  Tiers
                 </span>
                 <Button
                   size='sm'
                   radius='none'
                   variant={tier === '' ? 'solid' : 'flat'}
-                  className='min-w-0'
+                  className={cn('min-w-0 h-6 font-bold uppercase', {
+                    'bg-brand text-white': tier === '',
+                  })}
                   onPress={() => setTier('')}>
                   All
                 </Button>
@@ -174,7 +179,9 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     size='sm'
                     radius='none'
                     variant={tier === t ? 'solid' : 'flat'}
-                    className='min-w-0 capitalize'
+                    className={cn('min-w-0 h-6 font-semibold uppercase', {
+                      'bg-brand text-white': tier === t,
+                    })}
                     onPress={() => setTier(t)}>
                     {t}
                   </Button>
