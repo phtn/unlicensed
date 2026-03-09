@@ -14,7 +14,7 @@ import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {useQuery} from 'convex/react'
 import {useSearchParams} from 'next/navigation'
-import {useCallback, useMemo} from 'react'
+import {useCallback, useEffect, useMemo} from 'react'
 import {BundleBuilder} from './components/bundle-builder'
 
 interface DealsContentProps {
@@ -203,6 +203,20 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
     return byType
   }, [configsList, productsWithImages])
 
+  useEffect(() => {
+    if (dealsLoading || configsList.length === 0) return
+
+    const hash = window.location.hash.slice(1)
+    if (!hash) return
+
+    const target = document.getElementById(decodeURIComponent(hash))
+    if (!target) return
+
+    requestAnimationFrame(() => {
+      target.scrollIntoView({behavior: 'smooth', block: 'start'})
+    })
+  }, [configsList.length, dealsLoading])
+
   return (
     <div className='min-h-screen pt-16 sm:pt-20 md:pt-24 lg:pt-26 pb-16 px-2 sm:px-4 md:px-6 lg:px-8'>
       <div className='hidden _flex items-center justify-center h-16 w-full bg-indigo-400 mb-8 text-xl text-white font-okxs space-x-2 md:rounded-lg'>
@@ -211,8 +225,8 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
       </div>
       <div className='max-w-7xl mx-auto pt-16'>
         <header className='ml-4 md:ml-0 mb-10'>
-          <h1 className='font-polysans text-3xl sm:text-4xl font-bold tracking-tight'>
-            Deals & Bundles
+          <h1 className='font-clash text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight'>
+            Deals <span className='text-brand'>&</span> Bundles
           </h1>
           <p className='mt-2 text-sm md:text-base text-muted-foreground'>
             Save more when you mix and match custom bundles.{' '}

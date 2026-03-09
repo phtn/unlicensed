@@ -39,7 +39,10 @@ const components = {
     const text = extractText(children)
     const headingId = id || slugify(text)
     return (
-      <h1 id={headingId} className='font-bold pt-12 mb-0 text-3xl' {...props}>
+      <h1
+        id={headingId}
+        className='font-semibold pt-12 mb-0 text-3xl'
+        {...props}>
         {children}
       </h1>
     )
@@ -50,7 +53,7 @@ const components = {
     return (
       <h2
         id={headingId}
-        className='mb-4 mt-6 text-2xl font-normal font-figtree tracking-tighter'
+        className='mb-4 mt-6 text-2xl font-normal font-clash'
         {...props}>
         {children}
       </h2>

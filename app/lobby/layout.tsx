@@ -1,9 +1,9 @@
 'use client'
 
 import {ChatDock} from '@/components/main/chat-dock'
-import {Footer} from '@/components/ui/footer'
-import {NuqsAdapter} from 'nuqs/adapters/next/app'
+import {NewFooter} from '@/components/main/new-footer'
 import {usePathname} from 'next/navigation'
+import {NuqsAdapter} from 'nuqs/adapters/next/app'
 import type {ReactNode} from 'react'
 
 type LobbyLayoutProps = {
@@ -23,7 +23,7 @@ export default function LobbyLayout({children, navbar}: LobbyLayoutProps) {
           {children}
           <ChatDock hidden={hideChatDock} />
         </main>
-        <Footer />
+        <NewFooter />
       </div>
     </NuqsAdapter>
   )

@@ -1,5 +1,6 @@
 'use client'
 
+import {FeaturedProducts} from '@/app/lobby/(store)/featured'
 import {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
@@ -12,7 +13,6 @@ import {Button, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useMemo, useState} from 'react'
 import {SectionHeader} from '../ui/section-header'
-import {CartCollection} from './cart-collection'
 import {ProductCard} from './product-card'
 
 const formatPrice = (priceCents: number) => {
@@ -85,7 +85,7 @@ export const SuggestedCartItems = () => {
       )}
 
       {/* Collection Section */}
-      <CartCollection />
+      <FeaturedProducts featuredProducts={featured} />
 
       {/* Previous Section */}
       {previous.length > 0 && (

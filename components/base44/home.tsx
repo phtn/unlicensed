@@ -1,9 +1,9 @@
-import {Highlights} from '@/app/lobby/(store)/hero'
+import {Highlights} from '@/components/main/highlights/content'
 import {useMobile} from '@/hooks/use-mobile'
 import {Button} from '@heroui/react'
-import Image from 'next/image'
 import Link from 'next/link'
-import {useEffect, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
+import {Slide} from '../main/highlights/slider'
 
 export const NewHome = () => {
   const isMobile = useMobile()
@@ -26,70 +26,45 @@ export const NewHome = () => {
     return () => observer.disconnect()
   }, [])
 
+  const slides = useMemo(
+    () =>
+      [
+        {
+          id: 'id',
+          tag: '',
+          imageUrl: isMobile
+            ? 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772603013/hero-mobile-v2_vaiesj.webp'
+            : 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772552114/hero-image_ivcsbu.webp',
+          imageAlt: '',
+          title: '',
+          description: '',
+          ctaText: 's',
+          ctaHref: '',
+        },
+      ] as Array<Slide>,
+    [isMobile],
+  )
+
   return (
     <div
-      className='relative bg-linear-to-b bg-background dark:bg-black'
-      style={
-        heroImageHeight != null ? {minHeight: heroImageHeight + 40} : undefined
-      }>
-      <div
-        ref={heroImageWrapRef}
-        className='absolute h-fit top-0 left-0 w-full min-h-screen'>
-        <Image
-          id='hero-image'
-          alt='hero-image'
-          width={isMobile ? 1168 : 2752}
-          height={isMobile ? 1536 : 1136}
-          className='absolute top-0 left-0 w-screen h-auto aspect-4/5 sm:w-full sm:aspect-auto bg-cover'
-          src={
-            isMobile
-              ? // 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772559002/hero-mobile_unh1to.webp'
-                'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772603013/hero-mobile-v2_vaiesj.webp'
-              : 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772552114/hero-image_ivcsbu.webp'
-          }
+      className='relative h-screen bg-linear-to-b bg-background dark:bg-black'
+      // style={heroImageHeight != null ? {height: heroImageHeight} : undefined}
+    >
+      <div ref={heroImageWrapRef} className='h-screen top-0 left-0 w-full'>
+        <Highlights
+          isMobile={isMobile}
+          heroImageHeight={heroImageHeight}
+          slides={slides}
         />
       </div>
-      {/*<div className='flex justify-end w-fit px-4 sticky z-9999 top-14 left-4 bg-black/50 text-orange-200'>
-        <div className='h-32'>
-          <p>Image Height: {heroImageHeight}</p>
-          <p className='hidden sm:flex space-x-4'>
-            <span className='sm:text-emerald-500 sm:flex md:hidden'>S</span>
-            <span className='sm:hidden md:flex lg:hidden md:text-indigo-400'>
-              M
-            </span>
-            <span className='md:hidden lg:flex xl:hidden  md:text-pink-400'>
-              L
-            </span>
-            <span className='sm:hidden xl:flex 2xl:hidden md:text-white'>
-              X
-            </span>
-            <span className='2xl:flex md:text-orange-300'>2</span>
-          </p>
-        </div>
-      </div>*/}
-      <Highlights
-        isMobile={isMobile}
-        heroImageHeight={heroImageHeight}
-        slides={[
-          {
-            id: 'id',
-            tag: '',
-            imageUrl: '',
-            imageAlt: '',
-            title: '',
-            description: '',
-            ctaText: '',
-            ctaHref: '',
-          },
-        ]}
-      />
+
       <Button
         as={Link}
         size='lg'
         radius='none'
         href='/lobby/category'
         variant='solid'
-        className='absolute top-1/2 translate-y-24 md:-translate-y-1/6 lg:-translate-y-4/3 left-1/2 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white  _dark:bg-white'>
+        className='absolute bottom-44 left-1/2 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white  _dark:bg-white md:w-64'>
         Shop Now
       </Button>
     </div>
@@ -157,3 +132,19 @@ export const NewHome = () => {
 //     ] as Highlight[],
 //   [],
 // )
+
+/*
+<Image
+          id='hero-image'
+          alt='hero-image'
+          width={isMobile ? 1168 : 2752}
+          height={isMobile ? 1536 : 1150}
+          className='absolute hidden top-0 left-0 w-[calc(104lvw)] h-auto aspect-4/5 sm:w-full sm:aspect-auto bg-cover'
+          src={
+            isMobile
+              ? // 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772559002/hero-mobile_unh1to.webp'
+                'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772603013/hero-mobile-v2_vaiesj.webp'
+              : 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772552114/hero-image_ivcsbu.webp'
+          }
+        />
+*/

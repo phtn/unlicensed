@@ -552,10 +552,12 @@ export function BundleBuilder({
   ])
 
   return (
-    <Card className='rounded-none! border border-foreground/20 overflow-hidden'>
+    <Card
+      id={config.id}
+      className='scroll-mt-28 md:scroll-mt-32 rounded-none! border border-foreground/20 overflow-hidden'>
       <CardHeader className='flex flex-col items-start gap-2'>
         <div className='flex items-center justify-between w-full min-h-12 md:min-h-14'>
-          <h2 className='flex items-center pl-1 space-x-4 font-polysans text-lg md:text-xl font-semibold'>
+          <h2 className='flex items-center pl-1 space-x-4 font-clash text-lg md:text-xl font-semibold'>
             <span>{config.title}</span>
             {config.variations.length === 1 && (
               <div className='flex items-center space-x-2 md:space-x-3'>

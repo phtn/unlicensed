@@ -1,8 +1,8 @@
 'use client'
 
-import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
 import {CashBackRedemption} from '@/app/lobby/(store)/cart/checkout/components/cash-back-redemption'
 import {useCashBackRedemption} from '@/app/lobby/(store)/cart/hooks/use-cash-back-redemption'
+import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
 import {AuthModal} from '@/components/auth/auth-modal'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
@@ -200,12 +200,12 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
             <div className='py-4 flex-1 overflow-y-scroll overflow-x-hidden w-screen md:w-full'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-4 mb-4 px-4'>
-                  <Drawer.Title className='text-base md:text-lg lg:text-2xl font-semibold tracking-normal font-okxs'>
+                  <Drawer.Title className='text-base md:text-lg lg:text-2xl font-semibold tracking-normal font-clash'>
                     In Cart
                   </Drawer.Title>
                   <Drawer.Description asChild>
                     <div className='flex items-center h-7 p-1'>
-                      <span className='ml-1 font-okxs text-base md:text-lg lg:text-2xl px-2 opacity-70'>
+                      <span className='ml-1 font-clash text-base md:text-lg lg:text-2xl px-2 opacity-70'>
                         <span className='mr-1.5'>{cartItemCount}</span>
                         <span className='tracking-tighter'>
                           item{cartItemCount > 1 ? `s` : null}
@@ -444,7 +444,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                     )}
                     <div className='flex justify-between'>
                       <span className='text-color-muted font-medium'>
-                        {appliedCashBackCents > 0 ? 'Due today' : 'Current total'}
+                        {appliedCashBackCents > 0
+                          ? 'Due today'
+                          : 'Current total'}
                       </span>
                       <span className='font-medium text-lg'>
                         ${formatPrice(discountedSubtotal)}

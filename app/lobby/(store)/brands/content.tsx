@@ -409,23 +409,17 @@ export const Content = () => {
               Looking for something specific?
             </h2>
             <p className='text-sm sm:text-base lg:text-lg opacity-70 mb-6 sm:mb-8 max-w-2xl mx-auto'>
-              Try our Strain-Finder to discover products that match your
+              Try our Deals Bundle-Builder to discover products that match your
               preferences.
             </p>
             <div className='flex flex-col sm:flex-row items-center justify-center gap-4'>
               <Button
                 as={Link}
-                href='/lobby/strain-finder'
+                href='/lobby'
                 prefetch
                 size='lg'
-                endContent={
-                  <Icon
-                    name='search-magic'
-                    className='dark:text-brand text-white'
-                  />
-                }
                 className='dark:bg-white opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base'>
-                <span className='drop-shadow-xs'>Strain Finder</span>
+                <span className='drop-shadow-xs'>Home</span>
               </Button>
 
               <Button

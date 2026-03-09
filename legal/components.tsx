@@ -6,7 +6,7 @@ interface Props {
 
 export const TitleHeader = ({title, effectiveDate, lastUpdated}: Props) => (
   <div className='flex items-center justify-between w-full h-36'>
-    <h1 className='text-3xl md:text-4xl capitalize font-bold font-figtree text-foreground tracking-tighter'>
+    <h1 className='text-3xl md:text-4xl capitalize font-bold font-clash text-foreground'>
       {title}
     </h1>
     <div className='font-figtree text-right text-sm'>

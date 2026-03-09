@@ -56,11 +56,11 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
   return (
     <section
       id='collection'
-      className='mx-auto w-full translate-y-8 sm:translate-y-0 lg:-translate-y-1/4 pt-12 md:max-w-7xl px-2 sm:px-4 md:px-6 xl:px-0 bg-background'>
+      className='mx-auto w-full pt-16 md:max-w-7xl px-2 sm:px-4 md:px-6 xl:px-0 bg-background'>
       <div className='flex flex-col gap-20'>
         <div className='flex flex-wrap items-center justify-between gap-4'>
           <div className='space-y-1'>
-            <h2 className='text-3xl font-polysans font-semibold tracking-tight sm:text-5xl'>
+            <h2 className='text-3xl font-clash font-semibold tracking-tight sm:text-5xl'>
               <span className='text-brand'>Fire</span> Collection
             </h2>
           </div>
@@ -71,7 +71,7 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
             id={`category-${category.slug}`}
             className='mx-auto w-full max-w-7xl'>
             <div className='flex flex-col gap-8 rounded-3xl transition-colors'>
-              <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+              <div className='flex gap-4 items-center justify-between'>
                 <div>
                   <h3 className='capitalize text-xl font-clash text-foreground sm:text-3xl'>
                     {category.name}
