@@ -29,11 +29,7 @@ export const OrderSummaryWidget = () => {
       ),
     [order],
   )
-  const cashback = useMemo(() => {
-    return order?.redeemedStoreCreditCents
-      ? `- $${formatPrice(order.redeemedStoreCreditCents)}`
-      : null
-  }, [order])
+  const redeemedStoreCreditCents = order?.redeemedStoreCreditCents ?? 0
   const subtotal = useMemo(() => {
     return (
       (order?.shippingCents ?? 0) -
@@ -41,15 +37,17 @@ export const OrderSummaryWidget = () => {
       (itemsTotal ?? 0)
     )
   }, [order, itemsTotal])
+
   const total = useMemo(() => {
     return (
       (order?.totalCents ?? 0) *
       (1 + +(process.env.NEXT_PUBLIC_DEBOUNCE_BPS ?? 0) / 10000)
     )
   }, [order])
+
   const processingFee = useMemo(() => {
-    return `$${formatPrice(total - (order?.totalCents ?? 0))}`
-  }, [total, order])
+    return `$${formatPrice(total - (subtotal ?? 0))}`
+  }, [total, subtotal])
 
   return (
     <main className='md:w-3xl z-80'>
@@ -89,10 +87,14 @@ export const OrderSummaryWidget = () => {
               label: 'Items Total',
               value: `$${formatPrice(itemsTotal ?? 0)}`,
             },
-            {
-              label: 'Redeemed Points',
-              value: `${cashback}`,
-            },
+            ...(redeemedStoreCreditCents > 0
+              ? [
+                  {
+                    label: 'Redeemed Points',
+                    value: `- $${formatPrice(redeemedStoreCreditCents)}`,
+                  },
+                ]
+              : []),
             {
               label: 'Shipping',
               value: `$${formatPrice(order?.shippingCents ?? 0)}`,
