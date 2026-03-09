@@ -36,7 +36,7 @@ export const SectionHeader = ({
             text={description as string}
             speed={2}
             showCursor={false}
-            className='text-left text-sm text-foreground/60'></Typewrite>
+            className='text-left text-sm text-foreground/60 whitespace-nowrap'></Typewrite>
         )}
       </ViewTransition>
     </div>

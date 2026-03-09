@@ -28,6 +28,7 @@ async function getPinCookie(): Promise<string | undefined> {
 }
 
 interface PinAccessContextValue {
+  isEnabled: boolean
   isAuthenticated: boolean
   authenticate: (pin: string) => Promise<boolean>
   logout: () => Promise<void>
@@ -42,10 +43,14 @@ interface PinAccessProviderProps {
 
 export function PinAccessProvider({children}: PinAccessProviderProps) {
   const haltPass = useQuery(api.admin.q.getHaltPass)
-  const passes = useMemo(
-    () => haltPass?.value?.value.map((pass: string) => pass.toUpperCase()),
-    [haltPass],
-  )
+  const isEnabled = haltPass?.value?.enabled !== false
+  const passes = useMemo(() => {
+    const configuredPasses = haltPass?.value?.value
+    if (!Array.isArray(configuredPasses)) return []
+    return configuredPasses
+      .filter((pass): pass is string => typeof pass === 'string')
+      .map((pass) => pass.toUpperCase())
+  }, [haltPass])
 
   // Track manual authentication state (for authenticate/logout actions)
   const [authStateVersion, setAuthStateVersion] = useState(0)
@@ -88,12 +93,13 @@ export function PinAccessProvider({children}: PinAccessProviderProps) {
 
   const value = useMemo(
     () => ({
+      isEnabled,
       isAuthenticated,
       authenticate,
       logout,
       pinLength: PIN_CODE.length,
     }),
-    [isAuthenticated, authenticate, logout],
+    [isEnabled, isAuthenticated, authenticate, logout],
   )
 
   return <PinAccessCtx.Provider value={value}>{children}</PinAccessCtx.Provider>

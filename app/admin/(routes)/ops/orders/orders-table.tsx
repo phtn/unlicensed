@@ -300,6 +300,7 @@ export const OrdersTable = () => {
         columnConfigs={columns}
         actionConfig={actionConfig}
         editingRowId={null}
+        defaultPageSize={50}
       />
     </div>
   )

@@ -1,6 +1,5 @@
 'use client'
 
-import {Callout} from '@/components/ui/callout'
 import {SectionHeader} from '@/components/ui/section-header'
 import {
   TextureCardContent,
@@ -52,9 +51,9 @@ const SETTINGS_FEATURES: Array<SettingItem> = [
     icon: 'money-duotone',
   },
   {
-    id: 'rewarsd',
-    title: 'Rewarsd',
-    description: 'Manage Rewart Tiers.',
+    id: 'rewards',
+    title: 'Rewards',
+    description: 'Manage Reward Tiers.',
     icon: 'coins',
   },
   {
@@ -71,7 +70,7 @@ const SETTINGS_FEATURES: Array<SettingItem> = [
   },
   {
     id: 'assistant',
-    title: 'AI',
+    title: 'AI Assistant',
     description: 'Configure AI assistat instructions and context.',
     icon: 'phone',
   },
@@ -89,8 +88,8 @@ export const OverviewContent = () => {
       />
 
       <div className='grid w-full gap-6'>
-        <ViewTransition>
-          <Callout
+        {/*<ViewTransition>*/}
+        {/*<Callout
             size='sm'
             type='info'
             title='Function'
@@ -107,13 +106,10 @@ export const OverviewContent = () => {
                                 behave. Review each section before saving.'
             customStyle='rounded-2xl border border-primary/20 bg-primary/5 dark:bg-primary/10'
           />
-        </ViewTransition>
+        </ViewTransition>*/}
       </div>
 
       <section className='space-y-4'>
-        <h2 className='font-polysans text-sm font-medium uppercase tracking-widest text-foreground/70'>
-          Sections
-        </h2>
         <Card
           shadow='none'
           className='grid md:grid-cols-2 w-full bg-linear-to-br from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5 p-4'>
@@ -149,7 +145,7 @@ export const OverviewContent = () => {
                       />
                       <span className='px-2'>{feature.title}</span>
                     </div>
-                    <TextureCardDescription className='mt-1 font-okxs text-xs leading-relaxed text-foreground/60'>
+                    <TextureCardDescription className='mt-1 px-0 font-okxs text-xs leading-relaxed text-foreground/60'>
                       {feature.description}
                     </TextureCardDescription>
                   </div>

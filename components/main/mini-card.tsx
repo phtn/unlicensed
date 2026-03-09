@@ -39,8 +39,8 @@ export const MiniCardV2 = ({
     <div
       key={id}
       className={cn(
-        {'bg-black dark:bg-sidebar': dark},
         'flex items-center space-x-4 text-white! bg-brand group p-6 rounded-xs',
+        {'bg-black dark:bg-sidebar': dark},
       )}>
       <Icon name={icon} className='size-12' aria-hidden />
       <div className=''>

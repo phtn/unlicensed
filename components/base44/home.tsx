@@ -12,19 +12,26 @@ export const NewHome = () => {
 
   useEffect(() => {
     const el = heroImageWrapRef.current
-    if (!el) return
+    if (!el || !isMobile) return
+
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const h = entry.contentRect.height
-        const boxSize = entry.borderBoxSize
-        setHeroImageHeight(boxSize[0].inlineSize ?? 0)
-        console.log('entry', boxSize[0].inlineSize, 'h', h)
-        // if (typeof h === 'number' && h > 0) setHeroImageHeight(h)
+        const boxSize = Array.isArray(entry.borderBoxSize)
+          ? entry.borderBoxSize[0]
+          : entry.borderBoxSize
+        const nextHeight = boxSize?.blockSize ?? entry.contentRect.height
+
+        if (nextHeight > 0) {
+          setHeroImageHeight((currentHeight) =>
+            currentHeight === nextHeight ? currentHeight : nextHeight,
+          )
+        }
       }
     })
+
     observer.observe(el)
     return () => observer.disconnect()
-  }, [])
+  }, [isMobile])
 
   const slides = useMemo(
     () =>
@@ -47,15 +54,10 @@ export const NewHome = () => {
 
   return (
     <div
-      className='relative h-screen bg-linear-to-b bg-background dark:bg-black'
-      // style={heroImageHeight != null ? {height: heroImageHeight} : undefined}
-    >
-      <div ref={heroImageWrapRef} className='h-screen top-0 left-0 w-full'>
-        <Highlights
-          isMobile={isMobile}
-          heroImageHeight={heroImageHeight}
-          slides={slides}
-        />
+      className='relative bg-linear-to-b bg-background dark:bg-black md:h-screen'
+      style={isMobile && heroImageHeight != null ? {height: heroImageHeight} : undefined}>
+      <div ref={heroImageWrapRef} className='top-0 left-0 w-full md:h-screen'>
+        <Highlights heroImageHeight={heroImageHeight} slides={slides} />
       </div>
 
       <Button

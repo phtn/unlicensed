@@ -7,7 +7,6 @@ import {SlideButtonProps, Slider, SliderControls, type Slide} from './slider'
 
 interface HomepageCarouselProps {
   slides: Array<Slide>
-  isMobile: boolean
   /** Measured height of the hero image (from NewHome); used so content below does not overlap or fall short. */
   heroImageHeight?: number | null
   className?: string
@@ -15,7 +14,6 @@ interface HomepageCarouselProps {
 
 export const Highlights = ({
   slides = [],
-  isMobile,
   heroImageHeight,
   className,
 }: HomepageCarouselProps) => {
@@ -100,7 +98,7 @@ export const Highlights = ({
       )}
       style={
         heroImageHeight != null && heroImageHeight > 0
-          ? {height: isMobile ? heroImageHeight - 500 : heroImageHeight}
+          ? {height: heroImageHeight}
           : undefined
       }
       role='region'

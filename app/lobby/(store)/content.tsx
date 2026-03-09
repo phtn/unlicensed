@@ -60,7 +60,7 @@ export const Content = ({
                   with guaranteed delivery and seamless card payments.'>
         <div className='portrait:px-4 max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-8'>
           {ctas.map((feature, i) => (
-            <MiniCardV2 key={feature.title} {...feature} dark={i % 2 === 0} />
+            <MiniCardV2 key={feature.title} {...feature} dark={i === 0} />
           ))}
         </div>
       </MarkSection>

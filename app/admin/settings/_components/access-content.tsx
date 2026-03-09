@@ -5,17 +5,29 @@ import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Input} from '@heroui/react'
+import {Button, Input, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useRef, useState, ViewTransition} from 'react'
 import {commonInputClassNames} from '../../_components/ui/fields'
 
-function getPassesFromHaltPass(
-  haltPass: {value?: {value?: unknown}} | null | undefined,
-): string[] {
+function getHaltPassConfig(
+  haltPass:
+    | {
+        value?: {
+          value?: unknown
+          enabled?: unknown
+        }
+      }
+    | null
+    | undefined,
+): {passes: string[]; enabled: boolean} {
   const v = haltPass?.value?.value
-  if (!Array.isArray(v)) return []
-  return v.filter((x): x is string => typeof x === 'string')
+  return {
+    passes: Array.isArray(v)
+      ? v.filter((x): x is string => typeof x === 'string')
+      : [],
+    enabled: haltPass?.value?.enabled !== false,
+  }
 }
 
 export const AccessContent = () => {
@@ -23,6 +35,7 @@ export const AccessContent = () => {
   const haltPass = useQuery(api.admin.q.getHaltPass)
   const updateAdmin = useMutation(api.admin.m.updateAdminByIdentifier)
   const [passes, setPasses] = useState<string[]>([])
+  const [isEnabled, setIsEnabled] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>(
     'idle',
@@ -35,11 +48,12 @@ export const AccessContent = () => {
   // Sync from server when haltPass loads/changes (subscription to external system)
   useEffect(() => {
     if (haltPass === undefined) return
-    const serverPasses = getPassesFromHaltPass(haltPass ?? null)
-    const key = JSON.stringify(serverPasses)
+    const config = getHaltPassConfig(haltPass ?? null)
+    const key = JSON.stringify(config)
     if (key !== lastSyncedRef.current) {
       lastSyncedRef.current = key
-      setPasses(serverPasses)
+      setPasses(config.passes)
+      setIsEnabled(config.enabled)
     }
   }, [haltPass])
 
@@ -74,7 +88,7 @@ export const AccessContent = () => {
     try {
       await updateAdmin({
         identifier: 'halt-pass',
-        value: {value: trimmed},
+        value: {value: trimmed, enabled: isEnabled},
         uid: user?.uid ?? 'anonymous',
       })
       setPasses(trimmed)
@@ -96,7 +110,7 @@ export const AccessContent = () => {
     } finally {
       setIsSaving(false)
     }
-  }, [passes, updateAdmin, user?.uid])
+  }, [isEnabled, passes, updateAdmin, user?.uid])
 
   const isLoading = haltPass === undefined
 
@@ -113,7 +127,7 @@ export const AccessContent = () => {
     <div className='flex w-full flex-col gap-4'>
       <SectionHeader
         title='Access (Halt Gate)'
-        description='PIN codes that grant access to the store. 6 characters. Not case-sensitive.'>
+        description='PIN codes that grant access to the store. Disable this to bypass the gate and route visitors directly to /lobby.'>
         <Button
           size='sm'
           color='primary'
@@ -123,6 +137,15 @@ export const AccessContent = () => {
           Save Changes
         </Button>
       </SectionHeader>
+
+      <div className='max-w-lg rounded-2xl bg-default-100/50 px-4 py-3 dark:bg-default-100/30'>
+        <Switch
+          isSelected={isEnabled}
+          onValueChange={setIsEnabled}
+          size='sm'>
+          Require access code
+        </Switch>
+      </div>
 
       <ul className='flex flex-col gap-2 max-w-lg' role='list'>
         {passes.map((pass, index) => (

@@ -28,22 +28,22 @@ export const SettingsTabs = () => {
     <Tabs.Root
       defaultValue='overview'
       className='flex min-w-0 flex-col gap-3 sm:gap-4'>
-      <div className='-mx-3 overflow-x-auto px-3 sm:mx-0 sm:px-0'>
-        <Tabs.List className='relative z-0 inline-flex min-w-max gap-2 pb-1 sm:flex sm:min-w-0 sm:flex-wrap sm:gap-3'>
-        {tabs.map((tab) => (
-          <Tabs.Tab
-            key={tab.id}
-            className={cn(
-              'flex h-9 shrink-0 items-center justify-center rounded-md border-0 px-3 break-keep whitespace-nowrap',
-              'text-sm font-medium data-active:text-white font-okxs',
-              'outline-none select-none before:inset-x-0 before:inset-y-1 before:rounded-md',
-              'transition-colors duration-100 delay-100',
-            )}
-            value={tab.id}>
-            {tab.label}
-          </Tabs.Tab>
-        ))}
-        <Tabs.Indicator className='absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-sm bg-linear-to-r from-slate-600/90 via-slate-900/90 to-origin dark:via-slate-600 dark:to-dark-table transition-all duration-300 ease-in-out' />
+      <div className='-mx-3 overflow-x-auto px-3 pb-1 sm:mx-0 sm:px-0'>
+        <Tabs.List className='relative z-0 flex min-w-max flex-nowrap gap-1 md:gap-2'>
+          {tabs.map((tab) => (
+            <Tabs.Tab
+              key={tab.id}
+              className={cn(
+                'flex h-9 shrink-0 items-center justify-center rounded-md border-0 px-2 md:px-3 break-keep whitespace-nowrap',
+                'text-sm font-medium data-active:text-white font-okxs',
+                'outline-none select-none before:inset-x-0 before:inset-y-1 before:rounded-md',
+                'transition-colors duration-100 delay-100',
+              )}
+              value={tab.id}>
+              {tab.label}
+            </Tabs.Tab>
+          ))}
+          <Tabs.Indicator className='absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-sm bg-linear-to-r from-slate-600/90 via-slate-900/90 to-origin dark:via-slate-600 dark:to-dark-table transition-all duration-300 ease-in-out' />
         </Tabs.List>
       </div>
       <Tabs.Panel

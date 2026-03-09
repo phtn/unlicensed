@@ -19,7 +19,7 @@ import {
 } from 'react'
 
 export function PinAccessGate() {
-  const {authenticate, pinLength, isAuthenticated} = usePinAccess()
+  const {authenticate, pinLength, isAuthenticated, isEnabled} = usePinAccess()
   const router = useRouter()
   const [pin, setPin] = useState('')
   const [error, setError] = useState(false)
@@ -29,6 +29,14 @@ export function PinAccessGate() {
   const inputRef = useRef<HTMLInputElement>(null)
   const [redirectTimer, setRedirectTimer] = useState(false)
   const [isRedirecting, setIsRedirecting] = useState(false)
+
+  useEffect(() => {
+    if (!isEnabled) {
+      startTransition(() => {
+        router.replace('/lobby')
+      })
+    }
+  }, [isEnabled, router])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -141,6 +149,10 @@ export function PinAccessGate() {
 
     return display
   }, [pin, pinLength])
+
+  if (!isEnabled) {
+    return null
+  }
 
   if (isLoading) {
     return (
