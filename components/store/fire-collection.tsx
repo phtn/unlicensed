@@ -190,8 +190,8 @@ export const FireCollection = ({products}: FireCollectionProps) => {
                   />
                 ))}
               </div>
-              <p className='text-xs uppercase tracking-[0.3em] text-foreground/50'>
-                Swipe horizontally. Autoplay pauses on hover.
+              <p className='hidden md:block text-xs uppercase tracking-[0.3em] text-foreground/50'>
+                Swipe left or right
               </p>
             </div>
           )}

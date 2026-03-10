@@ -2,9 +2,9 @@
 
 import {CtaSection} from '@/components/main/cta-section'
 import {NewFooter} from '@/components/main/new-footer'
+import {QuickLinks} from '../account/quick-links'
 import {FireManifesto} from './fire-manifesto'
 import {Principles} from './principles'
-import {QuickLinks} from './quick-links'
 
 const YOUTUBE_VIDEO_ID = 'pwuFTsvJL34'
 
@@ -15,7 +15,7 @@ export const Content = () => {
       <FireManifesto />
       <section className='px-4 pb-6 sm:px-6 md:pb-10'>
         <div className='mx-auto max-w-7xl overflow-hidden rounded-xs border border-foreground/10 bg-black'>
-          <div className='aspect-video w-full min-h-[220px] sm:min-h-0'>
+          <div className='aspect-video w-full min-h-[220.1px] sm:min-h-0'>
             <iframe
               src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}`}
               title='Rapid Fire YouTube video'

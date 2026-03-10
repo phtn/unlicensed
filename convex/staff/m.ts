@@ -1,5 +1,36 @@
 import {v} from 'convex/values'
+import type {MutationCtx} from '../_generated/server'
 import {mutation} from '../_generated/server'
+
+async function requireStaffAdminOrManager(
+  ctx: MutationCtx,
+  currentUserEmail: string,
+) {
+  const currentUserStaff = await ctx.db
+    .query('staff')
+    .withIndex('by_email', (q) => q.eq('email', currentUserEmail))
+    .unique()
+
+  if (!currentUserStaff) {
+    throw new Error('Unauthorized: You must be a staff member to manage staff')
+  }
+
+  if (!currentUserStaff.active) {
+    throw new Error('Unauthorized: Your staff account is inactive')
+  }
+
+  const hasAdminOrManagerRole =
+    currentUserStaff.accessRoles.includes('admin') ||
+    currentUserStaff.accessRoles.includes('manager')
+
+  if (!hasAdminOrManagerRole) {
+    throw new Error(
+      'Unauthorized: Only admin or manager roles can manage staff members',
+    )
+  }
+
+  return currentUserStaff
+}
 
 export const createStaff = mutation({
   args: {
@@ -14,29 +45,7 @@ export const createStaff = mutation({
     currentUserEmail: v.string(), // Email of the user creating the staff member
   },
   handler: async (ctx, args) => {
-    // Check authorization: only admin or manager can create staff
-    const currentUserStaff = await ctx.db
-      .query('staff')
-      .withIndex('by_email', (q) => q.eq('email', args.currentUserEmail))
-      .unique()
-
-    if (!currentUserStaff) {
-      throw new Error('Unauthorized: You must be a staff member to create staff')
-    }
-
-    if (!currentUserStaff.active) {
-      throw new Error('Unauthorized: Your staff account is inactive')
-    }
-
-    const hasAdminOrManagerRole =
-      currentUserStaff.accessRoles.includes('admin') ||
-      currentUserStaff.accessRoles.includes('manager')
-
-    if (!hasAdminOrManagerRole) {
-      throw new Error(
-        'Unauthorized: Only admin or manager roles can create staff members',
-      )
-    }
+    await requireStaffAdminOrManager(ctx, args.currentUserEmail)
 
     const now = Date.now()
 
@@ -70,6 +79,7 @@ export const createStaff = mutation({
 export const updateStaff = mutation({
   args: {
     id: v.id('staff'),
+    currentUserEmail: v.string(),
     name: v.optional(v.string()),
     position: v.optional(v.string()),
     division: v.optional(v.string()),
@@ -79,7 +89,9 @@ export const updateStaff = mutation({
     userId: v.optional(v.id('users')),
   },
   handler: async (ctx, args) => {
-    const {id, ...updates} = args
+    const {id, currentUserEmail, ...updates} = args
+
+    await requireStaffAdminOrManager(ctx, currentUserEmail)
 
     await ctx.db.patch(id, {
       ...updates,
@@ -91,8 +103,10 @@ export const updateStaff = mutation({
 export const deleteStaff = mutation({
   args: {
     id: v.id('staff'),
+    currentUserEmail: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireStaffAdminOrManager(ctx, args.currentUserEmail)
     await ctx.db.delete(args.id)
   },
 })

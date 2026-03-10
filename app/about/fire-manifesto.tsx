@@ -1,3 +1,6 @@
+import {Button} from '@heroui/react'
+import Link from 'next/link'
+
 const MANIFESTO_PARAGRAPHS = [
   <>
     For over 10 years, we&apos;ve done one thing really well:{' '}
@@ -43,21 +46,16 @@ export const FireManifesto = () => {
                 <p className='font-clash text-brand text-xs uppercase tracking-[0.24em] sm:text-sm sm:tracking-[0.32em]'>
                   Why Rapid Fire
                 </p>
-                <h2 className='max-w-[11ch] font-bone text-3xl tracking-tight sm:text-5xl md:text-6xl'>
+                <h2 className='md:max-w-[11ch] max-w-[14ch] font-bone text-3xl tracking-tight sm:text-5xl md:text-6xl'>
                   The standard behind the menu.
                 </h2>
-                <p className='max-w-sm text-sm leading-6 text-white/62'>
-                  The screenshot copy is here, but translated into the same
-                  language as the rest of the page: darker surfaces, clearer
-                  hierarchy, and structured reading rhythm.
-                </p>
               </div>
 
               <div className='grid gap-3 sm:gap-4'>
                 {MANIFESTO_PARAGRAPHS.map((paragraph, index) => (
                   <article
                     key={index}
-                    className='border border-foreground/10 bg-background/5 p-4 sm:p-6'>
+                    className='border border-foreground/0 bg-background/5 p-2 md:p-6'>
                     <p className='max-w-4xl text-sm leading-6 text-white/82 sm:text-base sm:leading-7 md:text-lg md:leading-8 [&_strong]:font-semibold [&_strong]:text-white'>
                       {paragraph}
                     </p>
@@ -66,6 +64,16 @@ export const FireManifesto = () => {
               </div>
             </div>
           </div>
+          <Button
+            size='lg'
+            as={Link}
+            fullWidth
+            prefetch
+            radius='none'
+            href={'/lobby/categories'}
+            className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand rounded-xs dark:hover:text-white bg-brand hover:text-white text-white font-clash font-medium px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-base md:text-lg lg:text-xl md:py-4!'>
+            <span className='drop-shadow-xs'>Shop Now</span>
+          </Button>
         </div>
       </div>
     </section>

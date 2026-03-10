@@ -15,7 +15,7 @@ export const createNotification = mutation({
   },
   handler: async (ctx, args) => {
     // Prevent self-notifications
-    if (args.fid === args.actorId) {
+    if (args.uid === args.actorId) {
       return null
     }
 
@@ -92,7 +92,7 @@ export const markAsRead = mutation({
     }
 
     // Verify the notification belongs to the user
-    if (notification.fid !== user._id) {
+    if (notification.uid !== user._id) {
       throw new Error('Unauthorized to mark this notification as read')
     }
 

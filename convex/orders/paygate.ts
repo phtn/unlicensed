@@ -5,64 +5,10 @@
  * No API keys required - just configure your USDC Polygon wallet address.
  */
 
-import type {DefaultFunctionArgs, FunctionReference} from 'convex/server'
 import {v} from 'convex/values'
-import {api, internal} from '../_generated/api'
+import {api} from '../_generated/api'
 import {action} from '../_generated/server'
-import type {AdminSettings} from '../admin/d'
 import type {OrderType} from './d'
-
-// Type-safe access to internal API modules that may not be in generated types yet
-const internalApi = internal as {
-  orders?: {
-    q?: {
-      getOrder?: FunctionReference<
-        'query',
-        'internal',
-        {orderId: string},
-        OrderType | null
-      >
-    }
-    m?: {
-      updatePayment?: FunctionReference<
-        'mutation',
-        'internal',
-        {
-          orderId: string
-          payment: {
-            method: 'credit_card' | 'crypto' | 'cashapp'
-            status:
-              | 'pending'
-              | 'processing'
-              | 'completed'
-              | 'failed'
-              | 'refunded'
-              | 'partially_refunded'
-            transactionId?: string
-            paymentIntentId?: string
-            paidAt?: number
-            refundedAt?: number
-            refundAmountCents?: number
-            paygateSessionId?: string
-            paygatePaymentUrl?: string
-            paygateTransactionId?: string
-          }
-        },
-        string
-      >
-    }
-  }
-  admin?: {
-    q?: {
-      getAdminSettings?: FunctionReference<
-        'query',
-        'internal',
-        DefaultFunctionArgs,
-        AdminSettings | null
-      >
-    }
-  }
-}
 
 /**
  * Initiate PayGate payment for an order
@@ -87,12 +33,9 @@ export const initiatePayGatePayment = action({
     transactionId: string | undefined
   }> => {
     // Get order
-    const order: OrderType | null = await ctx.runQuery(
-      internalApi.orders?.q?.getOrder as unknown as FunctionReference<'query'>,
-      {
-        orderId: args.orderId,
-      },
-    )
+    const order: OrderType | null = await ctx.runQuery(api.orders.q.getById, {
+      id: args.orderId,
+    })
 
     if (!order) {
       throw new Error('Order not found')
@@ -112,12 +55,17 @@ export const initiatePayGatePayment = action({
       gatewayDoc?.checkoutUrl?.trim() || 'https://checkout.paygate.to'
 
     // Get admin settings for usdcWallet (legacy)
-    const adminSettings: AdminSettings | null = await ctx.runQuery(
-      internalApi.admin?.q
-        ?.getAdminSettings as unknown as FunctionReference<'query'>,
-      {},
-    )
-    const paygateVal = (adminSettings?.value as {paygate?: {usdcWallet?: string}} | undefined)?.paygate
+    const adminSettings = await ctx.runQuery(api.admin.q.getAdminByIdentifier, {
+      identifier: 'paygate',
+    })
+    const paygateVal =
+      adminSettings?.value &&
+      typeof adminSettings.value === 'object' &&
+      'paygate' in adminSettings.value &&
+      adminSettings.value.paygate &&
+      typeof adminSettings.value.paygate === 'object'
+        ? (adminSettings.value.paygate as {usdcWallet?: string})
+        : undefined
     const usdcWallet: string = paygateVal?.usdcWallet?.trim() || ''
 
     // Validate PayGate configuration
@@ -133,12 +81,13 @@ export const initiatePayGatePayment = action({
       | 'cards'
       | 'crypto_transfer'
       | 'crypto_commerce'
-      | 'cash_app'
       | undefined
     if (order.payment.method === 'cards') {
       paygatePaymentMethod = 'cards'
     } else if (order.payment.method === 'crypto_transfer') {
       paygatePaymentMethod = 'crypto_transfer'
+    } else if (order.payment.method === 'crypto_commerce') {
+      paygatePaymentMethod = 'crypto_commerce'
     }
     // cashapp is not directly supported by PayGate, treat as credit_card
     else if (order.payment.method === 'cash_app') {
@@ -329,20 +278,23 @@ export const initiatePayGatePayment = action({
     }
 
     // Update order with PayGate payment information
-    await ctx.runMutation(
-      internalApi.orders?.m
-        ?.updatePayment as unknown as FunctionReference<'mutation'>,
-      {
-        orderId: args.orderId,
-        payment: {
-          ...order.payment,
-          paygateSessionId: finalSessionId,
-          paygatePaymentUrl: paymentUrl,
-          paygateTransactionId: transactionId,
-          status: 'processing', // Mark as processing while payment is in progress
+    await ctx.runMutation(api.orders.m.updatePayment, {
+      orderId: args.orderId,
+      payment: {
+        ...order.payment,
+        gatewayId: finalSessionId,
+        gateway: {
+          name: 'paygate',
+          id: 'paygate',
+          provider: paygatePaymentMethod ?? 'cards',
+          status: 'processing',
+          sessionId: finalSessionId,
+          paymentUrl,
+          transactionId,
         },
+        status: 'processing',
       },
-    )
+    })
 
     return {
       success: true,
@@ -370,18 +322,18 @@ export const checkPayGatePaymentStatus = action({
     message?: string
   }> => {
     // Get order
-    const order: OrderType | null = await ctx.runQuery(
-      internalApi.orders?.q?.getOrder as unknown as FunctionReference<'query'>,
-      {
-        orderId: args.orderId,
-      },
-    )
+    const order: OrderType | null = await ctx.runQuery(api.orders.q.getById, {
+      id: args.orderId,
+    })
 
     if (!order) {
       throw new Error('Order not found')
     }
 
-    if (!order.payment.gatewayId) {
+    const sessionId =
+      order.payment.gateway?.sessionId ?? order.payment.gatewayId
+
+    if (!sessionId) {
       throw new Error('Order does not have a PayGate session')
     }
 
@@ -394,7 +346,7 @@ export const checkPayGatePaymentStatus = action({
 
     // Check payment status via PayGate API
     const response: Response = await fetch(
-      `${apiUrl}/status.php?session_id=${order.payment.gateway?.sessionId}`,
+      `${apiUrl}/status.php?session_id=${sessionId}`,
       {
         method: 'GET',
         headers: {
@@ -435,35 +387,45 @@ export const checkPayGatePaymentStatus = action({
 
     // Update order payment status if changed
     if (status.status === 'completed' && order.payment.status !== 'completed') {
-      await ctx.runMutation(
-        internalApi.orders?.m
-          ?.updatePayment as unknown as FunctionReference<'mutation'>,
-        {
-          orderId: args.orderId,
-          payment: {
-            ...order.payment,
-            status: 'completed',
-            transactionId: status.transactionId || order.payment.transactionId,
-            paygateTransactionId: status.transactionId,
-            paidAt: status.paidAt || Date.now(),
-          },
+      await ctx.runMutation(api.orders.m.updatePayment, {
+        orderId: args.orderId,
+        payment: {
+          ...order.payment,
+          transactionId: status.transactionId || order.payment.transactionId,
+          gateway: order.payment.gateway
+            ? {
+                ...order.payment.gateway,
+                status: 'completed',
+                sessionId,
+                transactionId:
+                  status.transactionId || order.payment.gateway.transactionId,
+              }
+            : undefined,
+          status: 'completed',
+          paidAt: status.paidAt || Date.now(),
         },
-      )
+      })
     } else if (
       status.status === 'failed' &&
       order.payment.status !== 'failed'
     ) {
-      await ctx.runMutation(
-        internalApi.orders?.m
-          ?.updatePayment as unknown as FunctionReference<'mutation'>,
-        {
-          orderId: args.orderId,
-          payment: {
-            ...order.payment,
-            status: 'failed',
-          },
+      await ctx.runMutation(api.orders.m.updatePayment, {
+        orderId: args.orderId,
+        payment: {
+          ...order.payment,
+          transactionId: status.transactionId || order.payment.transactionId,
+          gateway: order.payment.gateway
+            ? {
+                ...order.payment.gateway,
+                status: 'failed',
+                sessionId,
+                transactionId:
+                  status.transactionId || order.payment.gateway.transactionId,
+              }
+            : undefined,
+          status: 'failed',
         },
-      )
+      })
     }
 
     return {

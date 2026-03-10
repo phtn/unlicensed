@@ -20,13 +20,22 @@ export const listAdminSettings = query({
 export const getAdminSettings = query({
   args: {},
   handler: async (ctx): Promise<AdminSettings | null> => {
-    const settings = await ctx.db.query('adminSettings').first()
+    const settings =
+      (await ctx.db
+        .query('adminSettings')
+        .withIndex('by_identifier', (q) => q.eq('identifier', 'paygate'))
+        .unique()) ??
+      (await ctx.db
+        .query('adminSettings')
+        .withIndex('by_identifier', (q) => q.eq('identifier', 'statConfigs'))
+        .unique()) ??
+      (await ctx.db.query('adminSettings').first())
 
     if (!settings) {
       // Return default configs if no settings exist yet
       return {
         value: {
-          statsConfig: [
+          statConfigs: [
             {id: 'salesToday', label: 'Sales Today', visible: true, order: 0},
             {
               id: 'pendingOrders',
@@ -95,7 +104,10 @@ export const getAdminByIdentifier = query({
       .withIndex('by_identifier', (q) => q.eq('identifier', identifier))
       .unique()
 
-    if (!setting) {
+    if (
+      !setting &&
+      (identifier === 'productTiers' || identifier === 'statConfigs')
+    ) {
       // Fall back to first document when identifier wasn't set on existing docs
       setting = (await db.query('adminSettings').first()) ?? null
     }

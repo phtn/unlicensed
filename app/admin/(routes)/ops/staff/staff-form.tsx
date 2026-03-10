@@ -162,9 +162,16 @@ export const StaffForm = ({
         }
 
         if (isEditMode && staffId) {
+          if (!convexUser?.email) {
+            setErrorMessage('You must be signed in to update staff members')
+            setStatus('error')
+            return
+          }
+
           // For updates, don't include email (it shouldn't be changed)
           await updateStaff({
             id: staffId,
+            currentUserEmail: convexUser.email,
             name: value.name.trim() || undefined,
             position: value.position.trim(),
             division: value.division.trim() || undefined,

@@ -5,64 +5,10 @@
  * Requires Square Developer account and credentials.
  */
 
-import type {DefaultFunctionArgs, FunctionReference} from 'convex/server'
 import {v} from 'convex/values'
-import {internal} from '../_generated/api'
+import {api} from '../_generated/api'
 import {action} from '../_generated/server'
-import type {AdminSettings} from '../admin/d'
 import type {OrderType} from './d'
-
-// Type-safe access to internal API modules
-const internalApi = internal as {
-  orders?: {
-    q?: {
-      getOrder?: FunctionReference<
-        'query',
-        'internal',
-        {orderId: string},
-        OrderType | null
-      >
-    }
-    m?: {
-      updatePayment?: FunctionReference<
-        'mutation',
-        'internal',
-        {
-          orderId: string
-          payment: {
-            method: 'credit_card' | 'crypto' | 'cashapp'
-            status:
-              | 'pending'
-              | 'processing'
-              | 'completed'
-              | 'failed'
-              | 'refunded'
-              | 'partially_refunded'
-            transactionId?: string
-            paymentIntentId?: string
-            paidAt?: number
-            refundedAt?: number
-            refundAmountCents?: number
-            paygateSessionId?: string
-            paygatePaymentUrl?: string
-            paygateTransactionId?: string
-          }
-        },
-        string
-      >
-    }
-  }
-  admin?: {
-    q?: {
-      getAdminSettings?: FunctionReference<
-        'query',
-        'internal',
-        DefaultFunctionArgs,
-        AdminSettings | null
-      >
-    }
-  }
-}
 
 /**
  * Initiate Cash App Pay payment for an order
@@ -87,12 +33,9 @@ export const initiateCashAppPayment = action({
     error?: string
   }> => {
     // Get order
-    const order: OrderType | null = await ctx.runQuery(
-      internalApi.orders?.q?.getOrder as unknown as FunctionReference<'query'>,
-      {
-        orderId: args.orderId,
-      },
-    )
+    const order: OrderType | null = await ctx.runQuery(api.orders.q.getById, {
+      id: args.orderId,
+    })
 
     if (!order) {
       throw new Error('Order not found')
@@ -107,27 +50,37 @@ export const initiateCashAppPayment = action({
     }
 
     // Get admin settings for Cash App configuration
-    const adminSettings: AdminSettings | null = await ctx.runQuery(
-      internalApi.admin?.q
-        ?.getAdminSettings as unknown as FunctionReference<'query'>,
-      {},
-    )
+    const adminSettings = await ctx.runQuery(api.admin.q.getAdminByIdentifier, {
+      identifier: 'cashapp',
+    })
+    const cashAppSettings =
+      adminSettings?.value &&
+      typeof adminSettings.value === 'object' &&
+      'cashapp' in adminSettings.value &&
+      adminSettings.value.cashapp &&
+      typeof adminSettings.value.cashapp === 'object'
+        ? (adminSettings.value.cashapp as Record<string, unknown>)
+        : adminSettings?.value && typeof adminSettings.value === 'object'
+          ? (adminSettings.value as Record<string, unknown>)
+          : undefined
 
     // Get Cash App configuration from admin settings or environment
     // Note: Square credentials should be stored securely (env vars or admin settings)
     const squareAccessToken =
-      adminSettings?.value?.cashapp?.accessToken ||
+      (typeof cashAppSettings?.accessToken === 'string'
+        ? cashAppSettings.accessToken
+        : undefined) ||
       process.env.SQUARE_ACCESS_TOKEN ||
       ''
     const squareLocationId =
-      adminSettings?.value?.cashapp?.locationId ||
+      (typeof cashAppSettings?.locationId === 'string'
+        ? cashAppSettings.locationId
+        : undefined) ||
       process.env.SQUARE_LOCATION_ID ||
       ''
     const squareEnvironment =
-      (adminSettings?.value?.cashapp?.environment as
-        | 'sandbox'
-        | 'production') ||
-      (process.env.SQUARE_ENVIRONMENT as 'sandbox' | 'production') ||
+      ((cashAppSettings?.environment as 'sandbox' | 'production' | undefined) ??
+        (process.env.SQUARE_ENVIRONMENT as 'sandbox' | 'production')) ||
       'sandbox'
 
     if (!squareAccessToken) {
@@ -182,18 +135,14 @@ export const initiateCashAppPayment = action({
     }
 
     // Update order with payment information
-    await ctx.runMutation(
-      internalApi.orders?.m
-        ?.updatePayment as unknown as FunctionReference<'mutation'>,
-      {
-        orderId: args.orderId,
-        payment: {
-          ...order.payment,
-          paymentIntentId: paymentId, // Store Square payment ID
-          status: 'processing', // Mark as processing while payment is in progress
-        },
+    await ctx.runMutation(api.orders.m.updatePayment, {
+      orderId: args.orderId,
+      payment: {
+        ...order.payment,
+        paymentIntentId: paymentId,
+        status: 'processing',
       },
-    )
+    })
 
     // Return configuration for frontend SDK
     return {
@@ -201,7 +150,9 @@ export const initiateCashAppPayment = action({
       paymentId,
       applicationId:
         process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID ||
-        adminSettings?.value?.cashapp?.applicationId ||
+        (typeof cashAppSettings?.applicationId === 'string'
+          ? cashAppSettings.applicationId
+          : '') ||
         '',
       locationId: squareLocationId,
     }
@@ -226,12 +177,9 @@ export const checkCashAppPaymentStatus = action({
     message?: string
   }> => {
     // Get order
-    const order: OrderType | null = await ctx.runQuery(
-      internalApi.orders?.q?.getOrder as unknown as FunctionReference<'query'>,
-      {
-        orderId: args.orderId,
-      },
-    )
+    const order: OrderType | null = await ctx.runQuery(api.orders.q.getById, {
+      id: args.orderId,
+    })
 
     if (!order) {
       throw new Error('Order not found')
@@ -242,21 +190,29 @@ export const checkCashAppPaymentStatus = action({
     }
 
     // Get admin settings for Cash App configuration
-    const adminSettings: AdminSettings | null = await ctx.runQuery(
-      internalApi.admin?.q
-        ?.getAdminSettings as unknown as FunctionReference<'query'>,
-      {},
-    )
+    const adminSettings = await ctx.runQuery(api.admin.q.getAdminByIdentifier, {
+      identifier: 'cashapp',
+    })
+    const cashAppSettings =
+      adminSettings?.value &&
+      typeof adminSettings.value === 'object' &&
+      'cashapp' in adminSettings.value &&
+      adminSettings.value.cashapp &&
+      typeof adminSettings.value.cashapp === 'object'
+        ? (adminSettings.value.cashapp as Record<string, unknown>)
+        : adminSettings?.value && typeof adminSettings.value === 'object'
+          ? (adminSettings.value as Record<string, unknown>)
+          : undefined
 
     const squareAccessToken =
-      adminSettings?.value?.cashapp?.accessToken ||
+      (typeof cashAppSettings?.accessToken === 'string'
+        ? cashAppSettings.accessToken
+        : undefined) ||
       process.env.SQUARE_ACCESS_TOKEN ||
       ''
     const squareEnvironment =
-      (adminSettings?.value?.cashapp?.environment as
-        | 'sandbox'
-        | 'production') ||
-      (process.env.SQUARE_ENVIRONMENT as 'sandbox' | 'production') ||
+      ((cashAppSettings?.environment as 'sandbox' | 'production' | undefined) ??
+        (process.env.SQUARE_ENVIRONMENT as 'sandbox' | 'production')) ||
       'sandbox'
 
     if (!squareAccessToken) {
@@ -296,7 +252,7 @@ export const checkCashAppPaymentStatus = action({
       PENDING: 'pending',
       APPROVED: 'completed',
       COMPLETED: 'completed',
-      CANCELED: 'cancelled',
+      CANCELED: 'failed',
       FAILED: 'failed',
     }
 
@@ -305,8 +261,7 @@ export const checkCashAppPaymentStatus = action({
         | 'pending'
         | 'processing'
         | 'completed'
-        | 'failed'
-        | 'cancelled',
+        | 'failed',
       paymentId: payment.id,
       transactionId: payment.transaction_id,
       paidAt: payment.updated_at
@@ -316,34 +271,26 @@ export const checkCashAppPaymentStatus = action({
 
     // Update order payment status if changed
     if (status.status === 'completed' && order.payment.status !== 'completed') {
-      await ctx.runMutation(
-        internalApi.orders?.m
-          ?.updatePayment as unknown as FunctionReference<'mutation'>,
-        {
-          orderId: args.orderId,
-          payment: {
-            ...order.payment,
-            status: 'completed',
-            transactionId: status.transactionId || order.payment.transactionId,
-            paidAt: status.paidAt || Date.now(),
-          },
+      await ctx.runMutation(api.orders.m.updatePayment, {
+        orderId: args.orderId,
+        payment: {
+          ...order.payment,
+          status: 'completed',
+          transactionId: status.transactionId || order.payment.transactionId,
+          paidAt: status.paidAt || Date.now(),
         },
-      )
+      })
     } else if (
       status.status === 'failed' &&
       order.payment.status !== 'failed'
     ) {
-      await ctx.runMutation(
-        internalApi.orders?.m
-          ?.updatePayment as unknown as FunctionReference<'mutation'>,
-        {
-          orderId: args.orderId,
-          payment: {
-            ...order.payment,
-            status: 'failed',
-          },
+      await ctx.runMutation(api.orders.m.updatePayment, {
+        orderId: args.orderId,
+        payment: {
+          ...order.payment,
+          status: 'failed',
         },
-      )
+      })
     }
 
     return {

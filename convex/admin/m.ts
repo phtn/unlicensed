@@ -1,10 +1,10 @@
 import {v} from 'convex/values'
-import {mutation} from '../_generated/server'
 import type {MutationCtx} from '../_generated/server'
+import {mutation} from '../_generated/server'
 import {safeGet} from '../utils/id_validation'
 import {
-  paymentGatewayConfigsSchema,
   paygateSettingsSchema,
+  paymentGatewayConfigsSchema,
   StatConfig,
   statConfigSchema,
 } from './d'
@@ -257,12 +257,17 @@ export const updatePayGateSettings = mutation({
     paygate: paygateSettingsSchema,
   },
   handler: async (ctx, args) => {
-    let settings = await ctx.db.query('adminSettings').first()
+    let settings = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'paygate'))
+      .unique()
 
     if (!settings) {
       const settingsId = await ctx.db.insert('adminSettings', {
+        identifier: 'paygate',
         value: {paygate: args.paygate},
         updatedAt: Date.now(),
+        createdAt: Date.now(),
       })
       settings = await safeGet(ctx.db, 'adminSettings', settingsId)
     } else {
@@ -288,11 +293,15 @@ export const updatePaymentGatewayConfigs = mutation({
     configs: paymentGatewayConfigsSchema,
   },
   handler: async (ctx, {configs}) => {
-    const settings = await ctx.db.query('adminSettings').first()
+    const settings = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'payment-gateway'))
+      .unique()
     const now = Date.now()
 
     if (!settings) {
       await ctx.db.insert('adminSettings', {
+        identifier: 'payment-gateway',
         value: {
           paygate: configs.paygate,
           paylex: configs.paylex,
@@ -300,6 +309,7 @@ export const updatePaymentGatewayConfigs = mutation({
           defaultGateway: configs.defaultGateway,
         },
         updatedAt: now,
+        createdAt: now,
       })
       await syncGatewayUrlsToGateways(ctx, configs, now)
       return {success: true}
@@ -447,9 +457,7 @@ export const updatePaymentGatewayDefault = mutation({
   handler: async (ctx, {defaultGateway}) => {
     const setting = await ctx.db
       .query('adminSettings')
-      .withIndex('by_identifier', (q) =>
-        q.eq('identifier', 'payment-gateway'),
-      )
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'payment-gateway'))
       .unique()
 
     const now = Date.now()

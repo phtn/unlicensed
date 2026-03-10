@@ -1,6 +1,6 @@
 import {v} from 'convex/values'
-import type {Id} from '../_generated/dataModel'
 import {internal} from '../_generated/api'
+import type {Id} from '../_generated/dataModel'
 import type {MutationCtx} from '../_generated/server'
 import {internalMutation, mutation} from '../_generated/server'
 import {isProductCartItem} from '../cart/d'
@@ -11,6 +11,252 @@ import {
   paymentSchema,
   shippingSchema,
 } from './d'
+
+const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
+const DEFAULT_SHIPPING_FEE_CENTS = 500
+const DEFAULT_MINIMUM_ORDER_CENTS = 5000
+const DEFAULT_TAX_RATE_PERCENT = 10
+const DEFAULT_REWARDS_TIERS = [
+  {
+    minSubtotal: 0,
+    maxSubtotal: 98.99,
+    shippingCost: 12.99,
+    cashBackPct: 1.5,
+  },
+  {
+    minSubtotal: 99,
+    maxSubtotal: 148.99,
+    shippingCost: 3.99,
+    cashBackPct: 2.0,
+  },
+  {
+    minSubtotal: 149,
+    maxSubtotal: 248.99,
+    shippingCost: 0,
+    cashBackPct: 3.0,
+  },
+  {
+    minSubtotal: 249,
+    maxSubtotal: null,
+    shippingCost: 0,
+    cashBackPct: 5.0,
+  },
+] as const
+const DEFAULT_BUNDLE_BONUS = {enabled: true, bonusPct: 0.5, minCategories: 2}
+const DEFAULT_FREE_SHIPPING_FIRST_ORDER = 49
+
+type RewardsTierConfig = {
+  minSubtotal: number
+  maxSubtotal: number | null
+  shippingCost: number
+  cashBackPct: number
+}
+
+async function getAdminSettingValue(
+  ctx: MutationCtx,
+  identifier: string,
+): Promise<Record<string, unknown> | null> {
+  const setting = await ctx.db
+    .query('adminSettings')
+    .withIndex('by_identifier', (q) => q.eq('identifier', identifier))
+    .unique()
+
+  if (!setting?.value || typeof setting.value !== 'object') {
+    return null
+  }
+
+  return setting.value as Record<string, unknown>
+}
+
+function getProductUnitPriceCents(
+  product: {
+    priceCents?: number
+    priceByDenomination?: Record<string, number>
+  },
+  denomination: number | undefined,
+): number {
+  const denom = denomination ?? 1
+  const byDenom = product.priceByDenomination
+  if (byDenom && Object.keys(byDenom).length > 0) {
+    const direct = byDenom[String(denom)]
+    if (typeof direct === 'number' && direct >= 0) {
+      return Math.round(direct)
+    }
+  }
+
+  return (product.priceCents ?? 0) * denom
+}
+
+function getBundleTotalCents(
+  products: Array<{
+    priceCents?: number
+    priceByDenomination?: Record<string, number>
+  }>,
+  denom: number,
+  bundleAmount: number,
+): number {
+  if (products.length === 0) {
+    return 0
+  }
+
+  let sumCents = 0
+  for (const product of products) {
+    const direct = getProductUnitPriceCents(product, bundleAmount)
+    const derived =
+      denom > 0
+        ? getProductUnitPriceCents(product, denom) * (bundleAmount / denom)
+        : 0
+    sumCents += direct > 0 ? direct : derived
+  }
+
+  return Math.ceil(sumCents / products.length / 500) * 500
+}
+
+async function buildOrderItems(
+  ctx: MutationCtx,
+  cartItems: Array<
+    | {
+        productId: Id<'products'>
+        quantity: number
+        denomination?: number
+      }
+    | {
+        bundleType: string
+        variationIndex: number
+        bundleItems: Array<{
+          productId: Id<'products'>
+          quantity: number
+          denomination: number
+        }>
+      }
+  >,
+) {
+  const orderItems: Array<{
+    productId: Id<'products'>
+    productName: string
+    productSlug: string
+    productImage: string
+    quantity: number
+    denomination: number | undefined
+    unitPriceCents: number
+    totalPriceCents: number
+  }> = []
+  const categorySlugs = new Set<string>()
+
+  for (const cartItem of cartItems) {
+    if (isProductCartItem(cartItem)) {
+      const product = await ctx.db.get(cartItem.productId)
+      if (!product) {
+        throw new Error(`Product ${cartItem.productId} not found`)
+      }
+
+      const unitPriceCents = getProductUnitPriceCents(
+        product,
+        cartItem.denomination,
+      )
+      const totalPriceCents = unitPriceCents * cartItem.quantity
+      const productImage = product.image
+        ? ((await ctx.storage.getUrl(product.image)) ?? '')
+        : ''
+
+      if (product.categorySlug) {
+        categorySlugs.add(product.categorySlug)
+      }
+
+      orderItems.push({
+        productId: cartItem.productId,
+        productName: product.name ?? '',
+        productSlug: product.slug ?? '',
+        productImage,
+        quantity: cartItem.quantity,
+        denomination: cartItem.denomination,
+        unitPriceCents,
+        totalPriceCents,
+      })
+      continue
+    }
+
+    const deal = await ctx.db
+      .query('deals')
+      .withIndex('by_deal_slug', (q) => q.eq('id', cartItem.bundleType))
+      .unique()
+    const variation = deal?.variations[cartItem.variationIndex]
+
+    if (!deal || !deal.enabled || !variation) {
+      throw new Error(
+        'Bundle configuration is no longer available. Please rebuild your cart.',
+      )
+    }
+
+    const bundleAmount = variation.totalUnits * variation.denominationPerUnit
+    const lineItems = await Promise.all(
+      cartItem.bundleItems.map(async (bundleItem) => {
+        const product = await ctx.db.get(bundleItem.productId)
+        if (!product) {
+          throw new Error(`Product ${bundleItem.productId} not found`)
+        }
+
+        if (product.categorySlug) {
+          categorySlugs.add(product.categorySlug)
+        }
+
+        const productImage = product.image
+          ? ((await ctx.storage.getUrl(product.image)) ?? '')
+          : ''
+        const lineUnitQtyCents =
+          getProductUnitPriceCents(product, bundleItem.denomination) *
+          bundleItem.quantity
+
+        return {
+          product,
+          productImage,
+          bundleItem,
+          lineUnitQtyCents,
+        }
+      }),
+    )
+
+    const bundleTotalCents = getBundleTotalCents(
+      lineItems.map(({product}) => product),
+      variation.denominationPerUnit,
+      bundleAmount,
+    )
+    const lineUnitQtyTotal = lineItems.reduce(
+      (sum, lineItem) => sum + lineItem.lineUnitQtyCents,
+      0,
+    )
+    let remainingBundleCents = bundleTotalCents
+
+    lineItems.forEach((lineItem, index) => {
+      const totalPriceCents =
+        index === lineItems.length - 1
+          ? remainingBundleCents
+          : lineUnitQtyTotal > 0
+            ? Math.round(
+                (bundleTotalCents * lineItem.lineUnitQtyCents) /
+                  lineUnitQtyTotal,
+              )
+            : 0
+      remainingBundleCents -= totalPriceCents
+
+      orderItems.push({
+        productId: lineItem.bundleItem.productId,
+        productName: lineItem.product.name ?? '',
+        productSlug: lineItem.product.slug ?? '',
+        productImage: lineItem.productImage,
+        quantity: lineItem.bundleItem.quantity,
+        denomination: lineItem.bundleItem.denomination,
+        unitPriceCents:
+          lineItem.bundleItem.quantity > 0
+            ? Math.round(totalPriceCents / lineItem.bundleItem.quantity)
+            : 0,
+        totalPriceCents,
+      })
+    })
+  }
+
+  return {orderItems, categorySlugs}
+}
 
 async function getProductStockForOrder(
   ctx: MutationCtx,
@@ -115,6 +361,15 @@ export const createOrder = mutation({
       throw new Error('Cart is empty or not found')
     }
 
+    if (
+      args.userId !== undefined &&
+      args.userId !== null &&
+      cart.userId !== null &&
+      cart.userId !== args.userId
+    ) {
+      throw new Error('Cart does not belong to the requested user')
+    }
+
     // Flatten cart items: product items as-is, bundle items expanded to their line items
     const flatItems: Array<{
       productId: Id<'products'>
@@ -140,9 +395,22 @@ export const createOrder = mutation({
     }
 
     for (const item of flatItems) {
-      const stock = await getProductStockForOrder(ctx, item.productId, item.denomination)
-      const heldTotal = await getHeldQuantityForOrder(ctx, item.productId, item.denomination)
-      const ourHold = await getOurHoldForOrder(ctx, cart._id, item.productId, item.denomination)
+      const stock = await getProductStockForOrder(
+        ctx,
+        item.productId,
+        item.denomination,
+      )
+      const heldTotal = await getHeldQuantityForOrder(
+        ctx,
+        item.productId,
+        item.denomination,
+      )
+      const ourHold = await getOurHoldForOrder(
+        ctx,
+        cart._id,
+        item.productId,
+        item.denomination,
+      )
       const available = stock - heldTotal + ourHold
       if (available < item.quantity) {
         const product = await ctx.db.get(item.productId)
@@ -153,92 +421,148 @@ export const createOrder = mutation({
       }
     }
 
-    const overrideMap = new Map<string, { unitPriceCents: number; totalPriceCents: number }>()
-    if (args.itemPriceOverrides?.length) {
-      for (const o of args.itemPriceOverrides) {
-        const key = `${o.productId}:${o.denomination ?? 1}`
-        overrideMap.set(key, {
-          unitPriceCents: o.unitPriceCents,
-          totalPriceCents: o.totalPriceCents,
-        })
-      }
-    }
-
-    // Build order items with product snapshots. Orders table "items" field must be complete:
-    // every item has unitPriceCents and totalPriceCents (totalPriceCents = quantity × unitPriceCents × denomination).
-    const orderItems = await Promise.all(
-      flatItems.map(async (cartItem) => {
-        const product = await ctx.db.get(cartItem.productId)
-        if (!product) {
-          throw new Error(`Product ${cartItem.productId} not found`)
-        }
-
-        const denomination = cartItem.denomination ?? 1
-        const quantity = cartItem.quantity
-        const overrideKey = `${cartItem.productId}:${denomination}`
-        const override = overrideMap.get(overrideKey)
-
-        // Unit price in cents: prefer override, then priceByDenomination (per-denom price in cents), then priceCents (base price)
-        let unitPriceCents: number
-        let totalPriceCents: number
-        if (typeof override?.unitPriceCents === 'number') {
-          unitPriceCents = override.unitPriceCents
-          totalPriceCents =
-            typeof override?.totalPriceCents === 'number'
-              ? override.totalPriceCents
-              : unitPriceCents * quantity
-        } else {
-          const byDenom = product.priceByDenomination
-          const denomKey = String(denomination)
-          const priceFromDenom =
-            byDenom &&
-            Object.keys(byDenom).length > 0 &&
-            typeof byDenom[denomKey] === 'number'
-              ? byDenom[denomKey]
-              : null
-          if (priceFromDenom != null && priceFromDenom >= 0) {
-            // priceByDenomination is stored in cents; price is per unit of this denomination
-            unitPriceCents = priceFromDenom
-            totalPriceCents = unitPriceCents * quantity
-          } else {
-            // Fallback: base price in priceCents; total = base * denomination * quantity
-            unitPriceCents = typeof product.priceCents === 'number' ? product.priceCents : 0
-            totalPriceCents = unitPriceCents * denomination * quantity
-          }
-        }
-
-        const safeUnitPriceCents = Number(unitPriceCents) || 0
-        const safeTotalPriceCents =
-          Number(totalPriceCents) || safeUnitPriceCents * quantity
-
-        // Convert storage ID to URL if needed
-        let productImageUrl = ''
-        if (product.image) {
-          productImageUrl = (await ctx.storage.getUrl(product.image)) ?? ''
-        }
-
-        return {
-          productId: cartItem.productId,
-          productName: product.name ?? '',
-          productSlug: product.slug ?? '',
-          productImage: productImageUrl,
-          quantity,
-          denomination: cartItem.denomination,
-          unitPriceCents: safeUnitPriceCents,
-          totalPriceCents: safeTotalPriceCents,
-        }
-      }),
+    const {orderItems, categorySlugs} = await buildOrderItems(ctx, cart.items)
+    const subtotalCents = orderItems.reduce(
+      (sum, item) => sum + item.totalPriceCents,
+      0,
     )
 
-    // Calculate totals
-    const subtotalCents =
-      args.subtotalCents ??
-      orderItems.reduce((sum, item) => sum + item.totalPriceCents, 0)
+    const taxConfig = await getAdminSettingValue(ctx, 'tax_config')
+    const taxRatePercent =
+      taxConfig && typeof taxConfig.taxRatePercent === 'number'
+        ? taxConfig.taxRatePercent
+        : DEFAULT_TAX_RATE_PERCENT
+    const isTaxActive =
+      taxConfig && typeof taxConfig.active === 'boolean'
+        ? taxConfig.active
+        : true
+    const taxCents = isTaxActive
+      ? Math.round(subtotalCents * (taxRatePercent / 100))
+      : 0
 
-    const taxCents = args.taxCents ?? Math.round(subtotalCents * 0.1) // 10% tax
-    const shippingCents = args.shippingCents ?? (subtotalCents > 5000 ? 0 : 500) // Free shipping over $50
-    const processingFeeCents = args.processingFeeCents ?? 0
-    const discountCents = args.discountCents ?? 0
+    const rewardsConfig = await getAdminSettingValue(ctx, 'rewards_config')
+    const tiers =
+      rewardsConfig && Array.isArray(rewardsConfig.tiers)
+        ? rewardsConfig.tiers
+            .map((tier) =>
+              tier && typeof tier === 'object'
+                ? (tier as Partial<RewardsTierConfig>)
+                : null,
+            )
+            .filter(
+              (tier): tier is RewardsTierConfig =>
+                tier !== null &&
+                typeof tier.minSubtotal === 'number' &&
+                (tier.maxSubtotal === null ||
+                  typeof tier.maxSubtotal === 'number') &&
+                typeof tier.shippingCost === 'number' &&
+                typeof tier.cashBackPct === 'number',
+            )
+        : []
+    const rewardTiers = tiers.length > 0 ? tiers : [...DEFAULT_REWARDS_TIERS]
+    const bundleBonus =
+      rewardsConfig &&
+      rewardsConfig.bundleBonus &&
+      typeof rewardsConfig.bundleBonus === 'object'
+        ? (rewardsConfig.bundleBonus as {
+            enabled?: boolean
+            bonusPct?: number
+            minCategories?: number
+          })
+        : undefined
+    const subtotalDollars = subtotalCents / 100
+    const orderUserId = args.userId ?? null
+    const isFirstOrder = orderUserId
+      ? !(
+          await ctx.db
+            .query('orders')
+            .withIndex('by_user', (q) => q.eq('userId', orderUserId))
+            .collect()
+        ).some((order) => order.payment.status === 'completed')
+      : false
+    const currentTier =
+      rewardTiers.find(
+        (tier) =>
+          subtotalDollars >= tier.minSubtotal &&
+          (tier.maxSubtotal === null || subtotalDollars <= tier.maxSubtotal),
+      ) ?? rewardTiers[0]
+    const isBundleBonusActive =
+      (bundleBonus?.enabled ?? DEFAULT_BUNDLE_BONUS.enabled) &&
+      categorySlugs.size >=
+        (bundleBonus?.minCategories ?? DEFAULT_BUNDLE_BONUS.minCategories)
+    const cashBackPct =
+      currentTier.cashBackPct +
+      (isBundleBonusActive
+        ? (bundleBonus?.bonusPct ?? DEFAULT_BUNDLE_BONUS.bonusPct)
+        : 0)
+    const storeCreditCents = Math.round(
+      ((subtotalDollars * cashBackPct) / 100) * 100,
+    )
+    const freeShippingFirstOrder =
+      rewardsConfig && typeof rewardsConfig.freeShippingFirstOrder === 'number'
+        ? rewardsConfig.freeShippingFirstOrder
+        : DEFAULT_FREE_SHIPPING_FIRST_ORDER
+    const shippingConfig = await getAdminSettingValue(ctx, 'shipping_config')
+    const fallbackShippingFeeCents =
+      shippingConfig && typeof shippingConfig.shippingFeeCents === 'number'
+        ? shippingConfig.shippingFeeCents
+        : DEFAULT_SHIPPING_FEE_CENTS
+    const fallbackMinimumOrderCents =
+      shippingConfig && typeof shippingConfig.minimumOrderCents === 'number'
+        ? shippingConfig.minimumOrderCents
+        : DEFAULT_MINIMUM_ORDER_CENTS
+    const rewardsShippingCents = Math.round(currentTier.shippingCost * 100)
+    const shippingCents =
+      isFirstOrder && subtotalDollars >= freeShippingFirstOrder
+        ? 0
+        : rewardsShippingCents > 0
+          ? rewardsShippingCents
+          : subtotalCents >= fallbackMinimumOrderCents
+            ? 0
+            : fallbackShippingFeeCents
+
+    let discountCents = 0
+    if (
+      orderUserId &&
+      (args.redeemedStoreCreditCents ?? 0) > 0 &&
+      subtotalCents >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
+    ) {
+      const userRewards = await ctx.db
+        .query('userRewards')
+        .withIndex('by_user', (q) => q.eq('userId', orderUserId))
+        .unique()
+      const availableBalanceCents = Math.max(
+        0,
+        Math.round((userRewards?.availablePoints ?? 0) * 100),
+      )
+      discountCents = Math.min(
+        Math.max(0, args.redeemedStoreCreditCents ?? 0),
+        availableBalanceCents,
+        subtotalCents + taxCents + shippingCents,
+      )
+    }
+
+    const cardsProcessingFeeConfig = await getAdminSettingValue(
+      ctx,
+      'cards_processing_fee',
+    )
+    const isProcessingFeeEnabled =
+      cardsProcessingFeeConfig &&
+      typeof cardsProcessingFeeConfig.enabled === 'boolean'
+        ? cardsProcessingFeeConfig.enabled
+        : false
+    const processingFeePercent =
+      cardsProcessingFeeConfig &&
+      typeof cardsProcessingFeeConfig.percent === 'number'
+        ? cardsProcessingFeeConfig.percent
+        : 0
+    const discountedSubtotalCents = Math.max(0, subtotalCents - discountCents)
+    const processingFeeCents =
+      isProcessingFeeEnabled &&
+      (args.paymentMethod === 'crypto_transfer' ||
+        args.paymentMethod === 'crypto_commerce')
+        ? Math.round(discountedSubtotalCents * (processingFeePercent / 100))
+        : 0
 
     const totalCents =
       subtotalCents +
@@ -255,7 +579,7 @@ export const createOrder = mutation({
 
     // Create order
     const orderId = await ctx.db.insert('orders', {
-      userId: args.userId ?? null,
+      userId: orderUserId,
       orderNumber: args.orderNumber,
       uuid: args.uuid,
       orderStatus: 'pending_payment',
@@ -273,13 +597,8 @@ export const createOrder = mutation({
       contactPhone: args.contactPhone,
       payment,
       customerNotes: args.customerNotes,
-      ...(args.storeCreditCents != null && args.storeCreditCents > 0
-        ? {storeCreditCents: args.storeCreditCents}
-        : {}),
-      ...(args.redeemedStoreCreditCents != null &&
-      args.redeemedStoreCreditCents > 0
-        ? {redeemedStoreCreditCents: args.redeemedStoreCreditCents}
-        : {}),
+      ...(storeCreditCents > 0 ? {storeCreditCents} : {}),
+      ...(discountCents > 0 ? {redeemedStoreCreditCents: discountCents} : {}),
       createdAt: Date.now(),
       updatedAt: Date.now(),
     })
@@ -545,11 +864,10 @@ export const updateCourier = mutation({
         throw new Error('Courier not found')
       }
 
-      const accountIds = new Set((courier.accounts ?? []).map((account) => account.id))
-      if (
-        !nextCourierAccountId ||
-        !accountIds.has(nextCourierAccountId)
-      ) {
+      const accountIds = new Set(
+        (courier.accounts ?? []).map((account) => account.id),
+      )
+      if (!nextCourierAccountId || !accountIds.has(nextCourierAccountId)) {
         nextCourierAccountId = undefined
       }
     } else {

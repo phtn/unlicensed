@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "convex": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "0b6aae6f7797c86ce5181e4ff4bd0a99bc86c70a41bbd0cd12997cb2abb21570"
+    }
+  }
+}

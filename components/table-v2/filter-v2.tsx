@@ -100,8 +100,9 @@ export const Filter = <T,>({
         .filter(
           (option, index, options) =>
             option.token.length > 0 &&
-            options.findIndex((candidate) => candidate.token === option.token) ===
-              index,
+            options.findIndex(
+              (candidate) => candidate.token === option.token,
+            ) === index,
         )
         .sort((a, b) => a.label.localeCompare(b.label))
 
@@ -153,7 +154,7 @@ export const Filter = <T,>({
                 className={cn('size-4 dark:opacity-80')}
               />
             )}
-            <span className='hidden text-sm font-brk capitalize opacity-90 md:flex'>
+            <span className='text-sm font-brk capitalize opacity-90 flex'>
               Filter
             </span>
           </BaseButton>
@@ -243,11 +244,12 @@ export const Filter = <T,>({
                                 )
                                 if (!column) return
 
-                                const currentFilter = column.getFilterValue() as (
-                                  | string
-                                  | number
-                                  | boolean
-                                )[]
+                                const currentFilter =
+                                  column.getFilterValue() as (
+                                    | string
+                                    | number
+                                    | boolean
+                                  )[]
                                 const nextFilterValue = currentFilter
                                   ? [...currentFilter]
                                   : []
@@ -255,7 +257,8 @@ export const Filter = <T,>({
                                 if (checked) {
                                   const exists = nextFilterValue.some(
                                     (value) =>
-                                      getFilterValueToken(value) === option.token,
+                                      getFilterValueToken(value) ===
+                                      option.token,
                                   )
                                   if (!exists) {
                                     nextFilterValue.push(option.token)
@@ -263,7 +266,8 @@ export const Filter = <T,>({
                                 } else {
                                   const nextIndex = nextFilterValue.findIndex(
                                     (value) =>
-                                      getFilterValueToken(value) === option.token,
+                                      getFilterValueToken(value) ===
+                                      option.token,
                                   )
                                   if (nextIndex > -1) {
                                     nextFilterValue.splice(nextIndex, 1)
@@ -294,10 +298,13 @@ export const Filter = <T,>({
               </div>
             ) : (
               <div
-                className={cn('px-2 py-3 text-center font-brk text-xs opacity-60', {
-                  'border-t border-dashed border-dark-gray/25 dark:border-zinc-800':
-                    availableColumns.length > 0,
-                })}>
+                className={cn(
+                  'px-2 py-3 text-center font-brk text-xs opacity-60',
+                  {
+                    'border-t border-dashed border-dark-gray/25 dark:border-zinc-800':
+                      availableColumns.length > 0,
+                  },
+                )}>
                 no active filters
               </div>
             )}
