@@ -1,9 +1,9 @@
-import {describe, expect, test} from 'bun:test'
-import {render, screen} from './test-utils'
 import {DealsBundleDebug} from '@/app/lobby/(store)/deals/components/deals-bundle-debug'
 import {DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG} from '@/app/lobby/(store)/deals/lib/deal-types'
 import type {StoreProduct} from '@/app/types'
 import type {Id} from '@/convex/_generated/dataModel'
+import {describe, expect, test} from 'bun:test'
+import {render, screen} from './test-utils'
 
 function mkProduct(overrides: Partial<StoreProduct> = {}): StoreProduct {
   return {
@@ -11,8 +11,26 @@ function mkProduct(overrides: Partial<StoreProduct> = {}): StoreProduct {
     name: 'Test Flower',
     slug: 'test-flower',
     categorySlug: 'flower',
+    shortDescription: 'Test flower short description',
+    description: 'Test flower description',
     priceCents: 2599,
+    unit: 'g',
     availableDenominations: [0.125, 0.25, 3.5, 7],
+    popularDenomination: [3.5],
+    thcPercentage: 20,
+    effects: ['relaxed'],
+    terpenes: ['myrcene'],
+    featured: false,
+    limited: false,
+    onSale: false,
+    available: true,
+    stock: 10,
+    rating: 4.5,
+    image: null,
+    gallery: [],
+    consumption: 'Smoke',
+    flavorNotes: ['earthy'],
+    potencyLevel: 'medium',
     ...overrides,
   }
 }
@@ -70,12 +88,15 @@ describe('DealsBundleDebug', () => {
     summary.click()
     expect(screen.getByRole('cell', {name: /^products$/})).toBeInTheDocument()
     expect(screen.getByRole('cell', {name: /^productIds$/})).toBeInTheDocument()
-    expect(screen.getByRole('cell', {name: /^filteredProducts$/})).toBeInTheDocument()
+    expect(
+      screen.getByRole('cell', {name: /^filteredProducts$/}),
+    ).toBeInTheDocument()
   })
 
   test('shows per-product filter reasons when expanded', () => {
+    const productNoDenomId = 'p3' as Id<'products'>
     const productNoDenom = mkProduct({
-      _id: 'p3' as Id<'products'>,
+      _id: productNoDenomId,
       name: 'No Denom',
       availableDenominations: [],
     })
@@ -85,7 +106,7 @@ describe('DealsBundleDebug', () => {
         config={config}
         variation={variation}
         products={[productNoDenom, ...products]}
-        productIds={[productNoDenom._id, ...productIds]}
+        productIds={[productNoDenomId, ...productIds]}
         pairs={pairs}
         availableMap={availableMap}
         filteredProducts={filteredProducts}

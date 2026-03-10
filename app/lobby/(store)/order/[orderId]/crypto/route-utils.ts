@@ -1,5 +1,7 @@
 export const isCryptoPaymentMethod = (paymentMethod: string): boolean =>
-  paymentMethod === 'crypto_commerce' || paymentMethod === 'crypto_transfer'
+  paymentMethod === 'crypto_commerce' ||
+  paymentMethod === 'crypto_transfer' ||
+  paymentMethod === 'crypto-payment'
 
 export const getCryptoFallbackHref = (
   orderId: string,
@@ -12,6 +14,9 @@ export const getCryptoFallbackHref = (
     return `/lobby/order/${orderId}/cashapp`
   }
   if (paymentMethod === 'crypto_commerce') {
+    return `/lobby/order/${orderId}/crypto`
+  }
+  if (paymentMethod === 'crypto-payment') {
     return `/lobby/order/${orderId}/crypto`
   }
 

@@ -8,7 +8,8 @@ import type {Provider, ProviderStatusResponse} from '@/lib/paygate/types'
 import {cn} from '@/lib/utils'
 import {Card, CardHeader} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {useCallback, useEffect, useMemo} from 'react'
+import {useEffect, useMemo, useState} from 'react'
+import {toast} from 'react-hot-toast'
 
 const TOP_TEN_MAX = 10
 
@@ -26,56 +27,92 @@ function isProviderStatusResponse(
 
 const ProvidersList = () => {
   const {handleApiCall, response} = useApiCall()
-  const defaultAccount = useQuery(api.paygateAccounts.q.getDefaultAccount, {})
-  const updateTopTenProviders = useMutation(
+  const gatewayDoc = useQuery(api.gateways.q.getByGateway, {gateway: 'paygate'})
+  const defaultAccount = useQuery(api.paygateAccounts.q.getDefaultAccount, {
+    gateway: 'paygate',
+  })
+  const updateAccountTopTenProviders = useMutation(
     api.paygateAccounts.m.updateTopTenProviders,
   )
+  const updateGatewayTopTenProviders = useMutation(
+    api.gateways.m.updateTopTenProviders,
+  )
+  const [isSaving, setIsSaving] = useState(false)
+
+  const providerStatusUrl = useMemo(() => {
+    const apiUrl = gatewayDoc?.apiUrl?.trim() || 'https://api.paygate.to'
+    return `${apiUrl.replace(/\/$/, '')}/control/provider-status/`
+  }, [gatewayDoc?.apiUrl])
 
   useEffect(() => {
-    if (!response) {
-      handleApiCall('https://api.paygate.to/control/provider-status/')
+    if (!response && gatewayDoc !== undefined) {
+      handleApiCall(providerStatusUrl)
     }
-  }, [handleApiCall, response])
+  }, [gatewayDoc, handleApiCall, providerStatusUrl, response])
 
-  const data = useMemo(() => {
-    if (response?.data && isProviderStatusResponse(response.data)) {
-      return response.data.providers
-    }
-    return []
-  }, [response?.data])
+  const data =
+    response?.data && isProviderStatusResponse(response.data)
+      ? response.data.providers
+      : []
 
-  const topTen = useMemo(
-    () => defaultAccount?.topTenProviders ?? [],
-    [defaultAccount?.topTenProviders],
-  )
+  const topTen = gatewayDoc?.topTenProviders ?? []
+  const defaultProvider = gatewayDoc?.defaultProvider ?? topTen[0]?.id
 
-  const handleToggleProvider = useCallback(
-    (item: Provider) => {
-      if (defaultAccount == null) return
-      const isInTopTen = topTen.some((p) => p.id === item.id)
-      const next = isInTopTen
-        ? topTen.filter((p) => p.id !== item.id)
-        : topTen.length < TOP_TEN_MAX
-          ? [
-              ...topTen,
-              {
-                id: item.id,
-                provider_name: item.provider_name,
-                status: item.status,
-                minimum_currency: item.minimum_currency,
-                minimum_amount: item.minimum_amount,
-              },
-            ]
-          : topTen
-      if (next !== topTen) {
-        updateTopTenProviders({
+  const handleToggleProvider = async (item: Provider) => {
+    if (!gatewayDoc?._id && !defaultAccount?._id) return
+
+    const isInTopTen = topTen.some((provider) => provider.id === item.id)
+    const next = isInTopTen
+      ? topTen.filter((provider) => provider.id !== item.id)
+      : topTen.length < TOP_TEN_MAX
+        ? [
+            ...topTen,
+            {
+              id: item.id,
+              provider_name: item.provider_name,
+              status: item.status,
+              minimum_currency: item.minimum_currency,
+              minimum_amount: item.minimum_amount,
+            },
+          ]
+        : topTen
+
+    if (next === topTen) return
+
+    const nextDefaultProvider =
+      defaultProvider &&
+      next.some((provider) => provider.id === defaultProvider)
+        ? defaultProvider
+        : next[0]?.id
+
+    try {
+      setIsSaving(true)
+
+      if (defaultAccount?._id) {
+        await updateAccountTopTenProviders({
           id: defaultAccount._id,
           topTenProviders: next,
+          defaultProvider: nextDefaultProvider,
+        })
+        return
+      }
+
+      if (gatewayDoc?._id) {
+        await updateGatewayTopTenProviders({
+          gatewayId: gatewayDoc._id,
+          topTenProviders: next,
+          defaultProvider: nextDefaultProvider,
         })
       }
-    },
-    [defaultAccount, topTen, updateTopTenProviders],
-  )
+    } catch (error) {
+      console.error(error)
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to update providers',
+      )
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   if (!response) {
     return (
@@ -106,8 +143,8 @@ const ProvidersList = () => {
     )
   }
 
-  const accountLoading = defaultAccount === undefined
-  const canSelect = defaultAccount != null
+  const accountLoading = gatewayDoc === undefined || defaultAccount === undefined
+  const canSelect = gatewayDoc?._id != null || defaultAccount?._id != null
 
   return (
     <div className='dark:text-white py-4'>
@@ -117,13 +154,15 @@ const ProvidersList = () => {
       )}
       {!accountLoading && !canSelect && (
         <p className='text-small text-default-500'>
-          Set a default PayGate account to select top {TOP_TEN_MAX} providers.
+          Configure the PayGate gateway to select top {TOP_TEN_MAX} providers.
         </p>
       )}
       {canSelect && (
         <p className='text-small text-default-500'>
           Click a provider to add/remove from top {TOP_TEN_MAX} ({topTen.length}
-          /{TOP_TEN_MAX} selected).
+          /{TOP_TEN_MAX} selected). The first selected provider is used as the
+          default.
+          {isSaving ? ' Saving…' : ''}
         </p>
       )}
       <div className='w-full grid grid-cols-2 md:grid-cols-3 gap-2 mt-4'>
@@ -132,8 +171,9 @@ const ProvidersList = () => {
             key={item.id}
             item={item}
             isSelected={topTen.some((p) => p.id === item.id)}
+            isDefault={item.id === defaultProvider}
             onToggle={() => handleToggleProvider(item)}
-            disabled={!canSelect}
+            disabled={!canSelect || isSaving || item.status !== 'active'}
           />
         ))}
       </div>
@@ -144,6 +184,7 @@ const ProvidersList = () => {
 type ProviderItemProps = {
   item: Provider
   isSelected: boolean
+  isDefault: boolean
   onToggle: () => void
   disabled: boolean
 }
@@ -151,6 +192,7 @@ type ProviderItemProps = {
 const ProviderItem = ({
   item,
   isSelected,
+  isDefault,
   onToggle,
   disabled,
 }: ProviderItemProps) => {
@@ -168,9 +210,12 @@ const ProviderItem = ({
       <button
         type='button'
         className={cn(
-          'w-full outline-none',
-          !disabled &&
-            'cursor-pointer hover:bg-default-100 active:bg-default-200 rounded-none',
+          'w-full ',
+          {
+            'cursor-pointer hover:bg-default-100 active:bg-default-200 rounded-none':
+              !disabled,
+          },
+          'outline-one disabled:opacity-40',
         )}
         onClick={handleClick}
         disabled={disabled}
@@ -182,7 +227,14 @@ const ProviderItem = ({
         }>
         <CardHeader className='flex w-full justify-between text-left px-2 pointer-events-none'>
           <div className=''>
-            <span className='font-medium'>{item.provider_name}</span>
+            <div className='flex items-center gap-2'>
+              <span className='font-medium'>{item.provider_name}</span>
+              {isDefault ? (
+                <span className='text-[10px] uppercase tracking-[0.18em] px-2 py-0.5 rounded bg-primary/15 text-primary'>
+                  Default
+                </span>
+              ) : null}
+            </div>
             <div className='flex items-center space-x-2'>
               <span
                 className={cn('text-xs', {
@@ -211,6 +263,7 @@ const ProviderItem = ({
                   'text-emerald-500': item.status === 'active',
                   'text-flavors': item.status === 'redirected',
                   'text-danger': item.status === 'unstable',
+                  'text-primary': isDefault,
                 },
               )}></div>
           </div>

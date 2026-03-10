@@ -65,7 +65,7 @@ export default function PaymentPage() {
           orderId,
           returnUrl: `${baseUrl}/account/orders/${orderId}?payment=success`,
           cancelUrl: `${baseUrl}/order/${orderId}/payment?payment=cancelled`,
-          webhookUrl: `${baseUrl}/api/paygate/webhook`,
+          webhookUrl: `${baseUrl}/api/gateways/webhook`,
         })
 
         if (result.success && result.paymentUrl) {

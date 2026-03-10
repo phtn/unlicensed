@@ -195,6 +195,7 @@ export const updateTopTenProviders = mutation({
   args: {
     id: v.id('paygateAccounts'),
     topTenProviders: v.array(topTenProviderValidator),
+    defaultProvider: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     if (args.topTenProviders.length > TOP_TEN_MAX) {
@@ -202,14 +203,43 @@ export const updateTopTenProviders = mutation({
         `At most ${TOP_TEN_MAX} providers can be selected as top ten.`,
       )
     }
+
+    if (
+      args.defaultProvider &&
+      !args.topTenProviders.some(
+        (provider) => provider.id === args.defaultProvider,
+      )
+    ) {
+      throw new Error('Default provider must be included in top ten providers')
+    }
+
     const account = await ctx.db.get(args.id)
     if (!account) {
       throw new Error('Account not found')
     }
+
+    const gateway = account.gateway ?? 'paygate'
+    const updatedAt = Date.now()
+
     await ctx.db.patch(args.id, {
       topTenProviders: args.topTenProviders,
-      updatedAt: Date.now(),
+      defaultProvider: args.defaultProvider,
+      updatedAt,
     })
+
+    const gatewayDoc = await ctx.db
+      .query('gateways')
+      .withIndex('by_gateway', (q) => q.eq('gateway', gateway))
+      .unique()
+
+    if (gatewayDoc) {
+      await ctx.db.patch(gatewayDoc._id, {
+        topTenProviders: args.topTenProviders,
+        defaultProvider: args.defaultProvider,
+        updatedAt,
+      })
+    }
+
     return args.id
   },
 })

@@ -11,6 +11,7 @@ import {cartSchema} from './cart/d'
 import {categorySchema} from './categories/d'
 import {checkoutLogSchema} from './checkoutLogs/d'
 import {courierSchema} from './couriers/d'
+import {couponSchema} from './coupons/d'
 import {emailSettingsSchema} from './emailSettings/d'
 import {mailingListSchema} from './mailingLists/d'
 import {fileSchema} from './files/upload'
@@ -83,6 +84,9 @@ export default defineSchema({
   couriers: defineTable(courierSchema)
     .index('by_code', ['code'])
     .index('by_active', ['active']),
+  coupons: defineTable(couponSchema)
+    .index('by_code', ['code'])
+    .index('by_enabled', ['enabled']),
   logs: defineTable(logSchema)
     .index('by_type', ['type'])
     .index('by_user', ['userId'])

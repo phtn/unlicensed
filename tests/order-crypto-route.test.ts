@@ -30,9 +30,9 @@ describe('Order Crypto Route Utils', () => {
     )
   })
 
-  test('defaults fallback route to crypto for unknown methods', () => {
+  test('defaults fallback route to send for unknown methods', () => {
     expect(getCryptoFallbackHref('order_123', 'bank_transfer')).toBe(
-      '/lobby/order/order_123/crypto',
+      '/lobby/order/order_123/send',
     )
   })
 

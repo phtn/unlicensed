@@ -44,7 +44,7 @@ const paygateAccountSchema = z.object({
   callbackUrl: z.url().optional(),
 })
 
-const DEFAULT_CALLBACK_URL = 'https://rapidfirenow.com/api/paygate/webhook'
+const DEFAULT_CALLBACK_URL = 'https://rapidfirenow.com/api/gateways/webhook'
 
 const getDefaultValues = (): GatewayWallet => ({
   hexAddress: '',

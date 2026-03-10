@@ -21,7 +21,7 @@ export const Actions = ({status, href, isMobile}: Props) => {
             href={href}
             radius='none'
             color='success'
-            className='border-none bg-brand/80 rounded-xs font-okxs font-semibold dark:text-white text-base'>
+            className='border-none dark:bg-brand/80 bg-brand rounded-xs font-okxs font-semibold text-white text-base'>
             <Activity mode={isMobile ? 'hidden' : 'visible'}>
               <span className='drop-shadow-xs'>Complete Payment</span>
             </Activity>

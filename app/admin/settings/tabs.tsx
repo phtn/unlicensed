@@ -2,6 +2,7 @@ import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react/tabs'
 import {AccessContent} from './_components/access-content'
 import {AssistantContent} from './_components/assistant-content'
+import {CouponsContent} from './_components/coupons-content'
 import {CryptoContent} from './_components/crypto-content'
 import {DealsContent} from './_components/deals-content'
 import {OverviewContent} from './_components/overview-content'
@@ -16,6 +17,7 @@ export const SettingsTabs = () => {
     {id: 'overview', label: 'Overview'},
     {id: 'access', label: 'Access'},
     {id: 'payments', label: 'Payments'},
+    {id: 'coupons', label: 'Coupons'},
     {id: 'crypto', label: 'Crypto'},
     {id: 'shipping', label: 'Shipping'},
     {id: 'tax', label: 'Tax'},
@@ -60,6 +62,11 @@ export const SettingsTabs = () => {
         className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:p-4'
         value='payments'>
         <PaymentsSettings />
+      </Tabs.Panel>
+      <Tabs.Panel
+        className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:p-4'
+        value='coupons'>
+        <CouponsContent />
       </Tabs.Panel>
       <Tabs.Panel
         className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:p-4'

@@ -173,9 +173,9 @@ describe('computeOrderTotals', () => {
       createCartItem({product: {...createCartItem().product, priceCents: 1000}, quantity: 1}),
     ]
     const result = computeOrderTotals(items, null, null)
-    // Default min 5000, fee 500
-    expect(result.shipping).toBe(500)
-    expect(result.total).toBe(1500)
+    // Default min 9900, fee 1299
+    expect(result.shipping).toBe(1299)
+    expect(result.total).toBe(2299)
   })
 })
 
@@ -308,9 +308,9 @@ describe('computeCartRewards', () => {
     ]
     const subtotalCents = 5000 // $50
     const result = computeCartRewards(items, subtotalCents, false)
-    expect(result.currentTier.label).toBe('Starter')
+    expect(result.currentTier.label).toBe('Bronze')
     expect(result.cashBackPct).toBe(1.5)
-    expect(result.shippingCost).toBe(14.95)
+    expect(result.shippingCost).toBe(12.99)
   })
 
   test('isFirstOrder affects free shipping threshold', () => {
@@ -321,7 +321,7 @@ describe('computeCartRewards', () => {
     const firstOrder = computeCartRewards(items, subtotalCents, true)
     const repeatOrder = computeCartRewards(items, subtotalCents, false)
     expect(firstOrder.shippingCost).toBe(0)
-    expect(repeatOrder.shippingCost).toBe(14.95)
+    expect(repeatOrder.shippingCost).toBe(12.99)
   })
 
   test('bundle bonus when multiple categories', () => {

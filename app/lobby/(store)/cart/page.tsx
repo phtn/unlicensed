@@ -14,6 +14,7 @@ import {usePlaceOrder} from '@/hooks/use-place-order'
 import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
+import dynamic from 'next/dynamic'
 import {useRouter} from 'next/navigation'
 import {useCallback, useEffect, useMemo, useState, useTransition} from 'react'
 import {CartEmptyState} from './CartEmptyState'
@@ -35,6 +36,16 @@ import type {CartPageItem} from './types'
 
 const DEFAULT_SHIPPING_FEE_CENTS = 1299
 const DEFAULT_MINIMUM_ORDER_CENTS = 9900
+
+const CartEmptyScene = dynamic(
+  () => import('./CartEmptyScene').then((module) => module.CartEmptyScene),
+  {
+    ssr: false,
+    loading: () => (
+      <div className='min-h-[34.01rem] border border-foreground/15 bg-linear-to-br from-white/70 via-pink-50/70 to-sidebar/60 dark:from-dark-table/40 dark:via-[#140911]/70 dark:to-black/60 lg:min-h-[42.01rem]' />
+    ),
+  },
+)
 
 export default function CartPage() {
   const router = useRouter()
@@ -280,11 +291,15 @@ export default function CartPage() {
 
         <div className='grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]'>
           <div className='min-w-0 rounded-xs'>
-            <CartItemsSection
-              cartItems={cartItems}
-              onUpdateItem={updateItem}
-              onRemoveItem={removeItem}
-            />
+            {cartItems.length > 0 ? (
+              <CartItemsSection
+                cartItems={cartItems}
+                onUpdateItem={updateItem}
+                onRemoveItem={removeItem}
+              />
+            ) : (
+              <CartEmptyScene />
+            )}
           </div>
 
           {/*<div className='absolute top-0 left-0'>

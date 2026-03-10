@@ -12,6 +12,9 @@ import {useParams} from 'next/navigation'
 import {useCallback, useMemo, useState} from 'react'
 import {TopProviders} from './providers'
 
+const formatGatewayLabel = (gateway: string) =>
+  gateway.charAt(0).toUpperCase() + gateway.slice(1)
+
 export default function CardProvidersPage() {
   const params = useParams()
   const orderId = params.orderId as Id<'orders'>
@@ -28,8 +31,15 @@ export default function CardProvidersPage() {
     gateway: defaultGateway ?? 'paygate',
   })
   const defaultAccount = accounts?.find((a) => a.isDefault)
+  const gatewayLabel = useMemo(
+    () => formatGatewayLabel(defaultGateway ?? 'paygate'),
+    [defaultGateway],
+  )
 
-  const providers = useMemo(() => gateway?.topTenProviders ?? [], [gateway])
+  const topTenProviders = useMemo(
+    () => gateway?.topTenProviders ?? [],
+    [gateway],
+  )
 
   const isValidWallet = useMemo(() => {
     const addr = defaultAccount?.hexAddress
@@ -45,7 +55,7 @@ export default function CardProvidersPage() {
       setSelectedProviderId(providerId)
 
       try {
-        const response = await fetch('/api/paygate/checkout', {
+        const response = await fetch('/api/gateways/checkout', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -63,7 +73,9 @@ export default function CardProvidersPage() {
         } | null
 
         if (!response.ok || !data?.success || !data.paymentUrl) {
-          throw new Error(data?.error || 'Unable to start PayGate checkout')
+          throw new Error(
+            data?.error || `Unable to start ${gatewayLabel} checkout`,
+          )
         }
 
         window.location.href = data.paymentUrl
@@ -72,11 +84,11 @@ export default function CardProvidersPage() {
         setCheckoutError(
           error instanceof Error
             ? error.message
-            : 'Unable to start PayGate checkout',
+            : `Unable to start ${gatewayLabel} checkout`,
         )
       }
     },
-    [order],
+    [gatewayLabel, order],
   )
 
   if (
@@ -167,12 +179,12 @@ export default function CardProvidersPage() {
           </CardBody>
         </Card>
 
-        {providers.length === 0 ? (
+        {topTenProviders.length === 0 ? (
           <Card radius='sm' shadow='none'>
             <CardBody className='p-6 space-y-4'>
               <p className='text-sm text-default-500'>
-                No providers are configured in top ten for the default PayGate
-                account.
+                No providers are configured in top ten for the default{' '}
+                {gatewayLabel} account.
               </p>
               <Button as={NextLink} href={fallbackHref} color='primary'>
                 Continue with default provider
@@ -181,7 +193,7 @@ export default function CardProvidersPage() {
           </Card>
         ) : (
           <TopProviders
-            providers={providers}
+            topTenProviders={topTenProviders}
             totalAmount={order.totalCents}
             onSelectProvider={handleProviderSelect}
             selectedProviderId={selectedProviderId}

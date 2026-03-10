@@ -12,6 +12,9 @@ import {PaymentError} from './payment-error'
 import {PaymentProcessing} from './payment-processing'
 import {PaymentSuccess} from './payment-success'
 
+const formatGatewayLabel = (gateway: string) =>
+  gateway.charAt(0).toUpperCase() + gateway.slice(1)
+
 export default function PayPage() {
   const [errorId] = useState(v7())
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
@@ -23,9 +26,21 @@ export default function PayPage() {
 
   const order = useQuery(api.orders.q.getById, {id: orderId})
   const defaultGateway = useQuery(api.admin.q.getPaymentDefaultGateway, {})
-  const paygateAccount = useQuery(
-    api.paygateAccounts.q.getDefaultAccount,
+  const gatewayDoc = useQuery(
+    api.gateways.q.getByGateway,
     {gateway: defaultGateway ?? 'paygate'},
+  )
+  const gatewayLabel = useMemo(
+    () => formatGatewayLabel(defaultGateway ?? 'paygate'),
+    [defaultGateway],
+  )
+  const topTenProviders = useMemo(
+    () => gatewayDoc?.topTenProviders ?? [],
+    [gatewayDoc?.topTenProviders],
+  )
+  const defaultProvider = useMemo(
+    () => gatewayDoc?.defaultProvider || topTenProviders[0]?.id || 'moonpay',
+    [gatewayDoc?.defaultProvider, topTenProviders],
   )
 
   const selectedProvider = useMemo(
@@ -34,18 +49,16 @@ export default function PayPage() {
   )
 
   useEffect(() => {
-    if (!order || !paygateAccount || hasInitiated.current) return
+    if (!order || !gatewayDoc || hasInitiated.current) return
 
     if (order.payment.status === 'completed') return
 
     const provider =
       (selectedProvider &&
-      paygateAccount.topTenProviders?.some((item) => item.id === selectedProvider)
+      topTenProviders.some((item) => item.id === selectedProvider)
         ? selectedProvider
         : '') ||
-      paygateAccount.defaultProvider ||
-      paygateAccount.topTenProviders?.[0]?.id ||
-      'moonpay'
+      defaultProvider
 
     hasInitiated.current = true
     setCheckoutError(null)
@@ -53,7 +66,7 @@ export default function PayPage() {
 
     const initializeCheckout = async () => {
       try {
-        const response = await fetch('/api/paygate/checkout', {
+        const response = await fetch('/api/gateways/checkout', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -69,7 +82,9 @@ export default function PayPage() {
           | null
 
         if (!response.ok || !data?.success || !data.paymentUrl) {
-          throw new Error(data?.error || 'Unable to start PayGate checkout')
+          throw new Error(
+            data?.error || `Unable to start ${gatewayLabel} checkout`,
+          )
         }
 
         window.location.href = data.paymentUrl
@@ -78,7 +93,7 @@ export default function PayPage() {
         setCheckoutError(
           error instanceof Error
             ? error.message
-            : 'Unable to start PayGate checkout',
+            : `Unable to start ${gatewayLabel} checkout`,
         )
       } finally {
         setIsInitializing(false)
@@ -86,7 +101,7 @@ export default function PayPage() {
     }
 
     initializeCheckout()
-  }, [order, paygateAccount, selectedProvider])
+  }, [defaultProvider, gatewayDoc, gatewayLabel, order, selectedProvider, topTenProviders])
 
   const paymentStatus = useMemo(() => {
     if (typeof window !== 'undefined') {
@@ -95,7 +110,7 @@ export default function PayPage() {
     return null
   }, [])
 
-  if (!order || paygateAccount === undefined) {
+  if (!order || gatewayDoc === undefined) {
     return (
       <div className='h-screen w-screen overflow-hidden pt-100 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
         <Loader />
@@ -103,7 +118,7 @@ export default function PayPage() {
     )
   }
 
-  if (!paygateAccount) {
+  if (!gatewayDoc) {
     return (
       <div className='h-[calc(100vh-104px)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
         <InternalError errorId={errorId} />

@@ -87,12 +87,14 @@ export const GatewayAccountsList = ({
       </CardHeader>
       <CardBody className='space-y-4 h-screen overflow-y-scroll md:h-full '>
         <HyperList
-          data={accounts.map((a) => ({
-            ...a,
-            onEdit: handleEdit(a.hexAddress as `0x${string}`),
-            onRefresh: handleRefresh(a.hexAddress as `0x${string}`),
-            onDelete: handleDelete(a.hexAddress as `0x${string}`),
-          }))}
+          data={accounts
+            .filter((a) => !!a.enabled && !!a.isDefault)
+            .map((a) => ({
+              ...a,
+              onEdit: handleEdit(a.hexAddress as `0x${string}`),
+              onRefresh: handleRefresh(a.hexAddress as `0x${string}`),
+              onDelete: handleDelete(a.hexAddress as `0x${string}`),
+            }))}
           component={AccountItemCard}
           direction='right'
           container='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'

@@ -1,6 +1,6 @@
 import {v} from 'convex/values'
 import {mutation} from '../_generated/server'
-import {walletValidator} from './d'
+import {topTenProviderValidator, walletValidator} from './d'
 
 const accountUpdateInputValidator = v.object({
   addressIn: v.optional(v.string()),
@@ -25,6 +25,8 @@ const accountUpdateInputValidator = v.object({
   isDefault: v.optional(v.boolean()),
   enabled: v.optional(v.boolean()),
 })
+
+const TOP_TEN_MAX = 10
 
 /**
  * Create a new account on a gateway. Appends to the accounts array.
@@ -159,5 +161,62 @@ export const setDefault = mutation({
     })
 
     return id
+  },
+})
+
+/**
+ * Update top providers on a gateway document.
+ * Keeps defaultProvider valid by requiring it to exist in topTenProviders.
+ */
+export const updateTopTenProviders = mutation({
+  args: {
+    gatewayId: v.id('gateways'),
+    topTenProviders: v.array(topTenProviderValidator),
+    defaultProvider: v.optional(v.string()),
+  },
+  handler: async (ctx, {gatewayId, topTenProviders, defaultProvider}) => {
+    if (topTenProviders.length > TOP_TEN_MAX) {
+      throw new Error(
+        `At most ${TOP_TEN_MAX} providers can be selected as top ten.`,
+      )
+    }
+
+    const gateway = await ctx.db.get(gatewayId)
+    if (!gateway) {
+      throw new Error('Gateway not found')
+    }
+
+    if (
+      defaultProvider &&
+      !topTenProviders.some((provider) => provider.id === defaultProvider)
+    ) {
+      throw new Error('Default provider must be included in top ten providers')
+    }
+
+    const updatedAt = Date.now()
+
+    await ctx.db.patch(gatewayId, {
+      topTenProviders,
+      defaultProvider,
+      updatedAt,
+    })
+
+    const gatewayName = gateway.gateway ?? 'paygate'
+    const defaultAccount = await ctx.db
+      .query('paygateAccounts')
+      .withIndex('by_gateway_default', (q) =>
+        q.eq('gateway', gatewayName).eq('isDefault', true),
+      )
+      .first()
+
+    if (defaultAccount) {
+      await ctx.db.patch(defaultAccount._id, {
+        topTenProviders,
+        defaultProvider,
+        updatedAt,
+      })
+    }
+
+    return gatewayId
   },
 })

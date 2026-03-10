@@ -1,10 +1,10 @@
-import {describe, expect, test} from 'bun:test'
+import type {BundleConfig} from '@/app/lobby/(store)/deals/lib/deal-types'
 import {
+  getParamKeysForDealId,
   parseSelectionsString,
   serializeSelections,
-  BUNDLE_PARAM_KEYS,
 } from '@/app/lobby/(store)/deals/searchParams'
-import type {BundleType} from '@/app/lobby/(store)/deals/lib/deal-types'
+import {describe, expect, test} from 'bun:test'
 
 describe('parseSelectionsString', () => {
   test('returns empty map for empty string', () => {
@@ -67,9 +67,7 @@ describe('serializeSelections', () => {
   })
 
   test('serializes single entry', () => {
-    const map = new Map([
-      ['prod123', {productId: 'prod123', quantity: 2}],
-    ])
+    const map = new Map([['prod123', {productId: 'prod123', quantity: 2}]])
     expect(serializeSelections(map)).toBe('prod123:2')
   })
 
@@ -121,8 +119,8 @@ describe('serializeSelections', () => {
   })
 })
 
-describe('BUNDLE_PARAM_KEYS', () => {
-  const bundleTypes: BundleType[] = [
+describe('getParamKeysForDealId', () => {
+  const bundleTypes: BundleConfig['id'][] = [
     'build-your-own-oz',
     'mix-match-4oz',
     'extracts-3g',
@@ -133,7 +131,7 @@ describe('BUNDLE_PARAM_KEYS', () => {
 
   test('has keys for all bundle types', () => {
     for (const id of bundleTypes) {
-      const keys = BUNDLE_PARAM_KEYS[id]
+      const keys = getParamKeysForDealId(id)
       expect(keys).toBeDefined()
       expect(keys.v).toBeDefined()
       expect(keys.s).toBeDefined()
@@ -143,12 +141,12 @@ describe('BUNDLE_PARAM_KEYS', () => {
   })
 
   test('variation keys are unique per bundle', () => {
-    const vKeys = bundleTypes.map((id) => BUNDLE_PARAM_KEYS[id].v)
+    const vKeys = bundleTypes.map((id) => getParamKeysForDealId(id).v)
     expect(new Set(vKeys).size).toBe(bundleTypes.length)
   })
 
   test('selection keys are unique per bundle', () => {
-    const sKeys = bundleTypes.map((id) => BUNDLE_PARAM_KEYS[id].s)
+    const sKeys = bundleTypes.map((id) => getParamKeysForDealId(id).s)
     expect(new Set(sKeys).size).toBe(bundleTypes.length)
   })
 })

@@ -46,18 +46,28 @@ mock.module('convex/browser', () => {
 })
 
 const originalFetch = globalThis.fetch
+const originalPreconnect = originalFetch.preconnect
 
-const mockFetch: typeof fetch = async (input, init) => {
-  fetchCalls.push([input, init])
-  const nextResponse = dequeue(fetchQueue as unknown[], 'fetch') as Response
-  return nextResponse
-}
+const mockFetch = Object.assign(
+  async (input: RequestInfo | URL, init?: RequestInit) => {
+    fetchCalls.push([input, init])
+    const nextResponse = dequeue(fetchQueue as unknown[], 'fetch') as Response
+    return nextResponse
+  },
+  {
+    preconnect: (...args: Parameters<typeof fetch.preconnect>) =>
+      originalPreconnect?.(...args),
+  },
+) satisfies typeof fetch
 
-type RouteModule = typeof import('../app/api/paygate/checkout/route')
-let post: RouteModule['POST']
+type GatewayRouteModule = typeof import('../app/api/gateways/checkout/route')
+type LegacyRouteModule = typeof import('../app/api/paygate/checkout/route')
+
+let post: GatewayRouteModule['POST']
+let legacyPost: LegacyRouteModule['POST']
 
 const createRequest = (body: unknown) =>
-  new NextRequest('https://store.example/api/paygate/checkout', {
+  new NextRequest('https://store.example/api/gateways/checkout', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(body),
@@ -79,23 +89,25 @@ const account = {
   polygonAddressIn: '0xpolygonwallet',
   ipnToken: 'ipn_123',
   callbackUrl: 'https://store.example/api/paygate/webhook',
-  defaultProvider: 'moonpay',
-  topTenProviders: [{id: 'moonpay', provider_name: 'MoonPay'}],
+  isDefault: true,
 }
 
-const adminSettings = {
-  value: {
-    paygate: {
-      apiUrl: 'https://api.proxy.example',
-      checkoutUrl: 'https://checkout.proxy.example',
-    },
-  },
+const defaultGateway = 'paylex'
+
+const gatewayRecord = {
+  gateway: defaultGateway,
+  apiUrl: 'https://api.proxy.example',
+  checkoutUrl: 'https://checkout.proxy.example',
+  defaultProvider: 'moonpay',
+  topTenProviders: [{id: 'moonpay', provider_name: 'MoonPay'}],
+  accounts: [account],
 }
 
 beforeAll(async () => {
   process.env.NEXT_PUBLIC_CONVEX_URL = 'https://convex.example'
   globalThis.fetch = mockFetch
-  ;({POST: post} = await import('../app/api/paygate/checkout/route'))
+  ;({POST: post} = await import('../app/api/gateways/checkout/route'))
+  ;({POST: legacyPost} = await import('../app/api/paygate/checkout/route'))
 })
 
 afterAll(() => {
@@ -106,7 +118,7 @@ beforeEach(() => {
   resetState()
 })
 
-describe('Pay with cards checkout route', () => {
+describe('Gateway cards checkout route', () => {
   test('returns 400 when orderId is missing', async () => {
     const response = await post(createRequest({}))
     const payload = await response.json()
@@ -138,7 +150,7 @@ describe('Pay with cards checkout route', () => {
   })
 
   test('returns 400 when requested provider is not pre-selected', async () => {
-    queryQueue.push(order, adminSettings, account)
+    queryQueue.push(order, defaultGateway, gatewayRecord)
 
     const response = await post(
       createRequest({
@@ -158,7 +170,11 @@ describe('Pay with cards checkout route', () => {
   })
 
   test('initializes card checkout using predefined account values (no wallet API call)', async () => {
-    queryQueue.push(order, adminSettings, account)
+    queryQueue.push(
+      order,
+      defaultGateway,
+      gatewayRecord,
+    )
     mutationQueue.push(null)
 
     const response = await post(createRequest({orderId: order._id}))
@@ -166,6 +182,7 @@ describe('Pay with cards checkout route', () => {
 
     expect(response.status).toBe(200)
     expect(payload.success).toBe(true)
+    expect(payload.gateway).toBe(defaultGateway)
     expect(payload.provider).toBe('moonpay')
     expect(fetchCalls).toHaveLength(0)
 
@@ -216,7 +233,14 @@ describe('Pay with cards checkout route', () => {
       ...account,
       addressIn: doubleEncodedAddress,
     }
-    queryQueue.push(order, adminSettings, accountWithEncodedAddress)
+    queryQueue.push(
+      order,
+      defaultGateway,
+      {
+        ...gatewayRecord,
+        accounts: [accountWithEncodedAddress],
+      },
+    )
     mutationQueue.push(null)
 
     const response = await post(createRequest({orderId: order._id}))
@@ -237,16 +261,45 @@ describe('Pay with cards checkout route', () => {
       addressIn: '',
       polygonAddressIn: account.polygonAddressIn,
     }
-    queryQueue.push(order, adminSettings, accountWithoutAddressIn)
+    queryQueue.push(
+      order,
+      defaultGateway,
+      {
+        ...gatewayRecord,
+        accounts: [accountWithoutAddressIn],
+      },
+    )
 
     const response = await post(createRequest({orderId: order._id}))
     const payload = await response.json()
 
     expect(response.status).toBe(400)
     expect(payload).toEqual({
-      error: 'PayGate account address_in is not configured',
+      error: 'Paylex account address_in is not configured',
     })
     expect(fetchCalls).toHaveLength(0)
     expect(mutationCalls).toHaveLength(0)
+  })
+
+  test('legacy paygate checkout route stays as a compatibility alias', async () => {
+    queryQueue.push(
+      order,
+      defaultGateway,
+      gatewayRecord,
+    )
+    mutationQueue.push(null)
+
+    const response = await legacyPost(
+      new NextRequest('https://store.example/api/paygate/checkout', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({orderId: order._id}),
+      }),
+    )
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload.success).toBe(true)
+    expect(payload.gateway).toBe(defaultGateway)
   })
 })

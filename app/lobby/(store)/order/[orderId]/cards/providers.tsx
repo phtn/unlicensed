@@ -5,13 +5,13 @@ import {cn} from '@/lib/utils'
 import {useCallback, useState} from 'react'
 
 interface TopProvidersProps {
-  providers: Array<TopTenProvider>
+  topTenProviders: Array<TopTenProvider>
   onSelectProvider: (providerId: string) => void
   selectedProviderId?: string | null
   totalAmount: number
 }
 export const TopProviders = ({
-  providers,
+  topTenProviders,
   onSelectProvider,
   selectedProviderId = null,
   totalAmount,
@@ -30,11 +30,15 @@ export const TopProviders = ({
     [onSelectProvider],
   )
 
-  const activeProviders = providers.filter((p) => p.status === 'active')
+  const activeTopTenProviders = topTenProviders.filter(
+    (provider, index, list) =>
+      provider.status === 'active' &&
+      list.findIndex((item) => item.id === provider.id) === index,
+  )
 
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 lg:gap-12'>
-      {activeProviders.map((provider) => (
+      {activeTopTenProviders.map((provider) => (
         <button
           key={provider.id}
           type='button'
@@ -117,7 +121,7 @@ export const TopProviders = ({
             </div>
 
             <div className='flex items-center justify-between'>
-              <h3 className='flex text-sm md:text-xl font-okxs text-slate-900 dark:text-white'>
+              <h3 className='md:opacity-0 flex text-sm md:text-xl font-okxs text-slate-900 dark:text-white'>
                 {provider.id === 'robinhood' ? (
                   <span className='underline underline-offset-2 decoration-0.5 decoration-robinhood'>
                     3% Discount
