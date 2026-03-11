@@ -93,8 +93,7 @@ const ProductCardComponent = ({
       className={cn(
         'group h-full transition-all duration-300 rounded-xs dark:bg-black bg-sidebar min-w-48 max-w-48 sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
         className,
-      )}
-    >
+      )}>
       <CardBody className='flex flex-col p-0'>
         <div className='flex justify-center items-center relative overflow-hidden rounded-xs'>
           <div className='absolute size-full overflow-hidden inset-0 z-10 transition-all duration-300' />
@@ -104,12 +103,12 @@ const ProductCardComponent = ({
               alt={product.name}
               radius='none'
               shadow='none'
-              className='min-w-48 xl:min-w-64 rounded-t-xs rounded-b-sm object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
+              className='min-w-44 xl:min-w-64 rounded-t-xs rounded-b-sm object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
               isLoading={!imageSrc}
               loading='lazy'
             />
           ) : (
-            <div className='w-auto h-48 min-h-48 aspect-square flex items-center justify-center'>
+            <div className='h-44 w-auto min-h-48 xl:min-w-64 aspect-square flex items-center justify-center'>
               <Icon name='spinners-ring' />
             </div>
           )}
@@ -154,8 +153,7 @@ const ProductCardComponent = ({
             </div>
             <div
               id='denom-price'
-              className='text-2xl h-auto aspect-square flex items-center justify-end text-brand overflow-hidden grow-0'
-            >
+              className='text-2xl h-auto aspect-square flex items-center justify-end text-brand overflow-hidden grow-0'>
               {selectedOption ? `$${selectedOption.price}` : '—'}
             </div>
           </div>
@@ -166,8 +164,7 @@ const ProductCardComponent = ({
               onClick={(e) => e.preventDefault()}
               onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
               role='group'
-              aria-label='Select denomination'
-            >
+              aria-label='Select denomination'>
               {firstThreeOptions.map((opt, i) => (
                 <button
                   key={opt.denominationValue}
@@ -182,8 +179,7 @@ const ProductCardComponent = ({
                     e.preventDefault()
                     e.stopPropagation()
                     setSelectedIndex(i)
-                  }}
-                >
+                  }}>
                   {opt.denom}
                 </button>
               ))}
@@ -193,8 +189,7 @@ const ProductCardComponent = ({
               variant='shadow'
               className='bg-brand text-white rounded-xs mt-1.25'
               isDisabled={!productId || !selectedOption}
-              onClick={handleAddToCart}
-            >
+              onClick={handleAddToCart}>
               Add to Cart
             </Button>
           </div>
@@ -209,8 +204,7 @@ const ProductCardComponent = ({
             {topEffects.map((effect) => (
               <span
                 key={effect}
-                className='rounded-full bg-[#21A179] _pill-surface px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs capitalize tracking-tight opacity-80 font-space'
-              >
+                className='rounded-full bg-[#21A179] _pill-surface px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs capitalize tracking-tight opacity-80 font-space'>
                 {effect}
               </span>
             ))}

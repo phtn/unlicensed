@@ -2,6 +2,20 @@ import {v} from 'convex/values'
 import {query} from '../_generated/server'
 import {orderStatusSchema} from './d'
 
+function normalizePaymentReference(reference: string): string | null {
+  const trimmed = reference.trim()
+  if (!trimmed) {
+    return null
+  }
+
+  const maybeHash = trimmed.replace(/^0x/i, '')
+  if (/^[0-9a-fA-F]{64}$/.test(maybeHash)) {
+    return maybeHash.toLowerCase()
+  }
+
+  return trimmed
+}
+
 /**
  * Get order by ID
  */
@@ -31,6 +45,47 @@ export const getOrderByNumber = query({
       .unique()
 
     return order
+  },
+})
+
+/**
+ * Check whether a payment reference is already attached to another order.
+ */
+export const getOrderUsingPaymentReference = query({
+  args: {
+    transactionId: v.string(),
+    excludeOrderId: v.optional(v.id('orders')),
+  },
+  handler: async (ctx, args) => {
+    const normalizedReference = normalizePaymentReference(args.transactionId)
+    if (!normalizedReference) {
+      return null
+    }
+
+    const orders = await ctx.db.query('orders').collect()
+    const match =
+      orders.find((order) => {
+        if (args.excludeOrderId && order._id === args.excludeOrderId) {
+          return false
+        }
+
+        return (
+          normalizePaymentReference(order.payment.transactionId ?? '') ===
+            normalizedReference ||
+          normalizePaymentReference(
+            order.payment.gateway?.transactionId ?? '',
+          ) === normalizedReference
+        )
+      }) ?? null
+
+    if (!match) {
+      return null
+    }
+
+    return {
+      orderId: match._id,
+      orderNumber: match.orderNumber,
+    }
   },
 })
 

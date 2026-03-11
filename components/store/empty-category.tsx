@@ -12,9 +12,9 @@ export const EmptyCategory = () => {
             <div className='flex items-center relative'>
               <Icon
                 name='chevron-double-left'
-                className='rotate-90 size-8 md:size-12 text-featured opacity-100 relative z-30'
+                className='rotate-90 size-8 md:size-12 text-brand opacity-100 relative z-30'
               />
-              <span>check back soon</span>
+              <span className='lowercase'>check back soon</span>
             </div>
           }
         />

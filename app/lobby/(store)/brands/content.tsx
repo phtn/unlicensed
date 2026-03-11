@@ -7,7 +7,7 @@ import {ProductCard} from '@/components/store/product-card'
 import {api} from '@/convex/_generated/api'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
-import {Icon} from '@/lib/icons'
+import {Icon, IconName} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {cn} from '@/lib/utils'
 import {Button, Image} from '@heroui/react'
@@ -298,11 +298,9 @@ export const Content = () => {
                   {/* Brand Logo */}
                   <div className='relative z-10 mb-4 sm:mb-6 shrink-0'>
                     <div className='relative w-24 sm:w-28 lg:w-32 h-14 sm:h-16 lg:h-20'>
-                      <Image
-                        src={brand.icon}
-                        alt={brand.name}
-                        className='w-full h-full object-contain opacity-90 dark:opacity-100'
-                        loading='lazy'
+                      <Icon
+                        name={brand.icon as IconName}
+                        className='size-24 text-white opacity-90 dark:opacity-100'
                       />
                     </div>
                   </div>

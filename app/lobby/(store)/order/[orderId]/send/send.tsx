@@ -49,6 +49,20 @@ type ManualPaymentToken = 'bitcoin' | 'ethereum' | 'usdc' | 'usdt'
 /** Network keys that have wallet addresses in admin settings (used for indexing) */
 type SendPageNetwork = keyof CryptoWalletAddresses
 
+export function normalizePaymentReference(reference: string): string | null {
+  const trimmed = reference.trim()
+  if (!trimmed) {
+    return null
+  }
+
+  const maybeHash = trimmed.replace(/^0x/i, '')
+  if (/^[0-9a-fA-F]{64}$/.test(maybeHash)) {
+    return `0x${maybeHash.toLowerCase()}`
+  }
+
+  return trimmed
+}
+
 function parseCryptoWallets(value: unknown): CryptoWalletAddresses {
   if (!value || typeof value !== 'object' || 'error' in value) {
     return {bitcoin: '', ethereum: '', polygon: '', sepolia: ''}
@@ -128,7 +142,7 @@ function getStableRelayKeys(
   return [`sepolia${token}`]
 }
 
-function getExpectedRecipientAddress(
+export function getExpectedRecipientAddress(
   network: SendPageNetwork,
   paymentToken: ManualPaymentToken,
   walletAddress: string,
@@ -152,7 +166,7 @@ function getExpectedRecipientAddress(
   return walletAddress
 }
 
-function getExpectedValueBaseUnits(args: {
+export function getExpectedValueBaseUnits(args: {
   network: SendPageNetwork
   paymentToken: ManualPaymentToken
   orderTotalCents: number
@@ -184,7 +198,7 @@ function getExpectedValueBaseUnits(args: {
   ).toString()
 }
 
-function getPaymentAssetSymbol(
+export function getPaymentAssetSymbol(
   network: SendPageNetwork,
   paymentToken: ManualPaymentToken,
 ): string {
@@ -208,7 +222,7 @@ type VerificationResponse = {
   data?: TxData
 }
 
-function buildVerificationCandidates(args: {
+export function buildVerificationCandidates(args: {
   network: SendPageNetwork
   initialToken: ManualPaymentToken
   walletAddress: string
@@ -466,7 +480,7 @@ interface SendToPanelProps {
   tokenSelected: string | null
 }
 
-function toOrderTxData(data?: TxData): ITxData | undefined {
+export function toOrderTxData(data?: TxData): ITxData | undefined {
   if (!data) {
     return undefined
   }
@@ -483,7 +497,7 @@ function toOrderTxData(data?: TxData): ITxData | undefined {
   }
 }
 
-function SendToPanel({
+export function SendToPanel({
   qrDataUrl,
   walletAddress,
   copyFn,
@@ -500,6 +514,25 @@ function SendToPanel({
   const [txnHash, setTxnHash] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const normalizedTxnHash = useMemo(
+    () => normalizePaymentReference(txnHash),
+    [txnHash],
+  )
+  const existingPaymentReference = useQuery(
+    api.orders.q.getOrderUsingPaymentReference,
+    normalizedTxnHash
+      ? {
+          transactionId: normalizedTxnHash,
+          excludeOrderId: orderId,
+        }
+      : 'skip',
+  )
+  const duplicateHashMessage = existingPaymentReference
+    ? `This transaction hash is already linked to order ${existingPaymentReference.orderNumber}.`
+    : null
+  const isCheckingTxnHash = Boolean(
+    normalizedTxnHash && existingPaymentReference === undefined,
+  )
   const paymentToken = useMemo(
     () => resolvePaymentToken(network, order?.payment.asset, tokenSelected),
     [network, order?.payment.asset, tokenSelected],
@@ -517,6 +550,14 @@ function SendToPanel({
       if (!hash || !order) return
       if (order.payment.status === 'completed') {
         setError('This order has already been paid')
+        return
+      }
+      if (isCheckingTxnHash) {
+        setError('Still checking that transaction hash. Try again in a moment.')
+        return
+      }
+      if (duplicateHashMessage) {
+        setError(duplicateHashMessage)
         return
       }
 
@@ -634,6 +675,8 @@ function SendToPanel({
       network,
       orderId,
       updatePayment,
+      isCheckingTxnHash,
+      duplicateHashMessage,
       paymentToken,
       getBySymbol,
       relayedPaymentHashRef,
@@ -699,6 +742,15 @@ function SendToPanel({
           className='rounded-sm'
         />
       </div>
+      {duplicateHashMessage ? (
+        <p className='text-destructive text-sm' role='status'>
+          {duplicateHashMessage}
+        </p>
+      ) : isCheckingTxnHash ? (
+        <p className='text-muted-foreground text-sm' role='status'>
+          Checking whether this transaction hash has already been used...
+        </p>
+      ) : null}
       {error ? (
         <p className='text-destructive text-sm' role='alert'>
           {error}
@@ -709,7 +761,12 @@ function SendToPanel({
           size='lg'
           type='submit'
           radius='none'
-          disabled={!txnHash.trim() || isPending}
+          disabled={
+            !txnHash.trim() ||
+            isPending ||
+            isCheckingTxnHash ||
+            Boolean(duplicateHashMessage)
+          }
           isLoading={isPending}>
           Verify Payment
         </Button>

@@ -3,6 +3,7 @@
 import {StoreCategory} from '@/app/types'
 import {Tag} from '@/components/base44/tag'
 import {Title} from '@/components/base44/title'
+import {EmptyCategory} from '@/components/store/empty-category'
 import {api} from '@/convex/_generated/api'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptCategory} from '@/lib/convexClient'
@@ -111,23 +112,7 @@ export const Content = ({initialCategories}: ContentProps) => {
       <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
         <div className='max-w-7xl mx-auto rounded-3xl'>
           <Activity mode={categories.length === 0 ? 'visible' : 'hidden'}>
-            <div className='max-w-7xl mx-auto pt-20'>
-              <div className='flex flex-col items-center justify-center gap-4 px-6 py-24 text-center'>
-                <Title
-                  titleStyle='lowercase'
-                  title='Nothing here yet.'
-                  subtitle={
-                    <div className='flex items-center relative'>
-                      <Icon
-                        name='chevron-double-left'
-                        className='rotate-90 size-12 text-featured opacity-100 relative z-30'
-                      />
-                      <span>check back soon</span>
-                    </div>
-                  }
-                />
-              </div>
-            </div>
+            <EmptyCategory />
           </Activity>
           <div className='grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-4 md:gap-6 w-full'>
             {categories.map((category) => (

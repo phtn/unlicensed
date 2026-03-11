@@ -59,7 +59,7 @@ export const Content = ({
         title='The New Standard in Cannabis Retail.'
         description='Mix and match your order, earn cash back on every purchase, and shop
                   with guaranteed delivery and seamless card payments.'>
-        <div className='portrait:px-4 md:max-w-5xl max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8'>
+        <div className='portrait:px-4 max-w-xl md:max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8'>
           {ctas.map((feature, i) => (
             <MiniCardV2 key={feature.title} {...feature} dark={i === 0} />
           ))}

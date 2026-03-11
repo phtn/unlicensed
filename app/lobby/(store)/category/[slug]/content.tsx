@@ -107,8 +107,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   prefetch
                   radius='none'
                   href={'/lobby/brands'}
-                  className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand rounded-xs dark:hover:text-white bg-brand hover:text-white text-white font-clash font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'
-                >
+                  className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand rounded-xs dark:hover:text-white bg-brand hover:text-white text-white font-clash font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                   <span className='drop-shadow-xs'>Shop by Brand</span>
                 </Button>
                 <Button
@@ -119,8 +118,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   variant='light'
                   onPress={toggle}
                   href={'/lobby/deals'}
-                  className='hidden border dark:border-light-gray/80 sm:flex rounded-xs items-center gap-2 dark:text-terpenes font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'
-                >
+                  className='hidden border dark:border-light-gray/80 sm:flex rounded-xs items-center gap-2 dark:text-terpenes font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                   <span className='tracking-tight'>Find Deals</span>
                   <Icon
                     name={navigating ? 'spinners-ring' : 'search-magic'}
@@ -157,7 +155,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
           <div className='max-w-7xl mx-auto flex flex-wrap items-center gap-3'>
             {filterOptions.tiers.length > 0 && (
               <div className='flex flex-wrap items-center gap-1'>
-                <span className='text-sm font-clash font-semibold mr-2'>
+                <span className='text-sm font-clash font-semibold mr-2 uppercase'>
                   Tiers
                 </span>
                 <Button
@@ -167,8 +165,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   className={cn('min-w-0 h-6 font-bold uppercase', {
                     'bg-brand text-white': tier === '',
                   })}
-                  onPress={() => setTier('')}
-                >
+                  onPress={() => setTier('')}>
                   All
                 </Button>
                 {filterOptions.tiers.map((t) => (
@@ -180,8 +177,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     className={cn('min-w-0 h-6 font-semibold uppercase', {
                       'bg-brand text-white': tier === t,
                     })}
-                    onPress={() => setTier(t)}
-                  >
+                    onPress={() => setTier(t)}>
                     {t}
                   </Button>
                 ))}
@@ -189,16 +185,15 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
             )}
             {filterOptions.subcategories.length > 0 && (
               <div className='flex flex-wrap items-center gap-2'>
-                <span className='text-sm font-medium text-muted-foreground'>
-                  Subcategory:
+                <span className='text-sm font-clash font-semibold mr-2 uppercase'>
+                  Subcategory
                 </span>
                 <Button
                   size='sm'
                   radius='none'
                   variant={subcategory === '' ? 'solid' : 'flat'}
                   className='min-w-0'
-                  onPress={() => setSubcategory('')}
-                >
+                  onPress={() => setSubcategory('')}>
                   All
                 </Button>
                 {filterOptions.subcategories.map((s) => (
@@ -208,8 +203,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     radius='none'
                     variant={subcategory === s ? 'solid' : 'flat'}
                     className='min-w-0 capitalize'
-                    onPress={() => setSubcategory(s)}
-                  >
+                    onPress={() => setSubcategory(s)}>
                     {s}
                   </Button>
                 ))}
@@ -224,7 +218,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         <div className='flex flex-col gap-20'>
           <div className='flex flex-wrap items-center justify-between gap-4'>
             <div className='space-y-1'>
-              <h2 className='text-xl font-polysans font-semibold tracking-tight sm:text-4xl'>
+              <h2 className='text-xl font-clash font-semibold tracking-tight sm:text-4xl'>
                 Browse Category
               </h2>
             </div>
@@ -235,8 +229,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                 href={`/lobby/deals`}
                 radius='none'
                 prefetch
-                className='bg-terpenes opacity-100 text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tight md:tracking-normal'
-              >
+                className='bg-terpenes opacity-100 text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tight md:tracking-normal'>
                 <span className='drop-shadow-xs'>Deals</span>
               </Button>
               {categories
@@ -249,8 +242,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     href={`/lobby/category/${cat.slug}`}
                     prefetch
                     radius='none'
-                    className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tighter'
-                  >
+                    className='portrait:w-full dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tighter'>
                     <span className='drop-shadow-xs'>{cat.name}</span>
                   </Button>
                 ))}
@@ -265,8 +257,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
           as={Link}
           href={'/lobby/brands'}
           fullWidth
-          className='dark:bg-white h-14 opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-4 sm:px-8 py-2 sm:py-3 text-lg'
-        >
+          className='dark:bg-white h-14 opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-4 sm:px-8 py-2 sm:py-3 text-lg'>
           <span className='drop-shadow-xs'>Shop by Brand</span>
         </Button>
       </div>

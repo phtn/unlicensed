@@ -68,6 +68,55 @@ async function getAdminSettingValue(
   return setting.value as Record<string, unknown>
 }
 
+function normalizePaymentReference(
+  reference: string | undefined,
+): string | null {
+  if (!reference) {
+    return null
+  }
+
+  const trimmed = reference.trim()
+  if (!trimmed) {
+    return null
+  }
+
+  const maybeHash = trimmed.replace(/^0x/i, '')
+  if (/^[0-9a-fA-F]{64}$/.test(maybeHash)) {
+    return maybeHash.toLowerCase()
+  }
+
+  return trimmed
+}
+
+async function findOrderUsingPaymentReference(
+  ctx: MutationCtx,
+  reference: string | undefined,
+  excludeOrderId: Id<'orders'>,
+) {
+  const normalizedReference = normalizePaymentReference(reference)
+  if (!normalizedReference) {
+    return null
+  }
+
+  const orders = await ctx.db.query('orders').collect()
+
+  return (
+    orders.find((candidateOrder) => {
+      if (candidateOrder._id === excludeOrderId) {
+        return false
+      }
+
+      return (
+        normalizePaymentReference(candidateOrder.payment.transactionId) ===
+          normalizedReference ||
+        normalizePaymentReference(
+          candidateOrder.payment.gateway?.transactionId,
+        ) === normalizedReference
+      )
+    }) ?? null
+  )
+}
+
 function getProductUnitPriceCents(
   product: {
     priceCents?: number
@@ -693,6 +742,18 @@ export const updatePayment = mutation({
     if (!order) {
       throw new Error('Order not found')
     }
+
+    const conflictingOrder = await findOrderUsingPaymentReference(
+      ctx,
+      args.payment.transactionId,
+      args.orderId,
+    )
+    if (conflictingOrder) {
+      throw new Error(
+        `This transaction hash has already been used for order ${conflictingOrder.orderNumber}.`,
+      )
+    }
+
     const didPaymentStatusChange = order.payment.status !== args.payment.status
 
     // If payment is completed, update order status to order_processing
