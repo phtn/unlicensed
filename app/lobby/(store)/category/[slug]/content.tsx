@@ -192,7 +192,9 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   size='sm'
                   radius='none'
                   variant={subcategory === '' ? 'solid' : 'flat'}
-                  className='min-w-0'
+                  className={cn('min-w-0 h-6 font-bold uppercase', {
+                    'bg-brand text-white': subcategory === '',
+                  })}
                   onPress={() => setSubcategory('')}>
                   All
                 </Button>
@@ -202,7 +204,9 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     size='sm'
                     radius='none'
                     variant={subcategory === s ? 'solid' : 'flat'}
-                    className='min-w-0 capitalize'
+                    className={cn('min-w-0 h-6 font-semibold uppercase', {
+                      'bg-brand text-white': subcategory === s,
+                    })}
                     onPress={() => setSubcategory(s)}>
                     {s}
                   </Button>
@@ -212,8 +216,9 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
           </div>
         </section>
       )}
-
+      {/**/}
       <Products products={products} getImageUrl={getImageUrl} />
+      {/**/}
       <section className='py-12 sm:py-16 lg:py-20 px-4 sm:px-6 max-w-7xl mx-auto'>
         <div className='flex flex-col gap-20'>
           <div className='flex flex-wrap items-center justify-between gap-4'>
