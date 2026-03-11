@@ -170,9 +170,9 @@ export function getExpectedValueBaseUnits(args: {
   network: SendPageNetwork
   paymentToken: ManualPaymentToken
   orderTotalCents: number
-  getBySymbol: (symbol: string) => {price: number} | null
+  getBySymbolAction: (symbol: string) => {price: number} | null
 }): string | undefined {
-  const {network, paymentToken, orderTotalCents, getBySymbol} = args
+  const {network, paymentToken, orderTotalCents, getBySymbolAction} = args
 
   if (paymentToken === 'usdc' || paymentToken === 'usdt') {
     return (BigInt(orderTotalCents) * BigInt(10_000)).toString()
@@ -180,9 +180,9 @@ export function getExpectedValueBaseUnits(args: {
 
   const tokenPrice =
     network === 'ethereum' || network === 'sepolia'
-      ? getBySymbol('ETH')?.price
+      ? getBySymbolAction('ETH')?.price
       : network === 'polygon'
-        ? (getBySymbol('POL')?.price ?? getBySymbol('MATIC')?.price)
+        ? (getBySymbolAction('POL')?.price ?? getBySymbolAction('MATIC')?.price)
         : null
 
   if (
@@ -584,7 +584,7 @@ export function SendToPanel({
                 network,
                 paymentToken: candidate.paymentToken,
                 orderTotalCents: order.totalCents,
-                getBySymbol,
+                getBySymbolAction: getBySymbol,
               }),
             })
 

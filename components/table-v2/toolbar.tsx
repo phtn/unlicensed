@@ -6,14 +6,22 @@ import {ReactNode} from 'react'
 interface CenterTableToolbarProps {
   filter: ReactNode
   view: ReactNode
+  dateRange?: ReactNode
 }
 
-export const CenterTableToolbar = ({filter, view}: CenterTableToolbarProps) => {
+export const CenterTableToolbar = ({
+  filter,
+  view,
+  dateRange,
+}: CenterTableToolbarProps) => {
   return (
     <div className='order-3 flex h-auto w-full items-center justify-start pb-1 md:order-2 md:h-9 md:w-auto md:justify-center'>
       <div className='flex w-full flex-wrap items-start justify-start gap-2 md:w-auto md:flex-nowrap md:justify-between'>
         <div className='shrink-0'>{view}</div>
-        <div className='shrink-0'>{filter}</div>
+        <div className='flex shrink-0 flex-wrap items-start gap-2 md:flex-nowrap'>
+          <div className='shrink-0'>{filter}</div>
+          {dateRange ? <div className='shrink-0'>{dateRange}</div> : null}
+        </div>
       </div>
     </div>
   )

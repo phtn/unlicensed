@@ -36,7 +36,7 @@ const CategoriesContentInner = () => {
       return <EditCategory id={id as unknown as Id<'categories'>} />
     default:
       return (
-        <MainWrapper className='_border-t-0 '>
+        <MainWrapper className='_border-t-0 h-[calc(95lvh)] overflow-y-scroll'>
           <CategoryList categories={categories} />
         </MainWrapper>
       )

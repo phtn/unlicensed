@@ -118,8 +118,9 @@ const CategoryCard = ({
           <Chip
             size='sm'
             variant='flat'
+            radius='none'
             className={cn(
-              'border px-2 text-[11px] font-semibold rounded-md!',
+              'border px-2 text-[11px] font-semibold rounded-sm',
               category.visible === false
                 ? 'border-amber-500/20 bg-amber-500/15 text-amber-700 dark:text-amber-300'
                 : 'border-emerald-500/20 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
@@ -143,22 +144,22 @@ const CategoryCard = ({
         <div className=''>
           <div className='flex items-start justify-between gap-2'>
             <div className='min-w-0'>
-              <p className='truncate text-xs text-neutral-500 font-ios'>
+              <p className='truncate text-xs text-neutral-500 font-ios tracking-wider'>
                 /{category.slug ?? 'Missing slug'}
               </p>
             </div>
             <div className='flex items-center space-x-2'>
-              <div className='flex h-7 gap-2 items-center rounded-md bg-slate-500/10 px-2 py-1 font-clash text-sm text-slate-700 dark:text-slate-300'>
+              <div className='flex h-7 gap-2 items-center font-clash text-sm '>
                 <Link
                   href={`/admin/inventory/category?id=${category._id}&tabId=edit`}
-                  className='group block h-full touch-pan-y'>
+                  className='group flex items-center rounded-md bg-black text-white dark:bg-white dark:text-dark-table touch-pan-y h-6 px-4'>
                   Edit
                 </Link>
               </div>
-              <div className='flex h-7 gap-2 items-center rounded-md bg-emerald-500/10 px-2 py-1 font-clash text-sm text-emerald-700 dark:text-emerald-300'>
+              <div className='flex h-7 gap-2 items-center font-clash text-sm text-emerald-700 dark:text-emerald-300'>
                 <Link
                   href={categoryHref}
-                  className='group block h-full touch-pan-y'>
+                  className='group flex items-center h-6 rounded-md bg-emerald-500/10 px-3 touch-pan-y'>
                   Open
                 </Link>
               </div>
@@ -296,8 +297,8 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
   ]
 
   return (
-    <section className='space-y-4 px-2 pb-6'>
-      <div className='flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between'>
+    <section className='space-y-3 pt-2 px-2 pb-6'>
+      <div className='flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between'>
         <SectionHeader
           title={
             <div className='flex items-center space-x-2'>
@@ -318,13 +319,15 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
             <Chip
               size='sm'
               variant='flat'
-              className='bg-emerald-500/10 font-okxs text-emerald-700 dark:text-emerald-300'>
+              radius='none'
+              className='bg-emerald-500/10 font-okxs text-emerald-700 dark:text-emerald-300 rounded-sm'>
               {liveCategories} Live
             </Chip>
             <Chip
               size='sm'
+              radius='none'
               variant='flat'
-              className='bg-orange-500/10 text-orange-700 dark:text-orange-200'>
+              className='bg-orange-500/10 text-orange-700 dark:text-orange-200 rounded-sm'>
               {totalCategories - liveCategories} Hidden
             </Chip>
           </div>
@@ -339,7 +342,7 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
             radius='none'
             variant={activeFilter === filter.id ? 'solid' : 'flat'}
             className={cn(
-              'text-sm h-6! gap-1.5 rounded-md',
+              'text-sm h-6! gap-1.5 rounded-md pe-1.5',
               activeFilter === filter.id
                 ? 'bg-neutral-900 text-white dark:bg-white dark:text-black'
                 : 'bg-black/5 text-neutral-700 dark:bg-white/8 dark:text-neutral-200',

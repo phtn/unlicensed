@@ -163,7 +163,7 @@ export const Filter = <T,>({
       <Popover.Portal>
         <Popover.Positioner
           sideOffset={4}
-          align='end'
+          align='start'
           collisionAvoidance={{side: 'flip', align: 'none'}}
           positionMethod='fixed'>
           <Popover.Popup className='w-64 rounded-xl border border-dark-gray/30 bg-sidebar p-1 dark:bg-dark-table dark:text-zinc-200'>

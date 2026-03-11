@@ -10,7 +10,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {onError} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Badge, Button} from '@heroui/react'
+import {Badge, Button, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useCallback, useMemo, useState} from 'react'
@@ -34,6 +34,24 @@ const formatPlacedAt = (order: Order) => {
   })
 }
 
+const matchesDateRange = (
+  timestamp: number | undefined,
+  fromDate: string,
+  toDate: string,
+) => {
+  if (!fromDate && !toDate) return true
+  if (!timestamp) return false
+
+  const fromTimestamp = fromDate
+    ? new Date(`${fromDate}T00:00:00`).getTime()
+    : Number.NEGATIVE_INFINITY
+  const toTimestamp = toDate
+    ? new Date(`${toDate}T23:59:59.999`).getTime()
+    : Number.POSITIVE_INFINITY
+
+  return timestamp >= fromTimestamp && timestamp <= toTimestamp
+}
+
 export const OrdersTable = () => {
   const {user} = useAuthCtx()
   const orders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
@@ -52,6 +70,10 @@ export const OrdersTable = () => {
     null,
   )
   const [isOpeningChat, setIsOpeningChat] = useState(false)
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
+
+  const hasInvalidDateRange = Boolean(fromDate && toDate && fromDate > toDate)
 
   const customerProfileIdByUserId = useMemo(() => {
     const map = new Map<string, string>()
@@ -65,6 +87,20 @@ export const OrdersTable = () => {
 
     return map
   }, [users])
+
+  const filteredOrders = useMemo(() => {
+    if (!orders || hasInvalidDateRange) {
+      return []
+    }
+
+    return orders.filter((order) =>
+      matchesDateRange(
+        order.createdAt ?? order._creationTime,
+        fromDate,
+        toDate,
+      ),
+    )
+  }, [orders, hasInvalidDateRange, fromDate, toDate])
 
   const unreadCountByFid = useMemo(() => {
     const map = new Map<string, number>()
@@ -225,6 +261,61 @@ export const OrdersTable = () => {
     [customerProfileIdByUserId],
   )
 
+  const clearDateRange = useCallback(() => {
+    setFromDate('')
+    setToDate('')
+  }, [])
+
+  const dateRangeControl = useMemo(
+    () => (
+      <div className='flex flex-wrap items-center gap-2 md:flex-nowrap'>
+        <Input
+          type='date'
+          aria-label='Filter orders from date'
+          value={fromDate}
+          onValueChange={setFromDate}
+          size='sm'
+          radius='sm'
+          className='w-[10.51rem]'
+          classNames={{
+            inputWrapper:
+              'h-8 min-h-8 rounded-sm border border-foreground/10 bg-background shadow-none',
+            input: 'text-sm',
+          }}
+        />
+        <Input
+          type='date'
+          aria-label='Filter orders to date'
+          value={toDate}
+          onValueChange={setToDate}
+          size='sm'
+          radius='none'
+          isInvalid={hasInvalidDateRange}
+          errorMessage={
+            hasInvalidDateRange ? 'End date must be on or after start date' : ''
+          }
+          className='w-[10.51rem]'
+          classNames={{
+            inputWrapper:
+              'h-8 min-h-8 rounded-sm border border-foreground/10 bg-background shadow-none',
+            input: 'text-sm',
+            errorMessage: 'text-xs',
+          }}
+        />
+        {fromDate || toDate ? (
+          <Button
+            size='sm'
+            variant='light'
+            className='h-9 min-w-0 rounded-md px-3'
+            onPress={clearDateRange}>
+            Clear
+          </Button>
+        ) : null}
+      </div>
+    ),
+    [clearDateRange, fromDate, hasInvalidDateRange, toDate],
+  )
+
   const actionConfig = useMemo(
     () =>
       ({
@@ -298,12 +389,13 @@ export const OrdersTable = () => {
       )}
       <DataTable
         title='Orders'
-        data={orders ?? []}
+        data={filteredOrders}
         loading={!orders}
         columnConfigs={columns}
         actionConfig={actionConfig}
         editingRowId={null}
         defaultPageSize={50}
+        centerToolbarDateRange={dateRangeControl}
       />
     </div>
   )

@@ -86,6 +86,7 @@ interface TableProps<T> {
   selectedItemId?: string | null
   /** Default rows per page when no URL param is set. Defaults to 15. */
   defaultPageSize?: number
+  centerToolbarDateRange?: ReactNode
   rightToolbarLeft?:
     | ReactNode
     | ((context: TableToolbarContext<T>) => ReactNode)
@@ -101,6 +102,7 @@ function DataTableContent<T>({
   deleteIdAccessor = 'id' as keyof T,
   selectedItemId,
   defaultPageSize = 15,
+  centerToolbarDateRange,
   rightToolbarLeft,
 }: TableProps<T>) {
   const {columnVisibility, setColumnVisibility} = useColumnVisibility()
@@ -422,6 +424,7 @@ function DataTableContent<T>({
                   isMobile={isMobile}
                 />
               }
+              dateRange={centerToolbarDateRange}
               view={
                 <ColumnView
                   cols={allCols}

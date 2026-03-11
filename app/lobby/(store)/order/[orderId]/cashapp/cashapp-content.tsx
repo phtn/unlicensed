@@ -1,6 +1,7 @@
 'use client'
 
 import {ArcCard, ArcHeader} from '@/components/expermtl/arc-card'
+import {Confetti} from '@/components/magicui/confetti'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -15,6 +16,17 @@ import {useParams} from 'next/navigation'
 import {useEffect, useMemo, useRef, useState} from 'react'
 
 type StepState = 'complete' | 'active' | 'pending' | 'error'
+
+const CONFETTI_OPTIONS = {
+  particleCount: 220,
+  spread: 360,
+  startVelocity: 56,
+  decay: 0.92,
+  gravity: 0.82,
+  scalar: 1.08,
+  ticks: 340,
+  origin: {x: 0.5, y: 0.7},
+}
 
 const PAYMENT_CONFIRMED_ORDER_STATUSES = new Set([
   'order_processing',
@@ -100,6 +112,7 @@ export const Content = () => {
     isConnecting: false,
     error: null,
   })
+  const [showConfetti, setShowConfetti] = useState(false)
 
   const assignedRepFid =
     chatConnection.orderId === orderId ? chatConnection.repFid : null
@@ -109,6 +122,8 @@ export const Content = () => {
     chatConnection.orderId === orderId ? chatConnection.error : null
 
   const seededOrderRef = useRef<string | null>(null)
+  const previousOrderStatusRef = useRef<string | null>(null)
+  const celebratedOrderRef = useRef<string | null>(null)
 
   const assignedRep = useQuery(
     api.users.q.getCurrentUser,
@@ -477,18 +492,16 @@ export const Content = () => {
 
         {
           title: isPaymentConfirmed ? 'Payment Confirmed' : 'Pending Payment',
-          description:
-            isPaymentConfirmed
-              ? 'Payment confirmed and your order is now processing.'
-              : setupState === 'ready'
+          description: isPaymentConfirmed
+            ? 'Payment confirmed and your order is now processing.'
+            : setupState === 'ready'
               ? `Connected with ${assignedRep?.name ?? assignedRep?.email?.split('@')[0] ?? 'your rep'}.`
               : setupState === 'no_rep'
                 ? 'No active representative could be connected.'
                 : 'Selecting the next available representative.',
-          state:
-            isPaymentConfirmed
-              ? ('complete' as StepState)
-              : setupState === 'ready'
+          state: isPaymentConfirmed
+            ? ('complete' as StepState)
+            : setupState === 'ready'
               ? ('complete' as StepState)
               : setupState === 'no_rep'
                 ? ('error' as StepState)
@@ -531,10 +544,9 @@ export const Content = () => {
     ],
   )
 
-  const paymentStatus =
-    isPaymentConfirmed
-      ? 'Payment Confirmed'
-      : setupState === 'ready'
+  const paymentStatus = isPaymentConfirmed
+    ? 'Payment Confirmed'
+    : setupState === 'ready'
       ? 'Rep Connected'
       : setupState === 'connecting'
         ? 'Pending Payment'
@@ -561,8 +573,44 @@ export const Content = () => {
     })
   }
 
+  useEffect(() => {
+    if (!order) return
+
+    const previousStatus = previousOrderStatusRef.current
+    const enteredProcessing =
+      order.orderStatus === 'order_processing' &&
+      previousStatus !== 'order_processing' &&
+      celebratedOrderRef.current !== order._id
+    let showTimeout: number | undefined
+    let hideTimeout: number | undefined
+
+    if (enteredProcessing) {
+      celebratedOrderRef.current = order._id
+      showTimeout = window.setTimeout(() => {
+        setShowConfetti(true)
+      }, 0)
+      hideTimeout = window.setTimeout(() => {
+        setShowConfetti(false)
+      }, 5000)
+    }
+
+    previousOrderStatusRef.current = order.orderStatus
+
+    return () => {
+      if (showTimeout !== undefined) {
+        window.clearTimeout(showTimeout)
+      }
+      if (hideTimeout !== undefined) {
+        window.clearTimeout(hideTimeout)
+      }
+    }
+  }, [order])
+
   return (
     <main className='min-h-[calc(100lvh)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-black'>
+      {showConfetti ? (
+        <Confetti options={CONFETTI_OPTIONS} className='fixed inset-0 z-40' />
+      ) : null}
       <ArcCard className='relative overflow-hidden'>
         <ArcHeader
           title={
