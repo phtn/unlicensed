@@ -125,7 +125,7 @@ export const Content = () => {
             )}
 
             {selectedBrandProducts.length > 0 && (
-              <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-6'>
+              <div className='flex w-screen md:w-7xl overflow-x-auto gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3 pr-8'>
                 {selectedBrandProducts.map((product) => (
                   <ProductCard
                     key={product._id ?? product.slug}

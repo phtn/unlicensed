@@ -120,21 +120,21 @@ const ProductCardComponent = ({
               <h3 className='text-sm md:text-base font-okxs truncate capitalize leading-5'>
                 {product.name}
               </h3>
-              <div className='flex items-center space-x-1 whitespace-nowrap'>
+              <div className='flex items-center whitespace-nowrap'>
                 {product.productTier != null && product.productTier !== '' && (
                   <span className='min-h-6 text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum uppercase'>
                     {product.productTier ?? ''}
-                    <span className='min-h-6 text-xs px-2 opacity-50 font-bold'>
-                      &middot;
-                    </span>
                   </span>
                 )}
 
                 {netWeightLabel && (
                   <span className='min-h-6 text-xs md:text-xs font-okxs font-normal opacity-60 dark:opacity-100 dark:text-alum lowercase'>
+                    <span className='min-h-6 text-xs px-1 opacity-50 font-bold'>
+                      &middot;
+                    </span>
                     {netWeightLabel}
                     {batchIdLabel && (
-                      <span className='min-h-6 text-xs px-2 opacity-50 font-bold'>
+                      <span className='min-h-6 text-xs px-1 opacity-50 font-bold'>
                         &middot;
                       </span>
                     )}

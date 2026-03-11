@@ -63,8 +63,7 @@ export const SuggestedCartItems = () => {
             {featured.map((product) => (
               <div
                 key={product._id}
-                className='snap-start min-w-50 max-w-50 bg-surface-highlight/50 rounded-xs overflow-hidden border border-foreground/10 flex flex-col group md:hover:border-foreground/20'
-              >
+                className='snap-start min-w-50 max-w-50 bg-surface-highlight/50 rounded-xs overflow-hidden border border-foreground/10 flex flex-col group md:hover:border-foreground/20'>
                 <ProductCard
                   product={product}
                   imageUrl={resolveUrl(product.image ?? '') ?? undefined}
@@ -83,7 +82,7 @@ export const SuggestedCartItems = () => {
         <div className='space-y-3 w-3xl'>
           <SectionHeader title='Buy Again' className='px-4 w-md' />
 
-          <div className='flex w-md md:w-2xl overflow-x-auto gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3 pr-10'>
+          <div className='flex w-screen md:w-2xl overflow-x-auto gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3 pr-8'>
             {previous.map((product) => (
               <ProductCard
                 key={product._id}
@@ -146,8 +145,7 @@ const SuggestedItem = ({product, imageUrl, onAdd}: ISuggestedItem) => {
           variant='flat'
           className='w-full h-8 min-h-0 text-xs font-semibold font-space bg-foreground/5 hover:bg-foreground/10'
           isLoading={isAdding}
-          onPress={handleAdd}
-        >
+          onPress={handleAdd}>
           Add
         </Button>
       </div>
