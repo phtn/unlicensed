@@ -1,7 +1,6 @@
 'use client'
 
 import {ProductList} from '@/app/admin/(routes)/inventory/product/product-list'
-import {ProductsData} from '@/app/admin/(routes)/inventory/product/products-data'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {Typewrite} from '@/components/expermtl/typewrite'
 import {AnimatedNumber} from '@/components/ui/animated-number'
@@ -9,6 +8,7 @@ import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon, IconName} from '@/lib/icons'
+import {formatStockDisplay} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, Chip, Image} from '@heroui/react'
@@ -16,6 +16,7 @@ import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {parseAsString, parseAsStringEnum, useQueryState} from 'nuqs'
 import {Suspense} from 'react'
+import {ProductsData} from '../../product/products-data'
 
 interface CategoryProductsContentProps {
   categorySlug: string
@@ -48,16 +49,6 @@ const CATEGORY_PRODUCT_VIEWS: Array<{
     description: 'Dense operational table for sorting and quick edits.',
   },
 ]
-
-const getProductStock = (product: Doc<'products'>) => {
-  const stockByDenomination = Object.values(product.stockByDenomination ?? {})
-
-  if (stockByDenomination.length > 0) {
-    return stockByDenomination.reduce((total, quantity) => total + quantity, 0)
-  }
-
-  return product.stock ?? null
-}
 
 const getStartingPrice = (product: Doc<'products'>) => {
   if (typeof product.priceCents === 'number') {
@@ -95,7 +86,7 @@ const ProductStackView = ({
       ) : (
         <div className='space-y-3'>
           {products?.map((product) => {
-            const stock = getProductStock(product)
+            const stock = formatStockDisplay(product)
             const startingPrice = getStartingPrice(product)
             const metaChips = [
               product.brand?.[0],
@@ -187,7 +178,7 @@ const ProductStackView = ({
                             Stock
                           </p>
                           <p className='text-lg font-semibold text-foreground'>
-                            {stock ?? 'N/A'}
+                            {stock || 'N/A'}
                           </p>
                         </div>
                         <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-3 dark:border-white/10 dark:bg-white/5 space-y-0.5'>

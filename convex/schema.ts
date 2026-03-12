@@ -3,24 +3,24 @@ import {activitySchema} from './activities/d'
 import {activityViewSchema} from './activityViews/d'
 import {addressRecordSchema} from './addresses/d'
 import {adminSettingsSchema} from './admin/d'
-import {dealSchema} from './deals/d'
 import {affiliateAccountSchema} from './affiliateAccounts/d'
 import {archivedConversationSchema} from './archives/d'
 import {blogSchema} from './blogs/d'
 import {cartSchema} from './cart/d'
 import {categorySchema} from './categories/d'
 import {checkoutLogSchema} from './checkoutLogs/d'
-import {courierSchema} from './couriers/d'
 import {couponSchema} from './coupons/d'
+import {courierSchema} from './couriers/d'
+import {dealSchema} from './deals/d'
 import {emailSettingsSchema} from './emailSettings/d'
-import {mailingListSchema} from './mailingLists/d'
 import {fileSchema} from './files/upload'
 import {followSchema} from './follows/d'
+import {gatewaySchema} from './gateways/d'
 import {logSchema} from './logs/d'
+import {mailingListSchema} from './mailingLists/d'
 import {messageSchema} from './messages/d'
 import {notificationSchema} from './notifications/d'
 import {orderSchema} from './orders/d'
-import {gatewaySchema} from './gateways/d'
 import {paygateAccountSchema} from './paygateAccounts/d'
 import {productHoldSchema} from './productHolds/d'
 import {productImportSchema} from './productImports/d'
@@ -58,6 +58,7 @@ export default defineSchema({
   carts: defineTable(cartSchema).index('by_user', ['userId']),
   productHolds: defineTable(productHoldSchema)
     .index('by_cart', ['cartId'])
+    .index('by_product', ['productId'])
     .index('by_product_denom', ['productId', 'denomination'])
     .index('by_expires', ['expiresAt']),
   orders: defineTable(orderSchema)

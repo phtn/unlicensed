@@ -11,6 +11,7 @@ import {cn} from '@/lib/utils'
 import {Button, Card, Chip, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useRef, useState} from 'react'
+import {CSV_DENOM_KEYS} from '../product/csv-import/constants'
 import {
   applySlugConflicts,
   defaultImportTitle,
@@ -19,21 +20,6 @@ import {
   type ParsedRow,
   type ParseResult,
 } from '../product/csv-import/lib'
-
-const CSV_DENOMINATION_KEYS = [
-  '0.125',
-  '0.25',
-  '0.5',
-  '1',
-  '2',
-  '3',
-  '3.5',
-  '4',
-  '5',
-  '6',
-  '7',
-  '8',
-] as const
 
 const DEFAULT_PRODUCT_IMAGE_STORAGE_ID = 'kg24p8cjdd0rr1fnsjzspxxa1182b51r'
 const DEFAULT_DENOMINATION_STOCK = 100
@@ -57,11 +43,7 @@ function parseDenominationMapCell(
 
   try {
     const parsed = JSON.parse(value) as unknown
-    if (
-      parsed == null ||
-      typeof parsed !== 'object' ||
-      Array.isArray(parsed)
-    ) {
+    if (parsed == null || typeof parsed !== 'object' || Array.isArray(parsed)) {
       return {}
     }
 
@@ -91,11 +73,11 @@ function sortDenominationKeys(keys: Iterable<string>): string[] {
   const uniqueKeys = [...new Set(Array.from(keys).map((key) => key.trim()))]
     .filter(Boolean)
     .sort((a, b) => {
-      const aKnownIndex = CSV_DENOMINATION_KEYS.indexOf(
-        a as (typeof CSV_DENOMINATION_KEYS)[number],
+      const aKnownIndex = CSV_DENOM_KEYS.indexOf(
+        a as (typeof CSV_DENOM_KEYS)[number],
       )
-      const bKnownIndex = CSV_DENOMINATION_KEYS.indexOf(
-        b as (typeof CSV_DENOMINATION_KEYS)[number],
+      const bKnownIndex = CSV_DENOM_KEYS.indexOf(
+        b as (typeof CSV_DENOM_KEYS)[number],
       )
 
       if (aKnownIndex !== -1 && bKnownIndex !== -1) {
@@ -192,10 +174,9 @@ function seedDenominationColumnsFromMaps(
     }
   })
 
-  const seededHeaders = sortDenominationKeys(denominationKeys).flatMap((key) => [
-    `price_${key}`,
-    `stock_${key}`,
-  ])
+  const seededHeaders = sortDenominationKeys(denominationKeys).flatMap(
+    (key) => [`price_${key}`, `stock_${key}`],
+  )
   const headers = [
     ...parseResult.headers,
     ...seededHeaders.filter((header) => !parseResult.headers.includes(header)),
@@ -240,6 +221,10 @@ function seedDefaultDenominationStock(parseResult: ParseResult): ParseResult {
   }
 
   const rows = parseResult.rows.map((row) => {
+    if (row.product.inventoryMode === 'shared_weight') {
+      return row
+    }
+
     const parsedProductStockByDenomination =
       row.product.stockByDenomination != null &&
       typeof row.product.stockByDenomination === 'object' &&
@@ -250,7 +235,7 @@ function seedDefaultDenominationStock(parseResult: ParseResult): ParseResult {
     const nextRaw = {...row.raw}
     const nextStockByDenomination = {...parsedProductStockByDenomination}
 
-    for (const key of CSV_DENOMINATION_KEYS) {
+    for (const key of CSV_DENOM_KEYS) {
       const column = `stock_${key}`
       const rawValue = nextRaw[column]?.trim()
 
@@ -275,7 +260,7 @@ function seedDefaultDenominationStock(parseResult: ParseResult): ParseResult {
 
   const headers = [
     ...parseResult.headers,
-    ...CSV_DENOMINATION_KEYS.map((key) => `stock_${key}`).filter(
+    ...CSV_DENOM_KEYS.map((key) => `stock_${key}`).filter(
       (header) => !parseResult.headers.includes(header),
     ),
   ]

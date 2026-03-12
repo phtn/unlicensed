@@ -40,6 +40,9 @@ export interface StoreProduct {
   onSale: boolean
   available: boolean
   stock: number
+  inventoryMode?: 'by_denomination' | 'shared_weight'
+  masterStockQuantity?: number
+  masterStockUnit?: string
   /** Per-denomination inventory counts. Key = denomination as string (e.g. "0.125", "1", "3.5"). */
   stockByDenomination?: Record<string, number>
   /** Per-denomination price in cents. Key = denomination as string (e.g. "0.125", "1", "3.5"). */

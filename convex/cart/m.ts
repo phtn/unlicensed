@@ -1,62 +1,124 @@
 import {v} from 'convex/values'
+import {
+  getSharedWeightLineQuantity,
+  getTotalStock,
+  roundStockQuantity,
+  usesSharedWeightInventory,
+} from '../../lib/productStock'
+import type {Doc, Id} from '../_generated/dataModel'
 import type {MutationCtx} from '../_generated/server'
 import {mutation} from '../_generated/server'
-import type {Id} from '../_generated/dataModel'
 import {isProductCartItem} from './d'
 
 const HOLD_DURATION_MS = 5 * 60 * 1000 // 5 minutes
+const INVENTORY_EPSILON = 0.000001
+
+type ProductDoc = Doc<'products'>
+
+function getInventoryAvailabilityKey(
+  product: ProductDoc,
+  denomination: number | undefined,
+): string {
+  if (usesSharedWeightInventory(product)) {
+    return String(product._id)
+  }
+
+  return `${product._id}:${denomination ?? 'default'}`
+}
+
+function getRequestedInventoryQuantity(
+  product: ProductDoc,
+  quantity: number,
+  denomination: number | undefined,
+): number {
+  const sharedWeightQuantity = getSharedWeightLineQuantity(
+    product,
+    denomination,
+    quantity,
+  )
+
+  return sharedWeightQuantity ?? quantity
+}
 
 async function getProductStock(
   ctx: MutationCtx,
   productId: Id<'products'>,
-  denomination: number | undefined,
 ): Promise<number> {
   const product = await ctx.db.get(productId)
   if (!product) return 0
-  if (product.stockByDenomination != null && denomination !== undefined) {
-    const key = String(denomination)
-    return product.stockByDenomination[key] ?? 0
-  }
-  if (product.stockByDenomination != null) {
-    return (Object.values(product.stockByDenomination) as number[]).reduce(
-      (a, b) => a + b,
-      0,
-    )
-  }
-  return product.stock ?? 0
+  return getTotalStock(product)
 }
 
 async function getHeldQuantity(
   ctx: MutationCtx,
-  productId: Id<'products'>,
+  product: ProductDoc,
   denomination: number | undefined,
 ): Promise<number> {
-  const holds = await ctx.db
-    .query('productHolds')
-    .withIndex('by_product_denom', (q) =>
-      q.eq('productId', productId).eq('denomination', denomination),
-    )
-    .collect()
+  const holds = usesSharedWeightInventory(product)
+    ? await ctx.db
+        .query('productHolds')
+        .withIndex('by_product', (q) => q.eq('productId', product._id))
+        .collect()
+    : await ctx.db
+        .query('productHolds')
+        .withIndex('by_product_denom', (q) =>
+          q.eq('productId', product._id).eq('denomination', denomination),
+        )
+        .collect()
   const now = Date.now()
-  return holds
-    .filter((h) => h.expiresAt > now)
-    .reduce((sum, h) => sum + h.quantity, 0)
+  return roundStockQuantity(
+    holds
+      .filter((h) => h.expiresAt > now)
+      .reduce(
+        (sum, h) =>
+          sum +
+          getRequestedInventoryQuantity(product, h.quantity, h.denomination),
+        0,
+      ),
+  )
 }
 
 async function getOurHold(
   ctx: MutationCtx,
   cartId: Id<'carts'>,
-  productId: Id<'products'>,
+  product: ProductDoc,
   denomination: number | undefined,
-): Promise<{id: Id<'productHolds'>; quantity: number} | null> {
+): Promise<{
+  hold: {id: Id<'productHolds'>; quantity: number} | null
+  currentLineReservedQuantity: number
+  reservedQuantity: number
+}> {
   const holds = await ctx.db
     .query('productHolds')
     .withIndex('by_cart', (q) => q.eq('cartId', cartId))
     .collect()
   const match = holds.find(
-    (h) => h.productId === productId && h.denomination === denomination,
+    (h) => h.productId === product._id && h.denomination === denomination,
   )
-  return match ? {id: match._id, quantity: match.quantity} : null
+  const relevantHolds = usesSharedWeightInventory(product)
+    ? holds.filter((h) => h.productId === product._id)
+    : holds.filter(
+        (h) => h.productId === product._id && h.denomination === denomination,
+      )
+
+  return {
+    hold: match ? {id: match._id, quantity: match.quantity} : null,
+    currentLineReservedQuantity: match
+      ? getRequestedInventoryQuantity(
+          product,
+          match.quantity,
+          match.denomination,
+        )
+      : 0,
+    reservedQuantity: roundStockQuantity(
+      relevantHolds.reduce(
+        (sum, h) =>
+          sum +
+          getRequestedInventoryQuantity(product, h.quantity, h.denomination),
+        0,
+      ),
+    ),
+  }
 }
 
 export const addToCart = mutation({
@@ -106,11 +168,23 @@ export const addToCart = mutation({
         ? existingItem.quantity + args.quantity
         : args.quantity
 
-    const stock = await getProductStock(ctx, args.productId, args.denomination)
-    const heldTotal = await getHeldQuantity(ctx, args.productId, args.denomination)
-    const ourHold = await getOurHold(ctx, cart._id, args.productId, args.denomination)
-    const available = stock - heldTotal + (ourHold?.quantity ?? 0)
-    if (available < newLineQuantity) {
+    const product = await ctx.db.get(args.productId)
+    if (!product) {
+      throw new Error('Product not found')
+    }
+
+    const stock = await getProductStock(ctx, args.productId)
+    const heldTotal = await getHeldQuantity(ctx, product, args.denomination)
+    const ourHold = await getOurHold(ctx, cart._id, product, args.denomination)
+    const required = getRequestedInventoryQuantity(
+      product,
+      newLineQuantity,
+      args.denomination,
+    )
+    const available = stock - heldTotal + ourHold.reservedQuantity
+    const nextReservedQuantity =
+      ourHold.reservedQuantity - ourHold.currentLineReservedQuantity + required
+    if (available + INVENTORY_EPSILON < nextReservedQuantity) {
       throw new Error(
         'Not enough stock for this product and size. Try a lower quantity or another size.',
       )
@@ -123,8 +197,7 @@ export const addToCart = mutation({
       .collect()
     const existingHold = cartHolds.find(
       (h) =>
-        h.productId === args.productId &&
-        h.denomination === args.denomination,
+        h.productId === args.productId && h.denomination === args.denomination,
     )
 
     if (existingHold) {
@@ -205,12 +278,54 @@ export const addBundleToCart = mutation({
       if (!cart) throw new Error('Failed to create cart')
     }
 
+    const products = new Map<Id<'products'>, ProductDoc>()
     for (const bi of args.bundleItems) {
-      const stock = await getProductStock(ctx, bi.productId, bi.denomination)
-      const heldTotal = await getHeldQuantity(ctx, bi.productId, bi.denomination)
-      const ourHold = await getOurHold(ctx, cart._id, bi.productId, bi.denomination)
-      const available = stock - heldTotal + (ourHold?.quantity ?? 0)
-      if (available < bi.quantity) {
+      if (!products.has(bi.productId)) {
+        const product = await ctx.db.get(bi.productId)
+        if (!product) {
+          throw new Error('Product not found')
+        }
+        products.set(bi.productId, product)
+      }
+    }
+
+    const requiredByKey = new Map<
+      string,
+      {
+        product: ProductDoc
+        denomination: number | undefined
+        required: number
+      }
+    >()
+
+    for (const bi of args.bundleItems) {
+      const product = products.get(bi.productId)
+      if (!product) {
+        throw new Error('Product not found')
+      }
+
+      const key = getInventoryAvailabilityKey(product, bi.denomination)
+      const required = getRequestedInventoryQuantity(
+        product,
+        bi.quantity,
+        bi.denomination,
+      )
+      const existing = requiredByKey.get(key)
+      requiredByKey.set(key, {
+        product,
+        denomination: bi.denomination,
+        required: roundStockQuantity((existing?.required ?? 0) + required),
+      })
+    }
+
+    for (const {product, denomination, required} of requiredByKey.values()) {
+      const stock = await getProductStock(ctx, product._id)
+      const heldTotal = await getHeldQuantity(ctx, product, denomination)
+      const ourHold = await getOurHold(ctx, cart._id, product, denomination)
+      const available = stock - heldTotal + ourHold.reservedQuantity
+      const nextReservedQuantity = ourHold.reservedQuantity + required
+
+      if (available + INVENTORY_EPSILON < nextReservedQuantity) {
         throw new Error(
           'Not enough stock for this product and size. Try a lower quantity or another size.',
         )
@@ -234,8 +349,7 @@ export const addBundleToCart = mutation({
       const productId = key.slice(0, sepIdx) as Id<'products'>
       const denomination = Number(key.slice(sepIdx + 1))
       const existingHold = cartHolds.find(
-        (h) =>
-          h.productId === productId && h.denomination === denomination,
+        (h) => h.productId === productId && h.denomination === denomination,
       )
       const newQty = (existingHold?.quantity ?? 0) + addQuantity
       if (existingHold) {
@@ -359,7 +473,10 @@ export const updateCartUserId = mutation({
               existing.denomination === item.denomination,
           )
 
-          if (existingItemIndex >= 0 && isProductCartItem(mergedItems[existingItemIndex])) {
+          if (
+            existingItemIndex >= 0 &&
+            isProductCartItem(mergedItems[existingItemIndex])
+          ) {
             mergedItems[existingItemIndex] = {
               ...mergedItems[existingItemIndex],
               quantity: mergedItems[existingItemIndex].quantity + item.quantity,
@@ -486,11 +603,30 @@ export const updateCartItem = mutation({
     if (args.quantity <= 0) {
       newItems.splice(itemIndex, 1)
     } else {
-      const stock = await getProductStock(ctx, args.productId, args.denomination)
-      const heldTotal = await getHeldQuantity(ctx, args.productId, args.denomination)
-      const ourHold = await getOurHold(ctx, cart._id, args.productId, args.denomination)
-      const available = stock - heldTotal + (ourHold?.quantity ?? 0)
-      if (available < args.quantity) {
+      const product = await ctx.db.get(args.productId)
+      if (!product) {
+        throw new Error('Product not found')
+      }
+
+      const stock = await getProductStock(ctx, args.productId)
+      const heldTotal = await getHeldQuantity(ctx, product, args.denomination)
+      const ourHold = await getOurHold(
+        ctx,
+        cart._id,
+        product,
+        args.denomination,
+      )
+      const required = getRequestedInventoryQuantity(
+        product,
+        args.quantity,
+        args.denomination,
+      )
+      const available = stock - heldTotal + ourHold.reservedQuantity
+      const nextReservedQuantity =
+        ourHold.reservedQuantity -
+        ourHold.currentLineReservedQuantity +
+        required
+      if (available + INVENTORY_EPSILON < nextReservedQuantity) {
         throw new Error(
           'Not enough stock for this product and size. Try a lower quantity or another size.',
         )

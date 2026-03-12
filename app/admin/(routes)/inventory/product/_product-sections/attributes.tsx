@@ -88,7 +88,7 @@ export const Attributes = ({form}: AttributesProps) => {
           </form.Field>
         </div>
 
-        <div className='grid grid-cols-1 sm:grid-cols-3 w-full gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-3 w-full gap-4 mt-4'>
           <form.Field name='terpenes'>
             {(field) => (
               <div className='space-y-2 w-full'>

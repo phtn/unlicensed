@@ -48,6 +48,11 @@ export const productSchema = v.object({
   featured: v.optional(v.boolean()),
   available: v.optional(v.boolean()),
   stock: v.optional(v.number()),
+  inventoryMode: v.optional(
+    v.union(v.literal('by_denomination'), v.literal('shared_weight')),
+  ),
+  masterStockQuantity: v.optional(v.number()),
+  masterStockUnit: v.optional(v.string()),
   /** Per-denomination inventory. Key = denomination as string (e.g. "0.125", "1", "3.5"), value = count. */
   stockByDenomination: v.optional(v.record(v.string(), v.number())),
   priceByDenomination: v.optional(v.record(v.string(), v.number())),

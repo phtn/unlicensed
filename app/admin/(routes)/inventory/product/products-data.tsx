@@ -24,6 +24,7 @@ import {
 import {CellContext} from '@tanstack/react-table'
 import {useQuery} from 'convex/react'
 import {useCallback, useMemo} from 'react'
+import {CSV_DENOM_KEYS, PRODUCT_CSV_FIELDS} from './csv-import/constants'
 import {mapNumericFractions} from './product-schema'
 
 function escapeCsvValue(value: unknown): string {
@@ -31,75 +32,6 @@ function escapeCsvValue(value: unknown): string {
   if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`
   return s
 }
-
-/** Denomination keys used for per-denom price/stock columns in CSV */
-const DENOM_KEYS = [
-  '0.125',
-  '0.25',
-  '0.5',
-  '1',
-  '2',
-  '3',
-  '3.5',
-  '4',
-  '5',
-  '6',
-  '7',
-  '8',
-]
-
-/** All product table fields (scalar + JSON-serialized). Order: identity, core, then denom columns, then rest. */
-const PRODUCT_CSV_FIELDS = [
-  '_id',
-  '_creationTime',
-  'name',
-  'slug',
-  'base',
-  'categoryId',
-  'categorySlug',
-  'shortDescription',
-  'description',
-  'priceCents',
-  'unit',
-  'availableDenominations',
-  'popularDenomination',
-  'thcPercentage',
-  'cbdPercentage',
-  'effects',
-  'terpenes',
-  'limited',
-  'featured',
-  'available',
-  'stock',
-  'stockByDenomination',
-  'priceByDenomination',
-  'rating',
-  'image',
-  'gallery',
-  'consumption',
-  'flavorNotes',
-  'potencyLevel',
-  'potencyProfile',
-  'weightGrams',
-  'brand',
-  'lineage',
-  'noseRating',
-  'variants',
-  'tier',
-  'eligibleForRewards',
-  'eligibleForDeals',
-  'onSale',
-  'eligibleDenominationForDeals',
-  'eligibleForUpgrade',
-  'upgradePrice',
-  'dealType',
-  'productType',
-  'netWeight',
-  'netWeightUnit',
-  'subcategory',
-  'batchId',
-  'archived',
-] as const
 
 function serializeCsvCell(value: unknown): string {
   if (value === null || value === undefined) return ''
@@ -113,7 +45,10 @@ function exportProductsToCsv(
   products: Doc<'products'>[],
   filenamePrefix = 'products',
 ) {
-  const denomHeaders = DENOM_KEYS.flatMap((k) => [`price_${k}`, `stock_${k}`])
+  const denomHeaders = CSV_DENOM_KEYS.flatMap((k) => [
+    `price_${k}`,
+    `stock_${k}`,
+  ])
   const headers = [...PRODUCT_CSV_FIELDS, ...denomHeaders]
   const rows = products.map((p) => {
     const record = p as Record<string, unknown>
@@ -122,7 +57,7 @@ function exportProductsToCsv(
       (record.priceByDenomination as Record<string, number> | undefined) ?? {}
     const stockByDenom =
       (record.stockByDenomination as Record<string, number> | undefined) ?? {}
-    const denomCells = DENOM_KEYS.flatMap((k) => [
+    const denomCells = CSV_DENOM_KEYS.flatMap((k) => [
       serializeCsvCell(priceByDenom[k]),
       serializeCsvCell(stockByDenom[k]),
     ])

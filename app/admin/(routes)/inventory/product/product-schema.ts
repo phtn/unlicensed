@@ -215,7 +215,14 @@ export const productSchema = z.object({
   eligibleForRewards: z.boolean(),
   eligibleForDeals: z.optional(z.boolean()),
   onSale: z.optional(z.boolean()),
+  inventoryMode: z
+    .enum(['by_denomination', 'shared_weight'])
+    .default('by_denomination'),
   stock: z.optional(z.number().min(0, 'Stock must be positive.')),
+  masterStockQuantity: z.optional(
+    z.number().min(0, 'Master stock must be 0 or more.'),
+  ),
+  masterStockUnit: z.string().optional(),
   /** Per-denomination inventory. Key = denomination as string (e.g. "0.125", "1"), value = count. */
   stockByDenomination: z.optional(
     z.record(z.string(), z.number().min(0, 'Stock must be 0 or more.')),
@@ -596,6 +603,9 @@ export const defaultValues: ProductFormValues = {
   ),
   stockByDenomination: {},
   priceByDenomination: {},
+  inventoryMode: 'by_denomination',
+  masterStockQuantity: undefined,
+  masterStockUnit: '',
   popularDenomination: [] as number[],
   tier: undefined,
   lineage: undefined,

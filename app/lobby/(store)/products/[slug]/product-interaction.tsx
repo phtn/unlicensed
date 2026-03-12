@@ -13,6 +13,7 @@ import {
   useCart,
 } from '@/hooks/use-cart'
 import {Icon, IconName} from '@/lib/icons'
+import {formatStockDisplay} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {Badge, Button, Tooltip, useDisclosure} from '@heroui/react'
@@ -448,8 +449,7 @@ const ProductDetailStats = ({
         <span className='opacity-0 text-[9px] w-16 md:w-20 text-sm whitespace-nowrap capitalize'>
           <span className='font-polysans font-semibold text-base'>
             {product.stockByDenomination?.[denominationKey] ??
-              product.stock ??
-              0}
+              formatStockDisplay(product)}
           </span>{' '}
           left
         </span>

@@ -264,6 +264,9 @@ async function buildProductInsertDoc(
     featured: args.featured,
     available: args.available,
     stock: args.stock,
+    inventoryMode: args.inventoryMode,
+    masterStockQuantity: args.masterStockQuantity,
+    masterStockUnit: args.masterStockUnit?.trim() || undefined,
     stockByDenomination: args.stockByDenomination,
     rating: args.rating,
     image: args.image,
@@ -415,6 +418,15 @@ export const updateProduct = mutation({
     }
     if (fields.stock !== undefined) {
       updates.stock = fields.stock
+    }
+    if (fields.inventoryMode !== undefined) {
+      updates.inventoryMode = fields.inventoryMode
+    }
+    if (fields.masterStockQuantity !== undefined) {
+      updates.masterStockQuantity = fields.masterStockQuantity
+    }
+    if (fields.masterStockUnit !== undefined) {
+      updates.masterStockUnit = fields.masterStockUnit.trim() || undefined
     }
     if (fields.stockByDenomination !== undefined) {
       updates.stockByDenomination = fields.stockByDenomination

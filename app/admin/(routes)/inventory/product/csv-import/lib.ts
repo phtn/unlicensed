@@ -3,76 +3,11 @@
  * Matches the export format from products-data.tsx (PRODUCT_CSV_FIELDS + denom columns).
  * _id and _creationTime are accepted in the CSV (from export) but omitted on insert; Convex creates them.
  */
+import {CSV_DENOM_KEYS, DENOM_HEADERS, EXPECTED_CSV_HEADERS} from './constants'
 
-const DENOM_KEYS = [
-  '0.125',
-  '0.25',
-  '0.5',
-  '1',
-  '2',
-  '3',
-  '3.5',
-  '4',
-  '5',
-  '6',
-  '7',
-  '8',
-]
+export {CSV_DENOM_KEYS, EXPECTED_CSV_HEADERS}
 
-const PRODUCT_CSV_FIELDS = [
-  '_id',
-  '_creationTime',
-  'name',
-  'slug',
-  'base',
-  'categoryId',
-  'categorySlug',
-  'shortDescription',
-  'description',
-  'priceCents',
-  'unit',
-  'availableDenominations',
-  'popularDenomination',
-  'thcPercentage',
-  'cbdPercentage',
-  'effects',
-  'terpenes',
-  'limited',
-  'featured',
-  'available',
-  'stock',
-  'stockByDenomination',
-  'priceByDenomination',
-  'rating',
-  'image',
-  'gallery',
-  'consumption',
-  'flavorNotes',
-  'potencyLevel',
-  'potencyProfile',
-  'weightGrams',
-  'brand',
-  'lineage',
-  'noseRating',
-  'variants',
-  'tier',
-  'eligibleForRewards',
-  'eligibleForDeals',
-  'onSale',
-  'eligibleDenominationForDeals',
-  'eligibleForUpgrade',
-  'upgradePrice',
-  'dealType',
-  'productType',
-  'netWeight',
-  'netWeightUnit',
-  'subcategory',
-  'batchId',
-  'archived',
-] as const
-
-const DENOM_HEADERS = DENOM_KEYS.flatMap((k) => [`price_${k}`, `stock_${k}`])
-export const EXPECTED_CSV_HEADERS = [...PRODUCT_CSV_FIELDS, ...DENOM_HEADERS]
+const VALID_INVENTORY_MODES = new Set(['by_denomination', 'shared_weight'])
 
 /** CSV columns that are not sent on insert (created by Convex). Shown in export but omitted in preview/import. */
 export const OMIT_FROM_IMPORT_HEADERS = new Set(['_id', '_creationTime'])
@@ -149,7 +84,7 @@ function rawRowToProduct(
 ): Record<string, unknown> {
   const priceByDenomination: Record<string, number> = {}
   const stockByDenomination: Record<string, number> = {}
-  for (const k of DENOM_KEYS) {
+  for (const k of CSV_DENOM_KEYS) {
     const priceKey = `price_${k}`
     const stockKey = `stock_${k}`
     if (denomHeaders.includes(priceKey)) {
@@ -163,6 +98,10 @@ function rawRowToProduct(
   }
 
   const get = (key: string): string => raw[key] ?? ''
+  const inventoryMode = (() => {
+    const rawValue = get('inventoryMode').trim()
+    return VALID_INVENTORY_MODES.has(rawValue) ? rawValue : undefined
+  })()
 
   const availableDenoms = parseJsonArrayOrRecord(
     get('availableDenominations'),
@@ -210,11 +149,17 @@ function rawRowToProduct(
     limited: parseBool(get('limited')),
     featured: parseBool(get('featured')),
     available: parseBool(get('available')),
-    stock: parseNum(get('stock')),
+    stock:
+      inventoryMode === 'shared_weight' ? undefined : parseNum(get('stock')),
+    inventoryMode,
+    masterStockQuantity: parseNum(get('masterStockQuantity')),
+    masterStockUnit: get('masterStockUnit') || undefined,
     stockByDenomination:
-      Object.keys(stockByDenomination).length > 0
-        ? stockByDenomination
-        : undefined,
+      inventoryMode === 'shared_weight'
+        ? undefined
+        : Object.keys(stockByDenomination).length > 0
+          ? stockByDenomination
+          : undefined,
     priceByDenomination:
       Object.keys(priceByDenomination).length > 0
         ? priceByDenomination
@@ -318,6 +263,10 @@ export function parseProductsCsv(csvText: string): ParseResult {
 }
 
 const VALID_DEAL_TYPES_LOWER = new Set(['withintier', 'acrosstiers'])
+const VALID_INVENTORY_MODES_LOWER = new Set([
+  'by_denomination',
+  'shared_weight',
+])
 
 /** Client-side row validation (required fields, types). Does not check category existence or slug conflict. */
 function validateRow(
@@ -356,6 +305,31 @@ function validateRow(
       product.noseRating > 10)
   ) {
     errors.push('noseRating must be between 0 and 10')
+  }
+  const inventoryModeRaw = (raw.inventoryMode ?? '').trim()
+  if (
+    inventoryModeRaw !== '' &&
+    !VALID_INVENTORY_MODES_LOWER.has(inventoryModeRaw.toLowerCase())
+  ) {
+    errors.push('inventoryMode must be by_denomination or shared_weight')
+  }
+  if (product.inventoryMode === 'shared_weight') {
+    if (
+      typeof product.masterStockQuantity !== 'number' ||
+      product.masterStockQuantity < 0
+    ) {
+      errors.push(
+        'masterStockQuantity is required and must be a non-negative number when inventoryMode is shared_weight',
+      )
+    }
+    if (
+      product.masterStockUnit == null ||
+      String(product.masterStockUnit).trim() === ''
+    ) {
+      errors.push(
+        'masterStockUnit is required when inventoryMode is shared_weight',
+      )
+    }
   }
   const dealTypeRaw = (raw.dealType ?? '').trim()
   if (

@@ -41,6 +41,9 @@ export type RawProduct = {
   onSale?: boolean
   available?: boolean
   stock?: number
+  inventoryMode?: 'by_denomination' | 'shared_weight'
+  masterStockQuantity?: number
+  masterStockUnit?: string
   stockByDenomination?: Record<string, number>
   /** Per-denomination price in cents. */
   priceByDenomination?: Record<string, number>
@@ -144,6 +147,9 @@ export const adaptProduct = (
   onSale: product.onSale ?? false,
   available: product.available ?? true,
   stock: getTotalStock(product),
+  inventoryMode: product.inventoryMode,
+  masterStockQuantity: product.masterStockQuantity,
+  masterStockUnit: product.masterStockUnit,
   stockByDenomination: product.stockByDenomination,
   priceByDenomination: product.priceByDenomination,
   rating: product.rating ?? 0,

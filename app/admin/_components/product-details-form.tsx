@@ -3,7 +3,11 @@
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {getTotalStock} from '@/lib/productStock'
+import {
+  getStockDisplayUnit,
+  getTotalStock,
+  usesSharedWeightInventory,
+} from '@/lib/productStock'
 import {Button, Image, Input, Switch, Textarea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useEffect, useState} from 'react'
@@ -88,6 +92,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
         name?: string
         priceCents?: number
         stock?: number
+        masterStockQuantity?: number
         unit?: string
       } = {}
 
@@ -99,7 +104,11 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
         fields.priceCents = priceCents
       }
       if (stock !== getTotalStock(product)) {
-        fields.stock = stock
+        if (usesSharedWeightInventory(product)) {
+          fields.masterStockQuantity = stock
+        } else {
+          fields.stock = stock
+        }
       }
       if (unit !== product.unit) {
         fields.unit = unit
@@ -192,7 +201,11 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
         </div>
         <div className='w-full'>
           <Input
-            label='Qty in stock'
+            label={
+              usesSharedWeightInventory(product)
+                ? `Master stock${getStockDisplayUnit(product) ? ` (${getStockDisplayUnit(product)})` : ''}`
+                : 'Qty in stock'
+            }
             size='md'
             type='number'
             value={String(stock)}

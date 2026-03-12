@@ -142,8 +142,24 @@ export const ProductForm = ({
           available: data.available,
           eligibleForDeals: data.eligibleForDeals,
           onSale: data.onSale,
-          stock: data.stock ? Math.round(data.stock) : undefined,
-          stockByDenomination: data.stockByDenomination,
+          inventoryMode: data.inventoryMode,
+          stock:
+            data.inventoryMode === 'by_denomination' && data.stock != null
+              ? Math.round(data.stock)
+              : undefined,
+          masterStockQuantity:
+            data.inventoryMode === 'shared_weight' &&
+            data.masterStockQuantity != null
+              ? data.masterStockQuantity
+              : undefined,
+          masterStockUnit:
+            data.inventoryMode === 'shared_weight'
+              ? data.masterStockUnit?.trim() || undefined
+              : undefined,
+          stockByDenomination:
+            data.inventoryMode === 'by_denomination'
+              ? data.stockByDenomination
+              : undefined,
           rating: data.rating,
           image: data.image as Id<'_storage'>,
           gallery: data.gallery as Array<Id<'_storage'>>,
@@ -271,7 +287,13 @@ export const ProductForm = ({
       initialValues.eligibleForDeals ?? false,
     )
     form.setFieldValue('onSale', initialValues.onSale ?? false)
+    form.setFieldValue(
+      'inventoryMode',
+      initialValues.inventoryMode ?? 'by_denomination',
+    )
     form.setFieldValue('stock', initialValues.stock ?? 0)
+    form.setFieldValue('masterStockQuantity', initialValues.masterStockQuantity)
+    form.setFieldValue('masterStockUnit', initialValues.masterStockUnit ?? '')
     form.setFieldValue(
       'stockByDenomination',
       initialValues.stockByDenomination ?? {},

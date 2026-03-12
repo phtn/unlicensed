@@ -1,6 +1,12 @@
 import {v} from 'convex/values'
+import {
+  getSharedWeightLineQuantity,
+  getTotalStock,
+  roundStockQuantity,
+  usesSharedWeightInventory,
+} from '../../lib/productStock'
 import {internal} from '../_generated/api'
-import type {Id} from '../_generated/dataModel'
+import type {Doc, Id} from '../_generated/dataModel'
 import type {MutationCtx} from '../_generated/server'
 import {internalMutation, mutation} from '../_generated/server'
 import {isProductCartItem} from '../cart/d'
@@ -49,6 +55,9 @@ const DEFAULT_REWARDS_TIERS = [
 ] as const
 const DEFAULT_BUNDLE_BONUS = {enabled: true, bonusPct: 0.5, minCategories: 2}
 const DEFAULT_FREE_SHIPPING_FIRST_ORDER = 49
+const INVENTORY_EPSILON = 0.000001
+
+type ProductDoc = Doc<'products'>
 
 type RewardsTierConfig = {
   minSubtotal: number
@@ -315,54 +324,90 @@ async function buildOrderItems(
 async function getProductStockForOrder(
   ctx: MutationCtx,
   productId: Id<'products'>,
-  denomination: number | undefined,
 ): Promise<number> {
   const product = await ctx.db.get(productId)
   if (!product) return 0
-  if (product.stockByDenomination != null && denomination !== undefined) {
-    const key = String(denomination)
-    return product.stockByDenomination[key] ?? 0
+  return getTotalStock(product)
+}
+
+function getRequestedInventoryQuantity(
+  product: ProductDoc,
+  quantity: number,
+  denomination: number | undefined,
+): number {
+  const sharedWeightQuantity = getSharedWeightLineQuantity(
+    product,
+    denomination,
+    quantity,
+  )
+
+  return sharedWeightQuantity ?? quantity
+}
+
+function getInventoryAvailabilityKey(
+  product: ProductDoc,
+  denomination: number | undefined,
+): string {
+  if (usesSharedWeightInventory(product)) {
+    return String(product._id)
   }
-  if (product.stockByDenomination != null) {
-    return (Object.values(product.stockByDenomination) as number[]).reduce(
-      (a, b) => a + b,
-      0,
-    )
-  }
-  return product.stock ?? 0
+
+  return `${product._id}:${denomination ?? 'default'}`
 }
 
 async function getHeldQuantityForOrder(
   ctx: MutationCtx,
-  productId: Id<'products'>,
+  product: ProductDoc,
   denomination: number | undefined,
 ): Promise<number> {
-  const holds = await ctx.db
-    .query('productHolds')
-    .withIndex('by_product_denom', (q) =>
-      q.eq('productId', productId).eq('denomination', denomination),
-    )
-    .collect()
+  const holds = usesSharedWeightInventory(product)
+    ? await ctx.db
+        .query('productHolds')
+        .withIndex('by_product', (q) => q.eq('productId', product._id))
+        .collect()
+    : await ctx.db
+        .query('productHolds')
+        .withIndex('by_product_denom', (q) =>
+          q.eq('productId', product._id).eq('denomination', denomination),
+        )
+        .collect()
   const now = Date.now()
-  return holds
-    .filter((h) => h.expiresAt > now)
-    .reduce((sum, h) => sum + h.quantity, 0)
+  return roundStockQuantity(
+    holds
+      .filter((h) => h.expiresAt > now)
+      .reduce(
+        (sum, h) =>
+          sum +
+          getRequestedInventoryQuantity(product, h.quantity, h.denomination),
+        0,
+      ),
+  )
 }
 
 async function getOurHoldForOrder(
   ctx: MutationCtx,
   cartId: Id<'carts'>,
-  productId: Id<'products'>,
+  product: ProductDoc,
   denomination: number | undefined,
 ): Promise<number> {
   const holds = await ctx.db
     .query('productHolds')
     .withIndex('by_cart', (q) => q.eq('cartId', cartId))
     .collect()
-  const match = holds.find(
-    (h) => h.productId === productId && h.denomination === denomination,
+  const relevantHolds = usesSharedWeightInventory(product)
+    ? holds.filter((h) => h.productId === product._id)
+    : holds.filter(
+        (h) => h.productId === product._id && h.denomination === denomination,
+      )
+
+  return roundStockQuantity(
+    relevantHolds.reduce(
+      (sum, h) =>
+        sum +
+        getRequestedInventoryQuantity(product, h.quantity, h.denomination),
+      0,
+    ),
   )
-  return match?.quantity ?? 0
 }
 
 /**
@@ -448,26 +493,62 @@ export const createOrder = mutation({
       }
     }
 
+    const products = new Map<Id<'products'>, ProductDoc>()
     for (const item of flatItems) {
-      const stock = await getProductStockForOrder(
-        ctx,
-        item.productId,
+      if (!products.has(item.productId)) {
+        const product = await ctx.db.get(item.productId)
+        if (!product) {
+          throw new Error(`Product ${item.productId} not found`)
+        }
+        products.set(item.productId, product)
+      }
+    }
+
+    const requiredByKey = new Map<
+      string,
+      {
+        product: ProductDoc
+        denomination: number | undefined
+        required: number
+      }
+    >()
+
+    for (const item of flatItems) {
+      const product = products.get(item.productId)
+      if (!product) {
+        throw new Error(`Product ${item.productId} not found`)
+      }
+
+      const key = getInventoryAvailabilityKey(product, item.denomination)
+      const required = getRequestedInventoryQuantity(
+        product,
+        item.quantity,
         item.denomination,
       )
+      const existing = requiredByKey.get(key)
+      requiredByKey.set(key, {
+        product,
+        denomination: item.denomination,
+        required: roundStockQuantity((existing?.required ?? 0) + required),
+      })
+    }
+
+    for (const {product, denomination, required} of requiredByKey.values()) {
+      const stock = await getProductStockForOrder(ctx, product._id)
       const heldTotal = await getHeldQuantityForOrder(
         ctx,
-        item.productId,
-        item.denomination,
+        product,
+        denomination,
       )
       const ourHold = await getOurHoldForOrder(
         ctx,
         cart._id,
-        item.productId,
-        item.denomination,
+        product,
+        denomination,
       )
       const available = stock - heldTotal + ourHold
-      if (available < item.quantity) {
-        const product = await ctx.db.get(item.productId)
+
+      if (available + INVENTORY_EPSILON < required) {
         const name = product?.name ?? 'Product'
         throw new Error(
           `${name} is no longer available in the requested quantity. Please update your cart.`,
@@ -1167,29 +1248,84 @@ export const deductStockForOrder = internalMutation({
     const order = await ctx.db.get(args.orderId)
     if (!order) return
 
+    const productDocs = new Map<Id<'products'>, ProductDoc>()
+    const sharedWeightDeductions = new Map<Id<'products'>, number>()
+    const denominationDeductions = new Map<string, number>()
+
     for (const item of order.items) {
       const product = await ctx.db.get(item.productId)
       if (!product) continue
+      productDocs.set(item.productId, product)
 
-      const denom = item.denomination
-      const denomKey = denom !== undefined ? String(denom) : null
+      if (usesSharedWeightInventory(product)) {
+        const deduction = getRequestedInventoryQuantity(
+          product,
+          item.quantity,
+          item.denomination,
+        )
+        sharedWeightDeductions.set(
+          item.productId,
+          roundStockQuantity(
+            (sharedWeightDeductions.get(item.productId) ?? 0) + deduction,
+          ),
+        )
+        continue
+      }
+
+      const denomKey =
+        item.denomination !== undefined ? String(item.denomination) : null
+      const key = `${item.productId}:${denomKey ?? 'default'}`
+      denominationDeductions.set(
+        key,
+        (denominationDeductions.get(key) ?? 0) + item.quantity,
+      )
+    }
+
+    for (const [productId, deduction] of sharedWeightDeductions) {
+      const product = productDocs.get(productId)
+      if (!product) continue
+
+      const current = product.masterStockQuantity ?? 0
+      const next = Math.max(0, roundStockQuantity(current - deduction))
+      await ctx.db.patch(productId, {
+        masterStockQuantity: next,
+      })
+    }
+
+    for (const [key, deduction] of denominationDeductions) {
+      const separatorIndex = key.indexOf(':')
+      const productId = key.slice(0, separatorIndex) as Id<'products'>
+      const denomKeyRaw = key.slice(separatorIndex + 1)
+      const denomKey = denomKeyRaw === 'default' ? null : denomKeyRaw
+      const product = productDocs.get(productId)
+      if (!product) continue
 
       if (product.stockByDenomination != null && denomKey != null) {
         const current = product.stockByDenomination[denomKey] ?? 0
-        const next = Math.max(0, current - item.quantity)
-        await ctx.db.patch(item.productId, {
-          stockByDenomination: {
-            ...product.stockByDenomination,
-            [denomKey]: next,
-          },
+        const next = Math.max(0, current - deduction)
+        const nextStockByDenomination = {
+          ...product.stockByDenomination,
+          [denomKey]: next,
+        }
+        await ctx.db.patch(productId, {
+          stockByDenomination: nextStockByDenomination,
         })
-      } else {
-        const current = product.stock ?? 0
-        const next = Math.max(0, current - item.quantity)
-        await ctx.db.patch(item.productId, {
-          stock: next,
+        productDocs.set(productId, {
+          ...product,
+          stockByDenomination: nextStockByDenomination,
         })
+        continue
       }
+
+      const current = product.stock ?? 0
+      const next = Math.max(0, current - deduction)
+      await ctx.db.patch(productId, {
+        stock: next,
+      })
+      productDocs.set(productId, {
+        ...product,
+        stock: next,
+      })
     }
   },
 })

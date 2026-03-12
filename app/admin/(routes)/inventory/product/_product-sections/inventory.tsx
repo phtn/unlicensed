@@ -17,6 +17,8 @@ interface InventoryProps {
   form: ProductFormApi
 }
 
+const MASTER_STOCK_UNIT_OPTIONS = ['mg', 'g', 'kg', 'oz', 'lb'] as const
+
 // Extract numeric denomination from variant label (e.g., "0.125oz" -> 0.125)
 const extractDenomination = (label: string): number | null => {
   // Match numbers at the start of the label (including decimals)
@@ -48,6 +50,18 @@ export const Inventory = ({form}: InventoryProps) => {
   const eligibleForUpgrade = useStore(form.store, (state) => {
     const values = state.values as {eligibleForUpgrade?: boolean}
     return values.eligibleForUpgrade ?? false
+  })
+
+  const inventoryMode = useStore(form.store, (state) => {
+    const values = state.values as {
+      inventoryMode?: 'by_denomination' | 'shared_weight'
+    }
+    return values.inventoryMode ?? 'by_denomination'
+  })
+
+  const productUnit = useStore(form.store, (state) => {
+    const values = state.values as {unit?: string}
+    return values.unit ?? ''
   })
 
   // Parse current denominations from raw value
@@ -122,68 +136,202 @@ export const Inventory = ({form}: InventoryProps) => {
       <Header label='Inventory' />
       <div className='w-full space-y-8'>
         <div className='grid grid-cols-1 md:grid-cols-6 md:gap-x-6 gap-y-6 w-full'>
-          <div className='w-full col-span-6'>
-            <form.Field name='stockByDenomination'>
-              {(field) => {
-                const stockByDenomination =
-                  (field.state.value as Record<string, number>) ?? {}
-                const selectedVariantOptions = variantOptions.filter((opt) =>
-                  currentDenominations.has(opt.key),
-                )
-                const handleStockChange = (
-                  denominationKey: string,
-                  value: number,
-                ) => {
-                  const next = {
-                    ...stockByDenomination,
-                    [denominationKey]: Math.max(0, value),
-                  }
-                  field.handleChange(next)
-                }
-                return (
-                  <div className='space-y-3 w-full'>
-                    <label className='text-sm font-medium block'>
-                      Stock by Denomination
-                    </label>
-                    {selectedVariantOptions.length === 0 ? (
-                      <p className='text-sm text-color-muted'>
-                        Select available denominations below to set stock per
-                        size.
-                      </p>
-                    ) : (
-                      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-                        {selectedVariantOptions.map((option) => {
-                          const value = stockByDenomination[option.key] ?? 0
-                          return (
-                            <Input
-                              key={option.key}
-                              label={
-                                mapFractions[option.label] ??
-                                option.displayLabel ??
-                                option.label
-                              }
-                              type='number'
-                              value={String(value)}
-                              onChange={(e) =>
-                                handleStockChange(
-                                  option.key,
-                                  Number(e.target.value) || 0,
-                                )
-                              }
-                              onBlur={field.handleBlur}
-                              min={0}
-                              variant='bordered'
-                              classNames={commonInputClassNames}
-                            />
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )
-              }}
+          <div className='w-full col-span-6 md:col-span-3'>
+            <form.Field name='inventoryMode'>
+              {(field) => (
+                <Select
+                  label='Inventory Mode'
+                  selectedKeys={[
+                    String(field.state.value ?? 'by_denomination'),
+                  ]}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0]
+                    if (typeof selected === 'string') {
+                      field.handleChange(
+                        selected as 'by_denomination' | 'shared_weight',
+                      )
+                    }
+                  }}
+                  variant='bordered'
+                  classNames={commonSelectClassNames}>
+                  <SelectItem key='by_denomination' textValue='By denomination'>
+                    <div className='flex flex-col'>
+                      <span className='text-sm font-medium'>
+                        By denomination
+                      </span>
+                      <span className='text-xs opacity-70'>
+                        Track stock per purchasable size.
+                      </span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem
+                    key='shared_weight'
+                    textValue='Shared weight pool'>
+                    <div className='flex flex-col'>
+                      <span className='text-sm font-medium'>
+                        Shared weight pool
+                      </span>
+                      <span className='text-xs opacity-70'>
+                        Deduct all denominations from one master stock amount.
+                      </span>
+                    </div>
+                  </SelectItem>
+                </Select>
+              )}
             </form.Field>
           </div>
+
+          {inventoryMode === 'shared_weight' ? (
+            <>
+              <div className='w-full col-span-6 md:col-span-2'>
+                <form.Field name='masterStockQuantity'>
+                  {(field) => (
+                    <Input
+                      label='Master Stock'
+                      type='number'
+                      min={0}
+                      step='0.001'
+                      value={
+                        field.state.value == null
+                          ? ''
+                          : String(field.state.value)
+                      }
+                      onChange={(e) =>
+                        field.handleChange(Number(e.target.value) || 0)
+                      }
+                      onBlur={field.handleBlur}
+                      variant='bordered'
+                      classNames={commonInputClassNames}
+                    />
+                  )}
+                </form.Field>
+              </div>
+
+              <div className='w-full col-span-6 md:col-span-1'>
+                <form.Field name='masterStockUnit'>
+                  {(field) => (
+                    <Select
+                      label='Master Unit'
+                      selectedKeys={
+                        field.state.value
+                          ? [String(field.state.value)]
+                          : undefined
+                      }
+                      onSelectionChange={(keys) => {
+                        const selected = Array.from(keys)[0]
+                        if (typeof selected === 'string') {
+                          field.handleChange(selected)
+                        }
+                      }}
+                      variant='bordered'
+                      classNames={commonSelectClassNames}>
+                      {MASTER_STOCK_UNIT_OPTIONS.map((unit) => (
+                        <SelectItem key={unit} textValue={unit}>
+                          {unit}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                  )}
+                </form.Field>
+              </div>
+
+              <div className='col-span-6 rounded-xl border border-black/5 bg-black/2 p-4 text-sm text-color-muted dark:border-white/10 dark:bg-white/3'>
+                Orders will deduct from this master pool using the product unit
+                in Pricing. Example: `10 lb` with product denominations in `oz`
+                will drop to `9.5 lb` after one `0.5 oz` order.
+                {productUnit ? ` Current product unit: ${productUnit}.` : ''}
+              </div>
+            </>
+          ) : null}
+
+          {inventoryMode === 'by_denomination' ? (
+            <div className='w-full col-span-6'>
+              <form.Field name='stockByDenomination'>
+                {(field) => {
+                  const stockByDenomination =
+                    (field.state.value as Record<string, number>) ?? {}
+                  const selectedVariantOptions = variantOptions.filter((opt) =>
+                    currentDenominations.has(opt.key),
+                  )
+                  const handleStockChange = (
+                    denominationKey: string,
+                    value: number,
+                  ) => {
+                    const next = {
+                      ...stockByDenomination,
+                      [denominationKey]: Math.max(0, value),
+                    }
+                    field.handleChange(next)
+                  }
+                  return (
+                    <div className='space-y-3 w-full'>
+                      <label className='text-sm font-medium block'>
+                        Stock by Denomination
+                      </label>
+                      {selectedVariantOptions.length === 0 ? (
+                        <p className='text-sm text-color-muted'>
+                          Select available denominations below to set stock per
+                          size.
+                        </p>
+                      ) : (
+                        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+                          {selectedVariantOptions.map((option) => {
+                            const value = stockByDenomination[option.key] ?? 0
+                            return (
+                              <Input
+                                key={option.key}
+                                label={
+                                  mapFractions[option.label] ??
+                                  option.displayLabel ??
+                                  option.label
+                                }
+                                type='number'
+                                value={String(value)}
+                                onChange={(e) =>
+                                  handleStockChange(
+                                    option.key,
+                                    Number(e.target.value) || 0,
+                                  )
+                                }
+                                onBlur={field.handleBlur}
+                                min={0}
+                                variant='bordered'
+                                classNames={commonInputClassNames}
+                              />
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                }}
+              </form.Field>
+            </div>
+          ) : null}
+
+          {inventoryMode === 'by_denomination' &&
+          variantOptions.length === 0 ? (
+            <div className='w-full col-span-6 md:col-span-2'>
+              <form.Field name='stock'>
+                {(field) => (
+                  <Input
+                    label='Fallback Stock'
+                    type='number'
+                    min={0}
+                    value={
+                      field.state.value == null ? '' : String(field.state.value)
+                    }
+                    onChange={(e) =>
+                      field.handleChange(Number(e.target.value) || 0)
+                    }
+                    onBlur={field.handleBlur}
+                    variant='bordered'
+                    classNames={commonInputClassNames}
+                  />
+                )}
+              </form.Field>
+            </div>
+          ) : null}
 
           <div className='w-full grid md:grid-col-2 col-span-4'>
             <form.Field name='availableDenominationsRaw'>
