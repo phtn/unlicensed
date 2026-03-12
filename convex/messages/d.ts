@@ -66,3 +66,13 @@ export interface LastMessage {
   receiverId?: Id<'users'>
   attachments?: MessageAttachmentArray
 }
+
+export interface ConversationFolderSummary {
+  _id: Id<'conversationFolders'>
+  name: string
+}
+
+export interface ConversationFolderState {
+  enabled: boolean
+  folders: ConversationFolderSummary[]
+}

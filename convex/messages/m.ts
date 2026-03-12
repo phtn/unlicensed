@@ -1,6 +1,58 @@
 import {v} from 'convex/values'
 import type {Id} from '../_generated/dataModel'
 import {mutation} from '../_generated/server'
+import type {MutationCtx} from '../_generated/server'
+
+const normalizeFolderName = (value: string) =>
+  value
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, 40)
+
+const getFolderOwner = async (ctx: MutationCtx, userfid: string) => {
+  const user = await ctx.db
+    .query('users')
+    .withIndex('by_fid', (q) => q.eq('fid', userfid))
+    .first()
+
+  if (!user) {
+    throw new Error('User not found')
+  }
+
+  const staff = user.email
+    ? await ctx.db
+        .query('staff')
+        .withIndex('by_email', (q) => q.eq('email', user.email))
+        .unique()
+    : null
+
+  if (!staff?.active) {
+    throw new Error('Only active staff can manage chat folders')
+  }
+
+  return user
+}
+
+const resolveOtherUserId = async (
+  ctx: MutationCtx,
+  otherUserfid: string,
+  otherUserId?: string,
+) => {
+  const otherUser = await ctx.db
+    .query('users')
+    .withIndex('by_fid', (q) => q.eq('fid', otherUserfid))
+    .first()
+
+  if (otherUser) {
+    return otherUser._id
+  }
+
+  if (typeof otherUserId === 'string') {
+    return otherUserId as Id<'users'>
+  }
+
+  throw new Error('Other user not found')
+}
 
 // Send a message to another user
 export const sendMessage = mutation({
@@ -295,6 +347,138 @@ export const archiveConversation = mutation({
       userId: user._id,
       otherUserId: otherUserIdToArchive,
       archivedAt: new Date().toISOString(),
+    })
+  },
+})
+
+export const createConversationFolder = mutation({
+  args: {
+    userfid: v.string(),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getFolderOwner(ctx, args.userfid)
+    const name = normalizeFolderName(args.name)
+
+    if (name.length < 2) {
+      throw new Error('Folder name must be at least 2 characters')
+    }
+
+    const nameLower = name.toLowerCase()
+    const existing = await ctx.db
+      .query('conversationFolders')
+      .withIndex('by_ownerUserId_nameLower', (q) =>
+        q.eq('ownerUserId', user._id).eq('nameLower', nameLower),
+      )
+      .first()
+
+    if (existing) {
+      return existing._id
+    }
+
+    const now = new Date().toISOString()
+
+    return await ctx.db.insert('conversationFolders', {
+      ownerUserId: user._id,
+      name,
+      nameLower,
+      createdAt: now,
+      updatedAt: now,
+    })
+  },
+})
+
+export const renameConversationFolder = mutation({
+  args: {
+    userfid: v.string(),
+    folderId: v.id('conversationFolders'),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getFolderOwner(ctx, args.userfid)
+    const folder = await ctx.db.get(args.folderId)
+
+    if (!folder || folder.ownerUserId !== user._id) {
+      throw new Error('Folder not found')
+    }
+
+    const name = normalizeFolderName(args.name)
+
+    if (name.length < 2) {
+      throw new Error('Folder name must be at least 2 characters')
+    }
+
+    const nameLower = name.toLowerCase()
+    const existing = await ctx.db
+      .query('conversationFolders')
+      .withIndex('by_ownerUserId_nameLower', (q) =>
+        q.eq('ownerUserId', user._id).eq('nameLower', nameLower),
+      )
+      .first()
+
+    if (existing && existing._id !== folder._id) {
+      throw new Error('Folder name already exists')
+    }
+
+    await ctx.db.patch(args.folderId, {
+      name,
+      nameLower,
+      updatedAt: new Date().toISOString(),
+    })
+
+    return args.folderId
+  },
+})
+
+export const setConversationFolder = mutation({
+  args: {
+    userfid: v.string(),
+    otherUserfid: v.string(),
+    otherUserId: v.optional(v.string()),
+    folderId: v.union(v.id('conversationFolders'), v.null()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getFolderOwner(ctx, args.userfid)
+    const targetOtherUserId = await resolveOtherUserId(
+      ctx,
+      args.otherUserfid,
+      args.otherUserId,
+    )
+
+    const existingAssignment = await ctx.db
+      .query('conversationFolderAssignments')
+      .withIndex('by_ownerUserId_otherUserId', (q) =>
+        q.eq('ownerUserId', user._id).eq('otherUserId', targetOtherUserId),
+      )
+      .first()
+
+    if (args.folderId === null) {
+      if (existingAssignment) {
+        await ctx.db.delete(existingAssignment._id)
+      }
+      return null
+    }
+
+    const folder = await ctx.db.get(args.folderId)
+    if (!folder || folder.ownerUserId !== user._id) {
+      throw new Error('Folder not found')
+    }
+
+    const now = new Date().toISOString()
+
+    if (existingAssignment) {
+      await ctx.db.patch(existingAssignment._id, {
+        folderId: args.folderId,
+        assignedAt: now,
+      })
+      return existingAssignment._id
+    }
+
+    return await ctx.db.insert('conversationFolderAssignments', {
+      ownerUserId: user._id,
+      otherUserId: targetOtherUserId,
+      folderId: args.folderId,
+      assignedAt: now,
     })
   },
 })

@@ -9,6 +9,8 @@ import {blogSchema} from './blogs/d'
 import {cartSchema} from './cart/d'
 import {categorySchema} from './categories/d'
 import {checkoutLogSchema} from './checkoutLogs/d'
+import {conversationFolderAssignmentSchema} from './conversationFolderAssignments/d'
+import {conversationFolderSchema} from './conversationFolders/d'
 import {couponSchema} from './coupons/d'
 import {courierSchema} from './couriers/d'
 import {dealSchema} from './deals/d'
@@ -126,6 +128,15 @@ export default defineSchema({
     .index('by_receiver', ['receiverId']) // All messages received by a user
     .index('by_sender_receiver', ['senderId', 'receiverId']) // Messages between two specific users
     .index('by_receiver_sender', ['receiverId', 'senderId']), // Messages between two specific users (reverse)
+
+  conversationFolders: defineTable(conversationFolderSchema)
+    .index('by_ownerUserId', ['ownerUserId'])
+    .index('by_ownerUserId_nameLower', ['ownerUserId', 'nameLower']),
+
+  conversationFolderAssignments: defineTable(conversationFolderAssignmentSchema)
+    .index('by_ownerUserId', ['ownerUserId'])
+    .index('by_ownerUserId_otherUserId', ['ownerUserId', 'otherUserId'])
+    .index('by_ownerUserId_folderId', ['ownerUserId', 'folderId']),
 
   archivedConversations: defineTable(archivedConversationSchema)
     .index('by_userId', ['userId'])

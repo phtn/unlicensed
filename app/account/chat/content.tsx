@@ -3,6 +3,7 @@
 import {ScrollArea} from '@/components/ui/scroll-area'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import type {ConversationFolderSummary} from '@/convex/messages/d'
 import {useAuthCtx} from '@/ctx/auth'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
@@ -27,7 +28,13 @@ import {
 } from './_components/assistant'
 import {AssistantMessageInput} from './_components/assistant-message-input'
 import {AssistantMessageList} from './_components/assistant-message-list'
-import {Conversation, ConversationList} from './_components/conversation-list'
+import {
+  ALL_CONVERSATIONS_FOLDER,
+  ConversationFolderToolbar,
+  UNFILED_CONVERSATIONS_FOLDER,
+} from './_components/conversation-folder-toolbar'
+import type {Conversation} from './_components/conversation-list'
+import {ConversationList} from './_components/conversation-list'
 import {ConversationSearch} from './_components/conversation-search'
 import {MessageInput} from './_components/message-input'
 import {MessageList} from './_components/message-list'
@@ -39,9 +46,11 @@ interface ChatContentProps {
 
 export function ChatContent({initialConversationId}: ChatContentProps) {
   const {user} = useAuthCtx()
+  const currentUserId = user?.uid ?? null
   const router = useRouter()
   const isMobile = useMobile()
   const [searchQuery, setSearchQuery] = useState('')
+  const [activeFolderId, setActiveFolderId] = useState(ALL_CONVERSATIONS_FOLDER)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const [scrollButtonAnchorEl, setScrollButtonAnchorEl] =
@@ -62,7 +71,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   const assistantUser = useQuery(api.assistant.q.getAssistantUser)
   const lastAssistantMessage = useQuery(
     api.assistant.q.getLastAssistantMessage,
-    user?.uid ? {fid: user.uid} : 'skip',
+    currentUserId ? {fid: currentUserId} : 'skip',
   )
 
   const sendAssistantQuickAction = useCallback(
@@ -89,30 +98,106 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
 
   // Real-time conversations - automatically updates via Convex reactivity
   const conversations = useQuery(api.messages.q.getConversations, {
-    fid: user?.uid ?? '',
+    fid: currentUserId ?? '',
   })
 
   // Search conversations
   const searchResults = useQuery(
     api.messages.q.searchConversations,
-    searchQuery.trim() && user?.uid
+    searchQuery.trim() && currentUserId
       ? {
-          fid: user.uid,
+          fid: currentUserId,
           searchQuery: searchQuery.trim(),
         }
       : 'skip',
   )
+  const conversationFolderState = useQuery(
+    api.messages.q.getConversationFolders,
+    currentUserId ? {fid: currentUserId} : 'skip',
+  )
 
   // Use search results if searching, otherwise use regular conversations
-  const displayedConversations = useMemo(() => {
+  const baseConversations = useMemo<Conversation[]>(() => {
     const raw =
       searchQuery.trim() && searchResults
         ? searchResults
         : (conversations ?? [])
-    return raw.filter(
-      (c): c is Conversation => c != null && c.lastMessage != null,
-    )
+
+    const normalizedConversations: Conversation[] = []
+
+    for (const conversation of raw) {
+      if (!conversation || !conversation.lastMessage) {
+        continue
+      }
+
+      normalizedConversations.push({
+        otherUserId: conversation.otherUserId,
+        otherUser: conversation.otherUser,
+        lastMessage: conversation.lastMessage,
+        unreadCount: conversation.unreadCount,
+        hasMessages: conversation.hasMessages,
+        folderId: conversation.folderId ? String(conversation.folderId) : null,
+        folderName: conversation.folderName ?? null,
+      })
+    }
+
+    return normalizedConversations
   }, [searchQuery, searchResults, conversations])
+  const folderOptions = useMemo<ConversationFolderSummary[]>(
+    () => conversationFolderState?.folders ?? [],
+    [conversationFolderState],
+  )
+  const folderingEnabled = conversationFolderState?.enabled === true
+  const activeFolderExists = useMemo(
+    () => folderOptions.some((folder) => String(folder._id) === activeFolderId),
+    [activeFolderId, folderOptions],
+  )
+  const effectiveActiveFolderId =
+    !folderingEnabled ||
+    activeFolderId === ALL_CONVERSATIONS_FOLDER ||
+    activeFolderId === UNFILED_CONVERSATIONS_FOLDER ||
+    activeFolderExists
+      ? activeFolderId
+      : ALL_CONVERSATIONS_FOLDER
+
+  const folderCounts = useMemo(() => {
+    const counts = {
+      all: (conversations ?? []).length,
+      unfiled: 0,
+      byFolderId: {} as Record<string, number>,
+    }
+
+    for (const conversation of conversations ?? []) {
+      const folderId = conversation?.folderId
+      if (!folderId) {
+        counts.unfiled += 1
+        continue
+      }
+
+      counts.byFolderId[String(folderId)] =
+        (counts.byFolderId[String(folderId)] ?? 0) + 1
+    }
+
+    return counts
+  }, [conversations])
+
+  const displayedConversations = useMemo(() => {
+    if (
+      !folderingEnabled ||
+      effectiveActiveFolderId === ALL_CONVERSATIONS_FOLDER
+    ) {
+      return baseConversations
+    }
+
+    if (effectiveActiveFolderId === UNFILED_CONVERSATIONS_FOLDER) {
+      return baseConversations.filter((conversation) => !conversation.folderId)
+    }
+
+    return baseConversations.filter(
+      (conversation) =>
+        String(conversation.folderId ?? '') === effectiveActiveFolderId,
+    )
+  }, [baseConversations, effectiveActiveFolderId, folderingEnabled])
 
   // Auto-scroll for assistant messages
   const previousAssistantMessagesLengthRef = useRef(0)
@@ -136,9 +221,9 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   // Real-time messages - automatically updates when new messages arrive
   const messagesQuery = useQuery(
     api.messages.q.getMessages,
-    selectedUserProId && user?.uid
+    selectedUserProId && currentUserId
       ? {
-          currentUserId: user.uid,
+          currentUserId,
           otherUserId: selectedUserProId,
         }
       : 'skip',
@@ -147,7 +232,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   // Get current user's Convex ID for optimistic updates
   const currentUserConvex = useQuery(
     api.users.q.getCurrentUser,
-    user?.uid ? {fid: user.uid} : 'skip',
+    currentUserId ? {fid: currentUserId} : 'skip',
   )
 
   // Get other user's Convex ID for optimistic updates
@@ -258,6 +343,15 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
 
   const markAsRead = useMutation(api.messages.m.markAsRead)
   const archiveConversation = useMutation(api.messages.m.archiveConversation)
+  const createConversationFolder = useMutation(
+    api.messages.m.createConversationFolder,
+  )
+  const renameConversationFolder = useMutation(
+    api.messages.m.renameConversationFolder,
+  )
+  const setConversationFolder = useMutation(
+    api.messages.m.setConversationFolder,
+  )
 
   // Get the other user's profile to fetch their username
   // const otherUserProfile = useQuery(
@@ -323,13 +417,13 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
 
   // Mark messages as read when conversation is selected or new messages arrive
   useEffect(() => {
-    if (selectedUserProId && user?.uid && !isAssistant) {
+    if (selectedUserProId && currentUserId && !isAssistant) {
       markAsRead({
         senderfid: selectedUserProId,
-        receiverfid: user.uid,
+        receiverfid: currentUserId,
       }).catch(console.error)
     }
-  }, [selectedUserProId, user?.uid, markAsRead, lastMessageId, isAssistant])
+  }, [selectedUserProId, currentUserId, markAsRead, lastMessageId, isAssistant])
 
   const handleSelectConversation = (
     _otherUserId: string,
@@ -360,10 +454,10 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
 
   const handleArchiveConversation = useCallback(
     async (otherUserId: string, otherUserProId: string) => {
-      if (!user?.uid) return
+      if (!currentUserId) return
       try {
         await archiveConversation({
-          userfid: user.uid,
+          userfid: currentUserId,
           otherUserfid: otherUserProId,
           otherUserId,
         })
@@ -374,7 +468,51 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
         console.error('Error archiving conversation:', error)
       }
     },
-    [user, archiveConversation, selectedUserProId, router],
+    [archiveConversation, currentUserId, selectedUserProId, router],
+  )
+
+  const handleCreateFolder = useCallback(
+    async (name: string) => {
+      if (!currentUserId) return
+
+      const folderId = await createConversationFolder({
+        userfid: currentUserId,
+        name,
+      })
+      setActiveFolderId(String(folderId))
+    },
+    [createConversationFolder, currentUserId],
+  )
+
+  const handleMoveConversation = useCallback(
+    async (
+      otherUserId: string,
+      otherUserProId: string,
+      folderId: string | null,
+    ) => {
+      if (!currentUserId) return
+
+      await setConversationFolder({
+        userfid: currentUserId,
+        otherUserfid: otherUserProId,
+        otherUserId,
+        folderId: folderId ? (folderId as Id<'conversationFolders'>) : null,
+      })
+    },
+    [setConversationFolder, currentUserId],
+  )
+
+  const handleRenameFolder = useCallback(
+    async (folderId: Id<'conversationFolders'>, name: string) => {
+      if (!currentUserId) return
+
+      await renameConversationFolder({
+        userfid: currentUserId,
+        folderId,
+        name,
+      })
+    },
+    [currentUserId, renameConversationFolder],
   )
 
   // Find selected conversation by fid (null when conversation is archived)
@@ -402,92 +540,110 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   const showChatArea = !isMobile || showChat
 
   return (
-    <div className='flex h-full min-h-0 w-full overflow-hidden rounded-xl border border-sidebar/40 bg-sidebar/20'>
+    <div className='relative flex h-full min-h-0 w-full overflow-hidden bg-background md:rounded-3xl md:border md:border-sidebar/40 md:bg-sidebar/20'>
       {/* Conversation List Sidebar */}
-      <div
+      <aside
         className={cn(
-          'backdrop-blur-sm border-r border-sidebar/40 flex min-h-0 flex-col transition-all duration-300',
+          'flex min-h-0 flex-col overflow-hidden border-r border-sidebar/40 bg-background/95 supports-backdrop-filter:backdrop-blur-xl transition-all duration-300',
           isMobile
             ? showConversationList
               ? 'w-full'
               : 'hidden'
-            : 'w-88 shrink-0',
+            : 'w-88 shrink-0 lg:w-[24rem]',
         )}>
-        {/* Search Input */}
-        <ConversationSearch
-          onSearch={setSearchQuery}
-          searchQuery={searchQuery}
-        />
+        <div className='z-10 shrink-0 bg-background/95 supports-backdrop-filter:backdrop-blur-xl'>
+          <ConversationSearch
+            onSearch={setSearchQuery}
+            searchQuery={searchQuery}
+          />
+
+          {folderingEnabled && (
+            <ConversationFolderToolbar
+              activeFolderId={effectiveActiveFolderId}
+              counts={folderCounts}
+              folders={folderOptions}
+              onCreateFolder={handleCreateFolder}
+              onRenameFolder={handleRenameFolder}
+              onSelectFolder={setActiveFolderId}
+            />
+          )}
+        </div>
 
         {/* Conversation List */}
-        <ScrollArea className='flex-1'>
-          {/* Assistant conversation - always first */}
-          {!searchQuery.trim() && (
-            <div className='border-b border-border/40'>
-              <button
-                onClick={handleSelectAssistant}
-                className={cn(
-                  'w-full px-3 md:px-4 py-3 text-left transition-all duration-200 active:bg-accent/70',
-                  'hover:bg-sidebar touch-manipulation',
-                  isAssistant &&
-                    'bg-sidebar border-l-2 md:border-l-2 border-l-blue-500',
-                )}>
-                <div className='flex items-start gap-2 md:gap-3'>
-                  <div className='relative shrink-0'>
-                    <User
-                      avatarProps={{
-                        src: '/svg/rf-logo-round-204-latest.svg',
-                        fallback: 'FG',
-                      }}
-                      name={undefined}
-                    />
-                    <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border-2 border-background' />
-                  </div>
-                  <div className='min-w-0 flex-1'>
-                    <div className='flex items-center justify-between gap-2 mb-1'>
-                      <p className='truncate text-sm text-foreground flex items-center gap-1.5'>
-                        <span className='font-okxs font-medium'>
-                          {assistantUser?.name ?? ASSISTANT_NAME}
-                        </span>
-                        <span className='text-[10px] px-1.5 py-0.5 rounded-sm bg-sidebar text-brand dark:text-sky-50 font-polysans font-semibold'>
-                          AI
-                        </span>
+        <ScrollArea className='min-h-0 flex-1'>
+          <div className='pb-[max(12px,env(safe-area-inset-bottom))]'>
+            {/* Assistant conversation - always first */}
+            {!searchQuery.trim() && (
+              <div className='border-b border-border/40'>
+                <button
+                  onClick={handleSelectAssistant}
+                  className={cn(
+                    'w-full px-3 py-3 text-left transition-all duration-200 active:bg-accent/70 md:px-4',
+                    'touch-manipulation hover:bg-sidebar/70',
+                    isAssistant &&
+                      'border-l-2 border-l-brand bg-sidebar/80 md:border-l-4',
+                  )}>
+                  <div className='flex items-start gap-2 md:gap-3'>
+                    <div className='relative shrink-0'>
+                      <User
+                        avatarProps={{
+                          src: '/svg/rf-logo-round-204-latest.svg',
+                          fallback: 'FG',
+                        }}
+                        name={undefined}
+                      />
+                      <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border-2 border-background' />
+                    </div>
+                    <div className='min-w-0 flex-1'>
+                      <div className='mb-1 flex items-center justify-between gap-2'>
+                        <p className='flex truncate text-sm text-foreground items-center gap-1.5'>
+                          <span className='font-okxs font-medium'>
+                            {assistantUser?.name ?? ASSISTANT_NAME}
+                          </span>
+                          <span className='text-[10px] px-1.5 py-0.5 rounded-sm bg-sidebar text-brand dark:text-sky-50 font-polysans font-semibold'>
+                            AI
+                          </span>
+                        </p>
+                      </div>
+                      <p className='truncate text-sm text-muted-foreground'>
+                        {lastAssistantMessage
+                          ? lastAssistantMessage.content.slice(0, 50) +
+                            (lastAssistantMessage.content.length > 50
+                              ? '...'
+                              : '')
+                          : 'ask me anything'}
                       </p>
                     </div>
-                    <p className='truncate max-w-50 text-sm text-muted-foreground'>
-                      {lastAssistantMessage
-                        ? lastAssistantMessage.content.slice(0, 50) +
-                          (lastAssistantMessage.content.length > 50
-                            ? '...'
-                            : '')
-                        : 'ask me anything'}
-                    </p>
                   </div>
-                </div>
-              </button>
-            </div>
-          )}
+                </button>
+              </div>
+            )}
 
-          <ConversationList
-            selectedProId={selectedUserProId}
-            conversations={displayedConversations}
-            onSelectConversation={handleSelectConversation}
-            onArchiveConversation={handleArchiveConversation}
-          />
+            <ConversationList
+              selectedProId={selectedUserProId}
+              conversations={displayedConversations}
+              folderOptions={folderOptions}
+              onSelectConversation={handleSelectConversation}
+              onArchiveConversation={handleArchiveConversation}
+              onMoveConversation={
+                folderingEnabled ? handleMoveConversation : undefined
+              }
+            />
+          </div>
         </ScrollArea>
-      </div>
+      </aside>
 
       {/* Chat Area */}
-      <div
+      <section
         className={cn(
-          'flex flex-1 min-h-0 flex-col bg-background transition-all duration-300',
+          'flex min-h-0 flex-1 flex-col bg-background transition-all duration-300',
           isMobile && !showChatArea && 'hidden',
         )}>
         {isAssistant ? (
           <>
             {/* Assistant Chat Header */}
-            <div className='sticky top-0 z-10 h-14 md:h-16 flex items-center justify-between px-3 md:px-4 backdrop-blur-md shrink-0 border-b border-border/40 bg-background/95'>
-              <div className='flex items-center gap-0 md:gap-3 flex-1 min-w-0'>
+            <div className='sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b border-border/40 bg-background/95 px-3 supports-backdrop-filter:backdrop-blur-xl md:h-16 md:px-5'>
+              <div className='flex min-w-0 flex-1 items-center gap-0 md:gap-3'>
                 {isMobile && (
                   <button
                     onClick={handleBackToConversations}
@@ -534,8 +690,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
             </div>
 
             {/* Assistant Messages Area */}
-            <ScrollArea ref={scrollAreaRef} className='flex-1 min-h-0'>
-              <div className='px-3 md:px-4 py-4 md:py-6 pb-24 md:pb-32'>
+            <ScrollArea ref={scrollAreaRef} className='min-h-0 flex-1'>
+              <div className='mx-auto flex min-h-full w-full max-w-4xl flex-col px-3 py-4 pb-6 md:px-5 md:py-6 md:pb-8'>
                 <AssistantMessageList
                   messages={assistantChat.messages}
                   isLoading={assistantChat.isLoading}
@@ -551,12 +707,12 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
             {/* Scroll-to-bottom button anchor (above input) */}
             <div
               ref={setScrollButtonAnchorEl}
-              className='relative min-h-0 shrink-0'
+              className='relative z-10 shrink-0'
             />
 
             {/* Assistant Message Input */}
             <div
-              className='border-t border-border/40 backdrop-blur-sm p-3 md:p-4 shrink-0'
+              className='sticky bottom-0 z-20 shrink-0 border-t border-border/40 bg-background/95 px-3 py-3 shadow-[0_-12px_32px_rgba(15,23,42,0.04)] supports-backdrop-filter:backdrop-blur-xl md:px-5 md:py-4'
               style={{
                 paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
               }}>
@@ -577,8 +733,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
         ) : selectedUserProId && chatDisplayUser ? (
           <>
             {/* Chat Header - Sticky (works for both listed and archived conversations) */}
-            <div className='sticky top-0 z-10 h-14 md:h-16 flex items-center justify-between px-3 md:px-4 backdrop-blur-md shrink-0 border-b border-border/40 bg-background/95'>
-              <div className='flex items-center gap-0 md:gap-3 flex-1 min-w-0'>
+            <div className='sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b border-border/40 bg-background/95 px-3 supports-backdrop-filter:backdrop-blur-xl md:h-16 md:px-5'>
+              <div className='flex min-w-0 flex-1 items-center gap-0 md:gap-3'>
                 {/* Back button on mobile */}
                 {isMobile && (
                   <button
@@ -593,10 +749,10 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 <div className='relative shrink-0'>
                   {otherUser?.name ? (
                     <Link href={`/u/${otherUser.name}`}>
-                      <Avatar src={currentUserConvex?.photoUrl ?? undefined} />
+                      <Avatar src={chatDisplayUser.avatarUrl ?? undefined} />
                     </Link>
                   ) : (
-                    <Avatar src={otherUser?.photoUrl ?? undefined} />
+                    <Avatar src={chatDisplayUser.avatarUrl ?? undefined} />
                   )}
                   <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border-2 border-card' />
                 </div>
@@ -623,8 +779,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
             </div>
 
             {/* Messages Area */}
-            <ScrollArea ref={scrollAreaRef} className='flex-1 min-h-0'>
-              <div className='px-3 md:px-4 py-4 md:py-6 pb-24 md:pb-32'>
+            <ScrollArea ref={scrollAreaRef} className='min-h-0 flex-1'>
+              <div className='mx-auto flex min-h-full w-full max-w-4xl flex-col px-3 py-4 pb-6 md:px-5 md:py-6 md:pb-8'>
                 <MessageList
                   messages={messages}
                   currentUserProId={user?.uid ?? ''}
@@ -658,12 +814,12 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
             {/* Scroll-to-bottom button anchor (above input) */}
             <div
               ref={setScrollButtonAnchorEl}
-              className='relative min-h-0 shrink-0'
+              className='relative z-10 shrink-0'
             />
 
             {/* Message Input */}
             <div
-              className='border-t border-border/40 backdrop-blur-sm p-3 md:p-4 shrink-0'
+              className='sticky bottom-0 z-20 shrink-0 border-t border-border/40 bg-background/95 px-3 py-3 shadow-[0_-12px_32px_rgba(15,23,42,0.04)] supports-backdrop-filter:backdrop-blur-xl md:px-5 md:py-4'
               style={{
                 paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
               }}>
@@ -713,7 +869,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
             </div>
           </div>
         )}
-      </div>
+      </section>
     </div>
   )
 }

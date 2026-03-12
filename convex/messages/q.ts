@@ -1,8 +1,95 @@
 import {v} from 'convex/values'
-import {Id} from '../_generated/dataModel'
+import type {Doc, Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
+import type {QueryCtx} from '../_generated/server'
 import {ASSISTANT_PRO_ID} from '../assistant/d'
-import {LastMessage, OtherUser} from './d'
+import type {ConversationFolderState, LastMessage, OtherUser} from './d'
+
+const getUserByFid = async (ctx: QueryCtx, fid: string) =>
+  ctx.db
+    .query('users')
+    .withIndex('by_fid', (q) => q.eq('fid', fid))
+    .first()
+
+const getFolderCapability = async (ctx: QueryCtx, user: Doc<'users'>) => {
+  const currentUserStaff = user.email
+    ? await ctx.db
+        .query('staff')
+        .withIndex('by_email', (q) => q.eq('email', user.email))
+        .unique()
+    : null
+
+  return {
+    enabled: !!currentUserStaff?.active,
+    staff: currentUserStaff,
+  }
+}
+
+const getConversationFolderLookup = async (
+  ctx: QueryCtx,
+  ownerUserId: Id<'users'>,
+) => {
+  const assignments = await ctx.db
+    .query('conversationFolderAssignments')
+    .withIndex('by_ownerUserId', (q) => q.eq('ownerUserId', ownerUserId))
+    .collect()
+
+  if (assignments.length === 0) {
+    return new Map<
+      string,
+      {
+        folderId: Id<'conversationFolders'> | null
+        folderName: string | null
+      }
+    >()
+  }
+
+  const folderDocs = await Promise.all(
+    Array.from(new Set(assignments.map((assignment) => assignment.folderId))).map(
+      async (folderId) => ctx.db.get(folderId),
+    ),
+  )
+
+  const foldersById = new Map<string, {name: string}>()
+  for (const folder of folderDocs) {
+    if (folder) {
+      foldersById.set(String(folder._id), {name: folder.name})
+    }
+  }
+
+  return new Map(
+    assignments.map((assignment) => [
+      String(assignment.otherUserId),
+      {
+        folderId: assignment.folderId,
+        folderName: foldersById.get(String(assignment.folderId))?.name ?? null,
+      },
+    ]),
+  )
+}
+
+const withConversationFolder = <
+  T extends {
+    otherUserId: string
+  },
+>(
+  conversation: T,
+  folderLookup: Map<
+    string,
+    {
+      folderId: Id<'conversationFolders'> | null
+      folderName: string | null
+    }
+  >,
+) => {
+  const folder = folderLookup.get(conversation.otherUserId)
+
+  return {
+    ...conversation,
+    folderId: folder?.folderId ?? null,
+    folderName: folder?.folderName ?? null,
+  }
+}
 
 // Check if two users are connected (either follows the other)
 export const areConnected = query({
@@ -63,10 +150,7 @@ export const searchConversations = query({
     const searchLower = args.searchQuery.toLowerCase().trim()
 
     // Get the user by proId
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .first()
+    const user = await getUserByFid(ctx, args.fid)
 
     if (!user) {
       return []
@@ -104,14 +188,15 @@ export const searchConversations = query({
     }
 
     // Check if current user is staff with admin privileges (can search staff)
-    const currentUserStaff = await ctx.db
-      .query('staff')
-      .withIndex('by_email', (q) => q.eq('email', user.email))
-      .unique()
+    const {enabled: foldersEnabled, staff: currentUserStaff} =
+      await getFolderCapability(ctx, user)
     const isStaffAdmin =
       !!currentUserStaff &&
       currentUserStaff.active &&
       currentUserStaff.accessRoles.includes('admin')
+    const folderLookup = foldersEnabled
+      ? await getConversationFolderLookup(ctx, user._id)
+      : new Map()
 
     // Get all users and filter by search query
     const allUsers = await ctx.db.query('users').collect()
@@ -247,12 +332,24 @@ export const searchConversations = query({
     )
 
     // Filter out assistant, archived, and null results
-    return results.filter(
-      (r) =>
-        r !== null &&
-        r.otherUser?.fid !== ASSISTANT_PRO_ID &&
-        !archivedOtherUserIds.has(r.otherUserId),
-    )
+    const visibleResults = []
+
+    for (const conversation of results) {
+      if (!conversation) {
+        continue
+      }
+
+      if (
+        conversation.otherUser.fid === ASSISTANT_PRO_ID ||
+        archivedOtherUserIds.has(conversation.otherUserId)
+      ) {
+        continue
+      }
+
+      visibleResults.push(withConversationFolder(conversation, folderLookup))
+    }
+
+    return visibleResults
   },
 })
 
@@ -264,14 +361,16 @@ export const getConversations = query({
   },
   handler: async (ctx, args) => {
     // Get the user by proId
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .first()
+    const user = await getUserByFid(ctx, args.fid)
 
     if (!user) {
       return []
     }
+
+    const {enabled: foldersEnabled} = await getFolderCapability(ctx, user)
+    const folderLookup = foldersEnabled
+      ? await getConversationFolderLookup(ctx, user._id)
+      : new Map()
 
     // Get archived conversation partner IDs for this user
     const archivedRecords = await ctx.db
@@ -482,7 +581,43 @@ export const getConversations = query({
       return bTime - aTime
     })
 
-    return conversations
+    return conversations.map((conversation) =>
+      withConversationFolder(conversation, folderLookup),
+    )
+  },
+})
+
+export const getConversationFolders = query({
+  args: {
+    fid: v.string(),
+  },
+  handler: async (ctx, args): Promise<ConversationFolderState> => {
+    const user = await getUserByFid(ctx, args.fid)
+
+    if (!user) {
+      return {enabled: false, folders: []}
+    }
+
+    const {enabled} = await getFolderCapability(ctx, user)
+
+    if (!enabled) {
+      return {enabled: false, folders: []}
+    }
+
+    const folders = await ctx.db
+      .query('conversationFolders')
+      .withIndex('by_ownerUserId', (q) => q.eq('ownerUserId', user._id))
+      .collect()
+
+    return {
+      enabled: true,
+      folders: folders
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((folder) => ({
+          _id: folder._id,
+          name: folder.name,
+        })),
+    }
   },
 })
 

@@ -1,9 +1,10 @@
 'use client'
 
+import type {ConversationFolderSummary} from '@/convex/messages/d'
 import {
+  type LastMessage,
   type MessageAttachmentArray,
-  LastMessage,
-  OtherUser,
+  type OtherUser,
 } from '@/convex/messages/d'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
@@ -25,16 +26,25 @@ export interface Conversation {
   lastMessage: LastMessage
   unreadCount: number
   hasMessages: boolean
+  folderId?: string | null
+  folderName?: string | null
 }
 
 interface ConversationListProps {
   conversations: Conversation[] | undefined
+  folderOptions?: ConversationFolderSummary[]
   selectedProId: string | null
   onSelectConversation: (otherUserId: string, otherUserProId: string) => void
   onArchiveConversation?: (otherUserId: string, otherUserProId: string) => void
+  onMoveConversation?: (
+    otherUserId: string,
+    otherUserProId: string,
+    folderId: string | null,
+  ) => void
 }
 
 const ARCHIVE_BUTTON_WIDTH = 80
+const UNFILED_FOLDER_VALUE = '__unfiled__'
 
 function SwipeableConversationRow({
   conversation,
@@ -119,10 +129,16 @@ function SwipeableConversationRow({
 
 export function ConversationList({
   conversations,
+  folderOptions,
   selectedProId,
   onSelectConversation,
   onArchiveConversation,
+  onMoveConversation,
 }: ConversationListProps) {
+  const [folderEditorConversationId, setFolderEditorConversationId] = useState<
+    string | null
+  >(null)
+
   // Filter out null conversations and cast to expected type
   const validConversations = (conversations?.filter((conv) => conv !== null) ??
     []) as Conversation[]
@@ -149,8 +165,14 @@ export function ConversationList({
           conversation.otherUser?.name ??
           conversation.otherUser?.email?.split('@')[0] ??
           'Unknown User'
-        const _initials = displayName[0]?.toUpperCase() || 'U'
         const isUnread = conversation.unreadCount > 0
+
+        const folderControlFid =
+          conversation.otherUser?.proId ?? conversation.otherUser?.fid ?? ''
+        const showFolderPicker =
+          !!folderOptions?.length || Boolean(onMoveConversation)
+        const isFolderEditorOpen =
+          folderEditorConversationId === conversation.otherUserId
 
         // Check if last message has attachments and determine type
         const lastMessageAttachments: MessageAttachmentArray =
@@ -178,118 +200,221 @@ export function ConversationList({
         }
 
         const audioDuration = getAudioDuration()
+        const currentFolderLabel = conversation.folderName?.trim() || 'Unsorted'
 
         const rowContent = (
-          <button
-            onClick={() => {
-              const fid =
-                conversation.otherUser?.proId ??
-                conversation.otherUser?.fid ??
-                ''
-              if (fid) {
-                onSelectConversation(conversation.otherUserId, fid)
-              }
-            }}
+          <div
             className={cn(
-              'w-full px-3 md:px-4 py-3 text-left transition-all duration-200 active:bg-blue-100',
-              'touch-manipulation border-l-2 md:border-l-4 border-l-dark-gray/0',
+              'touch-manipulation border-l-2 md:border-l-4 border-l-dark-gray/0 transition-all duration-200',
               {
                 'dark:bg-alum/20 bg-alum/20 border-l-dark-gray': isSelected,
               },
             )}>
-            <div className='flex items-start gap-2 md:gap-3'>
-              <div className='relative shrink-0'>
-                <Avatar src={conversation.otherUser?.avatarUrl ?? undefined} />
-                <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border-2 border-background' />
-              </div>
-              <div className='min-w-0 flex-1'>
-                <div className='flex items-center justify-between gap-2 mb-0.5'>
-                  <p
-                    className={cn(
-                      'truncate font-medium text-sm',
-                      isUnread && 'text-foreground',
-                      !isUnread && 'text-foreground/80',
-                    )}>
-                    {displayName}
-                  </p>
-                  {conversation.hasMessages && (
-                    <span className='shrink-0 text-xs text-muted-foreground font-medium'>
-                      {formatTimestamp(conversation.lastMessage.createdAt)}
-                    </span>
-                  )}
+            <div
+              role='button'
+              tabIndex={0}
+              onClick={() => {
+                if (folderControlFid) {
+                  onSelectConversation(
+                    conversation.otherUserId,
+                    folderControlFid,
+                  )
+                }
+              }}
+              onKeyDown={(event) => {
+                if (
+                  !folderControlFid ||
+                  (event.key !== 'Enter' && event.key !== ' ')
+                ) {
+                  return
+                }
+
+                event.preventDefault()
+                onSelectConversation(conversation.otherUserId, folderControlFid)
+              }}
+              className='w-full cursor-pointer px-3 py-3 text-left active:bg-blue-100 md:px-4'>
+              <div className='flex items-start gap-2.5 md:gap-3'>
+                <div className='relative shrink-0'>
+                  <Avatar
+                    src={conversation.otherUser?.avatarUrl ?? undefined}
+                  />
+                  <div className='absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background bg-green-500 md:size-3' />
                 </div>
-                <div className='flex items-center justify-between gap-2'>
-                  {conversation.hasMessages ? (
-                    hasAudioAttachment ? (
-                      <div className='flex items-center gap-2'>
-                        <Icon
-                          name='soundwave-bold'
-                          className={cn(
-                            'size-4 shrink-0',
-                            isUnread
-                              ? 'text-indigo-500'
-                              : 'text-muted-foreground/60',
-                          )}
-                        />
-                        <span
-                          className={cn(
-                            'text-xs',
-                            isUnread
-                              ? 'text-foreground font-semibold tracking-tighter'
-                              : 'opacity-60',
-                          )}>
-                          {audioDuration ?? ''}
-                        </span>
-                      </div>
-                    ) : hasImageAttachment ? (
-                      <div className='flex items-center gap-2'>
-                        <Icon
-                          name='image-bold'
-                          className={cn(
-                            'size-4 shrink-0',
-                            isUnread
-                              ? 'text-pink-400'
-                              : 'text-muted-foreground/60',
-                          )}
-                        />
-                        <span
-                          className={cn(
-                            'text-xs',
-                            isUnread
-                              ? 'text-foreground font-semibold tracking-tighter'
-                              : 'opacity-60',
-                          )}>
-                          {imageAttachments.length}{' '}
-                          {imageAttachments.length === 1 ? 'photo' : 'photos'}
-                        </span>
-                      </div>
-                    ) : (
-                      <p
-                        className={cn(
-                          'truncate max-w-50 text-sm',
-                          isUnread
-                            ? 'text-foreground font-medium'
-                            : 'text-muted-foreground',
-                        )}>
-                        {conversation.lastMessage.content}
-                      </p>
-                    )
-                  ) : (
-                    <p className='truncate max-w-50 text-sm text-muted-foreground/60 italic'>
-                      Start a conversation
+                <div className='min-w-0 flex-1'>
+                  <div className='mb-1 flex items-start justify-between gap-2'>
+                    <p
+                      className={cn(
+                        'min-w-0 flex-1 truncate text-sm font-medium',
+                        isUnread && 'text-foreground',
+                        !isUnread && 'text-foreground/80',
+                      )}>
+                      {displayName}
                     </p>
-                  )}
-                  {isUnread && (
-                    <span className='shrink-0 flex size-5 md:size-6 items-center justify-center aspect-square rounded-full bg-primary text-xs font-extrabold text-white dark:text-white'>
-                      {conversation.unreadCount > 9
-                        ? '9+'
-                        : conversation.unreadCount}
-                    </span>
-                  )}
+                    {conversation.hasMessages && (
+                      <span className='max-w-18 shrink-0 text-right text-xs font-medium text-muted-foreground sm:max-w-none sm:text-xs'>
+                        {formatTimestamp(conversation.lastMessage.createdAt)}
+                      </span>
+                    )}
+                  </div>
+                  <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+                    <div className='min-w-0 flex-1'>
+                      {isFolderEditorOpen &&
+                      showFolderPicker &&
+                      folderControlFid &&
+                      onMoveConversation ? (
+                        <div
+                          className='relative max-w-full'
+                          onClick={(event) => event.stopPropagation()}>
+                          <div className='pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center gap-1 pl-2'>
+                            <Icon
+                              name='folder-open'
+                              className='size-3.5 shrink-0 text-muted-foreground'
+                            />
+                          </div>
+                          <select
+                            aria-label={`Move ${displayName} conversation to a folder`}
+                            value={conversation.folderId ?? UNFILED_FOLDER_VALUE}
+                            onClick={(event) => event.stopPropagation()}
+                            onChange={(event) => {
+                              event.stopPropagation()
+                              const nextFolderId =
+                                event.target.value === UNFILED_FOLDER_VALUE
+                                  ? null
+                                  : event.target.value
+                              onMoveConversation(
+                                conversation.otherUserId,
+                                folderControlFid,
+                                nextFolderId,
+                              )
+                              setFolderEditorConversationId(null)
+                            }}
+                            className='h-8 w-full appearance-none rounded-full border border-border/60 bg-background/80 pl-7 pr-7 text-transparent outline-none transition-colors focus:border-foreground/40'>
+                            <option value={UNFILED_FOLDER_VALUE}>
+                              Unsorted
+                            </option>
+                            {(folderOptions ?? []).map((folder) => (
+                              <option key={folder._id} value={folder._id}>
+                                {folder.name}
+                              </option>
+                            ))}
+                          </select>
+                          <div className='pointer-events-none absolute inset-y-0 left-7 right-7 flex items-center'>
+                            <span className='truncate text-[10px] text-muted-foreground sm:text-[11px]'>
+                              {currentFolderLabel}
+                            </span>
+                          </div>
+                          <Icon
+                            name='chevron-down'
+                            className='pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground'
+                          />
+                        </div>
+                      ) : conversation.hasMessages ? (
+                        hasAudioAttachment ? (
+                          <div className='flex items-center gap-2'>
+                            <Icon
+                              name='soundwave-bold'
+                              className={cn(
+                                'size-4 shrink-0',
+                                isUnread
+                                  ? 'text-indigo-500'
+                                  : 'text-muted-foreground/60',
+                              )}
+                            />
+                            <span
+                              className={cn(
+                                'text-xs',
+                                isUnread
+                                  ? 'font-semibold tracking-tighter text-foreground'
+                                  : 'opacity-60',
+                              )}>
+                              {audioDuration ?? ''}
+                            </span>
+                          </div>
+                        ) : hasImageAttachment ? (
+                          <div className='flex items-center gap-2'>
+                            <Icon
+                              name='image-bold'
+                              className={cn(
+                                'size-4 shrink-0',
+                                isUnread
+                                  ? 'text-pink-400'
+                                  : 'text-muted-foreground/60',
+                              )}
+                            />
+                            <span
+                              className={cn(
+                                'text-xs',
+                                isUnread
+                                  ? 'font-semibold tracking-tighter text-foreground'
+                                  : 'opacity-60',
+                              )}>
+                              {imageAttachments.length}{' '}
+                              {imageAttachments.length === 1
+                                ? 'photo'
+                                : 'photos'}
+                            </span>
+                          </div>
+                        ) : (
+                          <p
+                            className={cn(
+                              'truncate text-sm',
+                              isUnread
+                                ? 'font-medium text-foreground'
+                                : 'text-muted-foreground',
+                            )}>
+                            {conversation.lastMessage.content}
+                          </p>
+                        )
+                      ) : (
+                        <p className='truncate text-sm italic text-muted-foreground/60'>
+                          Start a conversation
+                        </p>
+                      )}
+                    </div>
+                    <div className='flex shrink-0 items-center justify-between gap-2 sm:justify-end'>
+                      {isUnread && (
+                        <span className='flex size-5 shrink-0 aspect-square items-center justify-center rounded-full bg-primary text-xs font-extrabold text-white dark:text-white md:size-6'>
+                          {conversation.unreadCount > 9
+                            ? '9+'
+                            : conversation.unreadCount}
+                        </span>
+                      )}
+                      {showFolderPicker &&
+                        folderControlFid &&
+                        onMoveConversation && (
+                          <button
+                            type='button'
+                            aria-label={
+                              isFolderEditorOpen
+                                ? 'Close folder selector'
+                                : `Move ${displayName} conversation to a folder`
+                            }
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              setFolderEditorConversationId((current) =>
+                                current === conversation.otherUserId
+                                  ? null
+                                  : conversation.otherUserId,
+                              )
+                            }}
+                            className={cn(
+                              'inline-flex size-8 shrink-0 items-center justify-center rounded-full border transition-colors',
+                              isFolderEditorOpen
+                                ? 'border-foreground/50 bg-background text-foreground'
+                                : 'border-border/60 bg-background/70 text-muted-foreground hover:border-foreground/40 hover:text-foreground',
+                            )}>
+                            <Icon
+                              name={isFolderEditorOpen ? 'x' : 'folder-open'}
+                              className='size-4'
+                            />
+                          </button>
+                        )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </button>
+          </div>
         )
 
         return onArchiveConversation ? (

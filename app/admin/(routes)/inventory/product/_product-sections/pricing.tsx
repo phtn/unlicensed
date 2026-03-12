@@ -117,29 +117,6 @@ export const Pricing = ({
       <div className='grid gap-6'>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           {/*{renderFields(form, fields, flowerDenominations)}*/}
-          <form.AppField name='batchId'>
-            {(field) => (
-              <div className='space-y-2'>
-                <Input
-                  label='Batch ID'
-                  type='text'
-                  value={String(field.state.value ?? '')}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder='e.g., B-2026-0007'
-                  variant='bordered'
-                  classNames={commonInputClassNames}
-                />
-                {field.state.meta.isTouched &&
-                  field.state.meta.errors.length > 0 && (
-                    <p className='text-xs text-rose-400'>
-                      {field.state.meta.errors.join(', ')}
-                    </p>
-                  )}
-              </div>
-            )}
-          </form.AppField>
-
           <form.AppField name='unit'>
             {(field) => {
               const unitValue = (field.state.value as string) ?? ''

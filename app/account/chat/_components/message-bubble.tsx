@@ -72,6 +72,7 @@ export function MessageBubble({
     (!audioAttachments || audioAttachments.length === 0)
 
   const isTimestampVisible = clickedMessageId === message._id
+  const bubbleWidthClass = 'max-w-[min(86%,22rem)] sm:max-w-[75%] md:max-w-[70%]'
 
   const handleToggleTimestamp = () => {
     if (clickedMessageId === message._id) {
@@ -101,6 +102,7 @@ export function MessageBubble({
             <Avatar
               src={otherUser.avatarUrl ?? undefined}
               name={otherUser.displayName ?? undefined}
+              fallback={otherUser.displayName ?? 'RF'}
             />
           ) : null}
         </div>
@@ -110,7 +112,8 @@ export function MessageBubble({
       {isAudioOnly && audioAttachments ? (
         <div
           className={cn(
-            'flex flex-col gap-1 max-w-[75%] md:max-w-[70%]',
+            'flex flex-col gap-1',
+            bubbleWidthClass,
             isCurrentUser && 'items-end',
             !isCurrentUser && 'items-start',
           )}>
@@ -139,7 +142,8 @@ export function MessageBubble({
       ) : isAttachmentOnly && nonAudioAttachments ? (
         <div
           className={cn(
-            'flex flex-col gap-1 max-w-[75%] md:max-w-[70%]',
+            'flex flex-col gap-1',
+            bubbleWidthClass,
             isCurrentUser && 'items-end',
             !isCurrentUser && 'items-start',
           )}>
@@ -166,7 +170,8 @@ export function MessageBubble({
       ) : (
         <div
           className={cn(
-            'flex flex-col gap-0.5 max-w-[75%] md:max-w-[70%]',
+            'flex flex-col gap-0.5',
+            bubbleWidthClass,
             isCurrentUser && 'items-end',
             !isCurrentUser && 'items-start',
           )}>

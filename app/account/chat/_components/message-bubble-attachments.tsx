@@ -47,10 +47,10 @@ export function MessageBubbleAttachments({
                 <img
                   src={attachment.url}
                   alt={attachment.fileName}
-                  className='h-28 w-28 object-cover'
+                  className='h-24 w-24 object-cover sm:h-28 sm:w-28'
                 />
               ) : (
-                <div className='h-28 w-28 flex items-center justify-center'>
+                <div className='flex h-24 w-24 items-center justify-center sm:h-28 sm:w-28'>
                   <Icon
                     name='spinner-dots'
                     className='size-5 text-muted-foreground'
@@ -75,7 +75,7 @@ export function MessageBubbleAttachments({
               )
             }}
             className={cn(
-              'h-28 w-28 rounded-lg border border-border/40 transition-colors flex flex-col items-center justify-center gap-1',
+              'flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-lg border border-border/40 transition-colors sm:h-28 sm:w-28',
               bgClass,
               !attachment.url && 'opacity-60 pointer-events-none',
             )}>

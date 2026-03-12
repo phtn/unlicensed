@@ -91,10 +91,10 @@ export function AssistantMessageInput({
   }, [isMobile])
 
   return (
-    <div className='flex items-end gap-2'>
+    <div className='flex items-end gap-1.5 sm:gap-2'>
       {/* Text Input Area */}
       <div className='flex-1 relative'>
-        <div className='relative flex items-end rounded-xl focus-within:ring-2 focus-within:ring-primary/20 dark:focus-within:ring-primary/5 transition-all'>
+        <div className='relative flex items-end rounded-2xl transition-all focus-within:ring-2 focus-within:ring-primary/20 dark:focus-within:ring-primary/5'>
           <Textarea
             ref={textareaRef}
             value={currentValue}
@@ -110,7 +110,7 @@ export function AssistantMessageInput({
             placeholder='type message'
             onBlur={handleOnBlur}
             disabled={isLoading}
-            rows={3}
+            rows={isMobile ? 2 : 3}
             classNames={chatInputClassNames}
           />
         </div>
@@ -122,7 +122,7 @@ export function AssistantMessageInput({
         onClick={handleSend}
         disabled={!currentValue.trim() || isLoading}
         className={cn(
-          'p-2.5 md:p-2 rounded-full transition-all shrink-0 touch-manipulation active:scale-95',
+          'flex size-11 shrink-0 items-center justify-center rounded-2xl transition-all touch-manipulation active:scale-95 sm:size-10 sm:rounded-full',
           currentValue.trim() && !isLoading
             ? 'bg-dark-gray text-primary-foreground dark:bg-white dark:text-dark-table hover:bg-brand/90'
             : 'bg-sidebar text-foreground/30 cursor-not-allowed',

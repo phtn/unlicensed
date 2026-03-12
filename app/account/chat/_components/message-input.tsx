@@ -435,9 +435,9 @@ export function MessageInput({
   if (inputMode === 'recording') {
     return (
       <div className='space-y-2'>
-        <div className='flex items-center gap-3 px-3 py-3 rounded-2xl bg-red-500/10 border border-red-500/30'>
+        <div className='flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-3 py-3 sm:gap-3'>
           {/* Recording indicator */}
-          <div className='flex items-center gap-2'>
+          <div className='flex shrink-0 items-center gap-2'>
             <div className='size-3 rounded-full bg-red-500 animate-pulse' />
             <span className='text-sm font-medium text-red-600 dark:text-red-400'>
               Recording
@@ -445,14 +445,14 @@ export function MessageInput({
           </div>
 
           {/* Timer */}
-          <div className='flex-1 flex justify-center'>
-            <span className='font-mono text-lg tabular-nums text-foreground'>
+          <div className='flex min-w-0 flex-1 justify-center'>
+            <span className='font-mono text-base tabular-nums text-foreground sm:text-lg'>
               {formatRecordingTime(recordingTime)}
             </span>
           </div>
 
           {/* Waveform visualization */}
-          <div className='flex items-center gap-0.5 h-8'>
+          <div className='hidden h-8 items-center gap-0.5 sm:flex'>
             {Array.from({length: 12}).map((_, i) => (
               <div
                 key={i}
@@ -466,12 +466,12 @@ export function MessageInput({
           </div>
         </div>
 
-        <div className='flex items-center justify-between gap-2'>
+        <div className='grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-between'>
           {/* Cancel Button */}
           <button
             type='button'
             onClick={handleCancelRecording}
-            className='p-2.5 md:p-2 rounded-full hover:bg-accent transition-colors shrink-0 active:scale-95 touch-manipulation'>
+            className='flex h-11 items-center justify-center rounded-2xl hover:bg-accent transition-colors active:scale-95 touch-manipulation sm:h-auto sm:w-auto sm:rounded-full sm:p-2'>
             <Icon name='x' className='size-5 text-muted-foreground' />
           </button>
 
@@ -479,7 +479,7 @@ export function MessageInput({
           <button
             type='button'
             onClick={isPaused ? resumeRecording : pauseRecording}
-            className='p-3 rounded-full bg-muted hover:bg-muted/80 transition-colors shrink-0 active:scale-95 touch-manipulation'>
+            className='flex h-11 items-center justify-center rounded-2xl bg-muted px-3 transition-colors active:scale-95 touch-manipulation hover:bg-muted/80 sm:h-auto sm:rounded-full sm:p-3'>
             {isPaused ? (
               <Icon name='play-solid' className='size-6 text-foreground' />
             ) : (
@@ -491,7 +491,7 @@ export function MessageInput({
           <button
             type='button'
             onClick={handleStopRecording}
-            className='p-2.5 md:p-2 rounded-full bg-red-500 hover:bg-red-600 transition-colors shrink-0 active:scale-95 touch-manipulation'>
+            className='flex h-11 items-center justify-center rounded-2xl bg-red-500 transition-colors active:scale-95 touch-manipulation hover:bg-red-600 sm:h-auto sm:w-auto sm:rounded-full sm:p-2'>
             <Icon name='stop' className='size-5 text-white' />
           </button>
         </div>
@@ -510,7 +510,7 @@ export function MessageInput({
     return (
       <div className='space-y-2'>
         {/* Audio Preview */}
-        <div className='flex items-center gap-3 px-3 py-3 rounded-2xl bg-muted/50 border border-border/40'>
+        <div className='flex items-center gap-2 overflow-hidden rounded-2xl border border-border/40 bg-muted/50 px-3 py-3 sm:gap-3'>
           <audio ref={previewAudioRef} src={audioUrl} className='hidden' />
 
           {/* Play preview button */}
@@ -526,12 +526,12 @@ export function MessageInput({
                 }
               }
             }}
-            className='p-2.5 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors shrink-0 active:scale-95 touch-manipulation'>
+            className='flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-colors active:scale-95 touch-manipulation hover:bg-primary/20 sm:size-10 sm:rounded-full'>
             <Icon name='play-solid' className='size-5 text-primary' />
           </button>
 
           {/* Waveform preview */}
-          <div className='flex-1 flex items-center gap-0.5 h-8'>
+          <div className='flex h-8 min-w-0 flex-1 items-center gap-0.5'>
             {Array.from({length: 32}).map((_, i) => {
               const height =
                 20 + Math.sin(i * 0.8) * 15 + Math.cos(i * 1.2) * 10
@@ -546,18 +546,18 @@ export function MessageInput({
           </div>
 
           {/* Duration */}
-          <span className='text-sm font-mono tabular-nums text-muted-foreground'>
+          <span className='shrink-0 text-sm font-mono tabular-nums text-muted-foreground'>
             {formatRecordingTime(recordingTime)}
           </span>
         </div>
 
-        <div className='flex items-center justify-between gap-2'>
+        <div className='grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-between'>
           {/* Cancel Button */}
           <button
             type='button'
             onClick={handleCancelRecording}
             disabled={isSending}
-            className='p-2.5 md:p-2 rounded-full hover:bg-accent transition-colors shrink-0 active:scale-95 touch-manipulation disabled:opacity-50'>
+            className='flex h-11 items-center justify-center rounded-2xl hover:bg-accent transition-colors active:scale-95 touch-manipulation disabled:opacity-50 sm:h-auto sm:w-auto sm:rounded-full sm:p-2'>
             <Icon name='x' className='size-5 text-muted-foreground' />
           </button>
 
@@ -566,9 +566,11 @@ export function MessageInput({
             type='button'
             onClick={handleStartRecording}
             disabled={isSending}
-            className='flex items-center gap-2 px-4 py-2 rounded-full bg-muted hover:bg-muted/80 transition-colors shrink-0 active:scale-95 touch-manipulation disabled:opacity-50'>
+            className='flex h-11 items-center justify-center gap-2 rounded-2xl bg-muted px-3 transition-colors active:scale-95 touch-manipulation hover:bg-muted/80 disabled:opacity-50 sm:h-auto sm:rounded-full sm:px-4 sm:py-2'>
             <Icon name='refresh' className='size-4 text-muted-foreground' />
-            <span className='text-sm text-muted-foreground'>Re-record</span>
+            <span className='text-xs text-muted-foreground sm:text-sm'>
+              Re-record
+            </span>
           </button>
 
           {/* Send Button */}
@@ -576,11 +578,11 @@ export function MessageInput({
             type='button'
             onClick={handleSendAudio}
             disabled={isSending}
-            className='p-2.5 md:p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shrink-0 active:scale-95 touch-manipulation shadow-md disabled:opacity-50'>
+            className='flex h-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition-colors active:scale-95 touch-manipulation shadow-md hover:bg-primary/90 disabled:opacity-50 sm:h-auto sm:w-auto sm:rounded-full sm:p-2'>
             {isSending ? (
               <div className='size-5 border-2 border-current border-t-transparent rounded-full animate-spin' />
             ) : (
-              <Icon name='arrow-right' className='size-5 -rotate-90' />
+              <Icon name='arrow-up' className='size-5' />
             )}
           </button>
         </div>
@@ -593,20 +595,20 @@ export function MessageInput({
     <div className='space-y-2'>
       {/* Attachments Preview */}
       {attachments.length > 0 && (
-        <div className='flex flex-wrap gap-2'>
+        <div className='flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
           {attachments.map((attachment, index) => (
             <div
               key={index}
-              className='relative group overflow-hidden rounded-lg border border-border/40 bg-muted/20'>
+              className='group relative shrink-0 overflow-hidden rounded-xl border border-border/40 bg-muted/20'>
               {attachment.fileType.startsWith('image/') && attachment.url ? (
                 // eslint-disable-next-line @next/next/no-img-element -- chat attachment URLs may be external
                 <img
                   src={attachment.url}
                   alt={attachment.fileName}
-                  className='h-20 w-20 object-cover'
+                  className='h-18 w-18 object-cover sm:h-20 sm:w-20'
                 />
               ) : (
-                <div className='h-20 w-20 flex items-center justify-center'>
+                <div className='flex h-18 w-18 items-center justify-center sm:h-20 sm:w-20'>
                   <Icon
                     name='folder-open'
                     className='size-6 text-muted-foreground'
@@ -625,7 +627,7 @@ export function MessageInput({
       )}
 
       {/* Input Area */}
-      <div className='flex items-end gap-2'>
+      <div className='flex items-end gap-1.5 sm:gap-2'>
         {/* File Upload Button */}
         <input
           ref={fileInputRef}
@@ -639,17 +641,20 @@ export function MessageInput({
           type='button'
           onClick={() => fileInputRef.current?.click()}
           disabled={isSending || uploading}
-          className='p-2.5 md:p-2 rounded-full hover:bg-accent transition-colors shrink-0 active:scale-95 touch-manipulation disabled:opacity-50'>
+          className='flex size-11 shrink-0 items-center justify-center rounded-2xl hover:bg-accent transition-colors active:scale-95 touch-manipulation disabled:opacity-50 sm:size-10 sm:rounded-full'>
           {uploading ? (
             <div className='size-5 border-2 border-current border-t-transparent rounded-full animate-spin' />
           ) : (
-            <Icon name='add-circle' className='size-8 text-muted-foreground' />
+            <Icon
+              name='add-circle'
+              className='size-7 text-muted-foreground sm:size-8'
+            />
           )}
         </button>
 
         {/* Text Input Area */}
         <div className='flex-1 relative'>
-          <div className='relative flex items-end rounded-xl bg-muted/50 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all'>
+          <div className='relative flex items-end rounded-2xl bg-muted/50 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20'>
             <Textarea
               ref={textareaRef}
               value={message}
@@ -658,7 +663,7 @@ export function MessageInput({
               onKeyDown={handleKeyPress}
               placeholder='Type a message...'
               disabled={isSending || uploading}
-              rows={3}
+              rows={isMobile ? 2 : 3}
               className='touch-manipulation'
               classNames={{
                 ...chatInputClassNames,
@@ -681,8 +686,11 @@ export function MessageInput({
             type='button'
             onClick={handleStartRecording}
             disabled={isSending || uploading}
-            className='p-2.5 md:p-2 rounded-full hover:bg-accent transition-colors shrink-0 active:scale-95 touch-manipulation disabled:opacity-50'>
-            <Icon name='wave-circle' className='size-8 text-muted-foreground' />
+            className='flex size-11 shrink-0 items-center justify-center rounded-2xl hover:bg-accent transition-colors active:scale-95 touch-manipulation disabled:opacity-50 sm:size-10 sm:rounded-full'>
+            <Icon
+              name='wave-circle'
+              className='size-7 text-muted-foreground sm:size-8'
+            />
           </button>
         )}
 
@@ -697,7 +705,7 @@ export function MessageInput({
               uploading
             }
             className={cn(
-              'p-2.5 md:p-2 rounded-full transition-all shrink-0 touch-manipulation active:scale-95',
+              'flex size-11 shrink-0 items-center justify-center rounded-2xl transition-all touch-manipulation active:scale-95 sm:size-10 sm:rounded-full',
               (message.trim() || attachments.length > 0) &&
                 !isSending &&
                 !uploading
@@ -720,7 +728,7 @@ export const searchInputClassNames: InputProps['classNames'] = {
   input:
     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
-    'shadow-none border rounded-xl border-dark-table/40 dark:border-black/10 bg-alum/10 dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-16 w-full',
+    'shadow-none border rounded-xl border-dark-table/40 dark:border-black/10 bg-alum/10 dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-14 md:min-h-16 w-full',
   innerWrapper: 'ps-8',
 }
 export const chatInputClassNames: InputProps['classNames'] = {
@@ -728,6 +736,6 @@ export const chatInputClassNames: InputProps['classNames'] = {
   input:
     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-dark-table/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
-    'border shadow-none rounded-xl border-dark-table/40 dark:border-black/10 bg-sidebar dark:bg-black/60 dark:hover:bg-black/40 dark:data-focus-visible:bg-white data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-16 w-full',
+    'border shadow-none rounded-xl border-dark-table/40 dark:border-black/10 bg-sidebar dark:bg-black/60 dark:hover:bg-black/40 dark:data-focus-visible:bg-white data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-14 md:min-h-16 w-full',
   innerWrapper: 'ps-2',
 }
