@@ -65,6 +65,7 @@ const ProductCardComponent = ({
     firstThreeOptions[Math.min(selectedIndex, firstThreeOptions.length - 1)] ??
     firstThreeOptions[0] ??
     null
+  const subcategoryLabel = product.subcategory?.trim() ?? ''
   const netWeightLabel =
     product.netWeight != null || product.netWeightUnit
       ? [product.netWeight, product.netWeightUnit]
@@ -103,7 +104,7 @@ const ProductCardComponent = ({
               alt={product.name}
               radius='none'
               shadow='none'
-              className='min-w-44 xl:min-w-64 rounded-t-xs rounded-b-sm object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
+              className='min-w-44 xl:min-w-64 rounded-xs object-cover aspect-square transition duration-300 group-hover:scale-[1.03]'
               isLoading={!imageSrc}
               loading='lazy'
             />
@@ -117,38 +118,52 @@ const ProductCardComponent = ({
         <div className='flex flex-col'>
           <div className='flex items-center justify-between gap-2 p-2 h-16'>
             <div className='flex-1 min-w-0'>
-              <h3 className='text-sm sm:text-base md:text-lg font-okxs truncate capitalize leading-5'>
+              <h3 className='text-sm sm:text-base md:text-lg lg:text-xl font-clash truncate capitalize leading-4 md:leading-5 lg:leading-7'>
                 {product.name}
               </h3>
-              <div className='flex items-center whitespace-nowrap'>
-                {product.productTier != null && product.productTier !== '' && (
-                  <span className='min-h-6 text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum uppercase'>
-                    {product.productTier ?? ''}
-                  </span>
-                )}
-
-                {netWeightLabel && (
-                  <span className='min-h-6 text-xs md:text-xs font-okxs font-normal opacity-60 dark:opacity-100 dark:text-alum lowercase'>
-                    <span className='min-h-6 text-xs px-1 opacity-50 font-bold'>
-                      &middot;
-                    </span>
-                    {netWeightLabel}
-                    {batchIdLabel && (
-                      <span className='min-h-6 text-xs px-1 opacity-50 font-bold'>
-                        &middot;
+              <div className=' whitespace-nowrap'>
+                <div className='flex items-center h-4'>
+                  {(product.productTierLabel ?? product.productTier) != null &&
+                    (product.productTierLabel ?? product.productTier) !==
+                      '' && (
+                      <span className='text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum uppercase'>
+                        {product.productTierLabel ?? product.productTier ?? ''}
                       </span>
                     )}
-                  </span>
-                )}
+                </div>
 
-                {batchIdLabel && (
-                  <span className='min-h-6 text-xs md:text-xs font-okxs font-normal opacity-60 dark:opacity-100 dark:text-alum uppercase'>
-                    {batchIdLabel}
-                    {/*<span className='min-h-6 text-xs px-2 opacity-50 font-bold'>
+                <div className='h-4 flex items-center whitespace-nowrap'>
+                  {subcategoryLabel && (
+                    <span className='text-xs md:text-xs font-okxs font-normal opacity-60 dark:opacity-100 dark:text-alum capitalize'>
+                      {subcategoryLabel}
+                      {(netWeightLabel || batchIdLabel) && (
+                        <span className='text-xs px-1 opacity-50 font-bold'>
+                          &middot;
+                        </span>
+                      )}
+                    </span>
+                  )}
+
+                  {netWeightLabel && (
+                    <span className='text-xs md:text-xs font-okxs font-normal opacity-60 dark:opacity-100 dark:text-alum lowercase'>
+                      {netWeightLabel}
+                      {batchIdLabel && (
+                        <span className='text-xs px-1 opacity-50 font-bold'>
+                          &middot;
+                        </span>
+                      )}
+                    </span>
+                  )}
+
+                  {batchIdLabel && (
+                    <span className='text-xs md:text-xs font-okxs font-normal opacity-60 dark:opacity-100 dark:text-alum uppercase'>
+                      {batchIdLabel}
+                      {/*<span className='min-h-6 text-xs px-2 opacity-50 font-bold'>
                       &middot;
                     </span>*/}
-                  </span>
-                )}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div

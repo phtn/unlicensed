@@ -62,6 +62,8 @@ export const userRewardsSchema = v.object({
 
   // Points tracking
   lastPaymentDate: v.optional(v.number()), // Timestamp of most recent payment completion
+  lastPointsEditedAt: v.optional(v.number()), // Timestamp of most recent manual points edit
+  lastPointsEditedBy: v.optional(v.string()), // Username/email of admin who last manually edited points
 
   // Timestamps
   createdAt: v.number(),

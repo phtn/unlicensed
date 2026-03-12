@@ -81,7 +81,7 @@ export const Content = ({initialProducts}: ContentProps) => {
 
   // Adapt and filter products
   const allProducts = useMemo(() => {
-    const nextProducts = productsQuery?.map(adaptProduct)
+    const nextProducts = productsQuery?.map((product) => adaptProduct(product))
     return nextProducts && nextProducts.length > 0
       ? nextProducts
       : initialProducts
@@ -394,8 +394,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                       Brand: {brand}
                       <button
                         onClick={() => setBrand(null)}
-                        className='hover:opacity-70'
-                      >
+                        className='hover:opacity-70'>
                         <Icon name='x' className='size-3' />
                       </button>
                     </span>
@@ -406,8 +405,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                       <span className='font-semibold'>{category}</span>
                       <button
                         onClick={() => setCategory(null)}
-                        className='hover:opacity-70'
-                      >
+                        className='hover:opacity-70'>
                         <Icon name='x' className='size-3' />
                       </button>
                     </span>
@@ -417,8 +415,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                       Potency: <span className='font-semibold'>{potency}</span>
                       <button
                         onClick={() => setPotency(null)}
-                        className='hover:opacity-70'
-                      >
+                        className='hover:opacity-70'>
                         <Icon name='x' className='size-3' />
                       </button>
                     </span>
@@ -428,8 +425,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                   size='sm'
                   variant='light'
                   onPress={clearFilters}
-                  className='text-xs'
-                >
+                  className='text-xs'>
                   Clear All
                 </Button>
               </div>
@@ -469,8 +465,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                     size='lg'
                     variant='light'
                     onPress={clearFilters}
-                    className='mt-4'
-                  >
+                    className='mt-4'>
                     Clear Filters
                   </Button>
                 )}
@@ -539,13 +534,11 @@ const FilterSelector = ({
             'rounded-lg bg-background dark:bg-dark-table dark:text-white',
           value: 'ml-2 mb-4 capitalize',
           label: selectChanged ? 'hidden' : 'block',
-        }}
-      >
+        }}>
         {data.map((b) => (
           <SelectItem
             key={typeof b === 'string' ? b : b.slug}
-            className='ml-2 capitalize'
-          >
+            className='ml-2 capitalize'>
             {typeof b === 'string' ? b : b.name}
           </SelectItem>
         ))}

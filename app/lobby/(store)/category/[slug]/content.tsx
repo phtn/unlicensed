@@ -36,7 +36,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
   })
 
   const baseProducts = useMemo(() => {
-    const nextProducts = productsQuery?.map(adaptProduct)
+    const nextProducts = productsQuery?.map((product) => adaptProduct(product))
     return nextProducts && nextProducts.length > 0
       ? nextProducts
       : initialProducts
@@ -51,14 +51,18 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
   }, [baseProducts, tier, subcategory])
 
   const filterOptions = useMemo(() => {
-    const tiers = new Set<string>()
+    const tiers = new Map<string, string>()
     const subcategories = new Set<string>()
     for (const p of baseProducts) {
-      if (p.productTier) tiers.add(p.productTier)
+      if (p.productTier) {
+        tiers.set(p.productTier, p.productTierLabel ?? p.productTier)
+      }
       if (p.subcategory) subcategories.add(p.subcategory)
     }
     return {
-      tiers: Array.from(tiers).sort(),
+      tiers: Array.from(tiers, ([value, label]) => ({value, label})).sort(
+        (a, b) => a.label.localeCompare(b.label),
+      ),
       subcategories: Array.from(subcategories).sort(),
     }
   }, [baseProducts])
@@ -168,17 +172,17 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   onPress={() => setTier('')}>
                   All
                 </Button>
-                {filterOptions.tiers.map((t) => (
+                {filterOptions.tiers.map((tierOption) => (
                   <Button
-                    key={t}
+                    key={tierOption.value}
                     size='sm'
                     radius='none'
-                    variant={tier === t ? 'solid' : 'flat'}
+                    variant={tier === tierOption.value ? 'solid' : 'flat'}
                     className={cn('min-w-0 h-6 font-semibold uppercase', {
-                      'bg-brand text-white': tier === t,
+                      'bg-brand text-white': tier === tierOption.value,
                     })}
-                    onPress={() => setTier(t)}>
-                    {t}
+                    onPress={() => setTier(tierOption.value)}>
+                    {tierOption.label}
                   </Button>
                 ))}
               </div>

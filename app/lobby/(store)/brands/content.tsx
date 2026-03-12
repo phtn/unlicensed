@@ -55,7 +55,9 @@ export const Content = () => {
   const selectedBrand =
     enhancedBrands.find((brand) => brand.slug === selectedBrandId) ?? null
   const selectedBrandProducts = useMemo<StoreProduct[]>(() => {
-    return selectedBrandProductsQuery?.map(adaptProduct) ?? []
+    return (
+      selectedBrandProductsQuery?.map((product) => adaptProduct(product)) ?? []
+    )
   }, [selectedBrandProductsQuery])
   const isSelectedBrandLoading =
     selectedBrandId !== '' && selectedBrandProductsQuery === undefined

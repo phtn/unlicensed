@@ -420,6 +420,8 @@ export const getUserPointsBalance = query({
         totalPoints: 0,
         redeemedPoints: 0,
         lastPaymentDate: undefined,
+        lastPointsEditedAt: undefined,
+        lastPointsEditedBy: undefined,
       }
     }
 
@@ -428,6 +430,8 @@ export const getUserPointsBalance = query({
       totalPoints: userRewards.totalPoints ?? 0,
       redeemedPoints: userRewards.redeemedPoints ?? 0,
       lastPaymentDate: userRewards.lastPaymentDate,
+      lastPointsEditedAt: userRewards.lastPointsEditedAt,
+      lastPointsEditedBy: userRewards.lastPointsEditedBy,
     }
   },
 })

@@ -135,9 +135,10 @@ export const Content = ({initialProducts}: ContentProps) => {
   const productsQuery = useQuery(api.products.q.listProducts, {})
   const products = useMemo(
     () =>
-      (productsQuery?.map(adaptProduct) ?? initialProducts).filter(
-        (p) => p.available && p.stock > 0,
-      ),
+      (
+        productsQuery?.map((product) => adaptProduct(product)) ??
+        initialProducts
+      ).filter((p) => p.available && p.stock > 0),
     [productsQuery, initialProducts],
   )
 

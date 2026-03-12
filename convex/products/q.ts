@@ -3,6 +3,43 @@ import type {Doc, Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
 import {safeGet} from '../utils/id_validation'
 
+type ProductWithTierLabel = Doc<'products'> & {
+  tierLabel?: string
+}
+
+const resolveTierLabel = (
+  tier: string | undefined,
+  category: Doc<'categories'> | null | undefined,
+) => {
+  const normalizedTier = tier?.trim()
+  if (!normalizedTier) return undefined
+
+  const match = category?.tiers?.find(
+    (entry) => entry.slug === normalizedTier || entry.name === normalizedTier,
+  )
+
+  return match?.name ?? normalizedTier
+}
+
+const buildCategoriesBySlug = (categories: Doc<'categories'>[]) =>
+  new Map(
+    categories
+      .filter((category) => !!category.slug)
+      .map((category) => [category.slug as string, category]),
+  )
+
+const attachTierLabels = (
+  products: Doc<'products'>[],
+  categoriesBySlug: Map<string, Doc<'categories'>>,
+): ProductWithTierLabel[] =>
+  products.map((product) => ({
+    ...product,
+    tierLabel: resolveTierLabel(
+      product.tier,
+      categoriesBySlug.get(product.categorySlug ?? ''),
+    ),
+  }))
+
 export const listProductSlugs = query({
   args: {},
   handler: async (ctx) => {
@@ -21,7 +58,7 @@ export const listProducts = query({
     limit: v.optional(v.number()),
     eligibleForDeals: v.optional(v.boolean()),
   },
-  handler: async (ctx, args): Promise<Doc<'products'>[]> => {
+  handler: async (ctx, args): Promise<ProductWithTierLabel[]> => {
     const limit = args.limit ?? 50
     const baseQuery = args.categorySlug
       ? ctx.db
@@ -42,7 +79,11 @@ export const listProducts = query({
     if (args.eligibleForDeals === true) {
       products = products.filter((p) => p.eligibleForDeals === true)
     }
-    return sortProducts(products).slice(0, limit)
+    const categories = await ctx.db.query('categories').collect()
+    return attachTierLabels(
+      sortProducts(products).slice(0, limit),
+      buildCategoriesBySlug(categories),
+    )
   },
 })
 
@@ -89,7 +130,11 @@ export const getProductsByIds = query({
     const products = await Promise.all(
       args.productIds.map((id) => safeGet(ctx.db, 'products', id)),
     )
-    return products.filter((p): p is NonNullable<typeof p> => p !== null)
+    const categories = await ctx.db.query('categories').collect()
+    return attachTierLabels(
+      products.filter((p): p is NonNullable<typeof p> => p !== null),
+      buildCategoriesBySlug(categories),
+    )
   },
 })
 
@@ -121,9 +166,15 @@ export const getProductBySlug = query({
     ).slice(0, 4)
 
     return {
-      product,
+      product: {
+        ...product,
+        tierLabel: resolveTierLabel(product.tier, category),
+      },
       category,
-      related: relatedProducts,
+      related: relatedProducts.map((item) => ({
+        ...item,
+        tierLabel: resolveTierLabel(item.tier, category),
+      })),
     }
   },
 })
@@ -255,7 +306,11 @@ export const getFeaturedProducts = query({
       .filter((q) => q.eq(q.field('featured'), true))
       .take(limit)
 
-    return sortProducts(products)
+    const categories = await ctx.db.query('categories').collect()
+    return attachTierLabels(
+      sortProducts(products),
+      buildCategoriesBySlug(categories),
+    )
   },
 })
 
@@ -293,6 +348,10 @@ export const getPreviouslyBoughtProducts = query({
     const products = await Promise.all(
       uniqueIds.map((id) => safeGet(ctx.db, 'products', id)),
     )
-    return products.filter((p): p is NonNullable<typeof p> => p !== null)
+    const categories = await ctx.db.query('categories').collect()
+    return attachTierLabels(
+      products.filter((p): p is NonNullable<typeof p> => p !== null),
+      buildCategoriesBySlug(categories),
+    )
   },
 })

@@ -31,11 +31,11 @@ export const SuggestedCartItems = () => {
   )
 
   const featured = useMemo(
-    () => featuredRaw?.map(adaptProduct) ?? [],
+    () => featuredRaw?.map((product) => adaptProduct(product)) ?? [],
     [featuredRaw],
   )
   const previous = useMemo(
-    () => previousRaw?.map(adaptProduct) ?? [],
+    () => previousRaw?.map((product) => adaptProduct(product)) ?? [],
     [previousRaw],
   )
 

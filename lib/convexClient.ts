@@ -57,6 +57,7 @@ export type RawProduct = {
   brand?: string | string[]
   grower?: string
   tier?: string
+  tierLabel?: string
   subcategory?: string
   netWeight?: number
   netWeightUnit?: string
@@ -102,7 +103,25 @@ export const adaptCategory = (category: RawCategory): StoreCategory => ({
   benefits: category.benefits ?? undefined,
 })
 
-export const adaptProduct = (product: RawProduct): StoreProduct => ({
+const resolveAttributeLabel = (
+  value: string | undefined,
+  options?: IAttribute[],
+) => {
+  const normalizedValue = value?.trim()
+  if (!normalizedValue) return undefined
+
+  const match = options?.find(
+    (option) =>
+      option.slug === normalizedValue || option.name === normalizedValue,
+  )
+
+  return match?.name ?? normalizedValue
+}
+
+export const adaptProduct = (
+  product: RawProduct,
+  category?: RawCategory | StoreCategory | null,
+): StoreProduct => ({
   slug: product.slug ?? '',
   name: product.name ?? '',
   categorySlug: product.categorySlug ?? '',
@@ -146,6 +165,8 @@ export const adaptProduct = (product: RawProduct): StoreProduct => ({
       ? [product.brand]
       : undefined,
   productTier: product.tier,
+  productTierLabel:
+    product.tierLabel ?? resolveAttributeLabel(product.tier, category?.tiers),
   subcategory: product.subcategory,
   _id: product._id,
   _creationTime: product._creationTime,
@@ -154,9 +175,11 @@ export const adaptProduct = (product: RawProduct): StoreProduct => ({
 export const adaptProductDetail = (
   detail: RawProductDetail,
 ): StoreProductDetail => ({
-  product: adaptProduct(detail.product),
+  product: adaptProduct(detail.product, detail.category),
   category: detail.category ? adaptCategory(detail.category) : null,
-  related: detail.related.map(adaptProduct),
+  related: detail.related.map((product) =>
+    adaptProduct(product, detail.category),
+  ),
 })
 
 export const fallbackCategories = (): StoreCategory[] => {
@@ -169,11 +192,14 @@ export const fallbackProducts = (categorySlug?: string): StoreProduct[] => {
     : productsSeed
 
   return filtered.map((product, index) =>
-    adaptProduct({
-      ...product,
-      // _id: `seed_${product.slug}`,
-      _creationTime: Date.now() - index * 1000,
-    }),
+    adaptProduct(
+      {
+        ...product,
+        // _id: `seed_${product.slug}`,
+        _creationTime: Date.now() - index * 1000,
+      },
+      categoriesSeed.find((category) => category.slug === product.categorySlug),
+    ),
   )
 }
 
@@ -244,12 +270,20 @@ const _fetchProducts = async (options?: {
   }
 
   try {
-    const products = (await client.query(api.products.q.listProducts, {
-      categorySlug: options?.categorySlug,
-      limit: options?.limit,
-      eligibleForDeals: options?.eligibleForDeals,
-    })) as RawProduct[]
-    return products.map(adaptProduct)
+    const [products, categories] = await Promise.all([
+      client.query(api.products.q.listProducts, {
+        categorySlug: options?.categorySlug,
+        limit: options?.limit,
+        eligibleForDeals: options?.eligibleForDeals,
+      }) as Promise<RawProduct[]>,
+      fetchCategories(),
+    ])
+    const categoriesBySlug = new Map(
+      categories.map((category) => [category.slug, category]),
+    )
+    return products.map((product) =>
+      adaptProduct(product, categoriesBySlug.get(product.categorySlug ?? '')),
+    )
   } catch (error) {
     console.warn('Falling back to seed products', error)
     const fallback = fallbackProducts(options?.categorySlug)
@@ -324,11 +358,20 @@ const _fetchFireCollections = async (): Promise<StoreCollectionSection[]> => {
         enabledCollections.flatMap((collection) => collection.productIds),
       ),
     )
-    const products = (await client.query(api.products.q.getProductsByIds, {
-      productIds,
-    })) as RawProduct[]
+    const [products, categories] = await Promise.all([
+      client.query(api.products.q.getProductsByIds, {
+        productIds,
+      }) as Promise<RawProduct[]>,
+      fetchCategories(),
+    ])
+    const categoriesBySlug = new Map(
+      categories.map((category) => [category.slug, category]),
+    )
     const productsById = new Map(
-      products.map((product) => [String(product._id), adaptProduct(product)]),
+      products.map((product) => [
+        String(product._id),
+        adaptProduct(product, categoriesBySlug.get(product.categorySlug ?? '')),
+      ]),
     )
 
     return enabledCollections

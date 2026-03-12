@@ -41,7 +41,7 @@ export const CartCollection = () => {
     [categoriesQuery],
   )
   const products = useMemo(
-    () => productsQuery?.map(adaptProduct) ?? [],
+    () => productsQuery?.map((product) => adaptProduct(product)) ?? [],
     [productsQuery],
   )
 

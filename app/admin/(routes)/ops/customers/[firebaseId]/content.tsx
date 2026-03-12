@@ -1,5 +1,6 @@
 'use client'
 
+import {narrowInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -17,6 +18,7 @@ import {
   Card,
   Chip,
   Image,
+  Input,
   Textarea,
   Tooltip,
 } from '@heroui/react'
@@ -47,8 +49,13 @@ export const Content = ({firebaseId}: ContentProps) => {
   const [isOpeningChat, setIsOpeningChat] = useState(false)
   const [remarks, setRemarks] = useState('')
   const [isSavingRemarks, setIsSavingRemarks] = useState(false)
+  const [rewardPointsInput, setRewardPointsInput] = useState('')
+  const [isSavingRewardPoints, setIsSavingRewardPoints] = useState(false)
   const followForChat = useMutation(api.follows.m.follow)
   const updateCustomerNotes = useMutation(api.users.m.updateNotes)
+  const setUserAvailablePoints = useMutation(
+    api.rewards.m.setUserAvailablePoints,
+  )
   const customer = useQuery(api.users.q.getByFid, {fid: firebaseId})
   const customerAddresses = useQuery(api.users.q.getUserAddresses, {
     fid: firebaseId,
@@ -71,10 +78,27 @@ export const Content = ({firebaseId}: ContentProps) => {
   )
   const customerId = customer?._id
   const customerNotes = customer?.notes ?? ''
+  const currentAvailablePoints = pointsBalance?.availablePoints ?? 0
   const storeCreditLabel =
     pointsBalance === undefined
       ? 'Loading rewards...'
-      : `$${formatPrice(Math.round((pointsBalance.availablePoints ?? 0) * 100))}`
+      : `$${formatPrice(Math.round(currentAvailablePoints * 100))}`
+  const editorUsername =
+    user?.displayName?.trim() ||
+    user?.email?.split('@')[0] ||
+    user?.email ||
+    'Unknown admin'
+  const parsedRewardPointsInput =
+    rewardPointsInput.trim() === ''
+      ? Number.NaN
+      : Number.parseFloat(rewardPointsInput)
+  const normalizedRewardPointsInput = Number.isFinite(parsedRewardPointsInput)
+    ? Math.round(parsedRewardPointsInput * 100) / 100
+    : Number.NaN
+  const isRewardPointsDirty =
+    Number.isFinite(normalizedRewardPointsInput) &&
+    normalizedRewardPointsInput >= 0 &&
+    Math.abs(normalizedRewardPointsInput - currentAvailablePoints) > 0.0001
   const productImageIds = useMemo(
     () =>
       (cart?.items ?? []).flatMap((item) => {
@@ -102,6 +126,11 @@ export const Content = ({firebaseId}: ContentProps) => {
     if (!customerId) return
     setRemarks(customerNotes)
   }, [customerId, customerNotes])
+
+  useEffect(() => {
+    if (pointsBalance === undefined) return
+    setRewardPointsInput(currentAvailablePoints.toFixed(2))
+  }, [currentAvailablePoints, pointsBalance])
 
   const handleOpenChat = useCallback(async () => {
     if (!user?.uid) {
@@ -157,6 +186,40 @@ export const Content = ({firebaseId}: ContentProps) => {
   const handleRemarksBlur = useCallback(() => {
     void handleSaveRemarks()
   }, [handleSaveRemarks])
+
+  const handleSaveRewardPoints = useCallback(async () => {
+    if (!customerId) return
+    if (
+      !Number.isFinite(normalizedRewardPointsInput) ||
+      normalizedRewardPointsInput < 0
+    ) {
+      onError('Rewards points must be a non-negative number')
+      return
+    }
+    if (!isRewardPointsDirty) return
+
+    setIsSavingRewardPoints(true)
+    try {
+      await setUserAvailablePoints({
+        userId: customerId,
+        points: normalizedRewardPointsInput,
+        editedBy: editorUsername,
+      })
+      onSuccess('Rewards points updated')
+    } catch (err) {
+      onError(
+        err instanceof Error ? err.message : 'Failed to update rewards points',
+      )
+    } finally {
+      setIsSavingRewardPoints(false)
+    }
+  }, [
+    customerId,
+    editorUsername,
+    isRewardPointsDirty,
+    normalizedRewardPointsInput,
+    setUserAvailablePoints,
+  ])
 
   if (customer === undefined) {
     return (
@@ -297,9 +360,70 @@ export const Content = ({firebaseId}: ContentProps) => {
                   <p className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
                     Rewards Points
                   </p>
-                  <p id='store-credit' className='text-sm'>
-                    {storeCreditLabel}
-                  </p>
+                  <div className='space-y-2'>
+                    <p id='store-credit' className='text-sm'>
+                      {storeCreditLabel}
+                    </p>
+                  </div>
+                </div>
+                <div className='col-span-2 w-full'>
+                  <label
+                    htmlFor='reward-points'
+                    className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
+                    <span className='mr-2'>Edit rewards balance</span>
+                  </label>
+                  <div className='flex items-center w-full gap-4 p-2 bg-sidebar/40'>
+                    <Input
+                      id='reward-points'
+                      type='number'
+                      min='0'
+                      step='0.01'
+                      size='sm'
+                      radius='sm'
+                      value={rewardPointsInput}
+                      onValueChange={setRewardPointsInput}
+                      isDisabled={
+                        isSavingRewardPoints || pointsBalance === undefined
+                      }
+                      labelPlacement='outside'
+                      classNames={narrowInputClassNames}
+                      className='max-w-48'
+                      placeholder='0.00'
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          void handleSaveRewardPoints()
+                        }
+                      }}
+                    />
+                    <Button
+                      size='sm'
+                      radius='none'
+                      variant='flat'
+                      isLoading={isSavingRewardPoints}
+                      className='rounded-sm'
+                      isDisabled={
+                        isSavingRewardPoints ||
+                        pointsBalance === undefined ||
+                        !isRewardPointsDirty ||
+                        !Number.isFinite(normalizedRewardPointsInput) ||
+                        normalizedRewardPointsInput < 0
+                      }
+                      onPress={() => void handleSaveRewardPoints()}>
+                      Save Changes
+                    </Button>
+                  </div>
+                  {pointsBalance?.lastPointsEditedBy && (
+                    <p className='text-xs text-muted-foreground'>
+                      Last edited by{' '}
+                      <span className='font-semibold text-foreground/80'>
+                        {pointsBalance.lastPointsEditedBy}
+                      </span>
+                      {pointsBalance.lastPointsEditedAt
+                        ? ` on ${formatDate(pointsBalance.lastPointsEditedAt)}`
+                        : ''}
+                    </p>
+                  )}
                 </div>
               </div>
             </Card>
@@ -322,9 +446,9 @@ export const Content = ({firebaseId}: ContentProps) => {
                       <p>{address.addressLine1}</p>
                       {address.addressLine2 && <p>{address.addressLine2}</p>}
                       <p>
-                        {address.city}, {address.state} {address.zipCode}
+                        {address.city}, {address.state} {address.zipCode},{' '}
+                        {address.country}
                       </p>
-                      <p>{address.country}</p>
                     </div>
                   ))}
                 </div>

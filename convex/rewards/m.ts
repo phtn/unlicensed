@@ -1,11 +1,11 @@
 import {v} from 'convex/values'
-import {mutation, internalMutation} from '../_generated/server'
+import {internalMutation, mutation} from '../_generated/server'
+import {safeGet} from '../utils/id_validation'
 import {
-  calculateRecencyMultiplier,
   calculatePointsEarned,
+  calculateRecencyMultiplier,
   getDaysSinceLastPayment,
 } from './utils'
-import {safeGet} from '../utils/id_validation'
 
 /**
  * Create a new reward tier (admin only)
@@ -30,14 +30,14 @@ export const createRewardTier = mutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now()
-    
+
     // If this is set as default, unset other defaults
     if (args.isDefault) {
       const existingDefaults = await ctx.db
         .query('rewardTiers')
         .filter((q) => q.eq(q.field('isDefault'), true))
         .collect()
-      
+
       for (const tier of existingDefaults) {
         await ctx.db.patch(tier._id, {
           isDefault: false,
@@ -45,7 +45,7 @@ export const createRewardTier = mutation({
         })
       }
     }
-    
+
     const tierId = await ctx.db.insert('rewardTiers', {
       name: args.name,
       level: args.level,
@@ -65,7 +65,7 @@ export const createRewardTier = mutation({
       createdAt: now,
       updatedAt: now,
     })
-    
+
     return tierId
   },
 })
@@ -97,16 +97,16 @@ export const updateRewardTier = mutation({
     if (!tier) {
       throw new Error('Reward tier not found')
     }
-    
+
     const now = Date.now()
-    
+
     // If setting as default, unset other defaults
     if (args.isDefault === true) {
       const existingDefaults = await ctx.db
         .query('rewardTiers')
         .filter((q) => q.eq(q.field('isDefault'), true))
         .collect()
-      
+
       for (const defaultTier of existingDefaults) {
         if (defaultTier._id !== args.tierId) {
           await ctx.db.patch(defaultTier._id, {
@@ -116,7 +116,7 @@ export const updateRewardTier = mutation({
         }
       }
     }
-    
+
     const updates: {
       name?: string
       level?: number
@@ -137,7 +137,7 @@ export const updateRewardTier = mutation({
     } = {
       updatedAt: now,
     }
-    
+
     if (args.name !== undefined) updates.name = args.name
     if (args.level !== undefined) updates.level = args.level
     if (args.discountPercentage !== undefined)
@@ -160,9 +160,9 @@ export const updateRewardTier = mutation({
     if (args.icon !== undefined) updates.icon = args.icon
     if (args.active !== undefined) updates.active = args.active
     if (args.isDefault !== undefined) updates.isDefault = args.isDefault
-    
+
     await ctx.db.patch(args.tierId, updates)
-    
+
     return args.tierId
   },
 })
@@ -179,19 +179,19 @@ export const deleteRewardTier = mutation({
     if (!tier) {
       throw new Error('Reward tier not found')
     }
-    
+
     // Check if any users are using this tier
     const usersWithTier = await ctx.db
       .query('userRewards')
       .filter((q) => q.eq(q.field('currentTierId'), args.tierId))
       .collect()
-    
+
     if (usersWithTier.length > 0) {
       throw new Error(
         `Cannot delete tier: ${usersWithTier.length} users are currently using it`,
       )
     }
-    
+
     await ctx.db.delete(args.tierId)
     return args.tierId
   },
@@ -210,20 +210,20 @@ export const initializeUserRewards = mutation({
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
-    
+
     if (existing) {
       return existing._id
     }
-    
+
     // Find default tier
     const defaultTier = await ctx.db
       .query('rewardTiers')
       .filter((q) => q.eq(q.field('isDefault'), true))
       .filter((q) => q.eq(q.field('active'), true))
       .first()
-    
+
     const now = Date.now()
-    
+
     const rewardsId = await ctx.db.insert('userRewards', {
       userId: args.userId,
       currentTierId: defaultTier?._id,
@@ -233,7 +233,7 @@ export const initializeUserRewards = mutation({
       createdAt: now,
       updatedAt: now,
     })
-    
+
     return rewardsId
   },
 })
@@ -252,7 +252,7 @@ export const updateUserRewardsFromOrder = mutation({
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
-    
+
     if (!userRewards) {
       // Initialize if doesn't exist
       const defaultTier = await ctx.db
@@ -260,7 +260,7 @@ export const updateUserRewardsFromOrder = mutation({
         .filter((q) => q.eq(q.field('isDefault'), true))
         .filter((q) => q.eq(q.field('active'), true))
         .first()
-      
+
       const now = Date.now()
       const rewardsId = await ctx.db.insert('userRewards', {
         userId: args.userId,
@@ -284,16 +284,16 @@ export const updateUserRewardsFromOrder = mutation({
       userRewards = await safeGet(ctx.db, 'userRewards', userRewards._id)
       if (!userRewards) throw new Error('Failed to update user rewards')
     }
-    
+
     // Check if user qualifies for a higher tier
     const allTiers = await ctx.db
       .query('rewardTiers')
       .filter((q) => q.eq(q.field('active'), true))
       .collect()
-    
+
     // Sort tiers by level (highest first)
     const sortedTiers = allTiers.sort((a, b) => b.level - a.level)
-    
+
     // Find the highest tier user qualifies for
     let newTierId = userRewards.currentTierId
     for (const tier of sortedTiers) {
@@ -305,13 +305,13 @@ export const updateUserRewardsFromOrder = mutation({
       const meetsPoints =
         !tier.minimumPoints ||
         (userRewards.totalPoints ?? 0) >= tier.minimumPoints
-      
+
       if (meetsSpending && meetsOrders && meetsPoints) {
         newTierId = tier._id
         break
       }
     }
-    
+
     // If tier changed, update it
     if (newTierId && newTierId !== userRewards.currentTierId) {
       await ctx.db.patch(userRewards._id, {
@@ -320,7 +320,7 @@ export const updateUserRewardsFromOrder = mutation({
         updatedAt: Date.now(),
       })
     }
-    
+
     return userRewards._id
   },
 })
@@ -338,17 +338,17 @@ export const assignTierToUser = mutation({
     if (!tier) {
       throw new Error('Reward tier not found')
     }
-    
+
     if (!tier.active) {
       throw new Error('Cannot assign inactive tier')
     }
-    
+
     // Get or create user rewards
     const userRewards = await ctx.db
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
-    
+
     if (!userRewards) {
       const now = Date.now()
       const rewardsId = await ctx.db.insert('userRewards', {
@@ -362,22 +362,21 @@ export const assignTierToUser = mutation({
       })
       return rewardsId
     }
-    
+
     // Validate currentTierId from database before using in get()
     const currentTier = userRewards.currentTierId
       ? await safeGet(ctx.db, 'rewardTiers', userRewards.currentTierId)
       : null
     const wasUpgrade =
-      !userRewards.currentTierId ||
-      (tier.level > (currentTier?.level ?? 0))
-    
+      !userRewards.currentTierId || tier.level > (currentTier?.level ?? 0)
+
     await ctx.db.patch(userRewards._id, {
       currentTierId: args.tierId,
       tierJoinedAt: wasUpgrade ? undefined : userRewards.tierJoinedAt,
       tierUpgradedAt: wasUpgrade ? Date.now() : userRewards.tierUpgradedAt,
       updatedAt: Date.now(),
     })
-    
+
     return userRewards._id
   },
 })
@@ -396,7 +395,7 @@ export const addPoints = mutation({
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
-    
+
     if (!userRewards) {
       // Initialize user rewards
       const defaultTier = await ctx.db
@@ -404,7 +403,7 @@ export const addPoints = mutation({
         .filter((q) => q.eq(q.field('isDefault'), true))
         .filter((q) => q.eq(q.field('active'), true))
         .first()
-      
+
       const now = Date.now()
       const rewardsId = await ctx.db.insert('userRewards', {
         userId: args.userId,
@@ -419,24 +418,24 @@ export const addPoints = mutation({
       })
       return rewardsId
     }
-    
+
     const newTotalPoints = (userRewards.totalPoints ?? 0) + args.points
     const newAvailablePoints = (userRewards.availablePoints ?? 0) + args.points
-    
+
     await ctx.db.patch(userRewards._id, {
       totalPoints: newTotalPoints,
       availablePoints: newAvailablePoints,
       updatedAt: Date.now(),
     })
-    
+
     // Check if points qualify for tier upgrade
     const allTiers = await ctx.db
       .query('rewardTiers')
       .filter((q) => q.eq(q.field('active'), true))
       .collect()
-    
+
     const sortedTiers = allTiers.sort((a, b) => b.level - a.level)
-    
+
     let newTierId = userRewards.currentTierId
     for (const tier of sortedTiers) {
       const meetsSpending =
@@ -446,13 +445,13 @@ export const addPoints = mutation({
         !tier.minimumOrders || userRewards.totalOrders >= tier.minimumOrders
       const meetsPoints =
         !tier.minimumPoints || newTotalPoints >= tier.minimumPoints
-      
+
       if (meetsSpending && meetsOrders && meetsPoints) {
         newTierId = tier._id
         break
       }
     }
-    
+
     if (newTierId && newTierId !== userRewards.currentTierId) {
       await ctx.db.patch(userRewards._id, {
         currentTierId: newTierId,
@@ -460,7 +459,108 @@ export const addPoints = mutation({
         updatedAt: Date.now(),
       })
     }
-    
+
+    return userRewards._id
+  },
+})
+
+/**
+ * Set a user's available rewards balance from admin.
+ * Preserves lifetime-earned totals unless the new balance would exceed them.
+ */
+export const setUserAvailablePoints = mutation({
+  args: {
+    userId: v.id('users'),
+    points: v.number(),
+    editedBy: v.string(),
+  },
+  handler: async (ctx, args) => {
+    if (!Number.isFinite(args.points) || args.points < 0) {
+      throw new Error('Points must be a non-negative number')
+    }
+
+    const user = await ctx.db.get(args.userId)
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    const now = Date.now()
+    const normalizedPoints = Math.round(args.points * 100) / 100
+    const userRewards = await ctx.db
+      .query('userRewards')
+      .withIndex('by_user', (q) => q.eq('userId', args.userId))
+      .unique()
+
+    if (!userRewards) {
+      const defaultTier = await ctx.db
+        .query('rewardTiers')
+        .filter((q) => q.eq(q.field('isDefault'), true))
+        .filter((q) => q.eq(q.field('active'), true))
+        .first()
+
+      const rewardsId = await ctx.db.insert('userRewards', {
+        userId: args.userId,
+        currentTierId: defaultTier?._id,
+        lifetimeSpendingCents: 0,
+        totalOrders: 0,
+        totalPoints: normalizedPoints,
+        availablePoints: normalizedPoints,
+        redeemedPoints: 0,
+        tierJoinedAt: defaultTier ? now : undefined,
+        lastPointsEditedAt: now,
+        lastPointsEditedBy: args.editedBy.trim(),
+        createdAt: now,
+        updatedAt: now,
+      })
+
+      return rewardsId
+    }
+
+    const redeemedPoints = userRewards.redeemedPoints ?? 0
+    const nextTotalPoints = Math.max(
+      userRewards.totalPoints ?? 0,
+      normalizedPoints + redeemedPoints,
+    )
+
+    await ctx.db.patch(userRewards._id, {
+      availablePoints: normalizedPoints,
+      totalPoints: nextTotalPoints,
+      lastPointsEditedAt: now,
+      lastPointsEditedBy: args.editedBy.trim(),
+      updatedAt: now,
+    })
+
+    const allTiers = await ctx.db
+      .query('rewardTiers')
+      .filter((q) => q.eq(q.field('active'), true))
+      .collect()
+
+    const sortedTiers = allTiers.sort((a, b) => b.level - a.level)
+    let newTierId = userRewards.currentTierId
+
+    for (const tier of sortedTiers) {
+      const meetsSpending =
+        !tier.minimumSpendingCents ||
+        userRewards.lifetimeSpendingCents >= tier.minimumSpendingCents
+      const meetsOrders =
+        !tier.minimumOrders || userRewards.totalOrders >= tier.minimumOrders
+      const meetsPoints =
+        !tier.minimumPoints || nextTotalPoints >= tier.minimumPoints
+
+      if (meetsSpending && meetsOrders && meetsPoints) {
+        newTierId = tier._id
+        break
+      }
+    }
+
+    if (newTierId && newTierId !== userRewards.currentTierId) {
+      await ctx.db.patch(userRewards._id, {
+        currentTierId: newTierId,
+        tierUpgradedAt: now,
+        updatedAt: now,
+      })
+    }
+
     return userRewards._id
   },
 })
@@ -479,7 +579,7 @@ export const setVIPStatus = mutation({
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
-    
+
     if (!userRewards) {
       // Initialize user rewards
       const defaultTier = await ctx.db
@@ -487,7 +587,7 @@ export const setVIPStatus = mutation({
         .filter((q) => q.eq(q.field('isDefault'), true))
         .filter((q) => q.eq(q.field('active'), true))
         .first()
-      
+
       const now = Date.now()
       const rewardsId = await ctx.db.insert('userRewards', {
         userId: args.userId,
@@ -502,13 +602,13 @@ export const setVIPStatus = mutation({
       })
       return rewardsId
     }
-    
+
     await ctx.db.patch(userRewards._id, {
       isVIP: args.isVIP,
       vipNotes: args.notes,
       updatedAt: Date.now(),
     })
-    
+
     return userRewards._id
   },
 })
@@ -527,7 +627,7 @@ export const setFreeShippingOverride = mutation({
       .query('userRewards')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .unique()
-    
+
     if (!userRewards) {
       // Initialize user rewards
       const defaultTier = await ctx.db
@@ -535,7 +635,7 @@ export const setFreeShippingOverride = mutation({
         .filter((q) => q.eq(q.field('isDefault'), true))
         .filter((q) => q.eq(q.field('active'), true))
         .first()
-      
+
       const now = Date.now()
       const rewardsId = await ctx.db.insert('userRewards', {
         userId: args.userId,
@@ -549,12 +649,12 @@ export const setFreeShippingOverride = mutation({
       })
       return rewardsId
     }
-    
+
     await ctx.db.patch(userRewards._id, {
       freeShippingOverride: args.freeShipping,
       updatedAt: Date.now(),
     })
-    
+
     return userRewards._id
   },
 })
@@ -575,7 +675,7 @@ export const awardPointsFromOrder = internalMutation({
 
     // Skip if guest order (no userId)
     if (!order.userId) {
-      return { pointsEarned: 0, multiplier: 1.0 }
+      return {pointsEarned: 0, multiplier: 1.0}
     }
 
     // Get or initialize user rewards
@@ -625,12 +725,12 @@ export const awardPointsFromOrder = internalMutation({
         order.items.map(async (item) => {
           const product = await safeGet(ctx.db, 'products', item.productId)
           const isEligible = product?.eligibleForRewards !== false
-          return { item, isEligible }
+          return {item, isEligible}
         }),
       )
 
       const eligibleSpendingCents = eligibleItems.reduce(
-        (sum, { item, isEligible }) =>
+        (sum, {item, isEligible}) =>
           isEligible ? sum + item.totalPriceCents : sum,
         0,
       )
@@ -641,7 +741,7 @@ export const awardPointsFromOrder = internalMutation({
           pointsMultiplier: 1.0,
           updatedAt: Date.now(),
         })
-        return { pointsEarned: 0, multiplier: 1.0 }
+        return {pointsEarned: 0, multiplier: 1.0}
       }
 
       const daysSinceLastPayment = getDaysSinceLastPayment(
@@ -713,7 +813,7 @@ export const awardPointsFromOrder = internalMutation({
       })
     }
 
-    return { pointsEarned, multiplier }
+    return {pointsEarned, multiplier}
   },
 })
 
@@ -733,7 +833,7 @@ export const deductPointsFromRefund = internalMutation({
 
     // Skip if guest order or no points were earned
     if (!order.userId || !order.pointsEarned || order.pointsEarned === 0) {
-      return { pointsDeducted: 0 }
+      return {pointsDeducted: 0}
     }
 
     // Get user rewards
@@ -743,7 +843,7 @@ export const deductPointsFromRefund = internalMutation({
       .unique()
 
     if (!userRewards) {
-      return { pointsDeducted: 0 }
+      return {pointsDeducted: 0}
     }
 
     // Calculate points to deduct
@@ -764,7 +864,7 @@ export const deductPointsFromRefund = internalMutation({
     const actualDeduction = Math.min(pointsToDeduct, availablePoints)
 
     if (actualDeduction === 0) {
-      return { pointsDeducted: 0 }
+      return {pointsDeducted: 0}
     }
 
     // Update user rewards
@@ -777,6 +877,6 @@ export const deductPointsFromRefund = internalMutation({
       updatedAt: Date.now(),
     })
 
-    return { pointsDeducted: actualDeduction }
+    return {pointsDeducted: actualDeduction}
   },
 })

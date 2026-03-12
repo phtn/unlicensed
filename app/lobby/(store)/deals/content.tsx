@@ -145,28 +145,28 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
 
   const flower = useMemo(
     () =>
-      flowerQuery?.map(adaptProduct) ??
+      flowerQuery?.map((product) => adaptProduct(product)) ??
       initialProductsByCategory['flower'] ??
       [],
     [flowerQuery, initialProductsByCategory],
   )
   const extracts = useMemo(
     () =>
-      extractsQuery?.map(adaptProduct) ??
+      extractsQuery?.map((product) => adaptProduct(product)) ??
       initialProductsByCategory['extracts'] ??
       [],
     [extractsQuery, initialProductsByCategory],
   )
   const edibles = useMemo(
     () =>
-      ediblesQuery?.map(adaptProduct) ??
+      ediblesQuery?.map((product) => adaptProduct(product)) ??
       initialProductsByCategory['edibles'] ??
       [],
     [ediblesQuery, initialProductsByCategory],
   )
   const prerolls = useMemo(
     () =>
-      prerollsQuery?.map(adaptProduct) ??
+      prerollsQuery?.map((product) => adaptProduct(product)) ??
       initialProductsByCategory['pre-rolls'] ??
       [],
     [prerollsQuery, initialProductsByCategory],

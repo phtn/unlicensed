@@ -54,6 +54,7 @@ export interface StoreProduct {
   base?: string
   productType?: string
   productTier?: string
+  productTierLabel?: string
   subcategory?: string
   weightGrams?: number
   brand?: string[]

@@ -170,6 +170,7 @@ export const RecentActivities = ({
         case 'user':
           if (activity.user) {
             return (
+              // <Link href={`/admin/users/${activity.user.firebaseIdb}`}>
               <User
                 avatarProps={{
                   size: 'sm',
@@ -186,6 +187,7 @@ export const RecentActivities = ({
                 }>
                 {activity.user.email}
               </User>
+              // </Link>
             )
           }
           return (
