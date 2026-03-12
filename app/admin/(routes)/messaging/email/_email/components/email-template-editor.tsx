@@ -1,6 +1,9 @@
 'use client'
 
-import {SelectOption} from '@/app/admin/_components/ui/fields'
+import {
+  commonSelectClassNames,
+  SelectOption,
+} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {Icon} from '@/lib/icons'
@@ -202,7 +205,7 @@ export const EmailTemplateEditor = ({
                 }}
               </form.AppField>
             </div>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4'>
               <form.AppField name='intent'>
                 {(fieldApi) => {
                   const errors = fieldApi.state.meta.errors
@@ -247,9 +250,6 @@ export const EmailTemplateEditor = ({
                       required
                       error={error}
                       defaultValue={initialValues.type}
-                      // handleChange={(value: string) => {
-                      //   fieldApi.handleChange(value)
-                      // }}
                     />
                   )
                 }}
@@ -396,9 +396,9 @@ export const EmailTemplateEditor = ({
         <section>
           <SectionHeader title='Content' />
 
-          <div className='space-y-4 pt-2'>
+          <div className='pt-2 space-y-4'>
             <Select
-              label='Start from template'
+              label='Template'
               placeholder='Choose a template (optional)'
               variant='bordered'
               selectedKeys={selectedTemplateKey ? [selectedTemplateKey] : []}
@@ -407,10 +407,7 @@ export const EmailTemplateEditor = ({
                 handleTemplateSelect(key)
               }}
               isDisabled={isLoadingTemplate}
-              classNames={{
-                trigger:
-                  'border border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 rounded-lg min-h-10',
-              }}
+              classNames={commonSelectClassNames}
               items={templateSelectOptions}>
               {(item) => (
                 <SelectItem key={item.id} textValue={item.label}>

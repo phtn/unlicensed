@@ -3,27 +3,26 @@ import {cn} from '@/lib/utils'
 import {motion} from 'motion/react'
 import {useMemo} from 'react'
 import {HyperList} from '../expermtl/hyper-list'
-
-type AllowedNetworks = 'ethereum' | 'polygon' | 'bitcoin' | 'sepolia' | 'amoy'
+import {DEFAULT_ALLOWED_PAY_NETWORKS, type PayNetworkName} from './pay-config'
 
 interface NetworkSelectorProps {
   currentNetwork: string | null
   onSelectNetwork: (network: string) => () => void
+  allowedNetworks?: readonly PayNetworkName[]
 }
 
 export const NetworkSelector = ({
   currentNetwork,
   onSelectNetwork,
+  allowedNetworks = DEFAULT_ALLOWED_PAY_NETWORKS,
 }: NetworkSelectorProps) => {
   const network_list = useMemo(() => {
-    const networks: AllowedNetworks[] = ['bitcoin', 'ethereum', 'polygon']
-
-    return networks.map((net) => ({
+    return allowedNetworks.map((net) => ({
       name: net,
       onSelect: onSelectNetwork(net),
       selected: currentNetwork === net,
     }))
-  }, [currentNetwork, onSelectNetwork])
+  }, [allowedNetworks, currentNetwork, onSelectNetwork])
   return (
     <>
       <motion.div
@@ -54,7 +53,7 @@ export const NetworkSelector = ({
 }
 
 interface NetworkButtonRoundProps {
-  name: AllowedNetworks
+  name: PayNetworkName
   onSelect: VoidFunction
   selected: boolean
 }

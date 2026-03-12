@@ -1,6 +1,10 @@
 'use client'
 
 import {PayTab} from '@/components/appkit/pay'
+import {
+  DEFAULT_ALLOWED_PAY_NETWORKS,
+  type PayNetworkName,
+} from '@/components/appkit/pay-config'
 import type {PaymentSuccessContext} from '@/components/appkit/types'
 import {
   SearchParamsProvider,
@@ -13,10 +17,61 @@ import {useMutation, useQuery} from 'convex/react'
 import {useParams} from 'next/navigation'
 import {useCallback, useMemo, useRef, useState} from 'react'
 
+const CRYPTO_WALLET_IDENTIFIER = 'crypto_wallet_addresses'
+
+const NETWORK_DEFAULTS: Record<PayNetworkName, boolean> = {
+  bitcoin: true,
+  ethereum: true,
+  polygon: true,
+  sepolia: false,
+  amoy: false,
+}
+
+const NETWORK_ORDER = [
+  'bitcoin',
+  'ethereum',
+  'polygon',
+  'sepolia',
+  'amoy',
+] as const satisfies readonly PayNetworkName[]
+
+const getNetworkEnabled = (value: unknown, key: PayNetworkName): boolean => {
+  if (typeof value === 'string') {
+    return value.trim().length > 0 || NETWORK_DEFAULTS[key]
+  }
+
+  if (value && typeof value === 'object') {
+    const config = value as Record<string, unknown>
+    if (typeof config.active === 'boolean') {
+      return config.active
+    }
+  }
+
+  return NETWORK_DEFAULTS[key]
+}
+
+const parseEnabledNetworks = (value: unknown): readonly PayNetworkName[] => {
+  if (!value || typeof value !== 'object' || 'error' in value) {
+    return DEFAULT_ALLOWED_PAY_NETWORKS
+  }
+
+  const wallets = value as Record<string, unknown>
+  const enabledNetworks = NETWORK_ORDER.filter((key) =>
+    getNetworkEnabled(wallets[key], key),
+  )
+
+  return enabledNetworks.length > 0
+    ? enabledNetworks
+    : DEFAULT_ALLOWED_PAY_NETWORKS
+}
+
 const CryptoPayContent = () => {
   const params = useParams()
   const orderId = params.orderId as Id<'orders'>
   const order = useQuery(api.orders.q.getById, {id: orderId})
+  const cryptoNetworksSetting = useQuery(api.admin.q.getAdminByIdentStrict, {
+    identifier: CRYPTO_WALLET_IDENTIFIER,
+  })
   const updatePayment = useMutation(api.orders.m.updatePayment)
   const {setParams} = useSearchParams()
   const {getBySymbol} = useCrypto()
@@ -35,6 +90,11 @@ const CryptoPayContent = () => {
     if (order == null || order === undefined) return undefined
     return (order.totalCents / 100).toFixed(2)
   }, [order])
+
+  const allowedNetworks = useMemo(
+    () => parseEnabledNetworks(cryptoNetworksSetting),
+    [cryptoNetworksSetting],
+  )
 
   const handleReset = useCallback(() => {
     setTo('')
@@ -92,6 +152,7 @@ const CryptoPayContent = () => {
           tokenPrice={ethPrice}
           defaultPaymentAmountUsd={defaultPaymentAmountUsd}
           onReset={handleReset}
+          allowedNetworks={allowedNetworks}
         />
       </div>
     </div>

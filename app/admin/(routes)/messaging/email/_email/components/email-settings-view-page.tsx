@@ -8,7 +8,7 @@ import {
 } from '@/app/admin/_components/ui/fields'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {api} from '@/convex/_generated/api'
-import {Id} from '@/convex/_generated/dataModel'
+import {type Doc, Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
@@ -37,6 +37,8 @@ interface EmailTemplateViewerProps {
   id: string
 }
 export type RecipientRow = {name: string; email: string}
+type MailingListDoc = Doc<'mailingLists'>
+type MailingListRecipient = MailingListDoc['recipients'][number]
 
 /** Parse pasted text into name/email rows. Separators: =, :, or , (one per line). */
 function parsePastedRecipients(text: string): RecipientRow[] {
@@ -299,13 +301,17 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   }, [])
 
   const handleEmailBlastSend = useCallback(async () => {
-    const list = mailingLists?.find((l) => l._id === selectedListId)
+    const list = mailingLists?.find(
+      (l: MailingListDoc) => l._id === selectedListId,
+    )
     if (!list || list.recipients.length === 0) {
       toast.error('Select a mailing list with recipients.')
       return
     }
     if (!emailSetting) return
-    const valid = list.recipients.filter((r) => r.email.trim())
+    const valid = list.recipients.filter((r: MailingListRecipient) =>
+      r.email.trim(),
+    )
     if (valid.length === 0) {
       toast.error('The selected list has no valid email addresses.')
       return
@@ -436,7 +442,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             variant='light'
             onPress={navigateBackToList}
             className='gap-2 dark:bg-transparent'>
-            <Icon name='chevron-left' />
+            <Icon name='chevron-left' className='size-4' />
             <span>Back to Templates</span>
           </Button>
           <div className='flex items-center gap-3 px-1'>
@@ -479,7 +485,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             className=''>
             <Card
               radius='none'
-              className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-t-2xl rounded-b-none shadow-none font-figtree h-28'>
+              className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-t-md rounded-b-none shadow-none font-figtree h-28'>
               <CardHeader>
                 <div className='flex items-center gap-3'>
                   <SectionHeader
@@ -503,7 +509,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                 </div>
               </CardHeader>
               <CardBody>
-                <div className='text-base pt-2 font-figtree'>
+                <div className='text-base pt-2 font-clash'>
                   <span className='text-xs uppercase opacity-70 mr-2'>
                     subject:
                   </span>
@@ -515,7 +521,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             </Card>
 
             <div className='grid grid-cols-1 md:grid-cols-3 font-figtree'>
-              <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none md:rounded-bl-4xl shadow-none'>
+              <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none md:rounded-bl-md shadow-none'>
                 <CardBody>
                   <SectionHeader title='Recipients' />
                   <div className='pt-6 space-y-3'>
@@ -546,7 +552,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                   </div>
                 </CardBody>
               </Card>
-              <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none shadow-none'>
+              <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none shadow-none'>
                 <CardBody>
                   <SectionHeader title='Template' />
                   <div className='pt-6 space-y-3'>
@@ -563,7 +569,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                   </div>
                 </CardBody>
               </Card>
-              <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-t-0 md:border-l-0 border-background rounded-none rounded-b-4xl md:rounded-bl-none shadow-none'>
+              <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-t-0 md:border-l-0 border-background rounded-none rounded-b-md md:rounded-bl-md shadow-none'>
                 <CardBody>
                   <SectionHeader title='Metadata' />
                   <div className='pt-6 space-y-3'>
@@ -601,7 +607,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
               )}
 
               {emailSetting.body && (
-                <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
+                <Card className='hidden dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
                   <SectionHeader title='Body Template' />
                   <div className='p-2 max-h-10'>
                     <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
@@ -649,7 +655,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                     }}
                     isDisabled={!mailingLists?.length}
                     classNames={commonSelectClassNames}>
-                    {(mailingLists ?? []).map((list) => (
+                    {(mailingLists ?? []).map((list: MailingListDoc) => (
                       <SelectItem
                         key={list._id}
                         textValue={`${list.name} (${list.recipients.length})`}>
@@ -688,7 +694,9 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       isDisabled={
                         !selectedListId ||
                         !!blastProgress?.sending ||
-                        !mailingLists?.some((l) => l._id === selectedListId)
+                        !mailingLists?.some(
+                          (l: MailingListDoc) => l._id === selectedListId,
+                        )
                       }
                       isLoading={!!blastProgress?.sending}
                       className='rounded-lg bg-dark-gray dark:bg-white dark:text-dark-table'>

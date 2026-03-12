@@ -11,6 +11,11 @@ import {
   paymentSchema,
   shippingSchema,
 } from './d'
+import {
+  canAttemptPaymentSuccessEmail,
+  createPendingPaymentSuccessEmailState,
+  isPaymentSuccessEmailEligibleMethod,
+} from './email_delivery'
 
 const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
 const DEFAULT_SHIPPING_FEE_CENTS = 500
@@ -775,9 +780,17 @@ export const updatePayment = mutation({
           : args.payment.paidAt,
     }
 
+    const nextPaymentSuccessEmail =
+      wasPaymentCompleted &&
+      isPaymentSuccessEmailEligibleMethod(args.payment.method) &&
+      order.paymentSuccessEmail?.status !== 'sent'
+        ? createPendingPaymentSuccessEmailState()
+        : order.paymentSuccessEmail
+
     await ctx.db.patch(args.orderId, {
       payment: paymentUpdate,
       orderStatus,
+      paymentSuccessEmail: nextPaymentSuccessEmail,
       updatedAt: Date.now(),
     })
 
@@ -793,6 +806,19 @@ export const updatePayment = mutation({
       await ctx.scheduler.runAfter(0, internal.orders.m.deductStockForOrder, {
         orderId: args.orderId,
       })
+    }
+
+    if (
+      wasPaymentCompleted &&
+      isPaymentSuccessEmailEligibleMethod(args.payment.method)
+    ) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.orders.a.sendPaymentSuccessForOrder,
+        {
+          orderId: args.orderId,
+        },
+      )
     }
 
     // Deduct points when payment is refunded
@@ -825,6 +851,104 @@ export const updatePayment = mutation({
         },
       )
     }
+
+    return args.orderId
+  },
+})
+
+export const preparePaymentSuccessEmailAttempt = internalMutation({
+  args: {
+    orderId: v.id('orders'),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId)
+    if (!order) {
+      return null
+    }
+
+    if (
+      order.payment.status !== 'completed' ||
+      !isPaymentSuccessEmailEligibleMethod(order.payment.method)
+    ) {
+      return null
+    }
+
+    const now = Date.now()
+    if (!canAttemptPaymentSuccessEmail(order.paymentSuccessEmail, now)) {
+      return null
+    }
+
+    const attempts = (order.paymentSuccessEmail?.attempts ?? 0) + 1
+
+    await ctx.db.patch(args.orderId, {
+      paymentSuccessEmail: {
+        status: 'sending',
+        attempts,
+        lastAttemptAt: now,
+        sentAt: order.paymentSuccessEmail?.sentAt,
+        lastError: undefined,
+        providerMessageId: order.paymentSuccessEmail?.providerMessageId,
+      },
+      updatedAt: now,
+    })
+
+    return order
+  },
+})
+
+export const markPaymentSuccessEmailSent = internalMutation({
+  args: {
+    orderId: v.id('orders'),
+    providerMessageId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId)
+    if (!order) {
+      return null
+    }
+
+    const now = Date.now()
+    await ctx.db.patch(args.orderId, {
+      paymentSuccessEmail: {
+        status: 'sent',
+        attempts: order.paymentSuccessEmail?.attempts ?? 1,
+        lastAttemptAt: order.paymentSuccessEmail?.lastAttemptAt ?? now,
+        sentAt: now,
+        lastError: undefined,
+        providerMessageId:
+          args.providerMessageId ??
+          order.paymentSuccessEmail?.providerMessageId,
+      },
+      updatedAt: now,
+    })
+
+    return args.orderId
+  },
+})
+
+export const markPaymentSuccessEmailFailed = internalMutation({
+  args: {
+    orderId: v.id('orders'),
+    error: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId)
+    if (!order) {
+      return null
+    }
+
+    const now = Date.now()
+    await ctx.db.patch(args.orderId, {
+      paymentSuccessEmail: {
+        status: 'failed',
+        attempts: order.paymentSuccessEmail?.attempts ?? 1,
+        lastAttemptAt: order.paymentSuccessEmail?.lastAttemptAt ?? now,
+        sentAt: order.paymentSuccessEmail?.sentAt,
+        lastError: args.error,
+        providerMessageId: order.paymentSuccessEmail?.providerMessageId,
+      },
+      updatedAt: now,
+    })
 
     return args.orderId
   },

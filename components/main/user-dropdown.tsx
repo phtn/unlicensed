@@ -65,7 +65,6 @@ export const UserDropdown = ({
           href='/account'
           key='profile'
           variant='flat'
-          textValue='account'
           classNames={{
             title: 'text-foreground/90 font-polysans',
             base: 'hover:bg-alum/0 bg-background/0 dark:hover:bg-alum/10 dark:bg-white focus-visible:ring-1 outline-none',

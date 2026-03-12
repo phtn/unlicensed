@@ -9,4 +9,11 @@ crons.interval(
   internal.productHolds.m.deleteExpiredHolds,
 )
 
+crons.interval(
+  'retry payment success emails',
+  {minutes: 10},
+  internal.orders.a.retryPendingPaymentSuccessEmails,
+  {limit: 25},
+)
+
 export default crons

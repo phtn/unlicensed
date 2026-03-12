@@ -152,7 +152,7 @@ export function ReceiptModal({
                 <div className='flex items-center justify-between mb-4'>
                   <h2
                     id='receipt-modal-title'
-                    className='font-polyn font-bold text-lg text-white/90'>
+                    className='font-clash font-bold text-lg text-white/90'>
                     Payment Receipt
                   </h2>
                   <button

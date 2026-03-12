@@ -1,5 +1,6 @@
-import { IconName } from '@/lib/icons'
-import { Dispatch, Ref, SetStateAction } from 'react'
+import {IconName} from '@/lib/icons'
+import {Dispatch, Ref, SetStateAction} from 'react'
+import type {PayNetworkName} from './pay-config'
 
 export interface Balance {
   value: bigint
@@ -7,7 +8,10 @@ export interface Balance {
   decimals: number
 }
 
-export type ReceiptStatus = { blockNumber: bigint; status: 'success' | 'reverted' } | null
+export type ReceiptStatus = {
+  blockNumber: bigint
+  status: 'success' | 'reverted'
+} | null
 
 export interface PaymentSuccessContext {
   asset: string
@@ -39,6 +43,7 @@ export interface PayTabProps {
   hash?: `0x${string}` | null
   explorerUrl?: string | null
   onReset?: VoidFunction
+  allowedNetworks?: readonly PayNetworkName[]
 }
 
 export interface TokenData {

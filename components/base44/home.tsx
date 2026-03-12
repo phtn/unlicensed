@@ -40,8 +40,8 @@ export const NewHome = () => {
           id: 'id',
           tag: '',
           imageUrl: isMobile
-            ? 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772603013/hero-mobile-v2_vaiesj.webp'
-            : 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1772552114/hero-image_ivcsbu.webp',
+            ? 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1773341566/Revised_mobile_f5wwdo.webp'
+            : 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1773341316/Revised_jhykmd.webp',
           imageAlt: '',
           title: '',
           description: '',
@@ -55,7 +55,11 @@ export const NewHome = () => {
   return (
     <div
       className='relative bg-linear-to-b bg-background dark:bg-black md:h-screen'
-      style={isMobile && heroImageHeight != null ? {height: heroImageHeight} : undefined}>
+      style={
+        isMobile && heroImageHeight != null
+          ? {height: heroImageHeight}
+          : undefined
+      }>
       <div ref={heroImageWrapRef} className='top-0 left-0 w-full md:h-screen'>
         <Highlights heroImageHeight={heroImageHeight} slides={slides} />
       </div>

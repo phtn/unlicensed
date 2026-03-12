@@ -45,6 +45,7 @@ import {NetworkSelector} from './network-selector'
 import {PayAmount} from './pay-amount'
 import {PayButtons} from './pay-buttons'
 import {
+  DEFAULT_ALLOWED_PAY_NETWORKS,
   getChainIdForNetwork,
   getNativeSymbolForChainId,
   getNetworkForChainId,
@@ -53,6 +54,7 @@ import {
   isEvmPayToken,
   parseTokenParam,
   type EvmPayToken,
+  type PayNetworkName,
 } from './pay-config'
 import {PaymentProcessing} from './payment-processing'
 import {ReceiptModal} from './receipt-modal'
@@ -165,6 +167,7 @@ export const PayTab = ({
   hash = null,
   explorerUrl = null,
   onReset,
+  allowedNetworks = DEFAULT_ALLOWED_PAY_NETWORKS,
 }: PayTabProps) => {
   const {params, setParams} = useSearchParams()
 
@@ -327,6 +330,13 @@ export const PayTab = ({
     persistedBitcoinAddress,
     evmWalletAddress,
   ])
+
+  const selectorCurrentNetwork = useMemo(() => {
+    if (!selectedNetwork) return null
+    return allowedNetworks.includes(selectedNetwork as PayNetworkName)
+      ? selectedNetwork
+      : null
+  }, [allowedNetworks, selectedNetwork])
 
   useEffect(() => {
     if (!selectedNetwork) return
@@ -1038,8 +1048,9 @@ export const PayTab = ({
           />
         )}
         <NetworkSelector
-          currentNetwork={selectedNetwork}
+          currentNetwork={selectorCurrentNetwork}
           onSelectNetwork={handleNetworkSelect}
+          allowedNetworks={allowedNetworks}
         />
         <motion.div
           initial={{opacity: 0, y: 5}}

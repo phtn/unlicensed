@@ -17,8 +17,8 @@ export const EMAIL_TEMPLATE_OPTIONS = [
   },
   {
     id: 'payment-success',
-    label: 'Payment success',
-    defaultSubject: 'Payment received',
+    label: 'Payment Success',
+    defaultSubject: 'We received your payment!',
   },
   {
     id: 'notification',
@@ -37,6 +37,11 @@ export const EMAIL_TEMPLATE_OPTIONS = [
     id: 'product-discount',
     label: 'Product discount',
     defaultSubject: 'A discount just for you',
+  },
+  {
+    id: 'bulk-value',
+    label: 'Bulk value',
+    defaultSubject: 'Bulk just makes sense',
   },
   {
     id: 'first-order',

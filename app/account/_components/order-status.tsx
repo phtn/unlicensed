@@ -36,10 +36,14 @@ export const OrderStatusBadge = ({status}: Props) => {
       variant='faded'
       radius='none'
       className={cn(
-        'ml-1 px-1 border-none rounded-sm uppercase font-brk dark:bg-black/30 bg-dark-table',
+        'ml-1 px-1 border-none rounded-sm uppercase font-ios dark:bg-black/30 bg-dark-table',
         {
           'bg-emerald-500 dark:bg-emerald-500/80 text-white opacity-100':
             status === 'order_processing',
+        },
+        {
+          'bg-foreground dark:bg-background text-orange-300 opacity-100':
+            status === 'pending_payment',
         },
       )}
       size='sm'>

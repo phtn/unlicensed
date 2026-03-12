@@ -44,16 +44,16 @@ export const ReceiptEmail = ({
   <Html>
     <Head />
     <Tailwind config={tailwindConfig}>
-      <Body className='font-okxs bg-white'>
+      <Body className='font-okxs bg-transparent'>
         <Preview>Rapid Fire Receipt</Preview>
-        <Container className='mx-auto px-0 py-5 pb-12 w-[660px] max-w-full'>
+        <Container className='mx-auto px-0 py-5 pb-12 w-[660.01px] max-w-full bg-transparent'>
           <Section>
             <Row>
               <Column>
                 <Img
-                  src={`${baseUrl}/static/rf-wordmark-latest.png`}
+                  src={`https://res.cloudinary.com/dx0heqhhe/image/upload/v1771881178/rf-wordmark-flex_vrgct3.png`}
                   width='auto'
-                  height='42'
+                  height='32'
                   alt='RF Logo'
                   className='aspect-auto'
                 />
@@ -67,12 +67,12 @@ export const ReceiptEmail = ({
             </Row>
           </Section>
 
-          <Section className='border-collapse border-spacing-0 font-okxs text-[rgb(51,51,51)] bg-[rgb(250,250,250)] rounded-[3px] text-[12px] mt-12'>
+          <Section className='border-collapse border-spacing-0 font-okxs text-[rgb(51,51,51)] rounded-[3px] text-[12px] mt-12'>
             <Row className='min-h-[54.1px]'>
               <Column colSpan={2}>
                 <Section>
                   <Row>
-                    <Column className='p-3 border-solid border-white border-0 border-r border-b min-h-[44px]'>
+                    <Column className='p-3 border-solid border-white border-0 border-r border-b min-h-[44.01px]'>
                       <Text className='m-0 p-0 text-[rgb(102,102,102)] text-[10px] leading-[1.4]'>
                         ACCOUNT
                       </Text>
@@ -83,7 +83,7 @@ export const ReceiptEmail = ({
                   </Row>
 
                   <Row>
-                    <Column className='p-3 border-solid border-white border-0 border-r border-b min-h-[44px]'>
+                    <Column className='p-3 border-solid border-white border-0 border-r border-b min-h-[44.01px]'>
                       <Text className='m-0 p-0 text-[rgb(102,102,102)] text-[10px] leading-[1.4]'>
                         INVOICE DATE
                       </Text>
@@ -94,7 +94,7 @@ export const ReceiptEmail = ({
                   </Row>
 
                   <Row className=''>
-                    <Column className='p-3 border-solid border-white border-0 border-r border-b min-h-[44px]'>
+                    <Column className='p-3 border-solid border-white border-0 border-r border-b min-h-[44.01px]'>
                       <Text className='m-0 p-0 text-[rgb(102,102,102)] text-[10px] leading-[1.4]'>
                         ORDER ID
                       </Text>
@@ -106,7 +106,7 @@ export const ReceiptEmail = ({
                 </Section>
               </Column>
               <Column
-                className='p-3 border-solid border-white border-0 border-r border-b min-h-[44px]'
+                className='p-3 border-solid border-white border-0 border-r border-b min-h-[44.01px]'
                 colSpan={2}>
                 <Text className='m-0 p-0 text-[rgb(102,102,102)] text-[10px] leading-[1.4]'>
                   CUSTOMER
@@ -128,7 +128,7 @@ export const ReceiptEmail = ({
             </Row>
           </Section>
 
-          <LineItems baseUrl={baseUrl} items={lineItems} total={total} />
+          <LineItems items={lineItems} total={total} />
           <RewardsGuide baseUrl={baseUrl} />
           <FooterEmailContent baseUrl={baseUrl} />
         </Container>

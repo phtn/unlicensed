@@ -25,16 +25,24 @@ export const narrowInputClassNames = {
 }
 
 export const commonSelectClassNames = {
-  value: 'placeholder:text-slate-400/80 py-4 mt-2',
+  label: 'ps-1 mb-4 uppercase font-ios text-xs tracking-widest opacity-80',
+  value: 'ps-1 placeholder:text-slate-400/80 py-4 mt-2',
   trigger:
     'border h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-  mainWrapper: 'py-4',
+  mainWrapper: '',
+}
+export const narrowSelectClassNames = {
+  label: 'ps-1 mb-3 uppercase font-ios text-xs tracking-widest opacity-80',
+  value: 'ps-1 placeholder:text-slate-400/80 py-4 mt-2',
+  trigger:
+    'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
+  mainWrapper: '',
 }
 export const multiSelectClassNames = {
   value: 'placeholder:text-slate-400/80 py-2',
   trigger:
     'border h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-  mainWrapper: 'py-4',
+  mainWrapper: '',
 }
 
 type BaseFieldProps<T> = {
@@ -250,7 +258,7 @@ export function SelectField<T>(
   }
 
   return (
-    <div className='space-y-2'>
+    <div className='h-fit'>
       <Select
         label={props?.label}
         selectionMode={mode}
@@ -276,7 +284,7 @@ export function SelectField<T>(
                 }
 
                 return (
-                  <div className='flex items-center gap-2 overflow-x-auto whitespace-nowrap py-0.5 pr-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
+                  <div className='flex items-center space-x-2 overflow-x-auto whitespace-nowrap  pr-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
                     {items.map((item) => {
                       const optionValue = item.key
                         ? getOptionValue(item.key)
@@ -414,7 +422,7 @@ export function SelectWithCustomField<T>(
     allowCustom && (selectedKey === SELECT_CUSTOM_OPTION_KEY || isCustomValue)
 
   return (
-    <div className='space-y-2'>
+    <div className=''>
       {showCustomInput ? (
         <Input
           size='lg'

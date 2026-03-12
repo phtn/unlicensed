@@ -19,16 +19,29 @@ const ORDER_NUMBER_KEYS = [
 const ORDER_DOC_ID_KEYS = ['order_doc_id', 'orderDocId', 'order_doc'] as const
 const SESSION_KEYS = ['session_id', 'sessionId'] as const
 const STATUS_KEYS = ['status'] as const
-const TX_IN_KEYS = ['txid_in', 'txidIn', 'transaction_id', 'transactionId'] as const
+const TX_IN_KEYS = [
+  'txid_in',
+  'txidIn',
+  'transaction_id',
+  'transactionId',
+] as const
 const TX_OUT_KEYS = ['txid_out', 'txidOut'] as const
 const ADDRESS_IN_KEYS = ['address_in', 'addressIn'] as const
 const PROVIDER_KEYS = ['provider', 'provider_id', 'providerId'] as const
 const VALUE_COIN_KEYS = ['value_coin', 'valueCoin'] as const
 const AMOUNT_KEYS = ['amount'] as const
-const VALUE_FORWARDED_KEYS = ['value_forwarded_coin', 'valueForwardedCoin'] as const
+const VALUE_FORWARDED_KEYS = [
+  'value_forwarded_coin',
+  'valueForwardedCoin',
+] as const
 const COIN_KEYS = ['coin', 'currency'] as const
 const ASSET_KEYS = ['asset', 'token', 'coin_symbol', 'coinSymbol'] as const
-const CHAIN_KEYS = ['chain', 'network', 'blockchain', 'blockchainSymbol'] as const
+const CHAIN_KEYS = [
+  'chain',
+  'network',
+  'blockchain',
+  'blockchainSymbol',
+] as const
 const USD_VALUE_KEYS = [
   'value_usd',
   'valueUsd',
@@ -143,7 +156,8 @@ const parsePendingFlag = (payload: CallbackPayload): boolean | undefined => {
   if (!pendingValue) return undefined
 
   if (pendingValue === '1' || pendingValue.toLowerCase() === 'true') return true
-  if (pendingValue === '0' || pendingValue.toLowerCase() === 'false') return false
+  if (pendingValue === '0' || pendingValue.toLowerCase() === 'false')
+    return false
   return undefined
 }
 
@@ -161,7 +175,9 @@ const mapStatusFromPayload = (payload: CallbackPayload): PaymentStatus => {
   const txOut = getFirstString(payload, TX_OUT_KEYS)
   const valueCoin = parseNumeric(getFirstString(payload, VALUE_COIN_KEYS))
   const amount = parseNumeric(getFirstString(payload, AMOUNT_KEYS))
-  const hasPaymentSignal = Boolean(txIn || txOut || (valueCoin ?? amount ?? 0) > 0)
+  const hasPaymentSignal = Boolean(
+    txIn || txOut || (valueCoin ?? amount ?? 0) > 0,
+  )
 
   if (pendingFlag === true) return 'processing'
   if (hasPaymentSignal) return 'completed'
@@ -294,7 +310,9 @@ export const settlePaygateCallback = async (
   const valueForwardedCoin = parseNumeric(
     getFirstString(payload, VALUE_FORWARDED_KEYS),
   )
-  const usdValueFromPayload = parseNumeric(getFirstString(payload, USD_VALUE_KEYS))
+  const usdValueFromPayload = parseNumeric(
+    getFirstString(payload, USD_VALUE_KEYS),
+  )
   const coinDescriptor = parseCoinDescriptor(coin)
   const assetFromPayload = getFirstString(payload, ASSET_KEYS)
   const chainFromPayload = getFirstString(payload, CHAIN_KEYS)
@@ -308,14 +326,13 @@ export const settlePaygateCallback = async (
     ? normalizeChain(chainFromPayload || coinDescriptor.chain)
     : undefined
   const nativeValue = isCryptoPayment
-    ? valueCoin ?? (asset ? amount : undefined)
+    ? (valueCoin ?? (asset ? amount : undefined))
     : undefined
   const usdValue = isCryptoPayment
-    ? usdValueFromPayload ?? order.payment.usdValue ?? order.totalCents / 100
+    ? (usdValueFromPayload ?? order.payment.usdValue ?? order.totalCents / 100)
     : undefined
   const rawStatus = getFirstString(payload, STATUS_KEYS)
   const now = Date.now()
-
   const shouldUpdate = needsPaymentUpdate(
     order,
     nextStatus,
@@ -340,8 +357,10 @@ export const settlePaygateCallback = async (
     }
   }
 
-  const existingMetadata = (order.payment.gateway?.metadata ??
-    {}) as Record<string, unknown>
+  const existingMetadata = (order.payment.gateway?.metadata ?? {}) as Record<
+    string,
+    unknown
+  >
 
   const nextMetadata: Record<string, unknown> = {
     ...existingMetadata,
@@ -363,9 +382,14 @@ export const settlePaygateCallback = async (
   if (rawStatus) nextMetadata.paygateStatus = rawStatus
 
   const gatewayId =
-    addressIn || order.payment.gateway?.id || order.payment.gatewayId || 'paygate'
-  const gatewayProvider = provider || order.payment.gateway?.provider || 'paygate'
-  const gatewaySession = ipnToken || sessionId || order.payment.gateway?.sessionId
+    addressIn ||
+    order.payment.gateway?.id ||
+    order.payment.gatewayId ||
+    'paygate'
+  const gatewayProvider =
+    provider || order.payment.gateway?.provider || 'paygate'
+  const gatewaySession =
+    ipnToken || sessionId || order.payment.gateway?.sessionId
 
   const nextGateway = {
     ...(order.payment.gateway ?? {
@@ -384,7 +408,9 @@ export const settlePaygateCallback = async (
   }
 
   const paidAt =
-    nextStatus === 'completed' ? order.payment.paidAt ?? now : order.payment.paidAt
+    nextStatus === 'completed'
+      ? (order.payment.paidAt ?? now)
+      : order.payment.paidAt
 
   await convex.mutation(api.orders.m.updatePayment, {
     orderId: order._id,

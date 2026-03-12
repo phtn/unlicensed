@@ -65,28 +65,28 @@ export const RewardsGuide = ({baseUrl}: RewardsGuideProps) => {
         issued as store credit after your order ships.
       </Text>
 
-      <Hr className='mt-[30px] mb-0' />
+      <Hr className='mt-[30.01px] mb-0' />
       <Section align='right'>
         <Row className='w-full table-fixed'>
-          <Column className='table-cell w-[72px] align-middle py-2'>
+          <Column className='table-cell w-[72.01px] align-middle py-2'>
             <Text className='m-0 font-okxs font-medium text-[rgb(102,102,102)] text-[10px] p-0 pl-6'>
               Tier
             </Text>
           </Column>
-          <Column className='w-[1px] min-h-[1px] align-middle p-0 [border-left:1px_solid_rgb(238,238,238)]' />
-          <Column className='table-cell w-[160px] align-middle py-2 text-center'>
+          <Column className='w-[1.01px] min-h-[1.01px] align-middle p-0 [border-left:1px_solid_rgb(238,238,238)]' />
+          <Column className='table-cell w-[160.01px] align-middle py-2 text-center'>
             <Text className='m-0 font-okxs font-medium text-[rgb(102,102,102)] text-[10px] p-0 text-center'>
               Cart Subtotal
             </Text>
           </Column>
-          <Column className='w-[1px] min-h-[1px] align-middle p-0 [border-left:1px_solid_rgb(238,238,238)]' />
-          <Column className='table-cell w-[90px] align-middle py-2 text-center'>
+          <Column className='w-[1.01px] min-h-[1.01px] align-middle p-0 [border-left:1px_solid_rgb(238,238,238)]' />
+          <Column className='table-cell w-[90.01px] align-middle py-2 text-center'>
             <Text className='m-0 font-okxs font-medium text-[rgb(102,102,102)] text-[10px] p-0 text-center'>
               Shipping
             </Text>
           </Column>
-          <Column className='w-[1px] min-h-[1px] align-middle p-0 [border-left:1px_solid_rgb(238,238,238)]' />
-          <Column className='table-cell w-[90px] align-middle py-2 text-center'>
+          <Column className='w-[1.01px] min-h-[1.01px] align-middle p-0 [border-left:1px_solid_rgb(238,238,238)]' />
+          <Column className='table-cell w-[90.01px] align-middle py-2 text-center'>
             <Text className='m-0 font-okxs font-medium text-[rgb(102,102,102)] text-[10px] p-0 text-center'>
               Cash Back
             </Text>
@@ -97,25 +97,25 @@ export const RewardsGuide = ({baseUrl}: RewardsGuideProps) => {
       <Section>
         {cashbackTiers.map((tier) => (
           <Row key={tier.id} className='w-full table-fixed'>
-            <Column className='table-cell w-[72px] align-middle py-2'>
+            <Column className='table-cell w-[72.01px] align-middle py-2'>
               <Text className='m-0 font-okxs font-medium text-[rgb(102,102,102)] text-[10px] p-0 pl-6'>
                 {tier.id}
               </Text>
             </Column>
-            <Column className='w-[1px] min-h-[1px] align-middle p-0 [border-left:1px_solid_rgb(238,238,238)]' />
-            <Column className='table-cell w-[160px] align-middle py-2 text-center'>
+            <Column className='w-[1.01px] min-h-[1.01px] align-middle p-0 [border-left:1px_solid_rgb(238,238,238)]' />
+            <Column className='table-cell w-[160.01px] align-middle py-2 text-center'>
               <Text className='m-0 font-okxs font-medium text-[rgb(102,102,102)] text-[10px] p-0 text-center'>
                 {tier.subtotal}
               </Text>
             </Column>
-            <Column className='w-[1px] min-h-[1px] align-middle p-0 [border-left:1px_solid_rgb(238,238,238)]' />
-            <Column className='table-cell w-[90px] align-middle py-2 text-center'>
+            <Column className='w-[1.01px] min-h-[1.01px] align-middle p-0 [border-left:1px_solid_rgb(238,238,238)]' />
+            <Column className='table-cell w-[90.01px] align-middle py-2 text-center'>
               <Text className='m-0 font-okxs font-medium text-[rgb(102,102,102)] text-[10px] p-0 text-center'>
                 {tier.shipping}
               </Text>
             </Column>
-            <Column className='w-[1px] min-h-[1px] align-middle p-0 [border-left:1px_solid_rgb(238,238,238)]' />
-            <Column className='table-cell w-[90px] align-middle py-2 text-center'>
+            <Column className='w-[1.01px] min-h-[1.01px] align-middle p-0 [border-left:1px_solid_rgb(238,238,238)]' />
+            <Column className='table-cell w-[90.01px] align-middle py-2 text-center'>
               <Text className='m-0 font-okxs font-medium text-[rgb(102,102,102)] text-[10px] p-0 text-center'>
                 {tier.cashback}
               </Text>
@@ -123,7 +123,7 @@ export const RewardsGuide = ({baseUrl}: RewardsGuideProps) => {
           </Row>
         ))}
       </Section>
-      <Hr className='mb-[75px]' />
+      <Hr className='mb-[75.01px]' />
 
       <Text className='text-xs text-[rgb(102,102,102)] my-5 leading-[normal] text-center'>
         {' '}

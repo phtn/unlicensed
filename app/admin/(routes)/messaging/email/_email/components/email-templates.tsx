@@ -120,7 +120,7 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
                           </div>
                           <div className='flex-1 min-w-0'>
                             <div className='flex items-center gap-3 mb-1'>
-                              <h3 className='text-base font-semibold truncate'>
+                              <h3 className='text-base font-clash font-semibold truncate'>
                                 {template.title || 'Untitled Template'}
                               </h3>
                               <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-cyan-100/50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-600/50 dark:border-cyan-500/30'>
@@ -130,8 +130,8 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
                                 {template.type || 'default'}
                               </span>
                             </div>
-                            <p className='text-sm opacity-80 truncate my-3 font-space'>
-                              <span className='font-light tracking-tighter mr-1.5'>
+                            <p className='text-sm opacity-80 truncate my-3 font-clash'>
+                              <span className='font-medium mr-1.5'>
                                 Subject:
                               </span>
                               {template.subject || 'No subject defined'}

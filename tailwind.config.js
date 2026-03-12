@@ -22,7 +22,7 @@ const config = {
         foreground: 'var(--foreground)',
         accent: 'var(--accent)',
         primary: 'var(--primary)',
-        brand: 'var(--brand)',
+        brand: '#d1499b',
         'primary-foreground': 'var(--primary-foreground)',
         secondary: 'var(--secondary)',
         'secondary-foreground': 'var(--secondary-foreground)',

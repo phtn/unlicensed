@@ -3,12 +3,12 @@ import {motion} from 'motion/react'
 import {tickerSymbol} from './ticker'
 
 const CONFETTI_COLORS = [
-  '#86efac',
-  '#fef08a',
+  '#222222',
+  '#d1499b',
   '#7dd3fc',
-  '#fca5a5',
-  '#c4b5fd',
-  '#67e8f9',
+  '#d1499b',
+  '#111111',
+  '#d1499b',
 ] as const
 
 const CONFETTI_PARTICLES = Array.from({length: 36}, (_, index) => {
@@ -60,7 +60,7 @@ export const PaymentSuccess = ({
       <div className='absolute bg-[url("/svg/noise.svg")] opacity-15 scale-100 pointer-events-none top-0 left-0 w-full h-full' />
       <div
         aria-hidden
-        className='pointer-events-none absolute inset-0 overflow-hidden'>
+        className='pointer-events-none absolute inset-0 overflow-hidden '>
         {CONFETTI_PARTICLES.map((particle) => (
           <motion.span
             key={particle.id}
@@ -81,7 +81,7 @@ export const PaymentSuccess = ({
               width: particle.width,
               height: particle.height,
             }}
-            className='absolute top-1/2 left-1/2 rounded-[2px]'
+            className='absolute top-1/2 left-1/2 rounded-xs'
           />
         ))}
       </div>

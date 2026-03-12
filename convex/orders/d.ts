@@ -35,6 +35,27 @@ const tx = v.object({
 
 export type ITxData = Infer<typeof tx>
 
+export const paymentSuccessEmailStatusSchema = v.union(
+  v.literal('pending'),
+  v.literal('sending'),
+  v.literal('sent'),
+  v.literal('failed'),
+)
+
+export const paymentSuccessEmailSchema = v.object({
+  status: paymentSuccessEmailStatusSchema,
+  attempts: v.number(),
+  lastAttemptAt: v.optional(v.number()),
+  sentAt: v.optional(v.number()),
+  lastError: v.optional(v.string()),
+  providerMessageId: v.optional(v.string()),
+})
+
+export type PaymentSuccessEmailStatus = Infer<
+  typeof paymentSuccessEmailStatusSchema
+>
+export type PaymentSuccessEmailState = Infer<typeof paymentSuccessEmailSchema>
+
 // Payment information schema
 export const paymentSchema = v.object({
   method: paymentMethodSchema,
@@ -150,6 +171,9 @@ export const orderSchema = v.object({
   pointsMultiplier: v.optional(v.number()), // Multiplier used when awarding points
   storeCreditCents: v.optional(v.number()), // Store credit (cash back) calculated at checkout; added to user availablePoints when payment completes
   redeemedStoreCreditCents: v.optional(v.number()), // Cash back redeemed on this order; deducted from availablePoints when payment completes
+
+  // Transactional email delivery
+  paymentSuccessEmail: v.optional(paymentSuccessEmailSchema),
 
   // Timestamps
   createdAt: v.optional(v.number()),

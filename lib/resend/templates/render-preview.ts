@@ -1,5 +1,7 @@
 import {renderTemplate} from '@/lib/resend'
+import {formatDate} from '@/utils/date'
 import type {ComponentType} from 'react'
+import {BulkValueEmail} from './bulk-value'
 import {FirstOrderEmail} from './first-order'
 import {InvitationEmail} from './invitation'
 import {NotificationEmail} from './notification'
@@ -46,13 +48,12 @@ const TEMPLATE_MAP: Record<EmailTemplateId, TemplateEntry> = {
   'payment-success': {
     Component: PaymentSuccessEmail as ComponentType<object>,
     defaultProps: {
-      customerName: '{{customerName}}',
-      planLabel: '{{planLabel}}',
-      orderNumber: '{{orderNumber}}',
-      amount: 0,
+      customerName: 'there',
+      orderDate: formatDate(Date.now()),
+      orderNumber: '00ML-RF45-XX',
+      amount: 250,
       currency: 'USD',
-      cardId: '{{cardId}}',
-      dashboardUrl: '{{dashboardUrl}}',
+      paymentMethod: 'cards',
     },
   },
   notification: {
@@ -130,6 +131,48 @@ const TEMPLATE_MAP: Record<EmailTemplateId, TemplateEntry> = {
       validUntil: '{{validUntil}}',
       ctaLabel: '{{ctaLabel}}',
       ctaUrl: '{{ctaUrl}}',
+    },
+  },
+  'bulk-value': {
+    Component: BulkValueEmail as ComponentType<object>,
+    defaultProps: {
+      notice: 'Free delivery on orders $99+.',
+      noticeCtaLabel: 'SHOP BULK',
+      noticeCtaUrl: 'https://rapidfirenow.com/lobby',
+      headline: 'REORDERING?\nBULK JUST MAKES SENSE',
+      subheadline: 'Same THCa. Better value.',
+      ctaLabel: 'Shop Bulk',
+      ctaUrl: 'https://rapidfirenow.com/lobby',
+      introTitle: 'You already know what you like.',
+      introBody:
+        'Bulk lets you buy it smarter. Better value per gram, fewer checkouts, and the same menu you already trust.',
+      reasonsHeadline: 'WHY RAPID FIRE SHOPPERS GO BULK',
+      reasonsSubheadline:
+        'Frequent buyers figure this out fast: fewer re-ups, less friction, and stronger value every time.',
+      secondaryCtaLabel: 'Shop Bulk',
+      secondaryCtaUrl: 'https://rapidfirenow.com/lobby',
+      heroImageUrls: [
+        'https://rapidfirenow.com/static/slurry.webp',
+        'https://rapidfirenow.com/static/devilsm.webp',
+        'https://rapidfirenow.com/static/slurry.webp',
+      ],
+      benefits: [
+        {
+          title: 'LOWER COST',
+          description:
+            'Better value per gram means you keep more of your budget for the next drop.',
+        },
+        {
+          title: 'FEWER RE-UPS',
+          description:
+            'A larger cart means fewer repeat checkouts and less time spent restocking.',
+        },
+        {
+          title: 'SAME FIRE',
+          description:
+            'You are still shopping the same menu, just with a better buying strategy.',
+        },
+      ],
     },
   },
   'first-order': {

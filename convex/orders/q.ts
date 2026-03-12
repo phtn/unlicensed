@@ -1,6 +1,11 @@
 import {v} from 'convex/values'
+import type {Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
 import {orderStatusSchema} from './d'
+import {
+  canAttemptPaymentSuccessEmail,
+  isPaymentSuccessEmailEligibleMethod,
+} from './email_delivery'
 
 function normalizePaymentReference(reference: string): string | null {
   const trimmed = reference.trim()
@@ -147,6 +152,45 @@ export const getRecentOrders = query({
     const orders = await ctx.db.query('orders').order('desc').take(limit)
 
     return orders
+  },
+})
+
+export const listPaymentSuccessEmailRetryCandidateIds = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args): Promise<Id<'orders'>[]> => {
+    const limit = args.limit ?? 25
+    const now = Date.now()
+    const orders = await ctx.db.query('orders').collect()
+
+    return orders
+      .filter((order) => {
+        if (
+          order.payment.status !== 'completed' ||
+          !isPaymentSuccessEmailEligibleMethod(order.payment.method)
+        ) {
+          return false
+        }
+
+        return canAttemptPaymentSuccessEmail(order.paymentSuccessEmail, now)
+      })
+      .sort((a, b) => {
+        const aTime =
+          a.paymentSuccessEmail?.lastAttemptAt ??
+          a.payment.paidAt ??
+          a.updatedAt ??
+          a._creationTime
+        const bTime =
+          b.paymentSuccessEmail?.lastAttemptAt ??
+          b.payment.paidAt ??
+          b.updatedAt ??
+          b._creationTime
+
+        return aTime - bTime
+      })
+      .slice(0, limit)
+      .map((order) => order._id)
   },
 })
 

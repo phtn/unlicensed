@@ -66,10 +66,7 @@ export const PayButtons = ({
               <span className='flex items-center font-polysans font-medium text-white opacity-100 gap-2 drop-shadow-xs'>
                 {payLabel}
                 {payTokenIcon ? (
-                  <Icon
-                    name={payTokenIcon}
-                    className='size-5 text-foreground'
-                  />
+                  <Icon name={payTokenIcon} className='size-5 text-white' />
                 ) : (
                   <Icon name='cash-fast' className='size-6' />
                 )}

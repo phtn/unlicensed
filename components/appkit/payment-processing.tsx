@@ -17,7 +17,7 @@ export const PaymentProcessing = ({
       initial={{opacity: 0, y: 10}}
       animate={{opacity: 1, y: 0}}
       exit={{opacity: 0, y: -10}}
-      className='relative rounded-xl bg-white/5 border border-white/10 space-y-0 overflow-hidden'>
+      className='relative rounded-xl dark:bg-white/5 bg-dark-table border border-white/10 space-y-0 overflow-hidden'>
       <div className='absolute bg-[url("/svg/noise.svg")] opacity-15 scale-100 pointer-events-none top-0 left-0 w-full h-full' />
       <div className='relative px-4 py-6'>
         <div className='flex flex-col items-center justify-center gap-4'>
@@ -41,7 +41,7 @@ export const PaymentProcessing = ({
             </div>
           </div>
           <div className='text-center space-y-1'>
-            <p className='font-polyn font-bold text-xl text-white/80'>
+            <p className='font-clash font-bold text-xl text-white/80'>
               Processing Payment
             </p>
             <p className='text-xs font-brk text-white/50'>
