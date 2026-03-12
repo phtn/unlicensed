@@ -60,7 +60,7 @@ export const DialogWindow = ({
           exit={{opacity: 0, y: 12, scale: 0.98}}
           transition={{duration: 0.2, ease: 'easeOut'}}
           className={cn(
-            'fixed left-1/2 z-[9100] flex h-[min(70vh,36rem)] w-[min(calc(100vw-2rem),28rem)] -translate-x-1/2 flex-col overflow-hidden rounded-2xl border border-sidebar/50 bg-background/95 shadow-2xl backdrop-blur-xl',
+            'fixed left-1/2 z-9100 flex h-[min(70vh,36rem)] w-[min(calc(100vw-2rem),28rem)] -translate-x-1/2 flex-col overflow-hidden rounded-2xl border border-sidebar/50 bg-background/95 shadow-2xl backdrop-blur-xl',
             'bottom-[calc(env(safe-area-inset-bottom)+5.5rem)]',
             'px-0',
             className,

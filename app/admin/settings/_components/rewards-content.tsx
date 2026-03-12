@@ -9,7 +9,6 @@ import type {
 import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {Icon} from '@/lib/icons'
 import {
   Button,
   Card,
@@ -25,6 +24,7 @@ import {
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useState, ViewTransition} from 'react'
+import {LoadingHeader, PrimaryButton} from './components'
 
 type TierFormState = {
   minSubtotal: string
@@ -336,15 +336,7 @@ export const RewardsContent = () => {
   const isLoading = config === undefined
 
   if (isLoading) {
-    return (
-      <div className='flex w-full'>
-        <SectionHeader title='Rewards Manager'>
-          <Button disabled variant='light'>
-            <Icon name='spinner-dots' className='mr-1 size-5 opacity-80' />
-          </Button>
-        </SectionHeader>
-      </div>
-    )
+    return <LoadingHeader title='Rewards Manager' />
   }
 
   return (
@@ -353,15 +345,7 @@ export const RewardsContent = () => {
         <SectionHeader
           title='Rewards Manager'
           description='Configure tier-based shipping, cash back, and bundle bonus. Matches the structure used in checkout.'>
-          <Button
-            size='md'
-            radius='none'
-            color='primary'
-            onPress={openAddTier}
-            className='bg-dark-table dark:bg-white dark:text-dark-table rounded-lg'>
-            <Icon name='plus' className='mr-1 size-5' />
-            <span>Add Tier</span>
-          </Button>
+          <PrimaryButton onPress={openAddTier} icon='plus' label='Add Tier' />
         </SectionHeader>
       </div>
 

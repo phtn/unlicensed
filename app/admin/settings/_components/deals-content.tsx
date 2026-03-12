@@ -29,6 +29,7 @@ import {
   useState,
   ViewTransition,
 } from 'react'
+import {LoadingHeader, PrimaryButton} from './components'
 
 type VariationForm = {
   totalUnits: string
@@ -555,15 +556,7 @@ export const DealsContent = () => {
   const isLoading = deals === undefined
 
   if (isLoading) {
-    return (
-      <div className='flex w-full'>
-        <SectionHeader title='Deals & Bundles' description={''}>
-          <Button size='md' disabled variant='light'>
-            <Icon name='spinner-dots' className='mr-1 size-5 opacity-80' />
-          </Button>
-        </SectionHeader>
-      </div>
-    )
+    return <LoadingHeader title='Deals & Bundles' />
   }
 
   return (
@@ -574,24 +567,14 @@ export const DealsContent = () => {
           description='Configure store deals and mix-and-match bundles. Only enabled deals appear on the Deals page.'>
           <div className='flex'>
             {deals.length === 0 && (
-              <Button
-                size='md'
-                variant='flat'
+              <PrimaryButton
                 onPress={handleSeedDefaults}
-                isLoading={isSeeding}
-                color='secondary'>
-                Seed default deals
-              </Button>
+                icon={isSeeding ? 'spinners-ring' : 'arrow-up'}
+                disabled={isSeeding}
+                label='Seed Deals'
+              />
             )}
-            <Button
-              size='md'
-              radius='none'
-              color='primary'
-              onPress={openAdd}
-              className='bg-dark-table dark:bg-white dark:text-dark-table rounded-lg'>
-              <Icon name='plus' className='mr-1 size-5' />
-              <span>Add Deal</span>
-            </Button>
+            <PrimaryButton onPress={openAdd} icon='plus' label='Add Deal' />
           </div>
         </SectionHeader>
       </div>

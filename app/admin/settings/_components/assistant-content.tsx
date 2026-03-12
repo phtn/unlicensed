@@ -6,7 +6,8 @@ import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Button, Switch, Textarea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {startTransition, useCallback, useState, ViewTransition} from 'react'
+import {Activity, startTransition, useCallback, useState} from 'react'
+import {PrimaryButton} from './components'
 
 const DEFAULT_INSTRUCTIONS = `You are a bubbly and radiant assistant named Fire Girl.
 Follow these rules:
@@ -48,19 +49,14 @@ export const AssistantContent = () => {
 
   return (
     <div className='flex w-full flex-col gap-4'>
-      <div className='flex items-center justify-between'>
-        <SectionHeader title='AI Assistant Configuration' />
-        <SeedAssistantButton
-          canSeed={assistantProfile === null}
-          isSeeded={assistantProfile != null}
-          isLoading={assistantProfile === undefined}
-          onSeed={seedAssistant}
-        />
-      </div>
       <AIAssistantFormInner
         key={configKey}
         configValue={configValue}
         configLoaded={config !== undefined}
+        canSeedAssistant={assistantProfile === null}
+        isAssistantSeeded={assistantProfile != null}
+        isAssistantLoading={assistantProfile === undefined}
+        onSeedAssistant={seedAssistant}
         updateAdmin={updateAdmin}
         userUid={user?.uid}
       />
@@ -92,7 +88,7 @@ function SeedAssistantButton({
   }, [canSeed, isSeeding, onSeed])
 
   return (
-    <ViewTransition>
+    <Activity mode={isSeeded ? 'hidden' : 'visible'}>
       <div className='flex flex-col gap-2'>
         <Button
           radius='none'
@@ -104,24 +100,27 @@ function SeedAssistantButton({
           onPress={handleSeed}>
           Seed assistant
         </Button>
-        {isSeeded && (
-          <span className='text-muted-foreground text-sm'>
-            Assistant is already seeded.
-          </span>
-        )}
       </div>
-    </ViewTransition>
+    </Activity>
   )
 }
 
 function AIAssistantFormInner({
   configValue,
   configLoaded,
+  canSeedAssistant,
+  isAssistantSeeded,
+  isAssistantLoading,
+  onSeedAssistant,
   updateAdmin,
   userUid,
 }: {
   configValue: AssistantConfigValue | undefined
   configLoaded: boolean
+  canSeedAssistant: boolean
+  isAssistantSeeded: boolean
+  isAssistantLoading: boolean
+  onSeedAssistant: () => Promise<unknown>
   updateAdmin: (args: {
     identifier: string
     value: Record<string, string | boolean>
@@ -159,6 +158,33 @@ function AIAssistantFormInner({
 
   return (
     <section className='flex w-md flex-col gap-4'>
+      <SectionHeader
+        title='AI Assistant Configuration'
+        description='Configure your AI assistant settings here.'>
+        <div className='flex items-center gap-3'>
+          <SeedAssistantButton
+            canSeed={canSeedAssistant}
+            isSeeded={isAssistantSeeded}
+            isLoading={isAssistantLoading}
+            onSeed={onSeedAssistant}
+          />
+          <PrimaryButton
+            onPress={handleSave}
+            icon={isSaving ? 'spinners-ring' : 'save'}
+            label='Save Changes'
+            disabled={isSaving || !configLoaded || !userUid}
+          />
+          {saveMessage === 'saved' && (
+            <span className='text-sm text-emerald-600 dark:text-emerald-400'>
+              Saved
+            </span>
+          )}
+          {saveMessage === 'error' && (
+            <span className='text-sm text-destructive'>Save failed</span>
+          )}
+        </div>
+      </SectionHeader>
+
       <div className='flex flex-col gap-4 w-full'>
         <div className='flex max-w-6xl flex-col gap-2'>
           <Textarea
@@ -178,21 +204,12 @@ function AIAssistantFormInner({
             onValueChange={setIsActive}
             isDisabled={!configLoaded}
             size='sm'>
-            Assistant active
+            Active
           </Switch>
-          <Button
-            radius='none'
-            color='default'
-            variant='flat'
-            onPress={handleSave}
-            isDisabled={isSaving || !configLoaded || !userUid}
-            className='rounded-sm'
-            isLoading={isSaving}>
-            {isSaving ? 'Saving…' : 'Save'}
-          </Button>
         </div>
       </div>
-      <ViewTransition>
+
+      {/*<ViewTransition>
         <div className='flex items-center gap-3'>
           <Button
             radius='none'
@@ -213,7 +230,7 @@ function AIAssistantFormInner({
             <span className='text-sm text-destructive'>Save failed</span>
           )}
         </div>
-      </ViewTransition>
+      </ViewTransition>*/}
     </section>
   )
 }

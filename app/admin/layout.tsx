@@ -5,6 +5,7 @@ import {ReactNode} from 'react'
 import {RouteProtection} from '../_components/route-protection'
 import {OrderDetailsProvider} from './(routes)/ops/orders/order-details-context'
 import {AdminAccessGuard} from './_components/admin-access-guard'
+import {AdminAlertsListener} from './_components/admin-alerts-listener'
 import {AdminSidebar} from './_components/admin-sidebar'
 import {ProductDetailsProvider} from './_components/product-details-context'
 import {Container, WrappedContent} from './_components/ui/container'
@@ -26,6 +27,7 @@ const AdminLayout = ({children, toolbar}: AdminLayoutProps) => {
               <OrderDetailsProvider>
                 <ProductDetailsProvider>
                   <SidebarInset className='group/sidebar-inset'>
+                    <AdminAlertsListener />
                     <Container>
                       <WrappedContent toolbar={toolbar}>
                         {children}

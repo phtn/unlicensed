@@ -16,6 +16,7 @@ import {cn} from '@/lib/utils'
 import {
   Button,
   Divider,
+  Image,
   Input,
   Modal,
   ModalBody,
@@ -32,7 +33,6 @@ import {
   useMemo,
   useState,
 } from 'react'
-import {DitherPhoto, ImageDither} from '../paper/dithering'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -271,9 +271,12 @@ export const AuthModal = ({
       }}
       hideCloseButton>
       <ModalContent className='rounded-xs dark:border-brand border-light-gray/80 w-96 h-120 overflow-hidden flex flex-col'>
-        <div className='absolute h-160 w-160 aspect-auto -top-24 md:-top-28 -left-16 flex items-center'>
-          <ImageDither image={'/svg/rf-logo-hot-pink-2.svg'} />
-          <DitherPhoto />
+        <div className='size-80 absolute left-1/2 -translate-x-1/2 top-1/3 -translate-y-1/2'>
+          <Image
+            src={'/svg/rf-logo-hot-pink-2.svg'}
+            className='size-80'
+            alt='rf-logo'
+          />
         </div>
         <ModalHeader className='relative z-10 tracking-tight flex justify-between items-start shrink-0'>
           <div className='bg-black backdrop-blur-2xl text-white text-sm rounded-xs w-full whitespace-nowrap flex'>

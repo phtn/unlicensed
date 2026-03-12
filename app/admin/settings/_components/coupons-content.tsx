@@ -23,6 +23,7 @@ import {
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useEffect, useMemo, useState} from 'react'
+import {PrimaryButton} from './components'
 
 type CouponFormState = {
   code: string
@@ -342,12 +343,11 @@ export const CouponsContent = () => {
         title='Coupon Code Manager'
         description='Create and control promo codes, timing windows, and discount rules from one place.'>
         <div className='flex items-center justify-end gap-2'>
-          <Button
-            color='primary'
+          <PrimaryButton
             onPress={openCreateModal}
-            className='rounded-sm bg-black text-white dark:bg-white dark:text-dark-table'>
-            Add coupon
-          </Button>
+            label='Add coupon'
+            icon='plus'
+          />
         </div>
       </SectionHeader>
 

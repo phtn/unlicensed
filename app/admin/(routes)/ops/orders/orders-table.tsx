@@ -215,7 +215,7 @@ export const OrdersTable = () => {
         ),
         accessorKey: 'orderNumber',
         cell: orderNumberCell(),
-        size: 60,
+        size: 80,
       },
       {
         id: 'customer',
@@ -230,7 +230,7 @@ export const OrdersTable = () => {
             : undefined
 
           return (
-            <div className='flex flex-col'>
+            <div className='flex flex-col min-w-30'>
               {profileId ? (
                 <Link
                   prefetch
@@ -246,7 +246,7 @@ export const OrdersTable = () => {
             </div>
           )
         },
-        size: 140,
+        size: 160,
       },
       {
         id: 'date',

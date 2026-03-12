@@ -9,10 +9,28 @@ import dynamic from 'next/dynamic'
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {Dock, DockIcon} from '../ui/dock'
 
-const ChatWindow = dynamic(
-  () => import('./chat-window').then((module) => module.ChatWindow),
-  {ssr: false},
-)
+const loadChatWindow = () =>
+  import('./chat-window').then((module) => module.ChatWindow)
+
+let chatWindowPreloadPromise: Promise<unknown> | null = null
+
+const preloadChatWindow = () => {
+  if (!chatWindowPreloadPromise) {
+    chatWindowPreloadPromise = loadChatWindow()
+  }
+  return chatWindowPreloadPromise
+}
+
+const ChatWindow = dynamic(loadChatWindow, {
+  ssr: false,
+  loading: () => (
+    <div className='fixed right-4 top-14 bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] z-9100 w-[min(calc(100vw-2.5rem),34rem)] rounded-3xl border border-sidebar/50 bg-background/95 shadow-2xl backdrop-blur-xl md:right-8 md:bottom-[calc(env(safe-area-inset-bottom)+8rem)] lg:top-16 xl:top-20 2xl:top-24'>
+      <div className='flex h-full items-center justify-center text-sm text-muted-foreground'>
+        Loading chat...
+      </div>
+    </div>
+  ),
+})
 
 interface DockNav {
   id: string
@@ -52,6 +70,30 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
     }
   }, [toggle])
 
+  useEffect(() => {
+    if (hidden) return
+
+    if (typeof window === 'undefined') return
+
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(() => {
+        void preloadChatWindow()
+      })
+
+      return () => {
+        window.cancelIdleCallback(idleId)
+      }
+    }
+
+    const timeoutId = globalThis.setTimeout(() => {
+      void preloadChatWindow()
+    }, 1200)
+
+    return () => {
+      globalThis.clearTimeout(timeoutId)
+    }
+  }, [hidden])
+
   const navs = useMemo<DockNav[]>(
     () => [
       {
@@ -86,6 +128,15 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
                   <button
                     type='button'
                     onClick={nav.onClick}
+                    onPointerEnter={() => {
+                      void preloadChatWindow()
+                    }}
+                    onFocus={() => {
+                      void preloadChatWindow()
+                    }}
+                    onTouchStart={() => {
+                      void preloadChatWindow()
+                    }}
                     aria-label={nav.label}
                     aria-haspopup='dialog'
                     aria-expanded={isWindowOpen}

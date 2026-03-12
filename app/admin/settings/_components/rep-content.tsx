@@ -8,7 +8,7 @@ import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
-import {Avatar, Button, Select, SelectItem, Textarea, User} from '@heroui/react'
+import {Avatar, Select, SelectItem, Textarea, User} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import React, {
   startTransition,
@@ -17,6 +17,7 @@ import React, {
   useState,
   ViewTransition,
 } from 'react'
+import {LoadingHeader, PrimaryButton} from './components'
 
 type SalesRepValue = {staffId?: string; initialMessageSeed?: string}
 
@@ -104,29 +105,23 @@ export const RepContent = () => {
   const isLoading = reps === undefined || salesRepSetting === undefined
 
   if (isLoading) {
-    return (
-      <div className='flex w-full flex-col gap-4'>
-        <SectionHeader title='Default Sales Rep' />
-        <p className='text-sm text-foreground/60'>Loading…</p>
-      </div>
-    )
+    return <LoadingHeader title='Default Sales Rep' />
   }
 
   return (
-    <div className='flex w-full flex-col gap-4'>
-      <SectionHeader
-        title='Default Sales Rep'
-        description='Assign default Sales Rep used across the platform. Only staff with Rep position are listed.'>
-        <Button
-          size='sm'
-          color='primary'
-          onPress={handleSave}
-          className='bg-dark-table dark:bg-white dark:text-dark-table'
-          isLoading={isSaving}
-          isDisabled={!hasChange}>
-          Save Changes
-        </Button>
-      </SectionHeader>
+    <div className='flex w-full flex-col space-y-2'>
+      <div className='flex items-start w-full min-h-20'>
+        <SectionHeader
+          title='Default Sales Rep'
+          description='Assign default Sales Rep used across the platform. Only staff with Rep position are listed.'>
+          <PrimaryButton
+            onPress={handleSave}
+            label='Save Changes'
+            disabled={!hasChange}
+            icon={isSaving ? 'spinners-ring' : 'save'}
+          />
+        </SectionHeader>
+      </div>
 
       <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
         <section className='flex flex-col'>

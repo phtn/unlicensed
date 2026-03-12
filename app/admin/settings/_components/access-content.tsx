@@ -9,6 +9,7 @@ import {Button, Input, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useRef, useState, ViewTransition} from 'react'
 import {commonInputClassNames} from '../../_components/ui/fields'
+import {LoadingHeader, PrimaryButton} from './components'
 
 function getHaltPassConfig(
   haltPass:
@@ -115,12 +116,7 @@ export const AccessContent = () => {
   const isLoading = haltPass === undefined
 
   if (isLoading) {
-    return (
-      <div className='flex w-full flex-col gap-4'>
-        <SectionHeader title='Access (Halt Pass)' />
-        <p className='text-sm text-foreground/60'>Loading…</p>
-      </div>
-    )
+    return <LoadingHeader title='Access (Halt Gate)' />
   }
 
   return (
@@ -128,21 +124,16 @@ export const AccessContent = () => {
       <SectionHeader
         title='Access (Halt Gate)'
         description='PIN codes that grant access to the store. Disable this to bypass the gate and route visitors directly to /lobby.'>
-        <Button
-          size='sm'
-          color='primary'
+        <PrimaryButton
           onPress={handleSave}
-          className='bg-dark-table dark:bg-white dark:text-dark-table'
-          isLoading={isSaving}>
-          Save Changes
-        </Button>
+          label='Save Changes'
+          disabled={isSaving}
+          icon={isSaving ? 'spinners-ring' : 'save'}
+        />
       </SectionHeader>
 
       <div className='max-w-lg rounded-2xl bg-default-100/50 px-4 py-3 dark:bg-default-100/30'>
-        <Switch
-          isSelected={isEnabled}
-          onValueChange={setIsEnabled}
-          size='sm'>
+        <Switch isSelected={isEnabled} onValueChange={setIsEnabled} size='sm'>
           Require access code
         </Switch>
       </div>

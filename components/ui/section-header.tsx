@@ -22,7 +22,7 @@ export const SectionHeader = ({
           className={cn('flex items-center justify-between w-full', {
             ' space-x-4': children,
           })}>
-          <div className=' text-lg font-clash md:font-medium w-full'>
+          <div className='text-lg md:text-xl font-clash md:font-medium w-full'>
             {title}
           </div>
           <ViewTransition>

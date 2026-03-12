@@ -18,7 +18,14 @@ import {cn} from '@/lib/utils'
 import {Avatar, Select, SelectItem} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
-import {startTransition, useCallback, useEffect, useRef, useState} from 'react'
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 const ASSISTANT_VALUE = '__assistant__'
 
@@ -34,29 +41,27 @@ export function ChatWindow({
   conversationFid = null,
 }: ChatDockWindowProps) {
   const {user} = useAuthCtx()
-  const assistantChat = useAssistantChat()
-  const [assistantDraft, setAssistantDraft] = useState('')
   const [selectedConversationFid, setSelectedConversationFid] = useState<
     string | null | undefined
   >(undefined)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
   const activeConversationFid =
     selectedConversationFid === undefined
       ? conversationFid
       : selectedConversationFid
   const isConversationMode = Boolean(activeConversationFid)
+  const assistantChat = useAssistantChat({
+    enabled: open && !isConversationMode,
+  })
+  const [assistantDraft, setAssistantDraft] = useState('')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
   const markAsRead = useMutation(api.messages.m.markAsRead)
   const conversations = useQuery(
     api.messages.q.getConversations,
-    user?.uid ? {fid: user.uid} : 'skip',
-  )
-  const _otherUser = useQuery(
-    api.users.q.getByFid,
-    activeConversationFid ? {fid: activeConversationFid} : 'skip',
+    open && user?.uid ? {fid: user.uid} : 'skip',
   )
   const conversationMessages = useQuery(
     api.messages.q.getMessages,
-    activeConversationFid && user?.uid
+    open && activeConversationFid && user?.uid
       ? {
           currentUserId: user.uid,
           otherUserId: activeConversationFid,
@@ -65,26 +70,31 @@ export function ChatWindow({
   )
   const lastConversationMessageId =
     conversationMessages?.[conversationMessages.length - 1]?._id
-  const conversationItems = (conversations ?? []).flatMap((conversation) => {
-    const fid = conversation?.otherUser?.proId ?? conversation?.otherUser?.fid
-    if (!conversation || !fid) return []
+  const conversationItems = useMemo(
+    () =>
+      (conversations ?? []).flatMap((conversation) => {
+        const fid =
+          conversation?.otherUser?.proId ?? conversation?.otherUser?.fid
+        if (!conversation || !fid) return []
 
-    return [
-      {
-        id: conversation.otherUserId,
-        fid,
-        displayName:
-          conversation?.otherUser?.displayName ??
-          conversation?.otherUser?.name ??
-          conversation?.otherUser?.email?.split('@').shift() ??
-          'User',
-        avatarUrl:
-          conversation?.otherUser?.avatarUrl ??
-          conversation?.otherUser?.photoUrl ??
-          null,
-      },
-    ]
-  })
+        return [
+          {
+            id: conversation.otherUserId,
+            fid,
+            displayName:
+              conversation?.otherUser?.displayName ??
+              conversation?.otherUser?.name ??
+              conversation?.otherUser?.email?.split('@').shift() ??
+              'User',
+            avatarUrl:
+              conversation?.otherUser?.avatarUrl ??
+              conversation?.otherUser?.photoUrl ??
+              null,
+          },
+        ]
+      }),
+    [conversations],
+  )
 
   const handleWindowOpenChange = useCallback(
     (nextOpen: boolean) => {
@@ -180,14 +190,21 @@ export function ChatWindow({
     ? (activeConversationFid ?? '')
     : ASSISTANT_VALUE
 
-  const selectItems = [
-    {key: ASSISTANT_VALUE, label: ASSISTANT_NAME, avatarUrl: ASSISTANT_AVATAR},
-    ...conversationItems.map((c) => ({
-      key: c.fid,
-      label: c.displayName,
-      avatarUrl: c.avatarUrl,
-    })),
-  ]
+  const selectItems = useMemo(
+    () => [
+      {
+        key: ASSISTANT_VALUE,
+        label: ASSISTANT_NAME,
+        avatarUrl: ASSISTANT_AVATAR,
+      },
+      ...conversationItems.map((conversation) => ({
+        key: conversation.fid,
+        label: conversation.displayName,
+        avatarUrl: conversation.avatarUrl,
+      })),
+    ],
+    [conversationItems],
+  )
 
   return (
     <DialogWindow
@@ -198,7 +215,7 @@ export function ChatWindow({
         // From navbar bottom (h-14 lg:h-16 xl:h-20 2xl:h-24) to above chat dock (5.25rem / 8rem)
         'top-14 lg:top-16 xl:top-20 2xl:top-24',
         'bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] md:right-8 md:bottom-[calc(env(safe-area-inset-bottom)+8rem)]',
-        'min-h-48',
+        'min-h-48 max-h-[602.01px]',
         // height = viewport minus top (navbar) minus bottom (above dock)
         'h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-5.25rem)] max-h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-5.25rem)]',
         'md:h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-8rem)] md:max-h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-8rem)]',

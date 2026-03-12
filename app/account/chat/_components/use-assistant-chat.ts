@@ -14,20 +14,31 @@ interface UseAssistantChatReturn {
   clearMessages: () => void
 }
 
-export function useAssistantChat(): UseAssistantChatReturn {
+interface UseAssistantChatOptions {
+  enabled?: boolean
+}
+
+export function useAssistantChat({
+  enabled = true,
+}: UseAssistantChatOptions = {}): UseAssistantChatReturn {
   const {user} = useAuthCtx()
   const [isLoading, setIsLoading] = useState(false)
   const [streamingContent, setStreamingContent] = useState<string | null>(null)
   const streamingIdRef = useRef<string | null>(null)
 
   // Get assistant profile to check if active (assistant exists and is active)
-  const assistantProfile = useQuery(api.assistant.q.getAssistantProfile)
-  const isActive = (assistantProfile?.isActive ?? true) && assistantProfile != null
+  const assistantProfile = useQuery(
+    api.assistant.q.getAssistantProfile,
+    enabled ? {} : 'skip',
+  )
+  const isActive = enabled
+    ? (assistantProfile?.isActive ?? true) && assistantProfile != null
+    : true
 
   // Get messages from Convex
   const convexMessages = useQuery(
     api.assistant.q.getAssistantMessages,
-    user?.uid ? {fid: user.uid} : 'skip',
+    enabled && user?.uid ? {fid: user.uid} : 'skip',
   )
 
   // Mutations
@@ -73,7 +84,7 @@ export function useAssistantChat(): UseAssistantChatReturn {
 
   const sendMessage = useCallback(
     async (content: string) => {
-      if (!content.trim() || isLoading || !user?.uid) return
+      if (!enabled || !content.trim() || isLoading || !user?.uid) return
 
       setIsLoading(true)
 
@@ -206,17 +217,18 @@ export function useAssistantChat(): UseAssistantChatReturn {
       sendAssistantMessage,
       isActive,
       assistantProfile?.bio,
+      enabled,
     ],
   )
 
   const clearMessages = useCallback(async () => {
-    if (!user?.uid) return
+    if (!enabled || !user?.uid) return
     try {
       await clearAssistantMessages({fid: user.uid})
     } catch (error) {
       console.error('Error clearing messages:', error)
     }
-  }, [user?.uid, clearAssistantMessages])
+  }, [user?.uid, clearAssistantMessages, enabled])
 
   return {
     messages,
