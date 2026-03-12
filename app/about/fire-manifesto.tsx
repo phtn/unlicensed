@@ -55,7 +55,7 @@ export const FireManifesto = () => {
                 {MANIFESTO_PARAGRAPHS.map((paragraph, index) => (
                   <article
                     key={index}
-                    className='border border-foreground/0 bg-background/5 p-2 md:p-6'>
+                    className='border border-foreground/0 bg-background/0 p-2 md:p-6'>
                     <p className='max-w-4xl text-sm leading-6 text-white/82 sm:text-base sm:leading-7 md:text-lg md:leading-8 [&_strong]:font-semibold [&_strong]:text-white'>
                       {paragraph}
                     </p>

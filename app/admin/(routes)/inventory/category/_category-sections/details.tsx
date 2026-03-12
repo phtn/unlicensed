@@ -14,7 +14,7 @@ export const Details = ({form}: DetailsProps) => {
     <FormSection id='details' position='bottom'>
       <Header label='Additional Details' />
       <div className='grid gap-4'>
-        <div className='flex items-center space-x-4 w-full'>
+        <div className='grid w-full gap-4 lg:grid-cols-2'>
           <form.AppField name='description'>
             {(field) => {
               const descValue = (field.state.value as string) ?? ''

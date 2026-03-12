@@ -64,7 +64,7 @@ export const AllBrands = () => {
   return (
     <section className='px-4 sm:px-6 py-20 sm:py-24 lg:pb-32'>
       <div className='max-w-7xl mx-auto'>
-        <div className='mb-8 sm:mb-12'>
+        <div className='hidden mb-8 sm:mb-12'>
           <div className='space-y-1'>
             <h2 className='text-3xl font-clash font-semibold tracking-tight sm:text-5xl'>
               <span className='text-brand'>All</span> Brands

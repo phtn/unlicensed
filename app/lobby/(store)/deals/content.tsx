@@ -14,7 +14,7 @@ import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {useQuery} from 'convex/react'
 import {useSearchParams} from 'next/navigation'
-import {useCallback, useEffect, useMemo} from 'react'
+import {useCallback, useEffect, useMemo, useSyncExternalStore} from 'react'
 import {BundleBuilder} from './components/bundle-builder'
 
 interface DealsContentProps {
@@ -30,6 +30,23 @@ function getDefaultVariationByBundle(
     if (config.variations[idx]) out[id] = idx
   }
   return out
+}
+
+function isLocalhostHostname(hostname: string): boolean {
+  return (
+    hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]'
+  )
+}
+
+function subscribeToClientMount(callback: () => void): () => void {
+  if (typeof window === 'undefined') return () => {}
+  callback()
+  return () => {}
+}
+
+function getIsLocalhostSnapshot(): boolean {
+  if (typeof window === 'undefined') return false
+  return isLocalhostHostname(window.location.hostname)
 }
 
 function ControlledBundleBuilder({
@@ -88,7 +105,12 @@ function ControlledBundleBuilder({
 
 export function DealsContent({initialProductsByCategory}: DealsContentProps) {
   const searchParams = useSearchParams()
-  const debug = searchParams.get('debug') === '1'
+  const isLocalhost = useSyncExternalStore(
+    subscribeToClientMount,
+    getIsLocalhostSnapshot,
+    () => false,
+  )
+  const debug = searchParams.get('debug') === '1' || isLocalhost
   const {configs, configsList, isLoading: dealsLoading} = useDealConfigs()
   const dealIds = useMemo(() => configsList.map((c) => c.id), [configsList])
   const defaultVariationByBundle = useMemo(

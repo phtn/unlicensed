@@ -195,7 +195,7 @@ export const CategoryForm = ({
   )
 
   return (
-    <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 md:p-4 lg:p-0 items-start md:h-[calc(100vh-6rem)] h-[calc(100lvh)]'>
+    <div className='grid grid-cols-1 items-start gap-8 h-[calc(100lvh-6rem)] md:h-[calc(100vh-6rem)] md:p-4 lg:grid-cols-12 lg:p-0'>
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block cols-span-3 2xl:col-span-2 col-span-3 h-full overflow-y-auto space-y-6'>
         <nav className='flex flex-col pl-2 gap-1'>
@@ -283,7 +283,7 @@ export const CategoryForm = ({
       {/* Main Content Area */}
       <main
         ref={mainScrollRef}
-        className='col-span-1 lg:col-span-8 xl:col-span-9 2xl:col-span-10 h-full overflow-y-auto space-y-0 pb-24 scroll-smooth px-1 relative md:pt-2'>
+        className='relative col-span-1 h-full overflow-y-auto space-y-0 scroll-smooth px-1 pb-28 md:pt-2 lg:col-span-8 lg:pb-0 xl:col-span-9 2xl:col-span-10'>
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -291,30 +291,67 @@ export const CategoryForm = ({
             void form.handleSubmit()
           }}
           className='space-y-0 pt-2 relative'>
-          <div id='basic-info' className=''>
+          <div className='mb-4 rounded-2xl border border-dark-gray/10 bg-slate-500/5 p-4 dark:border-zinc-700/50 dark:bg-zinc-800/40 lg:hidden'>
+            <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+              <div className='min-w-0 space-y-1'>
+                <h1 className='text-lg font-okxs font-semibold tracking-tight text-dark-gray dark:text-foreground'>
+                  {isEditMode ? 'Edit Category' : 'Create New Category'}
+                </h1>
+                <p className='text-sm text-dark-gray/60 dark:text-light-gray/70'>
+                  Manage visibility, packaging, media, and category metadata.
+                </p>
+              </div>
+              <form.Field name='visible'>
+                {(field) => {
+                  const visible = (field.state.value as boolean) ?? false
+                  return (
+                    <div className='flex w-fit shrink-0 items-center gap-3 rounded-xl border border-dark-gray/10 bg-white/70 px-3 py-2 dark:border-zinc-700/50 dark:bg-zinc-900/60'>
+                      <span className='text-sm font-medium tracking-tight text-dark-gray dark:text-foreground'>
+                        Active
+                      </span>
+                      <Switch
+                        size='sm'
+                        isSelected={visible}
+                        onValueChange={(value) => field.handleChange(value)}
+                        onBlur={field.handleBlur}
+                        classNames={{
+                          wrapper: 'group-data-[selected=true]:bg-emerald-500',
+                        }}
+                      />
+                    </div>
+                  )
+                }}
+              </form.Field>
+            </div>
+          </div>
+
+          <div>
             <BasicInfo
               form={form as CategoryFormApi}
               fields={categoryFields.slice(0, 2)}
             />
           </div>
-          <div id='media' className=''>
+          <div>
             <Media form={form as CategoryFormApi} />
           </div>
 
-          <div id='packaging'>
+          <div>
             <Packaging form={form as CategoryFormApi} />
           </div>
 
-          <div id='attributes' className=''>
-            <Attributes form={form as CategoryFormApi} category={category ?? null} />
+          <div>
+            <Attributes
+              form={form as CategoryFormApi}
+              category={category ?? null}
+            />
           </div>
 
-          <div id='details'>
+          <div>
             <Details form={form as CategoryFormApi} />
           </div>
 
           {/* Mobile Actions */}
-          <div className='lg:hidden sticky bottom-4 z-20 p-4 bg-neutral-900/80 backdrop-blur-md border border-neutral-800 rounded-xl shadow-2xl'>
+          <div className='sticky bottom-0 z-20 mt-4 border border-neutral-800 bg-neutral-900/85 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl backdrop-blur-md lg:hidden rounded-t-xl'>
             <Button
               type='submit'
               color='success'
@@ -328,6 +365,18 @@ export const CategoryForm = ({
                   ? 'Update Category'
                   : 'Create Category'}
             </Button>
+            {status === 'success' && (
+              <p className='mt-2 text-sm text-center text-emerald-400'>
+                {isEditMode
+                  ? 'Category updated successfully!'
+                  : 'Category created successfully!'}
+              </p>
+            )}
+            {status === 'error' && errorMessage && (
+              <p className='mt-2 text-sm text-center text-rose-400'>
+                {errorMessage}
+              </p>
+            )}
           </div>
         </form>
       </main>

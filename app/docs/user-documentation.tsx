@@ -333,14 +333,14 @@ export const UserDocumentation = () => {
         <div className='grid gap-4 lg:grid-cols-5 lg:gap-6'>
           <div className='rounded-xs border border-foreground/10 bg-foreground/3 p-5 sm:p-6 md:p-8 lg:col-span-3'>
             <p className='font-clash text-xs uppercase tracking-[0.24em] text-foreground/55 sm:text-sm sm:tracking-[0.3em]'>
-              Docs Center
+              Help Center
             </p>
             <h2 className='mt-4 max-w-[12ch] font-bone text-3xl tracking-tight sm:max-w-[16ch] sm:text-5xl md:text-6xl'>
-              FAQs, how-tos, and buying rules in one place.
+              FAQ
             </h2>
             <p className='mt-4 max-w-md font-polysans text-sm leading-6 text-foreground/68 md:text-base'>
-              This is the user-facing reference layer for rewards, delivery,
-              payments, promotions, deals, and product quality standards.
+              Find answers about our rewards program, payment methods, and
+              deals, along with other common questions.
             </p>
           </div>
 
@@ -381,7 +381,7 @@ export const UserDocumentation = () => {
           </div>
         </div>
 
-        <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
+        <div className='hidden _grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
           {HOW_TO_GUIDES.map((guide) => (
             <article
               key={guide.title}
@@ -406,7 +406,7 @@ export const UserDocumentation = () => {
           ))}
         </div>
 
-        <div className='-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0'>
+        <div className='hidden -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0'>
           <div className='flex min-w-max gap-2 sm:min-w-0 sm:flex-wrap'>
             {DOC_SECTIONS.map((section) => (
               <a
@@ -439,7 +439,7 @@ export const UserDocumentation = () => {
                   aria-label={section.title}
                   title={
                     <div className='pr-6 text-left'>
-                      <p className='font-clash text-[11px] uppercase tracking-[0.22em] text-brand sm:text-xs sm:tracking-[0.28em]'>
+                      <p className='hidden font-clash text-[11px] uppercase tracking-[0.22em] text-brand sm:text-xs sm:tracking-[0.28em]'>
                         {section.eyebrow}
                       </p>
                       <div className='mt-3 flex flex-col gap-3 md:flex-row md:items-end md:justify-between'>
@@ -447,7 +447,7 @@ export const UserDocumentation = () => {
                           <h3 className='font-clash text-xl font-semibold sm:text-2xl md:text-3xl'>
                             {section.title}
                           </h3>
-                          <p className='mt-2 max-w-2xl text-sm leading-6 text-foreground/62'>
+                          <p className='hidden mt-2 max-w-2xl text-sm leading-6 text-foreground/62'>
                             {section.description}
                           </p>
                         </div>

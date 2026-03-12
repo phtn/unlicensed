@@ -27,7 +27,7 @@ export const BasicInfo = ({form, fields}: BasicInfoProps) => {
     <FormSection id='basic-info' position='top'>
       <Header label='Basic Information' />
       <div className='grid gap-6 w-full'>
-        <div className='flex w-full space-x-4'>
+        <div className='grid w-full gap-4 md:grid-cols-2'>
           {nameField && (
             <form.AppField name='name'>
               {(input) => (

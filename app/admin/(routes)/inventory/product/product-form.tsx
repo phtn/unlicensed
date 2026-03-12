@@ -358,7 +358,7 @@ export const ProductForm = ({
   }, [archiveProduct, onUpdated, productId])
 
   return (
-    <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 md:p-4 lg:p-0 items-start h-[calc(100vh-6rem)]'>
+    <div className='grid grid-cols-1 items-start gap-8 h-[calc(100lvh-6rem)] md:h-[calc(100vh-6rem)] md:p-4 lg:grid-cols-12 lg:p-0'>
       {/* Left Sidebar Navigation */}
       <aside className='hidden lg:block col-span-2 h-full overflow-y-auto pr-2 space-y-6'>
         <nav className='flex flex-col gap-1'>
@@ -424,7 +424,7 @@ export const ProductForm = ({
       {/* Main Content Area */}
       <main
         ref={mainScrollRef}
-        className='col-span-1 lg:col-span-10 h-full overflow-y-auto space-y-0 md:mb-24 scroll-smooth px-1 dark:bg-dark-table/40'>
+        className='col-span-1 h-full overflow-y-auto space-y-0 scroll-smooth px-1 pb-28 dark:bg-dark-table/40 lg:col-span-10 lg:pb-0'>
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -470,13 +470,13 @@ export const ProductForm = ({
           </div>
 
           {/* Mobile Actions */}
-          <div className='lg:hidden sticky z-200'>
+          <div className='sticky bottom-0 z-20 mt-4 rounded-t-xl border border-neutral-800 bg-neutral-900/85 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-md lg:hidden'>
             <Button
               size='lg'
               type='submit'
               radius='none'
               color='success'
-              className='w-full font-medium font-okxs h-14'
+              className='h-14 w-full font-medium font-okxs'
               isLoading={isSubmitting}>
               {isSubmitting
                 ? isEditMode
@@ -486,6 +486,18 @@ export const ProductForm = ({
                   ? 'Save Changes'
                   : 'Create Product'}
             </Button>
+            {status === 'success' && (
+              <p className='mt-2 text-sm text-center text-emerald-400'>
+                {isEditMode
+                  ? 'Product updated successfully!'
+                  : 'Product created successfully!'}
+              </p>
+            )}
+            {status === 'error' && errorMessage && (
+              <p className='mt-2 text-sm text-center text-rose-400'>
+                {errorMessage}
+              </p>
+            )}
           </div>
         </form>
       </main>

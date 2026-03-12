@@ -19,7 +19,7 @@ export const FormSection = ({
       radius='none'
       shadow='none'
       className={cn(
-        'dark:bg-zinc-600 p-4 border-x border-t border-gray-300 dark:border-origin',
+        'scroll-mt-4 border-x border-t border-gray-300 p-4 dark:border-origin dark:bg-zinc-600',
         {
           'rounded-t-2xl': position === 'top',
           'border-b rounded-b-2xl': position === 'bottom',

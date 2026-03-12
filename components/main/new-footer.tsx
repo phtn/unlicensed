@@ -25,7 +25,7 @@ export function NewFooter() {
           <Link
             href='/docs'
             className='text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white'>
-            FAQs
+            FAQ
           </Link>
           <Link
             href='/purchase-agreement'

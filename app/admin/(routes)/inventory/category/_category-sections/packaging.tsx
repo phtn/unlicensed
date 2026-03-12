@@ -39,8 +39,8 @@ export const Packaging = ({form}: PackagingProps) => {
   return (
     <FormSection id='packaging' position='middle'>
       <Header label='Packaging' />
-      <div className='grid grid-cols-1 sm:grid-cols-1 w-full'>
-        <div className='flex items-center space-x-4 w-full space-y-4'>
+      <div className='grid w-full grid-cols-1'>
+        <div className='grid w-full gap-4 lg:grid-cols-2'>
           <form.AppField name='unitsRaw'>
             {(field) => {
               const unitsValue = (field.state.value as string) ?? ''
@@ -191,7 +191,7 @@ export const Packaging = ({form}: PackagingProps) => {
                         </span>
                         :
                       </p>
-                      <div className='flex flex-wrap gap-1 md:gap-3 font-okxs font-semibold h-16'>
+                      <div className='flex flex-wrap gap-1 md:gap-3 font-okxs font-semibold min-h-16'>
                         {suggestions.map((suggestion) => {
                           const isSelected =
                             currentDenominations.includes(suggestion)

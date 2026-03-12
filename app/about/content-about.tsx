@@ -4,14 +4,13 @@ import {CtaSection} from '@/components/main/cta-section'
 import {NewFooter} from '@/components/main/new-footer'
 import {QuickLinks} from '../account/quick-links'
 import {FireManifesto} from './fire-manifesto'
-import {Principles} from './principles'
 
 const YOUTUBE_VIDEO_ID = 'pwuFTsvJL34'
 
 export const Content = () => {
   return (
     <main className='relative overflow-x-hidden bg-background pt-16 text-foreground md:pt-24'>
-      <Principles />
+      {/*<Principles />*/}
       <FireManifesto />
       <section className='px-4 pb-6 sm:px-6 md:pb-10'>
         <div className='mx-auto max-w-7xl overflow-hidden rounded-xs border border-foreground/10 bg-black'>

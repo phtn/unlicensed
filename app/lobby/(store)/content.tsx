@@ -65,9 +65,9 @@ export const Content = ({
           ))}
         </div>
       </MarkSection>
+      <AllBrands />
       <GridFour />
       <FireCollectionContent initialProducts={initialProducts} />
-      <AllBrands />
       <FireManifesto />
       <CtaSection />
       <DealsMini />
