@@ -10,31 +10,89 @@ import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useMemo} from 'react'
 
+interface StoreCollectionSection {
+  id: string
+  title: string
+  products: StoreProduct[]
+}
+
 export const FireCollectionContent = ({
-  initialProducts,
+  initialCollections,
 }: {
-  initialProducts: StoreProduct[]
+  initialCollections: StoreCollectionSection[]
 }) => {
-  const fireCollectionConfig = useQuery(api.admin.q.getFireCollectionConfig, {})
+  const fireCollections = useQuery(api.admin.q.getFireCollectionsConfig, {})
+  const enabledCollections = useMemo(
+    () => (fireCollections ?? []).filter((collection) => collection.enabled),
+    [fireCollections],
+  )
+  const configuredProductIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          enabledCollections.flatMap((collection) => collection.productIds),
+        ),
+      ),
+    [enabledCollections],
+  )
   const configuredProducts = useQuery(
     api.products.q.getProductsByIds,
-    fireCollectionConfig && fireCollectionConfig.productIds.length > 0
-      ? {productIds: fireCollectionConfig.productIds}
+    configuredProductIds.length > 0
+      ? {productIds: configuredProductIds}
       : 'skip',
   )
-  const products = useMemo(
-    () => configuredProducts?.map(adaptProduct) ?? initialProducts,
-    [configuredProducts, initialProducts],
-  )
+  const collections = useMemo(() => {
+    if (!fireCollections) {
+      return initialCollections
+    }
+
+    if (enabledCollections.length === 0) {
+      return []
+    }
+
+    if (configuredProductIds.length > 0 && configuredProducts === undefined) {
+      return initialCollections
+    }
+
+    const productsById = new Map(
+      (configuredProducts ?? []).map((product) => [
+        String(product._id),
+        adaptProduct(product),
+      ]),
+    )
+
+    return enabledCollections
+      .map((collection) => ({
+        id: collection.id,
+        title: collection.title,
+        products: collection.productIds
+          .map((productId) => productsById.get(productId))
+          .filter((product): product is StoreProduct => product != null),
+      }))
+      .filter((collection) => collection.products.length > 0)
+  }, [
+    configuredProducts,
+    configuredProductIds.length,
+    enabledCollections,
+    fireCollections,
+    initialCollections,
+  ])
 
   return (
     <div className='min-h-screen pt-16 sm:pt-20 md:pt-24 lg:pt-28 xl:pt-28 pb-16 sm:pb-20 lg:pb-24 px-4 sm:px-6 overflow-x-hidden bg-background'>
       {/* Hero Section - Asymmetric Layout */}
       <section className='relative'>
         <div className='max-w-7xl mx-auto'>
-
-          {/* Featured Brands - Large Showcase */}
-          <FireCollection products={products} />
+          <div className='flex flex-col gap-16'>
+            {collections.map((collection) => (
+              <FireCollection
+                key={collection.id}
+                id={collection.id}
+                title={collection.title}
+                products={collection.products}
+              />
+            ))}
+          </div>
         </div>
       </section>
 

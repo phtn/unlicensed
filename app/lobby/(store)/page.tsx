@@ -1,4 +1,8 @@
-import {fetchCategories, fetchProducts} from '@/lib/convexClient'
+import {
+  fetchCategories,
+  fetchFireCollections,
+  fetchProducts,
+} from '@/lib/convexClient'
 import {buildTypeFlag, delayFlag} from '@/lib/flags'
 import {all} from 'better-all'
 
@@ -13,9 +17,12 @@ export default async function StorefrontPage() {
     await new Promise((resolve) => setTimeout(resolve, delay))
   }
 
-  const {initialCategories, initialProducts} = await all({
+  const {initialCategories, initialCollections, initialProducts} = await all({
     async initialCategories() {
       return await fetchCategories()
+    },
+    async initialCollections() {
+      return await fetchFireCollections()
     },
     async initialProducts() {
       return await fetchProducts()
@@ -27,6 +34,7 @@ export default async function StorefrontPage() {
       delay={delay}
       buildType={buildType}
       initialCategories={initialCategories}
+      initialCollections={initialCollections}
       initialProducts={initialProducts}
     />
   )

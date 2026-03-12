@@ -287,7 +287,7 @@
 }
 
 :root.light {
-  --background: oklch(0.99 0 0);
+  --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   /*--foreground: oklch(0.243 0.027 220.39);*/
   --muted: rgba(255, 242, 233, 0.78);

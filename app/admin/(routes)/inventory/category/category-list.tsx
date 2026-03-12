@@ -1,11 +1,13 @@
 'use client'
 
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
+import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Card, Chip, Image} from '@heroui/react'
+import {useMutation} from 'convex/react'
 import {formatDistanceToNow} from 'date-fns'
 import Link from 'next/link'
 import {startTransition, useState} from 'react'
@@ -24,11 +26,51 @@ type CategoryStat = {
 }
 
 type CategoryFilter = 'active' | 'inactive'
+type CategoryId = CategoryListItem['_id']
 
 const countItems = (items?: unknown[]) => items?.length ?? 0
 
 const isCategoryActive = (category: CategoryListItem) =>
   category.visible !== false
+
+function moveItem<T>(items: T[], fromIndex: number, toIndex: number): T[] {
+  const reordered = [...items]
+  const [moved] = reordered.splice(fromIndex, 1)
+  reordered.splice(toIndex, 0, moved)
+  return reordered
+}
+
+function reorderFilteredCategories(
+  categories: CategoryListItem[],
+  visibleIds: Set<CategoryId>,
+  draggedId: CategoryId,
+  targetId: CategoryId,
+): CategoryListItem[] {
+  const filtered = categories.filter((category) => visibleIds.has(category._id))
+  const draggedIndex = filtered.findIndex(
+    (category) => category._id === draggedId,
+  )
+  const targetIndex = filtered.findIndex(
+    (category) => category._id === targetId,
+  )
+
+  if (
+    draggedIndex === -1 ||
+    targetIndex === -1 ||
+    draggedIndex === targetIndex
+  ) {
+    return categories
+  }
+
+  const reorderedFiltered = moveItem(filtered, draggedIndex, targetIndex)
+  let filteredIndex = 0
+
+  return categories.map((category) =>
+    visibleIds.has(category._id)
+      ? reorderedFiltered[filteredIndex++]
+      : category,
+  )
+}
 
 const buildStats = (category: CategoryListItem): CategoryStat[] => {
   // const merchandisingOptions =
@@ -75,9 +117,17 @@ const buildWarnings = (category: CategoryListItem) => {
 const CategoryCard = ({
   category,
   heroImageUrl,
+  isDragging = false,
+  isDropTarget = false,
+  onDragHandlePointerDown,
+  dragHandleDisabled = false,
 }: {
   category: CategoryListItem
   heroImageUrl: string | null
+  isDragging?: boolean
+  isDropTarget?: boolean
+  onDragHandlePointerDown?: VoidFunction
+  dragHandleDisabled?: boolean
 }) => {
   const categoryHref = category.slug
     ? `/admin/inventory/category?slug=${category.slug}`
@@ -93,7 +143,14 @@ const CategoryCard = ({
   return (
     <Card
       shadow='none'
-      className='h-full overflow-hidden border border-black/10 bg-white/80 hover:border-emerald-500/20 hover:bg-white dark:border-white/10 dark:bg-dark-table/45 dark:hover:border-emerald-400/30 dark:hover:bg-dark-table/60 transition-colors duration-300'>
+      className={cn(
+        'h-full overflow-hidden border border-black/10 bg-white/80 hover:border-emerald-500/20 hover:bg-white dark:border-white/10 dark:bg-dark-table/45 dark:hover:border-emerald-400/30 dark:hover:bg-dark-table/60 transition-all duration-300',
+        {
+          'scale-[0.985] opacity-60': isDragging,
+          'border-emerald-500/60 ring-2 ring-emerald-500/30 dark:border-emerald-400/60 dark:ring-emerald-400/20':
+            isDropTarget,
+        },
+      )}>
       <div className='relative h-36 overflow-hidden bg-linear-to-br from-emerald-500/15 via-sky-500/10 to-transparent'>
         {heroImageUrl ? (
           <Image
@@ -135,8 +192,20 @@ const CategoryCard = ({
           </Chip>
         </div>
 
-        <div className='absolute right-3 top-3 flex size-9 items-center justify-center rounded-full border border-black/10 bg-white/80 text-neutral-700 backdrop-blur dark:border-white/10 dark:bg-black/35 dark:text-white/85'>
-          <Icon name='circle-in' className='size-4' />
+        <div className='absolute right-4 top-4 z-100 flex items-center gap-2'>
+          <Button
+            size='sm'
+            isIconOnly
+            variant='light'
+            aria-label={`Drag to reorder ${category.name}`}
+            disabled={dragHandleDisabled}
+            onPointerDown={() => onDragHandlePointerDown?.()}
+            className='group/handle flex cursor-grab active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40 text-white'>
+            <Icon name='dots-fill' className='size-5' />
+          </Button>
+          {/*<div className='flex size-9 items-center justify-center rounded-full border border-black/10 bg-white/80 text-neutral-700 backdrop-blur dark:border-white/10 dark:bg-black/35 dark:text-white/85'>
+            <Icon name='circle-in' className='size-4' />
+          </div>*/}
         </div>
       </div>
 
@@ -257,6 +326,11 @@ const CategorySkeleton = () => {
 
 export const CategoryList = ({categories}: CurrentCategoriesProps) => {
   const [activeFilter, setActiveFilter] = useState<CategoryFilter>('active')
+  const [dragHandleId, setDragHandleId] = useState<CategoryId | null>(null)
+  const [draggedId, setDraggedId] = useState<CategoryId | null>(null)
+  const [dropTargetId, setDropTargetId] = useState<CategoryId | null>(null)
+  const [isReordering, setIsReordering] = useState(false)
+  const reorderCategories = useMutation(api.categories.m.reorder)
   const heroImages = categories?.map((category) => category.heroImage) ?? []
   const resolveUrl = useStorageUrls(heroImages)
 
@@ -286,6 +360,9 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
   const liveCategories = activeCategories.length
   const filteredCategories =
     activeFilter === 'active' ? activeCategories : inactiveCategories
+  const filteredCategoryIds = new Set(
+    filteredCategories.map((category) => category._id),
+  )
 
   const filterOptions: Array<{
     id: CategoryFilter
@@ -359,6 +436,10 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
         ))}
       </div>
 
+      <p className='text-xs text-neutral-500'>
+        Drag the handle on a card to change category order.
+      </p>
+
       {categories.length === 0 ? (
         <p className='mt-3 text-sm text-neutral-500'>
           No categories yet. Create one above to get started.
@@ -372,12 +453,74 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
           {filteredCategories.map((category) => (
             <li
               key={category._id}
+              draggable={
+                !isReordering &&
+                (dragHandleId === category._id || draggedId === category._id)
+              }
+              onDragStart={(event) => {
+                if (dragHandleId !== category._id) {
+                  event.preventDefault()
+                  return
+                }
+
+                event.dataTransfer.effectAllowed = 'move'
+                event.dataTransfer.setData('text/plain', String(category._id))
+                setDraggedId(category._id)
+                setDropTargetId(category._id)
+              }}
+              onDragOver={(event) => {
+                if (!draggedId || draggedId === category._id) return
+                event.preventDefault()
+                event.dataTransfer.dropEffect = 'move'
+                setDropTargetId(category._id)
+              }}
+              onDrop={(event) => {
+                event.preventDefault()
+                if (!categories || !draggedId || draggedId === category._id) {
+                  setDragHandleId(null)
+                  setDraggedId(null)
+                  setDropTargetId(null)
+                  return
+                }
+
+                const reordered = reorderFilteredCategories(
+                  categories,
+                  filteredCategoryIds,
+                  draggedId,
+                  category._id,
+                )
+
+                setIsReordering(true)
+                startTransition(() => {
+                  reorderCategories({
+                    orderedIds: reordered.map((item) => item._id),
+                  })
+                    .catch(() => {})
+                    .finally(() => {
+                      setIsReordering(false)
+                      setDragHandleId(null)
+                      setDraggedId(null)
+                      setDropTargetId(null)
+                    })
+                })
+              }}
+              onDragEnd={() => {
+                setDragHandleId(null)
+                setDraggedId(null)
+                setDropTargetId(null)
+              }}
               className='[content-visibility:auto] [contain-intrinsic-size:28rem]'>
               <CategoryCard
                 category={category}
                 heroImageUrl={
                   category.heroImage ? resolveUrl(category.heroImage) : null
                 }
+                isDragging={draggedId === category._id}
+                isDropTarget={
+                  dropTargetId === category._id && draggedId !== category._id
+                }
+                dragHandleDisabled={isReordering}
+                onDragHandlePointerDown={() => setDragHandleId(category._id)}
               />
             </li>
           ))}

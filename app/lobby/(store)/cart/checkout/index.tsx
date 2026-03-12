@@ -4,13 +4,21 @@ import {api} from '@/convex/_generated/api'
 import {AddressType} from '@/convex/users/d'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
-import {useCallback, useEffect, useRef, useState, useTransition} from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react'
+import {useCashBackRedemption} from '../hooks/use-cash-back-redemption'
 import {CheckoutModal} from './components/checkout-modal'
 import {DevelopmentModal} from './components/development-modal'
 import {OrderSummaryCard} from './components/order-summary-card'
 import {isCheckoutDevMode} from './config'
-import {useCashBackRedemption} from '../hooks/use-cash-back-redemption'
 import {useOrderForm} from './hooks/use-order-form'
+import {computeCashBackAmount} from './lib/rewards'
 import {CheckoutProps, FormData} from './types'
 
 const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
@@ -145,6 +153,17 @@ export function Checkout({
     ? Math.round(discountedSubtotalCents * (processingFeePercent / 100))
     : 0
   const totalWithProcessingFee = total + processingFeeCents
+  const effectiveComputedRewards = useMemo(() => {
+    if (!computedRewards) return computedRewards
+
+    return {
+      ...computedRewards,
+      cashBackAmount: computeCashBackAmount(
+        discountedSubtotalCents / 100,
+        computedRewards.cashBackPct,
+      ),
+    }
+  }, [computedRewards, discountedSubtotalCents])
 
   useEffect(() => {
     // Wait for both orderId and order to be loaded before redirecting
@@ -326,8 +345,8 @@ export function Checkout({
         processingFeeCents,
         discountCents: appliedCashBackCents,
         redeemedStoreCreditCents: appliedCashBackCents,
-        storeCreditCents: computedRewards
-          ? Math.round(computedRewards.cashBackAmount * 100)
+        storeCreditCents: effectiveComputedRewards
+          ? Math.round(effectiveComputedRewards.cashBackAmount * 100)
           : undefined,
       })
     })
@@ -339,7 +358,7 @@ export function Checkout({
     shipping,
     processingFeeCents,
     appliedCashBackCents,
-    computedRewards,
+    effectiveComputedRewards,
     onPlaceOrder,
   ])
 
@@ -373,7 +392,7 @@ export function Checkout({
         minimumOrderCents={minimumOrderCents}
         shippingFeeCents={shippingFeeCents}
         rewardsVariant={rewardsVariant}
-        computedRewards={computedRewards}
+        computedRewards={effectiveComputedRewards}
         rewardsConfig={rewardsConfig}
         topUpSuggestions={topUpSuggestions}
         onAddTopUp={onAddTopUp}

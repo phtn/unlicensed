@@ -375,6 +375,9 @@ export const UserDocumentation = () => {
                 FIRE25
               </p>
               <p className='mt-2 text-sm leading-6 text-foreground/62'>
+                Enter this code at checkout.
+              </p>
+              <p className='mt-2 text-sm leading-6 text-foreground/62'>
                 $25 off and free shipping for qualifying first orders.
               </p>
             </article>

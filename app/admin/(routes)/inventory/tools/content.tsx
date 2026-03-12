@@ -33,7 +33,7 @@ export const Content = () => {
   }, [])
 
   return (
-    <MainWrapper className='md:p-4'>
+    <MainWrapper className='md:p-4 h-[92lvh] overflow-y-scroll'>
       <Tabs.Root defaultValue='image-opt'>
         <Tabs.List className='relative z-0 flex gap-1 px-2'>
           {tabs.map((tab) => (

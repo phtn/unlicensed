@@ -8,19 +8,28 @@ import {MarkSection} from '@/components/store/marketing-card'
 import {useScrollY} from '@/hooks/use-scroll-y'
 import type {BuildType} from '@/lib/flags'
 import {AllBrands} from './brands/all-brands'
+import {FullCollection} from './collection'
 import {FireCollectionContent} from './collection/content'
 import {DealsMini} from './deals/components/deals-mini'
 import {GridFour} from './grid-four'
 
+interface StoreCollectionSection {
+  id: string
+  title: string
+  products: StoreProduct[]
+}
+
 interface StorefrontPageProps {
   initialCategories: StoreCategory[]
+  initialCollections: StoreCollectionSection[]
   initialProducts: StoreProduct[]
   delay?: number
   buildType?: BuildType
 }
 
 export const Content = ({
-  // initialCategories,
+  initialCategories,
+  initialCollections,
   initialProducts,
 }: StorefrontPageProps) => {
   const scrollY = useScrollY()
@@ -67,7 +76,11 @@ export const Content = ({
       </MarkSection>
       <AllBrands />
       <GridFour />
-      <FireCollectionContent initialProducts={initialProducts} />
+      <FullCollection
+        products={initialProducts}
+        categories={initialCategories}
+      />
+      <FireCollectionContent initialCollections={initialCollections} />
       <FireManifesto />
       <CtaSection />
       <DealsMini />

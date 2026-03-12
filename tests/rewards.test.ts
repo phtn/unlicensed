@@ -1,9 +1,20 @@
-import {describe, expect, test} from 'bun:test'
 import {
+  computeCashBackAmount,
   computeRewards,
   formatRewardsCurrency,
   REWARDS_CONFIG,
 } from '@/app/lobby/(store)/cart/checkout/lib/rewards'
+import {describe, expect, test} from 'bun:test'
+
+describe('computeCashBackAmount', () => {
+  test('calculates cash back from eligible subtotal', () => {
+    expect(computeCashBackAmount(90, 5)).toBe(4.5)
+  })
+
+  test('clamps negative subtotals to zero', () => {
+    expect(computeCashBackAmount(-10, 5)).toBe(0)
+  })
+})
 
 describe('computeRewards', () => {
   test('uses Bronze tier defaults for low subtotal repeat orders', () => {

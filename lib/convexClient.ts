@@ -286,34 +286,67 @@ const _fetchProductDetail = async (
 
 export const fetchProductDetail = cache(_fetchProductDetail)
 
-const _fetchFireCollectionProducts = async (): Promise<StoreProduct[]> => {
+interface RawFireCollectionConfig {
+  id: string
+  title: string
+  enabled: boolean
+  order: number
+  productIds: string[]
+}
+
+interface StoreCollectionSection {
+  id: string
+  title: string
+  products: StoreProduct[]
+}
+
+const _fetchFireCollections = async (): Promise<StoreCollectionSection[]> => {
   const client = getClient()
   if (!client) {
     return []
   }
 
   try {
-    const config = (await client.query(api.admin.q.getFireCollectionConfig, {})) as
-      | {productIds?: string[]}
-      | null
-    const productIds = Array.isArray(config?.productIds) ? config.productIds : []
+    const collections = (await client.query(
+      api.admin.q.getFireCollectionsConfig,
+      {},
+    )) as RawFireCollectionConfig[] | null
+    const enabledCollections = (collections ?? []).filter(
+      (collection) => collection.enabled && collection.productIds.length > 0,
+    )
 
-    if (productIds.length === 0) {
+    if (enabledCollections.length === 0) {
       return []
     }
 
+    const productIds = Array.from(
+      new Set(
+        enabledCollections.flatMap((collection) => collection.productIds),
+      ),
+    )
     const products = (await client.query(api.products.q.getProductsByIds, {
       productIds,
     })) as RawProduct[]
+    const productsById = new Map(
+      products.map((product) => [String(product._id), adaptProduct(product)]),
+    )
 
-    return products.map(adaptProduct)
+    return enabledCollections
+      .map((collection) => ({
+        id: collection.id,
+        title: collection.title,
+        products: collection.productIds
+          .map((productId) => productsById.get(productId))
+          .filter((product): product is StoreProduct => product != null),
+      }))
+      .filter((collection) => collection.products.length > 0)
   } catch (error) {
-    console.warn('Falling back to empty fire collection', error)
+    console.warn('Falling back to empty fire collections', error)
     return []
   }
 }
 
-export const fetchFireCollectionProducts = cache(_fetchFireCollectionProducts)
+export const fetchFireCollections = cache(_fetchFireCollections)
 
 // const MOCK_SUB_ITEMS_BY_SLUG: Partial<Record<string, NavMenuSubItem[]>> = {
 //   flower: [

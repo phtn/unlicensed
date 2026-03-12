@@ -1,9 +1,11 @@
 'use client'
 
 import ShimmerText from '@/components/expermtl/shimmer'
+import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {formatDecimalUSD} from '@/utils/currency'
 import {Card, CardBody} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useTheme} from 'next-themes'
@@ -194,7 +196,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
 
         {/* Tier row */}
         <div className='flex items-center justify-between overflow-hidden'>
-          <span className='text-[13px] opacity-80'>
+          <span className='text-base md:text-lg font-clash font-medium'>
             You&apos;re getting right now
           </span>
           <div className='flex items-center gap-1 md:gap-2 overflow-hidden'>
@@ -209,7 +211,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
         </div>
 
         {/* Current benefit */}
-        <div className='relative min-h-[62px] z-900 rounded-xl dark:bg-[#515155] bg-[#e2e3e7] p-4 overflow-hidden w-full'>
+        <div className='relative min-h-[62.01px] z-900 rounded-xl dark:bg-[#515155] bg-[#e2e3e7] p-4 overflow-hidden w-full'>
           <div className="absolute _md:max-w-500 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none" />
           <div className='flex items-center justify-around'>
             <div className='text-center'>
@@ -235,7 +237,15 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
 
             <div className='text-center'>
               <div className='text-lg font-bold text-foreground dark:text-foreground'>
-                {formatRewardsCurrency(r.cashBackAmount)}
+                <AnimatedNumber
+                  mass={0.1}
+                  stiffness={240}
+                  damping={180}
+                  precision={3}
+                  format={formatDecimalUSD}
+                  value={r.cashBackAmount}
+                />
+                {/*{formatRewardsCurrency(r.cashBackAmount)}*/}
               </div>
               <div className='text-[11px] text-muted-foreground'>
                 Store credit
@@ -266,7 +276,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
                 to unlock:
               </span>
 
-              <span className='text-sm w-fit'>
+              <span className='text-sm w-fit pr-2'>
                 <ShimmerText
                   surface='light'
                   variant='default'
@@ -288,14 +298,14 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
         )}
 
         {!r.nextTier && (
-          <div className='py-2 text-center text-sm font-polysans font-medium tracking-wide text-foreground dark:text-foreground'>
+          <div className='py-2 text-center text-sm md:text-lg font-clash font-medium tracking-wide text-foreground dark:text-foreground'>
             ✦ Maximum Rewards Unlocked ✦
           </div>
         )}
 
         {/* Bundle bonus hint */}
         {!r.isBundleBonusActive && (
-          <div className='flex items-center mt-2 space-x-3 rounded-lg border border-dashed border-foreground/20 bg-foreground/3 px-3 py-2 text-xs sm:text-sm text-muted-foreground'>
+          <div className='flex items-center mt-0 space-x-3 rounded-lg border border-dashed border-foreground/20 bg-foreground/3 px-3 py-2 text-xs sm:text-sm text-muted-foreground'>
             <Icon
               name='lightbulb-bold'
               className='size-5 dark:text-yellow-200'

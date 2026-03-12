@@ -117,7 +117,7 @@ const ProductCardComponent = ({
         <div className='flex flex-col'>
           <div className='flex items-center justify-between gap-2 p-2 h-16'>
             <div className='flex-1 min-w-0'>
-              <h3 className='text-sm md:text-base font-okxs truncate capitalize leading-5'>
+              <h3 className='text-sm sm:text-base md:text-lg font-okxs truncate capitalize leading-5'>
                 {product.name}
               </h3>
               <div className='flex items-center whitespace-nowrap'>

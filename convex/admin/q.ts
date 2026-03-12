@@ -1,6 +1,7 @@
 import {v} from 'convex/values'
 import {query} from '../_generated/server'
 import type {AdminSettings} from './d'
+import {normalizeFireCollectionsValue} from './fireCollections'
 import {
   DEFAULT_PRODUCT_TIERS_AS_ARRAY,
   distributeFlatTiers,
@@ -308,19 +309,23 @@ export const getFireCollectionConfig = query({
       .withIndex('by_identifier', (q) => q.eq('identifier', 'fireCollection'))
       .unique()
 
-    const rawProductIds =
-      setting?.value &&
-      typeof setting.value === 'object' &&
-      'productIds' in setting.value &&
-      Array.isArray(setting.value.productIds)
-        ? setting.value.productIds
-        : []
+    const collections = normalizeFireCollectionsValue(setting?.value)
+    const primaryCollection =
+      collections.find((collection) => collection.enabled) ?? collections[0]
 
-    const productIds = rawProductIds.filter(
-      (value): value is string => typeof value === 'string' && value.length > 0,
-    )
+    return {productIds: primaryCollection?.productIds ?? []}
+  },
+})
 
-    return {productIds}
+export const getFireCollectionsConfig = query({
+  args: {},
+  handler: async ({db}) => {
+    const setting = await db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'fireCollection'))
+      .unique()
+
+    return normalizeFireCollectionsValue(setting?.value)
   },
 })
 

@@ -51,6 +51,14 @@ export interface ComputedRewards {
   isFirstOrder: boolean
 }
 
+export function computeCashBackAmount(
+  subtotalDollars: number,
+  cashBackPct: number,
+): number {
+  const eligibleSubtotalDollars = Math.max(0, subtotalDollars)
+  return (eligibleSubtotalDollars * cashBackPct) / 100
+}
+
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 export const REWARDS_CONFIG: RewardsConfig = {
@@ -123,7 +131,7 @@ export function computeRewards(
   const cashBackPct =
     currentTier.cashBackPct +
     (isBundleBonusActive ? config.bundleBonus.bonusPct : 0)
-  const cashBackAmount = (subtotalDollars * cashBackPct) / 100
+  const cashBackAmount = computeCashBackAmount(subtotalDollars, cashBackPct)
 
   let shippingCost = currentTier.shippingCost
   if (isFirstOrder && subtotalDollars >= config.freeShippingFirstOrder)
@@ -164,5 +172,7 @@ export function formatRewardsCurrency(dollars: number): string {
   return dollars.toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   })
 }

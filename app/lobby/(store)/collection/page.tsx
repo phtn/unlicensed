@@ -1,10 +1,10 @@
-import {fetchFireCollectionProducts} from '@/lib/convexClient'
+import {fetchFireCollections} from '@/lib/convexClient'
 import {Content} from './content'
 
 const Page = async () => {
-  const initialProducts = await fetchFireCollectionProducts()
+  const initialCollections = await fetchFireCollections()
 
-  return <Content initialProducts={initialProducts} />
+  return <Content initialCollections={initialCollections} />
 }
 
 export default Page

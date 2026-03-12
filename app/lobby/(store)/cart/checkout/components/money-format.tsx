@@ -1,16 +1,21 @@
 import {AnimatedNumber} from '@/components/ui/animated-number'
+import {formatDecimalUSD} from '@/utils/currency'
 
-export const MoneyFormat = ({value}: {value: number}) => {
+interface MoneyFormatProps {
+  value: number
+  precision?: number
+}
+
+export const MoneyFormat = ({value, precision = 1}: MoneyFormatProps) => {
   return (
     <span className='font-okxs font-medium'>
-      $
       <AnimatedNumber
         value={value}
-        format={(v) => v.toFixed(2)}
-        precision={1}
-        stiffness={160}
-        mass={0.2}
+        mass={0.1}
         damping={180}
+        stiffness={240}
+        precision={precision}
+        format={formatDecimalUSD}
       />
     </span>
   )

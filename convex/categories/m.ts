@@ -44,9 +44,16 @@ export const create = mutation({
     const tiers = normalizeAttributeEntries(args.tiers)
     const bases = normalizeAttributeEntries(args.bases)
     const brands = normalizeAttributeEntries(args.brands)
+    const categories = await ctx.db.query('categories').collect()
+    const nextOrder =
+      categories.reduce(
+        (maxOrder, category) => Math.max(maxOrder, category.order ?? -1),
+        -1,
+      ) + 1
 
     const categoryId = await ctx.db.insert('categories', {
       ...args,
+      order: args.order ?? nextOrder,
       slug,
       benefits,
       productTypes: productTypes.length > 0 ? productTypes : undefined,
@@ -140,5 +147,18 @@ export const updateTiers = mutation({
       tiers: normalized.length > 0 ? normalized : undefined,
     })
     return categoryId
+  },
+})
+
+export const reorder = mutation({
+  args: {
+    orderedIds: v.array(v.id('categories')),
+  },
+  handler: async (ctx, {orderedIds}) => {
+    for (let index = 0; index < orderedIds.length; index++) {
+      await ctx.db.patch(orderedIds[index], {order: index})
+    }
+
+    return {success: true}
   },
 })

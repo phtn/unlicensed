@@ -37,7 +37,7 @@ const MANIFESTO_PARAGRAPHS = [
 
 export const FireManifesto = () => {
   return (
-    <section className='px-4 pb-10 sm:px-6 md:pb-14'>
+    <section className='px-4 pb-0 sm:px-6'>
       <div className='mx-auto max-w-7xl'>
         <div className='relative overflow-hidden rounded-xs border border-r-0 border-foreground/10 bg-linear-to-r from-dark-table via-brand/30 to-black px-1 py-1 text-white'>
           <div className='rounded-sm bg-black/75 px-4 py-6 backdrop-blur-md sm:px-6 sm:py-8 md:px-8 md:py-10'>
@@ -71,7 +71,7 @@ export const FireManifesto = () => {
             prefetch
             radius='none'
             href={'/lobby/categories'}
-            className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand rounded-xs dark:hover:text-white bg-brand hover:text-white text-white font-clash font-medium px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-base md:text-lg lg:text-xl md:py-4!'>
+            className='opacity-100 hover:bg-brand rounded-xs bg-brand text-white font-clash font-medium px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-base md:text-lg lg:text-xl md:py-4!'>
             <span className='drop-shadow-xs'>Shop Now</span>
           </Button>
         </div>

@@ -42,22 +42,22 @@ export const brands: IEnhancedBrand[] = [
     featured: true,
     productCount: 2,
   },
-  // {
-  //   name: 'Jungle Boys',
-  //   slug: 'jungle-boys',
-  //   icon: '/svg/jungle-boys.svg',
-  //   description: 'Cultivated excellence from seed to harvest',
-  //   featured: false,
-  //   productCount: 1,
-  // },
-  // {
-  //   name: 'Heirbloom',
-  //   slug: 'heirbloom',
-  //   icon: '/svg/heirbloom.svg',
-  //   description: 'Legacy genetics, modern innovation',
-  //   featured: false,
-  //   productCount: 0,
-  // },
+  {
+    name: 'Jungle Boys',
+    slug: 'jungle-boys',
+    icon: 'cbx',
+    description: 'Cultivated excellence from seed to harvest',
+    featured: false,
+    productCount: 1,
+  },
+  {
+    name: 'Heirbloom',
+    slug: 'heirbloom',
+    icon: 'wtrees',
+    description: 'Legacy genetics, modern innovation',
+    featured: false,
+    productCount: 0,
+  },
 ]
 
 export const AllBrands = () => {

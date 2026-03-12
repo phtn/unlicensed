@@ -32,6 +32,18 @@ export const paymentGatewayConfigsSchema = v.object({
   defaultGateway: v.optional(gatewayIdValidator),
 })
 
+export const fireCollectionEntrySchema = v.object({
+  id: v.string(),
+  title: v.string(),
+  enabled: v.boolean(),
+  order: v.number(),
+  productIds: v.array(v.string()),
+})
+
+export const fireCollectionsSettingsSchema = v.object({
+  collections: v.array(fireCollectionEntrySchema),
+})
+
 export const adminSettingsSchema = v.object({
   id: v.optional(v.string()),
   label: v.optional(v.string()),
@@ -47,3 +59,4 @@ export const adminSettingsSchema = v.object({
 export type StatConfig = Infer<typeof statConfigSchema>
 export type PaygateSettings = Infer<typeof paygateSettingsSchema>
 export type AdminSettings = Infer<typeof adminSettingsSchema>
+export type FireCollectionEntry = Infer<typeof fireCollectionEntrySchema>

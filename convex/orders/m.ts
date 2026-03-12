@@ -544,9 +544,6 @@ export const createOrder = mutation({
       (isBundleBonusActive
         ? (bundleBonus?.bonusPct ?? DEFAULT_BUNDLE_BONUS.bonusPct)
         : 0)
-    const storeCreditCents = Math.round(
-      ((subtotalDollars * cashBackPct) / 100) * 100,
-    )
     const freeShippingFirstOrder =
       rewardsConfig && typeof rewardsConfig.freeShippingFirstOrder === 'number'
         ? rewardsConfig.freeShippingFirstOrder
@@ -606,6 +603,9 @@ export const createOrder = mutation({
         ? cardsProcessingFeeConfig.percent
         : 0
     const discountedSubtotalCents = Math.max(0, subtotalCents - discountCents)
+    const storeCreditCents = Math.round(
+      (((discountedSubtotalCents / 100) * cashBackPct) / 100) * 100,
+    )
     const processingFeeCents =
       isProcessingFeeEnabled &&
       (args.paymentMethod === 'crypto_transfer' ||

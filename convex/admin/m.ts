@@ -1,4 +1,5 @@
 import {v} from 'convex/values'
+import {slugify} from '../../lib/slug'
 import type {MutationCtx} from '../_generated/server'
 import {mutation} from '../_generated/server'
 import {safeGet} from '../utils/id_validation'
@@ -8,6 +9,10 @@ import {
   StatConfig,
   statConfigSchema,
 } from './d'
+import {
+  normalizeFireCollectionProductIds,
+  normalizeFireCollectionsValue,
+} from './fireCollections'
 import {DEFAULT_PRODUCT_TIERS_AS_ARRAY} from './productTiersDefaults'
 
 const DEFAULT_STAT_CONFIGS: Array<StatConfig> = [
@@ -532,15 +537,26 @@ export const updateFireCollectionProducts = mutation({
       .unique()
 
     const now = Date.now()
-    const normalizedProductIds = Array.from(
-      new Set(
-        productIds
-          .map((productId) => productId.trim())
-          .filter((productId) => productId.length > 0),
-      ),
-    )
+    const collections = normalizeFireCollectionsValue(setting?.value)
+    const normalizedProductIds = normalizeFireCollectionProductIds(productIds)
+    const nextCollections =
+      collections.length > 0
+        ? collections.map((collection, index) =>
+            index === 0
+              ? {...collection, productIds: normalizedProductIds}
+              : collection,
+          )
+        : [
+            {
+              id: 'fire-collection',
+              title: 'Fire Collection',
+              enabled: true,
+              order: 0,
+              productIds: normalizedProductIds,
+            },
+          ]
 
-    const value = {productIds: normalizedProductIds}
+    const value = {collections: nextCollections}
 
     if (!setting) {
       await ctx.db.insert('adminSettings', {
@@ -557,6 +573,142 @@ export const updateFireCollectionProducts = mutation({
     await ctx.db.patch(setting._id, {
       value,
       updatedAt: now,
+      updatedBy: uid,
+    })
+
+    return {success: true}
+  },
+})
+
+export const createFireCollection = mutation({
+  args: {
+    title: v.string(),
+    uid: v.optional(v.string()),
+  },
+  handler: async (ctx, {title, uid}) => {
+    const setting = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'fireCollection'))
+      .unique()
+
+    const collections = normalizeFireCollectionsValue(setting?.value)
+    const trimmedTitle = title.trim() || `Collection ${collections.length + 1}`
+    const baseId =
+      slugify(trimmedTitle) || `collection-${collections.length + 1}`
+    const existingIds = new Set(collections.map((collection) => collection.id))
+    let collectionId = baseId
+    let suffix = 2
+    while (existingIds.has(collectionId)) {
+      collectionId = `${baseId}-${suffix++}`
+    }
+
+    const nextCollections = [
+      ...collections,
+      {
+        id: collectionId,
+        title: trimmedTitle,
+        enabled: true,
+        order: collections.length,
+        productIds: [],
+      },
+    ]
+
+    const now = Date.now()
+    const value = {collections: nextCollections}
+
+    if (!setting) {
+      await ctx.db.insert('adminSettings', {
+        identifier: 'fireCollection',
+        value,
+        updatedAt: now,
+        createdAt: now,
+        createdBy: uid,
+      })
+    } else {
+      await ctx.db.patch(setting._id, {
+        value,
+        updatedAt: now,
+        updatedBy: uid,
+      })
+    }
+
+    return {success: true, collectionId}
+  },
+})
+
+export const updateFireCollection = mutation({
+  args: {
+    collectionId: v.string(),
+    patch: v.object({
+      title: v.optional(v.string()),
+      enabled: v.optional(v.boolean()),
+      productIds: v.optional(v.array(v.string())),
+    }),
+    uid: v.optional(v.string()),
+  },
+  handler: async (ctx, {collectionId, patch, uid}) => {
+    const setting = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'fireCollection'))
+      .unique()
+
+    const collections = normalizeFireCollectionsValue(setting?.value)
+    const collectionIndex = collections.findIndex(
+      (collection) => collection.id === collectionId,
+    )
+
+    if (collectionIndex === -1) {
+      throw new Error(`Fire collection "${collectionId}" not found`)
+    }
+
+    const nextCollections = collections.map((collection) => {
+      if (collection.id !== collectionId) return collection
+
+      return {
+        ...collection,
+        ...(patch.title !== undefined
+          ? {title: patch.title.trim() || collection.title}
+          : {}),
+        ...(patch.enabled !== undefined ? {enabled: patch.enabled} : {}),
+        ...(patch.productIds !== undefined
+          ? {productIds: normalizeFireCollectionProductIds(patch.productIds)}
+          : {}),
+      }
+    })
+
+    await ctx.db.patch(setting!._id, {
+      value: {collections: nextCollections},
+      updatedAt: Date.now(),
+      updatedBy: uid,
+    })
+
+    return {success: true}
+  },
+})
+
+export const deleteFireCollection = mutation({
+  args: {
+    collectionId: v.string(),
+    uid: v.optional(v.string()),
+  },
+  handler: async (ctx, {collectionId, uid}) => {
+    const setting = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'fireCollection'))
+      .unique()
+
+    if (!setting) {
+      return {success: true}
+    }
+
+    const collections = normalizeFireCollectionsValue(setting.value)
+    const nextCollections = collections
+      .filter((collection) => collection.id !== collectionId)
+      .map((collection, index) => ({...collection, order: index}))
+
+    await ctx.db.patch(setting._id, {
+      value: {collections: nextCollections},
+      updatedAt: Date.now(),
       updatedBy: uid,
     })
 

@@ -1,6 +1,16 @@
 import {v} from 'convex/values'
 import {query} from '../_generated/server'
 
+function compareCategoriesByOrderThenName(
+  a: {name: string; order?: number},
+  b: {name: string; order?: number},
+): number {
+  const orderA = a.order ?? Number.MAX_SAFE_INTEGER
+  const orderB = b.order ?? Number.MAX_SAFE_INTEGER
+  if (orderA !== orderB) return orderA - orderB
+  return a.name.localeCompare(b.name)
+}
+
 export const listCategories = query({
   args: {},
   handler: async (ctx) => {
@@ -8,7 +18,7 @@ export const listCategories = query({
       .query('categories')
       .filter((f) => f.neq(f.field('visible'), false))
       .collect()
-    return categories.sort((a, b) => a.name.localeCompare(b.name))
+    return categories.sort(compareCategoriesByOrderThenName)
   },
 })
 
@@ -24,7 +34,9 @@ export const listCategoriesForAdmin = query({
           ? (
               await ctx.db
                 .query('products')
-                .withIndex('by_category', (q) => q.eq('categorySlug', categorySlug))
+                .withIndex('by_category', (q) =>
+                  q.eq('categorySlug', categorySlug),
+                )
                 .collect()
             ).filter((product) => product.archived !== true).length
           : 0
@@ -36,7 +48,7 @@ export const listCategoriesForAdmin = query({
       }),
     )
 
-    return categoriesWithStats.sort((a, b) => a.name.localeCompare(b.name))
+    return categoriesWithStats.sort(compareCategoriesByOrderThenName)
   },
 })
 

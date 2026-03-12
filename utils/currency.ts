@@ -24,3 +24,13 @@ export const currencyConverter = (amount: string | null) => {
   }
   return undefined
 }
+
+/** Format dollars for display (e.g. $12.99) */
+export function formatDecimalUSD(dollars: number): string {
+  return dollars.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}

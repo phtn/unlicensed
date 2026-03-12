@@ -10,6 +10,7 @@ export type AttributeEntry = Infer<typeof attributeEntrySchema>
 
 export const categorySchema = {
   name: v.string(),
+  order: v.optional(v.number()),
   slug: v.optional(v.string()),
   description: v.optional(v.string()),
   heroImage: v.optional(v.id('_storage')),
