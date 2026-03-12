@@ -27,6 +27,7 @@ export type ResendRequest = z.infer<typeof resendRequestSchema>
 export const resendApiSuccessResponseSchema = z.object({
   ok: z.literal(true),
   id: z.string().min(1).nullable(),
+  ids: z.array(z.string().min(1)).optional(),
 })
 
 export const resendApiErrorResponseSchema = z.object({

@@ -1,4 +1,5 @@
 import {createClient} from '@/lib/resend'
+import {queueResendSend} from '@/lib/resend/rate-limit'
 import {uuidv7} from 'uuidv7'
 import {z} from 'zod'
 
@@ -45,7 +46,8 @@ export async function POST(req: Request) {
   try {
     resend = createClient()
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Resend is not configured'
+    const message =
+      err instanceof Error ? err.message : 'Resend is not configured'
     console.error('[resend/test] createClient', err)
     return Response.json({ok: false, error: message}, {status: 502})
   }
@@ -59,13 +61,15 @@ export async function POST(req: Request) {
 
   let result: unknown
   try {
-    result = await resend.emails.send({
-      from: `Rapid Fire <${from}>`,
-      to: to.trim(),
-      subject,
-      html,
-      headers,
-    })
+    result = await queueResendSend(() =>
+      resend.emails.send({
+        from: `Rapid Fire <${from}>`,
+        to: to.trim(),
+        subject,
+        html,
+        headers,
+      }),
+    )
   } catch (err) {
     console.error('[resend/test] send threw', err)
     return Response.json({ok: false, error: toErrorMessage(err)}, {status: 502})

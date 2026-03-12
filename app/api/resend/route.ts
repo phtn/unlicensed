@@ -1,4 +1,5 @@
 import {createClient} from '@/lib/resend'
+import {queueResendSend} from '@/lib/resend/rate-limit'
 import {resendRequestSchema} from './types'
 
 export const runtime = 'nodejs'
@@ -43,10 +44,7 @@ export const POST = async (req: Request) => {
   try {
     raw = await req.json()
   } catch {
-    return Response.json(
-      {ok: false, error: 'Invalid JSON body'},
-      {status: 400},
-    )
+    return Response.json({ok: false, error: 'Invalid JSON body'}, {status: 400})
   }
   const parsed = resendRequestSchema.safeParse(raw)
   if (!parsed.success) {
@@ -62,7 +60,8 @@ export const POST = async (req: Request) => {
   try {
     resend = createClient()
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Resend is not configured'
+    const message =
+      err instanceof Error ? err.message : 'Resend is not configured'
     console.error('[resend] createClient', err)
     return Response.json({ok: false, error: message}, {status: 502})
   }
@@ -107,76 +106,80 @@ export const POST = async (req: Request) => {
     )
   }
 
-  let result: unknown
-  try {
-    // Convert single-item array to string (Resend API expects string for single recipient)
-    const toValue: string | string[] =
-      normalizedTo.length === 1 ? normalizedTo[0]! : normalizedTo
+  const ids: string[] = []
 
-    const resendPayload: {
-      from: string
-      to: string | string[]
-      subject: string
-      html: string
-      headers: Record<string, string>
-      cc?: string[]
-      bcc?: string[]
-      attachments?: Array<{filename: string; content: string}>
-    } = {
-      from,
-      to: toValue,
-      subject,
-      html: finalHtml,
-      headers: groupHeaders,
+  for (const recipient of normalizedTo) {
+    let result: unknown
+    try {
+      const resendPayload: {
+        from: string
+        to: string
+        subject: string
+        html: string
+        headers: Record<string, string>
+        cc?: string[]
+        bcc?: string[]
+        attachments?: Array<{filename: string; content: string}>
+      } = {
+        from: `Rapid Fire <${from}>`,
+        to: recipient,
+        subject,
+        html: finalHtml,
+        headers: groupHeaders,
+      }
+
+      if (cc && cc.length > 0) {
+        resendPayload.cc = cc
+      }
+      if (bcc && bcc.length > 0) {
+        resendPayload.bcc = bcc
+      }
+      if (attachments && attachments.length > 0) {
+        resendPayload.attachments = attachments.map((a) => ({
+          filename: a.filename,
+          content: a.contentBase64,
+        }))
+      }
+
+      result = await queueResendSend(() => resend.emails.send(resendPayload))
+    } catch (err) {
+      const message = toErrorMessage(err)
+      console.error('[resend] send threw', err)
+      return Response.json(
+        {ok: false, error: `Resend failed [SEND] - ${message}`},
+        {status: 502},
+      )
     }
 
-    if (cc && cc.length > 0) {
-      resendPayload.cc = cc
-    }
-    if (bcc && bcc.length > 0) {
-      resendPayload.bcc = bcc
-    }
-    if (attachments && attachments.length > 0) {
-      resendPayload.attachments = attachments.map((a) => ({
-        filename: a.filename,
-        content: a.contentBase64,
-      }))
+    if (
+      typeof result === 'object' &&
+      result !== null &&
+      'error' in result &&
+      (result as {error?: unknown}).error
+    ) {
+      const resendErr = (result as {error?: unknown}).error
+      const details = extractResendErrorDetails(resendErr)
+      console.error('[resend] send returned error', resendErr)
+      return Response.json(
+        {ok: false, error: `Resend failed [SEND] - ${details}`},
+        {status: 502},
+      )
     }
 
-    result = await resend.emails.send(resendPayload)
-  } catch (err) {
-    const message = toErrorMessage(err)
-    console.error('[resend] send threw', err)
-    return Response.json(
-      {ok: false, error: `Resend failed [SEND] - ${message}`},
-      {status: 502},
-    )
+    const id =
+      typeof result === 'object' &&
+      result !== null &&
+      'data' in result &&
+      typeof (result as {data?: unknown}).data === 'object' &&
+      (result as {data?: {id?: unknown}}).data !== null &&
+      typeof (result as {data?: {id?: unknown}}).data?.id === 'string'
+        ? (result as {data: {id: string}}).data.id
+        : null
+
+    if (id) {
+      ids.push(id)
+    }
   }
 
-  if (
-    typeof result === 'object' &&
-    result !== null &&
-    'error' in result &&
-    (result as {error?: unknown}).error
-  ) {
-    const resendErr = (result as {error?: unknown}).error
-    const details = extractResendErrorDetails(resendErr)
-    console.error('[resend] send returned error', resendErr)
-    return Response.json(
-      {ok: false, error: `Resend failed [SEND] - ${details}`},
-      {status: 502},
-    )
-  }
-
-  const id =
-    typeof result === 'object' &&
-    result !== null &&
-    'data' in result &&
-    typeof (result as {data?: unknown}).data === 'object' &&
-    (result as {data?: {id?: unknown}}).data !== null &&
-    typeof (result as {data?: {id?: unknown}}).data?.id === 'string'
-      ? (result as {data: {id: string}}).data.id
-      : null
-
-  return Response.json({ok: true, id}, {status: 200})
+  return Response.json({ok: true, id: ids[0] ?? null, ids}, {status: 200})
 }

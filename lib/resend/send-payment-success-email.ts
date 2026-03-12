@@ -1,6 +1,7 @@
 import type {Doc} from '../../convex/_generated/dataModel'
 import {formatDate} from '../../utils/date'
 import {createClient} from './index'
+import {queueResendSend} from './rate-limit'
 import {renderTemplate} from './render'
 import {PaymentSuccessEmail} from './templates/payment-success'
 
@@ -84,7 +85,7 @@ async function sendViaAppApi(args: {
       intent: 'sales',
       type: 'products',
       group: 'auto',
-      from: 'Rapid Fire <' + (process.env.RESEND_FROM ?? DEFAULT_FROM) + '>',
+      from: process.env.RESEND_FROM ?? DEFAULT_FROM,
       to: [args.to],
       subject: args.subject,
       html: args.html,
@@ -189,12 +190,14 @@ export async function sendPaymentSuccessEmail({
     })
   }
 
-  const result = await resend.emails.send({
-    from: 'Rapid Fire <' + (process.env.RESEND_FROM ?? DEFAULT_FROM) + '>',
-    to,
-    subject,
-    html,
-  })
+  const result = await queueResendSend(() =>
+    resend.emails.send({
+      from: process.env.RESEND_FROM ?? DEFAULT_FROM,
+      to,
+      subject,
+      html,
+    }),
+  )
 
   if (result.error) {
     throw new Error(extractResendError(result.error))

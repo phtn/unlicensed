@@ -1,8 +1,9 @@
+import {createClient} from '@/lib/resend'
+import {queueResendSend} from '@/lib/resend/rate-limit'
 import {
   parseInvitationTemplateProps,
   renderInvitationTemplate,
 } from '@/lib/resend/templates/render-with-props'
-import {createClient} from '@/lib/resend'
 import {uuidv7} from 'uuidv7'
 
 export const runtime = 'nodejs'
@@ -105,15 +106,25 @@ export async function POST(req: Request) {
     )
   }
 
-  const {to, recipients, subject, html, body, cc, bcc, template, templateProps} =
-    parsed
+  const {
+    to,
+    recipients,
+    subject,
+    html,
+    body,
+    cc,
+    bcc,
+    template,
+    templateProps,
+  } = parsed
   const from =
     parsed.from ?? process.env.RESEND_FROM ?? 'hello@rapidfirenow.com'
   let resend: ReturnType<typeof createClient>
   try {
     resend = createClient()
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Resend is not configured'
+    const message =
+      err instanceof Error ? err.message : 'Resend is not configured'
     console.error('[resend/send-job] createClient', err)
     return Response.json({ok: false, error: message}, {status: 502})
   }
@@ -126,7 +137,9 @@ export async function POST(req: Request) {
   const fallbackHtml = html ?? (body ? `<p>${body}</p>` : '<p></p>')
 
   const recipientList: {email: string; name: string}[] =
-    (recipients?.length ?? 0) > 0 ? recipients! : to.map((e) => ({email: e, name: ''}))
+    (recipients?.length ?? 0) > 0
+      ? recipients!
+      : to.map((e) => ({email: e, name: ''}))
 
   const ids: string[] = []
 
@@ -143,7 +156,8 @@ export async function POST(req: Request) {
       try {
         htmlToSend = await renderInvitationTemplate({
           ...invitationProps,
-          recipientName: recipient.name || recipient.email.split('@')[0] || 'there',
+          recipientName:
+            recipient.name || recipient.email.split('@')[0] || 'there',
         })
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Render failed'
@@ -166,7 +180,7 @@ export async function POST(req: Request) {
       cc?: string[]
       bcc?: string[]
     } = {
-      from,
+      from: `Rapid Fire <${from}>`,
       to: recipient.email,
       subject,
       html: htmlToSend,
@@ -177,7 +191,7 @@ export async function POST(req: Request) {
 
     let result: unknown
     try {
-      result = await resend.emails.send(payload)
+      result = await queueResendSend(() => resend.emails.send(payload))
     } catch (err) {
       const message = toErrorMessage(err)
       console.error('[resend/send-job] send threw', err)
