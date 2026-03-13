@@ -6,14 +6,13 @@ import {firestore} from '@/lib/firebase/config'
 import {createOrUpdateUserInFirestore} from '@/lib/firebase/users'
 import {useMutation} from 'convex/react'
 import {User} from 'firebase/auth'
-import {useEffect, useRef, useState} from 'react'
+import {useEffect, useState} from 'react'
 
 export const useAuth = () => {
   // Lazy initialization: read initial user state
   const [user, setUser] = useState<User | null>(() => getCurrentUser())
   const [loading, setLoading] = useState(true)
   const createOrUpdateUser = useMutation(api.users.m.createOrUpdateUser)
-  const hasInitializedRef = useRef(false)
 
   useEffect(() => {
     const unsubscribe = onAuthChange(async (firebaseUser) => {
@@ -48,23 +47,14 @@ export const useAuth = () => {
   }, [createOrUpdateUser])
 
   useEffect(() => {
-    // Ensure user exists in Firestore on initial load if user is already set
-    if (!hasInitializedRef.current && user && firestore) {
-      hasInitializedRef.current = true
-      createOrUpdateUserInFirestore(firestore, user).catch((error) => {
-        console.error(
-          'Failed to sync user with Firestore on initial load:',
-          error,
-        )
-      })
-    }
-    // onAuthStateChanged will fire immediately, so we can set loading to false
-    // after a brief delay to allow the subscription to initialize
+    // Rely on onAuthStateChanged for Firestore syncs. During email-link sign-in,
+    // auth.currentUser can be populated before Firestore requests have an auth
+    // context attached, which makes the eager initial sync fail rules checks.
     const timer = setTimeout(() => {
       setLoading(false)
     }, 50)
     return () => clearTimeout(timer)
-  }, [user])
+  }, [])
 
   return {user, loading}
 }
