@@ -5,12 +5,19 @@ import {
   SelectOption,
 } from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
+import {JunctionBox} from '@/app/admin/_components/ui/junction-box'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
+import {api} from '@/convex/_generated/api'
+import type {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
+import {
+  EMAIL_TEMPLATE_OPTIONS,
+  type EmailTemplateId,
+} from '@/lib/resend/templates/registry'
 import {getInvitationDefaultProps} from '@/lib/resend/templates/render-with-props'
 import {cn} from '@/lib/utils'
 import {Button, Select, SelectItem} from '@heroui/react'
+import {useQuery} from 'convex/react'
 import {useCallback, useMemo, useState, useTransition} from 'react'
 import {toast} from 'react-hot-toast'
 import type {
@@ -30,6 +37,99 @@ interface EmailTemplateEditorProps {
 }
 
 const TEMPLATE_NONE = ''
+const COUPON_TEMPLATE_PROP_KEYS: Partial<
+  Record<EmailTemplateId, 'couponCode' | 'discountCode'>
+> = {
+  welcome: 'couponCode',
+  'first-order': 'discountCode',
+  'product-discount': 'discountCode',
+}
+
+const parseTemplateProps = (
+  value: string | undefined,
+): Record<string, unknown> => {
+  if (!value?.trim()) {
+    return {}
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return {}
+    }
+
+    return parsed as Record<string, unknown>
+  } catch {
+    return {}
+  }
+}
+
+const stringifyTemplateProps = (value: Record<string, unknown>): string => {
+  const next = Object.fromEntries(
+    Object.entries(value).filter(([, entry]) => {
+      if (entry === undefined || entry === null) {
+        return false
+      }
+      if (typeof entry === 'string') {
+        return entry.trim().length > 0
+      }
+      return true
+    }),
+  )
+
+  return Object.keys(next).length > 0 ? JSON.stringify(next, null, 2) : ''
+}
+
+const getCouponPropKey = (templateKey: string) =>
+  COUPON_TEMPLATE_PROP_KEYS[templateKey as EmailTemplateId] ?? null
+
+const stripCouponAttachmentProps = (value: string | undefined): string => {
+  const next = parseTemplateProps(value)
+  delete next.couponId
+  delete next.couponCode
+  delete next.discountCode
+  return stringifyTemplateProps(next)
+}
+
+const getCouponAttachmentState = (
+  templateKey: string,
+  value: string | undefined,
+) => {
+  const couponPropKey = getCouponPropKey(templateKey)
+  const templateProps = parseTemplateProps(value)
+  const couponId =
+    typeof templateProps.couponId === 'string' ? templateProps.couponId : ''
+  const couponCode =
+    couponPropKey && typeof templateProps[couponPropKey] === 'string'
+      ? String(templateProps[couponPropKey])
+      : ''
+
+  return {
+    enabled: Boolean(couponId || couponCode),
+    couponId,
+    couponCode,
+  }
+}
+
+const applyCouponAttachmentProps = (
+  templateKey: string,
+  value: string | undefined,
+  coupon: Pick<Doc<'coupons'>, '_id' | 'code'>,
+): string => {
+  const couponPropKey = getCouponPropKey(templateKey)
+  if (!couponPropKey) {
+    return stripCouponAttachmentProps(value)
+  }
+
+  const next = parseTemplateProps(value)
+  delete next.couponCode
+  delete next.discountCode
+
+  next.couponId = String(coupon._id)
+  next[couponPropKey] = coupon.code
+
+  return stringifyTemplateProps(next)
+}
 
 export const EmailTemplateEditor = ({
   initialValues,
@@ -41,6 +141,7 @@ export const EmailTemplateEditor = ({
   const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>(
     () => initialValues.template ?? TEMPLATE_NONE,
   )
+  const [couponSnapshotNow] = useState(() => Date.now())
   const [isLoadingTemplate, startLoadingTemplate] = useTransition()
 
   const form = useAppForm({
@@ -96,40 +197,117 @@ export const EmailTemplateEditor = ({
     [],
   )
 
-  const handleTemplateSelect = useCallback(
-    (key: React.Key | null) => {
-      const id = key === null || key === TEMPLATE_NONE ? '' : String(key)
-      setSelectedTemplateKey(id)
-      form.setFieldValue('template', id)
-      if (id === 'invitation') {
-        form.setFieldValue(
-          'templateProps',
-          JSON.stringify(getInvitationDefaultProps(), null, 2),
-        )
+  const coupons = useQuery(api.coupons.q.listCoupons)
+
+  const initialCouponAttachment = useMemo(
+    () =>
+      getCouponAttachmentState(
+        initialValues.template ?? TEMPLATE_NONE,
+        initialValues.templateProps,
+      ),
+    [initialValues.template, initialValues.templateProps],
+  )
+
+  const [couponAttachmentEnabled, setCouponAttachmentEnabled] =
+    useState<boolean>(() => initialCouponAttachment.enabled)
+  const [selectedCouponId, setSelectedCouponId] = useState<string>(
+    () => initialCouponAttachment.couponId,
+  )
+
+  const activeCoupons = useMemo(() => {
+    return (coupons ?? []).filter((coupon) => {
+      if (!coupon.enabled) {
+        return false
       }
-      if (!id) return
+      if (
+        coupon.startsAt !== undefined &&
+        coupon.startsAt > couponSnapshotNow
+      ) {
+        return false
+      }
+      if (
+        coupon.expiresAt !== undefined &&
+        coupon.expiresAt <= couponSnapshotNow
+      ) {
+        return false
+      }
+      return true
+    })
+  }, [couponSnapshotNow, coupons])
+
+  const couponSelectOptions = useMemo(
+    () =>
+      activeCoupons.map((coupon) => ({
+        id: String(coupon._id),
+        label:
+          coupon.name && coupon.name !== coupon.code
+            ? `${coupon.code} · ${coupon.name}`
+            : coupon.code,
+      })),
+    [activeCoupons],
+  )
+
+  const templateCouponPropKey = useMemo(
+    () => getCouponPropKey(selectedTemplateKey),
+    [selectedTemplateKey],
+  )
+
+  const selectedCoupon = useMemo(() => {
+    if (selectedCouponId) {
+      return (
+        activeCoupons.find(
+          (coupon) => String(coupon._id) === selectedCouponId,
+        ) ?? null
+      )
+    }
+
+    if (!initialCouponAttachment.couponCode) {
+      return null
+    }
+
+    return (
+      activeCoupons.find(
+        (coupon) => coupon.code === initialCouponAttachment.couponCode,
+      ) ?? null
+    )
+  }, [activeCoupons, initialCouponAttachment.couponCode, selectedCouponId])
+  const resolvedSelectedCouponId =
+    selectedCouponId || (selectedCoupon ? String(selectedCoupon._id) : '')
+
+  const loadTemplatePreview = useCallback(
+    (
+      templateId: string,
+      templateProps?: string,
+      notifySuccess: boolean = false,
+    ) => {
+      if (!templateId) {
+        return
+      }
 
       startLoadingTemplate(() => {
         ;(async () => {
           try {
+            const params = new URLSearchParams({live: '1'})
+            if (templateProps?.trim()) {
+              params.set('templateProps', templateProps)
+            }
+
             const res = await fetch(
-              `/api/resend/templates/${encodeURIComponent(id)}?live=1`,
+              `/api/resend/templates/${encodeURIComponent(templateId)}?${params.toString()}`,
             )
             if (!res.ok) {
               const data = (await res.json()) as {error?: string}
               toast.error(data?.error ?? 'Failed to load template')
               return
             }
+
             const data = (await res.json()) as {html: string; subject: string}
             form.setFieldValue('subject', data.subject)
             form.setFieldValue('html', data.html)
-            if (id === 'invitation') {
-              form.setFieldValue(
-                'templateProps',
-                JSON.stringify(getInvitationDefaultProps(), null, 2),
-              )
+
+            if (notifySuccess) {
+              toast.success('Template applied')
             }
-            toast.success('Template applied')
           } catch {
             toast.error('Failed to load template')
           }
@@ -137,6 +315,122 @@ export const EmailTemplateEditor = ({
       })
     },
     [form],
+  )
+
+  const handleTemplateSelect = useCallback(
+    (key: React.Key | null) => {
+      const id = key === null || key === TEMPLATE_NONE ? '' : String(key)
+      setSelectedTemplateKey(id)
+      form.setFieldValue('template', id)
+      const couponPropKey = getCouponPropKey(id)
+
+      let nextTemplateProps = ''
+
+      if (id === 'invitation') {
+        nextTemplateProps = JSON.stringify(getInvitationDefaultProps(), null, 2)
+      } else if (couponPropKey && couponAttachmentEnabled) {
+        const coupon = selectedCoupon ?? activeCoupons[0] ?? null
+        if (coupon) {
+          setSelectedCouponId(String(coupon._id))
+          nextTemplateProps = applyCouponAttachmentProps(id, '', coupon)
+        } else {
+          setCouponAttachmentEnabled(false)
+          toast.error('No active coupons available')
+        }
+      }
+
+      form.setFieldValue('templateProps', nextTemplateProps)
+
+      if (!id) {
+        return
+      }
+
+      loadTemplatePreview(id, nextTemplateProps, true)
+    },
+    [
+      activeCoupons,
+      couponAttachmentEnabled,
+      form,
+      loadTemplatePreview,
+      selectedCoupon,
+    ],
+  )
+
+  const handleCouponAttachmentToggle = useCallback(
+    (nextEnabled: boolean) => {
+      if (!selectedTemplateKey || !templateCouponPropKey) {
+        return
+      }
+
+      if (nextEnabled) {
+        const coupon = selectedCoupon ?? activeCoupons[0] ?? null
+        if (!coupon) {
+          toast.error('No active coupons available')
+          return
+        }
+
+        const nextTemplateProps = applyCouponAttachmentProps(
+          selectedTemplateKey,
+          form.getFieldValue('templateProps') as string | undefined,
+          coupon,
+        )
+
+        setCouponAttachmentEnabled(true)
+        setSelectedCouponId(String(coupon._id))
+        form.setFieldValue('templateProps', nextTemplateProps)
+        loadTemplatePreview(selectedTemplateKey, nextTemplateProps)
+        return
+      }
+
+      const nextTemplateProps = stripCouponAttachmentProps(
+        form.getFieldValue('templateProps') as string | undefined,
+      )
+
+      setCouponAttachmentEnabled(false)
+      form.setFieldValue('templateProps', nextTemplateProps)
+      loadTemplatePreview(selectedTemplateKey, nextTemplateProps)
+    },
+    [
+      activeCoupons,
+      form,
+      loadTemplatePreview,
+      selectedCoupon,
+      selectedTemplateKey,
+      templateCouponPropKey,
+    ],
+  )
+
+  const handleCouponSelect = useCallback(
+    (key: React.Key | null) => {
+      const nextId = key === null ? '' : String(key)
+      setSelectedCouponId(nextId)
+
+      if (!nextId || !selectedTemplateKey || !templateCouponPropKey) {
+        return
+      }
+
+      const coupon =
+        activeCoupons.find((entry) => String(entry._id) === nextId) ?? null
+      if (!coupon) {
+        return
+      }
+
+      const nextTemplateProps = applyCouponAttachmentProps(
+        selectedTemplateKey,
+        form.getFieldValue('templateProps') as string | undefined,
+        coupon,
+      )
+
+      form.setFieldValue('templateProps', nextTemplateProps)
+      loadTemplatePreview(selectedTemplateKey, nextTemplateProps)
+    },
+    [
+      activeCoupons,
+      form,
+      loadTemplatePreview,
+      selectedTemplateKey,
+      templateCouponPropKey,
+    ],
   )
 
   return (
@@ -415,6 +709,46 @@ export const EmailTemplateEditor = ({
                 </SelectItem>
               )}
             </Select>
+
+            {templateCouponPropKey && (
+              <div className='space-y-4'>
+                <JunctionBox
+                  title='Attach Coupon'
+                  checked={couponAttachmentEnabled}
+                  onUpdate={handleCouponAttachmentToggle}
+                  description='Attach an active coupon from the coupons table and use its code in this template render.'
+                />
+
+                <Select
+                  label='Coupon'
+                  placeholder={
+                    activeCoupons.length > 0
+                      ? 'Choose a coupon'
+                      : 'No active coupons available'
+                  }
+                  variant='bordered'
+                  selectedKeys={
+                    resolvedSelectedCouponId ? [resolvedSelectedCouponId] : []
+                  }
+                  onSelectionChange={(keys) => {
+                    const key = Array.from(keys)[0] ?? null
+                    handleCouponSelect(key)
+                  }}
+                  isDisabled={
+                    !couponAttachmentEnabled ||
+                    isLoadingTemplate ||
+                    activeCoupons.length === 0
+                  }
+                  classNames={commonSelectClassNames}
+                  items={couponSelectOptions}>
+                  {(item) => (
+                    <SelectItem key={item.id} textValue={item.label}>
+                      {item.label}
+                    </SelectItem>
+                  )}
+                </Select>
+              </div>
+            )}
 
             {selectedTemplateKey === 'invitation' && (
               <form.AppField name='templateProps'>

@@ -1,6 +1,6 @@
 import {getTemplatePreview} from '@/lib/resend/templates/render-preview'
-import {NextResponse} from 'next/server'
 import {readFile} from 'fs/promises'
+import {NextResponse} from 'next/server'
 import {join} from 'path'
 
 export const runtime = 'nodejs'
@@ -21,14 +21,14 @@ export async function GET(
   try {
     const {id} = await params
     if (!id) {
-      return NextResponse.json(
-        {error: 'Missing template id'},
-        {status: 400},
-      )
+      return NextResponse.json({error: 'Missing template id'}, {status: 400})
     }
 
     const url = new URL(req.url)
-    const useLiveRender = url.searchParams.get('live') === '1' || url.searchParams.get('live') === 'true'
+    const useLiveRender =
+      url.searchParams.get('live') === '1' ||
+      url.searchParams.get('live') === 'true'
+    const templateProps = url.searchParams.get('templateProps') ?? undefined
 
     // Use live render (render-preview.ts) when requested, so template/defaultProps updates are visible
     if (!useLiveRender) {
@@ -47,12 +47,9 @@ export async function GET(
       }
     }
 
-    const preview = await getTemplatePreview(id)
+    const preview = await getTemplatePreview(id, templateProps)
     if (!preview) {
-      return NextResponse.json(
-        {error: 'Template not found'},
-        {status: 404},
-      )
+      return NextResponse.json({error: 'Template not found'}, {status: 404})
     }
 
     if (typeof preview.html !== 'string') {
@@ -65,9 +62,6 @@ export async function GET(
     return NextResponse.json(preview)
   } catch (err) {
     console.error('[resend/templates] getTemplatePreview error:', err)
-    return NextResponse.json(
-      {error: toErrorMessage(err)},
-      {status: 500},
-    )
+    return NextResponse.json({error: toErrorMessage(err)}, {status: 500})
   }
 }

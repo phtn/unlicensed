@@ -106,9 +106,10 @@ export const BulkValueEmail = ({
               borderBottom: '6px solid #d1499b',
             }}>
             <Img
-              src={`https://res.cloudinary.com/dx0heqhhe/image/upload/v1773327157/rf-wordmark-white_dznnii.png`}
+              src={`https://res.cloudinary.com/dx0heqhhe/image/upload/v1773388822/rf-sticker_vsksfb.png`}
+              // src{`https://res.cloudinary.com/dx0heqhhe/image/upload/v1773327157/rf-wordmark-white_dznnii.png`}
               alt='Rapid Fire'
-              width='100'
+              width='140'
               className='mx-auto'
             />
 

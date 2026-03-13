@@ -240,6 +240,10 @@ export const createOrUpdateUser = mutation({
       userEmail: args.email,
     })
 
+    await ctx.scheduler.runAfter(0, internal.users.a.sendWelcomeEmailForUser, {
+      userId,
+    })
+
     return userId
   },
 })

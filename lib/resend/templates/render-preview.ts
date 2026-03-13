@@ -23,9 +23,8 @@ const TEMPLATE_MAP: Record<EmailTemplateId, TemplateEntry> = {
   welcome: {
     Component: WelcomeEmail as ComponentType<object>,
     defaultProps: {
-      userName: '{{userName}}',
-      loginUrl: '{{loginUrl}}',
-      supportUrl: '{{supportUrl}}',
+      userName: '',
+      couponCode: 'FIRE25',
     },
   },
   'password-reset': {
@@ -222,17 +221,41 @@ const TEMPLATE_MAP: Record<EmailTemplateId, TemplateEntry> = {
 
 const RENDER_TIMEOUT_MS = 12_000
 
+function parseTemplatePreviewProps(
+  templateProps?: string,
+): Record<string, unknown> | null {
+  if (!templateProps?.trim()) {
+    return null
+  }
+
+  try {
+    const parsed = JSON.parse(templateProps) as unknown
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return null
+    }
+
+    return parsed as Record<string, unknown>
+  } catch {
+    return null
+  }
+}
+
 export async function getTemplatePreview(
   id: string,
+  templateProps?: string,
 ): Promise<{html: string; subject: string} | null> {
   const entry = TEMPLATE_MAP[id as EmailTemplateId]
   if (!entry) return null
 
   const option = EMAIL_TEMPLATE_OPTIONS.find((o) => o.id === id)
   const subject = option?.defaultSubject ?? ''
+  const resolvedProps = {
+    ...entry.defaultProps,
+    ...(parseTemplatePreviewProps(templateProps) ?? {}),
+  }
 
   const html = await Promise.race([
-    renderTemplate(entry.Component, entry.defaultProps),
+    renderTemplate(entry.Component, resolvedProps),
     new Promise<never>((_, reject) =>
       setTimeout(
         () => reject(new Error('Template render timed out')),

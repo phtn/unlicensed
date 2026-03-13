@@ -55,12 +55,12 @@ export const PaymentSuccessEmail = ({
   amount,
   currency,
 }: PaymentSuccessEmailProps) => (
-  <Html>
+  <Html className='dark:bg-black'>
     <Preview>Your order is on the way, {customerName}</Preview>
     <Tailwind>
       <Head />
-      <Body className='m-0 bg-[#ececec] py-8 font-sans text-[#171717]'>
-        <Container className='mx-auto w-full max-w-[640.01px] md:px-4'>
+      <Body className='m-0 bg-white dark:bg-black py-8 font-sans text-[#171717]'>
+        <Container className='mx-auto w-full max-w-[640.01px] md:px-4 dark:bg-black'>
           <Section className='pb-4 md:pb-8 pt-2 text-center'>
             <Img
               src={`https://res.cloudinary.com/dx0heqhhe/image/upload/v1771881178/rf-wordmark-flex_vrgct3.png`}
@@ -76,33 +76,12 @@ export const PaymentSuccessEmail = ({
               background:
                 'radial-gradient(circle at 50% 62%, rgba(209, 73, 155, 0.95) 0%, rgba(209, 73, 155, 0.82) 28%, rgba(209, 73, 155, 0.8) 58%, rgba(209, 73, 155, 1) 100%)',
             }}>
-            <Section
-              className='mx-auto w-fit rounded-full bg-white'
-              style={{
-                paddingLeft: 8,
-                paddingRight: 12,
-                paddingTop: 6,
-                paddingBottom: 6,
-              }}>
-              <Text className='m-0 text-lg font-clash font-semibold text-[#2f2f2f]'>
-                <span
-                  style={{
-                    display: 'inline-block',
-                    width: '32px',
-                    height: '32px',
-                    lineHeight: '32px',
-                    textAlign: 'center',
-                    borderRadius: '999px',
-                    backgroundColor: '#111111',
-                    color: '#ffffff',
-                    fontWeight: 800,
-                    marginRight: '12px',
-                  }}>
-                  ✓
-                </span>
-                Payment Successful!
-              </Text>
-            </Section>
+            <Img
+              src='https://res.cloudinary.com/dx0heqhhe/image/upload/v1773401623/payment_successful_light_wuqxxp.png'
+              alt='Rapid Fire'
+              width='240'
+              className='mx-auto'
+            />
 
             <Text
               className='m-0 mt-14 text-center text-[36px] font-black leading-[1.12] tracking-[-0.04em] text-white'
@@ -124,7 +103,7 @@ export const PaymentSuccessEmail = ({
             </Section>
           </Section>
 
-          <Section className='rounded-b-[22px] bg-white px-7 py-12 text-center shadow-[0_20px_60px_rgba(17,17,17,0.08)]'>
+          <Section className='rounded-b-px bg-white px-2 md:px-7 py-12 text-center shadow-[0_20px_60px_rgba(17,17,17,0.08)]'>
             <Text className='m-0 text-[20px] font-medium leading-1 tracking-[-0.03em] text-[#20123e]'>
               Payment Details
             </Text>
@@ -132,7 +111,7 @@ export const PaymentSuccessEmail = ({
               We&apos;ll keep you posted as your order moves forward.
             </Text>
             <Section className='mt-4 rounded-2xl bg-[#efefef] px-6 py-5 text-left'>
-              <Text className='m-0 text-sm font-medium uppercase tracking-[0.12em] text-[#7b70a0]'>
+              <Text className='m-0 text-sm font-medium uppercase tracking-[0.12em] text-[#3b3b3b]'>
                 Order Number
               </Text>
               <Text className='m-0 mt-2 text-[20px] font-bold text-[#26184a]'>
@@ -140,7 +119,7 @@ export const PaymentSuccessEmail = ({
               </Text>
             </Section>
             <Section className='mt-4 rounded-2xl bg-[#efefef] px-6 py-5 text-left'>
-              <Text className='m-0 text-sm font-medium uppercase tracking-[0.12em] text-[#7b70a0]'>
+              <Text className='m-0 text-sm font-medium uppercase tracking-[0.12em] text-[#3b3b3b]'>
                 Order Date
               </Text>
               <Text className='m-0 mt-2 text-[20px] font-bold text-[#26184a]'>
@@ -149,7 +128,7 @@ export const PaymentSuccessEmail = ({
             </Section>
 
             <Section className='mt-4 rounded-2xl bg-[#efefef] px-6 py-5 text-left'>
-              <Text className='m-0 text-sm font-medium uppercase tracking-[0.12em] text-[#7b70a0]'>
+              <Text className='m-0 text-sm font-medium uppercase tracking-[0.12em] text-[#3b3b3b]'>
                 Payment Method
               </Text>
               <Text className='m-0 mt-2 text-[20px] font-bold text-[#26184a]'>

@@ -103,6 +103,7 @@ import type * as staff_d from "../staff/d.js";
 import type * as staff_m from "../staff/m.js";
 import type * as staff_q from "../staff/q.js";
 import type * as uploads from "../uploads.js";
+import type * as users_a from "../users/a.js";
 import type * as users_d from "../users/d.js";
 import type * as users_m from "../users/m.js";
 import type * as users_q from "../users/q.js";
@@ -210,6 +211,7 @@ declare const fullApi: ApiFromModules<{
   "staff/m": typeof staff_m;
   "staff/q": typeof staff_q;
   uploads: typeof uploads;
+  "users/a": typeof users_a;
   "users/d": typeof users_d;
   "users/m": typeof users_m;
   "users/q": typeof users_q;
