@@ -17,6 +17,14 @@ import {
 import {auth, firestore} from './config'
 import {createOrUpdateUserInFirestore} from './users'
 
+export const getPostEmailLinkRedirectUrl = () => {
+  if (typeof window === 'undefined') {
+    return '/lobby'
+  }
+
+  return new URL('/lobby', window.location.origin).toString()
+}
+
 export const loginWithEmail = async (email: string, password: string) => {
   if (!auth) throw new Error('Firebase auth not initialized')
   if (!firestore) throw new Error('Firestore not initialized')
@@ -118,22 +126,25 @@ export function hasEmailLinkParams(url: string): boolean {
 
 export const checkIsEmailLink = (emailLink?: string): boolean => {
   if (!auth) return false
-  const link = emailLink || (typeof window !== 'undefined' ? window.location.href : undefined)
+  const link =
+    emailLink ||
+    (typeof window !== 'undefined' ? window.location.href : undefined)
   if (!link) return false
   return isSignInWithEmailLink(auth, link)
 }
 
-export const loginWithEmailLink = async (
-  email: string,
-  emailLink?: string,
-) => {
+export const loginWithEmailLink = async (email: string, emailLink?: string) => {
   if (!auth) throw new Error('Firebase auth not initialized')
   if (!firestore) throw new Error('Firestore not initialized')
 
   // If emailLink is not provided, use the current URL
-  const link = emailLink || (typeof window !== 'undefined' ? window.location.href : undefined)
+  const link =
+    emailLink ||
+    (typeof window !== 'undefined' ? window.location.href : undefined)
   if (!link) {
-    throw new Error('Email link is required. Provide emailLink parameter or ensure user is on the page with the email link.')
+    throw new Error(
+      'Email link is required. Provide emailLink parameter or ensure user is on the page with the email link.',
+    )
   }
 
   const userCredential = await signInWithEmailLink(auth, email, link)

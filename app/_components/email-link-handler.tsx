@@ -3,6 +3,7 @@
 import {useAuthCtx} from '@/ctx/auth'
 import {
   checkIsEmailLink,
+  getPostEmailLinkRedirectUrl,
   hasEmailLinkParams,
   loginWithEmailLink,
 } from '@/lib/firebase/auth'
@@ -51,12 +52,13 @@ export function EmailLinkHandler() {
 
       loginWithEmailLink(email, href)
         .then(() => {
-          window.history.replaceState({}, '', window.location.origin)
-          setStatus('done')
+          window.location.assign(getPostEmailLinkRedirectUrl())
         })
         .catch((err: unknown) => {
           const message =
-            err instanceof Error ? err.message : 'Sign-in failed. Please try again.'
+            err instanceof Error
+              ? err.message
+              : 'Sign-in failed. Please try again.'
           setErrorMessage(message)
           setStatus('error')
           window.localStorage.removeItem('emailForSignIn')
@@ -73,12 +75,11 @@ export function EmailLinkHandler() {
   if (status === 'handling') {
     return (
       <div
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
-        aria-live="polite"
-        aria-busy="true"
-      >
-        <div className="rounded-2xl bg-[var(--color-bg-elevated)] px-8 py-6 shadow-xl">
-          <p className="text-center font-medium text-[var(--color-fg)]">
+        className='fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm'
+        aria-live='polite'
+        aria-busy='true'>
+        <div className='rounded-2xl bg-(--color-bg-elevated) px-8 py-6 shadow-xl'>
+          <p className='text-center font-medium text-(--color-fg)'>
             Signing you in…
           </p>
         </div>
@@ -92,24 +93,20 @@ export function EmailLinkHandler() {
   if (status === 'error') {
     return (
       <div
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-        role="alert"
-      >
-        <div className="w-full max-w-sm rounded-2xl bg-[var(--color-bg-elevated)] p-6 shadow-xl">
-          <p className="font-medium text-[var(--color-fg)]">Sign-in failed</p>
-          <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
-            {errorMessage}
-          </p>
+        className='fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4'
+        role='alert'>
+        <div className='w-full max-w-sm rounded-2xl bg-(--color-bg-elevated) p-6 shadow-xl'>
+          <p className='font-medium text-(--color-fg)'>Sign-in failed</p>
+          <p className='mt-1 text-sm text-(--color-fg-muted)'>{errorMessage}</p>
           <button
-            type="button"
+            type='button'
             onClick={() => {
               setStatus('idle')
               setErrorMessage(null)
               handledRef.current = false
               window.history.replaceState({}, '', window.location.origin)
             }}
-            className="mt-4 w-full rounded-lg bg-[var(--color-accent)] px-4 py-2 font-medium text-white hover:opacity-90"
-          >
+            className='mt-4 w-full rounded-lg bg-(--color-accent) px-4 py-2 font-medium text-white hover:opacity-90'>
             Dismiss
           </button>
         </div>

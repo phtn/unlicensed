@@ -36,16 +36,16 @@ function gpfm(
 
 // Example usage
 const mnemonic =
-  'pottery avocado bar sign wolf enforce orient baby stage leg garbage click'
+  'strategy execute please whip combine deer demand differ match dream analyst ocean'
 
-const _ethKey = gpfm(mnemonic, 'ethereum')
-const btcKey = gpfm(mnemonic, 'bitcoin_segwit')
+const ethKey = gpfm(mnemonic, 'ethereum')
+const _btcKey = gpfm(mnemonic, 'bitcoin_segwit')
 const _btcLeg = gpfm(mnemonic, 'bitcoin_legacy')
 const _solKey = gpfm(mnemonic, 'solana')
 const _ethAccount2 = gpfm(mnemonic, 'ethereum', 1)
 
 // console.log('ETH Private Key:', ethKey)
 // console.log('BTC Legacy Key:', btcLeg)
-console.log('BTC Private Key:', btcKey)
+console.log('EVM Private Key:', ethKey)
 // console.log('SOL Private Key:', solKey)
 // console.log('ETH Account 2:', ethAccount2)

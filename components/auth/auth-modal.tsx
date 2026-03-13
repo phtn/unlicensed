@@ -2,6 +2,7 @@
 
 import {useAuthCtx} from '@/ctx/auth'
 import {
+  getPostEmailLinkRedirectUrl,
   loginWithEmail,
   loginWithEmailLink,
   loginWithGoogle,
@@ -247,10 +248,9 @@ export const AuthModal = ({
     setLoading(true)
     try {
       await loginWithEmailLink(trimmed, completeEmailLink.href)
-      window.history.replaceState({}, '', window.location.origin)
       setCompleteEmailLink(null)
       closeAuthModal()
-      onClose()
+      window.location.assign(getPostEmailLinkRedirectUrl())
     } catch (err) {
       setEmailLinkError(parseFirebaseAuthError(err))
     } finally {

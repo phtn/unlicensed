@@ -50,3 +50,4 @@ public/workbox-*.js
 public/swe-worker-*.js
 web-check-results.json
 idle
+gpfm.ts
