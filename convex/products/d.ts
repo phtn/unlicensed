@@ -94,14 +94,10 @@ export const productSchema = v.object({
   highMargins: v.optional(v.array(v.string())),
   brandCollaborators: v.optional(v.array(v.string())),
   tags: v.optional(v.array(v.string())),
+  packagingMode: v.optional(v.union(v.literal('bulk'), v.literal('prepack'))),
+  startingWeight: v.optional(v.number()),
+  remainingWeight: v.optional(v.number()),
+  stockUnit: v.optional(v.string()),
 })
 
 export type ProductType = Infer<typeof productSchema>
-
-// flowers, extracts, edibles, vapes, pre-rolls
-// in-house -> 1/8, 1/4, 1/2, 1
-// branded -> only 1/8
-// merch -> shirts,
-// extracts -> 1,3,7 grams
-// packaged -> 1,5,10 unit
-// branded flower -> 1/8,1/4,1/2,1

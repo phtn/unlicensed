@@ -376,7 +376,28 @@ export const ProductsData = ({
           id: 'lineage',
           header: <ColHeader tip='Lineage' symbol='Lineage' />,
           accessorKey: 'lineage',
-          cell: textCell('lineage'),
+          cell: (ctx) => {
+            const lineage = ctx.row.original.lineage?.trim()
+
+            if (!lineage) {
+              return <span className='font-brk text-sm opacity-60'>····</span>
+            }
+
+            return (
+              <HoverCell
+                label={<Icon name='t' className='size-5 text-terpenes' />}
+                content={
+                  <div className='max-w-64 whitespace-pre-wrap text-sm text-foreground'>
+                    {lineage}
+                  </div>
+                }>
+                <span className='font-ios text-xs uppercase text-mac-blue dark:text-blue-400'>
+                  view
+                </span>
+              </HoverCell>
+            )
+          },
+          size: 100,
         },
         {
           id: 'noseRating',

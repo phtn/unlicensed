@@ -227,7 +227,7 @@ export const BasicInfo = ({
           </Button>
         </Header>
       </div>
-      <div className='grid gap-6 w-full'>
+      <div className='grid gap-4 w-full'>
         <div className='grid gap-4 md:grid-cols-3 items-start w-full'>
           {nameField && (
             <form.AppField name='name'>

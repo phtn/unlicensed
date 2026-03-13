@@ -235,7 +235,7 @@ export const Inventory = ({form}: InventoryProps) => {
                 </form.Field>
               </div>
 
-              <div className='col-span-6 rounded-xl border border-black/5 bg-black/2 p-4 text-sm text-color-muted dark:border-white/10 dark:bg-white/3'>
+              <div className='col-span-6 rounded-xl border border-black/5 bg-black/2 p-4 text-sm text-color-muted dark:border-white/10 dark:bg-white/3 overflow-scroll'>
                 Orders will deduct from this master pool using the product unit
                 in Pricing. Example: `10 lb` with product denominations in `oz`
                 will drop to `9.5 lb` after one `0.5 oz` order.

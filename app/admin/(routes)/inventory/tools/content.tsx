@@ -7,6 +7,7 @@ import {ReactNode, useMemo} from 'react'
 import {FireCollectionManager} from './fire-collection-manager'
 import {ImageOptimizer} from './image-optimizer'
 import {ProductCsvUpload} from './product-csv-upload'
+import {ProductDocs} from './product-docs'
 
 interface ToolTabs {
   id: string
@@ -19,6 +20,7 @@ export const Content = () => {
       [
         {id: 'image-opt', label: 'Image Optimizer'},
         {id: 'product-csv', label: 'Product CSV Import'},
+        {id: 'docs', label: 'Docs'},
         {id: 'fire-collection', label: 'Fire Collection'},
       ] as Array<ToolTabs>,
     [],
@@ -28,6 +30,7 @@ export const Content = () => {
     return {
       'image-opt': <ImageOptimizer />,
       'product-csv': <ProductCsvUpload />,
+      docs: <ProductDocs />,
       'fire-collection': <FireCollectionManager />,
     } as Record<ToolTabs['id'], ReactNode>
   }, [])

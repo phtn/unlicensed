@@ -47,13 +47,14 @@ const PrimaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
       id={id ?? label}
       as={Link}
       size='sm'
+      radius='none'
       prefetch
       href={href}
       disableRipple
       disableAnimation
       variant='bordered'
       className={cn(
-        'text-sm flex items-center p-1 md:p-2 dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white dark:bg-sidebar bg-light-gray/25 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight space-x-1.5 shrink-0',
+        'text-sm flex items-center rounded-md py-1 px-2.5 md:p-2 dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white dark:bg-sidebar bg-light-gray/25 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight space-x-1.5 shrink-0',
         {
           'text-indigo-500 dark:text-indigo-100 rounded-none bg-transparent dark:bg-transparent dark:hover:bg-transparent px-0':
             tabId === 'new',

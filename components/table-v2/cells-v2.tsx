@@ -105,7 +105,7 @@ interface HoverCellProps {
   content?: ReactNode
   /** Trigger element; must be a single element when using Radix asChild. */
   children: ReactNode
-  label?: string
+  label?: ReactNode
 }
 export const HoverCell = ({children, content, label}: HoverCellProps) => {
   return (
