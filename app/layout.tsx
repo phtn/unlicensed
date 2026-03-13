@@ -26,6 +26,7 @@ import {EmailLinkHandler} from './_components/email-link-handler'
 import {ScreenDimensionsTracker} from './_components/screen-dimensions-tracker'
 import {UserLocationTracker} from './_components/user-location-tracker'
 import './globals.css'
+import 'mapbox-gl/dist/mapbox-gl.css'
 
 const figtree = Figtree({
   variable: '--font-sans',

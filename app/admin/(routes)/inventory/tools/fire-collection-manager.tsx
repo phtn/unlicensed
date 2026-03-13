@@ -15,6 +15,7 @@ import {useMutation, useQuery} from 'convex/react'
 import {useDeferredValue, useEffect, useMemo, useRef, useState} from 'react'
 
 const MAX_LIBRARY_RESULTS = 24
+const RANDOM_INSERT_COUNT = 15
 
 const getBrandLabel = (product: Doc<'products'>) => {
   if (Array.isArray(product.brand) && product.brand.length > 0) {
@@ -40,6 +41,24 @@ const matchesSearch = (product: Doc<'products'>, query: string) => {
     .toLowerCase()
 
   return haystack.includes(query)
+}
+
+const pickRandomProductIds = (productIds: string[], count: number) => {
+  if (productIds.length <= count) {
+    return productIds
+  }
+
+  const shuffled = [...productIds]
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1))
+    ;[shuffled[index], shuffled[swapIndex]] = [
+      shuffled[swapIndex],
+      shuffled[index],
+    ]
+  }
+
+  return shuffled.slice(0, count)
 }
 
 interface ProductTileProps {
@@ -183,6 +202,15 @@ export const FireCollectionManager = () => {
   const resolveUrl = useStorageUrls(imageIds)
 
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds])
+  const unselectedLibraryProductIds = useMemo(() => {
+    if (!libraryProducts) {
+      return []
+    }
+
+    return libraryProducts
+      .filter((product) => !selectedIdSet.has(String(product._id)))
+      .map((product) => String(product._id))
+  }, [libraryProducts, selectedIdSet])
   const availableProducts = useMemo(() => {
     if (!libraryProducts) {
       return []
@@ -300,6 +328,28 @@ export const FireCollectionManager = () => {
       }),
     )
     setSelectedCollectionId(nextSelection)
+  }
+
+  const handleInsertRandomProducts = async () => {
+    if (!selectedCollection || !libraryProducts) return
+    if (unselectedLibraryProductIds.length === 0) {
+      return
+    }
+
+    const randomProductIds = pickRandomProductIds(
+      unselectedLibraryProductIds,
+      RANDOM_INSERT_COUNT,
+    )
+
+    await runMutation(`random:${selectedCollection.id}`, () =>
+      updateFireCollection({
+        collectionId: selectedCollection.id,
+        patch: {
+          productIds: [...selectedIds, ...randomProductIds],
+        },
+        uid: user?.uid ?? 'anonymous',
+      }),
+    )
   }
 
   return (
@@ -531,12 +581,33 @@ export const FireCollectionManager = () => {
 
         <section className='flex min-h-0 flex-col rounded-xl border border-foreground/10 bg-background/70 p-4'>
           <div className='flex items-center justify-between gap-3'>
-            <h3 className='text-xs font-okxs uppercase tracking-[0.3em] text-foreground/50'>
-              Product Library
-            </h3>
-            <span className='text-xs text-foreground/45'>
-              Showing up to {MAX_LIBRARY_RESULTS} matches
-            </span>
+            <div>
+              <h3 className='text-xs font-okxs uppercase tracking-[0.3em] text-foreground/50'>
+                Product Library
+              </h3>
+              <span className='text-xs text-foreground/45'>
+                Showing up to {MAX_LIBRARY_RESULTS} matches
+              </span>
+            </div>
+
+            <Button
+              size='sm'
+              radius='none'
+              variant='flat'
+              isDisabled={
+                activeKey !== null ||
+                !selectedCollection ||
+                libraryProducts === undefined ||
+                unselectedLibraryProductIds.length === 0
+              }
+              isLoading={
+                selectedCollection !== null &&
+                activeKey === `random:${selectedCollection.id}`
+              }
+              onPress={handleInsertRandomProducts}
+              className='rounded-md px-4 font-okxs text-[11px] uppercase tracking-[0.25em] bg-sidebar text-foreground'>
+              Add {RANDOM_INSERT_COUNT} Random
+            </Button>
           </div>
 
           <Input

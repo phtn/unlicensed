@@ -6,7 +6,7 @@ import {useMobile} from '@/hooks/use-mobile'
 import {useToggle} from '@/hooks/use-toggle'
 import {Suspense} from 'react'
 import {VisitorLogData} from './data'
-import {InsightsPage} from './insights'
+import {GeoPage, InsightsPage} from './insights'
 
 const ReportsContentInner = () => {
   const [tabId] = useAdminTabId()
@@ -14,6 +14,12 @@ const ReportsContentInner = () => {
   const {on: _fullTable, toggle: _toggleFullTable} = useToggle()
 
   switch (tabId) {
+    case 'geo':
+      return (
+        <Suspense fallback={<div>Loading...</div>}>
+          <GeoPage />
+        </Suspense>
+      )
     case 'insights':
       return (
         <Suspense fallback={<div>Loading...</div>}>

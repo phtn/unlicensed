@@ -2,6 +2,111 @@ import {v} from 'convex/values'
 import {query} from '../_generated/server'
 import {safeGet} from '../utils/id_validation'
 
+const US_STATE_NAME_BY_CODE = {
+  AL: 'Alabama',
+  AK: 'Alaska',
+  AZ: 'Arizona',
+  AR: 'Arkansas',
+  CA: 'California',
+  CO: 'Colorado',
+  CT: 'Connecticut',
+  DE: 'Delaware',
+  FL: 'Florida',
+  GA: 'Georgia',
+  HI: 'Hawaii',
+  ID: 'Idaho',
+  IL: 'Illinois',
+  IN: 'Indiana',
+  IA: 'Iowa',
+  KS: 'Kansas',
+  KY: 'Kentucky',
+  LA: 'Louisiana',
+  ME: 'Maine',
+  MD: 'Maryland',
+  MA: 'Massachusetts',
+  MI: 'Michigan',
+  MN: 'Minnesota',
+  MS: 'Mississippi',
+  MO: 'Missouri',
+  MT: 'Montana',
+  NE: 'Nebraska',
+  NV: 'Nevada',
+  NH: 'New Hampshire',
+  NJ: 'New Jersey',
+  NM: 'New Mexico',
+  NY: 'New York',
+  NC: 'North Carolina',
+  ND: 'North Dakota',
+  OH: 'Ohio',
+  OK: 'Oklahoma',
+  OR: 'Oregon',
+  PA: 'Pennsylvania',
+  RI: 'Rhode Island',
+  SC: 'South Carolina',
+  SD: 'South Dakota',
+  TN: 'Tennessee',
+  TX: 'Texas',
+  UT: 'Utah',
+  VT: 'Vermont',
+  VA: 'Virginia',
+  WA: 'Washington',
+  WV: 'West Virginia',
+  WI: 'Wisconsin',
+  WY: 'Wyoming',
+  DC: 'District of Columbia',
+} as const
+
+const US_STATE_LOOKUP = Object.fromEntries(
+  Object.entries(US_STATE_NAME_BY_CODE).flatMap(([code, name]) => [
+    [normalizeLocationKey(code), name],
+    [normalizeLocationKey(name), name],
+  ]),
+) as Record<string, string>
+
+function normalizeLocationKey(value: string) {
+  return value.toLowerCase().replace(/[^a-z]/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function isUnitedStatesCountry(country?: string | null) {
+  if (!country) {
+    return false
+  }
+
+  const normalizedCountry = normalizeLocationKey(country)
+  return (
+    normalizedCountry === 'us' ||
+    normalizedCountry === 'usa' ||
+    normalizedCountry === 'united states' ||
+    normalizedCountry === 'united states of america' ||
+    normalizedCountry.includes('united states')
+  )
+}
+
+function normalizeUsState(location?: string | null) {
+  if (!location) {
+    return null
+  }
+
+  const locationParts = location.split(',')
+  const lastLocationPart = locationParts[locationParts.length - 1] ?? ''
+  const candidates = [location, lastLocationPart]
+
+  for (const candidate of candidates) {
+    const normalizedCandidate = normalizeLocationKey(candidate)
+
+    if (!normalizedCandidate) {
+      continue
+    }
+
+    const stateName = US_STATE_LOOKUP[normalizedCandidate]
+    if (stateName) {
+      return stateName
+    }
+  }
+
+  return null
+}
+
 /**
  * Get logs with pagination
  */
@@ -192,6 +297,24 @@ export const getVisitStats = query({
       }
     })
 
+    const visitsByUsState: Record<string, number> = {}
+    let totalUnitedStatesVisits = 0
+
+    filteredLogs.forEach((log) => {
+      if (!isUnitedStatesCountry(log.country)) {
+        return
+      }
+
+      totalUnitedStatesVisits += 1
+
+      const stateName = normalizeUsState(log.region || log.city)
+      if (!stateName) {
+        return
+      }
+
+      visitsByUsState[stateName] = (visitsByUsState[stateName] || 0) + 1
+    })
+
     return {
       totalVisits,
       uniqueVisitors,
@@ -199,6 +322,8 @@ export const getVisitStats = query({
       visitsByPath,
       visitsByDevice,
       visitsByCountry,
+      totalUnitedStatesVisits,
+      visitsByUsState,
     }
   },
 })
@@ -237,4 +362,3 @@ export const getGeoByIp = query({
     return null
   },
 })
-

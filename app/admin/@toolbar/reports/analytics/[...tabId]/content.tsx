@@ -2,6 +2,7 @@
 
 import {ToolbarWrapper} from '../../../components'
 import {AnalyticsTabContent} from '../content'
+import {GeoTab} from './geo-tab'
 import {LogsTab} from './logs-tab'
 import {InsightsTab} from './insights-tab'
 
@@ -11,6 +12,12 @@ interface ContentProps {
 
 export const Content = ({tabId}: ContentProps) => {
   switch (tabId) {
+    case 'geo':
+      return (
+        <ToolbarWrapper>
+          <GeoTab />
+        </ToolbarWrapper>
+      )
     case 'logs':
       return (
         <ToolbarWrapper>
@@ -27,4 +34,3 @@ export const Content = ({tabId}: ContentProps) => {
       return <AnalyticsTabContent />
   }
 }
-

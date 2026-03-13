@@ -42,6 +42,12 @@ export const AnalyticsTabContent = () => {
           icon='strength'
           label='Insights'
         />
+        <PrimaryTab
+          id='geo'
+          href='/admin/reports/analytics?tabId=geo'
+          icon='globe-light'
+          label='Geo'
+        />
       </ToolbarButtonWrapper>
     </ToolbarWrapper>
   )

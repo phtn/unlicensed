@@ -1,6 +1,7 @@
 'use client'
 
 import {PageTitle} from '@/app/admin/_components/ui/page-title'
+import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {cn} from '@/lib/utils'
@@ -9,22 +10,24 @@ import Link from 'next/link'
 import {Suspense} from 'react'
 import {PrimaryTab, ToolbarButtonWrapper} from '../../../components'
 
-const InsightsInner = () => {
+const GeoInner = () => {
   const stats = useQuery(api.logs.q.getVisitStats, {})
-  const uniqueVisitors = stats?.uniqueVisitors ?? 0
+  const [tabId] = useAdminTabId()
+  const isGeoRoute = tabId === 'geo'
 
   return (
     <>
       <Link
-        href='/admin/reports/analytics?tabId=insights'
+        href='/admin/reports/analytics?tabId=geo'
         prefetch
         className='flex items-center space-x-4 group'>
-        <PageTitle>Insights</PageTitle>
+        <PageTitle>Geo</PageTitle>
         <span
           className={cn(
-            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold text-white',
+            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
+            {'bg-emerald-500 dark:bg-emerald-500 text-white': isGeoRoute},
           )}>
-          <AnimatedNumber value={uniqueVisitors} />
+          <AnimatedNumber value={stats?.totalVisits ?? 0} />
         </span>
       </Link>
       <ToolbarButtonWrapper>
@@ -51,13 +54,13 @@ const InsightsInner = () => {
   )
 }
 
-export const InsightsTab = () => {
+export const GeoTab = () => {
   return (
     <Suspense
       fallback={
         <div className='flex text-base items-center justify-between w-full px-2' />
       }>
-      <InsightsInner />
+      <GeoInner />
     </Suspense>
   )
 }
