@@ -9,6 +9,9 @@ import {IpResponse} from './types'
 interface Geo {
   country: string
   city: string
+  countryCode?: string
+  latitude?: number
+  longitude?: number
 }
 
 // In-memory cache for IP addresses
@@ -120,6 +123,15 @@ export async function getGeo(
     }
 
     const geo: Geo = {country, city}
+    if (data.country_code) {
+      geo.countryCode = data.country_code
+    }
+    if (typeof data.latitude === 'number') {
+      geo.latitude = data.latitude
+    }
+    if (typeof data.longitude === 'number') {
+      geo.longitude = data.longitude
+    }
 
     // Cache the result
     geoCache.set(ip, geo)

@@ -109,6 +109,20 @@ export const userSchema = v.object({
   // Preferences
   preferences: v.optional(preferencesSchema),
   cashAppUsername: v.optional(v.string()),
+  country: v.optional(v.string()),
+  countryCode: v.optional(v.string()),
+  city: v.optional(v.string()),
+  latitude: v.optional(v.number()),
+  longitude: v.optional(v.number()),
+  locationSource: v.optional(
+    v.union(
+      v.literal('browser'),
+      v.literal('header'),
+      v.literal('ip'),
+      v.literal('unknown'),
+    ),
+  ),
+  locationUpdatedAt: v.optional(v.number()),
   accountType: v.optional(
     v.union(v.literal('personal'), v.literal('business')),
   ),

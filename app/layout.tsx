@@ -24,6 +24,7 @@ import {AgeConfirmationModal} from './_components/age-confirmation-modal'
 import {ConditionalNavbar} from './_components/conditional-navbar'
 import {EmailLinkHandler} from './_components/email-link-handler'
 import {ScreenDimensionsTracker} from './_components/screen-dimensions-tracker'
+import {UserLocationTracker} from './_components/user-location-tracker'
 import './globals.css'
 
 const figtree = Figtree({
@@ -200,6 +201,7 @@ export default async function RootLayout({
             <EmailLinkHandler />
             <GlobalAuthModal />
             <ScreenDimensionsTracker />
+            <UserLocationTracker />
             <AgeConfirmationModal />
             <ConditionalNavbar navbar={navbar} />
             {children}

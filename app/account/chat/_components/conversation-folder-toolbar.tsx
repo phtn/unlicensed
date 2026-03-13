@@ -4,7 +4,7 @@ import {Id} from '@/convex/_generated/dataModel'
 import type {ConversationFolderSummary} from '@/convex/messages/d'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {MouseEvent, SubmitEvent, useEffect, useState} from 'react'
+import {MouseEvent, SubmitEvent, useEffect, useRef, useState} from 'react'
 
 export const ALL_CONVERSATIONS_FOLDER = '__all__'
 export const UNFILED_CONVERSATIONS_FOLDER = '__unfiled__'
@@ -42,6 +42,13 @@ export function ConversationFolderToolbar({
     left: number
     top: number
   } | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const selectedFolder =
+    folders.find((folder) => String(folder._id) === activeFolderId) ?? null
+  const isEditingSelectedFolder =
+    !!editingFolder &&
+    !!selectedFolder &&
+    editingFolder._id === selectedFolder._id
 
   useEffect(() => {
     if (!contextMenu) return
@@ -65,6 +72,19 @@ export function ConversationFolderToolbar({
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [contextMenu])
+
+  useEffect(() => {
+    if (!isFormVisible) return
+
+    const timeoutId = window.setTimeout(() => {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    }, 0)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [isFormVisible, editingFolder?._id])
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -107,6 +127,22 @@ export function ConversationFolderToolbar({
     setContextMenu(null)
   }
 
+  const handleToggleSelectedFolderEdit = () => {
+    if (!selectedFolder) {
+      return
+    }
+
+    if (isEditingSelectedFolder && isFormVisible) {
+      handleCancelEdit()
+      return
+    }
+
+    setEditingFolder(selectedFolder)
+    setDraft(selectedFolder.name)
+    setIsFormVisible(true)
+    setContextMenu(null)
+  }
+
   const handleCancelEdit = () => {
     setEditingFolder(null)
     setDraft('')
@@ -134,18 +170,18 @@ export function ConversationFolderToolbar({
       label: 'All',
       count: counts.all,
     },
-    {
-      id: UNFILED_CONVERSATIONS_FOLDER,
-      label: 'Unsorted',
-      count: counts.unfiled,
-    },
+    // {
+    //   id: UNFILED_CONVERSATIONS_FOLDER,
+    //   label: 'Unsorted',
+    //   count: counts.unfiled,
+    // },
   ]
 
   return (
-    <div className='relative border-b border-border/40 bg-background/95 px-3 py-3 supports-backdrop-filter:backdrop-blur-md md:px-4'>
-      <div className='flex items-center gap-2'>
-        <div className='flex-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
-          <div className='flex w-max gap-2'>
+    <div className='relative border-b border-sidebar bg-background/95 pt-2 px-0 md:py-3 supports-backdrop-filter:backdrop-blur-md pe-1'>
+      <div className='flex items-center gap-x-2'>
+        <div className='flex-1 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-2 bg-linear-to-r from-dark-table dark:from-sidebar via-brand/50 to-brand/10'>
+          <div className='flex items-center h-8 w-max gap-2'>
             {folderChips.map((folder) => {
               const isActive = activeFolderId === folder.id
               return (
@@ -154,21 +190,21 @@ export function ConversationFolderToolbar({
                   type='button'
                   onClick={() => onSelectFolder(folder.id)}
                   className={cn(
-                    'inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                    'inline-flex shrink-0 items-center gap-1.5 rounded-md border md:ps-1.5 ps-2 h-6 text-xs font-ios font-medium',
                     isActive
                       ? 'border-foreground bg-foreground text-background'
                       : 'border-border/60 bg-background/70 text-muted-foreground hover:text-foreground',
                   )}>
                   <span className='select-none'>{folder.label}</span>
-                  <span
+                  <div
                     className={cn(
-                      'rounded-full px-1.5 py-0.5 text-[10px]',
+                      'flex items-center justify-center rounded-sm aspect-square h-5 w-auto text-[10px]',
                       isActive
                         ? 'bg-background/15 text-inherit'
-                        : 'bg-muted text-foreground/70',
+                        : 'bg-sidebar text-foreground/70',
                     )}>
                     {folder.count}
-                  </span>
+                  </div>
                 </button>
               )
             })}
@@ -187,75 +223,100 @@ export function ConversationFolderToolbar({
                   aria-haspopup='menu'
                   title='Right-click to edit folder'
                   className={cn(
-                    'inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                    'inline-flex shrink-0 items-center gap-1.5 rounded-md border ps-2 md:ps-1.5 md:py-1.5 h-6 text-xs font-ios font-medium aspect-square',
                     isActive
                       ? 'border-foreground bg-foreground text-background'
                       : 'border-border/60 bg-background/70 text-muted-foreground hover:text-foreground hover:border-foreground/40',
                   )}>
                   <span>{folder.name}</span>
-                  <span
+                  <div
                     className={cn(
-                      'rounded-full px-1.5 py-0.5 text-[10px]',
+                      'flex items-center justify-center rounded-sm aspect-square h-5 w-auto text-[10px]',
                       isActive
                         ? 'bg-background/15 text-inherit'
-                        : 'bg-muted text-foreground/70',
+                        : 'bg-sidebar text-foreground/70',
                     )}>
                     {counts.byFolderId[folderId] ?? 0}
-                  </span>
+                  </div>
                 </button>
               )
             })}
           </div>
         </div>
 
-        <button
-          type='button'
-          onClick={handleToggleForm}
-          aria-label={isFormVisible ? 'Hide folder form' : 'Show folder form'}
-          className={cn(
-            'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-sidebar/60 bg-background/80 text-muted-foreground transition-colors hover:border-sidebar hover:text-foreground',
-            isFormVisible && 'border-sidebar text-foreground',
-          )}>
-          <Icon
-            name='plus'
-            className={cn('size-4 transition-transform duration-200', {
-              'rotate-[112.5deg] text-red-500': isFormVisible,
-            })}
-          />
-        </button>
+        <div className='flex shrink-0 items-center gap-2 md:gap-1'>
+          <button
+            type='button'
+            onClick={handleToggleSelectedFolderEdit}
+            aria-label={
+              isEditingSelectedFolder && isFormVisible
+                ? 'Cancel folder rename'
+                : 'Rename selected folder'
+            }
+            disabled={!selectedFolder}
+            className={cn(
+              'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-background/80 text-muted-foreground',
+              selectedFolder
+                ? 'hover:border-sidebar hover:text-foreground'
+                : 'cursor-not-allowed opacity-40',
+              isEditingSelectedFolder && 'border-sidebar text-foreground',
+              {hidden: isFormVisible},
+            )}>
+            <Icon name='pencil-fill' className='size-4' />
+          </button>
+
+          <button
+            type='button'
+            onClick={
+              isFormVisible && editingFolder
+                ? handleCancelEdit
+                : handleToggleForm
+            }
+            aria-label={isFormVisible ? 'Hide folder form' : 'Show folder form'}
+            className={cn(
+              'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-background/80 text-muted-foreground hover:border-sidebar hover:text-foreground',
+              isFormVisible &&
+                !editingFolder &&
+                'border-sidebar text-foreground',
+              {'bg-red-400/10 dark:bg-red-400/20': isFormVisible},
+            )}>
+            <Icon
+              name='plus'
+              className={cn('size-4 transition-transform duration-200', {
+                'rotate-[112.5deg] size-5 dark:text-red-300': isFormVisible,
+              })}
+            />
+          </button>
+        </div>
       </div>
 
       {isFormVisible && (
         <form
           onSubmit={handleSubmit}
-          className='mt-3 flex flex-wrap items-center gap-2'>
-          <div className='relative order-1 flex w-full items-center space-x-1 sm:order-0 sm:flex-1'>
+          className='left-0 bg-background mt-3 flex items-center w-full absolute ps-2 pe-1 pb-3 gap-2 border-b border-sidebar'>
+          <div className='relative order-1 flex w-full items-center space-x-2 sm:order-0'>
             <Icon
               name='open-folder'
               className='pointer-events-none size-4 text-muted-foreground'
             />
             <input
+              ref={inputRef}
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               placeholder={editingFolder ? 'Rename folder' : 'New folder'}
-              className='h-9 w-full rounded-full border border-border/60 bg-background pl-3 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/50'
+              className='h-8 w-full rounded-sm bg-sidebar pl-2 pr-3 text-sm outline-none placeholder:text-muted-foreground'
               maxLength={40}
             />
           </div>
           <button
             type='submit'
             disabled={!draft.trim()}
-            className='order-2 inline-flex h-8 w-auto aspect-square flex-1 items-center justify-center rounded-full border border-border/60 px-3 text-sm transition-colors hover:border-foreground/40 disabled:cursor-not-allowed disabled:opacity-50 sm:order-0 sm:flex-none bg-emerald-500/10'>
+            className={cn(
+              'order-2 inline-flex h-6 w-6 aspect-square flex-1 items-center justify-center rounded-sm disabled:cursor-not-allowed disabled:opacity-50 sm:order-0 sm:flex-none bg-emerald-500/10',
+              {'dark:text-emerald-400': true},
+            )}>
             <Icon name='check' className='size-4' />
           </button>
-          {editingFolder && (
-            <button
-              type='button'
-              onClick={handleCancelEdit}
-              className='order-2 inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-full border border-border/60 px-3 text-sm transition-colors hover:border-foreground/40 sm:order-0 sm:flex-none'>
-              <span>Cancel</span>
-            </button>
-          )}
         </form>
       )}
 

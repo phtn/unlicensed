@@ -1,5 +1,5 @@
-import type {Id} from '../_generated/dataModel'
 import {Infer, v} from 'convex/values'
+import type {Id} from '../_generated/dataModel'
 
 export const messageAttachmentSchema = v.array(
   v.object({
@@ -56,6 +56,8 @@ export interface OtherUser {
   displayName?: string | null
   /** Alias for photoUrl - for frontend compatibility */
   avatarUrl?: string | null
+  /** Staff-only location preview for conversation lists */
+  locationLabel?: string | null
 }
 
 export interface LastMessage {

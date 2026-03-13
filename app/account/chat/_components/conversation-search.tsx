@@ -32,11 +32,11 @@ export function ConversationSearch({
   }
 
   return (
-    <div className='border-b border-border/40 bg-background/95 px-3 py-3 supports-[backdrop-filter]:backdrop-blur-md md:px-4'>
+    <div className='border-b border-border/40 bg-background/95 px-3 md:pt-4 supports-backdrop-filter:backdrop-blur-md md:px-4'>
       <div className='relative'>
         <Icon
           name='search'
-          className='z-20 text-dark-table dark:text-primary-hover absolute left-2 top-1/2 -translate-y-1/2 size-4 opacity-90'
+          className='z-20 text-dark-table dark:text-white/40 absolute left-2 top-1/2 -translate-y-1/2 size-4 opacity-90'
         />
         <Input
           type='text'
@@ -51,7 +51,7 @@ export function ConversationSearch({
             ],
           }}
           placeholder='Search conversations'
-          className='focus:bg-sidebar hover:bg-sidebar placeholder:text-sm placeholder:opacity-80 dark:placeholder:focus:bg-background placeholder:text-primary  dark:placeholder:text-white shadow-none'
+          className='focus:bg-sidebar hover:bg-sidebar placeholder:text-sm dark:placeholder:focus:bg-background placeholder:text-foreground/40 dark:placeholder:text-white/40 shadow-none rounded-xl'
         />
         {localQuery && (
           <button

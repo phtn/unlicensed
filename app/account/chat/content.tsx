@@ -540,11 +540,11 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   const showChatArea = !isMobile || showChat
 
   return (
-    <div className='relative flex h-full min-h-0 w-full overflow-hidden bg-background md:rounded-3xl md:border md:border-sidebar/40 md:bg-sidebar/20'>
+    <div className='relative flex h-full min-h-0 w-full overflow-hidden bg-background md:rounded-3xl md:border md:border-sidebar md:bg-sidebar/20'>
       {/* Conversation List Sidebar */}
       <aside
         className={cn(
-          'flex min-h-0 flex-col overflow-hidden border-r border-sidebar/40 bg-background/95 supports-backdrop-filter:backdrop-blur-xl transition-all duration-300',
+          'flex min-h-0 flex-col overflow-hidden border-r border-sidebar bg-background/95 supports-backdrop-filter:backdrop-blur-xl transition-all duration-300',
           isMobile
             ? showConversationList
               ? 'w-full'

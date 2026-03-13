@@ -48,7 +48,7 @@ export async function proxy(request: NextRequest) {
     'Permissions-Policy': [
       'camera=()',
       'microphone=()',
-      'geolocation=()',
+      'geolocation=(self)',
       'payment=()',
       'usb=()',
       'bluetooth=()',

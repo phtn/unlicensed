@@ -1,6 +1,6 @@
 import {v} from 'convex/values'
-import type {Doc, Id} from '../_generated/dataModel'
 import {internal} from '../_generated/api'
+import type {Doc, Id} from '../_generated/dataModel'
 import type {MutationCtx} from '../_generated/server'
 import {mutation} from '../_generated/server'
 import {
@@ -241,6 +241,48 @@ export const createOrUpdateUser = mutation({
     })
 
     return userId
+  },
+})
+
+export const updateLocation = mutation({
+  args: {
+    fid: v.string(),
+    country: v.optional(v.string()),
+    countryCode: v.optional(v.string()),
+    city: v.optional(v.string()),
+    latitude: v.optional(v.number()),
+    longitude: v.optional(v.number()),
+    source: v.union(
+      v.literal('browser'),
+      v.literal('header'),
+      v.literal('ip'),
+      v.literal('unknown'),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
+      .unique()
+
+    if (!user) {
+      return null
+    }
+
+    await ctx.db.patch(user._id, {
+      ...(args.country !== undefined ? {country: args.country} : {}),
+      ...(args.countryCode !== undefined
+        ? {countryCode: args.countryCode}
+        : {}),
+      ...(args.city !== undefined ? {city: args.city} : {}),
+      ...(args.latitude !== undefined ? {latitude: args.latitude} : {}),
+      ...(args.longitude !== undefined ? {longitude: args.longitude} : {}),
+      locationSource: args.source,
+      locationUpdatedAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    return user._id
   },
 })
 

@@ -728,8 +728,8 @@ export const searchInputClassNames: InputProps['classNames'] = {
   input:
     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
-    'shadow-none border rounded-xl border-dark-table/40 dark:border-black/10 bg-alum/10 dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-14 md:min-h-16 w-full',
-  innerWrapper: 'ps-8',
+    'shadow-none border rounded-xl border-dark-table/40 dark:border-white/20 bg-alum/10 dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table/50 p-2 outline-none min-h-14 md:min-h-16 w-full overflow-hidden',
+  innerWrapper: 'ps-8 overflow-hidden',
 }
 export const chatInputClassNames: InputProps['classNames'] = {
   label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-brk',

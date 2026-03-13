@@ -201,6 +201,8 @@ export function ConversationList({
 
         const audioDuration = getAudioDuration()
         const currentFolderLabel = conversation.folderName?.trim() || 'Unsorted'
+        const geolocationLabel =
+          conversation.otherUser?.locationLabel?.trim() || null
 
         const rowContent = (
           <div
@@ -232,7 +234,7 @@ export function ConversationList({
                 event.preventDefault()
                 onSelectConversation(conversation.otherUserId, folderControlFid)
               }}
-              className='w-full cursor-pointer px-3 py-3 text-left active:bg-blue-100 md:px-4'>
+              className='w-full cursor-pointer px-2 py-3 text-left active:bg-blue-100/10'>
               <div className='flex items-start gap-2.5 md:gap-3'>
                 <div className='relative shrink-0'>
                   <Avatar
@@ -241,7 +243,7 @@ export function ConversationList({
                   <div className='absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background bg-green-500 md:size-3' />
                 </div>
                 <div className='min-w-0 flex-1'>
-                  <div className='mb-1 flex items-start justify-between gap-2'>
+                  <div className='mb-0 flex items-start justify-between gap-2'>
                     <p
                       className={cn(
                         'min-w-0 flex-1 truncate text-sm font-medium',
@@ -250,13 +252,15 @@ export function ConversationList({
                       )}>
                       {displayName}
                     </p>
-                    {conversation.hasMessages && (
-                      <span className='max-w-18 shrink-0 text-right text-xs font-medium text-muted-foreground sm:max-w-none sm:text-xs'>
-                        {formatTimestamp(conversation.lastMessage.createdAt)}
+                    {conversation.hasMessages && geolocationLabel && (
+                      <span
+                        id='geolocation'
+                        className='max-w-18 shrink-0 text-right text-[8px] font-normal text-muted-foreground sm:max-w-none font-clash'>
+                        {geolocationLabel}
                       </span>
                     )}
                   </div>
-                  <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+                  <div className='flex h-7 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
                     <div className='min-w-0 flex-1'>
                       {isFolderEditorOpen &&
                       showFolderPicker &&
@@ -267,13 +271,15 @@ export function ConversationList({
                           onClick={(event) => event.stopPropagation()}>
                           <div className='pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center gap-1 pl-2'>
                             <Icon
-                              name='folder-open'
+                              name='chevron-right'
                               className='size-3.5 shrink-0 text-muted-foreground'
                             />
                           </div>
                           <select
                             aria-label={`Move ${displayName} conversation to a folder`}
-                            value={conversation.folderId ?? UNFILED_FOLDER_VALUE}
+                            value={
+                              conversation.folderId ?? UNFILED_FOLDER_VALUE
+                            }
                             onClick={(event) => event.stopPropagation()}
                             onChange={(event) => {
                               event.stopPropagation()
@@ -288,12 +294,15 @@ export function ConversationList({
                               )
                               setFolderEditorConversationId(null)
                             }}
-                            className='h-8 w-full appearance-none rounded-full border border-border/60 bg-background/80 pl-7 pr-7 text-transparent outline-none transition-colors focus:border-foreground/40'>
+                            className='h-7 flex items-center w-full appearance-none rounded-md border border-border/60 bg-background/80 pl-7 pr-7 text-transparent outline-none transition-colors focus:border-foreground/40 text-xs'>
                             <option value={UNFILED_FOLDER_VALUE}>
                               Unsorted
                             </option>
                             {(folderOptions ?? []).map((folder) => (
-                              <option key={folder._id} value={folder._id}>
+                              <option
+                                key={folder._id}
+                                value={folder._id}
+                                className='flex items-center gap-2'>
                                 {folder.name}
                               </option>
                             ))}
@@ -379,6 +388,9 @@ export function ConversationList({
                             : conversation.unreadCount}
                         </span>
                       )}
+                      <div className='max-w-18 shrink-0 text-right text-[8px] font-normal text-muted-foreground sm:max-w-none font-ios tracking-tighter'>
+                        {formatTimestamp(conversation.lastMessage.createdAt)}
+                      </div>
                       {showFolderPicker &&
                         folderControlFid &&
                         onMoveConversation && (
@@ -398,14 +410,14 @@ export function ConversationList({
                               )
                             }}
                             className={cn(
-                              'inline-flex size-8 shrink-0 items-center justify-center rounded-full border transition-colors',
+                              'inline-flex w-3 h-4 shrink-0 items-center justify-center rounded-sm',
                               isFolderEditorOpen
-                                ? 'border-foreground/50 bg-background text-foreground'
-                                : 'border-border/60 bg-background/70 text-muted-foreground hover:border-foreground/40 hover:text-foreground',
+                                ? 'text-foreground'
+                                : 'bg-background/20 text-muted-foreground hover:text-foreground',
                             )}>
                             <Icon
-                              name={isFolderEditorOpen ? 'x' : 'folder-open'}
-                              className='size-4'
+                              name={isFolderEditorOpen ? 'x' : 'more-v'}
+                              className='size-3'
                             />
                           </button>
                         )}

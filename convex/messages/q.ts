@@ -1,7 +1,7 @@
 import {v} from 'convex/values'
 import type {Doc, Id} from '../_generated/dataModel'
-import {query} from '../_generated/server'
 import type {QueryCtx} from '../_generated/server'
+import {query} from '../_generated/server'
 import {ASSISTANT_PRO_ID} from '../assistant/d'
 import type {ConversationFolderState, LastMessage, OtherUser} from './d'
 
@@ -45,9 +45,9 @@ const getConversationFolderLookup = async (
   }
 
   const folderDocs = await Promise.all(
-    Array.from(new Set(assignments.map((assignment) => assignment.folderId))).map(
-      async (folderId) => ctx.db.get(folderId),
-    ),
+    Array.from(
+      new Set(assignments.map((assignment) => assignment.folderId)),
+    ).map(async (folderId) => ctx.db.get(folderId)),
   )
 
   const foldersById = new Map<string, {name: string}>()
@@ -88,6 +88,40 @@ const withConversationFolder = <
     ...conversation,
     folderId: folder?.folderId ?? null,
     folderName: folder?.folderName ?? null,
+  }
+}
+
+const formatUserLocationLabel = (user: Doc<'users'>): string | null => {
+  const city = user.city?.trim() || null
+  const countryCode = user.countryCode?.trim().toUpperCase() || null
+  const country = user.country?.trim() || null
+
+  if (city && countryCode) {
+    return `${city}, ${countryCode}`
+  }
+
+  if (city && country) {
+    return `${city}, ${country}`
+  }
+
+  return city ?? country ?? countryCode ?? null
+}
+
+const mapConversationUser = (
+  user: Doc<'users'>,
+  includeLocation: boolean,
+): OtherUser => {
+  const fid = user.fid ?? user.firebaseId ?? ''
+
+  return {
+    fid,
+    name: user.name ?? null,
+    email: user.email ?? '',
+    photoUrl: user.photoUrl ?? null,
+    proId: fid || undefined,
+    displayName: user.name ?? null,
+    avatarUrl: user.photoUrl ?? null,
+    locationLabel: includeLocation ? formatUserLocationLabel(user) : null,
   }
 }
 
@@ -190,6 +224,7 @@ export const searchConversations = query({
     // Check if current user is staff with admin privileges (can search staff)
     const {enabled: foldersEnabled, staff: currentUserStaff} =
       await getFolderCapability(ctx, user)
+    const canViewLocation = foldersEnabled
     const isStaffAdmin =
       !!currentUserStaff &&
       currentUserStaff.active &&
@@ -238,11 +273,7 @@ export const searchConversations = query({
             .withIndex('by_email', (q) => q.eq('email', staffEmail))
             .first()
         }
-        if (
-          linkedUser &&
-          'fid' in linkedUser &&
-          linkedUser._id !== user._id
-        ) {
+        if (linkedUser && 'fid' in linkedUser && linkedUser._id !== user._id) {
           staffMatchingUserIds.add(linkedUser._id as string)
         }
       }
@@ -285,7 +316,6 @@ export const searchConversations = query({
       Array.from(resultUserIds).map(async (userId) => {
         const otherUser = await ctx.db.get(userId as Id<'users'>)
         if (!otherUser || !('fid' in otherUser)) return null
-        const fid = otherUser.fid ?? otherUser.firebaseId
 
         // Get latest message with this user
         const messagesWithUser = allMessages.filter(
@@ -307,15 +337,7 @@ export const searchConversations = query({
 
         return {
           otherUserId: userId,
-          otherUser: {
-            fid: fid ?? '',
-            name: otherUser.name ?? null,
-            email: otherUser.email ?? '',
-            photoUrl: otherUser.photoUrl ?? null,
-            proId: fid ?? undefined,
-            displayName: otherUser.name ?? null,
-            avatarUrl: otherUser.photoUrl ?? null,
-          },
+          otherUser: mapConversationUser(otherUser, canViewLocation),
           lastMessage: latestMessage || {
             _id: null,
             content: 'No messages yet',
@@ -368,6 +390,7 @@ export const getConversations = query({
     }
 
     const {enabled: foldersEnabled} = await getFolderCapability(ctx, user)
+    const canViewLocation = foldersEnabled
     const folderLookup = foldersEnabled
       ? await getConversationFolderLookup(ctx, user._id)
       : new Map()
@@ -424,15 +447,7 @@ export const getConversations = query({
           otherUserId: otherUserIdString,
           otherUser:
             otherUser && 'fid' in otherUser
-              ? {
-                  fid: otherUser.fid ?? otherUser.firebaseId ?? '',
-                  name: otherUser.name ?? null,
-                  email: otherUser.email ?? '',
-                  photoUrl: otherUser.photoUrl ?? null,
-                  proId: otherUser.fid ?? otherUser.firebaseId ?? undefined,
-                  displayName: otherUser.name ?? null,
-                  avatarUrl: otherUser.photoUrl ?? null,
-                }
+              ? mapConversationUser(otherUser, canViewLocation)
               : null,
           lastMessage: message,
           unreadCount: 0, // Sent messages don't count as unread
@@ -463,15 +478,7 @@ export const getConversations = query({
           otherUserId: otherUserIdString,
           otherUser:
             otherUser && 'fid' in otherUser
-              ? {
-                  fid: otherUser.fid ?? otherUser.firebaseId ?? '',
-                  name: otherUser.name ?? null,
-                  email: otherUser.email ?? '',
-                  photoUrl: otherUser.photoUrl ?? null,
-                  proId: otherUser.fid ?? otherUser.firebaseId ?? undefined,
-                  displayName: otherUser.name ?? null,
-                  avatarUrl: otherUser.photoUrl ?? null,
-                }
+              ? mapConversationUser(otherUser, canViewLocation)
               : null,
           lastMessage: message,
           unreadCount,
@@ -505,18 +512,9 @@ export const getConversations = query({
       if (!conversationsMap.has(otherUserIdString)) {
         const otherUser = await ctx.db.get(follow.followedId)
         if (otherUser && 'fid' in otherUser) {
-          const fid = otherUser.fid ?? otherUser.firebaseId ?? ''
           conversationsMap.set(otherUserIdString, {
             otherUserId: otherUserIdString,
-            otherUser: {
-              fid,
-              name: otherUser.name ?? null,
-              email: otherUser.email ?? '',
-              photoUrl: otherUser.photoUrl ?? null,
-              proId: fid || undefined,
-              displayName: otherUser.name ?? null,
-              avatarUrl: otherUser.photoUrl ?? null,
-            },
+            otherUser: mapConversationUser(otherUser, canViewLocation),
             lastMessage: {
               _id: null,
               content: 'No messages yet',
@@ -536,18 +534,9 @@ export const getConversations = query({
       if (!conversationsMap.has(otherUserIdString)) {
         const otherUser = await ctx.db.get(follow.followerId)
         if (otherUser && 'fid' in otherUser) {
-          const fid = otherUser.fid ?? otherUser.firebaseId ?? ''
           conversationsMap.set(otherUserIdString, {
             otherUserId: otherUserIdString,
-            otherUser: {
-              fid,
-              name: otherUser.name ?? null,
-              email: otherUser.email ?? '',
-              photoUrl: otherUser.photoUrl ?? null,
-              proId: fid || undefined,
-              displayName: otherUser.name ?? null,
-              avatarUrl: otherUser.photoUrl ?? null,
-            },
+            otherUser: mapConversationUser(otherUser, canViewLocation),
             lastMessage: {
               _id: null,
               content: 'No messages yet',
