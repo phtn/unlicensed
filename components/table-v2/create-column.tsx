@@ -380,7 +380,7 @@ function SelectAllCheckbox<T>({
               const handler = table.getToggleAllPageRowsSelectedHandler()
               handler(fakeChangeEvent(!!checked))
             }}
-            className='w-4 h-4 rounded-[2.75px] bg-sidebar flex justify-center items-center'>
+            className='w-4 h-4 rounded-[2.75px] bg-sidebar flex justify-center items-center mr-4.5 md:mr-0'>
             <Icon
               name={
                 isSome
@@ -447,7 +447,7 @@ const SelectRowCheckbox = <T,>({
             className={cn('w-6 flex justify-center items-center')}>
             <Icon
               name={isChecked ? 'check' : 'checkbox-unchecked'}
-              className={cn('h-5 rounded-sm', {
+              className={cn('h-5 w-5 aspect-square rounded-sm', {
                 'bg-dark-gray dark:bg-mac-blue/80 opacity-100 text-background dark:text-white':
                   isChecked,
               })}

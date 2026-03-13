@@ -7,6 +7,7 @@ import {
   linkText,
   textCell,
   toggleCell,
+  formatText,
 } from '@/components/table-v2/cells-v2'
 import {ColumnConfig} from '@/components/table-v2/create-column'
 import {ColHeader} from '@/components/table-v2/headers'
@@ -218,17 +219,18 @@ export const ProductsData = ({
       [
         {
           id: '_id',
-          header: () => (
-            <div className='w-full flex items-center space-x-1'>
-              <span>ID</span>
-              <Icon name='pencil-fill' className='size-4' />
-            </div>
-          ),
+          header: <ColHeader tip='ID' symbol='ID' className='w-12' left />,
+          // header: () => (
+          //   <div className='w-full flex items-center space-x-1'>
+          //     <span>ID</span>
+          //     <Icon name='pencil-fill' className='md:size-4 size-3.5' />
+          //   </div>
+          // ),
           accessorKey: '_id',
-          size: 60,
           cell: linkText('_id', `/admin/inventory/product/`, (v) =>
             v.substring(28),
           ),
+          size: 80,
         },
         {
           id: 'name',
@@ -374,13 +376,19 @@ export const ProductsData = ({
 
         {
           id: 'lineage',
-          header: <ColHeader tip='Lineage' symbol='Lineage' />,
+          header: (
+            <ColHeader tip='Lineage' symbol='Lineage' className='w-20' center />
+          ),
           accessorKey: 'lineage',
           cell: (ctx) => {
             const lineage = ctx.row.original.lineage?.trim()
 
             if (!lineage) {
-              return <span className='font-brk text-sm opacity-60'>····</span>
+              return (
+                <div className='text-center font-brk text-sm opacity-60'>
+                  ····
+                </div>
+              )
             }
 
             return (
@@ -391,9 +399,9 @@ export const ProductsData = ({
                     {lineage}
                   </div>
                 }>
-                <span className='font-ios text-xs uppercase text-mac-blue dark:text-blue-400'>
+                <div className='text-center font-ios text-xs uppercase text-mac-blue dark:text-blue-400'>
                   view
-                </span>
+                </div>
               </HoverCell>
             )
           },
@@ -402,11 +410,16 @@ export const ProductsData = ({
         {
           id: 'noseRating',
           header: (
-            <ColHeader tip='Nose Rating' symbol='Nose' className='pr-4' />
+            <ColHeader
+              tip='Nose Rating'
+              symbol='Nose'
+              className='w-20'
+              center
+            />
           ),
           accessorKey: 'noseRating',
-          cell: textCell('noseRating'),
-          size: 40,
+          cell: formatText('noseRating', (v) => v, 'text-center'),
+          size: 80,
         },
         // {
         //   id: 'createdAt',
@@ -426,8 +439,10 @@ export const ProductsData = ({
               size='sm'
               radius='none'
               variant='flat'
-              className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk'
-              endContent={<Icon name='chevron-down' className='size-4' />}>
+              className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk portrait:aspect-square'
+              endContent={
+                <Icon name='chevron-down' className='size-4 md:flex hidden' />
+              }>
               <Icon name='download' className='size-4' />
               <span className='hidden sm:inline'>Export CSV</span>
             </Button>

@@ -2,11 +2,18 @@
 
 import {ThemeProvider} from '@/components/ui/theme-provider'
 import {getConvexReactClient} from '@/lib/convexReactClient'
+import {
+  THEME_ATTRIBUTE,
+  THEME_DEFAULT_THEME,
+  THEME_ENABLE_COLOR_SCHEME,
+  THEME_ENABLE_SYSTEM,
+} from '@/lib/theme'
 import {HeroUIProvider} from '@heroui/react'
 import {ConvexProvider} from 'convex/react'
 import {createContext, useContext, useMemo, type ReactNode} from 'react'
 import {AuthCtxProvider} from './auth'
 import {CartAnimationProvider} from './cart-animation'
+import {GuestChatProvider} from './guest-chat'
 import {PendingDealsProvider} from './pending-deals'
 import {PinAccessProvider} from './pin-access'
 import {Toasts} from './toast'
@@ -23,12 +30,15 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
   const content = (
     <HeroUIProvider locale='en-US' className='min-h-screen'>
       <ThemeProvider
-        attribute='class'
-        enableColorScheme
-        defaultTheme='dark'
+        attribute={THEME_ATTRIBUTE}
+        enableColorScheme={THEME_ENABLE_COLOR_SCHEME}
+        enableSystem={THEME_ENABLE_SYSTEM}
+        defaultTheme={THEME_DEFAULT_THEME}
         disableTransitionOnChange>
         <AuthCtxProvider>
-          <PendingDealsProvider>{children}</PendingDealsProvider>
+          <GuestChatProvider>
+            <PendingDealsProvider>{children}</PendingDealsProvider>
+          </GuestChatProvider>
         </AuthCtxProvider>
         <Toasts />
       </ThemeProvider>

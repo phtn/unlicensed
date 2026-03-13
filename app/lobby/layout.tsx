@@ -4,7 +4,7 @@ import {ChatDock} from '@/components/main/chat-dock'
 import {NewFooter} from '@/components/main/new-footer'
 import {usePathname} from 'next/navigation'
 import {NuqsAdapter} from 'nuqs/adapters/next/app'
-import type {ReactNode} from 'react'
+import {Children, type ReactNode} from 'react'
 
 type LobbyLayoutProps = {
   children: ReactNode
@@ -14,13 +14,15 @@ type LobbyLayoutProps = {
 export default function LobbyLayout({children, navbar}: LobbyLayoutProps) {
   const pathname = usePathname()
   const hideChatDock = pathname.includes('/cashapp')
+  const navbarChildren = Children.toArray(navbar)
+  const mainChildren = Children.toArray(children)
 
   return (
     <NuqsAdapter>
       <div suppressHydrationWarning className='flex min-h-screen flex-col'>
-        {navbar}
+        {navbarChildren}
         <main className='relative flex-1'>
-          {children}
+          {mainChildren}
           <ChatDock hidden={hideChatDock} />
         </main>
         <NewFooter />

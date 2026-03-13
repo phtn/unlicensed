@@ -2,13 +2,13 @@
 
 import ShimmerText from '@/components/expermtl/shimmer'
 import {AnimatedNumber} from '@/components/ui/animated-number'
+import {useTheme} from '@/components/ui/theme-provider'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDecimalUSD} from '@/utils/currency'
 import {Card, CardBody} from '@heroui/react'
 import {useQuery} from 'convex/react'
-import {useTheme} from 'next-themes'
 import {ViewTransition, memo, useState} from 'react'
 import {
   type ComputedRewards,

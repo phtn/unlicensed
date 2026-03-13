@@ -387,10 +387,10 @@ function DataTableContent<T>({
   const id = useId()
 
   return (
-    <div className={cn('text-foreground w-full duration-500 ease-in-out')}>
-      <div className='h-[94lvh] inset-0 dark:inset-0 pb-8 min-w-0 overflow-hidden'>
-        <div className='flex h-auto shrink items-center justify-between gap-2 md:h-10.5 md:flex-nowrap md:gap-0'>
-          <div className=' flex items-center'>
+    <div className={cn('text-foreground overflow-hidden')}>
+      <div className='relative inset-0 dark:inset-0 md:pb-8 min-w-0 md:w-full w-[95.1lvw] overflow-hidden mb-0'>
+        <div className='portrait:sticky left-0 flex h-auto shrink items-center justify-between gap-1 md:h-10.5 md:flex-nowrap md:gap-0 md:w-full w-[94lvw] overflow-hidden'>
+          <div className='flex items-center space-x-3'>
             <LeftTableToolbar
               select={
                 <SelectToggle
@@ -446,14 +446,14 @@ function DataTableContent<T>({
           />
         </div>
         {/* Table */}
-        <HyperWrap className='h-[94lvh] md:h-[92lvh] pb-12'>
+        <HyperWrap className='pb-5 h-[92lvh] md:h-[93lvh] md:pb-12'>
           <TableContainer>
             <Table className='w-fit min-w-4xl overflow-scroll'>
               <TableHeader className='w-full'>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
                     key={headerGroup.id}
-                    className='bg-dark-table dark:bg-dark-table/0'>
+                    className='bg-dark-table dark:bg-dark-table/0 md:h-8 h-7'>
                     {headerGroup.headers
                       .filter((header) => header.column.getIsVisible())
                       .map((header) => {
@@ -462,9 +462,9 @@ function DataTableContent<T>({
                             key={header.id + id}
                             style={{width: `${header.getSize()}px`}}
                             className={cn(
-                              'sticky top-0 z-20 bg-[#eceef2] md:h-8 h-8 uppercase overflow-hidden',
+                              'sticky top-0 z-20 bg-[#eceef2] md:h-8 h-7 uppercase overflow-hidden',
                               'font-clash font-medium tracking-tight text-dark-table/80 dark:text-white md:tracking-tight text-xs md:text-sm',
-                              'dark:text-zinc-300 dark:bg-dark-table',
+                              'dark:text-zinc-300 dark:bg-dark-table md:ps-0 ps-2',
                             )}>
                             <ColumnSort
                               flexRender={flexRender}

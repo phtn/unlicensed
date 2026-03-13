@@ -66,6 +66,10 @@ export interface StoreProduct {
   _creationTime?: number
   netWeight?: number
   netWeightUnit?: string
+  packagingMode?: 'bulk' | 'prepack'
+  stockUnit?: string
+  startingWeight?: number
+  remainingWeight?: number
   batchId?: string
 }
 

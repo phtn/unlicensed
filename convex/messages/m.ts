@@ -1,7 +1,11 @@
 import {v} from 'convex/values'
-import type {Id} from '../_generated/dataModel'
+import type {Doc, Id} from '../_generated/dataModel'
 import {mutation} from '../_generated/server'
 import type {MutationCtx} from '../_generated/server'
+
+const GUEST_FID_PREFIX = 'guest:'
+const GUEST_EMAIL_DOMAIN = 'guest-chat.hyfe.local'
+const GUEST_DISPLAY_NAME = 'Guest'
 
 const normalizeFolderName = (value: string) =>
   value
@@ -9,11 +13,245 @@ const normalizeFolderName = (value: string) =>
     .replace(/\s+/g, ' ')
     .slice(0, 40)
 
-const getFolderOwner = async (ctx: MutationCtx, userfid: string) => {
-  const user = await ctx.db
+const normalizeGuestId = (value: string) => value.trim()
+
+const buildGuestFid = (guestId: string) => `${GUEST_FID_PREFIX}${guestId}`
+
+const buildGuestEmail = (guestId: string) =>
+  `guest+${guestId}@${GUEST_EMAIL_DOMAIN}`
+
+const getUserByFid = async (ctx: MutationCtx, fid: string) =>
+  ctx.db
     .query('users')
-    .withIndex('by_fid', (q) => q.eq('fid', userfid))
+    .withIndex('by_fid', (q) => q.eq('fid', fid))
     .first()
+
+const getUserByGuestId = async (ctx: MutationCtx, guestId: string) =>
+  ctx.db
+    .query('users')
+    .withIndex('by_guestId', (q) => q.eq('guestId', guestId))
+    .first()
+
+const getRepresentativeFromStaff = async (
+  ctx: MutationCtx,
+  staffId: Id<'staff'>,
+) => {
+  const staff = await ctx.db.get(staffId)
+  if (!staff?.active) {
+    throw new Error('Default representative is not available')
+  }
+
+  let representative: Doc<'users'> | null = null
+
+  if (staff.userId) {
+    representative = await ctx.db.get(staff.userId as Id<'users'>)
+  } else if (staff.email) {
+    const staffEmail = staff.email
+    representative = await ctx.db
+      .query('users')
+      .withIndex('by_email', (q) => q.eq('email', staffEmail))
+      .first()
+  }
+
+  if (!representative) {
+    throw new Error('Default representative does not have a linked chat user')
+  }
+
+  const representativeFid =
+    representative.fid ?? representative.firebaseId ?? null
+
+  if (!representativeFid) {
+    throw new Error('Default representative does not have a chat identifier')
+  }
+
+  if (!representative.fid && representative.firebaseId) {
+    await ctx.db.patch(representative._id, {
+      fid: representative.firebaseId,
+      updatedAt: Date.now(),
+    })
+  }
+
+  return {
+    user: representative,
+    fid: representativeFid,
+  }
+}
+
+const getGuestRepresentative = async (
+  ctx: MutationCtx,
+  guestUser: Doc<'users'> | null,
+) => {
+  if (guestUser?.guestRepresentativeId) {
+    const existingRepresentative = await ctx.db.get(
+      guestUser.guestRepresentativeId,
+    )
+    const existingRepresentativeFid =
+      existingRepresentative?.fid ?? existingRepresentative?.firebaseId ?? null
+
+    if (existingRepresentative && existingRepresentativeFid) {
+      return {
+        user: existingRepresentative,
+        fid: existingRepresentativeFid,
+      }
+    }
+  }
+
+  const salesRepSetting = await ctx.db
+    .query('adminSettings')
+    .withIndex('by_identifier', (q) => q.eq('identifier', 'sales-rep'))
+    .unique()
+
+  const staffId =
+    salesRepSetting?.value &&
+    typeof salesRepSetting.value === 'object' &&
+    'staffId' in salesRepSetting.value &&
+    typeof salesRepSetting.value.staffId === 'string'
+      ? salesRepSetting.value.staffId
+      : null
+
+  if (!staffId) {
+    throw new Error('No default representative configured')
+  }
+
+  return getRepresentativeFromStaff(ctx, staffId as Id<'staff'>)
+}
+
+const ensureVisibleFollow = async (
+  ctx: MutationCtx,
+  followerId: Id<'users'>,
+  followedId: Id<'users'>,
+) => {
+  if (followerId === followedId) {
+    return null
+  }
+
+  const existingFollow = await ctx.db
+    .query('follows')
+    .withIndex('by_follower_followed', (q) =>
+      q.eq('followerId', followerId).eq('followedId', followedId),
+    )
+    .first()
+
+  if (existingFollow) {
+    if (!existingFollow.visible) {
+      await ctx.db.patch(existingFollow._id, {
+        visible: true,
+      })
+    }
+
+    return existingFollow._id
+  }
+
+  return ctx.db.insert('follows', {
+    followerId,
+    followedId,
+    createdAt: new Date().toISOString(),
+    visible: true,
+  })
+}
+
+const clearArchivePair = async (
+  ctx: MutationCtx,
+  userId: Id<'users'>,
+  otherUserId: Id<'users'>,
+) => {
+  const archivedConversation = await ctx.db
+    .query('archivedConversations')
+    .withIndex('by_userId_otherUserId', (q) =>
+      q.eq('userId', userId).eq('otherUserId', otherUserId),
+    )
+    .first()
+
+  if (archivedConversation) {
+    await ctx.db.delete(archivedConversation._id)
+  }
+}
+
+const remapLikes = (
+  likes:
+    | Array<{
+        userId: Id<'users'>
+        likedAt: string
+      }>
+    | undefined,
+  guestUserId: Id<'users'>,
+  userId: Id<'users'>,
+) => {
+  if (!likes?.length) {
+    return likes
+  }
+
+  const mappedLikes = likes.map((like) =>
+    like.userId === guestUserId ? {...like, userId} : like,
+  )
+
+  return mappedLikes.filter(
+    (like, index) =>
+      mappedLikes.findIndex((entry) => entry.userId === like.userId) === index,
+  )
+}
+
+const getOrCreateGuestUser = async (ctx: MutationCtx, guestId: string) => {
+  const normalizedGuestId = normalizeGuestId(guestId)
+  const guestFid = buildGuestFid(normalizedGuestId)
+  const guestEmail = buildGuestEmail(normalizedGuestId)
+  let guestUser =
+    (await getUserByGuestId(ctx, normalizedGuestId)) ??
+    (await getUserByFid(ctx, guestFid))
+
+  if (guestUser) {
+    const updates: Partial<Doc<'users'>> = {}
+
+    if (guestUser.guestId !== normalizedGuestId) {
+      updates.guestId = normalizedGuestId
+    }
+
+    if (guestUser.fid !== guestFid) {
+      updates.fid = guestFid
+    }
+
+    if (guestUser.email !== guestEmail) {
+      updates.email = guestEmail
+    }
+
+    if (guestUser.name !== GUEST_DISPLAY_NAME) {
+      updates.name = GUEST_DISPLAY_NAME
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await ctx.db.patch(guestUser._id, {
+        ...updates,
+        updatedAt: Date.now(),
+      })
+
+      guestUser = (await ctx.db.get(guestUser._id)) ?? guestUser
+    }
+
+    return guestUser
+  }
+
+  const guestUserId = await ctx.db.insert('users', {
+    email: guestEmail,
+    name: GUEST_DISPLAY_NAME,
+    fid: guestFid,
+    guestId: normalizedGuestId,
+    isActive: true,
+    accountStatus: 'guest',
+    notes: 'Guest chat session',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  })
+
+  const createdGuestUser = await ctx.db.get(guestUserId)
+  if (!createdGuestUser) {
+    throw new Error('Failed to create guest chat user')
+  }
+
+  return createdGuestUser
+}
+
+const getFolderOwner = async (ctx: MutationCtx, userfid: string) => {
+  const user = await getUserByFid(ctx, userfid)
 
   if (!user) {
     throw new Error('User not found')
@@ -38,10 +276,7 @@ const resolveOtherUserId = async (
   otherUserfid: string,
   otherUserId?: string,
 ) => {
-  const otherUser = await ctx.db
-    .query('users')
-    .withIndex('by_fid', (q) => q.eq('fid', otherUserfid))
-    .first()
+  const otherUser = await getUserByFid(ctx, otherUserfid)
 
   if (otherUser) {
     return otherUser._id
@@ -53,6 +288,274 @@ const resolveOtherUserId = async (
 
   throw new Error('Other user not found')
 }
+
+export const ensureGuestConversation = mutation({
+  args: {
+    guestId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const guestId = normalizeGuestId(args.guestId)
+
+    if (!guestId) {
+      throw new Error('Guest id is required')
+    }
+
+    let guestUser = await getOrCreateGuestUser(ctx, guestId)
+    const representative = await getGuestRepresentative(ctx, guestUser)
+
+    if (guestUser.guestRepresentativeId !== representative.user._id) {
+      await ctx.db.patch(guestUser._id, {
+        guestRepresentativeId: representative.user._id,
+        updatedAt: Date.now(),
+      })
+
+      guestUser = (await ctx.db.get(guestUser._id)) ?? guestUser
+    }
+
+    await ensureVisibleFollow(ctx, guestUser._id, representative.user._id)
+    await clearArchivePair(ctx, guestUser._id, representative.user._id)
+    await clearArchivePair(ctx, representative.user._id, guestUser._id)
+
+    return {
+      guestId,
+      guestFid: guestUser.fid ?? buildGuestFid(guestId),
+      representativeFid: representative.fid,
+      representative: {
+        name: representative.user.name ?? GUEST_DISPLAY_NAME,
+        email: representative.user.email ?? '',
+        photoUrl: representative.user.photoUrl ?? null,
+      },
+    }
+  },
+})
+
+export const mergeGuestConversation = mutation({
+  args: {
+    guestId: v.string(),
+    userFid: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const guestId = normalizeGuestId(args.guestId)
+
+    if (!guestId) {
+      return {merged: false}
+    }
+
+    const guestUser =
+      (await getUserByGuestId(ctx, guestId)) ??
+      (await getUserByFid(ctx, buildGuestFid(guestId)))
+
+    if (!guestUser) {
+      return {merged: false}
+    }
+
+    const user = await getUserByFid(ctx, args.userFid)
+    if (!user) {
+      throw new Error('Authenticated user not found')
+    }
+
+    if (guestUser._id === user._id) {
+      return {merged: false}
+    }
+
+    const guestSentMessages = await ctx.db
+      .query('messages')
+      .withIndex('by_sender', (q) => q.eq('senderId', guestUser._id))
+      .collect()
+
+    for (const message of guestSentMessages) {
+      await ctx.db.patch(message._id, {
+        senderId: user._id,
+        likes: remapLikes(message.likes, guestUser._id, user._id),
+      })
+    }
+
+    const guestReceivedMessages = await ctx.db
+      .query('messages')
+      .withIndex('by_receiver', (q) => q.eq('receiverId', guestUser._id))
+      .collect()
+
+    for (const message of guestReceivedMessages) {
+      await ctx.db.patch(message._id, {
+        receiverId: user._id,
+        likes: remapLikes(message.likes, guestUser._id, user._id),
+      })
+    }
+
+    const guestFollowing = await ctx.db
+      .query('follows')
+      .withIndex('by_follower', (q) => q.eq('followerId', guestUser._id))
+      .collect()
+
+    for (const follow of guestFollowing) {
+      if (follow.followedId === user._id) {
+        await ctx.db.delete(follow._id)
+        continue
+      }
+
+      const existingFollow = await ctx.db
+        .query('follows')
+        .withIndex('by_follower_followed', (q) =>
+          q.eq('followerId', user._id).eq('followedId', follow.followedId),
+        )
+        .first()
+
+      if (existingFollow) {
+        if (!existingFollow.visible && follow.visible) {
+          await ctx.db.patch(existingFollow._id, {
+            visible: true,
+          })
+        }
+        await ctx.db.delete(follow._id)
+        continue
+      }
+
+      await ctx.db.patch(follow._id, {
+        followerId: user._id,
+      })
+    }
+
+    const guestFollowers = await ctx.db
+      .query('follows')
+      .withIndex('by_followed', (q) => q.eq('followedId', guestUser._id))
+      .collect()
+
+    for (const follow of guestFollowers) {
+      if (follow.followerId === user._id) {
+        await ctx.db.delete(follow._id)
+        continue
+      }
+
+      const existingFollow = await ctx.db
+        .query('follows')
+        .withIndex('by_follower_followed', (q) =>
+          q.eq('followerId', follow.followerId).eq('followedId', user._id),
+        )
+        .first()
+
+      if (existingFollow) {
+        if (!existingFollow.visible && follow.visible) {
+          await ctx.db.patch(existingFollow._id, {
+            visible: true,
+          })
+        }
+        await ctx.db.delete(follow._id)
+        continue
+      }
+
+      await ctx.db.patch(follow._id, {
+        followedId: user._id,
+      })
+    }
+
+    const guestArchivedConversations = await ctx.db
+      .query('archivedConversations')
+      .withIndex('by_userId', (q) => q.eq('userId', guestUser._id))
+      .collect()
+
+    for (const archivedConversation of guestArchivedConversations) {
+      if (archivedConversation.otherUserId === user._id) {
+        await ctx.db.delete(archivedConversation._id)
+        continue
+      }
+
+      const existingArchivedConversation = await ctx.db
+        .query('archivedConversations')
+        .withIndex('by_userId_otherUserId', (q) =>
+          q
+            .eq('userId', user._id)
+            .eq('otherUserId', archivedConversation.otherUserId),
+        )
+        .first()
+
+      if (existingArchivedConversation) {
+        await ctx.db.delete(archivedConversation._id)
+        continue
+      }
+
+      await ctx.db.patch(archivedConversation._id, {
+        userId: user._id,
+      })
+    }
+
+    const archivedConversationsReferencingGuest = await ctx.db
+      .query('archivedConversations')
+      .withIndex('by_otherUserId', (q) => q.eq('otherUserId', guestUser._id))
+      .collect()
+
+    for (const archivedConversation of archivedConversationsReferencingGuest) {
+      if (archivedConversation.userId === user._id) {
+        await ctx.db.delete(archivedConversation._id)
+        continue
+      }
+
+      const existingArchivedConversation = await ctx.db
+        .query('archivedConversations')
+        .withIndex('by_userId_otherUserId', (q) =>
+          q.eq('userId', archivedConversation.userId).eq('otherUserId', user._id),
+        )
+        .first()
+
+      if (existingArchivedConversation) {
+        await ctx.db.delete(archivedConversation._id)
+        continue
+      }
+
+      await ctx.db.patch(archivedConversation._id, {
+        otherUserId: user._id,
+      })
+    }
+
+    const guestOwnedAssignments = await ctx.db
+      .query('conversationFolderAssignments')
+      .withIndex('by_ownerUserId', (q) => q.eq('ownerUserId', guestUser._id))
+      .collect()
+
+    for (const assignment of guestOwnedAssignments) {
+      await ctx.db.delete(assignment._id)
+    }
+
+    const assignmentsReferencingGuest = await ctx.db
+      .query('conversationFolderAssignments')
+      .withIndex('by_otherUserId', (q) => q.eq('otherUserId', guestUser._id))
+      .collect()
+
+    for (const assignment of assignmentsReferencingGuest) {
+      if (assignment.ownerUserId === user._id) {
+        await ctx.db.delete(assignment._id)
+        continue
+      }
+
+      const existingAssignment = await ctx.db
+        .query('conversationFolderAssignments')
+        .withIndex('by_ownerUserId_otherUserId', (q) =>
+          q.eq('ownerUserId', assignment.ownerUserId).eq('otherUserId', user._id),
+        )
+        .first()
+
+      if (existingAssignment) {
+        await ctx.db.delete(assignment._id)
+        continue
+      }
+
+      await ctx.db.patch(assignment._id, {
+        otherUserId: user._id,
+      })
+    }
+
+    const representativeUser = guestUser.guestRepresentativeId
+      ? await ctx.db.get(guestUser.guestRepresentativeId)
+      : null
+
+    await ctx.db.delete(guestUser._id)
+
+    return {
+      merged: true,
+      representativeFid:
+        representativeUser?.fid ?? representativeUser?.firebaseId ?? null,
+    }
+  },
+})
 
 // Send a message to another user
 export const sendMessage = mutation({

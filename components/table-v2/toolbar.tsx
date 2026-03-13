@@ -15,12 +15,14 @@ export const CenterTableToolbar = ({
   dateRange,
 }: CenterTableToolbarProps) => {
   return (
-    <div className='order-3 flex h-auto w-full items-center justify-start pb-1 md:order-2 md:h-9 md:w-auto md:justify-center'>
-      <div className='flex w-full flex-wrap items-start justify-start gap-2 md:w-auto md:flex-nowrap md:justify-between'>
+    <div className='order-3 flex w-full items-center justify-start pb-1 md:order-2 md:h-9 md:w-auto md:justify-center'>
+      <div className='flex w-full items-start justify-start gap-1 md:gap-2 md:w-auto md:flex-nowrap md:justify-between'>
         <div className='shrink-0'>{view}</div>
-        <div className='flex shrink-0 flex-wrap items-start gap-2 md:flex-nowrap'>
-          <div className='shrink-0'>{filter}</div>
-          {dateRange ? <div className='shrink-0'>{dateRange}</div> : null}
+        <div className='flex shrink-0 flex-wrap items-start md:gap-2 md:flex-nowrap'>
+          <div className='shrink-0 flex'>{filter}</div>
+          {dateRange ? (
+            <div className='shrink-0 hidden md:flex'>{dateRange}</div>
+          ) : null}
         </div>
       </div>
     </div>
@@ -35,7 +37,9 @@ interface RightTableToolbarProps {
 export const RightTableToolbar = ({left, search}: RightTableToolbarProps) => {
   return (
     <Toolbar.Root className='order-2 flex h-9 w-full items-start justify-end gap-px pb-1 overflow-visible md:order-3 md:w-auto'>
-      <ToggleGroup className='flex items-start gap-2' aria-label='Alignment'>
+      <ToggleGroup
+        className='flex items-start gap-1 md:gap-2'
+        aria-label='Alignment'>
         {left}
         {search}
       </ToggleGroup>

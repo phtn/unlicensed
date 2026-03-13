@@ -283,6 +283,10 @@ async function buildProductInsertDoc(
     weightGrams: args.weightGrams,
     netWeight: args.netWeight,
     netWeightUnit: args.netWeightUnit?.trim() || undefined,
+    packagingMode: args.packagingMode,
+    stockUnit: args.stockUnit?.trim() || undefined,
+    startingWeight: args.startingWeight,
+    remainingWeight: args.remainingWeight,
     variants: args.variants,
     priceByDenomination: args.priceByDenomination,
     eligibleForRewards: args.eligibleForRewards,
@@ -467,6 +471,18 @@ export const updateProduct = mutation({
     }
     if (fields.netWeightUnit !== undefined) {
       updates.netWeightUnit = fields.netWeightUnit.trim() || undefined
+    }
+    if (fields.packagingMode !== undefined) {
+      updates.packagingMode = fields.packagingMode
+    }
+    if (fields.stockUnit !== undefined) {
+      updates.stockUnit = fields.stockUnit.trim() || undefined
+    }
+    if (fields.startingWeight !== undefined) {
+      updates.startingWeight = fields.startingWeight
+    }
+    if (fields.remainingWeight !== undefined) {
+      updates.remainingWeight = fields.remainingWeight
     }
     if (fields.lineage !== undefined) {
       updates.lineage = fields.lineage.trim() || undefined

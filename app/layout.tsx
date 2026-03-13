@@ -1,4 +1,5 @@
 import {GlobalAuthModal} from '@/components/auth/global-auth-modal'
+import {ThemeScript} from '@/components/ui/theme-script'
 import {ProvidersCtxProvider} from '@/ctx'
 import {DynamicWagmiContext} from '@/ctx/wagmi/dynamic'
 import {
@@ -189,6 +190,9 @@ export default async function RootLayout({
   const cookies = (await headers()).get('cookie')
   return (
     <html lang='en' suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body
         className={`${GeistPixelSquare.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelGrid.variable} ${GeistPixelLine.variable} ${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} antialiased font-okxs font-normal selection:bg-brand selection:text-white`}>
         <DynamicWagmiContext cookies={cookies}>

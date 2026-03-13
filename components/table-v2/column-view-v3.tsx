@@ -41,15 +41,16 @@ export const ColumnView = <T,>({cols, onColumnVisibilityChange}: Props<T>) => {
         render={
           <Button
             className={cn(
-              'relative flex h-7.5 items-center justify-center rounded-sm space-x-2 px-3.5 text-sm select-none transition-colors duration-75',
+              'relative flex h-8 md:h-7.5 items-center justify-center rounded-sm md:space-x-2 px-2 md:px-3.5 text-sm select-none transition-colors duration-75',
               'data-pressed:bg-gray-100 dark:data-pressed:bg-dark-table/50 ',
-              'bg-sidebar/50 dark:bg-dark-table/10',
+              'bg-sidebar/50 dark:bg-dark-table/10 portrait:aspect-square',
               'hover:bg-sidebar/60 dark:hover:bg-dark-table/50',
               'active:bg-sidebar dark:active:bg-dark-table/20',
-              'focus-visible:bg-none focus-visible:outline-1 focus-visible:-outline-offset-1',
+              'focus-visible:bg-none focus-visible:outline-1 focus-visible:-outline-offset-1 grow-0',
+              {'px-0 md:px-3.5': invisibleColumns.length > 0},
             )}>
             {invisibleColumns.length > 0 ? (
-              <span className=' bg-orange-500 dark:bg-orange-400 text-white w-5 -ml-1 rounded-sm font-okxs font-semibold min-w-3.5'>
+              <span className=' bg-orange-500 dark:bg-orange-400 text-white w-5 md:-ml-1 rounded-sm font-okxs font-semibold min-w-3.5 grow-0'>
                 {invisibleColumns.length > 99 ? '99+' : invisibleColumns.length}
               </span>
             ) : (

@@ -1,10 +1,10 @@
 'use client'
 
+import {useTheme} from '@/components/ui/theme-provider'
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
-import {useTheme} from 'next-themes'
 import {useCallback, useMemo} from 'react'
 
 type ThemeToggleProps = {

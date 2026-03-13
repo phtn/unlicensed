@@ -8,6 +8,7 @@ import {CSV_DENOM_KEYS, DENOM_HEADERS, EXPECTED_CSV_HEADERS} from './constants'
 export {CSV_DENOM_KEYS, EXPECTED_CSV_HEADERS}
 
 const VALID_INVENTORY_MODES = new Set(['by_denomination', 'shared_weight'])
+const VALID_PACKAGING_MODES = new Set(['bulk', 'prepack'])
 
 /** CSV columns that are not sent on insert (created by Convex). Shown in export but omitted in preview/import. */
 export const OMIT_FROM_IMPORT_HEADERS = new Set(['_id', '_creationTime'])
@@ -101,6 +102,10 @@ function rawRowToProduct(
   const inventoryMode = (() => {
     const rawValue = get('inventoryMode').trim()
     return VALID_INVENTORY_MODES.has(rawValue) ? rawValue : undefined
+  })()
+  const packagingMode = (() => {
+    const rawValue = get('packagingMode').trim()
+    return VALID_PACKAGING_MODES.has(rawValue) ? rawValue : undefined
   })()
 
   const availableDenoms = parseJsonArrayOrRecord(
@@ -206,6 +211,10 @@ function rawRowToProduct(
     productType: get('productType') || undefined,
     netWeight: parseNum(get('netWeight')),
     netWeightUnit: get('netWeightUnit') || undefined,
+    packagingMode,
+    stockUnit: get('stockUnit') || undefined,
+    startingWeight: parseNum(get('startingWeight')),
+    remainingWeight: parseNum(get('remainingWeight')),
     subcategory: get('subcategory') || undefined,
     batchId: get('batchId') || undefined,
     archived: parseBool(get('archived')),
@@ -267,6 +276,7 @@ const VALID_INVENTORY_MODES_LOWER = new Set([
   'by_denomination',
   'shared_weight',
 ])
+const VALID_PACKAGING_MODES_LOWER = new Set(['bulk', 'prepack'])
 
 /** Client-side row validation (required fields, types). Does not check category existence or slug conflict. */
 function validateRow(
@@ -330,6 +340,13 @@ function validateRow(
         'masterStockUnit is required when inventoryMode is shared_weight',
       )
     }
+  }
+  const packagingModeRaw = (raw.packagingMode ?? '').trim()
+  if (
+    packagingModeRaw !== '' &&
+    !VALID_PACKAGING_MODES_LOWER.has(packagingModeRaw.toLowerCase())
+  ) {
+    errors.push('packagingMode must be bulk or prepack')
   }
   const dealTypeRaw = (raw.dealType ?? '').trim()
   if (

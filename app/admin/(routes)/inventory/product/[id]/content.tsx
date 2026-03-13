@@ -133,6 +133,10 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
     noseRating: product.noseRating ?? 0,
     netWeight: product.netWeight?.toString() ?? '',
     netWeightUnit: product.netWeightUnit ?? '',
+    packagingMode: product.packagingMode,
+    stockUnit: product.stockUnit ?? '',
+    startingWeight: product.startingWeight?.toString() ?? '',
+    remainingWeight: product.remainingWeight?.toString() ?? '',
     variants: product.variants?.map((v: {label: string; price: number}) => ({
       label: v.label,
       price: v.price / 100,

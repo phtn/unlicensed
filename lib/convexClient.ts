@@ -64,6 +64,10 @@ export type RawProduct = {
   subcategory?: string
   netWeight?: number
   netWeightUnit?: string
+  packagingMode?: 'bulk' | 'prepack'
+  stockUnit?: string
+  startingWeight?: number
+  remainingWeight?: number
   batchId?: string
   _id?: Id<'products'>
   _creationTime?: number
@@ -164,6 +168,10 @@ export const adaptProduct = (
   weightGrams: product.weightGrams,
   netWeight: product.netWeight,
   netWeightUnit: product.netWeightUnit,
+  packagingMode: product.packagingMode,
+  stockUnit: product.stockUnit,
+  startingWeight: product.startingWeight,
+  remainingWeight: product.remainingWeight,
   batchId: product.batchId,
   brand: Array.isArray(product.brand)
     ? product.brand

@@ -367,7 +367,7 @@ export const RecentActivities = ({
       radius='none'
       style={fullTable ? translateStyle : undefined}
       className={cn(
-        'relative z-300 border border-black dark:bg-dark-table/40 bg-light-table/0 overflow-hidden md:rounded-t-2xl md:w-full w-screen overflow-x-scroll mask-[linear-gradient(white,white)]',
+        'relative z-300 border border-black dark:bg-dark-table/40 bg-light-table/0 md:rounded-t-2xl md:w-full mask-[linear-gradient(white,white)] w-[92lvw] overflow-hidden',
         'transition-transform duration-300 border-t border-light-gray/40',
         {
           'h-full bg-sidebar/40': fullTable,
@@ -381,26 +381,28 @@ export const RecentActivities = ({
             'md:h-[calc(100lvh-66px)]': fullTable,
           },
         )}>
-        <div className='relative font-polysans text-sm flex items-center justify-between px-3 py-2 md:w-full w-screen'>
-          <div className='flex w-full'>Today</div>
-          <Button
-            size='sm'
-            isIconOnly
-            id='toggle-full-table'
-            onPress={toggleFullTable}
-            className='dark:bg-origin/60 bg-sidebar/60 scale-80 rounded-md px-0 overflow-hidden aspect-square flex-1 opacity-60 hover:opacity-100'>
-            <Icon
-              name='chevron-double-left'
-              className={cn('size-7 rotate-45', fullTable && '-rotate-45')}
-            />
-          </Button>
+        <div className='sticky left-0 top-0 font-clash text-sm flex items-center justify-between px-2 md:py-2 py-1 w-full bg-white'>
+          <div className='relative h-8! flex items-center justify-between md:w-full w-[92lvw]'>
+            <div className='flex w-full'>Today</div>
+            <Button
+              size='sm'
+              isIconOnly
+              id='toggle-full-table'
+              onPress={toggleFullTable}
+              className='sticky right-2 dark:bg-origin/60 bg-sidebar/60 scale-80 rounded-md px-0 overflow-hidden aspect-square flex-1 opacity-60 hover:opacity-100'>
+              <Icon
+                name='chevron-double-left'
+                className={cn('size-7 rotate-45', fullTable && '-rotate-45')}
+              />
+            </Button>
+          </div>
         </div>
         <Table
           removeWrapper
           radius='none'
           classNames={{
             ...classNames,
-            tbody: 'overflow-hidden rounded-3xl',
+            tbody: 'overflow-auto rounded-3xl',
             th: [
               'sticky top-0 overflow-hidden bg-sidebar dark:bg-dark-table backdrop-blur-3xl z-20 h-9 border-b border-sidebar dark:border-dark-table',
             ],

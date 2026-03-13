@@ -60,8 +60,8 @@ export const PaymentSuccessEmail = ({
     <Tailwind>
       <Head />
       <Body className='m-0 bg-[#ececec] py-8 font-sans text-[#171717]'>
-        <Container className='mx-auto w-full max-w-[640.01px] px-4'>
-          <Section className='pb-7 pt-3 text-center'>
+        <Container className='mx-auto w-full max-w-[640.01px] md:px-4'>
+          <Section className='pb-4 md:pb-8 pt-2 text-center'>
             <Img
               src={`https://res.cloudinary.com/dx0heqhhe/image/upload/v1771881178/rf-wordmark-flex_vrgct3.png`}
               alt='Rapid Fire'

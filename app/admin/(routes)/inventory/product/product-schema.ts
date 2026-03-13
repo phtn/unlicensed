@@ -256,6 +256,10 @@ export const productSchema = z.object({
   weightGrams: z.string().optional(),
   netWeight: z.string().optional(),
   netWeightUnit: z.string().optional(),
+  packagingMode: z.enum(['bulk', 'prepack']).optional(),
+  stockUnit: z.string().optional(),
+  startingWeight: z.string().optional(),
+  remainingWeight: z.string().optional(),
   batchId: z.string().optional(),
   variants: z
     .array(
@@ -590,6 +594,41 @@ export const productFields: FormInput<ProductFormValues>[] = [
     placeholder: 'e.g., g, oz, ml',
     defaultValue: '',
   },
+  {
+    name: 'packagingMode',
+    label: 'Packaging Mode',
+    required: false,
+    type: 'select',
+    options: [
+      {value: 'bulk', label: 'Bulk'},
+      {value: 'prepack', label: 'Prepack'},
+    ],
+    defaultValue: undefined,
+  },
+  {
+    name: 'stockUnit',
+    label: 'Stock Unit',
+    required: false,
+    type: 'text',
+    placeholder: 'e.g., g, oz, lb',
+    defaultValue: '',
+  },
+  {
+    name: 'startingWeight',
+    label: 'Starting Weight',
+    required: false,
+    type: 'text',
+    placeholder: 'Initial bulk weight',
+    defaultValue: '',
+  },
+  {
+    name: 'remainingWeight',
+    label: 'Remaining Weight',
+    required: false,
+    type: 'text',
+    placeholder: 'Current remaining bulk weight',
+    defaultValue: '',
+  },
 ]
 
 export const defaultValues: ProductFormValues = {
@@ -615,6 +654,10 @@ export const defaultValues: ProductFormValues = {
   onSale: false,
   eligibleForUpgrade: false,
   upgradePrice: undefined,
+  packagingMode: undefined,
+  stockUnit: '',
+  startingWeight: '',
+  remainingWeight: '',
 } as ProductFormValues
 
 export const flowerDenominations: Array<SelectOption> = [

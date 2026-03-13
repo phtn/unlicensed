@@ -187,6 +187,21 @@ const PRODUCT_FIELDS = [
   ],
   ['tags', 'Yes', 'string[]', "['seasonal', 'staff-pick']", 'Generic tags.'],
   ['packagingMode', 'Yes', "'bulk' | 'prepack'", 'bulk', 'Packaging model.'],
+  ['stockUnit', 'Yes', 'string', 'oz', 'Unit used for bulk stock tracking.'],
+  [
+    'startingWeight',
+    'Yes',
+    'number',
+    '160',
+    'Initial bulk weight or starting stock amount.',
+  ],
+  [
+    'remainingWeight',
+    'Yes',
+    'number',
+    '124.5',
+    'Current remaining bulk weight or stock amount.',
+  ],
 ] as const
 
 const SUPPORTING_TYPES = [

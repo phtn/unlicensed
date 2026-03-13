@@ -133,19 +133,20 @@ export const Filter = <T,>({
   return (
     <Popover.Root>
       <Popover.Trigger
-        className='hidden md:flex'
+        className=''
         render={
           <BaseButton
             className={cn(
-              'relative flex h-7.5 items-center justify-center rounded-sm space-x-2 px-3.5 text-sm select-none transition-colors duration-75',
+              'relative flex w-8 h-8 md:h-7.5 items-center justify-center rounded-sm md:space-x-2 md:w-auto md:px-3.5 text-sm select-none transition-colors duration-75',
               'data-pressed:bg-gray-100 dark:data-pressed:bg-dark-table/50 ',
               'bg-sidebar/50 dark:bg-dark-table/10',
               'hover:bg-sidebar/60 dark:hover:bg-dark-table/50',
               'active:bg-sidebar dark:active:bg-dark-table/20',
               'focus-visible:bg-none focus-visible:outline-1 focus-visible:-outline-offset-1',
+              {'px-0 md:px-3.5': totalActiveFilters > 0},
             )}>
             {totalActiveFilters > 0 ? (
-              <span className='bg-indigo-500 font-okxs -ml-1 w-5 rounded-sm font-semibold text-white dark:bg-indigo-400'>
+              <span className='bg-indigo-500 font-okxs md:-ml-1 w-5 rounded-sm font-semibold text-white dark:bg-indigo-400'>
                 {totalActiveFilters > 99 ? '99+' : totalActiveFilters}
               </span>
             ) : (
@@ -154,7 +155,7 @@ export const Filter = <T,>({
                 className={cn('size-4 dark:opacity-80')}
               />
             )}
-            <span className='text-sm font-brk capitalize opacity-90 flex'>
+            <span className='hidden text-sm font-brk capitalize opacity-90 md:flex'>
               Filter
             </span>
           </BaseButton>

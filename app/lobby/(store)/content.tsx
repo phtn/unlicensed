@@ -33,17 +33,6 @@ export const Content = ({
   initialProducts,
 }: StorefrontPageProps) => {
   const scrollY = useScrollY()
-  // const categoriesQuery = useQuery(api.categories.q.listCategories, {})
-  // const productsQuery = useQuery(api.products.q.listProducts, {})
-  // const categories = useMemo(
-  //   () => categoriesQuery?.map(adaptCategory) ?? initialCategories,
-  //   [categoriesQuery, initialCategories],
-  // )
-  // const products = useMemo(
-  //   () => productsQuery?.map(adaptProduct) ?? initialProducts,
-  //   [productsQuery, initialProducts],
-  // )
-
   const ctas: Array<MiniCardProps> = [
     {
       id: '01',

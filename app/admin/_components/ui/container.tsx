@@ -76,9 +76,9 @@ export const Wrapper = forwardRef<HTMLDivElement, WrapperProps>(
       <div
         className={cn(
           'flex-1 min-w-0 w-full border border-dark-gray/40 dark:border-dark-table/40 bg-white dark:bg-origin',
-          'drop-shadow-md md:overflow-hidden',
+          'drop-shadow-md',
           'md:rounded-xl whitespace-nowrap',
-          'px-4',
+          'px-4 -ml-1.5 md:ml-0 overflow-hidden',
           {'': isPanelExpanded},
         )}
         ref={ref}>

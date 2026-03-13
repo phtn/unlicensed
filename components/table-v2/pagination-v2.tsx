@@ -36,17 +36,21 @@ export const Paginator = ({
   }, [state.pageSize])
 
   return (
-    <div className='z-10 flex-1 grow-0 bg-background w-full border-t border-sidebar flex items-center justify-between py-1 md:py-2'>
+    <div className='z-10 flex-1 grow-0 flex bg-linear-to-r from-transparent via-sidebar to-transparent items-center justify-between md:py-2 border-0 border-gray-800'>
       {/* Results per page */}
-      <div className='flex items-center justify-between space-x-8 px-6'>
-        <label htmlFor={id} className='font-space tracking-tight'>
-          <span className='font-semibold text-base'>{rowCount}</span>
-          <span className='opacity-80 ml-1'>Items</span>
+      <div className='flex items-center md:justify-between md:w-fit md:space-x-8 space-x-2 md:px-6'>
+        <label
+          htmlFor={id}
+          className='font-okxs tracking-tight text-sm md:text-base'>
+          <span className='font-semibold'>{rowCount}</span>
+          <span className='opacity-80 ml-1 font-ios tracking-tighter'>
+            items
+          </span>
         </label>
-        <div className='flex items-center border border-greyed/40 dark:hover:bg-background/10 dark:focus-visible:bg-background/15 px-3 py-1 rounded-lg space-x-1 dark:bg-dysto/20'>
+        <div className='flex items-center dark:hover:bg-background/10 dark:focus-visible:bg-background/15 md:px-3 py-1 rounded-lg md:space-x-1 w-fit'>
           <label
             htmlFor='showing-rows'
-            className='max-sm:sr-only font-space tracking-tight mx-auto flex items-center'>
+            className='font-okxs tracking-tight md:mx-auto flex items-center'>
             <Select
               id='showing-rows'
               selectedKeys={[state.pageSize.toString()]}
@@ -54,17 +58,19 @@ export const Paginator = ({
                 const selectedKey = Array.from(keys)[0] as string
                 if (selectedKey) setPageSize(selectedKey)
               }}
+              className=' border-l border-gray-600'
               variant='bordered'
+              radius='none'
               aria-label='Rows per page'
               classNames={{
                 trigger:
-                  'min-h-0 h-auto py-0 px-2 border-none shadow-none bg-transparent min-w-unit-12',
-                value: 'whitespace-nowrap font-space font-semibold',
+                  'min-h-0 bg-transparent md:h-auto py-1 px-2 border-none shadow-none min-w-12',
+                value: 'whitespace-nowrap font-okxs font-semibold',
               }}
               popoverProps={{
                 classNames: {
                   content:
-                    '-translate-x-4 mb-2 w-[100px] min-w-[100px] p-1 rounded-lg',
+                    'md:-translate-x-4 mb-2 md:w-[100px] min-w-[100px] md:p-1 rounded-lg',
                 },
               }}>
               {pageSizeOptions.map((size) => (
@@ -73,14 +79,16 @@ export const Paginator = ({
                 </SelectItem>
               ))}
             </Select>
-            <span className='opacity-80 font-brk text-base ml-1'>Rows</span>
+            <span className='opacity-80 font-ios text-sm md:text-base ml-1 '>
+              rows
+            </span>
           </label>
         </div>
       </div>
       {/* Page number information */}
-      <div className='hidden _flex px-4 text-muted-foreground grow justify-end text-sm whitespace-nowrap'>
+      <div className='hidden _flex px-2 md:px-4 text-muted-foreground grow justify-end text-sm whitespace-nowrap'>
         <p
-          className='hidden text-muted-foreground text-sm whitespace-nowrap'
+          className='text-muted-foreground text-sm whitespace-nowrap'
           aria-live='polite'>
           <span className='text-foreground'>
             {state.pageIndex * state.pageSize + 1}-

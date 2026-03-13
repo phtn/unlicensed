@@ -1,4 +1,5 @@
 import {api} from '@/convex/_generated/api'
+import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, cn, Progress} from '@heroui/react'
@@ -52,6 +53,7 @@ type StatCardProps = {
 }
 
 const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
+  const isMobile = useMobile()
   const getStatValue = (
     statId: string,
   ): {value: string | number; subtitle?: string} => {
@@ -140,10 +142,10 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
           </p>
         </div>
         <div className='flex items-baseline gap-1'>
-          <span className='text-lg font-bold tracking-tight font-geist-sans'>
+          <span className='text-base md:text-lg font-bold tracking-tight font-geist-sans'>
             {statValue.value}
           </span>
-          {statValue.subtitle && (
+          {!isMobile && statValue.subtitle && (
             <span className='text-xs opacity-60'>{statValue.subtitle}</span>
           )}
         </div>
@@ -162,7 +164,7 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
             </p>
           </div>
           {config.id === 'deliveries' ? (
-            <div className='font-space text-sm space-x-2'>
+            <div className='font-okxs text-sm space-x-2'>
               <span className='opacity-60'>Ongoing</span>
               <span>{stats.ongoingDeliveriesCount}</span>
             </div>
@@ -184,7 +186,7 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
               <span className='text-sm opacity-60'>{statValue.subtitle}</span>
             )}
           </div>
-          {config.id === 'deliveries' && <p className='text-sm opacity-60'></p>}
+          {/*{config.id === 'deliveries' && <p className='text-sm opacity-60'></p>}*/}
         </div>
       </div>
 
@@ -317,12 +319,12 @@ export const Stats = ({
     <div
       ref={statsContainerRef}
       className={cn(
-        'portrait:mx-4 space-y-2 md:space-y-4 lg:space-y-6 transition-transform-opacity duration-300',
+        'portrait:mx-0 space-y-2 md:space-y-4 lg:space-y-6 transition-transform-opacity duration-300',
         {
           'opacity-0': fullTable,
         },
       )}>
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3 lg:gap-4 min-w-0'>
+      <div className='grid grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3 lg:gap-4 min-w-0'>
         {visibleStats.map((config: StatConfig) => {
           let chartData: Array<{value: number}> | undefined
           if (config.id === 'averageOrderValue') {

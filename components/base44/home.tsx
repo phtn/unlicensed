@@ -70,7 +70,7 @@ export const NewHome = () => {
         radius='none'
         href='/lobby/category'
         variant='solid'
-        className='absolute bottom-44 left-1/2 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white  _dark:bg-white md:w-64'>
+        className='absolute md:bottom-44 bottom-32 left-1/2 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white  _dark:bg-white md:w-64'>
         Shop Now
       </Button>
     </div>

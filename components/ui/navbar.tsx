@@ -1,5 +1,6 @@
 'use client'
 
+import {useTheme} from '@/components/ui/theme-provider'
 import {cn} from '@/lib/utils'
 import {
   Button,
@@ -12,7 +13,6 @@ import {
   NavbarMenuItem,
   NavbarMenuToggle,
 } from '@heroui/react'
-import {useTheme} from 'next-themes'
 import {usePathname} from 'next/navigation'
 import {useMemo, useState} from 'react'
 

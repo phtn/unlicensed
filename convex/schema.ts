@@ -51,6 +51,7 @@ export default defineSchema({
   staff: defineTable(staffSchema).index('by_email', ['email']),
   users: defineTable(userSchema)
     .index('by_fid', ['fid'])
+    .index('by_guestId', ['guestId'])
     .index('by_email', ['email']),
   addresses: defineTable(addressRecordSchema)
     .index('by_user', ['userId'])
@@ -135,11 +136,13 @@ export default defineSchema({
 
   conversationFolderAssignments: defineTable(conversationFolderAssignmentSchema)
     .index('by_ownerUserId', ['ownerUserId'])
+    .index('by_otherUserId', ['otherUserId'])
     .index('by_ownerUserId_otherUserId', ['ownerUserId', 'otherUserId'])
     .index('by_ownerUserId_folderId', ['ownerUserId', 'folderId']),
 
   archivedConversations: defineTable(archivedConversationSchema)
     .index('by_userId', ['userId'])
+    .index('by_otherUserId', ['otherUserId'])
     .index('by_userId_otherUserId', ['userId', 'otherUserId']),
 
   follows: defineTable(followSchema)

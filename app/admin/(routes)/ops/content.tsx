@@ -36,7 +36,7 @@ export const Content = () => {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <main className='md:px-4'>
+      <main className='md:px-4 w-full'>
         <div className='space-y-4'>
           <Stats
             stats={adminStats ?? defaultStats}

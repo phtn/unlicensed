@@ -179,7 +179,7 @@ export const StatSettings = () => {
     <Card
       radius='none'
       shadow='none'
-      className='p-4 sm:p-6 border-t border-sidebar'>
+      className='p-4 sm:p-6 border-0 border-sidebar'>
       <div className='space-y-4'>
         <SectionHeader
           title='Dashboard Stats'

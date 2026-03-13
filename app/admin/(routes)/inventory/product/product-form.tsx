@@ -104,6 +104,11 @@ export const ProductForm = ({
           parsedNetWeight != null && Number.isFinite(parsedNetWeight)
             ? parsedNetWeight
             : undefined
+        const parseOptionalNumber = (val?: string) => {
+          if (!val || val.trim().length === 0) return undefined
+          const parsedValue = Number(val)
+          return Number.isFinite(parsedValue) ? parsedValue : undefined
+        }
 
         // Helper to parse comma-separated numbers
         const parseNumbers = (val?: string) => {
@@ -177,6 +182,10 @@ export const ProductForm = ({
               : undefined,
           netWeight,
           netWeightUnit: data.netWeightUnit?.trim() || undefined,
+          packagingMode: data.packagingMode,
+          stockUnit: data.stockUnit?.trim() || undefined,
+          startingWeight: parseOptionalNumber(data.startingWeight),
+          remainingWeight: parseOptionalNumber(data.remainingWeight),
           variants: data.variants?.map((v) => {
             const denomKey = v.label.match(/^(\d+\.?\d*)/)?.[1]
             const priceCents =
@@ -310,6 +319,10 @@ export const ProductForm = ({
     form.setFieldValue('noseRating', initialValues.noseRating ?? 0)
     form.setFieldValue('netWeight', initialValues.netWeight ?? '')
     form.setFieldValue('netWeightUnit', initialValues.netWeightUnit ?? '')
+    form.setFieldValue('packagingMode', initialValues.packagingMode)
+    form.setFieldValue('stockUnit', initialValues.stockUnit ?? '')
+    form.setFieldValue('startingWeight', initialValues.startingWeight ?? '')
+    form.setFieldValue('remainingWeight', initialValues.remainingWeight ?? '')
     form.setFieldValue('variants', initialValues.variants ?? [])
     form.setFieldValue(
       'priceByDenomination',
