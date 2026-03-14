@@ -4,11 +4,13 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {PaymentMethod} from '@/convex/orders/d'
 import {AddressType} from '@/convex/users/d'
+import {getCouponErrorMessage} from '@/lib/coupon-errors'
 import {
   clearLocalStorageCart,
   getLocalStorageCartItems,
 } from '@/lib/localStorageCart'
 import {addToCartHistory} from '@/lib/localStorageCartHistory'
+import {ConvexError} from 'convex/values'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
 import {useAuth} from './use-auth'
@@ -24,19 +26,17 @@ export type OrderItemPriceOverride = {
 }
 
 /** Match Convex createOrder logic: use priceByDenomination when available (cents), else priceCents base price. */
-function computeItemPricesFromCart(
-  cart: {
-    items: Array<{
-      productId: Id<'products'>
-      quantity: number
-      denomination?: number
-      product: {
-        priceCents?: number
-        priceByDenomination?: Record<string, number>
-      }
-    }>
-  },
-): OrderItemPriceOverride[] {
+function computeItemPricesFromCart(cart: {
+  items: Array<{
+    productId: Id<'products'>
+    quantity: number
+    denomination?: number
+    product: {
+      priceCents?: number
+      priceByDenomination?: Record<string, number>
+    }
+  }>
+}): OrderItemPriceOverride[] {
   return cart.items.map((item) => {
     const denomination = item.denomination ?? 1
     const denomKey = String(denomination)
@@ -201,13 +201,24 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
 
       // When we have cart with products, ensure each item has unitPriceCents and totalPriceCents (totalPriceCents = quantity × unitPriceCents × denomination)
       let itemPriceOverrides: OrderItemPriceOverride[] | undefined
-      if (cart?.items?.length && cart.items.every((i) => 'product' in i && i.product)) {
-        itemPriceOverrides = computeItemPricesFromCart(cart as Parameters<typeof computeItemPricesFromCart>[0])
+      if (
+        cart?.items?.length &&
+        cart.items.every((i) => 'product' in i && i.product)
+      ) {
+        itemPriceOverrides = computeItemPricesFromCart(
+          cart as Parameters<typeof computeItemPricesFromCart>[0],
+        )
         const hasInvalid = itemPriceOverrides.some(
-          (o) => typeof o.unitPriceCents !== 'number' || typeof o.totalPriceCents !== 'number',
+          (o) =>
+            typeof o.unitPriceCents !== 'number' ||
+            typeof o.totalPriceCents !== 'number',
         )
         if (hasInvalid) {
-          setError(new Error('Cart item prices are invalid; please refresh and try again.'))
+          setError(
+            new Error(
+              'Cart item prices are invalid; please refresh and try again.',
+            ),
+          )
           return null
         }
       }
@@ -429,10 +440,16 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
 
         return newOrderId
       } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error('Failed to place order')
+        const couponErrorMessage = getCouponErrorMessage(err)
+        const error = couponErrorMessage
+          ? new Error(couponErrorMessage)
+          : params.couponCode && err instanceof ConvexError
+            ? new Error('We could not apply that coupon code right now.')
+            : err instanceof Error
+              ? err
+              : new Error('Failed to place order')
         setError(error)
-        console.error('[usePlaceOrder] Error placing order:', error)
+        console.error('[usePlaceOrder] Error placing order:', err)
         return null
       } finally {
         setIsLoading(false)

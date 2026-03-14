@@ -3,6 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {AddressType} from '@/convex/users/d'
+import {getCouponErrorMessage} from '@/lib/coupon-errors'
 import {useConvex, useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
 import {
@@ -23,6 +24,8 @@ import {computeCashBackAmount} from './lib/rewards'
 import {CheckoutProps, FormData} from './types'
 
 const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
+const DEFAULT_COUPON_VALIDATION_ERROR_MESSAGE =
+  'We could not validate that coupon code right now.'
 
 type AppliedCheckoutCoupon = {
   couponId: Id<'coupons'>
@@ -100,9 +103,8 @@ export function Checkout({
   const [couponCode, setCouponCode] = useState('')
   const [couponError, setCouponError] = useState<string | null>(null)
   const [couponHelpText, setCouponHelpText] = useState<string | null>(null)
-  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCheckoutCoupon | null>(
-    null,
-  )
+  const [appliedCoupon, setAppliedCoupon] =
+    useState<AppliedCheckoutCoupon | null>(null)
   const [isCouponApplying, setIsCouponApplying] = useState(false)
   const cardsProcessingFeeSetting = useQuery(
     api.admin.q.getAdminByIdentStrict,
@@ -207,11 +209,14 @@ export function Checkout({
       setIsCouponApplying(true)
 
       try {
-        const result = await convex.query(api.coupons.q.validateCouponForCheckout, {
-          code: nextCode,
-          userId: convexUser._id,
-          subtotalCents: subtotal,
-        })
+        const result = await convex.query(
+          api.coupons.q.validateCouponForCheckout,
+          {
+            code: nextCode,
+            userId: convexUser._id,
+            subtotalCents: subtotal,
+          },
+        )
 
         if (!result.ok) {
           setAppliedCoupon(null)
@@ -239,7 +244,8 @@ export function Checkout({
         setAppliedCoupon(null)
         setCouponHelpText(null)
         setCouponError(
-          error instanceof Error ? error.message : 'Failed to validate coupon.',
+          getCouponErrorMessage(error) ??
+            DEFAULT_COUPON_VALIDATION_ERROR_MESSAGE,
         )
         return null
       } finally {
@@ -287,11 +293,14 @@ export function Checkout({
       setIsCouponApplying(true)
 
       try {
-        const result = await convex.query(api.coupons.q.validateCouponForCheckout, {
-          code: appliedCoupon.code,
-          userId: convexUser._id,
-          subtotalCents: subtotal,
-        })
+        const result = await convex.query(
+          api.coupons.q.validateCouponForCheckout,
+          {
+            code: appliedCoupon.code,
+            userId: convexUser._id,
+            subtotalCents: subtotal,
+          },
+        )
 
         if (cancelled) {
           return
@@ -324,7 +333,8 @@ export function Checkout({
         setAppliedCoupon(null)
         setCouponHelpText(null)
         setCouponError(
-          error instanceof Error ? error.message : 'Failed to validate coupon.',
+          getCouponErrorMessage(error) ??
+            DEFAULT_COUPON_VALIDATION_ERROR_MESSAGE,
         )
       } finally {
         if (!cancelled) {

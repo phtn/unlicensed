@@ -5,6 +5,7 @@ import {
   roundStockQuantity,
   usesSharedWeightInventory,
 } from '../../lib/productStock'
+import {createCouponError} from '../../lib/coupon-errors'
 import {internal} from '../_generated/api'
 import type {Doc, Id} from '../_generated/dataModel'
 import type {MutationCtx} from '../_generated/server'
@@ -663,12 +664,12 @@ export const createOrder = mutation({
     let couponDiscountCents = 0
     if (args.couponCode) {
       if (!orderUserId) {
-        throw new Error('Coupon codes require a signed-in account.')
+        throw createCouponError('Coupon codes require a signed-in account.')
       }
 
       const normalizedCouponCode = normalizeCouponCode(args.couponCode)
       if (!normalizedCouponCode) {
-        throw new Error('Coupon code is required.')
+        throw createCouponError('Coupon code is required.')
       }
 
       const coupon = await ctx.db
@@ -677,7 +678,7 @@ export const createOrder = mutation({
         .unique()
 
       if (!coupon) {
-        throw new Error('Coupon code not found.')
+        throw createCouponError('Coupon code not found.')
       }
 
       const userOrders = await ctx.db
@@ -694,7 +695,7 @@ export const createOrder = mutation({
         userUses,
       })
       if (couponError) {
-        throw new Error(couponError)
+        throw createCouponError(couponError)
       }
 
       couponDiscountCents = getCouponDiscountCents(coupon, subtotalCents)
@@ -702,7 +703,10 @@ export const createOrder = mutation({
     }
 
     let redeemedStoreCreditCents = 0
-    const subtotalAfterCouponCents = Math.max(0, subtotalCents - couponDiscountCents)
+    const subtotalAfterCouponCents = Math.max(
+      0,
+      subtotalCents - couponDiscountCents,
+    )
     if (
       orderUserId &&
       (args.redeemedStoreCreditCents ?? 0) > 0 &&
@@ -738,7 +742,10 @@ export const createOrder = mutation({
         ? cardsProcessingFeeConfig.percent
         : 0
     const totalDiscountCents = couponDiscountCents + redeemedStoreCreditCents
-    const discountedSubtotalCents = Math.max(0, subtotalCents - totalDiscountCents)
+    const discountedSubtotalCents = Math.max(
+      0,
+      subtotalCents - totalDiscountCents,
+    )
     const storeCreditCents = Math.round(
       (((discountedSubtotalCents / 100) * cashBackPct) / 100) * 100,
     )
@@ -787,9 +794,7 @@ export const createOrder = mutation({
       payment,
       customerNotes: args.customerNotes,
       ...(storeCreditCents > 0 ? {storeCreditCents} : {}),
-      ...(redeemedStoreCreditCents > 0
-        ? {redeemedStoreCreditCents}
-        : {}),
+      ...(redeemedStoreCreditCents > 0 ? {redeemedStoreCreditCents} : {}),
       createdAt: Date.now(),
       updatedAt: Date.now(),
     })
