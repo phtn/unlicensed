@@ -111,15 +111,15 @@ export const ProductCarousel = ({products}: ProductCarouselProps) => {
         role='region'
         aria-roledescription='carousel'
         aria-label='Fire Collection products'>
-        <div className='flex touch-pan-y gap-3 pe-4 md:gap-4 md:pe-0'>
+        <div className='flex touch-pan-y'>
           {products.map((product) => (
             <div
               key={product._id ?? product.slug}
-              className='min-w-0 flex-[0_0_78%] sm:flex-[0_0_52%] lg:flex-[0_0_22rem] xl:flex-[0_0_24rem]'>
+              className='me-3 min-w-0 flex-[0_0_78%] sm:flex-[0_0_52%] md:me-4 lg:flex-[0_0_22rem] xl:flex-[0_0_24rem]'>
               <ProductCard
                 product={product}
                 imageUrl={resolveProductImage(product.image, resolveUrl)}
-                className='w-full min-w-0 max-w-none sm:min-w-0 md:min-w-0 lg:min-w-0 xl:min-w-0'
+                className='w-full min-w-0 max-w-none shrink-0 sm:min-w-0 md:min-w-0 lg:min-w-0 xl:min-w-0'
               />
             </div>
           ))}

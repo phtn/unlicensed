@@ -2,6 +2,7 @@
 
 import {
   commonInputClassNames,
+  commonSelectClassNames,
   narrowInputClassNames,
 } from '@/app/admin/_components/ui/fields'
 import {ScrollArea} from '@/components/ui/scroll-area'
@@ -10,12 +11,13 @@ import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {resolveProductImage} from '@/lib/resolve-product-image'
-import {Button, Image, Input, Switch} from '@heroui/react'
+import {Button, Image, Input, Select, SelectItem, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useDeferredValue, useEffect, useMemo, useRef, useState} from 'react'
 
 const MAX_LIBRARY_RESULTS = 24
 const RANDOM_INSERT_COUNT = 15
+const RANDOM_CATEGORY_ALL = '__all__'
 
 const getBrandLabel = (product: Doc<'products'>) => {
   if (Array.isArray(product.brand) && product.brand.length > 0) {
@@ -60,6 +62,13 @@ const pickRandomProductIds = (productIds: string[], count: number) => {
 
   return shuffled.slice(0, count)
 }
+
+const formatCategoryLabel = (slug: string) =>
+  slug
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
 
 interface ProductTileProps {
   product: Doc<'products'>
@@ -127,6 +136,7 @@ export const FireCollectionManager = () => {
   const updateFireCollection = useMutation(api.admin.m.updateFireCollection)
   const deleteFireCollection = useMutation(api.admin.m.deleteFireCollection)
   const fireCollections = useQuery(api.admin.q.getFireCollectionsConfig, {})
+  const categories = useQuery(api.categories.q.listCategories, {})
   const libraryProducts = useQuery(api.products.q.listProducts, {limit: 500})
   const [selectedCollectionId, setSelectedCollectionId] = useState<
     string | null
@@ -134,6 +144,8 @@ export const FireCollectionManager = () => {
   const [createTitle, setCreateTitle] = useState('')
   const [collectionTitle, setCollectionTitle] = useState('')
   const [query, setQuery] = useState('')
+  const [randomCategorySlug, setRandomCategorySlug] =
+    useState<string>(RANDOM_CATEGORY_ALL)
   const deferredQuery = useDeferredValue(query.trim().toLowerCase())
   const [activeKey, setActiveKey] = useState<string | null>(null)
   const [status, setStatus] = useState<null | 'saved' | 'error'>(null)
@@ -202,15 +214,64 @@ export const FireCollectionManager = () => {
   const resolveUrl = useStorageUrls(imageIds)
 
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds])
-  const unselectedLibraryProductIds = useMemo(() => {
+
+  const randomCategoryOptions = useMemo(() => {
+    const productCategorySlugs = new Set(
+      (libraryProducts ?? [])
+        .map((product) => product.categorySlug?.trim())
+        .filter((slug): slug is string => Boolean(slug)),
+    )
+
+    const options = (categories ?? [])
+      .filter(
+        (category) =>
+          !!category.slug && productCategorySlugs.has(category.slug),
+      )
+      .map((category) => ({
+        value: category.slug!,
+        label: category.name?.trim() || formatCategoryLabel(category.slug!),
+      }))
+
+    const knownValues = new Set(options.map((option) => option.value))
+    const missingOptions = [...productCategorySlugs]
+      .filter((slug) => !knownValues.has(slug))
+      .sort((a, b) => a.localeCompare(b))
+      .map((slug) => ({
+        value: slug,
+        label: formatCategoryLabel(slug),
+      }))
+
+    return [
+      {value: RANDOM_CATEGORY_ALL, label: 'Any Category'},
+      ...options.sort((a, b) => a.label.localeCompare(b.label)),
+      ...missingOptions,
+    ]
+  }, [categories, libraryProducts])
+
+  useEffect(() => {
+    if (
+      randomCategorySlug !== RANDOM_CATEGORY_ALL &&
+      !randomCategoryOptions.some(
+        (option) => option.value === randomCategorySlug,
+      )
+    ) {
+      setRandomCategorySlug(RANDOM_CATEGORY_ALL)
+    }
+  }, [randomCategoryOptions, randomCategorySlug])
+  const randomCandidateProductIds = useMemo(() => {
     if (!libraryProducts) {
       return []
     }
 
     return libraryProducts
       .filter((product) => !selectedIdSet.has(String(product._id)))
+      .filter(
+        (product) =>
+          randomCategorySlug === RANDOM_CATEGORY_ALL ||
+          product.categorySlug === randomCategorySlug,
+      )
       .map((product) => String(product._id))
-  }, [libraryProducts, selectedIdSet])
+  }, [libraryProducts, randomCategorySlug, selectedIdSet])
   const availableProducts = useMemo(() => {
     if (!libraryProducts) {
       return []
@@ -332,12 +393,12 @@ export const FireCollectionManager = () => {
 
   const handleInsertRandomProducts = async () => {
     if (!selectedCollection || !libraryProducts) return
-    if (unselectedLibraryProductIds.length === 0) {
+    if (randomCandidateProductIds.length === 0) {
       return
     }
 
     const randomProductIds = pickRandomProductIds(
-      unselectedLibraryProductIds,
+      randomCandidateProductIds,
       RANDOM_INSERT_COUNT,
     )
 
@@ -598,7 +659,7 @@ export const FireCollectionManager = () => {
                 activeKey !== null ||
                 !selectedCollection ||
                 libraryProducts === undefined ||
-                unselectedLibraryProductIds.length === 0
+                randomCandidateProductIds.length === 0
               }
               isLoading={
                 selectedCollection !== null &&
@@ -608,6 +669,32 @@ export const FireCollectionManager = () => {
               className='rounded-md px-4 font-okxs text-[11px] uppercase tracking-[0.25em] bg-sidebar text-foreground'>
               Add {RANDOM_INSERT_COUNT} Random
             </Button>
+          </div>
+
+          <div className='mt-4 flex flex-col gap-3 sm:flex-row sm:items-end'>
+            <Select
+              label='Random Source Category'
+              placeholder='Any category'
+              selectedKeys={[randomCategorySlug]}
+              onSelectionChange={(keys) => {
+                const key = Array.from(keys)[0]
+                setRandomCategorySlug(
+                  typeof key === 'string' ? key : RANDOM_CATEGORY_ALL,
+                )
+              }}
+              classNames={commonSelectClassNames}
+              disallowEmptySelection
+              items={randomCategoryOptions}>
+              {(item) => (
+                <SelectItem key={item.value} textValue={item.label}>
+                  {item.label}
+                </SelectItem>
+              )}
+            </Select>
+
+            <span className='pb-1 text-xs uppercase tracking-[0.22em] text-foreground/45'>
+              {randomCandidateProductIds.length} eligible for random pick
+            </span>
           </div>
 
           <Input

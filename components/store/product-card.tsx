@@ -118,7 +118,7 @@ const ProductCardComponent = ({
         <div className='flex flex-col'>
           <div className='flex items-center justify-between gap-2 p-2 h-16'>
             <div className='flex-1 min-w-0'>
-              <h3 className='text-sm sm:text-base md:text-lg lg:text-xl font-clash truncate capitalize leading-4 md:leading-5 lg:leading-7'>
+              <h3 className='text-base sm:text-base md:text-lg lg:text-xl font-clash truncate capitalize leading-4 md:leading-5 lg:leading-7'>
                 {product.name}
               </h3>
               <div className=' whitespace-nowrap'>
@@ -126,7 +126,7 @@ const ProductCardComponent = ({
                   {(product.productTierLabel ?? product.productTier) != null &&
                     (product.productTierLabel ?? product.productTier) !==
                       '' && (
-                      <span className='text-xs md:text-xs font-okxs font-bold opacity-60 dark:opacity-100 dark:text-alum uppercase'>
+                      <span className='text-xs md:text-xs font-clash font-medium md:font-semibold opacity-60 dark:opacity-100 dark:text-alum uppercase'>
                         {product.productTierLabel ?? product.productTier ?? ''}
                       </span>
                     )}
@@ -134,7 +134,7 @@ const ProductCardComponent = ({
 
                 <div className='h-4 flex items-center whitespace-nowrap'>
                   {subcategoryLabel && (
-                    <span className='text-xs md:text-xs font-okxs font-normal opacity-60 dark:opacity-100 dark:text-alum capitalize'>
+                    <span className='text-xs md:text-xs font-clash font-normal opacity-60 dark:opacity-100 dark:text-alum capitalize'>
                       {subcategoryLabel}
                       {(netWeightLabel || batchIdLabel) && (
                         <span className='text-xs px-1 opacity-50 font-bold'>
