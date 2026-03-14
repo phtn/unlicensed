@@ -3,7 +3,7 @@
 import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, CardBody, Divider} from '@heroui/react'
+import {Button, Card, CardBody, Divider, Input} from '@heroui/react'
 import {motion} from 'motion/react'
 import {memo, ViewTransition} from 'react'
 import {
@@ -58,6 +58,14 @@ interface OrderSummaryCardProps {
   appliedCashBackCents?: number
   isUsingCashBack?: boolean
   onCashBackToggle?: (nextValue: boolean) => void
+  couponCode: string
+  couponDiscountCents?: number
+  couponError?: string | null
+  couponHelpText?: string | null
+  isCouponApplying?: boolean
+  onCouponCodeChange: (value: string) => void
+  onApplyCoupon: VoidFunction
+  onRemoveCoupon: VoidFunction
 }
 
 export const OrderSummaryCard = memo(function OrderSummaryCard({
@@ -86,12 +94,21 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   appliedCashBackCents = 0,
   isUsingCashBack = false,
   onCashBackToggle,
+  couponCode,
+  couponDiscountCents = 0,
+  couponError,
+  couponHelpText,
+  isCouponApplying = false,
+  onCouponCodeChange,
+  onApplyCoupon,
+  onRemoveCoupon,
 }: OrderSummaryCardProps) {
   const handleOnChange = (value: FormData['paymentMethod']) => {
     onPaymentMethodChange(value)
   }
 
   const isFreeShipping = shipping === 0
+  const hasAppliedCoupon = couponDiscountCents > 0
   const effectiveVariant: RewardsVariant =
     rewardsVariant ?? (computedRewards != null ? 'tier' : 'off')
   const displayTotal = Math.max(0, total - appliedCashBackCents)
@@ -169,8 +186,15 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                     )}
                   </span>
                 </div>
+                {hasAppliedCoupon && (
+                  <div className='flex justify-between font-okxs text-sm md:text-base text-emerald-600 dark:text-emerald-400'>
+                    <span>Coupon ({couponCode.trim().toUpperCase()})</span>
+                    <span>- ${formatPrice(couponDiscountCents)}</span>
+                  </div>
+                )}
                 {appliedCashBackCents > 0 && (
                   <div className='flex justify-between font-okxs text-sm md:text-base text-emerald-600 dark:text-emerald-400'>
+                    <span>Cash back</span>
                     <span>- ${formatPrice(appliedCashBackCents)}</span>
                   </div>
                 )}
@@ -181,6 +205,66 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
               <span className=''>Total</span>
               <span className='font-medium'>${formatPrice(displayTotal)}</span>
             </div>
+
+            {isAuthenticated && (
+              <div className='space-y-2 rounded-lg border border-foreground/15 p-3'>
+                <div className='flex items-center justify-between gap-3'>
+                  <div>
+                    <p className='font-okxs text-sm md:text-base'>
+                      Coupon code
+                    </p>
+                    {couponHelpText ? (
+                      <p className='text-xs text-foreground/70'>
+                        {couponHelpText}
+                      </p>
+                    ) : couponError ? (
+                      <p className='text-xs text-danger'>{couponError}</p>
+                    ) : (
+                      <p className='text-xs text-foreground/60'>
+                        Discounts apply to subtotal only.
+                      </p>
+                    )}
+                  </div>
+                  {hasAppliedCoupon ? (
+                    <Button
+                      size='sm'
+                      variant='light'
+                      onPress={onRemoveCoupon}
+                      className='min-w-fit px-2 text-xs'>
+                      Remove
+                    </Button>
+                  ) : null}
+                </div>
+                <div className='flex items-center gap-2'>
+                  <Input
+                    value={couponCode}
+                    onValueChange={onCouponCodeChange}
+                    placeholder='Enter code'
+                    radius='none'
+                    variant='bordered'
+                    isDisabled={isPending || isLoading || !!orderId}
+                    classNames={{
+                      inputWrapper:
+                        'border-foreground/15 bg-transparent shadow-none',
+                    }}
+                  />
+                  <Button
+                    radius='none'
+                    variant='flat'
+                    onPress={hasAppliedCoupon ? onRemoveCoupon : onApplyCoupon}
+                    isDisabled={
+                      isPending ||
+                      isLoading ||
+                      !!orderId ||
+                      (!hasAppliedCoupon && couponCode.trim().length === 0)
+                    }
+                    isLoading={isCouponApplying}
+                    className='min-w-24'>
+                    {hasAppliedCoupon ? 'Applied' : 'Apply'}
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {isAuthenticated && onCashBackToggle && (
               <CashBackRedemption

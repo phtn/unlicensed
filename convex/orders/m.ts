@@ -22,6 +22,11 @@ import {
   createPendingPaymentSuccessEmailState,
   isPaymentSuccessEmailEligibleMethod,
 } from './email_delivery'
+import {
+  getCouponDiscountCents,
+  getCouponEligibilityError,
+  normalizeCouponCode,
+} from '../coupons/lib'
 
 const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
 const DEFAULT_SHIPPING_FEE_CENTS = 500
@@ -431,6 +436,7 @@ export const createOrder = mutation({
     shippingCents: v.optional(v.number()),
     processingFeeCents: v.optional(v.number()),
     discountCents: v.optional(v.number()),
+    couponCode: v.optional(v.string()),
     storeCreditCents: v.optional(v.number()), // Store credit (cash back) from checkout; added to user rewards when payment completes
     redeemedStoreCreditCents: v.optional(v.number()), // Cash back redeemed on this order; deducted from availablePoints when payment completes
     // Optional: client-provided item prices (unitPriceCents, totalPriceCents = quantity × unitPriceCents × denomination)
@@ -653,7 +659,50 @@ export const createOrder = mutation({
             ? 0
             : fallbackShippingFeeCents
 
-    let discountCents = 0
+    let appliedCoupon: Doc<'coupons'> | null = null
+    let couponDiscountCents = 0
+    if (args.couponCode) {
+      if (!orderUserId) {
+        throw new Error('Coupon codes require a signed-in account.')
+      }
+
+      const normalizedCouponCode = normalizeCouponCode(args.couponCode)
+      if (!normalizedCouponCode) {
+        throw new Error('Coupon code is required.')
+      }
+
+      const coupon = await ctx.db
+        .query('coupons')
+        .withIndex('by_code', (q) => q.eq('code', normalizedCouponCode))
+        .unique()
+
+      if (!coupon) {
+        throw new Error('Coupon code not found.')
+      }
+
+      const userOrders = await ctx.db
+        .query('orders')
+        .withIndex('by_user', (q) => q.eq('userId', orderUserId))
+        .collect()
+      const userUses = userOrders.filter(
+        (order) =>
+          order.couponId === coupon._id && order.orderStatus !== 'cancelled',
+      ).length
+
+      const couponError = getCouponEligibilityError(coupon, {
+        subtotalCents,
+        userUses,
+      })
+      if (couponError) {
+        throw new Error(couponError)
+      }
+
+      couponDiscountCents = getCouponDiscountCents(coupon, subtotalCents)
+      appliedCoupon = coupon
+    }
+
+    let redeemedStoreCreditCents = 0
+    const subtotalAfterCouponCents = Math.max(0, subtotalCents - couponDiscountCents)
     if (
       orderUserId &&
       (args.redeemedStoreCreditCents ?? 0) > 0 &&
@@ -667,10 +716,10 @@ export const createOrder = mutation({
         0,
         Math.round((userRewards?.availablePoints ?? 0) * 100),
       )
-      discountCents = Math.min(
+      redeemedStoreCreditCents = Math.min(
         Math.max(0, args.redeemedStoreCreditCents ?? 0),
         availableBalanceCents,
-        subtotalCents + taxCents + shippingCents,
+        subtotalAfterCouponCents + taxCents + shippingCents,
       )
     }
 
@@ -688,7 +737,8 @@ export const createOrder = mutation({
       typeof cardsProcessingFeeConfig.percent === 'number'
         ? cardsProcessingFeeConfig.percent
         : 0
-    const discountedSubtotalCents = Math.max(0, subtotalCents - discountCents)
+    const totalDiscountCents = couponDiscountCents + redeemedStoreCreditCents
+    const discountedSubtotalCents = Math.max(0, subtotalCents - totalDiscountCents)
     const storeCreditCents = Math.round(
       (((discountedSubtotalCents / 100) * cashBackPct) / 100) * 100,
     )
@@ -704,7 +754,7 @@ export const createOrder = mutation({
       taxCents +
       shippingCents +
       processingFeeCents -
-      discountCents
+      totalDiscountCents
 
     // Create payment object
     const payment = {
@@ -724,7 +774,11 @@ export const createOrder = mutation({
       shippingCents,
       processingFeeCents:
         processingFeeCents > 0 ? processingFeeCents : undefined,
-      discountCents: discountCents > 0 ? discountCents : undefined,
+      discountCents: totalDiscountCents > 0 ? totalDiscountCents : undefined,
+      couponId: appliedCoupon?._id,
+      couponCode: appliedCoupon?.code,
+      couponDiscountCents:
+        couponDiscountCents > 0 ? couponDiscountCents : undefined,
       totalCents,
       shippingAddress: args.shippingAddress,
       billingAddress: args.billingAddress,
@@ -733,10 +787,19 @@ export const createOrder = mutation({
       payment,
       customerNotes: args.customerNotes,
       ...(storeCreditCents > 0 ? {storeCreditCents} : {}),
-      ...(discountCents > 0 ? {redeemedStoreCreditCents: discountCents} : {}),
+      ...(redeemedStoreCreditCents > 0
+        ? {redeemedStoreCreditCents}
+        : {}),
       createdAt: Date.now(),
       updatedAt: Date.now(),
     })
+
+    if (appliedCoupon && couponDiscountCents > 0) {
+      await ctx.db.patch(appliedCoupon._id, {
+        timesRedeemed: appliedCoupon.timesRedeemed + 1,
+        updatedAt: Date.now(),
+      })
+    }
 
     // Delete all holds for this cart (items are now in the order)
     const holds = await ctx.db
@@ -784,6 +847,20 @@ export const updateOrderStatus = mutation({
 
     if (args.status === 'cancelled' && order.orderStatus !== 'cancelled') {
       updates.cancelledAt = Date.now()
+
+      if (
+        order.payment.status !== 'completed' &&
+        order.couponId &&
+        (order.couponDiscountCents ?? 0) > 0
+      ) {
+        const coupon = await ctx.db.get(order.couponId)
+        if (coupon && coupon.timesRedeemed > 0) {
+          await ctx.db.patch(order.couponId, {
+            timesRedeemed: coupon.timesRedeemed - 1,
+            updatedAt: Date.now(),
+          })
+        }
+      }
     }
 
     if (args.internalNotes) {

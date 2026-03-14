@@ -73,6 +73,7 @@ export interface PlaceOrderParams {
   paymentMethod: PaymentMethod
   customerNotes?: string
   cashAppUsername?: string
+  couponCode?: string
   // Optional: override calculated totals (useful for discounts, etc.)
   subtotalCents?: number
   taxCents?: number
@@ -280,6 +281,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 contactPhone: params.contactPhone,
                 paymentMethod: params.paymentMethod,
                 customerNotes: params.customerNotes,
+                couponCode: params.couponCode,
                 subtotalCents: params.subtotalCents,
                 taxCents: params.taxCents,
                 shippingCents: params.shippingCents,
@@ -299,6 +301,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 contactPhone: params.contactPhone,
                 paymentMethod: params.paymentMethod,
                 customerNotes: params.customerNotes,
+                couponCode: params.couponCode,
                 subtotalCents: params.subtotalCents,
                 taxCents: params.taxCents,
                 shippingCents: params.shippingCents,

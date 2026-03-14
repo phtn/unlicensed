@@ -1,8 +1,9 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
+import {Id} from '@/convex/_generated/dataModel'
 import {AddressType} from '@/convex/users/d'
-import {useQuery} from 'convex/react'
+import {useConvex, useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
 import {
   useCallback,
@@ -22,6 +23,14 @@ import {computeCashBackAmount} from './lib/rewards'
 import {CheckoutProps, FormData} from './types'
 
 const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
+
+type AppliedCheckoutCoupon = {
+  couponId: Id<'coupons'>
+  code: string
+  name: string
+  description: string | null
+  discountCents: number
+}
 
 const normalizeAddressValue = (value?: string) =>
   value?.trim().toLowerCase() ?? ''
@@ -81,12 +90,20 @@ export function Checkout({
   nextVisitMultiplier,
   estimatedPoints,
 }: CheckoutProps) {
+  const convex = useConvex()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [showDevModal, setShowDevModal] = useState(false)
   const hasShownDevModalRef = useRef(false)
   const isDevMode = isCheckoutDevMode()
   const {isCashBackEnabled, setCashBackEnabled} = useCashBackRedemption()
+  const [couponCode, setCouponCode] = useState('')
+  const [couponError, setCouponError] = useState<string | null>(null)
+  const [couponHelpText, setCouponHelpText] = useState<string | null>(null)
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCheckoutCoupon | null>(
+    null,
+  )
+  const [isCouponApplying, setIsCouponApplying] = useState(false)
   const cardsProcessingFeeSetting = useQuery(
     api.admin.q.getAdminByIdentStrict,
     {
@@ -140,19 +157,24 @@ export function Checkout({
     0,
     Math.round((pointsBalance?.availablePoints ?? 0) * 100),
   )
+  const couponDiscountCents = appliedCoupon?.discountCents ?? 0
+  const totalBeforeProcessingFee = Math.max(0, total - couponDiscountCents)
   const appliedCashBackCents =
     isCashBackEnabled && subtotal >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
-      ? Math.min(availableCashBackCents, total)
+      ? Math.min(availableCashBackCents, totalBeforeProcessingFee)
       : 0
   const isCryptoProcessingFeeApplied =
     processingFeeEnabled &&
     (formData.paymentMethod === 'crypto_transfer' ||
       formData.paymentMethod === 'crypto_commerce')
-  const discountedSubtotalCents = Math.max(0, subtotal - appliedCashBackCents)
+  const discountedSubtotalCents = Math.max(
+    0,
+    subtotal - couponDiscountCents - appliedCashBackCents,
+  )
   const processingFeeCents = isCryptoProcessingFeeApplied
     ? Math.round(discountedSubtotalCents * (processingFeePercent / 100))
     : 0
-  const totalWithProcessingFee = total + processingFeeCents
+  const totalWithProcessingFee = totalBeforeProcessingFee + processingFeeCents
   const effectiveComputedRewards = useMemo(() => {
     if (!computedRewards) return computedRewards
 
@@ -164,6 +186,159 @@ export function Checkout({
       ),
     }
   }, [computedRewards, discountedSubtotalCents])
+
+  const applyCoupon = useCallback(
+    async (rawCode: string) => {
+      if (!convexUser?._id) {
+        setCouponError('Sign in to use a coupon code.')
+        setCouponHelpText(null)
+        setAppliedCoupon(null)
+        return null
+      }
+
+      const nextCode = rawCode.trim()
+      if (!nextCode) {
+        setCouponError('Enter a coupon code.')
+        setCouponHelpText(null)
+        setAppliedCoupon(null)
+        return null
+      }
+
+      setIsCouponApplying(true)
+
+      try {
+        const result = await convex.query(api.coupons.q.validateCouponForCheckout, {
+          code: nextCode,
+          userId: convexUser._id,
+          subtotalCents: subtotal,
+        })
+
+        if (!result.ok) {
+          setAppliedCoupon(null)
+          setCouponError(result.error)
+          setCouponHelpText(null)
+          return null
+        }
+
+        const nextCoupon: AppliedCheckoutCoupon = {
+          couponId: result.couponId,
+          code: result.code,
+          name: result.name,
+          description: result.description,
+          discountCents: result.discountCents,
+        }
+
+        setAppliedCoupon(nextCoupon)
+        setCouponCode(result.code)
+        setCouponError(null)
+        setCouponHelpText(
+          result.description || `${result.name} applied successfully.`,
+        )
+        return nextCoupon
+      } catch (error) {
+        setAppliedCoupon(null)
+        setCouponHelpText(null)
+        setCouponError(
+          error instanceof Error ? error.message : 'Failed to validate coupon.',
+        )
+        return null
+      } finally {
+        setIsCouponApplying(false)
+      }
+    },
+    [convex, convexUser?._id, subtotal],
+  )
+
+  const handleCouponApply = useCallback(() => {
+    void applyCoupon(couponCode)
+  }, [applyCoupon, couponCode])
+
+  const handleCouponRemove = useCallback(() => {
+    setAppliedCoupon(null)
+    setCouponError(null)
+    setCouponHelpText(null)
+    setCouponCode('')
+  }, [])
+
+  const handleCouponCodeChange = useCallback(
+    (value: string) => {
+      setCouponCode(value)
+      setCouponError(null)
+      setCouponHelpText(null)
+
+      if (
+        appliedCoupon &&
+        value.trim().toUpperCase() !== appliedCoupon.code.toUpperCase()
+      ) {
+        setAppliedCoupon(null)
+      }
+    },
+    [appliedCoupon],
+  )
+
+  useEffect(() => {
+    if (!appliedCoupon?.code || !convexUser?._id) {
+      return
+    }
+
+    let cancelled = false
+
+    const revalidateCoupon = async () => {
+      setIsCouponApplying(true)
+
+      try {
+        const result = await convex.query(api.coupons.q.validateCouponForCheckout, {
+          code: appliedCoupon.code,
+          userId: convexUser._id,
+          subtotalCents: subtotal,
+        })
+
+        if (cancelled) {
+          return
+        }
+
+        if (!result.ok) {
+          setAppliedCoupon(null)
+          setCouponHelpText(null)
+          setCouponError(result.error)
+          return
+        }
+
+        setAppliedCoupon({
+          couponId: result.couponId,
+          code: result.code,
+          name: result.name,
+          description: result.description,
+          discountCents: result.discountCents,
+        })
+        setCouponCode(result.code)
+        setCouponError(null)
+        setCouponHelpText(
+          result.description || `${result.name} applied successfully.`,
+        )
+      } catch (error) {
+        if (cancelled) {
+          return
+        }
+
+        setAppliedCoupon(null)
+        setCouponHelpText(null)
+        setCouponError(
+          error instanceof Error ? error.message : 'Failed to validate coupon.',
+        )
+      } finally {
+        if (!cancelled) {
+          setIsCouponApplying(false)
+        }
+      }
+    }
+
+    void revalidateCoupon()
+
+    return () => {
+      cancelled = true
+    }
+  }, [appliedCoupon?.code, convex, convexUser?._id, subtotal])
 
   useEffect(() => {
     // Wait for both orderId and order to be loaded before redirecting
@@ -339,6 +514,7 @@ export function Checkout({
           formData.paymentMethod === 'cash_app'
             ? formData.cashAppUsername
             : undefined,
+        couponCode: appliedCoupon?.code,
         subtotalCents: subtotal,
         taxCents: tax,
         shippingCents: shipping,
@@ -360,6 +536,7 @@ export function Checkout({
     appliedCashBackCents,
     effectiveComputedRewards,
     onPlaceOrder,
+    appliedCoupon?.code,
   ])
 
   const handlePaymentMethodChange = useCallback(
@@ -402,6 +579,14 @@ export function Checkout({
         appliedCashBackCents={appliedCashBackCents}
         isUsingCashBack={isCashBackEnabled}
         onCashBackToggle={setCashBackEnabled}
+        couponCode={couponCode}
+        couponDiscountCents={couponDiscountCents}
+        couponError={couponError}
+        couponHelpText={couponHelpText}
+        isCouponApplying={isCouponApplying}
+        onCouponCodeChange={handleCouponCodeChange}
+        onApplyCoupon={handleCouponApply}
+        onRemoveCoupon={handleCouponRemove}
       />
 
       <CheckoutModal

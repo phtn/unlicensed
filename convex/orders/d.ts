@@ -145,6 +145,9 @@ export const orderSchema = v.object({
   shippingCents: v.number(), // Shipping cost
   processingFeeCents: v.optional(v.number()), // Hidden checkout fee applied to crypto payment methods
   discountCents: v.optional(v.number()), // Discount/coupon amount
+  couponId: v.optional(v.id('coupons')),
+  couponCode: v.optional(v.string()),
+  couponDiscountCents: v.optional(v.number()),
   totalCents: v.number(), // Final total
 
   // Addresses (can use address schema from users or store inline)
