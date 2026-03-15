@@ -55,6 +55,10 @@ export type PaymentSuccessEmailStatus = Infer<
   typeof paymentSuccessEmailStatusSchema
 >
 export type PaymentSuccessEmailState = Infer<typeof paymentSuccessEmailSchema>
+export const pendingPaymentEmailStatusSchema = paymentSuccessEmailStatusSchema
+export const pendingPaymentEmailSchema = paymentSuccessEmailSchema
+export type PendingPaymentEmailStatus = PaymentSuccessEmailStatus
+export type PendingPaymentEmailState = PaymentSuccessEmailState
 
 // Payment information schema
 export const paymentSchema = v.object({
@@ -149,6 +153,8 @@ export const orderSchema = v.object({
   couponCode: v.optional(v.string()),
   couponDiscountCents: v.optional(v.number()),
   totalCents: v.number(), // Final total
+  cryptoFeeCents: v.optional(v.number()), // crypto fee applied to crypto payment methods
+  totalWithCryptoFeeCents: v.optional(v.number()),
 
   // Addresses (can use address schema from users or store inline)
   shippingAddress: addressSchema,
@@ -176,6 +182,7 @@ export const orderSchema = v.object({
   redeemedStoreCreditCents: v.optional(v.number()), // Cash back redeemed on this order; deducted from availablePoints when payment completes
 
   // Transactional email delivery
+  pendingPaymentEmail: v.optional(pendingPaymentEmailSchema),
   paymentSuccessEmail: v.optional(paymentSuccessEmailSchema),
 
   // Timestamps

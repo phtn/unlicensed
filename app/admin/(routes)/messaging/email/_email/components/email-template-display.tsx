@@ -7,8 +7,9 @@ import {Button, Input} from '@heroui/react'
 import {AnimatePresence, motion} from 'motion/react'
 import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
-import {useCallback, useEffect, useState} from 'react'
+import {type KeyboardEvent, useCallback, useEffect, useState} from 'react'
 import {toast} from 'react-hot-toast'
+import z from 'zod'
 
 export type EmailTemplateDisplayProps = {
   /** When this changes, the preview is refetched so template/render updates are shown. */
@@ -30,6 +31,16 @@ export const EmailTemplateDisplay = ({
   const [refreshCount, setRefreshCount] = useState(0)
   const [testEmail, setTestEmail] = useState('')
   const [sendTestLoading, setSendTestLoading] = useState(false)
+  const trimmedTestEmail = testEmail.trim()
+  const isTestEmailValid =
+    trimmedTestEmail.length > 0 && z.email().safeParse(trimmedTestEmail).success
+  const showTestEmailError = trimmedTestEmail.length > 0 && !isTestEmailValid
+  const canSendTestEmail =
+    !previewLoading &&
+    !sendTestLoading &&
+    isTestEmailValid &&
+    !!previewHtml &&
+    !!previewSubject
 
   const clearPreview = useCallback(() => {
     setPreviewId(null)
@@ -43,7 +54,12 @@ export const EmailTemplateDisplay = ({
 
   const sendTestEmail = useCallback(async () => {
     const email = testEmail.trim()
-    if (!email || !previewHtml || !previewSubject) return
+    if (!email) return
+    if (!z.email().safeParse(email).success) {
+      toast.error('Enter a valid email address')
+      return
+    }
+    if (!previewHtml || !previewSubject) return
     setSendTestLoading(true)
     try {
       const res = await fetch('/api/resend/test', {
@@ -67,6 +83,16 @@ export const EmailTemplateDisplay = ({
       setSendTestLoading(false)
     }
   }, [testEmail, previewHtml, previewSubject])
+
+  const handleTestEmailKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.key !== 'Enter') return
+      event.preventDefault()
+      if (!trimmedTestEmail || sendTestLoading || previewLoading) return
+      void sendTestEmail()
+    },
+    [previewLoading, sendTestEmail, sendTestLoading, trimmedTestEmail],
+  )
 
   useEffect(() => {
     if (!previewId) {
@@ -199,12 +225,22 @@ export const EmailTemplateDisplay = ({
                 </div>
                 <div className='flex items-center gap-2'>
                   <Input
+                    id='test-email'
                     size='sm'
                     type='email'
                     placeholder='Send test to…'
                     value={testEmail}
                     onValueChange={setTestEmail}
+                    onKeyDown={handleTestEmailKeyDown}
                     isDisabled={previewLoading}
+                    isInvalid={showTestEmailError}
+                    errorMessage={
+                      showTestEmailError
+                        ? 'Enter a valid email address'
+                        : undefined
+                    }
+                    autoComplete='email'
+                    spellCheck='false'
                   />
                   <Button
                     size='sm'
@@ -212,13 +248,7 @@ export const EmailTemplateDisplay = ({
                     variant='solid'
                     aria-label='Send test email'
                     onPress={sendTestEmail}
-                    isDisabled={
-                      previewLoading ||
-                      sendTestLoading ||
-                      !testEmail.trim() ||
-                      !previewHtml ||
-                      !previewSubject
-                    }>
+                    isDisabled={!canSendTestEmail}>
                     {sendTestLoading ? (
                       <Icon name='spinners-ring' className='size-4' />
                     ) : (

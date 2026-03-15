@@ -9,45 +9,32 @@ import {
 } from '@/components/expermtl/arc-card'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {computeOrderSummarySubtotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
 import {useQuery} from 'convex/react'
 import {useParams} from 'next/navigation'
-import {useMemo} from 'react'
 import {pmmap} from '../../utils'
 
 export const OrderSummaryWidget = () => {
   const params = useParams()
   const orderId = params.orderId as Id<'orders'>
   const order = useQuery(api.orders.q.getById, {id: orderId})
-  const itemsTotal = useMemo(
-    () =>
-      order?.items.reduce(
-        (acc, item) => acc + item.unitPriceCents * item.quantity,
-        0,
-      ),
-    [order],
-  )
+  const itemsTotal =
+    order?.items.reduce(
+      (acc, item) => acc + item.unitPriceCents * item.quantity,
+      0,
+    ) ?? 0
   const redeemedStoreCreditCents = order?.redeemedStoreCreditCents ?? 0
-  const subtotal = useMemo(() => {
-    return (
-      (order?.shippingCents ?? 0) -
-      (order?.redeemedStoreCreditCents ?? 0) +
-      (itemsTotal ?? 0)
-    )
-  }, [order, itemsTotal])
-
-  const total = useMemo(() => {
-    return (
-      (order?.totalCents ?? 0) *
-      (1 + +(process.env.NEXT_PUBLIC_DEBOUNCE_BPS ?? 0) / 10000)
-    )
-  }, [order])
-
-  const processingFee = useMemo(() => {
-    return `$${formatPrice(total - (subtotal ?? 0))}`
-  }, [total, subtotal])
+  const taxCents = order?.taxCents ?? 0
+  const subtotal = computeOrderSummarySubtotalCents({
+    itemsTotalCents: itemsTotal,
+    redeemedStoreCreditCents,
+    shippingCents: order?.shippingCents ?? 0,
+  })
+  const total = order?.totalWithCryptoFeeCents ?? 0
+  const processingFee = total - subtotal
 
   return (
     <main className='md:w-3xl z-80'>
@@ -85,7 +72,7 @@ export const OrderSummaryWidget = () => {
             // ...data,
             {
               label: 'Items Total',
-              value: `$${formatPrice(itemsTotal ?? 0)}`,
+              value: `$${formatPrice(itemsTotal)}`,
             },
             ...(redeemedStoreCreditCents > 0
               ? [
@@ -99,18 +86,26 @@ export const OrderSummaryWidget = () => {
               label: 'Shipping',
               value: `$${formatPrice(order?.shippingCents ?? 0)}`,
             },
+            ...(taxCents > 0
+              ? [
+                  {
+                    label: 'Tax',
+                    value: `$${formatPrice(taxCents)}`,
+                  },
+                ]
+              : []),
 
             {
               label: 'Subtotal',
-              value: `$${formatPrice(subtotal ?? 0)}`,
+              value: `$${formatPrice(subtotal)}`,
             },
             {
               label: 'Processing Fee',
-              value: processingFee,
+              value: `$${formatPrice(processingFee)}`,
             },
             {
               label: 'Total',
-              value: `$${formatPrice(total ?? 0)}`,
+              value: `$${formatPrice(total)}`,
             },
           ]}
         />

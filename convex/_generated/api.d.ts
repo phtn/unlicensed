@@ -43,6 +43,7 @@ import type * as checkoutLogs_q from "../checkoutLogs/q.js";
 import type * as conversationFolderAssignments_d from "../conversationFolderAssignments/d.js";
 import type * as conversationFolders_d from "../conversationFolders/d.js";
 import type * as coupons_d from "../coupons/d.js";
+import type * as coupons_lib from "../coupons/lib.js";
 import type * as coupons_m from "../coupons/m.js";
 import type * as coupons_q from "../coupons/q.js";
 import type * as couriers_d from "../couriers/d.js";
@@ -151,6 +152,7 @@ declare const fullApi: ApiFromModules<{
   "conversationFolderAssignments/d": typeof conversationFolderAssignments_d;
   "conversationFolders/d": typeof conversationFolders_d;
   "coupons/d": typeof coupons_d;
+  "coupons/lib": typeof coupons_lib;
   "coupons/m": typeof coupons_m;
   "coupons/q": typeof coupons_q;
   "couriers/d": typeof couriers_d;

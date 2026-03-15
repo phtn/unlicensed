@@ -10,6 +10,13 @@ crons.interval(
 )
 
 crons.interval(
+  'retry pending payment emails',
+  {minutes: 10},
+  internal.orders.a.retryPendingPaymentEmails,
+  {limit: 25},
+)
+
+crons.interval(
   'retry payment success emails',
   {minutes: 10},
   internal.orders.a.retryPendingPaymentSuccessEmails,

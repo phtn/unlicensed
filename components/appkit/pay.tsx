@@ -40,7 +40,6 @@ import {
   useWriteContract,
 } from 'wagmi'
 import {AmountPayInput} from './amount-pay'
-import {withSecureRetry} from './converter-utils'
 import {NetworkSelector} from './network-selector'
 import {PayAmount} from './pay-amount'
 import {PayButtons} from './pay-buttons'
@@ -289,7 +288,7 @@ export const PayTab = ({
   // Amount actually charged to the payer (base + 6.75% fee)
   const payableUsdValue = useMemo(() => {
     if (baseUsdValue === null) return null
-    return withSecureRetry(baseUsdValue)
+    return baseUsdValue
   }, [baseUsdValue])
 
   // Calculate token amount from payable USD amount

@@ -28,7 +28,8 @@ export function splitUserName(user: UserType | null | undefined): {
 export function getDefaultPaymentMethod(
   user: UserType | null | undefined,
 ): PaymentMethod {
-  return (user?.preferences?.defaultPaymentMethod || 'credit_card') as PaymentMethod
+  return (user?.preferences?.defaultPaymentMethod ||
+    'credit_card') as PaymentMethod
 }
 
 /**
@@ -99,3 +100,47 @@ export function validateForm(formData: FormData): FormErrors {
   return errors
 }
 
+// const cardsProcessingFeeSetting = useQuery(
+//   api.admin.q.getAdminByIdentStrict,
+//   {
+//     identifier: 'cards_processing_fee',
+//   },
+// )
+
+// Query the order to get the actual payment method stored in the order
+
+// Debug: Log order state
+// useEffect(() => {
+//   if (orderId) {
+//     console.log('[Checkout] OrderId:', orderId)
+//     console.log('[Checkout] Order:', order)
+//     console.log('[Checkout] Order payment method:', order?.payment?.method)
+//   }
+// }, [orderId, order])
+
+// const processingFeePercent =
+//   cardsProcessingFeeSetting &&
+//   typeof cardsProcessingFeeSetting === 'object' &&
+//   !('error' in cardsProcessingFeeSetting) &&
+//   typeof cardsProcessingFeeSetting.percent === 'number'
+//     ? cardsProcessingFeeSetting.percent
+//     : 0
+// const processingFeeEnabled =
+//   cardsProcessingFeeSetting &&
+//   typeof cardsProcessingFeeSetting === 'object' &&
+//   !('error' in cardsProcessingFeeSetting) &&
+//   typeof cardsProcessingFeeSetting.enabled === 'boolean'
+//     ? cardsProcessingFeeSetting.enabled
+//     : false
+// const availableCashBackCents = Math.max(
+//   0,
+//   Math.round((pointsBalance?.availablePoints ?? 0) * 100),
+// )
+
+// const processingFeeCents = computeProcessingFeeCents({
+//   discountedSubtotalCents,
+//   enabled: processingFeeEnabled,
+//   paymentMethod: formData.paymentMethod,
+//   percent: processingFeePercent,
+// })
+//

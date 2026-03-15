@@ -7,6 +7,7 @@ import {InvitationEmail} from './invitation'
 import {NotificationEmail} from './notification'
 import {OrderConfirmationEmail} from './order-confirmation'
 import {PasswordResetEmail} from './password-reset'
+import {PaymentPendingEmail} from './payment-pending'
 import {PaymentSuccessEmail} from './payment-success'
 import {ProductDiscountEmail} from './product-discount'
 import {PromotionEmail} from './promotion'
@@ -53,6 +54,17 @@ const TEMPLATE_MAP: Record<EmailTemplateId, TemplateEntry> = {
       amount: 250,
       currency: 'USD',
       paymentMethod: 'cards',
+    },
+  },
+  'payment-pending': {
+    Component: PaymentPendingEmail as ComponentType<object>,
+    defaultProps: {
+      customerName: 'there',
+      orderDate: formatDate(Date.now()),
+      orderNumber: '00ML-RF45-XX',
+      amount: 250,
+      currency: 'USD',
+      paymentMethod: 'cash_app',
     },
   },
   notification: {

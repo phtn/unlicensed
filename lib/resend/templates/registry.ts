@@ -21,6 +21,11 @@ export const EMAIL_TEMPLATE_OPTIONS = [
     defaultSubject: 'We received your payment!',
   },
   {
+    id: 'payment-pending',
+    label: 'Pending Payment',
+    defaultSubject: 'We received your order!',
+  },
+  {
     id: 'notification',
     label: 'Notification',
     defaultSubject: '{{title}}',

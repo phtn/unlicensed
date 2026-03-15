@@ -1,15 +1,23 @@
-import type {PaymentMethod, PaymentSuccessEmailState} from './d'
+import type {
+  PaymentMethod,
+  PaymentSuccessEmailState,
+  PendingPaymentEmailState,
+} from './d'
+
+type OrderEmailState = PaymentSuccessEmailState | PendingPaymentEmailState
 
 export function isPaymentSuccessEmailEligibleMethod(
   paymentMethod: PaymentMethod,
 ): boolean {
   return (
-    paymentMethod === 'crypto_commerce' || paymentMethod === 'crypto_transfer'
+    paymentMethod === 'crypto_commerce' ||
+    paymentMethod === 'crypto_transfer' ||
+    paymentMethod === 'cash_app'
   )
 }
 
-export const PAYMENT_SUCCESS_EMAIL_MAX_ATTEMPTS = 5
-export const PAYMENT_SUCCESS_EMAIL_RETRY_DELAYS_MS = [
+export const EMAIL_DELIVERY_MAX_ATTEMPTS = 5
+export const EMAIL_DELIVERY_RETRY_DELAYS_MS = [
   0,
   5 * 60 * 1000,
   15 * 60 * 1000,
@@ -17,8 +25,10 @@ export const PAYMENT_SUCCESS_EMAIL_RETRY_DELAYS_MS = [
   6 * 60 * 60 * 1000,
 ] as const
 
-export function canAttemptPaymentSuccessEmail(
-  state: PaymentSuccessEmailState | undefined,
+export const PAYMENT_SUCCESS_EMAIL_MAX_ATTEMPTS = EMAIL_DELIVERY_MAX_ATTEMPTS
+
+export function canAttemptEmailDelivery(
+  state: OrderEmailState | undefined,
   now: number,
 ): boolean {
   if (!state) {
@@ -29,7 +39,7 @@ export function canAttemptPaymentSuccessEmail(
     return false
   }
 
-  if (state.attempts >= PAYMENT_SUCCESS_EMAIL_MAX_ATTEMPTS) {
+  if (state.attempts >= EMAIL_DELIVERY_MAX_ATTEMPTS) {
     return false
   }
 
@@ -38,16 +48,38 @@ export function canAttemptPaymentSuccessEmail(
   }
 
   const retryDelay =
-    PAYMENT_SUCCESS_EMAIL_RETRY_DELAYS_MS[
-      Math.min(state.attempts, PAYMENT_SUCCESS_EMAIL_RETRY_DELAYS_MS.length - 1)
+    EMAIL_DELIVERY_RETRY_DELAYS_MS[
+      Math.min(state.attempts, EMAIL_DELIVERY_RETRY_DELAYS_MS.length - 1)
     ] ?? 0
 
   return now - state.lastAttemptAt >= retryDelay
 }
 
-export function createPendingPaymentSuccessEmailState(): PaymentSuccessEmailState {
+export function createPendingEmailDeliveryState(): OrderEmailState {
   return {
     status: 'pending',
     attempts: 0,
   }
+}
+
+export function canAttemptPaymentSuccessEmail(
+  state: PaymentSuccessEmailState | undefined,
+  now: number,
+): boolean {
+  return canAttemptEmailDelivery(state, now)
+}
+
+export function createPendingPaymentSuccessEmailState(): PaymentSuccessEmailState {
+  return createPendingEmailDeliveryState()
+}
+
+export function canAttemptPendingPaymentEmail(
+  state: PendingPaymentEmailState | undefined,
+  now: number,
+): boolean {
+  return canAttemptEmailDelivery(state, now)
+}
+
+export function createPendingPaymentEmailState(): PendingPaymentEmailState {
+  return createPendingEmailDeliveryState()
 }

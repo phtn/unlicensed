@@ -39,6 +39,7 @@ export {
   NotificationEmail,
   OrderConfirmationEmail,
   PasswordResetEmail,
+  PaymentPendingEmail,
   PaymentSuccessEmail,
   ProductDiscountEmail,
   PromotionEmail,
@@ -50,6 +51,7 @@ export type {InvitationEmailProps} from './templates/invitation'
 export type {NotificationEmailProps} from './templates/notification'
 export type {OrderConfirmationEmailProps} from './templates/order-confirmation'
 export type {PasswordResetEmailProps} from './templates/password-reset'
+export type {PaymentPendingEmailProps} from './templates/payment-pending'
 export type {PaymentSuccessEmailProps} from './templates/payment-success'
 export type {ProductDiscountEmailProps} from './templates/product-discount'
 export type {PromotionEmailProps} from './templates/promotion'

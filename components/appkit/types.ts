@@ -21,7 +21,7 @@ export interface PaymentSuccessContext {
 }
 
 export interface PayTabProps {
-  onSend: VoidFunction
+  onSend?: VoidFunction
   onPaymentSuccess?: (
     transactionHash: `0x${string}`,
     context?: PaymentSuccessContext,
@@ -32,7 +32,7 @@ export interface PayTabProps {
   disabled: boolean
   amountInputRef: Ref<HTMLInputElement>
   addressInputRef: Ref<HTMLInputElement>
-  setTo: Dispatch<SetStateAction<string>>
+  setTo?: Dispatch<SetStateAction<string>>
   setAmount: Dispatch<SetStateAction<string>>
   amount: string
   /** Default USD amount when no paymentAmountUsd in URL (e.g. order total for order payment flow). */

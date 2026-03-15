@@ -11,6 +11,7 @@ import {
   useCart,
 } from '@/hooks/use-cart'
 import {usePlaceOrder} from '@/hooks/use-place-order'
+import {Icon} from '@/lib/icons'
 import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
 import {useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
@@ -42,7 +43,9 @@ const CartEmptyScene = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className='min-h-[34.01rem] border border-foreground/15 bg-linear-to-br from-white/70 via-pink-50/70 to-sidebar/60 dark:from-dark-table/40 dark:via-[#140911]/70 dark:to-black/60 lg:min-h-[42.01rem]' />
+      <div className='min-h-[34.01rem] whitespace-nowrap border border-foreground/15 bg-linear-to-br from-white/70 via-pink-50/70 to-sidebar/60 dark:from-dark-table/40 dark:via-[#140911]/70 dark:to-black/60 lg:min-h-[42.01rem] flex items-center justify-center space-x-2'>
+        <Icon name='spinners-ring' className='size-4' />
+      </div>
     ),
   },
 )

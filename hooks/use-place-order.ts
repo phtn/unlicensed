@@ -10,8 +10,8 @@ import {
   getLocalStorageCartItems,
 } from '@/lib/localStorageCart'
 import {addToCartHistory} from '@/lib/localStorageCartHistory'
-import {ConvexError} from 'convex/values'
 import {useMutation, useQuery} from 'convex/react'
+import {ConvexError} from 'convex/values'
 import {useCallback, useMemo, useState} from 'react'
 import {useAuth} from './use-auth'
 import {useCart} from './use-cart'
@@ -78,7 +78,6 @@ export interface PlaceOrderParams {
   subtotalCents?: number
   taxCents?: number
   shippingCents?: number
-  processingFeeCents?: number
   discountCents?: number
   /** Store credit (cash back) from checkout; added to user rewards when payment completes */
   storeCreditCents?: number
@@ -296,7 +295,6 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 subtotalCents: params.subtotalCents,
                 taxCents: params.taxCents,
                 shippingCents: params.shippingCents,
-                processingFeeCents: params.processingFeeCents,
                 discountCents: params.discountCents,
                 storeCreditCents: params.storeCreditCents,
                 redeemedStoreCreditCents: params.redeemedStoreCreditCents,
@@ -316,7 +314,6 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 subtotalCents: params.subtotalCents,
                 taxCents: params.taxCents,
                 shippingCents: params.shippingCents,
-                processingFeeCents: params.processingFeeCents,
                 discountCents: params.discountCents,
                 storeCreditCents: params.storeCreditCents,
                 redeemedStoreCreditCents: params.redeemedStoreCreditCents,

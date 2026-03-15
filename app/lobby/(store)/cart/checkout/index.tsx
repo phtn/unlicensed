@@ -106,12 +106,12 @@ export function Checkout({
   const [appliedCoupon, setAppliedCoupon] =
     useState<AppliedCheckoutCoupon | null>(null)
   const [isCouponApplying, setIsCouponApplying] = useState(false)
-  const cardsProcessingFeeSetting = useQuery(
-    api.admin.q.getAdminByIdentStrict,
-    {
-      identifier: 'cards_processing_fee',
-    },
-  )
+  // const cardsProcessingFeeSetting = useQuery(
+  //   api.admin.q.getAdminByIdentStrict,
+  //   {
+  //     identifier: 'cards_processing_fee',
+  //   },
+  // )
 
   // Query the order to get the actual payment method stored in the order
   const order = useQuery(api.orders.q.getById, orderId ? {id: orderId} : 'skip')
@@ -141,20 +141,20 @@ export function Checkout({
     convexUser,
     initialPaymentMethod: paymentMethodFromUrl,
   })
-  const processingFeePercent =
-    cardsProcessingFeeSetting &&
-    typeof cardsProcessingFeeSetting === 'object' &&
-    !('error' in cardsProcessingFeeSetting) &&
-    typeof cardsProcessingFeeSetting.percent === 'number'
-      ? cardsProcessingFeeSetting.percent
-      : 0
-  const processingFeeEnabled =
-    cardsProcessingFeeSetting &&
-    typeof cardsProcessingFeeSetting === 'object' &&
-    !('error' in cardsProcessingFeeSetting) &&
-    typeof cardsProcessingFeeSetting.enabled === 'boolean'
-      ? cardsProcessingFeeSetting.enabled
-      : false
+  // const processingFeePercent =
+  //   cardsProcessingFeeSetting &&
+  //   typeof cardsProcessingFeeSetting === 'object' &&
+  //   !('error' in cardsProcessingFeeSetting) &&
+  //   typeof cardsProcessingFeeSetting.percent === 'number'
+  //     ? cardsProcessingFeeSetting.percent
+  //     : 0
+  // const processingFeeEnabled =
+  //   cardsProcessingFeeSetting &&
+  //   typeof cardsProcessingFeeSetting === 'object' &&
+  //   !('error' in cardsProcessingFeeSetting) &&
+  //   typeof cardsProcessingFeeSetting.enabled === 'boolean'
+  //     ? cardsProcessingFeeSetting.enabled
+  //     : false
   const availableCashBackCents = Math.max(
     0,
     Math.round((pointsBalance?.availablePoints ?? 0) * 100),
@@ -165,18 +165,17 @@ export function Checkout({
     isCashBackEnabled && subtotal >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
       ? Math.min(availableCashBackCents, totalBeforeProcessingFee)
       : 0
-  const isCryptoProcessingFeeApplied =
-    processingFeeEnabled &&
-    (formData.paymentMethod === 'crypto_transfer' ||
-      formData.paymentMethod === 'crypto_commerce')
   const discountedSubtotalCents = Math.max(
     0,
     subtotal - couponDiscountCents - appliedCashBackCents,
   )
-  const processingFeeCents = isCryptoProcessingFeeApplied
-    ? Math.round(discountedSubtotalCents * (processingFeePercent / 100))
-    : 0
-  const totalWithProcessingFee = totalBeforeProcessingFee + processingFeeCents
+  // const processingFeeCents = computeProcessingFeeCents({
+  //   discountedSubtotalCents,
+  //   enabled: processingFeeEnabled,
+  //   paymentMethod: formData.paymentMethod,
+  //   percent: processingFeePercent,
+  // })
+  const totalWithProcessingFee = totalBeforeProcessingFee
   const effectiveComputedRewards = useMemo(() => {
     if (!computedRewards) return computedRewards
 
@@ -528,7 +527,6 @@ export function Checkout({
         subtotalCents: subtotal,
         taxCents: tax,
         shippingCents: shipping,
-        processingFeeCents,
         discountCents: appliedCashBackCents,
         redeemedStoreCreditCents: appliedCashBackCents,
         storeCreditCents: effectiveComputedRewards
@@ -542,7 +540,6 @@ export function Checkout({
     subtotal,
     tax,
     shipping,
-    processingFeeCents,
     appliedCashBackCents,
     effectiveComputedRewards,
     onPlaceOrder,

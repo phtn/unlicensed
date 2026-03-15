@@ -21,7 +21,7 @@ export const Products = ({products, getImageUrl}: ProductsProps) => {
               key={product._id}
               product={product}
               imageUrl={getImageUrl(product.image)}
-              className='!h-full !min-w-0 !max-w-none w-full'
+              className='h-full! min-w-0! max-w-none! w-full'
             />
           ))}
         </div>

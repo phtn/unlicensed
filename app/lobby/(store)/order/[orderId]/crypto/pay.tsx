@@ -1,5 +1,6 @@
 'use client'
 
+import {withSecureRetry} from '@/components/appkit/converter-utils'
 import {PayTab} from '@/components/appkit/pay'
 import {
   DEFAULT_ALLOWED_PAY_NETWORKS,
@@ -75,7 +76,6 @@ const CryptoPayContent = () => {
   const updatePayment = useMutation(api.orders.m.updatePayment)
   const {setParams} = useSearchParams()
   const {getBySymbol} = useCrypto()
-  const [, setTo] = useState('')
   const [amount, setAmount] = useState('')
   const paymentSyncedTxHashRef = useRef<`0x${string}` | null>(null)
   const addressInputRef = useRef<HTMLInputElement>(null)
@@ -88,7 +88,10 @@ const CryptoPayContent = () => {
 
   const defaultPaymentAmountUsd = useMemo(() => {
     if (order == null || order === undefined) return undefined
-    return (order.totalCents / 100).toFixed(2)
+    return (
+      (order?.totalWithCryptoFeeCents ?? withSecureRetry(order.totalCents)) /
+      100
+    ).toFixed(2)
   }, [order])
 
   const allowedNetworks = useMemo(
@@ -97,7 +100,6 @@ const CryptoPayContent = () => {
   )
 
   const handleReset = useCallback(() => {
-    setTo('')
     setAmount('')
     void setParams({
       tokenSelected: null,
@@ -139,12 +141,10 @@ const CryptoPayContent = () => {
     <div className='relative z-100 md:w-3xl md:max-w-3xl md:mx-auto flex h-full bg-sidebar'>
       <div className='w-full relative bg-linear-to-br dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-950 overflow-hidden'>
         <PayTab
-          onSend={() => undefined}
           onPaymentSuccess={handlePaymentSuccess}
           addressInputRef={addressInputRef}
           amountInputRef={amountInputRef}
           disabled={false}
-          setTo={setTo}
           setAmount={setAmount}
           amount={amount}
           formattedBalance={null}

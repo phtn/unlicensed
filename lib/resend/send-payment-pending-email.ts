@@ -4,12 +4,10 @@ import {createClient} from './index'
 import {resolvePaymentEmailAmountUsd} from './payment-email-amount'
 import {queueResendSend} from './rate-limit'
 import {renderTemplate} from './render'
-import {PaymentSuccessEmail} from './templates/payment-success'
+import {PaymentPendingEmail} from './templates/payment-pending'
 
-type SendPaymentSuccessEmailArgs = {
+type SendPaymentPendingEmailArgs = {
   order: Doc<'orders'>
-  amountUsd?: number
-  paidAt?: number
 }
 
 const DEFAULT_FROM = 'hello@rapidfirenow.com'
@@ -122,7 +120,7 @@ async function sendViaAppApiWithRetry(args: {
     try {
       const result = await sendViaAppApi(args)
       if (attempt > 0) {
-        console.info('[payment-success-email] fallback send recovered', {
+        console.info('[payment-pending-email] fallback send recovered', {
           orderNumber: args.orderNumber,
           attempt: attempt + 1,
           to: args.to,
@@ -131,7 +129,7 @@ async function sendViaAppApiWithRetry(args: {
       return result
     } catch (error) {
       lastError = error
-      console.error('[payment-success-email] fallback send failed', {
+      console.error('[payment-pending-email] fallback send failed', {
         orderNumber: args.orderNumber,
         attempt: attempt + 1,
         to: args.to,
@@ -152,25 +150,23 @@ async function sendViaAppApiWithRetry(args: {
     : new Error('Failed to send via /api/resend after retries')
 }
 
-export async function sendPaymentSuccessEmail({
+export async function sendPaymentPendingEmail({
   order,
-  amountUsd,
-  paidAt,
-}: SendPaymentSuccessEmailArgs): Promise<{id: string | null} | null> {
+}: SendPaymentPendingEmailArgs): Promise<{id: string | null} | null> {
   const to = toNonEmptyString(order.contactEmail)
   if (!to) {
     return null
   }
 
-  const html = await renderTemplate(PaymentSuccessEmail, {
+  const html = await renderTemplate(PaymentPendingEmail, {
     customerName: getCustomerName(order),
     paymentMethod: order.payment.method,
     orderNumber: order.orderNumber,
-    orderDate: formatDate(order.createdAt ?? paidAt ?? Date.now()),
-    amount: resolvePaymentEmailAmountUsd(order, amountUsd),
+    orderDate: formatDate(order.createdAt ?? Date.now()),
+    amount: resolvePaymentEmailAmountUsd(order),
     currency: 'USD',
   })
-  const subject = `Payment received for order ${order.orderNumber}`
+  const subject = 'We received your order!'
 
   let resend: ReturnType<typeof createClient> | null = null
   try {

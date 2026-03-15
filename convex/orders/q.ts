@@ -3,6 +3,7 @@ import type {Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
 import {orderStatusSchema} from './d'
 import {
+  canAttemptPendingPaymentEmail,
   canAttemptPaymentSuccessEmail,
   isPaymentSuccessEmailEligibleMethod,
 } from './email_delivery'
@@ -184,6 +185,46 @@ export const listPaymentSuccessEmailRetryCandidateIds = query({
         const bTime =
           b.paymentSuccessEmail?.lastAttemptAt ??
           b.payment.paidAt ??
+          b.updatedAt ??
+          b._creationTime
+
+        return aTime - bTime
+      })
+      .slice(0, limit)
+      .map((order) => order._id)
+  },
+})
+
+export const listPendingPaymentEmailRetryCandidateIds = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args): Promise<Id<'orders'>[]> => {
+    const limit = args.limit ?? 25
+    const now = Date.now()
+    const orders = await ctx.db.query('orders').collect()
+
+    return orders
+      .filter((order) => {
+        if (
+          order.orderStatus !== 'pending_payment' ||
+          order.payment.status === 'completed' ||
+          !order.contactEmail.trim()
+        ) {
+          return false
+        }
+
+        return canAttemptPendingPaymentEmail(order.pendingPaymentEmail, now)
+      })
+      .sort((a, b) => {
+        const aTime =
+          a.pendingPaymentEmail?.lastAttemptAt ??
+          a.createdAt ??
+          a.updatedAt ??
+          a._creationTime
+        const bTime =
+          b.pendingPaymentEmail?.lastAttemptAt ??
+          b.createdAt ??
           b.updatedAt ??
           b._creationTime
 

@@ -1,16 +1,22 @@
 import {v} from 'convex/values'
+import {computeProcessingFeeCents} from '../../lib/checkout/processing-fee'
+import {createCouponError} from '../../lib/coupon-errors'
 import {
   getSharedWeightLineQuantity,
   getTotalStock,
   roundStockQuantity,
   usesSharedWeightInventory,
 } from '../../lib/productStock'
-import {createCouponError} from '../../lib/coupon-errors'
 import {internal} from '../_generated/api'
 import type {Doc, Id} from '../_generated/dataModel'
 import type {MutationCtx} from '../_generated/server'
 import {internalMutation, mutation} from '../_generated/server'
 import {isProductCartItem} from '../cart/d'
+import {
+  getCouponDiscountCents,
+  getCouponEligibilityError,
+  normalizeCouponCode,
+} from '../coupons/lib'
 import {addressSchema} from '../users/d'
 import {
   orderStatusSchema,
@@ -20,14 +26,11 @@ import {
 } from './d'
 import {
   canAttemptPaymentSuccessEmail,
+  canAttemptPendingPaymentEmail,
+  createPendingPaymentEmailState,
   createPendingPaymentSuccessEmailState,
   isPaymentSuccessEmailEligibleMethod,
 } from './email_delivery'
-import {
-  getCouponDiscountCents,
-  getCouponEligibilityError,
-  normalizeCouponCode,
-} from '../coupons/lib'
 
 const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
 const DEFAULT_SHIPPING_FEE_CENTS = 500
@@ -435,7 +438,6 @@ export const createOrder = mutation({
     subtotalCents: v.optional(v.number()),
     taxCents: v.optional(v.number()),
     shippingCents: v.optional(v.number()),
-    processingFeeCents: v.optional(v.number()),
     discountCents: v.optional(v.number()),
     couponCode: v.optional(v.string()),
     storeCreditCents: v.optional(v.number()), // Store credit (cash back) from checkout; added to user rewards when payment completes
@@ -749,20 +751,33 @@ export const createOrder = mutation({
     const storeCreditCents = Math.round(
       (((discountedSubtotalCents / 100) * cashBackPct) / 100) * 100,
     )
-    const processingFeeCents =
-      isProcessingFeeEnabled &&
-      (args.paymentMethod === 'crypto_transfer' ||
-        args.paymentMethod === 'crypto_commerce')
-        ? Math.round(discountedSubtotalCents * (processingFeePercent / 100))
-        : 0
+    const processingFeeCents = computeProcessingFeeCents({
+      discountedSubtotalCents,
+      enabled: isProcessingFeeEnabled,
+      paymentMethod: args.paymentMethod,
+      percent: processingFeePercent,
+      shippingCents,
+    })
 
     const totalCents =
-      subtotalCents +
+      discountedSubtotalCents + taxCents + shippingCents + totalDiscountCents
+    const totalWithCryptoFee =
+      discountedSubtotalCents +
       taxCents +
       shippingCents +
-      processingFeeCents -
-      totalDiscountCents
+      ((args.paymentMethod === 'crypto_commerce' ||
+        args.paymentMethod === 'crypto_transfer') &&
+      isProcessingFeeEnabled
+        ? processingFeeCents
+        : 0)
 
+    const totalWithCryptoFeeCents = Math.round(totalWithCryptoFee * 1.065)
+
+    const cryptoFeeCents =
+      args.paymentMethod === 'crypto_commerce' ||
+      args.paymentMethod === 'crypto_transfer'
+        ? processingFeeCents + (totalWithCryptoFeeCents - totalCents)
+        : undefined
     // Create payment object
     const payment = {
       method: args.paymentMethod,
@@ -787,6 +802,8 @@ export const createOrder = mutation({
       couponDiscountCents:
         couponDiscountCents > 0 ? couponDiscountCents : undefined,
       totalCents,
+      cryptoFeeCents,
+      totalWithCryptoFeeCents,
       shippingAddress: args.shippingAddress,
       billingAddress: args.billingAddress,
       contactEmail: args.contactEmail,
@@ -795,6 +812,7 @@ export const createOrder = mutation({
       customerNotes: args.customerNotes,
       ...(storeCreditCents > 0 ? {storeCreditCents} : {}),
       ...(redeemedStoreCreditCents > 0 ? {redeemedStoreCreditCents} : {}),
+      pendingPaymentEmail: createPendingPaymentEmailState(),
       createdAt: Date.now(),
       updatedAt: Date.now(),
     })
@@ -819,6 +837,13 @@ export const createOrder = mutation({
     await ctx.scheduler.runAfter(0, internal.activities.m.logOrderCreated, {
       orderId,
     })
+    await ctx.scheduler.runAfter(
+      0,
+      internal.orders.a.sendPendingPaymentForOrder,
+      {
+        orderId,
+      },
+    )
 
     return orderId
   },
@@ -1059,6 +1084,47 @@ export const preparePaymentSuccessEmailAttempt = internalMutation({
   },
 })
 
+export const preparePendingPaymentEmailAttempt = internalMutation({
+  args: {
+    orderId: v.id('orders'),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId)
+    if (!order) {
+      return null
+    }
+
+    if (
+      order.orderStatus !== 'pending_payment' ||
+      order.payment.status === 'completed' ||
+      !order.contactEmail.trim()
+    ) {
+      return null
+    }
+
+    const now = Date.now()
+    if (!canAttemptPendingPaymentEmail(order.pendingPaymentEmail, now)) {
+      return null
+    }
+
+    const attempts = (order.pendingPaymentEmail?.attempts ?? 0) + 1
+
+    await ctx.db.patch(args.orderId, {
+      pendingPaymentEmail: {
+        status: 'sending',
+        attempts,
+        lastAttemptAt: now,
+        sentAt: order.pendingPaymentEmail?.sentAt,
+        lastError: undefined,
+        providerMessageId: order.pendingPaymentEmail?.providerMessageId,
+      },
+      updatedAt: now,
+    })
+
+    return order
+  },
+})
+
 export const markPaymentSuccessEmailSent = internalMutation({
   args: {
     orderId: v.id('orders'),
@@ -1089,6 +1155,36 @@ export const markPaymentSuccessEmailSent = internalMutation({
   },
 })
 
+export const markPendingPaymentEmailSent = internalMutation({
+  args: {
+    orderId: v.id('orders'),
+    providerMessageId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId)
+    if (!order) {
+      return null
+    }
+
+    const now = Date.now()
+    await ctx.db.patch(args.orderId, {
+      pendingPaymentEmail: {
+        status: 'sent',
+        attempts: order.pendingPaymentEmail?.attempts ?? 1,
+        lastAttemptAt: order.pendingPaymentEmail?.lastAttemptAt ?? now,
+        sentAt: now,
+        lastError: undefined,
+        providerMessageId:
+          args.providerMessageId ??
+          order.pendingPaymentEmail?.providerMessageId,
+      },
+      updatedAt: now,
+    })
+
+    return args.orderId
+  },
+})
+
 export const markPaymentSuccessEmailFailed = internalMutation({
   args: {
     orderId: v.id('orders'),
@@ -1109,6 +1205,34 @@ export const markPaymentSuccessEmailFailed = internalMutation({
         sentAt: order.paymentSuccessEmail?.sentAt,
         lastError: args.error,
         providerMessageId: order.paymentSuccessEmail?.providerMessageId,
+      },
+      updatedAt: now,
+    })
+
+    return args.orderId
+  },
+})
+
+export const markPendingPaymentEmailFailed = internalMutation({
+  args: {
+    orderId: v.id('orders'),
+    error: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId)
+    if (!order) {
+      return null
+    }
+
+    const now = Date.now()
+    await ctx.db.patch(args.orderId, {
+      pendingPaymentEmail: {
+        status: 'failed',
+        attempts: order.pendingPaymentEmail?.attempts ?? 1,
+        lastAttemptAt: order.pendingPaymentEmail?.lastAttemptAt ?? now,
+        sentAt: order.pendingPaymentEmail?.sentAt,
+        lastError: args.error,
+        providerMessageId: order.pendingPaymentEmail?.providerMessageId,
       },
       updatedAt: now,
     })
