@@ -210,7 +210,7 @@ function CryptoWalletFormInner({
   }, [updateAdmin, userUid, wallets])
 
   return (
-    <section className='flex flex-col gap-4'>
+    <section className='flex flex-col gap-4 h-[90lvh] md:w-[82lvw] overflow-y-scroll pb-32'>
       <SectionHeader title={title}>
         <div className='flex items-center justify-end gap-3'>
           <ViewTransition>
@@ -231,13 +231,13 @@ function CryptoWalletFormInner({
         </div>
       </SectionHeader>
 
-      <div className='grid grid-cols-3 gap-3'>
+      <div className='grid md:grid-cols-3 gap-3 w-full'>
         {NETWORKS.map((network) => (
           <div
             key={network.key}
             className='rounded-lg border border-default-200 bg-content1 p-4'>
             <div className='flex items-start justify-between gap-4'>
-              <div className='min-w-0'>
+              <div className='w-fit'>
                 <div className='text-sm font-clash font-semibold tracking-wider text-foreground'>
                   {network.label}{' '}
                   {(network.label === 'Sepolia' ||
@@ -269,7 +269,7 @@ function CryptoWalletFormInner({
                 handleAddressChange(network.key, address)
               }
               classNames={commonInputClassNames}
-              className='mt-4'
+              className='mt-4 w-full'
               isDisabled={!configLoaded}
             />
           </div>

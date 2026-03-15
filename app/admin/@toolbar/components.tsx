@@ -17,7 +17,7 @@ export const MainTab = ({href, children}: MainTab) => {
     <Link
       href={href}
       prefetch={href !== 'auto'}
-      className='flex items-center space-x-1 md:space-x-4 group'>
+      className='flex items-center space-x-2 md:space-x-4 group'>
       {children}
     </Link>
   )
@@ -54,7 +54,7 @@ const PrimaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
       disableAnimation
       variant='bordered'
       className={cn(
-        'text-sm flex items-center rounded-md py-1 px-2.5 md:p-2 dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white dark:bg-sidebar bg-light-gray/25 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight space-x-1.5 shrink-0',
+        'text-sm flex items-center rounded-md py-1 md:px-2.5 md:p-2 dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white dark:bg-sidebar bg-light-gray/25 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight space-x-1.5 shrink-0',
         {
           'text-indigo-500 dark:text-indigo-100 rounded-none bg-transparent dark:bg-transparent dark:hover:bg-transparent px-0':
             tabId === 'new',
@@ -101,7 +101,7 @@ const SecondaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
       disableAnimation
       size='sm'
       className={cn(
-        ' p-1 md:p-2 text-sm dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white bg-white dark:bg-transparent hover:bg-foreground/8 -space-x-1.5',
+        'p-1 md:p-2 text-sm dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white bg-white dark:bg-transparent hover:bg-foreground/8 -space-x-1.5',
         {
           'text-blue-500 dark:text-blue-100 rounded-none bg-transparent hover:bg-white dark:hover:bg-transparent -space-x-1.5':
             tabId === 'badges',

@@ -15,7 +15,7 @@ export const Content = () => {
   }, [router, startTransition])
 
   return (
-    <main className='p-4 w-full md:h-screen flex items-center'>
+    <main className='p-4 w-full h-96 md:h-screen flex items-center'>
       <Loader className='scale-30' />
     </main>
   )

@@ -6,6 +6,7 @@ import {Typewrite} from '@/components/expermtl/typewrite'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
+import {useMobile} from '@/hooks/use-mobile'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon, IconName} from '@/lib/icons'
 import {formatStockDisplay} from '@/lib/productStock'
@@ -147,7 +148,7 @@ const ProductStackView = ({
                         <p className='max-w-3xl text-sm leading-6 text-neutral-600 dark:text-neutral-300'>
                           {product.shortDescription?.trim() ||
                             product.description?.trim() ||
-                            'No product copy added yet.'}
+                            'No product description yet.'}
                         </p>
 
                         <div className='flex flex-wrap gap-2'>
@@ -157,7 +158,7 @@ const ProductStackView = ({
                                 key={`${product._id}-${chip}`}
                                 size='sm'
                                 variant='flat'
-                                className='bg-sky-500/10 text-sky-700 dark:text-sky-300'>
+                                className='bg-sky-500/10 text-sky-700 dark:text-sky-300 uppercase h-6 md:h-8'>
                                 {chip}
                               </Chip>
                             ))
@@ -203,7 +204,7 @@ const ProductStackView = ({
                           <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
                             Tier
                           </p>
-                          <p className='text-lg font-semibold text-foreground'>
+                          <p className='text-lg font-semibold text-foreground uppercase'>
                             {product.tier}
                           </p>
                         </div>
@@ -299,6 +300,8 @@ const CategoryProductsContentInner = ({
   const featuredCount =
     products?.filter((product) => product.featured).length ?? 0
 
+  const isMobile = useMobile()
+
   return (
     <div className='space-y-4 pt-2'>
       <div className='flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between'>
@@ -319,7 +322,7 @@ const CategoryProductsContentInner = ({
                 showCursor={false}
                 speed={50}
                 text={category.name}
-                className='text-lg font-medium capitalize'
+                className='text-base md:text-lg font-clash font-medium capitalize'
               />
             )}
           </div>
@@ -328,63 +331,65 @@ const CategoryProductsContentInner = ({
             as={Link}
             href={`/admin/inventory/category?slug=${categorySlug}&id=${category?._id}&tabId=edit`}
             radius='none'
+            isIconOnly={isMobile}
             variant='solid'
             onPress={handleEdit}
-            className='rounded-xs h-8 border-white bg-gray-100/80 font-clash text-zinc-600 dark:border-transparent dark:bg-gray-200/5 dark:text-indigo-100'
+            className='rounded-sm h-6 md:h-8 w-6 aspect-square md:w-fit border-white bg-gray-100/80 font-clash text-zinc-600 dark:border-transparent dark:bg-gray-200/5 dark:text-indigo-100'
             startContent={<Icon name='pencil-fill' className='size-4' />}>
-            <span className='text-sm'>Edit</span>
+            <span className='text-sm font-clash hidden md:flex'>Edit</span>
           </Button>
 
           <Button
             as={Link}
             prefetch
+            isIconOnly={isMobile}
             radius='none'
             variant='flat'
             href={`/admin/inventory/product?tabId=new&category=${categorySlug}`}
-            className='rounded-xs h-8 border-white bg-gray-100/80 text-zinc-600 dark:border-transparent dark:bg-foreground/10 dark:text-blue-100'
+            className='rounded-sm h-6 md:h-8 w-6 md:w-fit border-white bg-gray-100/80 text-zinc-600 dark:border-transparent dark:bg-foreground/10 dark:text-blue-100'
             startContent={<Icon name='plus' className='size-4' />}>
-            <span className='text-sm font-clash'>Add</span>
+            <span className='text-sm font-clash hidden md:flex'>Add</span>
           </Button>
-        </div>
-
-        <div className='flex flex-col gap-3 px-2 xl:items-end'>
-          <div className='flex flex-wrap items-center gap-0 border border-foreground/10'>
-            {CATEGORY_PRODUCT_VIEWS.map((option) => (
-              <Button
-                key={option.id}
-                size='sm'
-                isIconOnly
-                radius='none'
-                variant={view === option.id ? 'flat' : 'light'}
-                onPress={() => setView(option.id)}
-                className={cn(
-                  'rounded-xs',
-                  view === option.id
-                    ? 'bg-neutral-900 h-8 text-white dark:bg-white/5 '
-                    : 'bg-black/5 text-neutral-700 dark:bg-transparent dark:text-neutral-200',
-                )}
-                startContent={<Icon name={option.icon} className='size-4' />}
-              />
-            ))}
+          <div className='flex flex-col flex-1 gap-3 md:px-2 items-end'>
+            <div className='flex flex-wrap items-center gap-0 border border-foreground/10'>
+              {CATEGORY_PRODUCT_VIEWS.map((option) => (
+                <Button
+                  key={option.id}
+                  size='sm'
+                  isIconOnly
+                  radius='none'
+                  variant={view === option.id ? 'flat' : 'light'}
+                  onPress={() => setView(option.id)}
+                  className={cn(
+                    'rounded-xs h-6 md:h-8',
+                    view === option.id
+                      ? 'bg-neutral-900 text-white dark:bg-white/5 '
+                      : 'bg-black/5 text-neutral-700 dark:bg-transparent dark:text-neutral-200',
+                  )}
+                  startContent={<Icon name={option.icon} className='size-4' />}
+                />
+              ))}
+            </div>
           </div>
         </div>
-        <div className='flex flex-wrap items-center gap-2 text-xs'>
+
+        <div className='flex flex-wrap items-center gap-2 text-xs px-2 md:px-0'>
           <Chip
             size='sm'
             variant='flat'
-            className='bg-blue-500/10 rounded-xs h-8 text-blue-700 dark:text-blue-300'>
+            className='bg-blue-500/10 rounded-sm h-6 md:h-8 text-blue-700 dark:text-blue-300'>
             <AnimatedNumber value={products?.length ?? 0} /> items
           </Chip>
           <Chip
             size='sm'
             variant='flat'
-            className='bg-emerald-500/10 rounded-xs h-8 text-emerald-700 dark:text-emerald-300'>
+            className='bg-emerald-500/10 rounded-sm h-6 md:h-8 text-emerald-700 dark:text-emerald-300'>
             {availableCount} available
           </Chip>
           <Chip
             size='sm'
             variant='flat'
-            className='bg-violet-500/10 rounded-xs h-8 text-violet-700 dark:text-violet-300'>
+            className='bg-violet-500/10 rounded-sm h-6 md:h-8 text-violet-700 dark:text-violet-300'>
             {featuredCount} featured
           </Chip>
         </div>

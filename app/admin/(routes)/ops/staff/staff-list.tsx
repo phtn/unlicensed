@@ -44,7 +44,7 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
 
   return (
     <Card
-      className='p-4 hover:bg-neutral-50 transition-colors dark:hover:bg-dark-table/30 dark:bg-dark-table/40'
+      className='p-2 md:p-4 hover:bg-neutral-50 transition-colors dark:hover:bg-dark-table/30 dark:bg-dark-table/40'
       radius='none'
       shadow='none'>
       <div className='flex items-start justify-between'>
@@ -132,11 +132,11 @@ export const StaffList = ({staff}: StaffListProps) => {
   return (
     <section>
       {staff?.length === 0 ? (
-        <p className='mt-3 text-sm text-neutral-500 px-2'>
+        <p className='mt-3 text-sm text-neutral-500 md:px-2'>
           No staff members yet. Create one to get started.
         </p>
       ) : (
-        <ul className='space-y-2'>
+        <ul className='md:space-y-2'>
           {staff?.map((member) => (
             <li key={member._id}>
               <StaffItem member={member} />

@@ -24,7 +24,7 @@ export const PrimaryButton = ({
       disabled={disabled}
       className='bg-dark-table dark:bg-white dark:text-dark-table rounded-lg'>
       <Icon name={icon} className='mr-1 size-4 opacity-80' />
-      <span>{label}</span>
+      <span className='hidden md:flex'>{label}</span>
     </Button>
   )
 }

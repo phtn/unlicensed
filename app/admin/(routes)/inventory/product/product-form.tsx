@@ -458,7 +458,7 @@ export const ProductForm = ({
       {/* Main Content Area */}
       <main
         ref={mainScrollRef}
-        className='col-span-1 h-full overflow-y-auto space-y-0 scroll-smooth px-1 pb-28 dark:bg-dark-table/40 lg:col-span-10 lg:pb-0'>
+        className='col-span-1 h-full overflow-y-auto space-y-0 scroll-smooth md:px-1 md:pb-28 dark:bg-dark-table/40 lg:col-span-10 lg:pb-0'>
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -504,13 +504,13 @@ export const ProductForm = ({
           </div>
 
           {/* Mobile Actions */}
-          <div className='sticky bottom-0 z-20 mt-4 rounded-t-xl border border-neutral-800 bg-neutral-900/85 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-md lg:hidden'>
+          <div className='sticky bottom-0 z-20 mt-4 border border-neutral-800 bg-neutral-900/85 p-0 pb-[calc(env(safe-area-inset-bottom))] backdrop-blur-md lg:hidden'>
             <Button
               size='lg'
               type='submit'
               radius='none'
               color='success'
-              className='h-14 w-full font-medium font-okxs'
+              className='h-12 mb-2 w-full font-medium font-okxs'
               isLoading={isSubmitting}>
               {isSubmitting
                 ? isEditMode

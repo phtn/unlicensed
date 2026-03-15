@@ -74,58 +74,39 @@ const SETTINGS_FEATURES: Array<SettingItem> = [
     description: 'Configure AI assistat instructions and context.',
     icon: 'phone',
   },
+  {
+    id: 'alerts',
+    title: 'Alerts',
+    description: 'Configure alerts and notifications.',
+    icon: 'bell',
+  },
 ] as const
 
 export const OverviewContent = () => {
   return (
-    <div className='flex w-full flex-col gap-4'>
+    <div className='flex w-full flex-col gap-2 md:gap-4 md:ml-0'>
       <SectionHeader
         title={
-          <span className='font-polysans space-x-1'>
+          <span className='font-clash'>
             <span>Settings Overview</span>
           </span>
         }
       />
 
-      <div className='grid w-full gap-6'>
-        {/*<ViewTransition>*/}
-        {/*<Callout
-            size='sm'
-            type='info'
-            title='Function'
-            description='Settings is the control center for administrative and operational preferences. Use the tabs above to switch between sections.'
-            customStyle='rounded-2xl border border-primary/0 bg-primary/5 dark:bg-primary/10'
-          />
-        </ViewTransition>
-        <ViewTransition>
-          <Callout
-            size='sm'
-            type='error'
-            title='Warning'
-            description='Changes here affect how the admin panel and connected services
-                                behave. Review each section before saving.'
-            customStyle='rounded-2xl border border-primary/20 bg-primary/5 dark:bg-primary/10'
-          />
-        </ViewTransition>*/}
-      </div>
-
-      <section className='space-y-4'>
+      <section className='space-y-0 h-[90lvh] overflow-y-scroll'>
         <Card
           shadow='none'
-          className='grid md:grid-cols-2 w-full bg-linear-to-br from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5 p-4'>
+          className='p-0 grid md:grid-cols-2 w-full bg-linear-to-br from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5 md:p-4 pb-4'>
           {SETTINGS_FEATURES.map((feature, index) => (
             <ViewTransition key={feature.id}>
-              <div
-                className={cn(
-                  'relative overflow-hidden transition-all duration-300 ease-out',
-                )}>
+              <div className={cn('relative min-h-16')}>
                 <div
                   className={cn(
                     'pointer-events-none absolute inset-0 bg-linear-to-br',
                   )}
                   aria-hidden
                 />
-                <div className='relative flex flex-row items-start gap-4'>
+                <div className='relative flex flex-row items-start gap-2 md:gap-4'>
                   <div
                     className={cn(
                       'flex size-10 shrink-0 items-center justify-center rounded-xl',
@@ -145,7 +126,7 @@ export const OverviewContent = () => {
                       />
                       <span className='px-2'>{feature.title}</span>
                     </div>
-                    <TextureCardDescription className='mt-1 px-0 font-okxs text-xs leading-relaxed text-foreground/60'>
+                    <TextureCardDescription className='mt-1 px-0 font-okxs text-xs leading-relaxed text-foreground/60 line-clamp-2'>
                       {feature.description}
                     </TextureCardDescription>
                   </div>

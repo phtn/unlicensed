@@ -157,7 +157,7 @@ function AIAssistantFormInner({
   }, [instructions, isActive, updateAdmin, userUid])
 
   return (
-    <section className='flex w-md flex-col gap-4'>
+    <section className='flex md:w-md flex-col gap-4'>
       <SectionHeader
         title='AI Assistant Configuration'
         description='Configure your AI assistant settings here.'>

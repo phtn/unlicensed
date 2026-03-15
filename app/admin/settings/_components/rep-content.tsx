@@ -109,7 +109,7 @@ export const RepContent = () => {
   }
 
   return (
-    <div className='flex w-full flex-col space-y-2'>
+    <div className='flex w-full flex-col md:w-[82lvw] space-y-2'>
       <div className='flex items-start w-full min-h-20'>
         <SectionHeader
           title='Default Sales Rep'
@@ -124,7 +124,7 @@ export const RepContent = () => {
       </div>
 
       <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
-        <section className='flex flex-col'>
+        <section className='flex flex-col gap-4'>
           <h3 className='text-sm font-medium uppercase tracking-wider text-foreground/70'>
             Select A Rep
           </h3>
@@ -178,10 +178,15 @@ export const RepContent = () => {
             placeholder='e.g. Cash App checkout request for order {orderNumber}. I selected Cash App and need a representative to continue payment in this chat.'
             value={displayInitialMessage}
             onValueChange={setPendingInitialMessageSeed}
+            className='w-[94lvw] md:w-fit '
             classNames={commonInputClassNames}
             minRows={3}
-            description='Template for the first customer message when starting Cash App checkout chat. Use {orderNumber} as placeholder.'
           />
+
+          <div className='w-fit flex flex-wrap'>
+            Template for the first customer message when starting Cash App
+            checkout chat.
+          </div>
 
           <ViewTransition>
             <div className='flex items-center gap-3'>

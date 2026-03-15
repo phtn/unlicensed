@@ -36,7 +36,7 @@ export const SectionHeader = ({
             text={description as string}
             speed={2}
             showCursor={false}
-            className='text-left text-sm text-foreground/60 whitespace-nowrap'></Typewrite>
+            className='text-left text-sm text-foreground/60 whitespace-nowrap w-[94lvw] overflow-scroll md:w-full'></Typewrite>
         )}
       </ViewTransition>
     </div>

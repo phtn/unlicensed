@@ -260,7 +260,7 @@ export const AlertsContent = () => {
   )
 
   return (
-    <div className='flex w-full flex-col gap-4'>
+    <div className='flex w-full flex-col gap-4 h-[90vh] md:w-[82lvw] overflow-scroll pb-24'>
       <SectionHeader
         title={
           <div className='flex items-center space-x-4'>
@@ -269,7 +269,7 @@ export const AlertsContent = () => {
               isSelected={isEnabled}
               onValueChange={setIsEnabled}
               size='sm'>
-              Enable Audio Alerts
+              Enable Audio
             </Switch>
           </div>
         }

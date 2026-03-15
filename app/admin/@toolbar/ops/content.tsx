@@ -40,17 +40,17 @@ export const OpsContent = () => {
         className='flex items-center space-x-4 group'>
         <PageTitle>
           {route === 'ops'
-            ? 'Activity'
+            ? 'Overview'
             : pathname.includes('customers')
               ? 'Customers'
               : route}
         </PageTitle>
         <span
           className={cn(
-            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
+            'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-clash font-semibold',
             {
               'bg-blue-500 dark:bg-blue-500 text-white': isOpsRoute,
-              'w-8': (orders?.length ?? 0) > 19,
+              'w-8': (orders?.length ?? 0) > 11,
             },
           )}>
           <AnimatedNumber value={orders?.length ?? 0} />
@@ -58,7 +58,7 @@ export const OpsContent = () => {
       </Link>
       <Suspense
         fallback={
-          <div className='flex items-center space-x-1 md:space-x-4 px-4 text-base' />
+          <div className='flex items-center space-x-1 md:space-x-4 md:px-4 text-base' />
         }>
         <ToolbarTabs />
       </Suspense>

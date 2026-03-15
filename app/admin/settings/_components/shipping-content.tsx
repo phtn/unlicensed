@@ -8,8 +8,8 @@ import {Button, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useState, ViewTransition} from 'react'
 
-const DEFAULT_FEE_DOLLARS = '5'
-const DEFAULT_MIN_DOLLARS = '50'
+const DEFAULT_FEE_DOLLARS = '12.99'
+const DEFAULT_MIN_DOLLARS = '49.00'
 
 export const ShippingContent = () => {
   const {user} = useAuthCtx()
@@ -86,9 +86,9 @@ function ShippingFormInner({
   }, [shippingFeeDollars, minimumOrderDollars, updateAdmin, userUid])
 
   return (
-    <section className='flex w-md flex-col gap-4'>
+    <section className='flex md:w-md flex-col gap-4'>
       <div className='flex space-x-3'>
-        <div className='flex max-w-44 flex-col gap-2'>
+        <div className='flex md:max-w-44 flex-col gap-2'>
           <Input
             label='Shipping fee ($)'
             type='number'
@@ -121,7 +121,7 @@ function ShippingFormInner({
             variant='flat'
             onPress={handleSave}
             isDisabled={isSaving || config === undefined || !userUid}
-            className='rounded-sm'
+            className='rounded-sm px-8'
             isLoading={isSaving}>
             {isSaving ? 'Saving…' : 'Save'}
           </Button>

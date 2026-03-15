@@ -382,8 +382,8 @@ export const RecentActivities = ({
           },
         )}>
         <div className='sticky left-0 top-0 font-clash text-sm flex items-center justify-between px-2 md:py-2 py-1 w-full bg-white'>
-          <div className='relative h-8! flex items-center justify-between md:w-full w-[92lvw]'>
-            <div className='flex w-full'>Today</div>
+          <div className='relative h-8! flex items-center justify-between md:w-full w-[94lvw]'>
+            <div className='flex w-full text-dark-table'>Today</div>
             <Button
               size='sm'
               isIconOnly

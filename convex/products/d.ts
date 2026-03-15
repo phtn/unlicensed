@@ -8,29 +8,20 @@ const potencyLevel = v.union(
 
 export type PotencyLevel = Infer<typeof potencyLevel>
 
-// const productTier = v.union(
-//   v.literal('B'),
-//   v.literal('A'),
-//   v.literal('AA'),
-//   v.literal('AAA'),
-//   v.literal('AAAA'),
-//   v.literal('RARE'),
-//   v.literal('Cured Resin'),
-//   v.literal('Fresh Frozen'),
-//   v.literal('Live Resin'),
-//   v.literal('Full Melt'),
-//   v.literal('Half Melt'),
-//   v.literal('Distillate'),
-//   v.literal('Liquid Diamonds'),
-//   v.literal('Sauce'),
-//   v.literal('Live Rosin'),
-//   v.literal('Cured Rosin'),
-//   v.any(),
-// )
-//
 const inventoryModeSchema = v.union(
   v.literal('by_denomination'),
   v.literal('shared'),
+)
+
+const strainTypeSchema = v.union(
+  v.literal('Indica'),
+  v.literal('Indica Leaning'),
+  v.literal('Indica Dominant'),
+  v.literal('Sativa'),
+  v.literal('Sativa Leaning'),
+  v.literal('Sativa Dominant'),
+  v.literal('Hybrid'),
+  v.literal('Balanced Hybrid'),
 )
 
 export const productSchema = v.object({
@@ -89,6 +80,7 @@ export const productSchema = v.object({
     v.union(v.literal('withinTier'), v.literal('acrossTiers')),
   ),
   productType: v.optional(v.string()),
+  strainType: v.optional(strainTypeSchema),
   netWeight: v.optional(v.number()),
   netWeightUnit: v.optional(v.string()),
   subcategory: v.optional(v.string()),
@@ -101,6 +93,7 @@ export const productSchema = v.object({
   startingWeight: v.optional(v.number()),
   remainingWeight: v.optional(v.number()),
   stockUnit: v.optional(v.string()),
+  quantity: v.optional(v.number()),
 })
 
 export type ProductType = Infer<typeof productSchema>

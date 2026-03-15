@@ -560,7 +560,7 @@ export const DealsContent = () => {
   }
 
   return (
-    <div className='flex w-full flex-col space-y-2'>
+    <div className='flex w-full flex-col space-y-2 h-[90lvh] md:w-[82lvw] overflow-y-scroll pb-24'>
       <div className='flex items-start w-full min-h-20'>
         <SectionHeader
           title='Deals & Bundles'
@@ -681,7 +681,7 @@ export const DealsContent = () => {
                         className='min-w-8 rounded-sm'>
                         <Icon name='arrow-down' className='size-4' />
                       </Button>
-                      <div className='mx-3 w-px my-2 self-stretch bg-default-200' />
+                      <div className='md:mx-3 w-px my-2 md:self-stretch bg-default-200' />
                       <Button
                         size='sm'
                         radius='none'
@@ -696,7 +696,8 @@ export const DealsContent = () => {
                         variant='light'
                         className='rounded-sm text-red-400 dark:text-red-300 hover:bg-red-600/10! dark:hover:bg-red-500/10'
                         onPress={() => setDeleteConfirmId(deal.id)}>
-                        Delete
+                        <Icon name='trash' className='size-4 md:hidden' />
+                        <span className='hidden md:flex'>Delete</span>
                       </Button>
                     </div>
                   </div>

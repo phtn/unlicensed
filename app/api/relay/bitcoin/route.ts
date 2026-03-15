@@ -21,14 +21,28 @@ const DUST_THRESHOLD_SATS = BigInt(546)
 const DEFAULT_FEE_RATE_SAT_PER_VB = 10
 const MAX_PAYMENT_LOOKUP_ATTEMPTS = 5
 const PAYMENT_LOOKUP_RETRY_DELAY_MS = 1_000
-const MEMPOOL_API_BASE_URL =
+const DEFAULT_MEMPOOL_API_BASE_URL =
   process.env.BITCOIN_RELAY_API_BASE_URL ?? 'https://mempool.space/api'
 const CRYPTO_WALLET_DESTINATION_IDENTIFIER = 'crypto_wallet_destination'
+const CRYPTO_PRIVATE_CREDENTIALS_IDENTIFIER = 'crypto_private_credentials'
 
 const BITCOIN_ADDRESS_PATTERN =
   /^(bc1[ac-hj-np-z02-9]{11,71}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/i
 
 const relayedHashes = new Map<string, `0x${string}`>()
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === 'object' && !('error' in value)
+    ? (value as Record<string, unknown>)
+    : null
+
+const asString = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : undefined
+
+const asBoolean = (value: unknown): boolean | undefined =>
+  typeof value === 'boolean' ? value : undefined
 
 const computeRelayAmountSats = ({
   receivedAmountSats,
@@ -83,6 +97,7 @@ interface MempoolFeesResponse {
 
 interface RelayWalletConfig {
   keyPair: ReturnType<typeof ECPair.fromWIF>
+  apiBaseUrl: string
   sourceAddress: string
   sourceScript: Uint8Array
   destinationAddress: string
@@ -108,6 +123,8 @@ const getRequiredConfig = (value: string | undefined, name: string): string => {
   if (!value) throw new Error(`${name} is missing`)
   return value
 }
+
+const normalizeApiBaseUrl = (value: string): string => value.replace(/\/+$/, '')
 
 const getBitcoinDestinationAddress = async (): Promise<string> => {
   if (!convex) {
@@ -135,8 +152,58 @@ const getBitcoinDestinationAddress = async (): Promise<string> => {
   return destinationAddress
 }
 
-const fetchJson = async <T>(path: string): Promise<T> => {
-  const response = await fetch(`${MEMPOOL_API_BASE_URL}${path}`, {
+const getBitcoinRelayCredentials = async (): Promise<{
+  enabled: boolean
+  btcApiUrl?: string
+  btcNative?: string
+  btcPrivate?: string
+}> => {
+  if (!convex) {
+    throw new Error('Convex URL is not configured')
+  }
+
+  const setting = await convex.query(api.admin.q.getAdminByIdentifier, {
+    identifier: CRYPTO_PRIVATE_CREDENTIALS_IDENTIFIER,
+  })
+  const value = asRecord(setting?.value)
+  if (!value) {
+    throw new Error(
+      `${CRYPTO_PRIVATE_CREDENTIALS_IDENTIFIER} is not configured`,
+    )
+  }
+
+  const bitcoinValue = asRecord(value.bitcoin)
+  const rootEnabled = asBoolean(value.enabled)
+  const bitcoinEnabled = asBoolean(bitcoinValue?.enabled)
+
+  return {
+    enabled: bitcoinEnabled ?? rootEnabled ?? true,
+    btcApiUrl:
+      asString(bitcoinValue?.btcApiUrl) ??
+      asString(bitcoinValue?.apiUrl) ??
+      asString(bitcoinValue?.mempoolApiUrl) ??
+      asString(value.btcApiUrl) ??
+      asString(value.apiUrl) ??
+      asString(value.mempoolApiUrl),
+    btcNative:
+      asString(bitcoinValue?.btcNative) ??
+      asString(bitcoinValue?.native) ??
+      asString(bitcoinValue?.address) ??
+      asString(value.btcNative) ??
+      asString(value.native) ??
+      asString(value.address),
+    btcPrivate:
+      asString(bitcoinValue?.btcPrivate) ??
+      asString(bitcoinValue?.privateKey) ??
+      asString(bitcoinValue?.private) ??
+      asString(value.btcPrivate) ??
+      asString(value.privateKey) ??
+      asString(value.private),
+  }
+}
+
+const fetchJson = async <T>(apiBaseUrl: string, path: string): Promise<T> => {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
     cache: 'no-store',
   })
 
@@ -149,8 +216,12 @@ const fetchJson = async <T>(path: string): Promise<T> => {
   return (await response.json()) as T
 }
 
-const fetchText = async (path: string, init?: RequestInit): Promise<string> => {
-  const response = await fetch(`${MEMPOOL_API_BASE_URL}${path}`, {
+const fetchText = async (
+  apiBaseUrl: string,
+  path: string,
+  init?: RequestInit,
+): Promise<string> => {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
     cache: 'no-store',
     ...init,
   })
@@ -169,8 +240,19 @@ const sleep = async (ms: number): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-const getRelayWalletConfig = async (): Promise<RelayWalletConfig> => {
-  const relayWif = getRequiredConfig(process.env.B, 'BTC_EP or BTC_RELAY_WIF')
+const getRelayWalletConfig = async ({
+  btcApiUrl,
+  btcNative,
+  btcPrivate,
+}: {
+  btcApiUrl?: string
+  btcNative?: string
+  btcPrivate?: string
+}): Promise<RelayWalletConfig> => {
+  const relayWif = getRequiredConfig(
+    btcPrivate,
+    `${CRYPTO_PRIVATE_CREDENTIALS_IDENTIFIER}.btcPrivate`,
+  )
   const destinationAddress = await getBitcoinDestinationAddress()
 
   const keyPair = ECPair.fromWIF(relayWif, bitcoin.networks.bitcoin)
@@ -183,7 +265,7 @@ const getRelayWalletConfig = async (): Promise<RelayWalletConfig> => {
     throw new Error('Unable to derive a relay source address from BTC key')
   }
 
-  const configuredSourceAddress = process.env.SRC_B
+  const configuredSourceAddress = btcNative
 
   if (
     configuredSourceAddress &&
@@ -197,6 +279,7 @@ const getRelayWalletConfig = async (): Promise<RelayWalletConfig> => {
 
   return {
     keyPair,
+    apiBaseUrl: normalizeApiBaseUrl(btcApiUrl ?? DEFAULT_MEMPOOL_API_BASE_URL),
     sourceAddress: p2wpkh.address,
     sourceScript: p2wpkh.output,
     destinationAddress,
@@ -219,9 +302,12 @@ const estimateFee = (
   return BigInt(Math.ceil(estimatedVbytes * feeRateSatPerVb))
 }
 
-const getRecommendedFeeRate = async (): Promise<number> => {
+const getRecommendedFeeRate = async (apiBaseUrl: string): Promise<number> => {
   try {
-    const fees = await fetchJson<MempoolFeesResponse>('/v1/fees/recommended')
+    const fees = await fetchJson<MempoolFeesResponse>(
+      apiBaseUrl,
+      '/v1/fees/recommended',
+    )
     const candidateFeeRate = Number(
       fees.fastestFee ?? fees.halfHourFee ?? fees.hourFee ?? 0,
     )
@@ -294,9 +380,11 @@ const selectRelayUtxos = ({
 }
 
 const findPaymentToSource = async ({
+  apiBaseUrl,
   txid,
   sourceAddress,
 }: {
+  apiBaseUrl: string
   txid: string
   sourceAddress: string
 }): Promise<bigint> => {
@@ -305,7 +393,7 @@ const findPaymentToSource = async ({
 
   for (let attempt = 0; attempt < MAX_PAYMENT_LOOKUP_ATTEMPTS; attempt += 1) {
     try {
-      tx = await fetchJson<MempoolTx>(`/tx/${txid}`)
+      tx = await fetchJson<MempoolTx>(apiBaseUrl, `/tx/${txid}`)
       break
     } catch {
       if (attempt === MAX_PAYMENT_LOOKUP_ATTEMPTS - 1) {
@@ -372,7 +460,7 @@ const buildAndBroadcastRelayTransaction = async ({
   psbt.finalizeAllInputs()
 
   const rawHex = psbt.extractTransaction().toHex()
-  const broadcastedTxId = await fetchText('/tx', {
+  const broadcastedTxId = await fetchText(relayWallet.apiBaseUrl, '/tx', {
     method: 'POST',
     headers: {'Content-Type': 'text/plain'},
     body: rawHex,
@@ -414,8 +502,25 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const relayWallet = await getRelayWalletConfig()
+    const cryptoCredentials = await getBitcoinRelayCredentials().catch(
+      () => null,
+    )
+
+    if (cryptoCredentials && !cryptoCredentials.enabled) {
+      return NextResponse.json(
+        {error: 'Relay is disabled for Bitcoin'},
+        {status: 503},
+      )
+    }
+
+    const relayWallet = await getRelayWalletConfig({
+      btcApiUrl:
+        cryptoCredentials?.btcApiUrl ?? process.env.BITCOIN_RELAY_API_BASE_URL,
+      btcNative: cryptoCredentials?.btcNative ?? process.env.SRC_B,
+      btcPrivate: cryptoCredentials?.btcPrivate ?? process.env.B,
+    })
     const receivedAmountSats = await findPaymentToSource({
+      apiBaseUrl: relayWallet.apiBaseUrl,
       txid: paymentTxId,
       sourceAddress: relayWallet.sourceAddress,
     })
@@ -433,6 +538,7 @@ export async function POST(request: NextRequest) {
     }
 
     const sourceUtxos = await fetchJson<MempoolUtxo[]>(
+      relayWallet.apiBaseUrl,
       `/address/${encodeURIComponent(relayWallet.sourceAddress)}/utxo`,
     )
     if (!Array.isArray(sourceUtxos) || sourceUtxos.length === 0) {
@@ -442,7 +548,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const feeRateSatPerVb = await getRecommendedFeeRate()
+    const feeRateSatPerVb = await getRecommendedFeeRate(relayWallet.apiBaseUrl)
     const selection = selectRelayUtxos({
       availableUtxos: sourceUtxos,
       relayAmountSats,

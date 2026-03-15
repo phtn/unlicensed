@@ -340,7 +340,7 @@ export const RewardsContent = () => {
   }
 
   return (
-    <div className='flex w-full flex-col space-y-2'>
+    <div className='flex w-full flex-col space-y-2 h-[90lvh] md:w-[82lvw] overflow-y-scroll pb-24'>
       <div className='flex items-start w-full min-h-20'>
         <SectionHeader
           title='Rewards Manager'
