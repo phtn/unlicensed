@@ -4,8 +4,8 @@ import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {Suspense} from 'react'
 import {GatewayContent} from '../_components/gateway-content'
+import {UtilitiesContent} from '../_components/gateway-utilities'
 import {AffiliateContent} from './affiliate/affiliate'
-import {UtilitiesContent} from './utilities/content'
 
 const ContentInner = () => {
   const [tabId] = useAdminTabId()
@@ -21,7 +21,7 @@ const ContentInner = () => {
   if (tabId === 'utilities' || tabId?.startsWith('utilities')) {
     return (
       <Suspense fallback={<div>Loading...</div>}>
-        <UtilitiesContent />
+        <UtilitiesContent gateway='paygate' />
       </Suspense>
     )
   }

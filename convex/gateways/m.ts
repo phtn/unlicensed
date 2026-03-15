@@ -1,6 +1,6 @@
 import {v} from 'convex/values'
 import {mutation} from '../_generated/server'
-import {topTenProviderValidator, walletValidator} from './d'
+import {gatewayValidator, topTenProviderValidator, walletValidator} from './d'
 
 const accountUpdateInputValidator = v.object({
   addressIn: v.optional(v.string()),
@@ -89,9 +89,7 @@ export const updateAccount = mutation({
       )
     }
 
-    const updated = existing.map((a, i) =>
-      i === idx ? {...a, ...account} : a,
-    )
+    const updated = existing.map((a, i) => (i === idx ? {...a, ...account} : a))
 
     await ctx.db.patch(gatewayId, {
       accounts: updated,
@@ -170,7 +168,7 @@ export const setDefault = mutation({
  */
 export const updateTopTenProviders = mutation({
   args: {
-    gatewayId: v.id('gateways'),
+    gatewayId: gatewayValidator,
     topTenProviders: v.array(topTenProviderValidator),
     defaultProvider: v.optional(v.string()),
   },
@@ -181,7 +179,11 @@ export const updateTopTenProviders = mutation({
       )
     }
 
-    const gateway = await ctx.db.get(gatewayId)
+    const gateway = await ctx.db
+      .query('gateways')
+      .withIndex('by_gateway', (q) => q.eq('gateway', gatewayId))
+      .first()
+
     if (!gateway) {
       throw new Error('Gateway not found')
     }
@@ -195,13 +197,13 @@ export const updateTopTenProviders = mutation({
 
     const updatedAt = Date.now()
 
-    await ctx.db.patch(gatewayId, {
+    await ctx.db.patch(gateway._id, {
       topTenProviders,
       defaultProvider,
       updatedAt,
     })
 
-    const gatewayName = gateway.gateway ?? 'paygate'
+    const gatewayName = gatewayId
     const defaultAccount = await ctx.db
       .query('paygateAccounts')
       .withIndex('by_gateway_default', (q) =>

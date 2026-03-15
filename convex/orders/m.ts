@@ -32,9 +32,9 @@ import {
   isPaymentSuccessEmailEligibleMethod,
 } from './email_delivery'
 
-const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
-const DEFAULT_SHIPPING_FEE_CENTS = 500
-const DEFAULT_MINIMUM_ORDER_CENTS = 5000
+const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 4900
+const DEFAULT_SHIPPING_FEE_CENTS = 1299
+const DEFAULT_MINIMUM_ORDER_CENTS = 4900
 const DEFAULT_TAX_RATE_PERCENT = 10
 const DEFAULT_REWARDS_TIERS = [
   {
@@ -733,6 +733,7 @@ export const createOrder = mutation({
       ctx,
       'cards_processing_fee',
     )
+
     const isProcessingFeeEnabled =
       cardsProcessingFeeConfig &&
       typeof cardsProcessingFeeConfig.enabled === 'boolean'
@@ -742,6 +743,21 @@ export const createOrder = mutation({
       cardsProcessingFeeConfig &&
       typeof cardsProcessingFeeConfig.percent === 'number'
         ? cardsProcessingFeeConfig.percent
+        : 0
+    const cryptoProcessingFeeConfig = await getAdminSettingValue(
+      ctx,
+      'crypto_processing_fee',
+    )
+    const isCryptoFeeEnabled =
+      cryptoProcessingFeeConfig &&
+      typeof cryptoProcessingFeeConfig.enabled === 'number'
+        ? cryptoProcessingFeeConfig.enabled
+        : false
+    const cryptoFeeAcc =
+      cryptoProcessingFeeConfig &&
+      isCryptoFeeEnabled &&
+      typeof cryptoProcessingFeeConfig.acc === 'number'
+        ? cryptoProcessingFeeConfig.acc
         : 0
     const totalDiscountCents = couponDiscountCents + redeemedStoreCreditCents
     const discountedSubtotalCents = Math.max(
@@ -771,7 +787,9 @@ export const createOrder = mutation({
         ? processingFeeCents
         : 0)
 
-    const totalWithCryptoFeeCents = Math.round(totalWithCryptoFee * 1.065)
+    const totalWithCryptoFeeCents = Math.round(
+      totalWithCryptoFee * cryptoFeeAcc,
+    )
 
     const cryptoFeeCents =
       args.paymentMethod === 'crypto_commerce' ||

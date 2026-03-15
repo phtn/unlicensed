@@ -3,11 +3,11 @@
 import type {TableToolbarContext} from '@/components/table-v2'
 import {DataTable} from '@/components/table-v2'
 import {
+  formatText,
   HoverCell,
   linkText,
   textCell,
   toggleCell,
-  formatText,
 } from '@/components/table-v2/cells-v2'
 import {ColumnConfig} from '@/components/table-v2/create-column'
 import {ColHeader} from '@/components/table-v2/headers'
@@ -371,9 +371,22 @@ export const ProductsData = ({
           ),
           accessorKey: 'availableDenominations',
           cell: availableDenominationsCell,
-          size: 480,
+          size: 400,
         },
-
+        {
+          id: 'packagingMode',
+          header: <ColHeader tip='Packaging Mode' symbol='Packaging' />,
+          accessorKey: 'packagingMode',
+          cell: textCell('packagingMode', 'uppercase text-xs'),
+          size: 100,
+        },
+        {
+          id: 'masterStockQuantity',
+          header: <ColHeader tip='Stock Count' symbol='Stock' />,
+          accessorKey: 'masterStockQuantity',
+          cell: textCell('masterStockQuantity', 'uppercase text-xs'),
+          size: 100,
+        },
         {
           id: 'lineage',
           header: (

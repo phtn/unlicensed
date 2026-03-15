@@ -363,9 +363,8 @@ const CategoryProductsContentInner = ({
                     ? 'bg-neutral-900 h-8 text-white dark:bg-white/5 '
                     : 'bg-black/5 text-neutral-700 dark:bg-transparent dark:text-neutral-200',
                 )}
-                startContent={
-                  <Icon name={option.icon} className='size-4' />
-                }></Button>
+                startContent={<Icon name={option.icon} className='size-4' />}
+              />
             ))}
           </div>
         </div>

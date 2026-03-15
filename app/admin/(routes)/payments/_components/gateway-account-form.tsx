@@ -265,6 +265,9 @@ export const GatewayAccountForm = ({
     [form],
   )
 
+  const accountCount =
+    accounts?.filter((account) => account.enabled).length ?? 0
+
   return (
     <Card
       shadow='none'
@@ -274,7 +277,7 @@ export const GatewayAccountForm = ({
         <SectionHeader
           title={<Link href={`/admin/payments/${gateway}`}>{gateway}</Link>}>
           <span className='font-okxs font-medium'>
-            {accounts?.length ?? 0}{' '}
+            {accountCount}{' '}
             <span className='opacity-70 font-normal'>accounts</span>
           </span>
         </SectionHeader>
