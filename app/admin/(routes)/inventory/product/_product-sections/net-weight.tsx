@@ -21,6 +21,7 @@ const NET_WEIGHT_UNIT_OPTIONS = [
   {key: 'ml', label: 'ml (milliliters)'},
   {key: 'l', label: 'l (liters)'},
   {key: 'each', label: 'each'},
+  {key: 'unit', label: 'unit'},
 ]
 
 const PACKAGING_MODE_OPTIONS = [
@@ -119,7 +120,7 @@ export const NetWeight = ({form}: NetWeightProps) => {
             return (
               <div className='space-y-2'>
                 <Input
-                  label='Starting Weight'
+                  label='Starting Weight / Count'
                   type='number'
                   step='0.01'
                   value={value}
@@ -146,7 +147,7 @@ export const NetWeight = ({form}: NetWeightProps) => {
             return (
               <div className='space-y-2'>
                 <Input
-                  label='Remaining Weight'
+                  label='Remaining Weight / Count'
                   type='number'
                   step='0.01'
                   value={value}
