@@ -53,8 +53,8 @@ const PRODUCT_FIELDS = [
   [
     'inventoryMode',
     'Yes',
-    "'by_denomination' | 'shared_weight'",
-    'shared_weight',
+    "'by_denomination' | 'shared'",
+    'shared',
     'Inventory storage model.',
   ],
   [
@@ -217,8 +217,9 @@ const SUPPORTING_TYPES = [
 
 const TRAINING_NOTES = [
   'Every field in the current Convex product schema is optional.',
-  'Use inventoryMode = shared_weight with masterStockQuantity and masterStockUnit.',
+  'Use inventoryMode = shared with masterStockQuantity and masterStockUnit.',
   'Use inventoryMode = by_denomination with stockByDenomination.',
+  'CSV import still accepts legacy shared_weight values and normalizes them to shared.',
   'priceCents and upgradePrice are numeric currency fields stored in cents.',
   'stock is a legacy/general stock field that exists alongside the newer inventory model.',
 ] as const

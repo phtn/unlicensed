@@ -7,7 +7,11 @@ import {CSV_DENOM_KEYS, DENOM_HEADERS, EXPECTED_CSV_HEADERS} from './constants'
 
 export {CSV_DENOM_KEYS, EXPECTED_CSV_HEADERS}
 
-const VALID_INVENTORY_MODES = new Set(['by_denomination', 'shared_weight'])
+const VALID_INVENTORY_MODES = new Set([
+  'by_denomination',
+  'shared',
+  'shared_weight',
+])
 const VALID_PACKAGING_MODES = new Set(['bulk', 'prepack'])
 
 /** CSV columns that are not sent on insert (created by Convex). Shown in export but omitted in preview/import. */
@@ -63,6 +67,17 @@ function parseNum(v: string): number | undefined {
   return Number.isFinite(n) ? n : undefined
 }
 
+function normalizeInventoryMode(
+  value: string,
+): 'by_denomination' | 'shared' | undefined {
+  const normalizedValue = value.trim().toLowerCase()
+  if (normalizedValue === 'by_denomination') return 'by_denomination'
+  if (normalizedValue === 'shared' || normalizedValue === 'shared_weight') {
+    return 'shared'
+  }
+  return undefined
+}
+
 function parseJsonArrayOrRecord(value: string): unknown {
   if (!value || value.trim() === '') return undefined
   try {
@@ -101,7 +116,10 @@ function rawRowToProduct(
   const get = (key: string): string => raw[key] ?? ''
   const inventoryMode = (() => {
     const rawValue = get('inventoryMode').trim()
-    return VALID_INVENTORY_MODES.has(rawValue) ? rawValue : undefined
+    if (!VALID_INVENTORY_MODES.has(rawValue)) {
+      return normalizeInventoryMode(rawValue)
+    }
+    return normalizeInventoryMode(rawValue)
   })()
   const packagingMode = (() => {
     const rawValue = get('packagingMode').trim()
@@ -154,13 +172,12 @@ function rawRowToProduct(
     limited: parseBool(get('limited')),
     featured: parseBool(get('featured')),
     available: parseBool(get('available')),
-    stock:
-      inventoryMode === 'shared_weight' ? undefined : parseNum(get('stock')),
+    stock: inventoryMode === 'shared' ? undefined : parseNum(get('stock')),
     inventoryMode,
     masterStockQuantity: parseNum(get('masterStockQuantity')),
     masterStockUnit: get('masterStockUnit') || undefined,
     stockByDenomination:
-      inventoryMode === 'shared_weight'
+      inventoryMode === 'shared'
         ? undefined
         : Object.keys(stockByDenomination).length > 0
           ? stockByDenomination
@@ -274,6 +291,7 @@ export function parseProductsCsv(csvText: string): ParseResult {
 const VALID_DEAL_TYPES_LOWER = new Set(['withintier', 'acrosstiers'])
 const VALID_INVENTORY_MODES_LOWER = new Set([
   'by_denomination',
+  'shared',
   'shared_weight',
 ])
 const VALID_PACKAGING_MODES_LOWER = new Set(['bulk', 'prepack'])
@@ -321,24 +339,22 @@ function validateRow(
     inventoryModeRaw !== '' &&
     !VALID_INVENTORY_MODES_LOWER.has(inventoryModeRaw.toLowerCase())
   ) {
-    errors.push('inventoryMode must be by_denomination or shared_weight')
+    errors.push('inventoryMode must be by_denomination or shared')
   }
-  if (product.inventoryMode === 'shared_weight') {
+  if (product.inventoryMode === 'shared') {
     if (
       typeof product.masterStockQuantity !== 'number' ||
       product.masterStockQuantity < 0
     ) {
       errors.push(
-        'masterStockQuantity is required and must be a non-negative number when inventoryMode is shared_weight',
+        'masterStockQuantity is required and must be a non-negative number when inventoryMode is shared',
       )
     }
     if (
       product.masterStockUnit == null ||
       String(product.masterStockUnit).trim() === ''
     ) {
-      errors.push(
-        'masterStockUnit is required when inventoryMode is shared_weight',
-      )
+      errors.push('masterStockUnit is required when inventoryMode is shared')
     }
   }
   const packagingModeRaw = (raw.packagingMode ?? '').trim()

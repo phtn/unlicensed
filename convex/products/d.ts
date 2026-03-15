@@ -27,6 +27,11 @@ export type PotencyLevel = Infer<typeof potencyLevel>
 //   v.literal('Cured Rosin'),
 //   v.any(),
 // )
+//
+const inventoryModeSchema = v.union(
+  v.literal('by_denomination'),
+  v.literal('shared'),
+)
 
 export const productSchema = v.object({
   name: v.optional(v.string()),
@@ -48,9 +53,7 @@ export const productSchema = v.object({
   featured: v.optional(v.boolean()),
   available: v.optional(v.boolean()),
   stock: v.optional(v.number()),
-  inventoryMode: v.optional(
-    v.union(v.literal('by_denomination'), v.literal('shared_weight')),
-  ),
+  inventoryMode: v.optional(inventoryModeSchema),
   masterStockQuantity: v.optional(v.number()),
   masterStockUnit: v.optional(v.string()),
   /** Per-denomination inventory. Key = denomination as string (e.g. "0.125", "1", "3.5"), value = count. */
@@ -101,3 +104,4 @@ export const productSchema = v.object({
 })
 
 export type ProductType = Infer<typeof productSchema>
+export type InventoryMode = Infer<typeof inventoryModeSchema>

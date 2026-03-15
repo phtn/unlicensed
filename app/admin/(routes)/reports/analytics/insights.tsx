@@ -664,7 +664,7 @@ const MapboxUsChoropleth = ({
         </div>
       </div>
 
-      <div ref={mapContainerRef} className='h-[420px] md:h-[580px]' />
+      <div ref={mapContainerRef} className='h-[420.01px] md:h-[580.01px]' />
 
       {!isMapReady && !mapError ? (
         <div className='absolute inset-0 flex items-center justify-center bg-[#050811]/75 backdrop-blur-sm'>

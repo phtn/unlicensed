@@ -20,8 +20,8 @@ export const Content = () => {
       [
         {id: 'image-opt', label: 'Image Optimizer'},
         {id: 'product-csv', label: 'Product CSV Import'},
-        {id: 'docs', label: 'Docs'},
         {id: 'fire-collection', label: 'Fire Collection'},
+        {id: 'docs', label: 'Docs'},
       ] as Array<ToolTabs>,
     [],
   )

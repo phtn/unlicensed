@@ -42,6 +42,13 @@ function serializeCsvCell(value: unknown): string {
   return escapeCsvValue(JSON.stringify(value))
 }
 
+function normalizeInventoryModeForCsv(value: unknown) {
+  if (value === 'shared' || value === 'shared_weight') {
+    return 'shared'
+  }
+  return value
+}
+
 function exportProductsToCsv(
   products: Doc<'products'>[],
   filenamePrefix = 'products',
@@ -53,7 +60,13 @@ function exportProductsToCsv(
   const headers = [...PRODUCT_CSV_FIELDS, ...denomHeaders]
   const rows = products.map((p) => {
     const record = p as Record<string, unknown>
-    const mainCells = PRODUCT_CSV_FIELDS.map((h) => serializeCsvCell(record[h]))
+    const mainCells = PRODUCT_CSV_FIELDS.map((h) =>
+      serializeCsvCell(
+        h === 'inventoryMode'
+          ? normalizeInventoryModeForCsv(record[h])
+          : record[h],
+      ),
+    )
     const priceByDenom =
       (record.priceByDenomination as Record<string, number> | undefined) ?? {}
     const stockByDenom =
@@ -166,6 +179,25 @@ function availableDenominationsCell(
         )
       })}
     </div>
+  )
+}
+
+function masterStockCell(ctx: CellContext<Doc<'products'>, unknown>) {
+  const {masterStockQuantity, masterStockUnit} = ctx.row.original
+
+  if (masterStockQuantity == null) {
+    return <span className='font-brk text-sm opacity-60'>····</span>
+  }
+
+  const quantity = Number.isInteger(masterStockQuantity)
+    ? String(masterStockQuantity)
+    : String(Number(masterStockQuantity.toFixed(3)))
+  const unit = masterStockUnit?.trim()
+
+  return (
+    <span className='font-brk text-sm'>
+      {unit ? `${quantity} ${unit}` : quantity}
+    </span>
   )
 }
 
@@ -381,10 +413,10 @@ export const ProductsData = ({
           size: 100,
         },
         {
-          id: 'masterStockQuantity',
+          id: 'masterStock',
           header: <ColHeader tip='Stock Count' symbol='Stock' />,
           accessorKey: 'masterStockQuantity',
-          cell: textCell('masterStockQuantity', 'uppercase text-xs'),
+          cell: masterStockCell,
           size: 100,
         },
         {

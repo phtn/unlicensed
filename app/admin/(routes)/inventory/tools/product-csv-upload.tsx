@@ -221,7 +221,10 @@ function seedDefaultDenominationStock(parseResult: ParseResult): ParseResult {
   }
 
   const rows = parseResult.rows.map((row) => {
-    if (row.product.inventoryMode === 'shared_weight') {
+    if (
+      row.product.inventoryMode === 'shared' ||
+      row.product.inventoryMode === 'shared_weight'
+    ) {
       return row
     }
 

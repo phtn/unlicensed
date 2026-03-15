@@ -216,7 +216,7 @@ export const productSchema = z.object({
   eligibleForDeals: z.optional(z.boolean()),
   onSale: z.optional(z.boolean()),
   inventoryMode: z
-    .enum(['by_denomination', 'shared_weight'])
+    .enum(['by_denomination', 'shared'])
     .default('by_denomination'),
   stock: z.optional(z.number().min(0, 'Stock must be positive.')),
   masterStockQuantity: z.optional(

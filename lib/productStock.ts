@@ -1,5 +1,10 @@
-export const INVENTORY_MODES = ['by_denomination', 'shared_weight'] as const
+export const INVENTORY_MODES = [
+  'by_denomination',
+  'shared',
+  'shared_weight',
+] as const
 export type InventoryMode = (typeof INVENTORY_MODES)[number]
+export type NormalizedInventoryMode = 'by_denomination' | 'shared'
 
 export type InventoryProductLike = {
   inventoryMode?: string
@@ -47,8 +52,10 @@ export function roundStockQuantity(value: number): number {
 
 export function normalizeInventoryMode(
   value: string | undefined,
-): InventoryMode {
-  return value === 'shared_weight' ? 'shared_weight' : 'by_denomination'
+): NormalizedInventoryMode {
+  return value === 'shared' || value === 'shared_weight'
+    ? 'shared'
+    : 'by_denomination'
 }
 
 export function normalizeWeightUnit(
@@ -82,7 +89,7 @@ export function usesSharedWeightInventory(product: unknown): boolean {
   const p = product as InventoryProductLike
 
   return (
-    normalizeInventoryMode(p.inventoryMode) === 'shared_weight' &&
+    normalizeInventoryMode(p.inventoryMode) === 'shared' &&
     typeof p.masterStockQuantity === 'number' &&
     p.masterStockQuantity >= 0 &&
     normalizeWeightUnit(p.masterStockUnit) !== null &&

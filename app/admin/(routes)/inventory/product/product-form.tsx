@@ -96,6 +96,7 @@ export const ProductForm = ({
                 .filter((brand) => brand.length > 0)
             : undefined
         const isVapeCategory = data.categorySlug === 'vapes'
+        const isSharedInventoryMode = data.inventoryMode === 'shared'
         const parsedNetWeight =
           data.netWeight && data.netWeight.trim().length > 0
             ? Number(data.netWeight)
@@ -153,14 +154,12 @@ export const ProductForm = ({
               ? Math.round(data.stock)
               : undefined,
           masterStockQuantity:
-            data.inventoryMode === 'shared_weight' &&
-            data.masterStockQuantity != null
+            isSharedInventoryMode && data.masterStockQuantity != null
               ? data.masterStockQuantity
               : undefined,
-          masterStockUnit:
-            data.inventoryMode === 'shared_weight'
-              ? data.masterStockUnit?.trim() || undefined
-              : undefined,
+          masterStockUnit: isSharedInventoryMode
+            ? data.masterStockUnit?.trim() || undefined
+            : undefined,
           stockByDenomination:
             data.inventoryMode === 'by_denomination'
               ? data.stockByDenomination

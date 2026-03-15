@@ -5,6 +5,7 @@ import {
   commonSelectClassNames,
 } from '@/app/admin/_components/ui/fields'
 import {JunctionBox} from '@/app/admin/_components/ui/junction-box'
+import {InventoryMode} from '@/convex/products/d'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Chip, Input, Select, SelectItem, SelectedItems} from '@heroui/react'
@@ -53,9 +54,7 @@ export const Inventory = ({form}: InventoryProps) => {
   })
 
   const inventoryMode = useStore(form.store, (state) => {
-    const values = state.values as {
-      inventoryMode?: 'by_denomination' | 'shared_weight'
-    }
+    const values = state.values as {inventoryMode?: InventoryMode}
     return values.inventoryMode ?? 'by_denomination'
   })
 
@@ -147,9 +146,7 @@ export const Inventory = ({form}: InventoryProps) => {
                   onSelectionChange={(keys) => {
                     const selected = Array.from(keys)[0]
                     if (typeof selected === 'string') {
-                      field.handleChange(
-                        selected as 'by_denomination' | 'shared_weight',
-                      )
+                      field.handleChange(selected as InventoryMode)
                     }
                   }}
                   variant='bordered'
@@ -164,15 +161,20 @@ export const Inventory = ({form}: InventoryProps) => {
                       </span>
                     </div>
                   </SelectItem>
-                  <SelectItem
-                    key='shared_weight'
-                    textValue='Shared weight pool'>
+                  <SelectItem key='shared' textValue='Shared'>
                     <div className='flex flex-col'>
                       <span className='text-sm font-medium'>
-                        Shared weight pool
+                        Shared{' '}
+                        <span className='text-xs font-ios font-normal opacity-70'>
+                          (
+                        </span>
+                        Count / Weight
+                        <span className='text-xs font-ios font-normal opacity-70'>
+                          )
+                        </span>
                       </span>
                       <span className='text-xs opacity-70'>
-                        Deduct all denominations from one master stock amount.
+                        Master stock is shared across all denominations.
                       </span>
                     </div>
                   </SelectItem>
@@ -181,7 +183,7 @@ export const Inventory = ({form}: InventoryProps) => {
             </form.Field>
           </div>
 
-          {inventoryMode === 'shared_weight' ? (
+          {inventoryMode === 'shared' ? (
             <>
               <div className='w-full col-span-6 md:col-span-2'>
                 <form.Field name='masterStockQuantity'>

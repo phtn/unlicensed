@@ -41,7 +41,7 @@ export type RawProduct = {
   onSale?: boolean
   available?: boolean
   stock?: number
-  inventoryMode?: 'by_denomination' | 'shared_weight'
+  inventoryMode?: 'by_denomination' | 'shared' | 'shared_weight'
   masterStockQuantity?: number
   masterStockUnit?: string
   stockByDenomination?: Record<string, number>
