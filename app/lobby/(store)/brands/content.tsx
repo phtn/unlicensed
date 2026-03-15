@@ -302,7 +302,7 @@ export const Content = () => {
                     <div className='relative w-24 sm:w-28 lg:w-32 h-14 sm:h-16 lg:h-20'>
                       <Icon
                         name={brand.icon as IconName}
-                        className='size-24 text-white opacity-90 dark:opacity-100'
+                        className='size-32 text-white opacity-90 dark:opacity-100'
                       />
                     </div>
                   </div>
