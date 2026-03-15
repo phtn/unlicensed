@@ -93,8 +93,9 @@ export const productSchema = v.object({
   startingWeight: v.optional(v.number()),
   remainingWeight: v.optional(v.number()),
   stockUnit: v.optional(v.string()),
-  quantity: v.optional(v.number()),
+  packSize: v.optional(v.number()),
 })
 
 export type ProductType = Infer<typeof productSchema>
 export type InventoryMode = Infer<typeof inventoryModeSchema>
+export type StrainType = Infer<typeof strainTypeSchema>
