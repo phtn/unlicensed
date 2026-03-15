@@ -403,7 +403,7 @@ const ProductDetailStats = ({
       <div className='flex items-center space-x-2'>
         <span>
           <span className='font-bold text-xs md:text-sm opacity-60'>THC</span>{' '}
-          <span className='text-sm md:text-base font-polysans font-semibold'>
+          <span className='text-sm md:text-base font-clash font-medium'>
             {product.thcPercentage}
           </span>
           <span className='text-xs md:text-sm lowercase'>mg</span>
