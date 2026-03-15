@@ -70,7 +70,7 @@ export const FireManifesto = () => {
             fullWidth
             prefetch
             radius='none'
-            href={'/lobby/categories'}
+            href={'/lobby/category'}
             className='opacity-100 hover:bg-brand rounded-xs bg-brand text-white font-clash font-medium px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-base md:text-lg lg:text-xl md:py-4!'>
             <span className='drop-shadow-xs'>Shop Now</span>
           </Button>
