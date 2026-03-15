@@ -88,6 +88,7 @@
     "remark-toc": "^9.0.0",
     "resend": "^6.9.2",
     "simplex-noise": "^4.0.3",
+    "swapped-commerce-sdk": "^1.0.4",
     "swipe-right-js": "^1.0.3",
     "swr": "^2.3.8",
     "tailwind-merge": "^3.5.0",

@@ -72,6 +72,7 @@
         "remark-toc": "^9.0.0",
         "resend": "^6.9.2",
         "simplex-noise": "^4.0.3",
+        "swapped-commerce-sdk": "^1.0.4",
         "swipe-right-js": "^1.0.3",
         "swr": "^2.3.8",
         "tailwind-merge": "^3.5.0",
@@ -3644,6 +3645,8 @@
     "suspend-react": ["suspend-react@0.1.3", "", { "peerDependencies": { "react": ">=17.0" } }, "sha512-aqldKgX9aZqpoDp3e8/BZ8Dm7x1pJl+qI3ZKxDN0i/IQTWUwBx/ManmlVJ3wowqbno6c2bmiIfs+Um6LbsjJyQ=="],
 
     "svix": ["svix@1.84.1", "", { "dependencies": { "standardwebhooks": "1.0.0", "uuid": "^10.0.0" } }, "sha512-K8DPPSZaW/XqXiz1kEyzSHYgmGLnhB43nQCMeKjWGCUpLIpAMMM8kx3rVVOSm6Bo6EHyK1RQLPT4R06skM/MlQ=="],
+
+    "swapped-commerce-sdk": ["swapped-commerce-sdk@1.0.4", "", { "peerDependencies": { "typescript": "^5" } }, "sha512-zDmqSUg86w8PO8BU+FpdvEDZguehIVlBeYK/acsKkfCp0v0Iav2e2iws6cKNFrXe7mCrnZh8w170jB1ZUqW3mw=="],
 
     "swipe-right-js": ["swipe-right-js@1.0.3", "", { "peerDependencies": { "typescript": "^5" } }, "sha512-5+Qm8cMffOVdngx2X8xce2tD4kbtXrquOTThAKnDKpZ3295+bb8nMmQaqZVDnuY8Sbn0k3gTa+sh0L6UJlhfTw=="],
 
