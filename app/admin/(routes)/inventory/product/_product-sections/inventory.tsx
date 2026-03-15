@@ -18,7 +18,14 @@ interface InventoryProps {
   form: ProductFormApi
 }
 
-const MASTER_STOCK_UNIT_OPTIONS = ['mg', 'g', 'kg', 'oz', 'lb', 'unit'] as const
+const MASTER_STOCK_UNIT_OPTIONS = [
+  'mg',
+  'g',
+  'kg',
+  'oz',
+  'lb',
+  'units',
+] as const
 
 // Extract numeric denomination from variant label (e.g., "0.125oz" -> 0.125)
 const extractDenomination = (label: string): number | null => {

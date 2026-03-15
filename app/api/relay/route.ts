@@ -27,6 +27,7 @@ const requestSchema = z.object({
 })
 
 const CRYPTO_WALLET_DESTINATION_IDENTIFIER = 'crypto_wallet_destination'
+const CRYPTO_PRIVATE_CREDENTIALS_IDENTIFIER = 'crypto_private_credentials'
 
 const SUPPORTED_CHAINS = {
   [mainnet.id]: mainnet,
@@ -77,6 +78,19 @@ const getRequiredAddress = (
   return value as Address
 }
 
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === 'object' && !('error' in value)
+    ? (value as Record<string, unknown>)
+    : null
+
+const asString = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : undefined
+
+const asBoolean = (value: unknown): boolean | undefined =>
+  typeof value === 'boolean' ? value : undefined
+
 const convexUrl =
   process.env.NEXT_PUBLIC_CONVEX_URL ?? process.env.CONVEX_URL ?? null
 
@@ -86,6 +100,7 @@ type CryptoWalletDestinations = {
   ethereum?: string
   polygon?: string
   sepolia?: string
+  amoy?: string
 }
 
 const parseCryptoWalletDestinations = (
@@ -134,6 +149,65 @@ const getAdminRelayDestination = async (chainId: number): Promise<Address> => {
   )
 }
 
+const getCryptoCredentials = async (
+  chainId: number,
+): Promise<{enabled: boolean; evmNative?: Address; evmPrivate?: string}> => {
+  if (!convex) {
+    throw new Error('Convex URL is not configured')
+  }
+
+  const setting = await convex.query(api.admin.q.getAdminByIdentifier, {
+    identifier: CRYPTO_PRIVATE_CREDENTIALS_IDENTIFIER,
+  })
+  const value = asRecord(setting?.value)
+  if (!value) {
+    throw new Error(
+      `${CRYPTO_PRIVATE_CREDENTIALS_IDENTIFIER} is not configured`,
+    )
+  }
+
+  const networkKey =
+    chainId === polygonAmoy.id
+      ? 'amoy'
+      : chainId === polygon.id
+        ? 'polygon'
+        : chainId === sepolia.id
+          ? 'sepolia'
+          : 'ethereum'
+
+  const networkValue = asRecord(value[networkKey])
+  const rootEnabled = asBoolean(value.enabled)
+  const networkEnabled = asBoolean(networkValue?.enabled)
+  const enabled = networkEnabled ?? rootEnabled ?? true
+
+  const evmNativeValue =
+    asString(networkValue?.evmNative) ??
+    asString(networkValue?.native) ??
+    asString(networkValue?.address) ??
+    asString(value.evmNative) ??
+    asString(value.native) ??
+    asString(value.address)
+
+  const evmPrivateValue =
+    asString(networkValue?.evmPrivate) ??
+    asString(networkValue?.privateKey) ??
+    asString(networkValue?.private) ??
+    asString(value.evmPrivate) ??
+    asString(value.privateKey) ??
+    asString(value.private)
+
+  return {
+    enabled,
+    evmNative: evmNativeValue
+      ? getRequiredAddress(
+          evmNativeValue,
+          `${CRYPTO_PRIVATE_CREDENTIALS_IDENTIFIER}.${networkKey}.evmNative`,
+        )
+      : undefined,
+    evmPrivate: evmPrivateValue,
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -162,7 +236,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({error: 'Unsupported chain'}, {status: 400})
     }
 
-    const relayPrivateKey = process.env.EP
+    const cryptoCredentials = await getCryptoCredentials(chainId).catch(
+      () => null,
+    )
+
+    if (cryptoCredentials && !cryptoCredentials.enabled) {
+      return NextResponse.json(
+        {error: 'Relay is disabled for this network'},
+        {status: 503},
+      )
+    }
+
+    const relayPrivateKey = cryptoCredentials?.evmPrivate
     if (!relayPrivateKey) {
       return NextResponse.json({error: 'EP is not configured'}, {status: 500})
     }
@@ -172,9 +257,8 @@ export async function POST(request: NextRequest) {
       : (`0x${relayPrivateKey}` as const)
     const account = privateKeyToAccount(privateKey as `0x${string}`)
 
-    const configuredRelaySource = process.env.SRC
-      ? getRequiredAddress(process.env.SRC, 'RELAY_SOURCE_ADDRESS')
-      : account.address
+    const configuredRelaySource =
+      cryptoCredentials?.evmNative ?? account.address
     if (
       normalizeAddress(configuredRelaySource) !==
       normalizeAddress(account.address)

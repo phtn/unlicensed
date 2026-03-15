@@ -7,6 +7,7 @@ import {createCouponError} from '../../lib/coupon-errors'
 import {
   getSharedWeightLineQuantity,
   getTotalStock,
+  normalizeInventoryMode,
   roundStockQuantity,
   usesSharedWeightInventory,
 } from '../../lib/productStock'
@@ -1492,7 +1493,7 @@ export const deductStockForOrder = internalMutation({
       if (!product) continue
       productDocs.set(item.productId, product)
 
-      if (usesSharedWeightInventory(product)) {
+      if (normalizeInventoryMode(product.inventoryMode) === 'shared') {
         const deduction = getRequestedInventoryQuantity(
           product,
           item.quantity,

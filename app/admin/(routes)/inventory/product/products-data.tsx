@@ -195,8 +195,8 @@ function masterStockCell(ctx: CellContext<Doc<'products'>, unknown>) {
   const unit = masterStockUnit?.trim()
 
   return (
-    <span className='font-brk text-sm'>
-      {unit ? `${quantity} ${unit}` : quantity}
+    <span className='font-ios text-sm'>
+      {quantity} {unit && <span className='text-xs'>{unit}</span>}
     </span>
   )
 }
@@ -410,14 +410,14 @@ export const ProductsData = ({
           header: <ColHeader tip='Packaging Mode' symbol='Packaging' />,
           accessorKey: 'packagingMode',
           cell: textCell('packagingMode', 'uppercase text-xs'),
-          size: 100,
+          size: 140,
         },
         {
           id: 'masterStock',
           header: <ColHeader tip='Stock Count' symbol='Stock' />,
           accessorKey: 'masterStockQuantity',
           cell: masterStockCell,
-          size: 100,
+          size: 140,
         },
         {
           id: 'lineage',

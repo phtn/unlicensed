@@ -58,7 +58,6 @@ export const Paginator = ({
                 const selectedKey = Array.from(keys)[0] as string
                 if (selectedKey) setPageSize(selectedKey)
               }}
-              className=' border-l border-gray-600'
               variant='bordered'
               radius='none'
               aria-label='Rows per page'
@@ -66,6 +65,7 @@ export const Paginator = ({
                 trigger:
                   'min-h-0 bg-transparent md:h-auto py-1 px-2 border-none shadow-none min-w-12',
                 value: 'whitespace-nowrap font-okxs font-semibold',
+                listbox: 'p-1.5',
               }}
               popoverProps={{
                 classNames: {
