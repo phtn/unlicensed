@@ -6,7 +6,7 @@ interface CartPageHeaderProps {
 
 export function CartPageHeader({isPending}: CartPageHeaderProps) {
   return (
-    <div className='flex items-center justify-between mb-4'>
+    <div className='flex items-center justify-between ml-2 mb-2'>
       <h1 className='flex items-center text-base font-medium font-brk space-x-2 tracking-tight'>
         <span className='opacity-60'>Cart</span>
         <span className='font-light text-sm'>\</span>

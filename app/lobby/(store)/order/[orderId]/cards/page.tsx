@@ -3,6 +3,7 @@
 import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {computeOrderTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody} from '@heroui/react'
@@ -46,6 +47,22 @@ export default function CardProvidersPage() {
     if (!addr) return false
     return /^0x[a-fA-F0-9]{40}$/.test(addr.trim())
   }, [defaultAccount?.hexAddress])
+
+  const payableTotalCents = useMemo(() => {
+    if (!order) return 0
+
+    if (order.payment.method !== 'cards') {
+      return order.totalCents
+    }
+
+    return computeOrderTotalCents({
+      subtotalCents: order.subtotalCents,
+      taxCents: order.taxCents,
+      shippingCents: order.shippingCents,
+      discountCents: order.discountCents,
+      totalCents: order.totalCents,
+    })
+  }, [order])
 
   const handleProviderSelect = useCallback(
     async (providerId: string) => {
@@ -172,7 +189,7 @@ export default function CardProvidersPage() {
                   </p>
                 </div>
                 <p className='text-xl md:text-2xl font-okxs font-normal'>
-                  ${formatPrice(order.totalCents)}
+                  ${formatPrice(payableTotalCents)}
                 </p>
               </div>
             </div>
@@ -194,7 +211,7 @@ export default function CardProvidersPage() {
         ) : (
           <TopProviders
             topTenProviders={topTenProviders}
-            totalAmount={order.totalCents}
+            totalAmount={payableTotalCents}
             onSelectProvider={handleProviderSelect}
             selectedProviderId={selectedProviderId}
           />

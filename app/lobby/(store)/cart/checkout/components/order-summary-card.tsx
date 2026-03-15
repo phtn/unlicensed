@@ -209,7 +209,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
             {isAuthenticated && (
               <div className='space-y-2 rounded-lg border border-foreground/15 p-3'>
                 <div className='flex items-center justify-between gap-3'>
-                  <div>
+                  <div className='flex items-center justify-between w-full'>
                     <p className='font-okxs text-sm md:text-base'>
                       Coupon code
                     </p>
@@ -240,16 +240,16 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                     value={couponCode}
                     onValueChange={onCouponCodeChange}
                     placeholder='Enter code'
+                    size='sm'
                     radius='none'
-                    variant='bordered'
                     isDisabled={isPending || isLoading || !!orderId}
                     classNames={{
-                      inputWrapper:
-                        'border-foreground/15 bg-transparent shadow-none',
+                      inputWrapper: 'bg-foreground/5 shadow-none',
                     }}
                   />
                   <Button
                     radius='none'
+                    size='sm'
                     variant='flat'
                     onPress={hasAppliedCoupon ? onRemoveCoupon : onApplyCoupon}
                     isDisabled={

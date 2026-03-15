@@ -25,6 +25,19 @@ type ComputeOrderSummaryProcessingFeeCentsArgs =
     totalCents?: number
   }
 
+type ComputeOrderTotalCentsArgs = {
+  subtotalCents?: number
+  taxCents?: number
+  shippingCents?: number
+  discountCents?: number
+  totalCents?: number
+}
+
+type ComputeCryptoRelayTargetCentsArgs = {
+  totalCents?: number
+  processingFeeCents?: number
+}
+
 const normalizeMoneyCents = (value?: number) =>
   Number.isFinite(value) ? Math.max(0, value ?? 0) : 0
 
@@ -67,6 +80,41 @@ export const computeOrderSummaryProcessingFeeCents = ({
       normalizeMoneyCents(taxCents),
   )
 }
+
+export const computeOrderTotalCents = ({
+  subtotalCents,
+  taxCents,
+  shippingCents,
+  discountCents,
+  totalCents,
+}: ComputeOrderTotalCentsArgs) => {
+  const hasBreakdown =
+    subtotalCents !== undefined ||
+    taxCents !== undefined ||
+    shippingCents !== undefined ||
+    discountCents !== undefined
+
+  if (!hasBreakdown) {
+    return normalizeMoneyCents(totalCents)
+  }
+
+  return Math.max(
+    0,
+    normalizeMoneyCents(subtotalCents) +
+      normalizeMoneyCents(taxCents) +
+      normalizeMoneyCents(shippingCents) -
+      normalizeMoneyCents(discountCents),
+  )
+}
+
+export const computeCryptoRelayTargetCents = ({
+  totalCents,
+  processingFeeCents,
+}: ComputeCryptoRelayTargetCentsArgs) =>
+  Math.max(
+    0,
+    normalizeMoneyCents(totalCents) + normalizeMoneyCents(processingFeeCents),
+  )
 
 export const isProcessingFeePaymentMethod = (
   paymentMethod: ProcessingFeePaymentMethod,

@@ -11,6 +11,7 @@ import {Id} from '@/convex/_generated/dataModel'
 import {ITxData} from '@/convex/orders/d'
 import {useCopy} from '@/hooks/use-copy'
 import {useCrypto} from '@/hooks/use-crypto'
+import {computeCryptoRelayTargetCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react/tabs'
@@ -169,32 +170,36 @@ export function getExpectedRecipientAddress(
 export function getExpectedValueBaseUnits(args: {
   network: SendPageNetwork
   paymentToken: ManualPaymentToken
-  orderTotalCents: number
+  payableCents: number
   getBySymbolAction: (symbol: string) => {price: number} | null
 }): string | undefined {
-  const {network, paymentToken, orderTotalCents, getBySymbolAction} = args
+  const {network, paymentToken, payableCents, getBySymbolAction} = args
 
   if (paymentToken === 'usdc' || paymentToken === 'usdt') {
-    return (BigInt(orderTotalCents) * BigInt(10_000)).toString()
+    return (BigInt(payableCents) * BigInt(10_000)).toString()
   }
 
   const tokenPrice =
-    network === 'ethereum' || network === 'sepolia'
-      ? getBySymbolAction('ETH')?.price
-      : network === 'polygon'
-        ? (getBySymbolAction('POL')?.price ?? getBySymbolAction('MATIC')?.price)
-        : null
+    network === 'bitcoin'
+      ? getBySymbolAction('BTC')?.price
+      : network === 'ethereum' || network === 'sepolia'
+        ? getBySymbolAction('ETH')?.price
+        : network === 'polygon'
+          ? (getBySymbolAction('POL')?.price ??
+            getBySymbolAction('MATIC')?.price)
+          : null
+  const tokenDecimals = network === 'bitcoin' ? 8 : 18
 
   if (
     tokenPrice == null ||
     !Number.isFinite(tokenPrice) ||
-    (network !== 'ethereum' && network !== 'polygon' && network !== 'sepolia')
+    !['bitcoin', 'ethereum', 'polygon', 'sepolia'].includes(network)
   ) {
     return undefined
   }
 
   return BigInt(
-    Math.floor((orderTotalCents / 100 / tokenPrice) * 1e18),
+    Math.floor((payableCents / 100 / tokenPrice) * 10 ** tokenDecimals),
   ).toString()
 }
 
@@ -537,6 +542,14 @@ export function SendToPanel({
     () => resolvePaymentToken(network, order?.payment.asset, tokenSelected),
     [network, order?.payment.asset, tokenSelected],
   )
+  const relayTargetCents = useMemo(
+    () =>
+      computeCryptoRelayTargetCents({
+        totalCents: order?.totalCents,
+        processingFeeCents: order?.processingFeeCents,
+      }),
+    [order?.processingFeeCents, order?.totalCents],
+  )
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setTxnHash(event.target.value)
@@ -583,7 +596,7 @@ export function SendToPanel({
               expectedValueWei: getExpectedValueBaseUnits({
                 network,
                 paymentToken: candidate.paymentToken,
-                orderTotalCents: order.totalCents,
+                payableCents: relayTargetCents,
                 getBySymbolAction: getBySymbol,
               }),
             })
@@ -678,6 +691,7 @@ export function SendToPanel({
       isCheckingTxnHash,
       duplicateHashMessage,
       paymentToken,
+      relayTargetCents,
       getBySymbol,
       relayedPaymentHashRef,
       walletAddress,

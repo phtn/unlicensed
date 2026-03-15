@@ -1,5 +1,6 @@
 'use client'
 
+import {Icon} from '@/lib/icons'
 import {Center, ContactShadows, Float, Html, useGLTF} from '@react-three/drei'
 import {Canvas, useFrame} from '@react-three/fiber'
 import {motion, useReducedMotion} from 'motion/react'
@@ -42,7 +43,7 @@ function IdleModel({reduceMotion}: {reduceMotion: boolean}) {
         rotationIntensity={0}
         floatIntensity={reduceMotion ? 0 : 0.12}>
         <Center>
-          <primitive object={model} scale={1.72} />
+          <primitive object={model} scale={1.52} />
         </Center>
       </Float>
     </group>
@@ -96,8 +97,9 @@ function GlareRig({reduceMotion}: {reduceMotion: boolean}) {
 function SceneLoader() {
   return (
     <Html center>
-      <div className='rounded-full border border-foreground/10 bg-background/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-foreground/45 backdrop-blur-sm dark:border-white/10 dark:bg-black/40 dark:text-white/45'>
-        Loading scene
+      <div className='flex items-center space-x-1 whitespace-nowrap rounded-full border border-foreground/10 bg-background/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-foreground/45 backdrop-blur-sm dark:border-white/10 dark:bg-black/40 dark:text-white/45'>
+        <span>Loading scene</span>
+        <Icon name='spinners-ring' className='size-4' />
       </div>
     </Html>
   )
@@ -113,13 +115,17 @@ export function CartEmptyScene() {
       }
       animate={{opacity: 1, y: 0, filter: 'blur(0px)'}}
       transition={{duration: 0.7, ease: 'easeOut'}}
-      className='relative h-[30.01rem] w-full sm:h-[36.01rem] lg:h-[42.01rem]'>
+      className='relative h-[24.01rem] w-full sm:h-[36.01rem] lg:h-[42.01rem]'>
       <Canvas
         dpr={[1, 1.5]}
         gl={{antialias: true, alpha: true}}
         camera={{position: [0, 0, 10.6], fov: 24}}>
         <ambientLight intensity={1.95} />
-        <directionalLight position={[4, 5, 4]} intensity={3.8} color='#fff7fb' />
+        <directionalLight
+          position={[4, 5, 4]}
+          intensity={3.8}
+          color='#fff7fb'
+        />
         <directionalLight
           position={[-5, 2.5, 4]}
           intensity={2.2}

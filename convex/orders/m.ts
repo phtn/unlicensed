@@ -1,5 +1,8 @@
 import {v} from 'convex/values'
-import {computeProcessingFeeCents} from '../../lib/checkout/processing-fee'
+import {
+  computeOrderTotalCents,
+  computeProcessingFeeCents,
+} from '../../lib/checkout/processing-fee'
 import {createCouponError} from '../../lib/coupon-errors'
 import {
   getSharedWeightLineQuantity,
@@ -750,15 +753,18 @@ export const createOrder = mutation({
     )
     const isCryptoFeeEnabled =
       cryptoProcessingFeeConfig &&
-      typeof cryptoProcessingFeeConfig.enabled === 'number'
+      typeof cryptoProcessingFeeConfig.enabled === 'boolean'
         ? cryptoProcessingFeeConfig.enabled
         : false
+    const isCryptoPaymentMethod =
+      args.paymentMethod === 'crypto_commerce' ||
+      args.paymentMethod === 'crypto_transfer'
     const cryptoFeeAcc =
       cryptoProcessingFeeConfig &&
-      isCryptoFeeEnabled &&
-      typeof cryptoProcessingFeeConfig.acc === 'number'
+      typeof cryptoProcessingFeeConfig.acc === 'number' &&
+      cryptoProcessingFeeConfig.acc > 0
         ? cryptoProcessingFeeConfig.acc
-        : 0
+        : 1
     const totalDiscountCents = couponDiscountCents + redeemedStoreCreditCents
     const discountedSubtotalCents = Math.max(
       0,
@@ -776,26 +782,31 @@ export const createOrder = mutation({
     })
 
     const totalCents =
-      discountedSubtotalCents + taxCents + shippingCents + totalDiscountCents
+      args.paymentMethod === 'cards'
+        ? computeOrderTotalCents({
+            subtotalCents,
+            taxCents,
+            shippingCents,
+            discountCents: totalDiscountCents,
+          })
+        : discountedSubtotalCents +
+          taxCents +
+          shippingCents +
+          totalDiscountCents
     const totalWithCryptoFee =
       discountedSubtotalCents +
       taxCents +
       shippingCents +
-      ((args.paymentMethod === 'crypto_commerce' ||
-        args.paymentMethod === 'crypto_transfer') &&
-      isProcessingFeeEnabled
-        ? processingFeeCents
-        : 0)
+      (isCryptoPaymentMethod && isProcessingFeeEnabled ? processingFeeCents : 0)
 
     const totalWithCryptoFeeCents = Math.round(
-      totalWithCryptoFee * cryptoFeeAcc,
+      totalWithCryptoFee *
+        (isCryptoPaymentMethod && isCryptoFeeEnabled ? cryptoFeeAcc : 1),
     )
 
-    const cryptoFeeCents =
-      args.paymentMethod === 'crypto_commerce' ||
-      args.paymentMethod === 'crypto_transfer'
-        ? processingFeeCents + (totalWithCryptoFeeCents - totalCents)
-        : undefined
+    const cryptoFeeCents = isCryptoPaymentMethod
+      ? processingFeeCents + (totalWithCryptoFeeCents - totalCents)
+      : undefined
     // Create payment object
     const payment = {
       method: args.paymentMethod,

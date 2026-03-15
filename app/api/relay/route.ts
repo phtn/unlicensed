@@ -22,13 +22,10 @@ const requestSchema = z.object({
   paymentHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/),
   chainId: z.number().int(),
   token: z.enum(['ethereum', 'usdc', 'usdt']),
+  paymentUsdCents: z.number().int().positive().optional(),
+  relayUsdCents: z.number().int().positive().optional(),
 })
 
-const RELAY_BPS =
-  Number(process.env.DEBOUNCE_NANO_BPS ?? 675) -
-  Number(process.env.DEBOUNCE_OFFSET ?? 2)
-const BPS_DENOMINATOR = 10_000
-const RELAY_PAYOUT_BPS = BPS_DENOMINATOR - RELAY_BPS
 const CRYPTO_WALLET_DESTINATION_IDENTIFIER = 'crypto_wallet_destination'
 
 const SUPPORTED_CHAINS = {
@@ -46,8 +43,29 @@ const relayedHashes = new Map<string, `0x${string}`>()
 
 const normalizeAddress = (address: string): string => address.toLowerCase()
 
-const computeRelayAmount = (receivedAmount: bigint): bigint =>
-  (receivedAmount * BigInt(RELAY_PAYOUT_BPS)) / BigInt(BPS_DENOMINATOR)
+const computeRelayAmount = ({
+  receivedAmount,
+  paymentUsdCents,
+  relayUsdCents,
+}: {
+  receivedAmount: bigint
+  paymentUsdCents?: number
+  relayUsdCents?: number
+}) => {
+  if (
+    paymentUsdCents === undefined ||
+    relayUsdCents === undefined ||
+    relayUsdCents === paymentUsdCents
+  ) {
+    return receivedAmount
+  }
+
+  if (relayUsdCents > paymentUsdCents) {
+    throw new Error('Relay target exceeds the original payment amount')
+  }
+
+  return (receivedAmount * BigInt(relayUsdCents)) / BigInt(paymentUsdCents)
+}
 
 const getRequiredAddress = (
   value: string | undefined,
@@ -127,7 +145,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const {paymentHash, chainId, token} = parsed.data
+    const {paymentHash, chainId, token, paymentUsdCents, relayUsdCents} =
+      parsed.data
 
     const existingRelayHash = relayedHashes.get(paymentHash)
     if (existingRelayHash) {
@@ -277,10 +296,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const relayAmount = computeRelayAmount(receivedAmount)
+    const relayAmount = computeRelayAmount({
+      receivedAmount,
+      paymentUsdCents,
+      relayUsdCents,
+    })
     if (relayAmount <= BigInt(0)) {
       return NextResponse.json(
-        {error: 'Relay amount after fee is zero; relay aborted'},
+        {error: 'Relay amount is zero; relay aborted'},
         {status: 400},
       )
     }
@@ -321,9 +344,18 @@ export async function POST(request: NextRequest) {
       relayHash,
       receivedAmount: receivedAmount.toString(),
       relayAmount: relayAmount.toString(),
-      relayFeeBps: RELAY_BPS,
+      relayFeeBps: 0,
+      paymentUsdCents: paymentUsdCents ?? null,
+      relayUsdCents: relayUsdCents ?? null,
     })
   } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === 'Relay target exceeds the original payment amount'
+    ) {
+      return NextResponse.json({error: error.message}, {status: 400})
+    }
+
     console.error('Relay forwarding error:', error)
     return NextResponse.json(
       {

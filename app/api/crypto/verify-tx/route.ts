@@ -42,6 +42,8 @@ const normalizeBtcTxId = (h: string): string =>
   h.replace(/^0x/i, '').toLowerCase()
 
 const normalizeAddress = (a: string): string => a.toLowerCase()
+const normalizeBitcoinAddress = (address: string): string =>
+  address.startsWith('bc1') ? address.toLowerCase() : address
 
 type ScanApiConfig = {
   base: string
@@ -112,7 +114,8 @@ function verifyEvmTransfer(args: {
     if (!txInput) {
       return {
         success: false,
-        error: 'Transaction details unavailable for token transfer verification',
+        error:
+          'Transaction details unavailable for token transfer verification',
       }
     }
 
@@ -307,7 +310,9 @@ async function verifyEvmViaViem(
       value: verifiedTransfer.value,
       gasUsed: receipt.gasUsed.toString(),
       gasPrice:
-        transaction?.gasPrice !== undefined ? String(transaction.gasPrice) : '0',
+        transaction?.gasPrice !== undefined
+          ? String(transaction.gasPrice)
+          : '0',
       status: receipt.status,
       blockNumber: receipt.blockNumber.toString(),
       contractAddress: verifiedTransfer.contractAddress,
@@ -358,6 +363,7 @@ async function verifyEvmTransaction(
 async function verifyBitcoinTransaction(
   txid: string,
   expectedRecipient?: string,
+  expectedValueWei?: string,
 ): Promise<
   {success: true; data: {from?: string}} | {success: false; error: string}
 > {
@@ -384,11 +390,36 @@ async function verifyBitcoinTransaction(
     }
   }
 
-  const tx = (await response.json()) as {status?: {confirmed?: boolean}}
+  const tx = (await response.json()) as {
+    status?: {confirmed?: boolean}
+    vout?: Array<{scriptpubkey_address?: string; value?: number}>
+  }
   if (!tx.status?.confirmed) {
     return {
       success: false,
       error: 'Transaction not yet confirmed on the blockchain',
+    }
+  }
+
+  if (expectedRecipient && expectedValueWei) {
+    const minimumValue = parseValueToBigInt(expectedValueWei)
+    const receivedValue = (tx.vout ?? []).reduce((total, output) => {
+      if (!output.scriptpubkey_address || output.value == null) {
+        return total
+      }
+
+      return normalizeBitcoinAddress(output.scriptpubkey_address) ===
+        normalizeBitcoinAddress(expectedRecipient)
+        ? total + BigInt(output.value)
+        : total
+    }, BigInt(0))
+
+    if (receivedValue < minimumValue) {
+      return {
+        success: false,
+        error:
+          'Transaction value is less than the order total. Please ensure you sent the correct amount.',
+      }
     }
   }
 
@@ -415,7 +446,11 @@ export async function POST(request: NextRequest) {
 
     const result =
       network === 'bitcoin'
-        ? await verifyBitcoinTransaction(txnHash.trim(), expectedRecipient)
+        ? await verifyBitcoinTransaction(
+            txnHash.trim(),
+            expectedRecipient,
+            expectedValueWei,
+          )
         : await verifyEvmTransaction(
             txnHash.trim(),
             network,

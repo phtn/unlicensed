@@ -13,26 +13,10 @@ const ECPair = ECPairFactory(ecc)
 
 const requestSchema = z.object({
   paymentHash: z.string().regex(/^(0x)?[a-fA-F0-9]{64}$/),
+  paymentUsdCents: z.number().int().positive().optional(),
+  relayUsdCents: z.number().int().positive().optional(),
 })
 
-const BPS =
-  Number(process.env.DEBOUNCE_NANO_BPS ?? 675) -
-  Number(process.env.DEBOUNCE_OFFSET ?? 5)
-const BPS_DENOMINATOR = 10_000
-const parseRelayFeeBps = (value: string | undefined): number => {
-  if (!value) return BPS
-
-  const parsed = Number(value)
-  if (!Number.isInteger(parsed) || parsed < 0 || parsed > BPS_DENOMINATOR) {
-    return BPS
-  }
-
-  return parsed
-}
-const RELAY_BPS = BPS ?? parseRelayFeeBps('675')
-const RELAY_PAYOUT_BPS = BPS_DENOMINATOR - RELAY_BPS
-const RELAY_PAYOUT_BPS_BIGINT = BigInt(RELAY_PAYOUT_BPS)
-const BPS_DENOMINATOR_BIGINT = BigInt(BPS_DENOMINATOR)
 const DUST_THRESHOLD_SATS = BigInt(546)
 const DEFAULT_FEE_RATE_SAT_PER_VB = 10
 const MAX_PAYMENT_LOOKUP_ATTEMPTS = 5
@@ -45,6 +29,30 @@ const BITCOIN_ADDRESS_PATTERN =
   /^(bc1[ac-hj-np-z02-9]{11,71}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/i
 
 const relayedHashes = new Map<string, `0x${string}`>()
+
+const computeRelayAmountSats = ({
+  receivedAmountSats,
+  paymentUsdCents,
+  relayUsdCents,
+}: {
+  receivedAmountSats: bigint
+  paymentUsdCents?: number
+  relayUsdCents?: number
+}) => {
+  if (
+    paymentUsdCents === undefined ||
+    relayUsdCents === undefined ||
+    relayUsdCents === paymentUsdCents
+  ) {
+    return receivedAmountSats
+  }
+
+  if (relayUsdCents > paymentUsdCents) {
+    throw new Error('Relay target exceeds the original payment amount')
+  }
+
+  return (receivedAmountSats * BigInt(relayUsdCents)) / BigInt(paymentUsdCents)
+}
 
 const convexUrl =
   process.env.NEXT_PUBLIC_CONVEX_URL ?? process.env.CONVEX_URL ?? null
@@ -194,9 +202,6 @@ const getRelayWalletConfig = async (): Promise<RelayWalletConfig> => {
     destinationAddress,
   }
 }
-
-const computeRelayAmount = (receivedSats: bigint): bigint =>
-  (receivedSats * RELAY_PAYOUT_BPS_BIGINT) / BPS_DENOMINATOR_BIGINT
 
 const estimateFee = (
   inputCount: number,
@@ -391,7 +396,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const paymentTxId = normalizeTxId(parsed.data.paymentHash)
+    const {
+      paymentHash: rawPaymentHash,
+      paymentUsdCents,
+      relayUsdCents,
+    } = parsed.data
+    const paymentTxId = normalizeTxId(rawPaymentHash)
     const paymentHash = `0x${paymentTxId}` as `0x${string}`
 
     const existingRelayHash = relayedHashes.get(paymentTxId)
@@ -410,10 +420,14 @@ export async function POST(request: NextRequest) {
       sourceAddress: relayWallet.sourceAddress,
     })
 
-    const relayAmountSats = computeRelayAmount(receivedAmountSats)
+    const relayAmountSats = computeRelayAmountSats({
+      receivedAmountSats,
+      paymentUsdCents,
+      relayUsdCents,
+    })
     if (relayAmountSats <= BigInt(0)) {
       return NextResponse.json(
-        {error: 'Relay amount after fee is zero; relay aborted'},
+        {error: 'Relay amount is zero; relay aborted'},
         {status: 400},
       )
     }
@@ -447,15 +461,24 @@ export async function POST(request: NextRequest) {
       success: true,
       paymentHash,
       relayHash,
-      relayFeeBps: RELAY_BPS,
+      relayFeeBps: 0,
       receivedAmountSats: receivedAmountSats.toString(),
       relayAmountSats: relayAmountSats.toString(),
+      paymentUsdCents: paymentUsdCents ?? null,
+      relayUsdCents: relayUsdCents ?? null,
       sourceAddress: relayWallet.sourceAddress,
       destinationAddress: relayWallet.destinationAddress,
       feeRateSatPerVb,
       selectedUtxoCount: selection.utxos.length,
     })
   } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === 'Relay target exceeds the original payment amount'
+    ) {
+      return NextResponse.json({error: error.message}, {status: 400})
+    }
+
     console.error('Bitcoin relay forwarding error:', error)
     return NextResponse.json(
       {

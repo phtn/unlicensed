@@ -1,6 +1,5 @@
 'use client'
 
-import {withSecureRetry} from '@/components/appkit/converter-utils'
 import {PayTab} from '@/components/appkit/pay'
 import {
   DEFAULT_ALLOWED_PAY_NETWORKS,
@@ -14,6 +13,7 @@ import {
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCrypto} from '@/hooks/use-crypto'
+import {computeCryptoRelayTargetCents} from '@/lib/checkout/processing-fee'
 import {useMutation, useQuery} from 'convex/react'
 import {useParams} from 'next/navigation'
 import {useCallback, useMemo, useRef, useState} from 'react'
@@ -89,9 +89,22 @@ const CryptoPayContent = () => {
   const defaultPaymentAmountUsd = useMemo(() => {
     if (order == null || order === undefined) return undefined
     return (
-      (order?.totalWithCryptoFeeCents ?? withSecureRetry(order.totalCents)) /
-      100
+      (order.totalWithCryptoFeeCents ??
+        computeCryptoRelayTargetCents({
+          totalCents: order.totalCents,
+          processingFeeCents: order.processingFeeCents,
+        })) / 100
     ).toFixed(2)
+  }, [order])
+
+  const defaultRelayAmountUsd = useMemo(() => {
+    if (order == null || order === undefined) return undefined
+    return (
+      computeCryptoRelayTargetCents({
+        totalCents: order.totalCents,
+        processingFeeCents: order.processingFeeCents,
+      }) / 100
+    )
   }, [order])
 
   const allowedNetworks = useMemo(
@@ -151,6 +164,7 @@ const CryptoPayContent = () => {
           balance={null}
           tokenPrice={ethPrice}
           defaultPaymentAmountUsd={defaultPaymentAmountUsd}
+          defaultRelayAmountUsd={defaultRelayAmountUsd}
           onReset={handleReset}
           allowedNetworks={allowedNetworks}
         />

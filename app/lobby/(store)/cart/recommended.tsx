@@ -150,7 +150,7 @@ export const RecommendedProducts = memo(() => {
         </h2>
         {hasOnlyOneCategory && (
           <p className='text-sm italic mt-0.5 space-x-1'>
-            <span className=' opacity-80'>Add another category for</span>
+            <span className='opacity-80'>Add another category for</span>
             <span className='font-semibold opacity-100'>
               {bundleBonusPct}% bundle cash back
             </span>
@@ -192,7 +192,7 @@ const RecommendedCard = memo(function RecommendedCard({
       shadow='none'
       radius='none'
       className='rounded-none bg-linear-to-l from-featured/15 via-light-gray/10 to-transparent dark:bg-dark-gray/15'>
-      <CardBody className='p-0 md:p-6'>
+      <CardBody className='p-0 md:pe-6 md:py-6'>
         <div className='flex min-w-0 gap-4 items-center'>
           <div className='relative w-24 h-24 aspect-square shrink-0 overflow-hidden'>
             {productImage ? (

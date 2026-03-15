@@ -1,4 +1,5 @@
 import {useSearchParams} from '@/components/sepolia/search-params-context'
+import {api} from '@/convex/_generated/api'
 import {useBitcoinBalance} from '@/hooks/use-bitcoin-balance'
 import {useBitcoinTransfer} from '@/hooks/use-bitcoin-transfer'
 import {useCrypto} from '@/hooks/use-crypto'
@@ -22,6 +23,7 @@ import {
   useAppKitAccount,
   useAppKitNetwork,
 } from '@reown/appkit/react'
+import {useQuery} from 'convex/react'
 import {AnimatePresence, motion} from 'motion/react'
 import {
   useCallback,
@@ -155,11 +157,17 @@ const toLocalReceipt = (
   }
 }
 
+const toUsdCents = (value: number | null | undefined): number | null => {
+  if (value == null || !Number.isFinite(value) || value <= 0) return null
+  return Math.round(value * 100)
+}
+
 export const PayTab = ({
   onPaymentSuccess,
   tokenPrice,
   disabled,
   defaultPaymentAmountUsd,
+  defaultRelayAmountUsd,
   isPending = false,
   isConfirming = false,
   receipt = null,
@@ -201,6 +209,12 @@ export const PayTab = ({
     number | null
   >(null)
   const [lastPaymentUsdValue, setLastPaymentUsdValue] = useState<number | null>(
+    null,
+  )
+  const [lastRelayNativeValue, setLastRelayNativeValue] = useState<
+    number | null
+  >(null)
+  const [lastRelayUsdValue, setLastRelayUsdValue] = useState<number | null>(
     null,
   )
 
@@ -291,6 +305,18 @@ export const PayTab = ({
     return baseUsdValue
   }, [baseUsdValue])
 
+  const relayUsdValue = useMemo(() => {
+    if (
+      defaultRelayAmountUsd != null &&
+      Number.isFinite(defaultRelayAmountUsd) &&
+      defaultRelayAmountUsd > 0
+    ) {
+      return defaultRelayAmountUsd
+    }
+
+    return payableUsdValue
+  }, [defaultRelayAmountUsd, payableUsdValue])
+
   // Calculate token amount from payable USD amount
   const tokenAmount = useMemo(() => {
     if (!selectedToken || payableUsdValue === null) return null
@@ -298,6 +324,13 @@ export const PayTab = ({
     if (!price) return null
     return payableUsdValue / price
   }, [selectedToken, payableUsdValue, getTokenPrice])
+
+  const relayTokenAmount = useMemo(() => {
+    if (!selectedToken || relayUsdValue === null) return null
+    const price = getTokenPrice(selectedToken)
+    if (!price) return null
+    return relayUsdValue / price
+  }, [selectedToken, relayUsdValue, getTokenPrice])
 
   // Get current network name from chainId
   const currentNetwork = useMemo(() => getNetworkForChainId(chainId), [chainId])
@@ -546,35 +579,40 @@ export const PayTab = ({
     )
   }, [lastPaymentChainId, lastPaymentToken, nativeSymbol])
 
+  const cryptoCredsConfig = useQuery(api.admin.q.getAdminByIdentifier, {
+    identifier: 'crypto_private_credentials',
+  })
+  const cryptoCredentials = cryptoCredsConfig && cryptoCredsConfig.value
+
   // Get payment destination from environment variable
-  const src_e = useMemo(() => {
-    const dest = process.env.NEXT_PUBLIC_SRC_E
+  const evmRelaySource = useMemo(() => {
+    const dest = cryptoCredentials?.evmNative
     if (!dest) {
-      console.warn('NEXT_PUBLIC_SRC_E is not set')
+      console.error('EVM Native is not set')
       return null
     }
     return dest as Address
-  }, [])
+  }, [cryptoCredentials])
 
   const bitcoinRelaySource = useMemo(() => {
-    const configuredSource = process.env.NEXT_PUBLIC_SRC_B
+    const configuredSource = cryptoCredentials?.btcNative
     if (!configuredSource) return null
     return BITCOIN_ADDRESS_PATTERN.test(configuredSource)
       ? configuredSource
       : null
-  }, [])
+  }, [cryptoCredentials])
 
   useEffect(() => {
     if (!isBitcoinNetworkSelected) return
     if (bitcoinRelaySource) return
     console.warn(
-      'BTC_SOURCE is missing or invalid. Bitcoin payments are disabled.',
+      'BTC Native Source is missing or invalid. Bitcoin payments are disabled.',
     )
   }, [bitcoinRelaySource, isBitcoinNetworkSelected])
 
   const paymentDestination = isBitcoinNetworkSelected
     ? bitcoinRelaySource
-    : src_e
+    : evmRelaySource
 
   // EIP-681 payment request URI for wallet QR scan (ethereum:...)
   const paymentRequestUri = useMemo(() => {
@@ -587,11 +625,11 @@ export const PayTab = ({
       return `bitcoin:${bitcoinRelaySource}?amount=${amount}`
     }
 
-    if (!src_e || !chainId) return null
+    if (!evmRelaySource || !chainId) return null
     if (selectedToken === 'ethereum') {
       if (tokenAmount == null || tokenAmount <= 0) return null
       const value = `${Number(tokenAmount)}e18`
-      return `ethereum:${src_e}@${chainId}?value=${value}`
+      return `ethereum:${evmRelaySource}@${chainId}?value=${value}`
     }
 
     if (selectedToken === 'usdc' || selectedToken === 'usdt') {
@@ -604,14 +642,14 @@ export const PayTab = ({
       if (!tokenAddress) return null
 
       const amount = `${payableUsdValue.toFixed(6)}e6`
-      return `ethereum:${tokenAddress}@${chainId}/transfer?address=${src_e}&uint256=${amount}`
+      return `ethereum:${tokenAddress}@${chainId}/transfer?address=${evmRelaySource}&uint256=${amount}`
     }
 
     return null
   }, [
     bitcoinRelaySource,
     chainId,
-    src_e,
+    evmRelaySource,
     selectedToken,
     tokenAmount,
     payableUsdValue,
@@ -743,11 +781,8 @@ export const PayTab = ({
       tokenForTxState === 'bitcoin' ? null : (lastPaymentChainId ?? chainId)
     const asset = getPaymentAssetSymbol(tokenForTxState, paymentChainId)
     const chain = getPaymentChainName(tokenForTxState, paymentChainId)
-    const nativeValue =
-      asset !== 'ETH'
-        ? (lastPaymentNativeValue ?? 1) / 1.0675
-        : lastPaymentNativeValue
-    const usdValue = (lastPaymentUsdValue ?? 1) / 1.0675
+    const nativeValue = lastRelayNativeValue
+    const usdValue = lastRelayUsdValue
 
     if (!asset || !chain || nativeValue === null || usdValue === null) {
       return undefined
@@ -763,8 +798,8 @@ export const PayTab = ({
     tokenForTxState,
     lastPaymentChainId,
     chainId,
-    lastPaymentNativeValue,
-    lastPaymentUsdValue,
+    lastRelayNativeValue,
+    lastRelayUsdValue,
   ])
   const reportedSuccessHashRef = useRef<`0x${string}` | null>(null)
   const relayedPaymentHashRef = useRef<`0x${string}` | null>(null)
@@ -812,6 +847,8 @@ export const PayTab = ({
                 paymentHash: activeHash,
                 chainId: lastPaymentChainId ?? chainId,
                 token: tokenForTxState,
+                paymentUsdCents: toUsdCents(lastPaymentUsdValue),
+                relayUsdCents: toUsdCents(lastRelayUsdValue),
               }),
             })
           : tokenForTxState === 'bitcoin'
@@ -820,6 +857,8 @@ export const PayTab = ({
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                   paymentHash: activeHash,
+                  paymentUsdCents: toUsdCents(lastPaymentUsdValue),
+                  relayUsdCents: toUsdCents(lastRelayUsdValue),
                 }),
               })
             : null
@@ -842,7 +881,15 @@ export const PayTab = ({
         console.error('Relay forwarding failed:', relayError)
       }
     })()
-  }, [activeHash, activeReceipt, tokenForTxState, lastPaymentChainId, chainId])
+  }, [
+    activeHash,
+    activeReceipt,
+    tokenForTxState,
+    lastPaymentChainId,
+    chainId,
+    lastPaymentUsdValue,
+    lastRelayUsdValue,
+  ])
 
   const receiptExplorerUrl = useMemo(
     () =>
@@ -874,15 +921,20 @@ export const PayTab = ({
     isPendingProp: isPending,
     isConfirmingProp: isConfirming,
   })
+  const isRelayTargetAbovePayment =
+    relayUsdValue !== null &&
+    payableUsdValue !== null &&
+    relayUsdValue > payableUsdValue
   const isPayDisabled =
     isBasePayDisabled ||
     isUnsupportedPaymentToken ||
     isUnsupportedPaymentNetwork ||
-    isMissingBitcoinDestination
+    isMissingBitcoinDestination ||
+    isRelayTargetAbovePayment
 
   const sendStableTokenPayment = useCallback(
     (token: Exclude<EvmPayToken, 'ethereum'>, usdAmount: number) => {
-      if (!src_e) return
+      if (!evmRelaySource) return
 
       const tokenConfig = STABLE_TOKEN_CONFIG[token]
       if (!tokenConfig.isSupportedChain(chainId)) {
@@ -902,17 +954,17 @@ export const PayTab = ({
         abi: ERC20_TRANSFER_ABI,
         address: tokenAddress,
         functionName: 'transfer',
-        args: [src_e, transferAmount],
+        args: [evmRelaySource, transferAmount],
       })
     },
-    [chainId, src_e, mutate, mutateUsdt],
+    [chainId, evmRelaySource, mutate, mutateUsdt],
   )
 
   const sendBitcoinPayment = useCallback(
     async (btcAmount: number) => {
       if (!bitcoinRelaySource) {
         throw new Error(
-          'NEXT_PUBLIC_SRC_B is missing or invalid for Bitcoin payments',
+          'BTC Relay source is missing or invalid for Bitcoin payments',
         )
       }
 
@@ -944,10 +996,16 @@ export const PayTab = ({
       return
     }
 
+    if (relayUsdValue === null || relayUsdValue > payableUsdValue) {
+      return
+    }
+
     setLastPaymentToken(selectedToken)
     setLastPaymentChainId(chainId)
     setLastPaymentNativeValue(tokenAmount)
     setLastPaymentUsdValue(payableUsdValue)
+    setLastRelayNativeValue(relayTokenAmount ?? tokenAmount)
+    setLastRelayUsdValue(relayUsdValue)
 
     try {
       switch (selectedToken) {
@@ -957,8 +1015,8 @@ export const PayTab = ({
           await sendBitcoinPayment(tokenAmount)
           return
         case 'ethereum':
-          if (!src_e) return
-          sendEth({to: src_e, usd: payableUsdValue, chainId})
+          if (!evmRelaySource) return
+          sendEth({to: evmRelaySource, usd: payableUsdValue, chainId})
           return
         case 'usdc':
         case 'usdt':
@@ -977,10 +1035,12 @@ export const PayTab = ({
     selectedToken,
     paymentAmountUsd,
     payableUsdValue,
-    src_e,
+    relayUsdValue,
+    evmRelaySource,
     paymentDestination,
     hasInsufficientBalance,
     tokenAmount,
+    relayTokenAmount,
     chainId,
     sendBitcoinPayment,
     sendEth,
@@ -1013,6 +1073,7 @@ export const PayTab = ({
     !isUnsupportedPaymentToken &&
     !isUnsupportedPaymentNetwork &&
     !isMissingBitcoinDestination &&
+    !isRelayTargetAbovePayment &&
     !!selectedToken &&
     !!paymentAmountUsd &&
     !!paymentDestination

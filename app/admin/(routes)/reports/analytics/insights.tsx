@@ -750,7 +750,7 @@ export const GeoPage = () => {
             </Chip>
             <div>
               <h2 className='text-3xl font-space font-semibold text-white'>
-                United States visitor map
+                World Visitor Map
               </h2>
               <p className='mt-2 text-sm text-white/70'>
                 Mapbox choropleth of U.S. traffic from visitor logs, recorded

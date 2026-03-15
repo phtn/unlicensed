@@ -1,5 +1,7 @@
 'use client'
-import {useCallback} from 'react'
+import {api} from '@/convex/_generated/api'
+import {useQuery} from 'convex/react'
+import {useCallback, useMemo} from 'react'
 import {type Address, type Chain, formatEther, parseEther} from 'viem'
 import {useSendTransaction, useWaitForTransactionReceipt} from 'wagmi'
 import {useCrypto} from './use-crypto'
@@ -34,8 +36,6 @@ interface UseSendReturn {
   usdToEth: (usd: number) => string | null
 }
 
-const DEFAULT_RECIPIENT: Address = process.env
-  .NEXT_PUBLIC_TEST_TXN_OLD as Address
 const MIN_USD_AMOUNT = 0.01
 const RECEIPT_RETRY_DELAY_MS = (attemptIndex: number) =>
   Math.min(1000 * 2 ** attemptIndex, 5000)
@@ -57,6 +57,16 @@ const RECEIPT_REFETCH_INTERVAL_MS = (query: {
 export const useSend = (): UseSendReturn => {
   const {getBySymbol} = useCrypto()
   const {mutate, isPending, error, data: transactionHash} = useSendTransaction()
+
+  const cryptoCredsConfig = useQuery(api.admin.q.getAdminByIdentifier, {
+    identifier: 'crypto_private_credentials',
+  })
+  const cryptoCredentials = cryptoCredsConfig && cryptoCredsConfig.value
+
+  const destination = useMemo(
+    () => cryptoCredentials?.evmNative,
+    [cryptoCredentials],
+  )
 
   // Wait for transaction receipt once we have a hash
   // Note: wagmi's useWaitForTransactionReceipt automatically cleans up the refetchInterval
@@ -114,7 +124,7 @@ export const useSend = (): UseSendReturn => {
    */
   const send = useCallback(
     (params: SendParams): void => {
-      const {to = DEFAULT_RECIPIENT, usd, chainId} = params
+      const {to = destination, usd, chainId} = params
 
       // Validate USD amount
       if (usd <= 0) {
@@ -160,7 +170,7 @@ export const useSend = (): UseSendReturn => {
         )
       }
     },
-    [mutate, usdToEth, ethPrice],
+    [mutate, usdToEth, ethPrice, destination],
   )
 
   // Determine if we're still confirming - we have a hash but no receipt yet

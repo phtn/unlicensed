@@ -37,6 +37,7 @@ export interface PayTabProps {
   amount: string
   /** Default USD amount when no paymentAmountUsd in URL (e.g. order total for order payment flow). */
   defaultPaymentAmountUsd?: string
+  defaultRelayAmountUsd?: number
   isPending?: boolean
   isConfirming?: boolean
   receipt?: ReceiptStatus

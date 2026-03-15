@@ -1,5 +1,6 @@
 import {api} from '@/convex/_generated/api'
 import type {Id} from '@/convex/_generated/dataModel'
+import {computeOrderTotalCents} from '@/lib/checkout/processing-fee'
 import {getGatewayApiUrls, type GatewayId} from '@/lib/paygate/config'
 import {ConvexHttpClient} from 'convex/browser'
 import {NextRequest, NextResponse} from 'next/server'
@@ -131,14 +132,21 @@ export async function handleGatewayCheckout(request: NextRequest) {
 
     const provider = requestedProvider || defaultProvider
     const currency = getString(body.currency) || 'USD'
-    const amount = (order.totalCents / 100).toFixed(2)
-    const {checkoutUrl: rawCheckoutUrl} = getGatewayApiUrls(
-      gateway,
-      {
-        apiUrl: getString(gatewayDoc.apiUrl),
-        checkoutUrl: getString(gatewayDoc.checkoutUrl),
-      },
-    )
+    const amountCents =
+      order.payment.method === 'cards'
+        ? computeOrderTotalCents({
+            subtotalCents: order.subtotalCents,
+            taxCents: order.taxCents,
+            shippingCents: order.shippingCents,
+            discountCents: order.discountCents,
+            totalCents: order.totalCents,
+          })
+        : order.totalCents
+    const amount = (amountCents / 100).toFixed(2)
+    const {checkoutUrl: rawCheckoutUrl} = getGatewayApiUrls(gateway, {
+      apiUrl: getString(gatewayDoc.apiUrl),
+      checkoutUrl: getString(gatewayDoc.checkoutUrl),
+    })
     const checkoutUrl = normalizeCheckoutBaseUrl(rawCheckoutUrl)
 
     const callbackUrl = new URL('/api/gateways/webhook', request.nextUrl.origin)

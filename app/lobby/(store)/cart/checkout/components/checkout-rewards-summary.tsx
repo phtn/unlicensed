@@ -310,9 +310,16 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
               name='lightbulb-bold'
               className='size-5 dark:text-yellow-200'
             />
-            <span>
-              Pick from 2+ categories to earn additional 0.5% cash back
-            </span>
+            {r.isFirstOrder ? (
+              <p className='mb-0 text-[11px] text-muted-foreground max-w-xl overflow-scroll'>
+                Free shipping on your first order over{' '}
+                {formatRewardsCurrency(config.freeShippingFirstOrder)}
+              </p>
+            ) : (
+              <span>
+                Pick from 2+ categories to earn additional 0.5% cash back
+              </span>
+            )}
           </div>
         )}
 
@@ -330,13 +337,6 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
             suggestions={topUpSuggestions}
             onAdd={onAddTopUp}
           />
-        )}
-
-        {r.isFirstOrder && (
-          <p className='mt-3.5 mb-0 text-[11px] text-muted-foreground/80 max-w-xl overflow-scroll'>
-            Free shipping on your first order over{' '}
-            {formatRewardsCurrency(config.freeShippingFirstOrder)}
-          </p>
         )}
       </CardBody>
     </Card>
