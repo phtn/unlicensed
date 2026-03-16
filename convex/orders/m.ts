@@ -1,5 +1,6 @@
 import {v} from 'convex/values'
 import {
+  computeCryptoFeeCents,
   computeOrderTotalCents,
   computeProcessingFeeCents,
 } from '../../lib/checkout/processing-fee'
@@ -782,18 +783,12 @@ export const createOrder = mutation({
       shippingCents,
     })
 
-    const totalCents =
-      args.paymentMethod === 'cards'
-        ? computeOrderTotalCents({
-            subtotalCents,
-            taxCents,
-            shippingCents,
-            discountCents: totalDiscountCents,
-          })
-        : discountedSubtotalCents +
-          taxCents +
-          shippingCents +
-          totalDiscountCents
+    const totalCents = computeOrderTotalCents({
+      subtotalCents,
+      taxCents,
+      shippingCents,
+      discountCents: totalDiscountCents,
+    })
     const totalWithCryptoFee =
       discountedSubtotalCents +
       taxCents +
@@ -806,7 +801,10 @@ export const createOrder = mutation({
     )
 
     const cryptoFeeCents = isCryptoPaymentMethod
-      ? processingFeeCents + (totalWithCryptoFeeCents - totalCents)
+      ? computeCryptoFeeCents({
+          totalCents,
+          totalWithCryptoFeeCents,
+        })
       : undefined
     // Create payment object
     const payment = {

@@ -38,6 +38,11 @@ type ComputeCryptoRelayTargetCentsArgs = {
   processingFeeCents?: number
 }
 
+type ComputeCryptoFeeCentsArgs = {
+  totalCents?: number
+  totalWithCryptoFeeCents?: number
+}
+
 const normalizeMoneyCents = (value?: number) =>
   Number.isFinite(value) ? Math.max(0, value ?? 0) : 0
 
@@ -114,6 +119,16 @@ export const computeCryptoRelayTargetCents = ({
   Math.max(
     0,
     normalizeMoneyCents(totalCents) + normalizeMoneyCents(processingFeeCents),
+  )
+
+export const computeCryptoFeeCents = ({
+  totalCents,
+  totalWithCryptoFeeCents,
+}: ComputeCryptoFeeCentsArgs) =>
+  Math.max(
+    0,
+    normalizeMoneyCents(totalWithCryptoFeeCents) -
+      normalizeMoneyCents(totalCents),
   )
 
 export const isProcessingFeePaymentMethod = (

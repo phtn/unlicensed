@@ -131,24 +131,44 @@ export const RecentActivities = ({
     api.users.q.getCurrentUser,
     firebaseUser ? {fid: firebaseUser.uid} : 'skip',
   )
-  const markAsViewed = useMutation(api.activityViews.m.markActivityAsViewed)
+  const markAsViewed = useMutation(api.activityViews.m.markActivitiesAsViewed)
+  const viewedActivityIdsRef = React.useRef<Set<string>>(new Set())
 
   const activities = useQuery(api.activities.q.getRecentActivities, {
     limit: 30,
+    includeUsers: true,
+    includeViewers: true,
+    viewerLimit: 5,
   })
 
   // Mark activities as viewed when component mounts or activities change
   useEffect(() => {
-    if (activities && convexUser) {
-      activities.forEach((activity) => {
-        markAsViewed({
-          activityId: activity._id,
-          userId: convexUser._id,
-        }).catch(() => {
-          // Silently fail if already viewed
-        })
+    viewedActivityIdsRef.current = new Set()
+  }, [convexUser?._id])
+
+  useEffect(() => {
+    if (!activities || !convexUser) return
+
+    const unseenActivityIds = activities
+      .map((activity) => activity._id)
+      .filter(
+        (activityId) => !viewedActivityIdsRef.current.has(String(activityId)),
+      )
+
+    if (unseenActivityIds.length === 0) return
+
+    unseenActivityIds.forEach((activityId) => {
+      viewedActivityIdsRef.current.add(String(activityId))
+    })
+
+    markAsViewed({
+      activityIds: unseenActivityIds,
+      userId: convexUser._id,
+    }).catch(() => {
+      unseenActivityIds.forEach((activityId) => {
+        viewedActivityIdsRef.current.delete(String(activityId))
       })
-    }
+    })
   }, [activities, convexUser, markAsViewed])
 
   const renderCell = React.useCallback(
@@ -161,6 +181,7 @@ export const RecentActivities = ({
           email: string
           photoUrl?: string
         }>
+        viewerCount?: number
       },
       columnKey: React.Key,
     ) => {
@@ -257,6 +278,7 @@ export const RecentActivities = ({
           )
         case 'seenBy':
           const viewers = activity.viewers || []
+          const totalViewers = activity.viewerCount ?? viewers.length
           if (viewers.length === 0) {
             return (
               <p className='text-bold text-tiny text-default-400'>Not viewed</p>
@@ -284,10 +306,10 @@ export const RecentActivities = ({
                   </div>
                 </div>
               ))}
-              {viewers.length > 5 && (
+              {totalViewers > viewers.length && (
                 <div className='flex h-8 w-8 items-center justify-center rounded-full bg-default-100 ring-2 ring-background'>
                   <span className='text-xs font-medium text-default-600'>
-                    +{viewers.length - 5}
+                    +{totalViewers - viewers.length}
                   </span>
                 </div>
               )}

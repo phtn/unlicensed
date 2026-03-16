@@ -30,6 +30,8 @@ export function AdminAlertsListener() {
       ? {
           limit: 12,
           types: ['order_created', 'payment_completed', 'user_signup'],
+          includeUsers: false,
+          includeViewers: false,
         }
       : 'skip',
   )

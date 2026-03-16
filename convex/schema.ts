@@ -74,6 +74,7 @@ export default defineSchema({
     .index('by_user', ['userId'])
     .index('by_order', ['orderId'])
     .index('by_type', ['type'])
+    .index('by_type_created_at', ['type', 'createdAt'])
     .index('by_created_at', ['createdAt']),
   activityViews: defineTable(activityViewSchema)
     .index('by_activity', ['activityId'])
