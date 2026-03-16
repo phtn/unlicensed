@@ -3,7 +3,6 @@
 import {StoreProduct} from '@/app/types'
 import {Tag} from '@/components/base44/tag'
 import {Title} from '@/components/base44/title'
-import {ProductCard} from '@/components/store/product-card'
 import {api} from '@/convex/_generated/api'
 import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
@@ -18,7 +17,8 @@ import {
   useQueryState,
   useQueryStates,
 } from 'nuqs'
-import {Activity, ChangeEvent, useMemo, useState} from 'react'
+import {Activity, ChangeEvent, useCallback, useMemo, useState} from 'react'
+import {Products} from '../category/[slug]/products'
 
 interface ContentProps {
   initialProducts: StoreProduct[]
@@ -277,11 +277,16 @@ export const Content = ({initialProducts}: ContentProps) => {
   const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setSortParams({sort: e.target.value as SortField})
   }
+  const getImageUrl = useCallback(
+    (image: string | null | undefined) =>
+      resolveProductImage(image, resolveUrl),
+    [resolveUrl],
+  )
 
   return (
     <div className='min-h-screen overflow-x-hidden bg-background'>
       {/* Hero Section */}
-      <section className='pt-16 md:pt-20 lg:pt-24 xl:pt-28 2xl:pt-36 pb-12 sm:pb-16 lg:pb-16 px-4 sm:px-6'>
+      <section className='pt-16 md:pt-20 lg:pt-24 xl:pt-28 2xl:pt-36 pb-10 sm:pb-16 lg:pb-16 px-4 sm:px-6'>
         <div className='max-w-7xl mx-auto'>
           <Tag text='Search' />
           <Title title='Products' subtitle='Advanced Search' />
@@ -435,9 +440,9 @@ export const Content = ({initialProducts}: ContentProps) => {
       </section>
 
       {/* Products Grid */}
-      <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
+      <section className='py-6 sm:py-8 px-0 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
         <div className='max-w-7xl mx-auto'>
-          <div className='mb-6 flex items-center justify-between'>
+          <div className='mb-6 px-4 flex items-center justify-between'>
             <p className='text-sm opacity-60'>
               {filteredProducts.length} product
               {filteredProducts.length !== 1 ? 's' : ''} found
@@ -472,8 +477,7 @@ export const Content = ({initialProducts}: ContentProps) => {
               </div>
             </div>
           </Activity>
-
-          <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8'>
+          {/*<div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8'>
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product._id}
@@ -481,8 +485,10 @@ export const Content = ({initialProducts}: ContentProps) => {
                 imageUrl={resolveProductImage(product.image, resolveUrl)}
               />
             ))}
-          </div>
+          </div>*/}
         </div>
+
+        <Products products={filteredProducts} getImageUrl={getImageUrl} />
       </section>
     </div>
   )

@@ -1,6 +1,5 @@
 'use client'
 
-import {FeaturedProducts} from '@/app/lobby/(store)/featured'
 import {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {useAuth} from '@/hooks/use-auth'
@@ -9,8 +8,9 @@ import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {Button, Image} from '@heroui/react'
 import {useQuery} from 'convex/react'
+import Link from 'next/link'
 import {useMemo, useState} from 'react'
-import {SectionHeader} from '../ui/section-header'
+import {CtaSection} from '../main/cta-section'
 import {ProductCard} from './product-card'
 
 const formatPrice = (priceCents: number) => {
@@ -49,39 +49,25 @@ export const SuggestedCartItems = () => {
 
   const resolveUrl = useStorageUrls(allImageIds)
 
+  const categories = ['flower', 'extracts', 'vapes', 'edibles', 'pre-rolls']
   // If loading or both empty, we can just return null or loading state
   // But EmptyCart handles the main empty message.
   if (!featuredRaw && !previousRaw) return null
 
   return (
-    <div className='flex flex-col h-full gap-6 border-t border-foreground/15'>
-      {/* Featured Section */}
-      {featured.length > 0 && (
-        <div className=''>
-          <SectionHeader title='Featured Drops' className='p-4' />
-          <div className='flex w-md md:w-2xl overflow-x-auto gap-1 md:gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3 pr-10'>
-            {featured.map((product) => (
-              <div
-                key={product._id}
-                className='snap-start min-w-50 max-w-50 bg-surface-highlight/50 rounded-xs overflow-hidden border border-foreground/10 flex flex-col group md:hover:border-foreground/20'>
-                <ProductCard
-                  product={product}
-                  imageUrl={resolveUrl(product.image ?? '') ?? undefined}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
+    <div className='flex flex-col h-full gap-4 border-t border-foreground/15'>
       {/* Collection Section */}
-      <FeaturedProducts featuredProducts={featured} />
+      <div className='flex flex-wrap items-center justify-between gap-4 relative mt-4 px-3'>
+        <div className='space-y-1'>
+          <h2 className='text-3xl font-clash font-semibold sm:text-4xl'>
+            Buy <span className='text-brand'>Again</span>
+          </h2>
+        </div>
+      </div>
 
       {/* Previous Section */}
       {previous.length > 0 && (
         <div className='space-y-3 w-3xl'>
-          <SectionHeader title='Buy Again' className='px-4 w-md' />
-
           <div className='flex w-screen md:w-2xl overflow-x-auto gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3 pr-8'>
             {previous.map((product) => (
               <ProductCard
@@ -93,6 +79,25 @@ export const SuggestedCartItems = () => {
           </div>
         </div>
       )}
+
+      <CtaSection
+        title='Browse by Category'
+        description='Discover new products from our collection.'
+      />
+      <div className='w-full md:w-fit flex items-center justify-between gap-px md:gap-2'>
+        {categories.map((cat) => (
+          <Button
+            key={cat}
+            size='sm'
+            as={Link}
+            href={`/lobby/category/${cat}`}
+            prefetch
+            radius='none'
+            className='portrait:w-full dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-medium px-2 md:px-5 py-5 text-base lg:text-lg capitalize tracking-tighter'>
+            <span className='drop-shadow-xs'>{cat}</span>
+          </Button>
+        ))}
+      </div>
     </div>
   )
 }

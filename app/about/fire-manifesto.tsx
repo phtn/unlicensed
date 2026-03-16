@@ -1,5 +1,5 @@
-import {Button} from '@heroui/react'
 import Link from 'next/link'
+import {memo} from 'react'
 
 const MANIFESTO_PARAGRAPHS = [
   <>
@@ -35,12 +35,12 @@ const MANIFESTO_PARAGRAPHS = [
   </>,
 ] as const
 
-export const FireManifesto = () => {
+export const FireManifesto = memo(function FireManifesto() {
   return (
-    <section className='px-4 pb-0 sm:px-6'>
+    <section className='px-4 pb-0 sm:px-6 [content-visibility:auto] [contain-intrinsic-size:56rem]'>
       <div className='mx-auto max-w-7xl'>
-        <div className='relative overflow-hidden rounded-xs border border-r-0 border-foreground/10 bg-linear-to-r from-dark-table via-brand/30 to-black px-1 py-1 text-white'>
-          <div className='rounded-sm bg-black/75 px-4 py-6 backdrop-blur-md sm:px-6 sm:py-8 md:px-8 md:py-10'>
+        <div className='relative overflow-hidden rounded-xs border border-r-0 border-foreground/10 bg-linear-to-r from-dark-table via-brand/30 to-black px-1 py-1 text-white [contain:paint]'>
+          <div className='rounded-sm bg-black/82 px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10'>
             <div className='grid gap-6 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:gap-10'>
               <div className='space-y-4'>
                 <p className='font-clash text-brand text-xs uppercase tracking-[0.24em] sm:text-sm sm:tracking-[0.32em]'>
@@ -64,18 +64,14 @@ export const FireManifesto = () => {
               </div>
             </div>
           </div>
-          <Button
-            size='lg'
-            as={Link}
-            fullWidth
-            prefetch
-            radius='none'
-            href={'/lobby/category'}
-            className='opacity-100 hover:bg-brand rounded-xs bg-brand text-white font-clash font-medium px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-base md:text-lg lg:text-xl md:py-4!'>
+          <Link
+            href='/lobby/category'
+            prefetch={false}
+            className='flex w-full items-center justify-center rounded-xs bg-brand px-4 py-2 font-clash text-sm font-medium text-white opacity-100 hover:bg-brand sm:px-8 sm:py-3 sm:text-base md:py-4 md:text-lg lg:text-xl'>
             <span className='drop-shadow-xs'>Shop Now</span>
-          </Button>
+          </Link>
         </div>
       </div>
     </section>
   )
-}
+})

@@ -29,10 +29,10 @@ export async function generateMetadata({
         : undefined
 
   return {
-    title: `${product.name} | Unlicensed Goods`,
+    title: `${product.name} | Rapid Fire`,
     description: product.shortDescription,
     openGraph: {
-      title: `${product.name} | Unlicensed Goods`,
+      title: `${product.name} | Rapid Fire`,
       description: product.description,
       images: imageUrl ? [imageUrl] : [],
     },

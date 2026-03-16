@@ -41,7 +41,7 @@ export function CashBackRedemption({
           <p className='text-base font-semibold font-clash'>
             Available Rewards Points
           </p>
-          <p className='text-xs font-normal text-foreground/60'>
+          <div className='text-xs font-normal text-foreground/60'>
             {canRedeem && (
               <Icon
                 name='check'
@@ -51,7 +51,7 @@ export function CashBackRedemption({
             {canRedeem
               ? 'Eligible for redemption'
               : 'Redeemable on orders over $50.'}
-          </p>
+          </div>
         </div>
         <span className='text-base font-semibold font-okxs'>
           ${formatPrice(availableBalanceCents)}

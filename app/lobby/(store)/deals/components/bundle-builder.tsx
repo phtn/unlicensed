@@ -789,16 +789,21 @@ export function BundleBuilder({
               radius='none'
               onPress={handleAddToCart}
               isDisabled={!isComplete || isPending || bundleAlreadyInCart}
-              className='bg-terpenes rounded-none! px-3.5'
+              className={cn('bg-terpenes rounded-none! px-3.5', {
+                'opacity-100!': bundleAlreadyInCart,
+              })}
               startContent={
                 isPending ? (
                   <Icon name='spinners-ring' className='size-4' />
                 ) : (
-                  <Icon name='box-bold' className='size-5' />
+                  <Icon
+                    name={isComplete ? 'box-checked' : 'box-bold'}
+                    className='size-5'
+                  />
                 )
               }>
               {bundleAlreadyInCart
-                ? 'Bundle already in cart'
+                ? 'Bundle in cart'
                 : isComplete
                   ? 'Add to cart'
                   : 'Complete bundle'}

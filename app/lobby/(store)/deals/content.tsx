@@ -245,7 +245,7 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
         <Icon name='code' />
         <span className=''>Development In-progress</span>
       </div>
-      <div className='max-w-7xl mx-auto pt-16'>
+      <div className='max-w-7xl mx-auto pt-8 md:pt-16'>
         <header className='ml-4 md:ml-0 mb-10'>
           <h1 className='font-clash text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight'>
             Deals <span className='text-brand'>&</span> Bundles

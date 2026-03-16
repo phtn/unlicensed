@@ -28,7 +28,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     'brand',
     parseAsString.withDefault(''),
   )
-  const [productType, setProductType] = useQueryState(
+  const [productType] = useQueryState(
     'productType',
     parseAsString.withDefault(''),
   )
@@ -183,7 +183,6 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
       </section>
 
       {(filterOptions.brands.length > 0 ||
-        filterOptions.productTypes.length > 0 ||
         filterOptions.tiers.length > 0 ||
         filterOptions.subcategories.length > 0) && (
         <section className='px-4 sm:px-6 pb-4'>
@@ -278,47 +277,17 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                 ))}
               </div>
             )}
-            {filterOptions.productTypes.length > 0 && (
-              <div className='flex flex-wrap items-center gap-1'>
-                <span className='text-sm font-clash font-semibold mr-2 uppercase'>
-                  Product Type
-                </span>
-                <Button
-                  size='sm'
-                  radius='none'
-                  variant={productType === '' ? 'solid' : 'flat'}
-                  className={cn('min-w-0 h-6 font-bold uppercase', {
-                    'bg-brand text-white': productType === '',
-                  })}
-                  onPress={() => setProductType('')}>
-                  All
-                </Button>
-                {filterOptions.productTypes.map((type) => (
-                  <Button
-                    key={type}
-                    size='sm'
-                    radius='none'
-                    variant={productType === type ? 'solid' : 'flat'}
-                    className={cn('min-w-0 h-6 font-semibold uppercase', {
-                      'bg-brand text-white': productType === type,
-                    })}
-                    onPress={() => setProductType(type)}>
-                    {type}
-                  </Button>
-                ))}
-              </div>
-            )}
           </div>
         </section>
       )}
       {/**/}
       <Products products={products} getImageUrl={getImageUrl} />
       {/**/}
-      <section className='py-12 sm:py-16 lg:py-20 px-4 sm:px-6 max-w-7xl mx-auto'>
+      <section className='py-6 sm:py-10 lg:py-20 px-4 sm:px-6 max-w-7xl mx-auto'>
         <div className='flex flex-col gap-20'>
           <div className='flex flex-wrap items-center justify-between gap-4'>
             <div className='space-y-1'>
-              <h2 className='text-xl font-clash font-semibold tracking-tight sm:text-4xl'>
+              <h2 className='text-2xl font-clash font-bold tracking-normal sm:text-4xl'>
                 Browse Category
               </h2>
             </div>
@@ -350,14 +319,14 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
           </div>
         </div>
       </section>
-      <div className='flex justify-center w-full px-4 md:hidden pb-20'>
+      <div className='flex justify-center w-full px-4 sm:px-6 md:px-4 md:hidden pb-20'>
         <Button
           size='lg'
           radius='none'
           as={Link}
           href={'/lobby/brands'}
           fullWidth
-          className='dark:bg-white h-14 opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-4 sm:px-8 py-2 sm:py-3 text-lg'>
+          className='dark:bg-brand dark:text-white h-11 md:h-14 opacity-100 md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-clash font-bold px-4 sm:px-8 py-2 sm:py-3 text-lg'>
           <span className='drop-shadow-xs'>Shop by Brand</span>
         </Button>
       </div>

@@ -118,22 +118,28 @@ const ProductCardComponent = ({
         <div className='flex flex-col'>
           <div className='flex items-center justify-between p-2 h-20'>
             <div className='flex-1 min-w-0'>
-              <p className='text-sm tracking-wider capitalize font-light opacity-90'>
-                <span className='font-clash font-medium'>{product.brand}</span>
-                {product.productType && (
-                  <span>
-                    <span className='font-okxs text-xs px-1 opacity-70 font-thin'>
-                      &middot;
-                    </span>
-                    {product.productType}
+              {product.brand && (
+                <p className='text-xs md:text-sm font-okxs tracking-wide capitalize font-light opacity-90 mb-0.5'>
+                  <span className='font-light'>
+                    {product.brand
+                      ?.map((brand) => brand.split('-').join(' '))
+                      .join(', ')}
                   </span>
-                )}
-              </p>
-              <h3 className='text-base sm:text-base md:text-lg lg:text-xl font-clash truncate capitalize leading-4 md:leading-4 lg:leading-5'>
+                  {product.productType && (
+                    <span>
+                      <span className='font-okxs text-xs px-1 opacity-70 font-thin whitespace-nowrap truncate'>
+                        &middot;
+                      </span>
+                      {product.productType}
+                    </span>
+                  )}
+                </p>
+              )}
+              <h3 className='text-base sm:text-base md:text-lg lg:text-xl font-clash truncate capitalize leading-5 md:leading-5 lg:leading-5'>
                 {product.name}
               </h3>
               <div className=' whitespace-nowrap'>
-                <div className='flex items-center h-4 mt-1'>
+                <div className='flex items-center h-4 mt-0.5 md:mt-1'>
                   {(product.productTierLabel ?? product.productTier) != null &&
                     (product.productTierLabel ?? product.productTier) !==
                       '' && (
@@ -145,7 +151,7 @@ const ProductCardComponent = ({
 
                 <div className='h-4 flex items-center whitespace-nowrap'>
                   {subcategoryLabel && (
-                    <span className='text-xs md:text-sm font-clash font-light opacity-80 dark:opacity-100 dark:text-alum capitalize'>
+                    <span className='text-xs md:text-sm font-okxs font-light opacity-80 dark:opacity-100 dark:text-alum capitalize'>
                       {subcategoryLabel}
                       {(netWeightLabel || batchIdLabel) && (
                         <span className='text-xs px-1 opacity-80 font-thin'>
@@ -165,8 +171,14 @@ const ProductCardComponent = ({
             </div>
             <div
               id='denom-price'
-              className='text-2xl h-auto aspect-square flex items-center justify-end text-brand overflow-hidden grow-0'>
-              {selectedOption ? `$${selectedOption.price}` : '—'}
+              className='absolute right-2 text-2xl h-auto aspect-square flex items-center justify-end text-brand overflow-hidden grow-0'>
+              {selectedOption ? (
+                <span>
+                  $<span className='font-black'>{selectedOption.price}</span>
+                </span>
+              ) : (
+                '—'
+              )}
             </div>
           </div>
           <div className=' bg-dark-table dark:bg-black w-full flex flex-col'>

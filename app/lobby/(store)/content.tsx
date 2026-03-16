@@ -5,7 +5,6 @@ import {NewHome} from '@/components/base44/home'
 import {CtaSection} from '@/components/main/cta-section'
 import {MiniCardV2, type MiniCardProps} from '@/components/main/mini-card'
 import {MarkSection} from '@/components/store/marketing-card'
-import {useScrollY} from '@/hooks/use-scroll-y'
 import type {BuildType} from '@/lib/flags'
 import {AllBrands} from './brands/all-brands'
 import {FireCollectionContent} from './collection/content'
@@ -27,7 +26,6 @@ interface StorefrontPageProps {
 }
 
 export const Content = ({initialCollections}: StorefrontPageProps) => {
-  const scrollY = useScrollY()
   const ctas: Array<MiniCardProps> = [
     {
       id: '01',
@@ -46,7 +44,7 @@ export const Content = ({initialCollections}: StorefrontPageProps) => {
   ]
 
   return (
-    <div className='overflow-x-hidden' data-scroll-y={scrollY}>
+    <div className='overflow-x-hidden'>
       <NewHome />
       <MarkSection
         title='The New Standard in Cannabis Retail.'

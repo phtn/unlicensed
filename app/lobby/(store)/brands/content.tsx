@@ -345,12 +345,11 @@ export const Content = () => {
       <section className='py-12 sm:py-16 lg:py-20 px-4 sm:px-6'>
         <div className='max-w-4xl mx-auto text-center'>
           <div className='bg-sidebar/40 dark:bg-sidebar border border-foreground/10 dark:border-dark-gray/50 p-8 sm:p-12 lg:p-16'>
-            <h2 className='text-xl sm:text-3xl lg:text-4xl font-polysans font-bold mb-4 sm:mb-6 portrait:max-w-[15ch]'>
+            <h2 className='text-xl sm:text-3xl lg:text-4xl font-clash font-bold mb-4 sm:mb-6'>
               Looking for something specific?
             </h2>
             <p className='text-sm sm:text-base lg:text-lg opacity-70 mb-6 sm:mb-8 max-w-2xl mx-auto'>
-              Try our Deals Bundle-Builder to discover products that match your
-              preferences.
+              Try our Bundle-Builder and pick products that match your vibe.
             </p>
             <div className='flex flex-col sm:flex-row items-center justify-center gap-4'>
               <Button
@@ -359,7 +358,7 @@ export const Content = () => {
                 radius='none'
                 prefetch
                 size='lg'
-                className='dark:bg-white opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base'>
+                className='dark:bg-brand opacity-100 dark:text-white md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base portrait:w-full'>
                 <span className='drop-shadow-xs'>Home</span>
               </Button>
 
@@ -373,8 +372,10 @@ export const Content = () => {
                 endContent={
                   <Icon name={'search'} className='dark:text-white' />
                 }
-                className='border dark:border-light-gray/40 sm:flex items-center gap-2 font-polysans font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-base lg:text-lg'>
-                <span className='tracking-tight'>Advanced Search</span>
+                className='sm:flex items-center gap-2 font-clash font-medium bg-dark-table text-white dark:bg-black dark:text-white px-4 sm:px-8 py-2 sm:py-3 text-base lg:text-lg portrait:w-full'>
+                <div className='flex items-center tracking-tight'>
+                  <span className='hidden md:flex mr-1'>Advanced</span> Search
+                </div>
               </Button>
               <Button
                 as={Link}
@@ -383,7 +384,7 @@ export const Content = () => {
                 prefetch
                 size='lg'
                 endContent={<Icon name='box-bold' className=' text-white' />}
-                className='bg-terpenes opacity-100 text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base'>
+                className='bg-terpenes opacity-100 text-white font-clash font-medium px-6 sm:px-8 py-3 sm:py-4 text-base portrait:w-full'>
                 <span className='drop-shadow-xs'>Find Deals</span>
               </Button>
             </div>

@@ -416,8 +416,8 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                     })}
                   </div>
 
-                  <div className='font-okxs space-y-3 px-6 mb-6'>
-                    <div className='flex justify-between'>
+                  <div className='font-okxs space-y-3 px-4 mb-6'>
+                    <div className='flex justify-between px-2'>
                       <span className='text-color-muted font-medium'>
                         Subtotal
                       </span>
@@ -442,7 +442,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                         </span>
                       </div>
                     )}
-                    <div className='flex justify-between'>
+                    <div className='flex justify-between px-2'>
                       <span className='text-color-muted font-medium'>
                         {appliedCashBackCents > 0
                           ? 'Due today'
@@ -452,7 +452,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                         ${formatPrice(discountedSubtotal)}
                       </span>
                     </div>
-                    <div className='flex justify-between'>
+                    <div className='flex justify-between px-2'>
                       <span className='text-color-muted font-medium'>
                         Total Items
                       </span>
