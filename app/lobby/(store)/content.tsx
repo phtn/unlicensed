@@ -8,7 +8,6 @@ import {MarkSection} from '@/components/store/marketing-card'
 import {useScrollY} from '@/hooks/use-scroll-y'
 import type {BuildType} from '@/lib/flags'
 import {AllBrands} from './brands/all-brands'
-import {FullCollection} from './collection'
 import {FireCollectionContent} from './collection/content'
 import {DealsMini} from './deals/components/deals-mini'
 import {GridFour} from './grid-four'
@@ -27,11 +26,7 @@ interface StorefrontPageProps {
   buildType?: BuildType
 }
 
-export const Content = ({
-  initialCategories,
-  initialCollections,
-  initialProducts,
-}: StorefrontPageProps) => {
+export const Content = ({initialCollections}: StorefrontPageProps) => {
   const scrollY = useScrollY()
   const ctas: Array<MiniCardProps> = [
     {
@@ -65,10 +60,6 @@ export const Content = ({
       </MarkSection>
       <AllBrands />
       <GridFour />
-      <FullCollection
-        products={initialProducts}
-        categories={initialCategories}
-      />
       <FireCollectionContent initialCollections={initialCollections} />
       <FireManifesto />
       <CtaSection />

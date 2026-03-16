@@ -44,7 +44,26 @@ const WEIGHT_UNIT_ALIASES: Record<string, WeightUnit> = {
   pounds: 'lb',
 }
 
+const COUNT_UNIT_ALIASES: Record<string, 'units'> = {
+  unit: 'units',
+  units: 'units',
+  count: 'units',
+  counts: 'units',
+  each: 'units',
+  item: 'units',
+  items: 'units',
+  piece: 'units',
+  pieces: 'units',
+  pc: 'units',
+  pcs: 'units',
+}
+
 const STOCK_PRECISION = 1_000_000
+
+type CountUnit = 'units'
+type NormalizedInventoryUnit =
+  | {kind: 'weight'; unit: WeightUnit}
+  | {kind: 'count'; unit: CountUnit}
 
 export function roundStockQuantity(value: number): number {
   return Math.round(value * STOCK_PRECISION) / STOCK_PRECISION
@@ -63,6 +82,25 @@ export function normalizeWeightUnit(
 ): WeightUnit | null {
   if (!unit) return null
   return WEIGHT_UNIT_ALIASES[unit.trim().toLowerCase()] ?? null
+}
+
+function normalizeInventoryUnit(
+  unit: string | undefined | null,
+): NormalizedInventoryUnit | null {
+  if (!unit) return null
+
+  const normalized = unit.trim().toLowerCase()
+  const weightUnit = WEIGHT_UNIT_ALIASES[normalized]
+  if (weightUnit) {
+    return {kind: 'weight', unit: weightUnit}
+  }
+
+  const countUnit = COUNT_UNIT_ALIASES[normalized]
+  if (countUnit) {
+    return {kind: 'count', unit: countUnit}
+  }
+
+  return null
 }
 
 export function isWeightUnit(unit: string | undefined | null): boolean {
@@ -84,16 +122,38 @@ export function convertWeight(
   return roundStockQuantity(grams / WEIGHT_UNIT_TO_GRAMS[normalizedTo])
 }
 
+function convertInventoryQuantity(
+  value: number,
+  fromUnit: string | undefined | null,
+  toUnit: string | undefined | null,
+): number | null {
+  if (!Number.isFinite(value)) return null
+
+  const normalizedFrom = normalizeInventoryUnit(fromUnit)
+  const normalizedTo = normalizeInventoryUnit(toUnit)
+  if (!normalizedFrom || !normalizedTo) return null
+  if (normalizedFrom.kind !== normalizedTo.kind) return null
+
+  if (normalizedFrom.kind === 'count' && normalizedTo.kind === 'count') {
+    return roundStockQuantity(value)
+  }
+
+  return convertWeight(value, normalizedFrom.unit, normalizedTo.unit)
+}
+
 export function usesSharedWeightInventory(product: unknown): boolean {
   if (product == null || typeof product !== 'object') return false
   const p = product as InventoryProductLike
+  const normalizedMasterStockUnit = normalizeInventoryUnit(p.masterStockUnit)
+  const normalizedUnit = normalizeInventoryUnit(p.unit)
 
   return (
     normalizeInventoryMode(p.inventoryMode) === 'shared' &&
     typeof p.masterStockQuantity === 'number' &&
     p.masterStockQuantity >= 0 &&
-    normalizeWeightUnit(p.masterStockUnit) !== null &&
-    normalizeWeightUnit(p.unit) !== null
+    normalizedMasterStockUnit !== null &&
+    normalizedUnit !== null &&
+    normalizedMasterStockUnit.kind === normalizedUnit.kind
   )
 }
 
@@ -107,14 +167,18 @@ export function getSharedWeightLineQuantity(
   }
 
   const p = product as InventoryProductLike
-  return convertWeight(denomination * quantity, p.unit, p.masterStockUnit)
+  return convertInventoryQuantity(
+    denomination * quantity,
+    p.unit,
+    p.masterStockUnit,
+  )
 }
 
 export function getStockDisplayUnit(product: unknown): string | null {
   if (product == null || typeof product !== 'object') return null
   const p = product as InventoryProductLike
   if (usesSharedWeightInventory(p)) {
-    return normalizeWeightUnit(p.masterStockUnit)
+    return normalizeInventoryUnit(p.masterStockUnit)?.unit ?? null
   }
   return null
 }

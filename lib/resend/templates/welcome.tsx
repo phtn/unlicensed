@@ -48,7 +48,7 @@ export const WelcomeEmail = ({couponCode}: WelcomeEmailProps) => (
             <Img
               src='https://res.cloudinary.com/dx0heqhhe/image/upload/v1773404669/rf-dual_oaplux.png'
               alt='rf-dual'
-              width='300'
+              width='220'
               className='mx-auto'
             />
 

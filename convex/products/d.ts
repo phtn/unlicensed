@@ -64,6 +64,7 @@ export const productSchema = v.object({
   eligibleForRewards: v.optional(v.boolean()), // Whether this product is eligible for rewards points
   eligibleForDeals: v.optional(v.boolean()), // Whether this product is eligible for rewards points
   onSale: v.optional(v.boolean()),
+  salePriceByDenomination: v.optional(v.record(v.string(), v.number())),
   eligibleDenominationForDeals: v.optional(v.array(v.number())),
   eligibleForUpgrade: v.optional(v.boolean()),
   upgradePrice: v.optional(v.number()),

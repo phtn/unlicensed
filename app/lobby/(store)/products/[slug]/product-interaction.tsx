@@ -5,14 +5,13 @@ import {AuthModal} from '@/components/auth/auth-modal'
 import {ProductProfile} from '@/components/ui/product-profile'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
-import {PotencyLevel} from '@/convex/products/d'
 import {useAuthCtx} from '@/ctx/auth'
 import {
   type CartItemWithProduct,
   isProductCartItemWithProduct,
   useCart,
 } from '@/hooks/use-cart'
-import {Icon, IconName} from '@/lib/icons'
+import {Icon} from '@/lib/icons'
 import {formatStockDisplay} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
@@ -401,27 +400,25 @@ const ProductDetailStats = ({
         {product.categorySlug.toUpperCase()}
       </span>
       <div className='flex items-center space-x-2'>
-        <span>
-          <span className='font-clash font-medium text-xs md:text-sm'>THC</span>{' '}
-          <span className='text-sm md:text-base font-clash font-medium'>
-            {product.thcPercentage}
+        {product.categorySlug === 'vapes' ? (
+          <span>
+            <span className='text-sm md:text-base font-clash font-medium'>
+              {product.netWeight}
+              {product.netWeightUnit}
+            </span>
           </span>
-          <span className='text-xs md:text-sm lowercase'>mg</span>
-        </span>
+        ) : product.categorySlug === 'extracts' ? (
+          <span>
+            <span className='font-clash font-medium text-xs md:text-sm'>
+              THC
+            </span>
+            <span className='text-xs md:text-sm lowercase'>mg</span>
+          </span>
+        ) : null}
         <span className='px-1 md:px-2 text-sm font-thin opacity-30'>|</span>
         <span className='font-clash font-medium text-xs md:text-sm'>
           {product.strainType}
         </span>{' '}
-        <span className='px-1 md:px-2 text-sm font-thin opacity-30'>|</span>
-        <div className='flex items-center space-x-1'>
-          <Icon
-            name={pmap[product.potencyLevel]}
-            className='size-3 md:size-4 opacity-80'
-          />
-          <span className='capitalize text-sm font-medium'>
-            {product.potencyLevel}
-          </span>
-        </div>
       </div>
 
       {quantityInCart > 0 ? (
@@ -462,10 +459,4 @@ const ProductDetailStats = ({
       )}
     </div>
   )
-}
-
-const pmap: Record<PotencyLevel, IconName> = {
-  mild: 'low-bars',
-  medium: 'medium-bars',
-  high: 'high-bars',
 }

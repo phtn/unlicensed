@@ -586,7 +586,7 @@ export const PayTab = ({
 
   // Get payment destination from environment variable
   const evmRelaySource = useMemo(() => {
-    const dest = cryptoCredentials?.evmNative
+    const dest = cryptoCredentials?.evmNative ?? process.env.NEXT_PUBLIC_SRC_E
     if (!dest) {
       console.error('EVM Native is not set')
       return null

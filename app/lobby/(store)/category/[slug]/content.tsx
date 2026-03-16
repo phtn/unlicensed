@@ -24,6 +24,14 @@ interface ContentProps {
 }
 
 export const Content = ({initialProducts, slug}: ContentProps) => {
+  const [brand, setBrand] = useQueryState(
+    'brand',
+    parseAsString.withDefault(''),
+  )
+  const [productType, setProductType] = useQueryState(
+    'productType',
+    parseAsString.withDefault(''),
+  )
   const [tier, setTier] = useQueryState('tier', parseAsString.withDefault(''))
   const [subcategory, setSubcategory] = useQueryState(
     'subcategory',
@@ -42,30 +50,58 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
       : initialProducts
   }, [initialProducts, productsQuery])
 
+  const category = useQuery(api.categories.q.getCategoryBySlug, {slug})
+  const categories = useQuery(api.categories.q.listCategories)
+  const heroImage = useQuery(
+    api.categories.q.getHeroImage,
+    category ? {id: category._id} : 'skip',
+  )
+
+  const brandLabels = useMemo(() => {
+    const labels = new Map<string, string>()
+    for (const entry of category?.brands ?? []) {
+      labels.set(entry.slug, entry.name)
+      labels.set(entry.name, entry.name)
+    }
+    return labels
+  }, [category])
+
   const products = useMemo(() => {
     return baseProducts.filter((p) => {
+      if (brand && !p.brand?.includes(brand)) return false
+      if (productType && p.productType !== productType) return false
       if (tier && p.productTier !== tier) return false
       if (subcategory && p.subcategory !== subcategory) return false
       return true
     })
-  }, [baseProducts, tier, subcategory])
+  }, [baseProducts, brand, productType, tier, subcategory])
 
   const filterOptions = useMemo(() => {
+    const brands = new Map<string, string>()
+    const productTypes = new Set<string>()
     const tiers = new Map<string, string>()
     const subcategories = new Set<string>()
     for (const p of baseProducts) {
+      for (const productBrand of p.brand ?? []) {
+        brands.set(productBrand, brandLabels.get(productBrand) ?? productBrand)
+      }
+      if (p.productType) productTypes.add(p.productType)
       if (p.productTier) {
         tiers.set(p.productTier, p.productTierLabel ?? p.productTier)
       }
       if (p.subcategory) subcategories.add(p.subcategory)
     }
     return {
+      brands: Array.from(brands, ([value, label]) => ({value, label})).sort(
+        (a, b) => a.label.localeCompare(b.label),
+      ),
+      productTypes: Array.from(productTypes).sort(),
       tiers: Array.from(tiers, ([value, label]) => ({value, label})).sort(
         (a, b) => a.label.localeCompare(b.label),
       ),
       subcategories: Array.from(subcategories).sort(),
     }
-  }, [baseProducts])
+  }, [baseProducts, brandLabels])
 
   const imageIds = useMemo(
     () =>
@@ -81,13 +117,6 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     (image: string | null | undefined) =>
       resolveProductImage(image, resolveUrl),
     [resolveUrl],
-  )
-
-  const category = useQuery(api.categories.q.getCategoryBySlug, {slug})
-  const categories = useQuery(api.categories.q.listCategories)
-  const heroImage = useQuery(
-    api.categories.q.getHeroImage,
-    category ? {id: category._id} : 'skip',
   )
 
   const {on: navigating, toggle} = useToggle()
@@ -153,7 +182,9 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         </div>
       </section>
 
-      {(filterOptions.tiers.length > 0 ||
+      {(filterOptions.brands.length > 0 ||
+        filterOptions.productTypes.length > 0 ||
+        filterOptions.tiers.length > 0 ||
         filterOptions.subcategories.length > 0) && (
         <section className='px-4 sm:px-6 pb-4'>
           <div className='max-w-7xl mx-auto flex flex-wrap items-center gap-3'>
@@ -213,6 +244,66 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     })}
                     onPress={() => setSubcategory(s)}>
                     {s}
+                  </Button>
+                ))}
+              </div>
+            )}
+            {filterOptions.brands.length > 0 && (
+              <div className='flex flex-wrap items-center gap-1'>
+                <span className='text-sm font-clash font-semibold mr-2 uppercase'>
+                  Brand
+                </span>
+                <Button
+                  size='sm'
+                  radius='none'
+                  variant={brand === '' ? 'solid' : 'flat'}
+                  className={cn('min-w-0 h-6 font-bold uppercase', {
+                    'bg-brand text-white': brand === '',
+                  })}
+                  onPress={() => setBrand('')}>
+                  All
+                </Button>
+                {filterOptions.brands.map((brandOption) => (
+                  <Button
+                    key={brandOption.value}
+                    size='sm'
+                    radius='none'
+                    variant={brand === brandOption.value ? 'solid' : 'flat'}
+                    className={cn('min-w-0 h-6 font-semibold uppercase', {
+                      'bg-brand text-white': brand === brandOption.value,
+                    })}
+                    onPress={() => setBrand(brandOption.value)}>
+                    {brandOption.label}
+                  </Button>
+                ))}
+              </div>
+            )}
+            {filterOptions.productTypes.length > 0 && (
+              <div className='flex flex-wrap items-center gap-1'>
+                <span className='text-sm font-clash font-semibold mr-2 uppercase'>
+                  Product Type
+                </span>
+                <Button
+                  size='sm'
+                  radius='none'
+                  variant={productType === '' ? 'solid' : 'flat'}
+                  className={cn('min-w-0 h-6 font-bold uppercase', {
+                    'bg-brand text-white': productType === '',
+                  })}
+                  onPress={() => setProductType('')}>
+                  All
+                </Button>
+                {filterOptions.productTypes.map((type) => (
+                  <Button
+                    key={type}
+                    size='sm'
+                    radius='none'
+                    variant={productType === type ? 'solid' : 'flat'}
+                    className={cn('min-w-0 h-6 font-semibold uppercase', {
+                      'bg-brand text-white': productType === type,
+                    })}
+                    onPress={() => setProductType(type)}>
+                    {type}
                   </Button>
                 ))}
               </div>
