@@ -1,5 +1,6 @@
 import {
   fetchCategories,
+  fetchFeaturedDeals,
   fetchFireCollections,
   fetchProducts,
 } from '@/lib/convexClient'
@@ -17,7 +18,12 @@ export default async function StorefrontPage() {
     await new Promise((resolve) => setTimeout(resolve, delay))
   }
 
-  const {initialCategories, initialCollections, initialProducts} = await all({
+  const {
+    initialCategories,
+    initialCollections,
+    initialProducts,
+    featuredDeals,
+  } = await all({
     async initialCategories() {
       return await fetchCategories()
     },
@@ -26,6 +32,9 @@ export default async function StorefrontPage() {
     },
     async initialProducts() {
       return await fetchProducts()
+    },
+    async featuredDeals() {
+      return await fetchFeaturedDeals()
     },
   })
 
@@ -36,6 +45,7 @@ export default async function StorefrontPage() {
       initialCategories={initialCategories}
       initialCollections={initialCollections}
       initialProducts={initialProducts}
+      featuredDeals={featuredDeals}
     />
   )
 }

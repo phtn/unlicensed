@@ -9,6 +9,7 @@ import type {BuildType} from '@/lib/flags'
 import {AllBrands} from './brands/all-brands'
 import {FireCollectionContent} from './collection/content'
 import {DealsMini} from './deals/components/deals-mini'
+import type {BundleConfig} from './deals/lib/deal-types'
 import {GridFour} from './grid-four'
 
 interface StoreCollectionSection {
@@ -21,11 +22,15 @@ interface StorefrontPageProps {
   initialCategories: StoreCategory[]
   initialCollections: StoreCollectionSection[]
   initialProducts: StoreProduct[]
+  featuredDeals: BundleConfig[]
   delay?: number
   buildType?: BuildType
 }
 
-export const Content = ({initialCollections}: StorefrontPageProps) => {
+export const Content = ({
+  initialCollections,
+  featuredDeals,
+}: StorefrontPageProps) => {
   const ctas: Array<MiniCardProps> = [
     {
       id: '01',
@@ -61,7 +66,7 @@ export const Content = ({initialCollections}: StorefrontPageProps) => {
       <FireCollectionContent initialCollections={initialCollections} />
       <FireManifesto />
       <CtaSection />
-      <DealsMini />
+      <DealsMini featuredDeals={featuredDeals} />
     </div>
   )
 }

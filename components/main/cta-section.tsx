@@ -12,10 +12,10 @@ export const CtaSection = ({title, description}: CtaSectionProps) => {
       <div className='mx-auto max-w-2xl text-center'>
         <h2
           id='cta-heading'
-          className='text-3xl md:text-4xl font-clash font-semibold text-neutral-900 dark:text-white sm:text-3xl'>
+          className='text-3xl text-balance md:text-4xl font-clash font-semibold text-neutral-900 dark:text-white sm:text-3xl'>
           {title ?? 'Ready to explore bundle deals?'}
         </h2>
-        <p className='mt-3 text-neutral-500 dark:text-neutral-400'>
+        <p className='mt-3 text-neutral-500 dark:text-neutral-400 text-balance'>
           {description ?? 'Try our new bundle deals, mix and match your way.'}
         </p>
       </div>

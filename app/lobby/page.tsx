@@ -1,5 +1,6 @@
 import {
   fetchCategories,
+  fetchFeaturedDeals,
   fetchFireCollections,
   fetchProducts,
 } from '@/lib/convexClient'
@@ -16,18 +17,24 @@ export default async function LobbyPage() {
     await new Promise((resolve) => setTimeout(resolve, delay))
   }
 
-  const [initialCategories, initialCollections, initialProducts] =
-    await Promise.all([
-      fetchCategories(),
-      fetchFireCollections(),
-      fetchProducts(),
-    ])
+  const [
+    initialCategories,
+    initialCollections,
+    initialProducts,
+    featuredDeals,
+  ] = await Promise.all([
+    fetchCategories(),
+    fetchFireCollections(),
+    fetchProducts(),
+    fetchFeaturedDeals(),
+  ])
 
   return (
     <Content
       initialCategories={initialCategories}
       initialCollections={initialCollections}
       initialProducts={initialProducts}
+      featuredDeals={featuredDeals}
       delay={delay}
       buildType={buildType}
     />

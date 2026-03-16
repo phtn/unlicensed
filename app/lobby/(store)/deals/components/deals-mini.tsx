@@ -1,13 +1,14 @@
 import {Icon} from '@/lib/icons'
 import {Button, Link} from '@heroui/react'
 import NextLink from 'next/link'
-import {useMemo, ViewTransition} from 'react'
-import {useDealConfigs} from '../hooks/use-deal-configs'
+import {ViewTransition} from 'react'
+import type {BundleConfig} from '../lib/deal-types'
 
-export const DealsMini = () => {
-  const {configsList} = useDealConfigs()
-  const featuredDeals = useMemo(() => configsList.slice(0, 4), [configsList])
+interface DealsMiniProps {
+  featuredDeals: BundleConfig[]
+}
 
+export const DealsMini = ({featuredDeals}: DealsMiniProps) => {
   return (
     <section
       id='deals-bundle'
@@ -22,7 +23,7 @@ export const DealsMini = () => {
             </div>
             <h2
               id='deals-bundle-heading'
-              className='md:text-5xl font-medium text-foreground sm:text-4xl max-w-[28ch] font-clash py-12 sm:py-1'>
+              className='text-xl md:text-5xl font-medium text-foreground sm:text-4xl md:max-w-[28ch] text-balance font-clash py-12 sm:py-1'>
               Build your own Oz.{' '}
               <span className='text-terpenes'>Mix & Match</span> your way, and
               get more out of flexible bulk savings.

@@ -49,7 +49,7 @@ export const MiniCardV2 = ({
       <div
         key={id}
         className={cn(
-          'flex items-center space-x-6 text-white! bg-brand group p-5 rounded-xs',
+          'flex items-center space-x-6 text-white! bg-brand group p-5 rounded-xs portrait:min-h-28!',
           {'bg-black dark:bg-sidebar': dark},
         )}>
         <Icon

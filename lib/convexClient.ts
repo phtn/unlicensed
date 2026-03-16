@@ -1,3 +1,7 @@
+import {
+  dealDocToBundleConfig,
+  type BundleConfig,
+} from '@/app/lobby/(store)/deals/lib/deal-types'
 import type {StoreCategory, StoreProduct, StoreProductDetail} from '@/app/types'
 import type {IAttribute} from '@/app/types/store'
 import {api} from '@/convex/_generated/api'
@@ -352,6 +356,8 @@ interface StoreCollectionSection {
   products: StoreProduct[]
 }
 
+type RawDeal = Parameters<typeof dealDocToBundleConfig>[0]
+
 const _fetchFireCollections = async (): Promise<StoreCollectionSection[]> => {
   const client = getClient()
   if (!client) {
@@ -408,6 +414,26 @@ const _fetchFireCollections = async (): Promise<StoreCollectionSection[]> => {
 }
 
 export const fetchFireCollections = cache(_fetchFireCollections)
+
+const _fetchFeaturedDeals = async (limit = 4): Promise<BundleConfig[]> => {
+  const client = getClient()
+  if (!client) {
+    return []
+  }
+
+  try {
+    const deals = (await client.query(
+      api.deals.q.listForStore,
+      {},
+    )) as RawDeal[]
+    return deals.map((deal) => dealDocToBundleConfig(deal)).slice(0, limit)
+  } catch (error) {
+    console.warn('Falling back to empty featured deals', error)
+    return []
+  }
+}
+
+export const fetchFeaturedDeals = cache(_fetchFeaturedDeals)
 
 // const MOCK_SUB_ITEMS_BY_SLUG: Partial<Record<string, NavMenuSubItem[]>> = {
 //   flower: [
