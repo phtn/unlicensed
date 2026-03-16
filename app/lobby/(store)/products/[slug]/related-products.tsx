@@ -29,7 +29,7 @@ export const RelatedProducts = ({products}: RelatedProductsProps) => {
   return (
     <section
       id='related-selections'
-      className='mx-auto w-full max-w-7xl space-y-4'>
+      className='mx-auto w-full max-w-7xl space-y-4 px-4 md:px-0'>
       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4'>
         <div>
           <h2 className='text-2xl font-clash font-bold text-foreground sm:text-3xl'>
@@ -46,7 +46,7 @@ export const RelatedProducts = ({products}: RelatedProductsProps) => {
           View {products[0]?.categorySlug} Category
         </Button>
       </div>
-      <div className='w-full py-6 px-4 md:px-0'>
+      <div className='w-full py-6'>
         <div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-fr'>
           {products
             .filter((product) => !product.archived)
