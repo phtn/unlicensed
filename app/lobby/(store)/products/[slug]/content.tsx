@@ -108,7 +108,11 @@ export const ProductDetailContent = ({
       />
 
       {resolvedRelated.length > 0 ? (
-        <RelatedProducts products={resolvedRelated} />
+        <RelatedProducts
+          products={resolvedRelated.filter(
+            (product) => !product.archived && product.slug !== slug,
+          )}
+        />
       ) : null}
     </div>
   )
