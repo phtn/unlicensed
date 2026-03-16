@@ -50,6 +50,13 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
   const selectedCat = categoriesList.find(
     (c) => c.slug === (product.categorySlug ?? ''),
   )
+  const legacySelectedCat = selectedCat as
+    | (typeof selectedCat & {
+        productTypes?: {name: string; slug: string}[] | string[]
+      })
+    | undefined
+  const selectedCatStrainTypes =
+    selectedCat?.strainTypes ?? legacySelectedCat?.productTypes
   const tierOptions = getProductTierOptionsByCategory(
     product.categorySlug ?? '',
     categoriesList,
@@ -72,13 +79,14 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
           value: s,
           label: s,
         })) ?? [])
-  const productTypeOptions =
-    selectedCat?.productTypes?.length &&
-    typeof selectedCat.productTypes[0] === 'object'
-      ? (selectedCat.productTypes as {name: string; slug: string}[]).map(
-          (e) => ({value: e.slug, label: e.name}),
-        )
-      : ((selectedCat?.productTypes as string[] | undefined)?.map((s) => ({
+  const strainTypeOptions =
+    selectedCatStrainTypes?.length &&
+    typeof selectedCatStrainTypes[0] === 'object'
+      ? (selectedCatStrainTypes as {name: string; slug: string}[]).map((e) => ({
+          value: e.slug,
+          label: e.name,
+        }))
+      : ((selectedCatStrainTypes as string[] | undefined)?.map((s) => ({
           value: s,
           label: s,
         })) ?? [])
@@ -126,15 +134,17 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
       resolveAttributeValue(product.subcategory ?? '', subcategoryOptions) ??
       product.subcategory ??
       '',
-    productType:
-      resolveAttributeValue(product.productType ?? '', productTypeOptions) ??
-      product.productType ??
+    productType: product.productType ?? '',
+    strainType:
+      resolveAttributeValue(product.strainType ?? '', strainTypeOptions) ??
+      product.strainType ??
       '',
     noseRating: product.noseRating ?? 0,
     netWeight: product.netWeight?.toString() ?? '',
     netWeightUnit: product.netWeightUnit ?? '',
     packagingMode: product.packagingMode,
     stockUnit: product.stockUnit ?? '',
+    packSize: product.packSize?.toString() ?? '',
     startingWeight: product.startingWeight?.toString() ?? '',
     remainingWeight: product.remainingWeight?.toString() ?? '',
     variants: product.variants?.map((v: {label: string; price: number}) => ({

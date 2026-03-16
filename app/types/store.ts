@@ -9,6 +9,7 @@ export interface StoreCategory {
   slug: string
   name: string
   tiers: IAttribute[]
+  strainTypes?: IAttribute[]
   subcategories?: IAttribute[]
   productTypes?: IAttribute[]
   brands?: IAttribute[]
@@ -56,6 +57,7 @@ export interface StoreProduct {
   potencyProfile?: string
   base?: string
   productType?: string
+  strainType?: string
   productTier?: string
   productTierLabel?: string
   subcategory?: string

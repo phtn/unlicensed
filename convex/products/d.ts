@@ -13,16 +13,7 @@ const inventoryModeSchema = v.union(
   v.literal('shared'),
 )
 
-const strainTypeSchema = v.union(
-  v.literal('Indica'),
-  v.literal('Indica Leaning'),
-  v.literal('Indica Dominant'),
-  v.literal('Sativa'),
-  v.literal('Sativa Leaning'),
-  v.literal('Sativa Dominant'),
-  v.literal('Hybrid'),
-  v.literal('Balanced Hybrid'),
-)
+const strainTypeSchema = v.string()
 
 export const productSchema = v.object({
   name: v.optional(v.string()),

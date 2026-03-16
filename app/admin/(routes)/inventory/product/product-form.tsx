@@ -15,7 +15,7 @@ import {BasicInfo} from './_product-sections/basic-info'
 import {Details} from './_product-sections/details'
 import {Inventory} from './_product-sections/inventory'
 import {Media} from './_product-sections/media'
-import {NetWeight} from './_product-sections/net-weight'
+import {Packaging} from './_product-sections/packaging'
 import {Pricing} from './_product-sections/pricing'
 import {
   defaultValues,
@@ -40,11 +40,88 @@ const SECTIONS = [
   {id: 'basic-info', label: 'Basic Info', icon: 'file'},
   {id: 'media', label: 'Media', icon: 'image'},
   {id: 'pricing', label: 'Pricing', icon: 'dollar'},
-  {id: 'net-weight', label: 'Packaging', icon: 'box'},
+  {id: 'packaging', label: 'Packaging', icon: 'box'},
   {id: 'inventory', label: 'Inventory', icon: 'box'},
   {id: 'attributes', label: 'Attributes', icon: 'sliders'},
   {id: 'details', label: 'Details', icon: 'align-left'},
 ] as const
+
+type ProductSectionId = (typeof SECTIONS)[number]['id']
+
+const PRODUCT_FIELD_SECTION_MAP: Partial<
+  Record<keyof ProductFormValues, ProductSectionId>
+> = {
+  name: 'basic-info',
+  slug: 'basic-info',
+  base: 'basic-info',
+  categorySlug: 'basic-info',
+  brand: 'basic-info',
+  strainType: 'basic-info',
+  tier: 'basic-info',
+  subcategory: 'basic-info',
+  productType: 'basic-info',
+  image: 'media',
+  gallery: 'media',
+  priceCents: 'pricing',
+  batchId: 'pricing',
+  unit: 'pricing',
+  availableDenominationsRaw: 'pricing',
+  popularDenomination: 'pricing',
+  priceByDenomination: 'pricing',
+  variants: 'pricing',
+  packagingMode: 'packaging',
+  stockUnit: 'packaging',
+  packSize: 'packaging',
+  startingWeight: 'packaging',
+  remainingWeight: 'packaging',
+  netWeight: 'packaging',
+  netWeightUnit: 'packaging',
+  inventoryMode: 'inventory',
+  stock: 'inventory',
+  masterStockQuantity: 'inventory',
+  masterStockUnit: 'inventory',
+  stockByDenomination: 'inventory',
+  effects: 'attributes',
+  terpenes: 'attributes',
+  flavors: 'attributes',
+  shortDescription: 'details',
+  description: 'details',
+  consumption: 'details',
+  potencyLevel: 'details',
+  potencyProfile: 'details',
+  lineage: 'details',
+  weightGrams: 'details',
+  noseRating: 'details',
+}
+
+const PRODUCT_FIELD_LABEL_MAP = new Map(
+  productFields.map((field) => [String(field.name), field.label]),
+)
+
+const humanizeFieldName = (fieldName: string) =>
+  fieldName
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/^./, (char) => char.toUpperCase())
+
+const getProductFieldLabel = (fieldName: string) =>
+  PRODUCT_FIELD_LABEL_MAP.get(fieldName) ?? humanizeFieldName(fieldName)
+
+const getFieldNameFromServerError = (
+  message: string,
+): keyof ProductFormValues | null => {
+  if (message === 'Product name is required') return 'name'
+  if (/^Product with slug ".+" already exists\.$/.test(message)) return 'slug'
+  if (
+    message === 'Category slug is required' ||
+    /^Category ".+" not found\.$/.test(message)
+  ) {
+    return 'categorySlug'
+  }
+  if (/^Base ".+" is invalid/.test(message)) return 'base'
+  if (/^Tier ".+" is invalid/.test(message)) return 'tier'
+  if (/^Brand ".+" is invalid/.test(message)) return 'brand'
+  return null
+}
 
 export const ProductForm = ({
   categories,
@@ -61,24 +138,71 @@ export const ProductForm = ({
   const [activeSection, setActiveSection] = useState<string>('basic-info')
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [errorFieldLabel, setErrorFieldLabel] = useState<string | null>(null)
   const [isArchiving, setIsArchiving] = useState(false)
   const mainScrollRef = useRef<HTMLElement>(null)
 
   const formValues = initialValues ?? defaultValues
+
+  const focusSection = useCallback((sectionId: ProductSectionId) => {
+    setActiveSection(sectionId)
+    const element = document.getElementById(sectionId)
+    const scrollContainer = mainScrollRef.current
+
+    if (element && scrollContainer) {
+      const containerRect = scrollContainer.getBoundingClientRect()
+      const elementRect = element.getBoundingClientRect()
+      const scrollTop =
+        scrollContainer.scrollTop + elementRect.top - containerRect.top
+
+      scrollContainer.scrollTo({
+        top: scrollTop + 16,
+        behavior: 'smooth',
+      })
+    } else if (element) {
+      element.scrollIntoView({behavior: 'smooth', block: 'start'})
+    }
+  }, [])
+
+  const handleSubmitError = useCallback(
+    ({
+      fieldName,
+      message,
+    }: {
+      fieldName?: keyof ProductFormValues | null
+      message: string
+    }) => {
+      const nextFieldLabel = fieldName ? getProductFieldLabel(fieldName) : null
+      setErrorFieldLabel(nextFieldLabel)
+      setErrorMessage(message)
+      setStatus('error')
+
+      const sectionId = fieldName ? PRODUCT_FIELD_SECTION_MAP[fieldName] : null
+      if (sectionId) {
+        focusSection(sectionId)
+      }
+    },
+    [focusSection],
+  )
 
   const form = useAppForm({
     defaultValues: formValues,
     onSubmit: async ({value, formApi}) => {
       setStatus('idle')
       setErrorMessage(null)
+      setErrorFieldLabel(null)
       try {
         const parsed = productSchema.safeParse(value)
         if (!parsed.success) {
+          const issue = parsed.error.issues[0]
+          const fieldName =
+            typeof issue?.path?.[0] === 'string'
+              ? (issue.path[0] as keyof ProductFormValues)
+              : null
           const message =
-            parsed.error.issues[0]?.message ??
+            issue?.message ??
             'Please review the product form for validation errors.'
-          setErrorMessage(message)
-          setStatus('error')
+          handleSubmitError({fieldName, message})
 
           return
         }
@@ -95,6 +219,16 @@ export const ProductForm = ({
                 .map((brand) => brand.trim())
                 .filter((brand) => brand.length > 0)
             : undefined
+        const productTypeFromForm = form.getFieldValue('productType')
+        const productTypeValue =
+          typeof productTypeFromForm === 'string'
+            ? productTypeFromForm.trim() || undefined
+            : data.productType?.trim() || undefined
+        const strainTypeFromForm = form.getFieldValue('strainType')
+        const strainTypeValue =
+          typeof strainTypeFromForm === 'string'
+            ? strainTypeFromForm.trim() || undefined
+            : data.strainType?.trim() || undefined
         const isVapeCategory = data.categorySlug === 'vapes'
         const isSharedInventoryMode = data.inventoryMode === 'shared'
         const parsedNetWeight =
@@ -110,6 +244,11 @@ export const ProductForm = ({
           const parsedValue = Number(val)
           return Number.isFinite(parsedValue) ? parsedValue : undefined
         }
+        const packSizeFromForm = form.getFieldValue('packSize')
+        const packSizeValue =
+          typeof packSizeFromForm === 'string'
+            ? parseOptionalNumber(packSizeFromForm)
+            : parseOptionalNumber(data.packSize)
 
         // Helper to parse comma-separated numbers
         const parseNumbers = (val?: string) => {
@@ -172,7 +311,8 @@ export const ProductForm = ({
           potencyLevel: data.potencyLevel,
           potencyProfile: data.potencyProfile?.trim() || undefined,
           lineage: data.lineage?.trim() || undefined,
-          productType: data.productType?.trim() || undefined,
+          productType: productTypeValue,
+          strainType: strainTypeValue,
           subcategory: data.subcategory?.trim() || undefined,
           noseRating: isVapeCategory ? undefined : data.noseRating,
           weightGrams:
@@ -183,6 +323,7 @@ export const ProductForm = ({
           netWeightUnit: data.netWeightUnit?.trim() || undefined,
           packagingMode: data.packagingMode,
           stockUnit: data.stockUnit?.trim() || undefined,
+          packSize: packSizeValue,
           startingWeight: parseOptionalNumber(data.startingWeight),
           remainingWeight: parseOptionalNumber(data.remainingWeight),
           variants: data.variants?.map((v) => {
@@ -216,11 +357,13 @@ export const ProductForm = ({
             id: productId,
             fields: payload,
           })
+          setErrorFieldLabel(null)
           setStatus('success')
           onUpdated?.()
         } else {
           await createProduct(payload)
           formApi.reset()
+          setErrorFieldLabel(null)
           setStatus('success')
           // Reset scroll within the container
           const scrollContainer = mainScrollRef.current
@@ -247,8 +390,13 @@ export const ProductForm = ({
             : isEditMode
               ? 'Failed to update product.'
               : 'Failed to create product.'
-        setErrorMessage(message)
-        setStatus('error')
+        handleSubmitError({
+          fieldName:
+            error instanceof Error
+              ? getFieldNameFromServerError(error.message)
+              : null,
+          message,
+        })
       }
     },
   })
@@ -313,6 +461,7 @@ export const ProductForm = ({
     form.setFieldValue('potencyLevel', initialValues.potencyLevel ?? 'medium')
     form.setFieldValue('potencyProfile', initialValues.potencyProfile ?? '')
     form.setFieldValue('lineage', initialValues.lineage ?? '')
+    form.setFieldValue('strainType', initialValues.strainType ?? '')
     form.setFieldValue('subcategory', initialValues.subcategory ?? '')
     form.setFieldValue('productType', initialValues.productType ?? '')
     form.setFieldValue('noseRating', initialValues.noseRating ?? 0)
@@ -320,6 +469,7 @@ export const ProductForm = ({
     form.setFieldValue('netWeightUnit', initialValues.netWeightUnit ?? '')
     form.setFieldValue('packagingMode', initialValues.packagingMode)
     form.setFieldValue('stockUnit', initialValues.stockUnit ?? '')
+    form.setFieldValue('packSize', initialValues.packSize ?? '')
     form.setFieldValue('startingWeight', initialValues.startingWeight ?? '')
     form.setFieldValue('remainingWeight', initialValues.remainingWeight ?? '')
     form.setFieldValue('variants', initialValues.variants ?? [])
@@ -350,33 +500,19 @@ export const ProductForm = ({
     }
   }, [initialCategorySlug, categories, form])
 
-  const scrollToSection = useCallback((sectionId: string) => {
-    setActiveSection(sectionId)
-    const element = document.getElementById(sectionId)
-    const scrollContainer = mainScrollRef.current
-
-    if (element && scrollContainer) {
-      // Calculate the position relative to the scrollable container
-      const containerRect = scrollContainer.getBoundingClientRect()
-      const elementRect = element.getBoundingClientRect()
-      const scrollTop =
-        scrollContainer.scrollTop + elementRect.top - containerRect.top
-
-      scrollContainer.scrollTo({
-        top: scrollTop + 16, // Account for spacing
-        behavior: 'smooth',
-      })
-    } else if (element) {
-      // Fallback to default behavior if ref is not available
-      element.scrollIntoView({behavior: 'smooth', block: 'start'})
-    }
-  }, [])
+  const scrollToSection = useCallback(
+    (sectionId: ProductSectionId) => {
+      focusSection(sectionId)
+    },
+    [focusSection],
+  )
 
   const handleArchiveProduct = useCallback(async () => {
     if (!productId) return
 
     setStatus('idle')
     setErrorMessage(null)
+    setErrorFieldLabel(null)
     setIsArchiving(true)
     try {
       await archiveProduct({productId})
@@ -445,11 +581,18 @@ export const ProductForm = ({
                 : 'Product created successfully!'}
             </p>
           )}
-          <div className='wrap-break-word'>
+          <div className='my-4'>
             {status === 'error' && errorMessage && (
-              <p className='mt-2 text-sm text-center text-rose-500'>
-                {errorMessage}
-              </p>
+              <div className='p-1 mt-2 rounded-md dark:bg-red-500/80 bg-red-600/80 flex whitespace-pre-wrap overflow-scroll'>
+                <div className=' text-sm text-white font-clash'>
+                  {errorFieldLabel ? (
+                    <p className='text-xs uppercase tracking-[0.14em] font-ios border-b'>
+                      Field: {errorFieldLabel}
+                    </p>
+                  ) : null}
+                  <p>{errorMessage}</p>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -482,13 +625,14 @@ export const ProductForm = ({
           <div id='pricing' className='scroll-mt-4'>
             <Pricing
               form={form as ProductFormApi}
+              fields={productFields}
               categories={categories}
               isEditMode={isEditMode}
             />
           </div>
 
-          <div id='net-weight' className='scroll-mt-4'>
-            <NetWeight form={form as ProductFormApi} />
+          <div id='packaging' className='scroll-mt-4'>
+            <Packaging form={form as ProductFormApi} />
           </div>
 
           <div id='inventory' className='scroll-mt-4'>
@@ -528,9 +672,14 @@ export const ProductForm = ({
               </p>
             )}
             {status === 'error' && errorMessage && (
-              <p className='mt-2 text-sm text-center text-rose-400'>
-                {errorMessage}
-              </p>
+              <div className='mt-2 text-center text-rose-400'>
+                {errorFieldLabel ? (
+                  <p className='text-[11px] uppercase tracking-[0.18em] opacity-80'>
+                    Field: {errorFieldLabel}
+                  </p>
+                ) : null}
+                <p className='text-sm'>{errorMessage}</p>
+              </div>
             )}
           </div>
         </form>

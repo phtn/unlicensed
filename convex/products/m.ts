@@ -277,6 +277,7 @@ async function buildProductInsertDoc(
     potencyProfile: args.potencyProfile,
     lineage: args.lineage,
     brand: sanitizeArray(args.brand),
+    strainType: args.strainType?.trim() || undefined,
     subcategory: args.subcategory?.trim() || undefined,
     productType: args.productType?.trim() || undefined,
     noseRating: args.noseRating,
@@ -285,6 +286,7 @@ async function buildProductInsertDoc(
     netWeightUnit: args.netWeightUnit?.trim() || undefined,
     packagingMode: args.packagingMode,
     stockUnit: args.stockUnit?.trim() || undefined,
+    packSize: args.packSize,
     startingWeight: args.startingWeight,
     remainingWeight: args.remainingWeight,
     variants: args.variants,
@@ -478,6 +480,9 @@ export const updateProduct = mutation({
     if (fields.stockUnit !== undefined) {
       updates.stockUnit = fields.stockUnit.trim() || undefined
     }
+    if (fields.packSize !== undefined) {
+      updates.packSize = fields.packSize
+    }
     if (fields.startingWeight !== undefined) {
       updates.startingWeight = fields.startingWeight
     }
@@ -486,6 +491,9 @@ export const updateProduct = mutation({
     }
     if (fields.lineage !== undefined) {
       updates.lineage = fields.lineage.trim() || undefined
+    }
+    if (fields.strainType !== undefined) {
+      updates.strainType = fields.strainType.trim() || undefined
     }
     if (fields.brand !== undefined && fields.brand !== null) {
       updates.brand = sanitizeArray(fields.brand)

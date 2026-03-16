@@ -94,7 +94,7 @@ export const CategoryForm = ({
                 .map((u) => u.trim())
                 .filter((u) => u.length > 0)
             : undefined,
-          productTypes: data.productTypes ?? [],
+          strainTypes: data.strainTypes ?? [],
           subcategories: data.subcategories ?? [],
           tiers: data.tiers ?? [],
           bases: data.bases ?? [],
@@ -155,7 +155,7 @@ export const CategoryForm = ({
       form.setFieldValue('highlight', initialValues.highlight ?? '')
       form.setFieldValue('benefitsRaw', initialValues.benefitsRaw ?? '')
       form.setFieldValue('unitsRaw', initialValues.unitsRaw ?? '')
-      form.setFieldValue('productTypes', initialValues.productTypes ?? [])
+      form.setFieldValue('strainTypes', initialValues.strainTypes ?? [])
       form.setFieldValue('subcategories', initialValues.subcategories ?? [])
       form.setFieldValue('tiers', initialValues.tiers ?? [])
       form.setFieldValue('bases', initialValues.bases ?? [])

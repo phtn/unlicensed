@@ -39,7 +39,7 @@ export const create = mutation({
     const benefits = (args.benefits ?? [])
       .map((benefit) => benefit.trim())
       .filter((benefit) => benefit.length > 0)
-    const productTypes = normalizeAttributeEntries(args.productTypes)
+    const strainTypes = normalizeAttributeEntries(args.strainTypes)
     const subcategories = normalizeAttributeEntries(args.subcategories)
     const tiers = normalizeAttributeEntries(args.tiers)
     const bases = normalizeAttributeEntries(args.bases)
@@ -56,7 +56,7 @@ export const create = mutation({
       order: args.order ?? nextOrder,
       slug,
       benefits,
-      productTypes: productTypes.length > 0 ? productTypes : undefined,
+      strainTypes: strainTypes.length > 0 ? strainTypes : undefined,
       subcategories: subcategories.length > 0 ? subcategories : undefined,
       tiers: tiers.length > 0 ? tiers : undefined,
       bases: bases.length > 0 ? bases : undefined,
@@ -103,7 +103,7 @@ export const update = mutation({
     const benefits = (args.benefits ?? [])
       .map((benefit) => benefit.trim())
       .filter((benefit) => benefit.length > 0)
-    const productTypes = normalizeAttributeEntries(args.productTypes)
+    const strainTypes = normalizeAttributeEntries(args.strainTypes)
     const subcategories = normalizeAttributeEntries(args.subcategories)
     const tiers = normalizeAttributeEntries(args.tiers)
     const bases = normalizeAttributeEntries(args.bases)
@@ -112,7 +112,7 @@ export const update = mutation({
     await ctx.db.patch(categoryId, {
       ...updateData,
       benefits,
-      productTypes: productTypes.length > 0 ? productTypes : undefined,
+      strainTypes: strainTypes.length > 0 ? strainTypes : undefined,
       subcategories: subcategories.length > 0 ? subcategories : undefined,
       tiers: tiers.length > 0 ? tiers : undefined,
       bases: bases.length > 0 ? bases : undefined,

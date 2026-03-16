@@ -3,13 +3,18 @@
 import {
   commonInputClassNames,
   commonSelectClassNames,
+  FormInput,
 } from '@/app/admin/_components/ui/fields'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {Input, Select, SelectItem} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useEffect, useMemo, useRef} from 'react'
-import {mapFractions, ProductFormApi} from '../product-schema'
+import {
+  mapFractions,
+  ProductFormApi,
+  ProductFormValues,
+} from '../product-schema'
 import {FormSection, Header} from './components'
 
 function extractDenominationFromLabel(label: string): string | null {
@@ -23,6 +28,7 @@ function extractDenominationFromLabel(label: string): string | null {
 
 interface PricingProps {
   form: ProductFormApi
+  fields: Array<FormInput<ProductFormValues>>
   categories?: Doc<'categories'>[]
   /** When true (editing), we only auto-fill variants when empty. When false (creating), we always sync variants to the selected category's denominations. */
   isEditMode?: boolean
@@ -30,6 +36,7 @@ interface PricingProps {
 
 export const Pricing = ({
   form,
+  fields,
   categories,
   isEditMode = false,
 }: PricingProps) => {
@@ -42,8 +49,25 @@ export const Pricing = ({
     if (!categories || !categorySlug) return null
     return categories.find((c) => c.slug === categorySlug) ?? null
   }, [categories, categorySlug])
+  const batchIdField = useMemo(
+    () => fields.find((field) => field.name === 'batchId'),
+    [fields],
+  )
+  const defaultBatchId = useMemo(() => {
+    const now = new Date()
+    const year = String(now.getFullYear()).slice(-2)
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    return `${year}${month}`
+  }, [])
 
   const lastAppliedCategorySlugRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const currentBatchId = (form.getFieldValue('batchId') as string) ?? ''
+    if (!currentBatchId.trim()) {
+      form.setFieldValue('batchId', defaultBatchId)
+    }
+  }, [defaultBatchId, form])
 
   // Reflect category's denominations only: when creating, sync variants when category is selected or changes so only that category's options (e.g. 1, 3, 7 for Extracts) appear. When editing, only fill when variants are empty. Don't overwrite on every run or we'd wipe price edits.
   useEffect(() => {
@@ -116,6 +140,29 @@ export const Pricing = ({
       <Header label='Pricing' />
       <div className='grid gap-6'>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          {batchIdField && (
+            <form.AppField name='batchId'>
+              {(field) => (
+                <div className='space-y-2'>
+                  <Input
+                    label={batchIdField.label}
+                    value={String(field.state.value ?? '')}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder={batchIdField.placeholder}
+                    variant='bordered'
+                    classNames={commonInputClassNames}
+                  />
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className='text-xs text-rose-400'>
+                        {field.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                </div>
+              )}
+            </form.AppField>
+          )}
           {/*{renderFields(form, fields, flowerDenominations)}*/}
           <form.AppField name='unit'>
             {(field) => {

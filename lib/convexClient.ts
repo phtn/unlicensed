@@ -12,6 +12,7 @@ export type RawCategory = {
   slug?: string
   name: string
   tiers?: IAttribute[]
+  strainTypes?: IAttribute[]
   subcategories?: IAttribute[]
   productTypes?: IAttribute[]
   brands?: IAttribute[]
@@ -57,6 +58,7 @@ export type RawProduct = {
   weightGrams?: number
   base?: string
   productType?: string
+  strainType?: string
   brand?: string | string[]
   grower?: string
   tier?: string
@@ -100,6 +102,7 @@ export const adaptCategory = (category: RawCategory): StoreCategory => ({
   slug: category.slug ?? '',
   name: category.name ?? '',
   tiers: category.tiers ?? [],
+  strainTypes: category.strainTypes ?? [],
   subcategories: category.subcategories ?? [],
   productTypes: category.productTypes ?? [],
   brands: category.brands ?? [],
@@ -165,6 +168,7 @@ export const adaptProduct = (
   potencyProfile: product.potencyProfile,
   base: product.base,
   productType: product.productType,
+  strainType: resolveAttributeLabel(product.strainType, category?.strainTypes),
   weightGrams: product.weightGrams,
   netWeight: product.netWeight,
   netWeightUnit: product.netWeightUnit,

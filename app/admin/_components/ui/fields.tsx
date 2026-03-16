@@ -30,6 +30,7 @@ export const commonSelectClassNames = {
   trigger:
     'border h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
   mainWrapper: '',
+  listbox: 'p-1.5',
 }
 export const narrowSelectClassNames = {
   label: 'ps-1 mb-3 uppercase font-ios text-xs tracking-widest opacity-80',
@@ -37,12 +38,14 @@ export const narrowSelectClassNames = {
   trigger:
     'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
   mainWrapper: '',
+  listbox: 'p-1.5',
 }
 export const multiSelectClassNames = {
   value: 'placeholder:text-slate-400/80 py-2',
   trigger:
     'border h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
   mainWrapper: '',
+  listbox: 'p-1.5',
 }
 
 type BaseFieldProps<T> = {

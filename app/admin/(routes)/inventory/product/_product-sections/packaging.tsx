@@ -8,7 +8,7 @@ import {Input, Select, SelectItem} from '@heroui/react'
 import {ProductFormApi} from '../product-schema'
 import {FormSection, Header} from './components'
 
-interface NetWeightProps {
+interface PackagingProps {
   form: ProductFormApi
 }
 
@@ -29,16 +29,16 @@ const PACKAGING_MODE_OPTIONS = [
   {key: 'prepack', label: 'Prepack'},
 ]
 
-export const NetWeight = ({form}: NetWeightProps) => {
+export const Packaging = ({form}: PackagingProps) => {
   return (
     <FormSection>
-      <Header label='Packaging Specs' />
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+      <Header label='Packaging' />
+      <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
         <form.Field name='packagingMode'>
           {(field) => {
             const value = (field.state.value as string | undefined) ?? ''
             return (
-              <div className='space-y-2'>
+              <div className='space-y-2 col-span-2'>
                 <Select
                   label='Packaging Mode'
                   selectedKeys={value ? [value] : []}
@@ -113,7 +113,32 @@ export const NetWeight = ({form}: NetWeightProps) => {
             )
           }}
         </form.Field>
-
+        <form.Field name='packSize'>
+          {(field) => {
+            const value = (field.state.value as string) ?? ''
+            return (
+              <div className='space-y-2'>
+                <Input
+                  label='Pack Size'
+                  type='number'
+                  step='1'
+                  value={value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder='10'
+                  variant='bordered'
+                  classNames={commonInputClassNames}
+                />
+                {field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0 && (
+                    <p className='text-xs text-rose-400'>
+                      {field.state.meta.errors.join(', ')}
+                    </p>
+                  )}
+              </div>
+            )
+          }}
+        </form.Field>
         <form.Field name='startingWeight'>
           {(field) => {
             const value = (field.state.value as string) ?? ''

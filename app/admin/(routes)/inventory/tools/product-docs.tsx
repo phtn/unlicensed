@@ -166,6 +166,13 @@ const PRODUCT_FIELDS = [
     'Deal behavior type.',
   ],
   ['productType', 'Yes', 'string', 'Indoor Flower', 'Product subtype.'],
+  [
+    'strainType',
+    'Yes',
+    'string',
+    'indica-dominant',
+    'Category-driven strain type value or slug.',
+  ],
   ['netWeight', 'Yes', 'number', '3.5', 'Packaged net weight.'],
   ['netWeightUnit', 'Yes', 'string', 'g', 'Net weight unit.'],
   ['subcategory', 'Yes', 'string', 'hybrid', 'Subcategory label or slug.'],
@@ -188,6 +195,7 @@ const PRODUCT_FIELDS = [
   ['tags', 'Yes', 'string[]', "['seasonal', 'staff-pick']", 'Generic tags.'],
   ['packagingMode', 'Yes', "'bulk' | 'prepack'", 'bulk', 'Packaging model.'],
   ['stockUnit', 'Yes', 'string', 'oz', 'Unit used for bulk stock tracking.'],
+  ['packSize', 'Yes', 'number', '10', 'Package count or size value.'],
   [
     'startingWeight',
     'Yes',
@@ -210,6 +218,14 @@ const SUPPORTING_TYPES = [
     definition: "'mild' | 'medium' | 'high'",
   },
   {
+    name: 'InventoryMode',
+    definition: "'by_denomination' | 'shared'",
+  },
+  {
+    name: 'StrainType',
+    definition: 'string',
+  },
+  {
     name: 'ProductType',
     definition: 'Infer<typeof productSchema>',
   },
@@ -221,6 +237,8 @@ const TRAINING_NOTES = [
   'Use inventoryMode = by_denomination with stockByDenomination.',
   'CSV import still accepts legacy shared_weight values and normalizes them to shared.',
   'priceCents and upgradePrice are numeric currency fields stored in cents.',
+  'productType is a freeform string field, while strainType stores the selected category strain-type string value.',
+  'packSize is a numeric packaging field used alongside packagingMode, stockUnit, and netWeight fields.',
   'stock is a legacy/general stock field that exists alongside the newer inventory model.',
 ] as const
 

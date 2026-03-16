@@ -402,19 +402,25 @@ const ProductDetailStats = ({
       </span>
       <div className='flex items-center space-x-2'>
         <span>
-          <span className='font-bold text-xs md:text-sm opacity-60'>THC</span>{' '}
+          <span className='font-clash font-medium text-xs md:text-sm'>THC</span>{' '}
           <span className='text-sm md:text-base font-clash font-medium'>
             {product.thcPercentage}
           </span>
           <span className='text-xs md:text-sm lowercase'>mg</span>
         </span>
         <span className='px-1 md:px-2 text-sm font-thin opacity-30'>|</span>
+        <span className='font-clash font-medium text-xs md:text-sm'>
+          {product.strainType}
+        </span>{' '}
+        <span className='px-1 md:px-2 text-sm font-thin opacity-30'>|</span>
         <div className='flex items-center space-x-1'>
           <Icon
             name={pmap[product.potencyLevel]}
-            className='size-3 md:size-5'
+            className='size-3 md:size-4 opacity-80'
           />
-          <span className='capitalize text-sm'>{product.potencyLevel}</span>
+          <span className='capitalize text-sm font-medium'>
+            {product.potencyLevel}
+          </span>
         </div>
       </div>
 

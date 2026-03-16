@@ -69,12 +69,6 @@ export const BasicInfo = ({
   }, [fields])
 
   const _defaultTierOptions = useMemo(() => [], [])
-  const defaultBatchId = useMemo(() => {
-    const now = new Date()
-    const year = String(now.getFullYear()).slice(-2)
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    return `${year}${month}`
-  }, [])
 
   const defaultBaseOptions = useMemo(() => {
     const field = fields.find((entry) => entry.name === 'base')
@@ -91,8 +85,8 @@ export const BasicInfo = ({
   )
   const subcategoryField = fields.find((field) => field.name === 'subcategory')
   const productTypeField = fields.find((field) => field.name === 'productType')
+  const strainTypeField = fields.find((field) => field.name === 'strainType')
   const tierField = fields.find((field) => field.name === 'tier')
-  const batchIdField = fields.find((field) => field.name === 'batchId')
   const selectedCategory = useMemo(() => {
     if (!categorySlug) return null
     return availableCategories.find(
@@ -116,8 +110,8 @@ export const BasicInfo = ({
     }))
   }, [selectedCategory])
 
-  const productTypeOptions = useMemo(() => {
-    const raw = selectedCategory?.productTypes
+  const strainTypeOptions = useMemo(() => {
+    const raw = selectedCategory?.strainTypes
     if (!raw?.length) return defaultProductTypeOptions
     const first = raw[0]
     if (typeof first === 'string') {
@@ -148,21 +142,19 @@ export const BasicInfo = ({
   )
 
   useEffect(() => {
-    const currentProductType =
-      (form.getFieldValue('productType') as string) ?? ''
+    const currentStrainType = (form.getFieldValue('strainType') as string) ?? ''
     const currentSubcategory =
       (form.getFieldValue('subcategory') as string) ?? ''
     const currentTier = (form.getFieldValue('tier') as string) ?? ''
     const currentBase = (form.getFieldValue('base') as string) ?? ''
     const currentBrand = (form.getFieldValue('brand') as string[]) ?? []
-    const currentBatchId = (form.getFieldValue('batchId') as string) ?? ''
 
     if (
-      currentProductType &&
+      currentStrainType &&
       selectedCategory &&
-      !productTypeOptions.some((option) => option.value === currentProductType)
+      !strainTypeOptions.some((option) => option.value === currentStrainType)
     ) {
-      form.setFieldValue('productType', '')
+      form.setFieldValue('strainType', '')
     }
 
     if (
@@ -195,16 +187,11 @@ export const BasicInfo = ({
         form.setFieldValue('brand', validBrands)
       }
     }
-
-    if (!currentBatchId.trim()) {
-      form.setFieldValue('batchId', defaultBatchId)
-    }
   }, [
     baseOptions,
     brandOptions,
-    defaultBatchId,
     form,
-    productTypeOptions,
+    strainTypeOptions,
     selectedCategory,
     subcategoryOptions,
     tierOptions,
@@ -339,18 +326,18 @@ export const BasicInfo = ({
               )}
             </form.AppField>
           )}
-          {productTypeField?.type === 'select' && (
-            <form.AppField name='productType'>
+          {strainTypeField && strainTypeField?.type === 'select' && (
+            <form.AppField name='strainType'>
               {(input) => (
                 <input.SelectField
                   {...input}
                   type='select'
-                  name='productType'
+                  name='strainType'
                   mode='single'
-                  label={productTypeField.label}
-                  placeholder={productTypeField.placeholder}
+                  label={strainTypeField.label}
+                  placeholder={strainTypeField.placeholder}
                   classNames={{...commonSelectClassNames}}
-                  options={productTypeOptions}
+                  options={strainTypeOptions}
                 />
               )}
             </form.AppField>
@@ -387,17 +374,17 @@ export const BasicInfo = ({
               )}
             </form.AppField>
           )}
-          {batchIdField && (
-            <form.AppField name='batchId'>
+          {productTypeField && (
+            <form.AppField name='productType'>
               {(input) => (
                 <div className='space-y-2 w-full'>
                   <Input
                     size='lg'
-                    label={batchIdField.label}
+                    label={productTypeField.label}
                     value={String(input.state.value ?? '')}
                     onChange={(e) => input.handleChange(e.target.value)}
                     onBlur={input.handleBlur}
-                    placeholder={batchIdField.placeholder}
+                    placeholder={productTypeField.placeholder}
                     variant='bordered'
                     classNames={commonInputClassNames}
                   />

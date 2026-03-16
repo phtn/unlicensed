@@ -151,6 +151,13 @@ function rawRowToProduct(
   const parsedBrand = parseJsonArrayOrRecord(get('brand')) as
     | string[]
     | undefined
+  const parsedHighMargins = parseJsonArrayOrRecord(get('highMargins')) as
+    | string[]
+    | undefined
+  const parsedBrandCollaborators = parseJsonArrayOrRecord(
+    get('brandCollaborators'),
+  ) as string[] | undefined
+  const parsedTags = parseJsonArrayOrRecord(get('tags')) as string[] | undefined
 
   return {
     name: get('name') || undefined,
@@ -226,10 +233,19 @@ function rawRowToProduct(
         : undefined
     })(),
     productType: get('productType') || undefined,
+    strainType: get('strainType') || undefined,
     netWeight: parseNum(get('netWeight')),
     netWeightUnit: get('netWeightUnit') || undefined,
+    highMargins: Array.isArray(parsedHighMargins)
+      ? parsedHighMargins
+      : undefined,
+    brandCollaborators: Array.isArray(parsedBrandCollaborators)
+      ? parsedBrandCollaborators
+      : undefined,
+    tags: Array.isArray(parsedTags) ? parsedTags : undefined,
     packagingMode,
     stockUnit: get('stockUnit') || undefined,
+    packSize: parseNum(get('packSize')),
     startingWeight: parseNum(get('startingWeight')),
     remainingWeight: parseNum(get('remainingWeight')),
     subcategory: get('subcategory') || undefined,

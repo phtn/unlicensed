@@ -141,7 +141,7 @@ export const Inventory = ({form}: InventoryProps) => {
     <FormSection>
       <Header label='Inventory' />
       <div className='w-full space-y-8'>
-        <div className='grid grid-cols-1 md:grid-cols-6 md:gap-x-6 gap-y-6 w-full'>
+        <div className='grid grid-cols-1 md:grid-cols-6 md:gap-x-4 gap-y-6 w-full'>
           <div className='w-full col-span-6 md:col-span-3'>
             <form.Field name='inventoryMode'>
               {(field) => (

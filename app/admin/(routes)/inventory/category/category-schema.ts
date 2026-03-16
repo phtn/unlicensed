@@ -20,7 +20,8 @@ export const categorySchema = z.object({
   highlight: z.string().optional(),
   benefitsRaw: z.string().optional(),
   unitsRaw: z.string().optional(),
-  productTypes: z.array(attributeEntrySchema).default([]),
+  strainTypes: z.array(attributeEntrySchema).default([]),
+  productType: z.string().optional(),
   subcategories: z.array(attributeEntrySchema).default([]),
   tiers: z.array(attributeEntrySchema).default([]),
   bases: z.array(attributeEntrySchema).default([]),
@@ -141,11 +142,15 @@ export const categoryFields: FormInput<CategoryFormValues>[] = [
 ]
 
 export const defaultValues = categoryFields
-  .map((f) => ({ [f.name]: f.defaultValue }))
-  .reduce((acc, obj) => ({ ...acc, ...obj }), {
-    productTypes: [] as AttributeEntry[],
+  .map((f) => ({[f.name]: f.defaultValue}))
+  .reduce((acc, obj) => ({...acc, ...obj}), {
+    strainTypes: [] as AttributeEntry[],
     subcategories: [] as AttributeEntry[],
     tiers: [] as AttributeEntry[],
     bases: [] as AttributeEntry[],
     brands: [] as AttributeEntry[],
   }) as CategoryFormValues
+
+/*
+
+*/

@@ -248,6 +248,7 @@ export const productSchema = z.object({
   potencyProfile: z.string().optional(),
   lineage: z.string().optional(),
   productType: z.string().optional(),
+  strainType: z.string().optional(),
   noseRating: z
     .number()
     .min(0, 'Nose rating must be 0 or more.')
@@ -258,6 +259,7 @@ export const productSchema = z.object({
   netWeightUnit: z.string().optional(),
   packagingMode: z.enum(['bulk', 'prepack']).optional(),
   stockUnit: z.string().optional(),
+  packSize: z.string().optional(),
   startingWeight: z.string().optional(),
   remainingWeight: z.string().optional(),
   batchId: z.string().optional(),
@@ -344,12 +346,12 @@ export const productFields: FormInput<ProductFormValues>[] = [
     defaultValue: '',
   },
   {
-    name: 'productType',
-    label: 'Product Type',
+    name: 'strainType',
+    label: 'Strain Type',
     required: false,
     type: 'select',
     options: [],
-    placeholder: 'Product type',
+    placeholder: 'Strain Type',
     defaultValue: '',
   },
   {
@@ -385,7 +387,15 @@ export const productFields: FormInput<ProductFormValues>[] = [
     label: 'Batch ID',
     required: false,
     type: 'text',
-    placeholder: 'e.g., B-2026-0007',
+    placeholder: '2604',
+    defaultValue: '',
+  },
+  {
+    name: 'productType',
+    label: 'Product Type',
+    required: false,
+    type: 'text',
+    placeholder: '',
     defaultValue: '',
   },
   {
@@ -614,6 +624,14 @@ export const productFields: FormInput<ProductFormValues>[] = [
     defaultValue: '',
   },
   {
+    name: 'packSize',
+    label: 'Pack Size',
+    required: false,
+    type: 'text',
+    placeholder: '10',
+    defaultValue: '',
+  },
+  {
     name: 'startingWeight',
     label: 'Starting Weight',
     required: false,
@@ -656,6 +674,7 @@ export const defaultValues: ProductFormValues = {
   upgradePrice: undefined,
   packagingMode: undefined,
   stockUnit: '',
+  packSize: '',
   startingWeight: '',
   remainingWeight: '',
 } as ProductFormValues

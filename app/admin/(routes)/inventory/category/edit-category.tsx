@@ -8,12 +8,12 @@ import {
 } from '@/app/admin/(routes)/inventory/category/category-schema'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {slugify} from '@/lib/slug'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
-import {slugify} from '@/lib/slug'
 
 function toAttributeEntries(
-  val: string[] | { name: string; slug: string }[] | undefined,
+  val: string[] | {name: string; slug: string}[] | undefined,
 ): AttributeEntry[] {
   if (!val?.length) return []
   const first = val[0]
@@ -57,6 +57,11 @@ export const EditCategory = ({id}: EditCategoryContentProps) => {
     )
   }
 
+  const legacyCategory = category as typeof category & {
+    productTypes?: string[] | AttributeEntry[]
+  }
+  const strainTypes = category.strainTypes ?? legacyCategory.productTypes
+
   // Convert category data to form values (support legacy string[] from DB)
   const initialValues: CategoryFormValues = {
     ...defaultValues,
@@ -68,7 +73,7 @@ export const EditCategory = ({id}: EditCategoryContentProps) => {
     highlight: category.highlight ?? '',
     benefitsRaw: category.benefits?.join('\n') ?? '',
     unitsRaw: category.units?.join(', ') ?? '',
-    productTypes: toAttributeEntries(category.productTypes),
+    strainTypes: toAttributeEntries(strainTypes),
     subcategories: toAttributeEntries(category.subcategories),
     tiers: toAttributeEntries(category.tiers),
     bases: toAttributeEntries(category.bases),

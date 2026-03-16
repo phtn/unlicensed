@@ -11,7 +11,7 @@ import {FormSection, Header} from './components'
 
 type AttributeFieldName =
   | 'tiers'
-  | 'productTypes'
+  | 'strainTypes'
   | 'subcategories'
   | 'bases'
   | 'brands'
@@ -207,9 +207,9 @@ export const Attributes = ({form, category: _category}: AttributesProps) => {
           emptyLabel: 'No tiers set for this category',
         },
         {
-          name: 'productTypes',
-          label: 'Types',
-          emptyLabel: 'No product types configured',
+          name: 'strainTypes',
+          label: 'Strain Types',
+          emptyLabel: 'No strain types configured',
         },
         {
           name: 'bases',
@@ -265,91 +265,3 @@ export const Attributes = ({form, category: _category}: AttributesProps) => {
     </FormSection>
   )
 }
-
-/*
-<AccordionItem
-          key='tiers'
-          aria-label='tiers'
-          title={
-            <AttributeAccordionTitle
-              form={form}
-              fieldName='tiers'
-              title='Tiers'
-            />
-          }
-          className='dark:data-open:bg-sidebar data-open:bg-white rounded-t-lg'>
-          <AttributeEntryListField
-            form={form}
-            fieldName='tiers'
-            emptyLabel='No tiers set for this category'
-          />
-        </AccordionItem>
-        <AccordionItem
-          key='types'
-          aria-label='types'
-          title={
-            <AttributeAccordionTitle
-              form={form}
-              fieldName='productTypes'
-              title='Types'
-            />
-          }
-          className='data-open:bg-sidebar'>
-          <AttributeEntryListField
-            form={form}
-            fieldName='productTypes'
-            emptyLabel='No product types configured'
-          />
-        </AccordionItem>
-        <AccordionItem
-          key='base'
-          aria-label='base'
-          title={
-            <AttributeAccordionTitle
-              form={form}
-              fieldName='bases'
-              title='Base'
-            />
-          }
-          className='data-open:bg-sidebar'>
-          <AttributeEntryListField
-            form={form}
-            fieldName='bases'
-            emptyLabel='No base options configured'
-          />
-        </AccordionItem>
-        <AccordionItem
-          key='subcategory'
-          aria-label='subcategory'
-          title={
-            <AttributeAccordionTitle
-              form={form}
-              fieldName='subcategories'
-              title='Subcategory'
-            />
-          }
-          className='data-open:bg-sidebar'>
-          <AttributeEntryListField
-            form={form}
-            fieldName='subcategories'
-            emptyLabel='No subcategories configured'
-          />
-        </AccordionItem>
-        <AccordionItem
-          key='brand'
-          aria-label='brand'
-          title={
-            <AttributeAccordionTitle
-              form={form}
-              fieldName='brands'
-              title='Brand'
-            />
-          }
-          className='data-open:bg-sidebar'>
-          <AttributeEntryListField
-            form={form}
-            fieldName='brands'
-            emptyLabel='No brands configured'
-          />
-        </AccordionItem>
-*/

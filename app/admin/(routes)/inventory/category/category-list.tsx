@@ -27,8 +27,19 @@ type CategoryStat = {
 
 type CategoryFilter = 'active' | 'inactive'
 type CategoryId = CategoryListItem['_id']
+type CategoryAttributeEntry = {name: string; slug: string}
 
 const countItems = (items?: unknown[]) => items?.length ?? 0
+
+const getCategoryStrainTypes = (
+  category: CategoryListItem,
+): CategoryAttributeEntry[] => {
+  const legacyCategory = category as CategoryListItem & {
+    productTypes?: CategoryAttributeEntry[]
+  }
+
+  return category.strainTypes ?? legacyCategory.productTypes ?? []
+}
 
 const isCategoryActive = (category: CategoryListItem) =>
   category.visible !== false
@@ -83,7 +94,7 @@ const buildStats = (category: CategoryListItem): CategoryStat[] => {
   return [
     {label: 'Products', value: category.productCount},
     {label: 'Tiers', value: countItems(category.tiers)},
-    {label: 'Types', value: countItems(category.productTypes)},
+    {label: 'Types', value: countItems(getCategoryStrainTypes(category))},
     {label: 'Base', value: countItems(category.bases)},
     {label: 'Subcategory', value: countItems(category.subcategories)},
     {label: 'Brands', value: countItems(category.brands)},
@@ -92,7 +103,7 @@ const buildStats = (category: CategoryListItem): CategoryStat[] => {
 
 const buildPreviewTags = (category: CategoryListItem) => {
   const labels = [
-    ...(category.productTypes ?? []).map((item) => item.name),
+    ...getCategoryStrainTypes(category).map((item) => item.name),
     ...(category.subcategories ?? []).map((item) => item.name),
     ...(category.tiers ?? []).map((item) => item.name),
     ...(category.bases ?? []).map((item) => item.name),
