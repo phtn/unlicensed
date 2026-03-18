@@ -9,6 +9,7 @@ import {
   GeistPixelSquare,
   GeistPixelTriangle,
 } from 'geist/font/pixel'
+import 'mapbox-gl/dist/mapbox-gl.css'
 import type {Metadata, Viewport} from 'next'
 import {
   Bakbak_One as BakbakOne,
@@ -26,7 +27,6 @@ import {EmailLinkHandler} from './_components/email-link-handler'
 import {ScreenDimensionsTracker} from './_components/screen-dimensions-tracker'
 import {UserLocationTracker} from './_components/user-location-tracker'
 import './globals.css'
-import 'mapbox-gl/dist/mapbox-gl.css'
 
 const figtree = Figtree({
   variable: '--font-sans',
@@ -69,18 +69,18 @@ const nito = NunitoSans({
 export const metadata: Metadata = {
   title: {
     default: 'Rapid Fire',
-    template: '%s | Rapid Fire',
+    template: '%s ・ Rapid Fire',
   },
   description:
-    'Discover elevated THC flower, edibles, concentrates, and drinks curated for modern rituals.',
+    'Discover high quality flower, extracts, vapes, edibles, pre-rolls, and merch curated for modern rituals.',
   keywords: [
     'cannabis',
     'THC',
     'flower',
+    'extracts',
+    'vapes',
     'edibles',
-    'concentrates',
-    'dispensary',
-    'Hyfe',
+    'pre-rolls',
   ],
   authors: [{name: 'xpriori'}, {name: 'quimpoi'}],
   creator: 're-up.ph',

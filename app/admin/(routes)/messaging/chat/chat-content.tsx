@@ -30,17 +30,38 @@ const ChatWindow = dynamic(
 )
 
 const CHAT_TABS = [
-  {id: 'authed', label: 'Authenticated Users'},
-  {id: 'guests', label: 'Guest Users'},
+  {id: 'authed', label: 'Users'},
+  {id: 'staff', label: 'Staff'},
+  {id: 'guests', label: 'Guests'},
 ] as const
 
 const DEFAULT_TAB = CHAT_TABS[0].id
 
 type ChatTabId = (typeof CHAT_TABS)[number]['id']
 type UserDoc = Doc<'users'>
+type StaffDoc = Doc<'staff'>
 
 const getUserConversationFid = (participant: UserDoc) =>
   participant.fid ?? participant.firebaseId ?? null
+
+const getNormalizedEmail = (email?: string | null) => {
+  const normalizedEmail = email?.trim().toLowerCase()
+  return normalizedEmail ? normalizedEmail : null
+}
+
+const getStaffLabel = ({
+  position,
+  division,
+}: Pick<StaffDoc, 'position' | 'division'>) => {
+  const trimmedPosition = position.trim()
+  const trimmedDivision = division?.trim()
+
+  if (trimmedPosition && trimmedDivision) {
+    return `${trimmedPosition} • ${trimmedDivision}`
+  }
+
+  return trimmedPosition || trimmedDivision || 'Staff'
+}
 
 const getLocationLabel = ({
   city,
@@ -74,22 +95,26 @@ const getLocationLabel = ({
 interface ParticipantCardProps {
   avatarUrl?: string | null
   email?: string
+  disabled?: boolean
   isActive?: boolean
   isSelected: boolean
   label: string
   locationLabel: string
   name: string
+  statusText?: string
   subtitle: string
   onClick: VoidFunction
 }
 
 const ParticipantCard = ({
   avatarUrl,
+  disabled = false,
   isActive,
   isSelected,
   label,
   locationLabel,
   name,
+  statusText,
   subtitle,
   onClick,
 }: ParticipantCardProps) => {
@@ -97,10 +122,12 @@ const ParticipantCard = ({
     <button
       type='button'
       onClick={onClick}
+      disabled={disabled}
       className={cn(
         'group flex min-h-44 flex-col rounded-2xl border p-3 text-left transition-all duration-200',
         'border-sidebar/70 bg-background/70 hover:-translate-y-0.5 hover:border-dark-gray/60 hover:shadow-lg',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-gray/60',
+        'disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:border-sidebar/70 disabled:hover:shadow-none',
         isSelected && 'border-dark-gray bg-alum/30 shadow-lg',
       )}>
       <div className='flex items-start justify-between gap-2'>
@@ -146,7 +173,7 @@ const ParticipantCard = ({
       </div>
 
       <div className='mt-auto flex items-center justify-between pt-5'>
-        <span className='text-xs text-muted-foreground'></span>
+        <span className='text-xs text-muted-foreground'>{statusText}</span>
         <span className='inline-flex size-9 items-center justify-center rounded-full bg-dark-table text-white transition-transform duration-200 group-hover:scale-105'>
           <Icon name='chat' className='size-4' />
         </span>
@@ -158,6 +185,7 @@ const ParticipantCard = ({
 export const Content = () => {
   const {user} = useAuthCtx()
   const users = useQuery(api.users.q.getAllUsers, {limit: 5000})
+  const staff = useQuery(api.staff.q.getStaff)
   const guests = useQuery(api.guests.q.getAllGuests, {limit: 5000})
   const [selectedTab, setSelectedTab] = useQueryState(
     'chatTab',
@@ -172,9 +200,73 @@ export const Content = () => {
     ? (selectedTab as ChatTabId)
     : DEFAULT_TAB
 
+  const usersById = new Map(
+    (users ?? []).map((participant) => [String(participant._id), participant]),
+  )
+  const usersByEmail = new Map(
+    (users ?? []).flatMap((participant) => {
+      const email = getNormalizedEmail(participant.email)
+      return email ? [[email, participant] as const] : []
+    }),
+  )
+
+  const staffParticipants = (staff ?? [])
+    .map((member) => {
+      const normalizedEmail = getNormalizedEmail(member.email)
+      const linkedUser =
+        (member.userId
+          ? (usersById.get(String(member.userId)) ?? null)
+          : null) ??
+        (normalizedEmail ? (usersByEmail.get(normalizedEmail) ?? null) : null)
+      const conversationFid = linkedUser
+        ? getUserConversationFid(linkedUser)
+        : null
+
+      return {
+        staff: member,
+        linkedUser,
+        conversationFid,
+        normalizedEmail,
+      }
+    })
+    .sort((a, b) => {
+      if (a.staff.active !== b.staff.active) {
+        return a.staff.active ? -1 : 1
+      }
+
+      return (a.staff.name ?? a.staff.email ?? a.staff.position).localeCompare(
+        b.staff.name ?? b.staff.email ?? b.staff.position,
+      )
+    })
+
+  const staffLinkedUserIds = new Set(
+    staffParticipants.flatMap((participant) =>
+      participant.linkedUser ? [String(participant.linkedUser._id)] : [],
+    ),
+  )
+  const staffEmails = new Set(
+    staffParticipants.flatMap((participant) =>
+      participant.normalizedEmail ? [participant.normalizedEmail] : [],
+    ),
+  )
+  const staffConversationFids = new Set(
+    staffParticipants.flatMap((participant) =>
+      participant.conversationFid ? [participant.conversationFid] : [],
+    ),
+  )
+
   const authenticatedUsers = (users ?? []).filter((participant) => {
     const fid = getUserConversationFid(participant)
-    return Boolean(fid) && fid !== ASSISTANT_PRO_ID && fid !== user?.uid
+    const normalizedEmail = getNormalizedEmail(participant.email)
+
+    return (
+      Boolean(fid) &&
+      fid !== ASSISTANT_PRO_ID &&
+      fid !== user?.uid &&
+      !staffLinkedUserIds.has(String(participant._id)) &&
+      !staffConversationFids.has(String(fid)) &&
+      (!normalizedEmail || !staffEmails.has(normalizedEmail))
+    )
   })
 
   const guestUsers = guests ?? []
@@ -187,39 +279,33 @@ export const Content = () => {
   }
 
   return (
-    <MainWrapper className='h-[92lvh] overflow-y-scroll md:p-4'>
+    <MainWrapper className='h-[92lvh] overflow-y-scroll md:py-4'>
       <Tabs.Root
         value={activeTab}
         onValueChange={(value) => {
           void setSelectedTab(value)
         }}>
-        <div className='space-y-4 px-2'>
-          <header className='flex flex-col gap-2 pt-1'>
+        <div className='space-y-4'>
+          <header className='flex items-center justify-between pt-1'>
             <p className='text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground'>
-              Messaging Console
+              Chat Console - Direct routing
             </p>
             <div className='flex flex-col gap-2 md:flex-row md:items-end md:justify-between'>
-              <div className='space-y-1'>
-                <h1 className='font-polysans text-2xl font-semibold text-foreground'>
-                  Direct chat routing
-                </h1>
-                <p className='max-w-3xl text-sm text-muted-foreground'>
-                  Pick an authenticated customer or guest session and open the
-                  live conversation in the shared chat window.
-                </p>
-              </div>
               <div className='flex items-center gap-2 text-xs text-muted-foreground'>
-                <span className='rounded-full border border-sidebar px-3 py-1.5'>
-                  {authenticatedUsers.length} authed
+                <span className='rounded-full border border-sidebar px-3 py-1.5 capitalize font-ios'>
+                  {authenticatedUsers.length} Users
                 </span>
-                <span className='rounded-full border border-sidebar px-3 py-1.5'>
+                <span className='rounded-full border border-sidebar px-3 py-1.5 capitalize font-ios'>
+                  {staffParticipants.length} Staff
+                </span>
+                <span className='rounded-full border border-sidebar px-3 py-1.5 capitalize font-ios'>
                   {guestUsers.length} guests
                 </span>
               </div>
             </div>
           </header>
 
-          <Tabs.List className='relative z-0 flex gap-1 overflow-x-auto px-0 pb-1'>
+          <Tabs.List className='relative z-0 flex gap-2 overflow-x-auto px-0 pb-1'>
             {CHAT_TABS.map((tab) => (
               <Tabs.Tab
                 key={tab.id}
@@ -239,20 +325,8 @@ export const Content = () => {
 
         <Tabs.Panel
           value='authed'
-          className='relative flex min-h-32 flex-1 flex-col px-2 py-4'>
+          className='relative flex min-h-32 flex-1 flex-col py-4'>
           <section className='space-y-4'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <h2 className='font-polysans text-lg font-semibold'>
-                  Authenticated users
-                </h2>
-                <p className='text-sm text-muted-foreground'>
-                  Signed-in customer accounts that can be opened directly in the
-                  existing chat window.
-                </p>
-              </div>
-            </div>
-
             {authenticatedUsers.length === 0 ? (
               <div className='rounded-2xl border border-dashed border-sidebar p-8 text-center text-sm text-muted-foreground'>
                 No authenticated users are available for chat.
@@ -280,7 +354,7 @@ export const Content = () => {
                       locationLabel={getLocationLabel(participant)}
                       name={
                         participant.name ||
-                        participant.email.split('@')[0] ||
+                        participant.email?.split('@')[0] ||
                         'User'
                       }
                       subtitle={conversationFid}
@@ -296,21 +370,66 @@ export const Content = () => {
         </Tabs.Panel>
 
         <Tabs.Panel
-          value='guests'
-          className='relative flex min-h-32 flex-1 flex-col px-2 py-4'>
+          value='staff'
+          className='relative flex min-h-32 flex-1 flex-col py-4'>
           <section className='space-y-4'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <h2 className='font-polysans text-lg font-semibold'>
-                  Guest users
-                </h2>
-                <p className='text-sm text-muted-foreground'>
-                  Anonymous storefront visitors with persisted guest ids and
-                  chat history.
-                </p>
+            {staffParticipants.length === 0 ? (
+              <div className='rounded-2xl border border-dashed border-sidebar p-8 text-center text-sm text-muted-foreground'>
+                No staff members are available for chat.
               </div>
-            </div>
+            ) : (
+              <div className='grid grid-cols-1 gap-2 [content-visibility:auto] sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8'>
+                {staffParticipants.map((participant) => {
+                  const conversationFid = participant.conversationFid
+                  const displayName =
+                    participant.staff.name?.trim() ||
+                    participant.linkedUser?.name?.trim() ||
+                    participant.normalizedEmail?.split('@')[0] ||
+                    'Staff'
 
+                  return (
+                    <ParticipantCard
+                      key={participant.staff._id}
+                      avatarUrl={
+                        participant.linkedUser?.photoUrl ??
+                        participant.staff.avatarUrl
+                      }
+                      email={
+                        participant.linkedUser?.email ?? participant.staff.email
+                      }
+                      disabled={!conversationFid}
+                      isActive={participant.staff.active}
+                      isSelected={
+                        Boolean(conversationFid) &&
+                        selectedConversationFid === conversationFid &&
+                        isChatWindowOpen
+                      }
+                      label='Staff'
+                      locationLabel={getStaffLabel(participant.staff)}
+                      name={displayName}
+                      statusText={
+                        conversationFid ? undefined : 'No chat profile'
+                      }
+                      subtitle={participant.staff.position}
+                      onClick={() => {
+                        if (!conversationFid) {
+                          return
+                        }
+
+                        openConversation(conversationFid)
+                      }}
+                    />
+                  )
+                })}
+              </div>
+            )}
+          </section>
+        </Tabs.Panel>
+
+        <Tabs.Panel
+          value='guests'
+          className='relative flex min-h-32 flex-1 flex-col py-4'>
+          <section className='space-y-4'>
             {guestUsers.length === 0 ? (
               <div className='rounded-2xl border border-dashed border-sidebar p-8 text-center text-sm text-muted-foreground'>
                 No guest conversations have been created yet.

@@ -4,8 +4,14 @@ import {CategoriesContent} from './content'
 import {searchParamsCache} from './searchParams'
 
 export const metadata: Metadata = {
-  title: 'Categories',
-  description: 'Curate collections of products.',
+  title: 'Category',
+  description: 'Product Categories',
+  icons: [
+    {
+      rel: 'icon',
+      url: '/svg/rf-icon-latest.svg',
+    },
+  ],
 }
 type PageProps = {
   searchParams: Promise<SearchParams> // Next.js 15+: async searchParams prop
