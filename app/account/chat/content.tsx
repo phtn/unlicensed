@@ -59,9 +59,9 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   const previousMessagesLengthRef = useRef(0)
 
   // Derive conversation state from URL
-  const selectedUserProId = initialConversationId ?? null
-  const isAssistant = isAssistantConversation(selectedUserProId)
-  const showChat = !!selectedUserProId // For mobile: show chat area if conversation selected
+  const selectedConversationRef = initialConversationId ?? null
+  const isAssistant = isAssistantConversation(selectedConversationRef)
+  const showChat = !!selectedConversationRef // For mobile: show chat area if conversation selected
 
   // Assistant chat hook
   const assistantChat = useAssistantChat()
@@ -115,6 +115,23 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
     api.messages.q.getConversationFolders,
     currentUserId ? {fid: currentUserId} : 'skip',
   )
+  const selectedConversationUser = useQuery(
+    api.messages.q.resolveParticipantReference,
+    selectedConversationRef && !isAssistant
+      ? {reference: selectedConversationRef}
+      : 'skip',
+  )
+  const selectedConversationFid = useMemo(() => {
+    if (!selectedConversationUser) {
+      return null
+    }
+
+    if ('guestId' in selectedConversationUser) {
+      return selectedConversationUser.fid
+    }
+
+    return selectedConversationUser.fid ?? selectedConversationUser.firebaseId ?? null
+  }, [selectedConversationUser])
 
   // Use search results if searching, otherwise use regular conversations
   const baseConversations = useMemo<Conversation[]>(() => {
@@ -221,10 +238,10 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   // Real-time messages - automatically updates when new messages arrive
   const messagesQuery = useQuery(
     api.messages.q.getMessages,
-    selectedUserProId && currentUserId
+    currentUserId && selectedConversationFid
       ? {
           currentUserId,
-          otherUserId: selectedUserProId,
+          otherUserId: selectedConversationFid,
         }
       : 'skip',
   )
@@ -236,10 +253,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   )
 
   // Get other user's Convex ID for optimistic updates
-  const otherUser = useQuery(
-    api.users.q.getCurrentUser,
-    selectedUserProId ? {fid: selectedUserProId} : 'skip',
-  )
+  const otherUser = selectedConversationUser
 
   // Optimistic updates reducer
   type OptimisticAction =
@@ -257,12 +271,12 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
     | {
         type: 'like-message'
         messageId: Id<'messages'>
-        userId: Id<'users'>
+        userId: Id<'users'> | Id<'guests'>
       }
     | {
         type: 'unlike-message'
         messageId: Id<'messages'>
-        userId: Id<'users'>
+        userId: Id<'users'> | Id<'guests'>
       }
 
   const [optimisticMessages, addOptimisticUpdate] = useOptimistic(
@@ -410,20 +424,34 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
 
     viewport.addEventListener('scroll', handleScroll, {passive: true})
     return () => viewport.removeEventListener('scroll', handleScroll)
-  }, [selectedUserProId]) // Re-setup when conversation changes
+  }, [selectedConversationRef]) // Re-setup when conversation changes
 
   // Get the ID of the last message to detect new incoming messages
   const lastMessageId = messages?.[messages.length - 1]?._id
 
   // Mark messages as read when conversation is selected or new messages arrive
   useEffect(() => {
-    if (selectedUserProId && currentUserId && !isAssistant) {
+    if (
+      selectedConversationFid &&
+      currentUserId &&
+      currentUserConvex?._id &&
+      otherUser?._id &&
+      !isAssistant
+    ) {
       markAsRead({
-        senderfid: selectedUserProId,
+        senderfid: selectedConversationFid,
         receiverfid: currentUserId,
       }).catch(console.error)
     }
-  }, [selectedUserProId, currentUserId, markAsRead, lastMessageId, isAssistant])
+  }, [
+    currentUserConvex?._id,
+    currentUserId,
+    isAssistant,
+    lastMessageId,
+    markAsRead,
+    otherUser?._id,
+    selectedConversationFid,
+  ])
 
   const handleSelectConversation = (
     _otherUserId: string,
@@ -461,14 +489,17 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
           otherUserfid: otherUserProId,
           otherUserId,
         })
-        if (selectedUserProId === otherUserProId) {
+        if (
+          selectedConversationRef === otherUserProId ||
+          selectedConversationRef === otherUserId
+        ) {
           router.push('/account/chat')
         }
       } catch (error) {
         console.error('Error archiving conversation:', error)
       }
     },
-    [archiveConversation, currentUserId, selectedUserProId, router],
+    [archiveConversation, currentUserId, selectedConversationRef, router],
   )
 
   const handleCreateFolder = useCallback(
@@ -517,19 +548,23 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
 
   // Find selected conversation by fid (null when conversation is archived)
   const selectedConversation = displayedConversations?.find(
-    (conv) => conv?.otherUser?.fid === selectedUserProId,
+    (conv) =>
+      conv?.otherUser?.fid === selectedConversationRef ||
+      conv?.otherUserId === selectedConversationRef ||
+      (!!selectedConversationUser &&
+        conv?.otherUser?.fid === selectedConversationFid),
   )
 
   // For archived conversations we have selectedUserProId but no selectedConversation; use profile for header when available
   const chatDisplayUser =
     selectedConversation?.otherUser ??
-    (selectedUserProId && otherUser
+    (selectedConversationRef && otherUser
       ? {
-          fid: selectedUserProId,
+          fid: selectedConversationFid ?? '',
           name: otherUser.name ?? null,
           email: otherUser.email ?? '',
           photoUrl: otherUser.photoUrl ?? null,
-          proId: selectedUserProId,
+          proId: selectedConversationFid ?? '',
           displayName: otherUser.name ?? null,
           avatarUrl: otherUser.photoUrl ?? null,
         }
@@ -620,7 +655,9 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
             )}
 
             <ConversationList
-              selectedProId={selectedUserProId}
+              selectedProId={
+                selectedConversationFid ?? selectedConversationRef
+              }
               conversations={displayedConversations}
               folderOptions={folderOptions}
               onSelectConversation={handleSelectConversation}
@@ -730,7 +767,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
               />
             </div>
           </>
-        ) : selectedUserProId && chatDisplayUser ? (
+        ) : selectedConversationRef && chatDisplayUser ? (
           <>
             {/* Chat Header - Sticky (works for both listed and archived conversations) */}
             <div className='sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b border-border/40 bg-background/95 px-3 supports-backdrop-filter:backdrop-blur-xl md:h-16 md:px-5'>
@@ -754,7 +791,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                   ) : (
                     <Avatar src={chatDisplayUser.avatarUrl ?? undefined} />
                   )}
-                  <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border-2 border-card' />
+                  <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border border-white' />
                 </div>
                 <div className='min-w-0 flex-1'>
                   <h2 className='font-semibold text-sm truncate'>
@@ -784,7 +821,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 <MessageList
                   messages={messages}
                   currentUserProId={user?.uid ?? ''}
-                  otherUserProId={selectedUserProId ?? ''}
+                  otherUserProId={selectedConversationFid ?? ''}
                   scrollAreaRef={scrollAreaRef}
                   scrollButtonAnchorEl={scrollButtonAnchorEl}
                   onScrollToBottom={scrollToBottom}
@@ -824,7 +861,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
               }}>
               <MessageInput
-                receiverProId={selectedUserProId ?? ''}
+                receiverProId={selectedConversationFid ?? ''}
                 senderProId={user?.uid ?? ''}
                 onOptimisticMessage={(content, attachments) => {
                   startTransition(() => {

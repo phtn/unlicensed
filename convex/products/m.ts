@@ -3,7 +3,12 @@ import {ensureSlug} from '../../lib/slug'
 import {internal} from '../_generated/api'
 import type {Id} from '../_generated/dataModel'
 import {mutation, MutationCtx} from '../_generated/server'
-import {productSchema, type ProductType} from './d'
+import {
+  productCsvImportRowSchema,
+  productSchema,
+  type ProductCsvImportRowType,
+  type ProductType,
+} from './d'
 
 const FLOWER_TIERS = new Set(['B', 'A', 'AA', 'AAA', 'AAAA', 'RARE'])
 const EXTRACT_TIERS = new Set([
@@ -199,9 +204,10 @@ async function buildArchivedSlug(
   throw new Error('Failed to generate a unique archived slug.')
 }
 
-async function buildProductInsertDoc(
+async function buildProductDoc(
   ctx: MutationCtx,
   args: ProductType,
+  currentProductId?: Id<'products'>,
 ): Promise<{slug: string; doc: Record<string, unknown>}> {
   if (!args.name) {
     throw new Error('Product name is required')
@@ -213,7 +219,7 @@ async function buildProductInsertDoc(
     .withIndex('by_slug', (q) => q.eq('slug', slug))
     .unique()
 
-  if (existing) {
+  if (existing && existing._id !== currentProductId) {
     throw new Error(`Product with slug "${slug}" already exists.`)
   }
 
@@ -250,17 +256,18 @@ async function buildProductInsertDoc(
     base,
     categoryId: category._id,
     categorySlug: category.slug ?? '',
-    shortDescription: args.shortDescription,
-    description: args.description,
+    shortDescription: args.shortDescription?.trim() || undefined,
+    description: args.description?.trim() || undefined,
     priceCents: args.priceCents,
     batchId: args.batchId?.trim() || undefined,
-    unit: args.unit,
+    unit: args.unit?.trim() || undefined,
     availableDenominations: numericArray(args.availableDenominations),
-    popularDenomination: args.popularDenomination,
+    popularDenomination: numericArray(args.popularDenomination),
     thcPercentage: args.thcPercentage,
     cbdPercentage: args.cbdPercentage,
     effects: sanitizeArray(args.effects),
     terpenes: sanitizeArray(args.terpenes),
+    limited: args.limited,
     featured: args.featured,
     available: args.available,
     stock: args.stock,
@@ -270,12 +277,17 @@ async function buildProductInsertDoc(
     stockByDenomination: args.stockByDenomination,
     rating: args.rating,
     image: args.image,
-    gallery: args.gallery,
-    consumption: args.consumption,
+    gallery: args.gallery?.filter((value) => {
+      if (typeof value === 'string') {
+        return value.trim().length > 0
+      }
+      return true
+    }),
+    consumption: args.consumption?.trim() || undefined,
     flavorNotes: sanitizeArray(args.flavorNotes),
     potencyLevel: args.potencyLevel,
-    potencyProfile: args.potencyProfile,
-    lineage: args.lineage,
+    potencyProfile: args.potencyProfile?.trim() || undefined,
+    lineage: args.lineage?.trim() || undefined,
     brand: sanitizeArray(args.brand),
     strainType: args.strainType?.trim() || undefined,
     subcategory: args.subcategory?.trim() || undefined,
@@ -294,10 +306,17 @@ async function buildProductInsertDoc(
     eligibleForRewards: args.eligibleForRewards,
     eligibleForDeals: args.eligibleForDeals,
     onSale: args.onSale,
+    eligibleDenominationForDeals: numericArray(
+      args.eligibleDenominationForDeals,
+    ),
+    dealType: args.dealType,
     tier: args.tier,
     eligibleForUpgrade: args.eligibleForUpgrade,
     upgradePrice: args.upgradePrice,
-    archived: false,
+    highMargins: sanitizeArray(args.highMargins),
+    brandCollaborators: sanitizeArray(args.brandCollaborators),
+    tags: sanitizeArray(args.tags),
+    archived: args.archived ?? false,
   }
   return {slug, doc}
 }
@@ -305,7 +324,7 @@ async function buildProductInsertDoc(
 export const createProduct = mutation({
   args: productSchema,
   handler: async (ctx, args) => {
-    const {slug, doc} = await buildProductInsertDoc(ctx, args)
+    const {slug, doc} = await buildProductDoc(ctx, args)
 
     const productId = await ctx.db.insert('products', doc)
 
@@ -752,7 +771,7 @@ export const seedProductsFromCsv = mutation({
   args: {
     title: v.string(),
     uploadedBy: v.string(),
-    products: v.array(productSchema),
+    products: v.array(productCsvImportRowSchema),
   },
   handler: async (ctx, args) => {
     const now = Date.now()
@@ -775,13 +794,31 @@ export const seedProductsFromCsv = mutation({
     for (let rowIndex = 0; rowIndex < args.products.length; rowIndex++) {
       const row = args.products[rowIndex]
       try {
-        const {slug, doc} = await buildProductInsertDoc(ctx, row)
-        const productId = await ctx.db.insert('products', doc)
+        const {_id, ...fields} = row as ProductCsvImportRowType
+        const {slug, doc} = await buildProductDoc(ctx, fields, _id)
+
+        let productId: Id<'products'>
+        let activityType: 'product_created' | 'product_updated'
+
+        if (_id) {
+          const existingProduct = await ctx.db.get(_id)
+          if (!existingProduct) {
+            throw new Error(`Product with id "${_id}" not found.`)
+          }
+
+          await ctx.db.replace(_id, doc)
+          productId = _id
+          activityType = 'product_updated'
+        } else {
+          productId = await ctx.db.insert('products', doc)
+          activityType = 'product_created'
+        }
+
         await ctx.scheduler.runAfter(
           0,
           internal.activities.m.logProductActivity,
           {
-            type: 'product_created',
+            type: activityType,
             productId,
             productName: row.name?.trim() ?? '',
             productSlug: slug,

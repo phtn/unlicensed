@@ -1,3 +1,6 @@
+'use client'
+
+import {useAdminTab} from '@/app/admin/_components/use-admin-tab'
 import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react/tabs'
 import {AccessContent} from './_components/access-content'
@@ -12,6 +15,8 @@ import {RepContent} from './_components/rep-content'
 import {RewardsContent} from './_components/rewards-content'
 import {ShippingContent} from './_components/shipping-content'
 import {TaxContent} from './_components/tax-content'
+
+const DEFAULT_TAB = 'overview'
 
 export const SettingsTabs = () => {
   const tabs = [
@@ -28,12 +33,21 @@ export const SettingsTabs = () => {
     {id: 'assistant', label: 'Assistant', panel: <AssistantContent />},
     {id: 'alerts', label: 'Alerts', panel: <AlertsContent />},
   ]
+
+  const [tabParam, setTabParam] = useAdminTab(DEFAULT_TAB)
+  const activeTab = tabs.some((tab) => tab.id === tabParam)
+    ? tabParam
+    : DEFAULT_TAB
+
   return (
     <Tabs.Root
-      defaultValue='overview'
-      className='flex min-w-0 flex-col gap-3 sm:gap-4'>
+      value={activeTab}
+      onValueChange={(nextTab) => {
+        void setTabParam(nextTab)
+      }}
+      className='flex min-w-0 flex-col gap-3 sm:gap-0'>
       <div className='overflow-x-auto md:px-3 sm:mx-0 sm:px-0'>
-        <Tabs.List className='px-2 relative z-0 flex w-[95lvw] md:min-w-max flex-nowrap gap-1 md:gap-2 overflow-scroll'>
+        <Tabs.List className='px-2 md:px-0 relative z-0 flex w-[95lvw] md:min-w-max flex-nowrap gap-1 md:gap-2 overflow-scroll'>
           {tabs.map((tab) => (
             <Tabs.Tab
               key={tab.id}
@@ -54,7 +68,7 @@ export const SettingsTabs = () => {
       {tabs.map((tab) => (
         <Tabs.Panel
           key={tab.id}
-          className='relative w-[95lvw] flex min-h-32 min-w-0 flex-1 flex-col px-0 sm:px-2 sm:py-4 overflow-y-scroll'
+          className='relative w-[95lvw] flex min-w-0 flex-1 flex-col px-0 sm:px-2 sm:py-4 overflow-y-scroll'
           value={tab.id}>
           {tab.panel}
         </Tabs.Panel>

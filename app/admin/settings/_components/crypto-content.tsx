@@ -1,8 +1,10 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
-import {PrimaryButton} from '@/app/admin/settings/_components/components'
-import {SectionHeader} from '@/components/ui/section-header'
+import {
+  ContentHeader,
+  PrimaryButton,
+} from '@/app/admin/settings/_components/components'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Input, Switch} from '@heroui/react'
@@ -211,7 +213,7 @@ function CryptoWalletFormInner({
 
   return (
     <section className='flex flex-col gap-4 h-[90lvh] md:w-[82lvw] overflow-y-scroll pb-32'>
-      <SectionHeader title={title}>
+      <ContentHeader title={title}>
         <div className='flex items-center justify-end gap-3'>
           <ViewTransition>
             {saveMessage === 'saved' ? (
@@ -229,7 +231,7 @@ function CryptoWalletFormInner({
             icon={isSaving ? 'spinners-ring' : 'save'}
           />
         </div>
-      </SectionHeader>
+      </ContentHeader>
 
       <div className='grid md:grid-cols-3 gap-3 w-full'>
         {NETWORKS.map((network) => (

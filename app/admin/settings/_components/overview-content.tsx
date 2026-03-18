@@ -1,6 +1,6 @@
 'use client'
 
-import {SectionHeader} from '@/components/ui/section-header'
+import {useAdminTab} from '@/app/admin/_components/use-admin-tab'
 import {
   TextureCardContent,
   TextureCardDescription,
@@ -9,6 +9,7 @@ import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Card} from '@heroui/react'
 import {ViewTransition} from 'react'
+import {ContentHeader} from './components'
 
 interface SettingItem {
   id: string
@@ -83,23 +84,27 @@ const SETTINGS_FEATURES: Array<SettingItem> = [
 ] as const
 
 export const OverviewContent = () => {
+  const [, setTab] = useAdminTab('overview')
+
   return (
     <div className='flex w-full flex-col gap-2 md:gap-4 md:ml-0'>
-      <SectionHeader
-        title={
-          <span className='font-clash'>
-            <span>Settings Overview</span>
-          </span>
-        }
-      />
+      <ContentHeader title={'Settings Overview'} />
 
       <section className='space-y-0 h-[90lvh] overflow-y-scroll'>
         <Card
           shadow='none'
-          className='p-0 grid md:grid-cols-2 w-full bg-linear-to-br from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5 md:p-4 pb-4'>
+          className='p-0 grid md:grid-cols-2 w-full md:w-fit bg-linear-to-br from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5 md:p-4 pb-4'>
           {SETTINGS_FEATURES.map((feature, index) => (
             <ViewTransition key={feature.id}>
-              <div className={cn('relative min-h-16')}>
+              <button
+                type='button'
+                onClick={() => {
+                  void setTab(feature.id)
+                }}
+                className={cn(
+                  'relative min-h-16 w-full rounded-xl text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30',
+                  'hover:bg-foreground/5',
+                )}>
                 <div
                   className={cn(
                     'pointer-events-none absolute inset-0 bg-linear-to-br',
@@ -132,7 +137,7 @@ export const OverviewContent = () => {
                   </div>
                 </div>
                 <TextureCardContent className='relative pt-0'></TextureCardContent>
-              </div>
+              </button>
             </ViewTransition>
           ))}
         </Card>

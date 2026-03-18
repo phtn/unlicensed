@@ -1,6 +1,11 @@
 import {v} from 'convex/values'
-import type {Id} from '../_generated/dataModel'
 import {mutation} from '../_generated/server'
+import {
+  chatParticipantIdValidator,
+  getChatParticipantByFid,
+  getChatParticipantById,
+  getChatParticipantFid,
+} from '../messages/participants'
 import {resolveStaffChatUser} from '../staff/chat'
 
 // Connect admin with staff member for chat: creates follow and returns staff user's fid
@@ -54,33 +59,21 @@ export const connectStaffForChat = mutation({
 // Connect current user with a customer for chat: creates follow and returns customer fid
 export const connectCustomerForChat = mutation({
   args: {
-    customerId: v.id('users'),
+    customerId: chatParticipantIdValidator,
     currentUserFid: v.string(), // Firebase UID of the user initiating the chat
   },
   handler: async (ctx, args) => {
-    const customer = await ctx.db.get(args.customerId)
+    const customer = await getChatParticipantById(ctx, args.customerId)
     if (!customer) {
       throw new Error('Customer not found')
     }
 
-    let customerFid = (customer.fid ?? customer.firebaseId ?? '') as string
+    const customerFid = getChatParticipantFid(customer)
     if (!customerFid) {
       throw new Error('Customer does not have a linked user account to chat')
     }
 
-    // Backfill fid when legacy records only have firebaseId.
-    if (!customer.fid && customer.firebaseId) {
-      await ctx.db.patch(customer._id, {
-        fid: customer.firebaseId,
-        updatedAt: Date.now(),
-      })
-      customerFid = customer.firebaseId
-    }
-
-    const follower = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.currentUserFid))
-      .first()
+    const follower = await getChatParticipantByFid(ctx, args.currentUserFid)
 
     if (!follower) {
       throw new Error('Current user not found')

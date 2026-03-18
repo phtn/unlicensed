@@ -129,12 +129,14 @@ export const seedDefaults = mutation({
         excludedBrands: [],
         variations: [
           {
+            categorySlug: 'flower',
             totalUnits: 8,
             denominationPerUnit: 0.125,
             denominationLabel: '⅛',
             unitLabel: 'oz',
           },
           {
+            categorySlug: 'flower',
             totalUnits: 4,
             denominationPerUnit: 0.25,
             denominationLabel: '¼',
@@ -159,6 +161,7 @@ export const seedDefaults = mutation({
         excludedBrands: [],
         variations: [
           {
+            categorySlug: 'flower',
             totalUnits: 4,
             denominationPerUnit: 1,
             denominationLabel: '1',
@@ -179,7 +182,14 @@ export const seedDefaults = mutation({
         excludedProductTypes: [],
         excludedBases: [],
         excludedBrands: [],
-        variations: [{totalUnits: 3, denominationPerUnit: 1, unitLabel: 'g'}],
+        variations: [
+          {
+            categorySlug: 'extracts',
+            totalUnits: 3,
+            denominationPerUnit: 1,
+            unitLabel: 'g',
+          },
+        ],
         maxPerStrain: 1,
         order: 2,
         enabled: true,
@@ -194,7 +204,14 @@ export const seedDefaults = mutation({
         excludedProductTypes: [],
         excludedBases: [],
         excludedBrands: [],
-        variations: [{totalUnits: 7, denominationPerUnit: 1, unitLabel: 'g'}],
+        variations: [
+          {
+            categorySlug: 'extracts',
+            totalUnits: 7,
+            denominationPerUnit: 1,
+            unitLabel: 'g',
+          },
+        ],
         maxPerStrain: 1,
         order: 3,
         enabled: true,

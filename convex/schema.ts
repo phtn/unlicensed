@@ -17,6 +17,7 @@ import {dealSchema} from './deals/d'
 import {emailSettingsSchema} from './emailSettings/d'
 import {fileSchema} from './files/upload'
 import {followSchema} from './follows/d'
+import {guestSchema} from './guests/d'
 import {gatewaySchema} from './gateways/d'
 import {logSchema} from './logs/d'
 import {mailingListSchema} from './mailingLists/d'
@@ -49,7 +50,8 @@ export default defineSchema({
     'createdAt',
   ]),
   staff: defineTable(staffSchema).index('by_email', ['email']),
-  users: defineTable(userSchema)
+  users: defineTable(userSchema).index('by_fid', ['fid']).index('by_email', ['email']),
+  guests: defineTable(guestSchema)
     .index('by_fid', ['fid'])
     .index('by_guestId', ['guestId'])
     .index('by_email', ['email']),

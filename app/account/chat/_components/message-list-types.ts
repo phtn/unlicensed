@@ -2,8 +2,8 @@ import {Id} from '@/convex/_generated/dataModel'
 
 export interface Message {
   _id: Id<'messages'>
-  senderId: Id<'users'>
-  receiverId: Id<'users'>
+  senderId: Id<'users'> | Id<'guests'>
+  receiverId: Id<'users'> | Id<'guests'>
   content: string
   createdAt: string
   readAt: string | null
@@ -15,7 +15,7 @@ export interface Message {
     url: string | null
   }>
   likes?: Array<{
-    userId: Id<'users'>
+    userId: Id<'users'> | Id<'guests'>
     likedAt: string
   }>
 }
@@ -26,8 +26,14 @@ export interface MessageListProps {
   messages: Message[] | undefined
   currentUserProId: string
   otherUserProId: string
-  onOptimisticLike?: (messageId: Id<'messages'>, userId: Id<'users'>) => void
-  onOptimisticUnlike?: (messageId: Id<'messages'>, userId: Id<'users'>) => void
+  onOptimisticLike?: (
+    messageId: Id<'messages'>,
+    userId: Id<'users'> | Id<'guests'>,
+  ) => void
+  onOptimisticUnlike?: (
+    messageId: Id<'messages'>,
+    userId: Id<'users'> | Id<'guests'>,
+  ) => void
   scrollAreaRef?: React.RefObject<HTMLDivElement | null>
   scrollButtonAnchorEl?: HTMLDivElement | null
   onScrollToBottom?: () => void

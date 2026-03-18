@@ -3,7 +3,7 @@ import {useMemo} from 'react'
 import type {Message, MessageGroup} from './message-list-types'
 
 interface User {
-  _id: Id<'users'>
+  _id: Id<'users'> | Id<'guests'>
   displayName?: string | null
   email: string
   avatarUrl?: string | null

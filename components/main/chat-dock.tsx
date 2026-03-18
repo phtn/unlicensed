@@ -1,10 +1,14 @@
 'use client'
 
+import {api} from '@/convex/_generated/api'
+import {useAuthCtx} from '@/ctx/auth'
+import {useGuestChatCtx} from '@/ctx/guest-chat'
 import {useWindow} from '@/hooks/use-window'
 import {CHAT_DOCK_TOGGLE_EVENT} from '@/lib/chat-dock'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Tooltip} from '@heroui/react'
+import {Badge, Tooltip} from '@heroui/react'
+import {useQuery} from 'convex/react'
 import dynamic from 'next/dynamic'
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {Dock, DockIcon} from '../ui/dock'
@@ -43,8 +47,19 @@ interface ChatDockProps {
 }
 
 export const ChatDock = ({hidden = false}: ChatDockProps) => {
+  const {user} = useAuthCtx()
+  const guestChat = useGuestChatCtx()
   const [isWindowOpen, setIsWindowOpen] = useState(false)
   const [hasOpenedWindow, setHasOpenedWindow] = useState(false)
+  const guestParticipant = useQuery(
+    api.guests.q.getByGuestId,
+    !user?.uid && guestChat.guestId ? {guestId: guestChat.guestId} : 'skip',
+  )
+  const unreadFid = user?.uid ?? guestChat.guestFid ?? guestParticipant?.fid
+  const unreadCount = useQuery(
+    api.messages.q.getUnreadCount,
+    unreadFid ? {fid: unreadFid} : 'skip',
+  )
 
   const handleOpenChange = useCallback((open: boolean) => {
     if (open) {
@@ -125,27 +140,43 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
                 radius='none'
                 className='rounded-lg bg-dark-table text-white'>
                 <DockIcon>
-                  <button
-                    type='button'
-                    onClick={nav.onClick}
-                    onPointerEnter={() => {
-                      void preloadChatWindow()
-                    }}
-                    onFocus={() => {
-                      void preloadChatWindow()
-                    }}
-                    onTouchStart={() => {
-                      void preloadChatWindow()
-                    }}
-                    aria-label={nav.label}
-                    aria-haspopup='dialog'
-                    aria-expanded={isWindowOpen}
-                    className={cn(
-                      'flex size-full items-center justify-center transition-colors',
-                      isWindowOpen && 'bg-dark-table/10',
-                    )}>
-                    <Icon name={nav.icon} className='size-8' />
-                  </button>
+                  <Badge
+                    size='sm'
+                    key={`chat-dock-badge-${unreadCount ?? 0}`}
+                    content={
+                      (unreadCount ?? 0) > 0 ? (
+                        <span className='font-clash font-medium text-white leading-none'>
+                          {(unreadCount ?? 0) > 99 ? '99+' : unreadCount}
+                        </span>
+                      ) : undefined
+                    }
+                    isInvisible={(unreadCount ?? 0) === 0}
+                    classNames={{
+                      badge:
+                        'absolute top-1 right-1 min-w-5 h-5 w-auto flex items-center justify-center aspect-square rounded-full border-1 border-foreground shadow-sm bg-brand',
+                    }}>
+                    <button
+                      type='button'
+                      onClick={nav.onClick}
+                      onPointerEnter={() => {
+                        void preloadChatWindow()
+                      }}
+                      onFocus={() => {
+                        void preloadChatWindow()
+                      }}
+                      onTouchStart={() => {
+                        void preloadChatWindow()
+                      }}
+                      aria-label={nav.label}
+                      aria-haspopup='dialog'
+                      aria-expanded={isWindowOpen}
+                      className={cn(
+                        'flex size-full items-center justify-center transition-colors',
+                        isWindowOpen && 'bg-dark-table/10',
+                      )}>
+                      <Icon name={nav.icon} className='size-8' />
+                    </button>
+                  </Badge>
                 </DockIcon>
               </Tooltip>
             ))}

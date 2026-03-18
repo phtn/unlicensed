@@ -1,5 +1,6 @@
 import {Infer, v} from 'convex/values'
 import type {Id} from '../_generated/dataModel'
+import {chatParticipantIdValidator} from './participants'
 
 export const messageAttachmentSchema = v.array(
   v.object({
@@ -12,8 +13,8 @@ export const messageAttachmentSchema = v.array(
 )
 
 export const messageSchema = v.object({
-  senderId: v.id('users'), // The user who sent the message
-  receiverId: v.id('users'), // The user who receives the message
+  senderId: chatParticipantIdValidator, // The user or guest who sent the message
+  receiverId: chatParticipantIdValidator, // The user or guest who receives the message
   content: v.string(), // The message content
   createdAt: v.string(), // ISO timestamp
   readAt: v.union(v.string(), v.null()), // ISO timestamp when message was read, null if unread
@@ -24,7 +25,7 @@ export const messageSchema = v.object({
   likes: v.optional(
     v.array(
       v.object({
-        userId: v.id('users'), // User who liked the message
+        userId: chatParticipantIdValidator, // User or guest who liked the message
         likedAt: v.string(), // ISO timestamp
       }),
     ),
@@ -64,8 +65,8 @@ export interface LastMessage {
   _id?: string | null
   content: string
   createdAt: string
-  senderId?: Id<'users'>
-  receiverId?: Id<'users'>
+  senderId?: Id<'users'> | Id<'guests'>
+  receiverId?: Id<'users'> | Id<'guests'>
   attachments?: MessageAttachmentArray
 }
 

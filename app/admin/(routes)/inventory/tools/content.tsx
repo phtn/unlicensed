@@ -3,7 +3,8 @@
 import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react'
-import {ReactNode, useMemo} from 'react'
+import {parseAsString, useQueryState} from 'nuqs'
+import {ReactNode, useCallback, useMemo} from 'react'
 import {FireCollectionManager} from './fire-collection-manager'
 import {ImageOptimizer} from './image-optimizer'
 import {ProductCsvUpload} from './product-csv-upload'
@@ -18,26 +19,38 @@ export const Content = () => {
   const tabs = useMemo(
     () =>
       [
-        {id: 'image-opt', label: 'Image Optimizer'},
-        {id: 'product-csv', label: 'Product CSV Import'},
-        {id: 'fire-collection', label: 'Fire Collection'},
-        {id: 'docs', label: 'Docs'},
+        {id: 'img', label: 'Image Optimizer'},
+        {id: 'csv', label: 'Product CSV Import'},
+        {id: 'col', label: 'Fire Collection'},
+        {id: 'doc', label: 'Docs'},
       ] as Array<ToolTabs>,
     [],
+  )
+  const [selectedTab, setSelectedTab] = useQueryState(
+    'tabId',
+    parseAsString.withDefault('img'),
+  )
+  const tabIds = useMemo(() => new Set(tabs.map((tab) => tab.id)), [tabs])
+  const activeTab = tabIds.has(selectedTab) ? selectedTab : 'img'
+  const handleTabChange = useCallback(
+    (value: string) => {
+      void setSelectedTab(value)
+    },
+    [setSelectedTab],
   )
 
   const pmap = useMemo(() => {
     return {
-      'image-opt': <ImageOptimizer />,
-      'product-csv': <ProductCsvUpload />,
-      docs: <ProductDocs />,
-      'fire-collection': <FireCollectionManager />,
+      img: <ImageOptimizer />,
+      csv: <ProductCsvUpload />,
+      col: <FireCollectionManager />,
+      doc: <ProductDocs />,
     } as Record<ToolTabs['id'], ReactNode>
   }, [])
 
   return (
     <MainWrapper className='md:p-4 h-[92lvh] overflow-y-scroll'>
-      <Tabs.Root defaultValue='image-opt'>
+      <Tabs.Root value={activeTab} onValueChange={handleTabChange}>
         <Tabs.List className='relative z-0 flex gap-1 px-2'>
           {tabs.map((tab) => (
             <Tabs.Tab

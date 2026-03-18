@@ -1,5 +1,4 @@
 'use client'
-/* eslint-disable @next/next/no-img-element -- native img keeps this repeated grid item lightweight */
 
 import type {StoreProduct} from '@/app/types'
 import type {Id} from '@/convex/_generated/dataModel'
@@ -97,7 +96,7 @@ const areProductsEqual = (left: StoreProduct, right: StoreProduct) =>
   left.subcategory === right.subcategory &&
   left.netWeight === right.netWeight &&
   left.netWeightUnit === right.netWeightUnit &&
-  left.batchId === right.batchId &&
+  left.packSize === right.packSize &&
   left.unit === right.unit &&
   areStringArraysEqual(left.brand, right.brand) &&
   arePriceMapsEqual(left.priceByDenomination, right.priceByDenomination)
@@ -111,7 +110,7 @@ const ProductCardComponent = ({
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   const {
-    batchIdLabel,
+    packSizeLabel,
     brandLabel,
     firstThreeOptions,
     netWeightLabel,
@@ -129,7 +128,6 @@ const ProductCardComponent = ({
       )?.slice(0, 3) ?? EMPTY_PRICE_OPTIONS
 
     return {
-      batchIdLabel: product.batchId?.trim() ?? '',
       brandLabel,
       firstThreeOptions,
       netWeightLabel:
@@ -141,9 +139,10 @@ const ProductCardComponent = ({
       productHref: `/lobby/products/${product.slug.toLowerCase()}`,
       subcategoryLabel: product.subcategory?.trim() ?? '',
       tierLabel: product.productTierLabel ?? product.productTier ?? '',
+      packSizeLabel: product.packSize?.toString() ?? '',
     }
   }, [
-    product.batchId,
+    product.packSize,
     product.brand,
     product.netWeight,
     product.netWeightUnit,
@@ -236,7 +235,7 @@ const ProductCardComponent = ({
                   {subcategoryLabel && (
                     <span className='text-xs font-light capitalize opacity-80 dark:text-alum dark:opacity-100 md:text-sm font-okxs'>
                       {subcategoryLabel}
-                      {(netWeightLabel || batchIdLabel) && (
+                      {netWeightLabel && (
                         <span className='px-1 text-xs font-thin opacity-80'>
                           &middot;
                         </span>
@@ -246,7 +245,7 @@ const ProductCardComponent = ({
 
                   {netWeightLabel && (
                     <span className='text-xs font-normal lowercase opacity-80 dark:text-alum dark:opacity-100 md:text-xs font-okxs'>
-                      {netWeightLabel}
+                      {netWeightLabel} {packSizeLabel && ` ${packSizeLabel} pk`}
                     </span>
                   )}
                 </div>

@@ -36,10 +36,10 @@ export function MessageList({
   const [showLoader, setShowLoader] = useState(false)
 
   // Get user data for both users (fid = Firebase/auth UID)
-  const currentUserData = useQuery(api.users.q.getByFid, {
+  const currentUserData = useQuery(api.messages.q.getParticipantByFid, {
     fid: currentUserProId,
   })
-  const otherUserData = useQuery(api.users.q.getByFid, {
+  const otherUserData = useQuery(api.messages.q.getParticipantByFid, {
     fid: otherUserProId,
   })
 

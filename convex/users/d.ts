@@ -77,8 +77,6 @@ export const userSchema = v.object({
   name: v.string(),
   firebaseId: v.optional(v.string()),
   fid: v.optional(v.string()),
-  guestId: v.optional(v.string()),
-  guestRepresentativeId: v.optional(v.id('users')),
   bio: v.optional(v.string()),
   photoUrl: v.optional(v.string()),
 

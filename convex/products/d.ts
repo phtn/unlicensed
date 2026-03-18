@@ -15,7 +15,7 @@ const inventoryModeSchema = v.union(
 
 const strainTypeSchema = v.string()
 
-export const productSchema = v.object({
+const productFields = {
   name: v.optional(v.string()),
   slug: v.optional(v.string()),
   base: v.optional(v.string()),
@@ -86,8 +86,16 @@ export const productSchema = v.object({
   remainingWeight: v.optional(v.number()),
   stockUnit: v.optional(v.string()),
   packSize: v.optional(v.number()),
+} as const
+
+export const productSchema = v.object(productFields)
+
+export const productCsvImportRowSchema = v.object({
+  ...productFields,
+  _id: v.optional(v.id('products')),
 })
 
 export type ProductType = Infer<typeof productSchema>
+export type ProductCsvImportRowType = Infer<typeof productCsvImportRowSchema>
 export type InventoryMode = Infer<typeof inventoryModeSchema>
 export type StrainType = Infer<typeof strainTypeSchema>

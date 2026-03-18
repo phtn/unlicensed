@@ -82,11 +82,7 @@ export const getFollowers = query({
     const followers = await Promise.all(
       follows.map(async (follow) => {
         const user = await ctx.db.get(follow.followerId)
-        let name = null
-        if (user) {
-          const profile = await ctx.db.get('users', user._id)
-          name = profile?.name ?? null
-        }
+        const name = user?.name ?? null
         return {
           ...follow,
           user: user ? {...user, name} : null,

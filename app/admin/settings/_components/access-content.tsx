@@ -1,6 +1,5 @@
 'use client'
 
-import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
@@ -9,7 +8,7 @@ import {Button, Input, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useRef, useState, ViewTransition} from 'react'
 import {commonInputClassNames} from '../../_components/ui/fields'
-import {LoadingHeader, PrimaryButton} from './components'
+import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
 
 function getHaltPassConfig(
   haltPass:
@@ -121,7 +120,7 @@ export const AccessContent = () => {
 
   return (
     <div className='flex w-full flex-col gap-4'>
-      <SectionHeader
+      <ContentHeader
         title='Access (Halt Gate)'
         description='PIN codes that grant access to the store. Disable this to bypass the gate and route visitors directly to /lobby.'>
         <PrimaryButton
@@ -130,7 +129,7 @@ export const AccessContent = () => {
           disabled={isSaving}
           icon={isSaving ? 'spinners-ring' : 'save'}
         />
-      </SectionHeader>
+      </ContentHeader>
 
       <div className='max-w-lg rounded-2xl bg-default-100/50 px-4 py-3 dark:bg-default-100/30'>
         <Switch isSelected={isEnabled} onValueChange={setIsEnabled} size='sm'>

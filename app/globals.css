@@ -97,7 +97,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
-  --color-primary: var(--primary);
+  --color-primary: var(--dark-mask);
   --color-brand: var(--brand);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -216,6 +216,8 @@
   --pill-bg: rgba(255, 255, 255, 0.04);
   --pill-border: rgba(255, 255, 255, 0.12);
   --color-cashapp: oklch(0.8251 0.2644 143.87);
+  --dark-table: oklch(0.348 0.021 277.79);
+  --dark-mask: oklch(0.348 0.021 277.79);
 
   --effects: oklch(0.673 0.182 276.935);
   --terpenes: oklch(0.6143 0.123 166.24);
@@ -326,6 +328,7 @@
   --effects: oklch(0.584 0.233 280.76);
   --terpenes: oklch(0.633 0.123 166.24);
   --mac-blue: oklch(56.59% 0.241 264.58);
+  --dark-mask: oklch(0.348 0.021 277.79);
 
   --hero-gradient: linear-gradient(
     140deg,

@@ -1,28 +1,28 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
-import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Button, Switch, Textarea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {Activity, startTransition, useCallback, useState} from 'react'
-import {PrimaryButton} from './components'
+import {ContentHeader, PrimaryButton} from './components'
 
-const DEFAULT_INSTRUCTIONS = `You are a bubbly and radiant assistant named Fire Girl.
+const DEFAULT_INSTRUCTIONS = `You are a bubbly and radiant assistant named Rapid Assistant.
 Follow these rules:
+- No emojis.
 - Be helpful, friendly, professional, and direct.
 - Keep responses concise (prefer short paragraphs or bullets).
 - Answer questions about Rapid Fire's products, categories, order status, and policies.
 - Help users understand how to use the platform.
-- Provide accurate information about insurance, business cards, and networking features (only if you're confident it's correct).
+- For any product related questions, use the product catalog as the source of truth and provide a link like this: /lobby/category/flower?tier=aaaa&subcategory=regular&brand=jungle-boys.
+- For any product specifics, provide a link and use /lobby/products/[slug] catalog as the source of truth.
 - For policy, privacy, or purchase questions, use Rapid Fire's legal documents as the source of truth (when provided in context):
-  - https://rapidfirenow.com/terms-of-use (Terms of Use)
-  - https://rapidfirenow.com/privacy-policy (Privacy Policy)
-  - https://rapidfirenow.com/purchase-agreement (Purchase Agreement)
-  - src/legal/documents.ts (document slugs/titles)
-- If the answer isn't clearly covered by the legal docs or provided context, say so and direct the user to support@rapidfirenow.com (do not guess).
-- Do not provide legal advice; provide factual guidance and direct users to support@rapidfirenow.com for legal/account-specific concerns.`
+  - /terms-of-use (Terms of Service)
+  - /privacy-policy (Privacy Policy)
+  - /purchase-agreement (Purchase Agreement)
+- If the answer isn't clearly covered by the legal docs or provided context, say so and direct the user to hello@rapidfirenow.com (do not guess).
+- Do not provide legal advice; provide factual guidance and direct users to hello@rapidfirenow.com for legal/account-specific concerns.`
 
 type AssistantConfigValue = {
   instructions?: string
@@ -129,7 +129,9 @@ function AIAssistantFormInner({
   userUid: string | undefined
 }) {
   const [instructions, setInstructions] = useState(
-    configValue?.instructions ?? DEFAULT_INSTRUCTIONS,
+    configValue?.instructions
+      ? `${configValue.instructions} \n\n**Primary Instructions**\n\n${DEFAULT_INSTRUCTIONS}`
+      : DEFAULT_INSTRUCTIONS,
   )
   const [isActive, setIsActive] = useState(configValue?.isActive ?? false)
   const [isSaving, setIsSaving] = useState(false)
@@ -158,7 +160,7 @@ function AIAssistantFormInner({
 
   return (
     <section className='flex md:w-md flex-col gap-4'>
-      <SectionHeader
+      <ContentHeader
         title='AI Assistant Configuration'
         description='Configure your AI assistant settings here.'>
         <div className='flex items-center gap-3'>
@@ -183,7 +185,7 @@ function AIAssistantFormInner({
             <span className='text-sm text-destructive'>Save failed</span>
           )}
         </div>
-      </SectionHeader>
+      </ContentHeader>
 
       <div className='flex flex-col gap-4 w-full'>
         <div className='flex max-w-6xl flex-col gap-2'>

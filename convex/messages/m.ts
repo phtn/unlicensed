@@ -2,23 +2,49 @@ import {v} from 'convex/values'
 import type {Doc, Id} from '../_generated/dataModel'
 import {mutation} from '../_generated/server'
 import type {MutationCtx} from '../_generated/server'
+import {getCanonicalUserByFid} from '../users/lib'
 import {
   buildGuestFid,
   GUEST_DISPLAY_NAME,
+  getGuestByGuestIdRef,
   getOrCreateGuestUser,
-  getUserByGuestId,
   normalizeGuestId,
+  parseGuestIdFromFid,
 } from './guest'
+import {
+  getChatParticipantByFid,
+  getChatParticipantDisplayName,
+  getChatParticipantEmail,
+  getChatParticipantFid,
+  type ChatParticipantId,
+  isGuestParticipant,
+} from './participants'
 import {resolveStaffChatUser} from '../staff/chat'
 
 const normalizeFolderName = (value: string) =>
   value.trim().replace(/\s+/g, ' ').slice(0, 40)
 
-const getUserByFid = async (ctx: MutationCtx, fid: string) =>
-  ctx.db
-    .query('users')
-    .withIndex('by_fid', (q) => q.eq('fid', fid))
-    .first()
+const getUserByFid = (ctx: MutationCtx, fid: string) =>
+  getCanonicalUserByFid(ctx, fid)
+
+const getUserByFidOrCreateGuest = async (ctx: MutationCtx, fid: string) => {
+  const normalizedFid = fid.trim()
+  if (!normalizedFid) {
+    return null
+  }
+
+  const participant = await getChatParticipantByFid(ctx, normalizedFid)
+  if (participant) {
+    return participant
+  }
+
+  const guestId = parseGuestIdFromFid(normalizedFid)
+  if (!guestId) {
+    return null
+  }
+
+  return getOrCreateGuestUser(ctx, guestId)
+}
 
 const getRepresentativeFromStaff = async (
   ctx: MutationCtx,
@@ -34,12 +60,10 @@ const getRepresentativeFromStaff = async (
 
 const getGuestRepresentative = async (
   ctx: MutationCtx,
-  guestUser: Doc<'users'> | null,
+  guestUser: Doc<'guests'> | null,
 ) => {
-  if (guestUser?.guestRepresentativeId) {
-    const existingRepresentative = await ctx.db.get(
-      guestUser.guestRepresentativeId,
-    )
+  if (guestUser?.representativeId) {
+    const existingRepresentative = await ctx.db.get(guestUser.representativeId)
     const existingRepresentativeFid =
       existingRepresentative?.fid ?? existingRepresentative?.firebaseId ?? null
 
@@ -73,8 +97,8 @@ const getGuestRepresentative = async (
 
 const ensureVisibleFollow = async (
   ctx: MutationCtx,
-  followerId: Id<'users'>,
-  followedId: Id<'users'>,
+  followerId: ChatParticipantId,
+  followedId: ChatParticipantId,
 ) => {
   if (followerId === followedId) {
     return null
@@ -107,8 +131,8 @@ const ensureVisibleFollow = async (
 
 const clearArchivePair = async (
   ctx: MutationCtx,
-  userId: Id<'users'>,
-  otherUserId: Id<'users'>,
+  userId: ChatParticipantId,
+  otherUserId: ChatParticipantId,
 ) => {
   const archivedConversation = await ctx.db
     .query('archivedConversations')
@@ -125,11 +149,11 @@ const clearArchivePair = async (
 const remapLikes = (
   likes:
     | Array<{
-        userId: Id<'users'>
+        userId: ChatParticipantId
         likedAt: string
       }>
     | undefined,
-  guestUserId: Id<'users'>,
+  guestUserId: ChatParticipantId,
   userId: Id<'users'>,
 ) => {
   if (!likes?.length) {
@@ -172,14 +196,14 @@ const resolveOtherUserId = async (
   otherUserfid: string,
   otherUserId?: string,
 ) => {
-  const otherUser = await getUserByFid(ctx, otherUserfid)
+  const otherUser = await getChatParticipantByFid(ctx, otherUserfid)
 
   if (otherUser) {
     return otherUser._id
   }
 
   if (typeof otherUserId === 'string') {
-    return otherUserId as Id<'users'>
+    return otherUserId as ChatParticipantId
   }
 
   throw new Error('Other user not found')
@@ -199,9 +223,9 @@ export const ensureGuestConversation = mutation({
     let guestUser = await getOrCreateGuestUser(ctx, guestId)
     const representative = await getGuestRepresentative(ctx, guestUser)
 
-    if (guestUser.guestRepresentativeId !== representative.user._id) {
+    if (guestUser.representativeId !== representative.user._id) {
       await ctx.db.patch(guestUser._id, {
-        guestRepresentativeId: representative.user._id,
+        representativeId: representative.user._id,
         updatedAt: Date.now(),
       })
 
@@ -237,21 +261,19 @@ export const mergeGuestConversation = mutation({
       return {merged: false}
     }
 
-    const guestUser =
-      (await getUserByGuestId(ctx, guestId)) ??
-      (await getUserByFid(ctx, buildGuestFid(guestId)))
+    const guestUserCandidate =
+      (await getGuestByGuestIdRef(ctx, guestId)) ??
+      (await getUserByFidOrCreateGuest(ctx, buildGuestFid(guestId)))
 
-    if (!guestUser) {
+    if (!guestUserCandidate || !isGuestParticipant(guestUserCandidate)) {
       return {merged: false}
     }
+
+    const guestUser = guestUserCandidate
 
     const user = await getUserByFid(ctx, args.userFid)
     if (!user) {
       throw new Error('Authenticated user not found')
-    }
-
-    if (guestUser._id === user._id) {
-      return {merged: false}
     }
 
     const guestSentMessages = await ctx.db
@@ -406,11 +428,13 @@ export const mergeGuestConversation = mutation({
 
     const guestOwnedAssignments = await ctx.db
       .query('conversationFolderAssignments')
-      .withIndex('by_ownerUserId', (q) => q.eq('ownerUserId', guestUser._id))
+      .withIndex('by_ownerUserId', (q) => q.eq('ownerUserId', user._id))
       .collect()
 
     for (const assignment of guestOwnedAssignments) {
-      await ctx.db.delete(assignment._id)
+      if (assignment.otherUserId === guestUser._id) {
+        await ctx.db.delete(assignment._id)
+      }
     }
 
     const assignmentsReferencingGuest = await ctx.db
@@ -443,8 +467,8 @@ export const mergeGuestConversation = mutation({
       })
     }
 
-    const representativeUser = guestUser.guestRepresentativeId
-      ? await ctx.db.get(guestUser.guestRepresentativeId)
+    const representativeUser = guestUser.representativeId
+      ? await ctx.db.get(guestUser.representativeId)
       : null
 
     const guestChatOrders = await ctx.db
@@ -459,25 +483,14 @@ export const mergeGuestConversation = mutation({
       })
     }
 
-    const guestOwnedOrders = await ctx.db
-      .query('orders')
-      .withIndex('by_user', (q) => q.eq('userId', guestUser._id))
-      .collect()
-
-    for (const order of guestOwnedOrders) {
-      await ctx.db.patch(order._id, {
-        userId: user._id,
-        chatUserId: user._id,
-        updatedAt: Date.now(),
-      })
-    }
-
     await ctx.db.delete(guestUser._id)
 
     return {
       merged: true,
       representativeFid:
-        representativeUser?.fid ?? representativeUser?.firebaseId ?? null,
+        representativeUser
+          ? getChatParticipantFid(representativeUser)
+          : null,
     }
   },
 })
@@ -509,15 +522,8 @@ export const sendMessage = mutation({
     }
 
     // Get both users by fid
-    const sender = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.senderId))
-      .first()
-
-    const receiver = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.receiverId))
-      .first()
+    const sender = await getChatParticipantByFid(ctx, args.senderId)
+    const receiver = await getChatParticipantByFid(ctx, args.receiverId)
 
     if (!sender) {
       throw new Error('Sender user not found')
@@ -599,20 +605,22 @@ export const sendMessage = mutation({
     }
 
     // Push notify receiver (best-effort).
-    const receiverProfile = await ctx.db.get('users', receiver._id)
+    const receiverProfile =
+      !isGuestParticipant(receiver) && 'fcm' in receiver ? receiver : null
 
-    const tokens =
-      receiverProfile?.fcm?.tokens?.filter((t) => t.length > 0) ?? []
+    const tokens = receiverProfile?.fcm?.tokens?.filter((t) => t.length > 0) ?? []
     const token = receiverProfile?.fcm?.token
     const hasDeclined = receiverProfile?.fcm?.hasDeclined === true
     const sendTokens = tokens.length > 0 ? tokens : token ? [token] : []
     if (sendTokens.length > 0 && !hasDeclined) {
       const _senderName =
-        sender.name ?? sender.email.split('@')[0] ?? 'New message'
+        getChatParticipantDisplayName(sender) ||
+        getChatParticipantEmail(sender) ||
+        'New message'
       const _body =
         args.content.trim() ||
         (args.attachments?.length ? 'Sent an attachment' : 'New message')
-      const _url = `/account/chat/${sender.fid}`
+      const _url = `/account/chat/${getChatParticipantFid(sender)}`
 
       // for (const token of sendTokens) {
       //   await ctx.scheduler.runAfter(0, api.push.a.sendToToken, {
@@ -643,10 +651,7 @@ export const likeMessage = mutation({
     }
 
     // Get the user by fid
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.userfid))
-      .first()
+    const user = await getChatParticipantByFid(ctx, args.userfid)
 
     if (!user) {
       throw new Error('User not found')
@@ -689,19 +694,13 @@ export const markAsRead = mutation({
     receiverfid: v.string(), // The current user's fid (Firebase UID)
   },
   handler: async (ctx, args) => {
-    // Get both users by fid
-    const sender = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.senderfid))
-      .first()
-
-    const receiver = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.receiverfid))
-      .first()
+    // Guest conversations can reference synthetic guest fids before the row
+    // has been recreated in Convex, so recreate the guest user on demand.
+    const sender = await getUserByFidOrCreateGuest(ctx, args.senderfid)
+    const receiver = await getUserByFidOrCreateGuest(ctx, args.receiverfid)
 
     if (!sender || !receiver) {
-      throw new Error('User not found')
+      return 0
     }
 
     // Get all unread messages from sender to receiver
@@ -736,24 +735,18 @@ export const archiveConversation = mutation({
     otherUserId: v.optional(v.string()), // Other participant's Convex user id (use when otherUser not found by fid)
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.userfid))
-      .first()
+    const user = await getUserByFid(ctx, args.userfid)
 
     if (!user) {
       throw new Error('User not found')
     }
 
-    const otherUser = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.otherUserfid))
-      .first()
+    const otherUser = await getChatParticipantByFid(ctx, args.otherUserfid)
 
-    const otherUserIdToArchive: Id<'users'> | null = otherUser
+    const otherUserIdToArchive: ChatParticipantId | null = otherUser
       ? otherUser._id
       : typeof args.otherUserId === 'string'
-        ? (args.otherUserId as Id<'users'>)
+        ? (args.otherUserId as ChatParticipantId)
         : null
 
     if (!otherUserIdToArchive) {
@@ -926,10 +919,7 @@ export const deleteMessage = mutation({
     }
 
     // Get the user by fid
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.userfid))
-      .first()
+    const user = await getChatParticipantByFid(ctx, args.userfid)
 
     if (!user) {
       throw new Error('User not found')

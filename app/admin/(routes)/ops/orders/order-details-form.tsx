@@ -81,11 +81,13 @@ export function OrderDetailsForm({
   }
 
   const user = useQuery(
-    api.users.q.getById,
+    api.messages.q.getParticipantById,
     (order.chatUserId ?? order.userId)
       ? {id: (order.chatUserId ?? order.userId)!}
       : 'skip',
   )
+  const customerProfileFid =
+    user && 'guestId' in user ? null : (user?.fid ?? user?.firebaseId ?? null)
 
   return (
     <div className='flex flex-col min-h-0'>
@@ -121,11 +123,13 @@ export function OrderDetailsForm({
             </div>
             <User
               name={
-                <Link
-                  href={`/admin/ops/customers/${user?.fid ?? user?.firebaseId}`}
-                >
-                  {order.contactEmail}
-                </Link>
+                customerProfileFid ? (
+                  <Link href={`/admin/ops/customers/${customerProfileFid}`}>
+                    {order.contactEmail}
+                  </Link>
+                ) : (
+                  order.contactEmail
+                )
               }
               description={order.contactPhone}
               avatarProps={{

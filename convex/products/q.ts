@@ -52,6 +52,19 @@ export const listProductSlugs = query({
   },
 })
 
+export const listProductImportTargets = query({
+  args: {},
+  handler: async (ctx) => {
+    const products = await ctx.db.query('products').collect()
+    return products
+      .filter((product) => typeof product.slug === 'string' && product.slug)
+      .map((product) => ({
+        _id: product._id,
+        slug: product.slug as string,
+      }))
+  },
+})
+
 export const listProducts = query({
   args: {
     brand: v.optional(v.string()),

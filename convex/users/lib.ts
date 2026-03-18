@@ -12,7 +12,7 @@ export const getCanonicalUserByFid = async (
 ): Promise<Doc<'users'> | null> =>
   ctx.db
     .query('users')
-    .withIndex('by_fid', (q) => q.eq('fid', fid))
+    .withIndex('by_fid', (q) => q.eq('fid', fid.trim()))
     .first()
 
 export const getCanonicalUserByEmail = async (

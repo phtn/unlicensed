@@ -74,6 +74,7 @@ export interface StoreProduct {
   remainingWeight?: number
   batchId?: string
   archived?: boolean
+  packSize?: number
 }
 
 export interface StoreProductDetail {

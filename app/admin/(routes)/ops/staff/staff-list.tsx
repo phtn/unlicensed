@@ -120,7 +120,7 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
             prefetch
             href={`/admin/ops/staff?tabId=edit&id=${member._id}`}
             className='text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800 bg-sidebar/50'>
-            <Icon name='pencil-fill' className='size-5' />
+            <Icon name='pen' className='size-5' />
           </Button>
         </div>
       </div>

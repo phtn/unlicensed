@@ -4,7 +4,6 @@ import {
   commonInputClassNames,
   commonSelectClassNames,
 } from '@/app/admin/_components/ui/fields'
-import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -17,7 +16,7 @@ import React, {
   useState,
   ViewTransition,
 } from 'react'
-import {LoadingHeader, PrimaryButton} from './components'
+import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
 
 type SalesRepValue = {staffId?: string; initialMessageSeed?: string}
 
@@ -110,18 +109,16 @@ export const RepContent = () => {
 
   return (
     <div className='flex w-full flex-col md:w-[82lvw] space-y-2'>
-      <div className='flex items-start w-full min-h-20'>
-        <SectionHeader
-          title='Default Sales Rep'
-          description='Assign default Sales Rep used across the platform. Only staff with Rep position are listed.'>
-          <PrimaryButton
-            onPress={handleSave}
-            label='Save Changes'
-            disabled={!hasChange}
-            icon={isSaving ? 'spinners-ring' : 'save'}
-          />
-        </SectionHeader>
-      </div>
+      <ContentHeader
+        title='Default Sales Rep'
+        description='Assign default Sales Rep used across the platform. Only staff with Rep position are listed.'>
+        <PrimaryButton
+          onPress={handleSave}
+          label='Save Changes'
+          disabled={!hasChange}
+          icon={isSaving ? 'spinners-ring' : 'save'}
+        />
+      </ContentHeader>
 
       <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
         <section className='flex flex-col gap-4'>

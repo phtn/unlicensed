@@ -9,7 +9,7 @@ import type {
 } from './message-list-types'
 
 interface User {
-  _id: Id<'users'>
+  _id: Id<'users'> | Id<'guests'>
   displayName?: string | null
   email: string
   avatarUrl?: string | null

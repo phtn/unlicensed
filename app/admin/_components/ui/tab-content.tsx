@@ -5,7 +5,7 @@ import {ReactNode} from 'react'
 
 interface TabContentContainerProps {
   title: string
-  description?: string
+  description?: ReactNode
   children?: ReactNode
   className?: ClassName
   extraHeader?: ReactNode

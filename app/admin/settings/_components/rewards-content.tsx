@@ -6,7 +6,6 @@ import type {
   RewardsConfig,
   RewardsTier,
 } from '@/app/lobby/(store)/cart/checkout/lib/rewards'
-import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {
@@ -24,7 +23,7 @@ import {
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useState, ViewTransition} from 'react'
-import {LoadingHeader, PrimaryButton} from './components'
+import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
 
 type TierFormState = {
   minSubtotal: string
@@ -341,13 +340,11 @@ export const RewardsContent = () => {
 
   return (
     <div className='flex w-full flex-col space-y-2 h-[90lvh] md:w-[82lvw] overflow-y-scroll pb-24'>
-      <div className='flex items-start w-full min-h-20'>
-        <SectionHeader
-          title='Rewards Manager'
-          description='Configure tier-based shipping, cash back, and bundle bonus. Matches the structure used in checkout.'>
-          <PrimaryButton onPress={openAddTier} icon='plus' label='Add Tier' />
-        </SectionHeader>
-      </div>
+      <ContentHeader
+        title='Rewards Manager'
+        description='Configure tier-based shipping, cash back, and bundle bonus. Matches the structure used in checkout.'>
+        <PrimaryButton onPress={openAddTier} icon='plus' label='Add Tier' />
+      </ContentHeader>
 
       <section className='flex flex-col gap-4 mt-2'>
         <h3 className='text-sm font-semibold uppercase tracking-wider text-foreground/70'>

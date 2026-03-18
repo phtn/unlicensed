@@ -1,5 +1,3 @@
-'use client'
-
 export const GUEST_CHAT_COOKIE_NAME = 'hyfe_guest_chat_id'
 const GUEST_CHAT_COOKIE_MAX_AGE = 60 * 60 * 24 * 30
 
@@ -12,6 +10,11 @@ export const createGuestChatId = () => {
   }
 
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+export const normalizeGuestChatId = (guestId?: string | null) => {
+  const normalizedGuestId = guestId?.trim()
+  return normalizedGuestId ? normalizedGuestId : null
 }
 
 export const getGuestChatIdCookie = () => {

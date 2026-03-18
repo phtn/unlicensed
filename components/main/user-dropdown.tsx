@@ -128,7 +128,7 @@ export const UserDropdown = ({
                 key={`chat-badge-${unreadCount ?? 0}`}
                 content={
                   (unreadCount ?? 0) > 0 ? (
-                    <span className='font-okxs font-semibold text-white leading-none'>
+                    <span className='font-clash font-medium text-white leading-none'>
                       {(unreadCount ?? 0) > 99 ? '99+' : unreadCount}
                     </span>
                   ) : undefined
@@ -136,7 +136,7 @@ export const UserDropdown = ({
                 isInvisible={(unreadCount ?? 0) === 0}
                 classNames={{
                   badge:
-                    'min-w-5 h-5 px-1 flex items-center justify-center rounded-full border-1.5 dark:border-background/90 shadow-md bg-brand/80',
+                    'absolute top-2.5 right-2.5 min-w-5 h-5 w-auto flex items-center justify-center aspect-square rounded-full border-1 border-foreground shadow-sm bg-brand',
                 }}>
                 <JustTheTip
                   id='messages'

@@ -1,8 +1,10 @@
 /**
  * CSV import for products: parse export-format CSV and validate rows.
  * Matches the export format from products-data.tsx (PRODUCT_CSV_FIELDS + denom columns).
- * _id and _creationTime are accepted in the CSV (from export) but omitted on insert; Convex creates them.
+ * _id and _creationTime are accepted in the CSV (from export).
+ * When _id is present, the import replaces that product; _creationTime is ignored.
  */
+import {slugify} from '@/lib/slug'
 import {CSV_DENOM_KEYS, DENOM_HEADERS, EXPECTED_CSV_HEADERS} from './constants'
 
 export {CSV_DENOM_KEYS, EXPECTED_CSV_HEADERS}
@@ -14,7 +16,7 @@ const VALID_INVENTORY_MODES = new Set([
 ])
 const VALID_PACKAGING_MODES = new Set(['bulk', 'prepack'])
 
-/** CSV columns that are not sent on insert (created by Convex). Shown in export but omitted in preview/import. */
+/** CSV columns hidden from preview. They are still parsed from the CSV. */
 export const OMIT_FROM_IMPORT_HEADERS = new Set(['_id', '_creationTime'])
 
 /** Parse a single CSV line respecting quoted fields (handles "" as escape). */
@@ -160,6 +162,7 @@ function rawRowToProduct(
   const parsedTags = parseJsonArrayOrRecord(get('tags')) as string[] | undefined
 
   return {
+    _id: get('_id') || undefined,
     name: get('name') || undefined,
     slug: get('slug') || undefined,
     base: get('base') || undefined,
@@ -393,27 +396,26 @@ function validateRow(
 /** Apply slug conflict from existing slugs set. Mutates rows in place. */
 export function applySlugConflicts(
   rows: ParsedRow[],
-  existingSlugs: Set<string>,
+  existingProductsBySlug: Map<string, string>,
 ): void {
-  const slugify = (value: string): string =>
-    value
-      .toLowerCase()
-      .trim()
-      .replace(/[\s_]+/g, '-')
-      .replace(/[^a-z0-9-]/g, '')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-
   for (const row of rows) {
     const name = row.product.name
+    const rowId =
+      typeof row.product._id === 'string' && row.product._id.trim()
+        ? row.product._id.trim()
+        : undefined
     const slugRaw = (row.product.slug as string) ?? ''
     const slug = slugRaw ? slugify(slugRaw) : slugify(String(name ?? ''))
-    if (slug && existingSlugs.has(slug)) {
+    const existingProductId = slug ? existingProductsBySlug.get(slug) : null
+    if (existingProductId && existingProductId !== rowId) {
       row.conflict = 'slug'
       if (!row.errors.includes(`Slug "${slug}" already exists`)) {
         row.errors.push(`Slug "${slug}" already exists`)
       }
+      continue
     }
+
+    row.conflict = null
   }
 }
 

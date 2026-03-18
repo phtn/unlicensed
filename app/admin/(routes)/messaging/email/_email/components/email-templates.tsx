@@ -59,8 +59,8 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
   return (
     <div className='min-h-screen'>
       <div className='fixed inset-0 overflow-hidden pointer-events-none'>
-        <div className='absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl' />
-        <div className='absolute bottom-0 right-1/4 w-120 h-120 bg-purple-500/5 rounded-full blur-3xl' />
+        <div className='absolute top-0 left-1/4 w-96 h-96 bg-cyan-300/10 rounded-full blur-3xl' />
+        <div className='absolute bottom-0 right-1/4 w-120 h-120 bg-brand/2 rounded-full blur-3xl' />
       </div>
 
       <main className='relative px-2 sm:px-3 lg:px-4 space-y-4'>
@@ -70,7 +70,7 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
               initial={{opacity: 0, y: 20}}
               animate={{opacity: 1, y: 0}}
               exit={{opacity: 0, y: -20}}
-              className='rounded-xs h-[calc(100lvh-140px)] md:h-auto bg-slate-100 dark:bg-dark-table/60 border border-foreground/20 sm:px-8 sm:pt-8 transition-colors p-4'>
+              className='rounded-md h-[calc(100lvh-140px)] md:h-auto bg-slate-100 dark:bg-dark-table/40 border border-foreground/20 sm:px-8 sm:pt-8 p-4'>
               {/*<div className='w-12 h-12 rounded-xl bg-linear-to-br from-cyan-600/10 to-purple-200/10 border border-foreground/20 flex items-center justify-center shrink-0'></div>*/}
               <div className='flex items-center space-x-4'>
                 <Icon
@@ -97,7 +97,7 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
               initial={{opacity: 0}}
               animate={{opacity: 1}}
               exit={{opacity: 0}}
-              className='space-y-4'>
+              className='grid md:grid-cols-2'>
               {templates.map((template, index) => (
                 <Link
                   key={template._id}
@@ -123,24 +123,34 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
                               <h3 className='text-base font-clash font-semibold truncate'>
                                 {template.title || 'Untitled Template'}
                               </h3>
-                              <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-cyan-100/50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-600/50 dark:border-cyan-500/30'>
+                              <span className='inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium uppercase tracking-wider bg-cyan-100/50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-600/50 dark:border-cyan-500/30'>
                                 {template.intent || 'general'}
                               </span>
-                              <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-purple-500/10 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 dark:border-purple-500/30'>
+                              <span className='inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wide bg-purple-500/10 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 dark:border-purple-500/30'>
                                 {template.type || 'default'}
                               </span>
                             </div>
-                            <p className='text-sm opacity-80 truncate my-3 font-clash'>
-                              <span className='font-medium mr-1.5'>
+                            <p className='text-sm truncate my-3 font-clash font-normal'>
+                              <span className='text-xs font-ios mr-1.5'>
                                 Subject:
                               </span>
                               {template.subject || 'No subject defined'}
                             </p>
-                            <div className='flex items-center gap-4 text-xs opacity-80 font-figtree'>
-                              <span className='flex items-center gap-1.5'>
-                                <Icon name='email' className='size-3' />
-                                {template.from?.[0] || 'No sender'}
+                            <p className='text-sm truncate my-3 font-clash'>
+                              <span className='text-xs font-ios mr-1.5'>
+                                Template:
                               </span>
+                              <span
+                                className={
+                                  template.template
+                                    ? 'text-blue-500 capitalize'
+                                    : 'opacity-50'
+                                }>
+                                {template.template?.split('-').join(' ') ||
+                                  'N/A'}
+                              </span>
+                            </p>
+                            <div className='flex items-center gap-4 text-xs opacity-80 font-figtree'>
                               <span className='flex items-center gap-1.5'>
                                 <Icon name='user' className='size-3' />
                                 {(template.to?.length ?? 0) +

@@ -186,7 +186,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         filterOptions.tiers.length > 0 ||
         filterOptions.subcategories.length > 0) && (
         <section className='px-4 sm:px-6 pb-4'>
-          <div className='max-w-7xl mx-auto flex flex-wrap items-center gap-3'>
+          <div className='max-w-7xl mx-auto flex flex-col gap-3'>
             {filterOptions.tiers.length > 0 && (
               <div className='flex flex-wrap items-center gap-1'>
                 <span className='text-sm font-clash font-semibold mr-2 uppercase'>

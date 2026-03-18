@@ -1,12 +1,12 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
-import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Button, Input, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useState, ViewTransition} from 'react'
+import {ContentHeader} from './components'
 
 const DEFAULT_TAX_RATE = '10'
 
@@ -22,7 +22,7 @@ export const TaxContent = () => {
 
   return (
     <div className='flex w-full flex-col gap-4'>
-      <SectionHeader title='Tax Configuration' />
+      <ContentHeader title='Tax Configuration' />
       <TaxFormInner
         key={configKey}
         config={config}

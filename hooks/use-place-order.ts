@@ -1,5 +1,6 @@
 'use client'
 
+import {ensureGuestChatId} from '@/app/actions'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {PaymentMethod} from '@/convex/orders/d'
@@ -284,19 +285,22 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
 
         if (!uuid || !refNum) return null
 
-        const guestChatId =
-          !isAuthenticated && typeof window !== 'undefined'
-            ? (() => {
-                const existingGuestChatId = getGuestChatIdCookie()
-                if (existingGuestChatId) {
-                  return existingGuestChatId
-                }
+        let guestChatId: string | undefined
+        if (!isAuthenticated && typeof window !== 'undefined') {
+          const existingGuestChatId = getGuestChatIdCookie()
 
-                const nextGuestChatId = createGuestChatId()
-                setGuestChatIdCookie(nextGuestChatId)
-                return nextGuestChatId
-              })()
-            : undefined
+          try {
+            guestChatId = await ensureGuestChatId(existingGuestChatId)
+            setGuestChatIdCookie(guestChatId)
+          } catch (guestChatIdError) {
+            console.error(
+              'Failed to persist guest chat identifier before checkout:',
+              guestChatIdError,
+            )
+            guestChatId = existingGuestChatId ?? createGuestChatId()
+            setGuestChatIdCookie(guestChatId)
+          }
+        }
 
         const orderArgs =
           userIdToUse !== undefined

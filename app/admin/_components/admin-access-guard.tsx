@@ -7,7 +7,7 @@ import {api} from '@/convex/_generated/api'
 import {useFirebaseAuthUser} from '@/hooks/use-firebase-auth-user'
 import {Icon} from '@/lib/icons'
 import {useQuery} from 'convex/react'
-import {useRouter} from 'next/navigation'
+import {usePathname, useRouter} from 'next/navigation'
 import {FC, type ReactNode, useEffect, useMemo, useTransition} from 'react'
 import {uuidv7} from 'uuidv7'
 
@@ -17,6 +17,7 @@ type AdminAccessGuardProps = {
 
 export function AdminAccessGuard({children}: AdminAccessGuardProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
   const {user, isLoading: authLoading} = useFirebaseAuthUser()
 
@@ -34,18 +35,36 @@ export function AdminAccessGuard({children}: AdminAccessGuardProps) {
     return staff.accessRoles.includes('admin')
   }, [staff])
 
+  const isMessagingChatRoute = pathname.startsWith('/admin/messaging/chat')
+
+  const isRepForMessaging = useMemo(() => {
+    if (!staff) return false
+    if (!staff.active) return false
+    if (!isMessagingChatRoute) return false
+
+    const normalizedPosition = staff.position.trim().toLowerCase()
+
+    return (
+      normalizedPosition === 'rep' ||
+      normalizedPosition === 'representative' ||
+      normalizedPosition === 'sales rep'
+    )
+  }, [isMessagingChatRoute, staff])
+
   const isStaff = useMemo(() => {
     if (!staff) return false
     if (!staff.active) return false
     return true
   }, [staff])
 
+  const hasRouteAccess = isAdmin || isRepForMessaging
+
   const shouldRedirectHome = useMemo(() => {
     if (!authResolved) return false
     if (!user) return true
     if (!staffResolved) return false
-    return !isAdmin
-  }, [authResolved, isAdmin, staffResolved, user])
+    return !hasRouteAccess
+  }, [authResolved, hasRouteAccess, staffResolved, user])
 
   useEffect(() => {
     if (!shouldRedirectHome) return

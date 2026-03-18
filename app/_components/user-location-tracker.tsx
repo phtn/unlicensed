@@ -15,10 +15,11 @@ export function UserLocationTracker() {
     autoDetect: true,
     preferPrecise: false,
   })
-  const updateLocation = useMutation(api.users.m.updateLocation)
+  const updateUserLocation = useMutation(api.users.m.updateLocation)
+  const updateGuestLocation = useMutation(api.guests.m.updateLocation)
   const activeFid = user?.uid ?? guestFid ?? null
   const activeUser = useQuery(
-    api.users.q.getByFid,
+    api.messages.q.getParticipantByFid,
     activeFid ? {fid: activeFid} : 'skip',
   )
   const lastSyncedKeyRef = useRef<string | null>(null)
@@ -46,7 +47,9 @@ export function UserLocationTracker() {
       return
     }
 
-    void updateLocation({
+    const syncLocation = user?.uid ? updateUserLocation : updateGuestLocation
+
+    void syncLocation({
       fid: activeFid,
       ...(location.country ? {country: location.country} : {}),
       ...(location.countryCode ? {countryCode: location.countryCode} : {}),
@@ -61,7 +64,14 @@ export function UserLocationTracker() {
       .catch((error) => {
         console.error('Failed to sync user location:', error)
       })
-  }, [activeFid, activeUser?._id, location, updateLocation])
+  }, [
+    activeFid,
+    activeUser?._id,
+    location,
+    updateGuestLocation,
+    updateUserLocation,
+    user?.uid,
+  ])
 
   return null
 }

@@ -1,5 +1,6 @@
 import type {Doc} from '../_generated/dataModel'
 import type {MutationCtx} from '../_generated/server'
+import {getGuestByFid, getGuestByGuestId} from '../guests/lib'
 
 const GUEST_FID_PREFIX = 'guest:'
 const GUEST_EMAIL_DOMAIN = 'guest-chat.hyfe.local'
@@ -17,20 +18,24 @@ export const normalizeGuestId = (value: string) => value.trim()
 export const buildGuestFid = (guestId: string) =>
   `${GUEST_FID_PREFIX}${guestId}`
 
+export const parseGuestIdFromFid = (fid: string) => {
+  const normalizedFid = fid.trim()
+
+  if (!normalizedFid.startsWith(GUEST_FID_PREFIX)) {
+    return null
+  }
+
+  return normalizeGuestId(normalizedFid.slice(GUEST_FID_PREFIX.length))
+}
+
 const buildGuestEmail = (guestId: string) =>
   `guest+${guestId}@${GUEST_EMAIL_DOMAIN}`
 
-const getUserByFid = async (ctx: MutationCtx, fid: string) =>
-  ctx.db
-    .query('users')
-    .withIndex('by_fid', (q) => q.eq('fid', fid))
-    .first()
+export const getGuestByFidRef = (ctx: MutationCtx, fid: string) =>
+  getGuestByFid(ctx, fid)
 
-export const getUserByGuestId = async (ctx: MutationCtx, guestId: string) =>
-  ctx.db
-    .query('users')
-    .withIndex('by_guestId', (q) => q.eq('guestId', guestId))
-    .first()
+export const getGuestByGuestIdRef = (ctx: MutationCtx, guestId: string) =>
+  getGuestByGuestId(ctx, guestId)
 
 const trimOptionalValue = (value?: string | null) => {
   const trimmed = value?.trim()
@@ -66,11 +71,11 @@ export const getOrCreateGuestUser = async (
   const contactEmail = trimOptionalValue(profile.contactEmail)
   const contactPhone = trimOptionalValue(profile.contactPhone)
   let guestUser =
-    (await getUserByGuestId(ctx, normalizedGuestId)) ??
-    (await getUserByFid(ctx, guestFid))
+    (await getGuestByGuestId(ctx, normalizedGuestId)) ??
+    (await getGuestByFid(ctx, guestFid))
 
   if (guestUser) {
-    const updates: Partial<Doc<'users'>> = {}
+    const updates: Partial<Doc<'guests'>> = {}
     const nextName = getGuestDisplayName(profile, guestUser.name)
 
     if (guestUser.guestId !== normalizedGuestId) {
@@ -115,7 +120,7 @@ export const getOrCreateGuestUser = async (
     return guestUser
   }
 
-  const guestUserId = await ctx.db.insert('users', {
+  const guestUserId = await ctx.db.insert('guests', {
     email: guestEmail,
     name: getGuestDisplayName(profile),
     fid: guestFid,
@@ -129,7 +134,6 @@ export const getOrCreateGuestUser = async (
         }
       : {}),
     isActive: true,
-    accountStatus: 'guest',
     notes: 'Guest chat session',
     createdAt: Date.now(),
     updatedAt: Date.now(),

@@ -1,5 +1,6 @@
 'use client'
 
+import {ensureGuestChatId} from '@/app/actions'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {
@@ -75,6 +76,7 @@ export function GuestChatProvider({children}: {children: ReactNode}) {
 
   const bootstrappedGuestIdRef = useRef<string | null>(null)
   const mergeAttemptGuestIdRef = useRef<string | null>(null)
+  const guestIdPromiseRef = useRef<Promise<string> | null>(null)
   const bootstrapPromiseRef = useRef<Promise<GuestSessionResult | null> | null>(
     null,
   )
@@ -98,6 +100,54 @@ export function GuestChatProvider({children}: {children: ReactNode}) {
       setGuestId(cookieGuestId)
     }
   }, [])
+
+  const ensureGuestIdentifier = useCallback(async () => {
+    if (guestIdPromiseRef.current) {
+      return guestIdPromiseRef.current
+    }
+
+    const nextGuestIdPromise = (async () => {
+      const existingGuestId = guestId ?? getGuestChatIdCookie()
+
+      try {
+        const persistedGuestId = await ensureGuestChatId(existingGuestId)
+        setGuestChatIdCookie(persistedGuestId)
+        if (guestId !== persistedGuestId) {
+          setGuestId(persistedGuestId)
+        }
+        return persistedGuestId
+      } catch (persistError) {
+        console.error(
+          'Failed to persist guest chat identifier via server action:',
+          persistError,
+        )
+
+        const fallbackGuestId = existingGuestId ?? createGuestChatId()
+        setGuestChatIdCookie(fallbackGuestId)
+        if (guestId !== fallbackGuestId) {
+          setGuestId(fallbackGuestId)
+        }
+        return fallbackGuestId
+      } finally {
+        guestIdPromiseRef.current = null
+      }
+    })()
+
+    guestIdPromiseRef.current = nextGuestIdPromise
+    return nextGuestIdPromise
+  }, [guestId])
+
+  useEffect(() => {
+    if (user?.uid) {
+      return
+    }
+
+    if (guestId && getGuestChatIdCookie()) {
+      return
+    }
+
+    void ensureGuestIdentifier()
+  }, [ensureGuestIdentifier, guestId, user?.uid])
 
   useEffect(() => {
     if (user?.uid) {
@@ -135,16 +185,7 @@ export function GuestChatProvider({children}: {children: ReactNode}) {
       return null
     }
 
-    const existingGuestId = guestId ?? getGuestChatIdCookie()
-    const nextGuestId = existingGuestId || createGuestChatId()
-
-    if (!existingGuestId) {
-      setGuestChatIdCookie(nextGuestId)
-    }
-
-    if (guestId !== nextGuestId) {
-      setGuestId(nextGuestId)
-    }
+    const nextGuestId = await ensureGuestIdentifier()
 
     if (
       bootstrappedGuestIdRef.current === nextGuestId &&
@@ -194,8 +235,8 @@ export function GuestChatProvider({children}: {children: ReactNode}) {
     bootstrapPromiseRef.current = bootstrapPromise
     return bootstrapPromise
   }, [
+    ensureGuestIdentifier,
     ensureGuestConversation,
-    guestId,
     guestFid,
     isMerging,
     representative,

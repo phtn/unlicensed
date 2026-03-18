@@ -117,7 +117,7 @@ function SwipeableConversationRow({
           <button
             type='button'
             onClick={handleArchiveClick}
-            className='flex flex-col items-center justify-center text-white gap-1 py-2 text-destructive-foreground touch-manipulation'>
+            className='flex flex-col items-center justify-center text-white gap-1 py-2 touch-manipulation'>
             <Icon name='archive' className='size-5 text-white' />
             <span className='text-xs font-medium'>Archive</span>
           </button>
@@ -207,7 +207,7 @@ export function ConversationList({
         const rowContent = (
           <div
             className={cn(
-              'touch-manipulation border-l-2 md:border-l-4 border-l-dark-gray/0 transition-all duration-200',
+              'touch-manipulation border-l-2 md:border-l-4 border-l-dark-gray/0 transition-all duration-200 max-w-sm',
               {
                 'dark:bg-alum/20 bg-alum/20 border-l-dark-gray': isSelected,
               },

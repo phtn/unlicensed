@@ -1,7 +1,6 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
-import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import type {Coupon, CouponDiscountType} from '@/convex/coupons/d'
 import {useAuthCtx} from '@/ctx/auth'
@@ -23,7 +22,7 @@ import {
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useEffect, useMemo, useState} from 'react'
-import {PrimaryButton} from './components'
+import {ContentHeader, PrimaryButton} from './components'
 
 type CouponFormState = {
   code: string
@@ -339,7 +338,7 @@ export const CouponsContent = () => {
 
   return (
     <div className='flex w-full flex-col gap-4'>
-      <SectionHeader
+      <ContentHeader
         title='Coupon Code Manager'
         description='Create and control promo codes, timing windows, and discount rules from one place.'>
         <div className='flex items-center justify-end gap-2'>
@@ -349,7 +348,7 @@ export const CouponsContent = () => {
             icon='plus'
           />
         </div>
-      </SectionHeader>
+      </ContentHeader>
 
       <div className='flex flex-wrap gap-2'>
         <Chip variant='flat'>Total {counts.total}</Chip>

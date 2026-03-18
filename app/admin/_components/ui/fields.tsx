@@ -24,12 +24,11 @@ export const narrowInputClassNames = {
   innerWrapper: 'px-1',
 }
 
-export const commonSelectClassNames = {
+export const commonSelectClassNames: SelectProps['classNames'] = {
   label: 'ps-1 mb-4 uppercase font-ios text-xs tracking-widest opacity-80',
   value: 'ps-1 placeholder:text-slate-400/80 py-4 mt-2',
   trigger:
-    'border h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-  mainWrapper: '',
+    'border p-2 h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
   listbox: 'p-1.5',
 }
 export const narrowSelectClassNames = {

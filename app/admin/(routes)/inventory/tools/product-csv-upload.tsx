@@ -1,7 +1,6 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
-import {JunctionBox} from '@/app/admin/_components/ui/junction-box'
 import {useSidebar} from '@/app/admin/_components/ui/sidebar'
 import {TabContentContainer} from '@/app/admin/_components/ui/tab-content'
 import {api} from '@/convex/_generated/api'
@@ -273,14 +272,22 @@ function seedDefaultDenominationStock(parseResult: ParseResult): ParseResult {
 
 export function ProductCsvUpload() {
   const {user} = useAuthCtx()
-  const existingSlugsData = useQuery(api.products.q.listProductSlugs)
+  const importTargetsData = useQuery(api.products.q.listProductImportTargets)
   const categoriesData = useQuery(api.categories.q.listCategories)
-  const existingSlugs = useMemo(
-    () => existingSlugsData ?? [],
-    [existingSlugsData],
+  const importTargets = useMemo(
+    () => importTargetsData ?? [],
+    [importTargetsData],
   )
   const categories = useMemo(() => categoriesData ?? [], [categoriesData])
-  const existingSlugSet = useMemo(() => new Set(existingSlugs), [existingSlugs])
+  const existingProductsBySlug = useMemo(
+    () =>
+      new Map(
+        importTargets
+          .filter((target) => target.slug.trim())
+          .map((target) => [target.slug.trim(), String(target._id)]),
+      ),
+    [importTargets],
+  )
   const validCategorySlugs = useMemo(
     () => new Set(categories.map((c) => c.slug).filter(Boolean)),
     [categories],
@@ -312,9 +319,9 @@ export function ProductCsvUpload() {
       }
       return {...r, errors, conflict: r.conflict as ParsedRow['conflict']}
     })
-    applySlugConflicts(rows, existingSlugSet)
+    applySlugConflicts(rows, existingProductsBySlug)
     return rows
-  }, [fileParseResult, existingSlugSet, validCategorySlugs])
+  }, [fileParseResult, existingProductsBySlug, validCategorySlugs])
 
   const validRows = useMemo(() => {
     if (!rowsWithConflicts) return []
@@ -424,6 +431,15 @@ export function ProductCsvUpload() {
     seedProducts,
   ])
 
+  const handleClear = useCallback(() => {
+    setFileParseResult(null)
+    setFileName(null)
+    setTitle('')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }, [])
+
   const displayRows = rowsWithConflicts ?? fileParseResult?.rows ?? []
   const errorCount = displayRows.reduce((s, r) => s + r.errors.length, 0)
   const conflictCount = displayRows.filter((r) => r.conflict !== null).length
@@ -432,17 +448,30 @@ export function ProductCsvUpload() {
   return (
     <TabContentContainer
       title='Product CSV Import'
-      description='Upload a CSV in the same format as export. Preview rows, fix
-                validation errors and slug conflicts, then import. Each run is signed
-                by you and titled with a timestamp by default.'
+      description={
+        <div className='max-w-7xl wrap-normal'>
+          Upload a CSV in the same format as export. Preview rows, fix
+          validation errors and slug conflicts, then import. Rows with an _id
+          replace the existing product, and blank slugs are derived from the
+          product name.
+        </div>
+      }
       className={cn(
         'flex h-full min-w-0 md:max-w-[calc(95lvw)] flex-col gap-6 overflow-hidden bg-sidebar p-4 rounded-lg',
-        {'md:max-w-[85lvw]': sidebarOpen},
+        {'md:max-w-[calc(82lvw)]': sidebarOpen},
       )}
       extraHeader={
         fileName ? (
-          <div className='font-ios text-blue-500 px-4 py-1 rounded-sm bg-blue-400/10'>
-            {fileName}
+          <div className='flex items-center space-x-2'>
+            <Icon
+              name='x'
+              className='size-4 text-rose-400'
+              onClick={handleClear}
+            />
+            <div className='flex items-center space-x-2 font-ios text-sm text-blue-500 dark:text-blue-400 px-2 py-1 rounded-sm bg-blue-500/10'>
+              <Icon name='document' className='size-4' />
+              <span>{fileName}</span>
+            </div>
           </div>
         ) : null
       }>
@@ -475,7 +504,7 @@ export function ProductCsvUpload() {
                   <span className='text-center text-sm font-medium text-default-600 dark:text-default-400'>
                     Drop CSV here or click to choose
                   </span>
-                  <span className='inline-flex h-10 items-center justify-center rounded-sm dark:bg-white bg-sidebar dark:text-dark-table/70 px-8 text-sm font-semibold tracking-wide'>
+                  <span className='inline-flex h-10 items-center justify-center rounded-sm dark:bg-white bg-dark-table text-white dark:text-dark-table/70 px-8 text-sm font-clash font-medium tracking-wide'>
                     Choose CSV file
                   </span>
                 </>
@@ -506,47 +535,34 @@ export function ProductCsvUpload() {
           <Card
             radius='sm'
             shadow='none'
-            className='min-w-0 max-w-full p-0 bg-transparent'>
-            <div className='grid min-w-0 max-w-full grid-cols-1 gap-4 md:grid-cols-4'>
-              <div className='col-span-3 min-w-0 max-w-full'>
+            className='min-w-0 p-0 bg-transparent'>
+            <div className='grid min-w-0 grid-cols-1 gap-0 md:grid-cols-4'>
+              <div className='col-span-3'>
                 <Input
                   label='Upload title'
                   placeholder='e.g. 2026-03-03T12-34-56'
                   value={title}
                   onValueChange={setTitle}
-                  // description='Used for audit; default is current timestamp.'
                   size='sm'
                   radius='lg'
-                  className='w-5xl min-w-0 max-w-full'
+                  className='w-5xl'
                   classNames={{
                     ...commonInputClassNames,
-                    base: 'w-full min-w-0 max-w-full',
                   }}
                 />
               </div>
-              <JunctionBox
-                title={uploaderEmail.split('@')[0]}
-                description='Signer'
-                onUpdate={() => ({})}
-                checked={false}
-                className='max-h-18 bg-white dark:bg-background/60'
-              />
-              {/*<div className='flex flex-col gap-1 rounded-lg border border-default-200 dark:border-default-100 bg-background px-3 py-2'>
-              <span className='text-xs font-medium text-default-500'>
-                Signed by
-              </span>
-              <span className='font-mono text-sm text-foreground'>
-                {uploaderEmail || '—'}
-              </span>
-            </div>*/}
             </div>
           </Card>
         )}
 
         {/* Stats + table */}
         {displayRows.length > 0 && (
-          <div className='flex min-w-0 max-w-[82lvw] shrink-0 flex-col gap-4 overflow-hidden font-clash'>
-            <div className='flex flex-wrap items-center justify-between gap-3 capitalize'>
+          <div
+            className={cn(
+              'flex min-w-0 shrink-0 max-w-[calc(92lvw)] flex-col gap-4 overflow-hidden font-clash',
+              {' max-w-[calc(80lvw)]': sidebarOpen},
+            )}>
+            <div className='flex flex-wrap items-center justify-between gap-3'>
               <div className='flex flex-wrap items-center gap-2'>
                 <Chip
                   size='sm'
@@ -555,62 +571,82 @@ export function ProductCsvUpload() {
                     base: 'bg-default-100 dark:bg-default-100/20',
                     content: 'font-medium',
                   }}>
-                  {displayRows.length} rows
+                  <span className='pe-1.5'>{displayRows.length}</span>
+                  <span>Row{displayRows.length !== 1 ? 's' : ''}</span>
                 </Chip>
                 {errorCount > 0 && (
                   <Chip
-                    radius='none'
                     size='sm'
-                    variant='flat'
-                    color='warning'
-                    className='rounded-sm'>
-                    <span className='px-1.5'>{errorCount}</span> error
-                    {errorCount !== 1 ? 's' : ''}
+                    radius='none'
+                    variant='solid'
+                    color='danger'
+                    className='rounded-sm text-white'>
+                    <span className='pe-1.5'>{errorCount}</span>
+                    <span>Error{errorCount !== 1 ? 's' : ''}</span>
                   </Chip>
                 )}
                 {conflictCount > 0 && (
-                  <Chip size='sm' variant='flat' color='danger'>
-                    {conflictCount} conflict{conflictCount !== 1 ? 's' : ''}
+                  <Chip
+                    size='sm'
+                    radius='none'
+                    color='danger'
+                    variant='solid'
+                    className='rounded-sm bg-orange-400'>
+                    <span className='pe-1.5'>{conflictCount}</span>
+                    <span>Conflict{conflictCount !== 1 ? 's' : ''}</span>
                   </Chip>
                 )}
                 {validRows.length > 0 && (
-                  <Chip size='sm' variant='flat' color='success'>
-                    {validRows.length} ready to import
+                  <Chip
+                    size='sm'
+                    variant='solid'
+                    color='success'
+                    className='rounded-sm text-white dark:bg-emerald-500/80 tracking-wide'>
+                    <span className='pe-1.5'>{validRows.length}</span>
+                    <span className=''>
+                      {validRows.length !== 1 ? 'Products' : 'Product'} ready to
+                      import
+                    </span>
                   </Chip>
                 )}
               </div>
               <Button
-                color='primary'
                 size='sm'
+                variant='solid'
                 isDisabled={!canImport}
                 isLoading={isImporting}
                 onPress={handleImport}
-                radius='lg'
-                className='min-w-[181.1px] font-semibold'
+                radius='none'
+                className='bg-foreground text-background/80 rounded-md min-w-[181.1px] text-sm font-medium'
                 startContent={
                   !isImporting ? (
-                    <Icon name='download' className='size-5' />
+                    <Icon name='arrow-up-fat' className='size-4' />
                   ) : undefined
                 }>
-                {isImporting
-                  ? 'Importing…'
-                  : `Import ${validRows.length} product${validRows.length !== 1 ? 's' : ''}`}
+                {isImporting ? (
+                  'Importing…'
+                ) : (
+                  <span>
+                    Import <span className='px-1.5'>{validRows.length}</span>{' '}
+                    product{validRows.length !== 1 ? 's' : ''}
+                  </span>
+                )}
               </Button>
             </div>
 
             <Card
               radius='lg'
               shadow='none'
-              className='flex h-[min(55vh,480px)] min-h-50 min-w-0 max-w-full flex-col overflow-hidden border border-default-200/80 dark:border-default-100/50'>
+              className='flex h-[min(55vh,480px)] min-h-50 min-w-0 w-full flex-col overflow-hidden border-0'>
               <div className='min-h-0 w-full flex-1 overflow-x-auto overflow-y-auto'>
                 <table className='min-w-full table-fixed text-sm'>
-                  <thead className='sticky top-0 z-10 bg-default-100/95 dark:bg-default-100/10 backdrop-blur supports-backdrop-filter:bg-default-100/80'>
+                  <thead className='sticky top-0 z-10'>
                     <tr>
                       {getPreviewColumns(fileParseResult, displayRows).map(
                         (col) => (
                           <th
                             key={col}
-                            className='max-w-35 truncate whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest opacity-60'>
+                            className='max-w-36 truncate whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest opacity-60'>
                             {col}
                           </th>
                         ),
@@ -644,7 +680,7 @@ export function ProductCsvUpload() {
               'border px-4 py-3',
               importError
                 ? 'border-danger-200 bg-danger-50/50 dark:border-danger-900/50 dark:bg-danger-950/20'
-                : 'border-success-200 bg-success-50/50 dark:border-success-900/50 dark:bg-success-950/20',
+                : 'border-success-200 bg-success-50/50 dark:bg-success-500/10',
             )}>
             <p
               className={cn(
@@ -667,13 +703,17 @@ export function ProductCsvUpload() {
 
 function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
   const hasError = row.errors.length > 0 || row.conflict !== null
+  const rowMode =
+    typeof row.product._id === 'string' && row.product._id.trim()
+      ? 'Replace'
+      : 'Create'
   return (
     <tr
       className={cn(
         'transition-colors',
         hasError
           ? 'bg-danger-50/40 dark:bg-danger-950/30 hover:bg-danger-50/60 dark:hover:bg-danger-950/40'
-          : 'max-w-5xl hover:bg-default-50/80 dark:hover:bg-default-100/10',
+          : 'hover:bg-default-50/80 dark:hover:bg-default-100/10',
       )}>
       {columns.map((col) => {
         if (col === '#') {
@@ -694,9 +734,9 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
                 {row.conflict === 'slug' && (
                   <Chip
                     size='sm'
-                    variant='flat'
                     color='danger'
-                    className='font-medium'>
+                    variant='solid'
+                    className='font-medium text-white'>
                     Slug conflict
                   </Chip>
                 )}
@@ -711,8 +751,26 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
                   </ul>
                 )}
                 {!hasError && (
-                  <Chip size='sm' variant='flat' color='success'>
-                    OK
+                  <Chip
+                    size='sm'
+                    variant='solid'
+                    color='success'
+                    className={cn(
+                      'bg-white text-green-700 font-clash tracking-wide',
+                      {
+                        'bg-indigo-400 text-white': rowMode === 'Replace',
+                      },
+                    )}>
+                    {rowMode}
+                  </Chip>
+                )}
+                {hasError && row.errors.length === 0 && (
+                  <Chip
+                    size='sm'
+                    variant='solid'
+                    color='danger'
+                    className='text-white'>
+                    {rowMode}
                   </Chip>
                 )}
               </div>

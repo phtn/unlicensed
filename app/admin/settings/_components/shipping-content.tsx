@@ -1,12 +1,12 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
-import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Button, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useState, ViewTransition} from 'react'
+import {ContentHeader} from './components'
 
 const DEFAULT_FEE_DOLLARS = '12.99'
 const DEFAULT_MIN_DOLLARS = '49.00'
@@ -23,7 +23,7 @@ export const ShippingContent = () => {
 
   return (
     <div className='flex w-full flex-col gap-4'>
-      <SectionHeader title='Shipping Fee Configuration' />
+      <ContentHeader title='Shipping Fee Configuration' />
       <ShippingFormInner
         key={configKey}
         config={config}

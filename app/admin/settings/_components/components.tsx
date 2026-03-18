@@ -1,6 +1,8 @@
+import {Typewrite} from '@/components/expermtl/typewrite'
 import {SectionHeader} from '@/components/ui/section-header'
-import {Icon, IconName} from '@/lib/icons'
+import {Icon, type IconName} from '@/lib/icons'
 import {Button} from '@heroui/react'
+import {type ReactNode} from 'react'
 
 interface PrimaryButtonProps {
   onPress: VoidFunction
@@ -36,10 +38,41 @@ interface LoadingHeaderProps {
 export const LoadingHeader = ({title}: LoadingHeaderProps) => {
   return (
     <div className='flex w-full'>
-      <SectionHeader title={title}>
+      <SectionHeader
+        title={
+          <Typewrite
+            speed={12}
+            showCursor={false}
+            text={title ?? 'Loading...'}
+          />
+        }
+        className='sm:ps-1'>
         <Button size='md' disabled variant='light'>
           <Icon name='spinner-dots' className='mr-1 size-5 opacity-80' />
         </Button>
+      </SectionHeader>
+    </div>
+  )
+}
+
+interface ContentHeaderProps {
+  title: ReactNode
+  description?: ReactNode
+  children?: ReactNode
+}
+
+export const ContentHeader = ({
+  title,
+  description,
+  children,
+}: ContentHeaderProps) => {
+  return (
+    <div className='flex items-start w-full min-h-20'>
+      <SectionHeader
+        title={title}
+        className='sm:ps-1'
+        description={description}>
+        {children}
       </SectionHeader>
     </div>
   )

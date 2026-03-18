@@ -2,6 +2,11 @@
 
 import {Id} from '@/convex/_generated/dataModel'
 import {type ProductCartItem, CartItemType} from '@/convex/cart/d'
+import {
+  createGuestChatId,
+  GUEST_CHAT_COOKIE_NAME,
+  normalizeGuestChatId,
+} from '@/lib/guest-chat'
 import {cookies} from 'next/headers'
 
 interface CookieOptions {
@@ -12,8 +17,12 @@ interface CookieOptions {
   maxAge?: number
 }
 
-type CookieType = 'rfac' | 'guestCart'
-export type ValuesMap = {rfac: string; guestCart: CartItemType[]}
+type CookieType = 'rfac' | 'guestCart' | 'guestChatId'
+export type ValuesMap = {
+  rfac: string
+  guestCart: CartItemType[]
+  guestChatId: string
+}
 
 interface Expiry {
   expires?: Date
@@ -22,6 +31,7 @@ interface Expiry {
 const cookieNameMap: Record<CookieType, string> = {
   rfac: 'rf-ac',
   guestCart: 'hyfe_guest_cart',
+  guestChatId: GUEST_CHAT_COOKIE_NAME,
 }
 const defaults: CookieOptions = {
   path: '/',
@@ -36,6 +46,7 @@ const cookieExpiryMap: Partial<Record<CookieType, number>> = {
   // thirtyDays: 60 * 60 * 24 * 30, // 30 days
   rfac: 60 * 60 * 24 * 365, // 1 year
   guestCart: 60 * 60 * 24 * 30, // 30 days
+  guestChatId: 60 * 60 * 24 * 30, // 30 days
 }
 /**
  * @name setCookie
@@ -50,7 +61,7 @@ export const setCookie = async <T extends CookieType>(
 ) => {
   const name = cookieNameMap[type]
   const store = await cookies()
-  const value = JSON.stringify(values)
+  const value = typeof values === 'string' ? values : JSON.stringify(values)
   const maxAge = options?.maxAge ?? cookieExpiryMap[type] ?? defaults.maxAge
   store.set(name, value, {...defaults, maxAge, ...options})
 }
@@ -76,6 +87,14 @@ export const deleteCookie = async (type: CookieType) => {
   const name = cookieNameMap[type]
   const store = await cookies()
   store.delete(name)
+}
+
+export const ensureGuestChatId = async (
+  guestId?: string | null,
+): Promise<string> => {
+  const nextGuestId = normalizeGuestChatId(guestId) ?? createGuestChatId()
+  await setCookie('guestChatId', nextGuestId)
+  return nextGuestId
 }
 
 // Guest Cart Server Actions

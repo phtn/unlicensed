@@ -3,13 +3,23 @@ import type {Doc, Id} from '../_generated/dataModel'
 import type {QueryCtx} from '../_generated/server'
 import {query} from '../_generated/server'
 import {ASSISTANT_PRO_ID} from '../assistant/d'
+import {getGuestByGuestId} from '../guests/lib'
+import {getCanonicalUserByFid} from '../users/lib'
 import type {ConversationFolderState, LastMessage, OtherUser} from './d'
+import {
+  chatParticipantIdValidator,
+  getChatParticipantByFid,
+  getChatParticipantById,
+  getChatParticipantEmail,
+  getChatParticipantFid,
+  getChatParticipantLocationLabel,
+  type ChatParticipantDoc,
+  type ChatParticipantId,
+  isGuestParticipant,
+} from './participants'
 
-const getUserByFid = async (ctx: QueryCtx, fid: string) =>
-  ctx.db
-    .query('users')
-    .withIndex('by_fid', (q) => q.eq('fid', fid))
-    .first()
+const findParticipantByFid = (ctx: QueryCtx, fid: string) =>
+  getChatParticipantByFid(ctx, fid)
 
 const getFolderCapability = async (ctx: QueryCtx, user: Doc<'users'>) => {
   const currentUserStaff = user.email
@@ -91,33 +101,12 @@ const withConversationFolder = <
   }
 }
 
-const formatUserLocationLabel = (user: Doc<'users'>): string | null => {
-  const city = user.city?.trim() || null
-  const countryCode = user.countryCode?.trim().toUpperCase() || null
-  const country = user.country?.trim() || null
-
-  if (city && countryCode) {
-    return `${city}, ${countryCode}`
-  }
-
-  if (city && country) {
-    return `${city}, ${country}`
-  }
-
-  return city ?? country ?? countryCode ?? null
-}
-
-const getConversationEmail = (user: Doc<'users'>) =>
-  user.accountStatus === 'guest'
-    ? user.contact?.alternateEmail?.trim() || user.email || ''
-    : user.email || ''
-
 const mapConversationUser = (
-  user: Doc<'users'>,
+  user: ChatParticipantDoc,
   includeLocation: boolean,
 ): OtherUser => {
-  const fid = user.fid ?? user.firebaseId ?? ''
-  const email = getConversationEmail(user)
+  const fid = getChatParticipantFid(user)
+  const email = getChatParticipantEmail(user)
 
   return {
     fid,
@@ -127,7 +116,7 @@ const mapConversationUser = (
     proId: fid || undefined,
     displayName: user.name ?? null,
     avatarUrl: user.photoUrl ?? null,
-    locationLabel: includeLocation ? formatUserLocationLabel(user) : null,
+    locationLabel: includeLocation ? getChatParticipantLocationLabel(user) : null,
   }
 }
 
@@ -139,15 +128,8 @@ export const areConnected = query({
   },
   handler: async (ctx, args) => {
     // Get both users by proId
-    const user1 = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.user1Id))
-      .first()
-
-    const user2 = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.user2Id))
-      .first()
+    const user1 = await findParticipantByFid(ctx, args.user1Id)
+    const user2 = await findParticipantByFid(ctx, args.user2Id)
 
     if (!user1 || !user2) {
       return false
@@ -190,7 +172,7 @@ export const searchConversations = query({
     const searchLower = args.searchQuery.toLowerCase().trim()
 
     // Get the user by proId
-    const user = await getUserByFid(ctx, args.fid)
+    const user = await findParticipantByFid(ctx, args.fid)
 
     if (!user) {
       return []
@@ -229,24 +211,30 @@ export const searchConversations = query({
 
     // Check if current user is staff with admin privileges (can search staff)
     const {enabled: foldersEnabled, staff: currentUserStaff} =
-      await getFolderCapability(ctx, user)
+      isGuestParticipant(user)
+        ? {enabled: false, staff: null}
+        : await getFolderCapability(ctx, user)
     const canViewLocation = foldersEnabled
     const isStaffAdmin =
       !!currentUserStaff &&
       currentUserStaff.active &&
       currentUserStaff.accessRoles.includes('admin')
-    const folderLookup = foldersEnabled
-      ? await getConversationFolderLookup(ctx, user._id)
-      : new Map()
+    const folderLookup =
+      foldersEnabled && !isGuestParticipant(user)
+        ? await getConversationFolderLookup(ctx, user._id)
+        : new Map()
 
     // Get all users and filter by search query
-    const allUsers = await ctx.db.query('users').collect()
-    const matchingUsers = allUsers.filter((u) => {
+    const allParticipants = [
+      ...(await ctx.db.query('users').collect()),
+      ...(await ctx.db.query('guests').collect()),
+    ]
+    const matchingUsers = allParticipants.filter((u) => {
       const isConnected = connectedUserIds.has(u._id as string)
       if (!isConnected) return false
 
       const name = (u.name || '').toLowerCase()
-      const email = getConversationEmail(u).toLowerCase()
+      const email = getChatParticipantEmail(u).toLowerCase()
       return (
         name.includes(searchLower) ||
         email.includes(searchLower) ||
@@ -279,7 +267,12 @@ export const searchConversations = query({
             .withIndex('by_email', (q) => q.eq('email', staffEmail))
             .first()
         }
-        if (linkedUser && 'fid' in linkedUser && linkedUser._id !== user._id) {
+        if (
+          linkedUser &&
+          !isGuestParticipant(linkedUser as ChatParticipantDoc) &&
+          'fid' in linkedUser &&
+          linkedUser._id !== user._id
+        ) {
           staffMatchingUserIds.add(linkedUser._id as string)
         }
       }
@@ -320,16 +313,19 @@ export const searchConversations = query({
 
     const results = await Promise.all(
       Array.from(resultUserIds).map(async (userId) => {
-        const otherUser = await ctx.db.get(userId as Id<'users'>)
-        if (!otherUser || !('fid' in otherUser)) return null
+        const otherUser = await getChatParticipantById(
+          ctx,
+          userId as ChatParticipantId,
+        )
+        if (!otherUser) return null
 
         // Get latest message with this user
         const messagesWithUser = allMessages.filter(
           (m) =>
             (m.senderId === user._id &&
-              m.receiverId === (userId as Id<'users'>)) ||
+              m.receiverId === (userId as ChatParticipantId)) ||
             (m.receiverId === user._id &&
-              m.senderId === (userId as Id<'users'>)),
+              m.senderId === (userId as ChatParticipantId)),
         )
 
         const latestMessage =
@@ -349,10 +345,11 @@ export const searchConversations = query({
             content: 'No messages yet',
             createdAt: new Date().toISOString(),
             senderId: user._id,
-            receiverId: userId as Id<'users'>,
+            receiverId: userId as ChatParticipantId,
           },
           unreadCount: receivedMessages.filter(
-            (m) => m.senderId === (userId as Id<'users'>) && m.readAt === null,
+            (m) =>
+              m.senderId === (userId as ChatParticipantId) && m.readAt === null,
           ).length,
           hasMessages: latestMessage !== null,
         }
@@ -389,17 +386,20 @@ export const getConversations = query({
   },
   handler: async (ctx, args) => {
     // Get the user by proId
-    const user = await getUserByFid(ctx, args.fid)
+    const user = await findParticipantByFid(ctx, args.fid)
 
     if (!user) {
       return []
     }
 
-    const {enabled: foldersEnabled} = await getFolderCapability(ctx, user)
+    const {enabled: foldersEnabled} = isGuestParticipant(user)
+      ? {enabled: false}
+      : await getFolderCapability(ctx, user)
     const canViewLocation = foldersEnabled
-    const folderLookup = foldersEnabled
-      ? await getConversationFolderLookup(ctx, user._id)
-      : new Map()
+    const folderLookup =
+      foldersEnabled && !isGuestParticipant(user)
+        ? await getConversationFolderLookup(ctx, user._id)
+        : new Map()
 
     // Get archived conversation partner IDs for this user
     const archivedRecords = await ctx.db
@@ -448,13 +448,12 @@ export const getConversations = query({
           (existing.lastMessage?.createdAt &&
             new Date(existing.lastMessage.createdAt))
       ) {
-        const otherUser = await ctx.db.get(message.receiverId)
+        const otherUser = await getChatParticipantById(ctx, message.receiverId)
         conversationsMap.set(otherUserIdString, {
           otherUserId: otherUserIdString,
-          otherUser:
-            otherUser && 'fid' in otherUser
-              ? mapConversationUser(otherUser, canViewLocation)
-              : null,
+          otherUser: otherUser
+            ? mapConversationUser(otherUser, canViewLocation)
+            : null,
           lastMessage: message,
           unreadCount: 0, // Sent messages don't count as unread
           hasMessages: true,
@@ -475,17 +474,16 @@ export const getConversations = query({
           (existing.lastMessage?.createdAt &&
             new Date(existing.lastMessage.createdAt))
       ) {
-        const otherUser = await ctx.db.get(message.senderId)
+        const otherUser = await getChatParticipantById(ctx, message.senderId)
         const unreadCount = receivedMessages.filter(
           (m) => m.senderId === otherUserId && m.readAt === null,
         ).length
 
         conversationsMap.set(otherUserIdString, {
           otherUserId: otherUserIdString,
-          otherUser:
-            otherUser && 'fid' in otherUser
-              ? mapConversationUser(otherUser, canViewLocation)
-              : null,
+          otherUser: otherUser
+            ? mapConversationUser(otherUser, canViewLocation)
+            : null,
           lastMessage: message,
           unreadCount,
           hasMessages: true,
@@ -516,8 +514,8 @@ export const getConversations = query({
     for (const follow of following) {
       const otherUserIdString = follow.followedId as string
       if (!conversationsMap.has(otherUserIdString)) {
-        const otherUser = await ctx.db.get(follow.followedId)
-        if (otherUser && 'fid' in otherUser) {
+        const otherUser = await getChatParticipantById(ctx, follow.followedId)
+        if (otherUser) {
           conversationsMap.set(otherUserIdString, {
             otherUserId: otherUserIdString,
             otherUser: mapConversationUser(otherUser, canViewLocation),
@@ -538,8 +536,8 @@ export const getConversations = query({
     for (const follow of followers) {
       const otherUserIdString = follow.followerId as string
       if (!conversationsMap.has(otherUserIdString)) {
-        const otherUser = await ctx.db.get(follow.followerId)
-        if (otherUser && 'fid' in otherUser) {
+        const otherUser = await getChatParticipantById(ctx, follow.followerId)
+        if (otherUser) {
           conversationsMap.set(otherUserIdString, {
             otherUserId: otherUserIdString,
             otherUser: mapConversationUser(otherUser, canViewLocation),
@@ -587,7 +585,7 @@ export const getConversationFolders = query({
     fid: v.string(),
   },
   handler: async (ctx, args): Promise<ConversationFolderState> => {
-    const user = await getUserByFid(ctx, args.fid)
+    const user = await getCanonicalUserByFid(ctx, args.fid)
 
     if (!user) {
       return {enabled: false, folders: []}
@@ -624,15 +622,8 @@ export const getMessages = query({
   },
   handler: async (ctx, args) => {
     // Get both users by proId
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.currentUserId))
-      .first()
-
-    const otherUser = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.otherUserId))
-      .first()
+    const currentUser = await findParticipantByFid(ctx, args.currentUserId)
+    const otherUser = await findParticipantByFid(ctx, args.otherUserId)
 
     if (!currentUser || !otherUser) {
       return []
@@ -696,10 +687,7 @@ export const getUnreadCount = query({
   },
   handler: async (ctx, args) => {
     // Get the user by proId
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .first()
+    const user = await findParticipantByFid(ctx, args.fid)
 
     if (!user) {
       return 0
@@ -726,6 +714,45 @@ export const getUnreadCount = query({
       .collect()
 
     return unreadMessages.length
+  },
+})
+
+export const getParticipantById = query({
+  args: {
+    id: chatParticipantIdValidator,
+  },
+  handler: async (ctx, args) => getChatParticipantById(ctx, args.id),
+})
+
+export const getParticipantByFid = query({
+  args: {
+    fid: v.string(),
+  },
+  handler: async (ctx, args) => findParticipantByFid(ctx, args.fid),
+})
+
+export const resolveParticipantReference = query({
+  args: {
+    reference: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const reference = args.reference.trim()
+
+    if (!reference) {
+      return null
+    }
+
+    const byFid = await findParticipantByFid(ctx, reference)
+    if (byFid) {
+      return byFid
+    }
+
+    const byGuestId = await getGuestByGuestId(ctx, reference)
+    if (byGuestId) {
+      return byGuestId
+    }
+
+    return await getChatParticipantById(ctx, reference as ChatParticipantId)
   },
 })
 

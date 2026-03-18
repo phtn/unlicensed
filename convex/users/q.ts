@@ -77,6 +77,26 @@ export const getByFid = query({
   handler: async (ctx, args) => getCanonicalUserByFid(ctx, args.fid),
 })
 
+export const resolveUserReference = query({
+  args: {
+    reference: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const reference = args.reference.trim()
+
+    if (!reference) {
+      return null
+    }
+
+    const byFid = await getCanonicalUserByFid(ctx, reference)
+    if (byFid) {
+      return byFid
+    }
+
+    return await ctx.db.get(reference as Id<'users'>)
+  },
+})
+
 export const getUserAddresses = query({
   args: {
     fid: v.string(),

@@ -1,7 +1,6 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
-import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon, type IconName} from '@/lib/icons'
@@ -15,6 +14,7 @@ import {
   useState,
   ViewTransition,
 } from 'react'
+import {ContentHeader} from './components'
 
 export type PaymentMethodStatus = 'active' | 'inactive'
 
@@ -228,7 +228,7 @@ export const PaymentsSettings = () => {
 
   return (
     <div className='flex w-full flex-col gap-4'>
-      <SectionHeader title='Payments Methods' />
+      <ContentHeader title='Payments Methods' />
 
       <section className='grid gap-6 md:grid-cols-3'>
         <div className='space-y-3 min-w-0'>

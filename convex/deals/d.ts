@@ -2,6 +2,7 @@ import {Infer, v} from 'convex/values'
 
 /** Single variation of a deal (e.g. "8 x ⅛ oz" or "4 x ¼ oz") */
 export const dealVariationSchema = v.object({
+  categorySlug: v.optional(v.string()),
   totalUnits: v.number(),
   denominationPerUnit: v.number(),
   denominationLabel: v.optional(v.string()),

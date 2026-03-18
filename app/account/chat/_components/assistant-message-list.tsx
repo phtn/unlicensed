@@ -331,15 +331,13 @@ export function AssistantMessageList({
         )}
 
       {/* Scroll-to-bottom button (portaled above message input) */}
-      {scrollAreaRef &&
-        scrollButtonAnchorEl &&
-        onScrollToBottom && (
-          <ScrollToBottomButton
-            scrollAreaRef={scrollAreaRef}
-            scrollButtonAnchorEl={scrollButtonAnchorEl}
-            onScrollToBottom={onScrollToBottom}
-          />
-        )}
+      {scrollAreaRef && scrollButtonAnchorEl && onScrollToBottom && (
+        <ScrollToBottomButton
+          scrollAreaRef={scrollAreaRef}
+          scrollButtonAnchorEl={scrollButtonAnchorEl}
+          onScrollToBottom={onScrollToBottom}
+        />
+      )}
     </div>
   )
 }

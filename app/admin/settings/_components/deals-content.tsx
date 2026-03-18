@@ -1,7 +1,10 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
-import {SectionHeader} from '@/components/ui/section-header'
+import {mapNumericFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
+import {
+  commonInputClassNames,
+  commonSelectClassNames,
+} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import type {AttributeEntry} from '@/convex/categories/d'
 import type {Deal} from '@/convex/deals/d'
@@ -19,7 +22,10 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Select,
+  SelectItem,
   Switch,
+  type SharedSelection,
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {
@@ -28,10 +34,12 @@ import {
   useMemo,
   useState,
   ViewTransition,
+  type Key,
 } from 'react'
-import {LoadingHeader, PrimaryButton} from './components'
+import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
 
 type VariationForm = {
+  categorySlug: string
   totalUnits: string
   denominationPerUnit: string
   denominationLabel: string
@@ -69,6 +77,29 @@ type CategoryAttributeKey =
   | 'bases'
   | 'brands'
 
+type DealCategory = {
+  _id?: string
+  name?: string
+  slug?: string
+  tiers?: AttributeEntry[]
+  subcategories?: AttributeEntry[]
+  productTypes?: AttributeEntry[]
+  bases?: AttributeEntry[]
+  brands?: AttributeEntry[]
+  denominations?: number[]
+  units?: string[]
+}
+
+type VariationAttributeOption = {
+  label: string
+  value: string
+}
+
+type CategoryVariationAttributes = {
+  denominations: VariationAttributeOption[]
+  units: VariationAttributeOption[]
+}
+
 const DEAL_EXCLUSION_CONFIG: Array<{
   field: DealExclusionField
   categoryKey: CategoryAttributeKey
@@ -101,15 +132,16 @@ const DEAL_EXCLUSION_CONFIG: Array<{
   },
 ]
 
+const variationSelectClassNames = {
+  label: commonInputClassNames.label,
+  trigger: commonSelectClassNames?.trigger,
+  value: commonSelectClassNames?.value,
+  // value: commonInputClassNames.input,
+  listbox: commonSelectClassNames?.listbox,
+}
+
 function collectAttributeOptions(
-  categories: Array<{
-    slug?: string
-    tiers?: AttributeEntry[]
-    subcategories?: AttributeEntry[]
-    productTypes?: AttributeEntry[]
-    bases?: AttributeEntry[]
-    brands?: AttributeEntry[]
-  }>,
+  categories: DealCategory[],
   key: CategoryAttributeKey,
 ): AttributeEntry[] {
   const map = new Map<string, AttributeEntry>()
@@ -123,16 +155,206 @@ function collectAttributeOptions(
   return Array.from(map.values())
 }
 
+function getCategoryAttributes(
+  categories: DealCategory[],
+): CategoryVariationAttributes {
+  const denominationsMap = new Map<string, VariationAttributeOption>()
+  const unitsMap = new Map<string, VariationAttributeOption>()
+
+  categories.forEach((category) => {
+    if (category.denominations) {
+      category.denominations.forEach((value) => {
+        const normalizedValue = String(value)
+        if (!denominationsMap.has(normalizedValue)) {
+          denominationsMap.set(normalizedValue, {
+            value: normalizedValue,
+            label: normalizedValue,
+          })
+        }
+      })
+    }
+
+    if (category.units) {
+      category.units.forEach((value) => {
+        const normalizedValue = value.trim()
+        if (!normalizedValue || unitsMap.has(normalizedValue)) return
+
+        unitsMap.set(normalizedValue, {
+          value: normalizedValue,
+          label: normalizedValue,
+        })
+      })
+    }
+  })
+
+  return {
+    denominations: Array.from(denominationsMap.values()).toSorted(
+      (a, b) => Number(a.value) - Number(b.value),
+    ),
+    units: Array.from(unitsMap.values()),
+  }
+}
+
+function getDenominationLabel(
+  denominationValue: string,
+  unitValue: string,
+): string {
+  const normalizedDenomination = denominationValue.trim()
+  if (!normalizedDenomination) return ''
+
+  if (unitValue.trim().toLowerCase() === 'oz') {
+    return mapNumericFractions[normalizedDenomination] ?? normalizedDenomination
+  }
+
+  const parsed = Number(normalizedDenomination)
+  if (Number.isNaN(parsed)) return normalizedDenomination
+
+  return String(parsed)
+}
+
+function findMatchingDenomination(
+  value: string,
+  options: VariationAttributeOption[],
+): VariationAttributeOption | null {
+  const parsed = Number(value)
+  if (Number.isNaN(parsed)) return null
+
+  return options.find((option) => Number(option.value) === parsed) ?? null
+}
+
+function findMatchingUnit(
+  value: string,
+  options: VariationAttributeOption[],
+): VariationAttributeOption | null {
+  const normalized = value.trim().toLowerCase()
+  if (!normalized) return null
+
+  return (
+    options.find(
+      (option) => option.value.trim().toLowerCase() === normalized,
+    ) ?? null
+  )
+}
+
+function syncVariationsWithCategoryAttributes(
+  variations: VariationForm[],
+  selectedCategories: DealCategory[],
+): VariationForm[] {
+  return variations.map((variation) => {
+    const nextCategorySlug =
+      selectedCategories.find(
+        (category) => category.slug === variation.categorySlug,
+      )?.slug ??
+      selectedCategories[0]?.slug ??
+      ''
+    const categoryAttributes = getCategoryAttributes(
+      nextCategorySlug
+        ? selectedCategories.filter(
+            (category) => category.slug === nextCategorySlug,
+          )
+        : [],
+    )
+    const matchingDenomination = findMatchingDenomination(
+      variation.denominationPerUnit,
+      categoryAttributes.denominations,
+    )
+    const matchingUnit = findMatchingUnit(
+      variation.unitLabel,
+      categoryAttributes.units,
+    )
+
+    const denominationValue =
+      matchingDenomination?.value ??
+      categoryAttributes.denominations[0]?.value ??
+      variation.denominationPerUnit
+
+    const unitValue =
+      matchingUnit?.value ??
+      categoryAttributes.units[0]?.value ??
+      variation.unitLabel
+
+    return {
+      ...variation,
+      categorySlug: nextCategorySlug,
+      denominationPerUnit: denominationValue,
+      denominationLabel: getDenominationLabel(denominationValue, unitValue),
+      unitLabel: unitValue,
+    }
+  })
+}
+
+function syncDealFormWithCategoryAttributes(
+  form: DealFormState,
+  categories: DealCategory[],
+): DealFormState {
+  const selectedCategories = categories.filter((category) =>
+    form.categorySlugs.includes(category.slug ?? ''),
+  )
+
+  return {
+    ...pruneDealExclusions(form, categories),
+    variations: syncVariationsWithCategoryAttributes(
+      form.variations,
+      selectedCategories,
+    ),
+  }
+}
+
+function getSingleSelectedKey(keys: SharedSelection): string | null {
+  if (keys === 'all') return null
+
+  const [value] = Array.from(keys) as Key[]
+  return typeof value === 'string'
+    ? value
+    : value != null
+      ? String(value)
+      : null
+}
+
+function getDenominationOptions(
+  attributes: CategoryVariationAttributes,
+  unitValue: string,
+): VariationAttributeOption[] {
+  return attributes.denominations.map((option) => ({
+    value: option.value,
+    label: getDenominationLabel(option.value, unitValue),
+  }))
+}
+
+function getVariationCategoryOptions(
+  categories: DealCategory[],
+): VariationAttributeOption[] {
+  return categories
+    .filter((category) => (category.slug ?? '').length > 0)
+    .map((category) => ({
+      value: category.slug ?? '',
+      label: category.name ?? category.slug ?? '',
+    }))
+}
+
+function emptyVariation(categories?: DealCategory[]): VariationForm {
+  const categorySlug = categories?.[0]?.slug ?? ''
+  const categoryAttributes = getCategoryAttributes(
+    categorySlug
+      ? (categories ?? []).filter((category) => category.slug === categorySlug)
+      : [],
+  )
+  const denominationValue =
+    categoryAttributes?.denominations[0]?.value ?? '0.125'
+  const unitValue = categoryAttributes?.units[0]?.value ?? 'oz'
+
+  return {
+    categorySlug,
+    totalUnits: '1',
+    denominationPerUnit: denominationValue,
+    denominationLabel: getDenominationLabel(denominationValue, unitValue),
+    unitLabel: unitValue,
+  }
+}
+
 function pruneDealExclusions(
   form: DealFormState,
-  categories: Array<{
-    slug?: string
-    tiers?: AttributeEntry[]
-    subcategories?: AttributeEntry[]
-    productTypes?: AttributeEntry[]
-    bases?: AttributeEntry[]
-    brands?: AttributeEntry[]
-  }>,
+  categories: DealCategory[],
 ): DealFormState {
   const selectedCategories = categories.filter((category) =>
     form.categorySlugs.includes(category.slug ?? ''),
@@ -186,16 +408,8 @@ function pruneDealExclusions(
   }
 }
 
-function emptyVariation(): VariationForm {
-  return {
-    totalUnits: '1',
-    denominationPerUnit: '1',
-    denominationLabel: '',
-    unitLabel: 'unit',
-  }
-}
-
 function variationFormToDoc(v: VariationForm): {
+  categorySlug?: string
   totalUnits: number
   denominationPerUnit: number
   denominationLabel?: string
@@ -211,6 +425,7 @@ function variationFormToDoc(v: VariationForm): {
   )
     return null
   return {
+    categorySlug: v.categorySlug.trim() || undefined,
     totalUnits,
     denominationPerUnit,
     denominationLabel: v.denominationLabel.trim() || undefined,
@@ -230,6 +445,7 @@ function dealToForm(deal: Deal): DealFormState {
     excludedBases: [...(deal.excludedBases ?? [])],
     excludedBrands: [...(deal.excludedBrands ?? [])],
     variations: deal.variations.map((v) => ({
+      categorySlug: v.categorySlug ?? deal.categorySlugs[0] ?? '',
       totalUnits: String(v.totalUnits),
       denominationPerUnit: String(v.denominationPerUnit),
       denominationLabel: v.denominationLabel ?? '',
@@ -273,6 +489,7 @@ type DealInsert = {
   excludedBases: string[]
   excludedBrands: string[]
   variations: Array<{
+    categorySlug?: string
     totalUnits: number
     denominationPerUnit: number
     denominationLabel?: string
@@ -394,6 +611,19 @@ export const DealsContent = () => {
 
   const uid = user?.uid ?? 'admin'
 
+  const selectedCategories = useMemo(
+    () =>
+      (categories ?? []).filter((category) =>
+        form.categorySlugs.includes(category.slug ?? ''),
+      ),
+    [categories, form.categorySlugs],
+  )
+
+  const variationCategoryOptions = useMemo(
+    () => getVariationCategoryOptions(selectedCategories),
+    [selectedCategories],
+  )
+
   const openAdd = useCallback(() => {
     setEditingId(null)
     setForm(emptyForm())
@@ -401,12 +631,17 @@ export const DealsContent = () => {
     setSaveMessage(null)
   }, [])
 
-  const openEdit = useCallback((deal: Deal) => {
-    setEditingId(deal.id)
-    setForm(dealToForm(deal))
-    setModalOpen(true)
-    setSaveMessage(null)
-  }, [])
+  const openEdit = useCallback(
+    (deal: Deal) => {
+      setEditingId(deal.id)
+      setForm(
+        syncDealFormWithCategoryAttributes(dealToForm(deal), categories ?? []),
+      )
+      setModalOpen(true)
+      setSaveMessage(null)
+    },
+    [categories],
+  )
 
   const closeModal = useCallback(() => {
     setModalOpen(false)
@@ -508,17 +743,31 @@ export const DealsContent = () => {
 
   const toggleCategory = useCallback(
     (slug: string) => {
-      setForm((current) => {
-        const nextForm = {
-          ...current,
-          categorySlugs: current.categorySlugs.includes(slug)
-            ? current.categorySlugs.filter((s) => s !== slug)
-            : [...current.categorySlugs, slug],
-        }
-        return pruneDealExclusions(nextForm, categories ?? [])
-      })
+      setForm((current) =>
+        syncDealFormWithCategoryAttributes(
+          {
+            ...current,
+            categorySlugs: current.categorySlugs.includes(slug)
+              ? current.categorySlugs.filter((s) => s !== slug)
+              : [...current.categorySlugs, slug],
+          },
+          categories ?? [],
+        ),
+      )
     },
     [categories],
+  )
+
+  const updateVariation = useCallback(
+    (index: number, updater: (variation: VariationForm) => VariationForm) => {
+      setForm((current) => ({
+        ...current,
+        variations: current.variations.map((variation, variationIndex) =>
+          variationIndex === index ? updater(variation) : variation,
+        ),
+      }))
+    },
+    [],
   )
 
   const toggleExclusion = useCallback(
@@ -531,14 +780,6 @@ export const DealsContent = () => {
       }))
     },
     [],
-  )
-
-  const selectedCategories = useMemo(
-    () =>
-      (categories ?? []).filter((category) =>
-        form.categorySlugs.includes(category.slug ?? ''),
-      ),
-    [categories, form.categorySlugs],
   )
 
   const exclusionOptions = useMemo(
@@ -561,23 +802,21 @@ export const DealsContent = () => {
 
   return (
     <div className='flex w-full flex-col space-y-2 h-[90lvh] md:w-[82lvw] overflow-y-scroll pb-24'>
-      <div className='flex items-start w-full min-h-20'>
-        <SectionHeader
-          title='Deals & Bundles'
-          description='Configure store deals and mix-and-match bundles. Only enabled deals appear on the Deals page.'>
-          <div className='flex'>
-            {deals.length === 0 && (
-              <PrimaryButton
-                onPress={handleSeedDefaults}
-                icon={isSeeding ? 'spinners-ring' : 'arrow-up'}
-                disabled={isSeeding}
-                label='Seed Deals'
-              />
-            )}
-            <PrimaryButton onPress={openAdd} icon='plus' label='Add Deal' />
-          </div>
-        </SectionHeader>
-      </div>
+      <ContentHeader
+        title='Deals & Bundles'
+        description='Configure store deals and mix-and-match bundles. Only enabled deals appear on the Deals page.'>
+        <div className='flex'>
+          {deals.length === 0 && (
+            <PrimaryButton
+              onPress={handleSeedDefaults}
+              icon={isSeeding ? 'spinners-ring' : 'arrow-up'}
+              disabled={isSeeding}
+              label='Seed Deals'
+            />
+          )}
+          <PrimaryButton onPress={openAdd} icon='plus' label='Add Deal' />
+        </div>
+      </ContentHeader>
 
       <section className='flex flex-col gap-4'>
         <div className='flex items-baseline justify-between'>
@@ -712,7 +951,7 @@ export const DealsContent = () => {
       <Modal
         isOpen={modalOpen}
         onClose={closeModal}
-        size='2xl'
+        size='4xl'
         scrollBehavior='inside'
         classNames={{
           base: 'rounded-2xl',
@@ -777,15 +1016,22 @@ export const DealsContent = () => {
                 {(categories ?? []).map((c) => (
                   <Checkbox
                     key={c._id}
+                    size='sm'
                     color='default'
+                    icon={<Icon name='check' className='text-terpenes' />}
                     classNames={{
-                      label: 'text-sm py-0 pe-3 font-medium capitalize',
+                      icon: 'bg-white text-terpenes rounded-full h-6 w-auto aspect-square flex items-center justify-center p-0.5',
+                      label: [
+                        'text-sm py-0 pe-3 font-medium capitalize',
+                        form.categorySlugs.includes(c.slug ?? '') &&
+                          'text-white',
+                      ],
                       base:
                         form.categorySlugs.includes(c.slug ?? '') &&
-                        'bg-terpenes rounded-full',
+                        'bg-terpenes rounded-full ps-2.5',
                       wrapper:
                         form.categorySlugs.includes(c.slug ?? '') &&
-                        'bg-terpenes! rounded-full',
+                        'bg-terpenes! rounded-ful',
                     }}
                     isSelected={form.categorySlugs.includes(c.slug ?? '')}
                     onValueChange={() => toggleCategory(c.slug ?? '')}>
@@ -821,16 +1067,18 @@ export const DealsContent = () => {
                       <div className={cn('flex flex-wrap gap-5')}>
                         {options.map((option) => (
                           <Checkbox
+                            icon={<Icon name='x' />}
                             key={`${field}-${option.slug}`}
                             color='default'
                             classNames={{
-                              label: 'text-sm py-0 pe-3 font-medium',
+                              label: [
+                                'text-sm py-0 pe-3 font-medium',
+                                form[field].includes(option.slug) &&
+                                  'text-white',
+                              ],
                               base:
                                 form[field].includes(option.slug) &&
-                                'bg-terpenes rounded-full',
-                              wrapper:
-                                form[field].includes(option.slug) &&
-                                'bg-terpenes! rounded-full',
+                                'bg-rose-400 rounded-full',
                             }}
                             isSelected={form[field].includes(option.slug)}
                             onValueChange={() =>
@@ -857,96 +1105,203 @@ export const DealsContent = () => {
                   Variations
                 </p>
                 <p className='text-xs text-foreground/55'>
-                  Each row is one option (e.g. 8×⅛ oz or 4×¼ oz). At least one
-                  required.
+                  {`Each variation is one option (e.g. 8 × 3.5g or 4 × 7g). At least one
+                  required.`}
                 </p>
               </div>
               <div className='space-y-5'>
-                {form.variations.map((v, idx) => (
-                  <div
-                    key={idx}
-                    className='relative rounded-lg border border-default-200/80 bg-default-50/30 dark:bg-default-100/5 p-4'>
-                    <div className='grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4'>
-                      <Input
-                        label='Total units'
-                        type='number'
-                        min={1}
-                        value={v.totalUnits}
-                        onValueChange={(val) =>
-                          setForm((f) => {
-                            const vars = [...f.variations]
-                            vars[idx] = {...vars[idx], totalUnits: val}
-                            return {...f, variations: vars}
-                          })
-                        }
-                        classNames={commonInputClassNames}
-                      />
-                      <Input
-                        label='Size per unit'
-                        type='number'
-                        min={0.001}
-                        step={0.125}
-                        value={v.denominationPerUnit}
-                        onValueChange={(val) =>
-                          setForm((f) => {
-                            const vars = [...f.variations]
-                            vars[idx] = {...vars[idx], denominationPerUnit: val}
-                            return {...f, variations: vars}
-                          })
-                        }
-                        classNames={commonInputClassNames}
-                      />
-                      <Input
-                        label='Label'
-                        placeholder='⅛'
-                        value={v.denominationLabel}
-                        onValueChange={(val) =>
-                          setForm((f) => {
-                            const vars = [...f.variations]
-                            vars[idx] = {...vars[idx], denominationLabel: val}
-                            return {...f, variations: vars}
-                          })
-                        }
-                        classNames={commonInputClassNames}
-                      />
-                      <Input
-                        label='Unit'
-                        placeholder='oz'
-                        value={v.unitLabel}
-                        onValueChange={(val) =>
-                          setForm((f) => {
-                            const vars = [...f.variations]
-                            vars[idx] = {...vars[idx], unitLabel: val}
-                            return {...f, variations: vars}
-                          })
-                        }
-                        classNames={commonInputClassNames}
-                      />
+                {form.variations.map((v, idx) => {
+                  const variationCategory = selectedCategories.find(
+                    (category) => category.slug === v.categorySlug,
+                  )
+                  const variationCategoryAttributes = getCategoryAttributes(
+                    variationCategory ? [variationCategory] : [],
+                  )
+                  const denominationOptions = getDenominationOptions(
+                    variationCategoryAttributes,
+                    v.unitLabel,
+                  )
+                  const hasCategoryDenominations =
+                    variationCategoryAttributes.denominations.length > 0
+                  const hasCategoryUnits =
+                    variationCategoryAttributes.units.length > 0
+
+                  return (
+                    <div
+                      key={idx}
+                      className='relative rounded-lg border border-default-200/80 bg-default-50/30 dark:bg-default-100/5 p-4'>
+                      <div className='grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4'>
+                        <Select
+                          label='Category'
+                          placeholder={
+                            variationCategoryOptions.length > 0
+                              ? 'Select category'
+                              : 'Select categories first'
+                          }
+                          selectedKeys={
+                            v.categorySlug
+                              ? new Set([v.categorySlug])
+                              : new Set()
+                          }
+                          onSelectionChange={(keys) => {
+                            const nextValue = getSingleSelectedKey(keys)
+                            if (!nextValue) return
+
+                            updateVariation(
+                              idx,
+                              (variation) =>
+                                syncVariationsWithCategoryAttributes(
+                                  [{...variation, categorySlug: nextValue}],
+                                  selectedCategories,
+                                )[0],
+                            )
+                          }}
+                          classNames={variationSelectClassNames}
+                          isDisabled={variationCategoryOptions.length === 0}>
+                          {variationCategoryOptions.map((option) => (
+                            <SelectItem
+                              key={option.value}
+                              textValue={option.label}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </Select>
+                        <Input
+                          label='Total units'
+                          type='number'
+                          min={1}
+                          value={v.totalUnits}
+                          onValueChange={(val) =>
+                            updateVariation(idx, (variation) => ({
+                              ...variation,
+                              totalUnits: val,
+                            }))
+                          }
+                          classNames={commonInputClassNames}
+                        />
+                        <Select
+                          label='Size per unit'
+                          placeholder={
+                            hasCategoryDenominations
+                              ? 'Select denomination'
+                              : 'Select categories first'
+                          }
+                          selectedKeys={
+                            hasCategoryDenominations
+                              ? new Set([v.denominationPerUnit])
+                              : new Set()
+                          }
+                          onSelectionChange={(keys) => {
+                            const nextValue = getSingleSelectedKey(keys)
+                            if (!nextValue) return
+
+                            updateVariation(idx, (variation) => ({
+                              ...variation,
+                              denominationPerUnit: nextValue,
+                              denominationLabel: getDenominationLabel(
+                                nextValue,
+                                variation.unitLabel,
+                              ),
+                            }))
+                          }}
+                          classNames={variationSelectClassNames}
+                          isDisabled={!hasCategoryDenominations}>
+                          {denominationOptions.map((option) => (
+                            <SelectItem
+                              key={option.value}
+                              textValue={option.label}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </Select>
+                        {/*<Input
+                          label='Display label'
+                          value={v.denominationLabel}
+                          isReadOnly
+                          description='Auto-derived from the selected size and unit.'
+                          classNames={commonInputClassNames}
+                        />*/}
+                        <Select
+                          label='Unit'
+                          placeholder={
+                            hasCategoryUnits
+                              ? 'Select unit'
+                              : 'Select categories first'
+                          }
+                          selectedKeys={
+                            hasCategoryUnits
+                              ? new Set([v.unitLabel])
+                              : new Set()
+                          }
+                          onSelectionChange={(keys) => {
+                            const nextValue = getSingleSelectedKey(keys)
+                            if (!nextValue) return
+
+                            updateVariation(idx, (variation) => ({
+                              ...variation,
+                              unitLabel: nextValue,
+                              denominationLabel: getDenominationLabel(
+                                variation.denominationPerUnit,
+                                nextValue,
+                              ),
+                            }))
+                          }}
+                          classNames={variationSelectClassNames}
+                          isDisabled={!hasCategoryUnits}>
+                          {variationCategoryAttributes.units.map((option) => (
+                            <SelectItem
+                              key={option.value}
+                              textValue={option.label}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </Select>
+                      </div>
+                      {variationCategoryOptions.length === 0 && (
+                        <p className='mt-3 text-xs text-foreground/55'>
+                          Choose at least one deal category before configuring
+                          variation categories.
+                        </p>
+                      )}
+                      {variationCategoryOptions.length > 0 &&
+                        !hasCategoryDenominations &&
+                        !hasCategoryUnits && (
+                          <p className='mt-3 text-xs text-foreground/55'>
+                            The selected variation category has no packaging
+                            data yet. Add denominations and units in Inventory
+                            first.
+                          </p>
+                        )}
+                      <Button
+                        size='sm'
+                        color='default'
+                        variant='flat'
+                        isIconOnly
+                        className='absolute -top-4 -right-2 hover:text-danger'
+                        isDisabled={form.variations.length <= 1}
+                        onPress={() =>
+                          setForm((f) => ({
+                            ...f,
+                            variations: f.variations.filter(
+                              (_, i) => i !== idx,
+                            ),
+                          }))
+                        }>
+                        <Icon name='x' />
+                      </Button>
                     </div>
-                    <Button
-                      size='sm'
-                      color='default'
-                      variant='flat'
-                      isIconOnly
-                      className='absolute -top-4 -right-2 hover:text-danger'
-                      isDisabled={form.variations.length <= 1}
-                      onPress={() =>
-                        setForm((f) => ({
-                          ...f,
-                          variations: f.variations.filter((_, i) => i !== idx),
-                        }))
-                      }>
-                      <Icon name='x' />
-                    </Button>
-                  </div>
-                ))}
+                  )
+                })}
                 <Button
                   size='sm'
                   variant='bordered'
                   onPress={() =>
                     setForm((f) => ({
                       ...f,
-                      variations: [...f.variations, emptyVariation()],
+                      variations: [
+                        ...f.variations,
+                        emptyVariation(selectedCategories),
+                      ],
                     }))
                   }>
                   Add variation

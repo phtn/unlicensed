@@ -4,6 +4,7 @@ import type {Id} from '@/convex/_generated/dataModel'
 export type BundleType = string
 
 export interface BundleVariation {
+  categorySlug?: string
   totalUnits: number
   denominationPerUnit: number
   denominationLabel?: string
@@ -35,12 +36,14 @@ export const DEFAULT_BUILD_YOUR_OWN_OZ_CONFIG: BundleConfig = {
   categorySlugs: ['flower'],
   variations: [
     {
+      categorySlug: 'flower',
       totalUnits: 8,
       denominationPerUnit: 0.125,
       denominationLabel: '⅛',
       unitLabel: 'oz',
     },
     {
+      categorySlug: 'flower',
       totalUnits: 4,
       denominationPerUnit: 0.25,
       denominationLabel: '¼',
@@ -64,6 +67,7 @@ export function dealDocToBundleConfig(doc: {
   excludedBases?: string[]
   excludedBrands?: string[]
   variations: Array<{
+    categorySlug?: string
     totalUnits: number
     denominationPerUnit: number
     denominationLabel?: string

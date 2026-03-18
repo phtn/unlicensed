@@ -1,7 +1,6 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
-import {SectionHeader} from '@/components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError, onSuccess} from '@/ctx/toast'
@@ -30,7 +29,7 @@ import {
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useEffect, useMemo, useState} from 'react'
-import {PrimaryButton} from './components'
+import {ContentHeader, PrimaryButton} from './components'
 
 const ALERT_LABELS: Record<AdminAlertEventKey, string> = {
   orders: 'New Orders',
@@ -261,7 +260,7 @@ export const AlertsContent = () => {
 
   return (
     <div className='flex w-full flex-col gap-4 h-[90vh] md:w-[82lvw] overflow-scroll pb-24'>
-      <SectionHeader
+      <ContentHeader
         title={
           <div className='flex items-center space-x-4'>
             <span>Admin Alerts</span>
@@ -280,7 +279,7 @@ export const AlertsContent = () => {
           label='Save Changes'
           disabled={!user?.uid || isSaving || !isDirty}
         />
-      </SectionHeader>
+      </ContentHeader>
 
       <div className='grid gap-4 xl:grid-cols-4'>
         {ADMIN_ALERT_EVENT_KEYS.map((key) => {
