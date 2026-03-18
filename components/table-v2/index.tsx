@@ -25,6 +25,7 @@ import {
   useRef,
 } from 'react'
 
+import {useSidebar} from '@/app/admin/_components/ui/sidebar'
 import {
   Table,
   TableBody,
@@ -385,11 +386,16 @@ function DataTableContent<T>({
   }, [])
 
   const id = useId()
+  const {open: sidebarOpen} = useSidebar()
 
   return (
     <div className={cn('text-foreground overflow-hidden')}>
-      <div className='relative inset-0 dark:inset-0 md:pb-8 min-w-0 md:w-full w-[95.1lvw] overflow-hidden mb-0'>
-        <div className='portrait:sticky left-0 flex h-auto shrink items-center justify-between gap-1 md:h-10.5 md:flex-nowrap md:gap-0 md:w-full w-[94lvw] overflow-hidden'>
+      <div
+        className={cn(
+          'relative inset-0 dark:inset-0 md:pb-8 md:max-w-[84lvw] md:w-full overflow-hidden mb-0',
+          {'md:max-w-[96.25lvw]': !sidebarOpen},
+        )}>
+        <div className='portrait:sticky left-0 flex h-auto shrink items-center justify-between gap-1 md:h-10.5 md:flex-nowrap md:gap-0 md:w-full w-[lvw] overflow-hidden'>
           <div className='flex items-center space-x-3'>
             <LeftTableToolbar
               select={
@@ -464,7 +470,7 @@ function DataTableContent<T>({
                             className={cn(
                               'sticky top-0 z-20 bg-[#eceef2] md:h-8 h-7 uppercase overflow-hidden',
                               'font-clash font-medium tracking-tight text-dark-table/80 dark:text-white md:tracking-tight text-xs md:text-sm',
-                              'dark:text-zinc-300 dark:bg-dark-table md:ps-0 ps-2',
+                              'dark:text-zinc-300 dark:bg-dark-table ps-2',
                             )}>
                             <ColumnSort
                               flexRender={flexRender}

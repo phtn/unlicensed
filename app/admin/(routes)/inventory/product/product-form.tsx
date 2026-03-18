@@ -485,6 +485,88 @@ export const ProductForm = ({
     form.setFieldValue('upgradePrice', initialValues.upgradePrice)
   }, [isEditMode, productId, initialValues, form])
 
+  useEffect(() => {
+    if (!isEditMode || !categories?.length) return
+
+    const currentCategorySlug = form.getFieldValue('categorySlug')
+    if (!currentCategorySlug) return
+
+    const selectedCategory =
+      categories.find((category) => category.slug === currentCategorySlug) ??
+      null
+    if (!selectedCategory) return
+
+    const units = selectedCategory.units ?? []
+    const denominations = selectedCategory.denominations ?? []
+
+    const currentUnit = ((form.getFieldValue('unit') as string) ?? '').trim()
+    const primaryUnit = currentUnit || units[0] || ''
+    if (!currentUnit && units.length > 0) {
+      form.setFieldValue('unit', units[0])
+    }
+
+    if (!primaryUnit || denominations.length === 0) return
+
+    const currentVariants = form.getFieldValue('variants') as
+      | Array<{label: string; price: number}>
+      | undefined
+    const hasVariants =
+      Array.isArray(currentVariants) && currentVariants.length > 0
+    if (!hasVariants) {
+      form.setFieldValue(
+        'variants',
+        denominations.map((denomination) => ({
+          label: `${denomination}${primaryUnit}`,
+          price: 0,
+        })),
+      )
+    }
+
+    const currentAvailableDenominations = (
+      (form.getFieldValue('availableDenominationsRaw') as string) ?? ''
+    ).trim()
+    if (!currentAvailableDenominations) {
+      form.setFieldValue(
+        'availableDenominationsRaw',
+        denominations.map(String).join(', '),
+      )
+    }
+
+    const currentStockByDenomination =
+      (form.getFieldValue('stockByDenomination') as
+        | Record<string, number>
+        | undefined) ?? {}
+    const nextStockByDenomination = {...currentStockByDenomination}
+    let stockChanged = false
+    for (const denomination of denominations) {
+      const key = String(denomination)
+      if (nextStockByDenomination[key] === undefined) {
+        nextStockByDenomination[key] = 0
+        stockChanged = true
+      }
+    }
+    if (stockChanged) {
+      form.setFieldValue('stockByDenomination', nextStockByDenomination)
+    }
+
+    const currentPriceByDenomination =
+      (form.getFieldValue('priceByDenomination') as
+        | Record<string, number>
+        | undefined) ?? {}
+    const nextPriceByDenomination = {...currentPriceByDenomination}
+    let priceChanged = false
+    for (const denomination of denominations) {
+      const key = String(denomination)
+      if (nextPriceByDenomination[key] === undefined) {
+        nextPriceByDenomination[key] = 0
+        priceChanged = true
+      }
+    }
+    if (priceChanged) {
+      form.setFieldValue('priceByDenomination', nextPriceByDenomination)
+    }
+  }, [isEditMode, categories, form])
+
   // Auto-populate category from search params
   useEffect(() => {
     if (initialCategorySlug && categories) {

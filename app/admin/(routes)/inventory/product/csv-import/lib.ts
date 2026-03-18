@@ -404,8 +404,10 @@ export function applySlugConflicts(
       typeof row.product._id === 'string' && row.product._id.trim()
         ? row.product._id.trim()
         : undefined
+    const hasSlugField = Object.hasOwn(row.raw, 'slug')
     const slugRaw = (row.product.slug as string) ?? ''
-    const slug = slugRaw ? slugify(slugRaw) : slugify(String(name ?? ''))
+    const slug =
+      slugRaw || hasSlugField ? slugify(slugRaw || String(name ?? '')) : ''
     const existingProductId = slug ? existingProductsBySlug.get(slug) : null
     if (existingProductId && existingProductId !== rowId) {
       row.conflict = 'slug'

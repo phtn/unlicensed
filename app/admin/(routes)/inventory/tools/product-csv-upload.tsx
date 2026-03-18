@@ -6,6 +6,7 @@ import {TabContentContainer} from '@/app/admin/_components/ui/tab-content'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
+import {slugify} from '@/lib/slug'
 import {cn} from '@/lib/utils'
 import {Button, Card, Chip, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
@@ -308,8 +309,38 @@ export function ProductCsvUpload() {
   const rowsWithConflicts = useMemo(() => {
     if (!fileParseResult?.ok || !fileParseResult.rows.length) return
     const rows = fileParseResult.rows.map((r) => {
+      const raw = {...r.raw}
+      const product = {...r.product}
       const errors = [...r.errors]
-      const catSlug = r.product.categorySlug as string | undefined
+      const rowId =
+        typeof product._id === 'string' && product._id.trim()
+          ? product._id.trim()
+          : undefined
+      const slugFieldPresent = Object.hasOwn(raw, 'slug')
+
+      if (slugFieldPresent && !String(raw.slug ?? '').trim()) {
+        const nameSlug = slugify(String(product.name ?? ''))
+        if (nameSlug) {
+          let nextSlug = nameSlug
+          const existingProductId = existingProductsBySlug.get(nameSlug)
+          if (existingProductId && existingProductId !== rowId) {
+            const categorySlug = slugify(String(product.categorySlug ?? ''))
+            if (categorySlug) {
+              nextSlug = slugify(`${nameSlug}-${categorySlug}`)
+              const categorySlugOwner = existingProductsBySlug.get(nextSlug)
+              if (categorySlugOwner && categorySlugOwner !== rowId) {
+                nextSlug = slugify(
+                  `${nameSlug}-${categorySlug}-${new Date().getMinutes()}`,
+                )
+              }
+            }
+          }
+          raw.slug = nextSlug
+          product.slug = nextSlug
+        }
+      }
+
+      const catSlug = product.categorySlug as string | undefined
       if (
         catSlug != null &&
         catSlug.trim() !== '' &&
@@ -317,7 +348,13 @@ export function ProductCsvUpload() {
       ) {
         errors.push(`Category "${catSlug}" not found`)
       }
-      return {...r, errors, conflict: r.conflict as ParsedRow['conflict']}
+      return {
+        ...r,
+        raw,
+        product,
+        errors,
+        conflict: r.conflict as ParsedRow['conflict'],
+      }
     })
     applySlugConflicts(rows, existingProductsBySlug)
     return rows
