@@ -132,6 +132,7 @@ export const userSchema = v.object({
   updatedAt: v.optional(v.number()),
   notes: v.optional(v.string()),
   accountStatus: v.optional(v.string()),
+  wholesale: v.optional(v.boolean()),
 })
 
 export type UserType = Infer<typeof userSchema>

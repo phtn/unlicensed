@@ -363,7 +363,7 @@ export function ChatWindow({
       className={cn(
         'left-auto right-4 translate-x-0 rounded-3xl border-dark-table',
         'bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] md:right-8 md:bottom-[calc(env(safe-area-inset-bottom)+8rem)]',
-        'w-[min(calc(100vw-2.5rem),34rem)] md:w-[min(calc(100vw-4rem),34rem)] min-[384px]:min-w-[21.5rem]',
+        'w-[min(calc(100vw-2.5rem),34rem)] md:w-[min(calc(100vw-4rem),34rem)] min-[384px]:min-w-86',
         'h-[min(580px,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-5rem))]',
         'md:h-[min(580px,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-7rem))]',
         'max-h-[600.1px] min-h-48',
