@@ -7,6 +7,7 @@ import {Suspense} from 'react'
 import {EmailTemplateList} from './_email'
 import {EmailTemplateDisplay} from './_email/components/email-template-display'
 import {EmailTemplateForm} from './_email/components/email-template-form'
+import {MailingListContent} from './_email/components/mailing-list'
 
 const EmailContentInner = () => {
   const templates = useQuery(api.emailSettings.q.listEmailSettings)
@@ -15,6 +16,8 @@ const EmailContentInner = () => {
   switch (tabId) {
     case 'new':
       return <EmailTemplateForm />
+    case 'mailing-list':
+      return <MailingListContent />
     case 'templates':
       return <EmailTemplateDisplay />
     case 'edit':

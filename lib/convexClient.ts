@@ -70,6 +70,7 @@ export type RawProduct = {
   subcategory?: string
   netWeight?: number
   netWeightUnit?: string
+  packSize?: number
   packagingMode?: 'bulk' | 'prepack'
   stockUnit?: string
   startingWeight?: number
@@ -176,6 +177,7 @@ export const adaptProduct = (
   weightGrams: product.weightGrams,
   netWeight: product.netWeight,
   netWeightUnit: product.netWeightUnit,
+  packSize: product.packSize,
   packagingMode: product.packagingMode,
   stockUnit: product.stockUnit,
   startingWeight: product.startingWeight,

@@ -9,6 +9,8 @@ import {uuidv7} from 'uuidv7'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+const MAILING_LIST_BLAST_FROM = 'hello@rapidfirenow.com'
+
 const toErrorMessage = (err: unknown): string => {
   if (err instanceof Error) return err.message
   if (typeof err === 'string') return err
@@ -117,8 +119,7 @@ export async function POST(req: Request) {
     template,
     templateProps,
   } = parsed
-  const from =
-    parsed.from ?? process.env.RESEND_FROM ?? 'hello@rapidfirenow.com'
+  const from = MAILING_LIST_BLAST_FROM
   let resend: ReturnType<typeof createClient>
   try {
     resend = createClient()
@@ -198,7 +199,7 @@ export async function POST(req: Request) {
       return Response.json(
         {
           ok: false,
-          error: `Resend failed for ${recipient} - ${message}`,
+          error: `Resend failed for ${recipient.email} - ${message}`,
         },
         {status: 502},
       )
@@ -216,7 +217,7 @@ export async function POST(req: Request) {
       return Response.json(
         {
           ok: false,
-          error: `Resend failed for ${recipient} - ${details}`,
+          error: `Resend failed for ${recipient.email} - ${details}`,
         },
         {status: 502},
       )

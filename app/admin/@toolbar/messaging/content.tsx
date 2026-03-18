@@ -32,6 +32,12 @@ export const MessagingContent = () => {
       </MainTab>
       <ToolbarButtonWrapper>
         <SecondaryTab
+          id='mailing-list'
+          href='/admin/messaging/email?tabId=mailing-list'
+          icon='mail-send-fill'
+          label='Mailing List'
+        />
+        <SecondaryTab
           id='templates'
           href='/admin/messaging/email?tabId=templates'
           icon='gallery-edit-bold'

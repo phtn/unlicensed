@@ -33,6 +33,8 @@ import type {EmailSettingsConvexArgs} from '../email-settings-form-schema'
 import {toFormValues, withViewTransition} from '../utils'
 import {EmailTemplateEditor} from './email-template-editor'
 
+const MAILING_LIST_BLAST_FROM = 'hello@rapidfirenow.com'
+
 interface EmailTemplateViewerProps {
   id: string
 }
@@ -328,7 +330,9 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
           emailSetting.template === 'invitation' && emailSetting.templateProps
         const body: Record<string, unknown> = {
           subject: emailSetting.subject ?? '',
-          from: emailSetting.from?.[0],
+          from: MAILING_LIST_BLAST_FROM,
+          cc: emailSetting.cc ?? undefined,
+          bcc: emailSetting.bcc ?? undefined,
         }
         if (useInvitation) {
           body.template = 'invitation'
@@ -671,7 +675,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                             ? (blastProgress.sent / blastProgress.total) * 100
                             : 0
                         }
-                        color='primary'
+                        color='success'
                         showValueLabel
                         valueLabel={`${blastProgress.sent} / ${blastProgress.total}`}
                         className='max-w-full'

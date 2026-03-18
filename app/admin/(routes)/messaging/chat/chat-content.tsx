@@ -42,9 +42,6 @@ type UserDoc = Doc<'users'>
 const getUserConversationFid = (participant: UserDoc) =>
   participant.fid ?? participant.firebaseId ?? null
 
-const getStatusLabel = (isActive: boolean | undefined) =>
-  isActive === false ? 'Inactive' : 'Active'
-
 const getLocationLabel = ({
   city,
   countryCode,
@@ -76,7 +73,7 @@ const getLocationLabel = ({
 
 interface ParticipantCardProps {
   avatarUrl?: string | null
-  email: string
+  email?: string
   isActive?: boolean
   isSelected: boolean
   label: string
@@ -88,7 +85,6 @@ interface ParticipantCardProps {
 
 const ParticipantCard = ({
   avatarUrl,
-  email,
   isActive,
   isSelected,
   label,

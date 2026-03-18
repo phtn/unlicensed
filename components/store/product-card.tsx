@@ -160,6 +160,8 @@ const ProductCardComponent = ({
     null
   const imageSrc = imageUrlProp ?? product.image
   const productId = product._id as Id<'products'> | undefined
+  const hasMetaBeforePackSize =
+    subcategoryLabel !== '' || netWeightLabel !== ''
 
   const handleAddToCart = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
@@ -245,7 +247,18 @@ const ProductCardComponent = ({
 
                   {netWeightLabel && (
                     <span className='text-xs font-normal lowercase opacity-80 dark:text-alum dark:opacity-100 md:text-xs font-okxs'>
-                      {netWeightLabel} {packSizeLabel && ` ${packSizeLabel} pk`}
+                      {netWeightLabel}
+                    </span>
+                  )}
+
+                  {packSizeLabel && (
+                    <span className='text-xs font-normal lowercase opacity-80 dark:text-alum dark:opacity-100 md:text-xs font-okxs'>
+                      {hasMetaBeforePackSize && (
+                        <span className='px-1 text-xs font-thin opacity-80'>
+                          &middot;
+                        </span>
+                      )}
+                      <span>{packSizeLabel} pk</span>
                     </span>
                   )}
                 </div>
