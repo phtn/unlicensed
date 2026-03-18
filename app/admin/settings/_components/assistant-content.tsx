@@ -3,31 +3,11 @@
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
+import {parseAssistantConfig} from '@/lib/assistant/config'
 import {Button, Switch, Textarea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {Activity, startTransition, useCallback, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
-
-const DEFAULT_INSTRUCTIONS = `You are a bubbly and radiant assistant named Rapid Assistant.
-Follow these rules:
-- No emojis.
-- Be helpful, friendly, professional, and direct.
-- Keep responses concise (prefer short paragraphs or bullets).
-- Answer questions about Rapid Fire's products, categories, order status, and policies.
-- Help users understand how to use the platform.
-- For any product related questions, use the product catalog as the source of truth and provide a link like this: /lobby/category/flower?tier=aaaa&subcategory=regular&brand=jungle-boys.
-- For any product specifics, provide a link and use /lobby/products/[slug] catalog as the source of truth.
-- For policy, privacy, or purchase questions, use Rapid Fire's legal documents as the source of truth (when provided in context):
-  - /terms-of-use (Terms of Service)
-  - /privacy-policy (Privacy Policy)
-  - /purchase-agreement (Purchase Agreement)
-- If the answer isn't clearly covered by the legal docs or provided context, say so and direct the user to hello@rapidfirenow.com (do not guess).
-- Do not provide legal advice; provide factual guidance and direct users to hello@rapidfirenow.com for legal/account-specific concerns.`
-
-type AssistantConfigValue = {
-  instructions?: string
-  isActive?: boolean
-}
 
 export const AssistantContent = () => {
   const {user} = useAuthCtx()
@@ -38,13 +18,10 @@ export const AssistantContent = () => {
   const updateAdmin = useMutation(api.admin.m.updateAdminByIdentifier)
   const seedAssistant = useMutation(api.assistant.seed.seedAssistant)
 
-  const configValue =
-    config?.value && typeof config.value === 'object'
-      ? (config.value as AssistantConfigValue)
-      : undefined
+  const configValue = parseAssistantConfig(config?.value)
   const configKey =
     config !== undefined
-      ? `${configValue?.instructions ?? ''}-${configValue?.isActive ?? false}`
+      ? `${configValue.instructions}-${configValue.isActive}-${configValue.catalogSupportEnabled}`
       : 'loading'
 
   return (
@@ -115,7 +92,7 @@ function AIAssistantFormInner({
   updateAdmin,
   userUid,
 }: {
-  configValue: AssistantConfigValue | undefined
+  configValue: ReturnType<typeof parseAssistantConfig>
   configLoaded: boolean
   canSeedAssistant: boolean
   isAssistantSeeded: boolean
@@ -128,12 +105,11 @@ function AIAssistantFormInner({
   }) => Promise<unknown>
   userUid: string | undefined
 }) {
-  const [instructions, setInstructions] = useState(
-    configValue?.instructions
-      ? `${configValue.instructions} \n\n**Primary Instructions**\n\n${DEFAULT_INSTRUCTIONS}`
-      : DEFAULT_INSTRUCTIONS,
+  const [instructions, setInstructions] = useState(configValue.instructions)
+  const [isActive, setIsActive] = useState(configValue.isActive)
+  const [catalogSupportEnabled, setCatalogSupportEnabled] = useState(
+    configValue.catalogSupportEnabled,
   )
-  const [isActive, setIsActive] = useState(configValue?.isActive ?? false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<null | 'saved' | 'error'>(null)
 
@@ -143,7 +119,7 @@ function AIAssistantFormInner({
     startTransition(() => {
       updateAdmin({
         identifier: 'ai_assistant_config',
-        value: {instructions, isActive},
+        value: {instructions, isActive, catalogSupportEnabled},
         uid: userUid ?? 'anonymous',
       })
         .then(() => {
@@ -156,7 +132,7 @@ function AIAssistantFormInner({
           setSaveMessage('error')
         })
     })
-  }, [instructions, isActive, updateAdmin, userUid])
+  }, [catalogSupportEnabled, instructions, isActive, updateAdmin, userUid])
 
   return (
     <section className='flex md:w-md flex-col gap-4'>
@@ -200,14 +176,38 @@ function AIAssistantFormInner({
             minRows={12}
           />
         </div>
-        <div className='flex items-center justify-between'>
-          <Switch
-            isSelected={isActive}
-            onValueChange={setIsActive}
-            isDisabled={!configLoaded}
-            size='sm'>
-            Active
-          </Switch>
+        <div className='flex flex-col gap-4'>
+          <div className='flex items-center justify-between gap-4'>
+            <div className='flex flex-col gap-1'>
+              <span className='text-sm font-medium'>Active</span>
+              <span className='text-xs text-muted-foreground'>
+                Allow customers to chat with the assistant.
+              </span>
+            </div>
+            <Switch
+              isSelected={isActive}
+              onValueChange={setIsActive}
+              isDisabled={!configLoaded}
+              size='sm'
+            />
+          </div>
+          <div className='hidden _flex items-center justify-between gap-4'>
+            <div className='flex flex-col gap-1'>
+              <span className='text-sm font-medium'>
+                Catalog links and knowledge
+              </span>
+              <span className='text-xs text-muted-foreground'>
+                Let the assistant use the live store catalog for product-aware
+                answers and auto-linked product/category mentions.
+              </span>
+            </div>
+            <Switch
+              isSelected={catalogSupportEnabled}
+              onValueChange={setCatalogSupportEnabled}
+              isDisabled={!configLoaded}
+              size='sm'
+            />
+          </div>
         </div>
       </div>
 

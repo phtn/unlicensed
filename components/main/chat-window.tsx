@@ -361,16 +361,12 @@ export function ChatWindow({
       open={open}
       onOpenChange={handleWindowOpenChange}
       className={cn(
-        'left-auto right-4 w-[min(calc(100vw-2.5rem),34rem)] translate-x-0 rounded-3xl border-dark-table',
-        'top-14 lg:top-16 xl:top-20 2xl:top-24 3xl:top-32',
+        'left-auto right-4 translate-x-0 rounded-3xl border-dark-table',
         'bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] md:right-8 md:bottom-[calc(env(safe-area-inset-bottom)+8rem)]',
-        'h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-5.25rem)] max-h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-5.25rem)]',
-        'md:h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-8rem)] md:max-h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-8rem)]',
-        'lg:h-[calc(100vh-4rem-env(safe-area-inset-bottom)-8rem)] lg:max-h-[calc(100vh-4rem-env(safe-area-inset-bottom)-8rem)]',
-        'xl:h-[calc(100vh-5rem-env(safe-area-inset-bottom)-8rem)] xl:max-h-[calc(100vh-5rem-env(safe-area-inset-bottom)-8rem)]',
-        '2xl:h-[calc(100vh-6rem-env(safe-area-inset-bottom)-8rem)] 2xl:max-h-[calc(100vh-6rem-env(safe-area-inset-bottom)-8rem)]',
-        '3xl:h-[calc(100vh-6rem-env(safe-area-inset-bottom)-8rem)] 3xl:max-h-[calc(100vh-6rem-env(safe-area-inset-bottom)-8rem)]',
-        'min-h-48 2xl:max-h-[602.01px]!',
+        'w-[min(calc(100vw-2.5rem),34rem)] md:w-[min(calc(100vw-4rem),34rem)] min-[384px]:min-w-[21.5rem]',
+        'h-[min(580px,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-5rem))]',
+        'md:h-[min(580px,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-7rem))]',
+        'max-h-[600.1px] min-h-48',
       )}
       title={
         isGuestFlow ? (

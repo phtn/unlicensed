@@ -12,7 +12,6 @@ import {
   useCart,
 } from '@/hooks/use-cart'
 import {Icon} from '@/lib/icons'
-import {formatStockDisplay} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {Badge, Button, Tooltip, useDisclosure} from '@heroui/react'
@@ -26,6 +25,7 @@ import {
   useTransition,
   ViewTransition,
 } from 'react'
+import {ProductDetailStats} from './product-stats'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -158,8 +158,17 @@ export const ProductInteraction = ({
         denominationKey={currentDenominationKey}
       />
       <div className='flex flex-col gap-4 p-4 sm:p-5 lg:p-6 border-t border-foreground/20'>
-        <div className='space-y-4 sm:space-y-4'>
-          <h1 className='text-3xl lg:text-4xl xl:text-5xl capitalize font-bone font-light text-foreground leading-tight tracking-tight'>
+        <div className='space-y-2'>
+          {product.brand && (
+            <p className='text-sm font-clash opacity-70 capitalize'>
+              <span>{product.brand.map((brand) => brand).join(', ')}</span>
+              {product.productType && <span className='px-1'>&middot;</span>}
+              {product.productType && (
+                <span className='ml-2'>{product.productType}</span>
+              )}
+            </p>
+          )}
+          <h1 className='text-3xl lg:text-4xl xl:text-4xl capitalize font-clash text-foreground leading-tight tracking-tight'>
             {product.name.split('-').join(' ')}
           </h1>
           <p className='text-sm font-okxs opacity-70 leading-relaxed'>
@@ -180,12 +189,9 @@ export const ProductInteraction = ({
                     key={denomination}
                     size='sm'
                     content={
-                      <div className='flex items-center gap-0.5 overflow-hidden whitespace-nowrap h-5 text-sm'>
-                        <Icon
-                          name='star-fill'
-                          className='size-4 text-yellow-500'
-                        />
-                        <span>Top Picks</span>
+                      <div className='flex items-center space-x-0.5 overflow-hidden whitespace-nowrap h-5 text-sm'>
+                        <Icon name='hot' className='size-3 text-yellow-500' />
+                        <span>Popular</span>
                       </div>
                     }
                     classNames={{
@@ -198,16 +204,7 @@ export const ProductInteraction = ({
                       size={isMobile ? 'sm' : 'md'}
                       content={
                         product.popularDenomination?.includes(denomination) ? (
-                          <Icon
-                            name='star-fill'
-                            className={cn(
-                              'size-4 transition-transform duration-300',
-                              {
-                                'scale-110 rotate-16':
-                                  selectedDenomination === i,
-                              },
-                            )}
-                          />
+                          <Icon name='hot' className='size-4 text-yellow-500' />
                         ) : null
                       }
                       placement='top-right'
@@ -218,15 +215,14 @@ export const ProductInteraction = ({
                       })}
                       classNames={{
                         badge: cn(
-                          'rounded-full border-[0.5px] dark:border-sidebar/50 size-4 aspect-square',
+                          'rounded-full border-0 bg-transparent dark:sidebar/0 size-4 aspect-square',
                           'transition-transform duration-300',
                           {
-                            'bg-white text-brand':
+                            'text-brand':
                               product.popularDenomination?.includes(
                                 denomination,
                               ),
-                            'border-1 size-6 shadow-md':
-                              selectedDenomination === i,
+                            'bg-dark-table size-6': selectedDenomination === i,
                           },
                         ),
                       }}>
@@ -243,7 +239,7 @@ export const ProductInteraction = ({
                         )}>
                         <span
                           className={cn(
-                            'relative font-okxs text-base md:text-lg font-medium whitespace-nowrap portrait:px-0',
+                            'relative font-okxs text-base md:text-base font-medium whitespace-nowrap portrait:px-0',
                           )}>
                           <span>
                             {formatProductDenominationLabel(
@@ -315,7 +311,7 @@ export const ProductInteraction = ({
         <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />
       </div>
 
-      <div className='p-2 md:p-3'>
+      <div className='p-2 md:p-6'>
         <div className='bg-linear-to-r from-dark-gray/5 via-dark-gray/5 to-dark-gray/5 dark:bg-background/30 rounded-xs gap-4 p-4 space-y-3'>
           <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
             Lineage
@@ -379,84 +375,6 @@ export const ProductInteraction = ({
           </h3>
         )}
       </div>
-    </div>
-  )
-}
-
-interface ProductDetailStatsProps {
-  product: StoreProduct
-  quantityInCart: number
-  denominationKey: string
-}
-
-const ProductDetailStats = ({
-  product,
-  quantityInCart,
-  denominationKey,
-}: ProductDetailStatsProps) => {
-  return (
-    <div className='flex items-center h-14 border-b border-background/20 bg-background/60 overflow-hidden justify-between gap-1 pl-4 md:w-full'>
-      <span className='w-16 md:w-20 text-xs font-okxs'>
-        {product.categorySlug.toUpperCase()}
-      </span>
-      <div className='flex items-center space-x-2'>
-        {product.categorySlug === 'vapes' ? (
-          <span>
-            <span className='text-sm md:text-base font-clash font-medium'>
-              {product.netWeight}
-              {product.netWeightUnit}
-            </span>
-          </span>
-        ) : product.categorySlug === 'extracts' ? (
-          <span>
-            <span className='font-clash font-medium text-xs md:text-sm'>
-              THC
-            </span>
-            <span className='text-xs md:text-sm lowercase'>mg</span>
-          </span>
-        ) : null}
-        <span className='px-1 md:px-2 text-sm font-thin opacity-30'>|</span>
-        <span className='font-clash font-medium text-xs md:text-sm'>
-          {product.strainType}
-        </span>{' '}
-      </div>
-
-      {quantityInCart > 0 ? (
-        <Tooltip key='in-cart' content='In The Bag'>
-          <Badge
-            size='lg'
-            variant='shadow'
-            className='px-[0.5px]'
-            classNames={{
-              badge:
-                'aspect-square size-5 md:size-6 text-sm md:text-base translate-x-0 -translate-y-1 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-background/85 shadow-md backdrop-blur-2xl bg-brand/90',
-            }}
-            content={
-              <div
-                suppressHydrationWarning
-                className='flex items-center justify-center rounded-xs py-0.5 px-1 md:mx-0 size-4 aspect-square'>
-                <span className='font-okxs font-medium text-xs md:text-sm text-white leading-none drop-shadow-xs'>
-                  {quantityInCart}
-                </span>
-              </div>
-            }>
-            <div className='w-16 md:w-20 flex items-center justify-end pr-1'>
-              <Icon
-                name='shopping-bag-fill'
-                className='size-4 md:size-5 drop-shadow-xs mt-0.5 md:mt-1 mr-4.5'
-              />
-            </div>
-          </Badge>
-        </Tooltip>
-      ) : (
-        <span className='opacity-0 text-[9px] w-16 md:w-20 text-sm whitespace-nowrap capitalize'>
-          <span className='font-polysans font-semibold text-base'>
-            {product.stockByDenomination?.[denominationKey] ??
-              formatStockDisplay(product)}
-          </span>{' '}
-          left
-        </span>
-      )}
     </div>
   )
 }

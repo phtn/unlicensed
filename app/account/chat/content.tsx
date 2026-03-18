@@ -454,14 +454,14 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   ])
 
   const handleSelectConversation = (
-    _otherUserId: string,
-    otherUserProId: string,
+    otherUserId: string,
+    _otherUserProId: string,
   ) => {
     setSearchQuery('') // Clear search when selecting a conversation
     shouldAutoScrollRef.current = true // Reset auto-scroll for new conversation
     previousMessagesLengthRef.current = 0 // Reset message count
     previousAssistantMessagesLengthRef.current = 0 // Reset assistant message count
-    router.push(`/account/chat/${otherUserProId}`)
+    router.push(`/account/chat/${encodeURIComponent(otherUserId)}`)
   }
 
   const handleSelectAssistant = () => {

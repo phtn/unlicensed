@@ -1,6 +1,52 @@
 import {v} from 'convex/values'
+import {parseAssistantConfig} from '../../lib/assistant/config'
 import {query} from '../_generated/server'
+import type {Doc} from '../_generated/dataModel'
 import {ASSISTANT_PRO_ID} from './d'
+
+function compareCategoriesByOrderThenName(
+  a: {name: string; order?: number},
+  b: {name: string; order?: number},
+): number {
+  const orderA = a.order ?? Number.MAX_SAFE_INTEGER
+  const orderB = b.order ?? Number.MAX_SAFE_INTEGER
+  if (orderA !== orderB) return orderA - orderB
+  return a.name.localeCompare(b.name)
+}
+
+function compareProductsByName(
+  a: {featured?: boolean; name?: string},
+  b: {featured?: boolean; name?: string},
+): number {
+  const aFeatured = a.featured ?? false
+  const bFeatured = b.featured ?? false
+
+  if (aFeatured !== bFeatured) {
+    return aFeatured ? -1 : 1
+  }
+
+  return (a.name ?? '').localeCompare(b.name ?? '')
+}
+
+function resolveTierLabel(
+  tier: string | undefined,
+  category: Doc<'categories'> | null | undefined,
+): string | undefined {
+  const normalizedTier = tier?.trim()
+  if (!normalizedTier) return undefined
+
+  const match = category?.tiers?.find(
+    (entry) => entry.slug === normalizedTier || entry.name === normalizedTier,
+  )
+
+  return match?.name ?? normalizedTier
+}
+
+function normalizeBrands(brands: string[] | undefined): string[] {
+  return (brands ?? [])
+    .map((brand) => brand.trim())
+    .filter((brand) => brand.length > 0)
+}
 
 /**
  * Get all messages between the user and the assistant
@@ -91,6 +137,87 @@ export const getAssistantProfile = query({
       .first()
 
     return assistant
+  },
+})
+
+export const getAssistantRuntimeConfig = query({
+  args: {},
+  handler: async (ctx) => {
+    const settings = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'ai_assistant_config'))
+      .unique()
+
+    const config = parseAssistantConfig(settings?.value)
+
+    return {
+      isActive: config.isActive,
+      catalogSupportEnabled: config.catalogSupportEnabled,
+    }
+  },
+})
+
+export const getAssistantCatalog = query({
+  args: {},
+  handler: async (ctx) => {
+    const [categories, products] = await Promise.all([
+      ctx.db
+        .query('categories')
+        .filter((q) => q.neq(q.field('visible'), false))
+        .collect(),
+      ctx.db.query('products').collect(),
+    ])
+
+    const visibleCategories = [...categories].sort(compareCategoriesByOrderThenName)
+    const categoryBySlug = new Map(
+      visibleCategories
+        .filter((category) => typeof category.slug === 'string' && category.slug)
+        .map((category) => [category.slug as string, category]),
+    )
+
+    const visibleProducts = products
+      .filter(
+        (product) =>
+          product.archived !== true &&
+          typeof product.slug === 'string' &&
+          product.slug.length > 0 &&
+          typeof product.name === 'string' &&
+          product.name.length > 0,
+      )
+      .sort(compareProductsByName)
+
+    return {
+      categories: visibleCategories
+        .filter((category) => typeof category.slug === 'string' && category.slug)
+        .map((category) => ({
+          name: category.name,
+          slug: category.slug as string,
+          href: `/lobby/category/${category.slug as string}`,
+          description: category.description,
+          tiers: category.tiers ?? [],
+          subcategories: category.subcategories ?? [],
+          brands: category.brands ?? [],
+        })),
+      products: visibleProducts.map((product) => {
+        const category = categoryBySlug.get(product.categorySlug ?? '')
+
+        return {
+          name: product.name as string,
+          slug: product.slug as string,
+          href: `/lobby/products/${product.slug as string}`,
+          categorySlug: product.categorySlug ?? '',
+          categoryName: category?.name,
+          brand: normalizeBrands(product.brand),
+          tier: product.tier,
+          tierLabel: resolveTierLabel(product.tier, category),
+          subcategory: product.subcategory,
+          productType: product.productType,
+          strainType: product.strainType,
+          available: product.available !== false,
+          featured: product.featured === true,
+        }
+      }),
+    }
   },
 })
 

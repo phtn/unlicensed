@@ -1,13 +1,94 @@
 import {
   Content,
   createClient,
-  INSTRUCTIONS,
   type ChatMessage,
 } from '@/lib/cohere'
+import {buildAssistantCatalogPrompt, type AssistantCatalog} from '@/lib/assistant/catalog'
+import {
+  DEFAULT_ASSISTANT_CONFIG,
+  parseAssistantConfig,
+} from '@/lib/assistant/config'
+import {api} from '@/convex/_generated/api'
+import {ConvexHttpClient} from 'convex/browser'
 
 interface AIRequestBody {
   prompt: string
   messages?: Array<ChatMessage>
+}
+
+let convexClient: ConvexHttpClient | null = null
+
+function getConvexClient(): ConvexHttpClient | null {
+  const url = process.env.NEXT_PUBLIC_CONVEX_URL ?? process.env.CONVEX_URL
+  if (!url) return null
+
+  if (!convexClient) {
+    convexClient = new ConvexHttpClient(url)
+  }
+
+  return convexClient
+}
+
+function getChatMessageText(message: ChatMessage): string {
+  const content = message.content
+
+  if (typeof content === 'string') {
+    return content
+  }
+
+  if (!Array.isArray(content)) {
+    return ''
+  }
+
+  return content
+    .map((item) => {
+      if (item.type === 'text') return item.text
+      if (item.type === 'thinking') return item.thinking
+      return ''
+    })
+    .join(' ')
+    .trim()
+}
+
+async function buildSystemInstructions(
+  prompt: string,
+  history: ChatMessage[],
+): Promise<string> {
+  let fallbackInstructions = DEFAULT_ASSISTANT_CONFIG.instructions
+  const convex = getConvexClient()
+  if (!convex) {
+    return fallbackInstructions
+  }
+
+  try {
+    const settings = await convex.query(api.admin.q.getAdminByIdentifier, {
+      identifier: 'ai_assistant_config',
+    })
+    const config = parseAssistantConfig(settings?.value)
+    fallbackInstructions = config.instructions
+
+    if (!config.catalogSupportEnabled) {
+      return config.instructions
+    }
+
+    const catalog = (await convex.query(
+      api.assistant.q.getAssistantCatalog,
+      {},
+    )) as AssistantCatalog
+    const searchText = [...history.map(getChatMessageText), prompt]
+      .filter((value) => value.length > 0)
+      .join('\n')
+    const catalogPrompt = buildAssistantCatalogPrompt(catalog, searchText)
+
+    if (!catalogPrompt) {
+      return config.instructions
+    }
+
+    return `${config.instructions}\n\n${catalogPrompt}`
+  } catch (error) {
+    console.error('Failed to build assistant system instructions:', error)
+    return fallbackInstructions
+  }
 }
 
 export const POST = async (req: Request) => {
@@ -46,10 +127,11 @@ export const POST = async (req: Request) => {
       ...history,
       {role: 'user', content: prompt},
     ]
+    const systemInstructions = await buildSystemInstructions(prompt, history)
 
     const stream = await client.chatStream({
       model: 'command-a-03-2025',
-      messages: [{role: 'system', content: INSTRUCTIONS}, ...current],
+      messages: [{role: 'system', content: systemInstructions}, ...current],
     })
 
     const encoder = new TextEncoder()

@@ -31,8 +31,12 @@ export function useAssistantChat({
     api.assistant.q.getAssistantProfile,
     enabled ? {} : 'skip',
   )
+  const assistantRuntimeConfig = useQuery(
+    api.assistant.q.getAssistantRuntimeConfig,
+    enabled ? {} : 'skip',
+  )
   const isActive = enabled
-    ? (assistantProfile?.isActive ?? true) && assistantProfile != null
+    ? assistantProfile != null && (assistantRuntimeConfig?.isActive ?? true)
     : true
 
   // Get messages from Convex

@@ -10,14 +10,18 @@ interface RelatedProductsProps {
   products: Array<StoreProduct>
 }
 export const RelatedProducts = ({products}: RelatedProductsProps) => {
+  const visibleProducts = useMemo(
+    () => products.filter((product) => product.available && !product.archived),
+    [products],
+  )
   const imageIds = useMemo(
     () =>
-      products
+      visibleProducts
         .filter(
           (product) => !!product.image && !product.image.startsWith('http'),
         )
         .map((product) => product.image),
-    [products],
+    [visibleProducts],
   )
   const resolveUrl = useStorageUrls(imageIds)
   const getImageUrl = useCallback(
@@ -25,6 +29,12 @@ export const RelatedProducts = ({products}: RelatedProductsProps) => {
       resolveProductImage(image, resolveUrl),
     [resolveUrl],
   )
+
+  const categorySlug = visibleProducts[0]?.categorySlug
+
+  if (visibleProducts.length === 0) {
+    return null
+  }
 
   return (
     <section
@@ -36,28 +46,28 @@ export const RelatedProducts = ({products}: RelatedProductsProps) => {
             Related Selections
           </h2>
         </div>
-        <Button
-          as={Link}
-          href={`/category/${products[0].categorySlug}`}
-          radius='full'
-          variant='faded'
-          size='sm'
-          className='self-start sm:self-auto border border-color-border/70 bg-background/30 text-xs sm:text-sm text-foreground/80 capitalize'>
-          View {products[0]?.categorySlug} Category
-        </Button>
+        {categorySlug ? (
+          <Button
+            as={Link}
+            href={`/category/${categorySlug}`}
+            radius='full'
+            variant='faded'
+            size='sm'
+            className='self-start sm:self-auto border border-color-border/70 bg-background/30 text-xs sm:text-sm text-foreground/80 capitalize'>
+            View {categorySlug} Category
+          </Button>
+        ) : null}
       </div>
       <div className='w-full py-6'>
         <div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-fr'>
-          {products
-            .filter((product) => !product.archived)
-            .map((product) => (
-              <ProductCard
-                key={product._id}
-                product={product}
-                imageUrl={getImageUrl(product.image)}
-                className='h-full! min-w-0! max-w-none! w-full'
-              />
-            ))}
+          {visibleProducts.map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+              imageUrl={getImageUrl(product.image)}
+              className='h-full! min-w-0! max-w-none! w-full'
+            />
+          ))}
         </div>
       </div>
     </section>
