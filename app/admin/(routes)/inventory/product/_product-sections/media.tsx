@@ -2,13 +2,16 @@
 
 import {FormInput} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
+import {Alert, AlertDescription, AlertTitle} from '@/components/reui/alert'
 import {api} from '@/convex/_generated/api'
+import {useFileUpload} from '@/hooks/use-file-upload'
+import {useStorageUpload} from '@/hooks/use-storage-upload'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Drawer, DrawerContent, DrawerHeader, Image} from '@heroui/react'
 import {Derived, useStore} from '@tanstack/react-store'
 import {useQuery} from 'convex/react'
-import {useCallback, useMemo, useState} from 'react'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {ProductFormValues} from '../product-schema'
 import {FormSection, Header} from './components'
 
@@ -33,6 +36,14 @@ type TagGalleryGroup = {
   }>
 }
 
+type UploadState = {
+  status: 'uploading' | 'error'
+  message?: string
+}
+
+const MAX_UPLOAD_FILES = 12
+const MAX_UPLOAD_SIZE = 10 * 1024 * 1024
+
 const normalizeTag = (value: string) => value.trim().toLowerCase()
 
 const titleCaseTag = (value: string) =>
@@ -43,12 +54,23 @@ const titleCaseTag = (value: string) =>
     .map((part) => part[0]?.toUpperCase() + part.slice(1))
     .join(' ')
 
+const summarizeStorageId = (value: string) =>
+  value.length <= 16 ? value : `${value.slice(0, 8)}...${value.slice(-4)}`
+
 export const Media = ({form, fields: _fields}: MediaProps) => {
+  const {uploadFile} = useStorageUpload()
   const [isLibraryOpen, setIsLibraryOpen] = useState(false)
   const [libraryTarget, setLibraryTarget] =
     useState<MediaLibraryTarget>('primary')
   const [tagSearch, setTagSearch] = useState('')
   const [activeTag, setActiveTag] = useState<string | null>(null)
+  const [uploadStateById, setUploadStateById] = useState<
+    Record<string, UploadState>
+  >({})
+  const [uploadedPreviewById, setUploadedPreviewById] = useState<
+    Record<string, string>
+  >({})
+  const processingFileIdsRef = useRef<Set<string>>(new Set())
 
   const primaryImageValue = useStore(
     form.store as unknown as Derived<FormStoreState, never>,
@@ -71,14 +93,44 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
     limitPerTag: 40,
   })
 
+  const [
+    {files: queuedFiles, isDragging, errors: uploadValidationErrors},
+    {
+      removeFile: removeQueuedFile,
+      handleDragEnter,
+      handleDragLeave,
+      handleDragOver,
+      handleDrop,
+      openFileDialog,
+      getInputProps,
+    },
+  ] = useFileUpload({
+    accept: 'image/*',
+    maxFiles: MAX_UPLOAD_FILES,
+    maxSize: MAX_UPLOAD_SIZE,
+    multiple: true,
+  })
+
   const allTaggedGroups = useMemo(
     () => (libraryResponse?.tags ?? []) as TagGalleryGroup[],
     [libraryResponse],
   )
 
-  const allSelectedImageIds = useMemo(
-    () => [primaryImageValue, ...galleryValue].filter(Boolean),
+  const selectedStorageIds = useMemo(
+    () => [
+      ...new Set(
+        [primaryImageValue, ...galleryValue].filter(
+          (value): value is string =>
+            !!value && !value.startsWith('http') && !value.startsWith('data:'),
+        ),
+      ),
+    ],
     [primaryImageValue, galleryValue],
+  )
+
+  const resolvedSelectedUrls = useQuery(
+    api.uploads.getStorageUrls,
+    selectedStorageIds.length > 0 ? {storageIds: selectedStorageIds} : 'skip',
   )
 
   const previewById = useMemo(() => {
@@ -92,8 +144,20 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
       }
     }
 
+    for (const [storageId, url] of Object.entries(uploadedPreviewById)) {
+      if (url) {
+        map.set(storageId, url)
+      }
+    }
+
+    for (const item of resolvedSelectedUrls ?? []) {
+      if (item.url) {
+        map.set(item.storageId, item.url)
+      }
+    }
+
     return map
-  }, [allTaggedGroups])
+  }, [allTaggedGroups, uploadedPreviewById, resolvedSelectedUrls])
 
   const resolvePreview = useCallback(
     (storageId: string) => {
@@ -179,17 +243,158 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
     [form, galleryValue],
   )
 
+  const setPrimaryImage = useCallback(
+    (storageId: string) => {
+      if (!storageId || storageId === primaryImageValue) {
+        return
+      }
+
+      const nextGallery = galleryValue.filter((id) => id !== storageId)
+      if (
+        primaryImageValue &&
+        primaryImageValue !== storageId &&
+        !nextGallery.includes(primaryImageValue)
+      ) {
+        nextGallery.unshift(primaryImageValue)
+      }
+
+      form.setFieldValue('image', storageId)
+      form.setFieldValue('gallery', nextGallery)
+    },
+    [form, galleryValue, primaryImageValue],
+  )
+
+  const attachUploadedStorageIds = useCallback(
+    (storageIds: string[]) => {
+      if (storageIds.length === 0) {
+        return
+      }
+
+      let nextPrimary = primaryImageValue.trim()
+      const nextGallery = [...galleryValue]
+
+      for (const storageId of storageIds) {
+        if (!storageId) {
+          continue
+        }
+
+        if (!nextPrimary) {
+          nextPrimary = storageId
+          continue
+        }
+
+        if (storageId !== nextPrimary && !nextGallery.includes(storageId)) {
+          nextGallery.push(storageId)
+        }
+      }
+
+      form.setFieldValue('image', nextPrimary)
+      form.setFieldValue('gallery', nextGallery)
+    },
+    [form, galleryValue, primaryImageValue],
+  )
+
+  const dismissQueuedFile = useCallback(
+    (fileId: string) => {
+      processingFileIdsRef.current.delete(fileId)
+      removeQueuedFile(fileId)
+      setUploadStateById((current) => {
+        const next = {...current}
+        delete next[fileId]
+        return next
+      })
+    },
+    [removeQueuedFile],
+  )
+
+  useEffect(() => {
+    const nextQueuedFiles = queuedFiles.filter(
+      (item) =>
+        item.file instanceof File && !processingFileIdsRef.current.has(item.id),
+    )
+
+    if (nextQueuedFiles.length === 0) {
+      return
+    }
+
+    for (const item of nextQueuedFiles) {
+      processingFileIdsRef.current.add(item.id)
+    }
+
+    setUploadStateById((current) => {
+      const next = {...current}
+      for (const item of nextQueuedFiles) {
+        next[item.id] = {status: 'uploading'}
+      }
+      return next
+    })
+
+    let cancelled = false
+
+    const uploadQueuedFiles = async () => {
+      const uploadedStorageIds: string[] = []
+
+      for (const item of nextQueuedFiles) {
+        if (cancelled || !(item.file instanceof File)) {
+          return
+        }
+
+        try {
+          const {storageId, url} = await uploadFile(item.file)
+          if (cancelled) {
+            return
+          }
+
+          if (url) {
+            setUploadedPreviewById((current) => ({
+              ...current,
+              [storageId]: url,
+            }))
+          }
+
+          uploadedStorageIds.push(storageId)
+          dismissQueuedFile(item.id)
+        } catch (error) {
+          if (cancelled) {
+            return
+          }
+
+          const message =
+            error instanceof Error ? error.message : 'Failed to upload file.'
+
+          setUploadStateById((current) => ({
+            ...current,
+            [item.id]: {
+              status: 'error',
+              message,
+            },
+          }))
+        }
+      }
+
+      if (!cancelled) {
+        attachUploadedStorageIds(uploadedStorageIds)
+      }
+    }
+
+    void uploadQueuedFiles()
+
+    return () => {
+      cancelled = true
+    }
+  }, [attachUploadedStorageIds, dismissQueuedFile, queuedFiles, uploadFile])
+
   const selectLibraryImage = useCallback(
     (storageId: string) => {
       if (libraryTarget === 'primary') {
-        form.setFieldValue('image', storageId)
+        setPrimaryImage(storageId)
         setIsLibraryOpen(false)
         return
       }
 
       toggleGalleryItem(storageId)
     },
-    [form, libraryTarget, toggleGalleryItem],
+    [libraryTarget, setPrimaryImage, toggleGalleryItem],
   )
 
   const displayImages = useMemo(() => {
@@ -203,156 +408,488 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
     ]
   }, [galleryValue, primaryImageValue])
 
-  const primaryPreview = resolvePreview(primaryImageValue)
+  const displayMediaItems = useMemo(
+    () =>
+      displayImages.map((storageId, index) => {
+        const isPrimary =
+          primaryImageValue.length > 0 && storageId === primaryImageValue
+        const preview = resolvePreview(storageId)
+        const galleryIndex = primaryImageValue ? index : index + 1
+
+        return {
+          storageId,
+          preview,
+          isPrimary,
+          badgeLabel: isPrimary ? 'Lead' : `#${index + 1}`,
+          label: isPrimary ? 'Lead image' : `Gallery ${galleryIndex}`,
+          summary: preview
+            ? isPrimary
+              ? 'Primary image'
+              : 'Gallery image'
+            : summarizeStorageId(storageId),
+        }
+      }),
+    [displayImages, primaryImageValue, resolvePreview],
+  )
+
+  const primaryMediaItem = useMemo(
+    () => displayMediaItems.find((item) => item.isPrimary) ?? null,
+    [displayMediaItems],
+  )
+
+  const galleryMediaItems = useMemo(
+    () => displayMediaItems.filter((item) => !item.isPrimary),
+    [displayMediaItems],
+  )
+
+  const thumbnailMediaItems = useMemo(
+    () => galleryMediaItems.slice(0, 4),
+    [galleryMediaItems],
+  )
+
+  const remainingMediaCount = Math.max(galleryMediaItems.length - 4, 0)
+
+  const hasUnresolvedDisplayImages = useMemo(
+    () =>
+      displayImages.some(
+        (storageId) =>
+          !storageId.startsWith('http') &&
+          !storageId.startsWith('data:') &&
+          !resolvePreview(storageId),
+      ),
+    [displayImages, resolvePreview],
+  )
+
+  const queuedTotalBytes = useMemo(
+    () =>
+      queuedFiles.reduce((total, item) => {
+        if (item.file instanceof File) {
+          return total + item.file.size
+        }
+        return total
+      }, 0),
+    [queuedFiles],
+  )
+
+  const uploadMessages = useMemo(
+    () => [
+      ...new Set([
+        ...uploadValidationErrors,
+        ...Object.values(uploadStateById)
+          .map((state) =>
+            state.status === 'error'
+              ? (state.message ?? 'Upload failed.')
+              : null,
+          )
+          .filter((message): message is string => !!message),
+      ]),
+    ],
+    [uploadStateById, uploadValidationErrors],
+  )
+
+  const activeUploadCount = useMemo(
+    () =>
+      Object.values(uploadStateById).filter(
+        (state) => state.status === 'uploading',
+      ).length,
+    [uploadStateById],
+  )
 
   return (
     <>
       <FormSection>
         <Header label='Media' />
         <div className='grid gap-6'>
-          <div className='grid gap-4 lg:grid-cols-3'>
-            <div className='space-y-3 w-fit'>
-              <div className='flex items-center justify-between'>
-                <label className='text-base font-okxs font-medium tracking-tight dark:text-light-gray'>
-                  Primary Image
-                </label>
-                <div className='flex gap-2'>
+          <section
+            className={cn(
+              'rounded-2xl border border-dashed p-5 transition-colors',
+              isDragging
+                ? 'border-blue-500 bg-blue-500/5'
+                : 'border-foreground/15 bg-background/60',
+            )}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            <input {...getInputProps()} className='sr-only' />
+
+            <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
+              <div className='flex items-start gap-4'>
+                <div
+                  className={cn(
+                    'flex size-14 shrink-0 items-center justify-center rounded-full',
+                    isDragging ? 'bg-blue-500/10' : 'bg-foreground/5',
+                  )}
+                >
+                  <Icon
+                    name='image-open-light'
+                    className={cn(
+                      'size-5',
+                      isDragging ? 'text-blue-500' : 'text-foreground/60',
+                    )}
+                  />
+                </div>
+
+                <div className='space-y-1.5'>
+                  <h3 className='text-base font-semibold'>
+                    Upload product images
+                  </h3>
+                  <p className='text-sm text-foreground/70'>
+                    Drag images here or browse files. The first uploaded image
+                    fills the primary slot when it is empty, and the rest are
+                    attached to the product gallery.
+                  </p>
+                  <p className='text-xs text-foreground/55'>
+                    Use Browse below to pick from the optimized shared media
+                    library.
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                radius='none'
+                variant='flat'
+                className='rounded-lg dark:bg-blue-500 dark:text-white'
+                endContent={<Icon name='image-plus-light' className='size-4' />}
+                onPress={openFileDialog}
+              >
+                Select images
+              </Button>
+            </div>
+
+            {(queuedFiles.length > 0 || activeUploadCount > 0) && (
+              <div className='mt-5 flex flex-wrap items-center gap-3 text-xs text-foreground/60'>
+                <span>
+                  Queue: {queuedFiles.length}/{MAX_UPLOAD_FILES}
+                </span>
+                <span>
+                  {Math.round(MAX_UPLOAD_SIZE / (1024 * 1024))}MB max per file
+                </span>
+                <span>
+                  Pending size:{' '}
+                  {queuedTotalBytes > 0
+                    ? `${(queuedTotalBytes / (1024 * 1024)).toFixed(2)} MB`
+                    : '0 MB'}
+                </span>
+                {activeUploadCount > 0 ? (
+                  <span className='inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2 py-1 text-blue-500'>
+                    <span className='size-3 animate-spin rounded-full border border-current border-r-transparent' />
+                    Uploading {activeUploadCount}
+                  </span>
+                ) : null}
+              </div>
+            )}
+
+            {queuedFiles.length > 0 ? (
+              <div className='mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
+                {queuedFiles.map((item) => {
+                  const uploadState = uploadStateById[item.id]
+                  const isUploading = uploadState?.status === 'uploading'
+                  const isError = uploadState?.status === 'error'
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={cn(
+                        'overflow-hidden rounded-xl border bg-background',
+                        {
+                          'border-blue-500/30': isUploading,
+                          'border-red-500/40': isError,
+                          'border-foreground/10': !isUploading && !isError,
+                        },
+                      )}
+                    >
+                      <div className='relative aspect-square overflow-hidden bg-foreground/5'>
+                        {item.preview ? (
+                          <Image
+                            src={item.preview}
+                            alt={item.file.name}
+                            radius='none'
+                            shadow='none'
+                            className='size-full object-cover'
+                          />
+                        ) : (
+                          <div className='flex size-full items-center justify-center text-foreground/40'>
+                            <Icon name='image-open-light' className='size-7' />
+                          </div>
+                        )}
+
+                        {isUploading ? (
+                          <div className='absolute inset-0 flex items-center justify-center bg-black/45 text-white'>
+                            <div className='flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-xs'>
+                              <span className='size-3.5 animate-spin rounded-full border border-current border-r-transparent' />
+                              Uploading
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {!isUploading ? (
+                          <button
+                            type='button'
+                            onClick={() => dismissQueuedFile(item.id)}
+                            className='absolute right-2 top-2 rounded-full bg-black/55 p-1.5 text-white transition-colors hover:bg-black/75'
+                          >
+                            <Icon name='x' size={14} />
+                          </button>
+                        ) : null}
+                      </div>
+
+                      <div className='space-y-1 p-3'>
+                        <p className='truncate text-sm font-medium'>
+                          {item.file.name}
+                        </p>
+                        <p className='text-xs text-foreground/55'>
+                          {(item.file.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                        {isError && uploadState?.message ? (
+                          <p className='text-xs text-red-500'>
+                            {uploadState.message}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : null}
+
+            {uploadMessages.length > 0 ? (
+              <Alert variant='destructive' className='mt-5'>
+                <AlertTitle>File upload error(s)</AlertTitle>
+                <AlertDescription>
+                  {uploadMessages.map((message) => (
+                    <p key={message}>{message}</p>
+                  ))}
+                </AlertDescription>
+              </Alert>
+            ) : null}
+            <div className='mt-6 space-y-3'>
+              <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+                <div className='space-y-1'>
+                  <div className='flex flex-wrap items-center gap-2'>
+                    <h3 className='text-sm font-semibold'>Selected media</h3>
+                    <span className='rounded-full border border-foreground/10 bg-background/80 px-2 py-0.5 text-[11px] text-foreground/60'>
+                      {displayMediaItems.length} total
+                    </span>
+                    {remainingMediaCount > 0 ? (
+                      <span className='rounded-full border border-foreground/10 bg-background/80 px-2 py-0.5 text-[11px] text-foreground/60'>
+                        +{remainingMediaCount} more
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className='text-xs text-foreground/55'>
+                    On mobile, gallery slots stack below the primary image and
+                    scroll horizontally.
+                  </p>
+                </div>
+
+                <div className='flex flex-wrap gap-2'>
                   <Button
                     size='sm'
                     radius='none'
                     variant='flat'
-                    endContent={<Icon name='image-open-light' />}
-                    className='dark:bg-blue-500 dark:text-white rounded-lg'
-                    onPress={() => openLibrary('primary')}>
-                    Browse
+                    endContent={<Icon name='image-open-light' className='size-4' />}
+                    className='rounded-lg dark:bg-blue-500 dark:text-white'
+                    onPress={() => openLibrary('primary')}
+                  >
+                    Browse lead
+                  </Button>
+                  <Button
+                    size='sm'
+                    radius='none'
+                    variant='flat'
+                    endContent={<Icon name='image-plus-light' className='size-4' />}
+                    className='rounded-lg'
+                    onPress={() => openLibrary('gallery')}
+                  >
+                    Add gallery
                   </Button>
                   {primaryImageValue ? (
                     <Button
                       size='sm'
                       variant='light'
                       className='bg-light-gray/0 dark:bg-transparent'
-                      onPress={clearPrimaryImage}>
-                      Clear
+                      onPress={clearPrimaryImage}
+                    >
+                      Clear lead
                     </Button>
                   ) : null}
                 </div>
               </div>
 
-              <button
-                type='button'
-                onClick={() => openLibrary('primary')}
-                className={cn(
-                  'rounded-xl size-72 md:size-100 relative overflow-hidden border border-dashed border-light-gray dark:border-dark-gray dark:bg-black/60 transition-colors text-left',
-                  {
-                    'border-2 border-solid border-blue-500 dark:border-blue-500':
-                      primaryImageValue.trim().length > 0,
-                  },
-                )}>
-                {primaryPreview ? (
-                  <Image
-                    src={primaryPreview}
-                    alt='Primary image preview'
-                    radius='none'
-                    shadow='none'
-                    className='w-full h-full object-cover'
-                  />
-                ) : (
-                  <div className='absolute inset-0 flex flex-col items-center justify-center gap-2 dark:text-light-gray'>
-                    <Icon
-                      name='image-plus-light'
-                      className='size-12 aspect-square opacity-50'
-                    />
-                    <span className='text-xs font-okxs'>
-                      Select Primary Image
-                    </span>
-                  </div>
-                )}
-              </button>
-            </div>
+              <div className='grid gap-4 md:grid-cols-[minmax(0,14rem)_1fr] md:items-start'>
+                <div className='space-y-2'>
+                  <p className='text-[11px] font-medium uppercase tracking-[0.16em] text-foreground/55'>
+                    Primary Image
+                  </p>
 
-            <div className='space-y-3 col-span-2'>
-              <div className='flex items-center justify-between'>
-                <label className='text-base font-medium tracking-tight dark:text-light-gray'>
-                  Gallery
-                </label>
-                <Button
-                  size='sm'
-                  variant='flat'
-                  className='dark:bg-black/15'
-                  onPress={() => openLibrary('gallery')}>
-                  Browse
-                </Button>
-              </div>
-
-              <div className='flex min-h-72 flex-wrap gap-4 rounded-xl border border-dashed border-light-gray p-4 dark:border-dark-gray dark:bg-black/60'>
-                {displayImages.map((storageId, index) => {
-                  const isPrimary =
-                    primaryImageValue.length > 0 &&
-                    storageId === primaryImageValue
-                  const preview = resolvePreview(storageId)
-
-                  return (
-                    <div
-                      key={`${storageId}-${index}`}
-                      className={cn(
-                        'relative size-32 rounded-xl border-2 group',
-                        {
-                          'border-blue-500': isPrimary,
-                          'border-foreground/20 bg-background': !isPrimary,
-                        },
-                      )}>
-                      {isPrimary ? (
-                        <div className='absolute z-40 -top-2.5 right-1.5 rounded bg-blue-600 px-1.5 py-0 text-[8px] font-brk uppercase text-white'>
-                          Primary
-                        </div>
-                      ) : null}
-
-                      {preview ? (
+                  {primaryMediaItem ? (
+                    <div className='group relative aspect-square w-full max-w-40 overflow-hidden rounded-2xl border border-foreground/10 bg-background sm:max-w-48 md:max-w-none'>
+                      {primaryMediaItem.preview ? (
                         <Image
-                          src={preview}
+                          src={primaryMediaItem.preview}
+                          alt={primaryMediaItem.label}
                           radius='none'
-                          alt={isPrimary ? 'Primary image' : 'Gallery image'}
-                          className='size-full rounded-[9px] object-cover'
+                          shadow='none'
+                          className='size-full object-cover'
                         />
                       ) : (
-                        <div className='flex size-full items-center justify-center rounded-xl text-dark-gray/50'>
-                          <Icon name='image-open-light' />
+                        <div className='flex size-full items-center justify-center bg-foreground/5 text-foreground/45'>
+                          <Icon
+                            name='image-open-light'
+                            className='size-8 opacity-70'
+                          />
                         </div>
                       )}
 
-                      {!isPrimary ? (
-                        <button
-                          type='button'
-                          onClick={() => toggleGalleryItem(storageId)}
-                          className='absolute right-1 top-1 z-20 rounded-full bg-black/50 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-500'>
-                          <Icon name='x' size={12} />
-                        </button>
-                      ) : null}
-                    </div>
-                  )
-                })}
+                      <div className='absolute left-3 top-3 rounded bg-blue-600 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-white'>
+                        Lead
+                      </div>
 
-                {displayImages.length === 0 ? (
-                  <button
-                    type='button'
-                    onClick={() => openLibrary('gallery')}
-                    className='flex w-full flex-col items-center justify-center py-8 text-light-gray'>
-                    <Icon
-                      name='image-open-light'
-                      className='mb-2 size-12 opacity-50'
-                    />
-                    <span className='text-xs'>
-                      Select tagged gallery images
-                    </span>
-                  </button>
-                ) : null}
+                      <button
+                        type='button'
+                        onClick={clearPrimaryImage}
+                        className='absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-red-500'
+                        aria-label='Clear lead image'
+                      >
+                        <Icon name='x' size={14} />
+                      </button>
+
+                      <div className='absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/30 to-transparent px-3 py-3 text-white'>
+                        <p className='truncate text-sm font-medium'>
+                          {primaryMediaItem.label}
+                        </p>
+                        <p className='truncate text-xs text-white/75'>
+                          {primaryMediaItem.summary}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type='button'
+                      onClick={() => openLibrary('primary')}
+                      className='flex aspect-square w-full max-w-40 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-foreground/20 bg-background/50 px-4 text-center transition-colors hover:border-blue-500/50 hover:bg-blue-500/5 sm:max-w-48 md:max-w-none'
+                    >
+                      <div className='flex size-11 items-center justify-center rounded-full bg-foreground/5 text-foreground/70'>
+                        <Icon name='image-plus-light' className='size-5' />
+                      </div>
+                      <div className='space-y-1'>
+                        <p className='text-sm font-semibold'>
+                          Select primary image
+                        </p>
+                        <p className='text-xs text-foreground/55'>
+                          Choose the lead asset for this product first.
+                        </p>
+                      </div>
+                    </button>
+                  )}
+                </div>
+
+                <div className='space-y-2'>
+                  <div className='flex items-center justify-between gap-3'>
+                    <p className='text-[11px] font-medium uppercase tracking-[0.16em] text-foreground/55'>
+                      Gallery Slots
+                    </p>
+                    {remainingMediaCount > 0 ? (
+                      <span className='rounded-full border border-foreground/10 bg-background/80 px-2 py-0.5 text-[11px] text-foreground/60'>
+                        +{remainingMediaCount} more
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className='overflow-x-auto pb-1 sm:overflow-visible sm:pb-0'>
+                    <div className='flex w-max gap-3 sm:grid sm:w-full sm:grid-cols-4'>
+                      {Array.from({length: 4}).map((_, index) => {
+                        const item = thumbnailMediaItems[index]
+                        const slotLabel = `Gallery slot ${index + 1}`
+
+                        if (!item) {
+                          return (
+                            <button
+                              key={`empty-slot-${index}`}
+                              type='button'
+                              onClick={() => openLibrary('gallery')}
+                              className='group relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl border border-dashed border-foreground/20 bg-background/50 text-left transition-colors hover:border-blue-500/50 hover:bg-blue-500/5 sm:w-auto'
+                            >
+                              <div className='flex size-full flex-col items-center justify-center gap-2 text-foreground/45'>
+                                <Icon
+                                  name='image-plus-light'
+                                  className='size-7 opacity-70'
+                                />
+                                <span className='text-[11px] font-medium uppercase tracking-[0.16em]'>
+                                  {slotLabel}
+                                </span>
+                              </div>
+                            </button>
+                          )
+                        }
+
+                        return (
+                          <div
+                            key={item.storageId}
+                            className='group relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl border border-foreground/10 bg-background sm:w-auto'
+                          >
+                            {item.preview ? (
+                              <Image
+                                src={item.preview}
+                                alt={item.label}
+                                radius='none'
+                                shadow='none'
+                                className='size-full object-cover'
+                              />
+                            ) : (
+                              <div className='flex size-full items-center justify-center bg-foreground/5 text-foreground/45'>
+                                <Icon
+                                  name='image-open-light'
+                                  className='size-7'
+                                />
+                              </div>
+                            )}
+
+                            <div className='absolute left-2 top-2 rounded bg-black/60 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-white'>
+                              {item.badgeLabel}
+                            </div>
+
+                            <div className='absolute right-2 top-2 flex gap-1.5'>
+                              <button
+                                type='button'
+                                onClick={() => setPrimaryImage(item.storageId)}
+                                className='rounded-full bg-black/55 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-white transition-colors hover:bg-blue-600'
+                              >
+                                Lead
+                              </button>
+                              <button
+                                type='button'
+                                onClick={() => toggleGalleryItem(item.storageId)}
+                                className='flex size-7 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-red-500'
+                                aria-label={`Remove ${item.label.toLowerCase()}`}
+                              >
+                                <Icon name='x' size={12} />
+                              </button>
+                            </div>
+
+                            <div className='absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/30 to-transparent px-2 py-2 text-white'>
+                              <p className='truncate text-xs font-medium'>
+                                {item.label}
+                              </p>
+                              <p className='truncate text-[11px] text-white/75'>
+                                {item.summary}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          {allSelectedImageIds.some((id) => !resolvePreview(id)) ? (
+          {hasUnresolvedDisplayImages ? (
             <p className='text-xs text-dark-gray/70 dark:text-light-gray/70'>
-              Some selected storage IDs are not in the tagged gallery index yet.
+              Some selected storage IDs have not resolved to preview URLs yet.
             </p>
           ) : null}
         </div>
@@ -362,7 +899,8 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
         placement='right'
         isOpen={isLibraryOpen}
         onOpenChange={setIsLibraryOpen}
-        size='5xl'>
+        size='5xl'
+      >
         <DrawerContent className='max-w-6xl bg-background p-0'>
           <DrawerHeader className='border-b border-foreground/10'>
             <div className='flex w-full items-center justify-between gap-3'>
@@ -379,7 +917,8 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
               <Button
                 size='sm'
                 variant='flat'
-                onPress={() => setIsLibraryOpen(false)}>
+                onPress={() => setIsLibraryOpen(false)}
+              >
                 Done
               </Button>
             </div>
@@ -412,7 +951,8 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                         isActive
                           ? 'bg-blue-500/10 text-blue-500'
                           : 'hover:bg-foreground/5',
-                      )}>
+                      )}
+                    >
                       <span className='truncate'>
                         {titleCaseTag(group.tag)}
                       </span>
@@ -472,7 +1012,8 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                               'border-foreground/20 hover:border-foreground/40':
                                 !isSelected,
                             },
-                          )}>
+                          )}
+                        >
                           {item.url ? (
                             <Image
                               src={item.url}

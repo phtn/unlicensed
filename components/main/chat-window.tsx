@@ -66,7 +66,12 @@ export function ChatWindow({
     return selectedConversationFid === undefined
       ? conversationFid
       : selectedConversationFid
-  }, [conversationFid, guestConversationFid, isGuestFlow, selectedConversationFid])
+  }, [
+    conversationFid,
+    guestConversationFid,
+    isGuestFlow,
+    selectedConversationFid,
+  ])
   const isConversationMode = Boolean(activeConversationFid)
   const activeChatFid = guestChat.activeChatFid
   const assistantChat = useAssistantChat({
@@ -148,16 +153,13 @@ export function ChatWindow({
     }
 
     return items
-  }, [
-    conversations,
-    guestChat.representative,
-    guestChat.representativeFid,
-  ])
+  }, [conversations, guestChat.representative, guestChat.representativeFid])
 
   const activeConversationItem = useMemo(
     () =>
-      conversationItems.find((conversation) => conversation.fid === activeConversationFid) ??
-      null,
+      conversationItems.find(
+        (conversation) => conversation.fid === activeConversationFid,
+      ) ?? null,
     [activeConversationFid, conversationItems],
   )
 
@@ -360,14 +362,15 @@ export function ChatWindow({
       onOpenChange={handleWindowOpenChange}
       className={cn(
         'left-auto right-4 w-[min(calc(100vw-2.5rem),34rem)] translate-x-0 rounded-3xl border-dark-table',
-        'top-14 lg:top-16 xl:top-20 2xl:top-24',
+        'top-14 lg:top-16 xl:top-20 2xl:top-24 3xl:top-32',
         'bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] md:right-8 md:bottom-[calc(env(safe-area-inset-bottom)+8rem)]',
-        'min-h-48 max-h-[602.01px]',
         'h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-5.25rem)] max-h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-5.25rem)]',
         'md:h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-8rem)] md:max-h-[calc(100vh-3.5rem-env(safe-area-inset-bottom)-8rem)]',
         'lg:h-[calc(100vh-4rem-env(safe-area-inset-bottom)-8rem)] lg:max-h-[calc(100vh-4rem-env(safe-area-inset-bottom)-8rem)]',
         'xl:h-[calc(100vh-5rem-env(safe-area-inset-bottom)-8rem)] xl:max-h-[calc(100vh-5rem-env(safe-area-inset-bottom)-8rem)]',
         '2xl:h-[calc(100vh-6rem-env(safe-area-inset-bottom)-8rem)] 2xl:max-h-[calc(100vh-6rem-env(safe-area-inset-bottom)-8rem)]',
+        '3xl:h-[calc(100vh-6rem-env(safe-area-inset-bottom)-8rem)] 3xl:max-h-[calc(100vh-6rem-env(safe-area-inset-bottom)-8rem)]',
+        'min-h-48 2xl:max-h-[602.01px]!',
       )}
       title={
         isGuestFlow ? (
@@ -460,7 +463,8 @@ export function ChatWindow({
         <div
           className='shrink-0 border-t border-foreground/20 dark:border-dark-table bg-background/90 p-3'
           style={{paddingBottom: 'max(12px, env(safe-area-inset-bottom))'}}>
-          {guestChat.error && isGuestFlow ? null : showGuestStatusPanel ? null : isConversationMode ? (
+          {guestChat.error &&
+          isGuestFlow ? null : showGuestStatusPanel ? null : isConversationMode ? (
             <MessageInput
               receiverProId={activeConversationFid ?? ''}
               senderProId={activeChatFid ?? ''}

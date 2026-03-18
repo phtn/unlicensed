@@ -2,34 +2,22 @@ import {v} from 'convex/values'
 import type {Doc, Id} from '../_generated/dataModel'
 import {mutation} from '../_generated/server'
 import type {MutationCtx} from '../_generated/server'
-
-const GUEST_FID_PREFIX = 'guest:'
-const GUEST_EMAIL_DOMAIN = 'guest-chat.hyfe.local'
-const GUEST_DISPLAY_NAME = 'Guest'
+import {
+  buildGuestFid,
+  GUEST_DISPLAY_NAME,
+  getOrCreateGuestUser,
+  getUserByGuestId,
+  normalizeGuestId,
+} from './guest'
+import {resolveStaffChatUser} from '../staff/chat'
 
 const normalizeFolderName = (value: string) =>
-  value
-    .trim()
-    .replace(/\s+/g, ' ')
-    .slice(0, 40)
-
-const normalizeGuestId = (value: string) => value.trim()
-
-const buildGuestFid = (guestId: string) => `${GUEST_FID_PREFIX}${guestId}`
-
-const buildGuestEmail = (guestId: string) =>
-  `guest+${guestId}@${GUEST_EMAIL_DOMAIN}`
+  value.trim().replace(/\s+/g, ' ').slice(0, 40)
 
 const getUserByFid = async (ctx: MutationCtx, fid: string) =>
   ctx.db
     .query('users')
     .withIndex('by_fid', (q) => q.eq('fid', fid))
-    .first()
-
-const getUserByGuestId = async (ctx: MutationCtx, guestId: string) =>
-  ctx.db
-    .query('users')
-    .withIndex('by_guestId', (q) => q.eq('guestId', guestId))
     .first()
 
 const getRepresentativeFromStaff = async (
@@ -41,40 +29,7 @@ const getRepresentativeFromStaff = async (
     throw new Error('Default representative is not available')
   }
 
-  let representative: Doc<'users'> | null = null
-
-  if (staff.userId) {
-    representative = await ctx.db.get(staff.userId as Id<'users'>)
-  } else if (staff.email) {
-    const staffEmail = staff.email
-    representative = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', staffEmail))
-      .first()
-  }
-
-  if (!representative) {
-    throw new Error('Default representative does not have a linked chat user')
-  }
-
-  const representativeFid =
-    representative.fid ?? representative.firebaseId ?? null
-
-  if (!representativeFid) {
-    throw new Error('Default representative does not have a chat identifier')
-  }
-
-  if (!representative.fid && representative.firebaseId) {
-    await ctx.db.patch(representative._id, {
-      fid: representative.firebaseId,
-      updatedAt: Date.now(),
-    })
-  }
-
-  return {
-    user: representative,
-    fid: representativeFid,
-  }
+  return resolveStaffChatUser(ctx, staff)
 }
 
 const getGuestRepresentative = async (
@@ -189,65 +144,6 @@ const remapLikes = (
     (like, index) =>
       mappedLikes.findIndex((entry) => entry.userId === like.userId) === index,
   )
-}
-
-const getOrCreateGuestUser = async (ctx: MutationCtx, guestId: string) => {
-  const normalizedGuestId = normalizeGuestId(guestId)
-  const guestFid = buildGuestFid(normalizedGuestId)
-  const guestEmail = buildGuestEmail(normalizedGuestId)
-  let guestUser =
-    (await getUserByGuestId(ctx, normalizedGuestId)) ??
-    (await getUserByFid(ctx, guestFid))
-
-  if (guestUser) {
-    const updates: Partial<Doc<'users'>> = {}
-
-    if (guestUser.guestId !== normalizedGuestId) {
-      updates.guestId = normalizedGuestId
-    }
-
-    if (guestUser.fid !== guestFid) {
-      updates.fid = guestFid
-    }
-
-    if (guestUser.email !== guestEmail) {
-      updates.email = guestEmail
-    }
-
-    if (guestUser.name !== GUEST_DISPLAY_NAME) {
-      updates.name = GUEST_DISPLAY_NAME
-    }
-
-    if (Object.keys(updates).length > 0) {
-      await ctx.db.patch(guestUser._id, {
-        ...updates,
-        updatedAt: Date.now(),
-      })
-
-      guestUser = (await ctx.db.get(guestUser._id)) ?? guestUser
-    }
-
-    return guestUser
-  }
-
-  const guestUserId = await ctx.db.insert('users', {
-    email: guestEmail,
-    name: GUEST_DISPLAY_NAME,
-    fid: guestFid,
-    guestId: normalizedGuestId,
-    isActive: true,
-    accountStatus: 'guest',
-    notes: 'Guest chat session',
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  })
-
-  const createdGuestUser = await ctx.db.get(guestUserId)
-  if (!createdGuestUser) {
-    throw new Error('Failed to create guest chat user')
-  }
-
-  return createdGuestUser
 }
 
 const getFolderOwner = async (ctx: MutationCtx, userfid: string) => {
@@ -492,7 +388,9 @@ export const mergeGuestConversation = mutation({
       const existingArchivedConversation = await ctx.db
         .query('archivedConversations')
         .withIndex('by_userId_otherUserId', (q) =>
-          q.eq('userId', archivedConversation.userId).eq('otherUserId', user._id),
+          q
+            .eq('userId', archivedConversation.userId)
+            .eq('otherUserId', user._id),
         )
         .first()
 
@@ -529,7 +427,9 @@ export const mergeGuestConversation = mutation({
       const existingAssignment = await ctx.db
         .query('conversationFolderAssignments')
         .withIndex('by_ownerUserId_otherUserId', (q) =>
-          q.eq('ownerUserId', assignment.ownerUserId).eq('otherUserId', user._id),
+          q
+            .eq('ownerUserId', assignment.ownerUserId)
+            .eq('otherUserId', user._id),
         )
         .first()
 
@@ -546,6 +446,31 @@ export const mergeGuestConversation = mutation({
     const representativeUser = guestUser.guestRepresentativeId
       ? await ctx.db.get(guestUser.guestRepresentativeId)
       : null
+
+    const guestChatOrders = await ctx.db
+      .query('orders')
+      .withIndex('by_chatUserId', (q) => q.eq('chatUserId', guestUser._id))
+      .collect()
+
+    for (const order of guestChatOrders) {
+      await ctx.db.patch(order._id, {
+        chatUserId: user._id,
+        updatedAt: Date.now(),
+      })
+    }
+
+    const guestOwnedOrders = await ctx.db
+      .query('orders')
+      .withIndex('by_user', (q) => q.eq('userId', guestUser._id))
+      .collect()
+
+    for (const order of guestOwnedOrders) {
+      await ctx.db.patch(order._id, {
+        userId: user._id,
+        chatUserId: user._id,
+        updatedAt: Date.now(),
+      })
+    }
 
     await ctx.db.delete(guestUser._id)
 

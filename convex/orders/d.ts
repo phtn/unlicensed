@@ -134,6 +134,7 @@ export const shippingSchema = v.object({
 export const orderSchema = v.object({
   // User information
   userId: v.union(v.id('users'), v.null()), // null for guest orders
+  chatUserId: v.optional(v.id('users')), // chat profile used for guest/staff conversations
 
   // Order identification
   orderNumber: v.string(), // Human-readable order number (e.g., "ORD-2024-001234")

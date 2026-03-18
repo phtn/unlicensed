@@ -1,6 +1,7 @@
 import {v} from 'convex/values'
 import type {Doc, Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
+import {getCanonicalUserByFid} from '../users/lib'
 import {safeGet} from '../utils/id_validation'
 
 type ProductWithTierLabel = Doc<'products'> & {
@@ -322,10 +323,7 @@ export const getPreviouslyBoughtProducts = query({
   handler: async (ctx, args) => {
     if (!args.fid) return []
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid!))
-      .unique()
+    const user = await getCanonicalUserByFid(ctx, args.fid)
 
     if (!user) return []
 

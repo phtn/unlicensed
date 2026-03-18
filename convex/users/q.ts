@@ -3,6 +3,7 @@ import type {Doc, Id} from '../_generated/dataModel'
 import type {QueryCtx} from '../_generated/server'
 import {query} from '../_generated/server'
 import type {AddressType} from './d'
+import {getCanonicalUserByFid} from './lib'
 
 const matchesType = (
   addressType: AddressType['type'],
@@ -57,14 +58,7 @@ export const getCurrentUser = query({
   args: {
     fid: v.string(),
   },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .first()
-
-    return user
-  },
+  handler: async (ctx, args) => getCanonicalUserByFid(ctx, args.fid),
 })
 /** Get user by fid (Firebase/auth UID) - alias for message/chat components that use "proId" for fid */
 export const getById = query({
@@ -80,12 +74,7 @@ export const getByFid = query({
   args: {
     fid: v.string(),
   },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .first()
-  },
+  handler: async (ctx, args) => getCanonicalUserByFid(ctx, args.fid),
 })
 
 export const getUserAddresses = query({
@@ -96,10 +85,7 @@ export const getUserAddresses = query({
     ),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .unique()
+    const user = await getCanonicalUserByFid(ctx, args.fid)
 
     if (!user) {
       return []
@@ -125,10 +111,7 @@ export const getDefaultAddress = query({
     ),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .unique()
+    const user = await getCanonicalUserByFid(ctx, args.fid)
 
     if (!user) {
       return null

@@ -23,7 +23,7 @@ export const RewardPoints = ({pointsBalance}: RewardPointsProps) => {
           </h3>
         </div>
 
-        <div className='flex items-end justify-between bg-brand px-4 py-4'>
+        <div className='flex items-end justify-between px-4 py-4'>
           <div className=''>
             <Icon name='coins' className='size-14 dark:text-purple-100' />
           </div>

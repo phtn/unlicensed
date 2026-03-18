@@ -10,6 +10,7 @@ import {
   socialMediaSchema,
   type AddressType,
 } from './d'
+import {getCanonicalUserByEmail, getCanonicalUserByFid} from './lib'
 
 const supportsShipping = (type: AddressType['type']) =>
   type === 'shipping' || type === 'both'
@@ -164,17 +165,26 @@ export const createOrUpdateUser = mutation({
   handler: async (ctx, args) => {
     const now = Date.now()
 
-    // Check if user exists by fid
-    const existing = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', args.email))
-      .unique()
+    // Prefer the auth identifier and only fall back to email for legacy rows
+    // that were created before `fid` was consistently backfilled.
+    const existingByFid = await getCanonicalUserByFid(ctx, args.firebaseId)
+    const existingByEmail = existingByFid
+      ? null
+      : await getCanonicalUserByEmail(ctx, args.email)
+    const canReuseEmailMatch =
+      !!existingByEmail &&
+      (!existingByEmail.fid ||
+        existingByEmail.fid === args.firebaseId ||
+        existingByEmail.firebaseId === args.firebaseId)
+    const existing =
+      existingByFid ?? (canReuseEmailMatch ? existingByEmail : null)
 
     if (existing) {
       // Update existing user - only patch fields that are provided (not undefined)
       const updates: {
         email: string
         name: string
+        firebaseId: string
         fid: string
         photoUrl?: string
         contact?: typeof args.contact
@@ -187,6 +197,7 @@ export const createOrUpdateUser = mutation({
       } = {
         email: args.email,
         name: args.name,
+        firebaseId: args.firebaseId,
         fid: args.firebaseId,
         updatedAt: now,
       }
@@ -264,10 +275,7 @@ export const updateLocation = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .unique()
+    const user = await getCanonicalUserByFid(ctx, args.fid)
 
     if (!user) {
       return null
@@ -294,14 +302,7 @@ export const getUserByFid = mutation({
   args: {
     fid: v.string(),
   },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .unique()
-
-    return user
-  },
+  handler: async (ctx, args) => getCanonicalUserByFid(ctx, args.fid),
 })
 
 export const updateContact = mutation({
@@ -310,10 +311,7 @@ export const updateContact = mutation({
     contact: contactSchema,
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .unique()
+    const user = await getCanonicalUserByFid(ctx, args.fid)
 
     if (!user) {
       throw new Error('User not found')
@@ -341,10 +339,7 @@ export const addAddress = mutation({
     address: addressSchema,
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .unique()
+    const user = await getCanonicalUserByFid(ctx, args.fid)
 
     if (!user) {
       throw new Error('User not found')
@@ -388,10 +383,7 @@ export const updateAddress = mutation({
     address: addressSchema,
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .unique()
+    const user = await getCanonicalUserByFid(ctx, args.fid)
 
     if (!user) {
       throw new Error('User not found')
@@ -469,10 +461,7 @@ export const removeAddress = mutation({
     addressId: v.string(),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .unique()
+    const user = await getCanonicalUserByFid(ctx, args.fid)
 
     if (!user) {
       throw new Error('User not found')
@@ -531,10 +520,7 @@ export const updateSocialMedia = mutation({
     socialMedia: socialMediaSchema,
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .unique()
+    const user = await getCanonicalUserByFid(ctx, args.fid)
 
     if (!user) {
       throw new Error('User not found')
@@ -562,10 +548,7 @@ export const updatePreferences = mutation({
     preferences: preferencesSchema,
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .unique()
+    const user = await getCanonicalUserByFid(ctx, args.fid)
 
     if (!user) {
       throw new Error('User not found')
@@ -603,10 +586,7 @@ export const updateProfile = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', args.fid))
-      .unique()
+    const user = await getCanonicalUserByFid(ctx, args.fid)
 
     if (!user) {
       throw new Error('User not found')

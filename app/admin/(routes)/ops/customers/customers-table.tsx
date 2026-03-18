@@ -119,7 +119,9 @@ export const CustomersTable = () => {
           size: 200,
           cell: ({row}) => (
             <p className='font-mono text-xs text-muted-foreground'>
-              {row.original.email || 'N/A'}
+              {row.original.contact?.alternateEmail ||
+                row.original.email ||
+                'N/A'}
             </p>
           ),
         },

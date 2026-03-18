@@ -104,11 +104,30 @@ export const getUserOrders = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let orders = await ctx.db
+    const directOrders = await ctx.db
       .query('orders')
       .withIndex('by_user', (q) => q.eq('userId', args.userId))
       .order('desc')
       .collect()
+
+    const chatLinkedOrders = await ctx.db
+      .query('orders')
+      .withIndex('by_chatUserId', (q) => q.eq('chatUserId', args.userId))
+      .order('desc')
+      .collect()
+
+    let orders = Array.from(
+      new Map(
+        [...directOrders, ...chatLinkedOrders].map((order) => [
+          String(order._id),
+          order,
+        ]),
+      ).values(),
+    ).sort((left, right) => {
+      const leftTime = left.createdAt ?? left._creationTime
+      const rightTime = right.createdAt ?? right._creationTime
+      return rightTime - leftTime
+    })
 
     if (args.limit) {
       orders = orders.slice(0, args.limit)
@@ -253,11 +272,16 @@ export const getCustomerPurchaseSummaries = query({
     >()
 
     for (const order of orders) {
-      if (!order.userId || order.payment.status !== 'completed') {
+      if (order.payment.status !== 'completed') {
         continue
       }
 
-      const userId = String(order.userId)
+      const customerId = order.chatUserId ?? order.userId
+      if (!customerId) {
+        continue
+      }
+
+      const userId = String(customerId)
       const paidAt =
         order.payment.paidAt ?? order.createdAt ?? order._creationTime
       const amountCents = order.totalCents ?? 0

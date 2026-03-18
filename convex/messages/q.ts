@@ -107,16 +107,22 @@ const formatUserLocationLabel = (user: Doc<'users'>): string | null => {
   return city ?? country ?? countryCode ?? null
 }
 
+const getConversationEmail = (user: Doc<'users'>) =>
+  user.accountStatus === 'guest'
+    ? user.contact?.alternateEmail?.trim() || user.email || ''
+    : user.email || ''
+
 const mapConversationUser = (
   user: Doc<'users'>,
   includeLocation: boolean,
 ): OtherUser => {
   const fid = user.fid ?? user.firebaseId ?? ''
+  const email = getConversationEmail(user)
 
   return {
     fid,
     name: user.name ?? null,
-    email: user.email ?? '',
+    email,
     photoUrl: user.photoUrl ?? null,
     proId: fid || undefined,
     displayName: user.name ?? null,
@@ -240,7 +246,7 @@ export const searchConversations = query({
       if (!isConnected) return false
 
       const name = (u.name || '').toLowerCase()
-      const email = (u.email || '').toLowerCase()
+      const email = getConversationEmail(u).toLowerCase()
       return (
         name.includes(searchLower) ||
         email.includes(searchLower) ||

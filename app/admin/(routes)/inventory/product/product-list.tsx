@@ -44,12 +44,11 @@ const ProductItem = ({product, imageUrl}: ProductItemProps) => (
           <p className='text-tiny text-white'>
             Stock:{' '}
             <span className='text-blue-400 text-sm font-medium tracking-tight'>
-              {              product.stockByDenomination &&
+              {product.stockByDenomination &&
               Object.keys(product.stockByDenomination).length > 0
-                ? (Object.values(product.stockByDenomination) as number[]).reduce(
-                    (a, b) => a + b,
-                    0,
-                  )
+                ? (
+                    Object.values(product.stockByDenomination) as number[]
+                  ).reduce((a, b) => a + b, 0)
                 : (product.stock ?? 'N/A')}
             </span>
           </p>
@@ -64,7 +63,7 @@ const ProductItem = ({product, imageUrl}: ProductItemProps) => (
         prefetch={true}
         href={`/admin/inventory/product?tabId=edit&id=${product._id}`}
         className='text-white font-semibold hover:bg-dark-gray bg-dark-gray'>
-        <Icon name='pencil-fill' className='size-5' />
+        <Icon name='pen' className='size-5' />
       </Button>
     </CardFooter>
   </Card>

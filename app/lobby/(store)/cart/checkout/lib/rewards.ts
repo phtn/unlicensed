@@ -1,3 +1,5 @@
+import {resolveRewardShippingCostDollars} from '@/lib/checkout/shipping'
+
 /**
  * Tier-based rewards: shipping tiers, cash back %, bundle bonus.
  * All monetary values in config and computeRewards are in dollars.
@@ -133,9 +135,12 @@ export function computeRewards(
     (isBundleBonusActive ? config.bundleBonus.bonusPct : 0)
   const cashBackAmount = computeCashBackAmount(subtotalDollars, cashBackPct)
 
-  let shippingCost = currentTier.shippingCost
-  if (isFirstOrder && subtotalDollars >= config.freeShippingFirstOrder)
-    shippingCost = 0
+  const shippingCost = resolveRewardShippingCostDollars({
+    tierShippingCostDollars: currentTier.shippingCost,
+    isFirstOrder,
+    subtotalDollars,
+    freeShippingFirstOrderDollars: config.freeShippingFirstOrder,
+  })
 
   const amountToNextTier = nextTier
     ? Math.max(0, nextTier.minSubtotal - subtotalDollars)

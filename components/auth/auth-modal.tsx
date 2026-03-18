@@ -64,6 +64,7 @@ export const AuthModal = ({
   const [emailSent, setEmailSent] = useState(false)
   const [resetEmailSent, setResetEmailSent] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [emailLoading, setEmailLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [emailForLink, setEmailForLink] = useState('')
   const [emailLinkError, setEmailLinkError] = useState<string | null>(null)
@@ -126,7 +127,7 @@ export const AuthModal = ({
 
     if (isLogin) {
       if (!signInValid) return
-      setLoading(true)
+      setEmailLoading(true)
       try {
         await loginWithEmail(email.trim(), password)
         setAuthModalOpen(false)
@@ -134,7 +135,7 @@ export const AuthModal = ({
       } catch (err) {
         setError(parseFirebaseAuthError(err))
       } finally {
-        setLoading(false)
+        setEmailLoading(false)
       }
       return
     }
@@ -153,7 +154,7 @@ export const AuthModal = ({
       return
     }
 
-    setLoading(true)
+    setEmailLoading(true)
     try {
       await signupWithEmail(email.trim(), password)
       setAuthModalOpen(false)
@@ -161,7 +162,7 @@ export const AuthModal = ({
     } catch (err) {
       setError(parseFirebaseAuthError(err))
     } finally {
-      setLoading(false)
+      setEmailLoading(false)
     }
   }
 
@@ -171,14 +172,14 @@ export const AuthModal = ({
       return
     }
     setError(null)
-    setLoading(true)
+    setEmailLoading(true)
     try {
       await sendPasswordReset(email.trim())
       setResetEmailSent(true)
     } catch (err) {
       setError(parseFirebaseAuthError(err))
     } finally {
-      setLoading(false)
+      setEmailLoading(false)
     }
   }
 
@@ -189,7 +190,7 @@ export const AuthModal = ({
       return
     }
     setError(null)
-    setLoading(true)
+    setEmailLoading(true)
     try {
       const actionCodeSettings: ActionCodeSettings = {
         url: `${window.location.origin}/auth/email-link`,
@@ -201,7 +202,7 @@ export const AuthModal = ({
     } catch (err) {
       setError(parseFirebaseAuthError(err))
     } finally {
-      setLoading(false)
+      setEmailLoading(false)
     }
   }
 
@@ -245,7 +246,7 @@ export const AuthModal = ({
       return
     }
     setEmailLinkError(null)
-    setLoading(true)
+    setEmailLoading(true)
     try {
       await loginWithEmailLink(trimmed, completeEmailLink.href)
       setCompleteEmailLink(null)
@@ -254,7 +255,7 @@ export const AuthModal = ({
     } catch (err) {
       setEmailLinkError(parseFirebaseAuthError(err))
     } finally {
-      setLoading(false)
+      setEmailLoading(false)
     }
   }
 
@@ -512,11 +513,8 @@ export const AuthModal = ({
                       'bg-black/50': primaryActionDisabled,
                     },
                   )}>
-                  {loading ? (
-                    <Icon
-                      name='spinners-ring'
-                      className='size-5 text-orange-400'
-                    />
+                  {emailLoading ? (
+                    <Icon name='spinners-ring' className='size-5 text-white' />
                   ) : isEmailLinkView ? (
                     'Send email link'
                   ) : isLogin ? (
@@ -562,13 +560,13 @@ export const AuthModal = ({
                       radius='none'
                       variant='flat'
                       onPress={handleCompleteEmailLink}
-                      disabled={loading}
+                      disabled={emailLoading}
                       className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-full text-white rounded-lg'
                       startContent={
-                        loading ? (
+                        emailLoading ? (
                           <Icon
                             name='spinners-ring'
-                            className='size-5 text-orange-400'
+                            className='size-5 text-white'
                           />
                         ) : null
                       }>

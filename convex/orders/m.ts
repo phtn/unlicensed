@@ -4,6 +4,7 @@ import {
   computeOrderTotalCents,
   computeProcessingFeeCents,
 } from '../../lib/checkout/processing-fee'
+import {resolveOrderShippingCents} from '../../lib/checkout/shipping'
 import {createCouponError} from '../../lib/coupon-errors'
 import {
   getSharedWeightLineQuantity,
@@ -23,6 +24,7 @@ import {
   normalizeCouponCode,
 } from '../coupons/lib'
 import {addressSchema} from '../users/d'
+import {getOrCreateGuestUser} from '../messages/guest'
 import {
   orderStatusSchema,
   paymentMethodSchema,
@@ -437,6 +439,7 @@ export const createOrder = mutation({
     billingAddress: v.optional(addressSchema),
     contactEmail: v.string(),
     contactPhone: v.optional(v.string()),
+    guestChatId: v.optional(v.string()),
     paymentMethod: paymentMethodSchema,
     customerNotes: v.optional(v.string()),
     // Optional: override calculated totals
@@ -621,6 +624,15 @@ export const createOrder = mutation({
         : undefined
     const subtotalDollars = subtotalCents / 100
     const orderUserId = args.userId ?? null
+    const orderChatUser =
+      !orderUserId && args.guestChatId
+        ? await getOrCreateGuestUser(ctx, args.guestChatId, {
+            displayName:
+              `${args.shippingAddress.firstName} ${args.shippingAddress.lastName}`.trim(),
+            contactEmail: args.contactEmail,
+            contactPhone: args.contactPhone,
+          })
+        : null
     const isFirstOrder = orderUserId
       ? !(
           await ctx.db
@@ -657,15 +669,14 @@ export const createOrder = mutation({
       shippingConfig && typeof shippingConfig.minimumOrderCents === 'number'
         ? shippingConfig.minimumOrderCents
         : DEFAULT_MINIMUM_ORDER_CENTS
-    const rewardsShippingCents = Math.round(currentTier.shippingCost * 100)
-    const shippingCents =
-      isFirstOrder && subtotalDollars >= freeShippingFirstOrder
-        ? 0
-        : rewardsShippingCents > 0
-          ? rewardsShippingCents
-          : subtotalCents >= fallbackMinimumOrderCents
-            ? 0
-            : fallbackShippingFeeCents
+    const shippingCents = resolveOrderShippingCents({
+      subtotalCents,
+      isFirstOrder,
+      freeShippingFirstOrderDollars: freeShippingFirstOrder,
+      rewardTierShippingCostDollars: currentTier?.shippingCost,
+      fallbackMinimumOrderCents,
+      fallbackShippingFeeCents,
+    })
 
     let appliedCoupon: Doc<'coupons'> | null = null
     let couponDiscountCents = 0
@@ -815,6 +826,7 @@ export const createOrder = mutation({
     // Create order
     const orderId = await ctx.db.insert('orders', {
       userId: orderUserId,
+      ...(orderChatUser ? {chatUserId: orderChatUser._id} : {}),
       orderNumber: args.orderNumber,
       uuid: args.uuid,
       orderStatus: 'pending_payment',

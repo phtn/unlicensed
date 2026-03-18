@@ -1,6 +1,7 @@
 import {v} from 'convex/values'
 import type {Id} from '../_generated/dataModel'
 import {mutation} from '../_generated/server'
+import {resolveStaffChatUser} from '../staff/chat'
 
 // Connect admin with staff member for chat: creates follow and returns staff user's fid
 export const connectStaffForChat = mutation({
@@ -14,27 +15,10 @@ export const connectStaffForChat = mutation({
       throw new Error('Staff member not found')
     }
 
-    let staffUser: Awaited<ReturnType<typeof ctx.db.get>> = null
-    if (staff.userId) {
-      staffUser = await ctx.db.get(staff.userId as Id<'users'>)
-    } else if (staff.email) {
-      staffUser = await ctx.db
-        .query('users')
-        .withIndex('by_email', (q) => q.eq('email', staff.email as string))
-        .first()
-    }
-
-    if (!staffUser || !('fid' in staffUser)) {
-      throw new Error(
-        'Staff member does not have a linked user account to chat',
-      )
-    }
-
-    const staffUserFid =
-      (staffUser.fid ?? staffUser.firebaseId ?? '') as string
-    if (!staffUserFid) {
-      throw new Error('Staff user has no Firebase ID')
-    }
+    const {user: staffUser, fid: staffUserFid} = await resolveStaffChatUser(
+      ctx,
+      staff,
+    )
 
     const follower = await ctx.db
       .query('users')

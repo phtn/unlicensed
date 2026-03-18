@@ -6,6 +6,11 @@ import {PaymentMethod} from '@/convex/orders/d'
 import {AddressType} from '@/convex/users/d'
 import {getCouponErrorMessage} from '@/lib/coupon-errors'
 import {
+  createGuestChatId,
+  getGuestChatIdCookie,
+  setGuestChatIdCookie,
+} from '@/lib/guest-chat'
+import {
   clearLocalStorageCart,
   getLocalStorageCartItems,
 } from '@/lib/localStorageCart'
@@ -279,6 +284,20 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
 
         if (!uuid || !refNum) return null
 
+        const guestChatId =
+          !isAuthenticated && typeof window !== 'undefined'
+            ? (() => {
+                const existingGuestChatId = getGuestChatIdCookie()
+                if (existingGuestChatId) {
+                  return existingGuestChatId
+                }
+
+                const nextGuestChatId = createGuestChatId()
+                setGuestChatIdCookie(nextGuestChatId)
+                return nextGuestChatId
+              })()
+            : undefined
+
         const orderArgs =
           userIdToUse !== undefined
             ? {
@@ -308,6 +327,7 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
                 billingAddress: params.billingAddress,
                 contactEmail: params.contactEmail,
                 contactPhone: params.contactPhone,
+                guestChatId,
                 paymentMethod: params.paymentMethod,
                 customerNotes: params.customerNotes,
                 couponCode: params.couponCode,

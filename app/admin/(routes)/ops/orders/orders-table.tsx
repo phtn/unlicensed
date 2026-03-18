@@ -132,7 +132,9 @@ export const OrdersTable = () => {
         onError('You must be signed in to start a chat')
         return
       }
-      if (!order.userId) {
+      const targetCustomerId = order.chatUserId ?? order.userId
+
+      if (!targetCustomerId) {
         onError('This order is not linked to a customer profile')
         return
       }
@@ -140,7 +142,7 @@ export const OrdersTable = () => {
       setIsOpeningChat(true)
       try {
         const result = await connectCustomerForChat({
-          customerId: order.userId,
+          customerId: targetCustomerId,
           currentUserFid: user.uid,
         })
 
@@ -225,8 +227,9 @@ export const OrdersTable = () => {
           const email = row.original.contactEmail
           if (!email) return <span className='text-muted-foreground'>····</span>
 
-          const profileId = row.original.userId
-            ? customerProfileIdByUserId.get(String(row.original.userId))
+          const profileUserId = row.original.chatUserId ?? row.original.userId
+          const profileId = profileUserId
+            ? customerProfileIdByUserId.get(String(profileUserId))
             : undefined
 
           return (
@@ -235,7 +238,8 @@ export const OrdersTable = () => {
                 <Link
                   prefetch
                   href={`/admin/ops/customers/${profileId}`}
-                  className='flex justify-center opacity-80 hover:opacity-100 font-okxs text-sm hover:underline underline-offset-4 decoration-dotted decoration-foreground/40 hover:decoration-blue-500 dark:hover:decoration-primary'>
+                  className='flex justify-center opacity-80 hover:opacity-100 font-okxs text-sm hover:underline underline-offset-4 decoration-dotted decoration-foreground/40 hover:decoration-blue-500 dark:hover:decoration-primary'
+                >
                   {email?.split('@').shift()}
                 </Link>
               ) : (
@@ -307,7 +311,8 @@ export const OrdersTable = () => {
             size='sm'
             variant='light'
             className='h-9 min-w-0 rounded-md px-3'
-            onPress={clearDateRange}>
+            onPress={clearDateRange}
+          >
             Clear
           </Button>
         ) : null}
@@ -322,8 +327,9 @@ export const OrdersTable = () => {
         mode: 'custom',
         render: ({row}) => {
           const order = row.original
-          const customerFid = order.userId
-            ? customerProfileIdByUserId.get(String(order.userId))
+          const customerProfileId = order.chatUserId ?? order.userId
+          const customerFid = customerProfileId
+            ? customerProfileIdByUserId.get(String(customerProfileId))
             : null
           const unreadCount = customerFid
             ? (unreadCountByFid.get(customerFid) ?? 0)
@@ -344,7 +350,8 @@ export const OrdersTable = () => {
                 classNames={{
                   badge:
                     'min-w-5 h-5 px-1 flex items-center justify-center rounded-full border-1.5 dark:border-background/90 shadow-md bg-brand/80',
-                }}>
+                }}
+              >
                 <Button
                   isIconOnly
                   size='sm'
@@ -353,7 +360,8 @@ export const OrdersTable = () => {
                   className='h-8 w-8 min-w-8 rounded-lg'
                   onPress={() => {
                     void handleOpenCustomerChat(order)
-                  }}>
+                  }}
+                >
                   <Icon name='chat' className='size-4 opacity-80' />
                 </Button>
               </Badge>
@@ -362,7 +370,8 @@ export const OrdersTable = () => {
                 size='sm'
                 variant='light'
                 className='h-8 w-8 min-w-8 rounded-lg'
-                onPress={() => handleViewOrder(order)}>
+                onPress={() => handleViewOrder(order)}
+              >
                 <Icon name='details' className='size-4' />
               </Button>
             </div>

@@ -66,6 +66,7 @@ export default defineSchema({
     .index('by_expires', ['expiresAt']),
   orders: defineTable(orderSchema)
     .index('by_user', ['userId'])
+    .index('by_chatUserId', ['chatUserId'])
     .index('by_order_number', ['orderNumber'])
     .index('by_status', ['orderStatus']),
   rewardTiers: defineTable(rewardTierSchema),
