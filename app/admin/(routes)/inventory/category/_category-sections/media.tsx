@@ -4,7 +4,8 @@ import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Drawer, DrawerContent, DrawerHeader, Image} from '@heroui/react'
-import {Derived, useStore} from '@tanstack/react-store'
+import type {ReadonlyStore} from '@tanstack/store'
+import {useStore} from '@tanstack/react-store'
 import {useQuery} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
 import {CategoryFormApi, CategoryFormValues} from '../category-schema'
@@ -44,12 +45,12 @@ export const Media = ({form}: MediaProps) => {
   const [activeTag, setActiveTag] = useState<string | null>(null)
 
   const heroImageValue = useStore(
-    form.store as unknown as Derived<FormStoreState, never>,
+    form.store as ReadonlyStore<FormStoreState>,
     (state: FormStoreState) => (state.values.heroImage as string) ?? '',
   )
 
   const categorySlug = useStore(
-    form.store as unknown as Derived<FormStoreState, never>,
+    form.store as ReadonlyStore<FormStoreState>,
     (state: FormStoreState) => (state.values.slug as string) ?? '',
   )
 

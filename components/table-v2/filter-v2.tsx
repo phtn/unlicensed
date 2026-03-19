@@ -150,10 +150,7 @@ export const Filter = <T,>({
                 {totalActiveFilters > 99 ? '99+' : totalActiveFilters}
               </span>
             ) : (
-              <Icon
-                name='filter-bold'
-                className={cn('size-4 dark:opacity-80')}
-              />
+              <Icon name='filter' className={cn('size-4 dark:opacity-90')} />
             )}
             <span className='hidden text-sm font-brk capitalize opacity-90 md:flex'>
               Filter

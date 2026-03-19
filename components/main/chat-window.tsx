@@ -87,14 +87,6 @@ export function ChatWindow({
     void guestChat.ensureSession()
   }, [guestChat, isGuestFlow, open])
 
-  useEffect(() => {
-    if (!guestConversationFid || !isGuestFlow) {
-      return
-    }
-
-    setSelectedConversationFid(guestConversationFid)
-  }, [guestConversationFid, isGuestFlow])
-
   const conversations = useQuery(
     api.messages.q.getConversations,
     open && activeChatFid ? {fid: activeChatFid} : 'skip',

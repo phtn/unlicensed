@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {Spinner} from '@/components/ui/spinner'
+import NextImage from 'next/image'
 
 function ImageIcon(props: React.ComponentProps<'svg'>) {
   return (
@@ -276,9 +277,12 @@ export function Pattern({
                       <Spinner className='text-muted-foreground size-6' />
                     </div>
                   )}
-                  <img
+                  <NextImage
                     src={fileItem.preview}
                     alt={fileItem.file.name}
+                    fill
+                    unoptimized
+                    sizes='(min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw'
                     onLoad={() =>
                       setLoadingImages((prev) => ({
                         ...prev,
@@ -286,7 +290,7 @@ export function Pattern({
                       }))
                     }
                     className={cn(
-                      'rounded-lg h-full w-full border object-cover transition-all group-hover/item:scale-105',
+                      'rounded-lg border object-cover transition-all group-hover/item:scale-105',
                       loadingImages[fileItem.id] !== false
                         ? 'opacity-0'
                         : 'opacity-100',
@@ -365,7 +369,7 @@ export function Pattern({
           <DialogHeader className='sr-only'>
             <DialogTitle>Image Preview</DialogTitle>
           </DialogHeader>
-          <div className='flex items-center justify-center'>
+          <div className='relative flex h-[min(70vh,42rem)] w-full items-center justify-center'>
             {selectedImage && (
               <>
                 {isPreviewLoading && (
@@ -373,12 +377,15 @@ export function Pattern({
                     <Spinner className='size-8 text-white' />
                   </div>
                 )}
-                <img
+                <NextImage
                   src={selectedImage}
                   alt='Preview'
+                  fill
+                  unoptimized
+                  sizes='100vw'
                   onLoad={() => setIsPreviewLoading(false)}
                   className={cn(
-                    'rounded-lg h-full w-auto object-contain transition-opacity duration-300',
+                    'rounded-lg object-contain transition-opacity duration-300',
                     isPreviewLoading ? 'opacity-0' : 'opacity-100',
                   )}
                 />

@@ -26,7 +26,10 @@ import {CellContext} from '@tanstack/react-table'
 import {useQuery} from 'convex/react'
 import {useCallback, useMemo} from 'react'
 import {CSV_DENOM_KEYS, PRODUCT_CSV_FIELDS} from './csv-import/constants'
-import {mapNumericFractions} from './product-schema'
+import {
+  getProductTierOptionsByCategory,
+  mapNumericFractions,
+} from './product-schema'
 
 function escapeCsvValue(value: unknown): string {
   const s = value === null || value === undefined ? '' : String(value)
@@ -285,6 +288,25 @@ export const ProductsData = ({
           accessorKey: 'tier',
           cell: textCell('tier', 'text-center uppercase'),
           size: 64,
+          meta: {
+            bulkEditor: {
+              type: 'select',
+              options: (rows: Doc<'products'>[]) => {
+                const uniqueCategorySlugs = [...new Set(
+                  rows
+                    .map((row) => row.categorySlug)
+                    .filter(
+                      (slug): slug is string =>
+                        typeof slug === 'string' && slug.length > 0,
+                    ),
+                )]
+
+                return uniqueCategorySlugs.flatMap((slug) =>
+                  getProductTierOptionsByCategory(slug, categories ?? []),
+                )
+              },
+            },
+          },
         },
         {
           id: 'available',
@@ -411,6 +433,15 @@ export const ProductsData = ({
           accessorKey: 'packagingMode',
           cell: textCell('packagingMode', 'uppercase text-xs'),
           size: 140,
+          meta: {
+            bulkEditor: {
+              type: 'select',
+              options: [
+                {value: 'bulk', label: 'Bulk'},
+                {value: 'prepack', label: 'Prepack'},
+              ],
+            },
+          },
         },
         {
           id: 'masterStock',
@@ -472,7 +503,7 @@ export const ProductsData = ({
         //   accessorKey: 'createdAt',
         // },
       ] as ColumnConfig<Doc<'products'>>[],
-    [categorySlugs],
+    [categories, categorySlugs],
   )
 
   const ExportCsvToolbar = useCallback(

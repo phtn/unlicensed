@@ -9,6 +9,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   PaginationState,
+  Row,
   RowSelectionState,
   SortingState,
   useReactTable,
@@ -23,6 +24,7 @@ import {
   useId,
   useMemo,
   useRef,
+  useState,
 } from 'react'
 
 import {useSidebar} from '@/app/admin/_components/ui/sidebar'
@@ -33,6 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {DialogWindow} from '@/components/ui/window'
 import {useMobile} from '@/hooks/use-mobile'
 import {cn} from '@/lib/utils'
 import {ColumnSort} from './column-sort-v2'
@@ -51,6 +54,7 @@ import {DeleteButton} from './delete-row-v2'
 import {EmptyTable} from './empty-table-v2'
 import {Filter} from './filter-v2'
 import {HyperWrap} from './hyper-wrap'
+import {MultiSelect} from './multi-select'
 import {PageControl, Paginator} from './pagination-v2'
 import {
   createColumnFiltersParser,
@@ -75,6 +79,12 @@ export interface TableToolbarContext<T> {
   getFilteredData: () => T[]
 }
 
+interface BulkUpdateSelectionArgs<T> {
+  ids: string[]
+  rows: T[]
+  updates: Partial<T>
+}
+
 interface TableProps<T> {
   data: T[]
   title?: string
@@ -83,6 +93,9 @@ interface TableProps<T> {
   columnConfigs: ColumnConfig<T>[]
   actionConfig?: ActionConfig<T>
   onDeleteSelected?: (ids: string[]) => void | Promise<void>
+  onBulkUpdateSelected?: (
+    args: BulkUpdateSelectionArgs<T>,
+  ) => void | Promise<void>
   deleteIdAccessor?: keyof T
   selectedItemId?: string | null
   /** Default rows per page when no URL param is set. Defaults to 15. */
@@ -100,12 +113,17 @@ function DataTableContent<T>({
   columnConfigs,
   actionConfig,
   onDeleteSelected,
+  onBulkUpdateSelected,
   deleteIdAccessor = 'id' as keyof T,
   selectedItemId,
   defaultPageSize = 15,
   centerToolbarDateRange,
   rightToolbarLeft,
 }: TableProps<T>) {
+  const [tableData, setTableData] = useState(data)
+  const [bulkAction, setBulkAction] = useState<'idle' | 'update' | 'delete'>(
+    'idle',
+  )
   const {columnVisibility, setColumnVisibility} = useColumnVisibility()
 
   const paginationParserInstance = useMemo(
@@ -155,6 +173,10 @@ function DataTableContent<T>({
   const selectOn = useMemo(() => selectModeParam === 'true', [selectModeParam])
 
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setTableData(data)
+  }, [data])
 
   const handleFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault()
@@ -225,8 +247,13 @@ function DataTableContent<T>({
   )
 
   const selectToggle = useCallback(() => {
-    setSelectModeParam(selectOn ? 'false' : 'true')
-  }, [selectOn, setSelectModeParam])
+    const nextSelectOn = !selectOn
+    setSelectModeParam(nextSelectOn ? 'true' : 'false')
+
+    if (!nextSelectOn) {
+      setRowSelectionParam({})
+    }
+  }, [selectOn, setRowSelectionParam, setSelectModeParam])
 
   // const handleDeleteRows = () => {
   //   const selectedRows = table.getSelectedRowModel().rows;
@@ -242,9 +269,8 @@ function DataTableContent<T>({
     [columnConfigs, actionConfig, selectOn],
   )
 
-  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table API is not memoization-safe
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -342,8 +368,106 @@ function DataTableContent<T>({
 
   const tableRows = table.getRowModel().rows
   const selectedRowModel = table.getSelectedRowModel().rows
-  // Derive selectedRows during render (simple nullish coalescing)
-  const selectedRows = selectedRowModel ?? []
+  const selectedRows = selectedRowModel
+  const selectedRowData = useMemo(
+    () => selectedRows.map((row) => row.original),
+    [selectedRows],
+  )
+  const selectedRowSignature = useMemo(
+    () =>
+      selectedRows
+        .map((row) => row.id)
+        .sort()
+        .join('|'),
+    [selectedRows],
+  )
+
+  const getSelectionIds = useCallback(
+    (rows: Row<T>[]) =>
+      rows.map((row) => {
+        const value = row.original[deleteIdAccessor]
+        return value == null ? row.id : String(value)
+      }),
+    [deleteIdAccessor],
+  )
+
+  const clearSelection = useCallback(() => {
+    setRowSelectionParam({})
+  }, [setRowSelectionParam])
+
+  const handleDeleteSelectedRows = useCallback(async () => {
+    if (selectedRows.length === 0 || bulkAction !== 'idle') return
+
+    setBulkAction('delete')
+
+    try {
+      if (onDeleteSelected) {
+        await onDeleteSelected(getSelectionIds(selectedRows))
+      } else {
+        const selectedRowIds = new Set(selectedRows.map((row) => row.id))
+        setTableData((current) =>
+          current.filter((_, index) => !selectedRowIds.has(String(index))),
+        )
+      }
+
+      clearSelection()
+    } finally {
+      setBulkAction('idle')
+    }
+  }, [
+    bulkAction,
+    clearSelection,
+    getSelectionIds,
+    onDeleteSelected,
+    selectedRows,
+  ])
+
+  const handleBulkUpdateRows = useCallback(
+    async (updates: Partial<T>) => {
+      if (
+        selectedRows.length === 0 ||
+        Object.keys(updates).length === 0 ||
+        bulkAction !== 'idle'
+      ) {
+        return
+      }
+
+      setBulkAction('update')
+
+      try {
+        if (onBulkUpdateSelected) {
+          await onBulkUpdateSelected({
+            ids: getSelectionIds(selectedRows),
+            rows: selectedRowData,
+            updates,
+          })
+        } else {
+          const selectedRowIds = new Set(selectedRows.map((row) => row.id))
+          setTableData((current) =>
+            current.map((item, index) => {
+              if (!selectedRowIds.has(String(index))) {
+                return item
+              }
+
+              return {
+                ...(item as Record<string, unknown>),
+                ...(updates as Record<string, unknown>),
+              } as T
+            }),
+          )
+        }
+      } finally {
+        setBulkAction('idle')
+      }
+    },
+    [
+      bulkAction,
+      getSelectionIds,
+      onBulkUpdateSelected,
+      selectedRowData,
+      selectedRows,
+    ],
+  )
 
   const toolbarLeftContent =
     typeof rightToolbarLeft === 'function'
@@ -409,12 +533,9 @@ function DataTableContent<T>({
                 onDeleteSelected && (
                   <DeleteButton
                     rows={selectedRows}
-                    onDelete={async (ids) => {
-                      await onDeleteSelected(ids)
-                      setRowSelectionParam({})
-                    }}
+                    onDelete={handleDeleteSelectedRows}
                     idAccessor={deleteIdAccessor}
-                    disabled={loading}
+                    disabled={loading || bulkAction !== 'idle'}
                   />
                 )
               }
@@ -508,6 +629,31 @@ function DataTableContent<T>({
           />
         </HyperWrap>
       </div>
+
+      <DialogWindow
+        open={selectedRows.length > 0}
+        onOpenChange={(open) => {
+          if (!open) {
+            clearSelection()
+          }
+        }}
+        draggable={true}
+        title={<span className='text-lg'>Multi-Row Editor</span>}
+        description={`Non-mixed fields are prefilled. Only changed values are applied.`}
+        className={cn(
+          'h-auto max-h-none translate-x-0 rounded-3xl border-dark-table/20',
+          'w-[min(calc(100vw-1.5rem),31rem)] md:w-[min(calc(100vw-3rem),31rem)]',
+          'md:right-6 md:top-24 md:bottom-6 left-auto right-3 top-24 bottom-3 ',
+        )}>
+        <MultiSelect
+          key={selectedRowSignature}
+          selectedRows={selectedRowData}
+          columnConfigs={columnConfigs}
+          pending={loading || bulkAction !== 'idle'}
+          onApply={handleBulkUpdateRows}
+          onDeleteSelected={handleDeleteSelectedRows}
+        />
+      </DialogWindow>
     </div>
   )
 }

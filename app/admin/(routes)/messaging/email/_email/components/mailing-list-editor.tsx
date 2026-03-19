@@ -284,7 +284,9 @@ export const MailingListEditor = ({
                 {recipients.length} recipient
                 {recipients.length === 1 ? '' : 's'}
               </span>
-            ) : null
+            ) : (
+              description
+            )
           }
         />
         <Input

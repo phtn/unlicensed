@@ -9,7 +9,8 @@ import {useStorageUpload} from '@/hooks/use-storage-upload'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Drawer, DrawerContent, DrawerHeader, Image} from '@heroui/react'
-import {Derived, useStore} from '@tanstack/react-store'
+import type {ReadonlyStore} from '@tanstack/store'
+import {useStore} from '@tanstack/react-store'
 import {useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {ProductFormValues} from '../product-schema'
@@ -73,17 +74,17 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
   const processingFileIdsRef = useRef<Set<string>>(new Set())
 
   const primaryImageValue = useStore(
-    form.store as unknown as Derived<FormStoreState, never>,
+    form.store as ReadonlyStore<FormStoreState>,
     (state: FormStoreState) => (state.values.image as string) ?? '',
   )
 
   const categorySlug = useStore(
-    form.store as unknown as Derived<FormStoreState, never>,
+    form.store as ReadonlyStore<FormStoreState>,
     (state: FormStoreState) => (state.values.categorySlug as string) ?? '',
   )
 
   const galleryValue = useStore(
-    form.store as unknown as Derived<FormStoreState, never>,
+    form.store as ReadonlyStore<FormStoreState>,
     (state: FormStoreState) => (state.values.gallery as string[]) ?? [],
   )
 

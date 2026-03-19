@@ -173,6 +173,23 @@ export const globalFilterFn = <T,>(
 }
 
 // Column factory configuration interface
+export interface BulkEditorOption {
+  value: string
+  label: string
+}
+
+export interface BulkEditorConfig<T> {
+  enabled?: boolean
+  type?: 'text' | 'number' | 'select'
+  options?: BulkEditorOption[] | ((rows: T[]) => BulkEditorOption[])
+  placeholder?: string
+}
+
+export interface ColumnMeta<T> extends Record<string, unknown> {
+  filterOptions?: Array<string | number | boolean>
+  bulkEditor?: boolean | BulkEditorConfig<T>
+}
+
 export interface ColumnConfig<T> {
   id: string
   header: ReactNode
@@ -205,7 +222,7 @@ export interface ColumnConfig<T> {
   filterFn?: FilterFn<T>
   enableHiding?: boolean
   enableSorting?: boolean
-  meta?: Record<string, unknown>
+  meta?: ColumnMeta<T>
 }
 
 export type ActionRenderMode = 'dropdown' | 'buttons' | 'custom'

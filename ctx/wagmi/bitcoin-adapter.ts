@@ -54,20 +54,29 @@ export class BitcoinAdapter extends AdapterBlueprint {
   async getAccounts(params: AdapterBlueprint.GetAccountsParams) {
     const walletConnectProvider = this.provider as UniversalProvider | undefined
     const resolvedNamespace = params.namespace ?? BTC_NAMESPACE
-    const addresses =
+    const caipAccounts =
       walletConnectProvider?.session?.namespaces?.[resolvedNamespace]?.accounts
-        ?.map((account) => {
-          const [, , address] = account.split(':')
-          return address
-        })
+        ?.filter(
+          (account): account is `${typeof BTC_NAMESPACE}:${string}:${string}` => {
+            const [namespace, chainId, address] = account.split(':')
+
+            return (
+              namespace === BTC_NAMESPACE &&
+              chainId.length > 0 &&
+              address.length > 0
+            )
+          },
+        )
         .filter(
-          (address, index, allAddresses) =>
-            allAddresses.indexOf(address) === index,
+          (account, index, allAccounts) => allAccounts.indexOf(account) === index,
         ) ?? []
 
     return {
-      accounts: addresses.map((address) =>
-        CoreHelperUtil.createAccount(BTC_NAMESPACE, address, 'payment'),
+      accounts: caipAccounts.map((caipAddress) =>
+        CoreHelperUtil.createAccount({
+          caipAddress,
+          type: 'payment',
+        }),
       ),
     }
   }

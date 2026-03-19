@@ -10,13 +10,14 @@ import {ReactNode, useEffect, useId, useRef} from 'react'
 interface DialogWindowProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  children: ReactNode
   title?: ReactNode
   description?: ReactNode
   descriptionStyle?: ClassName
   actions?: ReactNode
   hotkey?: Keys
   className?: string
-  children: ReactNode
+  draggable?: boolean
 }
 
 export const DialogWindow = ({
@@ -29,6 +30,7 @@ export const DialogWindow = ({
   hotkey,
   className,
   children,
+  draggable,
 }: DialogWindowProps) => {
   const {isOpen, close} = useWindow({
     isOpen: open,
@@ -49,6 +51,8 @@ export const DialogWindow = ({
     <AnimatePresence>
       {isOpen && (
         <motion.section
+          draggable={draggable}
+          // dragConstraints={{top: 64, left: 64, right: 64, bottom: 100}}
           ref={windowRef}
           tabIndex={-1}
           role='dialog'

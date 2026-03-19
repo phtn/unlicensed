@@ -6,6 +6,7 @@ import {useAddCartItem} from '@/hooks/use-add-cart-item'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
+import NextImage from 'next/image'
 import NextLink from 'next/link'
 import {memo, type MouseEvent, useMemo, useState} from 'react'
 
@@ -188,12 +189,13 @@ const ProductCardComponent = ({
       <div className='flex h-full flex-col'>
         <div className='relative flex items-center justify-center overflow-hidden rounded-xs bg-sidebar/40 dark:bg-dark-table/40'>
           {imageSrc ? (
-            <img
+            <NextImage
               src={imageSrc}
               alt={product.name}
-              loading='lazy'
-              decoding='async'
-              draggable={false}
+              width={512}
+              height={512}
+              unoptimized
+              sizes='(min-width: 1280px) 19rem, (min-width: 1024px) 16rem, (min-width: 768px) 18rem, 100vw'
               className='aspect-square min-w-44 rounded-xs object-cover transition-transform duration-300 group-hover:scale-[1.03] xl:min-w-64'
             />
           ) : (

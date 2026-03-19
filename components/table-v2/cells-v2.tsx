@@ -493,7 +493,7 @@ export const toggleCell = <T, V>(
   const {
     values,
     labels = [String(values[0]), String(values[1])],
-    colors = ['primary', 'default'],
+    colors = ['success', 'default'],
     getMutationArgs,
     className: _className,
   } = config
@@ -539,7 +539,7 @@ export const toggleCell = <T, V>(
             <Icon
               name={isFirstValue ? 'confirm-circle' : 'circ'}
               className={cn(
-                'size-7 dark:text-primary/80 text-blue-400 dark:group-hover/tb:text-slate-600 ',
+                'size-7 dark:text-blue-400/80 text-blue-400 dark:group-hover/tb:text-slate-600 ',
                 {
                   'text-slate-400 group-hover/tb:text-slate-600 dark:text-slate-600 group-hover/tb:opacity-90':
                     !isFirstValue,

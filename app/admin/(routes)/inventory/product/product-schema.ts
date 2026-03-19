@@ -77,21 +77,6 @@ export function getProductTierOptionsByCategory(
   }))
 }
 
-export const extractAndEdibleProductBases = [
-  'Distillate',
-  'Hydrocarbon (BHO)',
-  'CO2',
-  'Rosin',
-  'Hash',
-] as const
-
-export const preRollProductBases = ['Flower', 'Infused'] as const
-
-const categoryContains = (
-  categorySlug: string,
-  candidates: readonly string[],
-) => candidates.some((c) => (categorySlug ?? '').includes(c))
-
 type CategoryForOptions = {
   slug?: string
   _id: string
@@ -120,23 +105,13 @@ function baseEntries(
   return raw as AttributeEntry[]
 }
 
-/** When category has bases configured, use them (value=slug, label=name); else derive from slug. */
+/** Returns base options configured on the selected category. */
 export const getProductBaseOptionsByCategory = (
   categorySlug?: string,
   categories?: CategoryForOptions[],
 ): SelectOption[] => {
   const entries = baseEntries(categorySlug, categories)
-  if (entries.length > 0) {
-    return entries.map((e) => ({value: e.slug, label: e.name}))
-  }
-  const normalized = categorySlug?.toLowerCase().trim() ?? ''
-  if (categoryContains(normalized, ['extract', 'concentrate', 'edible'])) {
-    return extractAndEdibleProductBases.map((b) => ({value: b, label: b}))
-  }
-  if (categoryContains(normalized, ['pre-roll', 'preroll', 'pre roll'])) {
-    return preRollProductBases.map((b) => ({value: b, label: b}))
-  }
-  return []
+  return entries.map((e) => ({value: e.slug, label: e.name}))
 }
 
 function brandEntries(

@@ -485,14 +485,7 @@ export function ProductCsvUpload() {
   return (
     <TabContentContainer
       title='Product CSV Import'
-      description={
-        <div className='max-w-7xl wrap-normal'>
-          Upload a CSV in the same format as export. Preview rows, fix
-          validation errors and slug conflicts, then import. Rows with an _id
-          replace the existing product, and blank slugs are derived from the
-          product name.
-        </div>
-      }
+      description='Upload a CSV in the same format as export. Preview rows, fix validation errors and slug conflicts, then import. Rows with an _id replace the existing product, and blank slugs are derived from the product name.'
       className={cn(
         'flex h-full min-w-0 md:max-w-[calc(95lvw)] flex-col gap-6 overflow-hidden bg-sidebar p-4 rounded-lg',
         {'md:max-w-[calc(82lvw)]': sidebarOpen},
