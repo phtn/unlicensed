@@ -2,6 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import {useMobile} from '@/hooks/use-mobile'
+import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
@@ -86,11 +87,23 @@ export default function OrderDetailPage() {
       <motion.div
         initial={{opacity: 0}}
         animate={{opacity: 1}}
-        className='min-h-screen flex items-center justify-center'>
+        className='min-h-screen flex items-center justify-center'
+      >
         <p>Loading order...</p>
       </motion.div>
     )
   }
+
+  const payableTotalCents = resolveOrderPayableTotalCents({
+    paymentMethod: order.payment.method,
+    totalCents: order.totalCents,
+    processingFeeCents: order.processingFeeCents,
+    totalWithCryptoFeeCents: order.totalWithCryptoFeeCents,
+  })
+  const processingFeeLabel =
+    order.payment.method === 'cash_app'
+      ? 'Cash App Processing Fee'
+      : 'Processing Fee'
 
   return (
     <div className='min-h-screen pt-4'>
@@ -117,7 +130,8 @@ export default function OrderDetailPage() {
                   variant='light'
                   size='sm'
                   onPress={() => setShowSuccessBanner(false)}
-                  className='min-w-0 w-8 h-8'>
+                  className='min-w-0 w-8 h-8'
+                >
                   <Icon name='x' className='size-4' />
                 </Button>
               </div>
@@ -165,7 +179,8 @@ export default function OrderDetailPage() {
                     className={cn('p', {
                       'md:pe-8 md:border-r border-dotted border-foreground/15':
                         index % 2 === 0,
-                    })}>
+                    })}
+                  >
                     <div className='flex gap-4'>
                       <Image
                         src={item.productImage}
@@ -233,10 +248,18 @@ export default function OrderDetailPage() {
                       )}
                     </span>
                   </div>
+                  {order.processingFeeCents && order.processingFeeCents > 0 && (
+                    <div className='flex justify-between text-sm'>
+                      <span className='text-color-muted'>
+                        {processingFeeLabel}
+                      </span>
+                      <span>${formatPrice(order.processingFeeCents)}</span>
+                    </div>
+                  )}
                   <Divider className='my-2' />
                   <div className='flex justify-between'>
                     <span>Total</span>
-                    <span>${formatPrice(order.totalCents ?? 0)}</span>
+                    <span>${formatPrice(payableTotalCents)}</span>
                   </div>
                 </div>
               </CardBody>
@@ -288,7 +311,8 @@ export default function OrderDetailPage() {
                             order.payment.method,
                           )}
                           color='primary'
-                          className='w-full'>
+                          className='w-full'
+                        >
                           Complete Payment
                         </Button>
                       </div>
@@ -415,7 +439,8 @@ export default function OrderDetailPage() {
               variant='faded'
               as={NextLink}
               href='/account'
-              className='border-transparent dark:bg-dark-table/10 rounded-lg font-okxs font-semibold dark:text-white text-base'>
+              className='border-transparent dark:bg-dark-table/10 rounded-lg font-okxs font-semibold dark:text-white text-base'
+            >
               Back to Account
             </Button>
             {order.orderStatus !== 'shipped' &&
@@ -425,7 +450,8 @@ export default function OrderDetailPage() {
                   size='md'
                   radius='none'
                   variant='light'
-                  className='rounded-xs font-okxs font-semibold dark:text-danger text-base'>
+                  className='rounded-xs font-okxs font-semibold dark:text-danger text-base'
+                >
                   Cancel Order
                 </Button>
               )}

@@ -148,7 +148,7 @@ export const orderSchema = v.object({
   subtotalCents: v.number(), // Sum of all item prices
   taxCents: v.number(), // Tax amount
   shippingCents: v.number(), // Shipping cost
-  processingFeeCents: v.optional(v.number()), // Hidden checkout fee applied to crypto payment methods
+  processingFeeCents: v.optional(v.number()), // Checkout fee applied to eligible payment methods such as crypto and Cash App
   discountCents: v.optional(v.number()), // Discount/coupon amount
   couponId: v.optional(v.id('coupons')),
   couponCode: v.optional(v.string()),

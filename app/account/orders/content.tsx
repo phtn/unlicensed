@@ -5,6 +5,7 @@ import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
 import type {OrderType} from '@/convex/orders/d'
 import {useAuth} from '@/hooks/use-auth'
+import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, CardBody, Input, InputProps} from '@heroui/react'
@@ -32,6 +33,14 @@ const toDateKey = (timestamp?: number) => {
   return `${year}-${month}-${day}`
 }
 
+const getDisplayOrderTotalCents = (order: OrderType) =>
+  resolveOrderPayableTotalCents({
+    paymentMethod: order.payment.method,
+    totalCents: order.totalCents,
+    processingFeeCents: order.processingFeeCents,
+    totalWithCryptoFeeCents: order.totalWithCryptoFeeCents,
+  })
+
 const matchesSearch = (order: OrderType, query: string, mode: SearchMode) => {
   const normalizedQuery = query.trim().toLowerCase()
   if (!normalizedQuery) return true
@@ -46,7 +55,8 @@ const matchesSearch = (order: OrderType, query: string, mode: SearchMode) => {
         day: 'numeric',
       })
     : ''
-  const orderAmountFormatted = formatPrice(order.totalCents).toLowerCase()
+  const displayTotalCents = getDisplayOrderTotalCents(order)
+  const orderAmountFormatted = formatPrice(displayTotalCents).toLowerCase()
   const amountQuery = normalizedQuery.replace(/[$,\s]/g, '')
   const parsedAmount = Number(amountQuery)
   const parsedAmountCents = Number.isFinite(parsedAmount)
@@ -59,8 +69,8 @@ const matchesSearch = (order: OrderType, query: string, mode: SearchMode) => {
     orderDateLabel.toLowerCase().includes(normalizedQuery)
   const isAmountMatch =
     orderAmountFormatted.includes(amountQuery) ||
-    `${order.totalCents / 100}`.includes(amountQuery) ||
-    (parsedAmountCents !== null && parsedAmountCents === order.totalCents)
+    `${displayTotalCents / 100}`.includes(amountQuery) ||
+    (parsedAmountCents !== null && parsedAmountCents === displayTotalCents)
 
   if (mode === 'orderNumber') return isOrderNumberMatch
   if (mode === 'date') return isDateMatch
@@ -150,7 +160,7 @@ export const Content = () => {
   const filteredTotalSpend = useMemo(
     () =>
       filteredOrders.reduce((total, order) => {
-        return total + order.totalCents
+        return total + getDisplayOrderTotalCents(order)
       }, 0),
     [filteredOrders],
   )
@@ -236,7 +246,8 @@ export const Content = () => {
                   radius='full'
                   variant={searchMode === mode.id ? 'solid' : 'flat'}
                   color={searchMode === mode.id ? 'primary' : 'default'}
-                  onPress={() => handleSearchModeChange(mode.id)}>
+                  onPress={() => handleSearchModeChange(mode.id)}
+                >
                   {mode.label}
                 </Button>
               ))}
@@ -245,7 +256,8 @@ export const Content = () => {
               size='sm'
               variant='light'
               onPress={clearFilters}
-              isDisabled={!hasFilters}>
+              isDisabled={!hasFilters}
+            >
               Clear filters
             </Button>
           </div>
@@ -276,7 +288,8 @@ export const Content = () => {
       ) : orders && orders.length === 0 ? (
         <Card
           shadow='none'
-          className='border-2 border-dashed border-default-200 dark:border-default-100/20'>
+          className='border-2 border-dashed border-default-200 dark:border-default-100/20'
+        >
           <CardBody className='py-16 flex flex-col items-center text-center gap-4'>
             <h2 className='text-xl font-semibold'>No orders yet</h2>
             <p className='text-default-500 max-w-md'>
@@ -321,7 +334,8 @@ export const Content = () => {
               <Button
                 variant='flat'
                 onPress={() => setPage(Math.max(1, currentPage - 1))}
-                isDisabled={currentPage <= 1}>
+                isDisabled={currentPage <= 1}
+              >
                 Previous
               </Button>
 
@@ -330,7 +344,8 @@ export const Content = () => {
                   item === 'ellipsis' ? (
                     <span
                       key={`ellipsis-${index}`}
-                      className='px-2 text-default-400'>
+                      className='px-2 text-default-400'
+                    >
                       ...
                     </span>
                   ) : (
@@ -340,7 +355,8 @@ export const Content = () => {
                       radius='full'
                       variant={item === currentPage ? 'solid' : 'light'}
                       color={item === currentPage ? 'primary' : 'default'}
-                      onPress={() => setPage(item)}>
+                      onPress={() => setPage(item)}
+                    >
                       {item}
                     </Button>
                   ),
@@ -350,7 +366,8 @@ export const Content = () => {
               <Button
                 variant='flat'
                 onPress={() => setPage(Math.min(totalPages, currentPage + 1))}
-                isDisabled={currentPage >= totalPages}>
+                isDisabled={currentPage >= totalPages}
+              >
                 Next
               </Button>
             </CardBody>

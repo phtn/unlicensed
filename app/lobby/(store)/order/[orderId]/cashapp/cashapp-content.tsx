@@ -6,6 +6,7 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {toggleChatDockWindow} from '@/lib/chat-dock'
+import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
@@ -60,7 +61,7 @@ function StepRow({
         className={cn(
           'mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full border',
           {
-            'border-cashapp/60 bg-emerald-500/15 text-emerald-300':
+            'border-emerald-500/60 bg-emerald-500/15 text-emerald-500 dark:text-emerald-300':
               state === 'complete',
             'border-orange-400/60 bg-orange-500/15 text-orange-300':
               state === 'active',
@@ -73,7 +74,8 @@ function StepRow({
         <Icon
           name={stepIconName(state)}
           className={cn('size-4', {
-            'animate-spin': state === 'active',
+            '': state === 'active',
+            'size-6': state === 'complete',
           })}
         />
       </div>
@@ -561,7 +563,19 @@ export const Content = () => {
   const repName =
     assignedRep?.name ?? assignedRep?.email?.split('@')[0] ?? 'Representative'
 
-  const orderTotalLabel = order ? `$${formatPrice(order.totalCents)}` : '--'
+  const payableTotalCents = order
+    ? resolveOrderPayableTotalCents({
+        paymentMethod: order.payment.method,
+        totalCents: order.totalCents,
+        processingFeeCents: order.processingFeeCents,
+        totalWithCryptoFeeCents: order.totalWithCryptoFeeCents,
+      })
+    : 0
+  const orderTotalLabel = order ? `$${formatPrice(payableTotalCents)}` : '--'
+  const processingFeeLabel =
+    order?.processingFeeCents && order.processingFeeCents > 0
+      ? `$${formatPrice(order.processingFeeCents)}`
+      : null
   const itemCountLabel = order ? `${order.items.length}` : '--'
 
   const handleRetry = () => {
@@ -607,7 +621,7 @@ export const Content = () => {
   }, [order])
 
   return (
-    <main className='min-h-[calc(100lvh)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-black'>
+    <main className='min-h-[calc(100lvh)] pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-background'>
       {showConfetti ? (
         <Confetti options={CONFETTI_OPTIONS} className='fixed inset-0 z-40' />
       ) : null}
@@ -616,7 +630,7 @@ export const Content = () => {
           title={
             <div className='flex items-center space-x-2'>
               <Icon name='cashapp' className='text-cashapp size-6' />
-              <span>Cash App Checkout</span>
+              <span className='font-clash'>Cash App Checkout</span>
             </div>
           }
           description={`Order*: ${order?.orderNumber.substring(5)}`}
@@ -626,10 +640,10 @@ export const Content = () => {
 
         {/*<ArcCallout icon='info' value={chatMessage} type={chatCalloutType} />*/}
 
-        <div className='rounded-xl border border-foreground/15 dark:bg-black/35 p-4 space-y-4'>
+        <div className='space-y-4'>
           <div className='hidden _flex items-center justify-between gap-3'>
             <div>
-              <p className='text-sm font-polysans tracking-tight'>
+              <p className='text-sm font-clash tracking-tight'>
                 Live Handoff Panel
               </p>
               <p className='text-xs opacity-70'>
@@ -646,19 +660,24 @@ export const Content = () => {
           </div>
 
           <div className='grid grid-cols-2 gap-3'>
-            <div className='rounded-lg border border-foreground/15 bg-foreground/5 p-3'>
-              <p className='text-[11px] uppercase tracking-wide opacity-70'>
+            <div className='rounded-lg border border-foreground/15 bg-foreground/5 dark:bg-foreground/15 p-3 space-y-1'>
+              <p className='text-xs font-ios uppercase tracking-wide opacity-70'>
                 Order Total
               </p>
               <p className='text-lg font-okxs leading-6'>{orderTotalLabel}</p>
             </div>
-            <div className='rounded-lg border border-foreground/15 bg-foreground/5 p-3'>
-              <p className='text-[11px] uppercase tracking-wide opacity-70'>
+            <div className='rounded-lg border border-foreground/15 bg-foreground/5 p-3 space-y-1'>
+              <p className='text-xs font-ios uppercase tracking-wide opacity-70'>
                 Items
               </p>
               <p className='text-lg font-okxs leading-6'>{itemCountLabel}</p>
             </div>
           </div>
+          {processingFeeLabel ? (
+            <p className='text-xs opacity-70'>
+              Includes {processingFeeLabel} Cash App processing fee.
+            </p>
+          ) : null}
         </div>
 
         <div className='rounded-xl border border-foreground/15 dark:bg-black/30 p-4 space-y-4'>
@@ -668,7 +687,7 @@ export const Content = () => {
               <Chip
                 size='sm'
                 variant='flat'
-                className='bg-emerald-500/10 text-emerald-300 border border-emerald-400/30'>
+                className='dark:bg-emerald-500/10 bg-emerald-300 text-emerald-500 dark:text-emerald-300 border border-emerald-400/30'>
                 {repName}
               </Chip>
             ) : null}
@@ -690,23 +709,36 @@ export const Content = () => {
           <p className='text-xs opacity-75'>
             Our representatives will guide you through the payment process.
           </p>
-          <Divider className='bg-foreground/15' />
-          <div className='grid gap-2 text-xs'>
+          <Divider className='border-b-[0.25px] border-foreground/15 border-dotted' />
+          <div className='grid gap-2.5 text-xs'>
             <div className='flex items-start gap-2'>
-              <Icon name='check-fill' className='size-4 text-emerald-300' />
+              <Icon
+                name='check-fill'
+                className='size-4 text-emerald-500 dark:text-emerald-300'
+              />
               <span>
                 Confirm your Cash App username with our representatives.
               </span>
             </div>
             <div className='flex items-start gap-2'>
-              <Icon name='check-fill' className='size-4 text-emerald-300' />
+              <Icon
+                name='check-fill'
+                className='size-4 text-emerald-500 dark:text-emerald-300'
+              />
               <span>
                 Share any delivery notes or timing constraints for this order.
               </span>
             </div>
             <div className='flex items-start gap-2'>
-              <Icon name='info' className='size-4 text-emerald-300' />
-              <span>8% fee is will be added to your total order amount.</span>
+              <Icon
+                name='info'
+                className='size-4 text-emerald-500 dark:text-emerald-300'
+              />
+              <span>
+                {processingFeeLabel
+                  ? `${processingFeeLabel} Cash App processing fee is included in your order total.`
+                  : 'An 8% Cash App processing fee is included in your order total.'}
+              </span>
             </div>
           </div>
         </div>
@@ -718,8 +750,8 @@ export const Content = () => {
             size='lg'
             variant='flat'
             className='font-polysans font-normal dark:bg-sidebar'
-            startContent={<Icon name='chevron-left' className='size-5' />}>
-            Back To Order
+            startContent={<Icon name='chevron-left' className='size-4' />}>
+            Review Order
           </Button>
           {setupState === 'no_rep' ? (
             <Button

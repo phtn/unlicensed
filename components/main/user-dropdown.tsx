@@ -64,6 +64,7 @@ export const UserDropdown = ({
           as={Link}
           href='/account'
           key='profile'
+          textValue={`Account ${user.displayName ?? user.email ?? 'User'}`}
           variant='flat'
           classNames={{
             title: 'text-foreground/90 font-polysans',
@@ -95,7 +96,7 @@ export const UserDropdown = ({
             key='quick-links'
             as={'div'}
             variant='light'
-            textValue='notifications'
+            textValue='Quick links'
             startContent={
               <JustTheTip
                 id='updates'
@@ -162,6 +163,7 @@ export const UserDropdown = ({
         <DropdownSection className='w-full flex items-center justify-end'>
           <DropdownItem
             key='logout'
+            textValue='Sign out'
             // startContent={<Icon name='rapid-fire-logo-2' className='size-6' />}
             onPress={onLogout}
             title='sign out'

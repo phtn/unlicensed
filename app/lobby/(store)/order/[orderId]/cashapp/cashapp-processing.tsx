@@ -7,6 +7,7 @@ import {
   ArcLoader,
 } from '@/components/expermtl/arc-card'
 import {Doc} from '@/convex/_generated/dataModel'
+import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {formatPrice} from '@/utils/formatPrice'
 import {useMemo} from 'react'
 import {CashAppPaymentSDK} from './cashapp-payment-sdk'
@@ -30,19 +31,29 @@ export const CashAppProcessing = ({
   onPaymentSuccess,
   onPaymentError,
 }: CashAppProcessingProps) => {
+  const payableTotalCents = useMemo(
+    () =>
+      resolveOrderPayableTotalCents({
+        paymentMethod: order.payment.method,
+        totalCents: order.totalCents,
+        processingFeeCents: order.processingFeeCents,
+        totalWithCryptoFeeCents: order.totalWithCryptoFeeCents,
+      }),
+    [order],
+  )
   const payItems = useMemo(
     () =>
       [
         {
           label: 'Total Amount',
-          value: '$' + formatPrice(order?.totalCents ?? 0),
+          value: '$' + formatPrice(payableTotalCents),
         },
         {
           label: 'Payment Method',
           value: 'Cash App',
         },
       ] as Array<{label: string; value: string}>,
-    [order],
+    [payableTotalCents],
   )
 
   return (
@@ -68,7 +79,7 @@ export const CashAppProcessing = ({
           <CashAppPaymentSDK
             applicationId={paymentConfig.applicationId}
             locationId={paymentConfig.locationId}
-            amountCents={order.totalCents}
+            amountCents={payableTotalCents}
             orderId={order.orderNumber}
             onSuccess={() => {
               onPaymentSuccess?.()
@@ -81,10 +92,7 @@ export const CashAppProcessing = ({
       )}
 
       <ArcActionBar>
-        <ArcButtonFull
-          label='Cancel'
-          href={`/account/orders/${order._id}`}
-        />
+        <ArcButtonFull label='Cancel' href={`/account/orders/${order._id}`} />
       </ArcActionBar>
     </ArcCard>
   )

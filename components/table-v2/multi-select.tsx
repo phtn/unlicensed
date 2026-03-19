@@ -7,6 +7,7 @@ import {
   FrameTitle,
 } from '@/components/reui/frame'
 import {Table, TableBody, TableCell, TableRow} from '@/components/ui/table'
+import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Select, SelectItem} from '@heroui/react'
 import {useMemo, useState} from 'react'
@@ -40,6 +41,7 @@ interface MultiSelectProps<T> {
   selectedRows: T[]
   onApply: (updates: Partial<T>) => void | Promise<void>
   onDeleteSelected?: VoidFunction | (() => Promise<void>)
+  isCompact?: boolean
 }
 
 export const MultiSelect = <T,>({
@@ -47,6 +49,7 @@ export const MultiSelect = <T,>({
   pending = false,
   selectedRows,
   onApply,
+  isCompact,
   onDeleteSelected,
 }: MultiSelectProps<T>) => {
   const editableFields = useMemo<EditableField<T>[]>(() => {
@@ -179,7 +182,7 @@ export const MultiSelect = <T,>({
         spacing='sm'
         variant='ghost'
         className='flex h-full min-h-0 w-full max-w-none flex-col rounded-none border-0 bg-transparent p-3'>
-        <FrameHeader className='px-0! pt-0!'>
+        <FrameHeader className='px-0! pt-0! select-none'>
           <div className='flex items-start justify-between gap-3'>
             <div className='min-w-0'>
               <FrameTitle className='opacity-80'>
@@ -213,10 +216,14 @@ export const MultiSelect = <T,>({
                     <TableRow
                       key={field.id}
                       className='*:border-dark-table/20 hover:bg-transparent [&>:not(:last-child)]:border-r'>
-                      <TableCell className='bg-sidebar/20 dark:bg-sidebar border-b-[0.5px] w-44 align-top text-sm font-medium'>
+                      <TableCell
+                        className={cn(
+                          'bg-sidebar/20 dark:bg-sidebar border-b-[0.5px] align-top text-sm font-medium w-44 max-w-44',
+                          {'max-w-24': isCompact},
+                        )}>
                         <div className='flex flex-col gap-1'>
                           <span>{field.label}</span>
-                          <div className='flex items-center justify-between font-ios font-light uppercase text-[9px] tracking-wider'>
+                          <div className='flex items-center justify-between font-ios font-light uppercase text-[8px] md:text-[9px] tracking-wider'>
                             <span
                               className={cn(
                                 'dark:text-emerald-400 text-emerald-600',
@@ -232,16 +239,19 @@ export const MultiSelect = <T,>({
                               {field.typeLabel}
                             </span>
                             <span
-                              className={cn('text-foreground', {
-                                'text-amber-600 dark:text-orange-300':
-                                  field.isMixed,
-                              })}>
+                              className={cn(
+                                'text-foreground text-[8px] md:text-[9px]',
+                                {
+                                  'text-amber-600 dark:text-orange-300':
+                                    field.isMixed,
+                                },
+                              )}>
                               {field.isMixed && field.preview}
                             </span>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className='py-0'>
+                      <TableCell className={cn('py-0', {hidden: isCompact})}>
                         <div className='flex flex-col'>
                           {field.inputKind === 'select' ? (
                             <Select
@@ -306,16 +316,25 @@ export const MultiSelect = <T,>({
               type='button'
               onClick={onDeleteSelected}
               disabled={pending || !onDeleteSelected}
-              className='rounded-lg bg-rose-500/95 hover:bg-rose-500 px-3 py-2 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400'>
-              Delete selected
+              className='rounded-lg bg-rose-500/95 hover:bg-rose-500 px-2 md:px-3 py-2 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50'>
+              <span className={cn('flex', {hidden: isCompact})}>
+                Delete selected
+              </span>
+              <Icon
+                name='trash-fill'
+                className={cn('size-4 hidden', {flex: isCompact})}
+              />
             </button>
             <div className='flex items-center gap-2'>
               <button
                 type='button'
                 onClick={resetDraftValues}
                 disabled={pending || !hasDraftChanges}
-                className='rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50'>
-                Reset fields
+                className={cn(
+                  'rounded-lg border border-border bg-background px-2 md:px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50',
+                  {hidden: isCompact},
+                )}>
+                Reset
               </button>
               <button
                 type='button'
@@ -323,7 +342,7 @@ export const MultiSelect = <T,>({
                 disabled={
                   pending || !hasDraftChanges || editableFields.length === 0
                 }
-                className='rounded-lg border border-foreground/10 bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-50'>
+                className='rounded-lg border border-foreground/10 bg-foreground px-2 md:px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-50'>
                 {pending ? 'Saving...' : 'Apply changes'}
               </button>
             </div>

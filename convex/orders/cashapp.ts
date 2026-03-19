@@ -6,6 +6,7 @@
  */
 
 import {v} from 'convex/values'
+import {resolveOrderPayableTotalCents} from '../../lib/checkout/processing-fee'
 import {api} from '../_generated/api'
 import {action} from '../_generated/server'
 import type {OrderType} from './d'
@@ -101,7 +102,12 @@ export const initiateCashAppPayment = action({
       source_id: 'CASH_APP', // Cash App Pay source
       idempotency_key: `cashapp_${order.orderNumber}_${Date.now()}`,
       amount_money: {
-        amount: order.totalCents, // Square API uses cents
+        amount: resolveOrderPayableTotalCents({
+          paymentMethod: order.payment.method,
+          totalCents: order.totalCents,
+          processingFeeCents: order.processingFeeCents,
+          totalWithCryptoFeeCents: order.totalWithCryptoFeeCents,
+        }),
         currency: 'USD',
       },
       order_id: order.orderNumber,

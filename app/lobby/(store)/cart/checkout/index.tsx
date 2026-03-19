@@ -3,6 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {AddressType} from '@/convex/users/d'
+import {computeProcessingFeeCents} from '@/lib/checkout/processing-fee'
 import {getCouponErrorMessage} from '@/lib/coupon-errors'
 import {useConvex, useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
@@ -169,13 +170,14 @@ export function Checkout({
     0,
     subtotal - couponDiscountCents - appliedCashBackCents,
   )
-  // const processingFeeCents = computeProcessingFeeCents({
-  //   discountedSubtotalCents,
-  //   enabled: processingFeeEnabled,
-  //   paymentMethod: formData.paymentMethod,
-  //   percent: processingFeePercent,
-  // })
-  const totalWithProcessingFee = totalBeforeProcessingFee
+  const processingFeeCents = computeProcessingFeeCents({
+    discountedSubtotalCents,
+    enabled: false,
+    paymentMethod: formData.paymentMethod,
+    percent: 0,
+    shippingCents: shipping,
+  })
+  const totalWithProcessingFee = totalBeforeProcessingFee + processingFeeCents
   const effectiveComputedRewards = useMemo(() => {
     if (!computedRewards) return computedRewards
 
@@ -562,6 +564,7 @@ export function Checkout({
         tax={tax}
         shipping={shipping}
         total={totalWithProcessingFee}
+        processingFeeCents={processingFeeCents}
         showTaxRow={showTaxRow}
         isAuthenticated={isAuthenticated}
         isLoading={isLoading}

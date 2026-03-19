@@ -7,11 +7,11 @@ import {
 } from '../convex/orders/email_delivery'
 
 describe('payment success email delivery helpers', () => {
-  test('accepts both crypto payment methods for payment success emails', () => {
+  test('accepts both crypto payment methods and cash app for payment success emails', () => {
     expect(isPaymentSuccessEmailEligibleMethod('crypto_commerce')).toBe(true)
     expect(isPaymentSuccessEmailEligibleMethod('crypto_transfer')).toBe(true)
     expect(isPaymentSuccessEmailEligibleMethod('cards')).toBe(false)
-    expect(isPaymentSuccessEmailEligibleMethod('cash_app')).toBe(false)
+    expect(isPaymentSuccessEmailEligibleMethod('cash_app')).toBe(true)
   })
 
   test('treats missing state as retryable', () => {

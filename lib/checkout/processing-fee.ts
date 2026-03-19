@@ -4,6 +4,13 @@ type ProcessingFeePaymentMethod =
   | 'crypto_commerce'
   | 'cash_app'
 
+type ResolveOrderPayableTotalCentsArgs = {
+  paymentMethod?: string
+  totalCents?: number
+  processingFeeCents?: number
+  totalWithCryptoFeeCents?: number
+}
+
 type ComputeProcessingFeeCentsArgs = {
   discountedSubtotalCents: number
   enabled: boolean
@@ -43,8 +50,25 @@ type ComputeCryptoFeeCentsArgs = {
   totalWithCryptoFeeCents?: number
 }
 
+type ComputePersistedOrderPaymentAmountsArgs = {
+  paymentMethod: ProcessingFeePaymentMethod
+  discountedSubtotalCents: number
+  totalCents: number
+  taxCents?: number
+  shippingCents?: number
+  processingFeeEnabled?: boolean
+  processingFeePercent?: number
+  cryptoFeeEnabled?: boolean
+  cryptoFeeAcc?: number
+}
+
+export const CASH_APP_PROCESSING_FEE_PERCENT = 8
+
 const normalizeMoneyCents = (value?: number) =>
   Number.isFinite(value) ? Math.max(0, value ?? 0) : 0
+
+const isCryptoPaymentMethod = (paymentMethod?: string) =>
+  paymentMethod === 'crypto_transfer' || paymentMethod === 'crypto_commerce'
 
 export const computeOrderSummarySubtotalCents = ({
   itemsTotalCents,
@@ -133,7 +157,7 @@ export const computeCryptoFeeCents = ({
 
 export const isProcessingFeePaymentMethod = (
   paymentMethod: ProcessingFeePaymentMethod,
-) => paymentMethod === 'crypto_transfer' || paymentMethod === 'crypto_commerce'
+) => isCryptoPaymentMethod(paymentMethod) || paymentMethod === 'cash_app'
 
 export const computeProcessingFeeCents = ({
   discountedSubtotalCents,
@@ -142,15 +166,100 @@ export const computeProcessingFeeCents = ({
   percent,
   shippingCents = 0,
 }: ComputeProcessingFeeCentsArgs) => {
-  if (!enabled || !isProcessingFeePaymentMethod(paymentMethod)) {
+  if (!isProcessingFeePaymentMethod(paymentMethod)) {
     return 0
   }
 
   const normalizedSubtotalCents = Math.max(0, discountedSubtotalCents)
+  const effectivePercent =
+    paymentMethod === 'cash_app' ? CASH_APP_PROCESSING_FEE_PERCENT : percent
   const normalizedPercent =
-    Number.isFinite(percent) && percent > 0 ? percent / 100 : 0
+    Number.isFinite(effectivePercent) && effectivePercent > 0
+      ? effectivePercent / 100
+      : 0
+
+  if ((paymentMethod !== 'cash_app' && !enabled) || normalizedPercent === 0) {
+    return 0
+  }
 
   return Math.round(
     (normalizedSubtotalCents + shippingCents) * normalizedPercent,
   )
+}
+
+export const computePersistedOrderPaymentAmounts = ({
+  paymentMethod,
+  discountedSubtotalCents,
+  totalCents,
+  taxCents = 0,
+  shippingCents = 0,
+  processingFeeEnabled = false,
+  processingFeePercent = 0,
+  cryptoFeeEnabled = false,
+  cryptoFeeAcc = 1,
+}: ComputePersistedOrderPaymentAmountsArgs) => {
+  const processingFeeCents = computeProcessingFeeCents({
+    discountedSubtotalCents,
+    enabled: processingFeeEnabled,
+    paymentMethod,
+    percent: processingFeePercent,
+    shippingCents,
+  })
+
+  if (!isCryptoPaymentMethod(paymentMethod)) {
+    return {
+      processingFeeCents:
+        processingFeeCents > 0 ? normalizeMoneyCents(processingFeeCents) : undefined,
+      cryptoFeeCents: undefined,
+      totalWithCryptoFeeCents: undefined,
+    }
+  }
+
+  const totalBeforeCryptoFeeCents =
+    normalizeMoneyCents(discountedSubtotalCents) +
+    normalizeMoneyCents(taxCents) +
+    normalizeMoneyCents(shippingCents) +
+    (processingFeeEnabled ? normalizeMoneyCents(processingFeeCents) : 0)
+  const normalizedCryptoFeeAcc =
+    Number.isFinite(cryptoFeeAcc) && cryptoFeeAcc > 0 ? cryptoFeeAcc : 1
+  const totalWithCryptoFeeCents = Math.round(
+    totalBeforeCryptoFeeCents *
+      (cryptoFeeEnabled ? normalizedCryptoFeeAcc : 1),
+  )
+
+  return {
+    processingFeeCents:
+      processingFeeCents > 0 ? normalizeMoneyCents(processingFeeCents) : undefined,
+    cryptoFeeCents: computeCryptoFeeCents({
+      totalCents,
+      totalWithCryptoFeeCents,
+    }),
+    totalWithCryptoFeeCents,
+  }
+}
+
+export const resolveOrderPayableTotalCents = ({
+  paymentMethod,
+  totalCents,
+  processingFeeCents,
+  totalWithCryptoFeeCents,
+}: ResolveOrderPayableTotalCentsArgs) => {
+  if (isCryptoPaymentMethod(paymentMethod)) {
+    const normalizedTotalWithCryptoFeeCents = normalizeMoneyCents(
+      totalWithCryptoFeeCents,
+    )
+
+    if (normalizedTotalWithCryptoFeeCents > 0) {
+      return normalizedTotalWithCryptoFeeCents
+    }
+  }
+
+  if (paymentMethod === 'cash_app') {
+    return Math.max(
+      0,
+      normalizeMoneyCents(totalCents) + normalizeMoneyCents(processingFeeCents),
+    )
+  }
+
+  return normalizeMoneyCents(totalCents)
 }

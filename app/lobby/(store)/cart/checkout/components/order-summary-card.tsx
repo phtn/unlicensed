@@ -25,6 +25,7 @@ interface OrderSummaryCardProps {
   tax: number
   shipping: number
   total: number
+  processingFeeCents?: number
   showTaxRow?: boolean
   isAuthenticated: boolean
   isLoading: boolean
@@ -73,6 +74,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   tax,
   shipping,
   total,
+  processingFeeCents = 0,
   showTaxRow = true,
   isAuthenticated,
   isLoading,
@@ -109,9 +111,12 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
 
   const isFreeShipping = shipping === 0
   const hasAppliedCoupon = couponDiscountCents > 0
+  const hasProcessingFee = processingFeeCents > 0
   const effectiveVariant: RewardsVariant =
     rewardsVariant ?? (computedRewards != null ? 'tier' : 'off')
   const displayTotal = Math.max(0, total - appliedCashBackCents)
+  const processingFeeLabel =
+    paymentMethod === 'cash_app' ? 'Cash App Processing Fee' : 'Processing Fee'
 
   const rewardsPanel =
     effectiveVariant === 'tier' && computedRewards != null ? (
@@ -134,19 +139,23 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
     <motion.div
       layout
       transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}
-      className='lg:sticky lg:top-20 h-fit min-h-[calc(90lvh)] space-y-0'>
+      className='lg:sticky lg:top-20 h-fit min-h-[calc(90lvh)] space-y-0'
+    >
       <motion.div
         layout
-        transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}>
+        transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}
+      >
         <CheckoutRewardsContent>{rewardsPanel}</CheckoutRewardsContent>
       </motion.div>
       <motion.div
         layout
-        transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}>
+        transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}
+      >
         <Card
           shadow='none'
           radius='none'
-          className='min-w-0 overflow-hidden dark:bg-dark-table/40 border border-foreground/20 border-t-0'>
+          className='min-w-0 overflow-hidden dark:bg-dark-table/40 border border-foreground/20 border-t-0'
+        >
           <CardBody className='relative space-y-4 p-4 sm:px-5 py-4'>
             <div className="absolute w-500 h-full scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
             <h2 className='text-2xl font-normal font-bone'>Order Summary</h2>
@@ -198,6 +207,12 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                     <span>- ${formatPrice(appliedCashBackCents)}</span>
                   </div>
                 )}
+                {hasProcessingFee && (
+                  <div className='flex justify-between font-okxs text-sm md:text-base'>
+                    <span>{processingFeeLabel}</span>
+                    <span>+ ${formatPrice(processingFeeCents)}</span>
+                  </div>
+                )}
               </div>
             </ViewTransition>
             <Divider className='opacity-60' />
@@ -230,7 +245,8 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                       size='sm'
                       variant='light'
                       onPress={onRemoveCoupon}
-                      className='min-w-fit px-2 text-xs'>
+                      className='min-w-fit px-2 text-xs'
+                    >
                       Remove
                     </Button>
                   ) : null}
@@ -259,7 +275,8 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                       (!hasAppliedCoupon && couponCode.trim().length === 0)
                     }
                     isLoading={isCouponApplying}
-                    className='min-w-24'>
+                    className='min-w-24'
+                  >
                     {hasAppliedCoupon ? 'Applied' : 'Apply'}
                   </Button>
                 </div>
@@ -291,7 +308,8 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
               <div
                 id='auth-check'
                 onClick={onOpen}
-                className='flex items-center justify-center space-x-1 p-3 bg-brand/10 border border-brand/10 rounded-lg cursor-pointer'>
+                className='flex items-center justify-center space-x-1 p-3 bg-brand/10 border border-brand/10 rounded-lg cursor-pointer'
+              >
                 <Icon name='user' className='size-3.5' />
                 <p className='text-sm hover:underline underline-offset-4'>
                   <span className='font-bold'>Sign in</span> to proceed to
@@ -312,7 +330,8 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                 isLoading || isPending || orderId ? (
                   <Icon name='spinners-ring' className='size-4' />
                 ) : null
-              }>
+              }
+            >
               <span className='drop-shadow-sm'>
                 {orderId ? 'Order Placed!' : 'Place Order'}
               </span>

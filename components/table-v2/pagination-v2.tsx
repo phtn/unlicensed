@@ -38,16 +38,16 @@ export const Paginator = ({
   return (
     <div className='z-10 flex-1 grow-0 flex bg-linear-to-r from-transparent via-sidebar to-transparent items-center justify-between md:py-2 border-0 border-gray-800'>
       {/* Results per page */}
-      <div className='flex items-center md:justify-between md:w-fit md:space-x-8 space-x-2 md:px-6'>
+      <div className='flex items-center md:justify-between md:w-fit md:space-x-8 space-x-2 px-6 md:px-6'>
         <label
           htmlFor={id}
-          className='font-okxs tracking-tight text-sm md:text-base'>
-          <span className='font-semibold'>{rowCount}</span>
+          className='font-clash tracking-tight text-sm md:text-base'>
+          <span className='font-medium'>{rowCount}</span>
           <span className='opacity-80 ml-1 font-ios tracking-tighter'>
             items
           </span>
         </label>
-        <div className='flex items-center dark:hover:bg-background/10 dark:focus-visible:bg-background/15 md:px-3 py-1 rounded-lg md:space-x-1 w-fit'>
+        <div className='flex items-center dark:hover:bg-background/10 dark:focus-visible:bg-background/15 md:px-3 py-1.5 rounded-lg md:space-x-1 w-fit'>
           <label
             htmlFor='showing-rows'
             className='font-okxs tracking-tight md:mx-auto flex items-center'>
@@ -63,8 +63,8 @@ export const Paginator = ({
               aria-label='Rows per page'
               classNames={{
                 trigger:
-                  'min-h-0 bg-transparent md:h-auto py-1 px-2 border-none shadow-none min-w-12',
-                value: 'whitespace-nowrap font-okxs font-semibold',
+                  'min-h-0 bg-transparent md:h-auto py-1 md:px-2 border-none shadow-none min-w-20',
+                value: 'whitespace-nowrap font-clash font-medium',
                 listbox: 'p-1.5',
               }}
               popoverProps={{
@@ -79,7 +79,7 @@ export const Paginator = ({
                 </SelectItem>
               ))}
             </Select>
-            <span className='opacity-80 font-ios text-sm md:text-base ml-1 '>
+            <span className='opacity-80 font-ios text-sm md:text-base mr-2'>
               rows
             </span>
           </label>

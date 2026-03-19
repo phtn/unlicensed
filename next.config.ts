@@ -7,6 +7,7 @@ const DEFAULT_SERVER_ACTION_ALLOWED_ORIGINS = [
   'rapidfirenow.com',
   'localhost',
   'rapid-fire-online.vercel.app',
+  '192.168.1.7',
 ]
 
 const customAllowedOrigins = (

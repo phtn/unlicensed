@@ -1,8 +1,7 @@
 import {v} from 'convex/values'
 import {
-  computeCryptoFeeCents,
+  computePersistedOrderPaymentAmounts,
   computeOrderTotalCents,
-  computeProcessingFeeCents,
 } from '../../lib/checkout/processing-fee'
 import {resolveOrderShippingCents} from '../../lib/checkout/shipping'
 import {createCouponError} from '../../lib/coupon-errors'
@@ -769,9 +768,6 @@ export const createOrder = mutation({
       typeof cryptoProcessingFeeConfig.enabled === 'boolean'
         ? cryptoProcessingFeeConfig.enabled
         : false
-    const isCryptoPaymentMethod =
-      args.paymentMethod === 'crypto_commerce' ||
-      args.paymentMethod === 'crypto_transfer'
     const cryptoFeeAcc =
       cryptoProcessingFeeConfig &&
       typeof cryptoProcessingFeeConfig.acc === 'number' &&
@@ -786,37 +782,27 @@ export const createOrder = mutation({
     const storeCreditCents = Math.round(
       (((discountedSubtotalCents / 100) * cashBackPct) / 100) * 100,
     )
-    const processingFeeCents = computeProcessingFeeCents({
-      discountedSubtotalCents,
-      enabled: isProcessingFeeEnabled,
-      paymentMethod: args.paymentMethod,
-      percent: processingFeePercent,
-      shippingCents,
-    })
-
     const totalCents = computeOrderTotalCents({
       subtotalCents,
       taxCents,
       shippingCents,
       discountCents: totalDiscountCents,
     })
-    const totalWithCryptoFee =
-      discountedSubtotalCents +
-      taxCents +
-      shippingCents +
-      (isCryptoPaymentMethod && isProcessingFeeEnabled ? processingFeeCents : 0)
-
-    const totalWithCryptoFeeCents = Math.round(
-      totalWithCryptoFee *
-        (isCryptoPaymentMethod && isCryptoFeeEnabled ? cryptoFeeAcc : 1),
-    )
-
-    const cryptoFeeCents = isCryptoPaymentMethod
-      ? computeCryptoFeeCents({
-          totalCents,
-          totalWithCryptoFeeCents,
-        })
-      : undefined
+    const {
+      processingFeeCents,
+      cryptoFeeCents,
+      totalWithCryptoFeeCents,
+    } = computePersistedOrderPaymentAmounts({
+      paymentMethod: args.paymentMethod,
+      discountedSubtotalCents,
+      totalCents,
+      taxCents,
+      shippingCents,
+      processingFeeEnabled: isProcessingFeeEnabled,
+      processingFeePercent,
+      cryptoFeeEnabled: isCryptoFeeEnabled,
+      cryptoFeeAcc,
+    })
     // Create payment object
     const payment = {
       method: args.paymentMethod,
@@ -834,16 +820,17 @@ export const createOrder = mutation({
       subtotalCents,
       taxCents,
       shippingCents,
-      processingFeeCents:
-        processingFeeCents > 0 ? processingFeeCents : undefined,
+      processingFeeCents,
       discountCents: totalDiscountCents > 0 ? totalDiscountCents : undefined,
       couponId: appliedCoupon?._id,
       couponCode: appliedCoupon?.code,
       couponDiscountCents:
         couponDiscountCents > 0 ? couponDiscountCents : undefined,
       totalCents,
-      cryptoFeeCents,
-      totalWithCryptoFeeCents,
+      ...(cryptoFeeCents !== undefined ? {cryptoFeeCents} : {}),
+      ...(totalWithCryptoFeeCents !== undefined
+        ? {totalWithCryptoFeeCents}
+        : {}),
       shippingAddress: args.shippingAddress,
       billingAddress: args.billingAddress,
       contactEmail: args.contactEmail,

@@ -6,6 +6,7 @@ import {useMobile} from '@/hooks/use-mobile'
 import {useToggle} from '@/hooks/use-toggle'
 import {useQuery} from 'convex/react'
 import {Suspense, useState} from 'react'
+import {MainWrapper} from '../../_components/main-wrapper'
 import {RecentActivities} from './recent-activities'
 import {Stats} from './stats'
 
@@ -36,28 +37,26 @@ export const Content = () => {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <main className='md:px-4 w-full'>
-        <div className='space-y-4'>
-          <Stats
-            stats={adminStats ?? defaultStats}
-            salesData={chartData?.salesData}
-            ordersData={chartData?.ordersData}
-            deliveriesData={chartData?.deliveriesData}
-            aovData={chartData?.aovData}
-            fullTable={fullTable}
-            onVisibleStatsChange={setVisibleStatsCount}
-            onStatsHeightChange={setStatsHeight}
-          />
-          <RecentActivities
-            fullTable={fullTable}
-            toggleFullTable={toggleFullTable}
-            isMobile={isMobile}
-            visibleStatsCount={visibleStatsCount}
-            breakpoint={breakpoint}
-            statsHeight={statsHeight}
-          />
-        </div>
-      </main>
+      <MainWrapper className='md:px-4 space-y-4 w-full'>
+        <Stats
+          stats={adminStats ?? defaultStats}
+          salesData={chartData?.salesData}
+          ordersData={chartData?.ordersData}
+          deliveriesData={chartData?.deliveriesData}
+          aovData={chartData?.aovData}
+          fullTable={fullTable}
+          onVisibleStatsChange={setVisibleStatsCount}
+          onStatsHeightChange={setStatsHeight}
+        />
+        <RecentActivities
+          fullTable={fullTable}
+          toggleFullTable={toggleFullTable}
+          isMobile={isMobile}
+          visibleStatsCount={visibleStatsCount}
+          breakpoint={breakpoint}
+          statsHeight={statsHeight}
+        />
+      </MainWrapper>
     </Suspense>
   )
 }

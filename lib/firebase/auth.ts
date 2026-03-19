@@ -25,21 +25,42 @@ export const getPostEmailLinkRedirectUrl = () => {
   return new URL('/lobby', window.location.origin).toString()
 }
 
+const syncUserProfileAfterSignIn = async (
+  user: User,
+  options: {
+    blocking?: boolean
+    reason?: string
+  } = {},
+) => {
+  if (!firestore) throw new Error('Firestore not initialized')
+
+  const {blocking = true, reason = 'sign-in'} = options
+  const syncPromise = createOrUpdateUserInFirestore(firestore, user)
+
+  if (blocking) {
+    await syncPromise
+    return
+  }
+
+  // Email-link auth can resolve before Firestore has an attached auth context.
+  void syncPromise.catch((error) => {
+    console.warn(`Failed to sync Firebase user after ${reason}:`, error)
+  })
+}
+
 export const loginWithEmail = async (email: string, password: string) => {
   if (!auth) throw new Error('Firebase auth not initialized')
-  if (!firestore) throw new Error('Firestore not initialized')
 
   const userCredential = await signInWithEmailAndPassword(auth, email, password)
 
   // Ensure user exists in Firestore (in case they were created before this feature)
-  await createOrUpdateUserInFirestore(firestore, userCredential.user)
+  await syncUserProfileAfterSignIn(userCredential.user)
 
   return userCredential
 }
 
 export const signupWithEmail = async (email: string, password: string) => {
   if (!auth) throw new Error('Firebase auth not initialized')
-  if (!firestore) throw new Error('Firestore not initialized')
 
   const userCredential = await createUserWithEmailAndPassword(
     auth,
@@ -48,20 +69,19 @@ export const signupWithEmail = async (email: string, password: string) => {
   )
 
   // Create user document in Firestore
-  await createOrUpdateUserInFirestore(firestore, userCredential.user)
+  await syncUserProfileAfterSignIn(userCredential.user)
 
   return userCredential
 }
 
 export const loginWithGoogle = async () => {
   if (!auth) throw new Error('Firebase auth not initialized')
-  if (!firestore) throw new Error('Firestore not initialized')
 
   const provider = new GoogleAuthProvider()
   const userCredential = await signInWithPopup(auth, provider)
 
   // Create or update user document in Firestore
-  await createOrUpdateUserInFirestore(firestore, userCredential.user)
+  await syncUserProfileAfterSignIn(userCredential.user)
 
   return userCredential
 }
@@ -70,12 +90,11 @@ export const loginWithGoogleCredential = async (
   credential: OAuthCredential,
 ) => {
   if (!auth) throw new Error('Firebase auth not initialized')
-  if (!firestore) throw new Error('Firestore not initialized')
 
   const userCredential = await signInWithCredential(auth, credential)
 
   // Create or update user document in Firestore
-  await createOrUpdateUserInFirestore(firestore, userCredential.user)
+  await syncUserProfileAfterSignIn(userCredential.user)
 
   return userCredential
 }
@@ -135,7 +154,6 @@ export const checkIsEmailLink = (emailLink?: string): boolean => {
 
 export const loginWithEmailLink = async (email: string, emailLink?: string) => {
   if (!auth) throw new Error('Firebase auth not initialized')
-  if (!firestore) throw new Error('Firestore not initialized')
 
   // If emailLink is not provided, use the current URL
   const link =
@@ -149,13 +167,16 @@ export const loginWithEmailLink = async (email: string, emailLink?: string) => {
 
   const userCredential = await signInWithEmailLink(auth, email, link)
 
-  // Create or update user document in Firestore
-  await createOrUpdateUserInFirestore(firestore, userCredential.user)
-
   // Clear email from localStorage after successful sign-in
   if (typeof window !== 'undefined') {
     window.localStorage.removeItem('emailForSignIn')
   }
+
+  // Do not block email-link auth on Firestore profile sync.
+  await syncUserProfileAfterSignIn(userCredential.user, {
+    blocking: false,
+    reason: 'email link sign-in',
+  })
 
   return userCredential
 }

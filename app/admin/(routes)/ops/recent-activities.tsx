@@ -389,7 +389,7 @@ export const RecentActivities = ({
       radius='none'
       style={fullTable ? translateStyle : undefined}
       className={cn(
-        'relative z-300 border border-black dark:bg-dark-table/40 bg-light-table/0 md:rounded-t-2xl md:w-full mask-[linear-gradient(white,white)] w-[92lvw] overflow-hidden',
+        'relative z-300 border border-black dark:bg-dark-table/40 bg-light-table/0 md:rounded-t-2xl md:w-full mask-[linear-gradient(white,white)] w-[96lvw] overflow-hidden',
         'transition-transform duration-300 border-t border-light-gray/40',
         {
           'h-full bg-sidebar/40': fullTable,

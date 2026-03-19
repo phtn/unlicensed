@@ -7,6 +7,7 @@ import {
   hasEmailLinkParams,
   loginWithEmailLink,
 } from '@/lib/firebase/auth'
+import {parseFirebaseAuthError} from '@/lib/firebase/parseAuthError'
 import {useEffect, useRef, useState} from 'react'
 
 type Status = 'idle' | 'handling' | 'need-email' | 'done' | 'error'
@@ -52,14 +53,11 @@ export function EmailLinkHandler() {
 
       loginWithEmailLink(email, href)
         .then(() => {
-          window.location.assign(getPostEmailLinkRedirectUrl())
+          setStatus('done')
+          window.location.replace(getPostEmailLinkRedirectUrl())
         })
         .catch((err: unknown) => {
-          const message =
-            err instanceof Error
-              ? err.message
-              : 'Sign-in failed. Please try again.'
-          setErrorMessage(message)
+          setErrorMessage(parseFirebaseAuthError(err))
           setStatus('error')
           window.localStorage.removeItem('emailForSignIn')
         })
@@ -72,20 +70,7 @@ export function EmailLinkHandler() {
 
   if (status === 'idle' || status === 'done') return null
 
-  if (status === 'handling') {
-    return (
-      <div
-        className='fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm'
-        aria-live='polite'
-        aria-busy='true'>
-        <div className='rounded-2xl bg-(--color-bg-elevated) px-8 py-6 shadow-xl'>
-          <p className='text-center font-medium text-(--color-fg)'>
-            Signing you in…
-          </p>
-        </div>
-      </div>
-    )
-  }
+  if (status === 'handling') return null
 
   // need-email: auth modal shows the input in place of Email Link + Google buttons
   if (status === 'need-email') return null
@@ -93,20 +78,21 @@ export function EmailLinkHandler() {
   if (status === 'error') {
     return (
       <div
-        className='fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4'
+        className='fixed inset-x-0 top-6 z-9999 flex justify-center p-4'
         role='alert'>
-        <div className='w-full max-w-sm rounded-2xl bg-(--color-bg-elevated) p-6 shadow-xl'>
-          <p className='font-medium text-(--color-fg)'>Sign-in failed</p>
-          <p className='mt-1 text-sm text-(--color-fg-muted)'>{errorMessage}</p>
+        <div className='w-full max-w-md rounded-[1.75rem] border border-white/12 bg-background/88 p-5 shadow-2xl backdrop-blur-2xl'>
+          <p className='font-clash text-lg text-white'>Sign-in failed</p>
+          <p className='mt-1 text-sm text-white/72'>{errorMessage}</p>
           <button
             type='button'
             onClick={() => {
               setStatus('idle')
               setErrorMessage(null)
               handledRef.current = false
-              window.history.replaceState({}, '', window.location.origin)
+              const url = new URL(window.location.href)
+              window.history.replaceState({}, '', url.pathname)
             }}
-            className='mt-4 w-full rounded-lg bg-(--color-accent) px-4 py-2 font-medium text-white hover:opacity-90'>
+            className='mt-4 w-full rounded-2xl bg-white/10 px-4 py-2.5 font-medium text-white transition hover:bg-white/16'>
             Dismiss
           </button>
         </div>

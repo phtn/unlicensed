@@ -387,9 +387,9 @@ function SelectAllCheckbox<T>({
     <AnimatePresence mode='wait'>
       {isVisible && (
         <motion.div
-          initial={{opacity: 0.2, x: -1}}
-          animate={{opacity: 1, x: 3}}
-          className={cn('w-10 flex justify-center items-center')}>
+          initial={{opacity: 0.2, x: -8}}
+          animate={{opacity: 1, x: -4}}
+          className={cn('w-9 md:w-10 flex justify-center items-center')}>
           <Checkbox.Root
             checked={isAll}
             indeterminate={isSome}
@@ -397,7 +397,7 @@ function SelectAllCheckbox<T>({
               const handler = table.getToggleAllPageRowsSelectedHandler()
               handler(fakeChangeEvent(!!checked))
             }}
-            className='w-4 md:w-8 h-4 rounded-[2.75px] bg-sidebar flex justify-center items-center mr-4.5 md:ml-2'>
+            className='w-4 md:w-8 h-4 rounded-[2.75px] bg-sidebar flex justify-center items-center md:mr-4.5 md:ml-2'>
             <Icon
               name={
                 isSome
@@ -455,9 +455,9 @@ const SelectRowCheckbox = <T,>({
       {isVisible && (
         <motion.div
           initial={{scale: 1, x: 10}}
-          animate={{scale: 1, x: 10}}
+          animate={{scale: 1, x: 3}}
           className={cn(
-            'w-6 md:w-5 md:-ml-1 flex items-center justify-center',
+            'w-4 md:w-5 md:-ml-1 flex items-center justify-center',
           )}>
           <Checkbox.Root
             checked={isChecked}

@@ -251,7 +251,7 @@ export const AuthModal = ({
       await loginWithEmailLink(trimmed, completeEmailLink.href)
       setCompleteEmailLink(null)
       closeAuthModal()
-      window.location.assign(getPostEmailLinkRedirectUrl())
+      window.location.replace(getPostEmailLinkRedirectUrl())
     } catch (err) {
       setEmailLinkError(parseFirebaseAuthError(err))
     } finally {

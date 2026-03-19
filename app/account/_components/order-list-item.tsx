@@ -1,5 +1,6 @@
 import {ClassName} from '@/app/types'
 import {OrderType, PaymentMethod} from '@/convex/orders/d'
+import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon, IconName} from '@/lib/icons'
 import {formatTimestamp} from '@/utils/date'
 import {formatPrice} from '@/utils/formatPrice'
@@ -9,8 +10,13 @@ import {OrderStatusBadge} from './order-status'
 
 export const OrderListItem = ({order}: {order: OrderType}) => {
   // Helper for Order Status Color
-  const {orderNumber, items, orderStatus, totalCents, createdAt, payment} =
-    order
+  const {orderNumber, items, orderStatus, createdAt, payment} = order
+  const payableTotalCents = resolveOrderPayableTotalCents({
+    paymentMethod: order.payment.method,
+    totalCents: order.totalCents,
+    processingFeeCents: order.processingFeeCents,
+    totalWithCryptoFeeCents: order.totalWithCryptoFeeCents,
+  })
 
   const router = useRouter()
 
@@ -22,7 +28,8 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
       key={orderNumber}
       as={Link}
       href={`/account/orders/${orderNumber}`}
-      className='w-full rounded-xs border dark:border-dark-table border-dark-table/40 dark:bg-dark-table bg-content/50 dark:hover:bg-dark-table/70'>
+      className='w-full rounded-xs border dark:border-dark-table border-dark-table/40 dark:bg-dark-table bg-content/50 dark:hover:bg-dark-table/70'
+    >
       <CardBody className='p-3 md:p-5'>
         <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
           <div className='flex items-start gap-8 flex-1 min-w-0'>
@@ -66,7 +73,7 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
                 Total
               </p>
               <p className='text-xl font-okxs font-medium'>
-                ${formatPrice(totalCents)}
+                ${formatPrice(payableTotalCents)}
               </p>
             </div>
             <Icon name='chevron-right' className='size-4' />
