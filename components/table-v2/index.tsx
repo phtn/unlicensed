@@ -95,6 +95,7 @@ interface TableProps<T> {
   columnConfigs: ColumnConfig<T>[]
   actionConfig?: ActionConfig<T>
   onDeleteSelected?: (ids: string[]) => void | Promise<void>
+  deleteActionLabel?: string
   onBulkUpdateSelected?: (
     args: BulkUpdateSelectionArgs<T>,
   ) => void | Promise<void>
@@ -115,6 +116,7 @@ function DataTableContent<T>({
   columnConfigs,
   actionConfig,
   onDeleteSelected,
+  deleteActionLabel = 'Delete selected',
   onBulkUpdateSelected,
   deleteIdAccessor = 'id' as keyof T,
   selectedItemId,
@@ -655,9 +657,9 @@ function DataTableContent<T>({
         description={`Only changed values will be applied on save.`}
         className={cn(
           'h-auto max-h-none translate-x-0 rounded-xl border-dark-table/20',
-          'w-[min(calc(100vw-10rem),31rem)] md:w-[min(calc(100vw-3rem),31rem)]',
+          'w-[min(calc(100vw-4rem),31rem)] md:w-[min(calc(100vw-3rem),31rem)]',
           'md:right-6 md:top-24 md:bottom-6 left-auto right-3 top-30 bottom-16 ',
-          {'w-[min(calc(100vw-20rem),31rem)]': multiRowCompact},
+          {'w-[min(calc(100vw-12rem),31rem)]': multiRowCompact},
         )}>
         <MultiSelect
           key={selectedRowSignature}
@@ -666,6 +668,7 @@ function DataTableContent<T>({
           pending={loading || bulkAction !== 'idle'}
           onApply={handleBulkUpdateRows}
           onDeleteSelected={handleDeleteSelectedRows}
+          deleteActionLabel={deleteActionLabel}
           isCompact={multiRowCompact}
         />
       </DialogWindow>

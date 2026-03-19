@@ -1,3 +1,4 @@
+import {useMobile} from '@/hooks/use-mobile'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Checkbox} from '@base-ui/react/checkbox'
@@ -383,12 +384,14 @@ function SelectAllCheckbox<T>({
   const isSome =
     selectedOnPage.length > 0 && selectedOnPage.length < pageRowIds.length
 
+  const isMobile = useMobile()
+
   return (
     <AnimatePresence mode='wait'>
       {isVisible && (
         <motion.div
-          initial={{opacity: 0.2, x: -8}}
-          animate={{opacity: 1, x: -4}}
+          initial={{opacity: 0.2, x: isMobile ? -8 : 0}}
+          animate={{opacity: 1, x: isMobile ? -4 : 2}}
           className={cn('w-9 md:w-10 flex justify-center items-center')}>
           <Checkbox.Root
             checked={isAll}
@@ -432,6 +435,8 @@ const SelectRowCheckbox = <T,>({
     createRowSelectionParser(),
   )
 
+  const isMobile = useMobile()
+
   const isChecked = useMemo(
     () => (rowSelectionParam ?? {})[row.id] === true,
     [row.id, rowSelectionParam],
@@ -455,7 +460,7 @@ const SelectRowCheckbox = <T,>({
       {isVisible && (
         <motion.div
           initial={{scale: 1, x: 10}}
-          animate={{scale: 1, x: 3}}
+          animate={{scale: 1, x: isMobile ? 3 : 9}}
           className={cn(
             'w-4 md:w-5 md:-ml-1 flex items-center justify-center',
           )}>

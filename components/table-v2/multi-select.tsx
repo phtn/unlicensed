@@ -41,6 +41,7 @@ interface MultiSelectProps<T> {
   selectedRows: T[]
   onApply: (updates: Partial<T>) => void | Promise<void>
   onDeleteSelected?: VoidFunction | (() => Promise<void>)
+  deleteActionLabel?: string
   isCompact?: boolean
 }
 
@@ -51,6 +52,7 @@ export const MultiSelect = <T,>({
   onApply,
   isCompact,
   onDeleteSelected,
+  deleteActionLabel = 'Delete selected',
 }: MultiSelectProps<T>) => {
   const editableFields = useMemo<EditableField<T>[]>(() => {
     return columnConfigs.flatMap((config) => {
@@ -318,7 +320,7 @@ export const MultiSelect = <T,>({
               disabled={pending || !onDeleteSelected}
               className='rounded-lg bg-rose-500/95 hover:bg-rose-500 px-2 md:px-3 py-2 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50'>
               <span className={cn('flex', {hidden: isCompact})}>
-                Delete selected
+                {deleteActionLabel}
               </span>
               <Icon
                 name='trash-fill'

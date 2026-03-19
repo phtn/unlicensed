@@ -30,7 +30,6 @@ export const DialogWindow = ({
   hotkey,
   className,
   children,
-  draggable,
 }: DialogWindowProps) => {
   const {isOpen, close} = useWindow({
     isOpen: open,
@@ -51,8 +50,6 @@ export const DialogWindow = ({
     <AnimatePresence>
       {isOpen && (
         <motion.section
-          draggable={draggable}
-          // dragConstraints={{top: 64, left: 64, right: 64, bottom: 100}}
           ref={windowRef}
           tabIndex={-1}
           role='dialog'

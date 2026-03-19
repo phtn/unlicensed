@@ -23,7 +23,7 @@ import {
   DropdownTrigger,
 } from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
-import {useQuery} from 'convex/react'
+import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo} from 'react'
 import {CSV_DENOM_KEYS, PRODUCT_CSV_FIELDS} from './csv-import/constants'
 import {
@@ -242,6 +242,7 @@ export const ProductsData = ({
   exportFilePrefix = 'products',
 }: ProductsDataProps) => {
   const categories = useQuery(api.categories.q.listCategories)
+  const archiveProduct = useMutation(api.products.m.archiveProduct)
   const categorySlugs = useMemo(
     () =>
       (categories ?? [])
@@ -292,14 +293,16 @@ export const ProductsData = ({
             bulkEditor: {
               type: 'select',
               options: (rows: Doc<'products'>[]) => {
-                const uniqueCategorySlugs = [...new Set(
-                  rows
-                    .map((row) => row.categorySlug)
-                    .filter(
-                      (slug): slug is string =>
-                        typeof slug === 'string' && slug.length > 0,
-                    ),
-                )]
+                const uniqueCategorySlugs = [
+                  ...new Set(
+                    rows
+                      .map((row) => row.categorySlug)
+                      .filter(
+                        (slug): slug is string =>
+                          typeof slug === 'string' && slug.length > 0,
+                      ),
+                  ),
+                ]
 
                 return uniqueCategorySlugs.flatMap((slug) =>
                   getProductTierOptionsByCategory(slug, categories ?? []),
@@ -547,6 +550,20 @@ export const ProductsData = ({
   )
 
   const exportToolbar = useMemo(() => ExportCsvToolbar, [ExportCsvToolbar])
+  const handleArchiveSelected = useCallback(
+    async (ids: string[]) => {
+      await Promise.all(
+        ids.map((productId) =>
+          archiveProduct({
+            productId: productId as Parameters<
+              typeof archiveProduct
+            >[0]['productId'],
+          }),
+        ),
+      )
+    },
+    [archiveProduct],
+  )
 
   return (
     <div className='relative w-full max-w-full overflow-hidden'>
@@ -559,6 +576,9 @@ export const ProductsData = ({
           editingRowId={null}
           defaultPageSize={25}
           rightToolbarLeft={exportToolbar}
+          deleteIdAccessor='_id'
+          deleteActionLabel='Delete Selected'
+          onDeleteSelected={handleArchiveSelected}
         />
       )}
     </div>
