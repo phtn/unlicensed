@@ -314,6 +314,44 @@ const VALID_INVENTORY_MODES_LOWER = new Set([
   'shared_weight',
 ])
 const VALID_PACKAGING_MODES_LOWER = new Set(['bulk', 'prepack'])
+const NUMERIC_CSV_FIELDS = new Set([
+  'priceCents',
+  'thcPercentage',
+  'cbdPercentage',
+  'stock',
+  'masterStockQuantity',
+  'rating',
+  'weightGrams',
+  'noseRating',
+  'upgradePrice',
+  'netWeight',
+  'packSize',
+  'startingWeight',
+  'remainingWeight',
+  ...DENOM_HEADERS,
+])
+const ARRAY_CSV_FIELDS = [
+  'availableDenominations',
+  'popularDenomination',
+  'effects',
+  'terpenes',
+  'gallery',
+  'flavorNotes',
+  'variants',
+  'eligibleDenominationForDeals',
+  'highMargins',
+  'brandCollaborators',
+  'tags',
+] as const
+
+function hasTypedValue(value: string | undefined): boolean {
+  return (value ?? '').trim() !== ''
+}
+
+function isJsonArrayValue(value: string | undefined): boolean {
+  const parsed = parseJsonArrayOrRecord(value ?? '')
+  return Array.isArray(parsed)
+}
 
 /** Client-side row validation (required fields, types). Does not check category existence or slug conflict. */
 function validateRow(
@@ -322,6 +360,24 @@ function validateRow(
   raw: Record<string, string>,
 ): string[] {
   const errors: string[] = []
+  const hasDenominationStockInput = (() => {
+    const parsedStockByDenomination = parseJsonArrayOrRecord(
+      raw.stockByDenomination ?? '',
+    )
+
+    if (
+      parsedStockByDenomination != null &&
+      typeof parsedStockByDenomination === 'object' &&
+      !Array.isArray(parsedStockByDenomination)
+    ) {
+      return Object.keys(parsedStockByDenomination).length > 0
+    }
+
+    return Object.entries(raw).some(([key, value]) => {
+      if (!key.startsWith('stock_')) return false
+      return parseNum(value) !== undefined
+    })
+  })()
   const name = product.name
   if (name == null || String(name).trim().length < 2) {
     errors.push('Name is required and must be at least 2 characters')
@@ -329,6 +385,18 @@ function validateRow(
   const categorySlug = product.categorySlug
   if (categorySlug == null || String(categorySlug).trim() === '') {
     errors.push('Category (categorySlug) is required')
+  }
+  for (const field of NUMERIC_CSV_FIELDS) {
+    if (!hasTypedValue(raw[field])) continue
+    if (parseNum(raw[field]) === undefined) {
+      errors.push(`${field} must be a number`)
+    }
+  }
+  for (const field of ARRAY_CSV_FIELDS) {
+    if (!hasTypedValue(raw[field])) continue
+    if (!isJsonArrayValue(raw[field])) {
+      errors.push(`${field} must be a JSON array`)
+    }
   }
   const priceCents = product.priceCents
   if (
@@ -360,7 +428,9 @@ function validateRow(
   ) {
     errors.push('inventoryMode must be by_denomination or shared')
   }
-  if (product.inventoryMode === 'shared') {
+  // Exported rows can still carry per-denomination stock while marked shared.
+  // Treat that as valid import input instead of forcing master stock fields.
+  if (product.inventoryMode === 'shared' && !hasDenominationStockInput) {
     if (
       typeof product.masterStockQuantity !== 'number' ||
       product.masterStockQuantity < 0

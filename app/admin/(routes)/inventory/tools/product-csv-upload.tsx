@@ -271,6 +271,141 @@ function seedDefaultDenominationStock(parseResult: ParseResult): ParseResult {
   return {...parseResult, headers, rows}
 }
 
+type ImportRowError = {
+  rowIndex: number
+  slug?: string
+  message: string
+}
+
+type PreviewCellIssue = {
+  label: 'REQUIRED' | 'NUMBER TYPE' | 'ARRAY TYPE' | 'VALUE TYPE' | 'CONFLICT'
+  message: string
+}
+
+type PreviewIssueEntry = PreviewCellIssue & {
+  column: string
+}
+
+function getPreviewCellIssue(
+  row: ParsedRow,
+  column: string,
+): PreviewCellIssue | null {
+  if (column === 'slug' && row.conflict === 'slug') {
+    return {
+      label: 'CONFLICT',
+      message: 'Slug already exists',
+    }
+  }
+
+  for (const error of row.errors) {
+    if (column === 'name' && error.startsWith('Name is required')) {
+      return {label: 'REQUIRED', message: error}
+    }
+    if (
+      column === 'categorySlug' &&
+      error === 'Category (categorySlug) is required'
+    ) {
+      return {label: 'REQUIRED', message: error}
+    }
+    if (
+      column === 'categorySlug' &&
+      error.startsWith('Category "') &&
+      error.endsWith('" not found')
+    ) {
+      return {label: 'VALUE TYPE', message: error}
+    }
+    if (column === 'availableDenominations' && error.startsWith(`${column} `)) {
+      return {label: 'ARRAY TYPE', message: error}
+    }
+    if (column === 'popularDenomination' && error.startsWith(`${column} `)) {
+      return {label: 'ARRAY TYPE', message: error}
+    }
+    if (column === 'effects' && error.startsWith(`${column} `)) {
+      return {label: 'ARRAY TYPE', message: error}
+    }
+    if (column === 'terpenes' && error.startsWith(`${column} `)) {
+      return {label: 'ARRAY TYPE', message: error}
+    }
+    if (column === 'gallery' && error.startsWith(`${column} `)) {
+      return {label: 'ARRAY TYPE', message: error}
+    }
+    if (column === 'flavorNotes' && error.startsWith(`${column} `)) {
+      return {label: 'ARRAY TYPE', message: error}
+    }
+    if (column === 'variants' && error.startsWith(`${column} `)) {
+      return {label: 'ARRAY TYPE', message: error}
+    }
+    if (
+      column === 'eligibleDenominationForDeals' &&
+      error.startsWith(`${column} `)
+    ) {
+      return {label: 'ARRAY TYPE', message: error}
+    }
+    if (column === 'highMargins' && error.startsWith(`${column} `)) {
+      return {label: 'ARRAY TYPE', message: error}
+    }
+    if (column === 'brandCollaborators' && error.startsWith(`${column} `)) {
+      return {label: 'ARRAY TYPE', message: error}
+    }
+    if (column === 'tags' && error.startsWith(`${column} `)) {
+      return {label: 'ARRAY TYPE', message: error}
+    }
+    if (column === 'priceCents' && error.startsWith('priceCents must')) {
+      return {label: 'NUMBER TYPE', message: error}
+    }
+    if (column === 'rating' && error.startsWith('rating must')) {
+      return {label: 'NUMBER TYPE', message: error}
+    }
+    if (column === 'noseRating' && error.startsWith('noseRating must')) {
+      return {label: 'NUMBER TYPE', message: error}
+    }
+    if (error === `${column} must be a number`) {
+      return {label: 'NUMBER TYPE', message: error}
+    }
+    if (column === 'inventoryMode' && error.startsWith('inventoryMode must')) {
+      return {label: 'VALUE TYPE', message: error}
+    }
+    if (
+      column === 'masterStockQuantity' &&
+      error.startsWith('masterStockQuantity is required')
+    ) {
+      return {label: 'REQUIRED', message: error}
+    }
+    if (
+      column === 'masterStockUnit' &&
+      error.startsWith('masterStockUnit is required')
+    ) {
+      return {label: 'REQUIRED', message: error}
+    }
+    if (column === 'packagingMode' && error.startsWith('packagingMode must')) {
+      return {label: 'VALUE TYPE', message: error}
+    }
+    if (column === 'dealType' && error.startsWith('dealType must')) {
+      return {label: 'VALUE TYPE', message: error}
+    }
+    if (
+      column === 'slug' &&
+      error.startsWith('Slug "') &&
+      error.endsWith('" already exists')
+    ) {
+      return {label: 'CONFLICT', message: error}
+    }
+  }
+
+  return null
+}
+
+function getRowPreviewIssues(
+  row: ParsedRow,
+  columns: string[],
+): PreviewIssueEntry[] {
+  return columns.flatMap((column) => {
+    if (column === '#' || column === 'Status') return []
+    const issue = getPreviewCellIssue(row, column)
+    return issue ? [{column, ...issue}] : []
+  })
+}
+
 export function ProductCsvUpload() {
   const {user} = useAuthCtx()
   const importTargetsData = useQuery(api.products.q.listProductImportTargets)
@@ -303,6 +438,7 @@ export function ProductCsvUpload() {
   const [isImporting, setIsImporting] = useState(false)
   const [importError, setImportError] = useState<string | null>(null)
   const [importSuccess, setImportSuccess] = useState<string | null>(null)
+  const [importRowErrors, setImportRowErrors] = useState<ImportRowError[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -387,6 +523,7 @@ export function ProductCsvUpload() {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setImportError(null)
       setImportSuccess(null)
+      setImportRowErrors([])
       const file = e.target.files?.[0]
       if (!file) {
         setFileParseResult(null)
@@ -408,6 +545,7 @@ export function ProductCsvUpload() {
       setIsDragging(false)
       setImportError(null)
       setImportSuccess(null)
+      setImportRowErrors([])
       const file = e.dataTransfer.files?.[0]
       if (!file || !file.name.toLowerCase().endsWith('.csv')) return
       const reader = new FileReader()
@@ -435,6 +573,7 @@ export function ProductCsvUpload() {
     setIsImporting(true)
     setImportError(null)
     setImportSuccess(null)
+    setImportRowErrors([])
     try {
       const result = await seedProducts({
         title: title.trim(),
@@ -442,11 +581,18 @@ export function ProductCsvUpload() {
         products: products as Parameters<typeof seedProducts>[0]['products'],
       })
       if (result.errorCount > 0) {
+        setImportRowErrors(
+          (result.errors ?? []).map((error) => ({
+            ...error,
+            rowIndex: validRows[error.rowIndex]?.rowIndex ?? error.rowIndex + 1,
+          })),
+        )
         setImportError(
           `Imported ${result.successCount} products. ${result.errorCount} row(s) failed.`,
         )
       } else {
         setImportSuccess(`Imported ${result.successCount} product(s).`)
+        setImportRowErrors([])
         setFileParseResult(null)
         setFileName(null)
         setTitle('')
@@ -455,6 +601,7 @@ export function ProductCsvUpload() {
         }
       }
     } catch (e) {
+      setImportRowErrors([])
       setImportError(e instanceof Error ? e.message : 'Import failed')
     } finally {
       setIsImporting(false)
@@ -472,14 +619,41 @@ export function ProductCsvUpload() {
     setFileParseResult(null)
     setFileName(null)
     setTitle('')
+    setImportError(null)
+    setImportSuccess(null)
+    setImportRowErrors([])
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
   }, [])
 
-  const displayRows = rowsWithConflicts ?? fileParseResult?.rows ?? []
+  const displayRows = useMemo(
+    () => rowsWithConflicts ?? fileParseResult?.rows ?? [],
+    [rowsWithConflicts, fileParseResult],
+  )
+  const previewColumns = useMemo(
+    () => getPreviewColumns(fileParseResult, displayRows),
+    [fileParseResult, displayRows],
+  )
   const errorCount = displayRows.reduce((s, r) => s + r.errors.length, 0)
   const conflictCount = displayRows.filter((r) => r.conflict !== null).length
+  const previewIssues = useMemo(
+    () =>
+      displayRows.flatMap((row) => {
+        const slug =
+          typeof row.product.slug === 'string' && row.product.slug.trim()
+            ? row.product.slug.trim()
+            : undefined
+        return getRowPreviewIssues(row, previewColumns).map((issue) => ({
+          rowIndex: row.rowIndex,
+          column: issue.column,
+          label: issue.label,
+          slug,
+          message: issue.message,
+        }))
+      }),
+    [displayRows, previewColumns],
+  )
   const {open: sidebarOpen} = useSidebar()
 
   return (
@@ -664,6 +838,40 @@ export function ProductCsvUpload() {
               </Button>
             </div>
 
+            {previewIssues.length > 0 && (
+              <Card
+                radius='none'
+                shadow='none'
+                className='rounded-md border border-warning-200 bg-white px-4 py-3 dark:border-warning-900/50 dark:bg-warning-950/20'>
+                <p className='flex items-center space-x-1 text-sm font-medium text-warning-800 dark:text-dark-table'>
+                  <Icon name='alert-circle' className='size-4' />
+                  <span>Validation issues</span>
+                </p>
+                <ul className='mt-2 space-y-1 text-sm text-warning-700 dark:text-warning-300'>
+                  {previewIssues.map((issue) => (
+                    <li
+                      key={`${issue.rowIndex}-${issue.column}-${issue.slug ?? issue.message}`}>
+                      <Chip
+                        size='sm'
+                        className='rounded-sm bg-orange-400 dark:bg-orange-500/75 text-white'>
+                        Row {issue.rowIndex}
+                      </Chip>
+                      <Chip
+                        size='sm'
+                        className='ms-2 rounded-sm bg-cyan-500/85 text-white dark:bg-cyan-500'>
+                        {issue.column}
+                      </Chip>
+                      <span className='ms-2'>{issue.label}</span>
+                      <span className='px-2 opacity-80'>-</span>
+                      <span>{issue.slug ?? 'No slug'}</span>
+                      <span className='px-2 opacity-80'>-</span>
+                      <span>{issue.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
+
             <Card
               radius='lg'
               shadow='none'
@@ -672,15 +880,13 @@ export function ProductCsvUpload() {
                 <table className='min-w-full table-fixed text-sm'>
                   <thead className='sticky top-0 z-10'>
                     <tr>
-                      {getPreviewColumns(fileParseResult, displayRows).map(
-                        (col) => (
-                          <th
-                            key={col}
-                            className='max-w-36 truncate whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest opacity-60'>
-                            {col}
-                          </th>
-                        ),
-                      )}
+                      {previewColumns.map((col) => (
+                        <th
+                          key={col}
+                          className='max-w-36 truncate whitespace-nowrap px-4 py-3 text-left text-xs font-medium uppercase tracking-widest text-cyan-600 dark:text-cyan-300 bg-background'>
+                          {col}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody className='divide-y divide-default-100 dark:divide-default-50/20'>
@@ -688,10 +894,7 @@ export function ProductCsvUpload() {
                       <PreviewRow
                         key={row.rowIndex}
                         row={row}
-                        columns={getPreviewColumns(
-                          fileParseResult,
-                          displayRows,
-                        )}
+                        columns={previewColumns}
                       />
                     ))}
                   </tbody>
@@ -721,6 +924,16 @@ export function ProductCsvUpload() {
               )}>
               {importError ?? importSuccess}
             </p>
+            {importRowErrors.length > 0 && (
+              <ul className='mt-3 space-y-1 text-sm text-danger-700 dark:text-danger-300'>
+                {importRowErrors.map((error) => (
+                  <li key={`${error.rowIndex}-${error.slug ?? error.message}`}>
+                    Row {error.rowIndex}
+                    {error.slug ? ` (${error.slug})` : ''}: {error.message}
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
         )}
 
@@ -733,6 +946,8 @@ export function ProductCsvUpload() {
 
 function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
   const hasError = row.errors.length > 0 || row.conflict !== null
+  const rowIssues = getRowPreviewIssues(row, columns)
+  const statusIssue = rowIssues[0] ?? null
   const rowMode =
     typeof row.product._id === 'string' && row.product._id.trim()
       ? 'Replace'
@@ -750,7 +965,7 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
           return (
             <td
               key={col}
-              className='sticky left-0 z-1 whitespace-nowrap bg-inherit px-4 py-2.5 font-mono text-xs text-default-500'>
+              className='sticky left-0 z-1 whitespace-nowrap bg-inherit px-4 py-2.5 font-ios text-sm text-orange-500 dark:text-orange-300'>
               {row.rowIndex}
             </td>
           )
@@ -761,24 +976,14 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
               key={col}
               className='sticky right-0 z-1 min-w-[140.1px] bg-inherit px-4 py-2.5'>
               <div className='flex flex-wrap items-center gap-1.5'>
-                {row.conflict === 'slug' && (
+                {statusIssue && (
                   <Chip
                     size='sm'
                     color='danger'
                     variant='solid'
                     className='font-medium text-white'>
-                    Slug conflict
+                    {statusIssue.label}
                   </Chip>
-                )}
-                {row.errors.length > 0 && (
-                  <ul className='hidden list-inside list-disc space-y-0.5 text-xs text-warning-600 dark:text-warning-400'>
-                    {row.errors.slice(0, 2).map((e, i) => (
-                      <li key={i}>{e}</li>
-                    ))}
-                    {row.errors.length > 2 && (
-                      <li>+{row.errors.length - 2} more</li>
-                    )}
-                  </ul>
                 )}
                 {!hasError && (
                   <Chip
@@ -809,12 +1014,38 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
         }
         const value = row.raw[col] ?? '—'
         const display = String(value).trim() || '—'
+        const issue = getPreviewCellIssue(row, col)
         return (
           <td
             key={col}
-            className='max-w-35 truncate whitespace-nowrap px-4 py-2.5 text-default-600'
-            title={display}>
-            {display}
+            className={cn('max-w-35 px-4 py-2.5 align-top text-default-600', {
+              'truncate whitespace-nowrap': !issue,
+              'bg-danger-50/80 dark:bg-danger-950/20': issue,
+            })}
+            title={issue?.message ?? display}>
+            {issue ? (
+              <div className='flex min-w-0 flex-col gap-1'>
+                <span className='wrap-break-word whitespace-normal'>
+                  {display}
+                </span>
+                <span
+                  className={cn(
+                    'inline-flex w-fit items-center rounded-sm px-1.5 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] text-white',
+                    {
+                      'bg-danger-600': issue.label === 'REQUIRED',
+                      'bg-orange-400':
+                        issue.label === 'NUMBER TYPE' ||
+                        issue.label === 'ARRAY TYPE' ||
+                        issue.label === 'VALUE TYPE',
+                      'bg-orange-500': issue.label === 'CONFLICT',
+                    },
+                  )}>
+                  {issue.label}
+                </span>
+              </div>
+            ) : (
+              display
+            )}
           </td>
         )
       })}
