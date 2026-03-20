@@ -30,6 +30,7 @@ import {
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useEffect, useMemo, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
+import {LowStockEmailAlertsPanel} from './low-stock-email-alerts-panel'
 
 const ALERT_LABELS: Record<AdminAlertEventKey, string> = {
   orders: 'New Orders',
@@ -267,12 +268,14 @@ export const AlertsContent = () => {
             <Switch
               isSelected={isEnabled}
               onValueChange={setIsEnabled}
-              size='sm'>
+              size='sm'
+            >
               Enable Audio
             </Switch>
           </div>
         }
-        description='Configure Tone.js audio alerts for new orders, completed payments, new user sign-ups, and new customer chat messages.'>
+        description='Configure Tone.js audio alerts for new orders, completed payments, new user sign-ups, and new customer chat messages.'
+      >
         <PrimaryButton
           onPress={handleSave}
           icon={isSaving ? 'spinners-ring' : 'save'}
@@ -289,7 +292,8 @@ export const AlertsContent = () => {
             <Card
               key={key}
               shadow='none'
-              className='rounded-2xl border border-divider bg-default-100/30'>
+              className='rounded-2xl border border-divider bg-default-100/30'
+            >
               <CardBody className='gap-4 p-4'>
                 <div className='flex items-center justify-between gap-3'>
                   <h3 className='text-base font-semibold'>
@@ -300,7 +304,8 @@ export const AlertsContent = () => {
                     onValueChange={(value) =>
                       setDraftField(key, 'enabled', value)
                     }
-                    size='sm'>
+                    size='sm'
+                  >
                     On
                   </Switch>
                 </div>
@@ -329,7 +334,8 @@ export const AlertsContent = () => {
                         next as AdminAlertEventConfig['synthType'],
                       )
                     }
-                  }}>
+                  }}
+                >
                   {ALERT_SYNTH_TYPES.map((synthType) => (
                     <SelectItem key={synthType}>{synthType}</SelectItem>
                   ))}
@@ -349,7 +355,8 @@ export const AlertsContent = () => {
                           next as AdminAlertEventConfig['waveform'],
                         )
                       }
-                    }}>
+                    }}
+                  >
                     {TONE_OSCILLATORS.map((waveform) => (
                       <SelectItem key={waveform}>{waveform}</SelectItem>
                     ))}
@@ -390,7 +397,8 @@ export const AlertsContent = () => {
                   variant='flat'
                   onPress={() => void handleTest(key)}
                   isDisabled={!isEnabled || !draft.enabled}
-                  isLoading={testingKey === key}>
+                  isLoading={testingKey === key}
+                >
                   Test {ALERT_LABELS[key]}
                 </Button>
               </CardBody>
@@ -398,6 +406,8 @@ export const AlertsContent = () => {
           )
         })}
       </div>
+
+      <LowStockEmailAlertsPanel />
     </div>
   )
 }

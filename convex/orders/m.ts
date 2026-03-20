@@ -790,21 +790,18 @@ export const createOrder = mutation({
       shippingCents,
       discountCents: totalDiscountCents,
     })
-    const {
-      processingFeeCents,
-      cryptoFeeCents,
-      totalWithCryptoFeeCents,
-    } = computePersistedOrderPaymentAmounts({
-      paymentMethod: args.paymentMethod,
-      discountedSubtotalCents,
-      totalCents,
-      taxCents,
-      shippingCents,
-      processingFeeEnabled: isProcessingFeeEnabled,
-      processingFeePercent,
-      cryptoFeeEnabled: isCryptoFeeEnabled,
-      cryptoFeeAcc,
-    })
+    const {processingFeeCents, cryptoFeeCents, totalWithCryptoFeeCents} =
+      computePersistedOrderPaymentAmounts({
+        paymentMethod: args.paymentMethod,
+        discountedSubtotalCents,
+        totalCents,
+        taxCents,
+        shippingCents,
+        processingFeeEnabled: isProcessingFeeEnabled,
+        processingFeePercent,
+        cryptoFeeEnabled: isCryptoFeeEnabled,
+        cryptoFeeAcc,
+      })
     // Create payment object
     const payment = {
       method: args.paymentMethod,
@@ -1545,7 +1542,10 @@ export const deductStockForOrder = internalMutation({
           previousQuantity: current,
           quantityDelta: roundStockQuantity(change.quantityDelta),
           nextQuantity: next,
-          unit: product.masterStockUnit?.trim() || product.unit?.trim() || undefined,
+          unit:
+            product.masterStockUnit?.trim() ||
+            product.unit?.trim() ||
+            undefined,
         },
       ])
       productDocs.set(productId, {
@@ -1563,7 +1563,9 @@ export const deductStockForOrder = internalMutation({
       if (!product) continue
 
       if (product.stockByDenomination != null && denomKey != null) {
-        const current = roundStockQuantity(product.stockByDenomination[denomKey] ?? 0)
+        const current = roundStockQuantity(
+          product.stockByDenomination[denomKey] ?? 0,
+        )
         const change = applyInventoryDeduction({
           currentQuantity: current,
           deductionQuantity: deduction,
@@ -1631,6 +1633,14 @@ export const deductStockForOrder = internalMutation({
         sourceOrderId: order._id,
         sourceOrderNumber: order.orderNumber,
       })
+
+      await ctx.scheduler.runAfter(
+        0,
+        internal.lowStockAlerts.m.evaluateProductAlertState,
+        {
+          productId,
+        },
+      )
     }
   },
 })

@@ -198,6 +198,14 @@ export const productSchema = z.object({
     z.number().min(0, 'Master stock must be 0 or more.'),
   ),
   masterStockUnit: z.string().optional(),
+  lowStockThreshold: z
+    .string()
+    .optional()
+    .refine(
+      (value) =>
+        !value?.trim() || (!Number.isNaN(Number(value)) && Number(value) >= 0),
+      'Low stock threshold must be 0 or more.',
+    ),
   /** Per-denomination inventory. Key = denomination as string (e.g. "0.125", "1"), value = count. */
   stockByDenomination: z.optional(
     z.record(z.string(), z.number().min(0, 'Stock must be 0 or more.')),
@@ -519,6 +527,14 @@ export const productFields: FormInput<ProductFormValues>[] = [
     defaultValue: false,
   },
   {
+    name: 'lowStockThreshold',
+    label: 'Low Stock Alert Threshold',
+    required: false,
+    type: 'text',
+    placeholder: 'Leave blank to disable',
+    defaultValue: '',
+  },
+  {
     name: 'rating',
     label: 'Rating',
     required: true,
@@ -638,6 +654,7 @@ export const defaultValues: ProductFormValues = {
   inventoryMode: 'by_denomination',
   masterStockQuantity: undefined,
   masterStockUnit: '',
+  lowStockThreshold: '',
   popularDenomination: [] as number[],
   tier: undefined,
   lineage: undefined,

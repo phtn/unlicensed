@@ -2,6 +2,7 @@ import {paginationOptsValidator, type PaginationResult} from 'convex/server'
 import {v} from 'convex/values'
 import type {Doc, Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
+import {getStockDisplayUnit, getTotalStock} from '../../lib/productStock'
 import {getCanonicalUserByFid} from '../users/lib'
 import {safeGet} from '../utils/id_validation'
 
@@ -326,6 +327,49 @@ export const getProductByName = query({
     const products = await ctx.db.query('products').collect()
     const product = products.find((p) => p.name === args.name)
     return product ?? null
+  },
+})
+
+export const listLowStockProducts = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 12
+    const products = await ctx.db.query('products').collect()
+
+    return products
+      .filter((product) => {
+        if (product.archived === true) {
+          return false
+        }
+
+        if (
+          typeof product.lowStockThreshold !== 'number' ||
+          !Number.isFinite(product.lowStockThreshold)
+        ) {
+          return false
+        }
+
+        return getTotalStock(product) <= product.lowStockThreshold
+      })
+      .map((product) => ({
+        _id: product._id,
+        name: product.name ?? 'Untitled product',
+        slug: product.slug ?? '',
+        currentStock: getTotalStock(product),
+        lowStockThreshold: product.lowStockThreshold ?? 0,
+        lowStockAlertActive: product.lowStockAlertActive === true,
+        stockUnit: getStockDisplayUnit(product),
+      }))
+      .sort((a, b) => {
+        if (a.currentStock !== b.currentStock) {
+          return a.currentStock - b.currentStock
+        }
+
+        return a.name.localeCompare(b.name)
+      })
+      .slice(0, limit)
   },
 })
 

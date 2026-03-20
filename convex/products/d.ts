@@ -86,6 +86,13 @@ const productFields = {
   remainingWeight: v.optional(v.number()),
   stockUnit: v.optional(v.string()),
   packSize: v.optional(v.number()),
+  lowStockThreshold: v.optional(v.number()),
+  lowStockAlertActive: v.optional(v.boolean()),
+  lowStockAlertTriggeredAt: v.optional(v.number()),
+  lowStockAlertLastSentAt: v.optional(v.number()),
+  lowStockAlertLastNotifiedStock: v.optional(v.number()),
+  lowStockAlertLastError: v.optional(v.string()),
+  lowStockAlertLastMessageIds: v.optional(v.array(v.string())),
 } as const
 
 export const productSchema = v.object(productFields)

@@ -81,6 +81,7 @@ const PRODUCT_FIELD_SECTION_MAP: Partial<
   stock: 'inventory',
   masterStockQuantity: 'inventory',
   masterStockUnit: 'inventory',
+  lowStockThreshold: 'inventory',
   stockByDenomination: 'inventory',
   effects: 'attributes',
   terpenes: 'attributes',
@@ -309,6 +310,7 @@ export const ProductForm = ({
           masterStockUnit: isSharedInventoryMode
             ? data.masterStockUnit?.trim() || undefined
             : undefined,
+          lowStockThreshold: parseOptionalNumber(data.lowStockThreshold),
           rating: data.rating,
           image: data.image as Id<'_storage'>,
           gallery: data.gallery as Array<Id<'_storage'>>,
@@ -456,6 +458,10 @@ export const ProductForm = ({
     form.setFieldValue('stock', initialValues.stock ?? 0)
     form.setFieldValue('masterStockQuantity', initialValues.masterStockQuantity)
     form.setFieldValue('masterStockUnit', initialValues.masterStockUnit ?? '')
+    form.setFieldValue(
+      'lowStockThreshold',
+      initialValues.lowStockThreshold ?? '',
+    )
     form.setFieldValue(
       'stockByDenomination',
       initialValues.stockByDenomination ?? {},
@@ -640,7 +646,8 @@ export const ProductForm = ({
                 activeSection === section.id
                   ? 'dark:bg-zinc-700 dark:text-blue-300 bg-dark-gray/5 text-blue-500'
                   : 'text-dark-gray/60 dark:text-light-gray/80 dark:hover:text-blue-100  hover:bg-dark-gray/5 hover:text-dark-gray/90',
-              )}>
+              )}
+            >
               <Icon name={section.icon} className='size-4' />
               <span>{section.label}</span>
             </Button>
@@ -653,7 +660,8 @@ export const ProductForm = ({
             type='submit'
             className='w-full rounded-xl font-medium tracking-tight bg-blue-500 text-white'
             isLoading={isSubmitting}
-            onPress={form.handleSubmit}>
+            onPress={form.handleSubmit}
+          >
             {isSubmitting
               ? isEditMode
                 ? 'Updating...'
@@ -689,26 +697,30 @@ export const ProductForm = ({
       {/* Main Content Area */}
       <main
         ref={mainScrollRef}
-        className='col-span-1 h-full overflow-y-auto space-y-0 scroll-smooth md:px-1 md:pb-28 dark:bg-dark-table/40 lg:col-span-10 lg:pb-0'>
+        className='col-span-1 h-full overflow-y-auto space-y-0 scroll-smooth md:px-1 md:pb-28 dark:bg-dark-table/40 lg:col-span-10 lg:pb-0'
+      >
         <form
           onSubmit={(e) => {
             e.preventDefault()
             e.stopPropagation()
             void form.handleSubmit()
           }}
-          className='space-y-0 pt-1'>
+          className='space-y-0 pt-1'
+        >
           <div id='basic-info' className='scroll-mt-4'>
             <BasicInfo
               form={form as ProductFormApi}
               fields={productFields.slice(0, 10)}
               categories={categories}
               onArchiveProduct={isEditMode ? handleArchiveProduct : undefined}
-              isArchiving={isArchiving}></BasicInfo>
+              isArchiving={isArchiving}
+            ></BasicInfo>
           </div>
           <div id='media' className='scroll-mt-4'>
             <Media
               form={form as ProductFormApi}
-              fields={productFields.slice(10, 10)}></Media>
+              fields={productFields.slice(10, 10)}
+            ></Media>
           </div>
           <div id='pricing' className='scroll-mt-4'>
             <Pricing
@@ -747,7 +759,8 @@ export const ProductForm = ({
               radius='none'
               color='success'
               className='h-12 mb-2 w-full font-medium font-okxs'
-              isLoading={isSubmitting}>
+              isLoading={isSubmitting}
+            >
               {isSubmitting
                 ? isEditMode
                   ? 'Updating...'

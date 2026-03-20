@@ -1,6 +1,10 @@
 import {v} from 'convex/values'
 import {applyInventoryUpdate} from '../../lib/inventory-adjustments'
-import {normalizeInventoryMode, roundStockQuantity} from '../../lib/productStock'
+import {
+  normalizeInventoryMode,
+  roundStockQuantity,
+} from '../../lib/productStock'
+import {internal} from '../_generated/api'
 import type {Doc} from '../_generated/dataModel'
 import {mutation} from '../_generated/server'
 import {insertInventoryMovement} from './lib'
@@ -131,7 +135,9 @@ export const applyInventoryAdjustment = mutation({
 
       if (hasDenominationAdjustments) {
         if (
-          args.adjustments.some((adjustment) => adjustment.denomination === undefined)
+          args.adjustments.some(
+            (adjustment) => adjustment.denomination === undefined,
+          )
         ) {
           throw new Error(
             'Per-denomination inventory adjustments must include a denomination for every entry.',
@@ -211,6 +217,14 @@ export const applyInventoryAdjustment = mutation({
       performedByEmail: args.performedByEmail,
       performedByName: args.performedByName,
     })
+
+    await ctx.scheduler.runAfter(
+      0,
+      internal.lowStockAlerts.m.evaluateProductAlertState,
+      {
+        productId: args.productId,
+      },
+    )
 
     return {movementId, success: true}
   },

@@ -122,6 +122,7 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
     stock: product.stock ?? 0,
     masterStockQuantity: product.masterStockQuantity,
     masterStockUnit: product.masterStockUnit ?? '',
+    lowStockThreshold: product.lowStockThreshold?.toString() ?? '',
     stockByDenomination: product.stockByDenomination ?? {},
     rating: product.rating ?? 0,
     image: product.image ?? '',

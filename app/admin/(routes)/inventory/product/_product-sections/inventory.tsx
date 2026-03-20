@@ -7,7 +7,11 @@ import {
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {InventoryMode} from '@/convex/products/d'
-import {normalizeInventoryMode} from '@/lib/productStock'
+import {
+  getStockDisplayUnit,
+  getTotalStock,
+  normalizeInventoryMode,
+} from '@/lib/productStock'
 import {formatPrice} from '@/utils/formatPrice'
 import {
   Button,
@@ -66,6 +70,14 @@ const movementTypeLabels = {
   order_deduction: 'Order Deduction',
 } as const
 
+const formatAlertQuantity = (value: number) =>
+  Number.isInteger(value)
+    ? value.toLocaleString('en-US')
+    : value.toLocaleString('en-US', {maximumFractionDigits: 6})
+
+const formatAlertQuantityLabel = (value: number, unit: string | null) =>
+  unit ? `${formatAlertQuantity(value)} ${unit}` : formatAlertQuantity(value)
+
 const formatMovementLine = (
   product: Doc<'products'>,
   movementType: keyof typeof movementTypeLabels,
@@ -77,17 +89,19 @@ const formatMovementLine = (
   },
 ) => {
   const unit = line.unit?.trim()
-  const quantityLabel = unit ? `${formatQuantity(line.nextQuantity)} ${unit}` : formatQuantity(line.nextQuantity)
+  const quantityLabel = unit
+    ? `${formatQuantity(line.nextQuantity)} ${unit}`
+    : formatQuantity(line.nextQuantity)
   const deltaLabel = unit
     ? `${line.quantityDelta > 0 ? '+' : ''}${formatQuantity(line.quantityDelta)} ${unit}`
     : `${line.quantityDelta > 0 ? '+' : ''}${formatQuantity(line.quantityDelta)}`
   const lineLabel =
     line.denomination !== undefined
-      ? buildInventoryInputs({
+      ? (buildInventoryInputs({
           ...product,
           availableDenominations: [line.denomination],
           stockByDenomination: {[String(line.denomination)]: line.nextQuantity},
-        })[0]?.label ?? String(line.denomination)
+        })[0]?.label ?? String(line.denomination))
       : normalizeInventoryMode(product.inventoryMode) === 'shared'
         ? `Master stock${unit ? ` (${unit})` : ''}`
         : 'Stock'
@@ -127,6 +141,10 @@ export const Inventory = ({
     const values = state.values as {unit?: string}
     return values.unit ?? ''
   })
+  const lowStockThreshold = useStore(form.store, (state) => {
+    const values = state.values as {lowStockThreshold?: string}
+    return values.lowStockThreshold ?? ''
+  })
 
   const currentDenominations = useMemo(() => {
     if (!availableDenominationsRaw) return new Set<string>()
@@ -145,7 +163,10 @@ export const Inventory = ({
 
   const variantOptions = useMemo(() => {
     return variants
-      .filter((variant) => variant.label && extractDenomination(variant.label) !== null)
+      .filter(
+        (variant) =>
+          variant.label && extractDenomination(variant.label) !== null,
+      )
       .map((variant) => {
         const denomination = extractDenomination(variant.label)
         const denominationKey = denomination?.toString() ?? variant.label
@@ -206,6 +227,17 @@ export const Inventory = ({
     () => (product ? buildInventoryInputs(product) : []),
     [product],
   )
+  const persistedCurrentStock = useMemo(
+    () => (product ? getTotalStock(product) : null),
+    [product],
+  )
+  const persistedStockUnit = useMemo(
+    () => (product ? getStockDisplayUnit(product) : null),
+    [product],
+  )
+  const parsedLowStockThreshold = lowStockThreshold.trim()
+    ? Number(lowStockThreshold)
+    : null
 
   return (
     <FormSection>
@@ -218,7 +250,9 @@ export const Inventory = ({
                 <div className='space-y-2'>
                   <Select
                     label='Inventory Mode'
-                    selectedKeys={[String(field.state.value ?? 'by_denomination')]}
+                    selectedKeys={[
+                      String(field.state.value ?? 'by_denomination'),
+                    ]}
                     onSelectionChange={(keys) => {
                       const selected = Array.from(keys)[0]
                       if (typeof selected === 'string') {
@@ -227,8 +261,12 @@ export const Inventory = ({
                     }}
                     isDisabled={isEditMode}
                     variant='bordered'
-                    classNames={commonSelectClassNames}>
-                    <SelectItem key='by_denomination' textValue='By denomination'>
+                    classNames={commonSelectClassNames}
+                  >
+                    <SelectItem
+                      key='by_denomination'
+                      textValue='By denomination'
+                    >
                       <div className='flex flex-col'>
                         <span className='text-sm font-medium'>
                           By denomination
@@ -267,6 +305,78 @@ export const Inventory = ({
             </form.Field>
           </div>
 
+          <div className='w-full col-span-6 md:col-span-3'>
+            <form.Field name='lowStockThreshold'>
+              {(field) => {
+                const value = (field.state.value as string) ?? ''
+                const thresholdLabel =
+                  parsedLowStockThreshold != null &&
+                  Number.isFinite(parsedLowStockThreshold)
+                    ? formatAlertQuantityLabel(
+                        parsedLowStockThreshold,
+                        persistedStockUnit,
+                      )
+                    : null
+
+                return (
+                  <div className='space-y-2'>
+                    <Input
+                      label='Low Stock Email Threshold'
+                      type='number'
+                      step='0.01'
+                      value={value}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
+                      onBlur={field.handleBlur}
+                      placeholder='Leave blank to disable'
+                      variant='bordered'
+                      classNames={commonInputClassNames}
+                    />
+                    <div className='space-y-1'>
+                      <p className='text-xs text-color-muted'>
+                        {product && persistedCurrentStock != null
+                          ? `Current stock: ${formatAlertQuantityLabel(persistedCurrentStock, persistedStockUnit)}.${thresholdLabel ? ` Email alerts trigger when stock reaches ${thresholdLabel} or lower.` : ' Leave blank to disable low-stock email alerts for this product.'}`
+                          : 'Leave blank to disable low-stock email alerts for this product.'}
+                      </p>
+                      {product?.lowStockAlertActive ? (
+                        <div className='flex items-center gap-2'>
+                          <Chip
+                            size='sm'
+                            variant='flat'
+                            className='bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-100'
+                          >
+                            Alert active
+                          </Chip>
+                          {product.lowStockAlertLastSentAt ? (
+                            <span className='text-xs text-color-muted'>
+                              Last sent{' '}
+                              {new Date(
+                                product.lowStockAlertLastSentAt,
+                              ).toLocaleString()}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
+                      {product?.lowStockAlertLastError ? (
+                        <p className='text-xs text-rose-400'>
+                          Last alert send failed:{' '}
+                          {product.lowStockAlertLastError}
+                        </p>
+                      ) : null}
+                    </div>
+                    {field.state.meta.isTouched &&
+                      field.state.meta.errors.length > 0 && (
+                        <p className='text-xs text-rose-400'>
+                          {field.state.meta.errors.join(', ')}
+                        </p>
+                      )}
+                  </div>
+                )
+              }}
+            </form.Field>
+          </div>
+
           {!isEditMode && inventoryMode === 'shared' ? (
             <>
               <div className='w-full col-span-6 md:col-span-2'>
@@ -299,7 +409,9 @@ export const Inventory = ({
                     <Select
                       label='Master Unit'
                       selectedKeys={
-                        field.state.value ? [String(field.state.value)] : undefined
+                        field.state.value
+                          ? [String(field.state.value)]
+                          : undefined
                       }
                       onSelectionChange={(keys) => {
                         const selected = Array.from(keys)[0]
@@ -308,7 +420,8 @@ export const Inventory = ({
                         }
                       }}
                       variant='bordered'
-                      classNames={commonSelectClassNames}>
+                      classNames={commonSelectClassNames}
+                    >
                       {MASTER_STOCK_UNIT_OPTIONS.map((unit) => (
                         <SelectItem key={unit} textValue={unit}>
                           {unit}
@@ -334,8 +447,8 @@ export const Inventory = ({
                 {(field) => {
                   const stockByDenomination =
                     (field.state.value as Record<string, number>) ?? {}
-                  const selectedVariantOptions = variantOptions.filter((option) =>
-                    currentDenominations.has(option.key),
+                  const selectedVariantOptions = variantOptions.filter(
+                    (option) => currentDenominations.has(option.key),
                   )
 
                   return (
@@ -359,7 +472,9 @@ export const Inventory = ({
                                 option.label
                               }
                               type='number'
-                              value={String(stockByDenomination[option.key] ?? 0)}
+                              value={String(
+                                stockByDenomination[option.key] ?? 0,
+                              )}
                               onChange={(event) =>
                                 field.handleChange({
                                   ...stockByDenomination,
@@ -394,7 +509,9 @@ export const Inventory = ({
                     label='Fallback Stock'
                     type='number'
                     min={0}
-                    value={field.state.value == null ? '' : String(field.state.value)}
+                    value={
+                      field.state.value == null ? '' : String(field.state.value)
+                    }
                     onChange={(event) =>
                       field.handleChange(Number(event.target.value) || 0)
                     }
@@ -410,7 +527,9 @@ export const Inventory = ({
           {isEditMode && product ? (
             <div className='col-span-6 space-y-4'>
               <div className='rounded-2xl border border-black/5 bg-black/2 p-4 dark:border-white/10 dark:bg-white/3'>
-                <p className='text-sm font-medium'>Official inventory controls</p>
+                <p className='text-sm font-medium'>
+                  Official inventory controls
+                </p>
                 <p className='mt-1 text-sm text-color-muted'>
                   Stock quantities are now managed through logged inventory
                   adjustments. Use restock when new supply arrives, and use
@@ -437,7 +556,8 @@ export const Inventory = ({
                 </Button>
                 <Button
                   variant='bordered'
-                  onPress={() => setIsManualOverrideOpen(true)}>
+                  onPress={() => setIsManualOverrideOpen(true)}
+                >
                   Manual Override
                 </Button>
               </div>
@@ -445,7 +565,9 @@ export const Inventory = ({
               <div className='space-y-3 rounded-2xl border border-black/5 bg-background/60 p-4 dark:border-white/10'>
                 <div className='flex items-center justify-between gap-3'>
                   <div>
-                    <p className='text-sm font-medium'>Recent inventory activity</p>
+                    <p className='text-sm font-medium'>
+                      Recent inventory activity
+                    </p>
                     <p className='text-xs text-color-muted'>
                       Restocks, corrections, and paid-order deductions for this
                       product.
@@ -466,7 +588,8 @@ export const Inventory = ({
                     {inventoryMovements.map((movement) => (
                       <div
                         key={movement._id}
-                        className='rounded-xl border border-black/5 bg-black/2 p-3 dark:border-white/10 dark:bg-white/3'>
+                        className='rounded-xl border border-black/5 bg-black/2 p-3 dark:border-white/10 dark:bg-white/3'
+                      >
                         <div className='flex flex-wrap items-center justify-between gap-3'>
                           <div className='flex flex-wrap items-center gap-2'>
                             <Chip
@@ -474,7 +597,8 @@ export const Inventory = ({
                               classNames={{
                                 base: `border ${movementTypeStyles[movement.type]}`,
                                 content: 'text-xs font-medium',
-                              }}>
+                              }}
+                            >
                               {movementTypeLabels[movement.type]}
                             </Chip>
                             <span className='text-sm text-color-muted'>
@@ -503,7 +627,8 @@ export const Inventory = ({
                               classNames={{
                                 base: 'border-black/10 dark:border-white/10',
                                 content: 'text-xs',
-                              }}>
+                              }}
+                            >
                               {formatMovementLine(product, movement.type, line)}
                             </Chip>
                           ))}
@@ -555,7 +680,9 @@ export const Inventory = ({
                       }
                       selectionMode='multiple'
                       selectedKeys={selectedKeys}
-                      onSelectionChange={(keys) => handleSelectionChange(field, keys)}
+                      onSelectionChange={(keys) =>
+                        handleSelectionChange(field, keys)
+                      }
                       variant='bordered'
                       isMultiline={true}
                       isDisabled={variantOptions.length === 0}
@@ -573,7 +700,8 @@ export const Inventory = ({
                                 classNames={{
                                   base: 'border border-light-gray dark:border-light-gray/30 h-7',
                                   content: 'text-xs flex items-center gap-1',
-                                }}>
+                                }}
+                              >
                                 <span className='capitalize'>
                                   {variant?.displayLabel ?? item.textValue}
                                 </span>
@@ -581,7 +709,8 @@ export const Inventory = ({
                             )
                           })}
                         </div>
-                      )}>
+                      )}
+                    >
                       {variantOptions.map((option) => {
                         const priceDisplay = option.price
                           ? formatPrice(Math.round(option.price * 100))
@@ -589,7 +718,8 @@ export const Inventory = ({
                         return (
                           <SelectItem
                             key={option.key}
-                            textValue={option.displayLabel}>
+                            textValue={option.displayLabel}
+                          >
                             <div className='flex items-center justify-between w-full'>
                               <div className='flex flex-col'>
                                 <span className='text-sm font-medium'>
@@ -695,7 +825,8 @@ export const Inventory = ({
                                 classNames={{
                                   base: 'border border-dark-gray bg-background dark:border-yellow-500 h-7',
                                   content: 'text-xs flex items-center gap-1',
-                                }}>
+                                }}
+                              >
                                 <span className='capitalize'>
                                   {variant?.displayLabel ?? item.textValue}
                                 </span>
@@ -703,9 +834,13 @@ export const Inventory = ({
                             )
                           })}
                         </div>
-                      )}>
+                      )}
+                    >
                       {variantOptions.map((option) => (
-                        <SelectItem key={option.key} textValue={option.displayLabel}>
+                        <SelectItem
+                          key={option.key}
+                          textValue={option.displayLabel}
+                        >
                           <div className='flex items-center justify-between w-full'>
                             <span className='text-sm font-medium'>
                               {option.displayLabel}

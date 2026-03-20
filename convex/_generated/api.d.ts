@@ -77,6 +77,8 @@ import type * as inventoryMovements_q from "../inventoryMovements/q.js";
 import type * as logs_d from "../logs/d.js";
 import type * as logs_m from "../logs/m.js";
 import type * as logs_q from "../logs/q.js";
+import type * as lowStockAlerts_a from "../lowStockAlerts/a.js";
+import type * as lowStockAlerts_m from "../lowStockAlerts/m.js";
 import type * as mailingLists_d from "../mailingLists/d.js";
 import type * as mailingLists_m from "../mailingLists/m.js";
 import type * as mailingLists_q from "../mailingLists/q.js";
@@ -198,6 +200,8 @@ declare const fullApi: ApiFromModules<{
   "logs/d": typeof logs_d;
   "logs/m": typeof logs_m;
   "logs/q": typeof logs_q;
+  "lowStockAlerts/a": typeof lowStockAlerts_a;
+  "lowStockAlerts/m": typeof lowStockAlerts_m;
   "mailingLists/d": typeof mailingLists_d;
   "mailingLists/m": typeof mailingLists_m;
   "mailingLists/q": typeof mailingLists_q;

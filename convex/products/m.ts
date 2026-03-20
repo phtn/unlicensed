@@ -303,6 +303,7 @@ async function buildProductDoc(
     packagingMode: args.packagingMode,
     stockUnit: args.stockUnit?.trim() || undefined,
     packSize: args.packSize,
+    lowStockThreshold: args.lowStockThreshold,
     startingWeight: args.startingWeight,
     remainingWeight: args.remainingWeight,
     variants: args.variants,
@@ -338,6 +339,13 @@ export const createProduct = mutation({
       productName: args.name?.trim() ?? '',
       productSlug: slug,
     })
+    await ctx.scheduler.runAfter(
+      0,
+      internal.lowStockAlerts.m.evaluateProductAlertState,
+      {
+        productId,
+      },
+    )
 
     return productId
   },
@@ -497,6 +505,9 @@ export const updateProduct = mutation({
     if (fields.packSize !== undefined) {
       updates.packSize = fields.packSize
     }
+    if (fields.lowStockThreshold !== undefined) {
+      updates.lowStockThreshold = fields.lowStockThreshold
+    }
     if (fields.startingWeight !== undefined) {
       updates.startingWeight = fields.startingWeight
     }
@@ -602,6 +613,13 @@ export const updateProduct = mutation({
     }
 
     await ctx.db.patch(id, updates)
+    await ctx.scheduler.runAfter(
+      0,
+      internal.lowStockAlerts.m.evaluateProductAlertState,
+      {
+        productId: id,
+      },
+    )
     return {success: true}
   },
 })
@@ -755,11 +773,21 @@ export const archiveProduct = mutation({
       product.name,
     )
 
-    return await ctx.db.patch(product._id, {
+    await ctx.db.patch(product._id, {
       archived: true,
       available: false,
       slug: archivedSlug,
     })
+
+    await ctx.scheduler.runAfter(
+      0,
+      internal.lowStockAlerts.m.evaluateProductAlertState,
+      {
+        productId: product._id,
+      },
+    )
+
+    return product._id
   },
 })
 
