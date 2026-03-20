@@ -413,13 +413,13 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
 
   if (isEditing) {
     return (
-      <div className='min-h-screen overflow-y-auto'>
+      <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
         <div className='hidden dark:fixed inset-0 overflow-hidden pointer-events-none'>
           <div className='absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl' />
           <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-brand/10 rounded-full blur-3xl' />
         </div>
-        <main className='relative overflow-y-auto'>
-          <div className='overflow-hidden'>
+        <main className='relative flex min-h-0 flex-1 flex-col overflow-hidden'>
+          <div className='flex min-h-0 flex-1 overflow-hidden'>
             <EmailTemplateEditor
               initialValues={toFormValues(emailSetting)}
               submitLabel='Update Template'
@@ -447,7 +447,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             onPress={navigateBackToList}
             className='gap-2 dark:bg-transparent'>
             <Icon name='chevron-left' className='size-4' />
-            <span>Back to Templates</span>
+            <span className='hidden md:flex'>Back to Templates</span>
           </Button>
           <div className='flex items-center gap-3 px-1'>
             <Button
@@ -455,29 +455,32 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
               variant='light'
               onPress={toggleMailingList}
               className='gap-1'>
-              Create Mailing List
+              <span className='md:hidden'>+ List</span>
+              <span className='hidden md:flex'>Create Mailing List</span>
             </Button>
             <Button
               type='button'
               variant='light'
               onPress={toggleEmailBlast}
               className='gap-1'>
-              Send Email Blast
+              <span className='hidden md:flex'>Send Email </span>Blast
             </Button>
             <Button
               type='button'
               variant='light'
               onPress={() => setIsEditing(true)}
               className='gap-1'>
-              Edit
+              <span className='hidden md:flex'>Edit</span>
+              <Icon name='pen' className='size-4 md:hidden' />
             </Button>
             <Button
               type='button'
               color='danger'
               variant='light'
               onPress={handleDelete}
-              className='text-mac-red hover:text-mac-red dark:text-red-400 dark:hover:text-red-500'>
-              Delete
+              className='text-mac-red hover:text-mac-red dark:text-red-400 dark:hover:text-red-500 w-4 md:w-fit'>
+              <span className='hidden md:flex'>Delete</span>
+              <Icon name='trash-fill' className='size-4 md:hidden' />
             </Button>
           </div>
         </div>

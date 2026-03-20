@@ -112,7 +112,7 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
                     <div className='relative dark:bg-background bg-greyed/10 backdrop-blur-xl border border-greyed/15 p-5 hover:border-zinc-700/50 transition-all duration-300'>
                       <div className='flex items-start justify-between gap-4'>
                         <div className='flex items-start gap-4 flex-1'>
-                          <div className='w-12 h-12 rounded-xl bg-linear-to-br from-cyan-600/10 to-purple-200/10 border border-foreground/20 flex items-center justify-center shrink-0'>
+                          <div className='w-8 h-8 rounded-xl bg-linear-to-br from-cyan-600/10 to-purple-200/10 border border-foreground/20 flex items-center justify-center shrink-0'>
                             <Icon
                               name='arrow-swap'
                               className='size-5 rotate-45'

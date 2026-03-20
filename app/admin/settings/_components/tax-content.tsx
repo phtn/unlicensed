@@ -21,7 +21,7 @@ export const TaxContent = () => {
       : 'loading'
 
   return (
-    <div className='flex w-full flex-col gap-4'>
+    <div className='flex w-full flex-col gap-4 ml-4 md:ml-0'>
       <ContentHeader title='Tax Configuration' />
       <TaxFormInner
         key={configKey}
@@ -79,14 +79,18 @@ function TaxFormInner({
   }, [taxRatePercent, active, updateAdmin, userUid])
 
   return (
-    <section className='flex w-md flex-col gap-4'>
+    <section className='flex w-md portrait:-mt-10 md:mt-0 flex-col gap-4'>
       <div className='flex flex-col gap-4'>
-        <Switch
-          isSelected={active}
-          onValueChange={setActive}
-          isDisabled={config === undefined}>
-          Tax active
-        </Switch>
+        <label
+          htmlFor='tax-active-switch'
+          className=' flex items-center space-x-4'>
+          <span>Tax active</span>
+          <Switch
+            id='tax-active-switch'
+            isSelected={active}
+            onValueChange={setActive}
+            isDisabled={config === undefined}></Switch>
+        </label>
         <div className='flex max-w-44 flex-col gap-2'>
           <Input
             label='Tax rate (%)'

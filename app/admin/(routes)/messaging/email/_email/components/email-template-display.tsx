@@ -289,8 +289,8 @@ export const EmailTemplateDisplay = ({
               exit={{opacity: 0}}
               className='space-y-4 overflow-scroll'>
               <SectionHeader
-                title='Resend templates'
-                description='View template preview.'
+                title='Preview templates'
+                description={`${EMAIL_TEMPLATE_OPTIONS.length} templates`}
               />
 
               <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
@@ -307,14 +307,12 @@ export const EmailTemplateDisplay = ({
                       <div className='absolute inset-0 bg-linear-to-r from-cyan-500/5 to-purple-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
                       <div className='relative dark:bg-background bg-greyed/10 backdrop-blur-xl border border-greyed/15 rounded-2xl p-4 hover:border-zinc-700/50 transition-all duration-300'>
                         <div className='flex items-start gap-3'>
-                          <div className='w-10 h-10 rounded-xl bg-linear-to-br from-cyan-600/10 to-purple-200/10 border border-foreground/20 flex items-center justify-center shrink-0'>
-                            <Icon
-                              name='email'
-                              className='size-5 text-cyan-600 dark:text-cyan-400'
-                            />
-                          </div>
+                          <Icon
+                            name='email'
+                            className='size-5 text-cyan-600 dark:text-cyan-400/80'
+                          />
                           <div className='min-w-0 flex-1'>
-                            <h3 className='text-sm font-semibold truncate'>
+                            <h3 className='text-sm font-semibold truncate tracking-wide'>
                               {opt.label}
                             </h3>
                             <p className='text-xs opacity-80 mt-0.5 truncate'>

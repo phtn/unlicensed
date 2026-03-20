@@ -83,6 +83,9 @@ const stringifyTemplateProps = (value: Record<string, unknown>): string => {
 const getCouponPropKey = (templateKey: string) =>
   COUPON_TEMPLATE_PROP_KEYS[templateKey as EmailTemplateId] ?? null
 
+const editorPaneClassName =
+  'w-full min-w-0 px-4 py-5 sm:px-6 sm:py-6 xl:px-8 xl:py-8'
+
 const stripCouponAttachmentProps = (value: string | undefined): string => {
   const next = parseTemplateProps(value)
   delete next.couponId
@@ -439,344 +442,365 @@ export const EmailTemplateEditor = ({
         e.preventDefault()
         form.handleSubmit()
       }}
-      className='h-screen flex w-full overflow-auto'>
-      <div className='p-6 space-y-10 flex-1 w-full'>
-        <section>
-          <SectionHeader title='Settings' />
-          <div className='space-y-4 pt-2'>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <form.AppField name='title'>
-                {(fieldApi) => {
-                  const errors = fieldApi.state.meta.errors
-                  const error =
-                    fieldApi.state.meta.isTouched && errors.length
-                      ? errors.join(', ')
-                      : undefined
-
-                  return (
-                    <fieldApi.TextField
-                      {...fieldApi}
-                      name='title'
-                      label='Template Name'
-                      defaultValue={fieldApi.state.value}
-                      placeholder='Welcome Email, Password Reset...'
-                      type='text'
-                      required
-                      error={error}
-                      // onChange={(event) => {
-                      //   fieldApi.handleChange(event.target.value)
-                      // }}
-                    />
-                  )
-                }}
-              </form.AppField>
-              <form.AppField name='group'>
-                {(fieldApi) => {
-                  const errors = fieldApi.state.meta.errors
-                  const error =
-                    fieldApi.state.meta.isTouched && errors.length
-                      ? errors.join(', ')
-                      : undefined
-
-                  return (
-                    <fieldApi.TextField
-                      {...fieldApi}
-                      name='group'
-                      defaultValue={fieldApi.state.value}
-                      label='Group'
-                      placeholder='users, admins, marketing...'
-                      type='text'
-                      error={
-                        typeof error === 'object'
-                          ? JSON.stringify(error)
-                          : error
-                      }
-                      // onChange={(event) => {
-                      //   fieldApi.handleChange(event.target.value)
-                      // }}
-                    />
-                  )
-                }}
-              </form.AppField>
-            </div>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4'>
-              <form.AppField name='intent'>
-                {(fieldApi) => {
-                  const errors = fieldApi.state.meta.errors
-                  const error =
-                    fieldApi.state.meta.isTouched && errors.length
-                      ? errors.join(', ')
-                      : undefined
-
-                  return (
-                    <fieldApi.TextField
-                      {...fieldApi}
-                      name='intent'
-                      label='Intent'
-                      defaultValue={fieldApi.state.value}
-                      placeholder='onboarding, notification...'
-                      type='text'
-                      error={error}
-                      // onChange={(event) => {
-                      //   fieldApi.handleChange(event.target.value)
-                      // }}
-                    />
-                  )
-                }}
-              </form.AppField>
-
-              <form.AppField name='type'>
-                {(fieldApi) => {
-                  const errors = fieldApi.state.meta.errors
-                  const error =
-                    fieldApi.state.meta.isTouched && errors.length
-                      ? errors.join(', ')
-                      : undefined
-
-                  return (
-                    <fieldApi.SelectField
-                      {...fieldApi}
-                      name='type'
-                      label='Type'
-                      placeholder='Select type'
-                      type='select'
-                      options={typeOptions}
-                      required
-                      error={error}
-                      defaultValue={initialValues.type}
-                    />
-                  )
-                }}
-              </form.AppField>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <SectionHeader title='Recipients' />
-
-          <div className='space-y-4 pt-2'>
-            <form.AppField name='from'>
-              {(fieldApi) => {
-                const errors = fieldApi.state.meta.errors
-                const error =
-                  fieldApi.state.meta.isTouched && errors.length
-                    ? errors.join(', ')
-                    : undefined
-
-                return (
-                  <fieldApi.TextField
-                    {...fieldApi}
-                    name='from'
-                    label='From Address'
-                    defaultValue={fieldApi.state.value}
-                    placeholder='support@protap.com'
-                    type='email'
-                    helperText='Comma-separated emails (or {{placeholders}})'
-                    error={error}
-                    // onChange={(event) => {
-                    //   fieldApi.handleChange(event.target.value)
-                    // }}
-                  />
-                )
-              }}
-            </form.AppField>
-
-            <form.AppField name='to'>
-              {(fieldApi) => {
-                const errors = fieldApi.state.meta.errors
-                const error =
-                  fieldApi.state.meta.isTouched && errors.length
-                    ? errors.join(', ')
-                    : undefined
-
-                return (
-                  <fieldApi.TextField
-                    {...fieldApi}
-                    name='to'
-                    label='To Recipients'
-                    defaultValue={fieldApi.state.value}
-                    placeholder='Comma-separated emails...'
-                    type='email'
-                    helperText='Comma-separated emails (or {{placeholders}})'
-                    error={error}
-                    // onChange={(event) => {
-                    //   fieldApi.handleChange(event.target.value)
-                    // }}
-                  />
-                )
-              }}
-            </form.AppField>
-
-            <form.AppField name='cc'>
-              {(fieldApi) => {
-                const errors = fieldApi.state.meta.errors
-                const error =
-                  fieldApi.state.meta.isTouched && errors.length
-                    ? errors.join(', ')
-                    : undefined
-
-                return (
-                  <fieldApi.TextField
-                    {...fieldApi}
-                    name='cc'
-                    label='CC'
-                    defaultValue={fieldApi.state.value}
-                    placeholder='Optional...'
-                    type='text'
-                    error={error}
-                    // onChange={(event) => {
-                    //   fieldApi.handleChange(event.target.value)
-                    // }}
-                  />
-                )
-              }}
-            </form.AppField>
-
-            <form.AppField name='bcc'>
-              {(fieldApi) => {
-                const errors = fieldApi.state.meta.errors
-                const error =
-                  fieldApi.state.meta.isTouched && errors.length
-                    ? errors.join(', ')
-                    : undefined
-
-                return (
-                  <fieldApi.TextField
-                    {...fieldApi}
-                    name='bcc'
-                    label='BCC'
-                    defaultValue={fieldApi.state.value}
-                    placeholder='Optional...'
-                    type='text'
-                    error={error}
-                    // onChange={(event) => {
-                    //   fieldApi.handleChange(event.target.value)
-                    // }}
-                  />
-                )
-              }}
-            </form.AppField>
-            <form.AppField name='subject'>
-              {(fieldApi) => {
-                const errors = fieldApi.state.meta.errors
-                const error =
-                  fieldApi.state.meta.isTouched && errors.length
-                    ? errors.join(', ')
-                    : undefined
-
-                return (
-                  <fieldApi.TextField
-                    {...fieldApi}
-                    name='subject'
-                    label='Subject Line'
-                    defaultValue={fieldApi.state.value}
-                    placeholder='Hi!'
-                    type='text'
-                    required
-                    error={error}
-                    // onChange={(event) => {
-                    //   fieldApi.handleChange(event.target.value)
-                    // }}
-                  />
-                )
-              }}
-            </form.AppField>
-          </div>
-        </section>
+      className='flex min-h-0 flex-1 w-full flex-col overflow-hidden'>
+      <div className='shrink-0 bg-background/95 px-4 supports-backdrop-filter:bg-background/80 sm:px-6'>
+        <div className='mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-3'>
+          <Button
+            type='button'
+            variant='light'
+            onPress={onCancel}
+            className='gap-2 -ml-2 dark:bg-transparent'>
+            <Icon name='chevron-left' className='size-4' />
+            Back
+          </Button>
+        </div>
       </div>
-      {/*RIGHT*/}
-      <div className='px-6 pt-6 space-y-10 flex-1'>
-        <section>
-          <SectionHeader title='Content' />
+      <div
+        className='flex-1 overflow-y-auto overscroll-y-contain'
+        style={{WebkitOverflowScrolling: 'touch'}}>
+        <div className='grid w-full min-w-0 grid-cols-1 xl:grid-cols-2 xl:items-start xl:divide-x xl:divide-foreground/10'>
+          <div className={cn(editorPaneClassName, 'space-y-8 sm:space-y-10')}>
+            <section>
+              <SectionHeader title='Settings' />
+              <div className='space-y-4 pt-2'>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <form.AppField name='title'>
+                    {(fieldApi) => {
+                      const errors = fieldApi.state.meta.errors
+                      const error =
+                        fieldApi.state.meta.isTouched && errors.length
+                          ? errors.join(', ')
+                          : undefined
 
-          <div className='pt-2 space-y-4'>
-            <Select
-              label='Template'
-              placeholder='Choose a template (optional)'
-              variant='bordered'
-              selectedKeys={selectedTemplateKey ? [selectedTemplateKey] : []}
-              onSelectionChange={(keys) => {
-                const key = Array.from(keys)[0] ?? null
-                handleTemplateSelect(key)
-              }}
-              isDisabled={isLoadingTemplate}
-              classNames={commonSelectClassNames}
-              items={templateSelectOptions}>
-              {(item) => (
-                <SelectItem key={item.id} textValue={item.label}>
-                  {item.label}
-                </SelectItem>
-              )}
-            </Select>
+                      return (
+                        <fieldApi.TextField
+                          {...fieldApi}
+                          name='title'
+                          label='Template Name'
+                          defaultValue={fieldApi.state.value}
+                          placeholder='Welcome Email, Password Reset...'
+                          type='text'
+                          required
+                          error={error}
+                          // onChange={(event) => {
+                          //   fieldApi.handleChange(event.target.value)
+                          // }}
+                        />
+                      )
+                    }}
+                  </form.AppField>
+                  <form.AppField name='group'>
+                    {(fieldApi) => {
+                      const errors = fieldApi.state.meta.errors
+                      const error =
+                        fieldApi.state.meta.isTouched && errors.length
+                          ? errors.join(', ')
+                          : undefined
 
-            {templateCouponPropKey && (
-              <div className='space-y-4'>
-                <JunctionBox
-                  title='Attach Coupon'
-                  checked={couponAttachmentEnabled}
-                  onUpdate={handleCouponAttachmentToggle}
-                  description='Attach an active coupon from the coupons table and use its code in this template render.'
-                />
+                      return (
+                        <fieldApi.TextField
+                          {...fieldApi}
+                          name='group'
+                          defaultValue={fieldApi.state.value}
+                          label='Group'
+                          placeholder='users, admins, marketing...'
+                          type='text'
+                          error={
+                            typeof error === 'object'
+                              ? JSON.stringify(error)
+                              : error
+                          }
+                          // onChange={(event) => {
+                          //   fieldApi.handleChange(event.target.value)
+                          // }}
+                        />
+                      )
+                    }}
+                  </form.AppField>
+                </div>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <form.AppField name='intent'>
+                    {(fieldApi) => {
+                      const errors = fieldApi.state.meta.errors
+                      const error =
+                        fieldApi.state.meta.isTouched && errors.length
+                          ? errors.join(', ')
+                          : undefined
 
+                      return (
+                        <fieldApi.TextField
+                          {...fieldApi}
+                          name='intent'
+                          label='Intent'
+                          defaultValue={fieldApi.state.value}
+                          placeholder='onboarding, notification...'
+                          type='text'
+                          error={error}
+                        />
+                      )
+                    }}
+                  </form.AppField>
+
+                  <form.AppField name='type'>
+                    {(fieldApi) => {
+                      const errors = fieldApi.state.meta.errors
+                      const error =
+                        fieldApi.state.meta.isTouched && errors.length
+                          ? errors.join(', ')
+                          : undefined
+
+                      return (
+                        <fieldApi.SelectField
+                          {...fieldApi}
+                          name='type'
+                          label='Type'
+                          placeholder='Select type'
+                          type='select'
+                          options={typeOptions}
+                          required
+                          error={error}
+                          defaultValue={initialValues.type}
+                        />
+                      )
+                    }}
+                  </form.AppField>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <SectionHeader title='Recipients' />
+
+              <div className='space-y-4 pt-2'>
+                <form.AppField name='from'>
+                  {(fieldApi) => {
+                    const errors = fieldApi.state.meta.errors
+                    const error =
+                      fieldApi.state.meta.isTouched && errors.length
+                        ? errors.join(', ')
+                        : undefined
+
+                    return (
+                      <fieldApi.TextField
+                        {...fieldApi}
+                        name='from'
+                        label='From Address'
+                        defaultValue={fieldApi.state.value}
+                        placeholder='support@protap.com'
+                        type='email'
+                        helperText='Comma-separated emails (or {{placeholders}})'
+                        error={error}
+                        // onChange={(event) => {
+                        //   fieldApi.handleChange(event.target.value)
+                        // }}
+                      />
+                    )
+                  }}
+                </form.AppField>
+
+                <form.AppField name='to'>
+                  {(fieldApi) => {
+                    const errors = fieldApi.state.meta.errors
+                    const error =
+                      fieldApi.state.meta.isTouched && errors.length
+                        ? errors.join(', ')
+                        : undefined
+
+                    return (
+                      <fieldApi.TextField
+                        {...fieldApi}
+                        name='to'
+                        label='To Recipients'
+                        defaultValue={fieldApi.state.value}
+                        placeholder='Comma-separated emails...'
+                        type='email'
+                        helperText='Comma-separated emails (or {{placeholders}})'
+                        error={error}
+                        // onChange={(event) => {
+                        //   fieldApi.handleChange(event.target.value)
+                        // }}
+                      />
+                    )
+                  }}
+                </form.AppField>
+
+                <form.AppField name='cc'>
+                  {(fieldApi) => {
+                    const errors = fieldApi.state.meta.errors
+                    const error =
+                      fieldApi.state.meta.isTouched && errors.length
+                        ? errors.join(', ')
+                        : undefined
+
+                    return (
+                      <fieldApi.TextField
+                        {...fieldApi}
+                        name='cc'
+                        label='CC'
+                        defaultValue={fieldApi.state.value}
+                        placeholder='Optional...'
+                        type='text'
+                        error={error}
+                        // onChange={(event) => {
+                        //   fieldApi.handleChange(event.target.value)
+                        // }}
+                      />
+                    )
+                  }}
+                </form.AppField>
+
+                <form.AppField name='bcc'>
+                  {(fieldApi) => {
+                    const errors = fieldApi.state.meta.errors
+                    const error =
+                      fieldApi.state.meta.isTouched && errors.length
+                        ? errors.join(', ')
+                        : undefined
+
+                    return (
+                      <fieldApi.TextField
+                        {...fieldApi}
+                        name='bcc'
+                        label='BCC'
+                        defaultValue={fieldApi.state.value}
+                        placeholder='Optional...'
+                        type='text'
+                        error={error}
+                        // onChange={(event) => {
+                        //   fieldApi.handleChange(event.target.value)
+                        // }}
+                      />
+                    )
+                  }}
+                </form.AppField>
+                <form.AppField name='subject'>
+                  {(fieldApi) => {
+                    const errors = fieldApi.state.meta.errors
+                    const error =
+                      fieldApi.state.meta.isTouched && errors.length
+                        ? errors.join(', ')
+                        : undefined
+
+                    return (
+                      <fieldApi.TextField
+                        {...fieldApi}
+                        name='subject'
+                        label='Subject Line'
+                        defaultValue={fieldApi.state.value}
+                        placeholder='Hi!'
+                        type='text'
+                        required
+                        error={error}
+                        // onChange={(event) => {
+                        //   fieldApi.handleChange(event.target.value)
+                        // }}
+                      />
+                    )
+                  }}
+                </form.AppField>
+              </div>
+            </section>
+          </div>
+          {/*RIGHT*/}
+          <div
+            className={cn(
+              editorPaneClassName,
+              'space-y-8 border-t border-foreground/10 sm:space-y-10 xl:border-t-0',
+            )}>
+            <section>
+              <SectionHeader title='Content' />
+
+              <div className='pt-2 space-y-4'>
                 <Select
-                  label='Coupon'
-                  placeholder={
-                    activeCoupons.length > 0
-                      ? 'Choose a coupon'
-                      : 'No active coupons available'
-                  }
+                  label='Template'
+                  placeholder='Choose a template (optional)'
                   variant='bordered'
                   selectedKeys={
-                    resolvedSelectedCouponId ? [resolvedSelectedCouponId] : []
+                    selectedTemplateKey ? [selectedTemplateKey] : []
                   }
                   onSelectionChange={(keys) => {
                     const key = Array.from(keys)[0] ?? null
-                    handleCouponSelect(key)
+                    handleTemplateSelect(key)
                   }}
-                  isDisabled={
-                    !couponAttachmentEnabled ||
-                    isLoadingTemplate ||
-                    activeCoupons.length === 0
-                  }
+                  isDisabled={isLoadingTemplate}
                   classNames={commonSelectClassNames}
-                  items={couponSelectOptions}>
+                  items={templateSelectOptions}>
                   {(item) => (
                     <SelectItem key={item.id} textValue={item.label}>
                       {item.label}
                     </SelectItem>
                   )}
                 </Select>
-              </div>
-            )}
 
-            {selectedTemplateKey === 'invitation' && (
-              <form.AppField name='templateProps'>
-                {(fieldApi) => (
-                  <fieldApi.TextAreaField
-                    {...fieldApi}
-                    name='templateProps'
-                    label='Invitation template props (JSON)'
-                    defaultValue={fieldApi.state.value}
-                    placeholder='{"title": "You are invited.", "message": "..."}'
-                    type='textarea'
-                    minRows={8}
-                    error={(() => {
-                      try {
-                        if (fieldApi.state.value) {
-                          JSON.parse(fieldApi.state.value)
-                        }
-                        return undefined
-                      } catch {
-                        return 'Invalid JSON'
+                {templateCouponPropKey && (
+                  <div className='space-y-4'>
+                    <JunctionBox
+                      title='Attach Coupon'
+                      checked={couponAttachmentEnabled}
+                      onUpdate={handleCouponAttachmentToggle}
+                      description='Attach an active coupon from the coupons table and use its code in this template render.'
+                    />
+
+                    <Select
+                      label='Coupon'
+                      placeholder={
+                        activeCoupons.length > 0
+                          ? 'Choose a coupon'
+                          : 'No active coupons available'
                       }
-                    })()}
-                  />
+                      variant='bordered'
+                      selectedKeys={
+                        resolvedSelectedCouponId
+                          ? [resolvedSelectedCouponId]
+                          : []
+                      }
+                      onSelectionChange={(keys) => {
+                        const key = Array.from(keys)[0] ?? null
+                        handleCouponSelect(key)
+                      }}
+                      isDisabled={
+                        !couponAttachmentEnabled ||
+                        isLoadingTemplate ||
+                        activeCoupons.length === 0
+                      }
+                      classNames={commonSelectClassNames}
+                      items={couponSelectOptions}>
+                      {(item) => (
+                        <SelectItem key={item.id} textValue={item.label}>
+                          {item.label}
+                        </SelectItem>
+                      )}
+                    </Select>
+                  </div>
                 )}
-              </form.AppField>
-            )}
 
-            {/*<form.AppField name='text'>
+                {selectedTemplateKey === 'invitation' && (
+                  <form.AppField name='templateProps'>
+                    {(fieldApi) => (
+                      <fieldApi.TextAreaField
+                        {...fieldApi}
+                        name='templateProps'
+                        label='Invitation template props (JSON)'
+                        defaultValue={fieldApi.state.value}
+                        placeholder='{"title": "You are invited.", "message": "..."}'
+                        type='textarea'
+                        minRows={6}
+                        error={(() => {
+                          try {
+                            if (fieldApi.state.value) {
+                              JSON.parse(fieldApi.state.value)
+                            }
+                            return undefined
+                          } catch {
+                            return 'Invalid JSON'
+                          }
+                        })()}
+                      />
+                    )}
+                  </form.AppField>
+                )}
+
+                {/*<form.AppField name='text'>
               {(fieldApi) => {
                 const errors = fieldApi.state.meta.errors
                 const error =
@@ -802,60 +826,64 @@ export const EmailTemplateEditor = ({
               }}
             </form.AppField>*/}
 
-            <form.AppField name='body'>
-              {(fieldApi) => {
-                const errors = fieldApi.state.meta.errors
-                const error =
-                  fieldApi.state.meta.isTouched && errors.length
-                    ? errors.join(', ')
-                    : undefined
+                <form.AppField name='body'>
+                  {(fieldApi) => {
+                    const errors = fieldApi.state.meta.errors
+                    const error =
+                      fieldApi.state.meta.isTouched && errors.length
+                        ? errors.join(', ')
+                        : undefined
 
-                return (
-                  <fieldApi.TextAreaField
-                    {...fieldApi}
-                    name='body'
-                    label='Body Template'
-                    defaultValue={fieldApi.state.value}
-                    placeholder='Hello {{name}}, welcome to {{company}}...'
-                    type='textarea'
-                    minRows={5}
-                    error={error}
-                    // onChange={(event) => {
-                    //   fieldApi.handleChange(event.target.value)
-                    // }}
-                  />
-                )
-              }}
-            </form.AppField>
+                    return (
+                      <fieldApi.TextAreaField
+                        {...fieldApi}
+                        name='body'
+                        label='Body Template'
+                        defaultValue={fieldApi.state.value}
+                        placeholder='Hello {{name}}, welcome to {{company}}...'
+                        type='textarea'
+                        minRows={4}
+                        error={error}
+                        // onChange={(event) => {
+                        //   fieldApi.handleChange(event.target.value)
+                        // }}
+                      />
+                    )
+                  }}
+                </form.AppField>
 
-            <form.AppField name='html'>
-              {(fieldApi) => {
-                const errors = fieldApi.state.meta.errors
-                const error =
-                  fieldApi.state.meta.isTouched && errors.length
-                    ? errors.join(', ')
-                    : undefined
+                <form.AppField name='html'>
+                  {(fieldApi) => {
+                    const errors = fieldApi.state.meta.errors
+                    const error =
+                      fieldApi.state.meta.isTouched && errors.length
+                        ? errors.join(', ')
+                        : undefined
 
-                return (
-                  <fieldApi.TextAreaField
-                    {...fieldApi}
-                    name='html'
-                    label='HTML Template'
-                    defaultValue={fieldApi.state.value}
-                    placeholder='<!DOCTYPE html><html>...</html>'
-                    type='textarea'
-                    minRows={8}
-                    error={error}
-                    // onChange={(event) => {
-                    //   fieldApi.handleChange(event.target.value)
-                    // }}
-                  />
-                )
-              }}
-            </form.AppField>
+                    return (
+                      <fieldApi.TextAreaField
+                        {...fieldApi}
+                        name='html'
+                        label='HTML Template'
+                        defaultValue={fieldApi.state.value}
+                        placeholder='<!DOCTYPE html><html>...</html>'
+                        type='textarea'
+                        minRows={6}
+                        error={error}
+                        // onChange={(event) => {
+                        //   fieldApi.handleChange(event.target.value)
+                        // }}
+                      />
+                    )
+                  }}
+                </form.AppField>
+              </div>
+            </section>
           </div>
-        </section>
-        <div className='flex items-center justify-between sticky bottom-0 px-4'>
+        </div>
+      </div>
+      <div className='shrink-0 border-t border-foreground/10 bg-background/95 px-4 py-3 backdrop-blur supports-backdrop-filter:bg-background/80 sm:px-6 md:px-10 sm:py-4'>
+        <div className='mx-auto flex w-full max-w-screen-2xl flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
           <form.AppField
             name='visible'
             validators={{
@@ -882,16 +910,18 @@ export const EmailTemplateEditor = ({
                   type='checkbox'
                   required
                   error={error}
+                  description='Control whether this template can be used.'
                   // on={(next) => fieldApi.handleChange(next)}
                 />
               )
             }}
           </form.AppField>
-          <div className='flex items-center justify-end gap-3'>
+          <div className='flex w-full flex-col gap-2 sm:flex-row sm:justify-end lg:w-auto lg:items-center lg:gap-3'>
             <Button
+              type='button'
               variant='light'
               onPress={onCancel}
-              className='hover:bg-sidebar border-background'>
+              className='w-full hover:bg-sidebar border-background sm:w-auto'>
               Cancel
             </Button>
 
@@ -899,7 +929,7 @@ export const EmailTemplateEditor = ({
               type='submit'
               disabled={isSaving}
               className={cn(
-                'gap-2 text-white border-0 shadow-lg',
+                'w-full gap-2 text-white border-0 shadow-lg sm:w-auto',
                 'bg-linear-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 shadow-cyan-500/25 hover:shadow-cyan-500/40',
               )}>
               {isSaving ? 'Saving…' : submitLabel}

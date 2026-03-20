@@ -1,6 +1,4 @@
-import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {useId, useMemo} from 'react'
 import {profileIcons} from './product-profile-icons'
 
 /**
@@ -56,15 +54,10 @@ function getProfileIcon(
 }
 
 export const ProductProfile = ({group, name}: IProductProfile) => {
-  const id = useId()
-  const iconData = useMemo(() => getProfileIcon(name), [name])
-  const fallbackIcon = group[0] as IconName
+  const iconData = getProfileIcon(name)
 
   return (
-    <div
-      id={id}
-      className={`flex items-center justify-between pl-1 pr-2 gap-0 rounded-full h-7 grow-0  bg-background/80 overflow-hidden`}
-    >
+    <div className='flex items-center justify-between gap-0 overflow-hidden rounded-full bg-background/80 pl-1 pr-2 h-7 grow-0'>
       {iconData ? (
         <svg
           className={cn('shrink-0 size-7 aspect-square', {
@@ -75,17 +68,21 @@ export const ProductProfile = ({group, name}: IProductProfile) => {
           viewBox={iconData.viewBox}
           fill='currentColor'
           xmlns='http://www.w3.org/2000/svg'
-          dangerouslySetInnerHTML={{__html: iconData.symbol}}
+            dangerouslySetInnerHTML={{__html: iconData.symbol}}
         />
       ) : (
-        <Icon
-          name={fallbackIcon}
-          className={cn('shrink-0 size-5 aspect-square', {
-            'text-effects': group === 'effects',
-            'text-flavors': group === 'flavors',
-            'text-terpenes': group === 'terpenes',
-          })}
-        />
+        <span
+          aria-hidden
+          className={cn(
+            'flex size-7 shrink-0 items-center justify-center text-xs font-semibold uppercase',
+            {
+              'text-effects': group === 'effects',
+              'text-flavors': group === 'flavors',
+              'text-terpenes': group === 'terpenes',
+            },
+          )}>
+          {group[0]}
+        </span>
       )}
       <span className='text-sm font-light capitalize'>
         {name.split('_').join(' ')}

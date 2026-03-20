@@ -344,6 +344,47 @@ const _fetchProductDetail = async (
 
 export const fetchProductDetail = cache(_fetchProductDetail)
 
+type RawStorageUrl = {
+  storageId: string
+  url: string | null
+}
+
+export const fetchStorageUrlMap = async (
+  values: Array<string | null | undefined>,
+): Promise<Map<string, string | null>> => {
+  const client = getClient()
+  if (!client) {
+    return new Map()
+  }
+
+  const storageIds = Array.from(
+    new Set(
+      values.filter(
+        (value): value is string =>
+          typeof value === 'string' &&
+          value.length > 0 &&
+          !value.startsWith('http') &&
+          !value.startsWith('data:'),
+      ),
+    ),
+  )
+
+  if (storageIds.length === 0) {
+    return new Map()
+  }
+
+  try {
+    const urls = (await client.query(api.uploads.getStorageUrls, {
+      storageIds,
+    })) as RawStorageUrl[]
+
+    return new Map(urls.map(({storageId, url}) => [storageId, url]))
+  } catch (error) {
+    console.warn('Failed to resolve storage URLs', error)
+    return new Map()
+  }
+}
+
 interface RawFireCollectionConfig {
   id: string
   title: string

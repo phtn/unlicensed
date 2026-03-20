@@ -227,10 +227,10 @@ export const PaymentsSettings = () => {
   }, [cardsFeeEnabled, cardsFeePercent, updateAdmin, user?.uid])
 
   return (
-    <div className='flex w-full flex-col gap-4'>
+    <div className='flex w-full flex-col gap-4 md:px-0 px-4'>
       <ContentHeader title='Payments Methods' />
 
-      <section className='grid gap-6 md:grid-cols-3'>
+      <section className='grid gap-6 md:grid-cols-3 portrait:-mt-10 md:mt-0'>
         <div className='space-y-3 min-w-0'>
           <ul className='flex flex-col gap-1 rounded-3xl' role='list'>
             {paymentMethods.map((method) => (

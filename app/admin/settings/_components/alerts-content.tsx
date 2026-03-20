@@ -259,7 +259,7 @@ export const AlertsContent = () => {
   )
 
   return (
-    <div className='flex w-full flex-col gap-4 h-[90vh] md:w-[82lvw] overflow-scroll pb-24'>
+    <div className='flex h-[90vh] min-w-0 w-full max-w-full flex-col gap-4 overflow-y-auto pb-24'>
       <ContentHeader
         title={
           <div className='flex items-center space-x-4'>

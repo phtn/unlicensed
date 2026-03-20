@@ -1,31 +1,30 @@
 'use client'
 
-import {StoreCategory, StoreProduct} from '@/app/types'
-import {AuthModal} from '@/components/auth/auth-modal'
-import {ProductProfile} from '@/components/ui/product-profile'
+import {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
-import {
-  type CartItemWithProduct,
-  isProductCartItemWithProduct,
-  useCart,
-} from '@/hooks/use-cart'
+import {useAddCartItem} from '@/hooks/use-add-cart-item'
+import {useProductCartQuantity} from '@/hooks/use-product-cart-quantity'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
-import {Badge, Button, Tooltip, useDisclosure} from '@heroui/react'
+import {Button, useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
+import dynamic from 'next/dynamic'
 import {useRouter} from 'next/navigation'
 import {
+  memo,
   useMemo,
-  useOptimistic,
-  useRef,
   useState,
   useTransition,
-  ViewTransition,
 } from 'react'
 import {ProductDetailStats} from './product-stats'
+
+const AuthModal = dynamic(
+  () => import('@/components/auth/auth-modal').then((module) => module.AuthModal),
+  {ssr: false},
+)
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -46,40 +45,124 @@ const formatProductDenominationLabel = (
 
 interface ProductInteractionProps {
   product: StoreProduct
-  category?: StoreCategory | null
   productId?: Id<'products'>
-  isMobile: boolean
 }
+
+type DenominationOption = {
+  label: string
+  value: number
+  isPopular: boolean
+}
+
+const ProductSummary = memo(({product}: {product: StoreProduct}) => (
+  <div className='space-y-2'>
+    {product.brand && (
+      <p className='text-sm font-clash opacity-70 capitalize'>
+        <span>{product.brand.join(', ')}</span>
+        {product.productType && <span className='px-1'>&middot;</span>}
+        {product.productType && <span className='ml-2'>{product.productType}</span>}
+      </p>
+    )}
+    <h1 className='text-3xl lg:text-4xl xl:text-4xl capitalize font-clash text-foreground leading-tight tracking-tight'>
+      {product.name.split('-').join(' ')}
+    </h1>
+    <p className='text-sm font-okxs opacity-70 leading-relaxed'>
+      {product.description}
+    </p>
+  </div>
+))
+
+ProductSummary.displayName = 'ProductSummary'
+
+const DenominationPicker = memo(
+  ({
+    options,
+    selectedIndex,
+    onSelect,
+  }: {
+    options: DenominationOption[]
+    selectedIndex: number
+    onSelect: (index: number) => void
+  }) => (
+    <div className='flex flex-wrap items-start gap-2 md:gap-3'>
+      {options.map((option, index) => {
+        const isSelected = selectedIndex === index
+
+        return (
+          <button
+            type='button'
+            key={option.value}
+            onClick={() => onSelect(index)}
+            aria-pressed={isSelected}
+            className={cn(
+              'relative inline-flex min-h-10 items-center justify-center border border-foreground/20 bg-sidebar px-3 text-base font-medium whitespace-nowrap transition-colors rounded-none font-okxs portrait:px-2',
+              isSelected
+                ? 'bg-dark-gray text-white md:hover:bg-black md:hover:text-brand dark:bg-white dark:text-dark-gray dark:md:hover:bg-brand dark:md:hover:text-white'
+                : 'text-foreground/85 hover:border-foreground/35',
+            )}>
+            {option.isPopular ? (
+              <span className='absolute -right-1 -top-1 inline-flex size-4 items-center justify-center rounded-full bg-dark-table text-yellow-500'>
+                <Icon name='hot' className='size-3' />
+              </span>
+            ) : null}
+            <span>{option.label}</span>
+          </button>
+        )
+      })}
+    </div>
+  ),
+)
+
+DenominationPicker.displayName = 'DenominationPicker'
 
 export const ProductInteraction = ({
   product,
   productId,
-  isMobile,
 }: ProductInteractionProps) => {
-  const [selectedDenomination, setSelectedDenomination] = useState<number>(0)
+  const [selectedDenominationIndex, setSelectedDenominationIndex] =
+    useState(0)
   const {isOpen, onOpen, onClose} = useDisclosure()
   const {user} = useAuthCtx()
   const router = useRouter()
-  const {cart, addItem} = useCart()
-  const [isPending, startTransition] = useTransition()
-  const addToCartButtonRef = useRef<HTMLDivElement>(null)
-
-  // Optimistic state for add-to-cart operations
-  const [optimisticAdding, setOptimisticAdding] = useOptimistic(
-    false,
-    (_current, isAdding: boolean) => isAdding,
+  const addItem = useAddCartItem()
+  const quantityInCart = useProductCartQuantity(
+    productId ?? (product._id as Id<'products'> | undefined),
   )
+  const [isNavigatingToCheckout, startCheckoutTransition] = useTransition()
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [addToCartError, setAddToCartError] = useState<string | null>(null)
 
   const resolvedProductId =
     productId ?? (product._id as Id<'products'> | undefined)
+  const denominationOptions = useMemo<DenominationOption[]>(() => {
+    const popularOptions = new Set(product.popularDenomination ?? [])
+
+    return (product.availableDenominations ?? []).map((denomination) => ({
+      value: denomination,
+      isPopular: popularOptions.has(denomination),
+      label: formatProductDenominationLabel(
+        denomination,
+        product.unit ?? '',
+        product.categorySlug ?? '',
+      ),
+    }))
+  }, [
+    product.availableDenominations,
+    product.categorySlug,
+    product.popularDenomination,
+    product.unit,
+  ])
 
   // Selected denomination value (e.g. 0.125, 1, 3.5) for price/stock lookups.
   const currentDenominationValue =
-    product.availableDenominations?.[selectedDenomination] ?? 0
+    denominationOptions[
+      Math.min(selectedDenominationIndex, denominationOptions.length - 1)
+    ]?.value ?? 0
   const currentDenominationKey = String(currentDenominationValue)
   const denominationForQuery =
-    product.availableDenominations?.[selectedDenomination]
+    denominationOptions[
+      Math.min(selectedDenominationIndex, denominationOptions.length - 1)
+    ]?.value
 
   const availableQuantity = useQuery(
     api.productHolds.q.getAvailableQuantity,
@@ -87,26 +170,6 @@ export const ProductInteraction = ({
       ? {productId: resolvedProductId, denomination: denominationForQuery}
       : 'skip',
   )
-
-  const quantityInCart = useMemo(() => {
-    if (!resolvedProductId || !cart?.items) return 0
-    return cart.items
-      .filter(
-        (
-          item,
-        ): item is Extract<
-          CartItemWithProduct,
-          {productId: Id<'products'>; quantity: number}
-        > =>
-          isProductCartItemWithProduct(item) &&
-          item.productId === resolvedProductId,
-      )
-      .reduce((sum, item) => sum + item.quantity, 0)
-  }, [cart, resolvedProductId])
-
-  const handleDenominationChange = (index: number) => () => {
-    setSelectedDenomination(index)
-  }
 
   const requireAuthForInteraction = () => {
     if (user) return true
@@ -117,143 +180,65 @@ export const ProductInteraction = ({
   const handleCheckoutPress = () => {
     if (!requireAuthForInteraction()) return
 
-    router.push('/lobby/cart')
+    startCheckoutTransition(() => {
+      router.push('/lobby/cart')
+    })
   }
 
   const handleAddToCart = async () => {
-    if (!resolvedProductId) {
+    if (!resolvedProductId || denominationForQuery === undefined) {
       console.error('Product ID not available')
       return
     }
 
-    const denomination = currentDenominationValue
     setAddToCartError(null)
+    setIsAddingToCart(true)
 
-    startTransition(async () => {
-      setOptimisticAdding(true)
-      try {
-        await addItem(resolvedProductId, 1, denomination)
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Failed to add to cart'
-        setAddToCartError(message)
-      } finally {
-        setOptimisticAdding(false)
-      }
-    })
+    try {
+      await addItem(resolvedProductId, 1, denominationForQuery)
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to add to cart'
+      setAddToCartError(message)
+    } finally {
+      setIsAddingToCart(false)
+    }
   }
 
-  const isAdding = optimisticAdding || isPending
   const priceByDenomination = formatPrice(
     product.priceByDenomination?.[currentDenominationKey] ??
       product.priceCents ??
       0,
   )
+  const isCheckoutDisabled = isNavigatingToCheckout || quantityInCart < 1
+  const isAddToCartDisabled =
+    isAddingToCart ||
+    denominationForQuery === undefined ||
+    (availableQuantity !== undefined && availableQuantity < 1)
 
   return (
-    <div className='space-y-0 lg:min-h-[78lvh] rounded-xs md:rounded-tl-none border border-foreground/20 bg-hue dark:bg-dark-table/50 backdrop-blur-xl w-full overflow-hidden'>
+    <>
       <ProductDetailStats
         product={product}
         quantityInCart={quantityInCart}
         denominationKey={currentDenominationKey}
+        availableQuantity={availableQuantity}
       />
       <div className='flex flex-col gap-4 p-4 sm:p-5 lg:p-6 border-t border-foreground/20'>
-        <div className='space-y-2'>
-          {product.brand && (
-            <p className='text-sm font-clash opacity-70 capitalize'>
-              <span>{product.brand.map((brand) => brand).join(', ')}</span>
-              {product.productType && <span className='px-1'>&middot;</span>}
-              {product.productType && (
-                <span className='ml-2'>{product.productType}</span>
-              )}
-            </p>
-          )}
-          <h1 className='text-3xl lg:text-4xl xl:text-4xl capitalize font-clash text-foreground leading-tight tracking-tight'>
-            {product.name.split('-').join(' ')}
-          </h1>
-          <p className='text-sm font-okxs opacity-70 leading-relaxed'>
-            {product.description}
-          </p>
-        </div>
-        <div className='flex items-start justify-between py-3 sm:py-4'>
+        <ProductSummary product={product} />
+
+        <div className='flex items-start justify-between gap-4 py-3 sm:py-4'>
           <div className='flex items-center font-okxs text-3xl sm:text-4xl font-semibold text-foreground w-40 md:w-28'>
             <div className='font-light opacity-80 scale-95'>$</div>
             {priceByDenomination}
           </div>
 
           <div className='flex items-center justify-end md:w-95'>
-            <div className='flex flex-wrap items-start gap-2 md:gap-3'>
-              {product.availableDenominations &&
-                product.availableDenominations.map((denomination, i) => (
-                  <Tooltip
-                    key={denomination}
-                    size='sm'
-                    content={
-                      <div className='flex items-center space-x-0.5 overflow-hidden whitespace-nowrap h-5 text-sm'>
-                        <Icon name='hot' className='size-3 text-yellow-500' />
-                        <span>Popular</span>
-                      </div>
-                    }
-                    classNames={{
-                      content:
-                        'font-okxs font-semibold overflow-hidden whitespace-nowrap',
-                    }}
-                    className=''>
-                    <Badge
-                      isOneChar
-                      size={isMobile ? 'sm' : 'md'}
-                      content={
-                        product.popularDenomination?.includes(denomination) ? (
-                          <Icon name='hot' className='size-4 text-yellow-500' />
-                        ) : null
-                      }
-                      placement='top-right'
-                      shape='circle'
-                      className={cn('flex items-center justify-center top-0', {
-                        hidden:
-                          !product.popularDenomination?.includes(denomination),
-                      })}
-                      classNames={{
-                        badge: cn(
-                          'rounded-full border-0 bg-transparent dark:sidebar/0 size-4 aspect-square',
-                          'transition-transform duration-300',
-                          {
-                            'text-brand':
-                              product.popularDenomination?.includes(
-                                denomination,
-                              ),
-                            'bg-dark-table size-6': selectedDenomination === i,
-                          },
-                        ),
-                      }}>
-                      <Button
-                        size='sm'
-                        radius='none'
-                        onPress={handleDenominationChange(i)}
-                        className={cn(
-                          'cursor-pointer bg-sidebar rounded-none border border-foreground/20 portrait:px-px',
-                          {
-                            'bg-dark-gray dark:bg-white dark:border-foreground text-white dark:text-dark-gray md:hover:bg-black dark:md:hover:bg-brand dark:md:hover:text-white md:hover:text-brand':
-                              selectedDenomination === i,
-                          },
-                        )}>
-                        <span
-                          className={cn(
-                            'relative font-okxs text-base md:text-base font-medium whitespace-nowrap portrait:px-0',
-                          )}>
-                          <span>
-                            {formatProductDenominationLabel(
-                              denomination,
-                              product.unit ?? '',
-                              product.categorySlug ?? '',
-                            )}
-                          </span>
-                        </span>
-                      </Button>
-                    </Badge>
-                  </Tooltip>
-                ))}
-            </div>
+            <DenominationPicker
+              options={denominationOptions}
+              selectedIndex={selectedDenominationIndex}
+              onSelect={setSelectedDenominationIndex}
+            />
           </div>
         </div>
 
@@ -264,117 +249,33 @@ export const ProductInteraction = ({
         )}
 
         <div className='flex flex-col sm:flex-row gap-3'>
-          <div ref={addToCartButtonRef} className='w-full sm:flex-1'>
-            <Button
-              size='lg'
-              color='primary'
-              variant='solid'
-              radius='none'
-              disableRipple
-              className='w-full h-14 font-polysans font-medium text-base md:text-lg bg-linear-to-r from-brand via-brand to-brand flex items-center'
-              onPress={handleAddToCart}
-              isDisabled={
-                isPending ||
-                (availableQuantity !== undefined && availableQuantity < 1)
-              }>
-              <span>Add to Cart</span>
-              <Icon
-                name={isAdding ? 'spinners-ring' : 'bag-solid'}
-                className='ml-2 size-6 sm:size-6 mb-1'
-              />
-            </Button>
-          </div>
-          <ViewTransition>
-            {user ? (
-              <Button
-                size='lg'
-                variant='solid'
-                radius='none'
-                isDisabled={isPending || quantityInCart < 1}
-                // isDisabled={isPending}
-                onPress={handleCheckoutPress}
-                className='w-full sm:flex-1 h-14 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
-                <span>Checkout</span>
-              </Button>
-            ) : (
-              <Button
-                size='lg'
-                variant='solid'
-                onPress={handleCheckoutPress}
-                radius='none'
-                className='w-full sm:flex-1 h-14 font-polysans font-medium text-lg bg-foreground/95 text-white dark:text-dark-gray'>
-                <span>Sign in</span>
-              </Button>
-            )}
-          </ViewTransition>
-        </div>
-        <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />
-      </div>
-
-      <div className='p-2 md:p-6'>
-        <div className='bg-linear-to-r from-dark-gray/5 via-dark-gray/5 to-dark-gray/5 dark:bg-background/30 rounded-xs gap-4 p-4 space-y-3'>
-          <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
-            Lineage
-          </span>
-          <div className='flex flex-wrap items-center gap-2 py-3 border-b-[0.5px] border-dotted dark:border-light-gray/20'>
-            {product.lineage}
-          </div>
-          <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
-            Nose Rating
-          </span>
-          <div className='flex flex-wrap items-center gap-2 py-3 border-b-[0.5px] border-dotted dark:border-light-gray/20'>
-            {product.noseRating}
-          </div>
-          <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
-            Terpenes
-          </span>
-          <div className='flex flex-wrap items-center gap-2 py-3 border-b-[0.5px] border-dotted dark:border-light-gray/20'>
-            {product.terpenes.map((terpene) => (
-              <ProductProfile key={terpene} name={terpene} group='terpenes' />
-            ))}
-          </div>
-          <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
-            Flavor Notes
-          </span>
-          <div className='flex flex-wrap items-center gap-2 py-3 border-b-[0.5px] border-dotted dark:border-light-gray/20'>
-            {product.flavorNotes.map((flavor) => (
-              <ProductProfile key={flavor} name={flavor} group='flavors' />
-            ))}
-          </div>
-          <span className='font-polysans font-normal text-xs uppercase opacity-80 mr-2'>
-            Effects
-          </span>
-          <div className='flex flex-wrap items-center gap-2 py-3'>
-            {product.effects.map((effect) => (
-              <ProductProfile key={effect} name={effect} group='effects' />
-            ))}
-          </div>
+          <Button
+            size='lg'
+            color='primary'
+            variant='solid'
+            radius='none'
+            disableRipple
+            className='flex h-14 w-full items-center bg-linear-to-r from-brand via-brand to-brand font-polysans text-base font-medium md:text-lg sm:flex-1'
+            onPress={() => void handleAddToCart()}
+            isDisabled={isAddToCartDisabled}>
+            <span>Add to Cart</span>
+            <Icon
+              name={isAddingToCart ? 'spinners-ring' : 'bag-solid'}
+              className='ml-2 mb-1 size-6'
+            />
+          </Button>
+          <Button
+            size='lg'
+            variant='solid'
+            onPress={handleCheckoutPress}
+            radius='none'
+            isDisabled={user ? isCheckoutDisabled : false}
+            className='h-14 w-full bg-foreground/95 font-polysans text-lg font-medium text-white dark:text-dark-gray sm:flex-1'>
+            <span>{user ? 'Checkout' : 'Sign in'}</span>
+          </Button>
         </div>
       </div>
-
-      <div className='p-4 space-y-4'>
-        {product.potencyProfile && (
-          <h3 className='min-h-14'>
-            <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
-              Experience:
-            </span>
-            <span className='text-xs sm:text-sm opacity-70 text-color-muted leading-relaxed'>
-              {product.potencyProfile}
-            </span>
-          </h3>
-        )}
-
-        {product.consumption && (
-          <h3 className='min-h-14'>
-            <span className='font-sans font-semibold tracking-tight opacity-80 mr-2'>
-              Smoke/Consumption:
-            </span>
-            <span className='text-xs sm:text-sm opacity-70 text-color-muted leading-relaxed'>
-              {product.consumption}
-            </span>
-          </h3>
-        )}
-      </div>
-    </div>
+      {isOpen ? <AuthModal isOpen={isOpen} onClose={onClose} mode='login' /> : null}
+    </>
   )
 }

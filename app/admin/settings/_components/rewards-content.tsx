@@ -339,7 +339,7 @@ export const RewardsContent = () => {
   }
 
   return (
-    <div className='flex w-full flex-col space-y-2 h-[90lvh] md:w-[82lvw] overflow-y-scroll pb-24'>
+    <div className='flex h-[90lvh] min-w-0 w-full max-w-full flex-col space-y-2 overflow-y-auto pb-24'>
       <ContentHeader
         title='Rewards Manager'
         description='Configure tier-based shipping, cash back, and bundle bonus. Matches the structure used in checkout.'>

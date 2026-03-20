@@ -1,6 +1,6 @@
 import {Infer, v} from 'convex/values'
 import {mutation, query} from '../_generated/server'
-import type {Id} from '../_generated/dataModel'
+import type {Doc, Id} from '../_generated/dataModel'
 
 export const fileSchema = v.object({
   body: v.id('_storage'),
@@ -29,9 +29,9 @@ export const file = mutation({
     uploadedAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const tags = [...new Set((args.tags ?? []).map((tag) => tag.trim()))].filter(
-      Boolean,
-    )
+    const tags = [
+      ...new Set((args.tags ?? []).map((tag) => tag.trim())),
+    ].filter(Boolean)
 
     if (tags.length > 0) {
       const existing = await ctx.db
@@ -47,10 +47,7 @@ export const file = mutation({
         }
 
         if (sourceTag && sizeTag) {
-          return (
-            entry.tags.includes(sourceTag) &&
-            entry.tags.includes(sizeTag)
-          )
+          return entry.tags.includes(sourceTag) && entry.tags.includes(sizeTag)
         }
 
         return tags.every((tag) => entry.tags?.includes(tag))
@@ -77,6 +74,82 @@ export const file = mutation({
     return {
       duplicate: false,
       recordId,
+    }
+  },
+})
+
+export const deleteManagedImage = mutation({
+  args: {
+    storageId: v.id('_storage'),
+  },
+  handler: async (ctx, args) => {
+    const fileRecords = await ctx.db
+      .query('files')
+      .withIndex('by_body', (q) => q.eq('body', args.storageId))
+      .collect()
+
+    const products = await ctx.db.query('products').collect()
+    let affectedProducts = 0
+    let removedFromPrimaryCount = 0
+    let removedFromGalleryCount = 0
+
+    for (const product of products) {
+      const updates: Partial<Doc<'products'>> = {}
+      let shouldPatch = false
+
+      if (product.image === args.storageId) {
+        updates.image = undefined
+        removedFromPrimaryCount += 1
+        shouldPatch = true
+      }
+
+      const currentGallery = product.gallery ?? []
+      const nextGallery = currentGallery.filter(
+        (item) => item !== args.storageId,
+      )
+
+      if (nextGallery.length !== currentGallery.length) {
+        updates.gallery = nextGallery.length > 0 ? nextGallery : undefined
+        removedFromGalleryCount += currentGallery.length - nextGallery.length
+        shouldPatch = true
+      }
+
+      if (!shouldPatch) {
+        continue
+      }
+
+      affectedProducts += 1
+      await ctx.db.patch(product._id, updates)
+    }
+
+    const categories = await ctx.db.query('categories').collect()
+    let removedFromCategoryHeroCount = 0
+
+    for (const category of categories) {
+      if (category.heroImage !== args.storageId) {
+        continue
+      }
+
+      const updates: Partial<Doc<'categories'>> = {
+        heroImage: undefined,
+      }
+
+      removedFromCategoryHeroCount += 1
+      await ctx.db.patch(category._id, updates)
+    }
+
+    for (const fileRecord of fileRecords) {
+      await ctx.db.delete(fileRecord._id)
+    }
+
+    await ctx.storage.delete(args.storageId)
+
+    return {
+      deletedFileRecords: fileRecords.length,
+      affectedProducts,
+      removedFromPrimaryCount,
+      removedFromGalleryCount,
+      removedFromCategoryHeroCount,
     }
   },
 })
@@ -148,9 +221,7 @@ export const listImageGalleriesByTag = query({
       )
 
     for (const file of sortedFiles) {
-      const tags = (file.tags ?? [])
-        .map((tag) => tag.trim())
-        .filter(Boolean)
+      const tags = (file.tags ?? []).map((tag) => tag.trim()).filter(Boolean)
       if (tags.length === 0) {
         continue
       }
@@ -173,8 +244,11 @@ export const listImageGalleriesByTag = query({
           return true
         })
 
-      const fallbackTag = requiredTag ? [{key: requiredTag, label: requiredTag}] : []
-      const groupingTags = curatedTagKeys.length > 0 ? curatedTagKeys : fallbackTag
+      const fallbackTag = requiredTag
+        ? [{key: requiredTag, label: requiredTag}]
+        : []
+      const groupingTags =
+        curatedTagKeys.length > 0 ? curatedTagKeys : fallbackTag
 
       for (const {key, label} of groupingTags) {
         if (!tagLabel.has(key)) {

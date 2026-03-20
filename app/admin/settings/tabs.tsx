@@ -45,9 +45,9 @@ export const SettingsTabs = () => {
       onValueChange={(nextTab) => {
         void setTabParam(nextTab)
       }}
-      className='flex min-w-0 flex-col gap-3 sm:gap-0'>
-      <div className='overflow-x-auto md:px-3 sm:mx-0 sm:px-0'>
-        <Tabs.List className='px-2 md:px-0 relative z-0 flex w-[95lvw] md:min-w-max flex-nowrap gap-1 md:gap-2 overflow-scroll'>
+      className='flex min-w-0 w-full max-w-full flex-col gap-3 sm:gap-0'>
+      <div className='w-full overflow-x-auto md:px-3 sm:mx-0 sm:px-0'>
+        <Tabs.List className='relative z-0 flex w-max min-w-full flex-nowrap gap-1 overflow-visible px-2 md:gap-2 md:px-0'>
           {tabs.map((tab) => (
             <Tabs.Tab
               key={tab.id}
@@ -68,7 +68,7 @@ export const SettingsTabs = () => {
       {tabs.map((tab) => (
         <Tabs.Panel
           key={tab.id}
-          className='relative w-[95lvw] flex min-w-0 flex-1 flex-col px-0 sm:px-2 sm:py-4 overflow-y-scroll'
+          className='relative flex w-full min-w-0 max-w-full flex-1 flex-col overflow-y-auto px-0 sm:px-2 sm:py-4'
           value={tab.id}>
           {tab.panel}
         </Tabs.Panel>

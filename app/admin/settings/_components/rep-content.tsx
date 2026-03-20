@@ -108,7 +108,7 @@ export const RepContent = () => {
   }
 
   return (
-    <div className='flex w-full flex-col md:w-[82lvw] space-y-2'>
+    <div className='flex min-w-0 w-full max-w-full flex-col space-y-2'>
       <ContentHeader
         title='Default Sales Rep'
         description='Assign default Sales Rep used across the platform. Only staff with Rep position are listed.'>
@@ -175,7 +175,7 @@ export const RepContent = () => {
             placeholder='e.g. Cash App checkout request for order {orderNumber}. I selected Cash App and need a representative to continue payment in this chat.'
             value={displayInitialMessage}
             onValueChange={setPendingInitialMessageSeed}
-            className='w-[94lvw] md:w-fit '
+            className='w-full max-w-3xl'
             classNames={commonInputClassNames}
             minRows={3}
           />

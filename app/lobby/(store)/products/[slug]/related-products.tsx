@@ -1,36 +1,20 @@
 import {StoreProduct} from '@/app/types'
 import {ProductCard} from '@/components/store/product-card'
-import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {resolveProductImage} from '@/lib/resolve-product-image'
-import {Button} from '@heroui/react'
 import Link from 'next/link'
-import {useCallback, useMemo} from 'react'
+
+type RelatedProductCard = {
+  product: StoreProduct
+  imageUrl?: string
+}
 
 interface RelatedProductsProps {
-  products: Array<StoreProduct>
+  products: RelatedProductCard[]
 }
 export const RelatedProducts = ({products}: RelatedProductsProps) => {
-  const visibleProducts = useMemo(
-    () => products.filter((product) => product.available && !product.archived),
-    [products],
+  const visibleProducts = products.filter(
+    ({product}) => product.available && !product.archived,
   )
-  const imageIds = useMemo(
-    () =>
-      visibleProducts
-        .filter(
-          (product) => !!product.image && !product.image.startsWith('http'),
-        )
-        .map((product) => product.image),
-    [visibleProducts],
-  )
-  const resolveUrl = useStorageUrls(imageIds)
-  const getImageUrl = useCallback(
-    (image: string | null | undefined) =>
-      resolveProductImage(image, resolveUrl),
-    [resolveUrl],
-  )
-
-  const categorySlug = visibleProducts[0]?.categorySlug
+  const categorySlug = visibleProducts[0]?.product.categorySlug
 
   if (visibleProducts.length === 0) {
     return null
@@ -39,7 +23,7 @@ export const RelatedProducts = ({products}: RelatedProductsProps) => {
   return (
     <section
       id='related-selections'
-      className='mx-auto w-full max-w-7xl space-y-4 px-4 md:px-0'>
+      className='mx-auto w-full max-w-7xl space-y-4 px-4 md:px-0 [content-visibility:auto] [contain-intrinsic-size:52rem]'>
       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4'>
         <div>
           <h2 className='text-2xl font-clash font-bold text-foreground sm:text-3xl'>
@@ -47,24 +31,20 @@ export const RelatedProducts = ({products}: RelatedProductsProps) => {
           </h2>
         </div>
         {categorySlug ? (
-          <Button
-            as={Link}
+          <Link
             href={`/category/${categorySlug}`}
-            radius='full'
-            variant='faded'
-            size='sm'
             className='self-start sm:self-auto border border-color-border/70 bg-background/30 text-xs sm:text-sm text-foreground/80 capitalize'>
             View {categorySlug} Category
-          </Button>
+          </Link>
         ) : null}
       </div>
       <div className='w-full py-6'>
         <div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-fr'>
-          {visibleProducts.map((product) => (
+          {visibleProducts.map(({product, imageUrl}) => (
             <ProductCard
               key={product._id}
               product={product}
-              imageUrl={getImageUrl(product.image)}
+              imageUrl={imageUrl}
               className='h-full! min-w-0! max-w-none! w-full'
             />
           ))}

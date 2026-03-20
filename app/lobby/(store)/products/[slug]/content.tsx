@@ -1,18 +1,12 @@
-'use client'
-
 import type {StoreProductDetail} from '@/app/types'
 import {QuickScroll} from '@/components/base44/quick-scroll'
-import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
-import {useMobile} from '@/hooks/use-mobile'
-import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {adaptProductDetail, type RawProductDetail} from '@/lib/convexClient'
+import {fetchStorageUrlMap} from '@/lib/convexClient'
 import {resolveProductImage} from '@/lib/resolve-product-image'
-import {useQuery} from 'convex/react'
 import {notFound} from 'next/navigation'
-import {useMemo, useRef} from 'react'
 import {Crumbs} from './crumbs'
 import {Gallery} from './gallery'
+import {ProductDetails} from './product-details'
 import {ProductInteraction} from './product-interaction'
 import {RelatedProducts} from './related-products'
 
@@ -21,65 +15,37 @@ interface ProductDetailContentProps {
   slug: string
 }
 
-export const ProductDetailContent = ({
+export const ProductDetailContent = async ({
   initialDetail,
   slug,
 }: ProductDetailContentProps) => {
-  const galleryImageRef = useRef<HTMLDivElement>(null)
-  const isMobile = useMobile()
-
-  const detailQuery = useQuery(api.products.q.getProductBySlug, {slug})
-
-  const detail = useMemo<StoreProductDetail | null | undefined>(() => {
-    if (detailQuery === undefined) {
-      return initialDetail
-    }
-    if (!detailQuery) {
-      return null
-    }
-    return adaptProductDetail(detailQuery as RawProductDetail)
-  }, [detailQuery, initialDetail])
-
-  const product = detail?.product
-  // const category = detail?.category
-  // const related = detail?.related ?? []
-  const productId = (detailQuery?.product?._id ?? product?._id) as
-    | Id<'products'>
-    | undefined
-  const mediaIds = useMemo(
-    () =>
-      product
-        ? [product.image, ...product.gallery].filter(
-            (image): image is string => !!image && !image.startsWith('http'),
-          )
-        : [],
-    [product],
-  )
-  const resolveMediaUrl = useStorageUrls(mediaIds)
-  const primaryImageUrl = product
-    ? resolveProductImage(product.image, resolveMediaUrl)
-    : undefined
-  const galleryImages = useMemo(
-    () =>
-      product
-        ? product.gallery
-            .map((image) => resolveProductImage(image, resolveMediaUrl))
-            .filter((image): image is string => !!image)
-        : [],
-    [product, resolveMediaUrl],
-  )
-
-  if (detail === null) {
+  if (!initialDetail) {
     notFound()
   }
 
-  if (!detail) {
-    return null
-  }
-
+  const detail = initialDetail
   const resolvedProduct = detail.product
-  const resolvedCategory = detail.category
-  const resolvedRelated = detail.related
+  const resolvedRelated = detail.related.filter(
+    (product) => !product.archived && product.slug !== slug,
+  )
+  const productId = resolvedProduct._id as Id<'products'> | undefined
+  const storageUrlMap = await fetchStorageUrlMap([
+    resolvedProduct.image,
+    ...resolvedProduct.gallery,
+    ...resolvedRelated.map((product) => product.image),
+  ])
+  const resolveStorageUrl = (value: string) => storageUrlMap.get(value) ?? null
+  const primaryImageUrl = resolveProductImage(
+    resolvedProduct.image,
+    resolveStorageUrl,
+  )
+  const galleryImages = resolvedProduct.gallery
+    .map((image) => resolveProductImage(image, resolveStorageUrl))
+    .filter((image): image is string => Boolean(image))
+  const relatedProducts = resolvedRelated.map((product) => ({
+    product,
+    imageUrl: resolveProductImage(product.image, resolveStorageUrl),
+  }))
 
   return (
     <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-12 sm:py-16 lg:py-20 overflow-x-hidden w-full'>
@@ -88,17 +54,13 @@ export const ProductDetailContent = ({
         <div className='mt-2 sm:mt-8 lg:mt-6 grid gap-6 sm:gap-8 lg:gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
           <Gallery
             product={resolvedProduct}
-            imageRef={galleryImageRef}
             primaryImageUrl={primaryImageUrl}
             galleryImages={galleryImages}
-            isMobile={isMobile}
           />
-          <ProductInteraction
-            product={resolvedProduct}
-            category={resolvedCategory}
-            productId={productId}
-            isMobile={isMobile}
-          />
+          <div className='w-full overflow-hidden rounded-xs border border-foreground/20 bg-hue backdrop-blur-xl dark:bg-dark-table/50 lg:min-h-[78lvh] md:rounded-tl-none'>
+            <ProductInteraction product={resolvedProduct} productId={productId} />
+            <ProductDetails product={resolvedProduct} />
+          </div>
         </div>
       </div>
 
@@ -107,12 +69,8 @@ export const ProductDetailContent = ({
         className='border-b-[0.33px] border-foreground/20 border-dotted bg-transparent'
       />
 
-      {resolvedRelated.length > 0 ? (
-        <RelatedProducts
-          products={resolvedRelated.filter(
-            (product) => !product.archived && product.slug !== slug,
-          )}
-        />
+      {relatedProducts.length > 0 ? (
+        <RelatedProducts products={relatedProducts} />
       ) : null}
     </div>
   )

@@ -212,7 +212,7 @@ function CryptoWalletFormInner({
   }, [updateAdmin, userUid, wallets])
 
   return (
-    <section className='flex flex-col gap-4 h-[90lvh] md:w-[82lvw] overflow-y-scroll pb-32'>
+    <section className='flex h-[90lvh] min-w-0 w-full max-w-full flex-col gap-4 overflow-y-auto pb-32'>
       <ContentHeader title={title}>
         <div className='flex items-center justify-end gap-3'>
           <ViewTransition>

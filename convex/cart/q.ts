@@ -124,3 +124,36 @@ export const getCartItemCount = query({
     }, 0)
   },
 })
+
+export const getProductQuantity = query({
+  args: {
+    userId: v.optional(v.union(v.id('users'), v.null())),
+    cartId: v.optional(v.id('carts')),
+    productId: v.id('products'),
+  },
+  handler: async (ctx, args) => {
+    let cart = null
+
+    if (args.cartId) {
+      cart = await ctx.db.get(args.cartId)
+    } else if (args.userId !== undefined && args.userId !== null) {
+      const userId = args.userId
+      cart = await ctx.db
+        .query('carts')
+        .withIndex('by_user', (q) => q.eq('userId', userId))
+        .unique()
+    }
+
+    if (!cart) {
+      return 0
+    }
+
+    return cart.items.reduce((total, item) => {
+      if (!isProductCartItem(item) || item.productId !== args.productId) {
+        return total
+      }
+
+      return total + item.quantity
+    }, 0)
+  },
+})

@@ -2,6 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
+import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Input, Switch} from '@heroui/react'
@@ -113,17 +114,19 @@ export const AccessContent = () => {
   }, [isEnabled, passes, updateAdmin, user?.uid])
 
   const isLoading = haltPass === undefined
+  const isMobile = useMobile()
 
   if (isLoading) {
     return <LoadingHeader title='Access (Halt Gate)' />
   }
 
   return (
-    <div className='flex w-full flex-col gap-4'>
+    <div className='flex flex-col gap-4'>
       <ContentHeader
         title='Access (Halt Gate)'
         description='PIN codes that grant access to the store. Disable this to bypass the gate and route visitors directly to /lobby.'>
         <PrimaryButton
+          isMobile={isMobile}
           onPress={handleSave}
           label='Save Changes'
           disabled={isSaving}

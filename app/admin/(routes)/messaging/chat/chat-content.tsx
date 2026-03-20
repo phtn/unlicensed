@@ -115,7 +115,6 @@ const ParticipantCard = ({
   locationLabel,
   name,
   statusText,
-  subtitle,
   onClick,
 }: ParticipantCardProps) => {
   return (
@@ -157,21 +156,7 @@ const ParticipantCard = ({
         <span className='font-okxs text-xs opacity-70 line-clamp-1'>
           {locationLabel}
         </span>
-        {/*<p className='line-clamp-1 text-sm opacity-70'>{email}</p>*/}
       </div>
-
-      <div className='hidden mt-5 space-y-2 text-xs text-muted-foreground'>
-        <div className='flex items-center gap-2'>
-          <Icon name='pin' className='size-4' />
-        </div>
-        <div className='hidden _flex items-center gap-2'>
-          <span className='font-medium uppercase tracking-[0.16em] text-[10px] text-foreground/70'>
-            Ref
-          </span>
-          <span className='line-clamp-1'>{subtitle}</span>
-        </div>
-      </div>
-
       <div className='mt-auto flex items-center justify-between pt-5'>
         <span className='text-xs text-muted-foreground'>{statusText}</span>
         <span className='inline-flex size-9 items-center justify-center rounded-full bg-dark-table text-white transition-transform duration-200 group-hover:scale-105'>
@@ -288,24 +273,24 @@ export const Content = () => {
         <div className='space-y-4'>
           <header className='flex items-center justify-between pt-1'>
             <p className='text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground'>
-              Chat Console - Direct routing
+              Chat Console
             </p>
             <div className='flex flex-col gap-2 md:flex-row md:items-end md:justify-between'>
-              <div className='flex items-center gap-2 text-xs text-muted-foreground'>
-                <span className='rounded-full border border-sidebar px-3 py-1.5 capitalize font-ios'>
+              <div className='flex items-center gap-1 md:gap-2 text-xs text-muted-foreground'>
+                <span className='rounded-full border border-sidebar px-1.5 md:px-3 py-0.5 md:py-1.5 capitalize font-ios'>
                   {authenticatedUsers.length} Users
                 </span>
-                <span className='rounded-full border border-sidebar px-3 py-1.5 capitalize font-ios'>
+                <span className='rounded-full border border-sidebar px-1.5 md:px-3 py-0.5 md:py-1.5 capitalize font-ios'>
                   {staffParticipants.length} Staff
                 </span>
-                <span className='rounded-full border border-sidebar px-3 py-1.5 capitalize font-ios'>
+                <span className='rounded-full border border-sidebar px-1.5 md:px-3 py-0.5 md:py-1.5 capitalize font-ios'>
                   {guestUsers.length} guests
                 </span>
               </div>
             </div>
           </header>
 
-          <Tabs.List className='relative z-0 flex gap-2 overflow-x-auto px-0 pb-1'>
+          <Tabs.List className='relative z-0 flex gap-2 overflow-x-auto px-0'>
             {CHAT_TABS.map((tab) => (
               <Tabs.Tab
                 key={tab.id}
@@ -332,7 +317,7 @@ export const Content = () => {
                 No authenticated users are available for chat.
               </div>
             ) : (
-              <div className='grid grid-cols-1 gap-2 [content-visibility:auto] sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8'>
+              <div className='grid gap-1 md:gap-2 [content-visibility:auto] grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8'>
                 {authenticatedUsers.map((participant) => {
                   const conversationFid = getUserConversationFid(participant)
 

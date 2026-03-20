@@ -7,12 +7,14 @@ interface ProductDetailStatsProps {
   product: StoreProduct
   quantityInCart: number
   denominationKey: string
+  availableQuantity?: number
 }
 
 export const ProductDetailStats = ({
   product,
   quantityInCart,
   denominationKey,
+  availableQuantity,
 }: ProductDetailStatsProps) => {
   return (
     <div className='flex items-center h-14 border-b border-background/20 bg-background/60 overflow-hidden justify-between gap-1 pl-4 md:w-full'>
@@ -71,7 +73,8 @@ export const ProductDetailStats = ({
       ) : (
         <span className='opacity-0 text-[9px] w-16 md:w-20 text-sm whitespace-nowrap capitalize'>
           <span className='font-polysans font-semibold text-base'>
-            {product.stockByDenomination?.[denominationKey] ??
+            {availableQuantity ??
+              product.stockByDenomination?.[denominationKey] ??
               formatStockDisplay(product)}
           </span>{' '}
           left

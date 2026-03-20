@@ -75,7 +75,7 @@ export const Wrapper = forwardRef<HTMLDivElement, WrapperProps>(
     return (
       <div
         className={cn(
-          'flex-1 min-w-0 w-full border border-dark-gray/40 dark:border-dark-table/40 bg-white dark:bg-origin',
+          'flex flex-1 min-h-0 min-w-0 w-full flex-col border border-dark-gray/40 dark:border-dark-table/40 bg-white dark:bg-origin',
           'drop-shadow-md',
           'md:rounded-xl whitespace-nowrap',
           'px-4 -ml-1.5 md:ml-0 overflow-hidden',

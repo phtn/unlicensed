@@ -9,6 +9,7 @@ import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
+import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {formatPrice} from '@/utils/formatPrice'
 import {Badge, Button, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
@@ -102,6 +103,20 @@ export const OrdersTable = () => {
     )
   }, [orders, hasInvalidDateRange, fromDate, toDate])
 
+  const tableOrders = useMemo(
+    () =>
+      filteredOrders.map((order) => ({
+        ...order,
+        displayTotalCents: resolveOrderPayableTotalCents({
+          paymentMethod: order.payment.method,
+          totalCents: order.totalCents,
+          processingFeeCents: order.processingFeeCents,
+          totalWithCryptoFeeCents: order.totalWithCryptoFeeCents,
+        }),
+      })),
+    [filteredOrders],
+  )
+
   const unreadCountByFid = useMemo(() => {
     const map = new Map<string, number>()
     if (!conversations) return map
@@ -172,11 +187,11 @@ export const OrdersTable = () => {
         size: 180,
       },
       {
-        id: 'totalCents',
+        id: 'displayTotalCents',
         header: <ColHeader tip='Total Amount' symbol='Amount' center />,
-        accessorKey: 'totalCents',
+        accessorKey: 'displayTotalCents' as keyof Order,
         cell: priceCell(
-          'totalCents',
+          'displayTotalCents' as keyof Order,
           (v) => formatPrice(+v),
           'text-right w-24! md:w-32!',
         ),
@@ -398,7 +413,7 @@ export const OrdersTable = () => {
       )}
       <DataTable
         title='Orders'
-        data={filteredOrders}
+        data={tableOrders}
         loading={!orders}
         columnConfigs={columns}
         actionConfig={actionConfig}

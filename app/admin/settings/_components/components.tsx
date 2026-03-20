@@ -9,6 +9,7 @@ interface PrimaryButtonProps {
   icon: IconName
   label: string
   disabled?: boolean
+  isMobile?: boolean
 }
 
 export const PrimaryButton = ({
@@ -16,6 +17,7 @@ export const PrimaryButton = ({
   icon,
   label,
   disabled,
+  isMobile,
 }: PrimaryButtonProps) => {
   return (
     <Button
@@ -24,8 +26,9 @@ export const PrimaryButton = ({
       color='primary'
       onPress={onPress}
       disabled={disabled}
-      className='bg-dark-table dark:bg-white dark:text-dark-table rounded-lg'>
-      <Icon name={icon} className='mr-1 size-4 opacity-80' />
+      isIconOnly={isMobile}
+      className='bg-dark-table dark:bg-white dark:text-dark-table rounded-md'>
+      <Icon name={icon} className='size-5 opacity-80' />
       <span className='hidden md:flex'>{label}</span>
     </Button>
   )

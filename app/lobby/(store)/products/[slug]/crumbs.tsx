@@ -1,3 +1,5 @@
+'use client'
+
 import {StoreProduct} from '@/app/types'
 import {Icon} from '@/lib/icons'
 import {BreadcrumbItem, Breadcrumbs} from '@heroui/react'

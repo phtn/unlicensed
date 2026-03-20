@@ -7,6 +7,7 @@ import {parseAsString, useQueryState} from 'nuqs'
 import {ReactNode, useCallback, useMemo} from 'react'
 import {FireCollectionManager} from './fire-collection-manager'
 import {ImageOptimizer} from './image-optimizer'
+import {ProductGalleryManager} from './product-gallery-manager'
 import {ProductCsvUpload} from './product-csv-upload'
 import {ProductDocs} from './product-docs'
 
@@ -20,6 +21,7 @@ export const Content = () => {
     () =>
       [
         {id: 'img', label: 'Image Optimizer'},
+        {id: 'gal', label: 'Product Gallery'},
         {id: 'csv', label: 'Product CSV Import'},
         {id: 'col', label: 'Fire Collection'},
         {id: 'doc', label: 'Docs'},
@@ -42,6 +44,7 @@ export const Content = () => {
   const pmap = useMemo(() => {
     return {
       img: <ImageOptimizer />,
+      gal: <ProductGalleryManager />,
       csv: <ProductCsvUpload />,
       col: <FireCollectionManager />,
       doc: <ProductDocs />,
@@ -63,7 +66,8 @@ export const Content = () => {
                     'outline-none select-none data-active:text-white',
                     'transition-colors duration-150',
                   )}
-                  value={tab.id}>
+                  value={tab.id}
+                >
                   {tab.label}
                 </Tabs.Tab>
               ))}
@@ -76,7 +80,8 @@ export const Content = () => {
               <Tabs.Panel
                 key={item.id}
                 className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-2 sm:px-1 md:px-2 md:py-4'
-                value={item.id}>
+                value={item.id}
+              >
                 {pmap[item.id]}
               </Tabs.Panel>
             ))}

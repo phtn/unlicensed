@@ -1,26 +1,30 @@
+'use client'
+
 import {StoreProduct} from '@/app/types'
-import {Lens} from '@/components/ui/lens'
-import {useToggle} from '@/hooks/use-toggle'
+import {useMobile} from '@/hooks/use-mobile'
 import {cn} from '@/lib/utils'
-import {Image} from '@heroui/react'
-import {memo, RefObject, useMemo, useState} from 'react'
+import dynamic from 'next/dynamic'
+import NextImage from 'next/image'
+import {memo, useMemo, useState} from 'react'
+
+const Lens = dynamic(
+  () => import('@/components/ui/lens').then((module) => module.Lens),
+  {ssr: false},
+)
 
 type GalleryProps = {
   product: StoreProduct
-  imageRef?: RefObject<HTMLDivElement | null>
   primaryImageUrl?: string
   galleryImages: string[]
-  isMobile: boolean
 }
 
 const GalleryComponent = ({
   product,
-  imageRef,
   primaryImageUrl,
   galleryImages,
-  isMobile,
 }: GalleryProps) => {
-  const {on, setOn} = useToggle()
+  const isMobile = useMobile()
+  const [isHovering, setIsHovering] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   const allImages = useMemo(
@@ -38,42 +42,54 @@ const GalleryComponent = ({
         : allImages[0],
     [allImages, selectedImage],
   )
+  const galleryFrame = (
+    <div className='relative aspect-square w-full overflow-hidden bg-background/60 sm:rounded-s-xs lg:aspect-auto lg:min-h-168 lg:border-y lg:border-s lg:border-e-none border-foreground/10 dark:border-foreground/30'>
+      {activeImage ? (
+        <NextImage
+          src={activeImage}
+          alt={product.name}
+          fill
+          priority
+          unoptimized
+          sizes='(min-width: 1280px) 42rem, (min-width: 1024px) 52vw, 100vw'
+          className='select-none object-cover portrait:aspect-square portrait:size-full rounded-xs md:rounded-none'
+        />
+      ) : (
+        <div className='aspect-square size-full bg-background/40' />
+      )}
+    </div>
+  )
 
   return (
     <section className='flex flex-col gap-y-3 sm:gap-0'>
-      <div
-        ref={imageRef}
-        className='relative aspect-auto sm:rounded-s-xs lg:border-s lg:border-e-none lg:border-y border-foreground/10 dark:border-foreground/30 w-full md:max-h-115 overflow-hidden bg-background/60 lg:min-h-168'>
-        <Lens hovering={isMobile ? false : on} setHovering={setOn}>
-          <Image
-            radius='none'
-            src={activeImage}
-            alt={product.name}
-            className='object-cover portrait:aspect-square portrait:size-full w-full h-full aspect-auto select-none rounded-xs md:rounded-none'
-            loading='eager'
-          />
+      {isMobile ? (
+        galleryFrame
+      ) : (
+        <Lens hovering={isHovering} setHovering={setIsHovering}>
+          {galleryFrame}
         </Lens>
-      </div>
-      <div className='flex items-start w-full overflow-x-auto overflow-y-hidden gap-2 p-1 mt-8 lg:mt-0'>
+      )}
+      <div className='mt-8 flex w-full items-start gap-2 overflow-x-auto overflow-y-hidden p-1 lg:mt-0'>
         {allImages.map((src, index) => (
           <button
             type='button'
             key={`${src}-${index}`}
             onClick={() => setSelectedImage(src)}
             className={cn(
-              'shrink-0 cursor-pointer select-none relative ring-2 aspect-square overflow-hidden rounded-none size-20 md:size-28',
+              'relative size-20 shrink-0 cursor-pointer overflow-hidden rounded-none ring-2 md:size-28',
               activeImage === src
                 ? 'border-foreground/50 ring-brand'
                 : 'border-foreground/10 dark:ring-foreground/40 hover:border-foreground/30',
             )}
             aria-label={`View ${product.name} image ${index + 1}`}
             aria-pressed={activeImage === src}>
-            <Image
-              radius='none'
+            <NextImage
               src={src}
               alt={`${product.name} gallery ${index + 1}`}
-              className='object-cover size-full rounded-none aspect-square'
-              loading='lazy'
+              fill
+              unoptimized
+              sizes='7rem'
+              className='rounded-none object-cover'
             />
           </button>
         ))}

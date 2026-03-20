@@ -2,6 +2,7 @@
 
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
+import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {useQuery} from 'convex/react'
 import {ViewTransition} from 'react'
@@ -16,10 +17,11 @@ import {
 
 export const MessagingContent = () => {
   const templates = useQuery(api.emailSettings.q.listEmailSettings)
+  const isMobile = useMobile()
   return (
     <ToolbarWrapper>
       <MainTab href='/admin/messaging/email'>
-        <PageTitle>Email Templates</PageTitle>
+        <PageTitle>Messaging</PageTitle>
         <ViewTransition>
           {templates ? (
             <div className='size-6 flex items-center justify-center aspect-square bg-foreground/8 rounded-md font-space font-medium text-base md:text-lg'>
@@ -47,7 +49,7 @@ export const MessagingContent = () => {
           id='new'
           href='/admin/messaging/email?tabId=new'
           icon='plus'
-          label='New Template'
+          label={isMobile ? 'New' : 'New Template'}
         />
       </ToolbarButtonWrapper>
     </ToolbarWrapper>
