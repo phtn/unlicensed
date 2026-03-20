@@ -15,8 +15,8 @@ function buildCsvRow(values: Partial<Record<string, string>>): string {
   ).join(',')
 }
 
-function buildCsv(values: Partial<Record<string, string>>): string {
-  return [EXPECTED_CSV_HEADERS.join(','), buildCsvRow(values)].join('\n')
+function buildCsv(...rows: Array<Partial<Record<string, string>>>): string {
+  return [EXPECTED_CSV_HEADERS.join(','), ...rows.map(buildCsvRow)].join('\n')
 }
 
 describe('product CSV import', () => {
@@ -119,6 +119,33 @@ describe('product CSV import', () => {
     expect(result.rows[0].errors).toContain(
       'Slug "existing-flower" already exists',
     )
+  })
+
+  test('prefers replacement rows over create rows when the same slug appears in one import', () => {
+    const result = parseProductsCsv(
+      buildCsv(
+        {
+          name: 'Fresh Drop Duplicate',
+          slug: 'fresh-drop',
+          categorySlug: 'flower',
+          priceCents: '3500',
+        },
+        {
+          _id: 'prod_existing_123',
+          name: 'Fresh Drop',
+          slug: 'fresh-drop',
+          categorySlug: 'flower',
+          priceCents: '4200',
+        },
+      ),
+    )
+
+    applySlugConflicts(result.rows, new Map())
+
+    expect(result.rows[0].conflict).toBe('slug')
+    expect(result.rows[0].errors).toContain('Slug "fresh-drop" already exists')
+    expect(result.rows[1].conflict).toBeNull()
+    expect(result.rows[1].errors).toEqual([])
   })
 
   test('requires master stock fields for shared inventory rows without denomination stock input', () => {

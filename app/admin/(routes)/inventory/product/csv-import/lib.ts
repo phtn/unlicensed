@@ -4,6 +4,7 @@
  * _id and _creationTime are accepted in the CSV (from export).
  * When _id is present, the import replaces that product; _creationTime is ignored.
  */
+import {getProductCsvImportRowId} from '@/lib/product-csv-import'
 import {slugify} from '@/lib/slug'
 import {CSV_DENOM_KEYS, DENOM_HEADERS, EXPECTED_CSV_HEADERS} from './constants'
 
@@ -468,22 +469,69 @@ export function applySlugConflicts(
   rows: ParsedRow[],
   existingProductsBySlug: Map<string, string>,
 ): void {
-  for (const row of rows) {
+  const addSlugConflict = (row: ParsedRow, slug: string) => {
+    row.conflict = 'slug'
+    if (!row.errors.includes(`Slug "${slug}" already exists`)) {
+      row.errors.push(`Slug "${slug}" already exists`)
+    }
+  }
+
+  const getRowSlug = (row: ParsedRow) => {
     const name = row.product.name
-    const rowId =
-      typeof row.product._id === 'string' && row.product._id.trim()
-        ? row.product._id.trim()
-        : undefined
     const hasSlugField = Object.hasOwn(row.raw, 'slug')
     const slugRaw = (row.product.slug as string) ?? ''
-    const slug =
-      slugRaw || hasSlugField ? slugify(slugRaw || String(name ?? '')) : ''
+
+    return slugRaw || hasSlugField
+      ? slugify(slugRaw || String(name ?? ''))
+      : ''
+  }
+
+  const preferredOwnersBySlug = new Map<
+    string,
+    {rowId?: string; rowIndex: number}
+  >()
+
+  const sortedRows = [...rows].sort((a, b) => {
+    const aIsReplacement = getProductCsvImportRowId(a.product) != null
+    const bIsReplacement = getProductCsvImportRowId(b.product) != null
+
+    if (aIsReplacement !== bIsReplacement) {
+      return aIsReplacement ? -1 : 1
+    }
+
+    return a.rowIndex - b.rowIndex
+  })
+
+  for (const row of sortedRows) {
+    const slug = getRowSlug(row)
+    if (!slug || preferredOwnersBySlug.has(slug)) {
+      continue
+    }
+
+    preferredOwnersBySlug.set(slug, {
+      rowId: getProductCsvImportRowId(row.product),
+      rowIndex: row.rowIndex,
+    })
+  }
+
+  for (const row of rows) {
+    const rowId = getProductCsvImportRowId(row.product)
+    const slug = getRowSlug(row)
+    const preferredOwner = slug ? preferredOwnersBySlug.get(slug) : undefined
+    const ownsSlugInImport =
+      preferredOwner != null &&
+      (preferredOwner.rowId != null
+        ? preferredOwner.rowId === rowId
+        : preferredOwner.rowIndex === row.rowIndex)
+
+    if (slug && preferredOwner && !ownsSlugInImport) {
+      addSlugConflict(row, slug)
+      continue
+    }
+
     const existingProductId = slug ? existingProductsBySlug.get(slug) : null
     if (existingProductId && existingProductId !== rowId) {
-      row.conflict = 'slug'
-      if (!row.errors.includes(`Slug "${slug}" already exists`)) {
-        row.errors.push(`Slug "${slug}" already exists`)
-      }
+      addSlugConflict(row, slug)
       continue
     }
 

@@ -1,4 +1,5 @@
 import {v} from 'convex/values'
+import {sortProductCsvImportRowsForProcessing} from '../../lib/product-csv-import'
 import {ensureSlug} from '../../lib/slug'
 import {internal} from '../_generated/api'
 import type {Id} from '../_generated/dataModel'
@@ -791,8 +792,9 @@ export const seedProductsFromCsv = mutation({
       message: string
     }> = []
 
-    for (let rowIndex = 0; rowIndex < args.products.length; rowIndex++) {
-      const row = args.products[rowIndex]
+    const rowsToProcess = sortProductCsvImportRowsForProcessing(args.products)
+
+    for (const {row, rowIndex} of rowsToProcess) {
       try {
         const {_id, ...fields} = row as ProductCsvImportRowType
         const {slug, doc} = await buildProductDoc(ctx, fields, _id)
