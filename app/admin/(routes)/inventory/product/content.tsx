@@ -11,7 +11,7 @@ import {ProductSettings} from './product-settings'
 import {ProductsData} from './products-data'
 
 const ProductsContentInner = () => {
-  const products = useQuery(api.products.q.listProducts, {limit: 100})
+  const products = useQuery(api.products.q.listProducts, {limit: 1000})
   const [tabId, , id] = useAdminTabId()
 
   switch (tabId) {

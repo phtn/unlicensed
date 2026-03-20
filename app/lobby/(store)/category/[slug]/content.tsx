@@ -40,7 +40,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
 
   const productsQuery = useQuery(api.products.q.listProducts, {
     categorySlug: slug,
-    limit: 20,
+    limit: 500,
   })
 
   const baseProducts = useMemo(() => {

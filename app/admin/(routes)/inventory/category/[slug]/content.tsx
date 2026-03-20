@@ -271,7 +271,7 @@ const CategoryProductsContentInner = ({
 }: CategoryProductsContentProps) => {
   const products = useQuery(api.products.q.listProducts, {
     categorySlug,
-    limit: 100,
+    limit: 1000,
   })
   const category = useQuery(api.categories.q.getCategoryBySlug, {
     slug: categorySlug,
