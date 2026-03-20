@@ -1,6 +1,6 @@
 import type {Order} from '@/app/admin/(routes)/ops/types'
 import type {Id} from '@/convex/_generated/dataModel'
-import {fireEvent, render, screen, waitFor} from '@testing-library/react'
+import {fireEvent, render, screen, waitFor} from './test-utils'
 import {
   afterAll,
   beforeAll,
@@ -14,8 +14,6 @@ import type {
   ButtonHTMLAttributes,
   ComponentProps,
   HTMLAttributes,
-  ImgHTMLAttributes,
-  InputHTMLAttributes,
   ReactNode,
 } from 'react'
 
@@ -31,83 +29,55 @@ const fetchCalls: Array<[input: RequestInfo | URL, init?: RequestInit]> = []
 let useQueryImpl: (fn: unknown, args: unknown) => unknown = () => undefined
 let fetchQueue: Response[] = []
 
-mock.module('@/convex/_generated/api', () => ({
-  api: {
-    orders: {
-      q: {
-        getOrderUsingPaymentReference: 'orders.q.getOrderUsingPaymentReference',
-      },
+function registerModuleMocks() {
+  mock.module('convex/react', () => ({
+    useQuery: (fn: unknown, args: unknown) => {
+      queryCalls.push([fn, args])
+      return useQueryImpl(fn, args)
     },
-  },
-}))
+    useMutation: () => async () => null,
+  }))
 
-mock.module('convex/react', () => ({
-  useQuery: (fn: unknown, args: unknown) => {
-    queryCalls.push([fn, args])
-    return useQueryImpl(fn, args)
-  },
-  useMutation: () => async () => null,
-}))
+  mock.module('@/components/sepolia/search-params-context', () => ({
+    SearchParamsProvider: ({children}: {children: ReactNode}) => children,
+    useSearchParams: () => ({params: new URLSearchParams()}),
+  }))
 
-mock.module('@/components/sepolia/search-params-context', () => ({
-  SearchParamsProvider: ({children}: {children: ReactNode}) => children,
-  useSearchParams: () => ({params: new URLSearchParams()}),
-}))
-
-mock.module('@base-ui/react/tabs', () => ({
-  Tabs: {
-    Root: ({children}: {children: ReactNode}) => <div>{children}</div>,
-    List: ({children}: {children: ReactNode}) => <div>{children}</div>,
-    Tab: ({children, ...props}: ButtonHTMLAttributes<HTMLButtonElement>) => (
-      <button type='button' {...props}>
-        {children}
-      </button>
-    ),
-    Panel: ({children}: {children: ReactNode}) => <div>{children}</div>,
-    Indicator: (props: HTMLAttributes<HTMLDivElement>) => <div {...props} />,
-  },
-}))
-
-mock.module('motion/react', () => ({
-  motion: {
-    div: ({children, ...props}: HTMLAttributes<HTMLDivElement>) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-}))
-
-mock.module('@heroui/react', () => ({
-  HeroUIProvider: ({children}: {children: ReactNode}) => <>{children}</>,
-  Button: ({
-    children,
-    isLoading: _isLoading,
-    ...props
-  }: ButtonHTMLAttributes<HTMLButtonElement> & {isLoading?: boolean}) => (
-    <button {...props}>{children}</button>
-  ),
-  Image: ({alt, src, ...props}: ImgHTMLAttributes<HTMLImageElement>) => (
-    <div aria-label={alt} data-src={src} {...props} />
-  ),
-  Input: (
-    props: InputHTMLAttributes<HTMLInputElement> & {
-      radius?: string
-      className?: string
+  mock.module('@base-ui/react/tabs', () => ({
+    Tabs: {
+      Root: ({children}: {children: ReactNode}) => <div>{children}</div>,
+      List: ({children}: {children: ReactNode}) => <div>{children}</div>,
+      Tab: ({children, ...props}: ButtonHTMLAttributes<HTMLButtonElement>) => (
+        <button type='button' {...props}>
+          {children}
+        </button>
+      ),
+      Panel: ({children}: {children: ReactNode}) => <div>{children}</div>,
+      Indicator: (props: HTMLAttributes<HTMLDivElement>) => <div {...props} />,
     },
-  ) => <input {...props} />,
-}))
+  }))
 
-mock.module('@/lib/icons', () => ({
-  Icon: ({
-    name,
-    ...props
-  }: HTMLAttributes<HTMLSpanElement> & {name: string}) => (
-    <span data-icon={name} {...props} />
-  ),
-}))
+  mock.module('motion/react', () => ({
+    motion: {
+      div: ({children, ...props}: HTMLAttributes<HTMLDivElement>) => (
+        <div {...props}>{children}</div>
+      ),
+    },
+  }))
 
-mock.module('next/navigation', () => ({
-  useParams: () => ({orderId: 'orders_test_123'}),
-}))
+  mock.module('@/lib/icons', () => ({
+    Icon: ({
+      name,
+      ...props
+    }: HTMLAttributes<HTMLSpanElement> & {name: string}) => (
+      <span data-icon={name} {...props} />
+    ),
+  }))
+
+  mock.module('next/navigation', () => ({
+    useParams: () => ({orderId: 'orders_test_123'}),
+  }))
+}
 
 const originalFetch = globalThis.fetch
 const originalPreconnect = originalFetch.preconnect
@@ -193,6 +163,7 @@ function renderSendToPanel(
 
 beforeAll(async () => {
   globalThis.fetch = mockFetch
+  registerModuleMocks()
   const sendModule =
     await import('@/app/lobby/(store)/order/[orderId]/send/send')
   SendToPanel = sendModule.SendToPanel
@@ -202,6 +173,7 @@ beforeAll(async () => {
 })
 
 afterAll(() => {
+  mock.restore()
   globalThis.fetch = originalFetch
 })
 

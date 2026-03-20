@@ -80,7 +80,6 @@ export function computeOrderTotals(
     shippingConfig?.minimumOrderCents ?? 9900,
     shippingConfig?.shippingFeeCents ?? 1299,
   )
-  const semiTotal = subtotal + tax + shipping
-  const total = semiTotal - semiTotal * 1.0775
+  const total = subtotal + tax + shipping
   return {subtotal, tax, shipping, total}
 }

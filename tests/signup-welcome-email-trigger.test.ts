@@ -13,8 +13,8 @@ const createOrUpdateUserHandler = (
             withIndex: (
               indexName: string,
               cb: unknown,
-            ) => {unique: () => Promise<Doc<'users'> | null>}
-            unique?: never
+            ) => {first: () => Promise<Doc<'users'> | null>}
+            first?: never
           }
           insert: (table: string, value: Record<string, unknown>) => Promise<Id<'users'>>
           patch: (id: Id<'users'>, value: Record<string, unknown>) => Promise<void>
@@ -42,6 +42,7 @@ describe('createOrUpdateUser welcome email scheduling', () => {
   test('schedules signup activity and welcome email for a newly created user', async () => {
     const insertedUserId = 'ns_new_user_signup_test' as Id<'users'>
     const insertCalls: Array<{table: string; value: Record<string, unknown>}> = []
+    const lookupIndexes: string[] = []
     const schedulerCalls: Array<{
       delayMs: number
       functionName: string
@@ -54,9 +55,9 @@ describe('createOrUpdateUser welcome email scheduling', () => {
           expect(table).toBe('users')
           return {
             withIndex: (indexName: string, _cb: unknown) => {
-              expect(indexName).toBe('by_email')
+              lookupIndexes.push(indexName)
               return {
-                unique: async () => null,
+                first: async () => null,
               }
             },
           }
@@ -101,6 +102,7 @@ describe('createOrUpdateUser welcome email scheduling', () => {
     })
     expect(typeof insertCalls[0]?.value.createdAt).toBe('number')
     expect(typeof insertCalls[0]?.value.updatedAt).toBe('number')
+    expect(lookupIndexes).toEqual(['by_fid', 'by_email'])
 
     expect(schedulerCalls).toEqual([
       {
@@ -134,6 +136,7 @@ describe('createOrUpdateUser welcome email scheduling', () => {
       createdAt: Date.now() - 1_000,
       updatedAt: Date.now() - 1_000,
     } as Doc<'users'>
+    const lookupIndexes: string[] = []
     const patchCalls: Array<{id: Id<'users'>; value: Record<string, unknown>}> =
       []
     const schedulerCalls: Array<unknown> = []
@@ -144,9 +147,10 @@ describe('createOrUpdateUser welcome email scheduling', () => {
           expect(table).toBe('users')
           return {
             withIndex: (indexName: string, _cb: unknown) => {
-              expect(indexName).toBe('by_email')
+              lookupIndexes.push(indexName)
               return {
-                unique: async () => existingUser,
+                first: async () =>
+                  indexName === 'by_fid' ? existingUser : null,
               }
             },
           }
@@ -175,6 +179,7 @@ describe('createOrUpdateUser welcome email scheduling', () => {
     })
 
     expect(result).toBe(existingUserId)
+    expect(lookupIndexes).toEqual(['by_fid'])
     expect(patchCalls).toHaveLength(1)
     expect(patchCalls[0]?.id).toBe(existingUserId)
     expect(patchCalls[0]?.value).toMatchObject({

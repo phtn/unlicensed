@@ -1,6 +1,7 @@
 import {describe, expect, test} from 'bun:test'
 import {
   EXPECTED_CSV_HEADERS,
+  applySlugConflicts,
   parseProductsCsv,
 } from '../app/admin/(routes)/inventory/product/csv-import/lib'
 
@@ -14,8 +15,12 @@ function buildCsvRow(values: Partial<Record<string, string>>): string {
   ).join(',')
 }
 
+function buildCsv(values: Partial<Record<string, string>>): string {
+  return [EXPECTED_CSV_HEADERS.join(','), buildCsvRow(values)].join('\n')
+}
+
 describe('product CSV import', () => {
-  test('includes shared inventory fields in the expected headers', () => {
+  test('includes shared inventory and packaging headers in the export format', () => {
     expect(EXPECTED_CSV_HEADERS).toContain('inventoryMode')
     expect(EXPECTED_CSV_HEADERS).toContain('masterStockQuantity')
     expect(EXPECTED_CSV_HEADERS).toContain('masterStockUnit')
@@ -25,28 +30,30 @@ describe('product CSV import', () => {
     expect(EXPECTED_CSV_HEADERS).toContain('remainingWeight')
   })
 
-  test('parses shared-weight inventory rows without denomination stock', () => {
-    const headers = EXPECTED_CSV_HEADERS.join(',')
-    const row = buildCsvRow({
-      name: 'Shared Flower',
-      slug: 'shared-flower',
-      categorySlug: 'flower',
-      priceCents: '1200',
-      unit: 'oz',
-      availableDenominations: '[0.5,1]',
-      inventoryMode: 'shared_weight',
-      masterStockQuantity: '10',
-      masterStockUnit: 'lb',
-      'stock_0.5': '25',
-      stockByDenomination: '{"0.5":25}',
-    })
+  test('returns a file error for an empty CSV', () => {
+    expect(parseProductsCsv('').fileError).toBe('File is empty')
+  })
 
-    const result = parseProductsCsv([headers, row].join('\n'))
+  test('parses legacy shared_weight rows and normalizes them to shared inventory', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        name: 'Shared Flower',
+        slug: 'shared-flower',
+        categorySlug: 'flower',
+        priceCents: '1200',
+        unit: 'oz',
+        availableDenominations: '[0.5,1]',
+        inventoryMode: 'shared_weight',
+        masterStockQuantity: '10',
+        masterStockUnit: 'lb',
+        stockByDenomination: '{"0.5":25}',
+      }),
+    )
 
     expect(result.ok).toBe(true)
     expect(result.rows).toHaveLength(1)
     expect(result.rows[0].errors).toEqual([])
-    expect(result.rows[0].product.inventoryMode).toBe('shared_weight')
+    expect(result.rows[0].product.inventoryMode).toBe('shared')
     expect(result.rows[0].product.masterStockQuantity).toBe(10)
     expect(result.rows[0].product.masterStockUnit).toBe('lb')
     expect(result.rows[0].product.stock).toBeUndefined()
@@ -54,20 +61,19 @@ describe('product CSV import', () => {
   })
 
   test('parses packaging fields from CSV rows', () => {
-    const headers = EXPECTED_CSV_HEADERS.join(',')
-    const row = buildCsvRow({
-      name: 'Bulk Flower',
-      slug: 'bulk-flower',
-      categorySlug: 'flower',
-      priceCents: '4500',
-      unit: 'oz',
-      packagingMode: 'bulk',
-      stockUnit: 'oz',
-      startingWeight: '160',
-      remainingWeight: '124.5',
-    })
-
-    const result = parseProductsCsv([headers, row].join('\n'))
+    const result = parseProductsCsv(
+      buildCsv({
+        name: 'Bulk Flower',
+        slug: 'bulk-flower',
+        categorySlug: 'flower',
+        priceCents: '4500',
+        unit: 'oz',
+        packagingMode: 'bulk',
+        stockUnit: 'oz',
+        startingWeight: '160',
+        remainingWeight: '124.5',
+      }),
+    )
 
     expect(result.ok).toBe(true)
     expect(result.rows).toHaveLength(1)
@@ -76,5 +82,135 @@ describe('product CSV import', () => {
     expect(result.rows[0].product.stockUnit).toBe('oz')
     expect(result.rows[0].product.startingWeight).toBe(160)
     expect(result.rows[0].product.remainingWeight).toBe(124.5)
+  })
+
+  test('preserves _id values so matching rows can replace existing products', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        _id: 'prod_existing_123',
+        name: 'Existing Flower',
+        slug: 'existing-flower',
+        categorySlug: 'flower',
+        priceCents: '3500',
+      }),
+    )
+
+    expect(result.rows[0].product._id).toBe('prod_existing_123')
+
+    applySlugConflicts(result.rows, new Map([['existing-flower', 'prod_existing_123']]))
+
+    expect(result.rows[0].conflict).toBeNull()
+    expect(result.rows[0].errors).toEqual([])
+  })
+
+  test('flags slug conflicts when the row does not own the existing slug', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        name: 'Conflicting Flower',
+        slug: 'existing-flower',
+        categorySlug: 'flower',
+        priceCents: '3500',
+      }),
+    )
+
+    applySlugConflicts(result.rows, new Map([['existing-flower', 'prod_other']]))
+
+    expect(result.rows[0].conflict).toBe('slug')
+    expect(result.rows[0].errors).toContain(
+      'Slug "existing-flower" already exists',
+    )
+  })
+
+  test('requires master stock fields for shared inventory rows without denomination stock input', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        name: 'Shared Flower',
+        slug: 'shared-flower',
+        categorySlug: 'flower',
+        inventoryMode: 'shared',
+        unit: 'oz',
+      }),
+    )
+
+    expect(result.rows[0].errors).toContain(
+      'masterStockQuantity is required and must be a non-negative number when inventoryMode is shared',
+    )
+    expect(result.rows[0].errors).toContain(
+      'masterStockUnit is required when inventoryMode is shared',
+    )
+  })
+
+  test('accepts shared inventory rows when per-denomination stock is provided', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        name: 'Shared Flower',
+        slug: 'shared-flower',
+        categorySlug: 'flower',
+        inventoryMode: 'shared',
+        stockByDenomination: '{"0.125":6,"0.25":10}',
+      }),
+    )
+
+    expect(result.rows[0].errors).not.toContain(
+      'masterStockQuantity is required and must be a non-negative number when inventoryMode is shared',
+    )
+    expect(result.rows[0].errors).not.toContain(
+      'masterStockUnit is required when inventoryMode is shared',
+    )
+  })
+
+  test('reports numeric field type errors with field-specific messages', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        name: 'Typed Flower',
+        slug: 'typed-flower',
+        categorySlug: 'flower',
+        priceCents: 'abc',
+        rating: 'oops',
+        'stock_0.125': 'bad',
+      }),
+    )
+
+    expect(result.rows[0].errors).toContain('priceCents must be a number')
+    expect(result.rows[0].errors).toContain('rating must be a number')
+    expect(result.rows[0].errors).toContain('stock_0.125 must be a number')
+  })
+
+  test('reports array field type errors with field-specific messages', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        name: 'Array Flower',
+        slug: 'array-flower',
+        categorySlug: 'flower',
+        effects: 'not-json',
+        tags: '{"bad":"shape"}',
+      }),
+    )
+
+    expect(result.rows[0].errors).toContain('effects must be a JSON array')
+    expect(result.rows[0].errors).toContain('tags must be a JSON array')
+  })
+
+  test('reports invalid enum values with explicit messages', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        name: 'Enum Flower',
+        slug: 'enum-flower',
+        categorySlug: 'flower',
+        inventoryMode: 'broken',
+        packagingMode: 'bagged',
+        dealType: 'unknown',
+      }),
+    )
+
+    expect(result.rows[0].errors).toContain(
+      'inventoryMode must be by_denomination or shared',
+    )
+    expect(result.rows[0].errors).toContain(
+      'packagingMode must be bulk or prepack',
+    )
+    expect(result.rows[0].errors).toContain(
+      'dealType must be withinTier or acrossTiers',
+    )
   })
 })
