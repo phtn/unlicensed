@@ -445,20 +445,11 @@ export const updateProduct = mutation({
     if (fields.available !== undefined) {
       updates.available = fields.available
     }
-    if (fields.stock !== undefined) {
-      updates.stock = fields.stock
-    }
     if (fields.inventoryMode !== undefined) {
       updates.inventoryMode = fields.inventoryMode
     }
-    if (fields.masterStockQuantity !== undefined) {
-      updates.masterStockQuantity = fields.masterStockQuantity
-    }
     if (fields.masterStockUnit !== undefined) {
       updates.masterStockUnit = fields.masterStockUnit.trim() || undefined
-    }
-    if (fields.stockByDenomination !== undefined) {
-      updates.stockByDenomination = fields.stockByDenomination
     }
     if (fields.rating !== undefined) {
       updates.rating = fields.rating

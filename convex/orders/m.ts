@@ -5,6 +5,7 @@ import {
 } from '../../lib/checkout/processing-fee'
 import {resolveOrderShippingCents} from '../../lib/checkout/shipping'
 import {createCouponError} from '../../lib/coupon-errors'
+import {applyInventoryDeduction} from '../../lib/inventory-adjustments'
 import {
   getSharedWeightLineQuantity,
   getTotalStock,
@@ -22,6 +23,7 @@ import {
   getCouponEligibilityError,
   normalizeCouponCode,
 } from '../coupons/lib'
+import {insertInventoryMovement} from '../inventoryMovements/lib'
 import {addressSchema} from '../users/d'
 import {getOrCreateGuestUser} from '../messages/guest'
 import {
@@ -1482,6 +1484,16 @@ export const deductStockForOrder = internalMutation({
     if (!order) return
 
     const productDocs = new Map<Id<'products'>, ProductDoc>()
+    const movementLinesByProduct = new Map<
+      Id<'products'>,
+      Array<{
+        denomination?: number
+        previousQuantity: number
+        quantityDelta: number
+        nextQuantity: number
+        unit?: string
+      }>
+    >()
     const sharedWeightDeductions = new Map<Id<'products'>, number>()
     const denominationDeductions = new Map<string, number>()
 
@@ -1518,9 +1530,26 @@ export const deductStockForOrder = internalMutation({
       const product = productDocs.get(productId)
       if (!product) continue
 
-      const current = product.masterStockQuantity ?? 0
-      const next = Math.max(0, roundStockQuantity(current - deduction))
+      const current = roundStockQuantity(product.masterStockQuantity ?? 0)
+      const change = applyInventoryDeduction({
+        currentQuantity: current,
+        deductionQuantity: deduction,
+      })
+      const next = roundStockQuantity(change.nextQuantity)
       await ctx.db.patch(productId, {
+        masterStockQuantity: next,
+      })
+      movementLinesByProduct.set(productId, [
+        ...(movementLinesByProduct.get(productId) ?? []),
+        {
+          previousQuantity: current,
+          quantityDelta: roundStockQuantity(change.quantityDelta),
+          nextQuantity: next,
+          unit: product.masterStockUnit?.trim() || product.unit?.trim() || undefined,
+        },
+      ])
+      productDocs.set(productId, {
+        ...product,
         masterStockQuantity: next,
       })
     }
@@ -1534,8 +1563,12 @@ export const deductStockForOrder = internalMutation({
       if (!product) continue
 
       if (product.stockByDenomination != null && denomKey != null) {
-        const current = product.stockByDenomination[denomKey] ?? 0
-        const next = Math.max(0, current - deduction)
+        const current = roundStockQuantity(product.stockByDenomination[denomKey] ?? 0)
+        const change = applyInventoryDeduction({
+          currentQuantity: current,
+          deductionQuantity: deduction,
+        })
+        const next = roundStockQuantity(change.nextQuantity)
         const nextStockByDenomination = {
           ...product.stockByDenomination,
           [denomKey]: next,
@@ -1543,6 +1576,16 @@ export const deductStockForOrder = internalMutation({
         await ctx.db.patch(productId, {
           stockByDenomination: nextStockByDenomination,
         })
+        movementLinesByProduct.set(productId, [
+          ...(movementLinesByProduct.get(productId) ?? []),
+          {
+            denomination: Number(denomKey),
+            previousQuantity: current,
+            quantityDelta: roundStockQuantity(change.quantityDelta),
+            nextQuantity: next,
+            unit: product.unit?.trim() || undefined,
+          },
+        ])
         productDocs.set(productId, {
           ...product,
           stockByDenomination: nextStockByDenomination,
@@ -1550,14 +1593,43 @@ export const deductStockForOrder = internalMutation({
         continue
       }
 
-      const current = product.stock ?? 0
-      const next = Math.max(0, current - deduction)
+      const current = roundStockQuantity(product.stock ?? 0)
+      const change = applyInventoryDeduction({
+        currentQuantity: current,
+        deductionQuantity: deduction,
+      })
+      const next = roundStockQuantity(change.nextQuantity)
       await ctx.db.patch(productId, {
         stock: next,
       })
+      movementLinesByProduct.set(productId, [
+        ...(movementLinesByProduct.get(productId) ?? []),
+        {
+          previousQuantity: current,
+          quantityDelta: roundStockQuantity(change.quantityDelta),
+          nextQuantity: next,
+          unit: product.unit?.trim() || undefined,
+        },
+      ])
       productDocs.set(productId, {
         ...product,
         stock: next,
+      })
+    }
+
+    for (const [productId, lines] of movementLinesByProduct) {
+      const product = productDocs.get(productId)
+      if (!product || lines.length === 0) continue
+
+      await insertInventoryMovement(ctx, {
+        product,
+        type: 'order_deduction',
+        inventoryMode: normalizeInventoryMode(product.inventoryMode),
+        lines,
+        note: 'Inventory deducted after payment was completed.',
+        reference: order.orderNumber,
+        sourceOrderId: order._id,
+        sourceOrderNumber: order.orderNumber,
       })
     }
   },

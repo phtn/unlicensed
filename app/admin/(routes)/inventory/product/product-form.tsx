@@ -30,6 +30,7 @@ type CategoryDoc = Doc<'categories'>
 type ProductFormProps = {
   categories: CategoryDoc[] | undefined
   initialCategorySlug?: string
+  product?: Doc<'products'>
   productId?: Id<'products'>
   initialValues?: ProductFormValues
   onCreated?: VoidFunction
@@ -126,6 +127,7 @@ const getFieldNameFromServerError = (
 export const ProductForm = ({
   categories,
   initialCategorySlug,
+  product,
   productId,
   initialValues,
   onCreated,
@@ -288,21 +290,25 @@ export const ProductForm = ({
           eligibleForDeals: data.eligibleForDeals,
           onSale: data.onSale,
           inventoryMode: data.inventoryMode,
-          stock:
-            data.inventoryMode === 'by_denomination' && data.stock != null
-              ? Math.round(data.stock)
-              : undefined,
-          masterStockQuantity:
-            isSharedInventoryMode && data.masterStockQuantity != null
-              ? data.masterStockQuantity
-              : undefined,
+          ...(isEditMode
+            ? {}
+            : {
+                stock:
+                  data.inventoryMode === 'by_denomination' && data.stock != null
+                    ? Math.round(data.stock)
+                    : undefined,
+                masterStockQuantity:
+                  isSharedInventoryMode && data.masterStockQuantity != null
+                    ? data.masterStockQuantity
+                    : undefined,
+                stockByDenomination:
+                  data.inventoryMode === 'by_denomination'
+                    ? data.stockByDenomination
+                    : undefined,
+              }),
           masterStockUnit: isSharedInventoryMode
             ? data.masterStockUnit?.trim() || undefined
             : undefined,
-          stockByDenomination:
-            data.inventoryMode === 'by_denomination'
-              ? data.stockByDenomination
-              : undefined,
           rating: data.rating,
           image: data.image as Id<'_storage'>,
           gallery: data.gallery as Array<Id<'_storage'>>,
@@ -718,7 +724,11 @@ export const ProductForm = ({
           </div>
 
           <div id='inventory' className='scroll-mt-4'>
-            <Inventory form={form as ProductFormApi} />
+            <Inventory
+              form={form as ProductFormApi}
+              isEditMode={isEditMode}
+              product={product}
+            />
           </div>
 
           <div id='attributes' className='scroll-mt-4'>

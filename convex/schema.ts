@@ -19,6 +19,7 @@ import {fileSchema} from './files/upload'
 import {followSchema} from './follows/d'
 import {guestSchema} from './guests/d'
 import {gatewaySchema} from './gateways/d'
+import {inventoryMovementSchema} from './inventoryMovements/d'
 import {logSchema} from './logs/d'
 import {mailingListSchema} from './mailingLists/d'
 import {messageSchema} from './messages/d'
@@ -66,6 +67,11 @@ export default defineSchema({
     .index('by_product', ['productId'])
     .index('by_product_denom', ['productId', 'denomination'])
     .index('by_expires', ['expiresAt']),
+  inventoryMovements: defineTable(inventoryMovementSchema)
+    .index('by_product_created_at', ['productId', 'createdAt'])
+    .index('by_created_at', ['createdAt'])
+    .index('by_type_created_at', ['type', 'createdAt'])
+    .index('by_order', ['sourceOrderId']),
   orders: defineTable(orderSchema)
     .index('by_user', ['userId'])
     .index('by_chatUserId', ['chatUserId'])

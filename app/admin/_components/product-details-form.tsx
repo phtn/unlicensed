@@ -10,6 +10,7 @@ import {
 } from '@/lib/productStock'
 import {Button, Image, Input, Switch, Textarea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
+import Link from 'next/link'
 import {useEffect, useState} from 'react'
 import {useProductDetailsSafe} from './product-details-context'
 import {useSettingsPanelSafe} from './ui/settings'
@@ -30,19 +31,16 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
     product.image ? {id: product._id} : 'skip',
   )
 
-  const [name, setName] = useState(product.name)
   const [priceCents, setPriceCents] = useState(product.priceCents)
-  const [stock, setStock] = useState(getTotalStock(product))
   const [unit, setUnit] = useState(product.unit)
   const [available, setAvailable] = useState(product.available)
   const [featured, setFeatured] = useState(product.featured)
   const [isSaving, setIsSaving] = useState(false)
+  const currentStock = getTotalStock(product)
 
   // Sync form state when product changes
   useEffect(() => {
-    setName(product.name)
     setPriceCents(product.priceCents)
-    setStock(getTotalStock(product))
     setUnit(product.unit)
     setAvailable(product.available)
     setFeatured(product.featured)
@@ -89,26 +87,13 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
     try {
       // Build update object with only changed fields
       const fields: {
-        name?: string
         priceCents?: number
-        stock?: number
-        masterStockQuantity?: number
         unit?: string
       } = {}
 
       // Only include fields that have changed
-      if (name !== product.name) {
-        fields.name = name
-      }
       if (priceCents !== product.priceCents) {
         fields.priceCents = priceCents
-      }
-      if (stock !== getTotalStock(product)) {
-        if (usesSharedWeightInventory(product)) {
-          fields.masterStockQuantity = stock
-        } else {
-          fields.stock = stock
-        }
       }
       if (unit !== product.unit) {
         fields.unit = unit
@@ -124,9 +109,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
     } catch (error) {
       console.error('Failed to save changes:', error)
       // Revert form state on error
-      setName(product.name)
       setPriceCents(product.priceCents)
-      setStock(getTotalStock(product))
       setUnit(product.unit)
     } finally {
       setIsSaving(false)
@@ -207,11 +190,24 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
                 : 'Qty in stock'
             }
             size='md'
-            type='number'
-            value={String(stock)}
-            onValueChange={(value) => setStock(Number(value))}
+            value={String(currentStock)}
+            isReadOnly
             placeholder='Stock quantity'
           />
+        </div>
+      </div>
+
+      <div className='rounded-lg border border-black/5 bg-black/2 p-3 text-sm text-foreground/70 dark:border-white/10 dark:bg-white/3'>
+        Inventory counts now use the dedicated inventory adjustment flow so
+        every restock and correction is logged.
+        <div className='mt-3'>
+          <Button
+            as={Link}
+            href={`/admin/inventory/product/${product._id}#inventory`}
+            size='sm'
+            variant='bordered'>
+            Open Inventory Controls
+          </Button>
         </div>
       </div>
 

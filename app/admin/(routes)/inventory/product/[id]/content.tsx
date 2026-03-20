@@ -186,6 +186,7 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
   return (
     <ProductForm
       key={product._id}
+      product={product}
       productId={product._id}
       categories={categories}
       initialValues={initialValues}

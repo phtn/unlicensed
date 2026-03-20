@@ -4,18 +4,34 @@ import {
   commonInputClassNames,
   commonSelectClassNames,
 } from '@/app/admin/_components/ui/fields'
-import {JunctionBox} from '@/app/admin/_components/ui/junction-box'
+import {api} from '@/convex/_generated/api'
+import type {Doc} from '@/convex/_generated/dataModel'
 import {InventoryMode} from '@/convex/products/d'
-import {Icon} from '@/lib/icons'
+import {normalizeInventoryMode} from '@/lib/productStock'
 import {formatPrice} from '@/utils/formatPrice'
-import {Chip, Input, Select, SelectItem, SelectedItems} from '@heroui/react'
+import {
+  Button,
+  Chip,
+  Input,
+  Select,
+  SelectItem,
+  SelectedItems,
+} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
-import {useMemo} from 'react'
+import {useQuery} from 'convex/react'
+import {useMemo, useState} from 'react'
 import {ProductFormApi, mapFractions} from '../product-schema'
+import {
+  buildInventoryInputs,
+  formatQuantity,
+  InventoryAdjustmentModal,
+} from './inventory-adjustment-modal'
 import {FormSection, Header} from './components'
 
 interface InventoryProps {
   form: ProductFormApi
+  isEditMode?: boolean
+  product?: Doc<'products'>
 }
 
 const MASTER_STOCK_UNIT_OPTIONS = [
@@ -27,19 +43,67 @@ const MASTER_STOCK_UNIT_OPTIONS = [
   'units',
 ] as const
 
-// Extract numeric denomination from variant label (e.g., "0.125oz" -> 0.125)
 const extractDenomination = (label: string): number | null => {
-  // Match numbers at the start of the label (including decimals)
   const match = label.match(/^(\d+\.?\d*)/)
-  if (match) {
-    const num = Number.parseFloat(match[1])
-    return Number.isNaN(num) ? null : num
-  }
-  return null
+  if (!match) return null
+
+  const num = Number.parseFloat(match[1])
+  return Number.isNaN(num) ? null : num
 }
 
-export const Inventory = ({form}: InventoryProps) => {
-  // Get variants from form store
+const movementTypeStyles = {
+  restock:
+    'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-900/60',
+  manual_override:
+    'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-900/60',
+  order_deduction:
+    'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-950/40 dark:text-slate-200 dark:border-slate-800',
+} as const
+
+const movementTypeLabels = {
+  restock: 'Restock',
+  manual_override: 'Manual Override',
+  order_deduction: 'Order Deduction',
+} as const
+
+const formatMovementLine = (
+  product: Doc<'products'>,
+  movementType: keyof typeof movementTypeLabels,
+  line: {
+    denomination?: number
+    nextQuantity: number
+    quantityDelta: number
+    unit?: string
+  },
+) => {
+  const unit = line.unit?.trim()
+  const quantityLabel = unit ? `${formatQuantity(line.nextQuantity)} ${unit}` : formatQuantity(line.nextQuantity)
+  const deltaLabel = unit
+    ? `${line.quantityDelta > 0 ? '+' : ''}${formatQuantity(line.quantityDelta)} ${unit}`
+    : `${line.quantityDelta > 0 ? '+' : ''}${formatQuantity(line.quantityDelta)}`
+  const lineLabel =
+    line.denomination !== undefined
+      ? buildInventoryInputs({
+          ...product,
+          availableDenominations: [line.denomination],
+          stockByDenomination: {[String(line.denomination)]: line.nextQuantity},
+        })[0]?.label ?? String(line.denomination)
+      : normalizeInventoryMode(product.inventoryMode) === 'shared'
+        ? `Master stock${unit ? ` (${unit})` : ''}`
+        : 'Stock'
+
+  if (movementType === 'manual_override') {
+    return `${lineLabel}: set to ${quantityLabel}`
+  }
+
+  return `${lineLabel}: ${deltaLabel}, now ${quantityLabel}`
+}
+
+export const Inventory = ({
+  form,
+  isEditMode = false,
+  product,
+}: InventoryProps) => {
   const variants = useStore(form.store, (state) => {
     const values = state.values as {
       variants?: Array<{label: string; price: number}>
@@ -47,17 +111,11 @@ export const Inventory = ({form}: InventoryProps) => {
     return values.variants ?? []
   })
 
-  // Get current availableDenominationsRaw value
   const availableDenominationsRaw = useStore(form.store, (state) => {
     const values = state.values as {
       availableDenominationsRaw?: string | string[]
     }
     return values.availableDenominationsRaw
-  })
-
-  const eligibleForUpgrade = useStore(form.store, (state) => {
-    const values = state.values as {eligibleForUpgrade?: boolean}
-    return values.eligibleForUpgrade ?? false
   })
 
   const inventoryMode = useStore(form.store, (state) => {
@@ -70,14 +128,13 @@ export const Inventory = ({form}: InventoryProps) => {
     return values.unit ?? ''
   })
 
-  // Parse current denominations from raw value
   const currentDenominations = useMemo(() => {
     if (!availableDenominationsRaw) return new Set<string>()
     if (typeof availableDenominationsRaw === 'string') {
       const nums = availableDenominationsRaw
         .split(',')
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0)
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0)
       return new Set(nums)
     }
     if (Array.isArray(availableDenominationsRaw)) {
@@ -86,10 +143,9 @@ export const Inventory = ({form}: InventoryProps) => {
     return new Set<string>()
   }, [availableDenominationsRaw])
 
-  // Create options from variants with prices
   const variantOptions = useMemo(() => {
     return variants
-      .filter((v) => v.label && extractDenomination(v.label) !== null)
+      .filter((variant) => variant.label && extractDenomination(variant.label) !== null)
       .map((variant) => {
         const denomination = extractDenomination(variant.label)
         const denominationKey = denomination?.toString() ?? variant.label
@@ -102,14 +158,20 @@ export const Inventory = ({form}: InventoryProps) => {
         }
       })
       .sort((a, b) => {
-        // Sort by denomination value
         const aNum = a.denomination ?? 0
         const bNum = b.denomination ?? 0
         return aNum - bNum
       })
   }, [variants])
 
-  // Handle selection change: update raw field and ensure stockByDenomination has an entry for each selected denomination
+  const inventoryMovements = useQuery(
+    api.inventoryMovements.q.getProductInventoryMovements,
+    product ? {productId: product._id, limit: 8} : 'skip',
+  )
+
+  const [isRestockOpen, setIsRestockOpen] = useState(false)
+  const [isManualOverrideOpen, setIsManualOverrideOpen] = useState(false)
+
   const handleSelectionChange = (
     field: {
       handleChange: (value: string) => void
@@ -118,24 +180,32 @@ export const Inventory = ({form}: InventoryProps) => {
   ) => {
     const newKeys =
       keys === 'all'
-        ? variantOptions.map((opt) => opt.key)
+        ? variantOptions.map((option) => option.key)
         : Array.from(keys).map((key) => String(key))
-    if (keys === 'all') {
-      const allDenominations = variantOptions.map((opt) => opt.key).join(', ')
-      field.handleChange(allDenominations)
-    } else {
-      field.handleChange(newKeys.join(', '))
-    }
+
+    field.handleChange(
+      keys === 'all'
+        ? variantOptions.map((option) => option.key).join(', ')
+        : newKeys.join(', '),
+    )
+
     const current =
       (form.getFieldValue('stockByDenomination') as
         | Record<string, number>
         | undefined) ?? {}
     const next = {...current}
-    for (const k of newKeys) {
-      if (next[k] === undefined) next[k] = 0
+
+    for (const key of newKeys) {
+      if (next[key] === undefined) next[key] = 0
     }
+
     form.setFieldValue('stockByDenomination', next)
   }
+
+  const persistedInventoryInputs = useMemo(
+    () => (product ? buildInventoryInputs(product) : []),
+    [product],
+  )
 
   return (
     <FormSection>
@@ -145,52 +215,59 @@ export const Inventory = ({form}: InventoryProps) => {
           <div className='w-full col-span-6 md:col-span-3'>
             <form.Field name='inventoryMode'>
               {(field) => (
-                <Select
-                  label='Inventory Mode'
-                  selectedKeys={[
-                    String(field.state.value ?? 'by_denomination'),
-                  ]}
-                  onSelectionChange={(keys) => {
-                    const selected = Array.from(keys)[0]
-                    if (typeof selected === 'string') {
-                      field.handleChange(selected as InventoryMode)
-                    }
-                  }}
-                  variant='bordered'
-                  classNames={commonSelectClassNames}>
-                  <SelectItem key='by_denomination' textValue='By denomination'>
-                    <div className='flex flex-col'>
-                      <span className='text-sm font-medium'>
-                        By denomination
-                      </span>
-                      <span className='text-xs opacity-70'>
-                        Track stock per purchasable size.
-                      </span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem key='shared' textValue='Shared'>
-                    <div className='flex flex-col'>
-                      <span className='text-sm font-medium'>
-                        Shared{' '}
-                        <span className='text-xs font-ios font-normal opacity-70'>
-                          (
+                <div className='space-y-2'>
+                  <Select
+                    label='Inventory Mode'
+                    selectedKeys={[String(field.state.value ?? 'by_denomination')]}
+                    onSelectionChange={(keys) => {
+                      const selected = Array.from(keys)[0]
+                      if (typeof selected === 'string') {
+                        field.handleChange(selected as InventoryMode)
+                      }
+                    }}
+                    isDisabled={isEditMode}
+                    variant='bordered'
+                    classNames={commonSelectClassNames}>
+                    <SelectItem key='by_denomination' textValue='By denomination'>
+                      <div className='flex flex-col'>
+                        <span className='text-sm font-medium'>
+                          By denomination
                         </span>
-                        Count / Weight
-                        <span className='text-xs font-ios font-normal opacity-70'>
-                          )
+                        <span className='text-xs opacity-70'>
+                          Track stock per purchasable size.
                         </span>
-                      </span>
-                      <span className='text-xs opacity-70'>
-                        Master stock is shared across all denominations.
-                      </span>
-                    </div>
-                  </SelectItem>
-                </Select>
+                      </div>
+                    </SelectItem>
+                    <SelectItem key='shared' textValue='Shared'>
+                      <div className='flex flex-col'>
+                        <span className='text-sm font-medium'>
+                          Shared{' '}
+                          <span className='text-xs font-ios font-normal opacity-70'>
+                            (
+                          </span>
+                          Count / Weight
+                          <span className='text-xs font-ios font-normal opacity-70'>
+                            )
+                          </span>
+                        </span>
+                        <span className='text-xs opacity-70'>
+                          Master stock is shared across all denominations.
+                        </span>
+                      </div>
+                    </SelectItem>
+                  </Select>
+                  {isEditMode ? (
+                    <p className='text-xs text-color-muted'>
+                      Inventory mode is locked after creation so stock history
+                      stays consistent.
+                    </p>
+                  ) : null}
+                </div>
               )}
             </form.Field>
           </div>
 
-          {inventoryMode === 'shared' ? (
+          {!isEditMode && inventoryMode === 'shared' ? (
             <>
               <div className='w-full col-span-6 md:col-span-2'>
                 <form.Field name='masterStockQuantity'>
@@ -205,8 +282,8 @@ export const Inventory = ({form}: InventoryProps) => {
                           ? ''
                           : String(field.state.value)
                       }
-                      onChange={(e) =>
-                        field.handleChange(Number(e.target.value) || 0)
+                      onChange={(event) =>
+                        field.handleChange(Number(event.target.value) || 0)
                       }
                       onBlur={field.handleBlur}
                       variant='bordered'
@@ -222,9 +299,7 @@ export const Inventory = ({form}: InventoryProps) => {
                     <Select
                       label='Master Unit'
                       selectedKeys={
-                        field.state.value
-                          ? [String(field.state.value)]
-                          : undefined
+                        field.state.value ? [String(field.state.value)] : undefined
                       }
                       onSelectionChange={(keys) => {
                         const selected = Array.from(keys)[0]
@@ -253,25 +328,16 @@ export const Inventory = ({form}: InventoryProps) => {
             </>
           ) : null}
 
-          {inventoryMode === 'by_denomination' ? (
+          {!isEditMode && inventoryMode === 'by_denomination' ? (
             <div className='w-full col-span-6'>
               <form.Field name='stockByDenomination'>
                 {(field) => {
                   const stockByDenomination =
                     (field.state.value as Record<string, number>) ?? {}
-                  const selectedVariantOptions = variantOptions.filter((opt) =>
-                    currentDenominations.has(opt.key),
+                  const selectedVariantOptions = variantOptions.filter((option) =>
+                    currentDenominations.has(option.key),
                   )
-                  const handleStockChange = (
-                    denominationKey: string,
-                    value: number,
-                  ) => {
-                    const next = {
-                      ...stockByDenomination,
-                      [denominationKey]: Math.max(0, value),
-                    }
-                    field.handleChange(next)
-                  }
+
                   return (
                     <div className='space-y-3 w-full'>
                       <label className='text-sm font-medium block'>
@@ -284,31 +350,31 @@ export const Inventory = ({form}: InventoryProps) => {
                         </p>
                       ) : (
                         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-                          {selectedVariantOptions.map((option) => {
-                            const value = stockByDenomination[option.key] ?? 0
-                            return (
-                              <Input
-                                key={option.key}
-                                label={
-                                  mapFractions[option.label] ??
-                                  option.displayLabel ??
-                                  option.label
-                                }
-                                type='number'
-                                value={String(value)}
-                                onChange={(e) =>
-                                  handleStockChange(
-                                    option.key,
-                                    Number(e.target.value) || 0,
-                                  )
-                                }
-                                onBlur={field.handleBlur}
-                                min={0}
-                                variant='bordered'
-                                classNames={commonInputClassNames}
-                              />
-                            )
-                          })}
+                          {selectedVariantOptions.map((option) => (
+                            <Input
+                              key={option.key}
+                              label={
+                                mapFractions[option.label] ??
+                                option.displayLabel ??
+                                option.label
+                              }
+                              type='number'
+                              value={String(stockByDenomination[option.key] ?? 0)}
+                              onChange={(event) =>
+                                field.handleChange({
+                                  ...stockByDenomination,
+                                  [option.key]: Math.max(
+                                    0,
+                                    Number(event.target.value) || 0,
+                                  ),
+                                })
+                              }
+                              onBlur={field.handleBlur}
+                              min={0}
+                              variant='bordered'
+                              classNames={commonInputClassNames}
+                            />
+                          ))}
                         </div>
                       )}
                     </div>
@@ -318,7 +384,8 @@ export const Inventory = ({form}: InventoryProps) => {
             </div>
           ) : null}
 
-          {inventoryMode === 'by_denomination' &&
+          {!isEditMode &&
+          inventoryMode === 'by_denomination' &&
           variantOptions.length === 0 ? (
             <div className='w-full col-span-6 md:col-span-2'>
               <form.Field name='stock'>
@@ -327,11 +394,9 @@ export const Inventory = ({form}: InventoryProps) => {
                     label='Fallback Stock'
                     type='number'
                     min={0}
-                    value={
-                      field.state.value == null ? '' : String(field.state.value)
-                    }
-                    onChange={(e) =>
-                      field.handleChange(Number(e.target.value) || 0)
+                    value={field.state.value == null ? '' : String(field.state.value)}
+                    onChange={(event) =>
+                      field.handleChange(Number(event.target.value) || 0)
                     }
                     onBlur={field.handleBlur}
                     variant='bordered'
@@ -342,13 +407,141 @@ export const Inventory = ({form}: InventoryProps) => {
             </div>
           ) : null}
 
+          {isEditMode && product ? (
+            <div className='col-span-6 space-y-4'>
+              <div className='rounded-2xl border border-black/5 bg-black/2 p-4 dark:border-white/10 dark:bg-white/3'>
+                <p className='text-sm font-medium'>Official inventory controls</p>
+                <p className='mt-1 text-sm text-color-muted'>
+                  Stock quantities are now managed through logged inventory
+                  adjustments. Use restock when new supply arrives, and use
+                  manual override only when you need to correct counts.
+                </p>
+              </div>
+
+              <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
+                {persistedInventoryInputs.map((input) => (
+                  <Input
+                    key={input.key}
+                    label={input.label}
+                    value={`${formatQuantity(input.currentQuantity)}${input.unit ? ` ${input.unit}` : ''}`}
+                    isReadOnly
+                    variant='bordered'
+                    classNames={commonInputClassNames}
+                  />
+                ))}
+              </div>
+
+              <div className='flex flex-wrap gap-3'>
+                <Button color='primary' onPress={() => setIsRestockOpen(true)}>
+                  Restock Inventory
+                </Button>
+                <Button
+                  variant='bordered'
+                  onPress={() => setIsManualOverrideOpen(true)}>
+                  Manual Override
+                </Button>
+              </div>
+
+              <div className='space-y-3 rounded-2xl border border-black/5 bg-background/60 p-4 dark:border-white/10'>
+                <div className='flex items-center justify-between gap-3'>
+                  <div>
+                    <p className='text-sm font-medium'>Recent inventory activity</p>
+                    <p className='text-xs text-color-muted'>
+                      Restocks, corrections, and paid-order deductions for this
+                      product.
+                    </p>
+                  </div>
+                </div>
+
+                {inventoryMovements === undefined ? (
+                  <p className='text-sm text-color-muted'>
+                    Loading inventory activity...
+                  </p>
+                ) : inventoryMovements.length === 0 ? (
+                  <p className='text-sm text-color-muted'>
+                    No inventory activity has been recorded yet.
+                  </p>
+                ) : (
+                  <div className='space-y-3'>
+                    {inventoryMovements.map((movement) => (
+                      <div
+                        key={movement._id}
+                        className='rounded-xl border border-black/5 bg-black/2 p-3 dark:border-white/10 dark:bg-white/3'>
+                        <div className='flex flex-wrap items-center justify-between gap-3'>
+                          <div className='flex flex-wrap items-center gap-2'>
+                            <Chip
+                              variant='flat'
+                              classNames={{
+                                base: `border ${movementTypeStyles[movement.type]}`,
+                                content: 'text-xs font-medium',
+                              }}>
+                              {movementTypeLabels[movement.type]}
+                            </Chip>
+                            <span className='text-sm text-color-muted'>
+                              {movement.performedByName ??
+                                movement.performedByEmail ??
+                                movement.sourceOrderNumber ??
+                                'System'}
+                            </span>
+                          </div>
+                          <span className='text-xs text-color-muted'>
+                            {new Date(movement.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+
+                        {movement.reference ? (
+                          <p className='mt-2 text-xs text-color-muted'>
+                            Reference: {movement.reference}
+                          </p>
+                        ) : null}
+
+                        <div className='mt-2 flex flex-wrap gap-2'>
+                          {movement.lines.map((line, index) => (
+                            <Chip
+                              key={`${movement._id}-${index}`}
+                              variant='bordered'
+                              classNames={{
+                                base: 'border-black/10 dark:border-white/10',
+                                content: 'text-xs',
+                              }}>
+                              {formatMovementLine(product, movement.type, line)}
+                            </Chip>
+                          ))}
+                        </div>
+
+                        {movement.note ? (
+                          <p className='mt-2 text-xs text-color-muted'>
+                            {movement.note}
+                          </p>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <InventoryAdjustmentModal
+                product={product}
+                adjustmentType='restock'
+                isOpen={isRestockOpen}
+                onOpenChange={setIsRestockOpen}
+              />
+              <InventoryAdjustmentModal
+                product={product}
+                adjustmentType='manual_override'
+                isOpen={isManualOverrideOpen}
+                onOpenChange={setIsManualOverrideOpen}
+              />
+            </div>
+          ) : null}
+
           <div className='w-full grid md:grid-col-2 col-span-4'>
             <form.Field name='availableDenominationsRaw'>
               {(field) => {
                 const selectedKeys = new Set(
                   variantOptions
-                    .filter((opt) => currentDenominations.has(opt.key))
-                    .map((opt) => opt.key),
+                    .filter((option) => currentDenominations.has(option.key))
+                    .map((option) => option.key),
                 )
 
                 return (
@@ -362,37 +555,33 @@ export const Inventory = ({form}: InventoryProps) => {
                       }
                       selectionMode='multiple'
                       selectedKeys={selectedKeys}
-                      onSelectionChange={(keys) =>
-                        handleSelectionChange(field, keys)
-                      }
+                      onSelectionChange={(keys) => handleSelectionChange(field, keys)}
                       variant='bordered'
                       isMultiline={true}
                       isDisabled={variantOptions.length === 0}
                       classNames={commonSelectClassNames}
-                      renderValue={(items: SelectedItems<object>) => {
-                        return (
-                          <div className='flex flex-wrap gap-2'>
-                            {items.map((item) => {
-                              const variant = variantOptions.find(
-                                (opt) => opt.key === item.key,
-                              )
-                              return (
-                                <Chip
-                                  key={item.key}
-                                  variant='flat'
-                                  classNames={{
-                                    base: 'border border-light-gray dark:border-light-gray/30 h-7',
-                                    content: 'text-xs flex items-center gap-1',
-                                  }}>
-                                  <span className='capitalize'>
-                                    {variant?.displayLabel ?? item.textValue}
-                                  </span>
-                                </Chip>
-                              )
-                            })}
-                          </div>
-                        )
-                      }}>
+                      renderValue={(items: SelectedItems<object>) => (
+                        <div className='flex flex-wrap gap-2'>
+                          {items.map((item) => {
+                            const variant = variantOptions.find(
+                              (option) => option.key === item.key,
+                            )
+                            return (
+                              <Chip
+                                key={item.key}
+                                variant='flat'
+                                classNames={{
+                                  base: 'border border-light-gray dark:border-light-gray/30 h-7',
+                                  content: 'text-xs flex items-center gap-1',
+                                }}>
+                                <span className='capitalize'>
+                                  {variant?.displayLabel ?? item.textValue}
+                                </span>
+                              </Chip>
+                            )
+                          })}
+                        </div>
+                      )}>
                       {variantOptions.map((option) => {
                         const priceDisplay = option.price
                           ? formatPrice(Math.round(option.price * 100))
@@ -418,12 +607,12 @@ export const Inventory = ({form}: InventoryProps) => {
                         )
                       })}
                     </Select>
-                    {variantOptions.length === 0 && (
+                    {variantOptions.length === 0 ? (
                       <p className='text-xs text-color-muted mt-1'>
                         Configure variants with prices in the Pricing section to
                         enable denomination selection.
                       </p>
-                    )}
+                    ) : null}
                   </div>
                 )
               }}
@@ -436,49 +625,44 @@ export const Inventory = ({form}: InventoryProps) => {
                 const popularDenominationValue =
                   (field.state.value as number[] | undefined) ?? []
 
-                // Find variant options that match the numeric values in the array
                 const selectedKeys = (() => {
-                  if (
-                    !popularDenominationValue ||
-                    popularDenominationValue.length === 0
-                  ) {
+                  if (!popularDenominationValue.length) {
                     return new Set<string>()
                   }
 
-                  // Find variant options that match these numeric values
-                  const matchingKeys = variantOptions
-                    .filter((opt) =>
-                      popularDenominationValue.some(
-                        (num) =>
-                          opt.denomination !== null &&
-                          Math.abs(opt.denomination - num) < 0.0001,
-                      ),
-                    )
-                    .map((opt) => opt.key)
-
-                  return new Set(matchingKeys)
+                  return new Set(
+                    variantOptions
+                      .filter((option) =>
+                        popularDenominationValue.some(
+                          (value) =>
+                            option.denomination !== null &&
+                            Math.abs(option.denomination - value) < 0.0001,
+                        ),
+                      )
+                      .map((option) => option.key),
+                  )
                 })()
 
-                const handleSelectionChange = (
+                const handlePopularSelectionChange = (
                   keys: Set<React.Key> | 'all',
                 ) => {
                   if (keys === 'all') {
-                    const allDenominations = variantOptions
-                      .map((opt) => opt.denomination)
-                      .filter((num): num is number => num !== null)
-                    field.handleChange(allDenominations)
-                  } else {
-                    // Convert selected keys to their numeric denomination values
-                    const selectedDenominations = Array.from(keys)
-                      .map((key) => {
-                        const option = variantOptions.find(
-                          (opt) => opt.key === key,
-                        )
-                        return option?.denomination ?? null
-                      })
-                      .filter((num): num is number => num !== null)
-                    field.handleChange(selectedDenominations)
+                    field.handleChange(
+                      variantOptions
+                        .map((option) => option.denomination)
+                        .filter((value): value is number => value !== null),
+                    )
+                    return
                   }
+
+                  field.handleChange(
+                    Array.from(keys)
+                      .map((key) =>
+                        variantOptions.find((option) => option.key === key),
+                      )
+                      .map((option) => option?.denomination ?? null)
+                      .filter((value): value is number => value !== null),
+                  )
                 }
 
                 return (
@@ -492,200 +676,53 @@ export const Inventory = ({form}: InventoryProps) => {
                       }
                       selectionMode='multiple'
                       selectedKeys={selectedKeys}
-                      onSelectionChange={handleSelectionChange}
+                      onSelectionChange={handlePopularSelectionChange}
                       variant='bordered'
                       isMultiline={true}
                       isDisabled={variantOptions.length === 0}
                       classNames={commonSelectClassNames}
-                      renderValue={(items: SelectedItems<object>) => {
-                        return (
-                          <div className='flex flex-wrap gap-2'>
-                            {items.map((item) => {
-                              const variant = variantOptions.find(
-                                (opt) => opt.key === item.key,
-                              )
-                              return (
-                                <Chip
-                                  key={item.key}
-                                  variant='bordered'
-                                  className='border border-blue-500'
-                                  classNames={{
-                                    base: 'border border-dark-gray bg-background dark:border-yellow-500 h-7',
-                                    content: 'text-xs flex items-center gap-1',
-                                  }}>
-                                  <span className='capitalize'>
-                                    {variant?.displayLabel ?? item.textValue}
-                                  </span>
-                                </Chip>
-                              )
-                            })}
+                      renderValue={(items: SelectedItems<object>) => (
+                        <div className='flex flex-wrap gap-2'>
+                          {items.map((item) => {
+                            const variant = variantOptions.find(
+                              (option) => option.key === item.key,
+                            )
+                            return (
+                              <Chip
+                                key={item.key}
+                                variant='bordered'
+                                className='border border-blue-500'
+                                classNames={{
+                                  base: 'border border-dark-gray bg-background dark:border-yellow-500 h-7',
+                                  content: 'text-xs flex items-center gap-1',
+                                }}>
+                                <span className='capitalize'>
+                                  {variant?.displayLabel ?? item.textValue}
+                                </span>
+                              </Chip>
+                            )
+                          })}
+                        </div>
+                      )}>
+                      {variantOptions.map((option) => (
+                        <SelectItem key={option.key} textValue={option.displayLabel}>
+                          <div className='flex items-center justify-between w-full'>
+                            <span className='text-sm font-medium'>
+                              {option.displayLabel}
+                            </span>
+                            <span className='text-xs opacity-70'>
+                              {option.label}
+                            </span>
                           </div>
-                        )
-                      }}>
-                      {variantOptions.map((option) => {
-                        const priceDisplay = option.price
-                          ? formatPrice(Math.round(option.price * 100))
-                          : 'No price'
-                        return (
-                          <SelectItem
-                            key={option.key}
-                            textValue={option.displayLabel}>
-                            <div className='flex items-center justify-between w-full'>
-                              <div className='flex flex-col'>
-                                <span className='text-sm font-medium'>
-                                  {option.displayLabel}
-                                </span>
-                                <span className='text-xs opacity-70'>
-                                  {option.label}
-                                </span>
-                              </div>
-                              <span className='text-sm font-semibold text-blue-400 ml-4'>
-                                ${priceDisplay}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        )
-                      })}
+                        </SelectItem>
+                      ))}
                     </Select>
-                    {variantOptions.length === 0 && (
-                      <p className='text-xs text-color-muted mt-1'>
-                        Configure variants with prices in the Pricing section to
-                        enable denomination selection.
-                      </p>
-                    )}
                   </div>
                 )
               }}
             </form.Field>
           </div>
         </div>
-
-        <div className='flex items-center pt-8 space-x-2'>
-          <Icon name='chevron-right' className='size-4 opacity-60' />
-          <span className='font-polysans font-medium'>Statuses</span>
-        </div>
-
-        <div className='grid md:grid-cols-4 items-center gap-4 py-4'>
-          <form.Field name='available'>
-            {(field) => {
-              return (
-                <JunctionBox
-                  title='Active'
-                  description='Product is visible in store.'
-                  checked={(field.state.value as boolean) ?? false}
-                  onUpdate={field.handleChange}
-                />
-              )
-            }}
-          </form.Field>
-          <form.Field name='eligibleForDeals'>
-            {(field) => {
-              return (
-                <JunctionBox
-                  title='Deals'
-                  description='Discounts and package deals.'
-                  checked={(field.state.value as boolean) ?? false}
-                  onUpdate={field.handleChange}
-                />
-              )
-            }}
-          </form.Field>
-
-          <form.Field name='eligibleForRewards'>
-            {(field) => {
-              return (
-                <JunctionBox
-                  title='Rewards'
-                  description='+Rewards for purchasing this product.'
-                  checked={(field.state.value as boolean) ?? false}
-                  onUpdate={field.handleChange}
-                />
-              )
-            }}
-          </form.Field>
-          <form.Field name='featured'>
-            {(field) => {
-              return (
-                <JunctionBox
-                  title='Featured'
-                  description='Highlight in featured sections.'
-                  checked={(field.state.value as boolean) ?? false}
-                  onUpdate={field.handleChange}
-                />
-              )
-            }}
-          </form.Field>
-          <form.Field name='limited'>
-            {(field) => {
-              return (
-                <JunctionBox
-                  title='Limited'
-                  description='Product with limited qty.'
-                  checked={(field.state.value as boolean) ?? false}
-                  onUpdate={field.handleChange}
-                />
-              )
-            }}
-          </form.Field>
-          <form.Field name='sale'>
-            {(field) => {
-              return (
-                <JunctionBox
-                  title='On Sale'
-                  description='Product is on-sale.'
-                  checked={(field.state.value as boolean) ?? false}
-                  onUpdate={field.handleChange}
-                />
-              )
-            }}
-          </form.Field>
-
-          <form.Field name='eligibleForUpgrade'>
-            {(field) => {
-              return (
-                <JunctionBox
-                  title='Upgradable'
-                  description='Product can be upgraded to a higher tiers.'
-                  checked={(field.state.value as boolean) ?? false}
-                  onUpdate={field.handleChange}
-                />
-              )
-            }}
-          </form.Field>
-        </div>
-
-        {eligibleForUpgrade && (
-          <div className='grid md:grid-cols-4 items-center gap-8 py-4'>
-            <form.Field name='upgradePrice'>
-              {(field) => {
-                const value = (field.state.value as number | undefined) ?? 0
-                return (
-                  <div className='space-y-2'>
-                    <Input
-                      label='Upgrade Price ($)'
-                      type='number'
-                      value={String(value)}
-                      onChange={(e) =>
-                        field.handleChange(Number(e.target.value) || 0)
-                      }
-                      onBlur={field.handleBlur}
-                      min={0}
-                      step={0.01}
-                      variant='bordered'
-                      classNames={commonInputClassNames}
-                      startContent={
-                        <Icon
-                          name='dollar'
-                          className='size-5 mb-0.5 opacity-80'
-                        />
-                      }
-                    />
-                  </div>
-                )
-              }}
-            </form.Field>
-          </div>
-        )}
       </div>
     </FormSection>
   )
