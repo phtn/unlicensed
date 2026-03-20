@@ -34,6 +34,38 @@ describe('product CSV import', () => {
     expect(parseProductsCsv('').fileError).toBe('File is empty')
   })
 
+  test('parses CSV files with a UTF-8 BOM header prefix', () => {
+    const result = parseProductsCsv(
+      `\uFEFF${buildCsv({
+        name: 'BOM Flower',
+        slug: 'bom-flower',
+        categorySlug: 'flower',
+      })}`,
+    )
+
+    expect(result.ok).toBe(true)
+    expect(result.headers[0]).toBe(EXPECTED_CSV_HEADERS[0])
+    expect(result.rows[0].product.name).toBe('BOM Flower')
+    expect(result.rows[0].errors).toEqual([])
+  })
+
+  test('parses multiline quoted fields without splitting a product into multiple rows', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        name: 'Story Flower',
+        slug: 'story-flower',
+        categorySlug: 'flower',
+        description: 'Top shelf,\nwith a second line and "quoted" tasting notes.',
+      }),
+    )
+
+    expect(result.rows).toHaveLength(1)
+    expect(result.rows[0].product.description).toBe(
+      'Top shelf,\nwith a second line and "quoted" tasting notes.',
+    )
+    expect(result.rows[0].errors).toEqual([])
+  })
+
   test('parses legacy shared_weight rows and normalizes them to shared inventory', () => {
     const result = parseProductsCsv(
       buildCsv({
@@ -175,6 +207,25 @@ describe('product CSV import', () => {
         categorySlug: 'flower',
         inventoryMode: 'shared',
         stockByDenomination: '{"0.125":6,"0.25":10}',
+      }),
+    )
+
+    expect(result.rows[0].errors).not.toContain(
+      'masterStockQuantity is required and must be a non-negative number when inventoryMode is shared',
+    )
+    expect(result.rows[0].errors).not.toContain(
+      'masterStockUnit is required when inventoryMode is shared',
+    )
+  })
+
+  test('accepts shared inventory rows when denomination stock is provided via exported stock columns', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        name: 'Shared Export Flower',
+        slug: 'shared-export-flower',
+        categorySlug: 'flower',
+        inventoryMode: 'shared',
+        'stock_0.125': '6',
       }),
     )
 

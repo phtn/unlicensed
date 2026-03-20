@@ -154,6 +154,27 @@ describe('product CSV upload helpers', () => {
     expect(rows?.[0].conflict).toBeNull()
   })
 
+  test('buildRowsWithConflicts appends the category slug when a derived slug already exists', () => {
+    const parseResult = parseProductsCsv(
+      buildCsv({
+        name: 'Blue Dream',
+        slug: '',
+        categorySlug: 'flower',
+      }),
+    )
+
+    const rows = buildRowsWithConflicts(
+      parseResult,
+      new Map([['blue-dream', 'prod_existing_123']]),
+      new Set(['flower']),
+    )
+
+    expect(rows).toBeDefined()
+    expect(rows?.[0].raw.slug).toBe('blue-dream-flower')
+    expect(rows?.[0].product.slug).toBe('blue-dream-flower')
+    expect(rows?.[0].conflict).toBeNull()
+  })
+
   test('buildRowsWithConflicts allows same-_id replacements to keep an existing slug', () => {
     const parseResult = parseProductsCsv(
       buildCsv({
@@ -196,6 +217,34 @@ describe('product CSV upload helpers', () => {
     expect(rows?.[0].conflict).toBe('slug')
     expect(rows?.[0].errors).toContain('Category "missing-category" not found')
     expect(rows?.[0].errors).toContain('Slug "existing-flower" already exists')
+  })
+
+  test('buildRowsWithConflicts flags later create rows that duplicate a slug inside the same import', () => {
+    const parseResult = parseProductsCsv(
+      buildCsv(
+        {
+          name: 'Duplicate Flower First',
+          slug: 'duplicate-flower',
+          categorySlug: 'flower',
+        },
+        {
+          name: 'Duplicate Flower Second',
+          slug: 'duplicate-flower',
+          categorySlug: 'flower',
+        },
+      ),
+    )
+
+    const rows = buildRowsWithConflicts(
+      parseResult,
+      new Map(),
+      new Set(['flower']),
+    )
+
+    expect(rows).toBeDefined()
+    expect(rows?.[0].conflict).toBeNull()
+    expect(rows?.[1].conflict).toBe('slug')
+    expect(rows?.[1].errors).toContain('Slug "duplicate-flower" already exists')
   })
 
   test('getPreviewCellIssue maps validation messages to required, type, and conflict labels', () => {

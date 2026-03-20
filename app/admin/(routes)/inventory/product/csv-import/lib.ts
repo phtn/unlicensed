@@ -57,6 +57,51 @@ function parseCsvLine(line: string): string[] {
   return result
 }
 
+/** Split CSV text into logical rows while preserving embedded newlines inside quoted cells. */
+function parseCsvRows(csvText: string): string[] {
+  const normalizedText =
+    csvText.charCodeAt(0) === 0xfeff ? csvText.slice(1) : csvText
+  const rows: string[] = []
+  let currentRow = ''
+  let inQuotes = false
+
+  for (let index = 0; index < normalizedText.length; index++) {
+    const char = normalizedText[index]
+
+    if (char === '"') {
+      if (inQuotes && normalizedText[index + 1] === '"') {
+        currentRow += '""'
+        index++
+        continue
+      }
+
+      inQuotes = !inQuotes
+      currentRow += char
+      continue
+    }
+
+    if ((char === '\n' || char === '\r') && !inQuotes) {
+      if (currentRow.trim().length > 0) {
+        rows.push(currentRow)
+      }
+      currentRow = ''
+
+      if (char === '\r' && normalizedText[index + 1] === '\n') {
+        index++
+      }
+      continue
+    }
+
+    currentRow += char
+  }
+
+  if (currentRow.trim().length > 0) {
+    rows.push(currentRow)
+  }
+
+  return rows
+}
+
 function parseBool(v: string): boolean | undefined {
   const s = (v ?? '').toLowerCase().trim()
   if (s === 'true' || s === '1') return true
@@ -275,7 +320,7 @@ export interface ParseResult {
 
 /** Parse CSV text into rows and map to product shape. Does not run full validation (category/slug conflict). */
 export function parseProductsCsv(csvText: string): ParseResult {
-  const lines = csvText.split(/\r?\n/).filter((l) => l.trim().length > 0)
+  const lines = parseCsvRows(csvText)
   if (lines.length === 0) {
     return {ok: false, headers: [], rows: [], fileError: 'File is empty'}
   }
