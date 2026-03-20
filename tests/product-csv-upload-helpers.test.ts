@@ -108,9 +108,9 @@ describe('product CSV upload helpers', () => {
     const firstDenomination = CSV_DENOM_KEYS[0]
 
     expect(seeded.headers).toContain(`stock_${firstDenomination}`)
-    expect(row.raw[`stock_${firstDenomination}`]).toBe('100')
+    expect(row.raw[`stock_${firstDenomination}`]).toBe('0')
     expect(row.product.stockByDenomination).toEqual(
-      Object.fromEntries(CSV_DENOM_KEYS.map((key) => [key, 100])),
+      Object.fromEntries(CSV_DENOM_KEYS.map((key) => [key, 0])),
     )
   })
 
@@ -172,7 +172,9 @@ describe('product CSV upload helpers', () => {
 
     expect(rows).toBeDefined()
     expect(rows?.[0].conflict).toBeNull()
-    expect(rows?.[0].errors).not.toContain('Slug "existing-flower" already exists')
+    expect(rows?.[0].errors).not.toContain(
+      'Slug "existing-flower" already exists',
+    )
   })
 
   test('buildRowsWithConflicts adds category errors and slug conflicts for invalid replacement targets', () => {
@@ -311,7 +313,9 @@ describe('product CSV upload helpers', () => {
       new Map([['existing-flower', 'prod_existing_123']]),
       new Set(['flower']),
     )
-    const validRows = rows?.filter((row) => row.errors.length === 0 && row.conflict === null) ?? []
+    const validRows =
+      rows?.filter((row) => row.errors.length === 0 && row.conflict === null) ??
+      []
 
     const errors = mapImportRowErrors(
       [

@@ -8,7 +8,7 @@ import {
 } from '../product/csv-import/lib'
 
 const DEFAULT_PRODUCT_IMAGE_STORAGE_ID = 'kg24p8cjdd0rr1fnsjzspxxa1182b51r'
-const DEFAULT_DENOMINATION_STOCK = 100
+const DEFAULT_DENOMINATION_STOCK = 0
 
 export type PreviewCellIssue = {
   label: 'REQUIRED' | 'NUMBER TYPE' | 'ARRAY TYPE' | 'VALUE TYPE' | 'CONFLICT'
@@ -216,7 +216,9 @@ export function seedDefaultImage(parseResult: ParseResult): ParseResult {
   return {...parseResult, headers, rows}
 }
 
-export function seedDefaultDenominationStock(parseResult: ParseResult): ParseResult {
+export function seedDefaultDenominationStock(
+  parseResult: ParseResult,
+): ParseResult {
   if (!parseResult.ok || parseResult.rows.length === 0) {
     return parseResult
   }
