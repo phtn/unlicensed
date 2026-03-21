@@ -175,7 +175,7 @@ const ProductCardComponent = ({
   return (
     <article
       className={cn(
-        'group relative h-full max-h-[350.01px] min-w-48 max-w-48 overflow-hidden rounded-xs bg-sidebar shadow-sm dark:bg-black sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
+        'group relative h-[350.01px] min-h-[350.01px] max-h-[350.01px] min-w-48 max-w-48 overflow-hidden rounded-xs bg-sidebar shadow-sm dark:bg-black sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
         className,
       )}>
       <NextLink
@@ -204,22 +204,24 @@ const ProductCardComponent = ({
           )}
         </div>
 
-        <div className='flex flex-1 flex-col'>
+        <div className='flex min-h-0 flex-1 flex-col'>
           <div className='relative flex items-center justify-between p-2'>
             <div className='min-w-0 flex-1 pr-24'>
-              {brandLabel && (
-                <p className='mb-0.5 text-xs font-light capitalize tracking-wide opacity-90 md:text-sm font-okxs'>
-                  <span className='font-light'>{brandLabel}</span>
-                  {product.productType && (
-                    <span>
-                      <span className='px-1 text-xs font-thin opacity-70 font-okxs'>
-                        &middot;
+              <div className='mb-0.5 h-4 md:h-5'>
+                {brandLabel && (
+                  <p className='truncate text-xs font-light capitalize tracking-wide opacity-90 md:text-sm font-okxs'>
+                    <span className='font-light'>{brandLabel}</span>
+                    {product.productType && (
+                      <span>
+                        <span className='px-1 text-xs font-thin opacity-70 font-okxs'>
+                          &middot;
+                        </span>
+                        {product.productType}
                       </span>
-                      {product.productType}
-                    </span>
-                  )}
-                </p>
-              )}
+                    )}
+                  </p>
+                )}
+              </div>
 
               <h3 className='truncate text-base capitalize leading-5 font-clash sm:text-base md:text-lg md:leading-5 lg:text-xl lg:leading-5'>
                 {product.name}
@@ -277,21 +279,22 @@ const ProductCardComponent = ({
             </div>
           </div>
 
-          <div className='flex w-full flex-col bg-dark-table dark:bg-black'>
+          <div className='mt-auto flex w-full flex-col bg-dark-table dark:bg-black'>
             <div
-              className='mt-1.5 flex h-8 gap-x-1.5'
               role='group'
+              className='mt-1.5 flex h-8 gap-x-1.5'
               aria-label='Select denomination'>
               {firstThreeOptions.map((option, index) => (
                 <button
                   key={option.denominationValue}
                   type='button'
-                  aria-pressed={selectedIndex === index}
+                  // aria-pressed={selectedIndex === index}
                   className={cn(
-                    'relative z-20 flex flex-1 items-center justify-center bg-sidebar/50 text-xs text-white transition-colors dark:bg-dark-table md:text-sm font-okxs',
+                    'relative z-20 flex flex-1 items-center justify-center bg-sidebar/50 text-xs md:text-sm text-white dark:bg-dark-table font-okxs',
+                    'transition-colors duration-300',
                     selectedIndex === index
                       ? 'bg-white text-brand hover:bg-sidebar/80 dark:bg-white/90 dark:hover:bg-white/75'
-                      : 'hover:bg-white/85 hover:text-brand dark:hover:bg-white/80',
+                      : 'hover:bg-white/85 hover:text-light-brand dark:hover:bg-white/80',
                   )}
                   onClick={(event) => {
                     event.preventDefault()
@@ -305,7 +308,7 @@ const ProductCardComponent = ({
 
             <button
               type='button'
-              className='relative z-20 mt-1.25 rounded-xs bg-brand px-3 py-2 text-sm font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-50'
+              className='relative z-20 mt-1.25 rounded-xs bg-brand hover:bg-light-brand px-3 py-2 text-sm font-medium text-white transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-50'
               disabled={!productId || !selectedOption}
               onClick={handleAddToCart}>
               Add to Cart

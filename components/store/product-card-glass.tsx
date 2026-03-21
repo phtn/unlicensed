@@ -174,11 +174,11 @@ const ProductCardGlassComponent = ({
   return (
     <article
       className={cn(
-        'group relative isolate h-full min-w-48 max-w-48 overflow-hidden rounded-[1.35rem] border border-white/15 bg-white/10 shadow-[0_18px_55px_rgba(15,23,42,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-white/3 sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
+        'group relative isolate h-[350.01px] min-h-[350.01px] max-h-[350.01px] min-w-48 max-w-48 overflow-hidden rounded-sm border border-white/15 bg-white/10 shadow-[0_18px_55px_rgba(15,23,42,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-white/3 sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
         className,
       )}>
-      <div className='pointer-events-none absolute inset-0 rounded-[inherit] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.34),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.16),transparent_33%)] opacity-90' />
-      <div className='pointer-events-none absolute inset-px rounded-[1.25rem] border border-white/15' />
+      <div className='pointer-events-none absolute inset-0 rounded-[inherit] rounded-tl-xs bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.34),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.16),transparent_33%)] opacity-90' />
+      <div className='pointer-events-none absolute inset-[0.5px] rounded-xs border border-white/15' />
       <div className='pointer-events-none absolute inset-x-4 top-0 h-16 bg-linear-to-b from-white/28 to-transparent blur-md dark:from-white/8' />
 
       <NextLink
@@ -189,8 +189,8 @@ const ProductCardGlassComponent = ({
       />
 
       <div className='relative flex h-full flex-col rounded-[inherit] bg-linear-to-b from-white/18 via-white/8 to-black/8 dark:from-white/5 dark:via-white/3 dark:to-black/24'>
-        <div className='relative p-2.5 pb-0'>
-          <div className='relative flex items-center justify-center overflow-hidden rounded-[1.05rem] border border-white/18 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-md dark:border-white/10 dark:bg-black/18'>
+        <div className='relative p-[0.5px] pb-0'>
+          <div className='relative flex items-center justify-center overflow-hidden rounded-xs border border-white/18 border-b-0 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-md dark:border-white/10 dark:bg-black/18'>
             <div className='pointer-events-none absolute inset-0 bg-linear-to-b from-white/14 via-transparent to-black/10' />
             {imageSrc ? (
               <img
@@ -199,7 +199,7 @@ const ProductCardGlassComponent = ({
                 loading='lazy'
                 decoding='async'
                 draggable={false}
-                className='aspect-square min-w-44 rounded-[0.95rem] object-cover transition-transform duration-500 group-hover:scale-[1.04] xl:min-w-64'
+                className='aspect-square min-w-44 rounded-xs object-cover transition-transform duration-500 group-hover:scale-[1.04] xl:min-w-64'
               />
             ) : (
               <div className='flex aspect-square h-44 min-h-48 w-auto items-center justify-center xl:min-w-64'>
@@ -209,22 +209,24 @@ const ProductCardGlassComponent = ({
           </div>
         </div>
 
-        <div className='flex flex-1 flex-col px-3 pb-3 pt-2.5'>
+        <div className='flex min-h-0 flex-1 flex-col px-3 pb-3 pt-2.5'>
           <div className='relative flex items-start justify-between gap-3'>
             <div className='min-w-0 flex-1 pr-22'>
-              {brandLabel && (
-                <p className='mb-0.75 text-xs font-light capitalize tracking-wide text-foreground/72 md:text-sm dark:text-white/72 font-okxs'>
-                  <span>{brandLabel}</span>
-                  {product.productType && (
-                    <span>
-                      <span className='px-1 text-xs font-thin text-foreground/45 dark:text-white/45 font-okxs'>
-                        &middot;
+              <div className='mb-0.75 h-4 md:h-5'>
+                {brandLabel && (
+                  <p className='truncate text-xs font-light capitalize tracking-wide text-foreground/72 md:text-sm dark:text-white/72 font-okxs'>
+                    <span>{brandLabel}</span>
+                    {product.productType && (
+                      <span>
+                        <span className='px-1 text-xs font-thin text-foreground/45 dark:text-white/45 font-okxs'>
+                          &middot;
+                        </span>
+                        {product.productType}
                       </span>
-                      {product.productType}
-                    </span>
-                  )}
-                </p>
-              )}
+                    )}
+                  </p>
+                )}
+              </div>
 
               <h3 className='truncate text-base capitalize leading-5 text-foreground sm:text-base md:text-lg md:leading-5 lg:text-xl lg:leading-5 dark:text-white font-clash'>
                 {product.name}
@@ -260,7 +262,7 @@ const ProductCardGlassComponent = ({
               </div>
             </div>
 
-            <div className='pointer-events-none absolute right-0 top-0 overflow-hidden rounded-full border border-white/22 bg-white/35 px-3 py-1 text-lg leading-none text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-md dark:border-white/12 dark:bg-black/28 dark:text-white'>
+            <div className='pointer-events-none absolute right-0 top-0 overflow-hidden rounded-xs bg-white/35 px-3 py-1 text-xl leading-none text-light-brand _shadow-[inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-md dark:bg-black/28 dark:text-light-brand md:text-2xl'>
               {selectedOption ? (
                 <span>
                   $<span className='font-black'>{selectedOption.price}</span>
@@ -273,7 +275,7 @@ const ProductCardGlassComponent = ({
 
           <div className='mt-auto pt-3'>
             <div
-              className='mt-1.5 flex gap-x-1.5 rounded-2xl border border-white/15 bg-black/10 p-1 backdrop-blur-md dark:border-white/10 dark:bg-black/22'
+              className='relative z-20 mt-1.5 flex gap-x-1 rounded-xs border border-white/15 bg-black/10 backdrop-blur-md dark:border-white/10 dark:bg-black/22'
               role='group'
               aria-label='Select denomination'>
               {firstThreeOptions.map((option, index) => (
@@ -282,10 +284,10 @@ const ProductCardGlassComponent = ({
                   type='button'
                   aria-pressed={selectedIndex === index}
                   className={cn(
-                    'relative z-20 flex h-8 flex-1 items-center justify-center rounded-[0.8rem] border border-transparent text-xs text-foreground/78 transition-colors md:text-sm dark:text-white/82 font-okxs',
+                    'relative z-20 flex h-8 flex-1 items-center justify-center rounded-xs border border-transparent text-xs text-foreground/78 transition-colors md:text-sm dark:text-white/82 font-okxs font-medium',
                     selectedIndex === index
-                      ? 'border-white/30 bg-white/88 text-brand shadow-[0_8px_20px_rgba(255,255,255,0.18)] dark:border-white/15 dark:bg-white/90'
-                      : 'bg-white/8 hover:bg-white/24 hover:text-foreground dark:bg-white/2 dark:hover:bg-white/12 dark:hover:text-white',
+                      ? 'border-white/30 bg-white/88 text-brand dark:bg-white dark:text-brand shadow-[0_8px_20px_rgba(255,255,255,0.18)] dark:border-white/15'
+                      : 'bg-white/8 hover:bg-white/24 hover:text-foreground dark:bg-sibebar/2 dark:hover:bg-sidebar/12 dark:hover:text-white',
                   )}
                   onClick={(event) => {
                     event.preventDefault()
@@ -299,7 +301,7 @@ const ProductCardGlassComponent = ({
 
             <button
               type='button'
-              className='relative z-20 mt-2.5 w-full rounded-2xl border border-white/20 bg-white/68 px-3 py-2.5 text-sm font-medium text-dark-table shadow-[inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-md transition-colors hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/12 dark:bg-white/10 dark:text-white dark:hover:bg-white/14 font-okxs'
+              className='relative z-20 mt-2.5 w-full rounded-xs border border-light-brand/20 bg-light-brand/68 px-2 py-2.5 text-sm font-medium text-dark-table shadow-[inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-md transition-colors hover:bg-brand/80 disabled:cursor-not-allowed disabled:opacity-50 dark:border-light-brand/12 dark:bg-light-brand/84 dark:text-white dark:hover:bg-light-brand/64 font-okxs'
               disabled={!productId || !selectedOption}
               onClick={handleAddToCart}>
               Add to Cart

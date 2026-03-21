@@ -4,9 +4,9 @@ import {StoreProduct} from '@/app/types'
 import {EmptyCategory} from '@/components/store/empty-category'
 import {ProductCard} from '@/components/store/product-card'
 import {Icon} from '@/lib/icons'
-import {Activity} from 'react'
 import {motion, useReducedMotion} from 'motion/react'
 import type {ReactNode} from 'react'
+import {Activity} from 'react'
 
 interface ProductsProps {
   products: StoreProduct[]
@@ -26,7 +26,8 @@ export const Products = ({
   return (
     <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
       <div className='max-w-7xl mx-auto'>
-        <Activity mode={!isLoading && products.length === 0 ? 'visible' : 'hidden'}>
+        <Activity
+          mode={!isLoading && products.length === 0 ? 'visible' : 'hidden'}>
           <EmptyCategory />
         </Activity>
 

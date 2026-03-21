@@ -334,7 +334,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
               </div>
             )}
             {filterOptions.brands.length > 0 && (
-              <div className='grid min-h-18 gap-1.5 border sm:grid-cols-[auto_1fr] sm:items-start'>
+              <div className='grid min-h-22 gap-1.5 sm:grid-cols-[auto_1fr] sm:items-start'>
                 <div className='flex flex-col gap-1.5'>
                   <div className='flex flex-wrap items-center gap-1'>
                     <span className='text-sm font-clash font-semibold uppercase sm:pt-1'>
