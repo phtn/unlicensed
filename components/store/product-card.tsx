@@ -175,7 +175,7 @@ const ProductCardComponent = ({
   return (
     <article
       className={cn(
-        'group relative h-full max-h-[350.01px] min-w-48 max-w-48 overflow-hidden rounded-xs bg-sidebar shadow-sm dark:bg-black sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76 contain-content [content-visibility:auto] [contain-intrinsic-size:350px]',
+        'group relative h-full max-h-[350.01px] min-w-48 max-w-48 overflow-hidden rounded-xs bg-sidebar shadow-sm dark:bg-black sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
         className,
       )}>
       <NextLink
