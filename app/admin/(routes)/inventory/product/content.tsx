@@ -2,7 +2,7 @@
 
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {api} from '@/convex/_generated/api'
-import {useQuery} from 'convex/react'
+import {usePaginatedQuery} from 'convex/react'
 import {Suspense} from 'react'
 import {EditProductContent} from './[id]/content'
 import {NewProduct} from './new-product'
@@ -10,9 +10,27 @@ import {ProductList} from './product-list'
 import {ProductSettings} from './product-settings'
 import {ProductsData} from './products-data'
 
+const ADMIN_PRODUCTS_PAGE_SIZE = 100
+
 const ProductsContentInner = () => {
-  const products = useQuery(api.products.q.listProducts, {limit: 1000})
+  const {
+    results: products,
+    status: productsStatus,
+    loadMore,
+  } = usePaginatedQuery(
+    api.products.q.listProductsPaginated,
+    {},
+    {initialNumItems: ADMIN_PRODUCTS_PAGE_SIZE},
+  )
   const [tabId, , id] = useAdminTabId()
+  const canLoadMore = productsStatus === 'CanLoadMore'
+  const isLoadingMore = productsStatus === 'LoadingMore'
+  const isLoadingInitial =
+    productsStatus === 'LoadingFirstPage' && products.length === 0
+
+  const handleLoadMore = () => {
+    loadMore(ADMIN_PRODUCTS_PAGE_SIZE)
+  }
 
   switch (tabId) {
     case 'settings':
@@ -21,11 +39,28 @@ const ProductsContentInner = () => {
       return <NewProduct />
     case 'edit':
       if (!id) {
-        return <ProductList products={products} />
+        return (
+          <ProductList
+            products={products}
+            isLoading={isLoadingInitial}
+            canLoadMore={canLoadMore}
+            isLoadingMore={isLoadingMore}
+            onLoadMore={handleLoadMore}
+          />
+        )
       }
       return <EditProductContent id={id} />
     default:
-      return <ProductsData data={products} />
+      return (
+        <ProductsData
+          data={products}
+          loading={isLoadingInitial}
+          canLoadMore={canLoadMore}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={handleLoadMore}
+          loadMoreLabel={`Load ${ADMIN_PRODUCTS_PAGE_SIZE} more`}
+        />
+      )
   }
 }
 

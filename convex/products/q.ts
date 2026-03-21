@@ -102,6 +102,36 @@ export const listProducts = query({
   },
 })
 
+export const listProductsPaginated = query({
+  args: {
+    archived: v.optional(v.boolean()),
+    categorySlug: v.optional(v.string()),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (
+    ctx,
+    args,
+  ): Promise<PaginationResult<Doc<'products'>>> => {
+    const archived = args.archived === true
+    const baseQuery = args.categorySlug
+      ? ctx.db
+          .query('products')
+          .withIndex('by_category', (q) =>
+            q.eq('categorySlug', args.categorySlug!),
+          )
+          .order('desc')
+      : ctx.db.query('products').order('desc')
+
+    return await baseQuery
+      .filter((q) =>
+        archived
+          ? q.eq(q.field('archived'), true)
+          : q.neq(q.field('archived'), true),
+      )
+      .paginate(args.paginationOpts)
+  },
+})
+
 export const listCategoryProductsPaginated = query({
   args: {
     brand: v.optional(v.string()),

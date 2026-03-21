@@ -235,14 +235,25 @@ interface ProductsDataProps {
   data: Doc<'products'>[] | undefined
   title?: string
   exportFilePrefix?: string
+  loading?: boolean
+  canLoadMore?: boolean
+  isLoadingMore?: boolean
+  onLoadMore?: VoidFunction
+  loadMoreLabel?: string
 }
 export const ProductsData = ({
   data,
   title = 'Products',
   exportFilePrefix = 'products',
+  loading,
+  canLoadMore = false,
+  isLoadingMore = false,
+  onLoadMore,
+  loadMoreLabel = 'Load more',
 }: ProductsDataProps) => {
   const categories = useQuery(api.categories.q.listCategories)
   const archiveProduct = useMutation(api.products.m.archiveProduct)
+  const safeData = useMemo(() => data ?? [], [data])
   const categorySlugs = useMemo(
     () =>
       (categories ?? [])
@@ -512,41 +523,74 @@ export const ProductsData = ({
   const ExportCsvToolbar = useCallback(
     (context: TableToolbarContext<Doc<'products'>>) => {
       return (
-        <Dropdown>
-          <DropdownTrigger>
+        <div className='flex items-center gap-2'>
+          <span className='hidden text-xs font-brk uppercase tracking-tight text-foreground/55 md:inline'>
+            {safeData.length} loaded
+          </span>
+          {onLoadMore && (canLoadMore || isLoadingMore) && (
             <Button
               size='sm'
               radius='none'
               variant='flat'
-              className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk portrait:aspect-square'
-              endContent={
-                <Icon name='chevron-down' className='size-4 md:flex hidden' />
-              }>
-              <Icon name='download' className='size-4' />
-              <span className='hidden sm:inline'>Export CSV</span>
+              isLoading={isLoadingMore}
+              isDisabled={isLoadingMore}
+              onPress={onLoadMore}
+              className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk'>
+              {loadMoreLabel}
             </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            aria-label='Export CSV options'
-            onAction={(key) => {
-              if (key === 'all')
-                exportProductsToCsv(data ?? [], exportFilePrefix)
-              if (key === 'current')
-                exportProductsToCsv(context.getFilteredData(), exportFilePrefix)
-            }}>
-            <DropdownItem key='all' description='Export all products'>
-              Export all
-            </DropdownItem>
-            <DropdownItem
-              key='current'
-              description='Export only products matching current search and filters'>
-              Export current list
-            </DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+          )}
+          <Dropdown>
+            <DropdownTrigger>
+              <Button
+                size='sm'
+                radius='none'
+                variant='flat'
+                className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk portrait:aspect-square'
+                endContent={
+                  <Icon name='chevron-down' className='size-4 md:flex hidden' />
+                }>
+                <Icon name='download' className='size-4' />
+                <span className='hidden sm:inline'>Export CSV</span>
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label='Export CSV options'
+              onAction={(key) => {
+                if (key === 'all')
+                  exportProductsToCsv(safeData, exportFilePrefix)
+                if (key === 'current')
+                  exportProductsToCsv(
+                    context.getFilteredData(),
+                    exportFilePrefix,
+                  )
+              }}>
+              <DropdownItem
+                key='all'
+                description={
+                  canLoadMore || isLoadingMore
+                    ? 'Export all currently loaded products'
+                    : 'Export all loaded products'
+                }>
+                {canLoadMore || isLoadingMore ? 'Export loaded' : 'Export all'}
+              </DropdownItem>
+              <DropdownItem
+                key='current'
+                description='Export only products matching current search and filters'>
+                Export current list
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </div>
       )
     },
-    [data, exportFilePrefix],
+    [
+      canLoadMore,
+      exportFilePrefix,
+      isLoadingMore,
+      loadMoreLabel,
+      onLoadMore,
+      safeData,
+    ],
   )
 
   const exportToolbar = useMemo(() => ExportCsvToolbar, [ExportCsvToolbar])
@@ -567,20 +611,18 @@ export const ProductsData = ({
 
   return (
     <div className='relative w-full max-w-full overflow-hidden'>
-      {data && (
-        <DataTable
-          title={title}
-          data={data}
-          loading={!data}
-          columnConfigs={columns}
-          editingRowId={null}
-          defaultPageSize={25}
-          rightToolbarLeft={exportToolbar}
-          deleteIdAccessor='_id'
-          deleteActionLabel='Delete Selected'
-          onDeleteSelected={handleArchiveSelected}
-        />
-      )}
+      <DataTable
+        title={title}
+        data={safeData}
+        loading={loading ?? !data}
+        columnConfigs={columns}
+        editingRowId={null}
+        defaultPageSize={25}
+        rightToolbarLeft={exportToolbar}
+        deleteIdAccessor='_id'
+        deleteActionLabel='Delete Selected'
+        onDeleteSelected={handleArchiveSelected}
+      />
     </div>
   )
 }

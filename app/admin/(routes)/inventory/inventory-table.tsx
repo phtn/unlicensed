@@ -26,13 +26,15 @@ import {
   TableHeader,
   TableRow,
 } from '@heroui/react'
-import {useMutation, useQuery} from 'convex/react'
+import {useMutation, usePaginatedQuery, useQuery} from 'convex/react'
 import {Key, useCallback, useEffect, useMemo, useState} from 'react'
 import {useProductDetails} from '../../_components/product-details-context'
 import {actionsCell, moneyCell, textCell} from '../../_components/ui/cells'
 import {useSettingsPanel} from '../../_components/ui/settings'
 
 type Product = Doc<'products'>
+
+const INVENTORY_PAGE_SIZE = 100
 
 const columns = [
   {name: 'PRODUCT', uid: 'product', minWidth: 200},
@@ -53,16 +55,29 @@ export const statusOptions = [
 ]
 
 export const InventoryTable = () => {
-  const products = useQuery(api.products.q.listProducts, {limit: 100})
+  const {
+    results: paginatedProducts,
+    status: paginatedProductsStatus,
+    loadMore,
+  } = usePaginatedQuery(
+    api.products.q.listProductsPaginated,
+    {},
+    {initialNumItems: INVENTORY_PAGE_SIZE},
+  )
   const categoriesData = useQuery(api.categories.q.listCategories)
   const categories = useMemo(
     () => categoriesData ?? [],
     [categoriesData],
   )
+  const products = useMemo(() => paginatedProducts, [paginatedProducts])
   const {selectedProduct, setSelectedProduct} = useProductDetails()
   const {open, setOpen} = useSettingsPanel()
   const selectedProductId = selectedProduct?._id
   const bulkUpdatePrices = useMutation(api.products.m.bulkUpdatePrices)
+  const canLoadMoreProducts = paginatedProductsStatus === 'CanLoadMore'
+  const isLoadingMoreProducts = paginatedProductsStatus === 'LoadingMore'
+  const isLoadingInitialProducts =
+    paginatedProductsStatus === 'LoadingFirstPage' && products.length === 0
 
   // Get all product image IDs for URL resolution
   const productImageIds = useMemo(
@@ -169,26 +184,25 @@ export const InventoryTable = () => {
   const hasSearchFilter = Boolean(filterValue)
 
   const filteredItems = useMemo(() => {
-    let filteredProducts: Product[] | undefined = products
+    let filteredProducts: Product[] = products
 
     if (hasSearchFilter) {
       filteredProducts =
-        filteredProducts?.filter((product) =>
+        filteredProducts.filter((product) =>
           product.name?.toLowerCase().includes(filterValue.toLowerCase()),
         ) ?? []
     }
 
     // Status filter
     if (statusFilter.size > 0 && statusFilter.size < statusOptions.length) {
-      filteredProducts =
-        filteredProducts?.filter((product) => {
-          const status = product.available
-            ? 'active'
-            : product.featured
-              ? 'featured'
-              : 'inactive'
-          return statusFilter.has(status)
-        }) ?? []
+      filteredProducts = filteredProducts.filter((product) => {
+        const status = product.available
+          ? 'active'
+          : product.featured
+            ? 'featured'
+            : 'inactive'
+        return statusFilter.has(status)
+      })
     }
 
     // Category filter
@@ -197,11 +211,10 @@ export const InventoryTable = () => {
       !categoryFilter.has('all') &&
       categoryFilter.size < categories.length + 1
     ) {
-      filteredProducts =
-        filteredProducts?.filter((product) => {
-          const category = product.categorySlug ?? 'uncategorized'
-          return categoryFilter.has(category)
-        }) ?? []
+      filteredProducts = filteredProducts.filter((product) => {
+        const category = product.categorySlug ?? 'uncategorized'
+        return categoryFilter.has(category)
+      })
     }
 
     return filteredProducts
@@ -213,6 +226,10 @@ export const InventoryTable = () => {
     categoryFilter,
     categories.length,
   ])
+
+  const handleLoadMoreProducts = useCallback(() => {
+    loadMore(INVENTORY_PAGE_SIZE)
+  }, [loadMore])
 
   const onSearchChange = useCallback((value: string) => {
     if (value) {
@@ -671,7 +688,7 @@ export const InventoryTable = () => {
     showCheckboxes,
   ])
 
-  if (!products) {
+  if (isLoadingInitialProducts) {
     return (
       <Card shadow='sm' className='p-4'>
         <p className='text-sm text-gray-400'>Loading inventory...</p>
@@ -852,6 +869,22 @@ export const InventoryTable = () => {
           </Table>
         </div>
       </Card>
+      {(canLoadMoreProducts || isLoadingMoreProducts) && (
+        <div className='flex items-center justify-center gap-3 px-4 pt-4'>
+          <span className='text-xs font-brk uppercase tracking-tight text-foreground/55'>
+            {products.length} loaded
+          </span>
+          <Button
+            radius='none'
+            variant='flat'
+            className='font-brk'
+            isLoading={isLoadingMoreProducts}
+            isDisabled={isLoadingMoreProducts}
+            onPress={handleLoadMoreProducts}>
+            {`Load ${INVENTORY_PAGE_SIZE} more`}
+          </Button>
+        </div>
+      )}
     </>
   )
 }

@@ -71,9 +71,19 @@ const ProductItem = ({product, imageUrl}: ProductItemProps) => (
 
 interface ProductListProps {
   products: Doc<'products'>[] | undefined
+  isLoading?: boolean
+  canLoadMore?: boolean
+  isLoadingMore?: boolean
+  onLoadMore?: VoidFunction
 }
 
-export const ProductList = ({products}: ProductListProps) => {
+export const ProductList = ({
+  products,
+  isLoading = false,
+  canLoadMore = false,
+  isLoadingMore = false,
+  onLoadMore,
+}: ProductListProps) => {
   const imageIds = useMemo(
     () => products?.map((p) => p.image).filter(Boolean) ?? [],
     [products],
@@ -82,21 +92,38 @@ export const ProductList = ({products}: ProductListProps) => {
 
   return (
     <section className='h-[91lvh] overflow-auto px-2'>
-      {products?.length === 0 ? (
+      {isLoading && products?.length === 0 ? (
+        <p className='text-sm text-neutral-500 px-4 font-okxs'>Loading...</p>
+      ) : products?.length === 0 ? (
         <p className='text-sm text-neutral-500 px-4 font-okxs'>0 products</p>
       ) : (
-        <ul className='grid gap-0.5 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6'>
-          {products?.map((product) => (
-            <li key={product._id}>
-              <ProductItem
-                product={product}
-                imageUrl={
-                  (product.image && resolveUrl(product.image)) ?? undefined
-                }
-              />
-            </li>
-          ))}
-        </ul>
+        <div className='space-y-4'>
+          <ul className='grid gap-0.5 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6'>
+            {products?.map((product) => (
+              <li key={product._id}>
+                <ProductItem
+                  product={product}
+                  imageUrl={
+                    (product.image && resolveUrl(product.image)) ?? undefined
+                  }
+                />
+              </li>
+            ))}
+          </ul>
+          {onLoadMore && (canLoadMore || isLoadingMore) && (
+            <div className='flex justify-center pb-6'>
+              <Button
+                radius='none'
+                variant='flat'
+                isLoading={isLoadingMore}
+                isDisabled={isLoadingMore}
+                onPress={onLoadMore}
+                className='font-brk'>
+                Load more
+              </Button>
+            </div>
+          )}
+        </div>
       )}
     </section>
   )
