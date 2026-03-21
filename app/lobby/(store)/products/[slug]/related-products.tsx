@@ -1,5 +1,6 @@
 import {StoreProduct} from '@/app/types'
 import {ProductCard} from '@/components/store/product-card'
+import {Icon} from '@/lib/icons'
 import Link from 'next/link'
 
 type RelatedProductCard = {
@@ -24,7 +25,7 @@ export const RelatedProducts = ({products}: RelatedProductsProps) => {
     <section
       id='related-selections'
       className='mx-auto w-full max-w-7xl space-y-4 px-px md:px-0 [content-visibility:auto] [contain-intrinsic-size:52rem]'>
-      <div className='pl-4 md:pl-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4'>
+      <div className='px-4 md:pl-0 flex flex-row items-center justify-between'>
         <div>
           <h2 className='text-2xl font-clash font-bold text-foreground sm:text-3xl'>
             Related Selections
@@ -32,9 +33,13 @@ export const RelatedProducts = ({products}: RelatedProductsProps) => {
         </div>
         {categorySlug ? (
           <Link
-            href={`/category/${categorySlug}`}
-            className='self-start sm:self-auto border border-color-border/70 bg-background/30 text-sm text-foreground/80 capitalize'>
-            View {categorySlug} Category
+            href={`/lobby/category/${categorySlug}`}
+            className='group flex items-center space-x-0.5 bg-background/30 text-sm capitalize'>
+            <span>View {categorySlug}</span>
+            <Icon
+              name='chevron-right'
+              className='size-3.5 text-foreground/80 group-hover:text-light-brand'
+            />
           </Link>
         ) : null}
       </div>
