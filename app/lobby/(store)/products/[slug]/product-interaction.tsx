@@ -238,7 +238,7 @@ export const ProductInteraction = ({
         <ProductSummary product={product} />
 
         <div className='flex items-start justify-between gap-4 py-3 sm:py-4'>
-          <div className='flex items-center font-okxs text-3xl sm:text-4xl font-semibold text-foreground w-36 md:w-28 border border-white'>
+          <div className='flex items-center font-okxs text-3xl sm:text-4xl font-semibold text-foreground w-36 md:w-28'>
             <div className='font-light opacity-80 scale-95'>$</div>
             {priceByDenomination}
           </div>

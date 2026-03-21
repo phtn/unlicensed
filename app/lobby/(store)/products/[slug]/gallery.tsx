@@ -69,7 +69,7 @@ const GalleryComponent = ({
           {galleryFrame}
         </Lens>
       )}
-      <div className='flex w-full items-start md:gap-2 overflow-x-auto overflow-y-hidden p-1 lg:mt-0'>
+      <div className='flex w-full items-start gap-1 md:gap-2 overflow-x-auto overflow-y-hidden p-1 lg:mt-0'>
         {allImages.map((src, index) => (
           <button
             type='button'
