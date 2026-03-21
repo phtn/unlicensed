@@ -286,7 +286,7 @@ const ProductCardComponent = ({
           <div className='mt-auto flex w-full flex-col bg-dark-table dark:bg-black'>
             <div
               role='group'
-              className='mt-1.5 flex h-8 gap-x-1.5'
+              className='mt-1.5 flex h-8 gap-x-1 md:gap-x-1.5'
               aria-label='Select denomination'>
               {firstThreeOptions.map((option, index) => (
                 <button
