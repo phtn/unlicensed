@@ -9,20 +9,16 @@ import {useProductCartQuantity} from '@/hooks/use-product-cart-quantity'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
-import {Button, useDisclosure} from '@heroui/react'
+import {Button, Tooltip, useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import dynamic from 'next/dynamic'
 import {useRouter} from 'next/navigation'
-import {
-  memo,
-  useMemo,
-  useState,
-  useTransition,
-} from 'react'
+import {memo, useMemo, useState, useTransition} from 'react'
 import {ProductDetailStats} from './product-stats'
 
 const AuthModal = dynamic(
-  () => import('@/components/auth/auth-modal').then((module) => module.AuthModal),
+  () =>
+    import('@/components/auth/auth-modal').then((module) => module.AuthModal),
   {ssr: false},
 )
 
@@ -60,7 +56,9 @@ const ProductSummary = memo(({product}: {product: StoreProduct}) => (
       <p className='text-sm font-clash opacity-70 capitalize'>
         <span>{product.brand.join(', ')}</span>
         {product.productType && <span className='px-1'>&middot;</span>}
-        {product.productType && <span className='ml-2'>{product.productType}</span>}
+        {product.productType && (
+          <span className='ml-2'>{product.productType}</span>
+        )}
       </p>
     )}
     <h1 className='text-3xl lg:text-4xl xl:text-4xl capitalize font-clash text-foreground leading-tight tracking-tight'>
@@ -97,14 +95,26 @@ const DenominationPicker = memo(
             className={cn(
               'relative inline-flex min-h-10 items-center justify-center border border-foreground/20 bg-sidebar px-3 text-base font-medium whitespace-nowrap transition-colors rounded-none font-okxs portrait:px-2',
               isSelected
-                ? 'bg-dark-gray text-white md:hover:bg-black md:hover:text-brand dark:bg-white dark:text-dark-gray dark:md:hover:bg-brand dark:md:hover:text-white'
+                ? 'bg-dark-gray text-white md:hover:bg-black dark:bg-white dark:text-dark-gray dark:md:hover:bg-brand dark:md:hover:text-white'
                 : 'text-foreground/85 hover:border-foreground/35',
             )}>
-            {option.isPopular ? (
-              <span className='absolute -right-1 -top-1 inline-flex size-4 items-center justify-center rounded-full bg-dark-table text-yellow-500'>
-                <Icon name='hot' className='size-3' />
-              </span>
-            ) : null}
+            <Tooltip
+              content={
+                <div className='flex items-center space-x-1'>
+                  <Icon name='hot' className='size-3 text-yellow-500' />
+                  <span className='font-medium'>Popular</span>
+                </div>
+              }>
+              {option.isPopular ? (
+                <div className='absolute -right-2 -top-2 inline-flex size-4.5 items-center justify-center rounded-sm rounded-ss-md rounded-ee-md bg-transparent text-yellow-500 -rotate-45'>
+                  <Icon
+                    name='hot'
+                    className='absolute w-5 h-4 translate-y-[0.33px] text-dark-table rotate-25'
+                  />
+                  <Icon name='hot' className='size-3.5 rotate-25' />
+                </div>
+              ) : null}
+            </Tooltip>
             <span>{option.label}</span>
           </button>
         )
@@ -119,8 +129,7 @@ export const ProductInteraction = ({
   product,
   productId,
 }: ProductInteractionProps) => {
-  const [selectedDenominationIndex, setSelectedDenominationIndex] =
-    useState(0)
+  const [selectedDenominationIndex, setSelectedDenominationIndex] = useState(0)
   const {isOpen, onOpen, onClose} = useDisclosure()
   const {user} = useAuthCtx()
   const router = useRouter()
@@ -255,7 +264,7 @@ export const ProductInteraction = ({
             variant='solid'
             radius='none'
             disableRipple
-            className='flex h-14 w-full items-center bg-linear-to-r from-brand via-brand to-brand font-polysans text-base font-medium md:text-lg sm:flex-1'
+            className='flex h-14 md:h-13 w-full items-center bg-linear-to-r from-brand via-brand to-brand font-clash text-base font-medium md:text-lg sm:flex-1'
             onPress={() => void handleAddToCart()}
             isDisabled={isAddToCartDisabled}>
             <span>Add to Cart</span>
@@ -270,12 +279,14 @@ export const ProductInteraction = ({
             onPress={handleCheckoutPress}
             radius='none'
             isDisabled={user ? isCheckoutDisabled : false}
-            className='h-14 w-full bg-foreground/95 font-polysans text-lg font-medium text-white dark:text-dark-gray sm:flex-1'>
+            className='h-14 md:h-13 w-full bg-foreground/95 font-clash text-lg font-medium text-white dark:text-dark-gray sm:flex-1'>
             <span>{user ? 'Checkout' : 'Sign in'}</span>
           </Button>
         </div>
       </div>
-      {isOpen ? <AuthModal isOpen={isOpen} onClose={onClose} mode='login' /> : null}
+      {isOpen ? (
+        <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />
+      ) : null}
     </>
   )
 }

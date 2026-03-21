@@ -1,0 +1,1 @@
+export const CATEGORY_PRODUCTS_PAGE_SIZE = 20

@@ -15,7 +15,7 @@ import {useQuery} from 'convex/react'
 import {Suspense} from 'react'
 
 const ProductContentInner = () => {
-  const products = useQuery(api.products.q.listProducts, {limit: 100})
+  const products = useQuery(api.products.q.listProducts, {limit: 1000})
   const [tabId] = useAdminTabId()
   const isProductRoute = tabId !== 'settings' && tabId !== 'new'
 
@@ -25,7 +25,7 @@ const ProductContentInner = () => {
         <PageTitle>Products</PageTitle>
         <span
           className={cn(
-            'px-1 h-6 w-8 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-sm font-space font-semibold',
+            'px-1 h-6 w-10 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-sm font-space font-semibold',
             {'bg-white dark:bg-white/10 text-blue-500': isProductRoute},
           )}>
           <AnimatedNumber value={products?.length ?? 0} />

@@ -13,17 +13,23 @@ import {Icon} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
-import {useQuery} from 'convex/react'
+import {usePaginatedQuery, useQuery} from 'convex/react'
+import {AnimatePresence, motion, useReducedMotion} from 'motion/react'
 import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
-import {useCallback, useMemo, ViewTransition} from 'react'
+import {useCallback, useEffect, useMemo, useRef, ViewTransition} from 'react'
+import {CATEGORY_PRODUCTS_PAGE_SIZE} from './constants'
 
 interface ContentProps {
   slug: string
   initialProducts: StoreProduct[]
 }
 
+const COLLAPSED_BRAND_COUNT = 1
+
 export const Content = ({initialProducts, slug}: ContentProps) => {
+  const shouldReduceMotion = useReducedMotion()
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const [brand, setBrand] = useQueryState(
     'brand',
     parseAsString.withDefault(''),
@@ -38,18 +44,6 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     parseAsString.withDefault(''),
   )
 
-  const productsQuery = useQuery(api.products.q.listProducts, {
-    categorySlug: slug,
-    limit: 500,
-  })
-
-  const baseProducts = useMemo(() => {
-    const nextProducts = productsQuery?.map((product) => adaptProduct(product))
-    return nextProducts && nextProducts.length > 0
-      ? nextProducts
-      : initialProducts
-  }, [initialProducts, productsQuery])
-
   const category = useQuery(api.categories.q.getCategoryBySlug, {slug})
   const categories = useQuery(api.categories.q.listCategories)
   const heroImage = useQuery(
@@ -57,51 +51,140 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     category ? {id: category._id} : 'skip',
   )
 
-  const brandLabels = useMemo(() => {
-    const labels = new Map<string, string>()
-    for (const entry of category?.brands ?? []) {
-      labels.set(entry.slug, entry.name)
-      labels.set(entry.name, entry.name)
-    }
-    return labels
-  }, [category])
+  const hasActiveProductFilters =
+    brand !== '' || productType !== '' || tier !== '' || subcategory !== ''
+
+  const {
+    results: paginatedProductResults,
+    status: paginatedProductsStatus,
+    loadMore: loadMoreProducts,
+  } = usePaginatedQuery(
+    api.products.q.listCategoryProductsPaginated,
+    {
+      brand: brand || undefined,
+      categorySlug: slug,
+      productType: productType || undefined,
+      subcategory: subcategory || undefined,
+      tier: tier || undefined,
+    },
+    {initialNumItems: CATEGORY_PRODUCTS_PAGE_SIZE},
+  )
+
+  const paginatedProducts = useMemo(
+    () =>
+      paginatedProductResults.map((product) => adaptProduct(product, category)),
+    [category, paginatedProductResults],
+  )
 
   const products = useMemo(() => {
-    return baseProducts.filter((p) => {
-      if (brand && !p.brand?.includes(brand)) return false
-      if (productType && p.productType !== productType) return false
-      if (tier && p.productTier !== tier) return false
-      if (subcategory && p.subcategory !== subcategory) return false
-      return true
-    })
-  }, [baseProducts, brand, productType, tier, subcategory])
+    if (
+      !hasActiveProductFilters &&
+      paginatedProductsStatus === 'LoadingFirstPage' &&
+      paginatedProducts.length === 0
+    ) {
+      return initialProducts
+    }
+
+    return paginatedProducts
+  }, [
+    hasActiveProductFilters,
+    initialProducts,
+    paginatedProducts,
+    paginatedProductsStatus,
+  ])
 
   const filterOptions = useMemo(() => {
-    const brands = new Map<string, string>()
-    const productTypes = new Set<string>()
-    const tiers = new Map<string, string>()
-    const subcategories = new Set<string>()
-    for (const p of baseProducts) {
-      for (const productBrand of p.brand ?? []) {
-        brands.set(productBrand, brandLabels.get(productBrand) ?? productBrand)
-      }
-      if (p.productType) productTypes.add(p.productType)
-      if (p.productTier) {
-        tiers.set(p.productTier, p.productTierLabel ?? p.productTier)
-      }
-      if (p.subcategory) subcategories.add(p.subcategory)
-    }
+    const brands = (category?.brands ?? [])
+      .map((entry) => ({value: entry.slug, label: entry.name}))
+      .sort((a, b) => a.label.localeCompare(b.label))
+
+    const tiers = (category?.tiers ?? [])
+      .map((entry) => ({value: entry.slug, label: entry.name}))
+      .sort((a, b) => a.label.localeCompare(b.label))
+
+    const subcategories = (category?.subcategories ?? [])
+      .map((entry) => ({value: entry.slug, label: entry.name}))
+      .sort((a, b) => a.label.localeCompare(b.label))
+
     return {
-      brands: Array.from(brands, ([value, label]) => ({value, label})).sort(
-        (a, b) => a.label.localeCompare(b.label),
-      ),
-      productTypes: Array.from(productTypes).sort(),
-      tiers: Array.from(tiers, ([value, label]) => ({value, label})).sort(
-        (a, b) => a.label.localeCompare(b.label),
-      ),
-      subcategories: Array.from(subcategories).sort(),
+      brands,
+      tiers,
+      subcategories,
     }
-  }, [baseProducts, brandLabels])
+  }, [category])
+
+  const {on: isBrandListExpanded, toggle: toggleBrandList} = useToggle()
+
+  const primaryBrandOptions = useMemo(() => {
+    if (filterOptions.brands.length <= COLLAPSED_BRAND_COUNT) {
+      return filterOptions.brands
+    }
+
+    const initialBrands = filterOptions.brands.slice(0, COLLAPSED_BRAND_COUNT)
+    if (isBrandListExpanded) {
+      return initialBrands
+    }
+
+    if (!brand || initialBrands.some((entry) => entry.value === brand)) {
+      return initialBrands
+    }
+
+    const selectedBrand = filterOptions.brands.find(
+      (entry) => entry.value === brand,
+    )
+
+    if (!selectedBrand) {
+      return initialBrands
+    }
+
+    return [...initialBrands.slice(0, COLLAPSED_BRAND_COUNT - 1), selectedBrand]
+  }, [brand, filterOptions.brands, isBrandListExpanded])
+
+  const overflowBrandOptions = useMemo(() => {
+    if (filterOptions.brands.length <= COLLAPSED_BRAND_COUNT) {
+      return []
+    }
+
+    const primaryValues = new Set(
+      primaryBrandOptions.map((brandOption) => brandOption.value),
+    )
+
+    return filterOptions.brands.filter(
+      (brandOption) => !primaryValues.has(brandOption.value),
+    )
+  }, [filterOptions.brands, primaryBrandOptions])
+
+  const hasCollapsibleBrands =
+    filterOptions.brands.length > COLLAPSED_BRAND_COUNT
+  const hiddenBrandCount = overflowBrandOptions.length
+
+  const canLoadMoreProducts = paginatedProductsStatus === 'CanLoadMore'
+  const isLoadingMoreProducts = paginatedProductsStatus === 'LoadingMore'
+  const isLoadingInitialProducts =
+    paginatedProductsStatus === 'LoadingFirstPage' &&
+    (hasActiveProductFilters || initialProducts.length === 0)
+
+  useEffect(() => {
+    if (!canLoadMoreProducts) return
+
+    const currentTarget = loadMoreRef.current
+    if (!currentTarget) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          loadMoreProducts(CATEGORY_PRODUCTS_PAGE_SIZE)
+        }
+      },
+      {rootMargin: '640px 0px'},
+    )
+
+    observer.observe(currentTarget)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [canLoadMoreProducts, loadMoreProducts])
 
   const imageIds = useMemo(
     () =>
@@ -119,7 +202,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     [resolveUrl],
   )
 
-  const {on: navigating, toggle} = useToggle()
+  const {on: navigating, toggle: toggleNavigating} = useToggle()
 
   return (
     <div className='min-h-screen overflow-x-hidden'>
@@ -149,7 +232,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   prefetch
                   radius='none'
                   variant='light'
-                  onPress={toggle}
+                  onPress={toggleNavigating}
                   href={'/lobby/deals'}
                   className='hidden border dark:border-light-gray/80 sm:flex rounded-xs items-center gap-2 dark:text-terpenes font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                   <span className='tracking-tight'>Find Deals</span>
@@ -218,7 +301,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
               </div>
             )}
             {filterOptions.subcategories.length > 0 && (
-              <div className='flex flex-wrap items-center gap-2'>
+              <div className='flex flex-wrap items-center gap-2 mt-0.5'>
                 <span className='text-sm font-clash font-semibold mr-2 uppercase'>
                   Subcategory
                 </span>
@@ -232,56 +315,195 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   onPress={() => setSubcategory('')}>
                   All
                 </Button>
-                {filterOptions.subcategories.map((s) => (
+                {filterOptions.subcategories.map((subcategoryOption) => (
                   <Button
-                    key={s}
+                    key={subcategoryOption.value}
                     size='sm'
                     radius='none'
-                    variant={subcategory === s ? 'solid' : 'flat'}
+                    variant={
+                      subcategory === subcategoryOption.value ? 'solid' : 'flat'
+                    }
                     className={cn('min-w-0 h-6 font-semibold uppercase', {
-                      'bg-brand text-white': subcategory === s,
+                      'bg-brand text-white':
+                        subcategory === subcategoryOption.value,
                     })}
-                    onPress={() => setSubcategory(s)}>
-                    {s}
+                    onPress={() => setSubcategory(subcategoryOption.value)}>
+                    {subcategoryOption.label}
                   </Button>
                 ))}
               </div>
             )}
             {filterOptions.brands.length > 0 && (
-              <div className='flex flex-wrap items-center gap-1'>
-                <span className='text-sm font-clash font-semibold mr-2 uppercase'>
-                  Brand
-                </span>
-                <Button
-                  size='sm'
-                  radius='none'
-                  variant={brand === '' ? 'solid' : 'flat'}
-                  className={cn('min-w-0 h-6 font-bold uppercase', {
-                    'bg-brand text-white': brand === '',
-                  })}
-                  onPress={() => setBrand('')}>
-                  All
-                </Button>
-                {filterOptions.brands.map((brandOption) => (
-                  <Button
-                    key={brandOption.value}
-                    size='sm'
-                    radius='none'
-                    variant={brand === brandOption.value ? 'solid' : 'flat'}
-                    className={cn('min-w-0 h-6 font-semibold uppercase', {
-                      'bg-brand text-white': brand === brandOption.value,
-                    })}
-                    onPress={() => setBrand(brandOption.value)}>
-                    {brandOption.label}
-                  </Button>
-                ))}
+              <div className='grid min-h-18 gap-1.5 border sm:grid-cols-[auto_1fr] sm:items-start'>
+                <div className='flex flex-col gap-1.5'>
+                  <div className='flex flex-wrap items-center gap-1'>
+                    <span className='text-sm font-clash font-semibold uppercase sm:pt-1'>
+                      Brand
+                    </span>
+                    <Button
+                      size='sm'
+                      radius='none'
+                      variant={brand === '' ? 'solid' : 'flat'}
+                      className={cn('min-w-0 h-6 font-bold uppercase', {
+                        'bg-brand text-white': brand === '',
+                      })}
+                      onPress={() => setBrand('')}>
+                      All
+                    </Button>
+                    {primaryBrandOptions.map((brandOption) => (
+                      <Button
+                        key={brandOption.value}
+                        size='sm'
+                        radius='none'
+                        variant={brand === brandOption.value ? 'solid' : 'flat'}
+                        className={cn('min-w-0 h-6 font-semibold uppercase', {
+                          'bg-brand text-white': brand === brandOption.value,
+                        })}
+                        onPress={() => setBrand(brandOption.value)}>
+                        {brandOption.label}
+                      </Button>
+                    ))}
+                    {hasCollapsibleBrands && (
+                      <Button
+                        size='sm'
+                        radius='none'
+                        variant='flat'
+                        aria-expanded={isBrandListExpanded}
+                        className='min-w-0 h-6 font-semibold uppercase'
+                        endContent={
+                          <Icon
+                            name='chevron-down'
+                            className={cn(
+                              'size-3 transition-transform',
+                              isBrandListExpanded && 'rotate-180',
+                            )}
+                          />
+                        }
+                        onPress={toggleBrandList}>
+                        {isBrandListExpanded
+                          ? 'Show less'
+                          : `+${hiddenBrandCount} more`}
+                      </Button>
+                    )}
+                  </div>
+                  <AnimatePresence initial={false}>
+                    {isBrandListExpanded && overflowBrandOptions.length > 0 && (
+                      <motion.div
+                        key='brand-overflow'
+                        initial='collapsed'
+                        animate='expanded'
+                        exit='collapsed'
+                        variants={{
+                          expanded: {
+                            opacity: 1,
+                            height: 'auto',
+                            transition: shouldReduceMotion
+                              ? {duration: 0.16}
+                              : {
+                                  duration: 0.22,
+                                  ease: [0.22, 1, 0.36, 1],
+                                  when: 'beforeChildren',
+                                  delayChildren: 0.02,
+                                  staggerChildren: 0.035,
+                                },
+                          },
+                          collapsed: {
+                            opacity: 0,
+                            height: 0,
+                            transition: shouldReduceMotion
+                              ? {duration: 0.12}
+                              : {
+                                  duration: 0.18,
+                                  ease: [0.4, 0, 0.2, 1],
+                                  when: 'afterChildren',
+                                  staggerChildren: 0.025,
+                                  staggerDirection: -1,
+                                },
+                          },
+                        }}
+                        className='overflow-hidden'>
+                        <motion.div className='flex flex-wrap items-center gap-1'>
+                          {overflowBrandOptions.map((brandOption) => (
+                            <motion.div
+                              key={brandOption.value}
+                              variants={{
+                                expanded: {
+                                  opacity: 1,
+                                  y: 0,
+                                  filter: 'blur(0px)',
+                                  transition: shouldReduceMotion
+                                    ? {duration: 0.12}
+                                    : {
+                                        duration: 0.2,
+                                        ease: [0.22, 1, 0.36, 1],
+                                      },
+                                },
+                                collapsed: {
+                                  opacity: 0,
+                                  y: -4,
+                                  filter: shouldReduceMotion
+                                    ? 'blur(0px)'
+                                    : 'blur(3px)',
+                                  transition: shouldReduceMotion
+                                    ? {duration: 0.1}
+                                    : {
+                                        duration: 0.14,
+                                        ease: [0.4, 0, 1, 1],
+                                      },
+                                },
+                              }}>
+                              <Button
+                                size='sm'
+                                radius='none'
+                                variant={
+                                  brand === brandOption.value ? 'solid' : 'flat'
+                                }
+                                className={cn(
+                                  'min-w-0 h-6 font-semibold uppercase',
+                                  {
+                                    'bg-brand text-white':
+                                      brand === brandOption.value,
+                                  },
+                                )}
+                                onPress={() => setBrand(brandOption.value)}>
+                                {brandOption.label}
+                              </Button>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             )}
           </div>
         </section>
       )}
       {/**/}
-      <Products products={products} getImageUrl={getImageUrl} />
+      <Products
+        products={products}
+        getImageUrl={getImageUrl}
+        isLoading={isLoadingInitialProducts}
+        footer={
+          (canLoadMoreProducts || isLoadingMoreProducts) && (
+            <div className='flex justify-center pt-6'>
+              <div
+                ref={loadMoreRef}
+                aria-hidden
+                className='flex h-10 w-full items-center justify-center'>
+                <Icon
+                  name='spinners-ring'
+                  className={cn(
+                    'size-4 transition-opacity',
+                    isLoadingMoreProducts ? 'opacity-60' : 'opacity-25',
+                  )}
+                />
+              </div>
+            </div>
+          )
+        }
+      />
       {/**/}
       <section className='py-6 sm:py-10 lg:py-20 px-4 sm:px-6 max-w-7xl mx-auto'>
         <div className='flex flex-col gap-20'>

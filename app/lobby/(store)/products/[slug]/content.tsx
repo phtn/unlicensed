@@ -57,8 +57,11 @@ export const ProductDetailContent = async ({
             primaryImageUrl={primaryImageUrl}
             galleryImages={galleryImages}
           />
-          <div className='w-full overflow-hidden rounded-xs border border-foreground/20 bg-hue backdrop-blur-xl dark:bg-dark-table/50 lg:min-h-[78lvh] md:rounded-tl-none'>
-            <ProductInteraction product={resolvedProduct} productId={productId} />
+          <div className='w-full overflow-hidden rounded-xs border border-foreground/20 bg-alum/10 backdrop-blur-xl dark:bg-dark-table/50 lg:min-h-[78lvh] md:rounded-tl-none'>
+            <ProductInteraction
+              product={resolvedProduct}
+              productId={productId}
+            />
             <ProductDetails product={resolvedProduct} />
           </div>
         </div>

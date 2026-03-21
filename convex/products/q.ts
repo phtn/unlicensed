@@ -1,3 +1,4 @@
+import {paginationOptsValidator, type PaginationResult} from 'convex/server'
 import {v} from 'convex/values'
 import type {Doc, Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
@@ -98,6 +99,95 @@ export const listProducts = query({
       sortProducts(products).slice(0, limit),
       buildCategoriesBySlug(categories),
     )
+  },
+})
+
+export const listCategoryProductsPaginated = query({
+  args: {
+    brand: v.optional(v.string()),
+    categorySlug: v.string(),
+    paginationOpts: paginationOptsValidator,
+    productType: v.optional(v.string()),
+    subcategory: v.optional(v.string()),
+    tier: v.optional(v.string()),
+  },
+  handler: async (
+    ctx,
+    args,
+  ): Promise<PaginationResult<ProductWithTierLabel>> => {
+    const category = await ctx.db
+      .query('categories')
+      .withIndex('by_slug', (q) => q.eq('slug', args.categorySlug))
+      .unique()
+
+    const categoriesBySlug = buildCategoriesBySlug(category ? [category] : [])
+
+    let productsQuery = ctx.db
+      .query('products')
+      .withIndex('by_category', (q) => q.eq('categorySlug', args.categorySlug))
+      .order('desc')
+      .filter((q) => q.neq(q.field('archived'), true))
+
+    if (args.productType) {
+      productsQuery = productsQuery.filter((q) =>
+        q.eq(q.field('productType'), args.productType),
+      )
+    }
+
+    if (args.tier) {
+      productsQuery = productsQuery.filter((q) =>
+        q.eq(q.field('tier'), args.tier),
+      )
+    }
+
+    if (args.subcategory) {
+      productsQuery = productsQuery.filter((q) =>
+        q.eq(q.field('subcategory'), args.subcategory),
+      )
+    }
+
+    if (!args.brand) {
+      const result = await productsQuery.paginate(args.paginationOpts)
+      return {
+        ...result,
+        page: attachTierLabels(result.page, categoriesBySlug),
+      }
+    }
+
+    const normalizedBrand = normalizeBrandValue(args.brand)
+    const page: Doc<'products'>[] = []
+    let cursor = args.paginationOpts.cursor
+    let isDone = false
+
+    while (page.length < args.paginationOpts.numItems && !isDone) {
+      const remainingItems = args.paginationOpts.numItems - page.length
+      const result = await productsQuery.paginate({
+        ...args.paginationOpts,
+        cursor,
+        numItems: remainingItems,
+      })
+
+      if (result.page.length === 0) {
+        cursor = result.continueCursor
+        isDone = result.isDone
+        break
+      }
+
+      page.push(
+        ...result.page.filter((product) =>
+          normalizeBrandValues(product.brand).includes(normalizedBrand),
+        ),
+      )
+
+      cursor = result.continueCursor
+      isDone = result.isDone
+    }
+
+    return {
+      continueCursor: cursor ?? args.paginationOpts.cursor ?? '',
+      isDone,
+      page: attachTierLabels(page, categoriesBySlug),
+    }
   },
 })
 

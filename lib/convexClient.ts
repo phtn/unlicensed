@@ -86,6 +86,12 @@ export type RawProductDetail = {
   related: RawProduct[]
 }
 
+type RawPaginatedProducts = {
+  page: RawProduct[]
+  isDone: boolean
+  continueCursor: string
+}
+
 let cachedClient: ConvexHttpClient | null = null
 
 export const getConvexUrl = () =>
@@ -319,6 +325,63 @@ const _fetchProducts = async (options?: {
 // For per-request deduplication, we cache the function but note that different object references
 // will cause cache misses (which is expected for different parameters)
 export const fetchProducts = cache(_fetchProducts)
+
+const _fetchCategoryProductsPage = async (options: {
+  categorySlug: string
+  brand?: string
+  productType?: string
+  tier?: string
+  subcategory?: string
+  numItems?: number
+}): Promise<StoreProduct[]> => {
+  const client = getClient()
+  const filterProducts = (products: StoreProduct[]) =>
+    products.filter((product) => {
+      if (options.brand && !product.brand?.includes(options.brand)) return false
+      if (options.productType && product.productType !== options.productType) {
+        return false
+      }
+      if (options.tier && product.productTier !== options.tier) return false
+      if (options.subcategory && product.subcategory !== options.subcategory) {
+        return false
+      }
+      return true
+    })
+
+  if (!client) {
+    const fallback = fallbackProducts(options.categorySlug)
+    return filterProducts(fallback).slice(0, options.numItems)
+  }
+
+  try {
+    const [productsPage, categories] = await Promise.all([
+      client.query(api.products.q.listCategoryProductsPaginated, {
+        brand: options.brand,
+        categorySlug: options.categorySlug,
+        paginationOpts: {
+          cursor: null,
+          numItems: options.numItems ?? 20,
+        },
+        productType: options.productType,
+        subcategory: options.subcategory,
+        tier: options.tier,
+      }) as Promise<RawPaginatedProducts>,
+      fetchCategories(),
+    ])
+    const categoriesBySlug = new Map(
+      categories.map((category) => [category.slug, category]),
+    )
+    return productsPage.page.map((product) =>
+      adaptProduct(product, categoriesBySlug.get(product.categorySlug ?? '')),
+    )
+  } catch (error) {
+    console.warn('Falling back to seed category products page', error)
+    const fallback = fallbackProducts(options.categorySlug)
+    return filterProducts(fallback).slice(0, options.numItems)
+  }
+}
+
+export const fetchCategoryProductsPage = cache(_fetchCategoryProductsPage)
 
 const _fetchProductDetail = async (
   slug: string,

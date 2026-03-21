@@ -1,30 +1,68 @@
+'use client'
+
 import {StoreProduct} from '@/app/types'
 import {EmptyCategory} from '@/components/store/empty-category'
 import {ProductCard} from '@/components/store/product-card'
+import {Icon} from '@/lib/icons'
 import {Activity} from 'react'
+import {motion, useReducedMotion} from 'motion/react'
+import type {ReactNode} from 'react'
 
 interface ProductsProps {
   products: StoreProduct[]
   getImageUrl: (image: string | null | undefined) => string | undefined
+  isLoading?: boolean
+  footer?: ReactNode
 }
-export const Products = ({products, getImageUrl}: ProductsProps) => {
+
+export const Products = ({
+  products,
+  getImageUrl,
+  isLoading = false,
+  footer,
+}: ProductsProps) => {
+  const shouldReduceMotion = useReducedMotion()
+
   return (
     <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
       <div className='max-w-7xl mx-auto'>
-        <Activity mode={products.length === 0 ? 'visible' : 'hidden'}>
+        <Activity mode={!isLoading && products.length === 0 ? 'visible' : 'hidden'}>
           <EmptyCategory />
         </Activity>
 
-        <div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-fr'>
-          {products.map((product) => (
-            <ProductCard
-              key={product._id}
-              product={product}
-              imageUrl={getImageUrl(product.image)}
-              className='h-full! min-w-0! max-w-none! w-full'
-            />
-          ))}
-        </div>
+        {isLoading && products.length === 0 && (
+          <div className='flex justify-center py-16'>
+            <Icon name='spinners-ring' className='size-5 opacity-55' />
+          </div>
+        )}
+
+        {products.length > 0 && (
+          <div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-fr'>
+            {products.map((product, index) => (
+              <motion.div
+                key={product._id ?? product.slug}
+                initial={shouldReduceMotion ? {opacity: 0} : {opacity: 0, y: 8}}
+                whileInView={
+                  shouldReduceMotion ? {opacity: 1} : {opacity: 1, y: 0}
+                }
+                viewport={{once: true, amount: 0.16}}
+                transition={{
+                  duration: shouldReduceMotion ? 0.18 : 0.24,
+                  delay: shouldReduceMotion ? 0 : (index % 10) * 0.015,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className='h-full'>
+                <ProductCard
+                  product={product}
+                  imageUrl={getImageUrl(product.image)}
+                  className='h-full! min-w-0! max-w-none! w-full'
+                />
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {footer}
       </div>
     </section>
   )

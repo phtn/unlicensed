@@ -161,8 +161,7 @@ const ProductCardComponent = ({
     null
   const imageSrc = imageUrlProp ?? product.image
   const productId = product._id as Id<'products'> | undefined
-  const hasMetaBeforePackSize =
-    subcategoryLabel !== '' || netWeightLabel !== ''
+  const hasMetaBeforePackSize = subcategoryLabel !== '' || netWeightLabel !== ''
 
   const handleAddToCart = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
@@ -267,10 +266,10 @@ const ProductCardComponent = ({
               </div>
             </div>
 
-            <div className='pointer-events-none absolute right-2 top-2 flex aspect-square h-auto grow-0 items-center justify-end overflow-hidden text-2xl text-brand'>
+            <div className='pointer-events-none absolute right-2 top-2 flex aspect-square font-medium h-auto grow-0 items-center justify-end overflow-hidden text-2xl text-light-brand'>
               {selectedOption ? (
                 <span>
-                  $<span className='font-black'>{selectedOption.price}</span>
+                  $<span className='font-bold'>{selectedOption.price}</span>
                 </span>
               ) : (
                 '—'

@@ -99,7 +99,14 @@ export const Nav = ({children}: NavProps) => {
                 scale: hovered ? 0.8 : 0,
               }}
               exit={{y: -12, opacity: 0, scale: 0}}
-              className='hidden md:flex absolute size-7 md:size-10 bg-white dark:bg-brand aspect-square rounded-full'
+              className={cn(
+                'hidden md:flex absolute size-7 md:size-10 bg-brand aspect-square rounded-full',
+                {
+                  'bg-brand':
+                    (!isMobile && scrollY <= 710) ||
+                    (isMobile && scrollY <= 400),
+                },
+              )}
             />
             <div
               className={cn(
@@ -108,11 +115,11 @@ export const Nav = ({children}: NavProps) => {
               <Icon
                 name='rapid-fire-logo'
                 className={cn(
-                  'h-8 md:h-10 w-auto relative text-white dark:group-hover:text-white',
+                  'h-8 md:h-10 w-auto relative text-white dark:group-hover:text-white transition-colors duration-300',
                   {
                     'text-dark-table dark:text-white dark:group-hover:text-white':
                       !inStoreLobby,
-                    'text-dark-table dark:text-white .':
+                    'text-dark-table dark:text-white group-hover:text-white .':
                       !isMobile && scrollY >= 710,
                     'text-dark-table dark:text-white _':
                       isMobile && scrollY >= 400,
