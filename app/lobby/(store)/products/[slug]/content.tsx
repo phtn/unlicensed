@@ -51,7 +51,7 @@ export const ProductDetailContent = async ({
     <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-12 sm:py-16 lg:py-20 overflow-x-hidden w-full'>
       <div className='md:mx-auto lg:max-w-7xl max-w-screen p-2 sm:pt-4 md:pt-6 2xl:pt-8 sm:px-6 lg:px-0'>
         <Crumbs product={resolvedProduct} />
-        <div className='mt-2 sm:mt-8 lg:mt-6 grid gap-6 sm:gap-8 lg:gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
+        <div className='mt-2 sm:mt-8 lg:mt-6 grid gap-1 sm:gap-8 lg:gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
           <Gallery
             product={resolvedProduct}
             primaryImageUrl={primaryImageUrl}

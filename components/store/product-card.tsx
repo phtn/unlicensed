@@ -175,7 +175,7 @@ const ProductCardComponent = ({
   return (
     <article
       className={cn(
-        'group relative h-[350.01px] min-h-[350.01px] max-h-[350.01px] min-w-48 max-w-48 overflow-hidden rounded-xs bg-sidebar shadow-sm dark:bg-black sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
+        'group relative h-fit  _max-h-[380.01px]  md:h-[340.01px] md:min-h-[340.01px] md:max-h-[340.01px] min-w-48 max-w-48 overflow-hidden rounded-xs bg-sidebar shadow-sm dark:bg-black sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
         className,
       )}>
       <NextLink
@@ -205,77 +205,81 @@ const ProductCardComponent = ({
         </div>
 
         <div className='flex min-h-0 flex-1 flex-col'>
-          <div className='relative flex items-center justify-between p-2'>
-            <div className='min-w-0 flex-1 pr-24'>
-              <div className='mb-0.5 h-4 md:h-5'>
-                {brandLabel && (
-                  <p className='truncate text-xs font-light capitalize tracking-wide opacity-90 md:text-sm font-okxs'>
-                    <span className='font-light'>{brandLabel}</span>
-                    {product.productType && (
-                      <span>
-                        <span className='px-1 text-xs font-thin opacity-70 font-okxs'>
-                          &middot;
+          <div className='relative flex max-h-32 md:max-h-16 min-h-32 md:min-h-16 items-start justify-between p-2'>
+            <div className='min-w-0 flex-1'>
+              <div>
+                <div className=''>
+                  {brandLabel && (
+                    <p className='mb-1 md:mb-0.5 h-4 md:h-5 truncate text-[9px] md:text-sm font-okxs font-light capitalize tracking-wide opacity-70'>
+                      <span className='font-light'>{brandLabel}</span>
+                      {product.productType && (
+                        <span>
+                          <span className='px-1 text-[8px] font-thin opacity-80 font-okxs'>
+                            &middot;
+                          </span>
+                          {product.productType}
                         </span>
-                        {product.productType}
+                      )}
+                    </p>
+                  )}
+                </div>
+                <h3 className='truncate capitalize leading-5 font-clash text-lg md:leading-5 lg:text-xl lg:leading-5'>
+                  {product.name}
+                </h3>
+              </div>
+
+              <div className='flex items-center justify-between relative top-1'>
+                <div className='whitespace-nowrap'>
+                  <div className='mt-0.5 flex h-4 items-center'>
+                    {tierLabel !== '' && (
+                      <span className='text-[9px] md:text-xs md:font-medium font-okxs font-medium uppercase tracking-widest opacity-70 dark:text-alum dark:opacity-100'>
+                        {tierLabel}
                       </span>
                     )}
-                  </p>
-                )}
-              </div>
+                  </div>
 
-              <h3 className='truncate text-base capitalize leading-5 font-clash sm:text-base md:text-lg md:leading-5 lg:text-xl lg:leading-5'>
-                {product.name}
-              </h3>
+                  <div className='flex h-4 items-center whitespace-nowrap'>
+                    {subcategoryLabel && (
+                      <span className='text-[9px] font-light capitalize opacity-80 dark:text-alum dark:opacity-100 md:text-sm font-okxs'>
+                        {subcategoryLabel}
+                        {netWeightLabel && (
+                          <span className='px-1 text-xs font-thin opacity-80'>
+                            &middot;
+                          </span>
+                        )}
+                      </span>
+                    )}
 
-              <div className='whitespace-nowrap'>
-                <div className='mt-0.5 flex h-4 items-center md:mt-1'>
-                  {tierLabel !== '' && (
-                    <span className='text-xs font-medium uppercase tracking-wider opacity-80 dark:text-alum dark:opacity-100 md:text-xs md:font-semibold font-clash'>
-                      {tierLabel}
-                    </span>
-                  )}
+                    {netWeightLabel && (
+                      <span className='text-xs font-normal lowercase opacity-80 dark:text-alum dark:opacity-100 md:text-xs font-okxs'>
+                        {netWeightLabel}
+                      </span>
+                    )}
+
+                    {packSizeLabel && (
+                      <span className='text-xs font-normal lowercase opacity-80 dark:text-alum dark:opacity-100 md:text-xs font-okxs'>
+                        {hasMetaBeforePackSize && (
+                          <span className='px-1 text-xs font-thin opacity-80'>
+                            &middot;
+                          </span>
+                        )}
+                        <span>{packSizeLabel} pk</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
-
-                <div className='flex h-4 items-center whitespace-nowrap'>
-                  {subcategoryLabel && (
-                    <span className='text-xs font-light capitalize opacity-80 dark:text-alum dark:opacity-100 md:text-sm font-okxs'>
-                      {subcategoryLabel}
-                      {netWeightLabel && (
-                        <span className='px-1 text-xs font-thin opacity-80'>
-                          &middot;
-                        </span>
-                      )}
+                <div className='pointer-events-none absolute right-0 flex aspect-square font-medium h-auto grow-0 items-center justify-end overflow-hidden'>
+                  {selectedOption ? (
+                    <span>
+                      <span className='font-medium tracking-tighter text-[1.75rem] text-light-brand'>
+                        ${selectedOption.price}
+                      </span>
                     </span>
-                  )}
-
-                  {netWeightLabel && (
-                    <span className='text-xs font-normal lowercase opacity-80 dark:text-alum dark:opacity-100 md:text-xs font-okxs'>
-                      {netWeightLabel}
-                    </span>
-                  )}
-
-                  {packSizeLabel && (
-                    <span className='text-xs font-normal lowercase opacity-80 dark:text-alum dark:opacity-100 md:text-xs font-okxs'>
-                      {hasMetaBeforePackSize && (
-                        <span className='px-1 text-xs font-thin opacity-80'>
-                          &middot;
-                        </span>
-                      )}
-                      <span>{packSizeLabel} pk</span>
-                    </span>
+                  ) : (
+                    '—'
                   )}
                 </div>
               </div>
-            </div>
-
-            <div className='pointer-events-none absolute right-2 top-2 flex aspect-square font-medium h-auto grow-0 items-center justify-end overflow-hidden text-2xl text-light-brand'>
-              {selectedOption ? (
-                <span>
-                  $<span className='font-bold'>{selectedOption.price}</span>
-                </span>
-              ) : (
-                '—'
-              )}
             </div>
           </div>
 

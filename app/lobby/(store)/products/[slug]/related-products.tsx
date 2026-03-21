@@ -23,8 +23,8 @@ export const RelatedProducts = ({products}: RelatedProductsProps) => {
   return (
     <section
       id='related-selections'
-      className='mx-auto w-full max-w-7xl space-y-4 px-4 md:px-0 [content-visibility:auto] [contain-intrinsic-size:52rem]'>
-      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4'>
+      className='mx-auto w-full max-w-7xl space-y-4 px-px md:px-0 [content-visibility:auto] [contain-intrinsic-size:52rem]'>
+      <div className='pl-4 md:pl-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4'>
         <div>
           <h2 className='text-2xl font-clash font-bold text-foreground sm:text-3xl'>
             Related Selections
@@ -33,13 +33,13 @@ export const RelatedProducts = ({products}: RelatedProductsProps) => {
         {categorySlug ? (
           <Link
             href={`/category/${categorySlug}`}
-            className='self-start sm:self-auto border border-color-border/70 bg-background/30 text-xs sm:text-sm text-foreground/80 capitalize'>
+            className='self-start sm:self-auto border border-color-border/70 bg-background/30 text-sm text-foreground/80 capitalize'>
             View {categorySlug} Category
           </Link>
         ) : null}
       </div>
       <div className='w-full py-6'>
-        <div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-fr'>
+        <div className='grid grid-cols-2 gap-1 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-fr'>
           {visibleProducts.map(({product, imageUrl}) => (
             <ProductCard
               key={product._id}

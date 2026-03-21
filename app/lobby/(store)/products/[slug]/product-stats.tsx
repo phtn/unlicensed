@@ -17,7 +17,7 @@ export const ProductDetailStats = ({
   availableQuantity,
 }: ProductDetailStatsProps) => {
   return (
-    <div className='flex items-center h-14 border-b border-background/20 bg-background/60 overflow-hidden justify-between gap-1 pl-4 md:w-full'>
+    <div className='hidden md:flex items-center h-14 border-b border-background/20 bg-background/60 overflow-hidden justify-between gap-1 pl-4 md:w-full'>
       <span className='w-16 md:w-20 text-xs font-okxs'>
         {product.categorySlug.toUpperCase()}
       </span>

@@ -65,6 +65,7 @@ const ProductSummary = memo(({product}: {product: StoreProduct}) => (
       {product.name.split('-').join(' ')}
     </h1>
     <p className='text-sm font-okxs opacity-70 leading-relaxed'>
+      <span className='font-ios tracking-wider'>{product.categorySlug}</span>
       {product.description}
     </p>
   </div>
@@ -82,7 +83,7 @@ const DenominationPicker = memo(
     selectedIndex: number
     onSelect: (index: number) => void
   }) => (
-    <div className='flex flex-wrap items-start gap-2 md:gap-3'>
+    <div className='flex items-start gap-2 md:gap-3'>
       {options.map((option, index) => {
         const isSelected = selectedIndex === index
 
@@ -93,7 +94,7 @@ const DenominationPicker = memo(
             onClick={() => onSelect(index)}
             aria-pressed={isSelected}
             className={cn(
-              'relative inline-flex min-h-10 items-center justify-center border border-foreground/20 bg-sidebar px-3 text-base font-medium whitespace-nowrap transition-colors rounded-none font-okxs portrait:px-2',
+              'relative inline-flex min-h-9.5 w-14 items-center justify-center border border-foreground/20 bg-sidebar text-base font-medium whitespace-nowrap transition-colors rounded-none font-okxs',
               isSelected
                 ? 'bg-dark-gray text-white md:hover:bg-black dark:bg-white dark:text-dark-gray dark:md:hover:bg-brand dark:md:hover:text-white'
                 : 'text-foreground/85 hover:border-foreground/35',
@@ -237,7 +238,7 @@ export const ProductInteraction = ({
         <ProductSummary product={product} />
 
         <div className='flex items-start justify-between gap-4 py-3 sm:py-4'>
-          <div className='flex items-center font-okxs text-3xl sm:text-4xl font-semibold text-foreground w-40 md:w-28'>
+          <div className='flex items-center font-okxs text-3xl sm:text-4xl font-semibold text-foreground w-36 md:w-28 border border-white'>
             <div className='font-light opacity-80 scale-95'>$</div>
             {priceByDenomination}
           </div>
@@ -257,20 +258,20 @@ export const ProductInteraction = ({
           </p>
         )}
 
-        <div className='flex flex-col sm:flex-row gap-3'>
+        <div className='flex gap-3'>
           <Button
             size='lg'
             color='primary'
             variant='solid'
             radius='none'
             disableRipple
-            className='flex h-14 md:h-13 w-full items-center bg-linear-to-r from-brand via-brand to-brand font-clash text-base font-medium md:text-lg sm:flex-1'
+            className='flex h-14 md:h-13 w-full items-center bg-linear-to-r from-brand hover:via-light-brand via-brand to-brand font-clash text-base font-medium md:text-lg sm:flex-1'
             onPress={() => void handleAddToCart()}
             isDisabled={isAddToCartDisabled}>
             <span>Add to Cart</span>
             <Icon
               name={isAddingToCart ? 'spinners-ring' : 'bag-solid'}
-              className='ml-2 mb-1 size-6'
+              className='hidden md:flex ml-2 mb-1 size-6'
             />
           </Button>
           <Button

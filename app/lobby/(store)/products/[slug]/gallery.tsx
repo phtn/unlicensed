@@ -61,7 +61,7 @@ const GalleryComponent = ({
   )
 
   return (
-    <section className='flex flex-col gap-y-3 sm:gap-0'>
+    <section className='flex flex-col gap-y-1 sm:gap-0'>
       {isMobile ? (
         galleryFrame
       ) : (
@@ -69,7 +69,7 @@ const GalleryComponent = ({
           {galleryFrame}
         </Lens>
       )}
-      <div className='mt-8 flex w-full items-start gap-2 overflow-x-auto overflow-y-hidden p-1 lg:mt-0'>
+      <div className='flex w-full items-start md:gap-2 overflow-x-auto overflow-y-hidden p-1 lg:mt-0'>
         {allImages.map((src, index) => (
           <button
             type='button'

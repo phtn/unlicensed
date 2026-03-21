@@ -11,7 +11,7 @@ export async function generateMetadata({
 
   if (!detail) {
     return {
-      title: 'Product not found | Hyfe Goods',
+      title: 'Product not found',
     }
   }
 
