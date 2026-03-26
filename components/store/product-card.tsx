@@ -205,7 +205,7 @@ const ProductCardComponent = ({
         </div>
 
         <div className='flex min-h-0 flex-1 flex-col'>
-          <div className='relative flex max-h-32 md:max-h-16 min-h-32 md:min-h-16 items-start justify-between p-2'>
+          <div className='relative flex max-h-24 sm:max-h-20 md:max-h-16 lg:max-h-12 lg:h-fit min-h-24 md:min-h-16 lg:min-h-12 items-start justify-between p-2'>
             <div className='min-w-0 flex-1'>
               <div>
                 <div className=''>

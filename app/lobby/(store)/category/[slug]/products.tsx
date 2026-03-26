@@ -38,7 +38,7 @@ export const Products = ({
         )}
 
         {products.length > 0 && (
-          <div className='grid grid-cols-2 gap-1 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-fr'>
+          <div className='grid grid-cols-2 gap-1 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 auto-rows-fr'>
             {products.map((product, index) => (
               <motion.div
                 key={product._id ?? product.slug}

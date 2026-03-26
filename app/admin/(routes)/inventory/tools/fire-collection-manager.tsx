@@ -1,9 +1,8 @@
 'use client'
 
 import {
-  commonInputClassNames,
-  commonSelectClassNames,
   narrowInputClassNames,
+  narrowSelectClassNames,
 } from '@/app/admin/_components/ui/fields'
 import {ScrollArea} from '@/components/ui/scroll-area'
 import {api} from '@/convex/_generated/api'
@@ -93,14 +92,13 @@ interface ProductTileProps {
 const ProductTile = ({
   product,
   imageUrl,
-  actionLabel,
   emptyLabel = 'No image',
   onAction,
   disabled = false,
   isBusy = false,
 }: ProductTileProps) => (
-  <article className='flex items-end gap-3 border border-foreground/0 bg-background/80'>
-    <div className='flex size-18 shrink-0 items-center justify-center overflow-hidden rounded-xs bg-sidebar/70'>
+  <article className='flex items-end gap-3 border border-foreground/0 bg-background/80 hover:bg-sidebar/50 transition-colors duration-200 ease-out'>
+    <div className='flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xs bg-sidebar/70'>
       {imageUrl ? (
         <Image
           src={imageUrl}
@@ -120,11 +118,8 @@ const ProductTile = ({
       <h3 className='font-clash text-sm font-semibold tracking-wider text-foreground'>
         {product.name}
       </h3>
-      <p className='mt-2 text-[9px] text-foreground/60 font-okxs tracking-widest'>
+      <p className='mt-2 text-[9px] text-foreground/60 font-okxs font-light tracking-wider'>
         {product.categorySlug || 'uncategorized'} · {getBrandLabel(product)}
-      </p>
-      <p className='mt-2 text-[8px] text-foreground/80 uppercase tracking-[0.2em]'>
-        {product.available ? 'Available' : 'Unavailable'}
       </p>
     </div>
 
@@ -136,8 +131,8 @@ const ProductTile = ({
       isLoading={isBusy}
       isDisabled={disabled}
       onPress={() => onAction(String(product._id))}
-      className='rounded-sm bg-sidebar/0 text-xs uppercase text-foreground h-7'>
-      <Icon name='trash' className='size-4' />
+      className='rounded-none hover:bg-sidebar dark:hover:bg-sidebar text-xs uppercase text-foreground h-6 hover:border-sidebar dark:hover:text-rose-400'>
+      <Icon name='trash' className='size-3.5' />
     </Button>
   </article>
 )
@@ -267,7 +262,7 @@ export const FireCollectionManager = () => {
       }))
 
     return [
-      {value: RANDOM_CATEGORY_ALL, label: 'Any Category'},
+      {value: RANDOM_CATEGORY_ALL, label: 'Random'},
       ...options.sort((a, b) => a.label.localeCompare(b.label)),
       ...missingOptions,
     ]
@@ -442,8 +437,8 @@ export const FireCollectionManager = () => {
 
   return (
     <section className='flex w-full flex-col gap-4'>
-      <div className='flex flex-col gap-3 border-b-2 border-foreground/10 p-2 max-h-23'>
-        <div className='flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between'>
+      <div className='flex flex-col gap-2 border-b-2 border-foreground/10 p-2 max-h-23'>
+        <div className='flex flex-col gap-1 lg:flex-row lg:items-end lg:justify-between'>
           <div className='flex items-center justify-between w-full'>
             <div>
               <div className='flex items-center space-x-4'>
@@ -452,10 +447,10 @@ export const FireCollectionManager = () => {
                 </h2>
 
                 <div className='flex flex-wrap items-center gap-3 text-[8px] uppercase tracking-widest text-foreground/45'>
-                  <span className='text-indigo-400'>
+                  <span className='text-indigo-500 dark:text-indigo-400'>
                     {fireCollections?.length ?? 0} collections
                   </span>
-                  <span className='text-emerald-500'>
+                  <span className='text-emerald-600 dark:text-emerald-400'>
                     {enabledCollectionsCount} enabled
                   </span>
                 </div>
@@ -601,8 +596,8 @@ export const FireCollectionManager = () => {
                     color='danger'
                     isDisabled={activeKey !== null}
                     onPress={handleDeleteCollection}
-                    className='rounded-sm font-okxs text-xs uppercase tracking-widest h-7'>
-                    <Icon name='trash-fill' className='size-4' />
+                    className='rounded-xs font-okxs text-xs uppercase tracking-widest h-6 dark:text-rose-400 text-rose-600 dark:hover:bg-rose-400/10'>
+                    <Icon name='trash' className='size-4' />
                   </Button>
                 </div>
               )}
@@ -614,7 +609,7 @@ export const FireCollectionManager = () => {
               </div>
             ) : (
               <div className='mt-4 flex flex-col gap-4'>
-                <div className='flex items-center gap-4'>
+                <div className='flex items-center gap-2'>
                   <Input
                     value={collectionTitle}
                     onValueChange={(value) => {
@@ -625,6 +620,7 @@ export const FireCollectionManager = () => {
                   />
                   <Button
                     size='sm'
+                    isIconOnly
                     radius='none'
                     variant='flat'
                     isDisabled={
@@ -633,8 +629,8 @@ export const FireCollectionManager = () => {
                       collectionTitle.trim() === selectedCollection.title
                     }
                     onPress={handleSaveCollectionTitle}
-                    className='rounded-md px-6 font-clash text-xs tracking-widest bg-dark-table text-white'>
-                    Save Changes
+                    className='rounded-xs px-4 font-clash font-medium text-sm tracking-widest bg-dark-table text-white'>
+                    <Icon name='save' className='size-4' />
                   </Button>
                 </div>
               </div>
@@ -699,11 +695,11 @@ export const FireCollectionManager = () => {
         <section className='flex min-h-0 flex-col rounded-xl border border-foreground/10 bg-background/70 p-4'>
           <div className='flex items-center justify-between gap-3'>
             <div>
-              <h3 className='text-xs font-okxs uppercase tracking-[0.3em] text-foreground/50'>
+              <h3 className='text-[8px] font-okxs font-light uppercase tracking-[0.2em] text-foreground/70'>
                 Product Library
               </h3>
-              <span className='text-xs text-foreground/45'>
-                Showing up to {MAX_LIBRARY_RESULTS} matches
+              <span className=' font-okxs tracking-wide text-xs text-foreground/40'>
+                up to {MAX_LIBRARY_RESULTS} matches
               </span>
             </div>
 
@@ -722,87 +718,89 @@ export const FireCollectionManager = () => {
                 activeKey === `random:${selectedCollection.id}`
               }
               onPress={handleInsertRandomProducts}
-              className='rounded-md px-4 font-okxs text-[11px] uppercase tracking-[0.25em] bg-sidebar text-foreground'>
+              className='rounded-sm px-4 font-clash font-normal tracking-wider text-sm bg-sidebar text-foreground'>
               Add {RANDOM_INSERT_COUNT} Random
             </Button>
           </div>
 
-          <div className='mt-4 flex flex-col gap-3 sm:flex-row sm:items-end'>
-            <Select
-              label='Random Source Category'
-              placeholder='Any category'
-              selectedKeys={[randomCategorySlug]}
-              onSelectionChange={(keys) => {
-                const key = Array.from(keys)[0]
-                void setFireState({
-                  fireRandomCategory:
-                    typeof key === 'string' ? key : RANDOM_CATEGORY_ALL,
-                })
+          <ScrollArea className='h-[70lvh] overflow-scroll'>
+            <div className='mt-2 flex flex-col gap-3 sm:flex-row sm:items-center'>
+              <Select
+                label='Source Category'
+                placeholder='Random category'
+                selectedKeys={[randomCategorySlug]}
+                onSelectionChange={(keys) => {
+                  const key = Array.from(keys)[0]
+                  void setFireState({
+                    fireRandomCategory:
+                      typeof key === 'string' ? key : RANDOM_CATEGORY_ALL,
+                  })
+                }}
+                classNames={narrowSelectClassNames}
+                disallowEmptySelection
+                items={randomCategoryOptions}>
+                {(item) => (
+                  <SelectItem key={item.value} textValue={item.label}>
+                    {item.label}
+                  </SelectItem>
+                )}
+              </Select>
+
+              <span className='pb-1 text-[8px] uppercase tracking-[0.22em] text-foreground/50 text-center text-balance'>
+                {randomCandidateProductIds.length} eligible for random pick
+              </span>
+            </div>
+
+            <Input
+              value={query}
+              onValueChange={(value) => {
+                void setFireState({fireQuery: value})
               }}
-              classNames={commonSelectClassNames}
-              disallowEmptySelection
-              items={randomCategoryOptions}>
-              {(item) => (
-                <SelectItem key={item.value} textValue={item.label}>
-                  {item.label}
-                </SelectItem>
-              )}
-            </Select>
+              placeholder='Search products by name, brand, category, or slug'
+              classNames={narrowInputClassNames}
+              className='mt-4'
+            />
 
-            <span className='pb-1 text-xs uppercase tracking-[0.22em] text-foreground/45'>
-              {randomCandidateProductIds.length} eligible for random pick
-            </span>
-          </div>
-
-          <Input
-            value={query}
-            onValueChange={(value) => {
-              void setFireState({fireQuery: value})
-            }}
-            placeholder='Search products by name, brand, category, or slug'
-            classNames={commonInputClassNames}
-            className='mt-4'
-          />
-
-          <ScrollArea className='mt-4 xl:flex-1'>
-            <div className='grid md:grid-cols-2 gap-3'>
-              {!selectedCollection && (
-                <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
-                  Create or select a collection before adding products.
-                </div>
-              )}
-
-              {selectedCollection && libraryProducts === undefined && (
-                <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
-                  Loading products...
-                </div>
-              )}
-
-              {selectedCollection &&
-                libraryProducts !== undefined &&
-                availableProducts.length === 0 && (
+            <div className='mt-4 xl:flex-1'>
+              <div className='grid md:grid-cols-2 gap-3'>
+                {!selectedCollection && (
                   <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
-                    No products match the current search.
+                    Create or select a collection before adding products.
                   </div>
                 )}
 
-              {selectedCollection &&
-                availableProducts.map((product) => (
-                  <ProductTile
-                    key={product._id}
-                    product={product}
-                    imageUrl={resolveProductImage(product.image, resolveUrl)}
-                    actionLabel='Add'
-                    disabled={activeKey !== null}
-                    isBusy={activeKey === `product:${String(product._id)}`}
-                    onAction={(productId) =>
-                      persistCollectionProducts(
-                        [...selectedIds, productId],
-                        productId,
-                      )
-                    }
-                  />
-                ))}
+                {selectedCollection && libraryProducts === undefined && (
+                  <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
+                    Loading products...
+                  </div>
+                )}
+
+                {selectedCollection &&
+                  libraryProducts !== undefined &&
+                  availableProducts.length === 0 && (
+                    <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
+                      No products match the current search.
+                    </div>
+                  )}
+
+                {selectedCollection &&
+                  availableProducts.map((product) => (
+                    <ProductTile
+                      key={product._id}
+                      product={product}
+                      imageUrl={resolveProductImage(product.image, resolveUrl)}
+                      actionLabel='Add'
+                      disabled={activeKey !== null}
+                      isBusy={activeKey === `product:${String(product._id)}`}
+                      onAction={(productId) =>
+                        persistCollectionProducts(
+                          [...selectedIds, productId],
+                          productId,
+                        )
+                      }
+                    />
+                  ))}
+              </div>
             </div>
           </ScrollArea>
         </section>
