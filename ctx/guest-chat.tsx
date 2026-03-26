@@ -169,7 +169,10 @@ export function GuestChatProvider({children}: {children: ReactNode}) {
       firebaseId: user.uid,
       ...(user.photoURL ? {photoUrl: user.photoURL} : {}),
     }).catch((syncError) => {
-      console.error('Failed to sync authenticated user for guest chat:', syncError)
+      console.error(
+        'Failed to sync authenticated user for guest chat:',
+        syncError,
+      )
     })
   }, [
     convexUser?._id,
@@ -245,6 +248,20 @@ export function GuestChatProvider({children}: {children: ReactNode}) {
   ])
 
   useEffect(() => {
+    if (user?.uid) {
+      return
+    }
+
+    if (guestFid && representativeFid && representative) {
+      return
+    }
+
+    // Create the guest chat participant and representative link on visit
+    // so staff can see the guest before they manually open the chat UI.
+    void ensureSession()
+  }, [ensureSession, guestFid, representative, representativeFid, user?.uid])
+
+  useEffect(() => {
     if (!user?.uid || !convexUser?._id) {
       return
     }
@@ -295,7 +312,7 @@ export function GuestChatProvider({children}: {children: ReactNode}) {
       representative,
       activeChatFid: user?.uid
         ? isMerging
-          ? guestFid ?? user.uid
+          ? (guestFid ?? user.uid)
           : user.uid
         : guestFid,
       isBootstrapping,

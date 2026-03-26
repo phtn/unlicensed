@@ -6,16 +6,17 @@ import {TabContentContainer} from '@/app/admin/_components/ui/tab-content'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
+import {getProductCsvImportRowId} from '@/lib/product-csv-import'
 import {cn} from '@/lib/utils'
 import {Button, Card, Chip, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useRef, useState} from 'react'
+import type {ParsedRow} from '../product/csv-import/lib'
 import {
   defaultImportTitle,
   parseProductsCsv,
   type ParseResult,
 } from '../product/csv-import/lib'
-import type {ParsedRow} from '../product/csv-import/lib'
 import {
   buildRowsWithConflicts,
   getPreviewCellIssue,
@@ -51,7 +52,10 @@ export function ProductCsvUpload() {
       new Set(
         categories
           .map((c) => c.slug)
-          .filter((slug): slug is string => typeof slug === 'string' && slug.length > 0),
+          .filter(
+            (slug): slug is string =>
+              typeof slug === 'string' && slug.length > 0,
+          ),
       ),
     [categories],
   )
@@ -526,10 +530,7 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
   const hasError = row.errors.length > 0 || row.conflict !== null
   const rowIssues = getRowPreviewIssues(row, columns)
   const statusIssue = rowIssues[0] ?? null
-  const rowMode =
-    typeof row.product._id === 'string' && row.product._id.trim()
-      ? 'Replace'
-      : 'Create'
+  const rowMode = getProductCsvImportRowId(row.product) ? 'Replace' : 'Create'
   return (
     <tr
       className={cn(

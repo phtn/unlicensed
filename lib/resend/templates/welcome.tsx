@@ -17,6 +17,7 @@ export type WelcomeEmailProps = {
   userName: string
   loginUrl?: string
   couponCode?: string
+  accessCode?: string
 }
 
 const baseUrl =
@@ -24,7 +25,7 @@ const baseUrl =
     ? 'http://localhost:3000'
     : 'https://rapidfirenow.com'
 
-export const WelcomeEmail = ({couponCode}: WelcomeEmailProps) => (
+export const WelcomeEmail = ({couponCode, accessCode}: WelcomeEmailProps) => (
   <Html className='dark:bg-black'>
     <Preview>Welcome to Rapid Fire! Your $25 credit is waiting...</Preview>
     <Tailwind>
@@ -57,7 +58,17 @@ export const WelcomeEmail = ({couponCode}: WelcomeEmailProps) => (
               style={{textShadow: '0 6px 24px rgba(136, 0, 92, 0.38)'}}>
               Your $25 credit is waiting!
             </Text>
-
+            <Text className='mx-auto mt-5 max-w-120 text-[16px] leading-[1.7] text-[#efe9ff]'>
+              Your Access Code
+            </Text>
+            <Section className='w-[280.01px] mt-4 rounded-2xl bg-[#efefef] px-12 py-5 text-left'>
+              <Text className='m-0 text-sm font-medium uppercase tracking-[0.12em] text-[#3b3b3b]'>
+                ACCESS CODE
+              </Text>
+              <Text className='m-0 mt-2 text-[20px] font-bold text-[#26184a]'>
+                {accessCode}
+              </Text>
+            </Section>
             <Text className='mx-auto mt-5 max-w-120 text-[16px] leading-[1.7] text-[#efe9ff]'>
               Enter the coupon code below to at checkout.
             </Text>

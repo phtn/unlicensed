@@ -763,6 +763,7 @@ export const archiveProduct = mutation({
 
     return await ctx.db.patch(product._id, {
       archived: true,
+      available: false,
       slug: archivedSlug,
     })
   },

@@ -1,3 +1,4 @@
+import {getProductCsvImportRowId} from '@/lib/product-csv-import'
 import {slugify} from '@/lib/slug'
 import {CSV_DENOM_KEYS} from '../product/csv-import/constants'
 import {
@@ -405,10 +406,7 @@ export function buildRowsWithConflicts(
     const raw = {...row.raw}
     const product = {...row.product}
     const errors = [...row.errors]
-    const rowId =
-      typeof product._id === 'string' && product._id.trim()
-        ? product._id.trim()
-        : undefined
+    const rowId = getProductCsvImportRowId(product)
     const slugFieldPresent = Object.hasOwn(raw, 'slug')
 
     if (slugFieldPresent && !String(raw.slug ?? '').trim()) {

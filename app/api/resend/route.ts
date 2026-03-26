@@ -54,7 +54,8 @@ export const POST = async (req: Request) => {
     )
   }
 
-  const {to, subject, group, html, body, cc, bcc, attachments} = parsed.data
+  const {to, subject, group, html, body, cc, bcc, attachments, headers} =
+    parsed.data
   const from = process.env.RESEND_FROM ?? 'hello@rapidfirenow.com'
   let resend: ReturnType<typeof createClient>
   try {
@@ -74,6 +75,8 @@ export const POST = async (req: Request) => {
 
   // (currently only `pa`) kept for future routing
   const groupHeaders = group === 'pa' ? priorityHeaders : priorityHeaders
+  const customHeaders =
+    headers && Object.keys(headers).length > 0 ? headers : undefined
 
   const finalHtml = html ?? (body ? `<p>${body}</p>` : '<p></p>')
 
@@ -125,7 +128,10 @@ export const POST = async (req: Request) => {
         to: recipient,
         subject,
         html: finalHtml,
-        headers: groupHeaders,
+        headers: {
+          ...groupHeaders,
+          ...(customHeaders ?? {}),
+        },
       }
 
       if (cc && cc.length > 0) {

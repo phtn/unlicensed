@@ -208,7 +208,7 @@ function rawRowToProduct(
   const parsedTags = parseJsonArrayOrRecord(get('tags')) as string[] | undefined
 
   return {
-    _id: get('_id') || undefined,
+    _id: getProductCsvImportRowId({_id: get('_id')}),
     name: get('name') || undefined,
     slug: get('slug') || undefined,
     base: get('base') || undefined,
@@ -526,9 +526,7 @@ export function applySlugConflicts(
     const hasSlugField = Object.hasOwn(row.raw, 'slug')
     const slugRaw = (row.product.slug as string) ?? ''
 
-    return slugRaw || hasSlugField
-      ? slugify(slugRaw || String(name ?? ''))
-      : ''
+    return slugRaw || hasSlugField ? slugify(slugRaw || String(name ?? '')) : ''
   }
 
   const preferredOwnersBySlug = new Map<

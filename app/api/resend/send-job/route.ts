@@ -1,9 +1,6 @@
 import {createClient} from '@/lib/resend'
 import {queueResendSend} from '@/lib/resend/rate-limit'
-import {
-  parseInvitationTemplateProps,
-  renderInvitationTemplate,
-} from '@/lib/resend/templates/render-with-props'
+import {sendInvitationEmail} from '@/lib/resend/send-invitation-email'
 import {uuidv7} from 'uuidv7'
 
 export const runtime = 'nodejs'
@@ -33,15 +30,12 @@ const extractResendErrorDetails = (err: unknown): string => {
   return `${message ?? 'Resend error'}${parts ? ` (${parts})` : ''}`
 }
 
-type _RecipientInput = string | {email: string; name?: string}
-
 function parseBody(raw: unknown): {
   to: string[]
   recipients?: {email: string; name: string}[]
   subject: string
   html?: string
   body?: string
-  from?: string
   cc?: string[]
   bcc?: string[]
   template?: string
@@ -66,10 +60,12 @@ function parseBody(raw: unknown): {
         typeof r === 'object' &&
         typeof (r as {email?: unknown}).email === 'string',
     )
-      ? (recipientsRaw as {email: string; name?: string}[]).map((r) => ({
-          email: r.email.trim(),
-          name: typeof r.name === 'string' ? r.name.trim() : '',
-        }))
+      ? (recipientsRaw as {email: string; name?: string}[])
+          .map((r) => ({
+            email: r.email.trim(),
+            name: typeof r.name === 'string' ? r.name.trim() : '',
+          }))
+          .filter((recipient) => recipient.email.length > 0)
       : undefined
   const hasRecipients = toArr.length > 0 || (recipients?.length ?? 0) > 0
   if (!hasRecipients) return null
@@ -81,7 +77,6 @@ function parseBody(raw: unknown): {
     subject,
     html: typeof o.html === 'string' ? o.html : undefined,
     body: typeof o.body === 'string' ? o.body : undefined,
-    from: typeof o.from === 'string' ? o.from.trim() : undefined,
     cc: Array.isArray(o.cc)
       ? (o.cc as unknown[]).filter(
           (x): x is string => typeof x === 'string' && x.trim().length > 0,
@@ -120,21 +115,8 @@ export async function POST(req: Request) {
     templateProps,
   } = parsed
   const from = MAILING_LIST_BLAST_FROM
-  let resend: ReturnType<typeof createClient>
-  try {
-    resend = createClient()
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : 'Resend is not configured'
-    console.error('[resend/send-job] createClient', err)
-    return Response.json({ok: false, error: message}, {status: 502})
-  }
-
   const useInvitationComponent =
     template === 'invitation' && recipients && recipients.length > 0
-  const invitationProps = useInvitationComponent
-    ? parseInvitationTemplateProps(templateProps)
-    : null
   const fallbackHtml = html ?? (body ? `<p>${body}</p>` : '<p></p>')
 
   const recipientList: {email: string; name: string}[] =
@@ -143,6 +125,7 @@ export async function POST(req: Request) {
       : to.map((e) => ({email: e, name: ''}))
 
   const ids: string[] = []
+  let resend: ReturnType<typeof createClient> | null = null
 
   for (const recipient of recipientList) {
     const headers: Record<string, string> = {
@@ -152,24 +135,52 @@ export async function POST(req: Request) {
       'X-Entity-Ref-ID': uuidv7(),
     }
 
-    let htmlToSend: string
-    if (useInvitationComponent && invitationProps) {
+    if (useInvitationComponent) {
       try {
-        htmlToSend = await renderInvitationTemplate({
-          ...invitationProps,
-          recipientName:
-            recipient.name || recipient.email.split('@')[0] || 'there',
+        const result = await sendInvitationEmail({
+          to: recipient.email,
+          subject,
+          recipientName: recipient.name,
+          templateProps,
+          cc,
+          bcc,
+          headers,
         })
+
+        if (result?.id) {
+          ids.push(result.id)
+        }
+        continue
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Render failed'
-        console.error('[resend/send-job] renderInvitationTemplate', err)
+        const message = err instanceof Error ? err.message : 'Send failed'
+        console.error('[resend/send-job] sendInvitationEmail', err)
         return Response.json(
-          {ok: false, error: `Template render failed: ${message}`},
-          {status: 500},
+          {
+            ok: false,
+            error: `Invitation send failed for ${recipient.email} - ${message}`,
+          },
+          {status: 502},
         )
       }
-    } else {
-      htmlToSend = fallbackHtml
+    }
+
+    if (!resend) {
+      try {
+        resend = createClient()
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'Resend is not configured'
+        console.error('[resend/send-job] createClient', err)
+        return Response.json({ok: false, error: message}, {status: 502})
+      }
+    }
+
+    const resendClient = resend
+    if (!resendClient) {
+      return Response.json(
+        {ok: false, error: 'Resend is not configured'},
+        {status: 502},
+      )
     }
 
     const payload: {
@@ -184,7 +195,7 @@ export async function POST(req: Request) {
       from: `Rapid Fire <${from}>`,
       to: recipient.email,
       subject,
-      html: htmlToSend,
+      html: fallbackHtml,
       headers,
     }
     if (cc && cc.length > 0) payload.cc = cc
@@ -192,7 +203,7 @@ export async function POST(req: Request) {
 
     let result: unknown
     try {
-      result = await queueResendSend(() => resend.emails.send(payload))
+      result = await queueResendSend(() => resendClient.emails.send(payload))
     } catch (err) {
       const message = toErrorMessage(err)
       console.error('[resend/send-job] send threw', err)

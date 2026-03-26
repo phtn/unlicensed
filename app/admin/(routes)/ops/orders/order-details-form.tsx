@@ -2,6 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
+import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Chip, ChipProps, Textarea, User} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
@@ -88,6 +89,16 @@ export function OrderDetailsForm({
   )
   const customerProfileFid =
     user && 'guestId' in user ? null : (user?.fid ?? user?.firebaseId ?? null)
+  const payableTotalCents = resolveOrderPayableTotalCents({
+    paymentMethod: order.payment.method,
+    totalCents: order.totalCents,
+    processingFeeCents: order.processingFeeCents,
+    totalWithCryptoFeeCents: order.totalWithCryptoFeeCents,
+  })
+  const processingFeeLabel =
+    order.payment.method === 'cash_app'
+      ? 'Cash App Processing Fee'
+      : 'Processing Fee'
 
   return (
     <div className='flex flex-col min-h-0'>
@@ -101,8 +112,7 @@ export function OrderDetailsForm({
             className='capitalize'
             color={statusColorMap[order.orderStatus] || 'default'}
             size='sm'
-            variant='flat'
-          >
+            variant='flat'>
             {order.orderStatus
               .split('_')
               .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -167,8 +177,7 @@ export function OrderDetailsForm({
               {order.items.map((item, idx) => (
                 <div
                   key={idx}
-                  className='border-b-[0.5px] border-dotted border-neutral-500/60 flex justify-between items-start text-sm p-3 bg-fade'
-                >
+                  className='border-b-[0.5px] border-dotted border-neutral-500/60 flex justify-between items-start text-sm p-3 bg-fade'>
                   <div className='flex-1 pr-4'>
                     <div className='font-medium flex items-center justify-between'>
                       <span>
@@ -212,6 +221,15 @@ export function OrderDetailsForm({
                       {formatPrice(order.shippingCents)}
                     </span>
                   </div>
+                  {order.processingFeeCents && order.processingFeeCents > 0 && (
+                    <div className='flex items-center justify-between border-b border-dotted border-sidebar h-8'>
+                      <span className='font-medium'>{processingFeeLabel}</span>
+                      <span className='font-okxs font-medium'>
+                        <span className='font-light'>$</span>
+                        {formatPrice(order.processingFeeCents)}
+                      </span>
+                    </div>
+                  )}
                   {order.discountCents && (
                     <div className='flex items-center justify-between border-b border-dotted border-sidebar h-8'>
                       <span className='text-muted-foreground'>Discount</span>
@@ -226,7 +244,7 @@ export function OrderDetailsForm({
               <h3 className='text-base font-semibold mb-2 block'>Total</h3>
               <span className=''>
                 <span className='font-light opacity-80'>$</span>
-                {formatPrice(order.totalCents)}
+                {formatPrice(payableTotalCents)}
               </span>
             </div>
 
@@ -255,8 +273,7 @@ export function OrderDetailsForm({
                   Object.entries(order.payment).map(([k, v]) => (
                     <div
                       key={k}
-                      className='flex items-start text-sm border-b border-dashed border-sidebar min-h-9 pt-2'
-                    >
+                      className='flex items-start text-sm border-b border-dashed border-sidebar min-h-9 pt-2'>
                       <span className='min-w-32 capitalize font-medium'>
                         {k}:
                       </span>
@@ -265,16 +282,14 @@ export function OrderDetailsForm({
                           ? Object.entries(v).map(([j, l]) => (
                               <div
                                 key={j}
-                                className='flex items-start text-sm border-b border-dashed border-sidebar min-h-9 pt-2'
-                              >
+                                className='flex items-start text-sm border-b border-dashed border-sidebar min-h-9 pt-2'>
                                 <div className='mr-3 font-medium'>{j}:</div>
                                 <div>
                                   {typeof l === 'object'
                                     ? Object.entries(l).map(([m, n]) => (
                                         <div
                                           key={m}
-                                          className='flex items-center'
-                                        >
+                                          className='flex items-center'>
                                           <span className='mr-3 font-medium'>
                                             {m}:
                                           </span>
@@ -307,8 +322,7 @@ export function OrderDetailsForm({
                   variant='flat'
                   onPress={handleCancel}
                   className='flex-1 text-base font-medium rounded-lg'
-                  isDisabled={isSaving}
-                >
+                  isDisabled={isSaving}>
                   Cancel
                 </Button>
                 <Button
@@ -317,8 +331,7 @@ export function OrderDetailsForm({
                   variant='solid'
                   onPress={handleSave}
                   className='flex-1 text-base font-medium rounded-lg bg-dark-table text-white dark:text-dark-table dark:bg-white'
-                  isLoading={isSaving}
-                >
+                  isLoading={isSaving}>
                   <span className='drop-shadow-sm'>Save Changes</span>
                 </Button>
               </div>
