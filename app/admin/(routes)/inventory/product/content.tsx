@@ -1,9 +1,11 @@
 'use client'
 
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
+import {createLoadedCountParser} from '@/components/table-v2/parsers-v2'
 import {api} from '@/convex/_generated/api'
 import {usePaginatedQuery} from 'convex/react'
-import {Suspense} from 'react'
+import {useQueryState} from 'nuqs'
+import {Suspense, useMemo} from 'react'
 import {EditProductContent} from './[id]/content'
 import {NewProduct} from './new-product'
 import {ProductList} from './product-list'
@@ -13,6 +15,11 @@ import {ProductsData} from './products-data'
 const ADMIN_PRODUCTS_PAGE_SIZE = 100
 
 const ProductsContentInner = () => {
+  const loadedCountParser = useMemo(
+    () => createLoadedCountParser(ADMIN_PRODUCTS_PAGE_SIZE),
+    [],
+  )
+  const [loadedCount] = useQueryState('loaded', loadedCountParser)
   const {
     results: products,
     status: productsStatus,
@@ -20,7 +27,7 @@ const ProductsContentInner = () => {
   } = usePaginatedQuery(
     api.products.q.listProductsPaginated,
     {},
-    {initialNumItems: ADMIN_PRODUCTS_PAGE_SIZE},
+    {initialNumItems: loadedCount},
   )
   const [tabId, , id] = useAdminTabId()
   const canLoadMore = productsStatus === 'CanLoadMore'
@@ -55,6 +62,7 @@ const ProductsContentInner = () => {
         <ProductsData
           data={products}
           loading={isLoadingInitial}
+          defaultLoadedCount={loadedCount}
           canLoadMore={canLoadMore}
           isLoadingMore={isLoadingMore}
           onLoadMore={handleLoadMore}

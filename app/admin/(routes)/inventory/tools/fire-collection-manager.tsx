@@ -10,14 +10,24 @@ import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
+import {Icon} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
+import {cn} from '@/lib/utils'
 import {Button, Image, Input, Select, SelectItem, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
+import {parseAsString, useQueryStates} from 'nuqs'
 import {useDeferredValue, useEffect, useMemo, useRef, useState} from 'react'
 
 const MAX_LIBRARY_RESULTS = 24
 const RANDOM_INSERT_COUNT = 15
 const RANDOM_CATEGORY_ALL = '__all__'
+const fireCollectionStateParsers = {
+  fireCollectionId: parseAsString,
+  fireCreateTitle: parseAsString.withDefault(''),
+  fireCollectionTitle: parseAsString.withDefault(''),
+  fireQuery: parseAsString.withDefault(''),
+  fireRandomCategory: parseAsString.withDefault(RANDOM_CATEGORY_ALL),
+}
 
 const getBrandLabel = (product: Doc<'products'>) => {
   if (Array.isArray(product.brand) && product.brand.length > 0) {
@@ -89,8 +99,8 @@ const ProductTile = ({
   disabled = false,
   isBusy = false,
 }: ProductTileProps) => (
-  <article className='flex items-center gap-3 rounded-2xl border border-foreground/10 bg-background/80 p-3'>
-    <div className='flex size-18 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-sidebar/70'>
+  <article className='flex items-end gap-3 border border-foreground/0 bg-background/80'>
+    <div className='flex size-18 shrink-0 items-center justify-center overflow-hidden rounded-xs bg-sidebar/70'>
       {imageUrl ? (
         <Image
           src={imageUrl}
@@ -107,25 +117,27 @@ const ProductTile = ({
     </div>
 
     <div className='min-w-0 flex-1'>
-      <h3 className='truncate font-clash text-sm font-medium text-foreground'>
+      <h3 className='font-clash text-sm font-semibold tracking-wider text-foreground'>
         {product.name}
       </h3>
-      <p className='mt-1 text-xs text-foreground/55'>
+      <p className='mt-2 text-[9px] text-foreground/60 font-okxs tracking-widest'>
         {product.categorySlug || 'uncategorized'} · {getBrandLabel(product)}
       </p>
-      <p className='mt-2 text-xs uppercase tracking-[0.25em] text-foreground/40'>
+      <p className='mt-2 text-[8px] text-foreground/80 uppercase tracking-[0.2em]'>
         {product.available ? 'Available' : 'Unavailable'}
       </p>
     </div>
 
     <Button
       radius='none'
-      variant='flat'
+      size='sm'
+      isIconOnly
+      variant='light'
       isLoading={isBusy}
       isDisabled={disabled}
       onPress={() => onAction(String(product._id))}
-      className='min-w-24 rounded-lg bg-sidebar px-4 font-okxs text-xs uppercase tracking-[0.25em] text-foreground'>
-      {actionLabel}
+      className='rounded-sm bg-sidebar/0 text-xs uppercase text-foreground h-7'>
+      <Icon name='trash' className='size-4' />
     </Button>
   </article>
 )
@@ -138,14 +150,12 @@ export const FireCollectionManager = () => {
   const fireCollections = useQuery(api.admin.q.getFireCollectionsConfig, {})
   const categories = useQuery(api.categories.q.listCategories, {})
   const libraryProducts = useQuery(api.products.q.listProducts, {limit: 500})
-  const [selectedCollectionId, setSelectedCollectionId] = useState<
-    string | null
-  >(null)
-  const [createTitle, setCreateTitle] = useState('')
-  const [collectionTitle, setCollectionTitle] = useState('')
-  const [query, setQuery] = useState('')
-  const [randomCategorySlug, setRandomCategorySlug] =
-    useState<string>(RANDOM_CATEGORY_ALL)
+  const [fireState, setFireState] = useQueryStates(fireCollectionStateParsers)
+  const selectedCollectionId = fireState.fireCollectionId ?? null
+  const createTitle = fireState.fireCreateTitle
+  const collectionTitle = fireState.fireCollectionTitle
+  const query = fireState.fireQuery
+  const randomCategorySlug = fireState.fireRandomCategory
   const deferredQuery = useDeferredValue(query.trim().toLowerCase())
   const [activeKey, setActiveKey] = useState<string | null>(null)
   const [status, setStatus] = useState<null | 'saved' | 'error'>(null)
@@ -161,7 +171,12 @@ export const FireCollectionManager = () => {
 
   useEffect(() => {
     if (!fireCollections || fireCollections.length === 0) {
-      setSelectedCollectionId(null)
+      if (selectedCollectionId !== null) {
+        void setFireState({
+          fireCollectionId: null,
+          fireCollectionTitle: '',
+        })
+      }
       return
     }
 
@@ -171,9 +186,9 @@ export const FireCollectionManager = () => {
         (collection) => collection.id === selectedCollectionId,
       )
     ) {
-      setSelectedCollectionId(fireCollections[0].id)
+      void setFireState({fireCollectionId: fireCollections[0].id})
     }
-  }, [fireCollections, selectedCollectionId])
+  }, [fireCollections, selectedCollectionId, setFireState])
 
   const selectedCollection = useMemo(
     () =>
@@ -184,8 +199,18 @@ export const FireCollectionManager = () => {
   )
 
   useEffect(() => {
-    setCollectionTitle(selectedCollection?.title ?? '')
-  }, [selectedCollection?.id, selectedCollection?.title])
+    const nextTitle = selectedCollection?.title ?? ''
+    if (collectionTitle === nextTitle) {
+      return
+    }
+
+    void setFireState({fireCollectionTitle: nextTitle})
+  }, [
+    collectionTitle,
+    selectedCollection?.id,
+    selectedCollection?.title,
+    setFireState,
+  ])
 
   const selectedIds = useMemo(
     () => selectedCollection?.productIds ?? [],
@@ -255,9 +280,9 @@ export const FireCollectionManager = () => {
         (option) => option.value === randomCategorySlug,
       )
     ) {
-      setRandomCategorySlug(RANDOM_CATEGORY_ALL)
+      void setFireState({fireRandomCategory: RANDOM_CATEGORY_ALL})
     }
-  }, [randomCategoryOptions, randomCategorySlug])
+  }, [randomCategoryOptions, randomCategorySlug, setFireState])
   const randomCandidateProductIds = useMemo(() => {
     if (!libraryProducts) {
       return []
@@ -327,8 +352,10 @@ export const FireCollectionManager = () => {
         title: createTitle,
         uid: user?.uid ?? 'anonymous',
       })
-      setCreateTitle('')
-      setSelectedCollectionId(result.collectionId)
+      await setFireState({
+        fireCreateTitle: '',
+        fireCollectionId: result.collectionId,
+      })
     })
   }
 
@@ -388,7 +415,7 @@ export const FireCollectionManager = () => {
         uid: user?.uid ?? 'anonymous',
       }),
     )
-    setSelectedCollectionId(nextSelection)
+    await setFireState({fireCollectionId: nextSelection})
   }
 
   const handleInsertRandomProducts = async () => {
@@ -414,8 +441,8 @@ export const FireCollectionManager = () => {
   }
 
   return (
-    <section className='flex w-full flex-col gap-6'>
-      <div className='flex flex-col gap-3 rounded-3xl border border-foreground/10 bg-background/70 p-5'>
+    <section className='flex w-full flex-col gap-4'>
+      <div className='flex flex-col gap-3 border-b-2 border-foreground/10 p-2 max-h-23'>
         <div className='flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between'>
           <div className='flex items-center justify-between w-full'>
             <div>
@@ -424,11 +451,15 @@ export const FireCollectionManager = () => {
                   Collection Creator
                 </h2>
 
-                <div className='flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.28em] text-foreground/45'>
-                  <span>{fireCollections?.length ?? 0} collections</span>
-                  <span>{enabledCollectionsCount} enabled</span>
+                <div className='flex flex-wrap items-center gap-3 text-[8px] uppercase tracking-widest text-foreground/45'>
+                  <span className='text-indigo-400'>
+                    {fireCollections?.length ?? 0} collections
+                  </span>
+                  <span className='text-emerald-500'>
+                    {enabledCollectionsCount} enabled
+                  </span>
                 </div>
-                <div className='flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.28em] text-foreground/45'>
+                <div className='flex flex-wrap items-center gap-3 text-[8px] uppercase tracking-widest text-foreground/45'>
                   {status === 'saved' && (
                     <span className='text-emerald-500'>Saved</span>
                   )}
@@ -438,7 +469,7 @@ export const FireCollectionManager = () => {
                 </div>
               </div>
 
-              <p className='mt-1 overflow-scroll text-sm text-foreground/65'>
+              <p className='mt-1 overflow-scroll text-sm text-foreground/60 font-okxs tracking-wide'>
                 Build multiple product collections, decide which ones are live,
                 and curate the order of products inside each row.
               </p>
@@ -465,16 +496,16 @@ export const FireCollectionManager = () => {
       </div>
 
       <div className='grid gap-6 xl:grid-cols-[18rem_minmax(0,0.95fr)_minmax(0,1fr)]'>
-        <section className='flex min-h-0 flex-col rounded-xl border border-foreground/10 bg-background/70 p-4'>
-          <div className='flex items-center justify-between gap-3'>
-            <h3 className='text-xs font-okxs uppercase tracking-[0.3em] text-foreground/50'>
+        <section className='flex min-h-0 flex-col bg-background/0'>
+          <div className='flex items-center justify-between h-8'>
+            <h3 className='text-[8px] pl-3 font-okxs font-light uppercase tracking-[0.2em] text-foreground/70'>
               Collections
             </h3>
-            <span className='text-xs text-foreground/45'>Select one</span>
+            {/*<span className='text-xs text-foreground/45'>Select one</span>*/}
           </div>
 
           <ScrollArea className='mt-4 max-h-[36.01rem] pr-3'>
-            <div className='flex flex-col gap-3'>
+            <div className='flex flex-col gap-0'>
               {!fireCollections?.length && (
                 <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
                   No collections yet. Create one to get started.
@@ -487,29 +518,44 @@ export const FireCollectionManager = () => {
                   <button
                     key={collection.id}
                     type='button'
-                    onClick={() => setSelectedCollectionId(collection.id)}
+                    onClick={() => {
+                      void setFireState({fireCollectionId: collection.id})
+                    }}
                     className={`rounded-2xl border p-4 text-left transition-colors ${
                       isSelected
-                        ? 'border-foreground/30 bg-sidebar'
-                        : 'border-foreground/10 bg-background/80 hover:border-foreground/20'
+                        ? 'border-foreground/30 bg-sidebar dark:bg-sidebar/30 shadow-inner'
+                        : 'border-foreground/15 bg-background/80 hover:border-foreground/20'
                     }`}>
                     <div className='flex items-start justify-between gap-3'>
                       <div className='min-w-0'>
-                        <h3 className='truncate font-okxs text-sm font-semibold text-foreground'>
-                          {collection.title}
+                        <h3 className='truncate font-clash text-sm font-semibold tracking-wider text-foreground/80'>
+                          <span>{collection.title}</span>
+
+                          <span className='ml-2'>
+                            <span className='font-ios font-thin opacity-30'>{`(`}</span>
+                            <span className='font-medium'>
+                              {collection.productIds.length}
+                            </span>
+                            <span className='font-ios font-thin opacity-30'>{`)`}</span>
+                          </span>
                         </h3>
-                        <p className='mt-1 text-xs uppercase tracking-[0.22em] text-foreground/45'>
-                          {collection.productIds.length} products
-                        </p>
+                        {/*<p className='mt-1 text-xs uppercase tracking-[0.22em] text-foreground/45'>
+                          {collection.productIds.length}
+                        </p>*/}
                       </div>
-                      <span
-                        className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.25em] ${
+                      <div
+                        className={`flex items-center justify-center rounded-sm px-1 py-0 text-[8.5px] uppercase font-clash font-black tracking-widest ${
                           collection.enabled
-                            ? 'bg-emerald-500/10 text-emerald-500'
-                            : 'bg-foreground/8 text-foreground/45'
+                            ? 'text-emerald-100 dark:text-emerald-500 bg-emerald-500 dark:bg-emerald-400/15'
+                            : 'bg-zinc-500/10 dark:bg-sidebar/0 text-zinc-500 dark:text-foreground/60'
                         }`}>
-                        {collection.enabled ? 'On' : 'Off'}
-                      </span>
+                        <span
+                          className={cn({
+                            'drop-shadow-2xs': collection.enabled,
+                          })}>
+                          {collection.enabled ? 'On' : 'Off'}
+                        </span>
+                      </div>
                     </div>
                   </button>
                 )
@@ -518,37 +564,45 @@ export const FireCollectionManager = () => {
           </ScrollArea>
         </section>
 
-        <div className='space-y-6'>
-          <section className='flex flex-col rounded-xl border border-foreground/10 bg-background/70 p-4'>
-            <div className='flex items-center justify-between gap-3'>
-              <h3 className='text-xs font-okxs uppercase tracking-[0.3em] text-foreground/50'>
+        <div className='space-y-1'>
+          <section className='flex flex-col bg-background/0 p-0'>
+            <div className='flex items-center justify-between h-8'>
+              <h3 className='text-[8px] font-okxs font-light uppercase tracking-[0.2em] text-foreground/70'>
                 Settings
               </h3>
               {selectedCollection && (
                 <div className='flex items-center space-x-2'>
-                  <div className='flex items-center space-x-2 bg-background/80 p-1'>
+                  <div className='flex items-center space-x-2 bg-background/80 dark:bg-background/0'>
                     <div>
-                      <p className='text-sm font-medium text-foreground'>
-                        Enabled
-                      </p>
+                      {selectedCollection.enabled ? (
+                        <p className='text-xs uppercase font-ios font-semibold tracking-widest text-emerald-600'>
+                          On
+                        </p>
+                      ) : (
+                        <p className='text-xs uppercase font-clash font-semibold tracking-widest text-zinc-400'>
+                          Off
+                        </p>
+                      )}
                     </div>
                     <Switch
                       isSelected={selectedCollection.enabled}
                       isDisabled={activeKey !== null}
                       onValueChange={handleToggleCollection}
+                      className='scale-75'
                       size='sm'
                     />
                   </div>
 
                   <Button
                     size='sm'
+                    isIconOnly
                     radius='none'
-                    variant='flat'
+                    variant='light'
                     color='danger'
                     isDisabled={activeKey !== null}
                     onPress={handleDeleteCollection}
-                    className='rounded-md px-3 font-okxs text-xs uppercase tracking-[0.25em]'>
-                    Delete
+                    className='rounded-sm font-okxs text-xs uppercase tracking-widest h-7'>
+                    <Icon name='trash-fill' className='size-4' />
                   </Button>
                 </div>
               )}
@@ -563,7 +617,9 @@ export const FireCollectionManager = () => {
                 <div className='flex items-center gap-4'>
                   <Input
                     value={collectionTitle}
-                    onValueChange={setCollectionTitle}
+                    onValueChange={(value) => {
+                      void setFireState({fireCollectionTitle: value})
+                    }}
                     placeholder='Collection title'
                     classNames={narrowInputClassNames}
                   />
@@ -577,26 +633,26 @@ export const FireCollectionManager = () => {
                       collectionTitle.trim() === selectedCollection.title
                     }
                     onPress={handleSaveCollectionTitle}
-                    className='rounded-md px-6 font-okxs text-xs uppercase tracking-[0.25em] bg-dark-table text-white'>
-                    Save Title
+                    className='rounded-md px-6 font-clash text-xs tracking-widest bg-dark-table text-white'>
+                    Save Changes
                   </Button>
                 </div>
               </div>
             )}
           </section>
 
-          <section className='flex flex-col rounded-xl border border-foreground/10 bg-background/70 p-4 h-fit'>
+          <section className='flex flex-col rounded-sm border border-foreground/10 bg-background/70 p-4 h-fit'>
             <div className='flex items-center justify-between gap-3'>
-              <h3 className='text-xs font-okxs uppercase tracking-[0.3em] text-foreground/50'>
+              <h3 className='text-[8px] font-okxs font-light uppercase tracking-[0.2em] text-foreground/70'>
                 Current Collection
               </h3>
-              <span className='text-xs text-foreground/45'>
-                Front of the list renders first
+              <span className='font-okxs text-xs tracking-wider text-foreground/45'>
+                renders in-order
               </span>
             </div>
 
             <ScrollArea className='mt-4 xl:flex-1'>
-              <div className='flex flex-col gap-3'>
+              <div className='grid md:grid-cols-2 gap-3'>
                 {!selectedCollection && (
                   <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
                     Choose a collection to manage its products.
@@ -678,9 +734,10 @@ export const FireCollectionManager = () => {
               selectedKeys={[randomCategorySlug]}
               onSelectionChange={(keys) => {
                 const key = Array.from(keys)[0]
-                setRandomCategorySlug(
-                  typeof key === 'string' ? key : RANDOM_CATEGORY_ALL,
-                )
+                void setFireState({
+                  fireRandomCategory:
+                    typeof key === 'string' ? key : RANDOM_CATEGORY_ALL,
+                })
               }}
               classNames={commonSelectClassNames}
               disallowEmptySelection
@@ -699,14 +756,16 @@ export const FireCollectionManager = () => {
 
           <Input
             value={query}
-            onValueChange={setQuery}
+            onValueChange={(value) => {
+              void setFireState({fireQuery: value})
+            }}
             placeholder='Search products by name, brand, category, or slug'
             classNames={commonInputClassNames}
             className='mt-4'
           />
 
           <ScrollArea className='mt-4 xl:flex-1'>
-            <div className='flex flex-col gap-3'>
+            <div className='grid md:grid-cols-2 gap-3'>
               {!selectedCollection && (
                 <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
                   Create or select a collection before adding products.

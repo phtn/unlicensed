@@ -15,6 +15,26 @@ export const createPaginationParser = (defaultPageSize = 15) => ({
 
 export const paginationParser = createPaginationParser(15)
 
+export const createLoadedCountParser = (defaultLoadedCount = 100) => ({
+  parse: (value: string | null): number => {
+    const parsed = value == null ? Number.NaN : Number(value)
+
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      return defaultLoadedCount
+    }
+
+    return Math.floor(parsed)
+  },
+  serialize: (value: number): string => {
+    if (!Number.isFinite(value) || value < 1) {
+      return String(defaultLoadedCount)
+    }
+
+    return String(Math.floor(value))
+  },
+  defaultValue: defaultLoadedCount,
+})
+
 // Search parser
 export const searchParser = parseAsString.withDefault('')
 
@@ -55,14 +75,11 @@ export const createColumnFiltersParser = () => ({
       const filterGroups = value.split('|')
       for (const group of filterGroups) {
         const colonIndex = group.indexOf(':')
-        const columnId =
-          colonIndex >= 0 ? group.slice(0, colonIndex) : group
+        const columnId = colonIndex >= 0 ? group.slice(0, colonIndex) : group
         const valuesStr = colonIndex >= 0 ? group.slice(colonIndex + 1) : ''
         if (columnId) {
           const values =
-            valuesStr.length > 0
-              ? valuesStr.split(',').filter(Boolean)
-              : []
+            valuesStr.length > 0 ? valuesStr.split(',').filter(Boolean) : []
           filters.push({
             id: columnId,
             value: values,

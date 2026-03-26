@@ -9,7 +9,15 @@ import {
 import {Table, TableBody, TableCell, TableRow} from '@/components/ui/table'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Select, SelectItem} from '@heroui/react'
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Select,
+  SelectItem,
+} from '@heroui/react'
 import {useMemo, useState} from 'react'
 import {
   BulkEditorConfig,
@@ -33,6 +41,12 @@ interface EditableField<T> {
   values: EditableValue[]
   options: BulkEditorOption[]
   initialValue: string
+}
+
+interface PendingFieldUpdate<T> {
+  field: EditableField<T>
+  value: T[keyof T]
+  displayValue: string
 }
 
 interface MultiSelectProps<T> {
@@ -136,6 +150,7 @@ export const MultiSelect = <T,>({
   const [draftValues, setDraftValues] = useState<Record<string, string>>(
     () => initialDraftValues,
   )
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   const hasDraftChanges = useMemo(
     () =>
@@ -147,34 +162,37 @@ export const MultiSelect = <T,>({
     [draftValues, editableFields, initialDraftValues],
   )
 
-  const handleApply = async () => {
-    if (!hasDraftChanges || pending) return
+  const pendingFieldUpdates = useMemo(
+    () =>
+      resolvePendingFieldUpdates(
+        editableFields,
+        draftValues,
+        initialDraftValues,
+      ),
+    [draftValues, editableFields, initialDraftValues],
+  )
 
-    const updates = editableFields.reduce((nextUpdates, field) => {
-      const draftValue = draftValues[field.id] ?? ''
-      const initialValue = initialDraftValues[field.id] ?? ''
+  const pendingUpdates = useMemo(
+    () => buildUpdatePayload(pendingFieldUpdates),
+    [pendingFieldUpdates],
+  )
 
-      if (draftValue === initialValue) {
-        return nextUpdates
-      }
+  const hasPendingUpdates = pendingFieldUpdates.length > 0
 
-      const normalizedValue =
-        field.inputKind === 'text' ? draftValue : draftValue.trim()
+  const handleApply = () => {
+    if (!hasPendingUpdates || pending) return
+    setIsConfirmOpen(true)
+  }
 
-      if (!normalizedValue) {
-        return nextUpdates
-      }
+  const handleConfirmApply = async () => {
+    if (!hasPendingUpdates || pending) return
 
-      nextUpdates[field.key] = coerceValue(normalizedValue, field) as T[keyof T]
-      return nextUpdates
-    }, {} as Partial<T>)
-
-    if (Object.keys(updates).length === 0) return
-
-    await onApply(updates)
+    await onApply(pendingUpdates)
+    setIsConfirmOpen(false)
   }
 
   const resetDraftValues = () => {
+    setIsConfirmOpen(false)
     setDraftValues(initialDraftValues)
   }
 
@@ -220,7 +238,7 @@ export const MultiSelect = <T,>({
                       className='*:border-dark-table/20 hover:bg-transparent [&>:not(:last-child)]:border-r'>
                       <TableCell
                         className={cn(
-                          'bg-sidebar/20 dark:bg-sidebar border-b-[0.5px] align-top text-sm font-medium w-44 max-w-44',
+                          'bg-sidebar/20 dark:bg-sidebar border-b-[0.5px] align-top text-sm font-medium w-40 max-w-40',
                           {'max-w-24': isCompact},
                         )}>
                         <div className='flex flex-col gap-1'>
@@ -342,7 +360,7 @@ export const MultiSelect = <T,>({
                 type='button'
                 onClick={handleApply}
                 disabled={
-                  pending || !hasDraftChanges || editableFields.length === 0
+                  pending || !hasPendingUpdates || editableFields.length === 0
                 }
                 className='rounded-lg border border-foreground/10 bg-foreground px-2 md:px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-50'>
                 {pending ? 'Saving...' : 'Apply changes'}
@@ -351,6 +369,96 @@ export const MultiSelect = <T,>({
           </div>
         </FrameFooter>
       </Frame>
+
+      <Modal
+        isOpen={isConfirmOpen}
+        onOpenChange={setIsConfirmOpen}
+        placement='center'
+        backdrop='blur'
+        size='lg'>
+        <ModalContent className='border border-border/60 bg-background/95 shadow-2xl'>
+          <ModalHeader className='flex flex-col gap-1 pb-2'>
+            <span className='text-base font-semibold tracking-tight'>
+              Review bulk changes
+            </span>
+            <p className='text-sm font-normal text-muted-foreground'>
+              {pendingFieldUpdates.length} field
+              {pendingFieldUpdates.length === 1 ? '' : 's'} will be applied to{' '}
+              {selectedRows.length} selected row
+              {selectedRows.length === 1 ? '' : 's'}.
+            </p>
+          </ModalHeader>
+          <ModalBody className='gap-4 pb-2'>
+            <div className='grid gap-2 sm:grid-cols-2'>
+              <div className='rounded-xl border border-border/60 bg-muted/40 px-4 py-3'>
+                <div className='text-[10px] font-medium uppercase tracking-[0.24em] text-muted-foreground'>
+                  Selected
+                </div>
+                <div className='mt-1 text-lg font-semibold'>
+                  {selectedRows.length} row
+                  {selectedRows.length === 1 ? '' : 's'}
+                </div>
+              </div>
+              <div className='rounded-xl border border-border/60 bg-muted/40 px-4 py-3'>
+                <div className='text-[10px] font-medium uppercase tracking-[0.24em] text-muted-foreground'>
+                  Pending fields
+                </div>
+                <div className='mt-1 text-lg font-semibold'>
+                  {pendingFieldUpdates.length}
+                </div>
+              </div>
+            </div>
+
+            <div className='overflow-hidden rounded-xl border border-border/60 bg-background/70'>
+              <div className='border-b border-border/60 px-4 py-2 text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground'>
+                Change summary
+              </div>
+              <div className='max-h-[42vh] overflow-y-auto'>
+                {pendingFieldUpdates.map(({field, displayValue}) => (
+                  <div
+                    key={field.id}
+                    className='grid gap-3 border-b border-border/50 px-4 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center'>
+                    <div className='min-w-0'>
+                      <div className='text-sm font-medium'>{field.label}</div>
+                      <div className='truncate text-xs text-muted-foreground'>
+                        {field.preview}
+                      </div>
+                    </div>
+                    <Icon
+                      name='arrow-right'
+                      className='size-4 shrink-0 text-muted-foreground'
+                    />
+                    <div className='min-w-0 text-sm font-medium sm:text-right'>
+                      {displayValue}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <p className='text-xs leading-5 text-muted-foreground'>
+              Only the fields listed here will be patched onto each selected
+              row.
+            </p>
+          </ModalBody>
+          <ModalFooter className='gap-2'>
+            <button
+              type='button'
+              onClick={() => setIsConfirmOpen(false)}
+              disabled={pending}
+              className='rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50'>
+              Cancel
+            </button>
+            <button
+              type='button'
+              onClick={handleConfirmApply}
+              disabled={pending || !hasPendingUpdates}
+              className='rounded-lg border border-foreground/10 bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-50'>
+              {pending ? 'Saving...' : 'Confirm changes'}
+            </button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   )
 }
@@ -601,4 +709,45 @@ const coerceValue = <T,>(rawValue: string, field: EditableField<T>) => {
   }
 
   return rawValue
+}
+
+const resolvePendingFieldUpdates = <T,>(
+  editableFields: EditableField<T>[],
+  draftValues: Record<string, string>,
+  initialDraftValues: Record<string, string>,
+): PendingFieldUpdate<T>[] => {
+  return editableFields.flatMap((field) => {
+    const draftValue = draftValues[field.id] ?? ''
+    const initialValue = initialDraftValues[field.id] ?? ''
+
+    if (draftValue === initialValue) {
+      return []
+    }
+
+    const normalizedValue =
+      field.inputKind === 'text' ? draftValue : draftValue.trim()
+
+    if (!normalizedValue) {
+      return []
+    }
+
+    const value = coerceValue(normalizedValue, field) as T[keyof T]
+
+    return [
+      {
+        field,
+        value,
+        displayValue: formatValue(value as EditableValue, field.options),
+      },
+    ]
+  })
+}
+
+const buildUpdatePayload = <T,>(
+  pendingFieldUpdates: PendingFieldUpdate<T>[],
+) => {
+  return pendingFieldUpdates.reduce((updates, {field, value}) => {
+    updates[field.key] = value
+    return updates
+  }, {} as Partial<T>)
 }

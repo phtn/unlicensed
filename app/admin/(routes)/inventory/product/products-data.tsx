@@ -13,7 +13,9 @@ import {ColumnConfig} from '@/components/table-v2/create-column'
 import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
+import type {ProductType} from '@/convex/products/d'
 import {Icon} from '@/lib/icons'
+import {formatTimestamp} from '@/utils/date'
 import {formatPrice} from '@/utils/formatPrice'
 import {
   Button,
@@ -236,16 +238,70 @@ interface ProductsDataProps {
   title?: string
   exportFilePrefix?: string
   loading?: boolean
+  defaultLoadedCount?: number
   canLoadMore?: boolean
   isLoadingMore?: boolean
   onLoadMore?: VoidFunction
   loadMoreLabel?: string
 }
+
+const toBulkEditableProductFields = (
+  updates: Partial<Doc<'products'>>,
+): ProductType => {
+  const fields: ProductType = {}
+
+  if (updates.name !== undefined) {
+    fields.name = updates.name
+  }
+  if (updates.categorySlug !== undefined) {
+    fields.categorySlug = updates.categorySlug
+  }
+  if (updates.tier !== undefined) {
+    fields.tier = updates.tier
+  }
+  if (updates.available !== undefined) {
+    fields.available = updates.available
+  }
+  if (updates.eligibleForDeals !== undefined) {
+    fields.eligibleForDeals = updates.eligibleForDeals
+  }
+  if (updates.featured !== undefined) {
+    fields.featured = updates.featured
+  }
+  if (updates.eligibleForRewards !== undefined) {
+    fields.eligibleForRewards = updates.eligibleForRewards
+  }
+  if (updates.onSale !== undefined) {
+    fields.onSale = updates.onSale
+  }
+  if (updates.limited !== undefined) {
+    fields.limited = updates.limited
+  }
+  if (updates.eligibleForUpgrade !== undefined) {
+    fields.eligibleForUpgrade = updates.eligibleForUpgrade
+  }
+  if (updates.packagingMode !== undefined) {
+    fields.packagingMode = updates.packagingMode
+  }
+  if (updates.masterStockQuantity !== undefined) {
+    fields.masterStockQuantity = updates.masterStockQuantity
+  }
+  if (updates.lineage !== undefined) {
+    fields.lineage = updates.lineage
+  }
+  if (updates.noseRating !== undefined) {
+    fields.noseRating = updates.noseRating
+  }
+
+  return fields
+}
+
 export const ProductsData = ({
   data,
   title = 'Products',
   exportFilePrefix = 'products',
   loading,
+  defaultLoadedCount = 100,
   canLoadMore = false,
   isLoadingMore = false,
   onLoadMore,
@@ -253,6 +309,7 @@ export const ProductsData = ({
 }: ProductsDataProps) => {
   const categories = useQuery(api.categories.q.listCategories)
   const archiveProduct = useMutation(api.products.m.archiveProduct)
+  const updateProduct = useMutation(api.products.m.updateProduct)
   const safeData = useMemo(() => data ?? [], [data])
   const categorySlugs = useMemo(
     () =>
@@ -511,11 +568,17 @@ export const ProductsData = ({
           cell: formatText('noseRating', (v) => v, 'text-center'),
           size: 80,
         },
-        // {
-        //   id: 'createdAt',
-        //   header: 'Created',
-        //   accessorKey: 'createdAt',
-        // },
+        {
+          id: 'createdAt',
+          header: <ColHeader tip='Last Updated' symbol='Updated' />,
+          accessorKey: '_creationTime',
+          size: 180,
+          cell: ({row}) => (
+            <span className='whitespace-nowrap font-ios text-xs'>
+              {formatTimestamp(row.original._creationTime)}
+            </span>
+          ),
+        },
       ] as ColumnConfig<Doc<'products'>>[],
     [categories, categorySlugs],
   )
@@ -609,6 +672,32 @@ export const ProductsData = ({
     [archiveProduct],
   )
 
+  const handleBulkUpdateSelected = useCallback(
+    async ({
+      rows,
+      updates,
+    }: {
+      ids: string[]
+      rows: Doc<'products'>[]
+      updates: Partial<Doc<'products'>>
+    }) => {
+      const fields = toBulkEditableProductFields(updates)
+      if (Object.keys(fields).length === 0) {
+        return
+      }
+
+      await Promise.all(
+        rows.map((row) =>
+          updateProduct({
+            id: row._id,
+            fields,
+          }),
+        ),
+      )
+    },
+    [updateProduct],
+  )
+
   return (
     <div className='relative w-full max-w-full overflow-hidden'>
       <DataTable
@@ -618,10 +707,13 @@ export const ProductsData = ({
         columnConfigs={columns}
         editingRowId={null}
         defaultPageSize={25}
+        defaultLoadedCount={defaultLoadedCount}
+        loadedCountParamKey='loaded'
         rightToolbarLeft={exportToolbar}
         deleteIdAccessor='_id'
         deleteActionLabel='Delete Selected'
         onDeleteSelected={handleArchiveSelected}
+        onBulkUpdateSelected={handleBulkUpdateSelected}
       />
     </div>
   )

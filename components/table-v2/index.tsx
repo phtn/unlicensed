@@ -61,6 +61,7 @@ import {PageControl, Paginator} from './pagination-v2'
 import {
   createColumnFiltersParser,
   createColumnVisibilityParser,
+  createLoadedCountParser,
   createPaginationParser,
   createRowSelectionParser,
   createSortingParser,
@@ -103,6 +104,10 @@ interface TableProps<T> {
   selectedItemId?: string | null
   /** Default rows per page when no URL param is set. Defaults to 15. */
   defaultPageSize?: number
+  /** Default loaded row count when no URL param is set. */
+  defaultLoadedCount?: number
+  /** Query param key used to persist the current loaded row count. */
+  loadedCountParamKey?: string
   centerToolbarDateRange?: ReactNode
   rightToolbarLeft?:
     | ReactNode
@@ -121,6 +126,8 @@ function DataTableContent<T>({
   deleteIdAccessor = 'id' as keyof T,
   selectedItemId,
   defaultPageSize = 15,
+  defaultLoadedCount = 100,
+  loadedCountParamKey,
   centerToolbarDateRange,
   rightToolbarLeft,
 }: TableProps<T>) {
@@ -160,6 +167,14 @@ function DataTableContent<T>({
     'multiRowCompact',
     parseAsBoolean.withDefault(false),
   )
+  const loadedCountParser = useMemo(
+    () => createLoadedCountParser(defaultLoadedCount),
+    [defaultLoadedCount],
+  )
+  const [loadedCountParam, setLoadedCountParam] = useQueryState(
+    loadedCountParamKey ?? '__tableLoadedCount',
+    loadedCountParser,
+  )
 
   const paginationState: PaginationState = useMemo(
     () => ({
@@ -186,6 +201,25 @@ function DataTableContent<T>({
   useEffect(() => {
     setTableData(data)
   }, [data])
+
+  useEffect(() => {
+    if (
+      !loadedCountParamKey ||
+      loading ||
+      data.length === 0 ||
+      loadedCountParam === data.length
+    ) {
+      return
+    }
+
+    void setLoadedCountParam(data.length)
+  }, [
+    data.length,
+    loadedCountParam,
+    loadedCountParamKey,
+    loading,
+    setLoadedCountParam,
+  ])
 
   const handleFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault()
@@ -654,12 +688,12 @@ function DataTableContent<T>({
           />
         }
         title={<span className='text-lg'>Multi-Row Editor</span>}
-        description={`Only changed values will be applied on save.`}
+        description={`Review and confirm changed values before they are applied.`}
         className={cn(
           'h-auto max-h-none translate-x-0 rounded-xl border-dark-table/20',
           'w-[min(calc(100vw-4rem),31rem)] md:w-[min(calc(100vw-3rem),31rem)]',
           'md:right-6 md:top-24 md:bottom-6 left-auto right-3 top-30 bottom-16 ',
-          {'w-[min(calc(100vw-12rem),31rem)]': multiRowCompact},
+          {'w-[min(calc(100vw-16rem),21rem)]': multiRowCompact},
         )}>
         <MultiSelect
           key={selectedRowSignature}
