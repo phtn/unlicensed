@@ -221,6 +221,7 @@ export interface ColumnConfig<T> {
   cell?: (ctx: CellContext<T, unknown>) => ReactNode
   size?: number
   filterFn?: FilterFn<T>
+  enableFiltering?: boolean
   enableHiding?: boolean
   enableSorting?: boolean
   meta?: ColumnMeta<T>
@@ -312,6 +313,7 @@ export const createColumns = <T,>(
       accessorKey: config.accessorKey as string,
       size: config.size ?? 150,
       filterFn: config.filterFn ?? filterFn,
+      enableColumnFilter: config.enableFiltering ?? true,
       enableHiding: config.enableHiding ?? true,
       enableSorting: config.enableSorting ?? true,
       ...(config.meta && Object.keys(config.meta).length > 0

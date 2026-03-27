@@ -151,6 +151,7 @@ export const MultiSelect = <T,>({
     () => initialDraftValues,
   )
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
 
   const hasDraftChanges = useMemo(
     () =>
@@ -191,8 +192,21 @@ export const MultiSelect = <T,>({
     setIsConfirmOpen(false)
   }
 
+  const handleDelete = () => {
+    if (!onDeleteSelected || pending) return
+    setIsDeleteConfirmOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!onDeleteSelected || pending) return
+
+    await onDeleteSelected()
+    setIsDeleteConfirmOpen(false)
+  }
+
   const resetDraftValues = () => {
     setIsConfirmOpen(false)
+    setIsDeleteConfirmOpen(false)
     setDraftValues(initialDraftValues)
   }
 
@@ -238,8 +252,8 @@ export const MultiSelect = <T,>({
                       className='*:border-dark-table/20 hover:bg-transparent [&>:not(:last-child)]:border-r'>
                       <TableCell
                         className={cn(
-                          'bg-sidebar/20 dark:bg-sidebar border-b-[0.5px] align-top text-sm font-medium w-40 max-w-40',
-                          {'max-w-24': isCompact},
+                          'bg-sidebar/20 dark:bg-sidebar border-b-[0.5px] align-top text-sm font-medium w-50 max-w-50 select-none',
+                          {'max-w-36': isCompact},
                         )}>
                         <div className='flex flex-col gap-1'>
                           <span>{field.label}</span>
@@ -334,7 +348,7 @@ export const MultiSelect = <T,>({
           <div className='flex flex-wrap items-center justify-between gap-2'>
             <button
               type='button'
-              onClick={onDeleteSelected}
+              onClick={handleDelete}
               disabled={pending || !onDeleteSelected}
               className='rounded-lg bg-rose-500/95 hover:bg-rose-500 px-2 md:px-3 py-2 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50'>
               <span className={cn('flex', {hidden: isCompact})}>
@@ -455,6 +469,70 @@ export const MultiSelect = <T,>({
               disabled={pending || !hasPendingUpdates}
               className='rounded-lg border border-foreground/10 bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-50'>
               {pending ? 'Saving...' : 'Confirm changes'}
+            </button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteConfirmOpen}
+        onOpenChange={setIsDeleteConfirmOpen}
+        placement='center'
+        backdrop='blur'
+        size='md'>
+        <ModalContent className='border border-border/60 bg-background/95 shadow-2xl'>
+          <ModalHeader className='flex flex-col gap-1 pb-2'>
+            <span className='text-base font-semibold tracking-tight'>
+              Confirm bulk delete
+            </span>
+            <p className='text-sm font-normal text-muted-foreground'>
+              {selectedRows.length} selected row
+              {selectedRows.length === 1 ? '' : 's'} will be deleted.
+            </p>
+          </ModalHeader>
+          <ModalBody className='gap-4 pb-2'>
+            <div className='rounded-xl border border-rose-500/20 bg-rose-500/8 px-4 py-3'>
+              <div className='flex items-start gap-3'>
+                <div className='mt-0.5 rounded-full bg-rose-500/12 p-2 text-rose-600 dark:text-rose-300'>
+                  <Icon name='trash-fill' className='size-4' />
+                </div>
+                <div className='min-w-0'>
+                  <div className='text-sm font-semibold text-foreground'>
+                    This action removes the selected rows.
+                  </div>
+                  <p className='mt-1 text-xs leading-5 text-muted-foreground'>
+                    Review the selection before continuing. This applies to all{' '}
+                    {selectedRows.length} selected row
+                    {selectedRows.length === 1 ? '' : 's'}.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className='rounded-xl border border-border/60 bg-muted/40 px-4 py-3'>
+              <div className='text-[10px] font-medium uppercase tracking-[0.24em] text-muted-foreground'>
+                Selected
+              </div>
+              <div className='mt-1 text-lg font-semibold'>
+                {selectedRows.length} row
+                {selectedRows.length === 1 ? '' : 's'}
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter className='gap-2'>
+            <button
+              type='button'
+              onClick={() => setIsDeleteConfirmOpen(false)}
+              disabled={pending}
+              className='rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50'>
+              Cancel
+            </button>
+            <button
+              type='button'
+              onClick={handleConfirmDelete}
+              disabled={pending || !onDeleteSelected}
+              className='rounded-lg border border-rose-500/10 bg-rose-500 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-500/90 disabled:cursor-not-allowed disabled:opacity-50'>
+              {pending ? 'Deleting...' : deleteActionLabel}
             </button>
           </ModalFooter>
         </ModalContent>

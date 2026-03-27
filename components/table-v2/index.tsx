@@ -337,6 +337,25 @@ function DataTableContent<T>({
     },
   })
 
+  useEffect(() => {
+    const filterableColumnIds = new Set(
+      table
+        .getAllColumns()
+        .filter((column) => column.getCanFilter())
+        .map((column) => column.id),
+    )
+
+    const nextFilters = columnFilters.filter((filter) =>
+      filterableColumnIds.has(filter.id),
+    )
+
+    if (nextFilters.length === columnFilters.length) {
+      return
+    }
+
+    void setColumnFiltersParam(nextFilters)
+  }, [columnFilters, setColumnFiltersParam, table])
+
   // Derive active filter columns from URL so Filter UI stays in sync with ?filters=
   const activeFilterColumns = useMemo(() => {
     const cols: Column<T, unknown>[] = []
@@ -680,6 +699,7 @@ function DataTableContent<T>({
             clearSelection()
           }
         }}
+        aria-label='Multi-Row Editor'
         actions={
           <Icon
             name='minus'
@@ -692,8 +712,11 @@ function DataTableContent<T>({
         className={cn(
           'h-auto max-h-none translate-x-0 rounded-xl border-dark-table/20',
           'w-[min(calc(100vw-4rem),31rem)] md:w-[min(calc(100vw-3rem),31rem)]',
+          {
+            'w-[min(calc(100vw-16rem),32rem)] md:w-[min(calc(100vw-20rem),16rem)]':
+              multiRowCompact,
+          },
           'md:right-6 md:top-24 md:bottom-6 left-auto right-3 top-30 bottom-16 ',
-          {'w-[min(calc(100vw-16rem),21rem)]': multiRowCompact},
         )}>
         <MultiSelect
           key={selectedRowSignature}

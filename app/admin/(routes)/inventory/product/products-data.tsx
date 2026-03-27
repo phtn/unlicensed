@@ -206,6 +206,19 @@ function masterStockCell(ctx: CellContext<Doc<'products'>, unknown>) {
   )
 }
 
+function getUniqueFilterOptions(
+  values: Iterable<string | null | undefined>,
+): string[] {
+  return [
+    ...new Set(
+      Array.from(values, (value) => value?.trim()).filter(
+        (value): value is string =>
+          typeof value === 'string' && value.length > 0,
+      ),
+    ),
+  ].sort((a, b) => a.localeCompare(b))
+}
+
 // function noseRatingCell(ctx: CellContext<Doc<'products'>, unknown>) {
 //   const rawValue = ctx.row.original.noseRating
 //   const value =
@@ -318,23 +331,32 @@ export const ProductsData = ({
         .filter((s): s is string => typeof s === 'string' && s.length > 0),
     [categories],
   )
+  const brandFilterOptions = useMemo(
+    () => getUniqueFilterOptions(safeData.flatMap((product) => product.brand)),
+    [safeData],
+  )
+  const subcategoryFilterOptions = useMemo(
+    () =>
+      getUniqueFilterOptions(safeData.map((product) => product.subcategory)),
+    [safeData],
+  )
+  const productTypeFilterOptions = useMemo(
+    () =>
+      getUniqueFilterOptions(safeData.map((product) => product.productType)),
+    [safeData],
+  )
   const columns = useMemo(
     () =>
       [
         {
           id: '_id',
           header: <ColHeader tip='ID' symbol='ID' className='w-12' left />,
-          // header: () => (
-          //   <div className='w-full flex items-center space-x-1'>
-          //     <span>ID</span>
-          //     <Icon name='pencil-fill' className='md:size-4 size-3.5' />
-          //   </div>
-          // ),
           accessorKey: '_id',
           cell: linkText('_id', `/admin/inventory/product/`, (v) =>
             v.substring(28),
           ),
           size: 80,
+          enableFiltering: false,
         },
         {
           id: 'name',
@@ -342,6 +364,7 @@ export const ProductsData = ({
           accessorKey: 'name',
           cell: textCell('name'),
           size: 200,
+          enableFiltering: false,
         },
         {
           id: 'categorySlug',
@@ -378,6 +401,30 @@ export const ProductsData = ({
               },
             },
           },
+        },
+        {
+          id: 'brand',
+          header: <ColHeader tip='Brand' symbol='Brand' />,
+          accessorKey: 'brand',
+          cell: textCell('brand', 'text-xs uppercase'),
+          size: 100,
+          meta: {filterOptions: brandFilterOptions},
+        },
+        {
+          id: 'subcategory',
+          header: <ColHeader tip='Subcategory' symbol='Subcat' />,
+          accessorKey: 'subcategory',
+          cell: textCell('subcategory', 'text-xs uppercase'),
+          size: 100,
+          meta: {filterOptions: subcategoryFilterOptions},
+        },
+        {
+          id: 'productType',
+          header: <ColHeader tip='Product Type' symbol='Type' />,
+          accessorKey: 'productType',
+          cell: textCell('productType', 'text-xs uppercase'),
+          size: 100,
+          meta: {filterOptions: productTypeFilterOptions},
         },
         {
           id: 'available',
@@ -453,20 +500,20 @@ export const ProductsData = ({
           }),
           size: 40,
         },
-        {
-          id: 'limited',
-          header: <ColHeader tip='Limited Quantity' symbol='ltd' center />,
-          accessorKey: 'limited',
-          cell: toggleCell('limited', api.products.m.toggleLimited, {
-            values: [true, false],
-            colors: ['primary', 'default'],
-            getMutationArgs: (row, newValue) => ({
-              productId: row._id,
-              limited: newValue,
-            }),
-          }),
-          size: 40,
-        },
+        // {
+        //   id: 'limited',
+        //   header: <ColHeader tip='Limited Quantity' symbol='ltd' center />,
+        //   accessorKey: 'limited',
+        //   cell: toggleCell('limited', api.products.m.toggleLimited, {
+        //     values: [true, false],
+        //     colors: ['primary', 'default'],
+        //     getMutationArgs: (row, newValue) => ({
+        //       productId: row._id,
+        //       limited: newValue,
+        //     }),
+        //   }),
+        //   size: 40,
+        // },
         {
           id: 'eligibleForUpgrade',
           header: <ColHeader tip='Upgradable' symbol='upgr' center />,
@@ -520,6 +567,7 @@ export const ProductsData = ({
           accessorKey: 'masterStockQuantity',
           cell: masterStockCell,
           size: 140,
+          enableFiltering: false,
         },
         {
           id: 'lineage',
@@ -573,6 +621,7 @@ export const ProductsData = ({
           header: <ColHeader tip='Last Updated' symbol='Updated' />,
           accessorKey: '_creationTime',
           size: 180,
+          enableFiltering: false,
           cell: ({row}) => (
             <span className='whitespace-nowrap font-ios text-xs'>
               {formatTimestamp(row.original._creationTime)}
@@ -580,7 +629,13 @@ export const ProductsData = ({
           ),
         },
       ] as ColumnConfig<Doc<'products'>>[],
-    [categories, categorySlugs],
+    [
+      brandFilterOptions,
+      categories,
+      categorySlugs,
+      productTypeFilterOptions,
+      subcategoryFilterOptions,
+    ],
   )
 
   const ExportCsvToolbar = useCallback(

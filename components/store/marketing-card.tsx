@@ -21,7 +21,7 @@ export const MarkSection = ({
           {description}
         </p>
       </div>
-      <div className='overflow-hidden bg-white dark:bg-black md:h-56 portrait:h-fit'>
+      <div className='overflow-hidden bg-white dark:bg-black md:h-37 portrait:h-fit'>
         {children}
       </div>
     </div>

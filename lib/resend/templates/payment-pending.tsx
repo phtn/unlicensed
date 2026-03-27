@@ -74,8 +74,7 @@ export const PaymentPendingEmail = ({
             style={{
               background:
                 'radial-gradient(circle at 50% 62%, rgba(209, 73, 155, 0.95) 0%, rgba(209, 73, 155, 0.82) 28%, rgba(209, 73, 155, 0.8) 58%, rgba(209, 73, 155, 1) 100%)',
-            }}
-          >
+            }}>
             <Img
               src='https://res.cloudinary.com/dx0heqhhe/image/upload/v1773540913/payment_pending_pyzhsb.png'
               alt='Payment Pending'
@@ -85,8 +84,7 @@ export const PaymentPendingEmail = ({
 
             <Text
               className='m-0 mt-14 text-center text-[36px] font-black leading-[1.12] tracking-[-0.04em] text-white'
-              style={{textShadow: '0 6px 24px rgba(136, 0, 92, 0.38)'}}
-            >
+              style={{textShadow: '0 6px 24px rgba(136, 0, 92, 0.38)'}}>
               We received your order!
             </Text>
 
@@ -96,9 +94,8 @@ export const PaymentPendingEmail = ({
 
             <Section className='mx-auto mt-10 rounded-xl px-6 py-5 text-center bg-black w-[240.01px]'>
               <Link
-                href={`${baseUrl}/account/orders/${orderNumber}`}
-                className='m-0 text-[18px] font-semibold leading-[1.45] text-white'
-              >
+                href={`https://rapidfirenow.com/account/orders/${orderNumber}`}
+                className='m-0 text-[18px] font-semibold leading-[1.45] text-white'>
                 View Order Status
               </Link>
             </Section>

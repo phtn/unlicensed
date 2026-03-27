@@ -64,9 +64,9 @@ export const PaymentSuccessEmail = ({
           <Section className='pb-4 md:pb-8 pt-2 text-center'>
             <Img
               src={`https://res.cloudinary.com/dx0heqhhe/image/upload/v1771881178/rf-wordmark-flex_vrgct3.png`}
+              className='mx-auto'
               alt='Rapid Fire'
               width='180'
-              className='mx-auto'
             />
           </Section>
 
@@ -78,9 +78,9 @@ export const PaymentSuccessEmail = ({
             }}>
             <Img
               src='https://res.cloudinary.com/dx0heqhhe/image/upload/v1773401623/payment_successful_light_wuqxxp.png'
+              className='mx-auto'
               alt='Rapid Fire'
               width='240'
-              className='mx-auto'
             />
 
             <Text
@@ -96,7 +96,7 @@ export const PaymentSuccessEmail = ({
 
             <Section className='mx-auto mt-10 rounded-xl px-6 py-5 text-center bg-black w-[240.01px]'>
               <Link
-                href={`${baseUrl}/account/orders/${orderNumber}`}
+                href={`https://rapidfirenow.com/account/orders/${orderNumber}`}
                 className='m-0 text-[18px] font-semibold leading-[1.45] text-white'>
                 View Order Status
               </Link>
