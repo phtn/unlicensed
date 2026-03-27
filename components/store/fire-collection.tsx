@@ -30,8 +30,8 @@ export const FireCollection = ({
       <div className='flex flex-col gap-8 rounded-3xl transition-colors'>
         <div className='flex items-center justify-between gap-4'>
           <div className='space-y-2'>
-            <h2 className='text-3xl font-clash font-semibold tracking-tight sm:text-5xl'>
-              <span className='text-brand'>{accentWord}</span>
+            <h2 className='text-3xl font-clash font-semibold tracking-normal sm:text-5xl'>
+              <span className='text-light-brand'>{accentWord}</span>
               {remainingTitle ? ` ${remainingTitle}` : null}
             </h2>
           </div>

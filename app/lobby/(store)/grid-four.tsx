@@ -92,33 +92,35 @@ export function GridItem({
         ease: [0.22, 1, 0.36, 1],
       }}
       className={cn(
-        'group relative isolate overflow-hidden border border-foreground/10 bg-linear-to-br from-background via-background to-foreground/2 p-6 _shadow-[0_24px_80px_-48px_rgba(0,0,0,0.5)] transition-transform duration-300',
+        'group relative isolate overflow-hidden pt-1 pl-1 _shadow-[0_24px_80px_-48px_rgba(0,0,0,0.2)] transition-transform duration-300',
+        'border border-r-0 border-b-0 border-foreground/10 bg-dark-table bg-linear-to-r from-dark-table via-brand/30 to-black',
         className,
       )}
       {...props}>
       <div className='absolute -right-10 -top-10 h-28 w-28 rounded-full bg-brand/12 blur-3xl transition-transform duration-300 group-hover:scale-125' />
       <div className='absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.55),transparent_42%)] opacity-70' />
-
-      <div className='hidden relative z-10 _flex items-start justify-between gap-4'>
-        <span className='hidden _inline-flex rounded-full border border-foreground/10 bg-background/80 px-3 py-1 text-[0.65rem] font-ios font-medium uppercase tracking-[0.2em] text-foreground/55 backdrop-blur-sm'>
-          {item.eyebrow}
-        </span>
-        <span className='hidden font-ios text-xs text-foreground/30'>
-          {String(index + 1).padStart(2, '0')}
-        </span>
-      </div>
-
-      <div className='relative z-10 md:ml-4 md:mt-4 gap-6 md:gap-12 flex items-start'>
-        <div className='flex size-13 shrink-0 items-center justify-center rounded-none bg-brand text-background'>
-          <Icon name={item.icon} aria-hidden className='size-6 text-white' />
+      <div className='rounded-xs bg-black/82 px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 h-full'>
+        <div className='hidden relative z-10 _flex items-start justify-between gap-4'>
+          <span className='hidden _inline-flex rounded-full border border-foreground/10 bg-background/80 px-3 py-1 text-[0.65rem] font-ios font-medium uppercase tracking-[0.2em] text-foreground/55 backdrop-blur-sm'>
+            {item.eyebrow}
+          </span>
+          <span className='hidden font-ios text-xs text-foreground/30'>
+            {String(index + 1).padStart(2, '0')}
+          </span>
         </div>
-        <div>
-          <h3 className='font-clash text-lg leading-tight md:text-xl'>
-            {item.title}
-          </h3>
-          <p className='mt-3 max-w-[34ch] text-sm leading-6 text-muted-foreground'>
-            {item.description}
-          </p>
+
+        <div className='relative z-10 md:ml-4 md:mt-4 gap-6 md:gap-12 flex items-start'>
+          <div className='flex size-13 shrink-0 items-center justify-center rounded-none bg-brand text-background'>
+            <Icon name={item.icon} aria-hidden className='size-6 text-white' />
+          </div>
+          <div>
+            <h3 className='font-clash text-lg leading-tight md:text-xl'>
+              {item.title}
+            </h3>
+            <p className='mt-3 max-w-[34ch] text-sm leading-6 text-muted-foreground'>
+              {item.description}
+            </p>
+          </div>
         </div>
       </div>
     </motion.article>

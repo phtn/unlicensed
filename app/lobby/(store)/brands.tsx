@@ -25,6 +25,7 @@ export const Brands = ({columnCount = 2}: {columnCount?: number}) => {
         {name: 'wizard-trees', id: 6, icon: '/svg/wizard-trees.svg'},
         {name: 'jungle-boys', id: 7, icon: '/svg/jungle-boys.svg'},
         {name: 'heirbloom', id: 8, icon: '/svg/heirbloom.svg'},
+        {name: 'turn', id: 8, icon: '/svg/heirbloom.svg'},
       ] as Logo[],
     [],
   )

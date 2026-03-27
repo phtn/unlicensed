@@ -90,6 +90,22 @@ export const brands: IEnhancedBrand[] = [
     featured: false,
     productCount: 0,
   },
+  {
+    name: 'Stiiizy',
+    slug: 'stiiizy',
+    icon: 'stiiizy',
+    description: 'Stiiizy Premium Cannabis Products',
+    featured: false,
+    productCount: 0,
+  },
+  {
+    name: '710labs',
+    slug: '710labs',
+    icon: '710labs',
+    description: '710labs Premium Cannabis Products',
+    featured: false,
+    productCount: 0,
+  },
 ]
 
 export const AllBrands = () => {
@@ -128,13 +144,13 @@ export const AllBrands = () => {
         </Activity>
 
         {/* Asymmetric Grid Layout */}
-        <div className='grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-4 sm:gap-6 lg:gap-6'>
+        <div className='grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-6'>
           {brands.map((brand, index) => (
             <Link
               href={`/lobby/brands?id=${brand.slug}`}
               key={brand.slug}
               className={cn(
-                'group relative overflow-hidden transition-all duration-500',
+                'group relative overflow-hidden transition-all duration-500 flex justify-center',
                 // Create visual interest with varying heights
                 index % 3 === 0 && 'sm:row-span-1',
                 index % 3 === 1 && 'sm:row-span-1',
