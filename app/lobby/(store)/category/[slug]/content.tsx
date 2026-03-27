@@ -17,7 +17,15 @@ import {usePaginatedQuery, useQuery} from 'convex/react'
 import {AnimatePresence, motion, useReducedMotion} from 'motion/react'
 import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
-import {useCallback, useEffect, useMemo, useRef, ViewTransition} from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  ViewTransition,
+} from 'react'
 import {CATEGORY_PRODUCTS_PAGE_SIZE} from './constants'
 
 interface ContentProps {
@@ -43,6 +51,11 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     'subcategory',
     parseAsString.withDefault(''),
   )
+  const [isFilterPending, startFilterTransition] = useTransition()
+  const [filterSnapshot, setFilterSnapshot] = useState<{
+    signature: string
+    products: StoreProduct[]
+  } | null>(null)
 
   const category = useQuery(api.categories.q.getCategoryBySlug, {slug})
   const categories = useQuery(api.categories.q.listCategories)
@@ -93,6 +106,24 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     paginatedProductsStatus,
   ])
 
+  const filterSignature = useMemo(
+    () => [brand, productType, tier, subcategory].join('|'),
+    [brand, productType, subcategory, tier],
+  )
+
+  const isRefreshingProducts =
+    paginatedProductsStatus === 'LoadingFirstPage' &&
+    filterSnapshot !== null &&
+    filterSnapshot.signature !== filterSignature
+
+  const visibleProducts = useMemo(() => {
+    if (isRefreshingProducts && filterSnapshot?.products.length) {
+      return filterSnapshot.products
+    }
+
+    return products
+  }, [filterSnapshot, isRefreshingProducts, products])
+
   const filterOptions = useMemo(() => {
     const brands = (category?.brands ?? [])
       .map((entry) => ({value: entry.slug, label: entry.name}))
@@ -114,6 +145,36 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
   }, [category])
 
   const {on: isBrandListExpanded, toggle: toggleBrandList} = useToggle()
+
+  const handleBrandChange = useCallback(
+    (nextBrand: string) => {
+      setFilterSnapshot({signature: filterSignature, products})
+      startFilterTransition(() => {
+        void setBrand(nextBrand)
+      })
+    },
+    [filterSignature, products, setBrand],
+  )
+
+  const handleTierChange = useCallback(
+    (nextTier: string) => {
+      setFilterSnapshot({signature: filterSignature, products})
+      startFilterTransition(() => {
+        void setTier(nextTier)
+      })
+    },
+    [filterSignature, products, setTier],
+  )
+
+  const handleSubcategoryChange = useCallback(
+    (nextSubcategory: string) => {
+      setFilterSnapshot({signature: filterSignature, products})
+      startFilterTransition(() => {
+        void setSubcategory(nextSubcategory)
+      })
+    },
+    [filterSignature, products, setSubcategory],
+  )
 
   const primaryBrandOptions = useMemo(() => {
     if (filterOptions.brands.length <= COLLAPSED_BRAND_COUNT) {
@@ -269,7 +330,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         filterOptions.tiers.length > 0 ||
         filterOptions.subcategories.length > 0) && (
         <section className='px-4 sm:px-6 pb-4'>
-          <div className='max-w-7xl mx-auto flex flex-col gap-3'>
+          <div className='max-w-7xl mx-auto flex flex-col gap-3 min-h-64'>
             {filterOptions.tiers.length > 0 && (
               <div className='flex flex-wrap items-center gap-1'>
                 <span className='text-sm font-clash font-semibold mr-2 uppercase'>
@@ -282,7 +343,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   className={cn('min-w-0 h-6 font-bold uppercase', {
                     'bg-brand text-white': tier === '',
                   })}
-                  onPress={() => setTier('')}>
+                  onPress={() => handleTierChange('')}>
                   All
                 </Button>
                 {filterOptions.tiers.map((tierOption) => (
@@ -294,7 +355,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     className={cn('min-w-0 h-6 font-semibold uppercase', {
                       'bg-brand text-white': tier === tierOption.value,
                     })}
-                    onPress={() => setTier(tierOption.value)}>
+                    onPress={() => handleTierChange(tierOption.value)}>
                     {tierOption.label}
                   </Button>
                 ))}
@@ -312,7 +373,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   className={cn('min-w-0 h-6 font-bold uppercase', {
                     'bg-brand text-white': subcategory === '',
                   })}
-                  onPress={() => setSubcategory('')}>
+                  onPress={() => handleSubcategoryChange('')}>
                   All
                 </Button>
                 {filterOptions.subcategories.map((subcategoryOption) => (
@@ -327,7 +388,9 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                       'bg-brand text-white':
                         subcategory === subcategoryOption.value,
                     })}
-                    onPress={() => setSubcategory(subcategoryOption.value)}>
+                    onPress={() =>
+                      handleSubcategoryChange(subcategoryOption.value)
+                    }>
                     {subcategoryOption.label}
                   </Button>
                 ))}
@@ -347,7 +410,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                       className={cn('min-w-0 h-6 font-bold uppercase', {
                         'bg-brand text-white': brand === '',
                       })}
-                      onPress={() => setBrand('')}>
+                      onPress={() => handleBrandChange('')}>
                       All
                     </Button>
                     {primaryBrandOptions.map((brandOption) => (
@@ -359,7 +422,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                         className={cn('min-w-0 h-6 font-semibold uppercase', {
                           'bg-brand text-white': brand === brandOption.value,
                         })}
-                        onPress={() => setBrand(brandOption.value)}>
+                        onPress={() => handleBrandChange(brandOption.value)}>
                         {brandOption.label}
                       </Button>
                     ))}
@@ -374,7 +437,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                           <Icon
                             name='chevron-down'
                             className={cn(
-                              'size-3 transition-transform',
+                              'size-3 transition-transform text-light-brand',
                               isBrandListExpanded && 'rotate-180',
                             )}
                           />
@@ -465,7 +528,9 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                                       brand === brandOption.value,
                                   },
                                 )}
-                                onPress={() => setBrand(brandOption.value)}>
+                                onPress={() =>
+                                  handleBrandChange(brandOption.value)
+                                }>
                                 {brandOption.label}
                               </Button>
                             </motion.div>
@@ -482,12 +547,13 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
       )}
       {/**/}
       <Products
-        products={products}
+        products={visibleProducts}
         getImageUrl={getImageUrl}
         isLoading={isLoadingInitialProducts}
+        isRefreshing={isFilterPending || isRefreshingProducts}
         footer={
           (canLoadMoreProducts || isLoadingMoreProducts) && (
-            <div className='flex justify-center pt-6'>
+            <div className='flex justify-center pt-6 h-96'>
               <div
                 ref={loadMoreRef}
                 aria-hidden

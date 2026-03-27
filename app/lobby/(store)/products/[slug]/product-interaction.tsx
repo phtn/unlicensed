@@ -53,7 +53,7 @@ type DenominationOption = {
 const ProductSummary = memo(({product}: {product: StoreProduct}) => (
   <div className='space-y-2'>
     {product.brand && (
-      <p className='text-sm font-clash opacity-70 capitalize'>
+      <p className='text-sm font-clash tracking-wider opacity-70 capitalize'>
         <span>{product.brand.join(', ')}</span>
         {product.productType && <span className='px-1'>&middot;</span>}
         {product.productType && (
@@ -65,7 +65,7 @@ const ProductSummary = memo(({product}: {product: StoreProduct}) => (
       {product.name.split('-').join(' ')}
     </h1>
     <p className='text-sm font-okxs opacity-70 leading-relaxed'>
-      <span className='font-ios tracking-wider'>{product.categorySlug}</span>
+      <span className='font-okxs tracking-wider'>{product.categorySlug}</span>
       {product.description}
     </p>
   </div>

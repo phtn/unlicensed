@@ -18,7 +18,7 @@ export const ProductDetailStats = ({
 }: ProductDetailStatsProps) => {
   return (
     <div className='hidden md:flex items-center h-14 border-b border-background/20 bg-background/60 overflow-hidden justify-between gap-1 pl-4 md:w-full'>
-      <span className='w-16 md:w-20 text-xs font-okxs'>
+      <span className='w-16 md:w-20 text-xs font-clash tracking-widest'>
         {product.categorySlug.toUpperCase()}
       </span>
       <div className='flex items-center space-x-2'>
@@ -29,7 +29,7 @@ export const ProductDetailStats = ({
               {product.netWeightUnit}
             </span>
           </span>
-        ) : product.categorySlug === 'extracts' ? (
+        ) : product.categorySlug === 'extracts' && !!product.thcPercentage ? (
           <span>
             <span className='font-clash font-medium text-xs md:text-sm'>
               THC
@@ -37,7 +37,9 @@ export const ProductDetailStats = ({
             <span className='text-xs md:text-sm lowercase'>mg</span>
           </span>
         ) : null}
-        <span className='px-1 md:px-2 text-sm font-thin opacity-30'>|</span>
+        {product.categorySlug === 'flower' || !product.thcPercentage ? null : (
+          <span className='px-1 md:px-2 text-sm font-thin opacity-30'>|</span>
+        )}
         <span className='font-clash font-medium text-xs md:text-sm'>
           {product.strainType}
         </span>{' '}

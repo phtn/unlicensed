@@ -108,10 +108,7 @@ export const listProductsPaginated = query({
     categorySlug: v.optional(v.string()),
     paginationOpts: paginationOptsValidator,
   },
-  handler: async (
-    ctx,
-    args,
-  ): Promise<PaginationResult<Doc<'products'>>> => {
+  handler: async (ctx, args): Promise<PaginationResult<Doc<'products'>>> => {
     const archived = args.archived === true
     const baseQuery = args.categorySlug
       ? ctx.db
@@ -152,32 +149,38 @@ export const listCategoryProductsPaginated = query({
 
     const categoriesBySlug = buildCategoriesBySlug(category ? [category] : [])
 
-    let productsQuery = ctx.db
-      .query('products')
-      .withIndex('by_category', (q) => q.eq('categorySlug', args.categorySlug))
-      .order('desc')
-      .filter((q) => q.neq(q.field('archived'), true))
+    const buildProductsQuery = () => {
+      let productsQuery = ctx.db
+        .query('products')
+        .withIndex('by_category', (q) =>
+          q.eq('categorySlug', args.categorySlug),
+        )
+        .order('desc')
+        .filter((q) => q.neq(q.field('archived'), true))
 
-    if (args.productType) {
-      productsQuery = productsQuery.filter((q) =>
-        q.eq(q.field('productType'), args.productType),
-      )
-    }
+      if (args.productType) {
+        productsQuery = productsQuery.filter((q) =>
+          q.eq(q.field('productType'), args.productType),
+        )
+      }
 
-    if (args.tier) {
-      productsQuery = productsQuery.filter((q) =>
-        q.eq(q.field('tier'), args.tier),
-      )
-    }
+      if (args.tier) {
+        productsQuery = productsQuery.filter((q) =>
+          q.eq(q.field('tier'), args.tier),
+        )
+      }
 
-    if (args.subcategory) {
-      productsQuery = productsQuery.filter((q) =>
-        q.eq(q.field('subcategory'), args.subcategory),
-      )
+      if (args.subcategory) {
+        productsQuery = productsQuery.filter((q) =>
+          q.eq(q.field('subcategory'), args.subcategory),
+        )
+      }
+
+      return productsQuery
     }
 
     if (!args.brand) {
-      const result = await productsQuery.paginate(args.paginationOpts)
+      const result = await buildProductsQuery().paginate(args.paginationOpts)
       return {
         ...result,
         page: attachTierLabels(result.page, categoriesBySlug),
@@ -185,37 +188,35 @@ export const listCategoryProductsPaginated = query({
     }
 
     const normalizedBrand = normalizeBrandValue(args.brand)
+    const startOffset = decodeBrandPaginationCursor(args.paginationOpts.cursor)
     const page: Doc<'products'>[] = []
-    let cursor = args.paginationOpts.cursor
-    let isDone = false
+    let matchingOffset = 0
+    let hasMore = false
 
-    while (page.length < args.paginationOpts.numItems && !isDone) {
-      const remainingItems = args.paginationOpts.numItems - page.length
-      const result = await productsQuery.paginate({
-        ...args.paginationOpts,
-        cursor,
-        numItems: remainingItems,
-      })
+    for await (const product of buildProductsQuery()) {
+      if (!normalizeBrandValues(product.brand).includes(normalizedBrand)) {
+        continue
+      }
 
-      if (result.page.length === 0) {
-        cursor = result.continueCursor
-        isDone = result.isDone
+      if (matchingOffset < startOffset) {
+        matchingOffset += 1
+        continue
+      }
+
+      if (page.length >= args.paginationOpts.numItems) {
+        hasMore = true
         break
       }
 
-      page.push(
-        ...result.page.filter((product) =>
-          normalizeBrandValues(product.brand).includes(normalizedBrand),
-        ),
-      )
-
-      cursor = result.continueCursor
-      isDone = result.isDone
+      page.push(product)
+      matchingOffset += 1
     }
 
     return {
-      continueCursor: cursor ?? args.paginationOpts.cursor ?? '',
-      isDone,
+      continueCursor: hasMore
+        ? encodeBrandPaginationCursor(startOffset + page.length)
+        : '',
+      isDone: !hasMore,
       page: attachTierLabels(page, categoriesBySlug),
     }
   },
@@ -331,6 +332,27 @@ const normalizeBrandValues = (brands?: string | string[]) =>
   (Array.isArray(brands) ? brands : brands ? [brands] : [])
     .map(normalizeBrandValue)
     .filter((brand) => brand.length > 0)
+
+const decodeBrandPaginationCursor = (cursor: string | null): number => {
+  if (!cursor) {
+    return 0
+  }
+
+  const parsed = Number(cursor)
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0
+  }
+
+  return Math.floor(parsed)
+}
+
+const encodeBrandPaginationCursor = (offset: number): string => {
+  if (!Number.isFinite(offset) || offset <= 0) {
+    return ''
+  }
+
+  return String(Math.floor(offset))
+}
 
 const sortProducts = <T extends {featured?: boolean; name?: string}>(
   items: T[],

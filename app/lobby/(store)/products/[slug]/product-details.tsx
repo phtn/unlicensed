@@ -56,7 +56,7 @@ export const ProductDetails = ({product}: ProductDetailsProps) => {
   return (
     <>
       {hasProfileDetails ? (
-        <div className='p-2 md:p-6 [content-visibility:auto] [contain-intrinsic-size:34rem]'>
+        <div className='p-2 md:p-6'>
           <div className='rounded-xs bg-linear-to-r from-dark-gray/5 via-dark-gray/5 to-dark-gray/5 p-4 space-y-3 dark:bg-background/30'>
             {product.lineage ? (
               <>

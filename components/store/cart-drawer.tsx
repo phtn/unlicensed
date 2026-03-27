@@ -19,6 +19,7 @@ import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {formatPrice} from '@/utils/formatPrice'
 import {Avatar, Button, Image, useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
+import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {useMemo, useOptimistic, useTransition} from 'react'
 import {Drawer} from 'vaul'
@@ -284,9 +285,12 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                             <div className='flex-1 min-w-0 flex flex-col justify-between gap-1'>
                               <div className='flex items-start justify-between gap-2'>
                                 <div className='min-w-0'>
-                                  <h3 className='font-medium font-okxs text-base truncate'>
-                                    {product.name ?? 'Product'}
-                                  </h3>
+                                  <Link
+                                    href={`/lobby/products/${product.slug}`}>
+                                    <h3 className='font-medium font-okxs text-base truncate'>
+                                      {product.name ?? 'Product'}
+                                    </h3>
+                                  </Link>
                                   {item.denomination != null && (
                                     <p className='text-base text-muted-foreground font-okxs'>
                                       {formatDenominationDisplay(
