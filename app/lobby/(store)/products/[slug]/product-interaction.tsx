@@ -94,7 +94,7 @@ const DenominationPicker = memo(
             onClick={() => onSelect(index)}
             aria-pressed={isSelected}
             className={cn(
-              'relative inline-flex min-h-9.5 w-14 items-center justify-center border border-foreground/20 bg-sidebar text-base font-medium whitespace-nowrap transition-colors rounded-none font-okxs',
+              'relative inline-flex min-h-9.5 w-16 items-center justify-center border border-foreground/20 bg-sidebar text-base font-medium whitespace-nowrap transition-colors rounded-none font-okxs',
               isSelected
                 ? 'bg-dark-gray text-white md:hover:bg-black dark:bg-white dark:text-dark-gray dark:md:hover:bg-brand dark:md:hover:text-white'
                 : 'text-foreground/85 hover:border-foreground/35',

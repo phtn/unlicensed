@@ -15,6 +15,9 @@ import {
   seedDenominationColumnsFromMaps,
 } from '../app/admin/(routes)/inventory/tools/product-csv-upload-helpers'
 
+const EXISTING_PRODUCT_ID = 'existingproduct1234567890'
+const OTHER_PRODUCT_ID = 'otherproduct1234567890123'
+
 function escapeCsvCell(value: string): string {
   return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value
 }
@@ -33,7 +36,7 @@ describe('product CSV upload helpers', () => {
   test('getPreviewColumns hides internal fields and keeps status columns', () => {
     const parseResult = parseProductsCsv(
       buildCsv({
-        _id: 'prod_existing_123',
+        _id: EXISTING_PRODUCT_ID,
         name: 'Existing Flower',
         slug: 'existing-flower',
         categorySlug: 'flower',
@@ -93,6 +96,24 @@ describe('product CSV upload helpers', () => {
     expect(row.product.image).toBe('kg24p8cjdd0rr1fnsjzspxxa1182b51r')
   })
 
+  test('seedDefaultImage does not inject a default image for update rows with a blank image cell', () => {
+    const parseResult = parseProductsCsv(
+      buildCsv({
+        _id: EXISTING_PRODUCT_ID,
+        name: 'Existing Flower',
+        slug: 'existing-flower',
+        categorySlug: 'flower',
+        image: '',
+      }),
+    )
+
+    const seeded = seedDefaultImage(parseResult)
+    const row = seeded.rows[0]
+
+    expect(row.raw.image).toBe('')
+    expect(row.product.image).toBeUndefined()
+  })
+
   test('seedDefaultDenominationStock fills default stock for non-shared inventory rows', () => {
     const parseResult = parseProductsCsv(
       buildCsv({
@@ -123,6 +144,24 @@ describe('product CSV upload helpers', () => {
         inventoryMode: 'shared',
         masterStockQuantity: '10',
         masterStockUnit: 'lb',
+      }),
+    )
+
+    const seeded = seedDefaultDenominationStock(parseResult)
+    const row = seeded.rows[0]
+
+    expect(row.raw['stock_0.125']).toBe('')
+    expect(row.product.stockByDenomination).toBeUndefined()
+  })
+
+  test('seedDefaultDenominationStock does not inject default stock for update rows with blank stock cells', () => {
+    const parseResult = parseProductsCsv(
+      buildCsv({
+        _id: EXISTING_PRODUCT_ID,
+        name: 'Existing Flower',
+        slug: 'existing-flower',
+        categorySlug: 'flower',
+        inventoryMode: 'by_denomination',
       }),
     )
 
@@ -165,7 +204,7 @@ describe('product CSV upload helpers', () => {
 
     const rows = buildRowsWithConflicts(
       parseResult,
-      new Map([['blue-dream', 'prod_existing_123']]),
+      new Map([['blue-dream', EXISTING_PRODUCT_ID]]),
       new Set(['flower']),
     )
 
@@ -178,7 +217,7 @@ describe('product CSV upload helpers', () => {
   test('buildRowsWithConflicts allows same-_id replacements to keep an existing slug', () => {
     const parseResult = parseProductsCsv(
       buildCsv({
-        _id: 'prod_existing_123',
+        _id: EXISTING_PRODUCT_ID,
         name: 'Existing Flower',
         slug: 'existing-flower',
         categorySlug: 'flower',
@@ -187,7 +226,7 @@ describe('product CSV upload helpers', () => {
 
     const rows = buildRowsWithConflicts(
       parseResult,
-      new Map([['existing-flower', 'prod_existing_123']]),
+      new Map([['existing-flower', EXISTING_PRODUCT_ID]]),
       new Set(['flower']),
     )
 
@@ -196,6 +235,29 @@ describe('product CSV upload helpers', () => {
     expect(rows?.[0].errors).not.toContain(
       'Slug "existing-flower" already exists',
     )
+  })
+
+  test('buildRowsWithConflicts keeps a blank slug untouched for update rows', () => {
+    const parseResult = parseProductsCsv(
+      buildCsv({
+        _id: EXISTING_PRODUCT_ID,
+        name: 'Existing Flower',
+        slug: '',
+        categorySlug: 'flower',
+      }),
+    )
+
+    const rows = buildRowsWithConflicts(
+      parseResult,
+      new Map([['existing-flower', EXISTING_PRODUCT_ID]]),
+      new Set(['flower']),
+    )
+
+    expect(rows).toBeDefined()
+    expect(rows?.[0].raw.slug).toBe('')
+    expect(rows?.[0].product.slug).toBeUndefined()
+    expect(rows?.[0].conflict).toBeNull()
+    expect(rows?.[0].errors).toEqual([])
   })
 
   test('buildRowsWithConflicts adds category errors and slug conflicts for invalid replacement targets', () => {
@@ -209,7 +271,7 @@ describe('product CSV upload helpers', () => {
 
     const rows = buildRowsWithConflicts(
       parseResult,
-      new Map([['existing-flower', 'prod_other']]),
+      new Map([['existing-flower', OTHER_PRODUCT_ID]]),
       new Set(['flower']),
     )
 
@@ -285,7 +347,7 @@ describe('product CSV upload helpers', () => {
           categorySlug: 'flower',
         }),
       ),
-      new Map([['existing-flower', 'prod_other']]),
+      new Map([['existing-flower', OTHER_PRODUCT_ID]]),
       new Set(['flower']),
     )
 
@@ -336,7 +398,7 @@ describe('product CSV upload helpers', () => {
     const parseResult = parseProductsCsv(
       buildCsv(
         {
-          _id: 'prod_existing_123',
+          _id: EXISTING_PRODUCT_ID,
           name: 'Existing Flower',
           slug: 'existing-flower',
           categorySlug: 'flower',
@@ -359,7 +421,7 @@ describe('product CSV upload helpers', () => {
 
     const rows = buildRowsWithConflicts(
       parseResult,
-      new Map([['existing-flower', 'prod_existing_123']]),
+      new Map([['existing-flower', EXISTING_PRODUCT_ID]]),
       new Set(['flower']),
     )
     const validRows =

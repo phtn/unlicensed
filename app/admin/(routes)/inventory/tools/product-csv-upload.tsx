@@ -241,7 +241,7 @@ export function ProductCsvUpload() {
   return (
     <TabContentContainer
       title='Product CSV Import'
-      description='Upload a CSV in the same format as export. Preview rows, fix validation errors and slug conflicts, then import. Rows with an _id replace the existing product, and blank slugs are derived from the product name.'
+      description='Upload a CSV in the same format as export. Preview rows, fix validation errors and slug conflicts, then import. Rows with an _id update the existing product using only the provided CSV values, while new rows can derive a slug from the product name when the slug cell is blank.'
       className={cn(
         'flex h-full min-w-0 md:max-w-[calc(95lvw)] flex-col gap-6 overflow-hidden bg-sidebar p-4 rounded-lg',
         {'md:max-w-[calc(82lvw)]': sidebarOpen},
@@ -530,7 +530,7 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
   const hasError = row.errors.length > 0 || row.conflict !== null
   const rowIssues = getRowPreviewIssues(row, columns)
   const statusIssue = rowIssues[0] ?? null
-  const rowMode = getProductCsvImportRowId(row.product) ? 'Replace' : 'Create'
+  const rowMode = getProductCsvImportRowId(row.product) ? 'Update' : 'Create'
   return (
     <tr
       className={cn(
@@ -572,7 +572,7 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
                     className={cn(
                       'bg-white text-green-700 font-clash tracking-wide',
                       {
-                        'bg-indigo-400 text-white': rowMode === 'Replace',
+                        'bg-indigo-400 text-white': rowMode === 'Update',
                       },
                     )}>
                     {rowMode}

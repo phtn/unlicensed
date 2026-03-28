@@ -193,6 +193,10 @@ export function seedDefaultImage(parseResult: ParseResult): ParseResult {
   }
 
   const rows = parseResult.rows.map((row) => {
+    if (getProductCsvImportRowId(row.product)) {
+      return row
+    }
+
     if (row.raw.image?.trim() || String(row.product.image ?? '').trim()) {
       return row
     }
@@ -225,6 +229,10 @@ export function seedDefaultDenominationStock(
   }
 
   const rows = parseResult.rows.map((row) => {
+    if (getProductCsvImportRowId(row.product)) {
+      return row
+    }
+
     if (
       row.product.inventoryMode === 'shared' ||
       row.product.inventoryMode === 'shared_weight'
@@ -409,7 +417,7 @@ export function buildRowsWithConflicts(
     const rowId = getProductCsvImportRowId(product)
     const slugFieldPresent = Object.hasOwn(raw, 'slug')
 
-    if (slugFieldPresent && !String(raw.slug ?? '').trim()) {
+    if (!rowId && slugFieldPresent && !String(raw.slug ?? '').trim()) {
       const nameSlug = slugify(String(product.name ?? ''))
       if (nameSlug) {
         let nextSlug = nameSlug

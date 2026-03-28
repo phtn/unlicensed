@@ -37,3 +37,18 @@ export function sortProductCsvImportRowsForProcessing<
       return a.rowIndex - b.rowIndex
     })
 }
+
+export function mergeDefinedCsvImportFields<T extends Record<string, unknown>>(
+  existingRow: T,
+  importedRow: Partial<T>,
+): T {
+  const mergedRow = {...existingRow}
+
+  for (const [key, value] of Object.entries(importedRow)) {
+    if (value !== undefined) {
+      mergedRow[key as keyof T] = value as T[keyof T]
+    }
+  }
+
+  return mergedRow
+}

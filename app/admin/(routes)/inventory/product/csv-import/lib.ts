@@ -2,7 +2,8 @@
  * CSV import for products: parse export-format CSV and validate rows.
  * Matches the export format from products-data.tsx (PRODUCT_CSV_FIELDS + denom columns).
  * _id and _creationTime are accepted in the CSV (from export).
- * When _id is present, the import replaces that product; _creationTime is ignored.
+ * When _id is present, the import updates that product using only the values
+ * provided in the CSV; _creationTime is ignored.
  */
 import {getProductCsvImportRowId} from '@/lib/product-csv-import'
 import {slugify} from '@/lib/slug'
@@ -105,7 +106,7 @@ function parseCsvRows(csvText: string): string[] {
 function parseBool(v: string): boolean | undefined {
   const s = (v ?? '').toLowerCase().trim()
   if (s === 'true' || s === '1') return true
-  if (s === 'false' || s === '0' || s === '') return false
+  if (s === 'false' || s === '0') return false
   return undefined
 }
 
@@ -522,11 +523,8 @@ export function applySlugConflicts(
   }
 
   const getRowSlug = (row: ParsedRow) => {
-    const name = row.product.name
-    const hasSlugField = Object.hasOwn(row.raw, 'slug')
-    const slugRaw = (row.product.slug as string) ?? ''
-
-    return slugRaw || hasSlugField ? slugify(slugRaw || String(name ?? '')) : ''
+    const slugRaw = (row.product.slug as string | undefined)?.trim() ?? ''
+    return slugRaw ? slugify(slugRaw) : ''
   }
 
   const preferredOwnersBySlug = new Map<

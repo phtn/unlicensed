@@ -1,5 +1,8 @@
 import {v} from 'convex/values'
-import {sortProductCsvImportRowsForProcessing} from '../../lib/product-csv-import'
+import {
+  mergeDefinedCsvImportFields,
+  sortProductCsvImportRowsForProcessing,
+} from '../../lib/product-csv-import'
 import {ensureSlug} from '../../lib/slug'
 import {internal} from '../_generated/api'
 import type {Id} from '../_generated/dataModel'
@@ -798,10 +801,10 @@ export const seedProductsFromCsv = mutation({
     for (const {row, rowIndex} of rowsToProcess) {
       try {
         const {_id, ...fields} = row as ProductCsvImportRowType
-        const {slug, doc} = await buildProductDoc(ctx, fields, _id)
-
         let productId: Id<'products'>
         let activityType: 'product_created' | 'product_updated'
+        let activitySlug: string
+        let activityProductName: string
 
         if (_id) {
           const existingProduct = await ctx.db.get(_id)
@@ -809,12 +812,28 @@ export const seedProductsFromCsv = mutation({
             throw new Error(`Product with id "${_id}" not found.`)
           }
 
+          const {
+            _creationTime,
+            _id: _existingId,
+            ...existingFields
+          } = existingProduct
+          const mergedFields = mergeDefinedCsvImportFields(
+            existingFields,
+            fields,
+          )
+          const {slug, doc} = await buildProductDoc(ctx, mergedFields, _id)
+
           await ctx.db.replace(_id, doc)
           productId = _id
           activityType = 'product_updated'
+          activitySlug = slug
+          activityProductName = String(doc.name ?? existingProduct.name ?? '')
         } else {
+          const {slug, doc} = await buildProductDoc(ctx, fields)
           productId = await ctx.db.insert('products', doc)
           activityType = 'product_created'
+          activitySlug = slug
+          activityProductName = String(doc.name ?? row.name ?? '')
         }
 
         await ctx.scheduler.runAfter(
@@ -823,8 +842,8 @@ export const seedProductsFromCsv = mutation({
           {
             type: activityType,
             productId,
-            productName: row.name?.trim() ?? '',
-            productSlug: slug,
+            productName: activityProductName,
+            productSlug: activitySlug,
           },
         )
         successCount++

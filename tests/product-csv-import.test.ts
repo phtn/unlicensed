@@ -5,6 +5,9 @@ import {
   parseProductsCsv,
 } from '../app/admin/(routes)/inventory/product/csv-import/lib'
 
+const EXISTING_PRODUCT_ID = 'existingproduct1234567890'
+const OTHER_PRODUCT_ID = 'otherproduct1234567890123'
+
 function escapeCsvCell(value: string): string {
   return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value
 }
@@ -55,7 +58,8 @@ describe('product CSV import', () => {
         name: 'Story Flower',
         slug: 'story-flower',
         categorySlug: 'flower',
-        description: 'Top shelf,\nwith a second line and "quoted" tasting notes.',
+        description:
+          'Top shelf,\nwith a second line and "quoted" tasting notes.',
       }),
     )
 
@@ -119,7 +123,7 @@ describe('product CSV import', () => {
   test('preserves _id values so matching rows can replace existing products', () => {
     const result = parseProductsCsv(
       buildCsv({
-        _id: 'prod_existing_123',
+        _id: EXISTING_PRODUCT_ID,
         name: 'Existing Flower',
         slug: 'existing-flower',
         categorySlug: 'flower',
@@ -127,11 +131,51 @@ describe('product CSV import', () => {
       }),
     )
 
-    expect(result.rows[0].product._id).toBe('prod_existing_123')
+    expect(result.rows[0].product._id).toBe(EXISTING_PRODUCT_ID)
 
-    applySlugConflicts(result.rows, new Map([['existing-flower', 'prod_existing_123']]))
+    applySlugConflicts(
+      result.rows,
+      new Map([['existing-flower', EXISTING_PRODUCT_ID]]),
+    )
 
     expect(result.rows[0].conflict).toBeNull()
+    expect(result.rows[0].errors).toEqual([])
+  })
+
+  test('treats blank boolean cells on update rows as omitted values', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        _id: EXISTING_PRODUCT_ID,
+        name: 'Existing Flower',
+        slug: 'existing-flower',
+        categorySlug: 'flower',
+        available: '',
+        featured: '',
+        eligibleForRewards: '',
+      }),
+    )
+
+    expect(result.rows[0].product.available).toBeUndefined()
+    expect(result.rows[0].product.featured).toBeUndefined()
+    expect(result.rows[0].product.eligibleForRewards).toBeUndefined()
+    expect(result.rows[0].errors).toEqual([])
+  })
+
+  test('still parses explicit false boolean values from CSV rows', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        name: 'False Flower',
+        slug: 'false-flower',
+        categorySlug: 'flower',
+        available: 'false',
+        featured: '0',
+        eligibleForRewards: 'false',
+      }),
+    )
+
+    expect(result.rows[0].product.available).toBe(false)
+    expect(result.rows[0].product.featured).toBe(false)
+    expect(result.rows[0].product.eligibleForRewards).toBe(false)
     expect(result.rows[0].errors).toEqual([])
   })
 
@@ -145,7 +189,10 @@ describe('product CSV import', () => {
       }),
     )
 
-    applySlugConflicts(result.rows, new Map([['existing-flower', 'prod_other']]))
+    applySlugConflicts(
+      result.rows,
+      new Map([['existing-flower', OTHER_PRODUCT_ID]]),
+    )
 
     expect(result.rows[0].conflict).toBe('slug')
     expect(result.rows[0].errors).toContain(
@@ -163,7 +210,7 @@ describe('product CSV import', () => {
           priceCents: '3500',
         },
         {
-          _id: 'prod_existing_123',
+          _id: EXISTING_PRODUCT_ID,
           name: 'Fresh Drop',
           slug: 'fresh-drop',
           categorySlug: 'flower',

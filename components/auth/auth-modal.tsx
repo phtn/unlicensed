@@ -85,7 +85,7 @@ export const AuthModal = ({
 
   useEffect(() => {
     if (!isOpen || completeEmailLink) return
-    setAuthView(mode === 'signup' ? 'signup' : 'login')
+    setAuthView(mode === 'signup' ? 'email-link' : 'email-link')
   }, [completeEmailLink, isOpen, mode])
 
   // Clean up on unmount
@@ -95,7 +95,7 @@ export const AuthModal = ({
     }
   }, [setAuthModalOpen])
 
-  const isLogin = authView === 'login'
+  const isLogin = authView === 'email-link'
   const isEmailLinkView = authView === 'email-link'
   const activeView = completeEmailLink ? 'email-link' : authView
   const passwordsMatch = password === confirmPassword
@@ -280,7 +280,7 @@ export const AuthModal = ({
           />
         </div>
         <ModalHeader className='relative z-10 tracking-tight flex justify-between items-start shrink-0'>
-          <div className='bg-black backdrop-blur-2xl text-white text-sm rounded-xs w-full whitespace-nowrap flex'>
+          <div className='bg-black backdrop-blur-2xl text-white text-sm rounded-xs w-fit whitespace-nowrap flex'>
             {emailSent ? (
               <a
                 rel='noopener noreferrer'
@@ -296,10 +296,10 @@ export const AuthModal = ({
               <>
                 <button
                   type='button'
-                  onClick={() => switchAuthView('login')}
+                  onClick={() => switchAuthView('email-link')}
                   className={cn(
                     'px-4 py-2 rounded-xs font-medium transition-colors',
-                    activeView === 'login'
+                    activeView === 'email-link'
                       ? 'bg-black/40 text-white'
                       : 'text-white/70 hover:text-white',
                   )}>
@@ -307,7 +307,7 @@ export const AuthModal = ({
                 </button>
                 <button
                   type='button'
-                  onClick={() => switchAuthView('signup')}
+                  onClick={() => switchAuthView('email-link')}
                   className={cn(
                     'px-4 py-2 rounded-xs font-medium transition-colors',
                     activeView === 'signup'
@@ -316,7 +316,7 @@ export const AuthModal = ({
                   )}>
                   Create account
                 </button>
-                <button
+                {/*<button
                   type='button'
                   onClick={() => switchAuthView('email-link')}
                   className={cn(
@@ -326,7 +326,7 @@ export const AuthModal = ({
                       : 'text-white/70 hover:text-white',
                   )}>
                   Send Email link
-                </button>
+                </button>*/}
               </>
             )}
           </div>
@@ -525,7 +525,9 @@ export const AuthModal = ({
                 </Button>
                 <div className='flex items-center gap-4 w-full'>
                   <Divider className='flex-1' />
-                  <span className='text-xs text-white/60 font-light'>or</span>
+                  <span className='text-xs dark:text-white opacity-70 font-light'>
+                    or
+                  </span>
                   <Divider className='flex-1' />
                 </div>
                 {completeEmailLink ? (
