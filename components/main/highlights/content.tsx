@@ -33,7 +33,7 @@ export const Highlights = ({
 
   const [selectedIndex, setSelectedIndex] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
-  const {height, width} = useScreenResizeObserver()
+  const {height} = useScreenResizeObserver()
 
   const scrollTo = useCallback(
     (index: number) => {
