@@ -14,6 +14,8 @@ interface StoreCollectionSection {
   id: string
   title: string
   products: StoreProduct[]
+  sourceCategorySlug?: string
+  sourceCategoryProductCount?: number
 }
 
 export const FireCollectionContent = ({
@@ -65,6 +67,9 @@ export const FireCollectionContent = ({
       .map((collection) => ({
         id: collection.id,
         title: collection.title,
+        sourceCategorySlug: collection.sourceCategorySlug,
+        sourceCategoryProductCount:
+          collection.sourceCategoryProductCount ?? undefined,
         products: collection.productIds
           .map((productId) => productsById.get(productId))
           .filter((product): product is StoreProduct => product != null),
@@ -90,6 +95,8 @@ export const FireCollectionContent = ({
                 id={collection.id}
                 title={collection.title}
                 products={collection.products}
+                sourceCategorySlug={collection.sourceCategorySlug}
+                productCount={collection.sourceCategoryProductCount}
               />
             ))}
           </div>

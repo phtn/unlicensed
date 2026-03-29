@@ -67,7 +67,7 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
         <NavigationMenuItem value={NAV_MENU_VALUE}>
           <NavigationMenuTrigger
             className={cn(
-              'rounded-none px-3 py-2 text-sm font-semibold',
+              'rounded-none p-2 aspect-square text-sm font-semibold outline-0 focus-visible:bg-brand focus-visible:ring-0',
               // 'text-gray-100 hover:text-white',
               // 'dark:text-white',
               // 'active:bg-transparent dark:data-[state=open]:text-white',

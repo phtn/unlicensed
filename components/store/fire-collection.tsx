@@ -9,6 +9,8 @@ interface FireCollectionProps {
   id?: string
   title?: string
   products: StoreProduct[]
+  sourceCategorySlug?: string
+  productCount?: number
 }
 
 const splitCollectionTitle = (title: string): [string, string] => {
@@ -20,8 +22,14 @@ export const FireCollection = ({
   id,
   title = 'Fire Collection',
   products,
+  sourceCategorySlug,
+  productCount,
 }: FireCollectionProps) => {
   const [accentWord, remainingTitle] = splitCollectionTitle(title)
+  const totalProducts = productCount ?? products.length
+  const viewAllHref = sourceCategorySlug
+    ? `/lobby/category/${sourceCategorySlug}`
+    : '/lobby/products'
 
   return (
     <section
@@ -37,15 +45,15 @@ export const FireCollection = ({
           </div>
           <Activity mode={products.length === 0 ? 'hidden' : 'visible'}>
             <Link
-              href='/lobby/products'
+              href={viewAllHref}
               className='flex items-center gap-3 text-xs uppercase tracking-[0.35em] text-color-muted transition-opacity hover:opacity-70'>
               <span>View all</span>
               <span className='h-px w-10 bg-foreground/30' />
-              <span>{products.length}</span>
+              <span>{totalProducts}</span>
             </Link>
           </Activity>
         </div>
-        <ProductCarousel products={products} />
+        <ProductCarousel products={products} productCount={totalProducts} />
       </div>
     </section>
   )

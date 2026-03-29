@@ -454,12 +454,16 @@ interface RawFireCollectionConfig {
   enabled: boolean
   order: number
   productIds: string[]
+  sourceCategorySlug?: string
+  sourceCategoryProductCount?: number
 }
 
 interface StoreCollectionSection {
   id: string
   title: string
   products: StoreProduct[]
+  sourceCategorySlug?: string
+  sourceCategoryProductCount?: number
 }
 
 type RawDeal = Parameters<typeof dealDocToBundleConfig>[0]
@@ -508,6 +512,9 @@ const _fetchFireCollections = async (): Promise<StoreCollectionSection[]> => {
       .map((collection) => ({
         id: collection.id,
         title: collection.title,
+        sourceCategorySlug: collection.sourceCategorySlug,
+        sourceCategoryProductCount:
+          collection.sourceCategoryProductCount ?? undefined,
         products: collection.productIds
           .map((productId) => productsById.get(productId))
           .filter((product): product is StoreProduct => product != null),

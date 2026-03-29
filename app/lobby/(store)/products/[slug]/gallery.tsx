@@ -50,7 +50,7 @@ const GalleryComponent = ({
           alt={product.name}
           fill
           priority
-          unoptimized
+          quality={78}
           sizes='(min-width: 1280px) 42rem, (min-width: 1024px) 52vw, 100vw'
           className='select-none object-cover portrait:aspect-square portrait:size-full rounded-xs md:rounded-none'
         />
@@ -87,7 +87,7 @@ const GalleryComponent = ({
               src={src}
               alt={`${product.name} gallery ${index + 1}`}
               fill
-              unoptimized
+              quality={60}
               sizes='7rem'
               className='rounded-none object-cover'
             />

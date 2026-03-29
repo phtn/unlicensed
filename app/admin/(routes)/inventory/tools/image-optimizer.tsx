@@ -278,7 +278,9 @@ const resizeImageForCropper = async (
 
 export const ImageOptimizer = () => {
   const {user} = useAuthCtx()
-  const {uploadFile, isUploading} = useStorageUpload()
+  const {uploadFile, isUploading} = useStorageUpload({
+    optimizeImages: false,
+  })
   const registerUploadedFile = useMutation(api.files.upload.file)
   const authorId = user?.uid ?? 'anonymous-admin'
 

@@ -16,6 +16,8 @@ interface StoreCollectionSection {
   id: string
   title: string
   products: StoreProduct[]
+  sourceCategorySlug?: string
+  sourceCategoryProductCount?: number
 }
 
 interface StorefrontPageProps {

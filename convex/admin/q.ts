@@ -325,7 +325,38 @@ export const getFireCollectionsConfig = query({
       .withIndex('by_identifier', (q) => q.eq('identifier', 'fireCollection'))
       .unique()
 
-    return normalizeFireCollectionsValue(setting?.value)
+    const collections = normalizeFireCollectionsValue(setting?.value)
+    const productCountCache = new Map<string, number>()
+
+    const countProductsByCategory = async (categorySlug: string) => {
+      const cachedCount = productCountCache.get(categorySlug)
+      if (cachedCount !== undefined) {
+        return cachedCount
+      }
+
+      let count = 0
+      for await (const product of db
+        .query('products')
+        .withIndex('by_category', (q) => q.eq('categorySlug', categorySlug))) {
+        if (product.archived === true) {
+          continue
+        }
+
+        count += 1
+      }
+
+      productCountCache.set(categorySlug, count)
+      return count
+    }
+
+    return await Promise.all(
+      collections.map(async (collection) => ({
+        ...collection,
+        sourceCategoryProductCount: collection.sourceCategorySlug
+          ? await countProductsByCategory(collection.sourceCategorySlug)
+          : undefined,
+      })),
+    )
   },
 })
 

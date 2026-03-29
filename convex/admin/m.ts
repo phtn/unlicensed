@@ -610,6 +610,7 @@ export const createFireCollection = mutation({
         enabled: true,
         order: collections.length,
         productIds: [],
+        sourceCategorySlug: undefined,
       },
     ]
 
@@ -643,6 +644,7 @@ export const updateFireCollection = mutation({
       title: v.optional(v.string()),
       enabled: v.optional(v.boolean()),
       productIds: v.optional(v.array(v.string())),
+      sourceCategorySlug: v.optional(v.union(v.string(), v.null())),
     }),
     uid: v.optional(v.string()),
   },
@@ -672,6 +674,11 @@ export const updateFireCollection = mutation({
         ...(patch.enabled !== undefined ? {enabled: patch.enabled} : {}),
         ...(patch.productIds !== undefined
           ? {productIds: normalizeFireCollectionProductIds(patch.productIds)}
+          : {}),
+        ...(patch.sourceCategorySlug !== undefined
+          ? {
+              sourceCategorySlug: patch.sourceCategorySlug?.trim() || undefined,
+            }
           : {}),
       }
     })

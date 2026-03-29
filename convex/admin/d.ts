@@ -38,6 +38,7 @@ export const fireCollectionEntrySchema = v.object({
   enabled: v.boolean(),
   order: v.number(),
   productIds: v.array(v.string()),
+  sourceCategorySlug: v.optional(v.string()),
 })
 
 export const fireCollectionsSettingsSchema = v.object({

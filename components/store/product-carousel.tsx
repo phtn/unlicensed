@@ -17,10 +17,15 @@ import {ProductCard} from './product-card'
 
 interface ProductCarouselProps {
   products: Array<StoreProduct>
+  productCount?: number
 }
 const AUTOPLAY_DELAY_MS = 4500
 
-export const ProductCarousel = ({products}: ProductCarouselProps) => {
+export const ProductCarousel = ({
+  products,
+  productCount,
+}: ProductCarouselProps) => {
+  const totalProducts = productCount ?? products.length
   const imageIds = useMemo(
     () =>
       products
@@ -110,7 +115,7 @@ export const ProductCarousel = ({products}: ProductCarouselProps) => {
         className='overflow-hidden'
         role='region'
         aria-roledescription='carousel'
-        aria-label='Fire Collection products'>
+        aria-label={`Fire Collection products, showing ${products.length} of ${totalProducts}`}>
         <div className='flex touch-pan-y'>
           {products.map((product) => (
             <div

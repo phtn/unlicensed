@@ -1,5 +1,5 @@
-import { slugify } from '../../lib/slug'
-import type { FireCollectionEntry } from './d'
+import {slugify} from '../../lib/slug'
+import type {FireCollectionEntry} from './d'
 
 const DEFAULT_FIRE_COLLECTION_TITLE = 'Fire Collection'
 
@@ -47,6 +47,11 @@ function normalizeFireCollectionEntry(
         ? collection.order
         : index,
     productIds: normalizeFireCollectionProductIds(collection.productIds),
+    sourceCategorySlug:
+      typeof collection.sourceCategorySlug === 'string' &&
+      collection.sourceCategorySlug.trim()
+        ? collection.sourceCategorySlug.trim()
+        : undefined,
   }
 }
 
@@ -78,6 +83,7 @@ export function normalizeFireCollectionsValue(
         enabled: true,
         order: 0,
         productIds: normalizeFireCollectionProductIds(value.productIds),
+        sourceCategorySlug: undefined,
       },
     ]
   }

@@ -86,49 +86,50 @@ export const Nav = ({children}: NavProps) => {
         )}
         data-scroll-y={scrollY}>
         <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 flex items-center justify-start md:justify-between h-full'>
-          <Link
-            href={'/lobby'}
-            onMouseEnter={handleHomeMouseEnter}
-            onMouseLeave={handleHomeMouseLeave}
-            className='group relative flex items-center justify-start min-w-12 md:w-36 h-10 md:h-12 overflow-hidden pl-1  dark:text-white text-dark-table hover:text-brand active:text-brand'>
-            <motion.div
-              initial={{y: 12, opacity: 0, scale: 0}}
-              animate={{
-                y: hovered ? 0 : 0,
-                opacity: hovered ? 1 : 0,
-                scale: hovered ? 0.8 : 0,
-              }}
-              exit={{y: -12, opacity: 0, scale: 0}}
-              className={cn(
-                'hidden md:flex absolute size-7 md:size-10 bg-brand aspect-square rounded-full',
-                {
-                  'bg-brand':
-                    (!isMobile && scrollY <= 710) ||
-                    (isMobile && scrollY <= 400),
-                },
-              )}
-            />
-            <div
-              className={cn(
-                'dark:bg-black/10 group-hover:backdrop-blur-none rounded-full',
-              )}>
-              <Icon
-                name='rapid-fire-logo'
+          <div className='min-w-12 md:w-36'>
+            <Link
+              href={'/lobby'}
+              onMouseEnter={handleHomeMouseEnter}
+              onMouseLeave={handleHomeMouseLeave}
+              className='group relative flex items-center justify-start rounded-full h-10 md:w-fit md:h-12 overflow-hidden px-1  dark:text-white text-dark-table hover:text-brand active:text-brand outline-0 focus-visible:bg-brand'>
+              <motion.div
+                initial={{y: 12, opacity: 0, scale: 0}}
+                animate={{
+                  y: hovered ? 0 : 0,
+                  opacity: hovered ? 1 : 0,
+                  scale: hovered ? 0.8 : 0,
+                }}
+                exit={{y: -12, opacity: 0, scale: 0}}
                 className={cn(
-                  'h-8 md:h-10 w-auto relative text-white dark:group-hover:text-white transition-colors duration-300',
+                  'hidden md:flex absolute size-7 md:size-10 bg-brand aspect-square rounded-full',
                   {
-                    'text-dark-table dark:text-white dark:group-hover:text-white':
-                      !inStoreLobby,
-                    'text-dark-table dark:text-white group-hover:text-white .':
-                      !isMobile && scrollY >= 710,
-                    'text-dark-table dark:text-white _':
-                      isMobile && scrollY >= 400,
+                    'bg-brand':
+                      (!isMobile && scrollY <= 710) ||
+                      (isMobile && scrollY <= 400),
                   },
                 )}
               />
-            </div>
-          </Link>
-
+              <div
+                className={cn(
+                  'dark:bg-black/10 group-hover:backdrop-blur-none rounded-full',
+                )}>
+                <Icon
+                  name='rapid-fire-logo'
+                  className={cn(
+                    'h-8 md:h-10 w-auto relative text-white dark:group-hover:text-white transition-colors duration-300',
+                    {
+                      'text-dark-table dark:text-white dark:group-hover:text-white':
+                        !inStoreLobby,
+                      'text-dark-table dark:text-white group-hover:text-white .':
+                        !isMobile && scrollY >= 710,
+                      'text-dark-table dark:text-white _':
+                        isMobile && scrollY >= 400,
+                    },
+                  )}
+                />
+              </div>
+            </Link>
+          </div>
           <nav
             className={cn(
               'flex items-center justify-center md:w-fit w-full space-x-4',
@@ -144,7 +145,7 @@ export const Nav = ({children}: NavProps) => {
             <Link
               href={'/lobby/category'}
               className={cn(
-                'hidden group text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-clash font-semibold space-x-1',
+                'hidden rounded-xs px-2 group text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-clash font-semibold space-x-1  outline-0 focus-visible:bg-brand focus-visible:ring-0',
                 {
                   'text-dark-table dark:text-white': !inStoreLobby,
                   'text-dark-table dark:text-white .':
@@ -203,9 +204,9 @@ export const Nav = ({children}: NavProps) => {
               <Button
                 isIconOnly
                 data-cart-icon
-                className='capitalize'
                 // style={{color: scrollY >= 710 ? '#373945' : undefined}}
                 variant='light'
+                className='capitalize outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand!'
                 onPress={onCartDrawerOpen}>
                 <Icon
                   name='bag-solid'
@@ -240,13 +241,16 @@ export const Nav = ({children}: NavProps) => {
               <Icon
                 name='user'
                 onClick={onOpen}
-                className={cn('size-6 text-white', {
-                  'text-dark-table dark:text-white': !inStoreLobby,
-                  'text-dark-table dark:text-white .':
-                    !isMobile && scrollY >= 710,
-                  'text-dark-table dark:text-white _':
-                    isMobile && scrollY >= 400,
-                })}
+                className={cn(
+                  'size-6 text-white focus-visible:outline-2! focus-visible:outline-brand!',
+                  {
+                    'text-dark-table dark:text-white': !inStoreLobby,
+                    'text-dark-table dark:text-white .':
+                      !isMobile && scrollY >= 710,
+                    'text-dark-table dark:text-white _':
+                      isMobile && scrollY >= 400,
+                  },
+                )}
               />
             )}
           </div>

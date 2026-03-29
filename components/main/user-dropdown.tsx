@@ -43,6 +43,8 @@ export const UserDropdown = ({
       classNames={{
         content: 'bg-sidebar dark:bg-white backdrop-blur-xl rounded-sm',
         base: 'rounded-sm',
+        trigger:
+          ' outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand!',
       }}>
       <DropdownTrigger disabled={loading}>
         {loading ? (

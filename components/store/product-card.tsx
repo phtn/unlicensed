@@ -104,6 +104,14 @@ const areProductsEqual = (left: StoreProduct, right: StoreProduct) =>
   areStringArraysEqual(left.brand, right.brand) &&
   arePriceMapsEqual(left.priceByDenomination, right.priceByDenomination)
 
+const isRenderableImageSrc = (value: string | null | undefined) =>
+  typeof value === 'string' &&
+  (value.startsWith('http://') ||
+    value.startsWith('https://') ||
+    value.startsWith('/') ||
+    value.startsWith('data:') ||
+    value.startsWith('blob:'))
+
 const ProductCardComponent = ({
   product,
   imageUrl: imageUrlProp,
@@ -162,7 +170,11 @@ const ProductCardComponent = ({
     firstThreeOptions[Math.min(selectedIndex, firstThreeOptions.length - 1)] ??
     firstThreeOptions[0] ??
     null
-  const imageSrc = imageUrlProp ?? product.image
+  const imageSrc = isRenderableImageSrc(imageUrlProp)
+    ? imageUrlProp
+    : isRenderableImageSrc(product.image)
+      ? product.image
+      : undefined
   const productId = product._id as Id<'products'> | undefined
   const hasMetaBeforePackSize = subcategoryLabel !== '' || netWeightLabel !== ''
 
@@ -202,7 +214,7 @@ const ProductCardComponent = ({
               alt={product.name}
               width={512}
               height={512}
-              unoptimized
+              quality={70}
               sizes='(min-width: 1280px) 19rem, (min-width: 1024px) 16rem, (min-width: 768px) 18rem, 100vw'
               className='aspect-square min-w-44 rounded-xs object-cover transition-transform duration-300 group-hover:scale-[1.03] xl:min-w-64'
             />

@@ -15,16 +15,29 @@ import {cn} from '@/lib/utils'
 import {Button, Image, Input, Select, SelectItem, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {parseAsString, useQueryStates} from 'nuqs'
-import {useDeferredValue, useEffect, useMemo, useRef, useState} from 'react'
+import {
+  memo,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 const MAX_LIBRARY_RESULTS = 24
 const RANDOM_INSERT_COUNT = 15
-const RANDOM_CATEGORY_ALL = '__all__'
+const FILTER_OPTION_ALL = '__all__'
+const RANDOM_CATEGORY_ALL = FILTER_OPTION_ALL
 const fireCollectionStateParsers = {
   fireCollectionId: parseAsString,
   fireCreateTitle: parseAsString.withDefault(''),
   fireCollectionTitle: parseAsString.withDefault(''),
   fireQuery: parseAsString.withDefault(''),
+  fireLibraryCategory: parseAsString.withDefault(FILTER_OPTION_ALL),
+  fireLibraryBrand: parseAsString.withDefault(FILTER_OPTION_ALL),
+  fireLibrarySubcategory: parseAsString.withDefault(FILTER_OPTION_ALL),
+  fireLibraryProductType: parseAsString.withDefault(FILTER_OPTION_ALL),
   fireRandomCategory: parseAsString.withDefault(RANDOM_CATEGORY_ALL),
 }
 
@@ -46,6 +59,8 @@ const matchesSearch = (product: Doc<'products'>, query: string) => {
     product.slug,
     product.categorySlug,
     getBrandLabel(product),
+    product.subcategory,
+    product.productType,
   ]
     .filter(Boolean)
     .join(' ')
@@ -79,12 +94,52 @@ const formatCategoryLabel = (slug: string) =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ')
 
+const getUniqueFilterValues = (
+  values: Iterable<string | null | undefined>,
+): string[] =>
+  [
+    ...new Set(
+      Array.from(values, (value) => value?.trim()).filter(
+        (value): value is string => Boolean(value),
+      ),
+    ),
+  ].sort((left, right) => left.localeCompare(right))
+
+const areStringArraysEqual = (
+  left?: readonly string[],
+  right?: readonly string[],
+) => {
+  if (left === right) {
+    return true
+  }
+
+  const leftLength = left?.length ?? 0
+  if (leftLength !== (right?.length ?? 0)) {
+    return false
+  }
+
+  for (let index = 0; index < leftLength; index += 1) {
+    if (left?.[index] !== right?.[index]) {
+      return false
+    }
+  }
+
+  return true
+}
+
+type FireCollectionListItem = {
+  enabled: boolean
+  id: string
+  productIds: string[]
+  title: string
+}
+
 interface ProductTileProps {
   product: Doc<'products'>
   imageUrl?: string | null
-  actionLabel: string
+  actionLabel?: string
   emptyLabel?: string
-  onAction: (productId: string) => void
+  onAction?: (productId: string) => void
   disabled?: boolean
   isBusy?: boolean
 }
@@ -94,6 +149,7 @@ const ProductTile = ({
   imageUrl,
   emptyLabel = 'No image',
   onAction,
+  actionLabel = 'Add',
   disabled = false,
   isBusy = false,
 }: ProductTileProps) => (
@@ -123,19 +179,93 @@ const ProductTile = ({
       </p>
     </div>
 
-    <Button
-      radius='none'
-      size='sm'
-      isIconOnly
-      variant='light'
-      isLoading={isBusy}
-      isDisabled={disabled}
-      onPress={() => onAction(String(product._id))}
-      className='rounded-none hover:bg-sidebar dark:hover:bg-sidebar text-xs uppercase text-foreground h-6 hover:border-sidebar dark:hover:text-rose-400'>
-      <Icon name='trash' className='size-3.5' />
-    </Button>
+    {onAction && (
+      <Button
+        radius='none'
+        size='sm'
+        isIconOnly
+        variant='light'
+        isLoading={isBusy}
+        isDisabled={disabled}
+        onPress={() => onAction(String(product._id))}
+        className='rounded-none hover:bg-sidebar dark:hover:bg-sidebar text-xs uppercase text-foreground h-6 hover:border-sidebar dark:hover:text-rose-400'>
+        <Icon
+          name={actionLabel?.toLowerCase() === 'add' ? 'plus' : 'trash'}
+          className='size-3.5'
+        />
+      </Button>
+    )}
   </article>
 )
+
+const MemoizedProductTile = memo(
+  ProductTile,
+  (previousProps, nextProps) =>
+    previousProps.imageUrl === nextProps.imageUrl &&
+    previousProps.actionLabel === nextProps.actionLabel &&
+    previousProps.disabled === nextProps.disabled &&
+    previousProps.isBusy === nextProps.isBusy &&
+    previousProps.product._id === nextProps.product._id &&
+    previousProps.product.name === nextProps.product.name &&
+    previousProps.product.categorySlug === nextProps.product.categorySlug &&
+    areStringArraysEqual(previousProps.product.brand, nextProps.product.brand),
+)
+
+interface CollectionCardProps {
+  collection: FireCollectionListItem
+  isSelected: boolean
+  onSelect: (collectionId: string) => void
+}
+
+const CollectionCard = memo(
+  ({collection, isSelected, onSelect}: CollectionCardProps) => (
+    <button
+      type='button'
+      onClick={() => onSelect(collection.id)}
+      className={`rounded-2xl border p-4 text-left transition-colors ${
+        isSelected
+          ? 'border-foreground/30 bg-sidebar dark:bg-sidebar/30 shadow-inner'
+          : 'border-foreground/15 bg-background/80 hover:border-foreground/20'
+      }`}>
+      <div className='flex items-start justify-between gap-3'>
+        <div className='min-w-0'>
+          <h3 className='truncate font-clash text-sm font-semibold tracking-wider text-foreground/80'>
+            <span>{collection.title}</span>
+
+            <span className='ml-2'>
+              <span className='font-ios font-thin opacity-30'>{`(`}</span>
+              <span className='font-medium'>
+                {collection.productIds.length}
+              </span>
+              <span className='font-ios font-thin opacity-30'>{`)`}</span>
+            </span>
+          </h3>
+        </div>
+        <div
+          className={`flex items-center justify-center rounded-sm px-1 py-0 text-[8.5px] uppercase font-clash font-black tracking-widest ${
+            collection.enabled
+              ? 'text-emerald-100 dark:text-emerald-500 bg-emerald-500 dark:bg-emerald-400/15'
+              : 'bg-zinc-500/10 dark:bg-sidebar/0 text-zinc-500 dark:text-foreground/60'
+          }`}>
+          <span
+            className={cn({
+              'drop-shadow-2xs': collection.enabled,
+            })}>
+            {collection.enabled ? 'On' : 'Off'}
+          </span>
+        </div>
+      </div>
+    </button>
+  ),
+  (previousProps, nextProps) =>
+    previousProps.isSelected === nextProps.isSelected &&
+    previousProps.collection.id === nextProps.collection.id &&
+    previousProps.collection.title === nextProps.collection.title &&
+    previousProps.collection.enabled === nextProps.collection.enabled &&
+    previousProps.collection.productIds.length ===
+      nextProps.collection.productIds.length,
+)
+CollectionCard.displayName = 'CollectionCard'
 
 export const FireCollectionManager = () => {
   const {user} = useAuthCtx()
@@ -150,11 +280,18 @@ export const FireCollectionManager = () => {
   const createTitle = fireState.fireCreateTitle
   const collectionTitle = fireState.fireCollectionTitle
   const query = fireState.fireQuery
-  const randomCategorySlug = fireState.fireRandomCategory
+  const libraryCategory = fireState.fireLibraryCategory
+  const libraryBrand = fireState.fireLibraryBrand
+  const librarySubcategory = fireState.fireLibrarySubcategory
+  const libraryProductType = fireState.fireLibraryProductType
   const deferredQuery = useDeferredValue(query.trim().toLowerCase())
   const [activeKey, setActiveKey] = useState<string | null>(null)
   const [status, setStatus] = useState<null | 'saved' | 'error'>(null)
   const clearStatusTimeoutRef = useRef<number | null>(null)
+  const selectedCollectionRef = useRef(selectedCollectionId)
+  const selectedIdsRef = useRef<string[]>([])
+  const lastSyncedCollectionIdRef = useRef<string | null>(null)
+  const lastSyncedCollectionTitleRef = useRef('')
 
   useEffect(() => {
     return () => {
@@ -192,14 +329,32 @@ export const FireCollectionManager = () => {
       ) ?? null,
     [fireCollections, selectedCollectionId],
   )
+  const selectedSourceCategorySlug =
+    selectedCollection?.sourceCategorySlug ?? RANDOM_CATEGORY_ALL
+
+  useEffect(() => {
+    selectedCollectionRef.current = selectedCollection?.id ?? null
+  }, [selectedCollection?.id])
 
   useEffect(() => {
     const nextTitle = selectedCollection?.title ?? ''
-    if (collectionTitle === nextTitle) {
-      return
-    }
+    const nextCollectionId = selectedCollection?.id ?? null
+    const didCollectionChange =
+      lastSyncedCollectionIdRef.current !== nextCollectionId
+    const didServerTitleChange =
+      lastSyncedCollectionTitleRef.current !== nextTitle
+    const shouldSyncTitle =
+      collectionTitle !== nextTitle &&
+      (didCollectionChange ||
+        (didServerTitleChange &&
+          collectionTitle === lastSyncedCollectionTitleRef.current))
 
-    void setFireState({fireCollectionTitle: nextTitle})
+    lastSyncedCollectionIdRef.current = nextCollectionId
+    lastSyncedCollectionTitleRef.current = nextTitle
+
+    if (shouldSyncTitle) {
+      void setFireState({fireCollectionTitle: nextTitle})
+    }
   }, [
     collectionTitle,
     selectedCollection?.id,
@@ -212,9 +367,50 @@ export const FireCollectionManager = () => {
     [selectedCollection?.productIds],
   )
 
-  const selectedProducts = useQuery(
+  useEffect(() => {
+    selectedIdsRef.current = selectedIds
+  }, [selectedIds])
+  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds])
+  const libraryProductsById = useMemo(
+    () =>
+      new Map(
+        (libraryProducts ?? []).map((product) => [
+          String(product._id),
+          product,
+        ]),
+      ),
+    [libraryProducts],
+  )
+  const missingSelectedIds = useMemo(
+    () =>
+      selectedIds.filter((productId) => !libraryProductsById.has(productId)),
+    [libraryProductsById, selectedIds],
+  )
+
+  const missingSelectedProducts = useQuery(
     api.products.q.getProductsByIds,
-    selectedIds.length > 0 ? {productIds: selectedIds} : 'skip',
+    missingSelectedIds.length > 0 ? {productIds: missingSelectedIds} : 'skip',
+  )
+  const missingSelectedProductsById = useMemo(
+    () =>
+      new Map(
+        (missingSelectedProducts ?? []).map((product) => [
+          String(product._id),
+          product,
+        ]),
+      ),
+    [missingSelectedProducts],
+  )
+  const selectedProducts = useMemo(
+    () =>
+      selectedIds.flatMap((productId) => {
+        const product =
+          libraryProductsById.get(productId) ??
+          missingSelectedProductsById.get(productId)
+
+        return product ? [product] : []
+      }),
+    [libraryProductsById, missingSelectedProductsById, selectedIds],
   )
 
   const imageIds = useMemo(
@@ -232,8 +428,75 @@ export const FireCollectionManager = () => {
     [libraryProducts, selectedProducts],
   )
   const resolveUrl = useStorageUrls(imageIds)
+  const isSelectedProductsLoading =
+    missingSelectedIds.length > 0 && missingSelectedProducts === undefined
+  const categoryLabelBySlug = useMemo(
+    () =>
+      new Map(
+        (categories ?? []).flatMap((category) => {
+          const slug = category.slug?.trim()
+          if (!slug) {
+            return []
+          }
 
-  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds])
+          return [[slug, category.name?.trim() || formatCategoryLabel(slug)]]
+        }),
+      ),
+    [categories],
+  )
+
+  const libraryCategoryOptions = useMemo(() => {
+    const slugs = getUniqueFilterValues(
+      (libraryProducts ?? []).map((product) => product.categorySlug),
+    )
+
+    return [
+      {value: FILTER_OPTION_ALL, label: 'All categories'},
+      ...slugs.map((slug) => ({
+        value: slug,
+        label: categoryLabelBySlug.get(slug) ?? formatCategoryLabel(slug),
+      })),
+    ]
+  }, [categoryLabelBySlug, libraryProducts])
+
+  const libraryBrandOptions = useMemo(
+    () => [
+      {value: FILTER_OPTION_ALL, label: 'All brands'},
+      ...getUniqueFilterValues(
+        (libraryProducts ?? []).flatMap((product) => product.brand ?? []),
+      ).map((brand) => ({
+        value: brand,
+        label: formatCategoryLabel(brand),
+      })),
+    ],
+    [libraryProducts],
+  )
+
+  const librarySubcategoryOptions = useMemo(
+    () => [
+      {value: FILTER_OPTION_ALL, label: 'All subcategories'},
+      ...getUniqueFilterValues(
+        (libraryProducts ?? []).map((product) => product.subcategory),
+      ).map((subcategory) => ({
+        value: subcategory,
+        label: formatCategoryLabel(subcategory),
+      })),
+    ],
+    [libraryProducts],
+  )
+
+  const libraryProductTypeOptions = useMemo(
+    () => [
+      {value: FILTER_OPTION_ALL, label: 'All product types'},
+      ...getUniqueFilterValues(
+        (libraryProducts ?? []).map((product) => product.productType),
+      ).map((productType) => ({
+        value: productType,
+        label: formatCategoryLabel(productType),
+      })),
+    ],
+    [libraryProducts],
+  )
 
   const randomCategoryOptions = useMemo(() => {
     const productCategorySlugs = new Set(
@@ -261,23 +524,84 @@ export const FireCollectionManager = () => {
         label: formatCategoryLabel(slug),
       }))
 
+    const selectedOption =
+      selectedSourceCategorySlug !== RANDOM_CATEGORY_ALL &&
+      !knownValues.has(selectedSourceCategorySlug) &&
+      !missingOptions.some(
+        (option) => option.value === selectedSourceCategorySlug,
+      )
+        ? [
+            {
+              value: selectedSourceCategorySlug,
+              label:
+                categoryLabelBySlug.get(selectedSourceCategorySlug) ??
+                formatCategoryLabel(selectedSourceCategorySlug),
+            },
+          ]
+        : []
+
     return [
       {value: RANDOM_CATEGORY_ALL, label: 'Random'},
       ...options.sort((a, b) => a.label.localeCompare(b.label)),
       ...missingOptions,
+      ...selectedOption,
     ]
-  }, [categories, libraryProducts])
+  }, [
+    categories,
+    categoryLabelBySlug,
+    libraryProducts,
+    selectedSourceCategorySlug,
+  ])
 
   useEffect(() => {
+    const nextState: Partial<typeof fireState> = {}
+
     if (
-      randomCategorySlug !== RANDOM_CATEGORY_ALL &&
-      !randomCategoryOptions.some(
-        (option) => option.value === randomCategorySlug,
+      libraryCategory !== FILTER_OPTION_ALL &&
+      !libraryCategoryOptions.some((option) => option.value === libraryCategory)
+    ) {
+      nextState.fireLibraryCategory = FILTER_OPTION_ALL
+    }
+
+    if (
+      libraryBrand !== FILTER_OPTION_ALL &&
+      !libraryBrandOptions.some((option) => option.value === libraryBrand)
+    ) {
+      nextState.fireLibraryBrand = FILTER_OPTION_ALL
+    }
+
+    if (
+      librarySubcategory !== FILTER_OPTION_ALL &&
+      !librarySubcategoryOptions.some(
+        (option) => option.value === librarySubcategory,
       )
     ) {
-      void setFireState({fireRandomCategory: RANDOM_CATEGORY_ALL})
+      nextState.fireLibrarySubcategory = FILTER_OPTION_ALL
     }
-  }, [randomCategoryOptions, randomCategorySlug, setFireState])
+
+    if (
+      libraryProductType !== FILTER_OPTION_ALL &&
+      !libraryProductTypeOptions.some(
+        (option) => option.value === libraryProductType,
+      )
+    ) {
+      nextState.fireLibraryProductType = FILTER_OPTION_ALL
+    }
+
+    if (Object.keys(nextState).length > 0) {
+      void setFireState(nextState)
+    }
+  }, [
+    libraryBrand,
+    libraryBrandOptions,
+    libraryCategory,
+    libraryCategoryOptions,
+    libraryProductType,
+    libraryProductTypeOptions,
+    librarySubcategory,
+    librarySubcategoryOptions,
+    setFireState,
+  ])
   const randomCandidateProductIds = useMemo(() => {
     if (!libraryProducts) {
       return []
@@ -287,21 +611,60 @@ export const FireCollectionManager = () => {
       .filter((product) => !selectedIdSet.has(String(product._id)))
       .filter(
         (product) =>
-          randomCategorySlug === RANDOM_CATEGORY_ALL ||
-          product.categorySlug === randomCategorySlug,
+          selectedSourceCategorySlug === RANDOM_CATEGORY_ALL ||
+          product.categorySlug === selectedSourceCategorySlug,
       )
       .map((product) => String(product._id))
-  }, [libraryProducts, randomCategorySlug, selectedIdSet])
-  const availableProducts = useMemo(() => {
+  }, [libraryProducts, selectedIdSet, selectedSourceCategorySlug])
+  const filteredLibraryProducts = useMemo(() => {
     if (!libraryProducts) {
       return []
     }
 
     return libraryProducts
       .filter((product) => !selectedIdSet.has(String(product._id)))
+      .filter(
+        (product) =>
+          libraryCategory === FILTER_OPTION_ALL ||
+          product.categorySlug === libraryCategory,
+      )
+      .filter(
+        (product) =>
+          libraryBrand === FILTER_OPTION_ALL ||
+          product.brand?.includes(libraryBrand),
+      )
+      .filter(
+        (product) =>
+          librarySubcategory === FILTER_OPTION_ALL ||
+          product.subcategory === librarySubcategory,
+      )
+      .filter(
+        (product) =>
+          libraryProductType === FILTER_OPTION_ALL ||
+          product.productType === libraryProductType,
+      )
       .filter((product) => matchesSearch(product, deferredQuery))
-      .slice(0, MAX_LIBRARY_RESULTS)
-  }, [deferredQuery, libraryProducts, selectedIdSet])
+  }, [
+    deferredQuery,
+    libraryBrand,
+    libraryCategory,
+    libraryProductType,
+    libraryProducts,
+    librarySubcategory,
+    selectedIdSet,
+  ])
+
+  const availableProducts = useMemo(
+    () => filteredLibraryProducts.slice(0, MAX_LIBRARY_RESULTS),
+    [filteredLibraryProducts],
+  )
+
+  const hasActiveLibraryFilters =
+    query.trim().length > 0 ||
+    libraryCategory !== FILTER_OPTION_ALL ||
+    libraryBrand !== FILTER_OPTION_ALL ||
+    librarySubcategory !== FILTER_OPTION_ALL ||
+    libraryProductType !== FILTER_OPTION_ALL
 
   const enabledCollectionsCount = useMemo(
     () =>
@@ -309,7 +672,7 @@ export const FireCollectionManager = () => {
     [fireCollections],
   )
 
-  const showSavedStatus = () => {
+  const showSavedStatus = useCallback(() => {
     setStatus('saved')
     if (clearStatusTimeoutRef.current) {
       window.clearTimeout(clearStatusTimeoutRef.current)
@@ -317,29 +680,32 @@ export const FireCollectionManager = () => {
     clearStatusTimeoutRef.current = window.setTimeout(() => {
       setStatus(null)
     }, 2200)
-  }
+  }, [])
 
-  const runMutation = async (
-    key: string,
-    action: () => Promise<unknown>,
-    options?: {
-      onSuccess?: () => void
+  const runMutation = useCallback(
+    async (
+      key: string,
+      action: () => Promise<unknown>,
+      options?: {
+        onSuccess?: () => void
+      },
+    ) => {
+      setActiveKey(key)
+      setStatus(null)
+
+      try {
+        await action()
+        options?.onSuccess?.()
+        showSavedStatus()
+      } catch (error) {
+        console.error('Failed to update collections', error)
+        setStatus('error')
+      } finally {
+        setActiveKey(null)
+      }
     },
-  ) => {
-    setActiveKey(key)
-    setStatus(null)
-
-    try {
-      await action()
-      options?.onSuccess?.()
-      showSavedStatus()
-    } catch (error) {
-      console.error('Failed to update collections', error)
-      setStatus('error')
-    } finally {
-      setActiveKey(null)
-    }
-  }
+    [showSavedStatus],
+  )
 
   const handleCreateCollection = async () => {
     await runMutation('create-collection', async () => {
@@ -354,20 +720,52 @@ export const FireCollectionManager = () => {
     })
   }
 
-  const persistCollectionProducts = async (
-    nextProductIds: string[],
-    productId: string,
-  ) => {
-    if (!selectedCollection) return
+  const persistCollectionProducts = useCallback(
+    async (nextProductIds: string[], productId: string) => {
+      const collectionId = selectedCollectionRef.current
+      if (!collectionId) {
+        return
+      }
 
-    await runMutation(`product:${productId}`, () =>
-      updateFireCollection({
-        collectionId: selectedCollection.id,
-        patch: {productIds: nextProductIds},
-        uid: user?.uid ?? 'anonymous',
-      }),
-    )
-  }
+      await runMutation(`product:${productId}`, () =>
+        updateFireCollection({
+          collectionId,
+          patch: {productIds: nextProductIds},
+          uid: user?.uid ?? 'anonymous',
+        }),
+      )
+    },
+    [runMutation, updateFireCollection, user?.uid],
+  )
+
+  const handleSelectCollection = useCallback(
+    (collectionId: string) => {
+      void setFireState({fireCollectionId: collectionId})
+    },
+    [setFireState],
+  )
+
+  const handleAddProduct = useCallback(
+    (productId: string) => {
+      const nextSelectedIds = selectedIdsRef.current
+      if (nextSelectedIds.includes(productId)) {
+        return
+      }
+
+      void persistCollectionProducts([...nextSelectedIds, productId], productId)
+    },
+    [persistCollectionProducts],
+  )
+
+  const handleRemoveProduct = useCallback(
+    (productId: string) => {
+      void persistCollectionProducts(
+        selectedIdsRef.current.filter((selectedId) => selectedId !== productId),
+        productId,
+      )
+    },
+    [persistCollectionProducts],
+  )
 
   const handleSaveCollectionTitle = async () => {
     if (!selectedCollection) return
@@ -429,6 +827,31 @@ export const FireCollectionManager = () => {
         collectionId: selectedCollection.id,
         patch: {
           productIds: [...selectedIds, ...randomProductIds],
+        },
+        uid: user?.uid ?? 'anonymous',
+      }),
+    )
+  }
+
+  const handleUpdateSourceCategory = async (nextCategorySlug: string) => {
+    if (!selectedCollection) {
+      return
+    }
+
+    const normalizedCategorySlug =
+      nextCategorySlug === RANDOM_CATEGORY_ALL ? null : nextCategorySlug
+
+    if (
+      (selectedCollection.sourceCategorySlug ?? null) === normalizedCategorySlug
+    ) {
+      return
+    }
+
+    await runMutation(`source:${selectedCollection.id}`, () =>
+      updateFireCollection({
+        collectionId: selectedCollection.id,
+        patch: {
+          sourceCategorySlug: normalizedCategorySlug,
         },
         uid: user?.uid ?? 'anonymous',
       }),
@@ -510,49 +933,12 @@ export const FireCollectionManager = () => {
               {(fireCollections ?? []).map((collection) => {
                 const isSelected = collection.id === selectedCollectionId
                 return (
-                  <button
+                  <CollectionCard
                     key={collection.id}
-                    type='button'
-                    onClick={() => {
-                      void setFireState({fireCollectionId: collection.id})
-                    }}
-                    className={`rounded-2xl border p-4 text-left transition-colors ${
-                      isSelected
-                        ? 'border-foreground/30 bg-sidebar dark:bg-sidebar/30 shadow-inner'
-                        : 'border-foreground/15 bg-background/80 hover:border-foreground/20'
-                    }`}>
-                    <div className='flex items-start justify-between gap-3'>
-                      <div className='min-w-0'>
-                        <h3 className='truncate font-clash text-sm font-semibold tracking-wider text-foreground/80'>
-                          <span>{collection.title}</span>
-
-                          <span className='ml-2'>
-                            <span className='font-ios font-thin opacity-30'>{`(`}</span>
-                            <span className='font-medium'>
-                              {collection.productIds.length}
-                            </span>
-                            <span className='font-ios font-thin opacity-30'>{`)`}</span>
-                          </span>
-                        </h3>
-                        {/*<p className='mt-1 text-xs uppercase tracking-[0.22em] text-foreground/45'>
-                          {collection.productIds.length}
-                        </p>*/}
-                      </div>
-                      <div
-                        className={`flex items-center justify-center rounded-sm px-1 py-0 text-[8.5px] uppercase font-clash font-black tracking-widest ${
-                          collection.enabled
-                            ? 'text-emerald-100 dark:text-emerald-500 bg-emerald-500 dark:bg-emerald-400/15'
-                            : 'bg-zinc-500/10 dark:bg-sidebar/0 text-zinc-500 dark:text-foreground/60'
-                        }`}>
-                        <span
-                          className={cn({
-                            'drop-shadow-2xs': collection.enabled,
-                          })}>
-                          {collection.enabled ? 'On' : 'Off'}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
+                    collection={collection}
+                    isSelected={isSelected}
+                    onSelect={handleSelectCollection}
+                  />
                 )
               })}
             </div>
@@ -663,28 +1049,22 @@ export const FireCollectionManager = () => {
 
                 {selectedCollection &&
                   selectedIds.length > 0 &&
-                  selectedProducts === undefined && (
+                  selectedProducts.length === 0 &&
+                  isSelectedProductsLoading && (
                     <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
                       Loading current collection...
                     </div>
                   )}
 
-                {(selectedProducts ?? []).map((product) => (
-                  <ProductTile
+                {selectedProducts.map((product) => (
+                  <MemoizedProductTile
                     key={product._id}
                     product={product}
                     imageUrl={resolveProductImage(product.image, resolveUrl)}
                     actionLabel='Remove'
                     disabled={activeKey !== null || !selectedCollection}
                     isBusy={activeKey === `product:${String(product._id)}`}
-                    onAction={(productId) =>
-                      persistCollectionProducts(
-                        selectedIds.filter(
-                          (selectedId) => selectedId !== productId,
-                        ),
-                        productId,
-                      )
-                    }
+                    onAction={handleRemoveProduct}
                   />
                 ))}
               </div>
@@ -728,16 +1108,16 @@ export const FireCollectionManager = () => {
               <Select
                 label='Source Category'
                 placeholder='Random category'
-                selectedKeys={[randomCategorySlug]}
+                selectedKeys={[selectedSourceCategorySlug]}
                 onSelectionChange={(keys) => {
                   const key = Array.from(keys)[0]
-                  void setFireState({
-                    fireRandomCategory:
-                      typeof key === 'string' ? key : RANDOM_CATEGORY_ALL,
-                  })
+                  void handleUpdateSourceCategory(
+                    typeof key === 'string' ? key : RANDOM_CATEGORY_ALL,
+                  )
                 }}
                 classNames={narrowSelectClassNames}
                 disallowEmptySelection
+                isDisabled={activeKey !== null || !selectedCollection}
                 items={randomCategoryOptions}>
                 {(item) => (
                   <SelectItem key={item.value} textValue={item.label}>
@@ -756,10 +1136,120 @@ export const FireCollectionManager = () => {
               onValueChange={(value) => {
                 void setFireState({fireQuery: value})
               }}
-              placeholder='Search products by name, brand, category, or slug'
+              placeholder='Search products by name, brand, category, subtype, or slug'
               classNames={narrowInputClassNames}
               className='mt-4'
             />
+
+            <div className='mt-3 grid gap-3 md:grid-cols-2'>
+              <Select
+                label='Category'
+                placeholder='All categories'
+                selectedKeys={[libraryCategory]}
+                onSelectionChange={(keys) => {
+                  const key = Array.from(keys)[0]
+                  void setFireState({
+                    fireLibraryCategory:
+                      typeof key === 'string' ? key : FILTER_OPTION_ALL,
+                  })
+                }}
+                classNames={narrowSelectClassNames}
+                disallowEmptySelection
+                items={libraryCategoryOptions}>
+                {(item) => (
+                  <SelectItem key={item.value} textValue={item.label}>
+                    {item.label}
+                  </SelectItem>
+                )}
+              </Select>
+
+              <Select
+                label='Brand'
+                placeholder='All brands'
+                selectedKeys={[libraryBrand]}
+                onSelectionChange={(keys) => {
+                  const key = Array.from(keys)[0]
+                  void setFireState({
+                    fireLibraryBrand:
+                      typeof key === 'string' ? key : FILTER_OPTION_ALL,
+                  })
+                }}
+                classNames={narrowSelectClassNames}
+                disallowEmptySelection
+                items={libraryBrandOptions}>
+                {(item) => (
+                  <SelectItem key={item.value} textValue={item.label}>
+                    {item.label}
+                  </SelectItem>
+                )}
+              </Select>
+
+              <Select
+                label='Subcategory'
+                placeholder='All subcategories'
+                selectedKeys={[librarySubcategory]}
+                onSelectionChange={(keys) => {
+                  const key = Array.from(keys)[0]
+                  void setFireState({
+                    fireLibrarySubcategory:
+                      typeof key === 'string' ? key : FILTER_OPTION_ALL,
+                  })
+                }}
+                classNames={narrowSelectClassNames}
+                disallowEmptySelection
+                items={librarySubcategoryOptions}>
+                {(item) => (
+                  <SelectItem key={item.value} textValue={item.label}>
+                    {item.label}
+                  </SelectItem>
+                )}
+              </Select>
+
+              <Select
+                label='Product Type'
+                placeholder='All product types'
+                selectedKeys={[libraryProductType]}
+                onSelectionChange={(keys) => {
+                  const key = Array.from(keys)[0]
+                  void setFireState({
+                    fireLibraryProductType:
+                      typeof key === 'string' ? key : FILTER_OPTION_ALL,
+                  })
+                }}
+                classNames={narrowSelectClassNames}
+                disallowEmptySelection
+                items={libraryProductTypeOptions}>
+                {(item) => (
+                  <SelectItem key={item.value} textValue={item.label}>
+                    {item.label}
+                  </SelectItem>
+                )}
+              </Select>
+            </div>
+
+            <div className='mt-3 flex items-center justify-between gap-3'>
+              <span className='text-[8px] uppercase tracking-[0.22em] text-foreground/50'>
+                {filteredLibraryProducts.length} matching products
+              </span>
+
+              <Button
+                size='sm'
+                radius='none'
+                variant='light'
+                isDisabled={!hasActiveLibraryFilters}
+                onPress={() => {
+                  void setFireState({
+                    fireQuery: '',
+                    fireLibraryCategory: FILTER_OPTION_ALL,
+                    fireLibraryBrand: FILTER_OPTION_ALL,
+                    fireLibrarySubcategory: FILTER_OPTION_ALL,
+                    fireLibraryProductType: FILTER_OPTION_ALL,
+                  })
+                }}
+                className='rounded-xs px-0 font-okxs text-[10px] uppercase tracking-[0.22em] text-foreground/55'>
+                Clear filters
+              </Button>
+            </div>
 
             <div className='mt-4 xl:flex-1'>
               <div className='grid md:grid-cols-2 gap-3'>
@@ -779,25 +1269,20 @@ export const FireCollectionManager = () => {
                   libraryProducts !== undefined &&
                   availableProducts.length === 0 && (
                     <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
-                      No products match the current search.
+                      No products match the current filters.
                     </div>
                   )}
 
                 {selectedCollection &&
                   availableProducts.map((product) => (
-                    <ProductTile
+                    <MemoizedProductTile
                       key={product._id}
                       product={product}
                       imageUrl={resolveProductImage(product.image, resolveUrl)}
                       actionLabel='Add'
                       disabled={activeKey !== null}
                       isBusy={activeKey === `product:${String(product._id)}`}
-                      onAction={(productId) =>
-                        persistCollectionProducts(
-                          [...selectedIds, productId],
-                          productId,
-                        )
-                      }
+                      onAction={handleAddProduct}
                     />
                   ))}
               </div>

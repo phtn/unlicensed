@@ -52,6 +52,43 @@ const deploymentId = sanitizeId(
   process.env.NEXT_DEPLOYMENT_ID?.trim() || buildId,
 )
 
+const buildConvexRemoteImagePatterns = () => {
+  const convexUrl =
+    process.env.NEXT_PUBLIC_CONVEX_URL ??
+    process.env.CONVEX_URL ??
+    process.env.CONVEX_CLOUD_URL
+
+  const patterns: Array<{
+    protocol: 'http' | 'https'
+    hostname: string
+  }> = [
+    {
+      protocol: 'https',
+      hostname: '**.convex.cloud',
+    },
+  ]
+
+  if (!convexUrl) {
+    return patterns
+  }
+
+  try {
+    const parsed = new URL(convexUrl)
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      patterns.push({
+        protocol: parsed.protocol.replace(':', '') as 'http' | 'https',
+        hostname: parsed.hostname,
+      })
+    }
+  } catch {
+    return patterns
+  }
+
+  return patterns
+}
+
+const convexRemoteImagePatterns = buildConvexRemoteImagePatterns()
+
 if (
   process.env.NODE_ENV === 'production' &&
   !process.env.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
@@ -92,6 +129,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
       },
+      ...convexRemoteImagePatterns,
     ],
   },
   generateBuildId: async () => {
