@@ -6,8 +6,10 @@ import {useAddCartItem} from '@/hooks/use-add-cart-item'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
+import {Tooltip} from '@heroui/react'
 import NextImage from 'next/image'
 import NextLink from 'next/link'
+import {useRouter} from 'next/navigation'
 import {memo, type MouseEvent, useMemo, useState} from 'react'
 
 type ProductCardProps = {
@@ -108,6 +110,7 @@ const ProductCardComponent = ({
   className,
 }: ProductCardProps) => {
   const addItem = useAddCartItem()
+  const router = useRouter()
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   const {
@@ -172,10 +175,16 @@ const ProductCardComponent = ({
     addItem(productId, 1, selectedOption.denominationValue)
   }
 
+  const handleNameClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    void router.push(productHref)
+  }
+
   return (
     <article
       className={cn(
-        'group relative h-fit  md:h-[340.01px] md:min-h-[340.01px] md:max-h-[340.01px] min-w-48 max-w-48 overflow-hidden rounded-xs bg-sidebar shadow-sm dark:bg-black sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
+        'group relative h-fit _md:h-[340.01px] _md:min-h-[340.01px] _md:max-h-[340.01px] min-w-48 max-w-48 overflow-hidden rounded-xs bg-sidebar shadow-sm dark:bg-black sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
         className,
       )}>
       <NextLink
@@ -185,7 +194,7 @@ const ProductCardComponent = ({
         className='absolute inset-0 z-10 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background'
       />
 
-      <div className='flex h-full flex-col'>
+      <div className='flex flex-col h-fit'>
         <div className='relative flex items-center justify-center overflow-hidden rounded-xs bg-sidebar/40 dark:bg-dark-table/40'>
           {imageSrc ? (
             <NextImage
@@ -204,13 +213,15 @@ const ProductCardComponent = ({
           )}
         </div>
 
-        <div className='flex min-h-0 flex-1 flex-col'>
-          <div className='relative flex max-h-24 sm:max-h-20 md:max-h-16 lg:max-h-12 lg:h-fit min-h-24 md:min-h-16 lg:min-h-12 items-start justify-between p-2'>
+        <div className='flex flex-col border-0 border-emerald-300 h-fit'>
+          <section
+            id='info-details'
+            className='relative flex shrink-0 items-start justify-between  sm:h-28 md:h-28 overflow-hidden bg-amber-200/0 p-2'>
             <div className='min-w-0 flex-1'>
               <div>
                 <div className=''>
                   {brandLabel && (
-                    <p className='mb-1 md:mb-0.5 h-4 md:h-5 truncate text-[9px] md:text-sm font-okxs font-light capitalize tracking-wide opacity-70'>
+                    <p className='mb-1 md:mb-0.5 h-4 md:h-5 truncate text-[9px] md:text-xs font-okxs font-light capitalize tracking-wide opacity-75'>
                       <span className='font-light'>{brandLabel}</span>
                       {product.productType && (
                         <span>
@@ -223,9 +234,19 @@ const ProductCardComponent = ({
                     </p>
                   )}
                 </div>
-                <h3 className='truncate capitalize leading-5 font-clash text-lg md:leading-5 lg:text-xl lg:leading-5'>
-                  {product.name}
-                </h3>
+                <Tooltip
+                  content={product.name}
+                  placement='top'
+                  className='border-light-brand border'>
+                  <button
+                    type='button'
+                    onClick={handleNameClick}
+                    className='relative z-20 block max-w-full text-left pointer-events-auto'>
+                    <h3 className='truncate capitalize leading-5 font-clash text-lg md:leading-5 lg:text-base lg:leading-5'>
+                      {product.name}
+                    </h3>
+                  </button>
+                </Tooltip>
               </div>
 
               <div className='flex items-center justify-between relative top-1'>
@@ -281,9 +302,9 @@ const ProductCardComponent = ({
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div className='mt-auto flex w-full flex-col bg-dark-table dark:bg-black'>
+          <section className='mt-auto flex w-full flex-col bg-dark-table dark:bg-black'>
             <div
               role='group'
               className='mt-1.5 flex h-8 gap-x-1 md:gap-x-1.5'
@@ -312,12 +333,14 @@ const ProductCardComponent = ({
 
             <button
               type='button'
-              className='relative z-20 mt-1.25 rounded-xs bg-brand hover:bg-light-brand px-3 py-2 text-sm font-medium text-white transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-50'
+              className='relative active:bg-brand transition-colors duration-200 z-20 mt-1.25 rounded-xs bg-brand hover:bg-light-brand px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50'
               disabled={!productId || !selectedOption}
               onClick={handleAddToCart}>
-              Add to Cart
+              <div className='group-active:scale-94 transition-transform duration-200'>
+                Add to Cart
+              </div>
             </button>
-          </div>
+          </section>
         </div>
       </div>
     </article>
@@ -333,3 +356,5 @@ export const ProductCard = memo(
     previousProps.imageUrl === nextProps.imageUrl &&
     areProductsEqual(previousProps.product, nextProps.product),
 )
+
+// className='relative flex h-24 shrink-0 items-start justify-between overflow-hidden p-2 sm:h-28 md:h-24 md:max-h-24 lg:max-h-24 xl:h-36'>

@@ -119,7 +119,7 @@ export const ProductCarousel = ({products}: ProductCarouselProps) => {
               <ProductCard
                 product={product}
                 imageUrl={resolveProductImage(product.image, resolveUrl)}
-                className='w-full min-w-0 max-w-none shrink-0 sm:min-w-0 md:min-w-0 lg:min-w-0 xl:min-w-0 md:h-[350.01px] md:min-h-[350.01px] md:max-h-[350.01px]'
+                className='w-full min-w-0 max-w-none shrink-0 sm:min-w-0 md:min-w-0 lg:min-w-0 xl:min-w-0 _md:h-[350.01px] _md:min-h-[350.01px] _md:max-h-[350.01px]'
               />
             </div>
           ))}
