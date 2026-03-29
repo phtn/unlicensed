@@ -20,15 +20,64 @@ const DEFAULT_SNAPSHOT: ScreenResizeSnapshot = {
 
 let currentSnapshot = DEFAULT_SNAPSHOT
 
+type MediaQueryListener = (event: MediaQueryListEvent) => void
+type MediaQueryListCompat = MediaQueryList & {
+  addListener?: (listener: MediaQueryListener) => void
+  removeListener?: (listener: MediaQueryListener) => void
+}
+
+const getOrientation = (
+  portraitMediaQuery?: MediaQueryList | null,
+): ScreenOrientation => {
+  if (portraitMediaQuery) {
+    return portraitMediaQuery.matches ? 'portrait' : 'landscape'
+  }
+
+  if (typeof window === 'undefined') {
+    return DEFAULT_SNAPSHOT.orientation
+  }
+
+  return window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'
+}
+
+const subscribeToMediaQuery = (
+  mediaQueryList: MediaQueryList | null,
+  onChange: MediaQueryListener,
+) => {
+  if (!mediaQueryList) {
+    return () => {}
+  }
+
+  if (typeof mediaQueryList.addEventListener === 'function') {
+    mediaQueryList.addEventListener('change', onChange)
+
+    return () => {
+      mediaQueryList.removeEventListener('change', onChange)
+    }
+  }
+
+  const legacyMediaQueryList = mediaQueryList as MediaQueryListCompat
+
+  legacyMediaQueryList.addListener?.(onChange)
+
+  return () => {
+    legacyMediaQueryList.removeListener?.(onChange)
+  }
+}
+
 const createSnapshot = (): ScreenResizeSnapshot => {
   if (typeof window === 'undefined') {
     return DEFAULT_SNAPSHOT
   }
 
   const viewport = window.visualViewport
+  const portraitMediaQuery =
+    typeof window.matchMedia === 'function'
+      ? window.matchMedia('(orientation: portrait)')
+      : null
   const width = Math.round(viewport?.width ?? window.innerWidth)
   const height = Math.round(viewport?.height ?? window.innerHeight)
-  const orientation = width > height ? 'landscape' : 'portrait'
+  const orientation = getOrientation(portraitMediaQuery)
 
   return {
     width,
@@ -60,7 +109,10 @@ const subscribe = (onStoreChange: VoidFunction) => {
   }
 
   const viewport = window.visualViewport
-  const root = document.documentElement
+  const portraitMediaQuery =
+    typeof window.matchMedia === 'function'
+      ? window.matchMedia('(orientation: portrait)')
+      : null
   let frameId = 0
 
   // Coalesce rapid resize bursts into one store update per frame.
@@ -73,23 +125,25 @@ const subscribe = (onStoreChange: VoidFunction) => {
     })
   }
 
-  const resizeObserver =
-    typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(notify)
-
-  resizeObserver?.observe(root)
   window.addEventListener('resize', notify, {passive: true})
   window.addEventListener('orientationchange', notify)
+  window.addEventListener('pageshow', notify)
   viewport?.addEventListener('resize', notify)
+  const unsubscribeMediaQuery = subscribeToMediaQuery(
+    portraitMediaQuery,
+    notify,
+  )
 
   return () => {
     if (frameId !== 0) {
       window.cancelAnimationFrame(frameId)
     }
 
-    resizeObserver?.disconnect()
     window.removeEventListener('resize', notify)
     window.removeEventListener('orientationchange', notify)
+    window.removeEventListener('pageshow', notify)
     viewport?.removeEventListener('resize', notify)
+    unsubscribeMediaQuery()
   }
 }
 

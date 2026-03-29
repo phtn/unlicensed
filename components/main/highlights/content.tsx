@@ -106,9 +106,9 @@ export const Highlights = ({
       role='region'
       aria-roledescription='carousel'
       aria-label='Featured products carousel'>
-      <div className='absolute dark:text-white text-xl font-bold z-9999 top-20 left-6'>
+      {/*<div className='absolute dark:text-white text-xl font-bold z-9999 top-20 left-6'>
         {height}x{width} px
-      </div>
+      </div>*/}
       <div
         ref={emblaRef}
         className='overflow-hidden md:snap-x 2xl:h-screen md:snap-mandatory md:scroll-smooth md:[-webkit-overflow-scrolling:touch] md:scrollbar-none md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden motion-safe:scroll-smooth'>
