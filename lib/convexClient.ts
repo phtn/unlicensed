@@ -45,6 +45,7 @@ export type RawProduct = {
   limited?: boolean
   onSale?: boolean
   available?: boolean
+  archived?: boolean
   stock?: number
   inventoryMode?: 'by_denomination' | 'shared' | 'shared_weight'
   masterStockQuantity?: number
@@ -480,46 +481,53 @@ const _fetchFireCollections = async (): Promise<StoreCollectionSection[]> => {
       {},
     )) as RawFireCollectionConfig[] | null
     const enabledCollections = (collections ?? []).filter(
-      (collection) => collection.enabled && collection.productIds.length > 0,
+      (collection) =>
+        collection.enabled &&
+        (collection.sourceCategorySlug
+          ? (collection.sourceCategoryProductCount ?? 0) > 0
+          : collection.productIds.length > 0),
     )
 
     if (enabledCollections.length === 0) {
       return []
     }
 
-    const productIds = Array.from(
-      new Set(
-        enabledCollections.flatMap((collection) => collection.productIds),
-      ),
-    )
-    const [products, categories] = await Promise.all([
-      client.query(api.products.q.getProductsByIds, {
-        productIds,
-      }) as Promise<RawProduct[]>,
-      fetchCategories(),
-    ])
-    const categoriesBySlug = new Map(
-      categories.map((category) => [category.slug, category]),
-    )
-    const productsById = new Map(
-      products.map((product) => [
-        String(product._id),
-        adaptProduct(product, categoriesBySlug.get(product.categorySlug ?? '')),
-      ]),
+    const collectionsWithProducts = await Promise.all(
+      enabledCollections.map(async (collection) => {
+        const rawProducts = collection.sourceCategorySlug
+          ? ((await client.query(api.products.q.listProducts, {
+              availableOnly: true,
+              categorySlug: collection.sourceCategorySlug,
+              limit: collection.sourceCategoryProductCount ?? 0,
+            })) as RawProduct[])
+          : ((await client.query(api.products.q.getProductsByIds, {
+              productIds: collection.productIds,
+            })) as RawProduct[])
+
+        const products = rawProducts
+          .filter(
+            (product) =>
+              product.archived !== true &&
+              product.available === true &&
+              (!collection.sourceCategorySlug ||
+                product.categorySlug === collection.sourceCategorySlug),
+          )
+          .map((product) => adaptProduct(product))
+
+        return {
+          id: collection.id,
+          title: collection.title,
+          sourceCategorySlug: collection.sourceCategorySlug,
+          sourceCategoryProductCount:
+            collection.sourceCategoryProductCount ?? undefined,
+          products,
+        }
+      }),
     )
 
-    return enabledCollections
-      .map((collection) => ({
-        id: collection.id,
-        title: collection.title,
-        sourceCategorySlug: collection.sourceCategorySlug,
-        sourceCategoryProductCount:
-          collection.sourceCategoryProductCount ?? undefined,
-        products: collection.productIds
-          .map((productId) => productsById.get(productId))
-          .filter((product): product is StoreProduct => product != null),
-      }))
-      .filter((collection) => collection.products.length > 0)
+    return collectionsWithProducts.filter(
+      (collection) => collection.products.length > 0,
+    )
   } catch (error) {
     console.warn('Falling back to empty fire collections', error)
     return []

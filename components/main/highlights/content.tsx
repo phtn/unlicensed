@@ -1,3 +1,4 @@
+import {useScreenResizeObserver} from '@/hooks/use-screen-resize-observer'
 import {cn} from '@/lib/utils'
 import type {EmblaCarouselType} from 'embla-carousel'
 import useEmblaCarousel from 'embla-carousel-react'
@@ -32,6 +33,7 @@ export const Highlights = ({
 
   const [selectedIndex, setSelectedIndex] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
+  const {height, width} = useScreenResizeObserver()
 
   const scrollTo = useCallback(
     (index: number) => {
@@ -92,21 +94,24 @@ export const Highlights = ({
     <div
       ref={containerRef}
       className={cn(
-        'relative w-full bg-background md:h-screen',
+        'relative w-full bg-background h-fit',
         'cursor-grab active:cursor-grabbing',
         className,
       )}
       style={
         heroImageHeight != null && heroImageHeight > 0
-          ? {height: heroImageHeight}
+          ? {height: height}
           : undefined
       }
       role='region'
       aria-roledescription='carousel'
       aria-label='Featured products carousel'>
+      <div className='absolute dark:text-white text-xl font-bold z-9999 top-20 left-6'>
+        {height}x{width} px
+      </div>
       <div
         ref={emblaRef}
-        className='overflow-hidden md:snap-x md:h-screen md:snap-mandatory md:scroll-smooth md:[-webkit-overflow-scrolling:touch] md:scrollbar-none md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden motion-safe:scroll-smooth'>
+        className='overflow-hidden md:snap-x 2xl:h-screen md:snap-mandatory md:scroll-smooth md:[-webkit-overflow-scrolling:touch] md:scrollbar-none md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden motion-safe:scroll-smooth'>
         {slides.map((slide, index) => (
           <Slider key={index} {...slide} />
         ))}

@@ -3,10 +3,12 @@
 import {StoreProduct} from '@/app/types'
 import {FireCollection} from '@/components/store/fire-collection'
 import {api} from '@/convex/_generated/api'
-import {adaptProduct} from '@/lib/convexClient'
+import {adaptProduct, type RawProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {Button} from '@heroui/react'
-import {useQuery} from 'convex/react'
+import {useQueries, useQuery} from 'convex/react'
+import type {FunctionReference} from 'convex/server'
+import type {Value} from 'convex/values'
 import Link from 'next/link'
 import {useMemo} from 'react'
 
@@ -18,6 +20,19 @@ interface StoreCollectionSection {
   sourceCategoryProductCount?: number
 }
 
+const toStoreProducts = (
+  products: RawProduct[],
+  sourceCategorySlug?: string,
+): StoreProduct[] =>
+  products
+    .filter(
+      (product) =>
+        product.archived !== true &&
+        product.available === true &&
+        (!sourceCategorySlug || product.categorySlug === sourceCategorySlug),
+    )
+    .map((product) => adaptProduct(product))
+
 export const FireCollectionContent = ({
   initialCollections,
 }: {
@@ -25,24 +40,60 @@ export const FireCollectionContent = ({
 }) => {
   const fireCollections = useQuery(api.admin.q.getFireCollectionsConfig, {})
   const enabledCollections = useMemo(
-    () => (fireCollections ?? []).filter((collection) => collection.enabled),
+    () =>
+      (fireCollections ?? []).filter(
+        (collection) =>
+          collection.enabled &&
+          (collection.sourceCategorySlug
+            ? (collection.sourceCategoryProductCount ?? 0) > 0
+            : collection.productIds.length > 0),
+      ),
     [fireCollections],
   )
-  const configuredProductIds = useMemo(
+  const initialCollectionsById = useMemo(
     () =>
-      Array.from(
-        new Set(
-          enabledCollections.flatMap((collection) => collection.productIds),
-        ),
+      new Map(
+        initialCollections.map((collection) => [collection.id, collection]),
       ),
-    [enabledCollections],
+    [initialCollections],
   )
-  const configuredProducts = useQuery(
-    api.products.q.getProductsByIds,
-    configuredProductIds.length > 0
-      ? {productIds: configuredProductIds}
-      : 'skip',
-  )
+  const collectionProductQueries = useMemo((): Record<
+    string,
+    {
+      query: FunctionReference<'query'>
+      args: Record<string, Value>
+    }
+  > => {
+    const queries: Record<
+      string,
+      {
+        query: FunctionReference<'query'>
+        args: Record<string, Value>
+      }
+    > = {}
+
+    for (const collection of enabledCollections) {
+      queries[collection.id] = collection.sourceCategorySlug
+        ? {
+            query: api.products.q.listProducts,
+            args: {
+              availableOnly: true,
+              categorySlug: collection.sourceCategorySlug,
+              limit: collection.sourceCategoryProductCount ?? 0,
+            },
+          }
+        : {
+            query: api.products.q.getProductsByIds,
+            args: {
+              productIds: collection.productIds,
+            },
+          }
+    }
+
+    return queries
+  }, [enabledCollections])
+  const collectionProductResults = useQueries(collectionProductQueries)
+
   const collections = useMemo(() => {
     if (!fireCollections) {
       return initialCollections
@@ -52,34 +103,35 @@ export const FireCollectionContent = ({
       return []
     }
 
-    if (configuredProductIds.length > 0 && configuredProducts === undefined) {
-      return initialCollections
-    }
-
-    const productsById = new Map(
-      (configuredProducts ?? []).map((product) => [
-        String(product._id),
-        adaptProduct(product),
-      ]),
-    )
-
     return enabledCollections
-      .map((collection) => ({
-        id: collection.id,
-        title: collection.title,
-        sourceCategorySlug: collection.sourceCategorySlug,
-        sourceCategoryProductCount:
-          collection.sourceCategoryProductCount ?? undefined,
-        products: collection.productIds
-          .map((productId) => productsById.get(productId))
-          .filter((product): product is StoreProduct => product != null),
-      }))
+      .map((collection) => {
+        const productResult = collectionProductResults[collection.id]
+        if (productResult instanceof Error || productResult === undefined) {
+          return initialCollectionsById.get(collection.id) ?? null
+        }
+
+        return {
+          id: collection.id,
+          title: collection.title,
+          sourceCategorySlug: collection.sourceCategorySlug,
+          sourceCategoryProductCount:
+            collection.sourceCategoryProductCount ?? undefined,
+          products: toStoreProducts(
+            productResult as RawProduct[],
+            collection.sourceCategorySlug,
+          ),
+        }
+      })
+      .filter(
+        (collection): collection is StoreCollectionSection =>
+          collection != null,
+      )
       .filter((collection) => collection.products.length > 0)
   }, [
-    configuredProducts,
-    configuredProductIds.length,
+    collectionProductResults,
     enabledCollections,
     fireCollections,
+    initialCollectionsById,
     initialCollections,
   ])
 

@@ -1,14 +1,25 @@
 import {Highlights} from '@/components/main/highlights/content'
-import {useMobile} from '@/hooks/use-mobile'
+import {useScreenResizeObserver} from '@/hooks/use-screen-resize-observer'
+import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import Link from 'next/link'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {Slide} from '../main/highlights/slider'
 
+const MOBILE_BREAKPOINT = 575
+const MD_BREAKPOINT = 768
+
 export const NewHome = () => {
-  const isMobile = useMobile()
+  const {isPortrait, width} = useScreenResizeObserver()
+  const isMobile = width < MOBILE_BREAKPOINT
+  const isPortraitBelowMd = width < MD_BREAKPOINT && isPortrait
   const heroImageWrapRef = useRef<HTMLDivElement>(null)
   const [heroImageHeight, setHeroImageHeight] = useState<number | null>(null)
+  const shopNowOffsetClassName = isPortraitBelowMd
+    ? 'bottom-32'
+    : isMobile
+      ? 'bottom-[8.333%]'
+      : 'bottom-[15.3%]'
 
   useEffect(() => {
     const el = heroImageWrapRef.current
@@ -33,6 +44,8 @@ export const NewHome = () => {
     return () => observer.disconnect()
   }, [isMobile])
 
+  // const {height: h, width: w} = useScreenResizeObserver()
+
   const slides = useMemo(
     () =>
       [
@@ -54,23 +67,29 @@ export const NewHome = () => {
 
   return (
     <div
-      className='relative bg-linear-to-b bg-background dark:bg-black md:h-screen'
+      className='relative bg-linear-to-b bg-background dark:bg-black 2xl:h-screen'
       style={
         isMobile && heroImageHeight != null
           ? {height: heroImageHeight}
           : undefined
       }>
-      <div ref={heroImageWrapRef} className='top-0 left-0 w-full md:h-screen'>
+      <div
+        ref={heroImageWrapRef}
+        className=' dark:bg-amber-200 top-0 left-0 w-full sm:h-[44lvh] md:h-[50lvh] lg:h-[58lvh] xl:h-[75lvh] 2xl:h-[85lvh]'>
         <Highlights heroImageHeight={heroImageHeight} slides={slides} />
       </div>
 
       <Button
         as={Link}
         size='lg'
+        id='shop-now'
         radius='none'
         href='/lobby/category'
         variant='solid'
-        className='absolute md:bottom-44 bottom-32 left-1/2 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white  _dark:bg-white md:w-64'>
+        className={cn(
+          'absolute left-1/2 z-10 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white _dark:bg-white md:bottom-24 lg:bottom-24 xl:bottom-28 2xl:bottom-44 md:w-64',
+          shopNowOffsetClassName,
+        )}>
         Shop Now
       </Button>
     </div>

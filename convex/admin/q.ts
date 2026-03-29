@@ -338,7 +338,7 @@ export const getFireCollectionsConfig = query({
       for await (const product of db
         .query('products')
         .withIndex('by_category', (q) => q.eq('categorySlug', categorySlug))) {
-        if (product.archived === true) {
+        if (product.archived === true || product.available !== true) {
           continue
         }
 

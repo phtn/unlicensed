@@ -68,6 +68,7 @@ export const listProductImportTargets = query({
 
 export const listProducts = query({
   args: {
+    availableOnly: v.optional(v.boolean()),
     brand: v.optional(v.string()),
     categorySlug: v.optional(v.string()),
     limit: v.optional(v.number()),
@@ -85,6 +86,9 @@ export const listProducts = query({
 
     let products = await baseQuery.collect()
     products = products.filter((p) => p.archived !== true)
+    if (args.availableOnly === true) {
+      products = products.filter((p) => p.available === true)
+    }
     if (args.brand) {
       const normalizedBrand = normalizeBrandValue(args.brand)
       products = products.filter((p) =>
