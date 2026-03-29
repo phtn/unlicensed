@@ -372,7 +372,7 @@ function SidebarGroup({className, ...props}: ComponentProps<'div'>) {
     <div
       data-sidebar='group'
       className={cn(
-        'relative flex w-full min-w-0 flex-col mb-4 px-3',
+        'relative flex w-full min-w-0 flex-col mb-2 px-3',
         className,
       )}
       {...props}

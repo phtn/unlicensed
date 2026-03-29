@@ -349,6 +349,11 @@ const data: Record<string, NavGroup[]> = {
           url: '/admin/messaging/chat',
           icon: 'chat',
         },
+        {
+          title: 'alerts',
+          url: '/admin/messaging/alerts',
+          icon: 'bell',
+        },
       ],
     },
     {

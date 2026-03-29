@@ -572,9 +572,9 @@ export const CouponsContent = () => {
                   setForm((current) => ({...current, discountType: next}))
                 }}
                 classNames={{
-                  label: commonInputClassNames.label,
-                  trigger: commonInputClassNames.inputWrapper,
-                  value: commonInputClassNames.input,
+                  label: commonInputClassNames?.label,
+                  trigger: commonInputClassNames?.inputWrapper,
+                  value: commonInputClassNames?.input,
                 }}>
                 {discountTypeOptions.map((option) => (
                   <SelectItem key={option.key}>{option.label}</SelectItem>

@@ -1,8 +1,8 @@
 import {paginationOptsValidator, type PaginationResult} from 'convex/server'
 import {v} from 'convex/values'
+import {getStockDisplayUnit, getTotalStock} from '../../lib/productStock'
 import type {Doc, Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
-import {getStockDisplayUnit, getTotalStock} from '../../lib/productStock'
 import {getCanonicalUserByFid} from '../users/lib'
 import {safeGet} from '../utils/id_validation'
 
@@ -338,21 +338,19 @@ export const listLowStockProducts = query({
     const limit = args.limit ?? 12
     const products = await ctx.db.query('products').collect()
 
-    return products
-      .filter((product) => {
-        if (product.archived === true) {
-          return false
-        }
+    const monitoredProducts = products.filter((product) => {
+      if (product.archived === true) {
+        return false
+      }
 
-        if (
-          typeof product.lowStockThreshold !== 'number' ||
-          !Number.isFinite(product.lowStockThreshold)
-        ) {
-          return false
-        }
+      return (
+        typeof product.lowStockThreshold === 'number' &&
+        Number.isFinite(product.lowStockThreshold)
+      )
+    })
 
-        return getTotalStock(product) <= product.lowStockThreshold
-      })
+    const lowStockProducts = monitoredProducts
+      .filter((product) => getTotalStock(product) <= product.lowStockThreshold!)
       .map((product) => ({
         _id: product._id,
         name: product.name ?? 'Untitled product',
@@ -360,6 +358,11 @@ export const listLowStockProducts = query({
         currentStock: getTotalStock(product),
         lowStockThreshold: product.lowStockThreshold ?? 0,
         lowStockAlertActive: product.lowStockAlertActive === true,
+        lowStockAlertTriggeredAt: product.lowStockAlertTriggeredAt ?? null,
+        lowStockAlertLastSentAt: product.lowStockAlertLastSentAt ?? null,
+        lowStockAlertLastNotifiedStock:
+          product.lowStockAlertLastNotifiedStock ?? null,
+        lowStockAlertLastError: product.lowStockAlertLastError ?? null,
         stockUnit: getStockDisplayUnit(product),
       }))
       .sort((a, b) => {
@@ -369,7 +372,22 @@ export const listLowStockProducts = query({
 
         return a.name.localeCompare(b.name)
       })
-      .slice(0, limit)
+
+    return {
+      summary: {
+        monitoredProductCount: monitoredProducts.length,
+        lowStockProductCount: lowStockProducts.length,
+        activeAlertCount: lowStockProducts.filter(
+          (product) => product.lowStockAlertActive,
+        ).length,
+        failedAlertCount: lowStockProducts.filter(
+          (product) =>
+            typeof product.lowStockAlertLastError === 'string' &&
+            product.lowStockAlertLastError.trim().length > 0,
+        ).length,
+      },
+      products: lowStockProducts.slice(0, limit),
+    }
   },
 })
 

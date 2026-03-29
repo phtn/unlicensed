@@ -1,5 +1,13 @@
 import {ClassName} from '@/app/types'
-import {Chip, Input, Select, SelectProps, Switch, Textarea} from '@heroui/react'
+import {
+  Chip,
+  Input,
+  InputProps,
+  Select,
+  SelectProps,
+  Switch,
+  Textarea,
+} from '@heroui/react'
 import React, {ChangeEvent, InputHTMLAttributes, ReactNode, Ref} from 'react'
 import {
   CategorySelectItem,
@@ -8,19 +16,39 @@ import {
 } from './category-select-item'
 import {useAppForm, useFieldContext} from './form-context'
 
-export const commonInputClassNames = {
+export const commonInputClassNames: InputProps['classNames'] = {
   label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-ios',
   input:
     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
-    'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-lg p-2 outline-none min-h-18 w-full',
+    'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 dark:data-hover:bg-background data-hover:bg-blue-200/20! dark:data-focus:bg-background/40 rounded-lg p-2 outline-none min-h-18 w-full',
   innerWrapper: 'px-1',
 }
-export const narrowInputClassNames = {
+export const darkInputClassNames: InputProps['classNames'] = {
+  label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-ios',
   input:
     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
-    'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-md p-2 outline-none min-h-10 w-full',
+    'border shadow-none border-dark-gray dark:border-black/60 bg-orange-200 dark:bg-cyan-300/20 data-hover:border-orange-700 dark:data-hover:border-blue-500 data-hover:bg-orange-200/60! data-focus:bg-orange-100/60 data-focus:border-orange-700 rounded-lg p-2 outline-none min-h-18 w-full',
+  innerWrapper: 'px-1',
+  description: 'text-slate-500 tracking-wide',
+}
+export const secondaryInputClassNames: InputProps['classNames'] = {
+  label:
+    'mb-4 pl-1 opacity-100 dark:opacity-80 tracking-widest uppercase text-xs font-ios',
+  input:
+    'text-blue-500 dark:text-white text-base md:text-lg font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
+  inputWrapper:
+    'border shadow-none border-dark-gray/40 dark:border-black/20 bg-light-gray/60 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-md px-2 pt-1 pb-0.5 outline-none min-h-14 w-full',
+  innerWrapper: 'px-1',
+}
+export const narrowInputClassNames: InputProps['classNames'] = {
+  label:
+    'mb-3 pl-1 opacity-100 dark:opacity-80 tracking-widest uppercase text-xs font-ios',
+  input:
+    'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
+  inputWrapper:
+    'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-md px-2 pb-1 pt-1 outline-none min-h-10 w-full',
   innerWrapper: 'px-1',
 }
 
@@ -31,7 +59,7 @@ export const commonSelectClassNames: SelectProps['classNames'] = {
     'border p-2 h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
   listbox: 'p-1.5',
 }
-export const narrowSelectClassNames = {
+export const narrowSelectClassNames: SelectProps['classNames'] = {
   label: 'ps-1 mb-3 uppercase font-ios text-xs tracking-widest opacity-80',
   value: 'ps-1 placeholder:text-slate-400/80 py-4 mt-2',
   trigger:
@@ -39,12 +67,19 @@ export const narrowSelectClassNames = {
   mainWrapper: '',
   listbox: 'p-1.5',
 }
-export const multiSelectClassNames = {
+export const multiSelectClassNames: SelectProps['classNames'] = {
   value: 'placeholder:text-slate-400/80 py-2',
   trigger:
     'border h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
   mainWrapper: '',
   listbox: 'p-1.5',
+}
+
+export const simpleSelectClassNames: SelectProps['classNames'] = {
+  value: 'px-2',
+  listbox: 'py-1.5',
+  label: 'font-semibold font-clash tracking-wide text-sm',
+  trigger: 'bg-background/40 hover:bg-background/50! rounded-md',
 }
 
 type BaseFieldProps<T> = {

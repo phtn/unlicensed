@@ -1,5 +1,6 @@
 'use client'
 
+import {narrowInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useFirebaseAuthUser} from '@/hooks/use-firebase-auth-user'
@@ -36,7 +37,8 @@ const formatDenominationLabel = (
   denomination: number,
   unit: string | undefined,
 ) => {
-  const label = mapNumericFractions[String(denomination)] ?? String(denomination)
+  const label =
+    mapNumericFractions[String(denomination)] ?? String(denomination)
   return unit ? `${label} ${unit}` : label
 }
 
@@ -94,21 +96,24 @@ export const buildInventoryInputs = (product: Product): InventoryInput[] => {
 type InventoryAdjustmentModalProps = {
   adjustmentType: AdjustmentType
   isOpen: boolean
-  onOpenChange: (isOpen: boolean) => void
+  onOpenChangeAction: (isOpen: boolean) => void
   product: Product
 }
 
 export function InventoryAdjustmentModal({
   adjustmentType,
   isOpen,
-  onOpenChange,
+  onOpenChangeAction,
   product,
 }: InventoryAdjustmentModalProps) {
   const {user} = useFirebaseAuthUser()
   const applyInventoryAdjustment = useMutation(
     api.inventoryMovements.m.applyInventoryAdjustment,
   )
-  const inventoryInputs = useMemo(() => buildInventoryInputs(product), [product])
+  const inventoryInputs = useMemo(
+    () => buildInventoryInputs(product),
+    [product],
+  )
   const [quantities, setQuantities] = useState<Record<string, string>>({})
   const [note, setNote] = useState('')
   const [reference, setReference] = useState('')
@@ -191,12 +196,10 @@ export function InventoryAdjustmentModal({
           user?.displayName ?? user?.email?.split('@')[0] ?? undefined,
       })
 
-      onOpenChange(false)
+      onOpenChangeAction(false)
     } catch (error) {
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : 'Failed to update inventory.',
+        error instanceof Error ? error.message : 'Failed to update inventory.',
       )
     } finally {
       setIsSubmitting(false)
@@ -206,14 +209,19 @@ export function InventoryAdjustmentModal({
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={onOpenChange}
+      onOpenChange={onOpenChangeAction}
       placement='center'
       backdrop='blur'>
-      <ModalContent>
+      <ModalContent className='rounded-lg border border-slate-400'>
         <ModalHeader>
-          {adjustmentType === 'restock'
-            ? `Restock ${product.name ?? 'product'}`
-            : `Manual Override for ${product.name ?? 'product'}`}
+          <div>
+            <div className='font-bold uppercase'>
+              {adjustmentType === 'restock' ? 'Restock' : 'Manual Override'}
+            </div>
+            <span className='dark:text-light-brand text-light-brand font-medium text-sm'>
+              {product.name}
+            </span>
+          </div>
         </ModalHeader>
         <ModalBody className='space-y-4'>
           <p className='text-sm text-foreground-600'>{description}</p>
@@ -227,6 +235,7 @@ export function InventoryAdjustmentModal({
                 min={0}
                 step='0.001'
                 value={quantities[input.key] ?? ''}
+                classNames={narrowInputClassNames}
                 onChange={(event) =>
                   setQuantities((current) => ({
                     ...current,
@@ -249,6 +258,7 @@ export function InventoryAdjustmentModal({
             value={reference}
             onValueChange={setReference}
             placeholder='PO number, delivery note, or supplier reference'
+            classNames={narrowInputClassNames}
             variant='bordered'
           />
 
@@ -257,6 +267,7 @@ export function InventoryAdjustmentModal({
             value={note}
             onValueChange={setNote}
             placeholder='Optional context for this inventory change'
+            classNames={narrowInputClassNames}
             variant='bordered'
             minRows={3}
           />
@@ -268,11 +279,14 @@ export function InventoryAdjustmentModal({
         <ModalFooter>
           <Button
             variant='light'
-            onPress={() => onOpenChange(false)}
+            onPress={() => onOpenChangeAction(false)}
             isDisabled={isSubmitting}>
             Cancel
           </Button>
-          <Button color='primary' isLoading={isSubmitting} onPress={handleSubmit}>
+          <Button
+            color='primary'
+            isLoading={isSubmitting}
+            onPress={handleSubmit}>
             {submitLabel}
           </Button>
         </ModalFooter>

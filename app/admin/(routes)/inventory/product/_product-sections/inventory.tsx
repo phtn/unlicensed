@@ -7,11 +7,8 @@ import {
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {InventoryMode} from '@/convex/products/d'
-import {
-  getStockDisplayUnit,
-  getTotalStock,
-  normalizeInventoryMode,
-} from '@/lib/productStock'
+import {Icon} from '@/lib/icons'
+import {getStockDisplayUnit, getTotalStock} from '@/lib/productStock'
 import {formatPrice} from '@/utils/formatPrice'
 import {
   Button,
@@ -25,12 +22,12 @@ import {useStore} from '@tanstack/react-store'
 import {useQuery} from 'convex/react'
 import {useMemo, useState} from 'react'
 import {ProductFormApi, mapFractions} from '../product-schema'
+import {FormSection, Header} from './components'
 import {
+  InventoryAdjustmentModal,
   buildInventoryInputs,
   formatQuantity,
-  InventoryAdjustmentModal,
 } from './inventory-adjustment-modal'
-import {FormSection, Header} from './components'
 
 interface InventoryProps {
   form: ProductFormApi
@@ -78,39 +75,43 @@ const formatAlertQuantity = (value: number) =>
 const formatAlertQuantityLabel = (value: number, unit: string | null) =>
   unit ? `${formatAlertQuantity(value)} ${unit}` : formatAlertQuantity(value)
 
-const formatMovementLine = (
+const formatMovementQuantityLabel = (value: number, unit?: string) => {
+  const normalizedUnit = unit?.trim()
+  return normalizedUnit
+    ? `${formatQuantity(value)} ${normalizedUnit}`
+    : formatQuantity(value)
+}
+
+const getMovementLineLabel = (
   product: Doc<'products'>,
-  movementType: keyof typeof movementTypeLabels,
+  inventoryMode: InventoryMode,
   line: {
     denomination?: number
     nextQuantity: number
-    quantityDelta: number
     unit?: string
   },
 ) => {
   const unit = line.unit?.trim()
-  const quantityLabel = unit
-    ? `${formatQuantity(line.nextQuantity)} ${unit}`
-    : formatQuantity(line.nextQuantity)
-  const deltaLabel = unit
-    ? `${line.quantityDelta > 0 ? '+' : ''}${formatQuantity(line.quantityDelta)} ${unit}`
-    : `${line.quantityDelta > 0 ? '+' : ''}${formatQuantity(line.quantityDelta)}`
-  const lineLabel =
-    line.denomination !== undefined
-      ? (buildInventoryInputs({
-          ...product,
-          availableDenominations: [line.denomination],
-          stockByDenomination: {[String(line.denomination)]: line.nextQuantity},
-        })[0]?.label ?? String(line.denomination))
-      : normalizeInventoryMode(product.inventoryMode) === 'shared'
-        ? `Master stock${unit ? ` (${unit})` : ''}`
-        : 'Stock'
-
-  if (movementType === 'manual_override') {
-    return `${lineLabel}: set to ${quantityLabel}`
+  if (line.denomination !== undefined) {
+    return (
+      buildInventoryInputs({
+        ...product,
+        availableDenominations: [line.denomination],
+        stockByDenomination: {[String(line.denomination)]: line.nextQuantity},
+      })[0]?.label ?? String(line.denomination)
+    )
   }
 
-  return `${lineLabel}: ${deltaLabel}, now ${quantityLabel}`
+  return inventoryMode === 'shared'
+    ? `Master stock${unit ? ` (${unit})` : ''}`
+    : 'Stock'
+}
+
+const getMovementDeltaLabel = (value: number, unit?: string) => {
+  if (value === 0) return 'No change'
+
+  const prefix = value > 0 ? '+' : ''
+  return `${prefix}${formatMovementQuantityLabel(value, unit)}`
 }
 
 export const Inventory = ({
@@ -261,12 +262,10 @@ export const Inventory = ({
                     }}
                     isDisabled={isEditMode}
                     variant='bordered'
-                    classNames={commonSelectClassNames}
-                  >
+                    classNames={commonSelectClassNames}>
                     <SelectItem
                       key='by_denomination'
-                      textValue='By denomination'
-                    >
+                      textValue='By denomination'>
                       <div className='flex flex-col'>
                         <span className='text-sm font-medium'>
                           By denomination
@@ -321,7 +320,7 @@ export const Inventory = ({
                 return (
                   <div className='space-y-2'>
                     <Input
-                      label='Low Stock Email Threshold'
+                      label='Low Stock Threshold'
                       type='number'
                       step='0.01'
                       value={value}
@@ -344,8 +343,7 @@ export const Inventory = ({
                           <Chip
                             size='sm'
                             variant='flat'
-                            className='bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-100'
-                          >
+                            className='bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-100'>
                             Alert active
                           </Chip>
                           {product.lowStockAlertLastSentAt ? (
@@ -376,10 +374,202 @@ export const Inventory = ({
               }}
             </form.Field>
           </div>
+          <div className=' grid md:grid-cols-2 gap-4 col-span-6'>
+            <div className='col-span-1'>
+              <form.Field name='availableDenominationsRaw'>
+                {(field) => {
+                  const selectedKeys = new Set(
+                    variantOptions
+                      .filter((option) => currentDenominations.has(option.key))
+                      .map((option) => option.key),
+                  )
+
+                  return (
+                    <div className='space-y-1 w-full'>
+                      <Select
+                        label='Available Denominations'
+                        placeholder={
+                          variantOptions.length === 0
+                            ? 'No variants available. Configure variants in Pricing section.'
+                            : 'Select denominations...'
+                        }
+                        selectionMode='multiple'
+                        selectedKeys={selectedKeys}
+                        onSelectionChange={(keys) =>
+                          handleSelectionChange(field, keys)
+                        }
+                        variant='bordered'
+                        isMultiline={true}
+                        isDisabled={variantOptions.length === 0}
+                        classNames={commonSelectClassNames}
+                        renderValue={(items: SelectedItems<object>) => (
+                          <div className='flex flex-wrap gap-2'>
+                            {items.map((item) => {
+                              const variant = variantOptions.find(
+                                (option) => option.key === item.key,
+                              )
+                              return (
+                                <Chip
+                                  key={item.key}
+                                  variant='flat'
+                                  classNames={{
+                                    base: 'border border-light-gray dark:border-light-gray/30 h-7',
+                                    content: 'text-xs flex items-center gap-1',
+                                  }}>
+                                  <span className='capitalize'>
+                                    {variant?.displayLabel ?? item.textValue}
+                                  </span>
+                                </Chip>
+                              )
+                            })}
+                          </div>
+                        )}>
+                        {variantOptions.map((option) => {
+                          const priceDisplay = option.price
+                            ? formatPrice(Math.round(option.price * 100))
+                            : 'No price'
+                          return (
+                            <SelectItem
+                              key={option.key}
+                              textValue={option.displayLabel}>
+                              <div className='flex items-center justify-between w-full'>
+                                <div className='flex flex-col'>
+                                  <span className='text-sm font-medium'>
+                                    {option.displayLabel}
+                                  </span>
+                                  <span className='text-xs opacity-70'>
+                                    {option.label}
+                                  </span>
+                                </div>
+                                <span className='text-sm font-semibold text-blue-400 ml-4'>
+                                  ${priceDisplay}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          )
+                        })}
+                      </Select>
+                      {variantOptions.length === 0 ? (
+                        <p className='text-xs text-color-muted mt-1'>
+                          Configure variants with prices in the Pricing section
+                          to enable denomination selection.
+                        </p>
+                      ) : null}
+                    </div>
+                  )
+                }}
+              </form.Field>
+            </div>
+            <div className=''>
+              <form.Field name='popularDenomination'>
+                {(field) => {
+                  const popularDenominationValue =
+                    (field.state.value as number[] | undefined) ?? []
+
+                  const selectedKeys = (() => {
+                    if (!popularDenominationValue.length) {
+                      return new Set<string>()
+                    }
+
+                    return new Set(
+                      variantOptions
+                        .filter((option) =>
+                          popularDenominationValue.some(
+                            (value) =>
+                              option.denomination !== null &&
+                              Math.abs(option.denomination - value) < 0.0001,
+                          ),
+                        )
+                        .map((option) => option.key),
+                    )
+                  })()
+
+                  const handlePopularSelectionChange = (
+                    keys: Set<React.Key> | 'all',
+                  ) => {
+                    if (keys === 'all') {
+                      field.handleChange(
+                        variantOptions
+                          .map((option) => option.denomination)
+                          .filter((value): value is number => value !== null),
+                      )
+                      return
+                    }
+
+                    field.handleChange(
+                      Array.from(keys)
+                        .map((key) =>
+                          variantOptions.find((option) => option.key === key),
+                        )
+                        .map((option) => option?.denomination ?? null)
+                        .filter((value): value is number => value !== null),
+                    )
+                  }
+
+                  return (
+                    <div className='space-y-1 w-full'>
+                      <Select
+                        label='Popular Denomination'
+                        placeholder={
+                          variantOptions.length === 0
+                            ? 'No variants available. Configure variants in Pricing section.'
+                            : 'Select popular denominations...'
+                        }
+                        selectionMode='multiple'
+                        selectedKeys={selectedKeys}
+                        onSelectionChange={handlePopularSelectionChange}
+                        variant='bordered'
+                        isMultiline={true}
+                        isDisabled={variantOptions.length === 0}
+                        classNames={commonSelectClassNames}
+                        renderValue={(items: SelectedItems<object>) => (
+                          <div className='flex flex-wrap gap-2'>
+                            {items.map((item) => {
+                              const variant = variantOptions.find(
+                                (option) => option.key === item.key,
+                              )
+                              return (
+                                <Chip
+                                  key={item.key}
+                                  variant='bordered'
+                                  className='border border-blue-500'
+                                  classNames={{
+                                    base: 'border border-dark-gray bg-background dark:border-yellow-500 h-7',
+                                    content: 'text-xs flex items-center gap-1',
+                                  }}>
+                                  <span className='capitalize'>
+                                    {variant?.displayLabel ?? item.textValue}
+                                  </span>
+                                </Chip>
+                              )
+                            })}
+                          </div>
+                        )}>
+                        {variantOptions.map((option) => (
+                          <SelectItem
+                            key={option.key}
+                            textValue={option.displayLabel}>
+                            <div className='flex items-center justify-between w-full'>
+                              <span className='text-sm font-medium'>
+                                {option.displayLabel}
+                              </span>
+                              <span className='text-xs opacity-70'>
+                                {option.label}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </Select>
+                    </div>
+                  )
+                }}
+              </form.Field>
+            </div>
+          </div>
 
           {!isEditMode && inventoryMode === 'shared' ? (
-            <>
-              <div className='w-full col-span-6 md:col-span-2'>
+            <div className='w-full grid grid-cols-8'>
+              <div className='w-full col-span-1'>
                 <form.Field name='masterStockQuantity'>
                   {(field) => (
                     <Input
@@ -403,7 +593,7 @@ export const Inventory = ({
                 </form.Field>
               </div>
 
-              <div className='w-full col-span-6 md:col-span-1'>
+              <div className='w-full'>
                 <form.Field name='masterStockUnit'>
                   {(field) => (
                     <Select
@@ -420,8 +610,7 @@ export const Inventory = ({
                         }
                       }}
                       variant='bordered'
-                      classNames={commonSelectClassNames}
-                    >
+                      classNames={commonSelectClassNames}>
                       {MASTER_STOCK_UNIT_OPTIONS.map((unit) => (
                         <SelectItem key={unit} textValue={unit}>
                           {unit}
@@ -438,7 +627,7 @@ export const Inventory = ({
                 will drop to `9.5 lb` after one `0.5 oz` order.
                 {productUnit ? ` Current product unit: ${productUnit}.` : ''}
               </div>
-            </>
+            </div>
           ) : null}
 
           {!isEditMode && inventoryMode === 'by_denomination' ? (
@@ -526,9 +715,10 @@ export const Inventory = ({
 
           {isEditMode && product ? (
             <div className='col-span-6 space-y-4'>
-              <div className='rounded-2xl border border-black/5 bg-black/2 p-4 dark:border-white/10 dark:bg-white/3'>
-                <p className='text-sm font-medium'>
-                  Official inventory controls
+              <div className='rounded-lg border-2 border-light-brand dark:border-brand bg-light-brand/5 p-4 dark:bg-brand/5'>
+                <p className='text-base font-okxs font-semibold tracking-wide'>
+                  Official inventory Controls{' '}
+                  <span className='font-ios px-3'>( ADMIN ONLY )</span>
                 </p>
                 <p className='mt-1 text-sm text-color-muted'>
                   Stock quantities are now managed through logged inventory
@@ -551,26 +741,28 @@ export const Inventory = ({
               </div>
 
               <div className='flex flex-wrap gap-3'>
-                <Button color='primary' onPress={() => setIsRestockOpen(true)}>
+                <Button
+                  color='primary'
+                  radius='none'
+                  onPress={() => setIsRestockOpen(true)}
+                  className='dark:bg-white dark:text-dark-table rounded-md'>
                   Restock Inventory
                 </Button>
                 <Button
                   variant='bordered'
                   onPress={() => setIsManualOverrideOpen(true)}
-                >
+                  className='rounded-md'>
                   Manual Override
                 </Button>
               </div>
 
-              <div className='space-y-3 rounded-2xl border border-black/5 bg-background/60 p-4 dark:border-white/10'>
+              <div className='space-y-3 rounded-md border border-light-gray/40 bg-background/60 p-4 dark:border-white/10'>
                 <div className='flex items-center justify-between gap-3'>
                   <div>
-                    <p className='text-sm font-medium'>
-                      Recent inventory activity
-                    </p>
-                    <p className='text-xs text-color-muted'>
-                      Restocks, corrections, and paid-order deductions for this
-                      product.
+                    <p className='text-sm font-medium'>Recent Activity</p>
+                    <p className='text-xs opacity-70'>
+                      Restocks, overrides, corrections, and paid-order
+                      deductions for this product.
                     </p>
                   </div>
                 </div>
@@ -584,61 +776,108 @@ export const Inventory = ({
                     No inventory activity has been recorded yet.
                   </p>
                 ) : (
-                  <div className='space-y-3'>
+                  <div className='space-y-0'>
                     {inventoryMovements.map((movement) => (
                       <div
                         key={movement._id}
-                        className='rounded-xl border border-black/5 bg-black/2 p-3 dark:border-white/10 dark:bg-white/3'
-                      >
+                        className='rounded-none border border-b-0 last:border-b border-light-gray/50 bg-default-100/80 p-3 dark:border-white/10 dark:bg-white/3'>
                         <div className='flex flex-wrap items-center justify-between gap-3'>
-                          <div className='flex flex-wrap items-center gap-2'>
+                          <div className='flex flex-wrap items-center gap-4'>
                             <Chip
                               variant='flat'
                               classNames={{
                                 base: `border ${movementTypeStyles[movement.type]}`,
-                                content: 'text-xs font-medium',
-                              }}
-                            >
+                                content:
+                                  'text-sm font-clash font-semibold tracking-wide',
+                              }}>
                               {movementTypeLabels[movement.type]}
                             </Chip>
-                            <span className='text-sm text-color-muted'>
-                              {movement.performedByName ??
-                                movement.performedByEmail ??
-                                movement.sourceOrderNumber ??
-                                'System'}
-                            </span>
+                            <div className='flex items-center gap-1'>
+                              <Icon
+                                name='user'
+                                className='w-3 h-3 opacity-80'
+                              />
+                              <span className='text-sm opacity-90'>
+                                {movement.performedByName ??
+                                  movement.performedByEmail ??
+                                  movement.sourceOrderNumber ??
+                                  'System'}
+                              </span>
+                            </div>
                           </div>
-                          <span className='text-xs text-color-muted'>
+                          <span className='text-xs opacity-60 font-ios'>
                             {new Date(movement.createdAt).toLocaleString()}
                           </span>
                         </div>
 
-                        {movement.reference ? (
-                          <p className='mt-2 text-xs text-color-muted'>
-                            Reference: {movement.reference}
-                          </p>
-                        ) : null}
+                        <div className='mt-2 space-y-2'>
+                          <div className='grid gap-2 md:grid-cols-2'>
+                            {movement.lines.map((line, index) => (
+                              <div
+                                key={`${movement._id}-${index}`}
+                                className='rounded-md border border-black/5 bg-background/70 px-3 py-2.5 dark:border-white/10 dark:bg-black/10'>
+                                <p className='text-xs font-ios uppercase tracking-[0.12em] opacity-60'>
+                                  {getMovementLineLabel(
+                                    product,
+                                    movement.inventoryMode,
+                                    line,
+                                  )}
+                                </p>
+                                <div className='mt-1 flex flex-wrap items-center gap-2'>
+                                  <span className='rounded-sm border border-black/5 bg-default-100 px-2 py-1 text-sm font-okxs tabular-nums dark:border-white/10 dark:bg-white/5'>
+                                    {formatMovementQuantityLabel(
+                                      line.previousQuantity,
+                                      line.unit,
+                                    )}
+                                  </span>
+                                  <Icon
+                                    name='arrow-right-normal'
+                                    className='size-4 text-blue-500 dark-text-blue-200'
+                                  />
+                                  <span className='rounded-sm border border-black/5 bg-background px-2 py-1 text-sm font-okxs tabular-nums dark:border-white/10 dark:bg-white/3'>
+                                    {formatMovementQuantityLabel(
+                                      line.nextQuantity,
+                                      line.unit,
+                                    )}
+                                  </span>
+                                  <span
+                                    className={`text-sm font-okxs ${
+                                      line.quantityDelta > 0
+                                        ? 'text-emerald-700 dark:text-emerald-300'
+                                        : line.quantityDelta < 0
+                                          ? 'text-rose-700 dark:text-rose-300'
+                                          : 'text-color-muted'
+                                    }`}>
+                                    {getMovementDeltaLabel(
+                                      line.quantityDelta,
+                                      line.unit,
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
 
-                        <div className='mt-2 flex flex-wrap gap-2'>
-                          {movement.lines.map((line, index) => (
-                            <Chip
-                              key={`${movement._id}-${index}`}
-                              variant='bordered'
-                              classNames={{
-                                base: 'border-black/10 dark:border-white/10',
-                                content: 'text-xs',
-                              }}
-                            >
-                              {formatMovementLine(product, movement.type, line)}
-                            </Chip>
-                          ))}
+                          <div className='flex flex-wrap items-center px-2 gap-x-4 gap-y-1'>
+                            {movement.reference ? (
+                              <p className='text-xs text-color-muted'>
+                                <span className='uppercase font-ios pr-2 opacity-60'>
+                                  ref:
+                                </span>{' '}
+                                {movement.reference}
+                              </p>
+                            ) : null}
+
+                            {movement.note ? (
+                              <p className='text-xs text-color-muted'>
+                                <span className='uppercase font-ios pr-2 opacity-60'>
+                                  notes:
+                                </span>{' '}
+                                {movement.note}
+                              </p>
+                            ) : null}
+                          </div>
                         </div>
-
-                        {movement.note ? (
-                          <p className='mt-2 text-xs text-color-muted'>
-                            {movement.note}
-                          </p>
-                        ) : null}
                       </div>
                     ))}
                   </div>
@@ -649,214 +888,16 @@ export const Inventory = ({
                 product={product}
                 adjustmentType='restock'
                 isOpen={isRestockOpen}
-                onOpenChange={setIsRestockOpen}
+                onOpenChangeAction={setIsRestockOpen}
               />
               <InventoryAdjustmentModal
                 product={product}
                 adjustmentType='manual_override'
                 isOpen={isManualOverrideOpen}
-                onOpenChange={setIsManualOverrideOpen}
+                onOpenChangeAction={setIsManualOverrideOpen}
               />
             </div>
           ) : null}
-
-          <div className='w-full grid md:grid-col-2 col-span-4'>
-            <form.Field name='availableDenominationsRaw'>
-              {(field) => {
-                const selectedKeys = new Set(
-                  variantOptions
-                    .filter((option) => currentDenominations.has(option.key))
-                    .map((option) => option.key),
-                )
-
-                return (
-                  <div className='space-y-1 w-full'>
-                    <Select
-                      label='Available Denominations'
-                      placeholder={
-                        variantOptions.length === 0
-                          ? 'No variants available. Configure variants in Pricing section.'
-                          : 'Select denominations...'
-                      }
-                      selectionMode='multiple'
-                      selectedKeys={selectedKeys}
-                      onSelectionChange={(keys) =>
-                        handleSelectionChange(field, keys)
-                      }
-                      variant='bordered'
-                      isMultiline={true}
-                      isDisabled={variantOptions.length === 0}
-                      classNames={commonSelectClassNames}
-                      renderValue={(items: SelectedItems<object>) => (
-                        <div className='flex flex-wrap gap-2'>
-                          {items.map((item) => {
-                            const variant = variantOptions.find(
-                              (option) => option.key === item.key,
-                            )
-                            return (
-                              <Chip
-                                key={item.key}
-                                variant='flat'
-                                classNames={{
-                                  base: 'border border-light-gray dark:border-light-gray/30 h-7',
-                                  content: 'text-xs flex items-center gap-1',
-                                }}
-                              >
-                                <span className='capitalize'>
-                                  {variant?.displayLabel ?? item.textValue}
-                                </span>
-                              </Chip>
-                            )
-                          })}
-                        </div>
-                      )}
-                    >
-                      {variantOptions.map((option) => {
-                        const priceDisplay = option.price
-                          ? formatPrice(Math.round(option.price * 100))
-                          : 'No price'
-                        return (
-                          <SelectItem
-                            key={option.key}
-                            textValue={option.displayLabel}
-                          >
-                            <div className='flex items-center justify-between w-full'>
-                              <div className='flex flex-col'>
-                                <span className='text-sm font-medium'>
-                                  {option.displayLabel}
-                                </span>
-                                <span className='text-xs opacity-70'>
-                                  {option.label}
-                                </span>
-                              </div>
-                              <span className='text-sm font-semibold text-blue-400 ml-4'>
-                                ${priceDisplay}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        )
-                      })}
-                    </Select>
-                    {variantOptions.length === 0 ? (
-                      <p className='text-xs text-color-muted mt-1'>
-                        Configure variants with prices in the Pricing section to
-                        enable denomination selection.
-                      </p>
-                    ) : null}
-                  </div>
-                )
-              }}
-            </form.Field>
-          </div>
-
-          <div className='w-full col-span-4'>
-            <form.Field name='popularDenomination'>
-              {(field) => {
-                const popularDenominationValue =
-                  (field.state.value as number[] | undefined) ?? []
-
-                const selectedKeys = (() => {
-                  if (!popularDenominationValue.length) {
-                    return new Set<string>()
-                  }
-
-                  return new Set(
-                    variantOptions
-                      .filter((option) =>
-                        popularDenominationValue.some(
-                          (value) =>
-                            option.denomination !== null &&
-                            Math.abs(option.denomination - value) < 0.0001,
-                        ),
-                      )
-                      .map((option) => option.key),
-                  )
-                })()
-
-                const handlePopularSelectionChange = (
-                  keys: Set<React.Key> | 'all',
-                ) => {
-                  if (keys === 'all') {
-                    field.handleChange(
-                      variantOptions
-                        .map((option) => option.denomination)
-                        .filter((value): value is number => value !== null),
-                    )
-                    return
-                  }
-
-                  field.handleChange(
-                    Array.from(keys)
-                      .map((key) =>
-                        variantOptions.find((option) => option.key === key),
-                      )
-                      .map((option) => option?.denomination ?? null)
-                      .filter((value): value is number => value !== null),
-                  )
-                }
-
-                return (
-                  <div className='space-y-1 w-full'>
-                    <Select
-                      label='Popular Denomination'
-                      placeholder={
-                        variantOptions.length === 0
-                          ? 'No variants available. Configure variants in Pricing section.'
-                          : 'Select popular denominations...'
-                      }
-                      selectionMode='multiple'
-                      selectedKeys={selectedKeys}
-                      onSelectionChange={handlePopularSelectionChange}
-                      variant='bordered'
-                      isMultiline={true}
-                      isDisabled={variantOptions.length === 0}
-                      classNames={commonSelectClassNames}
-                      renderValue={(items: SelectedItems<object>) => (
-                        <div className='flex flex-wrap gap-2'>
-                          {items.map((item) => {
-                            const variant = variantOptions.find(
-                              (option) => option.key === item.key,
-                            )
-                            return (
-                              <Chip
-                                key={item.key}
-                                variant='bordered'
-                                className='border border-blue-500'
-                                classNames={{
-                                  base: 'border border-dark-gray bg-background dark:border-yellow-500 h-7',
-                                  content: 'text-xs flex items-center gap-1',
-                                }}
-                              >
-                                <span className='capitalize'>
-                                  {variant?.displayLabel ?? item.textValue}
-                                </span>
-                              </Chip>
-                            )
-                          })}
-                        </div>
-                      )}
-                    >
-                      {variantOptions.map((option) => (
-                        <SelectItem
-                          key={option.key}
-                          textValue={option.displayLabel}
-                        >
-                          <div className='flex items-center justify-between w-full'>
-                            <span className='text-sm font-medium'>
-                              {option.displayLabel}
-                            </span>
-                            <span className='text-xs opacity-70'>
-                              {option.label}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </Select>
-                  </div>
-                )
-              }}
-            </form.Field>
-          </div>
         </div>
       </div>
     </FormSection>

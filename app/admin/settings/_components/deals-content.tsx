@@ -133,7 +133,7 @@ const DEAL_EXCLUSION_CONFIG: Array<{
 ]
 
 const variationSelectClassNames = {
-  label: commonInputClassNames.label,
+  label: commonInputClassNames?.label,
   trigger: commonSelectClassNames?.trigger,
   value: commonSelectClassNames?.value,
   // value: commonInputClassNames.input,

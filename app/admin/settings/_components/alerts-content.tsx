@@ -1,6 +1,10 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
+import {
+  darkInputClassNames,
+  secondaryInputClassNames,
+  simpleSelectClassNames,
+} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError, onSuccess} from '@/ctx/toast'
@@ -18,6 +22,7 @@ import {
   serializeAdminAlertsConfig,
   TONE_OSCILLATORS,
 } from '@/lib/admin-alerts'
+import {Icon} from '@/lib/icons'
 import {
   Button,
   Card,
@@ -30,7 +35,6 @@ import {
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useEffect, useMemo, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
-import {LowStockEmailAlertsPanel} from './low-stock-email-alerts-panel'
 
 const ALERT_LABELS: Record<AdminAlertEventKey, string> = {
   orders: 'New Orders',
@@ -260,7 +264,7 @@ export const AlertsContent = () => {
   )
 
   return (
-    <div className='flex h-[90vh] min-w-0 w-full max-w-full flex-col gap-4 overflow-y-auto pb-24'>
+    <div className='flex h-[92vh] min-w-0 w-full max-w-full flex-col gap-4 overflow-y-scroll pb-24'>
       <ContentHeader
         title={
           <div className='flex items-center space-x-4'>
@@ -268,14 +272,12 @@ export const AlertsContent = () => {
             <Switch
               isSelected={isEnabled}
               onValueChange={setIsEnabled}
-              size='sm'
-            >
+              size='sm'>
               Enable Audio
             </Switch>
           </div>
         }
-        description='Configure Tone.js audio alerts for new orders, completed payments, new user sign-ups, and new customer chat messages.'
-      >
+        description='Configure Tone.js audio alerts for new orders, completed payments, new user sign-ups, and new customer chat messages.'>
         <PrimaryButton
           onPress={handleSave}
           icon={isSaving ? 'spinners-ring' : 'save'}
@@ -292,8 +294,7 @@ export const AlertsContent = () => {
             <Card
               key={key}
               shadow='none'
-              className='rounded-2xl border border-divider bg-default-100/30'
-            >
+              className='rounded-lg border border-slate-500/60 bg-slate-300 dark:bg-dark-table'>
               <CardBody className='gap-4 p-4'>
                 <div className='flex items-center justify-between gap-3'>
                   <h3 className='text-base font-semibold'>
@@ -304,8 +305,7 @@ export const AlertsContent = () => {
                     onValueChange={(value) =>
                       setDraftField(key, 'enabled', value)
                     }
-                    size='sm'
-                  >
+                    size='sm'>
                     On
                   </Switch>
                 </div>
@@ -317,13 +317,14 @@ export const AlertsContent = () => {
                     setDraftField(key, 'notesInput', value)
                   }
                   placeholder='C5, E5, G5'
-                  description='Comma-separated Tone.js note names.'
-                  classNames={commonInputClassNames}
+                  description='Comma-separated notes.'
+                  classNames={darkInputClassNames}
                 />
 
                 <Select
+                  size='sm'
                   label='Synth'
-                  labelPlacement='outside'
+                  labelPlacement='outside-left'
                   selectedKeys={[draft.synthType]}
                   onSelectionChange={(keys) => {
                     const next = Array.from(keys)[0]
@@ -335,7 +336,7 @@ export const AlertsContent = () => {
                       )
                     }
                   }}
-                >
+                  classNames={simpleSelectClassNames}>
                   {ALERT_SYNTH_TYPES.map((synthType) => (
                     <SelectItem key={synthType}>{synthType}</SelectItem>
                   ))}
@@ -343,8 +344,9 @@ export const AlertsContent = () => {
 
                 {draft.synthType === 'basic' && (
                   <Select
+                    size='sm'
                     label='Waveform'
-                    labelPlacement='outside'
+                    labelPlacement='outside-left'
                     selectedKeys={[draft.waveform]}
                     onSelectionChange={(keys) => {
                       const next = Array.from(keys)[0]
@@ -356,7 +358,7 @@ export const AlertsContent = () => {
                         )
                       }
                     }}
-                  >
+                    classNames={simpleSelectClassNames}>
                     {TONE_OSCILLATORS.map((waveform) => (
                       <SelectItem key={waveform}>{waveform}</SelectItem>
                     ))}
@@ -371,7 +373,7 @@ export const AlertsContent = () => {
                     onValueChange={(value) =>
                       setDraftField(key, 'noteDurationMs', value)
                     }
-                    classNames={commonInputClassNames}
+                    classNames={secondaryInputClassNames}
                   />
                   <Input
                     type='number'
@@ -380,7 +382,7 @@ export const AlertsContent = () => {
                     onValueChange={(value) =>
                       setDraftField(key, 'gapMs', value)
                     }
-                    classNames={commonInputClassNames}
+                    classNames={secondaryInputClassNames}
                   />
                   <Input
                     type='number'
@@ -389,25 +391,31 @@ export const AlertsContent = () => {
                     onValueChange={(value) =>
                       setDraftField(key, 'volumeDb', value)
                     }
-                    classNames={commonInputClassNames}
+                    classNames={secondaryInputClassNames}
                   />
                 </div>
 
                 <Button
-                  variant='flat'
+                  size='sm'
+                  variant='light'
+                  radius='none'
                   onPress={() => void handleTest(key)}
                   isDisabled={!isEnabled || !draft.enabled}
-                  isLoading={testingKey === key}
-                >
-                  Test {ALERT_LABELS[key]}
+                  startContent={
+                    <Icon
+                      name={testingKey === key ? 'spinners-ring' : 'play-solid'}
+                      className='size-4'
+                    />
+                  }
+                  className='hover:bg-slate-400! dark:hover:bg-transparent! dark:hover:text-cyan-300 hover:text-orange-100 rounded-sm font-clash'>
+                  Play
+                  {/*{ALERT_LABELS[key]}*/}
                 </Button>
               </CardBody>
             </Card>
           )
         })}
       </div>
-
-      <LowStockEmailAlertsPanel />
     </div>
   )
 }
