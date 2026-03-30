@@ -4,6 +4,7 @@ import type {StoreProduct} from '@/app/types'
 import type {Id} from '@/convex/_generated/dataModel'
 import {useAddCartItem} from '@/hooks/use-add-cart-item'
 import {Icon} from '@/lib/icons'
+import {isTestProductType, TEST_PRODUCT_TYPE} from '@/lib/product-type'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {Tooltip} from '@heroui/react'
@@ -11,6 +12,7 @@ import NextImage from 'next/image'
 import NextLink from 'next/link'
 import {useRouter} from 'next/navigation'
 import {memo, type MouseEvent, useMemo, useState} from 'react'
+import ShimmerText from '../expermtl/shimmer'
 
 type ProductCardProps = {
   product: StoreProduct
@@ -177,6 +179,8 @@ const ProductCardComponent = ({
       : undefined
   const productId = product._id as Id<'products'> | undefined
   const hasMetaBeforePackSize = subcategoryLabel !== '' || netWeightLabel !== ''
+  const productTypeLabel = product.productType?.trim() ?? ''
+  const isTestProduct = isTestProductType(productTypeLabel)
 
   const handleAddToCart = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
@@ -193,12 +197,25 @@ const ProductCardComponent = ({
     void router.push(productHref)
   }
 
+  const isDemoProduct = brandLabel.toLowerCase().includes('test')
+
   return (
     <article
+      data-product-type={productTypeLabel || undefined}
+      data-test-product={isTestProduct ? 'true' : undefined}
       className={cn(
         'group relative h-fit _md:h-[340.01px] _md:min-h-[340.01px] _md:max-h-[340.01px] min-w-48 max-w-48 overflow-hidden rounded-xs bg-sidebar shadow-sm dark:bg-black sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
+        isTestProduct &&
+          'border border-orange-300/55 shadow-[0_0_0_1px_rgba(249,115,22,0.22),0_0_28px_rgba(249,115,22,0.18)] dark:border-orange-300/45',
         className,
       )}>
+      {isTestProduct ? (
+        <>
+          <div className='pointer-events-none absolute inset-[1px] z-0 rounded-[2px] border border-orange-200/35 dark:border-orange-200/20' />
+          <div className='pointer-events-none absolute inset-x-6 top-0 z-0 h-px bg-linear-to-r from-transparent via-orange-300/90 to-transparent shadow-[0_0_18px_rgba(251,146,60,0.75)]' />
+          <div className='pointer-events-none absolute inset-y-10 right-0 z-0 w-px bg-linear-to-b from-transparent via-orange-300/70 to-transparent shadow-[0_0_18px_rgba(251,146,60,0.65)]' />
+        </>
+      ) : null}
       <NextLink
         href={productHref}
         prefetch={false}
@@ -207,7 +224,24 @@ const ProductCardComponent = ({
       />
 
       <div className='flex flex-col h-fit'>
-        <div className='relative flex items-center justify-center overflow-hidden rounded-xs bg-sidebar/40 dark:bg-dark-table/40'>
+        <div
+          className={cn(
+            'relative flex items-center justify-center overflow-hidden rounded-xs bg-sidebar/40 dark:bg-dark-table/40',
+            isTestProduct &&
+              'border-b border-orange-300/60 bg-[radial-gradient(circle_at_top_left,rgba(251,146,60,0.22),transparent_42%),linear-gradient(180deg,rgba(154,52,18,0.18),transparent_52%)] dark:border-orange-300/40',
+          )}>
+          {isTestProduct ? (
+            <>
+              <div className='pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(135deg,rgba(251,146,60,0.18),transparent_38%,rgba(234,88,12,0.16)_100%)] mix-blend-screen' />
+              <div className='pointer-events-none absolute inset-0 z-10 opacity-70 bg-[linear-gradient(180deg,rgba(255,237,213,0.16)_0%,transparent_22%,transparent_78%,rgba(251,146,60,0.18)_100%)]' />
+              <div className='pointer-events-none absolute left-2 top-2 z-20 overflow-hidden rounded-xs border border-orange-300/75 bg-[linear-gradient(135deg,rgba(249,115,22,0.94),rgba(124,45,18,0.94))] px-2.5 py-1 shadow-[0_0_20px_rgba(249,115,22,0.3)] backdrop-blur-md'>
+                <div className='absolute inset-x-0 top-0 h-px bg-orange-100/80' />
+                <p className=' text-xs font-ios uppercase tracking-widest text-orange-50'>
+                  {TEST_PRODUCT_TYPE}
+                </p>
+              </div>
+            </>
+          ) : null}
           {imageSrc ? (
             <NextImage
               src={imageSrc}
@@ -225,7 +259,7 @@ const ProductCardComponent = ({
           )}
         </div>
 
-        <div className='flex flex-col border-0 border-emerald-300 h-fit'>
+        <div className='flex flex-col border-0 border-orange-300 h-fit'>
           <section
             id='info-details'
             className='relative flex shrink-0 items-start justify-between  sm:h-28 md:h-28 overflow-hidden bg-amber-200/0 p-2'>
@@ -234,18 +268,38 @@ const ProductCardComponent = ({
                 <div className=''>
                   {brandLabel && (
                     <p className='mb-1 md:mb-0.5 h-4 md:h-5 truncate text-[9px] md:text-xs font-okxs font-light capitalize tracking-wide opacity-75'>
-                      <span className='font-light'>{brandLabel}</span>
-                      {product.productType && (
+                      <span
+                        className={cn('font-light', {
+                          'font-bone font-normal text-sm tracking-widest uppercase dark:text-orange-300 -mt-2':
+                            isDemoProduct,
+                        })}>
+                        {isDemoProduct ? (
+                          <div className='bg-black pb-3 h-fit -translate-y-3 relative z-8888'>
+                            <ShimmerText text={'Demo'} surface='light' />
+                          </div>
+                        ) : (
+                          brandLabel
+                        )}
+                      </span>
+                      {productTypeLabel && !isTestProduct && (
                         <span>
                           <span className='px-1 text-[8px] font-thin opacity-80 font-okxs'>
                             &middot;
                           </span>
-                          {product.productType}
+                          {productTypeLabel}
                         </span>
                       )}
                     </p>
                   )}
                 </div>
+                {/*{isTestProduct ? (
+                  <div className='mb-1 flex items-center gap-2'>
+                    <span className='h-px w-4 bg-cyan-400/70 shadow-[0_0_12px_rgba(34,211,238,0.7)]' />
+                    <span className='font-okxs text-[9px] uppercase tracking-[0.24em] text-cyan-500 dark:text-cyan-300'>
+                      Test Product
+                    </span>
+                  </div>
+                ) : null}*/}
                 <Tooltip
                   content={product.name}
                   placement='top'
@@ -265,16 +319,20 @@ const ProductCardComponent = ({
                 <div className='whitespace-nowrap'>
                   <div className='mt-0.5 flex h-4 items-center'>
                     {tierLabel !== '' && (
-                      <span className='text-[9px] md:text-xs md:font-medium font-okxs font-medium uppercase tracking-widest opacity-70 dark:text-alum dark:opacity-100'>
-                        {tierLabel}
+                      <span className='text-[8px] md:text-xs md:font-medium font-okxs font-medium uppercase tracking-widest opacity-70 dark:text-alum dark:opacity-100'>
+                        {isDemoProduct ? 'For testing' : tierLabel}
                       </span>
                     )}
                   </div>
 
                   <div className='flex h-4 items-center whitespace-nowrap'>
                     {subcategoryLabel && (
-                      <span className='text-[9px] font-light capitalize opacity-80 dark:text-alum dark:opacity-100 md:text-sm font-okxs'>
-                        {subcategoryLabel}
+                      <span
+                        className={cn(
+                          'text-[8px] sm:text-xs font-light capitalize opacity-80 dark:text-alum dark:opacity-100 md:text-sm font-okxs',
+                          {'text-[9px]! md:font-medium': isDemoProduct},
+                        )}>
+                        {isDemoProduct ? ' USE ONLY' : subcategoryLabel}
                         {netWeightLabel && (
                           <span className='px-1 text-xs font-thin opacity-80'>
                             &middot;
@@ -284,13 +342,13 @@ const ProductCardComponent = ({
                     )}
 
                     {netWeightLabel && (
-                      <span className='text-xs font-normal lowercase opacity-80 dark:text-alum dark:opacity-100 md:text-xs font-okxs'>
+                      <span className='text-[8px] sm:text-xs font-normal lowercase opacity-80 dark:text-alum dark:opacity-100 md:text-xs font-okxs'>
                         {netWeightLabel}
                       </span>
                     )}
 
                     {packSizeLabel && (
-                      <span className='text-xs font-normal lowercase opacity-80 dark:text-alum dark:opacity-100 md:text-xs font-okxs'>
+                      <span className='text-[8px] sm:text-xs font-normal lowercase opacity-80 dark:text-alum dark:opacity-100 md:text-xs font-okxs'>
                         {hasMetaBeforePackSize && (
                           <span className='px-1 text-xs font-thin opacity-80'>
                             &middot;
@@ -304,7 +362,12 @@ const ProductCardComponent = ({
                 <div className='pointer-events-none absolute right-0 flex aspect-square font-medium h-auto grow-0 items-center justify-end overflow-hidden'>
                   {selectedOption ? (
                     <span>
-                      <span className='font-medium tracking-tighter text-[1.75rem] text-light-brand'>
+                      <span
+                        className={cn(
+                          'font-medium tracking-tighter text-[1.75rem] text-light-brand',
+                          isTestProduct &&
+                            'text-cyan-600 drop-shadow-[0_0_12px_rgba(34,211,238,0.22)] dark:text-cyan-300',
+                        )}>
                         ${selectedOption.price}
                       </span>
                     </span>
@@ -345,7 +408,12 @@ const ProductCardComponent = ({
 
             <button
               type='button'
-              className='relative active:bg-brand transition-colors duration-200 z-20 mt-1.25 rounded-xs bg-brand hover:bg-light-brand px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50'
+              className={cn(
+                'relative z-20 mt-1.25 rounded-xs px-3 py-2 text-sm font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
+                isTestProduct
+                  ? 'border border-cyan-300/60 bg-cyan-700 text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.24)] hover:bg-cyan-400 active:bg-cyan-600 dark:border-cyan-300/40 dark:bg-cyan-600 dark:text-white dark:hover:bg-cyan-500 dark:active:bg-cyan-500'
+                  : 'bg-brand text-white hover:bg-light-brand active:bg-brand',
+              )}
               disabled={!productId || !selectedOption}
               onClick={handleAddToCart}>
               <div className='group-active:scale-94 transition-transform duration-200'>

@@ -5,6 +5,7 @@ import type {StoreProduct} from '@/app/types'
 import type {Id} from '@/convex/_generated/dataModel'
 import {useAddCartItem} from '@/hooks/use-add-cart-item'
 import {Icon} from '@/lib/icons'
+import {isTestProductType, TEST_PRODUCT_TYPE} from '@/lib/product-type'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import NextLink from 'next/link'
@@ -161,6 +162,8 @@ const ProductCardGlassComponent = ({
     null
   const imageSrc = imageUrlProp ?? product.image
   const productId = product._id as Id<'products'> | undefined
+  const productTypeLabel = product.productType?.trim() ?? ''
+  const isTestProduct = isTestProductType(productTypeLabel)
 
   const handleAddToCart = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
@@ -173,13 +176,34 @@ const ProductCardGlassComponent = ({
 
   return (
     <article
+      data-product-type={productTypeLabel || undefined}
+      data-test-product={isTestProduct ? 'true' : undefined}
       className={cn(
         'group relative isolate h-[350.01px] min-h-[350.01px] max-h-[350.01px] min-w-48 max-w-48 overflow-hidden rounded-sm border border-white/15 bg-white/10 shadow-[0_18px_55px_rgba(15,23,42,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-white/3 sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
+        isTestProduct &&
+          'border-orange-300/55 shadow-[0_0_0_1px_rgba(249,115,22,0.2),0_0_30px_rgba(249,115,22,0.18),0_18px_55px_rgba(15,23,42,0.18)] dark:border-orange-300/45',
         className,
       )}>
-      <div className='pointer-events-none absolute inset-0 rounded-[inherit] rounded-tl-xs bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.34),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.16),transparent_33%)] opacity-90' />
-      <div className='pointer-events-none absolute inset-[0.5px] rounded-xs border border-white/15' />
+      <div
+        className={cn(
+          'pointer-events-none absolute inset-0 rounded-[inherit] rounded-tl-xs bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.34),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.16),transparent_33%)] opacity-90',
+          isTestProduct &&
+            'bg-[radial-gradient(circle_at_top_left,rgba(255,237,213,0.42),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(249,115,22,0.24),transparent_34%)]',
+        )}
+      />
+      <div
+        className={cn(
+          'pointer-events-none absolute inset-[0.5px] rounded-xs border border-white/15',
+          isTestProduct && 'border-orange-200/30 dark:border-orange-200/20',
+        )}
+      />
       <div className='pointer-events-none absolute inset-x-4 top-0 h-16 bg-linear-to-b from-white/28 to-transparent blur-md dark:from-white/8' />
+      {isTestProduct ? (
+        <>
+          <div className='pointer-events-none absolute inset-x-6 top-0 h-px bg-linear-to-r from-transparent via-orange-300/90 to-transparent shadow-[0_0_18px_rgba(251,146,60,0.8)]' />
+          <div className='pointer-events-none absolute bottom-0 left-4 right-4 h-px bg-linear-to-r from-transparent via-orange-400/60 to-transparent shadow-[0_0_16px_rgba(249,115,22,0.6)]' />
+        </>
+      ) : null}
 
       <NextLink
         href={productHref}
@@ -191,6 +215,20 @@ const ProductCardGlassComponent = ({
       <div className='relative flex h-full flex-col rounded-[inherit] bg-linear-to-b from-white/18 via-white/8 to-black/8 dark:from-white/5 dark:via-white/3 dark:to-black/24'>
         <div className='relative p-[0.5px] pb-0'>
           <div className='relative flex items-center justify-center overflow-hidden rounded-xs border border-white/18 border-b-0 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-md dark:border-white/10 dark:bg-black/18'>
+            {isTestProduct ? (
+              <>
+                <div className='pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(135deg,rgba(251,146,60,0.16),transparent_40%,rgba(234,88,12,0.16)_100%)] mix-blend-screen' />
+                <div className='pointer-events-none absolute left-2 top-2 z-20 overflow-hidden rounded-xs border border-orange-300/75 bg-[linear-gradient(135deg,rgba(249,115,22,0.92),rgba(124,45,18,0.94))] px-2.5 py-1 shadow-[0_0_22px_rgba(249,115,22,0.28)] backdrop-blur-md'>
+                  <div className='absolute inset-x-0 top-0 h-px bg-orange-100/80' />
+                  <p className='font-clash text-[10px] font-semibold uppercase tracking-[0.24em] text-orange-50'>
+                    {TEST_PRODUCT_TYPE}
+                  </p>
+                  <p className='font-okxs text-[9px] uppercase tracking-[0.18em] text-orange-100/80'>
+                    Sandbox
+                  </p>
+                </div>
+              </>
+            ) : null}
             <div className='pointer-events-none absolute inset-0 bg-linear-to-b from-white/14 via-transparent to-black/10' />
             {imageSrc ? (
               <img
@@ -216,17 +254,25 @@ const ProductCardGlassComponent = ({
                 {brandLabel && (
                   <p className='truncate text-xs font-light capitalize tracking-wide text-foreground/72 md:text-sm dark:text-white/72 font-okxs'>
                     <span>{brandLabel}</span>
-                    {product.productType && (
+                    {productTypeLabel && !isTestProduct && (
                       <span>
                         <span className='px-1 text-xs font-thin text-foreground/45 dark:text-white/45 font-okxs'>
                           &middot;
                         </span>
-                        {product.productType}
+                        {productTypeLabel}
                       </span>
                     )}
                   </p>
                 )}
               </div>
+              {isTestProduct ? (
+                <div className='mb-1 flex items-center gap-2'>
+                  <span className='h-px w-4 bg-orange-400/80 shadow-[0_0_12px_rgba(249,115,22,0.72)]' />
+                  <span className='font-okxs text-[9px] uppercase tracking-[0.24em] text-orange-600 dark:text-orange-300'>
+                    Test Product
+                  </span>
+                </div>
+              ) : null}
 
               <h3 className='truncate text-base capitalize leading-5 text-foreground sm:text-base md:text-lg md:leading-5 lg:text-xl lg:leading-5 dark:text-white font-clash'>
                 {product.name}
@@ -262,7 +308,12 @@ const ProductCardGlassComponent = ({
               </div>
             </div>
 
-            <div className='pointer-events-none absolute right-0 top-0 overflow-hidden rounded-xs bg-white/35 px-3 py-1 text-xl leading-none text-light-brand _shadow-[inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-md dark:bg-black/28 dark:text-light-brand md:text-2xl'>
+            <div
+              className={cn(
+                'pointer-events-none absolute right-0 top-0 overflow-hidden rounded-xs bg-white/35 px-3 py-1 text-xl leading-none text-light-brand _shadow-[inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-md dark:bg-black/28 dark:text-light-brand md:text-2xl',
+                isTestProduct &&
+                  'text-cyan-600 shadow-[0_0_18px_rgba(34,211,238,0.2)] dark:text-cyan-300',
+              )}>
               {selectedOption ? (
                 <span>
                   $<span className='font-black'>{selectedOption.price}</span>
@@ -301,7 +352,12 @@ const ProductCardGlassComponent = ({
 
             <button
               type='button'
-              className='relative z-20 mt-2.5 w-full rounded-xs border border-light-brand/20 bg-light-brand/68 px-2 py-2.5 text-sm font-medium text-dark-table shadow-[inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-md transition-colors hover:bg-brand/80 disabled:cursor-not-allowed disabled:opacity-50 dark:border-light-brand/12 dark:bg-light-brand/84 dark:text-white dark:hover:bg-light-brand/64 font-okxs'
+              className={cn(
+                'relative z-20 mt-2.5 w-full rounded-xs px-2 py-2.5 text-sm font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-md transition-colors disabled:cursor-not-allowed disabled:opacity-50 font-okxs',
+                isTestProduct
+                  ? 'border border-cyan-300/60 bg-cyan-500 text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_0_18px_rgba(34,211,238,0.22)] hover:bg-cyan-400 dark:border-cyan-300/40 dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300'
+                  : 'border border-light-brand/20 bg-light-brand/68 text-dark-table hover:bg-brand/80 dark:border-light-brand/12 dark:bg-light-brand/84 dark:text-white dark:hover:bg-light-brand/64',
+              )}
               disabled={!productId || !selectedOption}
               onClick={handleAddToCart}>
               Add to Cart
