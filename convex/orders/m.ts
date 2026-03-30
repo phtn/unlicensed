@@ -877,6 +877,7 @@ export const updateOrderStatus = mutation({
     orderId: v.id('orders'),
     status: orderStatusSchema,
     internalNotes: v.optional(v.string()),
+    updatedBy: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const order = await ctx.db.get(args.orderId)
@@ -884,19 +885,33 @@ export const updateOrderStatus = mutation({
       throw new Error('Order not found')
     }
 
+    const now = Date.now()
+    const enteredOrderProcessing =
+      args.status === 'order_processing' &&
+      order.orderStatus !== 'order_processing'
+    const shouldSyncCashAppPayment =
+      enteredOrderProcessing && order.payment.method === 'cash_app'
+    const shouldMarkCashAppPaymentCompleted =
+      shouldSyncCashAppPayment &&
+      order.payment.status !== 'completed' &&
+      order.payment.status !== 'refunded' &&
+      order.payment.status !== 'partially_refunded'
+
     const updates: {
       orderStatus: typeof args.status
       updatedAt: number
       cancelledAt?: number
       internalNotes?: string
       shipping?: typeof order.shipping
+      payment?: typeof order.payment
+      paymentSuccessEmail?: typeof order.paymentSuccessEmail
     } = {
       orderStatus: args.status,
-      updatedAt: Date.now(),
+      updatedAt: now,
     }
 
     if (args.status === 'cancelled' && order.orderStatus !== 'cancelled') {
-      updates.cancelledAt = Date.now()
+      updates.cancelledAt = now
 
       if (
         order.payment.status !== 'completed' &&
@@ -920,11 +935,79 @@ export const updateOrderStatus = mutation({
     if (args.status === 'delivered' && !order.shipping?.deliveredAt) {
       updates.shipping = {
         ...order.shipping,
-        deliveredAt: Date.now(),
+        deliveredAt: now,
       }
     }
 
+    if (shouldSyncCashAppPayment) {
+      updates.payment = {
+        ...order.payment,
+        status: shouldMarkCashAppPaymentCompleted
+          ? 'completed'
+          : order.payment.status,
+        paidAt:
+          shouldMarkCashAppPaymentCompleted && !order.payment.paidAt
+            ? now
+            : order.payment.paidAt,
+        updatedBy: args.updatedBy ?? order.payment.updatedBy,
+      }
+    }
+
+    if (shouldMarkCashAppPaymentCompleted) {
+      updates.paymentSuccessEmail =
+        isPaymentSuccessEmailEligibleMethod(order.payment.method) &&
+        order.paymentSuccessEmail?.status !== 'sent'
+          ? createPendingPaymentSuccessEmailState()
+          : order.paymentSuccessEmail
+    }
+
     await ctx.db.patch(args.orderId, updates)
+
+    if (shouldMarkCashAppPaymentCompleted && order.userId) {
+      await ctx.scheduler.runAfter(0, internal.rewards.m.awardPointsFromOrder, {
+        orderId: args.orderId,
+      })
+    }
+
+    if (shouldMarkCashAppPaymentCompleted) {
+      await ctx.scheduler.runAfter(0, internal.orders.m.deductStockForOrder, {
+        orderId: args.orderId,
+      })
+    }
+
+    if (
+      shouldMarkCashAppPaymentCompleted &&
+      isPaymentSuccessEmailEligibleMethod(order.payment.method)
+    ) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.orders.a.sendPaymentSuccessForOrder,
+        {
+          orderId: args.orderId,
+        },
+      )
+      await ctx.scheduler.runAfter(
+        0,
+        internal.activities.m.logPaymentStatusChange,
+        {
+          orderId: args.orderId,
+          previousStatus: order.payment.status,
+          newStatus: 'completed',
+          transactionId: order.payment.transactionId,
+        },
+      )
+    } else if (shouldMarkCashAppPaymentCompleted) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.activities.m.logPaymentStatusChange,
+        {
+          orderId: args.orderId,
+          previousStatus: order.payment.status,
+          newStatus: 'completed',
+          transactionId: order.payment.transactionId,
+        },
+      )
+    }
 
     // Log order status change activity
     await ctx.scheduler.runAfter(

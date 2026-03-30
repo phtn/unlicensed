@@ -1,4 +1,5 @@
 import {api} from '@/convex/_generated/api'
+import {useAuthCtx} from '@/ctx/auth'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
@@ -41,6 +42,7 @@ export const orderNumberCell = () => {
 
 export const statusCell = () => {
   const StatusCellComponent = (ctx: CellContext<Order, unknown>) => {
+    const {user} = useAuthCtx()
     const updateOrderStatus = useMutation(api.orders.m.updateOrderStatus)
     const status = ctx.getValue() as OrderStatusCode | undefined
     const [localStatus, setLocalStatus] = useState<OrderStatusCode | null>(
@@ -70,6 +72,7 @@ export const statusCell = () => {
         await updateOrderStatus({
           orderId: ctx.row.original._id,
           status: nextStatus,
+          updatedBy: user?.uid,
         })
       } catch (error) {
         console.error('Failed to update order status:', error)

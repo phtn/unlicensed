@@ -8,8 +8,8 @@ import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError} from '@/ctx/toast'
-import {Icon} from '@/lib/icons'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
+import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
 import {Badge, Button, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
@@ -70,6 +70,8 @@ export const OrdersTable = () => {
   const [chatConversationFid, setChatConversationFid] = useState<string | null>(
     null,
   )
+  const [chatConversationSelectionKey, setChatConversationSelectionKey] =
+    useState(0)
   const [isOpeningChat, setIsOpeningChat] = useState(false)
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
@@ -117,14 +119,14 @@ export const OrdersTable = () => {
     [filteredOrders],
   )
 
-  const unreadCountByFid = useMemo(() => {
+  const unreadCountByParticipantId = useMemo(() => {
     const map = new Map<string, number>()
     if (!conversations) return map
 
     for (const conversation of conversations) {
-      const fid = conversation?.otherUser?.fid
-      if (!fid) continue
-      map.set(fid, conversation.unreadCount ?? 0)
+      const participantId = conversation?.otherUserId
+      if (!participantId) continue
+      map.set(participantId, conversation.unreadCount ?? 0)
     }
 
     return map
@@ -167,6 +169,7 @@ export const OrdersTable = () => {
         }
 
         setChatConversationFid(result.customerFid)
+        setChatConversationSelectionKey((current) => current + 1)
         setIsChatWindowOpen(true)
       } catch (err) {
         onError(err instanceof Error ? err.message : 'Failed to open chat')
@@ -253,8 +256,7 @@ export const OrdersTable = () => {
                 <Link
                   prefetch
                   href={`/admin/ops/customers/${profileId}`}
-                  className='flex justify-center opacity-80 hover:opacity-100 font-okxs text-sm hover:underline underline-offset-4 decoration-dotted decoration-foreground/40 hover:decoration-blue-500 dark:hover:decoration-primary'
-                >
+                  className='flex justify-center opacity-80 hover:opacity-100 font-okxs text-sm hover:underline underline-offset-4 decoration-dotted decoration-foreground/40 hover:decoration-blue-500 dark:hover:decoration-primary'>
                   {email?.split('@').shift()}
                 </Link>
               ) : (
@@ -326,8 +328,7 @@ export const OrdersTable = () => {
             size='sm'
             variant='light'
             className='h-9 min-w-0 rounded-md px-3'
-            onPress={clearDateRange}
-          >
+            onPress={clearDateRange}>
             Clear
           </Button>
         ) : null}
@@ -343,11 +344,8 @@ export const OrdersTable = () => {
         render: ({row}) => {
           const order = row.original
           const customerProfileId = order.chatUserId ?? order.userId
-          const customerFid = customerProfileId
-            ? customerProfileIdByUserId.get(String(customerProfileId))
-            : null
-          const unreadCount = customerFid
-            ? (unreadCountByFid.get(customerFid) ?? 0)
+          const unreadCount = customerProfileId
+            ? (unreadCountByParticipantId.get(String(customerProfileId)) ?? 0)
             : 0
 
           return (
@@ -365,8 +363,7 @@ export const OrdersTable = () => {
                 classNames={{
                   badge:
                     'min-w-5 h-5 px-1 flex items-center justify-center rounded-full border-1.5 dark:border-background/90 shadow-md bg-brand/80',
-                }}
-              >
+                }}>
                 <Button
                   isIconOnly
                   size='sm'
@@ -375,8 +372,7 @@ export const OrdersTable = () => {
                   className='h-8 w-8 min-w-8 rounded-lg'
                   onPress={() => {
                     void handleOpenCustomerChat(order)
-                  }}
-                >
+                  }}>
                   <Icon name='chat' className='size-4 opacity-80' />
                 </Button>
               </Badge>
@@ -385,8 +381,7 @@ export const OrdersTable = () => {
                 size='sm'
                 variant='light'
                 className='h-8 w-8 min-w-8 rounded-lg'
-                onPress={() => handleViewOrder(order)}
-              >
+                onPress={() => handleViewOrder(order)}>
                 <Icon name='details' className='size-4' />
               </Button>
             </div>
@@ -394,11 +389,10 @@ export const OrdersTable = () => {
         },
       }) as ActionConfig<Order>,
     [
-      customerProfileIdByUserId,
       handleOpenCustomerChat,
       handleViewOrder,
       isOpeningChat,
-      unreadCountByFid,
+      unreadCountByParticipantId,
     ],
   )
 
@@ -409,6 +403,7 @@ export const OrdersTable = () => {
           open={isChatWindowOpen}
           onOpenChange={setIsChatWindowOpen}
           conversationFid={chatConversationFid}
+          conversationSelectionKey={chatConversationSelectionKey}
         />
       )}
       <DataTable

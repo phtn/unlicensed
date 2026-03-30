@@ -34,6 +34,7 @@ interface ChatDockWindowProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   conversationFid?: string | null
+  conversationSelectionKey?: number
 }
 
 type ConversationItem = {
@@ -47,12 +48,17 @@ export function ChatWindow({
   open,
   onOpenChange,
   conversationFid = null,
+  conversationSelectionKey = 0,
 }: ChatDockWindowProps) {
   const {user, setAuthModalOpen} = useAuthCtx()
   const guestChat = useGuestChatCtx()
-  const [selectedConversationFid, setSelectedConversationFid] = useState<
-    string | null | undefined
-  >(undefined)
+  const [selectedConversation, setSelectedConversation] = useState<{
+    fid: string | null | undefined
+    requestKey: number
+  }>({
+    fid: undefined,
+    requestKey: -1,
+  })
   const [assistantDraft, setAssistantDraft] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -63,14 +69,23 @@ export function ChatWindow({
       return guestConversationFid
     }
 
-    return selectedConversationFid === undefined
+    const shouldUseRequestedConversation =
+      Boolean(conversationFid) &&
+      conversationSelectionKey > selectedConversation.requestKey
+
+    if (shouldUseRequestedConversation) {
+      return conversationFid
+    }
+
+    return selectedConversation.fid === undefined
       ? conversationFid
-      : selectedConversationFid
+      : selectedConversation.fid
   }, [
     conversationFid,
+    conversationSelectionKey,
     guestConversationFid,
     isGuestFlow,
-    selectedConversationFid,
+    selectedConversation,
   ])
   const isConversationMode = Boolean(activeConversationFid)
   const activeChatFid = guestChat.activeChatFid
@@ -158,7 +173,10 @@ export function ChatWindow({
   const handleWindowOpenChange = useCallback(
     (nextOpen: boolean) => {
       if (!nextOpen) {
-        setSelectedConversationFid(undefined)
+        setSelectedConversation({
+          fid: undefined,
+          requestKey: -1,
+        })
       }
       onOpenChange(nextOpen)
     },
@@ -370,11 +388,10 @@ export function ChatWindow({
               selectedKeys={[conversationSelectValue]}
               onSelectionChange={(keys) => {
                 const key = Array.from(keys)[0] as string
-                if (key === ASSISTANT_VALUE || !key) {
-                  setSelectedConversationFid(null)
-                } else {
-                  setSelectedConversationFid(key)
-                }
+                setSelectedConversation({
+                  fid: key === ASSISTANT_VALUE || !key ? null : key,
+                  requestKey: conversationSelectionKey,
+                })
               }}
               size='sm'
               variant='flat'

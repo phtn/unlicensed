@@ -4,7 +4,7 @@ import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {useGuestChatCtx} from '@/ctx/guest-chat'
 import {useWindow} from '@/hooks/use-window'
-import {CHAT_DOCK_TOGGLE_EVENT} from '@/lib/chat-dock'
+import {CHAT_DOCK_OPEN_EVENT, CHAT_DOCK_TOGGLE_EVENT} from '@/lib/chat-dock'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Badge, Tooltip} from '@heroui/react'
@@ -51,6 +51,8 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
   const guestChat = useGuestChatCtx()
   const [isWindowOpen, setIsWindowOpen] = useState(false)
   const [hasOpenedWindow, setHasOpenedWindow] = useState(false)
+  const [conversationFid, setConversationFid] = useState<string | null>(null)
+  const [conversationSelectionKey, setConversationSelectionKey] = useState(0)
   const guestParticipant = useQuery(
     api.guests.q.getByGuestId,
     !user?.uid && guestChat.guestId ? {guestId: guestChat.guestId} : 'skip',
@@ -64,11 +66,13 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
   const handleOpenChange = useCallback((open: boolean) => {
     if (open) {
       setHasOpenedWindow(true)
+    } else {
+      setConversationFid(null)
     }
     setIsWindowOpen(open)
   }, [])
 
-  const {toggle} = useWindow({
+  const {open, toggle} = useWindow({
     isOpen: isWindowOpen,
     onOpenChange: handleOpenChange,
     hotkey: 'k',
@@ -78,12 +82,22 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
     const handleToggle = () => {
       toggle()
     }
+    const handleOpen = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        conversationFid?: string | null
+      }>
+      setConversationFid(customEvent.detail?.conversationFid ?? null)
+      setConversationSelectionKey((current) => current + 1)
+      open()
+    }
 
     window.addEventListener(CHAT_DOCK_TOGGLE_EVENT, handleToggle)
+    window.addEventListener(CHAT_DOCK_OPEN_EVENT, handleOpen)
     return () => {
       window.removeEventListener(CHAT_DOCK_TOGGLE_EVENT, handleToggle)
+      window.removeEventListener(CHAT_DOCK_OPEN_EVENT, handleOpen)
     }
-  }, [toggle])
+  }, [open, toggle])
 
   useEffect(() => {
     if (hidden) return
@@ -124,7 +138,12 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
   return (
     <>
       {hasOpenedWindow && (
-        <ChatWindow open={isWindowOpen} onOpenChange={handleOpenChange} />
+        <ChatWindow
+          open={isWindowOpen}
+          onOpenChange={handleOpenChange}
+          conversationFid={conversationFid}
+          conversationSelectionKey={conversationSelectionKey}
+        />
       )}
 
       {!hidden && (

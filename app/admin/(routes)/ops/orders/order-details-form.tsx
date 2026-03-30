@@ -2,6 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
+import {useAuthCtx} from '@/ctx/auth'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Chip, ChipProps, Textarea, User} from '@heroui/react'
@@ -38,6 +39,7 @@ export function OrderDetailsForm({
   const router = useRouter()
   const orderDetailsContext = useOrderDetailsSafe()
   const settingsPanelContext = useSettingsPanelSafe()
+  const {user: authUser} = useAuthCtx()
   const updateOrderStatus = useMutation(api.orders.m.updateOrderStatus)
 
   const [remarks, setRemarks] = useState(order.internalNotes || '')
@@ -55,6 +57,7 @@ export function OrderDetailsForm({
         orderId: order._id,
         status: order.orderStatus,
         internalNotes: remarks || undefined,
+        updatedBy: authUser?.uid,
       })
       // If in panel context, close panel; otherwise navigate back
       if (settingsPanelContext) {

@@ -5,12 +5,12 @@ import {Confetti} from '@/components/magicui/confetti'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
-import {toggleChatDockWindow} from '@/lib/chat-dock'
+import {openChatDockWindow} from '@/lib/chat-dock'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Chip, Divider} from '@heroui/react'
+import {Badge, Button, Chip, Divider} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useParams} from 'next/navigation'
@@ -96,6 +96,10 @@ export const Content = () => {
     api.users.q.getCurrentUser,
     user?.uid ? {fid: user.uid} : 'skip',
   )
+  const conversations = useQuery(
+    api.messages.q.getConversations,
+    user?.uid ? {fid: user.uid} : 'skip',
+  )
   const salesRepSetting = useQuery(api.admin.q.getAdminByIdentifier, {
     identifier: 'sales-rep',
   })
@@ -146,6 +150,18 @@ export const Content = () => {
     api.assistant.q.getAssistantMessages,
     user?.uid ? {fid: user.uid} : 'skip',
   )
+
+  const unreadRepCount = useMemo(() => {
+    if (!assignedRepFid || !conversations) return 0
+
+    const conversation = conversations.find(
+      (item) =>
+        item.otherUser?.fid === assignedRepFid ||
+        item.otherUser?.proId === assignedRepFid,
+    )
+
+    return conversation?.unreadCount ?? 0
+  }, [assignedRepFid, conversations])
 
   const isOrderOwner = useMemo(() => {
     if (!order || !currentUser) return false
@@ -587,6 +603,12 @@ export const Content = () => {
     })
   }
 
+  const handleOpenChat = () => {
+    openChatDockWindow({
+      conversationFid: assignedRepFid,
+    })
+  }
+
   useEffect(() => {
     if (!order) return
 
@@ -763,14 +785,31 @@ export const Content = () => {
               Retry Rep Assignment
             </Button>
           ) : (
-            <Button
-              size='lg'
-              color='primary'
-              className='font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
-              onPress={toggleChatDockWindow}
-              endContent={<Icon name='chat' className='size-5' />}>
-              {setupState === 'ready' ? 'Open Live Chat' : 'Open Chat'}
-            </Button>
+            <Badge
+              key={`cashapp-chat-badge-${orderId}-${unreadRepCount}`}
+              content={
+                unreadRepCount > 0 ? (
+                  <span className='font-okxs font-semibold text-white leading-none'>
+                    {unreadRepCount > 99 ? '99+' : unreadRepCount}
+                  </span>
+                ) : undefined
+              }
+              isInvisible={unreadRepCount === 0}
+              className='w-full'
+              classNames={{
+                base: 'w-full',
+                badge:
+                  'min-w-5 h-5 px-1 flex items-center justify-center rounded-full border-1.5 dark:border-background/90 shadow-md bg-brand/80',
+              }}>
+              <Button
+                size='lg'
+                color='primary'
+                className='w-full font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
+                onPress={handleOpenChat}
+                endContent={<Icon name='chat' className='size-5' />}>
+                {setupState === 'ready' ? 'Open Live Chat' : 'Open Chat'}
+              </Button>
+            </Badge>
           )}
         </div>
       </ArcCard>

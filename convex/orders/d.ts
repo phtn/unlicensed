@@ -79,6 +79,7 @@ export const paymentSchema = v.object({
   nativeValue: v.optional(v.number()), // Amount paid in asset units
   usdValue: v.optional(v.number()), // USD equivalent of nativeValue
   paidAt: v.optional(v.number()), // Timestamp when payment was completed
+  updatedBy: v.optional(v.string()), // Admin/user who manually updated payment state
   refundedAt: v.optional(v.number()), // Timestamp when refund was issued
   refundAmountCents: v.optional(v.number()), // Amount refunded in cents
   gatewayId: v.optional(v.string()), // Gateway ID

@@ -2,6 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import type {OrderStatus} from '@/convex/orders/d'
+import {useAuthCtx} from '@/ctx/auth'
 import {useCopy} from '@/hooks/use-copy'
 import {Icon} from '@/lib/icons'
 import {Button, Card, Select, SelectItem} from '@heroui/react'
@@ -27,6 +28,7 @@ interface ContentProps {
 export const Content = ({orderNumber}: ContentProps) => {
   const order = useQuery(api.orders.q.getOrderByNumber, {orderNumber})
   const router = useRouter()
+  const {user} = useAuthCtx()
   const updateOrderStatus = useMutation(api.orders.m.updateOrderStatus)
   const {copy, copied} = useCopy({timeout: 2000})
 
@@ -102,6 +104,7 @@ export const Content = ({orderNumber}: ContentProps) => {
                   updateOrderStatus({
                     orderId: order._id,
                     status: selected,
+                    updatedBy: user?.uid,
                   })
               }}
               aria-label='Order status'>
