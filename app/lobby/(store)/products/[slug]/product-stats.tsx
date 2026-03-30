@@ -1,21 +1,29 @@
 import {StoreProduct} from '@/app/types'
 import {Icon} from '@/lib/icons'
-import {formatStockDisplay} from '@/lib/productStock'
+import {
+  formatStockDisplay,
+  getAvailableCartQuantityForDenomination,
+} from '@/lib/productStock'
 import {Badge, Tooltip} from '@heroui/react'
 
 interface ProductDetailStatsProps {
   product: StoreProduct
   quantityInCart: number
-  denominationKey: string
+  denomination?: number
   availableQuantity?: number
 }
 
 export const ProductDetailStats = ({
   product,
   quantityInCart,
-  denominationKey,
+  denomination,
   availableQuantity,
 }: ProductDetailStatsProps) => {
+  const fallbackAvailableQuantity = getAvailableCartQuantityForDenomination(
+    product,
+    denomination,
+  )
+
   return (
     <div className='hidden md:flex items-center h-14 border-b border-background/20 bg-background/60 overflow-hidden justify-between gap-1 pl-4 md:w-full'>
       <span className='w-16 md:w-20 text-xs font-clash tracking-widest'>
@@ -76,8 +84,9 @@ export const ProductDetailStats = ({
         <span className='opacity-0 text-[9px] w-16 md:w-20 text-sm whitespace-nowrap capitalize'>
           <span className='font-polysans font-semibold text-base'>
             {availableQuantity ??
-              product.stockByDenomination?.[denominationKey] ??
-              formatStockDisplay(product)}
+              (denomination !== undefined
+                ? fallbackAvailableQuantity
+                : formatStockDisplay(product))}
           </span>{' '}
           left
         </span>

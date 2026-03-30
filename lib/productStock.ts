@@ -7,6 +7,7 @@ export type InventoryMode = (typeof INVENTORY_MODES)[number]
 export type NormalizedInventoryMode = 'by_denomination' | 'shared'
 
 export type InventoryProductLike = {
+  availableDenominations?: number[]
   inventoryMode?: string
   masterStockQuantity?: number
   masterStockUnit?: string
@@ -59,6 +60,7 @@ const COUNT_UNIT_ALIASES: Record<string, 'units'> = {
 }
 
 const STOCK_PRECISION = 1_000_000
+const STOCK_EPSILON = 1 / STOCK_PRECISION
 
 type CountUnit = 'units'
 type NormalizedInventoryUnit =
@@ -157,6 +159,12 @@ export function usesSharedWeightInventory(product: unknown): boolean {
   )
 }
 
+export function usesSharedInventoryPool(product: unknown): boolean {
+  if (product == null || typeof product !== 'object') return false
+  const p = product as InventoryProductLike
+  return normalizeInventoryMode(p.inventoryMode) === 'shared'
+}
+
 export function getSharedWeightLineQuantity(
   product: unknown,
   denomination: number | undefined,
@@ -174,10 +182,54 @@ export function getSharedWeightLineQuantity(
   )
 }
 
+function getSmallestDenomination(product: InventoryProductLike): number | null {
+  const values = (product.availableDenominations ?? []).filter(
+    (value) => Number.isFinite(value) && value > 0,
+  )
+  if (values.length === 0) return null
+  return Math.min(...values)
+}
+
+export function getSharedInventoryLineQuantity(
+  product: unknown,
+  denomination: number | undefined,
+  quantity: number,
+): number | null {
+  if (!usesSharedInventoryPool(product)) {
+    return null
+  }
+
+  const sharedWeightQuantity = getSharedWeightLineQuantity(
+    product,
+    denomination,
+    quantity,
+  )
+  if (sharedWeightQuantity != null) {
+    return sharedWeightQuantity
+  }
+
+  const p = product as InventoryProductLike
+  const normalizedMasterStockUnit = normalizeInventoryUnit(p.masterStockUnit)
+  if (normalizedMasterStockUnit?.kind !== 'count') {
+    return null
+  }
+
+  if (denomination === undefined) {
+    return roundStockQuantity(quantity)
+  }
+
+  const smallestDenomination = getSmallestDenomination(p)
+  if (smallestDenomination == null) {
+    return roundStockQuantity(quantity)
+  }
+
+  return roundStockQuantity((denomination / smallestDenomination) * quantity)
+}
+
 export function getStockDisplayUnit(product: unknown): string | null {
   if (product == null || typeof product !== 'object') return null
   const p = product as InventoryProductLike
-  if (usesSharedWeightInventory(p)) {
+  if (usesSharedInventoryPool(p)) {
     return normalizeInventoryUnit(p.masterStockUnit)?.unit ?? null
   }
   return null
@@ -192,6 +244,55 @@ export function formatStockDisplay(product: unknown): string {
   return unit ? `${value} ${unit}` : value
 }
 
+export function getStockForDenomination(
+  product: unknown,
+  denomination: number | undefined,
+): number {
+  if (product == null || typeof product !== 'object') return 0
+  const p = product as InventoryProductLike
+
+  if (normalizeInventoryMode(p.inventoryMode) === 'shared') {
+    return Math.max(0, roundStockQuantity(p.masterStockQuantity ?? 0))
+  }
+
+  const denomKey = denomination !== undefined ? String(denomination) : null
+  if (p.stockByDenomination != null && denomKey != null) {
+    return Math.max(0, roundStockQuantity(p.stockByDenomination[denomKey] ?? 0))
+  }
+
+  return getTotalStock(p)
+}
+
+export function getAvailableCartQuantityForDenomination(
+  product: unknown,
+  denomination: number | undefined,
+  availableStock = getStockForDenomination(product, denomination),
+): number {
+  if (product == null || typeof product !== 'object') return 0
+
+  const normalizedAvailableStock = Math.max(
+    0,
+    roundStockQuantity(availableStock),
+  )
+  const inventoryMode = normalizeInventoryMode(
+    (product as InventoryProductLike).inventoryMode,
+  )
+
+  if (inventoryMode !== 'shared') {
+    return normalizedAvailableStock
+  }
+
+  const lineQuantity = getSharedInventoryLineQuantity(product, denomination, 1)
+  if (lineQuantity == null || lineQuantity <= 0) {
+    return normalizedAvailableStock
+  }
+
+  return Math.max(
+    0,
+    Math.floor((normalizedAvailableStock + STOCK_EPSILON) / lineQuantity),
+  )
+}
+
 /**
  * Product stock can be stored as:
  * - a shared master weight pool (`masterStockQuantity` + `masterStockUnit`)
@@ -202,7 +303,7 @@ export function getTotalStock(product: unknown): number {
   if (product == null || typeof product !== 'object') return 0
   const p = product as InventoryProductLike
 
-  if (usesSharedWeightInventory(p)) {
+  if (usesSharedInventoryPool(p)) {
     return Math.max(0, roundStockQuantity(p.masterStockQuantity ?? 0))
   }
 

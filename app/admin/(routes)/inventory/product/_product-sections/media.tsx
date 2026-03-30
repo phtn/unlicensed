@@ -9,8 +9,8 @@ import {useStorageUpload} from '@/hooks/use-storage-upload'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Drawer, DrawerContent, DrawerHeader, Image} from '@heroui/react'
-import type {ReadonlyStore} from '@tanstack/store'
 import {useStore} from '@tanstack/react-store'
+import type {ReadonlyStore} from '@tanstack/store'
 import {useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {ProductFormValues} from '../product-schema'
@@ -102,7 +102,6 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
       handleDragLeave,
       handleDragOver,
       handleDrop,
-      openFileDialog,
       getInputProps,
     },
   ] = useFileUpload({
@@ -240,6 +239,20 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
         : [...galleryValue, storageId]
 
       form.setFieldValue('gallery', nextGallery)
+    },
+    [form, galleryValue],
+  )
+
+  const removeGalleryItem = useCallback(
+    (storageId: string) => {
+      if (!galleryValue.includes(storageId)) {
+        return
+      }
+
+      form.setFieldValue(
+        'gallery',
+        galleryValue.filter((id) => id !== storageId),
+      )
     },
     [form, galleryValue],
   )
@@ -393,9 +406,24 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
         return
       }
 
+      if (storageId === primaryImageValue) {
+        return
+      }
+
       toggleGalleryItem(storageId)
     },
-    [libraryTarget, setPrimaryImage, toggleGalleryItem],
+    [libraryTarget, primaryImageValue, setPrimaryImage, toggleGalleryItem],
+  )
+
+  const setLeadFromLibrary = useCallback(
+    (storageId: string) => {
+      setPrimaryImage(storageId)
+
+      if (libraryTarget === 'primary') {
+        setIsLibraryOpen(false)
+      }
+    },
+    [libraryTarget, setPrimaryImage],
   )
 
   const displayImages = useMemo(() => {
@@ -511,39 +539,31 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
-            onDrop={handleDrop}
-          >
+            onDrop={handleDrop}>
             <input {...getInputProps()} className='sr-only' />
 
             <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
               <div className='flex items-start gap-4'>
                 <div
                   className={cn(
-                    'flex size-14 shrink-0 items-center justify-center rounded-full',
+                    'flex size-10 shrink-0 items-center justify-center rounded-lg',
                     isDragging ? 'bg-blue-500/10' : 'bg-foreground/5',
-                  )}
-                >
+                  )}>
                   <Icon
-                    name='image-open-light'
+                    name='image-plus-light'
                     className={cn(
-                      'size-5',
+                      'size-8',
                       isDragging ? 'text-blue-500' : 'text-foreground/60',
                     )}
                   />
                 </div>
 
-                <div className='space-y-1.5'>
+                <div className='space-y-0.5'>
                   <h3 className='text-base font-semibold'>
-                    Upload product images
+                    Upload Product Images
                   </h3>
                   <p className='text-sm text-foreground/70'>
-                    Drag images here or browse files. The first uploaded image
-                    fills the primary slot when it is empty, and the rest are
-                    attached to the product gallery.
-                  </p>
-                  <p className='text-xs text-foreground/55'>
-                    Use Browse below to pick from the optimized shared media
-                    library.
+                    Select images from the product gallery.
                   </p>
                 </div>
               </div>
@@ -553,9 +573,8 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                 variant='flat'
                 className='rounded-lg dark:bg-blue-500 dark:text-white'
                 endContent={<Icon name='image-plus-light' className='size-4' />}
-                onPress={openFileDialog}
-              >
-                Select images
+                onPress={() => openLibrary('gallery')}>
+                Select Primary Image
               </Button>
             </div>
 
@@ -599,8 +618,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                           'border-red-500/40': isError,
                           'border-foreground/10': !isUploading && !isError,
                         },
-                      )}
-                    >
+                      )}>
                       <div className='relative aspect-square overflow-hidden bg-foreground/5'>
                         {item.preview ? (
                           <Image
@@ -629,8 +647,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                           <button
                             type='button'
                             onClick={() => dismissQueuedFile(item.id)}
-                            className='absolute right-2 top-2 rounded-full bg-black/55 p-1.5 text-white transition-colors hover:bg-black/75'
-                          >
+                            className='absolute right-2 top-2 rounded-full bg-black/55 p-1.5 text-white transition-colors hover:bg-black/75'>
                             <Icon name='x' size={14} />
                           </button>
                         ) : null}
@@ -669,8 +686,8 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
               <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
                 <div className='space-y-1'>
                   <div className='flex flex-wrap items-center gap-2'>
-                    <h3 className='text-sm font-semibold'>Selected media</h3>
-                    <span className='rounded-full border border-foreground/10 bg-background/80 px-2 py-0.5 text-[11px] text-foreground/60'>
+                    <h3 className='text-sm font-semibold'>Selected Media</h3>
+                    <span className='bg-background/80 px-2 py-0.5 text-sm text-mac-blue'>
                       {displayMediaItems.length} total
                     </span>
                     {remainingMediaCount > 0 ? (
@@ -679,10 +696,6 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                       </span>
                     ) : null}
                   </div>
-                  <p className='text-xs text-foreground/55'>
-                    On mobile, gallery slots stack below the primary image and
-                    scroll horizontally.
-                  </p>
                 </div>
 
                 <div className='flex flex-wrap gap-2'>
@@ -690,30 +703,20 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                     size='sm'
                     radius='none'
                     variant='flat'
-                    endContent={<Icon name='image-open-light' className='size-4' />}
-                    className='rounded-lg dark:bg-blue-500 dark:text-white'
-                    onPress={() => openLibrary('primary')}
-                  >
-                    Browse lead
-                  </Button>
-                  <Button
-                    size='sm'
-                    radius='none'
-                    variant='flat'
-                    endContent={<Icon name='image-plus-light' className='size-4' />}
+                    endContent={
+                      <Icon name='image-open-light' className='size-5' />
+                    }
                     className='rounded-lg'
-                    onPress={() => openLibrary('gallery')}
-                  >
-                    Add gallery
+                    onPress={() => openLibrary('gallery')}>
+                    Add Gallery Images
                   </Button>
                   {primaryImageValue ? (
                     <Button
                       size='sm'
                       variant='light'
                       className='bg-light-gray/0 dark:bg-transparent'
-                      onPress={clearPrimaryImage}
-                    >
-                      Clear lead
+                      onPress={clearPrimaryImage}>
+                      Clear Primary
                     </Button>
                   ) : null}
                 </div>
@@ -744,7 +747,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                         </div>
                       )}
 
-                      <div className='absolute left-3 top-3 rounded bg-blue-600 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-white'>
+                      <div className='absolute left-3 top-3 rounded bg-blue-600 px-2 py-1 text-xs font-medium uppercase tracking-[0.12em] text-white'>
                         Lead
                       </div>
 
@@ -752,8 +755,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                         type='button'
                         onClick={clearPrimaryImage}
                         className='absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-red-500'
-                        aria-label='Clear lead image'
-                      >
+                        aria-label='Clear lead image'>
                         <Icon name='x' size={14} />
                       </button>
 
@@ -769,18 +771,14 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                   ) : (
                     <button
                       type='button'
-                      onClick={() => openLibrary('primary')}
-                      className='flex aspect-square w-full max-w-40 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-foreground/20 bg-background/50 px-4 text-center transition-colors hover:border-blue-500/50 hover:bg-blue-500/5 sm:max-w-48 md:max-w-none'
-                    >
+                      onClick={() => openLibrary('gallery')}
+                      className='flex aspect-square w-full max-w-40 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-foreground/20 bg-background/50 px-4 text-center transition-colors hover:border-blue-500/50 hover:bg-blue-500/5 sm:max-w-48 md:max-w-none'>
                       <div className='flex size-11 items-center justify-center rounded-full bg-foreground/5 text-foreground/70'>
                         <Icon name='image-plus-light' className='size-5' />
                       </div>
                       <div className='space-y-1'>
                         <p className='text-sm font-semibold'>
                           Select primary image
-                        </p>
-                        <p className='text-xs text-foreground/55'>
-                          Choose the lead asset for this product first.
                         </p>
                       </div>
                     </button>
@@ -811,8 +809,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                               key={`empty-slot-${index}`}
                               type='button'
                               onClick={() => openLibrary('gallery')}
-                              className='group relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl border border-dashed border-foreground/20 bg-background/50 text-left transition-colors hover:border-blue-500/50 hover:bg-blue-500/5 sm:w-auto'
-                            >
+                              className='group relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl border border-dashed border-foreground/20 bg-background/50 text-left transition-colors hover:border-blue-500/50 hover:bg-blue-500/5 sm:w-auto'>
                               <div className='flex size-full flex-col items-center justify-center gap-2 text-foreground/45'>
                                 <Icon
                                   name='image-plus-light'
@@ -829,8 +826,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                         return (
                           <div
                             key={item.storageId}
-                            className='group relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl border border-foreground/10 bg-background sm:w-auto'
-                          >
+                            className='group relative aspect-square w-28 shrink-0 overflow-hidden rounded-xl border border-foreground/10 bg-background sm:w-auto'>
                             {item.preview ? (
                               <Image
                                 src={item.preview}
@@ -856,16 +852,16 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                               <button
                                 type='button'
                                 onClick={() => setPrimaryImage(item.storageId)}
-                                className='rounded-full bg-black/55 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-white transition-colors hover:bg-blue-600'
-                              >
+                                className='rounded-full bg-black/55 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-white transition-colors hover:bg-blue-600'>
                                 Lead
                               </button>
                               <button
                                 type='button'
-                                onClick={() => toggleGalleryItem(item.storageId)}
+                                onClick={() =>
+                                  removeGalleryItem(item.storageId)
+                                }
                                 className='flex size-7 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-red-500'
-                                aria-label={`Remove ${item.label.toLowerCase()}`}
-                              >
+                                aria-label={`Remove ${item.label.toLowerCase()}`}>
                                 <Icon name='x' size={12} />
                               </button>
                             </div>
@@ -900,8 +896,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
         placement='right'
         isOpen={isLibraryOpen}
         onOpenChange={setIsLibraryOpen}
-        size='5xl'
-      >
+        size='5xl'>
         <DrawerContent className='max-w-6xl bg-background p-0'>
           <DrawerHeader className='border-b border-foreground/10'>
             <div className='flex w-full items-center justify-between gap-3'>
@@ -910,16 +905,14 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                   Media Library
                 </p>
                 <p className='text-sm text-foreground/70'>
-                  {libraryTarget === 'primary'
-                    ? 'Choose one image for the primary slot.'
-                    : 'Select or remove gallery images by clicking them.'}
+                  Click any image to add it to the gallery. Use Lead to promote
+                  an image, or remove it from the top-right button.
                 </p>
               </div>
               <Button
                 size='sm'
                 variant='flat'
-                onPress={() => setIsLibraryOpen(false)}
-              >
+                onPress={() => setIsLibraryOpen(false)}>
                 Done
               </Button>
             </div>
@@ -952,8 +945,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                         isActive
                           ? 'bg-blue-500/10 text-blue-500'
                           : 'hover:bg-foreground/5',
-                      )}
-                    >
+                      )}>
                       <span className='truncate'>
                         {titleCaseTag(group.tag)}
                       </span>
@@ -995,26 +987,47 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
 
                   <div className='grid max-h-[calc(100vh-16rem)] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 lg:grid-cols-4'>
                     {activeGroup.items.map((item) => {
+                      const itemLabel = item.caption?.trim() || item.storageId
+                      const isLead = item.storageId === primaryImageValue
                       const isSelected =
                         libraryTarget === 'primary'
-                          ? item.storageId === primaryImageValue
+                          ? isLead
                           : galleryValue.includes(item.storageId)
+                      const isActive = isLead || isSelected
 
                       return (
-                        <button
+                        <div
                           key={item.storageId}
-                          type='button'
+                          role='button'
+                          tabIndex={0}
                           onClick={() => selectLibraryImage(item.storageId)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault()
+                              selectLibraryImage(item.storageId)
+                            }
+                          }}
+                          aria-label={
+                            libraryTarget === 'primary'
+                              ? `Select ${itemLabel} as primary image`
+                              : isLead
+                                ? `${itemLabel} is the current lead image`
+                                : isSelected
+                                  ? `Remove ${itemLabel} from gallery`
+                                  : `Add ${itemLabel} to gallery`
+                          }
+                          aria-pressed={
+                            libraryTarget === 'gallery' ? isActive : undefined
+                          }
                           className={cn(
-                            'group relative overflow-hidden rounded-xl border-2 text-left transition-all',
+                            'group relative overflow-hidden rounded-xl border-2 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40',
                             {
                               'border-blue-500 ring-2 ring-blue-500/40':
-                                isSelected,
+                                isActive,
                               'border-foreground/20 hover:border-foreground/40':
-                                !isSelected,
+                                !isActive,
                             },
-                          )}
-                        >
+                          )}>
                           {item.url ? (
                             <Image
                               src={item.url}
@@ -1028,18 +1041,58 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                             </div>
                           )}
 
-                          <div className='absolute inset-x-0 bottom-0 truncate bg-black/50 px-2 py-1 text-[10px] text-white'>
-                            {item.caption?.trim() || item.storageId}
+                          <div className='pointer-events-none absolute inset-x-0 bottom-0 truncate bg-black/50 px-2 py-1 text-[10px] text-white'>
+                            {itemLabel}
                           </div>
 
-                          {isSelected ? (
-                            <div className='absolute left-1.5 top-1.5 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-medium uppercase text-white'>
-                              {libraryTarget === 'primary'
-                                ? 'Selected'
-                                : 'Added'}
+                          {isActive ? (
+                            <div className='pointer-events-none absolute left-1.5 top-1.5 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-medium uppercase text-white'>
+                              {isLead
+                                ? 'Lead'
+                                : libraryTarget === 'primary'
+                                  ? 'Selected'
+                                  : 'Added'}
                             </div>
                           ) : null}
-                        </button>
+
+                          <div className='absolute right-1.5 top-1.5 z-20 flex gap-1.5'>
+                            <button
+                              type='button'
+                              onClick={(event) => {
+                                event.preventDefault()
+                                event.stopPropagation()
+                                setLeadFromLibrary(item.storageId)
+                              }}
+                              disabled={isLead}
+                              className={cn(
+                                'rounded-full px-2 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-white transition-colors',
+                                isLead
+                                  ? 'cursor-default bg-blue-600'
+                                  : 'bg-black/60 hover:bg-blue-600',
+                              )}
+                              aria-label={
+                                isLead
+                                  ? `${itemLabel} is already the lead image`
+                                  : `Set ${itemLabel} as the lead image`
+                              }>
+                              Lead
+                            </button>
+
+                            {isSelected && !isLead ? (
+                              <button
+                                type='button'
+                                onClick={(event) => {
+                                  event.preventDefault()
+                                  event.stopPropagation()
+                                  removeGalleryItem(item.storageId)
+                                }}
+                                className='flex size-7 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-500'
+                                aria-label={`Remove ${itemLabel} from gallery`}>
+                                <Icon name='x' size={12} />
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
                       )
                     })}
                   </div>

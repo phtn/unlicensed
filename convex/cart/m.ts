@@ -1,9 +1,9 @@
 import {v} from 'convex/values'
 import {
-  getSharedWeightLineQuantity,
-  getTotalStock,
+  getSharedInventoryLineQuantity,
+  getStockForDenomination,
   roundStockQuantity,
-  usesSharedWeightInventory,
+  usesSharedInventoryPool,
 } from '../../lib/productStock'
 import type {Doc, Id} from '../_generated/dataModel'
 import type {MutationCtx} from '../_generated/server'
@@ -19,7 +19,7 @@ function getInventoryAvailabilityKey(
   product: ProductDoc,
   denomination: number | undefined,
 ): string {
-  if (usesSharedWeightInventory(product)) {
+  if (usesSharedInventoryPool(product)) {
     return String(product._id)
   }
 
@@ -31,22 +31,16 @@ function getRequestedInventoryQuantity(
   quantity: number,
   denomination: number | undefined,
 ): number {
-  const sharedWeightQuantity = getSharedWeightLineQuantity(
-    product,
-    denomination,
-    quantity,
+  return (
+    getSharedInventoryLineQuantity(product, denomination, quantity) ?? quantity
   )
-
-  return sharedWeightQuantity ?? quantity
 }
 
-async function getProductStock(
-  ctx: MutationCtx,
-  productId: Id<'products'>,
-): Promise<number> {
-  const product = await ctx.db.get(productId)
-  if (!product) return 0
-  return getTotalStock(product)
+function getProductStock(
+  product: ProductDoc,
+  denomination: number | undefined,
+): number {
+  return getStockForDenomination(product, denomination)
 }
 
 async function getHeldQuantity(
@@ -54,7 +48,7 @@ async function getHeldQuantity(
   product: ProductDoc,
   denomination: number | undefined,
 ): Promise<number> {
-  const holds = usesSharedWeightInventory(product)
+  const holds = usesSharedInventoryPool(product)
     ? await ctx.db
         .query('productHolds')
         .withIndex('by_product', (q) => q.eq('productId', product._id))
@@ -95,7 +89,7 @@ async function getOurHold(
   const match = holds.find(
     (h) => h.productId === product._id && h.denomination === denomination,
   )
-  const relevantHolds = usesSharedWeightInventory(product)
+  const relevantHolds = usesSharedInventoryPool(product)
     ? holds.filter((h) => h.productId === product._id)
     : holds.filter(
         (h) => h.productId === product._id && h.denomination === denomination,
@@ -173,7 +167,7 @@ export const addToCart = mutation({
       throw new Error('Product not found')
     }
 
-    const stock = await getProductStock(ctx, args.productId)
+    const stock = getProductStock(product, args.denomination)
     const heldTotal = await getHeldQuantity(ctx, product, args.denomination)
     const ourHold = await getOurHold(ctx, cart._id, product, args.denomination)
     const required = getRequestedInventoryQuantity(
@@ -319,7 +313,7 @@ export const addBundleToCart = mutation({
     }
 
     for (const {product, denomination, required} of requiredByKey.values()) {
-      const stock = await getProductStock(ctx, product._id)
+      const stock = getProductStock(product, denomination)
       const heldTotal = await getHeldQuantity(ctx, product, denomination)
       const ourHold = await getOurHold(ctx, cart._id, product, denomination)
       const available = stock - heldTotal + ourHold.reservedQuantity
@@ -608,7 +602,7 @@ export const updateCartItem = mutation({
         throw new Error('Product not found')
       }
 
-      const stock = await getProductStock(ctx, args.productId)
+      const stock = getProductStock(product, args.denomination)
       const heldTotal = await getHeldQuantity(ctx, product, args.denomination)
       const ourHold = await getOurHold(
         ctx,

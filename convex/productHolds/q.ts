@@ -1,5 +1,37 @@
 import {v} from 'convex/values'
+import {
+  getAvailableCartQuantityForDenomination,
+  getSharedInventoryLineQuantity,
+  getStockForDenomination,
+  normalizeInventoryMode,
+  roundStockQuantity,
+} from '../../lib/productStock'
 import {query} from '../_generated/server'
+
+const getHeldQuantity = (
+  product: {
+    inventoryMode?: string
+    masterStockQuantity?: number
+    masterStockUnit?: string
+    unit?: string
+  },
+  holds: Array<{denomination?: number; quantity: number; expiresAt: number}>,
+  now: number,
+) =>
+  roundStockQuantity(
+    holds
+      .filter((hold) => hold.expiresAt > now)
+      .reduce(
+        (sum, hold) =>
+          sum +
+          (getSharedInventoryLineQuantity(
+            product,
+            hold.denomination,
+            hold.quantity,
+          ) ?? hold.quantity),
+        0,
+      ),
+  )
 
 /**
  * Returns available quantity for a product and denomination (stock minus active holds).
@@ -15,33 +47,29 @@ export const getAvailableQuantity = query({
     if (!product) return 0
 
     const now = Date.now()
-    const denomKey =
-      args.denomination !== undefined ? String(args.denomination) : null
+    const stock = getStockForDenomination(product, args.denomination)
+    const holds =
+      normalizeInventoryMode(product.inventoryMode) === 'shared'
+        ? await ctx.db
+            .query('productHolds')
+            .withIndex('by_product', (q) => q.eq('productId', args.productId))
+            .collect()
+        : await ctx.db
+            .query('productHolds')
+            .withIndex('by_product_denom', (q) =>
+              q
+                .eq('productId', args.productId)
+                .eq('denomination', args.denomination),
+            )
+            .collect()
+    const held = getHeldQuantity(product, holds, now)
+    const remainingStock = Math.max(0, roundStockQuantity(stock - held))
 
-    let stock: number
-    if (product.stockByDenomination != null && denomKey != null) {
-      stock = product.stockByDenomination[denomKey] ?? 0
-    } else if (product.stockByDenomination != null) {
-      stock = (Object.values(product.stockByDenomination) as number[]).reduce(
-        (a, b) => a + b,
-        0,
-      )
-    } else {
-      stock = product.stock ?? 0
-    }
-
-    const holds = await ctx.db
-      .query('productHolds')
-      .withIndex('by_product_denom', (q) =>
-        q.eq('productId', args.productId).eq('denomination', args.denomination),
-      )
-      .collect()
-
-    const held = holds
-      .filter((h) => h.expiresAt > now)
-      .reduce((sum, h) => sum + h.quantity, 0)
-
-    return Math.max(0, stock - held)
+    return getAvailableCartQuantityForDenomination(
+      product,
+      args.denomination,
+      remainingStock,
+    )
   },
 })
 
@@ -69,35 +97,28 @@ export const getAvailableQuantities = query({
         continue
       }
 
-      const denomKey =
-        denomination !== undefined ? String(denomination) : null
-      let stock: number
-      if (product.stockByDenomination != null && denomKey != null) {
-        stock = product.stockByDenomination[denomKey] ?? 0
-      } else if (product.stockByDenomination != null) {
-        stock = (Object.values(product.stockByDenomination) as number[]).reduce(
-          (a, b) => a + b,
-          0,
+      const stock = getStockForDenomination(product, denomination)
+      const holds =
+        normalizeInventoryMode(product.inventoryMode) === 'shared'
+          ? await ctx.db
+              .query('productHolds')
+              .withIndex('by_product', (q) => q.eq('productId', productId))
+              .collect()
+          : await ctx.db
+              .query('productHolds')
+              .withIndex('by_product_denom', (q) =>
+                q.eq('productId', productId).eq('denomination', denomination),
+              )
+              .collect()
+      const held = getHeldQuantity(product, holds, now)
+      const remainingStock = Math.max(0, roundStockQuantity(stock - held))
+
+      result[`${productId}-${denomination ?? 'default'}`] =
+        getAvailableCartQuantityForDenomination(
+          product,
+          denomination,
+          remainingStock,
         )
-      } else {
-        stock = product.stock ?? 0
-      }
-
-      const holds = await ctx.db
-        .query('productHolds')
-        .withIndex('by_product_denom', (q) =>
-          q.eq('productId', productId).eq('denomination', denomination),
-        )
-        .collect()
-
-      const held = holds
-        .filter((h) => h.expiresAt > now)
-        .reduce((sum, h) => sum + h.quantity, 0)
-
-      result[`${productId}-${denomination ?? 'default'}`] = Math.max(
-        0,
-        stock - held,
-      )
     }
 
     return result

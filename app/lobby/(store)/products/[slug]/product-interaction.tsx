@@ -7,6 +7,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useAddCartItem} from '@/hooks/use-add-cart-item'
 import {useProductCartQuantity} from '@/hooks/use-product-cart-quantity'
 import {Icon} from '@/lib/icons'
+import {getAvailableCartQuantityForDenomination} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {Button, Tooltip, useDisclosure} from '@heroui/react'
@@ -220,18 +221,22 @@ export const ProductInteraction = ({
       product.priceCents ??
       0,
   )
+  const fallbackAvailableQuantity = getAvailableCartQuantityForDenomination(
+    product,
+    denominationForQuery,
+  )
   const isCheckoutDisabled = isNavigatingToCheckout || quantityInCart < 1
   const isAddToCartDisabled =
     isAddingToCart ||
     denominationForQuery === undefined ||
-    (availableQuantity !== undefined && availableQuantity < 1)
+    (availableQuantity ?? fallbackAvailableQuantity) < 1
 
   return (
     <>
       <ProductDetailStats
         product={product}
         quantityInCart={quantityInCart}
-        denominationKey={currentDenominationKey}
+        denomination={denominationForQuery}
         availableQuantity={availableQuantity}
       />
       <div className='flex flex-col gap-4 p-4 sm:p-5 lg:p-6 border-t border-foreground/20'>

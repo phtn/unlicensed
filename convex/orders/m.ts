@@ -1,17 +1,17 @@
 import {v} from 'convex/values'
 import {
-  computePersistedOrderPaymentAmounts,
   computeOrderTotalCents,
+  computePersistedOrderPaymentAmounts,
 } from '../../lib/checkout/processing-fee'
 import {resolveOrderShippingCents} from '../../lib/checkout/shipping'
 import {createCouponError} from '../../lib/coupon-errors'
 import {applyInventoryDeduction} from '../../lib/inventory-adjustments'
 import {
-  getSharedWeightLineQuantity,
-  getTotalStock,
+  getSharedInventoryLineQuantity,
+  getStockForDenomination,
   normalizeInventoryMode,
   roundStockQuantity,
-  usesSharedWeightInventory,
+  usesSharedInventoryPool,
 } from '../../lib/productStock'
 import {internal} from '../_generated/api'
 import type {Doc, Id} from '../_generated/dataModel'
@@ -24,8 +24,8 @@ import {
   normalizeCouponCode,
 } from '../coupons/lib'
 import {insertInventoryMovement} from '../inventoryMovements/lib'
-import {addressSchema} from '../users/d'
 import {getOrCreateGuestUser} from '../messages/guest'
+import {addressSchema} from '../users/d'
 import {
   orderStatusSchema,
   paymentMethodSchema,
@@ -338,13 +338,11 @@ async function buildOrderItems(
   return {orderItems, categorySlugs}
 }
 
-async function getProductStockForOrder(
-  ctx: MutationCtx,
-  productId: Id<'products'>,
-): Promise<number> {
-  const product = await ctx.db.get(productId)
-  if (!product) return 0
-  return getTotalStock(product)
+function getProductStockForOrder(
+  product: ProductDoc,
+  denomination: number | undefined,
+): number {
+  return getStockForDenomination(product, denomination)
 }
 
 function getRequestedInventoryQuantity(
@@ -352,20 +350,16 @@ function getRequestedInventoryQuantity(
   quantity: number,
   denomination: number | undefined,
 ): number {
-  const sharedWeightQuantity = getSharedWeightLineQuantity(
-    product,
-    denomination,
-    quantity,
+  return (
+    getSharedInventoryLineQuantity(product, denomination, quantity) ?? quantity
   )
-
-  return sharedWeightQuantity ?? quantity
 }
 
 function getInventoryAvailabilityKey(
   product: ProductDoc,
   denomination: number | undefined,
 ): string {
-  if (usesSharedWeightInventory(product)) {
+  if (usesSharedInventoryPool(product)) {
     return String(product._id)
   }
 
@@ -377,7 +371,7 @@ async function getHeldQuantityForOrder(
   product: ProductDoc,
   denomination: number | undefined,
 ): Promise<number> {
-  const holds = usesSharedWeightInventory(product)
+  const holds = usesSharedInventoryPool(product)
     ? await ctx.db
         .query('productHolds')
         .withIndex('by_product', (q) => q.eq('productId', product._id))
@@ -411,7 +405,7 @@ async function getOurHoldForOrder(
     .query('productHolds')
     .withIndex('by_cart', (q) => q.eq('cartId', cartId))
     .collect()
-  const relevantHolds = usesSharedWeightInventory(product)
+  const relevantHolds = usesSharedInventoryPool(product)
     ? holds.filter((h) => h.productId === product._id)
     : holds.filter(
         (h) => h.productId === product._id && h.denomination === denomination,
@@ -552,7 +546,7 @@ export const createOrder = mutation({
     }
 
     for (const {product, denomination, required} of requiredByKey.values()) {
-      const stock = await getProductStockForOrder(ctx, product._id)
+      const stock = getProductStockForOrder(product, denomination)
       const heldTotal = await getHeldQuantityForOrder(
         ctx,
         product,
