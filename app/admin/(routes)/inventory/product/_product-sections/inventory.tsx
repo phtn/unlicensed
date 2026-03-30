@@ -194,6 +194,29 @@ export const Inventory = ({
   const [isRestockOpen, setIsRestockOpen] = useState(false)
   const [isManualOverrideOpen, setIsManualOverrideOpen] = useState(false)
 
+  const syncInventoryStateToForm = (nextInventoryState: {
+    inventoryMode: InventoryMode
+    masterStockQuantity?: number
+    masterStockUnit?: string
+    stock: number
+    stockByDenomination: Record<string, number>
+  }) => {
+    form.setFieldValue('inventoryMode', nextInventoryState.inventoryMode)
+    form.setFieldValue('stock', nextInventoryState.stock)
+    form.setFieldValue(
+      'masterStockQuantity',
+      nextInventoryState.masterStockQuantity,
+    )
+    form.setFieldValue(
+      'masterStockUnit',
+      nextInventoryState.masterStockUnit ?? '',
+    )
+    form.setFieldValue(
+      'stockByDenomination',
+      nextInventoryState.stockByDenomination,
+    )
+  }
+
   const handleSelectionChange = (
     field: {
       handleChange: (value: string) => void
@@ -295,8 +318,9 @@ export const Inventory = ({
                   </Select>
                   {isEditMode ? (
                     <p className='text-xs text-color-muted'>
-                      Inventory mode is locked after creation so stock history
-                      stays consistent.
+                      Change inventory mode through the restock or manual
+                      override modal so this form stays aligned with the logged
+                      inventory history.
                     </p>
                   ) : null}
                 </div>
@@ -889,12 +913,14 @@ export const Inventory = ({
                 adjustmentType='restock'
                 isOpen={isRestockOpen}
                 onOpenChangeAction={setIsRestockOpen}
+                onAppliedAction={syncInventoryStateToForm}
               />
               <InventoryAdjustmentModal
                 product={product}
                 adjustmentType='manual_override'
                 isOpen={isManualOverrideOpen}
                 onOpenChangeAction={setIsManualOverrideOpen}
+                onAppliedAction={syncInventoryStateToForm}
               />
             </div>
           ) : null}

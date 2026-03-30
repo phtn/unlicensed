@@ -14,6 +14,11 @@ const inventoryAdjustmentTypeSchema = v.union(
   v.literal('manual_override'),
 )
 
+const inventoryAdjustmentModeSchema = v.union(
+  v.literal('by_denomination'),
+  v.literal('shared'),
+)
+
 const inventoryAdjustmentEntrySchema = v.object({
   denomination: v.optional(v.number()),
   quantity: v.number(),
@@ -66,6 +71,7 @@ export const applyInventoryAdjustment = mutation({
   args: {
     productId: v.id('products'),
     type: inventoryAdjustmentTypeSchema,
+    inventoryMode: v.optional(inventoryAdjustmentModeSchema),
     adjustments: v.array(inventoryAdjustmentEntrySchema),
     note: v.optional(v.string()),
     reference: v.optional(v.string()),
@@ -84,7 +90,8 @@ export const applyInventoryAdjustment = mutation({
 
     assertNoDuplicateAdjustments(args.adjustments)
 
-    const inventoryMode = normalizeInventoryMode(product.inventoryMode)
+    const currentInventoryMode = normalizeInventoryMode(product.inventoryMode)
+    const inventoryMode = args.inventoryMode ?? currentInventoryMode
     const updates: Partial<Doc<'products'>> = {}
     const lines: Array<{
       denomination?: number
@@ -205,6 +212,17 @@ export const applyInventoryAdjustment = mutation({
       }
     }
 
+    if (inventoryMode !== currentInventoryMode) {
+      updates.inventoryMode = inventoryMode
+
+      if (
+        inventoryMode === 'shared' &&
+        normalizeOptionalString(product.masterStockUnit) === undefined
+      ) {
+        updates.masterStockUnit = normalizeOptionalString(product.unit)
+      }
+    }
+
     await ctx.db.patch(args.productId, updates)
 
     const movementId = await insertInventoryMovement(ctx, {
@@ -226,6 +244,19 @@ export const applyInventoryAdjustment = mutation({
       },
     )
 
-    return {movementId, success: true}
+    return {
+      movementId,
+      success: true,
+      nextInventoryState: {
+        inventoryMode,
+        stock: updates.stock ?? product.stock ?? 0,
+        stockByDenomination:
+          updates.stockByDenomination ?? product.stockByDenomination ?? {},
+        masterStockQuantity:
+          updates.masterStockQuantity ?? product.masterStockQuantity,
+        masterStockUnit:
+          updates.masterStockUnit ?? product.masterStockUnit ?? undefined,
+      },
+    }
   },
 })

@@ -1,8 +1,12 @@
 'use client'
 
-import {narrowInputClassNames} from '@/app/admin/_components/ui/fields'
+import {
+  commonSelectClassNames,
+  narrowInputClassNames,
+} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
+import type {InventoryMode} from '@/convex/products/d'
 import {useFirebaseAuthUser} from '@/hooks/use-firebase-auth-user'
 import {normalizeInventoryMode} from '@/lib/productStock'
 import {
@@ -13,6 +17,8 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Select,
+  SelectItem,
   Textarea,
 } from '@heroui/react'
 import {useMutation} from 'convex/react'
@@ -42,9 +48,10 @@ const formatDenominationLabel = (
   return unit ? `${label} ${unit}` : label
 }
 
-export const buildInventoryInputs = (product: Product): InventoryInput[] => {
-  const inventoryMode = normalizeInventoryMode(product.inventoryMode)
-
+export const buildInventoryInputs = (
+  product: Product,
+  inventoryMode: InventoryMode = normalizeInventoryMode(product.inventoryMode),
+): InventoryInput[] => {
   if (inventoryMode === 'shared') {
     return [
       {
@@ -97,6 +104,13 @@ type InventoryAdjustmentModalProps = {
   adjustmentType: AdjustmentType
   isOpen: boolean
   onOpenChangeAction: (isOpen: boolean) => void
+  onAppliedAction?: (nextInventoryState: {
+    inventoryMode: InventoryMode
+    masterStockQuantity?: number
+    masterStockUnit?: string
+    stock: number
+    stockByDenomination: Record<string, number>
+  }) => void
   product: Product
 }
 
@@ -104,15 +118,22 @@ export function InventoryAdjustmentModal({
   adjustmentType,
   isOpen,
   onOpenChangeAction,
+  onAppliedAction,
   product,
 }: InventoryAdjustmentModalProps) {
   const {user} = useFirebaseAuthUser()
   const applyInventoryAdjustment = useMutation(
     api.inventoryMovements.m.applyInventoryAdjustment,
   )
+  const initialInventoryMode = useMemo<InventoryMode>(
+    () => normalizeInventoryMode(product.inventoryMode),
+    [product.inventoryMode],
+  )
+  const [inventoryMode, setInventoryMode] =
+    useState<InventoryMode>(initialInventoryMode)
   const inventoryInputs = useMemo(
-    () => buildInventoryInputs(product),
-    [product],
+    () => buildInventoryInputs(product, inventoryMode),
+    [inventoryMode, product],
   )
   const [quantities, setQuantities] = useState<Record<string, string>>({})
   const [note, setNote] = useState('')
@@ -122,6 +143,7 @@ export function InventoryAdjustmentModal({
 
   useEffect(() => {
     if (!isOpen) {
+      setInventoryMode(initialInventoryMode)
       setQuantities({})
       setNote('')
       setReference('')
@@ -130,13 +152,23 @@ export function InventoryAdjustmentModal({
       return
     }
 
-    setQuantities(
-      Object.fromEntries(inventoryInputs.map((input) => [input.key, ''])),
-    )
+    setInventoryMode(initialInventoryMode)
     setNote('')
     setReference('')
     setErrorMessage(null)
-  }, [inventoryInputs, isOpen, adjustmentType])
+    setIsSubmitting(false)
+  }, [adjustmentType, initialInventoryMode, isOpen])
+
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
+    setQuantities(
+      Object.fromEntries(inventoryInputs.map((input) => [input.key, ''])),
+    )
+    setErrorMessage(null)
+  }, [inventoryInputs, isOpen])
 
   const submitLabel =
     adjustmentType === 'restock' ? 'Record Restock' : 'Apply Override'
@@ -185,9 +217,10 @@ export function InventoryAdjustmentModal({
 
       setIsSubmitting(true)
 
-      await applyInventoryAdjustment({
+      const result = await applyInventoryAdjustment({
         productId: product._id,
         type: adjustmentType,
+        inventoryMode,
         adjustments,
         note: note.trim() || undefined,
         reference: reference.trim() || undefined,
@@ -196,6 +229,7 @@ export function InventoryAdjustmentModal({
           user?.displayName ?? user?.email?.split('@')[0] ?? undefined,
       })
 
+      onAppliedAction?.(result.nextInventoryState)
       onOpenChangeAction(false)
     } catch (error) {
       setErrorMessage(
@@ -225,6 +259,34 @@ export function InventoryAdjustmentModal({
         </ModalHeader>
         <ModalBody className='space-y-4'>
           <p className='text-sm text-foreground-600'>{description}</p>
+
+          <div className='space-y-2'>
+            <Select
+              label='Inventory Mode'
+              selectedKeys={[inventoryMode]}
+              onSelectionChange={(keys) => {
+                const selected = Array.from(keys)[0]
+                if (selected === 'by_denomination' || selected === 'shared') {
+                  setInventoryMode(selected)
+                }
+              }}
+              isDisabled={isSubmitting}
+              variant='bordered'
+              classNames={commonSelectClassNames}>
+              <SelectItem key='by_denomination' textValue='By denomination'>
+                By denomination
+              </SelectItem>
+              <SelectItem key='shared' textValue='Shared'>
+                Shared
+              </SelectItem>
+            </Select>
+            <p className='text-xs text-foreground-500'>
+              Switching modes here updates the product inventory mode when this
+              adjustment is submitted. Stock values are not auto-converted
+              between modes, so enter the quantities you want to track for the
+              selected structure.
+            </p>
+          </div>
 
           <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
             {inventoryInputs.map((input) => (
