@@ -120,6 +120,7 @@ const nextConfig: NextConfig = {
   },
   reactCompiler: true,
   images: {
+    qualities: [70, 75],
     remotePatterns: [
       {
         protocol: 'https',

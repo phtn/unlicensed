@@ -75,7 +75,7 @@ export const NewHome = () => {
       }>
       <div
         ref={heroImageWrapRef}
-        className=' bg-background top-0 left-0 w-full sm:h-[44vh] md:h-[50vh] lg:h-[58vh] xl:h-[75vh] 2xl:h-[85vh]'>
+        className=' bg-background top-0 left-0 w-full h-[85lvh] sm:h-[44vh] md:h-[50vh] lg:h-[58vh] xl:h-[75vh] 2xl:h-[85vh]'>
         <Highlights heroImageHeight={heroImageHeight} slides={slides} />
       </div>
 
