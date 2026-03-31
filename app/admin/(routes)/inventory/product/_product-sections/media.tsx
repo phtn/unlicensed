@@ -13,9 +13,9 @@ import {useStore} from '@tanstack/react-store'
 import type {ReadonlyStore} from '@tanstack/store'
 import {useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
+import {PrimaryImageConverterModal} from '../primary-image-converter-modal'
 import {ProductFormValues} from '../product-schema'
 import {FormSection, Header} from './components'
-import {PrimaryImageConverterModal} from './primary-image-converter-modal'
 
 interface MediaProps {
   form: ReturnType<typeof useAppForm>
@@ -636,7 +636,9 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                     />
                   }
                   onPress={() => setIsConverterOpen(true)}>
-                  Image Optimized
+                  {!canConvertPrimaryImage
+                    ? 'Image Optimized'
+                    : 'Optimize Primary Image'}
                 </Button>
                 <Button
                   radius='none'
