@@ -16,6 +16,7 @@ import {
 } from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {User} from 'firebase/auth'
+import {useRouter} from 'next/navigation'
 
 interface UserDropdownProps {
   user: User
@@ -32,6 +33,7 @@ export const UserDropdown = ({
   onLogout,
   onThemeToggle,
 }: UserDropdownProps) => {
+  const router = useRouter()
   const unreadCount = useQuery(
     api.messages.q.getUnreadCount,
     user ? {fid: user.uid} : 'skip',
@@ -63,10 +65,11 @@ export const UserDropdown = ({
       </DropdownTrigger>
       <DropdownMenu aria-label='user-menu' className='p-1 bg-transparent'>
         <DropdownItem
-          as={Link}
-          href='/account'
           key='profile'
           textValue={`Account ${user.displayName ?? user.email ?? 'User'}`}
+          onPress={() => {
+            void router.push('/account')
+          }}
           variant='flat'
           classNames={{
             title: 'text-foreground/90 font-polysans',
@@ -96,7 +99,7 @@ export const UserDropdown = ({
         <DropdownSection className='hover:bg-white/0'>
           <DropdownItem
             key='quick-links'
-            as={'div'}
+            isReadOnly
             variant='light'
             textValue='Quick links'
             startContent={

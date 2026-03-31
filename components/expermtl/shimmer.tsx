@@ -130,7 +130,7 @@ export default function ShimmerText({
         initial={{opacity: 0, y: 0}}
         animate={{opacity: 1, y: 0}}
         transition={{duration: 4.5}}>
-        <motion.h1
+        <motion.span
           className={cn(
             'text-xl font-semibold tracking-tight bg-clip-text text-transparent',
             gradientClass,
@@ -162,7 +162,7 @@ export default function ShimmerText({
           aria-live={loading ? 'polite' : undefined}>
           {text}
           {children}
-        </motion.h1>
+        </motion.span>
       </motion.div>
     </div>
   )

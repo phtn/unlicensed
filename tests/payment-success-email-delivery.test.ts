@@ -4,6 +4,7 @@ import {
   createPendingPaymentSuccessEmailState,
   isPaymentSuccessEmailEligibleMethod,
   PAYMENT_SUCCESS_EMAIL_MAX_ATTEMPTS,
+  shouldQueueCashAppPaymentSuccessEmailOnOrderProcessing,
 } from '../convex/orders/email_delivery'
 
 describe('payment success email delivery helpers', () => {
@@ -79,6 +80,32 @@ describe('payment success email delivery helpers', () => {
         },
         Date.now(),
       ),
+    ).toBe(false)
+  })
+
+  test('queues cash app payment success email when order enters processing with a completed payment', () => {
+    expect(
+      shouldQueueCashAppPaymentSuccessEmailOnOrderProcessing({
+        enteredOrderProcessing: true,
+        hasCompletedCashAppPayment: true,
+        paymentMethod: 'cash_app',
+        paymentSuccessEmail: undefined,
+      }),
+    ).toBe(true)
+  })
+
+  test('does not queue cash app payment success email once it has already been sent', () => {
+    expect(
+      shouldQueueCashAppPaymentSuccessEmailOnOrderProcessing({
+        enteredOrderProcessing: true,
+        hasCompletedCashAppPayment: true,
+        paymentMethod: 'cash_app',
+        paymentSuccessEmail: {
+          status: 'sent',
+          attempts: 1,
+          sentAt: Date.now(),
+        },
+      }),
     ).toBe(false)
   })
 })

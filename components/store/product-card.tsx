@@ -211,7 +211,7 @@ const ProductCardComponent = ({
       )}>
       {isTestProduct ? (
         <>
-          <div className='pointer-events-none absolute inset-[1px] z-0 rounded-[2px] border border-orange-200/35 dark:border-orange-200/20' />
+          <div className='pointer-events-none absolute inset-px z-0 rounded-xs border border-orange-200/35 dark:border-orange-200/20' />
           <div className='pointer-events-none absolute inset-x-6 top-0 z-0 h-px bg-linear-to-r from-transparent via-orange-300/90 to-transparent shadow-[0_0_18px_rgba(251,146,60,0.75)]' />
           <div className='pointer-events-none absolute inset-y-10 right-0 z-0 w-px bg-linear-to-b from-transparent via-orange-300/70 to-transparent shadow-[0_0_18px_rgba(251,146,60,0.65)]' />
         </>

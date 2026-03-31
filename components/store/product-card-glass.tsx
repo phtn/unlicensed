@@ -248,7 +248,7 @@ const ProductCardGlassComponent = ({
         </div>
 
         <div className='flex min-h-0 flex-1 flex-col px-3 pb-3 pt-2.5'>
-          <div className='relative flex min-h-[5.75rem] items-start justify-between gap-3'>
+          <div className='relative flex min-h-[5.751rem] items-start justify-between gap-3'>
             <div className='min-w-0 flex-1 pr-22'>
               <div className='mb-0.75 h-4 md:h-5'>
                 {brandLabel && (

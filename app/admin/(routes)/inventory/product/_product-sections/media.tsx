@@ -15,6 +15,7 @@ import {useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {ProductFormValues} from '../product-schema'
 import {FormSection, Header} from './components'
+import {PrimaryImageConverterModal} from './primary-image-converter-modal'
 
 interface MediaProps {
   form: ReturnType<typeof useAppForm>
@@ -61,6 +62,9 @@ const summarizeStorageId = (value: string) =>
 export const Media = ({form, fields: _fields}: MediaProps) => {
   const {uploadFile} = useStorageUpload()
   const [isLibraryOpen, setIsLibraryOpen] = useState(false)
+  const [isConverterOpen, setIsConverterOpen] = useState(false)
+  const [recentlyOptimizedStorageIds, setRecentlyOptimizedStorageIds] =
+    useState<string[]>([])
   const [libraryTarget, setLibraryTarget] =
     useState<MediaLibraryTarget>('primary')
   const [tagSearch, setTagSearch] = useState('')
@@ -81,6 +85,17 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
   const categorySlug = useStore(
     form.store as ReadonlyStore<FormStoreState>,
     (state: FormStoreState) => (state.values.categorySlug as string) ?? '',
+  )
+
+  const productName = useStore(
+    form.store as ReadonlyStore<FormStoreState>,
+    (state: FormStoreState) => (state.values.name as string) ?? '',
+  )
+
+  const productBrands = useStore(
+    form.store as ReadonlyStore<FormStoreState>,
+    (state: FormStoreState) =>
+      ((state.values.brand as string[] | undefined) ?? []).filter(Boolean),
   )
 
   const galleryValue = useStore(
@@ -524,6 +539,46 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
     [uploadStateById],
   )
 
+  const optimizedStorageIds = useMemo(() => {
+    const ids = new Set(recentlyOptimizedStorageIds)
+
+    for (const group of allTaggedGroups) {
+      for (const item of group.items) {
+        ids.add(item.storageId)
+      }
+    }
+
+    return ids
+  }, [allTaggedGroups, recentlyOptimizedStorageIds])
+
+  const canConvertPrimaryImage = useMemo(
+    () =>
+      Boolean(
+        primaryMediaItem?.preview &&
+        primaryImageValue &&
+        !optimizedStorageIds.has(primaryImageValue),
+      ),
+    [optimizedStorageIds, primaryImageValue, primaryMediaItem?.preview],
+  )
+
+  const handleConvertedPrimary = useCallback(
+    ({storageId, url}: {storageId: string; url: string | null}) => {
+      if (url) {
+        setUploadedPreviewById((current) => ({
+          ...current,
+          [storageId]: url,
+        }))
+      }
+
+      setRecentlyOptimizedStorageIds((current) =>
+        current.includes(storageId) ? current : [...current, storageId],
+      )
+      setPrimaryImage(storageId)
+      setIsConverterOpen(false)
+    },
+    [setPrimaryImage],
+  )
+
   return (
     <>
       <FormSection>
@@ -567,15 +622,33 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                   </p>
                 </div>
               </div>
-
-              <Button
-                radius='none'
-                variant='flat'
-                className='rounded-lg dark:bg-blue-500 dark:text-white'
-                endContent={<Icon name='image-plus-light' className='size-4' />}
-                onPress={() => openLibrary('gallery')}>
-                Select Primary Image
-              </Button>
+              <div className='flex items-center space-x-4'>
+                <Button
+                  id='converter-trigger'
+                  radius='none'
+                  variant='flat'
+                  className='rounded-lg bg-indigo-950 text-white dark:text-white'
+                  isDisabled={!canConvertPrimaryImage}
+                  endContent={
+                    <Icon
+                      name='lightning'
+                      className='size-5 rotate-6 text-yellow-500'
+                    />
+                  }
+                  onPress={() => setIsConverterOpen(true)}>
+                  Image Optimized
+                </Button>
+                <Button
+                  radius='none'
+                  variant='flat'
+                  className='rounded-lg bg-blue-500 text-white dark:text-white'
+                  endContent={
+                    <Icon name='image-plus-light' className='size-5' />
+                  }
+                  onPress={() => openLibrary('gallery')}>
+                  Select Primary Image
+                </Button>
+              </div>
             </div>
 
             {(queuedFiles.length > 0 || activeUploadCount > 0) && (
@@ -736,7 +809,8 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                           alt={primaryMediaItem.label}
                           radius='none'
                           shadow='none'
-                          className='size-full object-cover'
+                          removeWrapper
+                          className='pointer-events-none size-full object-cover'
                         />
                       ) : (
                         <div className='flex size-full items-center justify-center bg-foreground/5 text-foreground/45'>
@@ -747,19 +821,19 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                         </div>
                       )}
 
-                      <div className='absolute left-3 top-3 rounded bg-blue-600 px-2 py-1 text-xs font-medium uppercase tracking-[0.12em] text-white'>
+                      <div className='absolute left-3 top-3 z-10 rounded bg-blue-600 px-2 py-1 text-xs font-medium uppercase tracking-[0.12em] text-white'>
                         Lead
                       </div>
 
                       <button
                         type='button'
                         onClick={clearPrimaryImage}
-                        className='absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-red-500'
+                        className='absolute right-3 top-3 z-20 flex size-8 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-red-500'
                         aria-label='Clear lead image'>
                         <Icon name='x' size={14} />
                       </button>
 
-                      <div className='absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/30 to-transparent px-3 py-3 text-white'>
+                      <div className='absolute inset-x-0 bottom-0 z-10 bg-linear-to-t from-black/80 via-black/30 to-transparent px-3 py-3 text-white'>
                         <p className='truncate text-sm font-medium'>
                           {primaryMediaItem.label}
                         </p>
@@ -833,7 +907,8 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                                 alt={item.label}
                                 radius='none'
                                 shadow='none'
-                                className='size-full object-cover'
+                                removeWrapper
+                                className='pointer-events-none size-full object-cover'
                               />
                             ) : (
                               <div className='flex size-full items-center justify-center bg-foreground/5 text-foreground/45'>
@@ -844,11 +919,11 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                               </div>
                             )}
 
-                            <div className='absolute left-2 top-2 rounded bg-black/60 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-white'>
+                            <div className='absolute left-2 top-2 z-10 rounded bg-black/60 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-white'>
                               {item.badgeLabel}
                             </div>
 
-                            <div className='absolute right-2 top-2 flex gap-1.5'>
+                            <div className='absolute right-2 top-2 z-20 flex gap-1.5'>
                               <button
                                 type='button'
                                 onClick={() => setPrimaryImage(item.storageId)}
@@ -866,7 +941,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                               </button>
                             </div>
 
-                            <div className='absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/30 to-transparent px-2 py-2 text-white'>
+                            <div className='absolute inset-x-0 bottom-0 z-10 bg-linear-to-t from-black/80 via-black/30 to-transparent px-2 py-2 text-white'>
                               <p className='truncate text-xs font-medium'>
                                 {item.label}
                               </p>
@@ -891,6 +966,16 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
           ) : null}
         </div>
       </FormSection>
+
+      <PrimaryImageConverterModal
+        isOpen={isConverterOpen}
+        onOpenChangeAction={setIsConverterOpen}
+        onConvertedAction={handleConvertedPrimary}
+        sourceUrl={primaryMediaItem?.preview ?? null}
+        categorySlug={categorySlug}
+        productBrands={productBrands}
+        suggestedFileNameStem={productName}
+      />
 
       <Drawer
         placement='right'

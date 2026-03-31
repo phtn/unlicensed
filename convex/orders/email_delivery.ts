@@ -73,6 +73,25 @@ export function createPendingPaymentSuccessEmailState(): PaymentSuccessEmailStat
   return createPendingEmailDeliveryState()
 }
 
+export function shouldQueueCashAppPaymentSuccessEmailOnOrderProcessing({
+  enteredOrderProcessing,
+  hasCompletedCashAppPayment,
+  paymentMethod,
+  paymentSuccessEmail,
+}: {
+  enteredOrderProcessing: boolean
+  hasCompletedCashAppPayment: boolean
+  paymentMethod: PaymentMethod
+  paymentSuccessEmail: PaymentSuccessEmailState | undefined
+}): boolean {
+  return (
+    enteredOrderProcessing &&
+    paymentMethod === 'cash_app' &&
+    hasCompletedCashAppPayment &&
+    paymentSuccessEmail?.status !== 'sent'
+  )
+}
+
 export function canAttemptPendingPaymentEmail(
   state: PendingPaymentEmailState | undefined,
   now: number,

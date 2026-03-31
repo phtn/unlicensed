@@ -38,6 +38,7 @@ import {
   createPendingPaymentEmailState,
   createPendingPaymentSuccessEmailState,
   isPaymentSuccessEmailEligibleMethod,
+  shouldQueueCashAppPaymentSuccessEmailOnOrderProcessing,
 } from './email_delivery'
 
 const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 4900
@@ -896,6 +897,15 @@ export const updateOrderStatus = mutation({
       order.payment.status !== 'completed' &&
       order.payment.status !== 'refunded' &&
       order.payment.status !== 'partially_refunded'
+    const shouldQueueCashAppPaymentSuccessEmail =
+      shouldQueueCashAppPaymentSuccessEmailOnOrderProcessing({
+        enteredOrderProcessing,
+        hasCompletedCashAppPayment:
+          shouldMarkCashAppPaymentCompleted ||
+          order.payment.status === 'completed',
+        paymentMethod: order.payment.method,
+        paymentSuccessEmail: order.paymentSuccessEmail,
+      })
 
     const updates: {
       orderStatus: typeof args.status
@@ -953,12 +963,8 @@ export const updateOrderStatus = mutation({
       }
     }
 
-    if (shouldMarkCashAppPaymentCompleted) {
-      updates.paymentSuccessEmail =
-        isPaymentSuccessEmailEligibleMethod(order.payment.method) &&
-        order.paymentSuccessEmail?.status !== 'sent'
-          ? createPendingPaymentSuccessEmailState()
-          : order.paymentSuccessEmail
+    if (shouldQueueCashAppPaymentSuccessEmail) {
+      updates.paymentSuccessEmail = createPendingPaymentSuccessEmailState()
     }
 
     await ctx.db.patch(args.orderId, updates)
@@ -975,10 +981,7 @@ export const updateOrderStatus = mutation({
       })
     }
 
-    if (
-      shouldMarkCashAppPaymentCompleted &&
-      isPaymentSuccessEmailEligibleMethod(order.payment.method)
-    ) {
+    if (shouldQueueCashAppPaymentSuccessEmail) {
       await ctx.scheduler.runAfter(
         0,
         internal.orders.a.sendPaymentSuccessForOrder,
