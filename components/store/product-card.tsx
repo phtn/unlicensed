@@ -7,7 +7,6 @@ import {Icon} from '@/lib/icons'
 import {isTestProductType, TEST_PRODUCT_TYPE} from '@/lib/product-type'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
-import {Tooltip} from '@heroui/react'
 import NextImage from 'next/image'
 import NextLink from 'next/link'
 import {memo, type MouseEvent, useMemo, useState} from 'react'
@@ -266,7 +265,7 @@ const ProductCardComponent = ({
                 <div>
                   <div>
                     {brandLabel && (
-                      <p className='mb-0.5 h-4 truncate text-[9px] font-okxs font-light capitalize tracking-wide opacity-80'>
+                      <div className='mb-0.5 h-4 truncate text-[9px] font-okxs font-light capitalize tracking-wide opacity-80'>
                         <span
                           className={cn('font-light', {
                             'font-bone font-normal text-sm tracking-widest uppercase text-orange-200 -mt-2':
@@ -288,22 +287,17 @@ const ProductCardComponent = ({
                             {productTypeLabel}
                           </span>
                         )}
-                      </p>
+                      </div>
                     )}
                   </div>
-                  <Tooltip
-                    content={product.name}
-                    placement='top'
-                    className='border-light-brand border'>
-                    <NextLink
-                      href={productHref}
-                      prefetch={false}
-                      className='relative z-20 inline-flex min-h-6 max-w-full items-center py-1 text-left pointer-events-auto'>
-                      <h3 className='truncate capitalize leading-5 font-clash text-base sm:text-lg'>
-                        {product.name}
-                      </h3>
-                    </NextLink>
-                  </Tooltip>
+                  <NextLink
+                    href={productHref}
+                    prefetch={false}
+                    className='relative z-20 inline-flex min-h-6 max-w-full items-center py-1 text-left pointer-events-auto'>
+                    <h3 className='truncate capitalize leading-5 font-clash text-base sm:text-lg'>
+                      {product.name}
+                    </h3>
+                  </NextLink>
                 </div>
 
                 <div className='flex items-center justify-between relative top-1'>
@@ -489,7 +483,7 @@ const ProductCardComponent = ({
               <div>
                 <div className=''>
                   {brandLabel && (
-                    <p className='mb-1 md:mb-0.5 h-4 md:h-5 truncate text-[9px] md:text-xs font-okxs font-light capitalize tracking-wide opacity-75'>
+                    <div className='mb-1 md:mb-0.5 h-4 md:h-5 truncate text-[9px] md:text-xs font-okxs font-light capitalize tracking-wide opacity-75'>
                       <span
                         className={cn('font-light', {
                           'font-bone font-normal text-sm tracking-widest uppercase dark:text-orange-300 -mt-2':
@@ -511,7 +505,7 @@ const ProductCardComponent = ({
                           {productTypeLabel}
                         </span>
                       )}
-                    </p>
+                    </div>
                   )}
                 </div>
                 {/*{isTestProduct ? (
@@ -522,19 +516,14 @@ const ProductCardComponent = ({
                     </span>
                   </div>
                 ) : null}*/}
-                <Tooltip
-                  content={product.name}
-                  placement='top'
-                  className='border-light-brand border'>
-                  <NextLink
-                    href={productHref}
-                    prefetch={false}
-                    className='relative z-20 inline-flex min-h-6 max-w-full items-center py-1 text-left pointer-events-auto'>
-                    <h3 className='truncate capitalize leading-5 font-clash text-lg md:leading-5 lg:text-base lg:leading-5'>
-                      {product.name}
-                    </h3>
-                  </NextLink>
-                </Tooltip>
+                <NextLink
+                  href={productHref}
+                  prefetch={false}
+                  className='relative z-20 inline-flex min-h-6 max-w-full items-center py-1 text-left pointer-events-auto'>
+                  <h3 className='truncate capitalize leading-5 font-clash text-lg md:leading-5 lg:text-base lg:leading-5'>
+                    {product.name}
+                  </h3>
+                </NextLink>
               </div>
 
               <div className='flex items-center justify-between relative top-1'>
@@ -637,7 +626,7 @@ const ProductCardComponent = ({
                   : `Add ${product.name} to cart`
               }
               className={cn(
-                'relative z-20 mt-1.25 rounded-xs px-3 py-2 text-sm font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
+                'relative z-20 mt-1.25 rounded-xs px-3 py-3 text-sm font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
                 isTestProduct
                   ? 'border border-cyan-300/60 bg-cyan-700 text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.24)] hover:bg-cyan-400 active:bg-cyan-600 dark:border-cyan-300/40 dark:bg-cyan-600 dark:text-white dark:hover:bg-cyan-500 dark:active:bg-cyan-500'
                   : 'bg-brand text-white hover:bg-light-brand active:bg-brand',

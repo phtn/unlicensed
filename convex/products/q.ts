@@ -2,11 +2,16 @@ import {paginationOptsValidator, type PaginationResult} from 'convex/server'
 import {v} from 'convex/values'
 import {getStockDisplayUnit, getTotalStock} from '../../lib/productStock'
 import type {Doc, Id} from '../_generated/dataModel'
-import {query} from '../_generated/server'
+import {query, type QueryCtx} from '../_generated/server'
 import {getCanonicalUserByFid} from '../users/lib'
 import {safeGet} from '../utils/id_validation'
 
 type ProductWithTierLabel = Doc<'products'> & {
+  tierLabel?: string
+}
+
+type ProductWithResolvedImage = Omit<Doc<'products'>, 'image'> & {
+  image?: string
   tierLabel?: string
 }
 
@@ -42,6 +47,44 @@ const attachTierLabels = (
       categoriesBySlug.get(product.categorySlug ?? ''),
     ),
   }))
+
+const resolveProductImageUrl = async (
+  ctx: QueryCtx,
+  image: string | undefined,
+) => {
+  if (
+    !image ||
+    image.startsWith('http://') ||
+    image.startsWith('https://') ||
+    image.startsWith('/') ||
+    image.startsWith('data:') ||
+    image.startsWith('blob:')
+  ) {
+    return image
+  }
+
+  try {
+    return (await ctx.storage.getUrl(image as Id<'_storage'>)) ?? image
+  } catch {
+    return image
+  }
+}
+
+const hydrateCategoryPageProducts = async (
+  ctx: QueryCtx,
+  products: Doc<'products'>[],
+  categoriesBySlug: Map<string, Doc<'categories'>>,
+): Promise<ProductWithResolvedImage[]> =>
+  Promise.all(
+    products.map(async (product) => ({
+      ...product,
+      image: await resolveProductImageUrl(ctx, product.image),
+      tierLabel: resolveTierLabel(
+        product.tier,
+        categoriesBySlug.get(product.categorySlug ?? ''),
+      ),
+    })),
+  )
 
 export const listProductSlugs = query({
   args: {},
@@ -146,7 +189,7 @@ export const listCategoryProductsPaginated = query({
   handler: async (
     ctx,
     args,
-  ): Promise<PaginationResult<ProductWithTierLabel>> => {
+  ): Promise<PaginationResult<ProductWithResolvedImage>> => {
     const category = await ctx.db
       .query('categories')
       .withIndex('by_slug', (q) => q.eq('slug', args.categorySlug))
@@ -188,7 +231,11 @@ export const listCategoryProductsPaginated = query({
       const result = await buildProductsQuery().paginate(args.paginationOpts)
       return {
         ...result,
-        page: attachTierLabels(result.page, categoriesBySlug),
+        page: await hydrateCategoryPageProducts(
+          ctx,
+          result.page,
+          categoriesBySlug,
+        ),
       }
     }
 
@@ -222,7 +269,7 @@ export const listCategoryProductsPaginated = query({
         ? encodeBrandPaginationCursor(startOffset + page.length)
         : '',
       isDone: !hasMore,
-      page: attachTierLabels(page, categoriesBySlug),
+      page: await hydrateCategoryPageProducts(ctx, page, categoriesBySlug),
     }
   },
 })

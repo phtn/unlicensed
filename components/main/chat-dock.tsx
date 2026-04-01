@@ -10,6 +10,7 @@ import {cn} from '@/lib/utils'
 import {Badge, Tooltip} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import dynamic from 'next/dynamic'
+import {usePathname} from 'next/navigation'
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {Dock, DockIcon} from '../ui/dock'
 
@@ -47,8 +48,10 @@ interface ChatDockProps {
 }
 
 export const ChatDock = ({hidden = false}: ChatDockProps) => {
+  const pathname = usePathname()
   const {user} = useAuthCtx()
   const guestChat = useGuestChatCtx()
+  const isHidden = hidden || pathname.includes('/cashapp')
   const [isWindowOpen, setIsWindowOpen] = useState(false)
   const [hasOpenedWindow, setHasOpenedWindow] = useState(false)
   const [conversationFid, setConversationFid] = useState<string | null>(null)
@@ -100,7 +103,7 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
   }, [open, toggle])
 
   useEffect(() => {
-    if (hidden) return
+    if (isHidden) return
 
     if (typeof window === 'undefined') return
 
@@ -121,7 +124,7 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
     return () => {
       globalThis.clearTimeout(timeoutId)
     }
-  }, [hidden])
+  }, [isHidden])
 
   const navs = useMemo<DockNav[]>(
     () => [
@@ -146,7 +149,7 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
         />
       )}
 
-      {!hidden && (
+      {!isHidden && (
         <div className='pointer-events-none fixed bottom-4 right-4 z-9000 md:bottom-8 md:right-8'>
           <Dock
             direction='middle'

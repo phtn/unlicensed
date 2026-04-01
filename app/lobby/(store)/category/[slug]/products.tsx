@@ -5,17 +5,15 @@ import {EmptyCategory} from '@/components/store/empty-category'
 import {ProductCard} from '@/components/store/product-card'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {motion, useReducedMotion} from 'motion/react'
 import type {ReactNode} from 'react'
 import {Activity} from 'react'
 
 interface ProductsProps {
   products: StoreProduct[]
-  getImageUrl: (image: string | null | undefined) => string | undefined
+  getImageUrl?: (image: string | null | undefined) => string | undefined
   isLoading?: boolean
   isRefreshing?: boolean
   footer?: ReactNode
-  matchCardHeightToImage?: boolean
 }
 
 export const Products = ({
@@ -25,8 +23,6 @@ export const Products = ({
   isRefreshing = false,
   footer,
 }: ProductsProps) => {
-  const shouldReduceMotion = useReducedMotion()
-
   return (
     <section className='py-6 sm:py-8 px-0 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
       <div className='max-w-7xl mx-auto'>
@@ -50,39 +46,20 @@ export const Products = ({
                 isRefreshing && 'opacity-45',
               )}>
               {products.map((product, index) => (
-                <motion.div
-                  key={product._id ?? product.slug}
-                  initial={
-                    shouldReduceMotion ? {opacity: 0} : {opacity: 0, y: 8}
-                  }
-                  whileInView={
-                    shouldReduceMotion ? {opacity: 1} : {opacity: 1, y: 0}
-                  }
-                  viewport={{once: true, amount: 0.16}}
-                  transition={{
-                    duration: shouldReduceMotion ? 0.18 : 0.24,
-                    delay: shouldReduceMotion ? 0 : (index % 10) * 0.015,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
+                <div
+                  key={product._id ?? product.slug ?? index}
                   className='h-full'>
                   <ProductCard
                     product={product}
-                    imageUrl={getImageUrl(product.image)}
-                    // matchImageHeight={matchCardHeightToImage}
-                    className={cn(
-                      'h-full! min-w-0! max-w-none! w-full',
-                      // !matchCardHeightToImage && 'h-full!',
-                    )}
+                    imageUrl={getImageUrl?.(product.image)}
+                    className={cn('h-full! min-w-0! max-w-none! w-full')}
                   />
-                </motion.div>
+                </div>
               ))}
             </div>
 
             {isRefreshing && (
-              <motion.div
-                initial={shouldReduceMotion ? {opacity: 0} : {opacity: 0, y: 4}}
-                animate={{opacity: 1, y: 0}}
-                className='pointer-events-none absolute inset-x-0 top-4 flex justify-center'>
+              <div className='pointer-events-none absolute inset-x-0 top-4 flex justify-center'>
                 <div className='inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-background/90 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.24em] text-foreground shadow-sm backdrop-blur'>
                   <Icon
                     name='spinners-ring'
@@ -90,7 +67,7 @@ export const Products = ({
                   />
                   Updating results
                 </div>
-              </motion.div>
+              </div>
             )}
           </div>
         )}

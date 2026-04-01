@@ -1,32 +1,20 @@
 'use client'
 
-import {Products} from '@/app/lobby/(store)/category/[slug]/products'
+import {CategoryProductsSection} from '@/app/lobby/(store)/category/[slug]/category-products-section'
 import {StoreProduct} from '@/app/types'
 import {Tag} from '@/components/base44/tag'
 import {Title} from '@/components/base44/title'
 import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
-import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {useToggle} from '@/hooks/use-toggle'
-import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
-import {resolveProductImage} from '@/lib/resolve-product-image'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
-import {usePaginatedQuery, useQuery} from 'convex/react'
+import {useQuery} from 'convex/react'
 import {AnimatePresence, motion, useReducedMotion} from 'motion/react'
 import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-  ViewTransition,
-} from 'react'
-import {CATEGORY_PRODUCTS_PAGE_SIZE} from './constants'
+import {useCallback, useMemo, useTransition, ViewTransition} from 'react'
 
 interface ContentProps {
   slug: string
@@ -37,7 +25,6 @@ const COLLAPSED_BRAND_COUNT = 1
 
 export const Content = ({initialProducts, slug}: ContentProps) => {
   const shouldReduceMotion = useReducedMotion()
-  const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const [brand, setBrand] = useQueryState(
     'brand',
     parseAsString.withDefault(''),
@@ -52,10 +39,6 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     parseAsString.withDefault(''),
   )
   const [isFilterPending, startFilterTransition] = useTransition()
-  const [filterSnapshot, setFilterSnapshot] = useState<{
-    signature: string
-    products: StoreProduct[]
-  } | null>(null)
 
   const category = useQuery(api.categories.q.getCategoryBySlug, {slug})
   const categories = useQuery(api.categories.q.listCategories)
@@ -63,66 +46,6 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
     api.categories.q.getHeroImage,
     category ? {id: category._id} : 'skip',
   )
-
-  const hasActiveProductFilters =
-    brand !== '' || productType !== '' || tier !== '' || subcategory !== ''
-
-  const {
-    results: paginatedProductResults,
-    status: paginatedProductsStatus,
-    loadMore: loadMoreProducts,
-  } = usePaginatedQuery(
-    api.products.q.listCategoryProductsPaginated,
-    {
-      brand: brand || undefined,
-      categorySlug: slug,
-      productType: productType || undefined,
-      subcategory: subcategory || undefined,
-      tier: tier || undefined,
-    },
-    {initialNumItems: CATEGORY_PRODUCTS_PAGE_SIZE},
-  )
-
-  const paginatedProducts = useMemo(
-    () =>
-      paginatedProductResults.map((product) => adaptProduct(product, category)),
-    [category, paginatedProductResults],
-  )
-
-  const products = useMemo(() => {
-    if (
-      !hasActiveProductFilters &&
-      paginatedProductsStatus === 'LoadingFirstPage' &&
-      paginatedProducts.length === 0
-    ) {
-      return initialProducts
-    }
-
-    return paginatedProducts
-  }, [
-    hasActiveProductFilters,
-    initialProducts,
-    paginatedProducts,
-    paginatedProductsStatus,
-  ])
-
-  const filterSignature = useMemo(
-    () => [brand, productType, tier, subcategory].join('|'),
-    [brand, productType, subcategory, tier],
-  )
-
-  const isRefreshingProducts =
-    paginatedProductsStatus === 'LoadingFirstPage' &&
-    filterSnapshot !== null &&
-    filterSnapshot.signature !== filterSignature
-
-  const visibleProducts = useMemo(() => {
-    if (isRefreshingProducts && filterSnapshot?.products.length) {
-      return filterSnapshot.products
-    }
-
-    return products
-  }, [filterSnapshot, isRefreshingProducts, products])
 
   const filterOptions = useMemo(() => {
     const brands = (category?.brands ?? [])
@@ -148,32 +71,29 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
 
   const handleBrandChange = useCallback(
     (nextBrand: string) => {
-      setFilterSnapshot({signature: filterSignature, products})
       startFilterTransition(() => {
         void setBrand(nextBrand)
       })
     },
-    [filterSignature, products, setBrand],
+    [setBrand],
   )
 
   const handleTierChange = useCallback(
     (nextTier: string) => {
-      setFilterSnapshot({signature: filterSignature, products})
       startFilterTransition(() => {
         void setTier(nextTier)
       })
     },
-    [filterSignature, products, setTier],
+    [setTier],
   )
 
   const handleSubcategoryChange = useCallback(
     (nextSubcategory: string) => {
-      setFilterSnapshot({signature: filterSignature, products})
       startFilterTransition(() => {
         void setSubcategory(nextSubcategory)
       })
     },
-    [filterSignature, products, setSubcategory],
+    [setSubcategory],
   )
 
   const primaryBrandOptions = useMemo(() => {
@@ -218,50 +138,6 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
   const hasCollapsibleBrands =
     filterOptions.brands.length > COLLAPSED_BRAND_COUNT
   const hiddenBrandCount = overflowBrandOptions.length
-
-  const canLoadMoreProducts = paginatedProductsStatus === 'CanLoadMore'
-  const isLoadingMoreProducts = paginatedProductsStatus === 'LoadingMore'
-  const isLoadingInitialProducts =
-    paginatedProductsStatus === 'LoadingFirstPage' &&
-    (hasActiveProductFilters || initialProducts.length === 0)
-
-  useEffect(() => {
-    if (!canLoadMoreProducts) return
-
-    const currentTarget = loadMoreRef.current
-    if (!currentTarget) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          loadMoreProducts(CATEGORY_PRODUCTS_PAGE_SIZE)
-        }
-      },
-      {rootMargin: '640px 0px'},
-    )
-
-    observer.observe(currentTarget)
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [canLoadMoreProducts, loadMoreProducts])
-
-  const imageIds = useMemo(
-    () =>
-      products
-        .filter(
-          (product) => !!product.image && !product.image.startsWith('http'),
-        )
-        .map((product) => product.image),
-    [products],
-  )
-  const resolveUrl = useStorageUrls(imageIds)
-  const getImageUrl = useCallback(
-    (image: string | null | undefined) =>
-      resolveProductImage(image, resolveUrl),
-    [resolveUrl],
-  )
 
   const {on: navigating, toggle: toggleNavigating} = useToggle()
 
@@ -546,32 +422,16 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         </section>
       )}
       {/**/}
-      <Products
-        products={visibleProducts}
-        getImageUrl={getImageUrl}
-        isLoading={isLoadingInitialProducts}
-        isRefreshing={isFilterPending || isRefreshingProducts}
-        matchCardHeightToImage
-        footer={
-          (canLoadMoreProducts || isLoadingMoreProducts) && (
-            <div className='flex justify-center pt-6 h-96'>
-              <div
-                ref={loadMoreRef}
-                aria-hidden
-                className='flex h-10 w-full items-center justify-center'>
-                <Icon
-                  name='spinners-ring'
-                  className={cn(
-                    'size-4 transition-opacity',
-                    isLoadingMoreProducts ? 'opacity-60' : 'opacity-25',
-                  )}
-                />
-              </div>
-            </div>
-          )
-        }
+      <CategoryProductsSection
+        slug={slug}
+        category={category}
+        brand={brand}
+        productType={productType}
+        tier={tier}
+        subcategory={subcategory}
+        initialProducts={initialProducts}
+        isFilterPending={isFilterPending}
       />
-      {/**/}
       <section className='py-6 sm:py-10 lg:py-20 px-4 sm:px-6 max-w-7xl mx-auto'>
         <div className='flex flex-col gap-20'>
           <div className='flex flex-wrap items-center justify-between gap-4'>

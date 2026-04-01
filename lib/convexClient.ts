@@ -469,6 +469,27 @@ interface StoreCollectionSection {
 
 type RawDeal = Parameters<typeof dealDocToBundleConfig>[0]
 
+const resolveStoredImage = (
+  value: string | null | undefined,
+  storageUrlMap: Map<string, string | null>,
+) => {
+  if (typeof value !== 'string' || value.length === 0) {
+    return undefined
+  }
+
+  if (
+    value.startsWith('http://') ||
+    value.startsWith('https://') ||
+    value.startsWith('/') ||
+    value.startsWith('data:') ||
+    value.startsWith('blob:')
+  ) {
+    return value
+  }
+
+  return storageUrlMap.get(value) ?? undefined
+}
+
 const _fetchFireCollections = async (): Promise<StoreCollectionSection[]> => {
   const client = getClient()
   if (!client) {
@@ -496,13 +517,21 @@ const _fetchFireCollections = async (): Promise<StoreCollectionSection[]> => {
             productIds: collection.productIds,
           },
         )) as RawProduct[]
+        const storageUrlMap = await fetchStorageUrlMap(
+          rawProducts.map((product) => product.image ?? null),
+        )
 
         const products = rawProducts
           .filter(
             (product) =>
               product.archived !== true && product.available === true,
           )
-          .map((product) => adaptProduct(product))
+          .map((product) =>
+            adaptProduct({
+              ...product,
+              image: resolveStoredImage(product.image, storageUrlMap),
+            }),
+          )
 
         return {
           id: collection.id,

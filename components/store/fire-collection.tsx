@@ -1,5 +1,3 @@
-'use client'
-
 import {StoreProduct} from '@/app/types'
 import Link from 'next/link'
 import {Activity} from 'react'

@@ -91,12 +91,12 @@ const patchWuiIconSizeBug = () => {
       | undefined
     if (!WuiIcon) return false
 
-    const prototypeWithPatch = WuiIcon.prototype as (HTMLElement & {
+    const prototypeWithPatch = WuiIcon.prototype as HTMLElement & {
       size?: string
       name?: string
       render?: (...args: unknown[]) => unknown
       __hyfePatchedPhosphorSize?: boolean
-    })
+    }
 
     if (prototypeWithPatch.__hyfePatchedPhosphorSize) return true
     const originalRender = prototypeWithPatch.render
@@ -165,12 +165,12 @@ function WagmiContext({
   cookies,
 }: {
   children: ReactNode
-  cookies: string | null
+  cookies?: string | null
 }) {
-  const initialState = cookieToInitialState(
-    wagmiAdapter.wagmiConfig as Config,
-    cookies,
-  )
+  const initialState =
+    typeof cookies === 'string'
+      ? cookieToInitialState(wagmiAdapter.wagmiConfig as Config, cookies)
+      : undefined
 
   return (
     <WagmiProvider

@@ -1,3 +1,5 @@
+'use client'
+
 import {StoreProduct} from '@/app/types'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {resolveProductImage} from '@/lib/resolve-product-image'
@@ -19,6 +21,7 @@ interface ProductCarouselProps {
   products: Array<StoreProduct>
   productCount?: number
 }
+
 const AUTOPLAY_DELAY_MS = 4500
 
 export const ProductCarousel = ({
@@ -95,6 +98,7 @@ export const ProductCarousel = ({
 
     return () => window.clearInterval(intervalId)
   }, [emblaApi, products.length])
+
   return (
     <div
       className='relative'
@@ -132,8 +136,8 @@ export const ProductCarousel = ({
       </div>
 
       {products.length > 1 && (
-        <div className='mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-          <div className='flex items-center gap-2' role='tablist'>
+        <div className='mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+          <div className='flex items-center gap-0' role='tablist'>
             {products.map((product, index) => (
               <button
                 key={product._id ?? product.slug}
@@ -141,7 +145,7 @@ export const ProductCarousel = ({
                 className={cn(
                   'relative flex h-6 w-6 items-center justify-center rounded-full transition-colors duration-300',
                   selectedIndex === index
-                    ? 'bg-foreground/10'
+                    ? 'bg-foreground/0'
                     : 'hover:bg-foreground/10',
                 )}
                 onClick={() => scrollTo(index)}
@@ -150,10 +154,10 @@ export const ProductCarousel = ({
                 aria-label={`Go to ${product.name}`}>
                 <span
                   className={cn(
-                    'block h-2.5 rounded-full transition-all duration-300',
+                    'block h-2 rounded-full transition-all duration-300',
                     selectedIndex === index
-                      ? 'w-8 bg-foreground'
-                      : 'w-2.5 bg-foreground/25',
+                      ? 'w-6 bg-foreground'
+                      : 'w-2 bg-foreground/25',
                   )}
                 />
               </button>

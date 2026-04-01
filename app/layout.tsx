@@ -1,4 +1,3 @@
-import {GlobalAuthModal} from '@/components/auth/global-auth-modal'
 import {ThemeScript} from '@/components/ui/theme-script'
 import {ProvidersCtxProvider} from '@/ctx'
 import WagmiContext from '@/ctx/wagmi'
@@ -20,12 +19,9 @@ import {
   Nunito_Sans as NunitoSans,
   Space_Grotesk,
 } from 'next/font/google'
-import {headers} from 'next/headers'
 import {AgeConfirmationModal} from './_components/age-confirmation-modal'
 import {ConditionalNavbar} from './_components/conditional-navbar'
-import {EmailLinkHandler} from './_components/email-link-handler'
-import {ScreenDimensionsTracker} from './_components/screen-dimensions-tracker'
-import {UserLocationTracker} from './_components/user-location-tracker'
+import {DeferredRootClient} from './_components/deferred-root-client'
 import './globals.css'
 
 const figtree = Figtree({
@@ -181,14 +177,13 @@ export const viewport: Viewport = {
  * - Each slot can have its own loading, error, and default files
  * - All slots share the same React context (including ConvexProvider)
  */
-export default async function RootLayout({
+export default function RootLayout({
   children,
   navbar,
 }: Readonly<{
   children: React.ReactNode
   navbar?: React.ReactNode
 }>) {
-  const cookies = (await headers()).get('cookie')
   return (
     <html lang='en' suppressHydrationWarning>
       <head>
@@ -196,12 +191,9 @@ export default async function RootLayout({
       </head>
       <body
         className={`${GeistPixelSquare.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelGrid.variable} ${GeistPixelLine.variable} ${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} antialiased font-okxs font-normal selection:bg-brand selection:text-white`}>
-        <WagmiContext cookies={cookies}>
+        <WagmiContext>
           <ProvidersCtxProvider>
-            <EmailLinkHandler />
-            <GlobalAuthModal />
-            <ScreenDimensionsTracker />
-            <UserLocationTracker />
+            <DeferredRootClient />
             <AgeConfirmationModal />
             <ConditionalNavbar navbar={navbar} />
             {children}

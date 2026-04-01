@@ -1,6 +1,12 @@
 import {fetchCategoryProductsPage} from '@/lib/convexClient'
+import {Metadata} from 'next'
 import {CATEGORY_PRODUCTS_PAGE_SIZE} from './constants'
 import {Content} from './content'
+
+export const metadata: Metadata = {
+  title: 'Category',
+  description: 'Browse products by category.',
+}
 
 type PageProps = {
   params: Promise<{slug: string}>

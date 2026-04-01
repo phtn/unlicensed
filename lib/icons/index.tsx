@@ -2,26 +2,25 @@
 
 import {type IconNameType, icons} from '@/lib/icons/icons'
 import type {IconData, IconProps} from '@/lib/icons/types'
-import {motion, MotionProps} from 'motion/react'
 import type {FC} from 'react'
 import {cn} from '../utils'
 
 export type IconName = IconNameType
 
-export const Icon: FC<IconProps & {motionprops?: MotionProps}> = ({
+export const Icon: FC<IconProps & {motionprops?: unknown}> = ({
   name,
   className,
   size = 16,
   color = 'currentColor',
   solid = true,
+  motionprops: _motionprops,
   ...props
 }) => {
   const icon = icons[name] as IconData
 
   return (
-    <motion.div
+    <span
       suppressHydrationWarning
-      {...props.motionprops}
       className={cn(
         props.onClick &&
           'cursor-pointer active:scale-92 transition-transform duration-200',
@@ -43,6 +42,6 @@ export const Icon: FC<IconProps & {motionprops?: MotionProps}> = ({
         {...props}
         dangerouslySetInnerHTML={{__html: icon?.symbol}}
       />
-    </motion.div>
+    </span>
   )
 }

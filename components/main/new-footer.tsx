@@ -3,15 +3,12 @@ import Link from 'next/link'
 
 export function NewFooter() {
   return (
-    <footer className='border-t border-neutral-200 px-4 py-8 dark:border-neutral-800 sm:px-6 lg:px-8'>
+    <footer className='px-4 py-8 dark:border-neutral-800 sm:px-6 lg:px-8'>
       <div className='mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row'>
-        <div className='flex items-center space-x-1 font-clash'>
-          <Icon
-            name='rapid-fire-logo'
-            className='size-5 text-neutral-500 dark:text-neutral-400'
-          />
-          <span className='text-sm font-cv text-neutral-500 dark:text-neutral-400'>
-            ©{new Date().getFullYear()} RapidFire
+        <div className='flex items-center space-x-2 font-clash'>
+          <Icon name='rapid-fire-logo' className='size-5 text-foreground/80' />
+          <span className='text-sm font-cv text-foreground'>
+            RapidFire ©{new Date().getFullYear()}
           </span>
         </div>
         <nav
@@ -19,27 +16,27 @@ export function NewFooter() {
           aria-label='Footer navigation'>
           <Link
             href='/about'
-            className='text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white'>
+            className='text-sm text-foreground/70 hover:text-foreground'>
             About
           </Link>
           <Link
             href='/docs'
-            className='text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white'>
+            className='text-sm text-foreground/70 hover:text-foreground'>
             FAQ
           </Link>
           <Link
             href='/purchase-agreement'
-            className='text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white'>
+            className='text-sm text-foreground/70 hover:text-foreground'>
             Agreement
           </Link>
           <Link
             href='/privacy-policy'
-            className='text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white'>
+            className='text-sm text-foreground/70 hover:text-foreground'>
             Privacy
           </Link>
           <Link
             href='/terms-of-use'
-            className='text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white'>
+            className='text-sm text-foreground/70 hover:text-foreground'>
             Terms
           </Link>
         </nav>

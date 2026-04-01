@@ -1,8 +1,6 @@
-'use client'
-
-import {NuqsAdapter} from 'nuqs/adapters/next/app'
 import {type ReactNode} from 'react'
 import {MainPage} from './main'
+import {StoreSearchParamsAdapter} from './store-search-params-adapter'
 
 type StoreLayoutProps = {
   navbar?: ReactNode
@@ -11,9 +9,9 @@ type StoreLayoutProps = {
 
 const StoreLayout = ({children, navbar}: StoreLayoutProps) => {
   return (
-    <NuqsAdapter>
-      <MainPage navbar={navbar}>{children}</MainPage>
-    </NuqsAdapter>
+    <MainPage navbar={navbar}>
+      <StoreSearchParamsAdapter>{children}</StoreSearchParamsAdapter>
+    </MainPage>
   )
 }
 
