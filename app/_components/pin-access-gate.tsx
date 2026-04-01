@@ -10,6 +10,7 @@ import {useRouter} from 'next/navigation'
 import {
   ChangeEvent,
   startTransition,
+  SubmitEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -41,7 +42,7 @@ export function PinAccessGate() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false)
-    }, 3000)
+    }, 2000)
     return () => clearTimeout(timer)
   }, [])
 
@@ -109,7 +110,7 @@ export function PinAccessGate() {
   }, [])
 
   const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
+    async (e: SubmitEvent) => {
       e.preventDefault()
       // Get the current value from the input ref for browser automation compatibility
       const inputValue = inputRef.current?.value || pin
@@ -175,7 +176,12 @@ export function PinAccessGate() {
           <div className='absolute inset-0 bg-linear-to-b from-fuchsia-950/20 via-zinc-950 to-zinc-950' />
           <div className='absolute -bottom-96 left-1/2 -translate-x-1/2 size-160 aspect-square rounded-full bg-linear-to-t from-slate-950 via-slate-800/40 to-transparent blur-3xl' />
           <div className='relative z-10 font-brk tracking-widest text-white'>
-            <Typewrite initialDelay={0} speed={30} text='AWESOME!' />
+            <Typewrite
+              initialDelay={0}
+              speed={30}
+              text='AWESOME!'
+              showCursor={false}
+            />
           </div>
           <div className='relative flex items-center h-16 z-10 font-brk text-sm tracking-widest'>
             <ViewTransition>

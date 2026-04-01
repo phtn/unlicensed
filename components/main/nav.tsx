@@ -89,9 +89,10 @@ export const Nav = ({children}: NavProps) => {
           <div className='min-w-12 md:w-36'>
             <Link
               href={'/lobby'}
+              aria-label='Go to the Rapid Fire storefront'
               onMouseEnter={handleHomeMouseEnter}
               onMouseLeave={handleHomeMouseLeave}
-              className='group relative flex items-center justify-start rounded-full h-10 md:w-fit md:h-12 overflow-hidden px-1  dark:text-white text-dark-table hover:text-brand active:text-brand outline-0 focus-visible:bg-brand'>
+              className='group relative flex min-h-11 items-center justify-start rounded-full h-11 md:w-fit md:h-12 overflow-hidden px-1.5 dark:text-white text-dark-table hover:text-brand active:text-brand outline-0 focus-visible:bg-brand'>
               <motion.div
                 initial={{y: 12, opacity: 0, scale: 0}}
                 animate={{
@@ -204,9 +205,10 @@ export const Nav = ({children}: NavProps) => {
               <Button
                 isIconOnly
                 data-cart-icon
+                aria-label='Open cart'
                 // style={{color: scrollY >= 710 ? '#373945' : undefined}}
                 variant='light'
-                className='capitalize outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand!'
+                className='size-11 min-h-11 min-w-11 capitalize outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand!'
                 onPress={onCartDrawerOpen}>
                 <Icon
                   name='bag-solid'
@@ -238,20 +240,23 @@ export const Nav = ({children}: NavProps) => {
                 onLogout={handleLogout}
               />
             ) : (
-              <Icon
-                name='user'
-                onClick={onOpen}
-                className={cn(
-                  'size-6 text-white focus-visible:outline-2! focus-visible:outline-brand!',
-                  {
+              <Button
+                isIconOnly
+                variant='light'
+                aria-label='Open login dialog'
+                className='size-11 min-h-11 min-w-11 capitalize outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand!'
+                onPress={onOpen}>
+                <Icon
+                  name='user'
+                  className={cn('size-6 text-white', {
                     'text-dark-table dark:text-white': !inStoreLobby,
                     'text-dark-table dark:text-white .':
                       !isMobile && scrollY >= 710,
                     'text-dark-table dark:text-white _':
                       isMobile && scrollY >= 400,
-                  },
-                )}
-              />
+                  })}
+                />
+              </Button>
             )}
           </div>
         </div>

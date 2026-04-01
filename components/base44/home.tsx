@@ -1,3 +1,5 @@
+'use client'
+
 import {Highlights} from '@/components/main/highlights/content'
 import {useScreenResizeObserver} from '@/hooks/use-screen-resize-observer'
 import {cn} from '@/lib/utils'
@@ -54,8 +56,10 @@ export const NewHome = () => {
           tag: '',
           imageUrl: isMobile
             ? 'https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1772603013/hero-mobile-v2_vaiesj.webp'
-            : 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1773341316/Revised_jhykmd.webp',
-          imageAlt: '',
+            : 'https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1772552114/hero-image_ivcsbu.webp',
+          imageAlt: 'Rapid Fire featured cannabis products',
+          imageWidth: isMobile ? 1168 : 2752,
+          imageHeight: isMobile ? 1536 : 1150,
           title: '',
           description: '',
           ctaText: 's',
@@ -83,7 +87,7 @@ export const NewHome = () => {
         href='/lobby/category'
         variant='solid'
         className={cn(
-          'absolute left-1/2 z-10 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100',
+          'absolute left-1/2 z-10 -translate-x-1/2 border border-white/80 bg-white text-dark-table uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:bg-light-brand hover:text-white hover:border-light-brand',
           'bottom-10! sm:bottom-16 md:bottom-24 lg:bottom-24 xl:bottom-28 2xl:bottom-44 md:w-64',
           shopNowOffsetClassName,
         )}>

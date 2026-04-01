@@ -1,3 +1,5 @@
+'use client'
+
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import Link from 'next/link'
@@ -58,12 +60,10 @@ export const MiniCardV2 = ({
           aria-hidden
         />
         <div className=''>
-          <h3 className='text-lg md:text-xl font-cv font-semibold text-white'>
+          <h3 className='text-lg md:text-xl font-cv font-semibold text-white drop-shadow-xs'>
             {title}
           </h3>
-          <p className='mt-1 text-sm opacity-80 group-hover:opacity-100'>
-            {description}
-          </p>
+          <p className='mt-1 text-sm'>{description}</p>
         </div>
       </div>
     </Link>

@@ -1,3 +1,5 @@
+'use client'
+
 import {Icon} from '@/lib/icons'
 import {Button, Link} from '@heroui/react'
 import NextLink from 'next/link'

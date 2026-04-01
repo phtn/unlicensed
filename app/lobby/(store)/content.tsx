@@ -1,4 +1,3 @@
-'use client'
 import {FireManifesto} from '@/app/about/fire-manifesto'
 import type {StoreCategory, StoreProduct} from '@/app/types'
 import {NewHome} from '@/components/base44/home'

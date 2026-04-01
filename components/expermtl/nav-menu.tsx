@@ -66,8 +66,9 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
       <NavigationMenuList className='gap-0'>
         <NavigationMenuItem value={NAV_MENU_VALUE}>
           <NavigationMenuTrigger
+            aria-label='Browse categories'
             className={cn(
-              'rounded-none p-2 aspect-square text-sm font-semibold outline-0 focus-visible:bg-brand focus-visible:ring-0',
+              'h-11 w-11 rounded-none p-2 text-sm font-semibold outline-0 focus-visible:bg-brand focus-visible:ring-0',
               // 'text-gray-100 hover:text-white',
               // 'dark:text-white',
               // 'active:bg-transparent dark:data-[state=open]:text-white',
@@ -89,6 +90,7 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
               //         : '#373945',
               // }}
             />
+            <span className='sr-only'>Browse categories</span>
           </NavigationMenuTrigger>
           <NavigationMenuContent
             dropdown

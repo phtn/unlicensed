@@ -1,3 +1,5 @@
+'use client'
+
 import {useMobile} from '@/hooks/use-mobile'
 import {useScreenResizeObserver} from '@/hooks/use-screen-resize-observer'
 import {cn} from '@/lib/utils'
@@ -131,6 +133,7 @@ export const Highlights = ({
                   {slides.map((_, index) => (
                     <button
                       key={index}
+                      type='button'
                       className={cn(
                         'h-2 rounded-full transition-all duration-300',
                         selectedIndex === index
@@ -153,6 +156,7 @@ export const Highlights = ({
             {slides.map((_, index) => (
               <button
                 key={index}
+                type='button'
                 className={cn(
                   'relative h-2.5 rounded-full transition-all duration-300',
                   "before:pointer-events-none before:absolute before:inset-2 before:content-['']",

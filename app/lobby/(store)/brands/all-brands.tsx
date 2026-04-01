@@ -149,6 +149,8 @@ export const AllBrands = () => {
             <Link
               href={`/lobby/brands?id=${brand.slug}`}
               key={brand.slug}
+              aria-label={`Browse ${brand.name}`}
+              title={brand.name}
               className={cn(
                 'group relative overflow-hidden transition-all duration-500 flex justify-center',
                 // Create visual interest with varying heights
@@ -157,6 +159,7 @@ export const AllBrands = () => {
                 index % 3 === 2 && 'sm:row-span-1',
               )}>
               <Icon name={brand.icon} className='size-20' />
+              <span className='sr-only'>{brand.name}</span>
             </Link>
           ))}
         </div>

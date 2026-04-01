@@ -1,7 +1,7 @@
 import {GlobalAuthModal} from '@/components/auth/global-auth-modal'
 import {ThemeScript} from '@/components/ui/theme-script'
 import {ProvidersCtxProvider} from '@/ctx'
-import {DynamicWagmiContext} from '@/ctx/wagmi/dynamic'
+import WagmiContext from '@/ctx/wagmi'
 import {
   GeistPixelCircle,
   GeistPixelGrid,
@@ -159,7 +159,6 @@ export const viewport: Viewport = {
   themeColor: '#1a1a1a',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
 }
 
 /**
@@ -197,7 +196,7 @@ export default async function RootLayout({
       </head>
       <body
         className={`${GeistPixelSquare.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelGrid.variable} ${GeistPixelLine.variable} ${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} antialiased font-okxs font-normal selection:bg-brand selection:text-white`}>
-        <DynamicWagmiContext cookies={cookies}>
+        <WagmiContext cookies={cookies}>
           <ProvidersCtxProvider>
             <EmailLinkHandler />
             <GlobalAuthModal />
@@ -207,7 +206,7 @@ export default async function RootLayout({
             <ConditionalNavbar navbar={navbar} />
             {children}
           </ProvidersCtxProvider>
-        </DynamicWagmiContext>
+        </WagmiContext>
       </body>
     </html>
   )

@@ -60,12 +60,14 @@
   src: url('/fonts/BerkeleyMono.otf') format('opentype');
   font-weight: 300;
   font-style: normal;
+  font-display: swap;
 }
 @font-face {
   font-family: 'IoskeleyMono';
   src: url('/fonts/IoskeleyMono-Regular.woff2') format('woff2');
   font-weight: 300;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -73,24 +75,28 @@
   src: url('/fonts/okxs-medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
+  font-display: swap;
 }
 @font-face {
   font-family: 'Okxs';
   src: url('/fonts/okxs-regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 @font-face {
   font-family: 'ClashGrotesk';
   src: url('/fonts/ClashGrotesk-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
+  font-display: swap;
 }
 @font-face {
   font-family: 'Monaco';
   src: url('/fonts/Monaco.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 @theme inline {
   --radius: 0.625rem;

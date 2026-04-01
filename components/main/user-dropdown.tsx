@@ -49,19 +49,29 @@ export const UserDropdown = ({
           ' outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand!',
       }}>
       <DropdownTrigger disabled={loading}>
-        {loading ? (
-          <Icon
-            name='spinners-ring'
-            className='size-7 bg-foreground/10 rounded-full'
-          />
-        ) : (
-          <Avatar
-            size='sm'
-            className='cursor-pointer border-2 border-white hover:border-brand dark:hover:border-white shadow-inner hover:shadow-white'
-            src={user.photoURL ?? undefined}
-            name={user.displayName ?? user.email ?? 'U'}
-          />
-        )}
+        <Button
+          isIconOnly
+          variant='light'
+          aria-label={
+            loading
+              ? 'Loading account menu'
+              : `Open account menu for ${user.displayName ?? user.email ?? 'user'}`
+          }
+          className='size-11 min-h-11 min-w-11 rounded-full p-0 focus-visible:outline-2! focus-visible:outline-brand!'>
+          {loading ? (
+            <Icon
+              name='spinners-ring'
+              className='size-7 rounded-full bg-foreground/10'
+            />
+          ) : (
+            <Avatar
+              size='sm'
+              className='cursor-pointer border-2 border-white hover:border-brand dark:hover:border-white shadow-inner hover:shadow-white'
+              src={user.photoURL ?? undefined}
+              name={user.displayName ?? user.email ?? 'U'}
+            />
+          )}
+        </Button>
       </DropdownTrigger>
       <DropdownMenu aria-label='user-menu' className='p-1 bg-transparent'>
         <DropdownItem

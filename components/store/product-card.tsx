@@ -10,7 +10,6 @@ import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {Tooltip} from '@heroui/react'
 import NextImage from 'next/image'
 import NextLink from 'next/link'
-import {useRouter} from 'next/navigation'
 import {memo, type MouseEvent, useMemo, useState} from 'react'
 import ShimmerText from '../expermtl/shimmer'
 
@@ -29,6 +28,8 @@ type PriceOption = {
 }
 
 const EMPTY_PRICE_OPTIONS: PriceOption[] = []
+const PRODUCT_CARD_IMAGE_SIZES =
+  '(min-width: 1536px) 19rem, (min-width: 1280px) 17rem, (min-width: 1024px) 15rem, (min-width: 640px) 38vw, 75vw'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -122,7 +123,6 @@ const ProductCardComponent = ({
   matchImageHeight = false,
 }: ProductCardProps) => {
   const addItem = useAddCartItem()
-  const router = useRouter()
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   const {
@@ -193,12 +193,6 @@ const ProductCardComponent = ({
     addItem(productId, 1, selectedOption.denominationValue)
   }
 
-  const handleNameClick = (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault()
-    event.stopPropagation()
-    void router.push(productHref)
-  }
-
   const isDemoProduct = brandLabel.toLowerCase().includes('test')
 
   if (matchImageHeight) {
@@ -251,7 +245,8 @@ const ProductCardComponent = ({
                 alt={product.name}
                 fill
                 quality={70}
-                sizes='(min-width: 1280px) 19rem, (min-width: 1024px) 16rem, (min-width: 768px) 18rem, 50vw'
+                loading='lazy'
+                sizes={PRODUCT_CARD_IMAGE_SIZES}
                 className='object-cover transition-transform duration-300 group-hover:scale-[1.03]'
               />
             ) : (
@@ -300,14 +295,14 @@ const ProductCardComponent = ({
                     content={product.name}
                     placement='top'
                     className='border-light-brand border'>
-                    <button
-                      type='button'
-                      onClick={handleNameClick}
-                      className='relative z-20 block max-w-full text-left pointer-events-auto'>
+                    <NextLink
+                      href={productHref}
+                      prefetch={false}
+                      className='relative z-20 inline-flex min-h-6 max-w-full items-center py-1 text-left pointer-events-auto'>
                       <h3 className='truncate capitalize leading-5 font-clash text-base sm:text-lg'>
                         {product.name}
                       </h3>
-                    </button>
+                    </NextLink>
                   </Tooltip>
                 </div>
 
@@ -325,7 +320,7 @@ const ProductCardComponent = ({
                       {subcategoryLabel && (
                         <span
                           className={cn(
-                            'text-[8px] font-okxs font-light capitalize opacity-80 sm:text-xs',
+                            'text-[8px] font-okxs font-light capitalize opacity-85 sm:text-xs',
                             {'text-[9px]! font-medium': isDemoProduct},
                           )}>
                           {isDemoProduct ? ' USE ONLY' : subcategoryLabel}
@@ -338,15 +333,15 @@ const ProductCardComponent = ({
                       )}
 
                       {netWeightLabel && (
-                        <span className='text-[8px] font-okxs font-normal lowercase opacity-80 sm:text-xs'>
+                        <span className='text-[8px] font-okxs font-normal lowercase opacity-85 sm:text-xs'>
                           {netWeightLabel}
                         </span>
                       )}
 
                       {packSizeLabel && (
-                        <span className='text-[8px] font-okxs font-normal lowercase opacity-80 sm:text-xs'>
+                        <span className='text-[8px] font-okxs font-normal lowercase opacity-85 sm:text-xs'>
                           {hasMetaBeforePackSize && (
-                            <span className='px-1 text-xs font-thin opacity-70'>
+                            <span className='px-1 text-xs font-thin opacity-85'>
                               &middot;
                             </span>
                           )}
@@ -376,14 +371,16 @@ const ProductCardComponent = ({
             <section className='flex w-full flex-col'>
               <div
                 role='group'
-                className='flex h-8 gap-x-1'
+                className='flex h-10 gap-x-1'
                 aria-label='Select denomination'>
                 {firstThreeOptions.map((option, index) => (
                   <button
                     key={option.denominationValue}
                     type='button'
+                    aria-label={`Select ${option.denom}`}
+                    aria-pressed={selectedIndex === index}
                     className={cn(
-                      'relative z-20 flex flex-1 items-center justify-center bg-white/14 text-xs text-white font-okxs backdrop-blur-sm transition-colors duration-300',
+                      'relative z-20 flex h-10 flex-1 items-center justify-center bg-white/14 text-xs text-white font-okxs backdrop-blur-sm transition-colors duration-300',
                       selectedIndex === index
                         ? 'bg-white text-brand hover:bg-white/85'
                         : 'hover:bg-white/28',
@@ -400,6 +397,11 @@ const ProductCardComponent = ({
 
               <button
                 type='button'
+                aria-label={
+                  selectedOption
+                    ? `Add ${product.name} ${selectedOption.denom} to cart`
+                    : `Add ${product.name} to cart`
+                }
                 className={cn(
                   'relative z-20 mt-1.25 rounded-xs px-3 py-2 text-sm font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
                   isTestProduct
@@ -469,7 +471,7 @@ const ProductCardComponent = ({
               width={512}
               height={512}
               quality={70}
-              sizes='(min-width: 1280px) 19rem, (min-width: 1024px) 16rem, (min-width: 768px) 18rem, 100vw'
+              sizes={PRODUCT_CARD_IMAGE_SIZES}
               className='aspect-square min-w-44 rounded-xs object-cover transition-transform duration-300 group-hover:scale-[1.03] xl:min-w-64'
             />
           ) : (
@@ -524,14 +526,14 @@ const ProductCardComponent = ({
                   content={product.name}
                   placement='top'
                   className='border-light-brand border'>
-                  <button
-                    type='button'
-                    onClick={handleNameClick}
-                    className='relative z-20 block max-w-full text-left pointer-events-auto'>
+                  <NextLink
+                    href={productHref}
+                    prefetch={false}
+                    className='relative z-20 inline-flex min-h-6 max-w-full items-center py-1 text-left pointer-events-auto'>
                     <h3 className='truncate capitalize leading-5 font-clash text-lg md:leading-5 lg:text-base lg:leading-5'>
                       {product.name}
                     </h3>
-                  </button>
+                  </NextLink>
                 </Tooltip>
               </div>
 
@@ -602,15 +604,16 @@ const ProductCardComponent = ({
           <section className='mt-auto flex w-full flex-col bg-dark-table dark:bg-black'>
             <div
               role='group'
-              className='mt-1.5 flex h-8 gap-x-1 md:gap-x-1.5'
+              className='mt-1.5 flex h-10 gap-x-1 md:gap-x-1.5'
               aria-label='Select denomination'>
               {firstThreeOptions.map((option, index) => (
                 <button
                   key={option.denominationValue}
                   type='button'
-                  // aria-pressed={selectedIndex === index}
+                  aria-label={`Select ${option.denom}`}
+                  aria-pressed={selectedIndex === index}
                   className={cn(
-                    'relative z-20 flex flex-1 items-center justify-center bg-sidebar/50 text-xs md:text-sm text-white dark:bg-dark-table font-okxs',
+                    'relative z-20 flex h-10 flex-1 items-center justify-center bg-sidebar/50 text-xs md:text-sm text-white dark:bg-dark-table font-okxs',
                     'transition-colors duration-300',
                     selectedIndex === index
                       ? 'bg-white text-brand hover:bg-sidebar/80 dark:bg-white/90 dark:hover:bg-white/75'
@@ -628,6 +631,11 @@ const ProductCardComponent = ({
 
             <button
               type='button'
+              aria-label={
+                selectedOption
+                  ? `Add ${product.name} ${selectedOption.denom} to cart`
+                  : `Add ${product.name} to cart`
+              }
               className={cn(
                 'relative z-20 mt-1.25 rounded-xs px-3 py-2 text-sm font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
                 isTestProduct

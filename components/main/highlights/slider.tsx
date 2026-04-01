@@ -8,6 +8,8 @@ export interface Slide {
   id: string
   imageUrl: string
   imageAlt: string
+  imageWidth?: number
+  imageHeight?: number
   title: ReactNode
   description: string
   ctaText?: string
@@ -17,6 +19,9 @@ export interface Slide {
 
 export const Slider = ({
   imageUrl,
+  imageAlt,
+  imageWidth = 2752,
+  imageHeight = 1150,
   // id,
   // tag,
   // title,
@@ -30,12 +35,14 @@ export const Slider = ({
     <div className='relative min-w-full flex-[0_0_100%] md:snap-start md:snap-always'>
       <div className='relative overflow-hidden h-screen '>
         <Image
-          width={0}
-          height={0}
+          width={imageWidth}
+          height={imageHeight}
           src={imageUrl}
-          alt='Beautiful flower'
+          alt={imageAlt || 'Rapid Fire featured hero image'}
           priority
-          unoptimized
+          fetchPriority='high'
+          quality={75}
+          sizes='100vw'
           className='h-auto w-full md:object-cover aspect-auto select-none'
         />
       </div>

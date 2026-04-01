@@ -10,6 +10,13 @@ const DEFAULT_SERVER_ACTION_ALLOWED_ORIGINS = [
   '192.168.1.7',
 ]
 
+const DEFAULT_ALLOWED_DEV_ORIGINS = [
+  'localhost',
+  '127.0.0.1',
+  '[::1]',
+  '192.168.1.7',
+]
+
 const customAllowedOrigins = (
   process.env.NEXT_SERVER_ACTIONS_ALLOWED_ORIGINS ?? ''
 )
@@ -19,6 +26,15 @@ const customAllowedOrigins = (
 
 const serverActionAllowedOrigins = Array.from(
   new Set([...DEFAULT_SERVER_ACTION_ALLOWED_ORIGINS, ...customAllowedOrigins]),
+)
+
+const customAllowedDevOrigins = (process.env.NEXT_ALLOWED_DEV_ORIGINS ?? '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+
+const allowedDevOrigins = Array.from(
+  new Set([...DEFAULT_ALLOWED_DEV_ORIGINS, ...customAllowedDevOrigins]),
 )
 
 const sanitizeId = (value: string) => {
@@ -112,6 +128,7 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   deploymentId,
+  allowedDevOrigins,
   serverExternalPackages: ['@react-email/render', '@react-email/components'],
   experimental: {
     serverActions: {

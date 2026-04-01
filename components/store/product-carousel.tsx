@@ -139,16 +139,24 @@ export const ProductCarousel = ({
                 key={product._id ?? product.slug}
                 type='button'
                 className={cn(
-                  'h-2 rounded-full transition-all duration-300',
+                  'relative flex h-6 w-6 items-center justify-center rounded-full transition-colors duration-300',
                   selectedIndex === index
-                    ? 'w-8 bg-foreground'
-                    : 'w-2 bg-foreground/25 hover:bg-foreground/45',
+                    ? 'bg-foreground/10'
+                    : 'hover:bg-foreground/10',
                 )}
                 onClick={() => scrollTo(index)}
                 role='tab'
                 aria-selected={selectedIndex === index}
-                aria-label={`Go to ${product.name}`}
-              />
+                aria-label={`Go to ${product.name}`}>
+                <span
+                  className={cn(
+                    'block h-2.5 rounded-full transition-all duration-300',
+                    selectedIndex === index
+                      ? 'w-8 bg-foreground'
+                      : 'w-2.5 bg-foreground/25',
+                  )}
+                />
+              </button>
             ))}
           </div>
           <p className='hidden md:block text-xs uppercase tracking-[0.3em] text-foreground/50'>
