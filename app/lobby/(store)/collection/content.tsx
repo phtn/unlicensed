@@ -20,16 +20,10 @@ interface StoreCollectionSection {
   sourceCategoryProductCount?: number
 }
 
-const toStoreProducts = (
-  products: RawProduct[],
-  sourceCategorySlug?: string,
-): StoreProduct[] =>
+const toStoreProducts = (products: RawProduct[]): StoreProduct[] =>
   products
     .filter(
-      (product) =>
-        product.archived !== true &&
-        product.available === true &&
-        (!sourceCategorySlug || product.categorySlug === sourceCategorySlug),
+      (product) => product.archived !== true && product.available === true,
     )
     .map((product) => adaptProduct(product))
 
@@ -42,11 +36,7 @@ export const FireCollectionContent = ({
   const enabledCollections = useMemo(
     () =>
       (fireCollections ?? []).filter(
-        (collection) =>
-          collection.enabled &&
-          (collection.sourceCategorySlug
-            ? (collection.sourceCategoryProductCount ?? 0) > 0
-            : collection.productIds.length > 0),
+        (collection) => collection.enabled && collection.productIds.length > 0,
       ),
     [fireCollections],
   )
@@ -73,21 +63,12 @@ export const FireCollectionContent = ({
     > = {}
 
     for (const collection of enabledCollections) {
-      queries[collection.id] = collection.sourceCategorySlug
-        ? {
-            query: api.products.q.listProducts,
-            args: {
-              availableOnly: true,
-              categorySlug: collection.sourceCategorySlug,
-              limit: collection.sourceCategoryProductCount ?? 0,
-            },
-          }
-        : {
-            query: api.products.q.getProductsByIds,
-            args: {
-              productIds: collection.productIds,
-            },
-          }
+      queries[collection.id] = {
+        query: api.products.q.getProductsByIds,
+        args: {
+          productIds: collection.productIds,
+        },
+      }
     }
 
     return queries
@@ -116,10 +97,7 @@ export const FireCollectionContent = ({
           sourceCategorySlug: collection.sourceCategorySlug,
           sourceCategoryProductCount:
             collection.sourceCategoryProductCount ?? undefined,
-          products: toStoreProducts(
-            productResult as RawProduct[],
-            collection.sourceCategorySlug,
-          ),
+          products: toStoreProducts(productResult as RawProduct[]),
         }
       })
       .filter(
@@ -178,7 +156,8 @@ export const FireCollectionContent = ({
                     className='dark:text-brand text-white'
                   />
                 }
-                className='dark:bg-white opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base'>
+                className='dark:bg-white opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base'
+              >
                 <span className='drop-shadow-xs'>Strain Finder</span>
               </Button>
 
@@ -191,7 +170,8 @@ export const FireCollectionContent = ({
                 endContent={
                   <Icon name={'search'} className='dark:text-white' />
                 }
-                className='border dark:border-light-gray/40 sm:flex items-center gap-2 font-polysans font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-base lg:text-lg'>
+                className='border dark:border-light-gray/40 sm:flex items-center gap-2 font-polysans font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-base lg:text-lg'
+              >
                 <span className='tracking-tight'>Advanced Search</span>
               </Button>
             </div>

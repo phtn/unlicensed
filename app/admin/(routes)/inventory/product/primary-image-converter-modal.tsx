@@ -758,8 +758,8 @@ export function PrimaryImageConverterModal({
                       className='h-96 bg-black/60 md:h-120'
                       image={workingSourceUrl}
                       aspectRatio={1}
-                      minZoom={1}
-                      maxZoom={4}
+                      minZoom={-0.3}
+                      maxZoom={2}
                       zoom={zoom}
                       onCropChange={setCroppedAreaPixels}
                       onZoomChange={setZoom}>
@@ -774,9 +774,9 @@ export function PrimaryImageConverterModal({
                     <div className='border-t border-foreground/10 px-4 py-3'>
                       <div className='mx-auto flex w-full max-w-lg items-center gap-3'>
                         <EdgeSlider
-                          min={1}
+                          min={0.8}
                           max={4}
-                          step={0.1}
+                          step={0.01}
                           value={[zoom]}
                           onValueChange={(value) =>
                             setZoom(
@@ -786,7 +786,7 @@ export function PrimaryImageConverterModal({
                           aria-label='Converter crop zoom'
                         />
                         <output className='w-14 text-right text-sm font-medium tabular-nums text-foreground/80'>
-                          {zoom.toFixed(1)}x
+                          {zoom.toFixed(2)}x
                         </output>
                       </div>
                     </div>

@@ -69,10 +69,10 @@ export const Products = ({
                   <ProductCard
                     product={product}
                     imageUrl={getImageUrl(product.image)}
-                    matchImageHeight={matchCardHeightToImage}
+                    // matchImageHeight={matchCardHeightToImage}
                     className={cn(
-                      'min-w-0! max-w-none! w-full',
-                      !matchCardHeightToImage && 'h-full!',
+                      'h-full! min-w-0! max-w-none! w-full',
+                      // !matchCardHeightToImage && 'h-full!',
                     )}
                   />
                 </motion.div>

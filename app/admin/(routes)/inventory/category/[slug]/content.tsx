@@ -247,8 +247,8 @@ const ProductStackView = ({
                   <div className='flex flex-col md:flex-row'>
                     <div
                       className={cn(
-                        'relative h-40 w-40 md:w-full shrink-0 overflow-hidden bg-linear-to-br from-slate-200/60 to-transparent md:h-auto dark:from-white/6 flex space-x-4 md:space-x-0',
-                        {'w-full': currentImageUrl},
+                        'relative h-40 shrink-0 overflow-hidden bg-linear-to-br from-slate-200/60 to-transparent md:h-auto dark:from-white/6 flex space-x-4 md:space-x-0',
+                        {'md:max-w-40': currentImageUrl},
                       )}>
                       {currentImageUrl ? (
                         <Image
@@ -257,7 +257,7 @@ const ProductStackView = ({
                           src={currentImageUrl}
                           radius='none'
                           loading='eager'
-                          className='md:w-full h-40 w-40 aspect-square'
+                          className='h-40 w-40 aspect-square'
                         />
                       ) : (
                         <div className='flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.18),transparent_55%),linear-gradient(135deg,rgba(15,23,42,0.08),transparent)] text-3xl font-semibold uppercase text-slate-600 dark:text-slate-300'>
@@ -265,8 +265,8 @@ const ProductStackView = ({
                         </div>
                       )}
                       <div
-                        className={cn('hidden grid-cols-2 gap-2', {
-                          'grid w-full': currentImageUrl,
+                        className={cn('md:hidden gap-2', {
+                          'grid grid-cols-2 w-full': !!currentImageUrl,
                         })}>
                         <div className='bg-neutral-50/80 p-2 dark:bg-white/5 space-y-1 h-fit'>
                           <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
@@ -276,7 +276,7 @@ const ProductStackView = ({
                             {stock || 'N/A'}
                           </p>
                         </div>
-                        <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-2 dark:border-white/10 dark:bg-white/5 space-y-1 h-fit'>
+                        <div className='rounded-sm bg-neutral-50/80 p-2 dark:bg-white/5 space-y-1 h-fit'>
                           <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
                             Starts
                           </p>
@@ -286,7 +286,7 @@ const ProductStackView = ({
                               : `$${formatPrice(startingPrice)}`}
                           </p>
                         </div>
-                        <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-2 dark:border-white/10 dark:bg-white/5 space-y-1 h-fit'>
+                        <div className='rounded-sm bg-neutral-50/80 p-2 dark:bg-white/5 space-y-1 h-fit'>
                           <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
                             Denoms
                           </p>
@@ -294,7 +294,7 @@ const ProductStackView = ({
                             {product.availableDenominations?.length ?? 0}
                           </p>
                         </div>
-                        <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-2 dark:border-white/10 dark:bg-white/5 space-y-1 h-fit'>
+                        <div className='rounded-sm bg-neutral-50/80 p-2 dark:bg-white/5 space-y-1 h-fit'>
                           <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
                             Tier
                           </p>
@@ -389,8 +389,8 @@ const ProductStackView = ({
                           </div>
                         </div>
 
-                        <div>
-                          <div className='hidden md:grid min-w-full grid-cols-2 gap-2 sm:min-w-80 sm:grid-cols-4'>
+                        <div className='h-fit'>
+                          <div className='hidden md:grid md:w-full md:min-w-full grid-cols-2 gap-2 sm:min-w-80 sm:grid-cols-4'>
                             <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-2 dark:border-white/10 dark:bg-white/5 space-y-1 h-fit'>
                               <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
                                 Stock

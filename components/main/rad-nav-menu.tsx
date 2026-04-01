@@ -101,41 +101,43 @@ export const InnerMenu = ({
             } as React.CSSProperties
           }>
           {items.map((item) => (
-            <li key={item.slug} className='list-none md:shrink-0'>
-              <button
-                type='button'
-                className={cn(
-                  'group/cat flex h-auto w-full items-center justify-between text-left text-sm font-semibold transition-colors duration-150 ease-out',
-                  'hover:border-border hover:text-accent-foreground px-6 py-0 md:py-3 data-active:border data-active:border-sidebar',
-                  'focus-visible:ring-2 focus-visible:ring-ring/50 rounded-none dark:bg-black dark:text-white',
-                  'border-none dark:data-active:text-white bg-sidebar/30',
-                  active === item.slug &&
-                    'border-border bg-transparent dark:bg-transparent!',
-                )}
-                onMouseEnter={(e) => {
-                  setActiveSlug(item.slug)
-                  setIndicatorToButton(e.currentTarget)
-                }}
-                onFocus={(e) => {
-                  setActiveSlug(item.slug)
-                  setIndicatorToButton(e.currentTarget)
-                }}
-                aria-current={active === item.slug ? 'true' : undefined}
-                data-active={active === item.slug || undefined}>
-                <span className='truncate capitalize text-base font-clash'>
-                  {item.name}
-                </span>
-                <Icon
-                  name='down-caret'
+            <Link href={`/lobby/category/${item.slug}`} key={item.slug}>
+              <li className='list-none md:shrink-0'>
+                <button
+                  type='button'
                   className={cn(
-                    'size-3.5 shrink-0 opacity-40 translate-x-0.5 -translate-y-0.5 transition-transform duration-300 ease-out scale-50 -rotate-45 md:rotate-0',
+                    'group/cat flex h-auto w-full items-center justify-between text-left text-sm font-semibold transition-colors duration-150 ease-out',
+                    'hover:border-border hover:text-accent-foreground px-6 py-0 md:py-3 data-active:border data-active:border-sidebar',
+                    'focus-visible:ring-2 focus-visible:ring-ring/50 rounded-none dark:bg-black dark:text-white',
+                    'border-none dark:data-active:text-white bg-sidebar/30',
                     active === item.slug &&
-                      'scale-75 md:scale-90 opacity-100 text-brand translate-y-0.0',
+                      'border-border bg-transparent dark:bg-transparent!',
                   )}
-                  aria-hidden
-                />
-              </button>
-            </li>
+                  onMouseEnter={(e) => {
+                    setActiveSlug(item.slug)
+                    setIndicatorToButton(e.currentTarget)
+                  }}
+                  onFocus={(e) => {
+                    setActiveSlug(item.slug)
+                    setIndicatorToButton(e.currentTarget)
+                  }}
+                  aria-current={active === item.slug ? 'true' : undefined}
+                  data-active={active === item.slug || undefined}>
+                  <span className='truncate capitalize text-base font-clash'>
+                    {item.name}
+                  </span>
+                  <Icon
+                    name='down-caret'
+                    className={cn(
+                      'size-3.5 shrink-0 opacity-40 translate-x-0.5 -translate-y-0.5 transition-transform duration-300 ease-out scale-50 -rotate-45 md:rotate-0',
+                      active === item.slug &&
+                        'scale-75 md:scale-90 opacity-100 text-brand translate-y-0.0',
+                    )}
+                    aria-hidden
+                  />
+                </button>
+              </li>
+            </Link>
           ))}
 
           <div

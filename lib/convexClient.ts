@@ -481,11 +481,7 @@ const _fetchFireCollections = async (): Promise<StoreCollectionSection[]> => {
       {},
     )) as RawFireCollectionConfig[] | null
     const enabledCollections = (collections ?? []).filter(
-      (collection) =>
-        collection.enabled &&
-        (collection.sourceCategorySlug
-          ? (collection.sourceCategoryProductCount ?? 0) > 0
-          : collection.productIds.length > 0),
+      (collection) => collection.enabled && collection.productIds.length > 0,
     )
 
     if (enabledCollections.length === 0) {
@@ -494,23 +490,17 @@ const _fetchFireCollections = async (): Promise<StoreCollectionSection[]> => {
 
     const collectionsWithProducts = await Promise.all(
       enabledCollections.map(async (collection) => {
-        const rawProducts = collection.sourceCategorySlug
-          ? ((await client.query(api.products.q.listProducts, {
-              availableOnly: true,
-              categorySlug: collection.sourceCategorySlug,
-              limit: collection.sourceCategoryProductCount ?? 0,
-            })) as RawProduct[])
-          : ((await client.query(api.products.q.getProductsByIds, {
-              productIds: collection.productIds,
-            })) as RawProduct[])
+        const rawProducts = (await client.query(
+          api.products.q.getProductsByIds,
+          {
+            productIds: collection.productIds,
+          },
+        )) as RawProduct[]
 
         const products = rawProducts
           .filter(
             (product) =>
-              product.archived !== true &&
-              product.available === true &&
-              (!collection.sourceCategorySlug ||
-                product.categorySlug === collection.sourceCategorySlug),
+              product.archived !== true && product.available === true,
           )
           .map((product) => adaptProduct(product))
 
