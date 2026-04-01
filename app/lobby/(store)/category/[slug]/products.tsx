@@ -15,6 +15,7 @@ interface ProductsProps {
   isLoading?: boolean
   isRefreshing?: boolean
   footer?: ReactNode
+  matchCardHeightToImage?: boolean
 }
 
 export const Products = ({
@@ -23,6 +24,7 @@ export const Products = ({
   isLoading = false,
   isRefreshing = false,
   footer,
+  matchCardHeightToImage = false,
 }: ProductsProps) => {
   const shouldReduceMotion = useReducedMotion()
 
@@ -67,7 +69,11 @@ export const Products = ({
                   <ProductCard
                     product={product}
                     imageUrl={getImageUrl(product.image)}
-                    className='h-full! min-w-0! max-w-none! w-full'
+                    matchImageHeight={matchCardHeightToImage}
+                    className={cn(
+                      'min-w-0! max-w-none! w-full',
+                      !matchCardHeightToImage && 'h-full!',
+                    )}
                   />
                 </motion.div>
               ))}

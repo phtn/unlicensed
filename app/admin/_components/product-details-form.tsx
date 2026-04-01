@@ -2,6 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
+import {useSaveAdminProductFormReturn} from '@/hooks/use-save-admin-product-form-return'
 import {Icon} from '@/lib/icons'
 import {
   getStockDisplayUnit,
@@ -25,6 +26,7 @@ interface ProductDetailsFormProps {
 export function ProductDetailsForm({product}: ProductDetailsFormProps) {
   const productDetailsContext = useProductDetailsSafe()
   const settingsPanelContext = useSettingsPanelSafe()
+  const saveAdminProductFormReturn = useSaveAdminProductFormReturn()
   const updateProduct = useMutation(api.products.m.updateProduct)
   const productImageUrl = useQuery(
     api.products.q.getPrimaryImage,
@@ -204,6 +206,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
           <Button
             as={Link}
             href={`/admin/inventory/product/${product._id}#inventory`}
+            onPress={saveAdminProductFormReturn}
             size='sm'
             variant='bordered'>
             Open Inventory Controls

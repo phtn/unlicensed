@@ -166,6 +166,7 @@ const CategoryCard = ({
         {heroImageUrl ? (
           <Image
             removeWrapper
+            loading='eager'
             alt={`${category.name} hero`}
             src={heroImageUrl}
             className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
@@ -177,7 +178,7 @@ const CategoryCard = ({
             </div>
           </div>
         )}
-        <h4 className='absolute top-4 left-4 z-100 truncate text-3xl font-semibold tracking-tight text-white'>
+        <h4 className='absolute top-4 left-4 z-100 truncate text-3xl font-semibold tracking-tight text-white bg-linear-to-r from-transparent to-black/40 pl-2 pr-4 rounded-e-full'>
           {category.name}
         </h4>
         <div className='absolute inset-0 bg-linear-to-t from-white via-white/20 to-transparent dark:from-[#0a0c10] dark:via-[#0a0c10]/25' />
@@ -236,11 +237,11 @@ const CategoryCard = ({
                   Edit
                 </Link>
               </div>
-              <div className='flex h-7 gap-2 items-center font-clash text-sm text-emerald-700 dark:text-emerald-300'>
+              <div className='flex h-7 gap-2 items-center font-clash text-sm text-emerald-950 dark:text-emerald-200'>
                 <Link
                   href={categoryHref}
                   className='group flex items-center h-6 rounded-md bg-emerald-500/10 px-3 touch-pan-y'>
-                  Open
+                  View List
                 </Link>
               </div>
             </div>

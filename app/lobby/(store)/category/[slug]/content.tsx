@@ -551,6 +551,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         getImageUrl={getImageUrl}
         isLoading={isLoadingInitialProducts}
         isRefreshing={isFilterPending || isRefreshingProducts}
+        matchCardHeightToImage
         footer={
           (canLoadMoreProducts || isLoadingMoreProducts) && (
             <div className='flex justify-center pt-6 h-96'>

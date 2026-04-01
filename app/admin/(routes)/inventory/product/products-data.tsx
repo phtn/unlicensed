@@ -14,6 +14,7 @@ import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
 import type {ProductType} from '@/convex/products/d'
+import {useSaveAdminProductFormReturn} from '@/hooks/use-save-admin-product-form-return'
 import {Icon} from '@/lib/icons'
 import {formatTimestamp} from '@/utils/date'
 import {formatPrice} from '@/utils/formatPrice'
@@ -26,6 +27,7 @@ import {
 } from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMutation, useQuery} from 'convex/react'
+import Link from 'next/link'
 import {useCallback, useMemo} from 'react'
 import {CSV_DENOM_KEYS, PRODUCT_CSV_FIELDS} from './csv-import/constants'
 import {
@@ -320,10 +322,37 @@ export const ProductsData = ({
   onLoadMore,
   loadMoreLabel = 'Load more',
 }: ProductsDataProps) => {
+  const saveAdminProductFormReturn = useSaveAdminProductFormReturn()
   const categories = useQuery(api.categories.q.listCategories)
   const archiveProduct = useMutation(api.products.m.archiveProduct)
   const updateProduct = useMutation(api.products.m.updateProduct)
   const safeData = useMemo(() => data ?? [], [data])
+  const leadImageStorageIds = useMemo(
+    () => [
+      ...new Set(
+        safeData.flatMap((product) => (product.image ? [product.image] : [])),
+      ),
+    ],
+    [safeData],
+  )
+  const optimizedLeadImageIds = useQuery(
+    api.files.upload.getTaggedStorageIds,
+    leadImageStorageIds.length > 0
+      ? {
+          storageIds: leadImageStorageIds,
+          requiredTag: 'gallery:optimized',
+        }
+      : 'skip',
+  )
+  const optimizedStorageIds = useMemo(() => {
+    const ids = new Set<string>()
+
+    for (const storageId of optimizedLeadImageIds ?? []) {
+      ids.add(String(storageId))
+    }
+
+    return ids
+  }, [optimizedLeadImageIds])
   const categorySlugs = useMemo(
     () =>
       (categories ?? [])
@@ -352,9 +381,18 @@ export const ProductsData = ({
           id: '_id',
           header: <ColHeader tip='ID' symbol='ID' className='w-12' left />,
           accessorKey: '_id',
-          cell: linkText('_id', `/admin/inventory/product/`, (v) =>
-            v.substring(28),
-          ),
+          cell: ({row}) => {
+            const productId = row.original._id
+
+            return (
+              <Link
+                href={`/admin/inventory/product/${productId}`}
+                onClick={saveAdminProductFormReturn}
+                className='font-brk text-sm tracking-wide uppercase hover:underline underline-offset-4 decoration-dotted text-mac-blue dark:text-blue-400'>
+                {productId.substring(28)}
+              </Link>
+            )
+          },
           size: 80,
           enableFiltering: false,
         },
@@ -425,6 +463,43 @@ export const ProductsData = ({
           cell: textCell('productType', 'text-xs uppercase'),
           size: 100,
           meta: {filterOptions: productTypeFilterOptions},
+        },
+        {
+          id: 'leadImageOptimized',
+          header: (
+            <ColHeader
+              tip='Lead Image in Optimized Gallery'
+              symbol={
+                <Icon name='image-bold' className='size-5 text-indigo-700' />
+              }
+              center
+            />
+          ),
+          accessorKey: 'image',
+          cell: ({row}) => {
+            const imageId = row.original.image
+
+            if (!imageId || optimizedLeadImageIds === undefined) {
+              return (
+                <div className='text-center font-brk text-sm opacity-60'>
+                  ····
+                </div>
+              )
+            }
+
+            return (
+              <div className='flex items-center justify-center'>
+                {optimizedStorageIds.has(String(imageId)) ? (
+                  <Icon
+                    name='checkbox-checked'
+                    className='size-5 text-indigo-500'
+                  />
+                ) : null}
+              </div>
+            )
+          },
+          size: 56,
+          enableFiltering: false,
         },
         {
           id: 'available',
@@ -633,7 +708,10 @@ export const ProductsData = ({
       brandFilterOptions,
       categories,
       categorySlugs,
+      optimizedLeadImageIds,
+      optimizedStorageIds,
       productTypeFilterOptions,
+      saveAdminProductFormReturn,
       subcategoryFilterOptions,
     ],
   )

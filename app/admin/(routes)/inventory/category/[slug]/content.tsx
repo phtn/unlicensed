@@ -1,22 +1,25 @@
 'use client'
 
+import {PrimaryImageConverterModal} from '@/app/admin/(routes)/inventory/product/primary-image-converter-modal'
 import {ProductList} from '@/app/admin/(routes)/inventory/product/product-list'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {Typewrite} from '@/components/expermtl/typewrite'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
-import {Doc} from '@/convex/_generated/dataModel'
+import {Doc, Id} from '@/convex/_generated/dataModel'
+import {onError} from '@/ctx/toast'
 import {useMobile} from '@/hooks/use-mobile'
+import {useSaveAdminProductFormReturn} from '@/hooks/use-save-admin-product-form-return'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon, IconName} from '@/lib/icons'
 import {formatStockDisplay} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button, Card, Chip, Image} from '@heroui/react'
-import {useQuery} from 'convex/react'
+import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {parseAsString, parseAsStringEnum, useQueryState} from 'nuqs'
-import {Suspense} from 'react'
+import {Suspense, useCallback, useMemo, useState} from 'react'
 import {ProductsData} from '../../product/products-data'
 
 interface CategoryProductsContentProps {
@@ -74,195 +77,437 @@ const ProductStackView = ({
   categorySlug: string
   products: Doc<'products'>[] | undefined
 }) => {
-  const imageIds =
-    products?.map((product) => product.image).filter(Boolean) ?? []
+  const saveAdminProductFormReturn = useSaveAdminProductFormReturn()
+  const updateProduct = useMutation(api.products.m.updateProduct)
+  const [activeConverterProductId, setActiveConverterProductId] = useState<
+    string | null
+  >(null)
+  const [isConverterOpen, setIsConverterOpen] = useState(false)
+  const [convertedPreviewByProductId, setConvertedPreviewByProductId] =
+    useState<Record<string, string>>({})
+  const [convertedImageIdByProductId, setConvertedImageIdByProductId] =
+    useState<Record<string, string>>({})
+  const leadImageStorageIds = useMemo(
+    () => [
+      ...new Set(
+        (products ?? []).flatMap((product) => {
+          const imageId =
+            convertedImageIdByProductId[product._id] ?? product.image
+          return imageId ? [imageId] : []
+        }),
+      ),
+    ],
+    [convertedImageIdByProductId, products],
+  )
+  const optimizedLeadImageIds = useQuery(
+    api.files.upload.getTaggedStorageIds,
+    leadImageStorageIds.length > 0
+      ? {
+          storageIds: leadImageStorageIds as Id<'_storage'>[],
+          requiredTag: 'gallery:optimized',
+        }
+      : 'skip',
+  )
+  const optimizedStorageIds = useMemo(
+    () =>
+      new Set(
+        (optimizedLeadImageIds ?? []).map((storageId) => String(storageId)),
+      ),
+    [optimizedLeadImageIds],
+  )
+  const imageIds = useMemo(
+    () => [
+      ...new Set(
+        (products ?? []).flatMap((product) => {
+          const imageId =
+            convertedImageIdByProductId[product._id] ?? product.image
+          return imageId ? [imageId] : []
+        }),
+      ),
+    ],
+    [convertedImageIdByProductId, products],
+  )
   const resolveUrl = useStorageUrls(imageIds as string[])
+  const activeConverterProduct = useMemo(
+    () =>
+      (products ?? []).find(
+        (product) => product._id === activeConverterProductId,
+      ) ?? null,
+    [activeConverterProductId, products],
+  )
+  const activeConverterSourceUrl = useMemo(() => {
+    if (!activeConverterProduct) {
+      return null
+    }
+
+    return (
+      convertedPreviewByProductId[activeConverterProduct._id] ??
+      (activeConverterProduct.image
+        ? (resolveUrl(
+            convertedImageIdByProductId[activeConverterProduct._id] ??
+              activeConverterProduct.image,
+          ) ?? null)
+        : null)
+    )
+  }, [
+    activeConverterProduct,
+    convertedImageIdByProductId,
+    convertedPreviewByProductId,
+    resolveUrl,
+  ])
+  const openConverter = useCallback((productId: string) => {
+    setActiveConverterProductId(productId)
+    setIsConverterOpen(true)
+  }, [])
+  const handleConvertedPrimary = useCallback(
+    async ({storageId, url}: {storageId: string; url: string | null}) => {
+      const productId = activeConverterProductId
+      if (!productId) {
+        return
+      }
+
+      setConvertedImageIdByProductId((current) => ({
+        ...current,
+        [productId]: storageId,
+      }))
+
+      if (url) {
+        setConvertedPreviewByProductId((current) => ({
+          ...current,
+          [productId]: url,
+        }))
+      }
+
+      try {
+        await updateProduct({
+          id: productId as Id<'products'>,
+          fields: {
+            image: storageId as Id<'_storage'>,
+          },
+        })
+      } catch (error) {
+        setConvertedImageIdByProductId((current) => {
+          const next = {...current}
+          delete next[productId]
+          return next
+        })
+        setConvertedPreviewByProductId((current) => {
+          const next = {...current}
+          delete next[productId]
+          return next
+        })
+        onError(
+          error instanceof Error
+            ? error.message
+            : 'Failed to apply optimized image to the product.',
+        )
+      }
+    },
+    [activeConverterProductId, updateProduct],
+  )
 
   return (
-    <section className='h-[91lvh] overflow-auto px-2 pb-10'>
-      {products?.length === 0 ? (
-        <p className='px-4 text-sm text-neutral-500'>
-          No products in this category.
-        </p>
-      ) : (
-        <div className='space-y-3'>
-          {products?.map((product) => {
-            const stock = formatStockDisplay(product)
-            const startingPrice = getStartingPrice(product)
-            const metaChips = [
-              product.brand?.[0],
-              product.tier,
-              product.productType,
-              product.subcategory,
-            ].filter((value): value is string => Boolean(value))
+    <>
+      <section className='h-[91lvh] overflow-auto px-2 pb-10'>
+        {products?.length === 0 ? (
+          <p className='px-4 text-sm text-neutral-500'>
+            No products in this category.
+          </p>
+        ) : (
+          <div className='space-y-3'>
+            {products?.map((product) => {
+              const currentImageId =
+                convertedImageIdByProductId[product._id] ?? product.image
+              const currentImageUrl =
+                convertedPreviewByProductId[product._id] ??
+                (currentImageId
+                  ? (resolveUrl(currentImageId) ?? undefined)
+                  : undefined)
+              const isLeadImageOptimized = currentImageId
+                ? optimizedStorageIds.has(String(currentImageId))
+                : false
+              const canConvertPrimaryImage = Boolean(
+                currentImageId && currentImageUrl && !isLeadImageOptimized,
+              )
+              const stock = formatStockDisplay(product)
+              const startingPrice = getStartingPrice(product)
+              const metaChips = [
+                product.brand?.[0],
+                product.tier,
+                product.productType,
+                product.subcategory,
+              ].filter((value): value is string => Boolean(value))
 
-            return (
-              <Card
-                key={product._id}
-                shadow='none'
-                radius='none'
-                className='overflow-hidden border border-black/5 bg-white/80 dark:border-white/10 dark:bg-dark-table/45'>
-                <div className='flex flex-col md:flex-row'>
-                  <div className='relative h-40 shrink-0 overflow-hidden bg-linear-to-br from-slate-200/60 to-transparent md:h-auto md:w-44 dark:from-white/6'>
-                    {product.image ? (
-                      <Image
-                        removeWrapper
-                        alt={product.name ?? 'Product image'}
-                        src={resolveUrl(product.image) ?? undefined}
-                        radius='none'
-                        className='h-full w-full object-cover'
-                      />
-                    ) : (
-                      <div className='flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.18),transparent_55%),linear-gradient(135deg,rgba(15,23,42,0.08),transparent)] text-3xl font-semibold uppercase text-slate-600 dark:text-slate-300'>
-                        {(product.name ?? '?').slice(0, 1)}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className='flex flex-1 flex-col gap-4 p-4'>
-                    <div className='flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between'>
-                      <div className='space-y-3'>
-                        <div>
-                          <div className='flex flex-wrap items-center gap-2'>
-                            <h3 className='text-lg font-semibold tracking-tight text-foreground'>
-                              {product.name}
-                            </h3>
-                            <Chip
-                              size='sm'
-                              variant='flat'
-                              className={
-                                product.available === false
-                                  ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
-                                  : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-                              }>
-                              {product.available === false
-                                ? 'Unavailable'
-                                : 'Available'}
-                            </Chip>
-                          </div>
-                          <p className='text-xs text-neutral-500'>
-                            {product.slug ?? `${categorySlug}-${product._id}`}
-                          </p>
+              return (
+                <Card
+                  key={product._id}
+                  shadow='none'
+                  radius='none'
+                  className='overflow-hidden border border-black/5 bg-white/80 dark:border-white/10 dark:bg-dark-table/45'>
+                  <div className='flex flex-col md:flex-row'>
+                    <div
+                      className={cn(
+                        'relative h-40 w-40 md:w-full shrink-0 overflow-hidden bg-linear-to-br from-slate-200/60 to-transparent md:h-auto dark:from-white/6 flex space-x-4 md:space-x-0',
+                        {'w-full': currentImageUrl},
+                      )}>
+                      {currentImageUrl ? (
+                        <Image
+                          removeWrapper
+                          alt={product.name ?? 'Product image'}
+                          src={currentImageUrl}
+                          radius='none'
+                          loading='eager'
+                          className='md:w-full h-40 w-40 aspect-square'
+                        />
+                      ) : (
+                        <div className='flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.18),transparent_55%),linear-gradient(135deg,rgba(15,23,42,0.08),transparent)] text-3xl font-semibold uppercase text-slate-600 dark:text-slate-300'>
+                          {(product.name ?? '?').slice(0, 1)}
                         </div>
-
-                        <p className='max-w-3xl text-sm leading-6 text-neutral-600 dark:text-neutral-300'>
-                          {product.shortDescription?.trim() ||
-                            product.description?.trim() ||
-                            'No product description yet.'}
-                        </p>
-
-                        <div className='flex flex-wrap gap-2'>
-                          {metaChips.length > 0 ? (
-                            metaChips.map((chip) => (
-                              <Chip
-                                key={`${product._id}-${chip}`}
-                                size='sm'
-                                variant='flat'
-                                className='bg-sky-500/10 text-sky-700 dark:text-sky-300 uppercase h-6 md:h-8'>
-                                {chip}
-                              </Chip>
-                            ))
-                          ) : (
-                            <Chip
-                              size='sm'
-                              variant='flat'
-                              className='bg-black/5 text-neutral-600 dark:bg-white/8 dark:text-neutral-300'>
-                              Missing taxonomy
-                            </Chip>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className='grid min-w-full grid-cols-2 gap-2 sm:min-w-80 sm:grid-cols-4'>
-                        <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-3 dark:border-white/10 dark:bg-white/5 space-y-0.5'>
+                      )}
+                      <div
+                        className={cn('hidden grid-cols-2 gap-2', {
+                          'grid w-full': currentImageUrl,
+                        })}>
+                        <div className='bg-neutral-50/80 p-2 dark:bg-white/5 space-y-1 h-fit'>
                           <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
                             Stock
                           </p>
-                          <p className='text-lg font-semibold text-foreground'>
+                          <p className='text-base font-medium text-foreground'>
                             {stock || 'N/A'}
                           </p>
                         </div>
-                        <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-3 dark:border-white/10 dark:bg-white/5 space-y-0.5'>
+                        <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-2 dark:border-white/10 dark:bg-white/5 space-y-1 h-fit'>
                           <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
                             Starts
                           </p>
-                          <p className='text-lg font-semibold text-foreground'>
+                          <p className='text-base font-medium text-foreground'>
                             {startingPrice == null
                               ? 'N/A'
                               : `$${formatPrice(startingPrice)}`}
                           </p>
                         </div>
-                        <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-3 dark:border-white/10 dark:bg-white/5 space-y-0.5'>
+                        <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-2 dark:border-white/10 dark:bg-white/5 space-y-1 h-fit'>
                           <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
                             Denoms
                           </p>
-                          <p className='text-lg font-semibold text-foreground'>
+                          <p className='text-base font-medium text-foreground'>
                             {product.availableDenominations?.length ?? 0}
                           </p>
                         </div>
-                        <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-3 dark:border-white/10 dark:bg-white/5 space-y-0.5'>
+                        <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-2 dark:border-white/10 dark:bg-white/5 space-y-1 h-fit'>
                           <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
                             Tier
                           </p>
-                          <p className='text-lg font-semibold text-foreground uppercase'>
+                          <p className='text-base font-medium text-foreground uppercase'>
                             {product.tier}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    <div className='flex flex-wrap items-center gap-2 pt-3'>
-                      {product.featured ? (
-                        <Chip
-                          size='sm'
-                          variant='flat'
-                          className='bg-violet-500/10 text-violet-700 dark:text-violet-300'>
-                          Featured
-                        </Chip>
-                      ) : null}
-                      {product.onSale ? (
-                        <Chip
-                          size='sm'
-                          variant='flat'
-                          className='bg-rose-500/10 text-rose-700 dark:text-rose-300'>
-                          On Sale
-                        </Chip>
-                      ) : null}
-                      {product.limited ? (
-                        <Chip
-                          size='sm'
-                          variant='flat'
-                          className='bg-orange-500/10 text-orange-700 dark:text-orange-300'>
-                          Limited
-                        </Chip>
-                      ) : null}
-                      <div className='ml-auto flex gap-2'>
-                        <Button
-                          as={Link}
-                          href={`/admin/inventory/product/${product._id}`}
-                          radius='none'
-                          variant='flat'
-                          className='rounded-sm h-8! bg-black/5 dark:bg-white/8'>
-                          Open
-                        </Button>
-                        <Button
-                          as={Link}
-                          href={`/admin/inventory/product?tabId=edit&id=${product._id}`}
-                          radius='none'
-                          variant='flat'
-                          className='rounded-sm h-8! bg-black text-white dark:bg-white dark:text-black'>
-                          Edit
-                        </Button>
+                    <div className='flex flex-1 flex-col gap-4 p-4'>
+                      <div className='flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between'>
+                        <div className='space-y-3'>
+                          <div>
+                            <div className='flex flex-wrap items-center gap-2'>
+                              <h3 className='text-lg font-clash tracking-tight text-foreground'>
+                                {product.name}
+                              </h3>
+                              <Chip
+                                size='sm'
+                                variant='flat'
+                                className={cn(
+                                  'font-medium bg-amber-500/10 uppercase text-amber-700 dark:text-amber-300 h-6!',
+                                  {
+                                    'bg-emerald-500 uppercase dark:bg-emerald-500/10 text-white dark:text-emerald-300 rounded-sm':
+                                      product.available,
+                                  },
+                                )}>
+                                {product.available === false
+                                  ? 'Unavailable'
+                                  : 'Available'}
+                              </Chip>
+                            </div>
+                            <p className='text-xs text-foreground/50'>
+                              {product.slug ?? `${categorySlug}-${product._id}`}
+                            </p>
+                          </div>
+
+                          <p className='max-w-3xl text-sm leading-6 text-neutral-600 dark:text-neutral-300'>
+                            {product.shortDescription?.trim() ||
+                              product.description?.trim() ||
+                              'No description.'}
+                          </p>
+
+                          <div>
+                            <div className='flex flex-wrap gap-2'>
+                              {metaChips.length > 0 ? (
+                                metaChips.map((chip) => (
+                                  <Chip
+                                    key={`${product._id}-${chip}`}
+                                    size='sm'
+                                    variant='flat'
+                                    className='bg-sky-500/10 text-sky-700 dark:text-sky-300 uppercase h-6 md:h-6 rounded-sm'>
+                                    {chip}
+                                  </Chip>
+                                ))
+                              ) : (
+                                <Chip
+                                  size='sm'
+                                  variant='flat'
+                                  className='bg-black/5 text-neutral-600 dark:bg-white/8 dark:text-neutral-300'>
+                                  Missing taxonomy
+                                </Chip>
+                              )}
+                            </div>
+                            <div className='flex min-h-0 flex-wrap items-center gap-2 min-w-0'>
+                              {product.featured ? (
+                                <Chip
+                                  size='sm'
+                                  variant='flat'
+                                  className='bg-violet-500/10 text-violet-700 dark:text-violet-300'>
+                                  Featured
+                                </Chip>
+                              ) : null}
+                              {product.onSale ? (
+                                <Chip
+                                  size='sm'
+                                  variant='flat'
+                                  className='bg-rose-500/10 text-rose-700 dark:text-rose-300'>
+                                  On Sale
+                                </Chip>
+                              ) : null}
+                              {product.limited ? (
+                                <Chip
+                                  size='sm'
+                                  variant='flat'
+                                  className='bg-orange-500/10 text-orange-700 dark:text-orange-300'>
+                                  Limited
+                                </Chip>
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className='hidden md:grid min-w-full grid-cols-2 gap-2 sm:min-w-80 sm:grid-cols-4'>
+                            <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-2 dark:border-white/10 dark:bg-white/5 space-y-1 h-fit'>
+                              <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
+                                Stock
+                              </p>
+                              <p className='text-base font-medium text-foreground'>
+                                {stock || 'N/A'}
+                              </p>
+                            </div>
+                            <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-2 dark:border-white/10 dark:bg-white/5 space-y-1 h-fit'>
+                              <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
+                                Starts
+                              </p>
+                              <p className='text-base font-medium text-foreground'>
+                                {startingPrice == null
+                                  ? 'N/A'
+                                  : `$${formatPrice(startingPrice)}`}
+                              </p>
+                            </div>
+                            <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-2 dark:border-white/10 dark:bg-white/5 space-y-1 h-fit'>
+                              <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
+                                Denoms
+                              </p>
+                              <p className='text-base font-medium text-foreground'>
+                                {product.availableDenominations?.length ?? 0}
+                              </p>
+                            </div>
+                            <div className='rounded-sm border border-black/5 bg-neutral-50/80 p-2 dark:border-white/10 dark:bg-white/5 space-y-1 h-fit'>
+                              <p className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
+                                Tier
+                              </p>
+                              <p className='text-base font-medium text-foreground uppercase'>
+                                {product.tier}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className='flex flex-col gap-2 pt-3 md:pt-0 md:flex-row items-end justify-end h-16 w-full'>
+                            <div className='flex shrink-0 gap-2 md:pl-4'>
+                              <Button
+                                radius='none'
+                                variant={
+                                  canConvertPrimaryImage ? 'flat' : 'light'
+                                }
+                                isIconOnly={!canConvertPrimaryImage}
+                                className={cn(
+                                  'rounded-sm h-8! bg-indigo-950 text-white dark:text-white',
+                                  {
+                                    'bg-transparent text-black dark:text-white pointer-events-none':
+                                      !canConvertPrimaryImage,
+                                  },
+                                )}
+                                endContent={
+                                  <Icon
+                                    name={
+                                      canConvertPrimaryImage
+                                        ? 'lightning'
+                                        : 'gallery-check-bold'
+                                    }
+                                    className={cn(
+                                      'size-4 rotate-6 text-yellow-500',
+                                      {
+                                        'rotate-0 size-6 text-indigo-500 pointer-events-none':
+                                          !canConvertPrimaryImage,
+                                      },
+                                    )}
+                                  />
+                                }
+                                onPress={() => openConverter(product._id)}>
+                                {!currentImageId
+                                  ? 'No Image'
+                                  : isLeadImageOptimized
+                                    ? ''
+                                    : 'Optimize Image'}
+                              </Button>
+                              <Button
+                                as={Link}
+                                href={`/admin/inventory/product/${product._id}`}
+                                onPress={saveAdminProductFormReturn}
+                                radius='none'
+                                variant='flat'
+                                className='rounded-sm h-8! bg-black/5 dark:bg-white/8'>
+                                Open
+                              </Button>
+                              <Button
+                                as={Link}
+                                href={`/admin/inventory/product?tabId=edit&id=${product._id}`}
+                                onPress={saveAdminProductFormReturn}
+                                radius='none'
+                                variant='flat'
+                                className='rounded-sm h-8! bg-black text-white dark:bg-white dark:text-black'>
+                                Edit
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            )
-          })}
-        </div>
-      )}
-    </section>
+                </Card>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
+      <PrimaryImageConverterModal
+        isOpen={isConverterOpen}
+        onOpenChangeAction={setIsConverterOpen}
+        onConvertedAction={(result) => {
+          void handleConvertedPrimary(result)
+        }}
+        sourceUrl={activeConverterSourceUrl}
+        categorySlug={categorySlug}
+        productBrands={activeConverterProduct?.brand ?? []}
+        suggestedFileNameStem={activeConverterProduct?.name ?? null}
+      />
+    </>
   )
 }
 
@@ -335,7 +580,7 @@ const CategoryProductsContentInner = ({
             variant='solid'
             onPress={handleEdit}
             className='rounded-sm h-6 md:h-8 w-6 aspect-square md:w-fit border-white bg-gray-100/80 font-clash text-zinc-600 dark:border-transparent dark:bg-gray-200/5 dark:text-indigo-100'
-            startContent={<Icon name='pencil-fill' className='size-4' />}>
+            startContent={<Icon name='pen' className='size-3' />}>
             <span className='text-sm font-clash hidden md:flex'>Edit</span>
           </Button>
 

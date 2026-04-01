@@ -19,6 +19,7 @@ type ProductCardProps = {
   /** Resolved image URL; when provided, used instead of product.image (e.g. when product.image is a storage ID) */
   imageUrl?: string | null
   className?: string
+  matchImageHeight?: boolean
 }
 
 type PriceOption = {
@@ -118,6 +119,7 @@ const ProductCardComponent = ({
   product,
   imageUrl: imageUrlProp,
   className,
+  matchImageHeight = false,
 }: ProductCardProps) => {
   const addItem = useAddCartItem()
   const router = useRouter()
@@ -198,6 +200,224 @@ const ProductCardComponent = ({
   }
 
   const isDemoProduct = brandLabel.toLowerCase().includes('test')
+
+  if (matchImageHeight) {
+    return (
+      <article
+        data-product-type={productTypeLabel || undefined}
+        data-test-product={isTestProduct ? 'true' : undefined}
+        className={cn(
+          'group relative aspect-square min-w-48 max-w-48 overflow-hidden rounded-xs bg-sidebar shadow-sm dark:bg-black sm:min-w-80 md:min-w-72 lg:min-w-64 xl:min-w-76',
+          isTestProduct &&
+            'border border-orange-300/55 shadow-[0_0_0_1px_rgba(249,115,22,0.22),0_0_28px_rgba(249,115,22,0.18)] dark:border-orange-300/45',
+          className,
+        )}>
+        {isTestProduct ? (
+          <>
+            <div className='pointer-events-none absolute inset-px z-0 rounded-xs border border-orange-200/35 dark:border-orange-200/20' />
+            <div className='pointer-events-none absolute inset-x-6 top-0 z-0 h-px bg-linear-to-r from-transparent via-orange-300/90 to-transparent shadow-[0_0_18px_rgba(251,146,60,0.75)]' />
+            <div className='pointer-events-none absolute inset-y-10 right-0 z-0 w-px bg-linear-to-b from-transparent via-orange-300/70 to-transparent shadow-[0_0_18px_rgba(251,146,60,0.65)]' />
+          </>
+        ) : null}
+        <NextLink
+          href={productHref}
+          prefetch={false}
+          aria-label={`View ${product.name}`}
+          className='absolute inset-0 z-10 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+        />
+
+        <div className='relative h-full'>
+          <div
+            className={cn(
+              'absolute inset-0 overflow-hidden rounded-xs bg-sidebar/40 dark:bg-dark-table/40',
+              isTestProduct &&
+                'border-b border-orange-300/60 bg-[radial-gradient(circle_at_top_left,rgba(251,146,60,0.22),transparent_42%),linear-gradient(180deg,rgba(154,52,18,0.18),transparent_52%)] dark:border-orange-300/40',
+            )}>
+            {isTestProduct ? (
+              <>
+                <div className='pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(135deg,rgba(251,146,60,0.18),transparent_38%,rgba(234,88,12,0.16)_100%)] mix-blend-screen' />
+                <div className='pointer-events-none absolute inset-0 z-10 opacity-70 bg-[linear-gradient(180deg,rgba(255,237,213,0.16)_0%,transparent_22%,transparent_78%,rgba(251,146,60,0.18)_100%)]' />
+                <div className='pointer-events-none absolute left-2 top-2 z-20 overflow-hidden rounded-xs border border-orange-300/75 bg-[linear-gradient(135deg,rgba(249,115,22,0.94),rgba(124,45,18,0.94))] px-2.5 py-1 shadow-[0_0_20px_rgba(249,115,22,0.3)] backdrop-blur-md'>
+                  <div className='absolute inset-x-0 top-0 h-px bg-orange-100/80' />
+                  <p className=' text-xs font-ios uppercase tracking-widest text-orange-50'>
+                    {TEST_PRODUCT_TYPE}
+                  </p>
+                </div>
+              </>
+            ) : null}
+            {imageSrc ? (
+              <NextImage
+                src={imageSrc}
+                alt={product.name}
+                fill
+                quality={70}
+                sizes='(min-width: 1280px) 19rem, (min-width: 1024px) 16rem, (min-width: 768px) 18rem, 50vw'
+                className='object-cover transition-transform duration-300 group-hover:scale-[1.03]'
+              />
+            ) : (
+              <div className='flex h-full w-full items-center justify-center'>
+                <Icon name='spinners-ring' />
+              </div>
+            )}
+          </div>
+
+          <div className='pointer-events-none absolute inset-x-0 bottom-0 z-10 h-40 bg-linear-to-t from-black via-black/78 to-transparent' />
+
+          <div className='relative z-20 flex h-full flex-col justify-end px-2 pb-2 text-white'>
+            <section
+              id='info-details'
+              className='relative flex shrink-0 items-start justify-between overflow-hidden pb-2'>
+              <div className='min-w-0 flex-1'>
+                <div>
+                  <div>
+                    {brandLabel && (
+                      <p className='mb-0.5 h-4 truncate text-[9px] font-okxs font-light capitalize tracking-wide opacity-80'>
+                        <span
+                          className={cn('font-light', {
+                            'font-bone font-normal text-sm tracking-widest uppercase text-orange-200 -mt-2':
+                              isDemoProduct,
+                          })}>
+                          {isDemoProduct ? (
+                            <div className='bg-black pb-3 h-fit -translate-y-3 relative z-8888'>
+                              <ShimmerText text={'Demo'} surface='light' />
+                            </div>
+                          ) : (
+                            brandLabel
+                          )}
+                        </span>
+                        {productTypeLabel && !isTestProduct && (
+                          <span>
+                            <span className='px-1 text-[8px] font-thin opacity-70 font-okxs'>
+                              &middot;
+                            </span>
+                            {productTypeLabel}
+                          </span>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                  <Tooltip
+                    content={product.name}
+                    placement='top'
+                    className='border-light-brand border'>
+                    <button
+                      type='button'
+                      onClick={handleNameClick}
+                      className='relative z-20 block max-w-full text-left pointer-events-auto'>
+                      <h3 className='truncate capitalize leading-5 font-clash text-base sm:text-lg'>
+                        {product.name}
+                      </h3>
+                    </button>
+                  </Tooltip>
+                </div>
+
+                <div className='flex items-center justify-between relative top-1'>
+                  <div className='whitespace-nowrap'>
+                    <div className='mt-0.5 flex h-4 items-center'>
+                      {tierLabel !== '' && (
+                        <span className='text-[8px] font-okxs font-medium uppercase tracking-widest opacity-75 sm:text-xs'>
+                          {isDemoProduct ? 'For testing' : tierLabel}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className='flex h-4 items-center whitespace-nowrap'>
+                      {subcategoryLabel && (
+                        <span
+                          className={cn(
+                            'text-[8px] font-okxs font-light capitalize opacity-80 sm:text-xs',
+                            {'text-[9px]! font-medium': isDemoProduct},
+                          )}>
+                          {isDemoProduct ? ' USE ONLY' : subcategoryLabel}
+                          {netWeightLabel && (
+                            <span className='px-1 text-xs font-thin opacity-70'>
+                              &middot;
+                            </span>
+                          )}
+                        </span>
+                      )}
+
+                      {netWeightLabel && (
+                        <span className='text-[8px] font-okxs font-normal lowercase opacity-80 sm:text-xs'>
+                          {netWeightLabel}
+                        </span>
+                      )}
+
+                      {packSizeLabel && (
+                        <span className='text-[8px] font-okxs font-normal lowercase opacity-80 sm:text-xs'>
+                          {hasMetaBeforePackSize && (
+                            <span className='px-1 text-xs font-thin opacity-70'>
+                              &middot;
+                            </span>
+                          )}
+                          <span>{packSizeLabel} pk</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className='pointer-events-none absolute right-0 flex aspect-square grow-0 items-center justify-end overflow-hidden font-medium'>
+                    {selectedOption ? (
+                      <span
+                        className={cn(
+                          'font-medium tracking-tighter text-[1.45rem] text-light-brand sm:text-[1.75rem]',
+                          isTestProduct &&
+                            'text-cyan-300 drop-shadow-[0_0_12px_rgba(34,211,238,0.22)]',
+                        )}>
+                        ${selectedOption.price}
+                      </span>
+                    ) : (
+                      '—'
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className='flex w-full flex-col'>
+              <div
+                role='group'
+                className='flex h-8 gap-x-1'
+                aria-label='Select denomination'>
+                {firstThreeOptions.map((option, index) => (
+                  <button
+                    key={option.denominationValue}
+                    type='button'
+                    className={cn(
+                      'relative z-20 flex flex-1 items-center justify-center bg-white/14 text-xs text-white font-okxs backdrop-blur-sm transition-colors duration-300',
+                      selectedIndex === index
+                        ? 'bg-white text-brand hover:bg-white/85'
+                        : 'hover:bg-white/28',
+                    )}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      setSelectedIndex(index)
+                    }}>
+                    {option.denom}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type='button'
+                className={cn(
+                  'relative z-20 mt-1.25 rounded-xs px-3 py-2 text-sm font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
+                  isTestProduct
+                    ? 'border border-cyan-300/60 bg-cyan-700 text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.24)] hover:bg-cyan-400 active:bg-cyan-600 dark:border-cyan-300/40 dark:bg-cyan-600 dark:text-white dark:hover:bg-cyan-500 dark:active:bg-cyan-500'
+                    : 'bg-brand text-white hover:bg-light-brand active:bg-brand',
+                )}
+                disabled={!productId || !selectedOption}
+                onClick={handleAddToCart}>
+                <div className='group-active:scale-94 transition-transform duration-200'>
+                  Add to Cart
+                </div>
+              </button>
+            </section>
+          </div>
+        </div>
+      </article>
+    )
+  }
 
   return (
     <article
@@ -433,6 +653,7 @@ export const ProductCard = memo(
   ProductCardComponent,
   (previousProps, nextProps) =>
     previousProps.className === nextProps.className &&
+    previousProps.matchImageHeight === nextProps.matchImageHeight &&
     previousProps.imageUrl === nextProps.imageUrl &&
     areProductsEqual(previousProps.product, nextProps.product),
 )

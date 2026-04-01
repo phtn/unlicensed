@@ -11,6 +11,7 @@ import {
 } from '@/app/admin/(routes)/inventory/product/product-schema'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {takeAdminProductFormReturnPath} from '@/lib/admin-product-form-return'
 import {useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
 
@@ -180,8 +181,7 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
   }
 
   const handleUpdated = () => {
-    // Navigate back to the product list after successful update
-    router.push('/admin/inventory/product')
+    router.push(takeAdminProductFormReturnPath('/admin/inventory/product'))
   }
 
   return (

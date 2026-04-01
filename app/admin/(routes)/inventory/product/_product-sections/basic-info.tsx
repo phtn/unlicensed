@@ -5,9 +5,9 @@ import {
   commonSelectClassNames,
   FormInput,
 } from '@/app/admin/_components/ui/fields'
-import {useAppForm} from '@/app/admin/_components/ui/form-context'
-import {Doc} from '@/convex/_generated/dataModel'
-import {ensureSlug} from '@/lib/slug'
+import { useAppForm } from '@/app/admin/_components/ui/form-context'
+import { Doc } from '@/convex/_generated/dataModel'
+import { ensureSlug } from '@/lib/slug'
 import {
   Button,
   Input,
@@ -18,15 +18,15 @@ import {
   ModalHeader,
   useDisclosure,
 } from '@heroui/react'
-import {useStore} from '@tanstack/react-store'
-import {useEffect, useMemo, useState} from 'react'
+import { useStore } from '@tanstack/react-store'
+import { useEffect, useMemo, useState } from 'react'
 import {
   getProductBaseOptionsByCategory,
   getProductBrandOptionsByCategory,
   getProductTierOptionsByCategory,
   ProductFormValues,
 } from '../product-schema'
-import {FormSection, Header} from './components'
+import { FormSection, Header } from './components'
 
 interface BasicInfoProps {
   categories: Doc<'categories'>[] | undefined
@@ -44,9 +44,9 @@ export const BasicInfo = ({
   isArchiving = false,
 }: BasicInfoProps) => {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
-  const {isOpen, onOpen, onClose, onOpenChange} = useDisclosure()
+  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure()
   const categorySlug = useStore(form.store, (state) => {
-    const values = state.values as {categorySlug?: string}
+    const values = state.values as { categorySlug?: string }
     return values.categorySlug ?? ''
   })
 
@@ -59,7 +59,7 @@ export const BasicInfo = ({
     () =>
       availableCategories
         .filter((c) => c.slug)
-        .map((c) => ({value: c.slug!, label: c.name})),
+        .map((c) => ({ value: c.slug!, label: c.name })),
     [availableCategories],
   )
 
@@ -102,9 +102,9 @@ export const BasicInfo = ({
       const strings = raw as unknown as string[]
       return [...new Set(strings.map((s) => s.trim()))]
         .filter((s) => s.length > 0)
-        .map((s) => ({value: s, label: s}))
+        .map((s) => ({ value: s, label: s }))
     }
-    return (raw as {name: string; slug: string}[]).map((e) => ({
+    return (raw as { name: string; slug: string }[]).map((e) => ({
       value: e.slug,
       label: e.name,
     }))
@@ -118,9 +118,9 @@ export const BasicInfo = ({
       const strings = raw as unknown as string[]
       return [...new Set(strings.map((s) => s.trim()))]
         .filter((s) => s.length > 0)
-        .map((s) => ({value: s, label: s}))
+        .map((s) => ({ value: s, label: s }))
     }
-    return (raw as {name: string; slug: string}[]).map((e) => ({
+    return (raw as { name: string; slug: string }[]).map((e) => ({
       value: e.slug,
       label: e.name,
     }))
@@ -209,7 +209,8 @@ export const BasicInfo = ({
             onPress={onOpen}
             isDisabled={!onArchiveProduct}
             isLoading={isArchiving}
-            className='rounded-sm flex-1 border-transparent bg-red-100'>
+            className='rounded-sm flex-1 border-transparent bg-red-100'
+          >
             Delete
           </Button>
         </Header>
@@ -284,7 +285,7 @@ export const BasicInfo = ({
                   label={baseField.label}
                   placeholder={baseField.placeholder}
                   options={baseOptions}
-                  classNames={{mainWrapper: 'py-0'}}
+                  classNames={{ mainWrapper: 'py-0' }}
                 />
               )}
             </form.AppField>
@@ -320,7 +321,7 @@ export const BasicInfo = ({
                   mode='multiple'
                   label={brandField.label}
                   placeholder={brandField.placeholder}
-                  classNames={{...commonSelectClassNames}}
+                  classNames={{ ...commonSelectClassNames }}
                   options={brandOptions}
                 />
               )}
@@ -336,7 +337,7 @@ export const BasicInfo = ({
                   mode='single'
                   label={strainTypeField.label}
                   placeholder={strainTypeField.placeholder}
-                  classNames={{...commonSelectClassNames}}
+                  classNames={{ ...commonSelectClassNames }}
                   options={strainTypeOptions}
                 />
               )}
@@ -368,7 +369,7 @@ export const BasicInfo = ({
                   mode='single'
                   label={subcategoryField.label}
                   placeholder={subcategoryField.placeholder}
-                  classNames={{...commonSelectClassNames}}
+                  classNames={{ ...commonSelectClassNames }}
                   options={subcategoryOptions}
                 />
               )}
@@ -404,7 +405,8 @@ export const BasicInfo = ({
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         placement='center'
-        backdrop='blur'>
+        backdrop='blur'
+      >
         <ModalContent>
           <ModalHeader>Archive Product</ModalHeader>
           <ModalBody>
@@ -422,7 +424,8 @@ export const BasicInfo = ({
               onPress={async () => {
                 await onArchiveProduct?.()
                 onClose()
-              }}>
+              }}
+            >
               Archive
             </Button>
           </ModalFooter>

@@ -4,6 +4,7 @@ import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError, onSuccess} from '@/ctx/toast'
+import {useSaveAdminProductFormReturn} from '@/hooks/use-save-admin-product-form-return'
 import {Icon} from '@/lib/icons'
 import {
   LOW_STOCK_ALERTS_IDENTIFIER,
@@ -138,6 +139,7 @@ const LowStockEmailAlertsEditor = ({
   onSaveConfig,
   userUid,
 }: LowStockEmailAlertsEditorProps) => {
+  const saveAdminProductFormReturn = useSaveAdminProductFormReturn()
   const nextRowIdRef = useRef(config.recipients.length)
   const allocateRowId = useCallback(() => {
     const rowId = nextRowIdRef.current
@@ -521,6 +523,7 @@ const LowStockEmailAlertsEditor = ({
                     <Link
                       key={product._id}
                       href={`/admin/inventory/product/${product._id}`}
+                      onClick={saveAdminProductFormReturn}
                       className='block rounded-lg border border-transparent bg-white px-3 py-3 transition-colors hover:border-foreground/10 hover:bg-default-100 dark:bg-default-50/10 dark:hover:bg-default-50/20'>
                       <div className='space-y-3'>
                         <div className='flex items-start justify-between gap-3'>

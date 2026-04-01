@@ -1,6 +1,6 @@
 import {Infer, v} from 'convex/values'
-import {mutation, query} from '../_generated/server'
 import type {Doc, Id} from '../_generated/dataModel'
+import {mutation, query} from '../_generated/server'
 
 export const fileSchema = v.object({
   body: v.id('_storage'),
@@ -187,6 +187,37 @@ export const existingPreviewSizes = query({
     }
 
     return [...sizes].sort((a, b) => b - a)
+  },
+})
+
+export const getTaggedStorageIds = query({
+  args: {
+    storageIds: v.array(v.id('_storage')),
+    requiredTag: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const requiredTag = args.requiredTag.trim().toLowerCase()
+    const uniqueStorageIds = [...new Set(args.storageIds)]
+    const taggedStorageIds: Id<'_storage'>[] = []
+
+    for (const storageId of uniqueStorageIds) {
+      const files = ctx.db
+        .query('files')
+        .withIndex('by_body', (q) => q.eq('body', storageId))
+
+      for await (const file of files) {
+        const tags = (file.tags ?? [])
+          .map((tag) => tag.trim().toLowerCase())
+          .filter(Boolean)
+
+        if (tags.includes(requiredTag)) {
+          taggedStorageIds.push(storageId)
+          break
+        }
+      }
+    }
+
+    return taggedStorageIds
   },
 })
 
