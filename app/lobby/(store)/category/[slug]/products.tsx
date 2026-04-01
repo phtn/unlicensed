@@ -24,7 +24,6 @@ export const Products = ({
   isLoading = false,
   isRefreshing = false,
   footer,
-  matchCardHeightToImage = false,
 }: ProductsProps) => {
   const shouldReduceMotion = useReducedMotion()
 

@@ -1,3 +1,4 @@
+import {useMobile} from '@/hooks/use-mobile'
 import {useScreenResizeObserver} from '@/hooks/use-screen-resize-observer'
 import {cn} from '@/lib/utils'
 import type {EmblaCarouselType} from 'embla-carousel'
@@ -86,6 +87,7 @@ export const Highlights = ({
     }
   }, [emblaApi, onSelect])
 
+  const isMobile = useMobile()
   if (!slides || slides.length === 0) {
     return null
   }
@@ -94,20 +96,23 @@ export const Highlights = ({
     <div
       ref={containerRef}
       className={cn(
-        'relative w-full bg-background h-fit',
+        'relative w-full bg-background md:h-fit',
         'cursor-grab active:cursor-grabbing',
         className,
       )}
       style={
-        heroImageHeight != null && heroImageHeight > 0
-          ? {height: height}
-          : undefined
+        heroImageHeight != null && heroImageHeight > 0 && !isMobile
+          ? {height}
+          : {height: height + 40}
       }
       role='region'
       aria-roledescription='carousel'
       aria-label='Featured products carousel'>
-      {/*<div className='absolute dark:text-white text-xl font-bold z-9999 top-20 left-6'>
-        {height}x{width} px
+      {/*<div className='absolute text-white text-xl font-bold z-9999 top-20 left-6'>
+        <p>
+          {height}x{width} px
+        </p>
+        <p>{slides[0].imageUrl.substring(60, slides[0].imageUrl.length)} px</p>
       </div>*/}
       <div
         ref={emblaRef}

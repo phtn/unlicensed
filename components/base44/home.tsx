@@ -53,7 +53,7 @@ export const NewHome = () => {
           id: 'id',
           tag: '',
           imageUrl: isMobile
-            ? 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1773341566/Revised_mobile_f5wwdo.webp'
+            ? 'https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1772603013/hero-mobile-v2_vaiesj.webp'
             : 'https://res.cloudinary.com/dx0heqhhe/image/upload/v1773341316/Revised_jhykmd.webp',
           imageAlt: '',
           title: '',
@@ -71,7 +71,7 @@ export const NewHome = () => {
       style={isMobile && heroImageHeight != null ? {height: 400} : undefined}>
       <div
         ref={heroImageWrapRef}
-        className=' bg-background top-0 left-0 w-full h-[86lvh] sm:h-[44vh] md:h-[50vh] lg:h-[58vh] xl:h-[75vh] 2xl:h-[85vh]'>
+        className='bg-background top-0 left-0 w-full portrait:h-[98lvh] h-[86lvh] sm:h-[44vh] md:h-[50vh] lg:h-[58vh] xl:h-[75vh] 2xl:h-[85vh]'>
         <Highlights heroImageHeight={heroImageHeight} slides={slides} />
       </div>
 
@@ -83,7 +83,8 @@ export const NewHome = () => {
         href='/lobby/category'
         variant='solid'
         className={cn(
-          'absolute left-1/2 z-10 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100 _dark:text-dark-gray _hover:bg-brand _dark:hover:text-white _dark:bg-white bottom-10 md:bottom-24 lg:bottom-24 xl:bottom-28 2xl:bottom-44 md:w-64',
+          'absolute left-1/2 z-10 -translate-x-1/2 opacity-100 bg-white text-brand uppercase font-clash font-semibold px-8 sm:px-8 py-2 sm:py-3 text-lg lg:text-xl hover:opacity-100',
+          'bottom-10! sm:bottom-16 md:bottom-24 lg:bottom-24 xl:bottom-28 2xl:bottom-44 md:w-64',
           shopNowOffsetClassName,
         )}>
         Shop Now

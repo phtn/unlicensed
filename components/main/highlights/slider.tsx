@@ -28,51 +28,7 @@ export const Slider = ({
 }: Slide) => {
   return (
     <div className='relative min-w-full flex-[0_0_100%] md:snap-start md:snap-always'>
-      {/*<div className={cn({'mt-10': id === 'rapid-fire'})}>
-            {id === 'rapid-fire' ? (
-              <Icon
-                name='rapid-fire-latest'
-                className='hidden h-28 w-auto text-zinc-400'
-              />
-            ) : (
-              <Tag text={tag} />
-            )}
-            {title}
-            <p className='hidden md:flex text-base opacity-70 mb-12 max-w-[38ch] leading-relaxed'>
-              {description}
-            </p>
-            <div className='flex items-center md:gap-4 lg:gap-5 relative z-100'>
-              {ctaText && (
-                <Button
-                  as={Link}
-                  href={ctaHref}
-                  variant='solid'
-                  className='hidden md:flex dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-brand font-polysans font-light hover:text-white text-white px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg hover:opacity-100'>
-                  {ctaText}
-                </Button>
-              )}
-              {ctaText && (
-                <Button
-                  size='lg'
-                  as={Link}
-                  href={'/lobby/deals'}
-                  prefetch
-                  onPress={toggle}
-                  variant='light'
-                  className='hidden border dark:border-dark-gray md:flex items-center gap-2 dark:text-terpenes bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg font-polysans font-light'>
-                  <span className='tracking-tight'>Find Deals</span>
-                  <Icon
-                    name={navigating ? 'spinners-ring' : 'search-magic'}
-                    className={cn('size-3 sm:w-4 sm:h-4 dark:text-white', {
-                      'sm:size-4': !navigating,
-                    })}
-                  />
-                </Button>
-              )}
-            </div>
-          </div>*/}
-
-      <div className='relative overflow-hidden'>
+      <div className='relative overflow-hidden h-screen '>
         <Image
           width={0}
           height={0}
@@ -80,7 +36,7 @@ export const Slider = ({
           alt='Beautiful flower'
           priority
           unoptimized
-          className='h-auto w-full object-cover aspect-auto select-none'
+          className='h-auto w-full md:object-cover aspect-auto select-none'
         />
       </div>
     </div>
