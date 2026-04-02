@@ -1,7 +1,7 @@
 import {v} from 'convex/values'
 import {sendPaymentPendingEmail} from '../../lib/resend/send-payment-pending-email'
 import {sendPaymentSuccessEmail} from '../../lib/resend/send-payment-success-email'
-import {api, internal} from '../_generated/api'
+import {internal} from '../_generated/api'
 import type {Id} from '../_generated/dataModel'
 import type {ActionCtx} from '../_generated/server'
 import {internalAction} from '../_generated/server'
@@ -166,7 +166,7 @@ export const retryPendingPaymentEmails: ReturnType<typeof internalAction> =
       failed: number
     }> => {
       const orderIds = await ctx.runQuery(
-        api.orders.q.listPendingPaymentEmailRetryCandidateIds,
+        internal.orders.q.listPendingPaymentEmailRetryCandidateIds,
         {
           limit: args.limit ?? 25,
         },
@@ -210,7 +210,7 @@ export const retryPendingPaymentSuccessEmails: ReturnType<
     failed: number
   }> => {
     const orderIds = await ctx.runQuery(
-      api.orders.q.listPaymentSuccessEmailRetryCandidateIds,
+      internal.orders.q.listPaymentSuccessEmailRetryCandidateIds,
       {
         limit: args.limit ?? 25,
       },

@@ -6,14 +6,20 @@ import type {
 
 type OrderEmailState = PaymentSuccessEmailState | PendingPaymentEmailState
 
+export const PAYMENT_SUCCESS_EMAIL_ELIGIBLE_METHODS = [
+  'crypto_commerce',
+  'crypto_transfer',
+  'cash_app',
+] as const satisfies readonly PaymentMethod[]
+
+const paymentSuccessEmailEligibleMethodSet = new Set<PaymentMethod>(
+  PAYMENT_SUCCESS_EMAIL_ELIGIBLE_METHODS,
+)
+
 export function isPaymentSuccessEmailEligibleMethod(
   paymentMethod: PaymentMethod,
 ): boolean {
-  return (
-    paymentMethod === 'crypto_commerce' ||
-    paymentMethod === 'crypto_transfer' ||
-    paymentMethod === 'cash_app'
-  )
+  return paymentSuccessEmailEligibleMethodSet.has(paymentMethod)
 }
 
 export const EMAIL_DELIVERY_MAX_ATTEMPTS = 5

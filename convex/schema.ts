@@ -78,7 +78,12 @@ export default defineSchema({
     .index('by_user', ['userId'])
     .index('by_chatUserId', ['chatUserId'])
     .index('by_order_number', ['orderNumber'])
-    .index('by_status', ['orderStatus']),
+    .index('by_status', ['orderStatus'])
+    // Stage this index first; the retry query can switch to it after backfill.
+    .index('by_payment_status_and_payment_method', {
+      fields: ['payment.status', 'payment.method'],
+      staged: true,
+    }),
   rewardTiers: defineTable(rewardTierSchema),
   userRewards: defineTable(userRewardsSchema).index('by_user', ['userId']),
   activities: defineTable(activitySchema)

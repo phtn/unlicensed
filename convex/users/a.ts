@@ -3,7 +3,7 @@ import {
   pickWelcomeCoupon,
   sendWelcomeEmail,
 } from '../../lib/resend/send-welcome-email'
-import {api} from '../_generated/api'
+import {api, internal} from '../_generated/api'
 import {internalAction} from '../_generated/server'
 
 type WelcomeEmailSendResult = {
@@ -41,7 +41,10 @@ export const sendWelcomeEmailForUser = internalAction({
       return {ok: false, id: null, error: 'User not found'}
     }
 
-    const coupons = await ctx.runQuery(api.coupons.q.listCoupons, {})
+    const coupons = await ctx.runQuery(
+      internal.coupons.q.listEnabledCoupons,
+      {},
+    )
     const coupon = pickWelcomeCoupon(coupons, Date.now())
     if (!coupon) {
       console.warn('[users/sendWelcomeEmailForUser] no active welcome coupon', {

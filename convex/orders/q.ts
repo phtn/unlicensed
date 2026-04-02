@@ -1,12 +1,66 @@
 import {v} from 'convex/values'
-import type {Id} from '../_generated/dataModel'
-import {query} from '../_generated/server'
+import type {Doc, Id} from '../_generated/dataModel'
+import type {QueryCtx} from '../_generated/server'
+import {internalQuery, query} from '../_generated/server'
 import {orderStatusSchema} from './d'
 import {
   canAttemptPaymentSuccessEmail,
   canAttemptPendingPaymentEmail,
   isPaymentSuccessEmailEligibleMethod,
 } from './email_delivery'
+
+type RetryCandidate = {
+  orderId: Id<'orders'>
+  sortTime: number
+}
+
+function insertRetryCandidate(
+  candidates: RetryCandidate[],
+  candidate: RetryCandidate,
+  limit: number,
+): void {
+  if (limit <= 0) {
+    return
+  }
+
+  const insertAt = candidates.findIndex(
+    (existing) => candidate.sortTime < existing.sortTime,
+  )
+
+  if (insertAt === -1) {
+    if (candidates.length < limit) {
+      candidates.push(candidate)
+    }
+    return
+  }
+
+  if (insertAt >= limit) {
+    return
+  }
+
+  candidates.splice(insertAt, 0, candidate)
+  if (candidates.length > limit) {
+    candidates.pop()
+  }
+}
+
+function getPaymentSuccessEmailRetrySortTime(order: Doc<'orders'>): number {
+  return (
+    order.paymentSuccessEmail?.lastAttemptAt ??
+    order.payment.paidAt ??
+    order.updatedAt ??
+    order._creationTime
+  )
+}
+
+function getPendingPaymentEmailRetrySortTime(order: Doc<'orders'>): number {
+  return (
+    order.pendingPaymentEmail?.lastAttemptAt ??
+    order.createdAt ??
+    order.updatedAt ??
+    order._creationTime
+  )
+}
 
 function normalizePaymentReference(reference: string): string | null {
   const trimmed = reference.trim()
@@ -20,6 +74,34 @@ function normalizePaymentReference(reference: string): string | null {
   }
 
   return trimmed
+}
+
+async function listPaymentSuccessEmailRetryCandidateIdsByScan(
+  ctx: QueryCtx,
+  limit: number,
+  now: number,
+): Promise<Id<'orders'>[]> {
+  const orders = await ctx.db.query('orders').collect()
+
+  return orders
+    .filter((order) => {
+      if (order.payment.status !== 'completed') {
+        return false
+      }
+
+      if (!isPaymentSuccessEmailEligibleMethod(order.payment.method)) {
+        return false
+      }
+
+      return canAttemptPaymentSuccessEmail(order.paymentSuccessEmail, now)
+    })
+    .sort(
+      (left, right) =>
+        getPaymentSuccessEmailRetrySortTime(left) -
+        getPaymentSuccessEmailRetrySortTime(right),
+    )
+    .slice(0, limit)
+    .map((order) => order._id)
 }
 
 /**
@@ -190,82 +272,56 @@ export const getPendingOrdersCount = query({
   },
 })
 
-export const listPaymentSuccessEmailRetryCandidateIds = query({
+export const listPaymentSuccessEmailRetryCandidateIds = internalQuery({
   args: {
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args): Promise<Id<'orders'>[]> => {
     const limit = args.limit ?? 25
+    if (limit <= 0) {
+      return []
+    }
+
     const now = Date.now()
-    const orders = await ctx.db.query('orders').collect()
-
-    return orders
-      .filter((order) => {
-        if (
-          order.payment.status !== 'completed' ||
-          !isPaymentSuccessEmailEligibleMethod(order.payment.method)
-        ) {
-          return false
-        }
-
-        return canAttemptPaymentSuccessEmail(order.paymentSuccessEmail, now)
-      })
-      .sort((a, b) => {
-        const aTime =
-          a.paymentSuccessEmail?.lastAttemptAt ??
-          a.payment.paidAt ??
-          a.updatedAt ??
-          a._creationTime
-        const bTime =
-          b.paymentSuccessEmail?.lastAttemptAt ??
-          b.payment.paidAt ??
-          b.updatedAt ??
-          b._creationTime
-
-        return aTime - bTime
-      })
-      .slice(0, limit)
-      .map((order) => order._id)
+    return await listPaymentSuccessEmailRetryCandidateIdsByScan(ctx, limit, now)
   },
 })
 
-export const listPendingPaymentEmailRetryCandidateIds = query({
+export const listPendingPaymentEmailRetryCandidateIds = internalQuery({
   args: {
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args): Promise<Id<'orders'>[]> => {
     const limit = args.limit ?? 25
+    if (limit <= 0) {
+      return []
+    }
+
     const now = Date.now()
-    const orders = await ctx.db.query('orders').collect()
+    const candidates: RetryCandidate[] = []
 
-    return orders
-      .filter((order) => {
-        if (
-          order.orderStatus !== 'pending_payment' ||
-          order.payment.status === 'completed' ||
-          !order.contactEmail.trim()
-        ) {
-          return false
-        }
+    for await (const order of ctx.db
+      .query('orders')
+      .withIndex('by_status', (q) => q.eq('orderStatus', 'pending_payment'))) {
+      if (order.payment.status === 'completed' || !order.contactEmail.trim()) {
+        continue
+      }
 
-        return canAttemptPendingPaymentEmail(order.pendingPaymentEmail, now)
-      })
-      .sort((a, b) => {
-        const aTime =
-          a.pendingPaymentEmail?.lastAttemptAt ??
-          a.createdAt ??
-          a.updatedAt ??
-          a._creationTime
-        const bTime =
-          b.pendingPaymentEmail?.lastAttemptAt ??
-          b.createdAt ??
-          b.updatedAt ??
-          b._creationTime
+      if (!canAttemptPendingPaymentEmail(order.pendingPaymentEmail, now)) {
+        continue
+      }
 
-        return aTime - bTime
-      })
-      .slice(0, limit)
-      .map((order) => order._id)
+      insertRetryCandidate(
+        candidates,
+        {
+          orderId: order._id,
+          sortTime: getPendingPaymentEmailRetrySortTime(order),
+        },
+        limit,
+      )
+    }
+
+    return candidates.map((candidate) => candidate.orderId)
   },
 })
 

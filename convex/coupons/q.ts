@@ -1,5 +1,5 @@
 import {v} from 'convex/values'
-import {query} from '../_generated/server'
+import {internalQuery, query} from '../_generated/server'
 import {
   getCouponDiscountCents,
   getCouponEligibilityError,
@@ -10,6 +10,16 @@ export const listCoupons = query({
   handler: async (ctx) => {
     const coupons = await ctx.db.query('coupons').collect()
     return coupons.slice().sort((a, b) => b.updatedAt - a.updatedAt)
+  },
+})
+
+export const listEnabledCoupons = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query('coupons')
+      .withIndex('by_enabled', (q) => q.eq('enabled', true))
+      .collect()
   },
 })
 
@@ -60,7 +70,8 @@ export const validateCouponForCheckout = query({
       .collect()
 
     const userUses = userOrders.filter(
-      (order) => order.couponId === coupon._id && order.orderStatus !== 'cancelled',
+      (order) =>
+        order.couponId === coupon._id && order.orderStatus !== 'cancelled',
     ).length
 
     const error = getCouponEligibilityError(coupon, {
