@@ -21,7 +21,7 @@ import {
   TableRow,
   User,
 } from '@heroui/react'
-import {useMutation, useQuery} from 'convex/react'
+import {useMutation} from 'convex/react'
 import Link from 'next/link'
 import React, {CSSProperties, ReactNode, useEffect} from 'react'
 
@@ -127,11 +127,7 @@ export const RecentActivities = ({
   isMobile,
   statsHeight,
 }: RecentActivitiesProps) => {
-  const {user: firebaseUser} = useAuth()
-  const convexUser = useQuery(
-    api.users.q.getCurrentUser,
-    firebaseUser ? {fid: firebaseUser.uid} : 'skip',
-  )
+  const {convexUserId} = useAuth()
   const markAsViewed = useMutation(api.activityViews.m.markActivitiesAsViewed)
   const viewedActivityIdsRef = React.useRef<Set<string>>(new Set())
 
@@ -148,10 +144,10 @@ export const RecentActivities = ({
   // Mark activities as viewed when component mounts or activities change
   useEffect(() => {
     viewedActivityIdsRef.current = new Set()
-  }, [convexUser?._id])
+  }, [convexUserId])
 
   useEffect(() => {
-    if (!activities || !convexUser) return
+    if (!activities || !convexUserId) return
 
     const unseenActivityIds = activities
       .map((activity) => activity._id)
@@ -167,7 +163,7 @@ export const RecentActivities = ({
 
     markAsViewed({
       activityIds: unseenActivityIds,
-      userId: convexUser._id,
+      userId: convexUserId,
     })
       .then(() => {
         void refreshActivities()
@@ -177,7 +173,7 @@ export const RecentActivities = ({
           viewedActivityIdsRef.current.delete(String(activityId))
         })
       })
-  }, [activities, convexUser, markAsViewed, refreshActivities])
+  }, [activities, convexUserId, markAsViewed, refreshActivities])
 
   const renderCell = React.useCallback(
     (

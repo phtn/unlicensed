@@ -1,6 +1,5 @@
 'use client'
 
-import {AccessDenied} from '@/app/admin/_components/ui/access-denied'
 import {
   commonInputClassNames,
   commonSelectClassNames,
@@ -9,7 +8,6 @@ import {
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {type Doc, Id} from '@/convex/_generated/dataModel'
-import {useAuthCtx} from '@/ctx/auth'
 import {onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
 import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
@@ -145,7 +143,6 @@ function parseCsvRecipients(text: string): RecipientRow[] {
 
 export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   const router = useRouter()
-  const {user} = useAuthCtx()
   const [isEditing, setIsEditing] = useState(false)
   const [showMailingList, setShowMailingList] = useState(false)
   const [showEmailBlast, setShowEmailBlast] = useState(false)
@@ -168,13 +165,6 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   const deleteEmailSetting = useMutation(api.emailSettings.m.remove)
   const createMailingList = useMutation(api.mailingLists.m.create)
   const mailingLists = useQuery(api.mailingLists.q.list)
-
-  const u = useQuery(
-    api.users.q.getCurrentUser,
-    user?.uid ? {fid: user.uid} : 'skip',
-  )
-
-  const isAdmin = u !== undefined
 
   const navigateBackToList = useCallback(() => {
     withViewTransition(() => {
@@ -379,10 +369,6 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
     setBlastProgress((p) => (p ? {...p, sending: false} : null))
     toast.success(`Email blast complete: ${sent} of ${valid.length} sent`)
   }, [mailingLists, selectedListId, emailSetting])
-
-  if (!!isAdmin && !isAdmin) {
-    return <AccessDenied />
-  }
 
   if (emailSetting === undefined) {
     return (

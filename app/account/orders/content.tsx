@@ -115,21 +115,21 @@ const getPageItems = (currentPage: number, totalPages: number) => {
 }
 
 export const Content = () => {
-  const {user: firebaseUser, loading: isAuthLoading} = useAuth()
+  const {
+    user: firebaseUser,
+    loading: isAuthLoading,
+    convexUserId,
+    isConvexUserLoading,
+  } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchMode, setSearchMode] = useState<SearchMode>('all')
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [page, setPage] = useState(1)
 
-  const user = useQuery(
-    api.users.q.getCurrentUser,
-    firebaseUser ? {fid: firebaseUser.uid} : 'skip',
-  )
-
   const orders = useQuery(
     api.orders.q.getUserOrders,
-    user?._id ? {userId: user._id} : 'skip',
+    convexUserId ? {userId: convexUserId} : 'skip',
   )
 
   const hasInvalidDateRange = Boolean(fromDate && toDate && fromDate > toDate)
@@ -196,7 +196,10 @@ export const Content = () => {
   }
 
   const isLoading =
-    isAuthLoading || (Boolean(firebaseUser) && (!user || orders === undefined))
+    isAuthLoading ||
+    isConvexUserLoading ||
+    (Boolean(firebaseUser) && !convexUserId) ||
+    (Boolean(convexUserId) && orders === undefined)
   const hasFilters = Boolean(searchQuery || fromDate || toDate)
   const pageItems = getPageItems(currentPage, totalPages)
 
@@ -246,8 +249,7 @@ export const Content = () => {
                   radius='full'
                   variant={searchMode === mode.id ? 'solid' : 'flat'}
                   color={searchMode === mode.id ? 'primary' : 'default'}
-                  onPress={() => handleSearchModeChange(mode.id)}
-                >
+                  onPress={() => handleSearchModeChange(mode.id)}>
                   {mode.label}
                 </Button>
               ))}
@@ -256,8 +258,7 @@ export const Content = () => {
               size='sm'
               variant='light'
               onPress={clearFilters}
-              isDisabled={!hasFilters}
-            >
+              isDisabled={!hasFilters}>
               Clear filters
             </Button>
           </div>
@@ -288,8 +289,7 @@ export const Content = () => {
       ) : orders && orders.length === 0 ? (
         <Card
           shadow='none'
-          className='border-2 border-dashed border-default-200 dark:border-default-100/20'
-        >
+          className='border-2 border-dashed border-default-200 dark:border-default-100/20'>
           <CardBody className='py-16 flex flex-col items-center text-center gap-4'>
             <h2 className='text-xl font-semibold'>No orders yet</h2>
             <p className='text-default-500 max-w-md'>
@@ -334,8 +334,7 @@ export const Content = () => {
               <Button
                 variant='flat'
                 onPress={() => setPage(Math.max(1, currentPage - 1))}
-                isDisabled={currentPage <= 1}
-              >
+                isDisabled={currentPage <= 1}>
                 Previous
               </Button>
 
@@ -344,8 +343,7 @@ export const Content = () => {
                   item === 'ellipsis' ? (
                     <span
                       key={`ellipsis-${index}`}
-                      className='px-2 text-default-400'
-                    >
+                      className='px-2 text-default-400'>
                       ...
                     </span>
                   ) : (
@@ -355,8 +353,7 @@ export const Content = () => {
                       radius='full'
                       variant={item === currentPage ? 'solid' : 'light'}
                       color={item === currentPage ? 'primary' : 'default'}
-                      onPress={() => setPage(item)}
-                    >
+                      onPress={() => setPage(item)}>
                       {item}
                     </Button>
                   ),
@@ -366,8 +363,7 @@ export const Content = () => {
               <Button
                 variant='flat'
                 onPress={() => setPage(Math.min(totalPages, currentPage + 1))}
-                isDisabled={currentPage >= totalPages}
-              >
+                isDisabled={currentPage >= totalPages}>
                 Next
               </Button>
             </CardBody>

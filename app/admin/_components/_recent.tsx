@@ -112,11 +112,7 @@ export const RecentActivities = ({
   fullTable,
   toggleFullTable,
 }: RecentActivitiesProps) => {
-  const {user: firebaseUser} = useAuth()
-  const convexUser = useQuery(
-    api.users.q.getCurrentUser,
-    firebaseUser ? {fid: firebaseUser.uid} : 'skip',
-  )
+  const {convexUserId} = useAuth()
   const markAsViewed = useMutation(api.activityViews.m.markActivitiesAsViewed)
   const viewedActivityIdsRef = React.useRef<Set<string>>(new Set())
 
@@ -130,10 +126,10 @@ export const RecentActivities = ({
   // Mark activities as viewed when component mounts or activities change
   useEffect(() => {
     viewedActivityIdsRef.current = new Set()
-  }, [convexUser?._id])
+  }, [convexUserId])
 
   useEffect(() => {
-    if (!activities || !convexUser) return
+    if (!activities || !convexUserId) return
 
     const unseenActivityIds = activities
       .map((activity) => activity._id)
@@ -149,13 +145,13 @@ export const RecentActivities = ({
 
     markAsViewed({
       activityIds: unseenActivityIds,
-      userId: convexUser._id,
+      userId: convexUserId,
     }).catch(() => {
       unseenActivityIds.forEach((activityId) => {
         viewedActivityIdsRef.current.delete(String(activityId))
       })
     })
-  }, [activities, convexUser, markAsViewed])
+  }, [activities, convexUserId, markAsViewed])
 
   const renderCell = React.useCallback(
     (

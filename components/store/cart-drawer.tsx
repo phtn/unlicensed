@@ -55,7 +55,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     cartItemCount,
     isAuthenticated,
   } = useCart()
-  const {user} = useAuthCtx()
+  const {user, convexUserId} = useAuthCtx()
   const {configs} = useDealConfigs()
   const {
     isOpen: isAuthOpen,
@@ -65,13 +65,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const {isCashBackEnabled, setCashBackEnabled} = useCashBackRedemption()
-  const convexUser = useQuery(
-    api.users.q.getCurrentUser,
-    user ? {fid: user.uid} : 'skip',
-  )
   const pointsBalance = useQuery(
     api.rewards.q.getUserPointsBalance,
-    convexUser?._id ? {userId: convexUser._id} : 'skip',
+    convexUserId ? {userId: convexUserId} : 'skip',
   )
 
   // Build cart items from server cart (preserve full structure for product + bundle)

@@ -9,7 +9,7 @@ import {
   getGuestChatIdCookie,
   setGuestChatIdCookie,
 } from '@/lib/guest-chat'
-import {useMutation, useQuery} from 'convex/react'
+import {useMutation} from 'convex/react'
 import {
   createContext,
   useCallback,
@@ -50,7 +50,7 @@ type GuestChatCtxValue = {
 const GuestChatCtx = createContext<GuestChatCtxValue | null>(null)
 
 export function GuestChatProvider({children}: {children: ReactNode}) {
-  const {user} = useAuthCtx()
+  const {user, convexUserId, isConvexUserLoading} = useAuthCtx()
   const [guestId, setGuestId] = useState<string | null>(null)
   const [guestFid, setGuestFid] = useState<string | null>(null)
   const [representativeFid, setRepresentativeFid] = useState<string | null>(
@@ -67,11 +67,6 @@ export function GuestChatProvider({children}: {children: ReactNode}) {
   )
   const mergeGuestConversation = useMutation(
     api.messages.m.mergeGuestConversation,
-  )
-  const createOrUpdateUser = useMutation(api.users.m.createOrUpdateUser)
-  const convexUser = useQuery(
-    api.users.q.getCurrentUser,
-    user?.uid ? {fid: user.uid} : 'skip',
   )
 
   const bootstrappedGuestIdRef = useRef<string | null>(null)
@@ -158,31 +153,6 @@ export function GuestChatProvider({children}: {children: ReactNode}) {
     setIsMerging(false)
   }, [user?.uid])
 
-  useEffect(() => {
-    if (!user?.uid || !user.email || convexUser?._id) {
-      return
-    }
-
-    void createOrUpdateUser({
-      email: user.email,
-      name: user.displayName || user.email.split('@')[0],
-      firebaseId: user.uid,
-      ...(user.photoURL ? {photoUrl: user.photoURL} : {}),
-    }).catch((syncError) => {
-      console.error(
-        'Failed to sync authenticated user for guest chat:',
-        syncError,
-      )
-    })
-  }, [
-    convexUser?._id,
-    createOrUpdateUser,
-    user?.displayName,
-    user?.email,
-    user?.photoURL,
-    user?.uid,
-  ])
-
   const ensureSession = useCallback(async () => {
     if (user?.uid && !isMerging) {
       return null
@@ -262,7 +232,7 @@ export function GuestChatProvider({children}: {children: ReactNode}) {
   }, [ensureSession, guestFid, representative, representativeFid, user?.uid])
 
   useEffect(() => {
-    if (!user?.uid || !convexUser?._id) {
+    if (!user?.uid || isConvexUserLoading || !convexUserId) {
       return
     }
 
@@ -298,8 +268,9 @@ export function GuestChatProvider({children}: {children: ReactNode}) {
       })
   }, [
     clearSession,
-    convexUser?._id,
+    convexUserId,
     guestId,
+    isConvexUserLoading,
     mergeGuestConversation,
     user?.uid,
   ])

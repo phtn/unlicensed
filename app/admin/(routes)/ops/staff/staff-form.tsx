@@ -63,7 +63,7 @@ export const StaffForm = ({
   onUpdated,
 }: StaffFormProps) => {
   const isEditMode = !!staffId
-  const {user: firebaseUser} = useAuth()
+  const {user: firebaseUser, convexUser} = useAuth()
   const createStaff = useMutation(api.staff.m.createStaff)
   const updateStaff = useMutation(api.staff.m.updateStaff)
   const [activeSection, setActiveSection] = useState<string>('basic-info')
@@ -71,16 +71,12 @@ export const StaffForm = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const mainScrollRef = useRef<HTMLElement>(null)
 
-  // Get current user for authorization
-  const convexUser = useQuery(
-    api.users.q.getCurrentUser,
-    firebaseUser ? {fid: firebaseUser.uid} : 'skip',
-  )
-
   // Get current user's staff record for authorization check
   const currentUserStaff = useQuery(
     api.staff.q.getStaffByEmail,
-    convexUser?.email ? {email: convexUser.email} : 'skip',
+    convexUser?.email || firebaseUser?.email
+      ? {email: convexUser?.email ?? firebaseUser?.email ?? ''}
+      : 'skip',
   )
 
   // Check if current user is authorized (admin or manager) to create staff

@@ -149,7 +149,7 @@ const isSameAddress = (left: AddressType, right: AddressType) =>
  * ```
  */
 export const usePlaceOrder = (): UsePlaceOrderResult => {
-  const {user} = useAuth()
+  const {user, convexUser, convexUserId} = useAuth()
   const {cart, isAuthenticated} = useCart()
   const createOrderMutation = useMutation(api.orders.m.createOrder)
   const addAddressMutation = useMutation(api.users.m.addAddress)
@@ -158,17 +158,12 @@ export const usePlaceOrder = (): UsePlaceOrderResult => {
   const addToCartMutation = useMutation(api.cart.m.addToCart)
   const {generateRefPair} = useRefGen()
 
-  // Get Convex user ID if authenticated (same pattern as use-cart)
-  const convexUser = useQuery(
-    api.users.q.getCurrentUser,
-    user ? {fid: user.uid} : 'skip',
-  )
   const savedAddresses = useQuery(
     api.users.q.getUserAddresses,
     user ? {fid: user.uid} : 'skip',
   )
 
-  const userId = useMemo(() => convexUser?._id, [convexUser?._id])
+  const userId = useMemo(() => convexUserId, [convexUserId])
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)

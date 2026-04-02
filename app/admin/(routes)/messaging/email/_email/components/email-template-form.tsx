@@ -1,9 +1,7 @@
 'use client'
 
-import {AccessDenied} from '@/app/admin/_components/ui/access-denied'
 import {api} from '@/convex/_generated/api'
-import {useAuthCtx} from '@/ctx/auth'
-import {useMutation, useQuery} from 'convex/react'
+import {useMutation} from 'convex/react'
 import {useRouter} from 'next/navigation'
 import {startTransition, useCallback} from 'react'
 import {toast} from 'react-hot-toast'
@@ -13,15 +11,7 @@ import {EmailTemplateEditor} from './email-template-editor'
 
 export const EmailTemplateForm = () => {
   const router = useRouter()
-  const {user} = useAuthCtx()
   const createEmailSetting = useMutation(api.emailSettings.m.create)
-
-  const u = useQuery(
-    api.users.q.getCurrentUser,
-    user?.uid ? {fid: user.uid} : 'skip',
-  )
-
-  const isAdmin = u !== undefined
 
   const navigateBackToList = useCallback(() => {
     withViewTransition(() => {
@@ -39,10 +29,6 @@ export const EmailTemplateForm = () => {
     },
     [createEmailSetting, navigateBackToList],
   )
-
-  if (!!isAdmin && !isAdmin) {
-    return <AccessDenied />
-  }
 
   return (
     <div className='flex min-h-0 flex-1 flex-col'>

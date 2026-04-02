@@ -88,14 +88,10 @@ function StepRow({
 }
 
 export const Content = () => {
-  const {user} = useAuthCtx()
+  const {user, convexUser: currentUser} = useAuthCtx()
   const params = useParams()
   const orderId = params.orderId as Id<'orders'>
   const order = useQuery(api.orders.q.getById, {id: orderId})
-  const currentUser = useQuery(
-    api.users.q.getCurrentUser,
-    user?.uid ? {fid: user.uid} : 'skip',
-  )
   const conversations = useQuery(
     api.messages.q.getConversations,
     user?.uid ? {fid: user.uid} : 'skip',

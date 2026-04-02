@@ -45,7 +45,7 @@ interface ChatContentProps {
 }
 
 export function ChatContent({initialConversationId}: ChatContentProps) {
-  const {user} = useAuthCtx()
+  const {user, convexUserId} = useAuthCtx()
   const currentUserId = user?.uid ?? null
   const router = useRouter()
   const isMobile = useMobile()
@@ -251,12 +251,6 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
       : 'skip',
   )
 
-  // Get current user's Convex ID for optimistic updates
-  const currentUserConvex = useQuery(
-    api.users.q.getCurrentUser,
-    currentUserId ? {fid: currentUserId} : 'skip',
-  )
-
   // Get other user's Convex ID for optimistic updates
   const otherUser = selectedConversationUser
 
@@ -294,12 +288,12 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
 
       switch (action.type) {
         case 'add-message': {
-          if (!currentUserConvex || !otherUser) return state
+          if (!convexUserId || !otherUser) return state
 
           const optimisticMessage: (typeof state)[number] = {
             _id: `optimistic-${Date.now()}` as Id<'messages'>,
             _creationTime: Date.now(),
-            senderId: currentUserConvex._id,
+            senderId: convexUserId,
             receiverId: otherUser._id,
             content: action.content,
             createdAt: new Date().toISOString(),
@@ -439,7 +433,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
     if (
       selectedConversationFid &&
       currentUserId &&
-      currentUserConvex?._id &&
+      convexUserId &&
       otherUser?._id &&
       !isAssistant
     ) {
@@ -449,7 +443,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
       }).catch(console.error)
     }
   }, [
-    currentUserConvex?._id,
+    convexUserId,
     currentUserId,
     isAssistant,
     lastMessageId,

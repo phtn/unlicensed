@@ -3,13 +3,7 @@ import {useQuery} from 'convex/react'
 import {useAuth} from './use-auth'
 
 export const useAccount = () => {
-  const {user: firebaseUser} = useAuth()
-
-  // 1. Get Current User
-  const convexUser = useQuery(
-    api.users.q.getCurrentUser,
-    firebaseUser ? {fid: firebaseUser.uid} : 'skip',
-  )
+  const {convexUser} = useAuth()
 
   const userId = convexUser?._id
 

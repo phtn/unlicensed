@@ -4,7 +4,6 @@ import {clearGuestCart, getGuestCartItems} from '@/app/actions'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {ProductType} from '@/convex/products/d'
-import {addToCartHistory} from '@/lib/localStorageCartHistory'
 import {
   addToLocalStorageCart,
   clearLocalStorageCart,
@@ -14,6 +13,7 @@ import {
   setLocalStorageCartItems,
   updateLocalStorageCartItem,
 } from '@/lib/localStorageCart'
+import {addToCartHistory} from '@/lib/localStorageCartHistory'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {useAuth} from './use-auth'
@@ -56,7 +56,9 @@ type BundleCartItemWithProducts = {
   }>
 }
 
-export type CartItemWithProduct = ProductCartItemWithProduct | BundleCartItemWithProducts
+export type CartItemWithProduct =
+  | ProductCartItemWithProduct
+  | BundleCartItemWithProducts
 
 export function isProductCartItemWithProduct(
   item: CartItemWithProduct,
@@ -110,7 +112,7 @@ interface UseCartResult {
 }
 
 export const useCart = (): UseCartResult => {
-  const {user} = useAuth()
+  const {user, convexUserId, isConvexUserLoading} = useAuth()
   const hasMergedRef = useRef(false)
   const mergeLockKeyRef = useRef<string | null>(null)
   const prevAuthenticatedRef = useRef<boolean | undefined>(undefined)
@@ -119,14 +121,8 @@ export const useCart = (): UseCartResult => {
   >([])
   const [isLoadingGuestCart, setIsLoadingGuestCart] = useState(true)
 
-  // Get user ID from Convex - this query automatically subscribes and updates
-  const convexUser = useQuery(
-    api.users.q.getCurrentUser,
-    user ? {fid: user.uid} : 'skip',
-  )
-
   // Memoize userId to ensure stability for cart queries
-  const userId = useMemo(() => convexUser?._id, [convexUser?._id])
+  const userId = useMemo(() => convexUserId, [convexUserId])
   const isAuthenticated = !!user && !!userId
 
   // Load guest cart from localStorage on mount. Migrate cookie→localStorage once, then subscribe to sync events.
@@ -139,7 +135,13 @@ export const useCart = (): UseCartResult => {
 
     let cancelled = false
     const onCartUpdated = (e: Event) => {
-      const custom = e as CustomEvent<Array<{productId: Id<'products'>; quantity: number; denomination?: number}>>
+      const custom = e as CustomEvent<
+        Array<{
+          productId: Id<'products'>
+          quantity: number
+          denomination?: number
+        }>
+      >
       if (custom.detail) setGuestCartItems(custom.detail)
     }
 
@@ -159,7 +161,10 @@ export const useCart = (): UseCartResult => {
         if (typeof window === 'undefined' || cancelled) return
         window.addEventListener(LOCAL_STORAGE_CART_UPDATED_EVENT, onCartUpdated)
         storageListenerRef.current = () =>
-          window.removeEventListener(LOCAL_STORAGE_CART_UPDATED_EVENT, onCartUpdated)
+          window.removeEventListener(
+            LOCAL_STORAGE_CART_UPDATED_EVENT,
+            onCartUpdated,
+          )
       } catch (error) {
         if (!cancelled) console.error('Failed to load guest cart:', error)
         setGuestCartItems([])
@@ -242,7 +247,9 @@ export const useCart = (): UseCartResult => {
   const addBundleToCartMutation = useMutation(api.cart.m.addBundleToCart)
   const updateCartItemMutation = useMutation(api.cart.m.updateCartItem)
   const removeFromCartMutation = useMutation(api.cart.m.removeFromCart)
-  const removeBundleFromCartMutation = useMutation(api.cart.m.removeBundleFromCart)
+  const removeBundleFromCartMutation = useMutation(
+    api.cart.m.removeBundleFromCart,
+  )
   const clearCartMutation = useMutation(api.cart.m.clearCart)
 
   // When user authenticates, merge guest cart into Convex cart
@@ -307,13 +314,10 @@ export const useCart = (): UseCartResult => {
           setGuestCartItems([])
 
           if (process.env.NODE_ENV === 'development') {
-            console.log(
-              '[useCart] Guest cart merged on authentication:',
-              {
-                itemsCount: itemsToMerge.length,
-                userId,
-              },
-            )
+            console.log('[useCart] Guest cart merged on authentication:', {
+              itemsCount: itemsToMerge.length,
+              userId,
+            })
           }
         } catch (error) {
           console.error('Failed to merge guest cart:', error)
@@ -350,7 +354,11 @@ export const useCart = (): UseCartResult => {
         return cartId
       } else {
         // Use localStorage for unauthenticated users
-        const newItems = addToLocalStorageCart(productId, quantity, denomination)
+        const newItems = addToLocalStorageCart(
+          productId,
+          quantity,
+          denomination,
+        )
         setGuestCartItems(newItems)
         return 'guest-cart' as Id<'carts'>
       }
@@ -399,7 +407,11 @@ export const useCart = (): UseCartResult => {
         })
       } else {
         // Use localStorage for unauthenticated users
-        const newItems = updateLocalStorageCartItem(productId, quantity, denomination)
+        const newItems = updateLocalStorageCartItem(
+          productId,
+          quantity,
+          denomination,
+        )
         setGuestCartItems(newItems)
       }
     },
@@ -469,7 +481,7 @@ export const useCart = (): UseCartResult => {
   // Show loader until we know—otherwise we'd show empty guest cart then switch to server cart.
   const isLoading = useMemo(() => {
     // If we have Firebase user but Convex user is still loading, show loader
-    const isResolvingAuth = Boolean(user && convexUser === undefined)
+    const isResolvingAuth = Boolean(user && isConvexUserLoading)
     if (isResolvingAuth) return true
     if (isAuthenticated) {
       return serverCart === undefined
@@ -480,7 +492,7 @@ export const useCart = (): UseCartResult => {
     )
   }, [
     user,
-    convexUser,
+    isConvexUserLoading,
     isAuthenticated,
     serverCart,
     guestCartProducts,

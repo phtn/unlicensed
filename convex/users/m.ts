@@ -139,6 +139,9 @@ const syncLegacyAddressesToTable = async (
   return {inserted, updated}
 }
 
+const isFieldChanged = <T>(currentValue: T, nextValue: T) =>
+  JSON.stringify(currentValue) !== JSON.stringify(nextValue)
+
 export const createOrUpdateUser = mutation({
   args: {
     email: v.string(),
@@ -211,7 +214,38 @@ export const createOrUpdateUser = mutation({
       if (args.cashAppUsername !== undefined)
         updates.cashAppUsername = args.cashAppUsername
 
-      await ctx.db.patch(existing._id, updates)
+      const hasProfileChanges =
+        existing.email !== updates.email ||
+        existing.name !== updates.name ||
+        existing.firebaseId !== updates.firebaseId ||
+        existing.fid !== updates.fid ||
+        (args.photoUrl !== undefined &&
+          isFieldChanged(existing.photoUrl ?? null, args.photoUrl ?? null)) ||
+        (args.contact !== undefined &&
+          isFieldChanged(existing.contact ?? null, args.contact ?? null)) ||
+        (args.socialMedia !== undefined &&
+          isFieldChanged(
+            existing.socialMedia ?? null,
+            args.socialMedia ?? null,
+          )) ||
+        (args.dateOfBirth !== undefined &&
+          isFieldChanged(existing.dateOfBirth ?? null, args.dateOfBirth)) ||
+        (args.gender !== undefined &&
+          isFieldChanged(existing.gender ?? null, args.gender)) ||
+        (args.preferences !== undefined &&
+          isFieldChanged(
+            existing.preferences ?? null,
+            args.preferences ?? null,
+          )) ||
+        (args.cashAppUsername !== undefined &&
+          isFieldChanged(
+            existing.cashAppUsername ?? null,
+            args.cashAppUsername ?? null,
+          ))
+
+      if (hasProfileChanges) {
+        await ctx.db.patch(existing._id, updates)
+      }
 
       if (args.addresses && args.addresses.length > 0) {
         await syncLegacyAddressesToTable(ctx, existing, args.addresses, now)

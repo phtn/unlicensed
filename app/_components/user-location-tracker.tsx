@@ -3,9 +3,10 @@
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {useGuestChatCtx} from '@/ctx/guest-chat'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {useUserGeolocation} from '@/hooks/use-user-geolocation'
 import {setUserLocationCookies} from '@/lib/user-location'
-import {useMutation, useQuery} from 'convex/react'
+import {useMutation} from 'convex/react'
 import {useEffect, useRef} from 'react'
 
 export function UserLocationTracker() {
@@ -18,7 +19,7 @@ export function UserLocationTracker() {
   const updateUserLocation = useMutation(api.users.m.updateLocation)
   const updateGuestLocation = useMutation(api.guests.m.updateLocation)
   const activeFid = user?.uid ?? guestFid ?? null
-  const activeUser = useQuery(
+  const {data: activeUser} = useConvexSnapshotQuery(
     api.messages.q.getParticipantByFid,
     activeFid ? {fid: activeFid} : 'skip',
   )

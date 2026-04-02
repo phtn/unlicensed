@@ -5,7 +5,7 @@ import {
   type BundleConfig,
 } from '@/app/lobby/(store)/deals/lib/deal-types'
 import {api} from '@/convex/_generated/api'
-import {useQuery} from 'convex/react'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {useMemo} from 'react'
 
 /** Returns deal configs keyed by id for the store (enabled only). Use in deals page, cart, pending deals. */
@@ -14,7 +14,7 @@ export function useDealConfigs(): {
   configsList: BundleConfig[]
   isLoading: boolean
 } {
-  const deals = useQuery(api.deals.q.listForStore)
+  const {data: deals} = useConvexSnapshotQuery(api.deals.q.listForStore, {})
 
   return useMemo(() => {
     if (deals === undefined) {

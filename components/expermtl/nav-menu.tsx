@@ -1,8 +1,8 @@
 import {api} from '@/convex/_generated/api'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {adaptCategory} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {useQuery} from 'convex/react'
 import {useMemo, useState} from 'react'
 import {InnerMenu, type NavMenuSubItem} from '../main/rad-nav-menu'
 import {
@@ -31,7 +31,10 @@ const NAV_MENU_VALUE = 'shop'
 
 export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
   const [openValue, setOpenValue] = useState('')
-  const categoriesQuery = useQuery(api.categories.q.listCategories)
+  const {data: categoriesQuery} = useConvexSnapshotQuery(
+    api.categories.q.listCategories,
+    {},
+  )
 
   const categories = useMemo(() => {
     const nextCategories = categoriesQuery?.map(adaptCategory)

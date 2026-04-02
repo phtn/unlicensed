@@ -1,7 +1,7 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
-import {useQuery} from 'convex/react'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {useMemo} from 'react'
 
 /**
@@ -27,7 +27,7 @@ export const useStorageUrls = (
   }, [values])
 
   // Fetch URLs for all storageIds
-  const storageUrls = useQuery(
+  const {data: storageUrls} = useConvexSnapshotQuery(
     api.uploads.getStorageUrls,
     storageIdsToResolve.length > 0 ? {storageIds: storageIdsToResolve} : 'skip',
   )

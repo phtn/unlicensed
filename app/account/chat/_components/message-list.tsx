@@ -3,8 +3,9 @@
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {Icon} from '@/lib/icons'
-import {useMutation, useQuery} from 'convex/react'
+import {useMutation} from 'convex/react'
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {MessageGroup} from './message-group'
 import {useGroupedMessages, useLastReadMessageId} from './message-list-hooks'
@@ -36,12 +37,18 @@ export function MessageList({
   const [showLoader, setShowLoader] = useState(false)
 
   // Get user data for both users (fid = Firebase/auth UID)
-  const currentUserData = useQuery(api.messages.q.getParticipantByFid, {
-    fid: currentUserProId,
-  })
-  const otherUserData = useQuery(api.messages.q.getParticipantByFid, {
-    fid: otherUserProId,
-  })
+  const {data: currentUserData} = useConvexSnapshotQuery(
+    api.messages.q.getParticipantByFid,
+    {
+      fid: currentUserProId,
+    },
+  )
+  const {data: otherUserData} = useConvexSnapshotQuery(
+    api.messages.q.getParticipantByFid,
+    {
+      fid: otherUserProId,
+    },
+  )
 
   const currentUser = useMemo(
     () =>
@@ -219,15 +226,13 @@ export function MessageList({
       ))}
 
       {/* Scroll-to-bottom button (portaled above message input) */}
-      {scrollAreaRef &&
-        scrollButtonAnchorEl &&
-        onScrollToBottom && (
-          <ScrollToBottomButton
-            scrollAreaRef={scrollAreaRef}
-            scrollButtonAnchorEl={scrollButtonAnchorEl}
-            onScrollToBottom={onScrollToBottom}
-          />
-        )}
+      {scrollAreaRef && scrollButtonAnchorEl && onScrollToBottom && (
+        <ScrollToBottomButton
+          scrollAreaRef={scrollAreaRef}
+          scrollButtonAnchorEl={scrollButtonAnchorEl}
+          onScrollToBottom={onScrollToBottom}
+        />
+      )}
     </div>
   )
 }

@@ -61,7 +61,7 @@ export default function CartPage() {
     isLoading,
     isAuthenticated,
   } = useCart()
-  const {user: firebaseUser} = useAuth()
+  const {user: firebaseUser, convexUser} = useAuth()
   const {
     placeOrder,
     isLoading: isPlacingOrder,
@@ -93,12 +93,6 @@ export default function CartPage() {
     shippingConfig?.shippingFeeCents ?? DEFAULT_SHIPPING_FEE_CENTS
   const minimumOrderCents =
     shippingConfig?.minimumOrderCents ?? DEFAULT_MINIMUM_ORDER_CENTS
-
-  // Get user info for checkout
-  const convexUser = useQuery(
-    api.users.q.getCurrentUser,
-    firebaseUser ? {fid: firebaseUser.uid} : 'skip',
-  )
 
   const defaultAddress = useQuery(
     api.users.q.getDefaultAddress,

@@ -24,20 +24,14 @@ const getGuestProductQuantity = (productId?: Id<'products'>) => {
 }
 
 export const useProductCartQuantity = (productId?: Id<'products'>) => {
-  const {user} = useAuthCtx()
-  const convexUser = useQuery(
-    api.users.q.getCurrentUser,
-    user ? {fid: user.uid} : 'skip',
-  )
-  const userId = useMemo(() => convexUser?._id, [convexUser?._id])
-  const isResolvingAuth = Boolean(user && convexUser === undefined)
+  const {user, convexUserId, isConvexUserLoading} = useAuthCtx()
+  const userId = useMemo(() => convexUserId, [convexUserId])
+  const isResolvingAuth = Boolean(user && isConvexUserLoading)
   const isAuthenticated = Boolean(user && userId)
 
   const serverQuantity = useQuery(
     api.cart.q.getProductQuantity,
-    isAuthenticated && userId && productId
-      ? {userId, productId}
-      : 'skip',
+    isAuthenticated && userId && productId ? {userId, productId} : 'skip',
   )
 
   const [guestQuantity, setGuestQuantity] = useState(() =>
@@ -85,5 +79,5 @@ export const useProductCartQuantity = (productId?: Id<'products'>) => {
     return 0
   }
 
-  return isAuthenticated ? serverQuantity ?? 0 : guestQuantity
+  return isAuthenticated ? (serverQuantity ?? 0) : guestQuantity
 }

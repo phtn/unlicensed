@@ -1,21 +1,15 @@
 'use client'
 
-import {useAuthCtx} from '@/ctx/auth'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {useAuthCtx} from '@/ctx/auth'
 import {getConvexReactClient} from '@/lib/convexReactClient'
 import {getCurrentUser} from '@/lib/firebase/auth'
 import {addToLocalStorageCart} from '@/lib/localStorageCart'
-import {useCallback, useRef} from 'react'
-
-type CachedUserId = {
-  fid: string
-  userId: Id<'users'>
-}
+import {useCallback} from 'react'
 
 export const useAddCartItem = () => {
-  const {user} = useAuthCtx()
-  const cachedUserIdRef = useRef<CachedUserId | null>(null)
+  const {user, convexUserId} = useAuthCtx()
 
   return useCallback(
     async (
@@ -26,10 +20,8 @@ export const useAddCartItem = () => {
       const currentUser = user ?? getCurrentUser()
 
       if (currentUser?.uid) {
-        const cachedUserId = cachedUserIdRef.current
         const convexClient = getConvexReactClient()
-        let userId =
-          cachedUserId?.fid === currentUser.uid ? cachedUserId.userId : null
+        let userId = convexUserId
 
         if (!userId) {
           const convexUser = await convexClient.query(
@@ -38,11 +30,7 @@ export const useAddCartItem = () => {
               fid: currentUser.uid,
             },
           )
-
-          if (convexUser?._id) {
-            userId = convexUser._id
-            cachedUserIdRef.current = {fid: currentUser.uid, userId}
-          }
+          userId = convexUser?._id ?? null
         }
 
         if (userId) {
@@ -58,6 +46,6 @@ export const useAddCartItem = () => {
       addToLocalStorageCart(productId, quantity, denomination)
       return 'guest-cart' as Id<'carts'>
     },
-    [user],
+    [convexUserId, user],
   )
 }

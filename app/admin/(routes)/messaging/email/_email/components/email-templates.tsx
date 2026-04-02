@@ -1,13 +1,9 @@
 'use client'
 
-import {AccessDenied} from '@/app/admin/_components/ui/access-denied'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
-import {api} from '@/convex/_generated/api'
 import {Doc} from '@/convex/_generated/dataModel'
-import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
 import {Button} from '@heroui/react'
-import {useQuery} from 'convex/react'
 import {AnimatePresence, motion} from 'motion/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
@@ -19,16 +15,7 @@ interface EmailTemplateListProps {
 }
 
 export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
-  const {user} = useAuthCtx()
   const router = useRouter()
-
-  // const emailSettings = useQuery(api.emailSettings.q.listEmailSettings)
-  const u = useQuery(
-    api.users.q.getCurrentUser,
-    user?.uid ? {fid: user.uid} : 'skip',
-  )
-
-  const isAdmin = u !== undefined
 
   const navigateToNew = useCallback(() => {
     withViewTransition(() => {
@@ -37,10 +24,6 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
       })
     })
   }, [router])
-
-  if (!!isAdmin && !isAdmin) {
-    return <AccessDenied />
-  }
 
   if (templates === undefined) {
     return (
