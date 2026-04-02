@@ -28,30 +28,8 @@ type StatConfig = {
   order: number
 }
 
-type AdminStats = {
-  salesTodayCents: number
-  salesThisWeekCents: number
-  salesThisMonthCents: number
-  totalRevenueCents: number
-  pendingOrdersCount: number
-  cancelledOrdersCount: number
-  ongoingDeliveriesCount: number
-  deliveredOrdersCount: number
-  totalOrdersCount: number
-  totalUsersCount: number
-  totalProductsCount: number
-  averageOrderValueCents: number
-}
-
 type MiniStatCardProps = {
   config: StatConfig
-  stats: AdminStats
-  chartData: {
-    salesData?: Array<{value: number}>
-    ordersData?: Array<{value: number}>
-    deliveriesData?: Array<{value: number}>
-    aovData?: Array<{value: number}>
-  }
   onToggle: (statId: string, visible: boolean) => void
 }
 
@@ -102,8 +80,6 @@ export const StatSettings = () => {
   const statConfigs = useQuery(api.admin.q.getAdminByIdentifier, {
     identifier: 'statConfigs',
   })
-  const adminStats = useQuery(api.orders.q.getAdminStats)
-  const chartData = useQuery(api.orders.q.getAdminChartData)
   const updateStatVisibility = useMutation(api.admin.m.updateStatVisibility)
   const ensureStatConfigsSeeded = useMutation(
     api.admin.m.ensureStatConfigsSeeded,
@@ -111,29 +87,6 @@ export const StatSettings = () => {
 
   const handleToggleVisibility = async (statId: string, visible: boolean) => {
     await updateStatVisibility({statId, visible})
-  }
-
-  const defaultStats: AdminStats = {
-    salesTodayCents: 0,
-    salesThisWeekCents: 0,
-    salesThisMonthCents: 0,
-    totalRevenueCents: 0,
-    pendingOrdersCount: 0,
-    cancelledOrdersCount: 0,
-    ongoingDeliveriesCount: 0,
-    deliveredOrdersCount: 0,
-    totalOrdersCount: 0,
-    totalUsersCount: 0,
-    totalProductsCount: 0,
-    averageOrderValueCents: 0,
-  }
-
-  const stats = adminStats ?? defaultStats
-  const chartDataWithDefaults = {
-    salesData: chartData?.salesData,
-    ordersData: chartData?.ordersData,
-    deliveriesData: chartData?.deliveriesData,
-    aovData: chartData?.aovData,
   }
 
   // Auto-seed statConfigs if they don't exist in the database
@@ -194,8 +147,6 @@ export const StatSettings = () => {
             <MiniStatCard
               key={config.id}
               config={config}
-              stats={stats}
-              chartData={chartDataWithDefaults}
               onToggle={handleToggleVisibility}
             />
           ))}

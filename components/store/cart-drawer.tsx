@@ -493,7 +493,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
               <div className='h-10 p-0 w-full border-t border-foreground/5 flex items-center justify-center bg-black'>
                 <Icon
                   name='rapid-fire-latest'
-                  className='mr-2 w-20 text-light-gray'
+                  className='mr-2 w-20 text-white/80'
                 />
                 <span className='text-white text-sm'>
                   <span className='font-space font-light tracking-tight'>

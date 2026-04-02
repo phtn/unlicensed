@@ -4,10 +4,10 @@ import type {StoreCategory, StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCart} from '@/hooks/use-cart'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptCategory, adaptProduct} from '@/lib/convexClient'
 import {Button, Image} from '@heroui/react'
-import {useQuery} from 'convex/react'
 import {useMemo, useState} from 'react'
 import {SectionHeader} from '../ui/section-header'
 
@@ -32,9 +32,14 @@ const buildCategoryCollections = (
 export const CartCollection = () => {
   const {addItem} = useCart()
 
-  // Fetch categories and products
-  const categoriesQuery = useQuery(api.categories.q.listCategories, {})
-  const productsQuery = useQuery(api.products.q.listProducts, {})
+  const {data: categoriesQuery} = useConvexSnapshotQuery(
+    api.categories.q.listCategories,
+    {},
+  )
+  const {data: productsQuery} = useConvexSnapshotQuery(
+    api.products.q.listProducts,
+    {},
+  )
 
   const categories = useMemo(
     () => categoriesQuery?.map(adaptCategory) ?? [],

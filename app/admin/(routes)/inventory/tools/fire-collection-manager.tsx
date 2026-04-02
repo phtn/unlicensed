@@ -8,6 +8,7 @@ import {ScrollArea} from '@/components/ui/scroll-area'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
@@ -272,9 +273,13 @@ export const FireCollectionManager = () => {
   const createFireCollection = useMutation(api.admin.m.createFireCollection)
   const updateFireCollection = useMutation(api.admin.m.updateFireCollection)
   const deleteFireCollection = useMutation(api.admin.m.deleteFireCollection)
-  const fireCollections = useQuery(api.admin.q.getFireCollectionsConfig, {})
+  const {data: fireCollections, refresh: refreshFireCollections} =
+    useConvexSnapshotQuery(api.admin.q.getFireCollectionsConfig, {})
   const categories = useQuery(api.categories.q.listCategories, {})
-  const libraryProducts = useQuery(api.products.q.listProducts, {limit: 500})
+  const {data: libraryProducts} = useConvexSnapshotQuery(
+    api.products.q.listProducts,
+    {limit: 500},
+  )
   const [fireState, setFireState] = useQueryStates(fireCollectionStateParsers)
   const selectedCollectionId = fireState.fireCollectionId ?? null
   const createTitle = fireState.fireCreateTitle
@@ -687,7 +692,7 @@ export const FireCollectionManager = () => {
       key: string,
       action: () => Promise<unknown>,
       options?: {
-        onSuccess?: () => void
+        onSuccess?: () => Promise<void> | void
       },
     ) => {
       setActiveKey(key)
@@ -695,7 +700,8 @@ export const FireCollectionManager = () => {
 
       try {
         await action()
-        options?.onSuccess?.()
+        await refreshFireCollections()
+        await options?.onSuccess?.()
         showSavedStatus()
       } catch (error) {
         console.error('Failed to update collections', error)
@@ -704,7 +710,7 @@ export const FireCollectionManager = () => {
         setActiveKey(null)
       }
     },
-    [showSavedStatus],
+    [refreshFireCollections, showSavedStatus],
   )
 
   const handleCreateCollection = async () => {

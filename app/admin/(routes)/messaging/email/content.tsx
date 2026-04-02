@@ -2,7 +2,7 @@
 
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {api} from '@/convex/_generated/api'
-import {useQuery} from 'convex/react'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {Suspense} from 'react'
 import {EmailTemplateList} from './_email'
 import {EmailTemplateDisplay} from './_email/components/email-template-display'
@@ -10,7 +10,10 @@ import {EmailTemplateForm} from './_email/components/email-template-form'
 import {MailingListContent} from './_email/components/mailing-list'
 
 const EmailContentInner = () => {
-  const templates = useQuery(api.emailSettings.q.listEmailSettings)
+  const {data: templates} = useConvexSnapshotQuery(
+    api.emailSettings.q.listEmailSettings,
+    {},
+  )
   const [tabId, , id] = useAdminTabId()
 
   switch (tabId) {

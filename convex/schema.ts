@@ -17,8 +17,8 @@ import {dealSchema} from './deals/d'
 import {emailSettingsSchema} from './emailSettings/d'
 import {fileSchema} from './files/upload'
 import {followSchema} from './follows/d'
-import {guestSchema} from './guests/d'
 import {gatewaySchema} from './gateways/d'
+import {guestSchema} from './guests/d'
 import {inventoryMovementSchema} from './inventoryMovements/d'
 import {logSchema} from './logs/d'
 import {mailingListSchema} from './mailingLists/d'
@@ -51,7 +51,9 @@ export default defineSchema({
     'createdAt',
   ]),
   staff: defineTable(staffSchema).index('by_email', ['email']),
-  users: defineTable(userSchema).index('by_fid', ['fid']).index('by_email', ['email']),
+  users: defineTable(userSchema)
+    .index('by_fid', ['fid'])
+    .index('by_email', ['email']),
   guests: defineTable(guestSchema)
     .index('by_fid', ['fid'])
     .index('by_guestId', ['guestId'])
@@ -137,6 +139,7 @@ export default defineSchema({
   messages: defineTable(messageSchema)
     .index('by_sender', ['senderId']) // All messages sent by a user
     .index('by_receiver', ['receiverId']) // All messages received by a user
+    .index('by_receiver_and_readAt', ['receiverId', 'readAt']) // Unread messages for a user
     .index('by_sender_receiver', ['senderId', 'receiverId']) // Messages between two specific users
     .index('by_receiver_sender', ['receiverId', 'senderId']), // Messages between two specific users (reverse)
 

@@ -49,7 +49,14 @@ export const SuggestedCartItems = () => {
 
   const resolveUrl = useStorageUrls(allImageIds)
 
-  const categories = ['flower', 'extracts', 'vapes', 'edibles', 'pre-rolls']
+  const categories = [
+    'flower',
+    'extracts',
+    'vapes',
+    'edibles',
+    'pre-rolls',
+    'accessories',
+  ]
   // If loading or both empty, we can just return null or loading state
   // But EmptyCart handles the main empty message.
   if (!featuredRaw && !previousRaw) return null
@@ -84,7 +91,7 @@ export const SuggestedCartItems = () => {
         title='Browse by Category'
         description='Discover new products from our collection.'
       />
-      <div className='w-full md:w-fit flex items-center justify-between gap-px md:gap-2'>
+      <div className='w-full flex items-center justify-center gap-px md:gap-2'>
         {categories.map((cat) => (
           <Button
             key={cat}
@@ -93,7 +100,7 @@ export const SuggestedCartItems = () => {
             href={`/lobby/category/${cat}`}
             prefetch
             radius='none'
-            className='portrait:w-full dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-medium px-2 md:px-5 py-5 text-base lg:text-lg capitalize tracking-tighter'>
+            className='portrait:w-full dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-clash font-medium px-2 md:px-5 py-5 text-base lg:text-lg capitalize tracking-tight'>
             <span className='drop-shadow-xs'>{cat}</span>
           </Button>
         ))}

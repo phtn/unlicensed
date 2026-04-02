@@ -8,6 +8,19 @@ export const listEmailSettings = query({
   },
 })
 
+export const getEmailSettingsCount = query({
+  args: {},
+  handler: async ({db}): Promise<number> => {
+    let count = 0
+
+    for await (const _setting of db.query('emailSettings')) {
+      count += 1
+    }
+
+    return count
+  },
+})
+
 export const getEmailSetting = query({
   args: {
     id: v.id('emailSettings'),

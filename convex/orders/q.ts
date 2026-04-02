@@ -3,8 +3,8 @@ import type {Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
 import {orderStatusSchema} from './d'
 import {
-  canAttemptPendingPaymentEmail,
   canAttemptPaymentSuccessEmail,
+  canAttemptPendingPaymentEmail,
   isPaymentSuccessEmailEligibleMethod,
 } from './email_delivery'
 
@@ -172,6 +172,21 @@ export const getRecentOrders = query({
     const orders = await ctx.db.query('orders').order('desc').take(limit)
 
     return orders
+  },
+})
+
+export const getPendingOrdersCount = query({
+  args: {},
+  handler: async (ctx): Promise<number> => {
+    let count = 0
+
+    for await (const _order of ctx.db
+      .query('orders')
+      .withIndex('by_status', (q) => q.eq('orderStatus', 'pending_payment'))) {
+      count += 1
+    }
+
+    return count
   },
 })
 

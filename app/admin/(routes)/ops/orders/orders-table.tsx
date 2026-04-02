@@ -57,8 +57,8 @@ export const OrdersTable = () => {
   const {user} = useAuthCtx()
   const orders = useQuery(api.orders.q.getRecentOrders, {limit: 100})
   const users = useQuery(api.users.q.getAllUsers, {limit: 5000})
-  const conversations = useQuery(
-    api.messages.q.getConversations,
+  const unreadConversations = useQuery(
+    api.messages.q.getUnreadConversationSummaries,
     user?.uid ? {fid: user.uid} : 'skip',
   )
   const connectCustomerForChat = useMutation(
@@ -121,16 +121,16 @@ export const OrdersTable = () => {
 
   const unreadCountByParticipantId = useMemo(() => {
     const map = new Map<string, number>()
-    if (!conversations) return map
+    if (!unreadConversations) return map
 
-    for (const conversation of conversations) {
+    for (const conversation of unreadConversations) {
       const participantId = conversation?.otherUserId
       if (!participantId) continue
       map.set(participantId, conversation.unreadCount ?? 0)
     }
 
     return map
-  }, [conversations])
+  }, [unreadConversations])
 
   const handleViewOrder = useCallback(
     (order: Order) => {

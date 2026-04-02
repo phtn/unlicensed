@@ -2,9 +2,9 @@
 
 import {api} from '@/convex/_generated/api'
 import {useBreakpoint} from '@/hooks/use-breakpoint'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {useMobile} from '@/hooks/use-mobile'
 import {useToggle} from '@/hooks/use-toggle'
-import {useQuery} from 'convex/react'
 import {Suspense, useState} from 'react'
 import {MainWrapper} from '../../_components/main-wrapper'
 import {RecentActivities} from './recent-activities'
@@ -13,8 +13,14 @@ import {Stats} from './stats'
 export const Content = () => {
   const isMobile = useMobile()
   const breakpoint = useBreakpoint()
-  const adminStats = useQuery(api.orders.q.getAdminStats)
-  const chartData = useQuery(api.orders.q.getAdminChartData)
+  const {data: adminStats} = useConvexSnapshotQuery(
+    api.orders.q.getAdminStats,
+    {},
+  )
+  const {data: chartData} = useConvexSnapshotQuery(
+    api.orders.q.getAdminChartData,
+    {},
+  )
   const [visibleStatsCount, setVisibleStatsCount] = useState(0)
   const [statsHeight, setStatsHeight] = useState(0)
 

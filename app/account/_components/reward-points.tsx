@@ -39,7 +39,7 @@ export const RewardPoints = ({pointsBalance}: RewardPointsProps) => {
 const PointsBalance = ({points}: {points: string}) => {
   return (
     <div className='flex items-baseline gap-2'>
-      <span className='text-2xl md:text-3xl font-semibold font-okxs text-white tracking-wide'>
+      <span className='text-2xl md:text-3xl font-semibold font-okxs dark:text-white tracking-wide'>
         ${points}
       </span>
     </div>

@@ -35,8 +35,8 @@ export function AdminAlertsListener() {
         }
       : 'skip',
   )
-  const conversations = useQuery(
-    api.messages.q.getConversations,
+  const unreadConversations = useQuery(
+    api.messages.q.getUnreadConversationSummaries,
     user?.uid ? {fid: user.uid} : 'skip',
   )
   const staff = useQuery(api.staff.q.getStaff)
@@ -95,10 +95,10 @@ export function AdminAlertsListener() {
   }, [activities, config])
 
   useEffect(() => {
-    if (!conversations) return
+    if (!unreadConversations) return
 
     const nextUnreadCounts = new Map(
-      conversations.map((conversation) => [
+      unreadConversations.map((conversation) => [
         conversation.otherUserId,
         conversation.unreadCount,
       ]),
@@ -110,7 +110,7 @@ export function AdminAlertsListener() {
       return
     }
 
-    const freshCustomerMessages = conversations.filter((conversation) => {
+    const freshCustomerMessages = unreadConversations.filter((conversation) => {
       const previousUnreadCount =
         unreadCountByConversationRef.current.get(conversation.otherUserId) ?? 0
       const email = conversation.otherUser?.email?.trim().toLowerCase()
@@ -132,7 +132,7 @@ export function AdminAlertsListener() {
         .then(() => playAdminAlert(config.messages))
         .catch(() => undefined)
     })
-  }, [activeStaffEmails, config, conversations])
+  }, [activeStaffEmails, config, unreadConversations])
 
   return null
 }

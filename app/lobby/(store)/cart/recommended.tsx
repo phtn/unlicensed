@@ -5,6 +5,7 @@ import type {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
 import {Doc, Id} from '@/convex/_generated/dataModel'
 import {isProductCartItemWithProduct, useCart} from '@/hooks/use-cart'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {adaptProduct, RawProduct} from '@/lib/convexClient'
 import {getUnitPriceCents} from '@/utils/cartPrice'
 import {formatPrice} from '@/utils/formatPrice'
@@ -37,9 +38,10 @@ function getLowestDenomination(product: StoreProduct): number {
 
 export const RecommendedProducts = memo(() => {
   const {cart, addItem} = useCart()
-  const productsQuery = useQuery(api.products.q.listProducts, {
-    limit: 50,
-  }) as Doc<'products'>[] | undefined
+  const {data: productsQuery} = useConvexSnapshotQuery(
+    api.products.q.listProducts,
+    {limit: 50},
+  ) as {data: Doc<'products'>[] | undefined}
 
   // Get product IDs and category slugs already in cart
   const cartProductIds = useMemo(() => {

@@ -6,7 +6,6 @@ import {Title} from '@/components/base44/title'
 import {api} from '@/convex/_generated/api'
 import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {Button, Select, SelectItem, SharedSelection} from '@heroui/react'
@@ -75,17 +74,9 @@ export const Content = ({initialProducts}: ContentProps) => {
     order: parseAsStringEnum<SortOrder>(['asc', 'desc']).withDefault('asc'),
   })
 
-  // Fetch products
-  const productsQuery = useQuery(api.products.q.listProducts, {limit: 200})
   const categoriesQuery = useQuery(api.categories.q.listCategories)
 
-  // Adapt and filter products
-  const allProducts = useMemo(() => {
-    const nextProducts = productsQuery?.map((product) => adaptProduct(product))
-    return nextProducts && nextProducts.length > 0
-      ? nextProducts
-      : initialProducts
-  }, [initialProducts, productsQuery])
+  const allProducts = initialProducts
 
   const getProductBrands = (brands?: string | string[]) =>
     Array.isArray(brands) ? brands : brands ? [brands] : []

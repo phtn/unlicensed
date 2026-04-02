@@ -7,12 +7,9 @@ import type {
   BundleType,
 } from '@/app/lobby/(store)/deals/lib/deal-types'
 import type {StoreProduct} from '@/app/types'
-import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
-import {useQuery} from 'convex/react'
 import {useSearchParams} from 'next/navigation'
 import {useCallback, useEffect, useMemo, useSyncExternalStore} from 'react'
 import {BundleBuilder} from './components/bundle-builder'
@@ -122,54 +119,14 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
     dealIds,
   )
 
-  const flowerQuery = useQuery(api.products.q.listProducts, {
-    categorySlug: 'flower',
-    limit: 50,
-    eligibleForDeals: true,
-  })
-  const extractsQuery = useQuery(api.products.q.listProducts, {
-    categorySlug: 'extracts',
-    limit: 50,
-    eligibleForDeals: true,
-  })
-  const ediblesQuery = useQuery(api.products.q.listProducts, {
-    categorySlug: 'edibles',
-    limit: 50,
-    eligibleForDeals: true,
-  })
-  const prerollsQuery = useQuery(api.products.q.listProducts, {
-    categorySlug: 'pre-rolls',
-    limit: 50,
-    eligibleForDeals: true,
-  })
-
-  const flower = useMemo(
-    () =>
-      flowerQuery?.map((product) => adaptProduct(product)) ??
-      initialProductsByCategory['flower'] ??
-      [],
-    [flowerQuery, initialProductsByCategory],
-  )
-  const extracts = useMemo(
-    () =>
-      extractsQuery?.map((product) => adaptProduct(product)) ??
-      initialProductsByCategory['extracts'] ??
-      [],
-    [extractsQuery, initialProductsByCategory],
-  )
-  const edibles = useMemo(
-    () =>
-      ediblesQuery?.map((product) => adaptProduct(product)) ??
-      initialProductsByCategory['edibles'] ??
-      [],
-    [ediblesQuery, initialProductsByCategory],
-  )
-  const prerolls = useMemo(
-    () =>
-      prerollsQuery?.map((product) => adaptProduct(product)) ??
-      initialProductsByCategory['pre-rolls'] ??
-      [],
-    [prerollsQuery, initialProductsByCategory],
+  const {flower, extracts, edibles, prerolls} = useMemo(
+    () => ({
+      flower: initialProductsByCategory['flower'] ?? [],
+      extracts: initialProductsByCategory['extracts'] ?? [],
+      edibles: initialProductsByCategory['edibles'] ?? [],
+      prerolls: initialProductsByCategory['pre-rolls'] ?? [],
+    }),
+    [initialProductsByCategory],
   )
 
   // const productsByCategory = useMemo(

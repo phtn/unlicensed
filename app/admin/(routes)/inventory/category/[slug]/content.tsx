@@ -8,6 +8,7 @@ import {AnimatedNumber} from '@/components/ui/animated-number'
 import {api} from '@/convex/_generated/api'
 import {Doc, Id} from '@/convex/_generated/dataModel'
 import {onError} from '@/ctx/toast'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {useMobile} from '@/hooks/use-mobile'
 import {useSaveAdminProductFormReturn} from '@/hooks/use-save-admin-product-form-return'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
@@ -514,7 +515,7 @@ const ProductStackView = ({
 const CategoryProductsContentInner = ({
   categorySlug,
 }: CategoryProductsContentProps) => {
-  const products = useQuery(api.products.q.listProducts, {
+  const {data: products} = useConvexSnapshotQuery(api.products.q.listProducts, {
     categorySlug,
     limit: 1000,
   })

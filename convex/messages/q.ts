@@ -13,9 +13,9 @@ import {
   getChatParticipantEmail,
   getChatParticipantFid,
   getChatParticipantLocationLabel,
+  isGuestParticipant,
   type ChatParticipantDoc,
   type ChatParticipantId,
-  isGuestParticipant,
 } from './participants'
 
 const findParticipantByFid = (ctx: QueryCtx, fid: string) =>
@@ -116,8 +116,41 @@ const mapConversationUser = (
     proId: fid || undefined,
     displayName: user.name ?? null,
     avatarUrl: user.photoUrl ?? null,
-    locationLabel: includeLocation ? getChatParticipantLocationLabel(user) : null,
+    locationLabel: includeLocation
+      ? getChatParticipantLocationLabel(user)
+      : null,
   }
+}
+
+const getAssistantUser = async (ctx: QueryCtx) =>
+  ctx.db
+    .query('users')
+    .withIndex('by_fid', (q) => q.eq('fid', ASSISTANT_PRO_ID))
+    .first()
+
+const listUnreadVisibleMessagesForUser = async (
+  ctx: QueryCtx,
+  userId: ChatParticipantId,
+  assistantId?: Id<'users'>,
+) => {
+  const unreadMessages = await ctx.db
+    .query('messages')
+    .withIndex('by_receiver_and_readAt', (q) =>
+      q.eq('receiverId', userId).eq('readAt', null),
+    )
+    .collect()
+
+  return unreadMessages.filter((message) => {
+    if (message.visible !== true) {
+      return false
+    }
+
+    if (assistantId && message.senderId === assistantId) {
+      return false
+    }
+
+    return true
+  })
 }
 
 // Check if two users are connected (either follows the other)
@@ -693,27 +726,80 @@ export const getUnreadCount = query({
       return 0
     }
 
-    // Get the assistant user to exclude their messages
-    const assistant = await ctx.db
-      .query('users')
-      .withIndex('by_fid', (q) => q.eq('fid', ASSISTANT_PRO_ID))
-      .first()
-
-    // Get all unread messages for the user (excluding assistant messages)
-    const unreadMessages = await ctx.db
-      .query('messages')
-      .withIndex('by_receiver', (q) => q.eq('receiverId', user._id))
-      .filter((q) =>
-        q.and(
-          q.eq(q.field('visible'), true),
-          q.eq(q.field('readAt'), null),
-          // Exclude messages from the assistant
-          assistant ? q.neq(q.field('senderId'), assistant._id) : true,
-        ),
-      )
-      .collect()
+    const assistant = await getAssistantUser(ctx)
+    const unreadMessages = await listUnreadVisibleMessagesForUser(
+      ctx,
+      user._id,
+      assistant?._id,
+    )
 
     return unreadMessages.length
+  },
+})
+
+export const getUnreadConversationSummaries = query({
+  args: {
+    fid: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await findParticipantByFid(ctx, args.fid)
+
+    if (!user) {
+      return []
+    }
+
+    const assistant = await getAssistantUser(ctx)
+    const unreadMessages = await listUnreadVisibleMessagesForUser(
+      ctx,
+      user._id,
+      assistant?._id,
+    )
+
+    if (unreadMessages.length === 0) {
+      return []
+    }
+
+    const unreadCountByOtherUserId = new Map<string, number>()
+    const otherUserIds = new Set<ChatParticipantId>()
+
+    for (const message of unreadMessages) {
+      const otherUserId = message.senderId
+      const key = String(otherUserId)
+
+      unreadCountByOtherUserId.set(
+        key,
+        (unreadCountByOtherUserId.get(key) ?? 0) + 1,
+      )
+      otherUserIds.add(otherUserId)
+    }
+
+    const otherUsers = await Promise.all(
+      [...otherUserIds].map(async (otherUserId) => {
+        const otherUser = await getChatParticipantById(ctx, otherUserId)
+        if (!otherUser) {
+          return null
+        }
+
+        return [
+          String(otherUserId),
+          mapConversationUser(otherUser, false),
+        ] as const
+      }),
+    )
+
+    const otherUsersById = new Map(
+      otherUsers.filter(
+        (entry): entry is readonly [string, OtherUser] => entry !== null,
+      ),
+    )
+
+    return [...unreadCountByOtherUserId.entries()].map(
+      ([otherUserId, unreadCount]) => ({
+        otherUserId,
+        otherUser: otherUsersById.get(otherUserId) ?? null,
+        unreadCount,
+      }),
+    )
   },
 })
 

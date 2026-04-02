@@ -13,7 +13,7 @@ import {useQuery} from 'convex/react'
 import {Suspense} from 'react'
 
 const EmailTabInner = () => {
-  const templates = useQuery(api.emailSettings.q.listEmailSettings)
+  const templateCount = useQuery(api.emailSettings.q.getEmailSettingsCount)
 
   return (
     <>
@@ -23,7 +23,7 @@ const EmailTabInner = () => {
           className={cn(
             'px-1 h-6 w-6 text-center dark:bg-dark-gray bg-dark-gray/10 rounded-md font-space font-semibold',
           )}>
-          <AnimatedNumber value={templates?.length ?? 0} />
+          <AnimatedNumber value={templateCount ?? 0} />
         </span>
       </MainTab>
       <ToolbarButtonWrapper>

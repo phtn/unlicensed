@@ -97,9 +97,10 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
   )
 
   // Real-time conversations - automatically updates via Convex reactivity
-  const conversations = useQuery(api.messages.q.getConversations, {
-    fid: currentUserId ?? '',
-  })
+  const conversations = useQuery(
+    api.messages.q.getConversations,
+    currentUserId ? {fid: currentUserId} : 'skip',
+  )
 
   // Search conversations
   const searchResults = useQuery(
@@ -130,7 +131,11 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
       return selectedConversationUser.fid
     }
 
-    return selectedConversationUser.fid ?? selectedConversationUser.firebaseId ?? null
+    return (
+      selectedConversationUser.fid ??
+      selectedConversationUser.firebaseId ??
+      null
+    )
   }, [selectedConversationUser])
 
   // Use search results if searching, otherwise use regular conversations
@@ -655,9 +660,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
             )}
 
             <ConversationList
-              selectedProId={
-                selectedConversationFid ?? selectedConversationRef
-              }
+              selectedProId={selectedConversationFid ?? selectedConversationRef}
               conversations={displayedConversations}
               folderOptions={folderOptions}
               onSelectConversation={handleSelectConversation}

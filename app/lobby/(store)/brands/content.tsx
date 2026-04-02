@@ -5,13 +5,13 @@ import {Tag} from '@/components/base44/tag'
 import {Title, TitleV4} from '@/components/base44/title'
 import {ProductCard} from '@/components/store/product-card'
 import {api} from '@/convex/_generated/api'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
 import {Icon, IconName} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {cn} from '@/lib/utils'
 import {Button, Image} from '@heroui/react'
-import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
 import {Activity, useMemo} from 'react'
@@ -22,8 +22,11 @@ export const Content = () => {
     'id',
     parseAsString.withDefault(''),
   )
-  const productsQuery = useQuery(api.products.q.listProducts, {limit: 100})
-  const selectedBrandProductsQuery = useQuery(
+  const {data: productsQuery} = useConvexSnapshotQuery(
+    api.products.q.listProducts,
+    {limit: 100},
+  )
+  const {data: selectedBrandProductsQuery} = useConvexSnapshotQuery(
     api.products.q.listProducts,
     selectedBrandId ? {brand: selectedBrandId, limit: 24} : 'skip',
   )

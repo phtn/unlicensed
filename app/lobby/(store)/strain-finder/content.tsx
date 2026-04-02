@@ -4,14 +4,11 @@ import type {ClassName, StoreProduct} from '@/app/types'
 import {HyperList} from '@/components/expermtl/hyper-list'
 import {PrimaryCard} from '@/components/store/primary-card'
 import {ScrollArea} from '@/components/ui/scroll-area'
-import {api} from '@/convex/_generated/api'
 import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {adaptProduct} from '@/lib/convexClient'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
-import {useQuery} from 'convex/react'
 import {parseAsString, parseAsStringEnum, useQueryState} from 'nuqs'
 import {
   Activity,
@@ -132,14 +129,9 @@ export const Content = ({initialProducts}: ContentProps) => {
     [moods, flavors, potency],
   )
 
-  const productsQuery = useQuery(api.products.q.listProducts, {})
   const products = useMemo(
-    () =>
-      (
-        productsQuery?.map((product) => adaptProduct(product)) ??
-        initialProducts
-      ).filter((p) => p.available && p.stock > 0),
-    [productsQuery, initialProducts],
+    () => initialProducts.filter((p) => p.available && p.stock > 0),
+    [initialProducts],
   )
 
   // Get product image IDs for URL resolution

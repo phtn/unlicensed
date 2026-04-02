@@ -28,6 +28,7 @@ const prefetchedRoutes = new Set<string>()
 export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const router = useRouter()
+  const pendingOrdersCount = useQuery(api.orders.q.getPendingOrdersCount) ?? 0
 
   // Collect all routes from navMain data
   const allRoutes = useMemo(() => {
@@ -95,7 +96,10 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                         asChild
                         className='capitalize group/menu-button data-[active=true]:hover:bg-background data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/50 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto'
                         isActive={isActive}>
-                        <MenuContent {...item} />
+                        <MenuContent
+                          {...item}
+                          pendingOrdersCount={pendingOrdersCount}
+                        />
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )
@@ -130,7 +134,10 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                           'group/menu-button font-medium h-7 [&>svg]:size-auto',
                         )}
                         isActive={isActive}>
-                        <MenuContent {...item} />
+                        <MenuContent
+                          {...item}
+                          pendingOrdersCount={pendingOrdersCount}
+                        />
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )
@@ -165,7 +172,10 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                       size='lg'
                       className='group/menu-button h-8 [&>svg]:size-auto'
                       isActive={isActive}>
-                      <MenuContent {...item} />
+                      <MenuContent
+                        {...item}
+                        pendingOrdersCount={pendingOrdersCount}
+                      />
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )
@@ -192,10 +202,11 @@ const Logo = () => {
   )
 }
 
-const MenuContent = memo(function MenuContent(item: NavItem) {
-  const adminStats = useQuery(api.orders.q.getAdminStats)
-  const pendingOrdersCount = adminStats?.pendingOrdersCount ?? 0
-  const showBadge = item.url === '/admin/orders' && pendingOrdersCount > 0
+const MenuContent = memo(function MenuContent(
+  item: NavItem & {pendingOrdersCount: number},
+) {
+  const showBadge =
+    item.url === '/admin/ops/orders' && item.pendingOrdersCount > 0
   const router = useRouter()
 
   // Prefetch on hover as a fallback (in case it wasn't prefetched yet)
@@ -230,7 +241,7 @@ const MenuContent = memo(function MenuContent(item: NavItem) {
       </span>
       {showBadge && (
         <span className='flex h-5 w-5 aspect-square items-center justify-center rounded-sm bg-foreground/90 px-1.5 text-base font-semibold tabular-nums text-background dark:text-sidebar font-space'>
-          {pendingOrdersCount}
+          {item.pendingOrdersCount}
         </span>
       )}
     </Link>

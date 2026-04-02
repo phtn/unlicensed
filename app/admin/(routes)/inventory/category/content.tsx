@@ -4,7 +4,7 @@ import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
-import {useQuery} from 'convex/react'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {parseAsString, useQueryState} from 'nuqs'
 import {Suspense} from 'react'
 import {CategoryProductsContent} from './[slug]/content'
@@ -13,7 +13,10 @@ import {EditCategory} from './edit-category'
 import {NewCategory} from './new-category'
 
 const CategoriesContentInner = () => {
-  const categories = useQuery(api.categories.q.listCategoriesForAdmin)
+  const {data: categories} = useConvexSnapshotQuery(
+    api.categories.q.listCategoriesForAdmin,
+    {},
+  )
   const [tabId, , id] = useAdminTabId()
   const [slug] = useQueryState('slug', parseAsString.withDefault(''))
 

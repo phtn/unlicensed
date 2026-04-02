@@ -3,6 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
+import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
@@ -134,12 +135,15 @@ export const RecentActivities = ({
   const markAsViewed = useMutation(api.activityViews.m.markActivitiesAsViewed)
   const viewedActivityIdsRef = React.useRef<Set<string>>(new Set())
 
-  const activities = useQuery(api.activities.q.getRecentActivities, {
-    limit: 30,
-    includeUsers: true,
-    includeViewers: true,
-    viewerLimit: 5,
-  })
+  const {data: activities, refresh: refreshActivities} = useConvexSnapshotQuery(
+    api.activities.q.getRecentActivities,
+    {
+      limit: 30,
+      includeUsers: true,
+      includeViewers: true,
+      viewerLimit: 5,
+    },
+  )
 
   // Mark activities as viewed when component mounts or activities change
   useEffect(() => {
@@ -164,12 +168,16 @@ export const RecentActivities = ({
     markAsViewed({
       activityIds: unseenActivityIds,
       userId: convexUser._id,
-    }).catch(() => {
-      unseenActivityIds.forEach((activityId) => {
-        viewedActivityIdsRef.current.delete(String(activityId))
-      })
     })
-  }, [activities, convexUser, markAsViewed])
+      .then(() => {
+        void refreshActivities()
+      })
+      .catch(() => {
+        unseenActivityIds.forEach((activityId) => {
+          viewedActivityIdsRef.current.delete(String(activityId))
+        })
+      })
+  }, [activities, convexUser, markAsViewed, refreshActivities])
 
   const renderCell = React.useCallback(
     (

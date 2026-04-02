@@ -16,16 +16,16 @@ import {
 } from '../components'
 
 export const MessagingContent = () => {
-  const templates = useQuery(api.emailSettings.q.listEmailSettings)
+  const templateCount = useQuery(api.emailSettings.q.getEmailSettingsCount)
   const isMobile = useMobile()
   return (
     <ToolbarWrapper>
       <MainTab href='/admin/messaging/email'>
         <PageTitle>Messaging</PageTitle>
         <ViewTransition>
-          {templates ? (
+          {templateCount !== undefined ? (
             <div className='size-6 flex items-center justify-center aspect-square bg-foreground/8 rounded-md font-space font-medium text-base md:text-lg'>
-              <AnimatedNumber value={templates?.length} />
+              <AnimatedNumber value={templateCount} />
             </div>
           ) : (
             <Icon name='spinners-ring' className='size-4' />

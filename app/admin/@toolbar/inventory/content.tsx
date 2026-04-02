@@ -8,14 +8,14 @@ import {PageTitle} from '../../_components/ui/page-title'
 import {MainTab, ToolbarButtonWrapper, ToolbarWrapper} from '../components'
 
 export const InventoryContent = () => {
-  const products = useQuery(api.products.q.listProducts, {limit: 100})
+  const productCount = useQuery(api.products.q.getActiveProductCount)
   return (
     <ToolbarWrapper>
       <MainTab href='/admin/inventory'>
         <PageTitle>Inventory</PageTitle>
-        {products ? (
+        {productCount !== undefined ? (
           <div className='w-8 flex items-center justify-center aspect-square bg-neutral-200/40 rounded-md font-space'>
-            <AnimatedNumber value={products?.length} />
+            <AnimatedNumber value={productCount} />
           </div>
         ) : (
           <Icon name='spinners-ring' className='size-4' />
