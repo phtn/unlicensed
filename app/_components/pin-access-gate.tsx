@@ -219,7 +219,7 @@ export function PinAccessGate() {
         <div className='flex items-center justify-center space-x-6'>
           {/* Logo/Icon */}
           <div className='flex items-center justify-center h-full'>
-            <div className='relative'>
+            <div className='relative -translate-y-0.5'>
               <Icon
                 name='re-up.ph'
                 className='relative z-50 size-10 mb-1 text-white/90 drop-shadow-2xl'
@@ -231,17 +231,15 @@ export function PinAccessGate() {
           {/* Header */}
           <div className='flex items-center justify-center whitespace-nowrap'>
             <ShimmerText
-              surface='dark'
-              variant='default'
-              className='leading-none'>
-              <span className='font-polysans font-bold text-4xl md:text-6xl'>
-                Halt Gate
-              </span>
-            </ShimmerText>
+              text='Halt Gate'
+              surface='light'
+              variant='chatgpt'
+              className='font-polysans font-bold text-4xl md:text-[44px]'
+            />
           </div>
         </div>
         <div className='relative flex items-center justify-center h-24'>
-          <div className='text-sky-100/80 text-base font-normal font-brk'>
+          <div className='text-sky-100/80 text-base font-normal font-ios tracking-wide'>
             <Typewrite text={'Access Code Required'} showCursor={false} />
           </div>
         </div>

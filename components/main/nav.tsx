@@ -1,40 +1,24 @@
 'use client'
 
-import {useTheme} from '@/components/ui/theme-provider'
-import {api} from '@/convex/_generated/api'
-import {useAuth} from '@/hooks/use-auth'
-import {useCart} from '@/hooks/use-cart'
-import {useMobile} from '@/hooks/use-mobile'
-import {useScrollY} from '@/hooks/use-scroll-y'
-import {logout} from '@/lib/firebase/auth'
-import {Icon} from '@/lib/icons'
-import {isActiveStaffMember} from '@/lib/staff-access'
-import {cn} from '@/lib/utils'
-import {Badge, Button, useDisclosure} from '@heroui/react'
-import {useQuery} from 'convex/react'
-import dynamic from 'next/dynamic'
+import { AuthModal } from '@/components/auth/auth-modal'
+import { CartDrawer } from '@/components/store/cart-drawer'
+import { useTheme } from '@/components/ui/theme-provider'
+import { api } from '@/convex/_generated/api'
+import { useAuth } from '@/hooks/use-auth'
+import { useCart } from '@/hooks/use-cart'
+import { useMobile } from '@/hooks/use-mobile'
+import { useScrollY } from '@/hooks/use-scroll-y'
+import { logout } from '@/lib/firebase/auth'
+import { Icon } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+import { Badge, Button, useDisclosure } from '@heroui/react'
+import { useQuery } from 'convex/react'
+import { motion } from 'motion/react'
 import Link from 'next/link'
-import {usePathname} from 'next/navigation'
-import {useCallback, useMemo, useState} from 'react'
-import {NavMenu} from '../expermtl/nav-menu'
-import {UserDropdown} from './user-dropdown'
-
-const AuthModal = dynamic(
-  () =>
-    import('@/components/auth/auth-modal').then((module) => module.AuthModal),
-  {ssr: false},
-)
-
-const CartDrawer = dynamic(
-  () =>
-    import('@/components/store/cart-drawer').then(
-      (module) => module.CartDrawer,
-    ),
-  {ssr: false},
-)
-
-const preloadAuthModal = () => import('@/components/auth/auth-modal')
-const preloadCartDrawer = () => import('@/components/store/cart-drawer')
+import { usePathname } from 'next/navigation'
+import { useCallback, useMemo, useState } from 'react'
+import { NavMenu } from '../expermtl/nav-menu'
+import { UserDropdown } from './user-dropdown'
 
 interface NavProps {
   children?: React.ReactNode
@@ -54,9 +38,6 @@ export const Nav = ({children}: NavProps) => {
     onOpen: onCartDrawerOpen,
     onClose: onCartDrawerClose,
   } = useDisclosure()
-  const [hasOpenedAuthModal, setHasOpenedAuthModal] = useState(false)
-  const [hasOpenedCartDrawer, setHasOpenedCartDrawer] = useState(false)
-  const [hovered, setHovered] = useState(false)
 
   const handleLogout = useCallback(async () => {
     try {
@@ -72,35 +53,16 @@ export const Nav = ({children}: NavProps) => {
     api.staff.q.getStaffByEmail,
     user?.email ? {email: user.email} : 'skip',
   )
-  const canAccessAdmin = useMemo(() => isActiveStaffMember(staff), [staff])
+  const isStaff = useMemo(
+    () => !!staff && staff.active && staff.accessRoles.length > 0,
+    [staff],
+  )
 
   const handleToggleTheme = useCallback(() => {
     setTheme(theme === 'light' ? 'dark' : 'light')
   }, [setTheme, theme])
 
-  const handleAuthOpen = useCallback(() => {
-    setHasOpenedAuthModal(true)
-    onOpen()
-  }, [onOpen])
-
-  const handleCartOpen = useCallback(() => {
-    setHasOpenedCartDrawer(true)
-    onCartDrawerOpen()
-  }, [onCartDrawerOpen])
-
-  const handleCartDrawerChange = useCallback(
-    (open: boolean) => {
-      if (open) {
-        setHasOpenedCartDrawer(true)
-        onCartDrawerOpen()
-        return
-      }
-
-      onCartDrawerClose()
-    },
-    [onCartDrawerClose, onCartDrawerOpen],
-  )
-
+  const [hovered, setHovered] = useState(false)
   const handleHomeMouseEnter = useCallback(() => {
     setHovered(true)
   }, [])
@@ -126,15 +88,20 @@ export const Nav = ({children}: NavProps) => {
         <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 flex items-center justify-start md:justify-between h-full'>
           <div className='min-w-12 md:w-36'>
             <Link
-              href='/lobby'
-              aria-label='Go to the Rapid Fire storefront'
+              href={'/lobby'}
               onMouseEnter={handleHomeMouseEnter}
               onMouseLeave={handleHomeMouseLeave}
-              className='group relative flex h-11 min-h-11 items-center justify-start overflow-hidden rounded-full px-1.5 text-dark-table outline-0 active:text-brand hover:text-brand focus-visible:bg-brand dark:text-white md:h-12 md:w-fit'>
-              <div
+              className='group relative flex items-center justify-start rounded-full h-10 md:w-fit md:h-12 overflow-hidden px-1  dark:text-white text-dark-table hover:text-brand active:text-brand outline-0 focus-visible:bg-brand'>
+              <motion.div
+                initial={{y: 12, opacity: 0, scale: 0}}
+                animate={{
+                  y: hovered ? 0 : 0,
+                  opacity: hovered ? 1 : 0,
+                  scale: hovered ? 0.8 : 0,
+                }}
+                exit={{y: -12, opacity: 0, scale: 0}}
                 className={cn(
-                  'absolute hidden size-7 aspect-square rounded-full bg-brand transition-all duration-300 ease-out md:flex md:size-10',
-                  hovered ? 'scale-[0.8] opacity-100' : 'scale-0 opacity-0',
+                  'hidden md:flex absolute size-7 md:size-10 bg-brand aspect-square rounded-full',
                   {
                     'bg-brand':
                       (!isMobile && scrollY <= 710) ||
@@ -142,11 +109,14 @@ export const Nav = ({children}: NavProps) => {
                   },
                 )}
               />
-              <div className='rounded-full dark:bg-black/10 dark:group-hover:text-white group-hover:backdrop-blur-none'>
+              <div
+                className={cn(
+                  'dark:bg-black/10 group-hover:backdrop-blur-none rounded-full',
+                )}>
                 <Icon
                   name='rapid-fire-logo'
                   className={cn(
-                    'relative h-8 w-auto text-white transition-colors duration-300 dark:group-hover:text-white md:h-10',
+                    'h-8 md:h-10 w-auto relative text-white dark:group-hover:text-white transition-colors duration-300',
                     {
                       'text-dark-table dark:text-white dark:group-hover:text-white':
                         !inStoreLobby,
@@ -160,7 +130,10 @@ export const Nav = ({children}: NavProps) => {
               </div>
             </Link>
           </div>
-          <nav className='flex items-center justify-center space-x-4 md:w-fit w-full'>
+          <nav
+            className={cn(
+              'flex items-center justify-center md:w-fit w-full space-x-4',
+            )}>
             <div className='portrait:flex-1 portrait:px-2'>
               <NavMenu
                 scrollY={scrollY}
@@ -170,9 +143,9 @@ export const Nav = ({children}: NavProps) => {
             </div>
             <div className='sm:hidden portrait:flex portrait:w-full' />
             <Link
-              href='/lobby/category'
+              href={'/lobby/category'}
               className={cn(
-                'hidden rounded-xs px-2 text-sm font-clash font-semibold text-gray-100 outline-0 hover:text-brand focus-visible:bg-brand focus-visible:ring-0 md:flex md:items-center md:space-x-1 lg:text-lg',
+                'hidden rounded-xs px-2 group text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-clash font-semibold space-x-1  outline-0 focus-visible:bg-brand focus-visible:ring-0',
                 {
                   'text-dark-table dark:text-white': !inStoreLobby,
                   'text-dark-table dark:text-white .':
@@ -181,13 +154,13 @@ export const Nav = ({children}: NavProps) => {
                     isMobile && scrollY >= 400,
                 },
               )}>
-              <span className='dark:drop-shadow-black group-hover:drop-shadow-sm'>
+              <span className='group-hover:drop-shadow-sm dark:drop-shadow-black'>
                 Shop
               </span>
             </Link>
             {children}
           </nav>
-          <div className='flex w-fit items-center justify-between gap-5 md:w-36'>
+          <div className='flex w-fit gap-5 md:w-36 items-center justify-between'>
             <Badge
               size='sm'
               variant='shadow'
@@ -196,8 +169,8 @@ export const Nav = ({children}: NavProps) => {
                 cartItemCount > 0 ? (
                   <div
                     suppressHydrationWarning
-                    className='flex size-5 aspect-square items-center justify-center rounded-full px-0.5 py-0.5 md:mx-0'>
-                    <span className='font-okxs text-base font-semibold leading-none text-white'>
+                    className='flex items-center justify-center rounded-full py-0.5 px-0.5 md:mx-0 size-5 aspect-square'>
+                    <span className='font-okxs font-semibold text-base text-white leading-none'>
                       {cartItemCount}
                     </span>
                   </div>
@@ -213,16 +186,9 @@ export const Nav = ({children}: NavProps) => {
               <Button
                 isIconOnly
                 data-cart-icon
-                aria-label='Open cart'
                 variant='light'
-                className='size-11 min-h-11 min-w-11 capitalize outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand!'
-                onPointerEnter={() => {
-                  void preloadCartDrawer()
-                }}
-                onFocus={() => {
-                  void preloadCartDrawer()
-                }}
-                onPress={handleCartOpen}>
+                className='capitalize outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand!'
+                onPress={onCartDrawerOpen}>
                 <Icon
                   name='bag-solid'
                   className={cn('size-6 text-white', {
@@ -240,47 +206,40 @@ export const Nav = ({children}: NavProps) => {
               <UserDropdown
                 loading={authLoading}
                 user={user}
-                canAccessAdmin={canAccessAdmin}
+                isStaff={isStaff}
                 onThemeToggle={handleToggleTheme}
                 onLogout={handleLogout}
               />
             ) : (
-              <Button
-                isIconOnly
-                variant='light'
-                aria-label='Open login dialog'
-                className='size-11 min-h-11 min-w-11 capitalize outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand!'
-                onPointerEnter={() => {
-                  void preloadAuthModal()
-                }}
-                onFocus={() => {
-                  void preloadAuthModal()
-                }}
-                onPress={handleAuthOpen}>
-                <Icon
-                  name='user'
-                  className={cn('size-6 text-white', {
+              <Icon
+                name='user'
+                onClick={onOpen}
+                className={cn(
+                  'size-6 text-white focus-visible:outline-2! focus-visible:outline-brand!',
+                  {
                     'text-dark-table dark:text-white': !inStoreLobby,
                     'text-dark-table dark:text-white .':
                       !isMobile && scrollY >= 710,
                     'text-dark-table dark:text-white _':
                       isMobile && scrollY >= 400,
-                  })}
-                />
-              </Button>
+                  },
+                )}
+              />
             )}
           </div>
         </div>
       </header>
-      {hasOpenedAuthModal ? (
-        <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />
-      ) : null}
-      {hasOpenedCartDrawer ? (
-        <CartDrawer
-          open={isCartDrawerOpen}
-          onOpenChange={handleCartDrawerChange}
-        />
-      ) : null}
+      <AuthModal isOpen={isOpen} onClose={onClose} mode='login' />
+      <CartDrawer
+        open={isCartDrawerOpen}
+        onOpenChange={(open) => {
+          if (open) {
+            onCartDrawerOpen()
+          } else {
+            onCartDrawerClose()
+          }
+        }}
+      />
     </div>
   )
 }

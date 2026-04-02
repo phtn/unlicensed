@@ -1,12 +1,13 @@
 'use client'
 
-import { useConvex } from 'convex/react'
+import {useConvex} from 'convex/react'
 import type {
-    FunctionArgs,
-    FunctionReference,
-    FunctionReturnType,
+  FunctionArgs,
+  FunctionReference,
+  FunctionReturnType,
 } from 'convex/server'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {getFunctionName} from 'convex/server'
+import {useCallback, useEffect, useRef, useState} from 'react'
 
 type SnapshotQueryOptions<Query extends FunctionReference<'query'>> = {
   initialData?: FunctionReturnType<Query>
@@ -21,15 +22,21 @@ export const useConvexSnapshotQuery = <
   options?: SnapshotQueryOptions<Query>,
 ) => {
   const convex = useConvex()
+  const queryName = getFunctionName(query)
   const argsKey = args === 'skip' ? 'skip' : JSON.stringify(args)
-  const initialArgsKeyRef = useRef(argsKey)
+  const requestKey = `${queryName}:${argsKey}`
+  const initialRequestKeyRef = useRef(requestKey)
+  const queryRef = useRef(query)
   const argsRef = useRef(args)
   const requestIdRef = useRef(0)
 
+  queryRef.current = query
   argsRef.current = args
 
+  // Convex API references are proxy objects, so the function name is the stable key.
   const canUseInitialData =
-    options?.initialData !== undefined && argsKey === initialArgsKeyRef.current
+    options?.initialData !== undefined &&
+    requestKey === initialRequestKeyRef.current
 
   const [data, setData] = useState<FunctionReturnType<Query> | undefined>(
     canUseInitialData ? options?.initialData : undefined,
@@ -54,7 +61,7 @@ export const useConvexSnapshotQuery = <
     setError(null)
 
     try {
-      const result = await convex.query(query, nextArgs)
+      const result = await convex.query(queryRef.current, nextArgs)
       if (requestId === requestIdRef.current) {
         setData(result)
       }
@@ -75,7 +82,7 @@ export const useConvexSnapshotQuery = <
         setIsLoading(false)
       }
     }
-  }, [convex, query])
+  }, [convex])
 
   useEffect(() => {
     if (argsKey === 'skip') {
@@ -94,7 +101,7 @@ export const useConvexSnapshotQuery = <
 
     setData(undefined)
     void refresh()
-  }, [argsKey, canUseInitialData, options?.refetchOnMount, refresh])
+  }, [argsKey, requestKey, canUseInitialData, options?.refetchOnMount, refresh])
 
   return {
     data,

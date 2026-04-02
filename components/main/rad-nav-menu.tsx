@@ -1,27 +1,26 @@
 'use client'
 
-import {useMobile} from '@/hooks/use-mobile'
-import {Icon} from '@/lib/icons'
-import {cn} from '@/lib/utils'
-import {AnimatePresence, motion} from 'motion/react'
+import { useMobile } from '@/hooks/use-mobile'
+import { Icon } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+import { AnimatePresence, motion } from 'motion/react'
 import Link from 'next/link'
 import {
-  createContext,
-  useCallback,
-  useContext,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
+    createContext,
+    useCallback,
+    useContext,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
 } from 'react'
-import {HyperList} from '../expermtl/hyper-list'
+import { HyperList } from '../expermtl/hyper-list'
 
 export interface NavMenuCategory {
   slug: string
   name: string
 }
 
-/** Optional submenu link for a category. Add more later for full submenus. */
 export interface NavMenuSubItem {
   id: string
   label: string
@@ -40,9 +39,7 @@ const NavMenuCloseContext = createContext<(() => void) | null>(null)
 
 interface InnerMenuProps {
   items: Array<NavMenuCategory>
-  /** Optional submenu per category. Key = category slug. Empty/missing = no submenu yet. */
   subItemsBySlug?: Partial<Record<string, NavMenuSubItem[]>>
-  /** Called when a tier/sub-item link is clicked; use to close the menu. */
   onClose?: () => void
 }
 
@@ -85,7 +82,6 @@ export const InnerMenu = ({
         onMouseLeave={() => setActiveSlug(active)}
         role='navigation'
         aria-label='Categories'>
-        {/* Category triggers: column on mobile (left), single row on desktop (top) */}
         <ul
           ref={listRef}
           className={cn(
@@ -101,41 +97,43 @@ export const InnerMenu = ({
             } as React.CSSProperties
           }>
           {items.map((item) => (
-            <li key={item.slug} className='list-none md:shrink-0'>
-              <Link
-                href={`/lobby/category/${item.slug}`}
-                className={cn(
-                  'group/cat flex h-auto w-full items-center justify-between text-left text-sm font-semibold transition-colors duration-150 ease-out',
-                  'hover:border-border hover:text-accent-foreground px-6 py-0 md:py-3 data-active:border data-active:border-sidebar',
-                  'focus-visible:ring-2 focus-visible:ring-ring/50 rounded-none dark:bg-black dark:text-white',
-                  'border-none dark:data-active:text-white bg-sidebar/30',
-                  active === item.slug &&
-                    'border-border bg-transparent dark:bg-transparent!',
-                )}
-                onMouseEnter={(event) => {
-                  setActiveSlug(item.slug)
-                  setIndicatorToButton(event.currentTarget)
-                }}
-                onFocus={(event) => {
-                  setActiveSlug(item.slug)
-                  setIndicatorToButton(event.currentTarget)
-                }}
-                aria-current={active === item.slug ? 'page' : undefined}
-                data-active={active === item.slug || undefined}>
-                <span className='truncate capitalize text-base font-clash'>
-                  {item.name}
-                </span>
-                <Icon
-                  name='down-caret'
+            <Link href={`/lobby/category/${item.slug}`} key={item.slug}>
+              <li className='list-none md:shrink-0'>
+                <button
+                  type='button'
                   className={cn(
-                    'size-3.5 shrink-0 opacity-40 translate-x-0.5 -translate-y-0.5 transition-transform duration-300 ease-out scale-50 -rotate-45 md:rotate-0',
+                    'group/cat flex h-auto w-full items-center justify-between text-left text-sm font-semibold transition-colors duration-150 ease-out',
+                    'hover:border-border hover:text-accent-foreground px-6 py-0 md:py-3 data-active:border data-active:border-sidebar',
+                    'focus-visible:ring-2 focus-visible:ring-ring/50 rounded-none dark:bg-black dark:text-white',
+                    'border-none dark:data-active:text-white bg-sidebar/30',
                     active === item.slug &&
-                      'scale-75 md:scale-90 opacity-100 text-brand translate-y-0.0',
+                      'border-border bg-transparent dark:bg-transparent!',
                   )}
-                  aria-hidden
-                />
-              </Link>
-            </li>
+                  onMouseEnter={(e) => {
+                    setActiveSlug(item.slug)
+                    setIndicatorToButton(e.currentTarget)
+                  }}
+                  onFocus={(e) => {
+                    setActiveSlug(item.slug)
+                    setIndicatorToButton(e.currentTarget)
+                  }}
+                  aria-current={active === item.slug ? 'true' : undefined}
+                  data-active={active === item.slug || undefined}>
+                  <span className='truncate capitalize text-base font-clash'>
+                    {item.name}
+                  </span>
+                  <Icon
+                    name='down-caret'
+                    className={cn(
+                      'size-3.5 shrink-0 opacity-40 translate-x-0.5 -translate-y-0.5 transition-transform duration-300 ease-out scale-50 -rotate-45 md:rotate-0',
+                      active === item.slug &&
+                        'scale-75 md:scale-90 opacity-100 text-brand translate-y-0.0',
+                    )}
+                    aria-hidden
+                  />
+                </button>
+              </li>
+            </Link>
           ))}
 
           <div
@@ -144,7 +142,6 @@ export const InnerMenu = ({
           />
         </ul>
 
-        {/* Single viewport: one category's content at a time — right column on mobile, below categories on desktop */}
         <div
           className='flex min-h-32 min-w-0 flex-1 overflow-hidden rounded-xs border border-border/60 md:py-2 md:pl-2 pr-2.5 dark:bg-dark-table/40 md:min-h-0 md:min-w-40'
           role='region'

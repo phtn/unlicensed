@@ -1,27 +1,27 @@
 'use client'
 
-import {api} from '@/convex/_generated/api'
-import {Icon, IconName} from '@/lib/icons'
+import { api } from '@/convex/_generated/api'
+import { Icon, IconName } from '@/lib/icons'
 import {
-  Avatar,
-  Badge,
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownSection,
-  DropdownTrigger,
-  Link,
-  Tooltip,
+    Avatar,
+    Badge,
+    Button,
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownSection,
+    DropdownTrigger,
+    Link,
+    Tooltip,
 } from '@heroui/react'
-import {useQuery} from 'convex/react'
-import {User} from 'firebase/auth'
-import {useRouter} from 'next/navigation'
+import { useQuery } from 'convex/react'
+import { User } from 'firebase/auth'
+import { useRouter } from 'next/navigation'
 
 interface UserDropdownProps {
   user: User
   loading: boolean
-  canAccessAdmin: boolean
+  isStaff: boolean
   onLogout: VoidFunction
   onThemeToggle: VoidFunction
 }
@@ -29,7 +29,7 @@ interface UserDropdownProps {
 export const UserDropdown = ({
   user,
   loading,
-  canAccessAdmin,
+  isStaff,
   onLogout,
   onThemeToggle,
 }: UserDropdownProps) => {
@@ -49,29 +49,19 @@ export const UserDropdown = ({
           ' outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand!',
       }}>
       <DropdownTrigger disabled={loading}>
-        <Button
-          isIconOnly
-          variant='light'
-          aria-label={
-            loading
-              ? 'Loading account menu'
-              : `Open account menu for ${user.displayName ?? user.email ?? 'user'}`
-          }
-          className='size-11 min-h-11 min-w-11 rounded-full p-0 focus-visible:outline-2! focus-visible:outline-brand!'>
-          {loading ? (
-            <Icon
-              name='spinners-ring'
-              className='size-7 rounded-full bg-foreground/10'
-            />
-          ) : (
-            <Avatar
-              size='sm'
-              className='cursor-pointer border-2 border-white hover:border-brand dark:hover:border-white shadow-inner hover:shadow-white'
-              src={user.photoURL ?? undefined}
-              name={user.displayName ?? user.email ?? 'U'}
-            />
-          )}
-        </Button>
+        {loading ? (
+          <Icon
+            name='spinners-ring'
+            className='size-7 bg-foreground/10 rounded-full'
+          />
+        ) : (
+          <Avatar
+            size='sm'
+            className='cursor-pointer border-2 border-white hover:border-brand dark:hover:border-white shadow-inner hover:shadow-white'
+            src={user.photoURL ?? undefined}
+            name={user.displayName ?? user.email ?? 'U'}
+          />
+        )}
       </DropdownTrigger>
       <DropdownMenu aria-label='user-menu' className='p-1 bg-transparent'>
         <DropdownItem
@@ -123,7 +113,7 @@ export const UserDropdown = ({
               />
             }
             endContent={
-              canAccessAdmin && (
+              isStaff && (
                 <JustTheTip
                   id='admin'
                   as={Link}
@@ -179,7 +169,6 @@ export const UserDropdown = ({
           <DropdownItem
             key='logout'
             textValue='Sign out'
-            // startContent={<Icon name='rapid-fire-logo-2' className='size-6' />}
             onPress={onLogout}
             title='sign out'
             endContent={
@@ -195,7 +184,6 @@ export const UserDropdown = ({
   )
 }
 
-/** Narrow type for Button's polymorphic `as` to avoid "union too complex" */
 type JustTheTipAs = 'button' | 'div' | typeof Link
 
 interface JustTheTipProps {
