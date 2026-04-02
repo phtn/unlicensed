@@ -21,7 +21,7 @@ import {useRouter} from 'next/navigation'
 interface UserDropdownProps {
   user: User
   loading: boolean
-  isStaff: boolean
+  canAccessAdmin: boolean
   onLogout: VoidFunction
   onThemeToggle: VoidFunction
 }
@@ -29,7 +29,7 @@ interface UserDropdownProps {
 export const UserDropdown = ({
   user,
   loading,
-  isStaff,
+  canAccessAdmin,
   onLogout,
   onThemeToggle,
 }: UserDropdownProps) => {
@@ -123,7 +123,7 @@ export const UserDropdown = ({
               />
             }
             endContent={
-              isStaff && (
+              canAccessAdmin && (
                 <JustTheTip
                   id='admin'
                   as={Link}

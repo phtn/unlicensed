@@ -1,7 +1,8 @@
-import {NextRequest, NextResponse} from 'next/server'
-import {getAdminAuth} from '@/lib/firebase/admin'
-import {ConvexHttpClient} from 'convex/browser'
 import {api} from '@/convex/_generated/api'
+import {getAdminAuth} from '@/lib/firebase/admin'
+import {canAccessAdminPanel} from '@/lib/staff-access'
+import {ConvexHttpClient} from 'convex/browser'
+import {NextRequest, NextResponse} from 'next/server'
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
 
@@ -39,7 +40,7 @@ async function requireStaffAdmin(request: NextRequest): Promise<AuthResult> {
   }
 
   const staff = await convex.query(api.staff.q.getStaffByEmail, {email})
-  const isAdmin = !!staff && staff.active && staff.accessRoles.includes('admin')
+  const isAdmin = canAccessAdminPanel(staff)
 
   if (!isAdmin) {
     return {
@@ -53,10 +54,10 @@ async function requireStaffAdmin(request: NextRequest): Promise<AuthResult> {
 
 /**
  * API Route to set custom claims for a Firebase user
- * 
+ *
  * POST /api/admin/users/[uid]/claims
  * Body: { claims: { role?: string, admin?: boolean, ... } }
- * 
+ *
  * This endpoint requires proper authentication/authorization in production.
  * You should verify that the requester has admin privileges before allowing
  * them to set custom claims.
@@ -185,4 +186,3 @@ export async function DELETE(
     )
   }
 }
-

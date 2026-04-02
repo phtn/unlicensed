@@ -114,6 +114,7 @@ import type * as rewards_q from "../rewards/q.js";
 import type * as rewards_utils from "../rewards/utils.js";
 import type * as staff_chat from "../staff/chat.js";
 import type * as staff_d from "../staff/d.js";
+import type * as staff_lib from "../staff/lib.js";
 import type * as staff_m from "../staff/m.js";
 import type * as staff_q from "../staff/q.js";
 import type * as uploads from "../uploads.js";
@@ -237,6 +238,7 @@ declare const fullApi: ApiFromModules<{
   "rewards/utils": typeof rewards_utils;
   "staff/chat": typeof staff_chat;
   "staff/d": typeof staff_d;
+  "staff/lib": typeof staff_lib;
   "staff/m": typeof staff_m;
   "staff/q": typeof staff_q;
   uploads: typeof uploads;

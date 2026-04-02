@@ -1,15 +1,13 @@
 import {v} from 'convex/values'
 import type {MutationCtx} from '../_generated/server'
 import {mutation} from '../_generated/server'
+import {findStaffByEmail, hasAdminAccessRole, normalizeStaffEmail} from './lib'
 
 async function requireStaffAdminOrManager(
   ctx: MutationCtx,
   currentUserEmail: string,
 ) {
-  const currentUserStaff = await ctx.db
-    .query('staff')
-    .withIndex('by_email', (q) => q.eq('email', currentUserEmail))
-    .unique()
+  const currentUserStaff = await findStaffByEmail(ctx, currentUserEmail)
 
   if (!currentUserStaff) {
     throw new Error('Unauthorized: You must be a staff member to manage staff')
@@ -19,9 +17,7 @@ async function requireStaffAdminOrManager(
     throw new Error('Unauthorized: Your staff account is inactive')
   }
 
-  const hasAdminOrManagerRole =
-    currentUserStaff.accessRoles.includes('admin') ||
-    currentUserStaff.accessRoles.includes('manager')
+  const hasAdminOrManagerRole = hasAdminAccessRole(currentUserStaff.accessRoles)
 
   if (!hasAdminOrManagerRole) {
     throw new Error(
@@ -46,21 +42,23 @@ export const createStaff = mutation({
   },
   handler: async (ctx, args) => {
     await requireStaffAdminOrManager(ctx, args.currentUserEmail)
+    const normalizedEmail = normalizeStaffEmail(args.email)
+
+    if (!normalizedEmail) {
+      throw new Error('Staff email is required')
+    }
 
     const now = Date.now()
 
     // Check if staff with this email already exists
-    const existing = await ctx.db
-      .query('staff')
-      .withIndex('by_email', (q) => q.eq('email', args.email))
-      .unique()
+    const existing = await findStaffByEmail(ctx, normalizedEmail)
 
     if (existing) {
       throw new Error('Staff with this email already exists')
     }
 
     const staffId = await ctx.db.insert('staff', {
-      email: args.email,
+      email: normalizedEmail,
       name: args.name,
       position: args.position,
       division: args.division,

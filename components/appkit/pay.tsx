@@ -77,7 +77,7 @@ const ERC20_TRANSFER_ABI = [
   },
 ] as const
 
-const RECEIPT_RETRY_DELAY_MS = (attemptIndex: number) =>
+const RECEIPT_RETRY_DELAY_MS = (attemptIndex: number): number =>
   Math.min(1000 * 2 ** attemptIndex, 5000)
 const RECEIPT_REFETCH_INTERVAL_MS = (query: {
   state: {data: unknown}

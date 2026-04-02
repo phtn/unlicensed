@@ -1,5 +1,6 @@
 import {v} from 'convex/values'
 import {query} from '../_generated/server'
+import {findStaffByEmail} from './lib'
 
 export const getStaff = query({
   handler: async (ctx) => {
@@ -10,10 +11,7 @@ export const getStaff = query({
 export const getStaffByEmail = query({
   args: {email: v.string()},
   handler: async (ctx, args) => {
-    return await ctx.db
-      .query('staff')
-      .withIndex('by_email', (q) => q.eq('email', args.email))
-      .unique()
+    return await findStaffByEmail(ctx, args.email)
   },
 })
 

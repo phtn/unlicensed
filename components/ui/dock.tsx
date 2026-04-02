@@ -24,13 +24,13 @@ export interface DockProps extends VariantProps<typeof dockVariants> {
   children: React.ReactNode
 }
 
-const DEFAULT_SIZE = 40
+const DEFAULT_SIZE = 32
 const DEFAULT_MAGNIFICATION = 45
 const DEFAULT_DISTANCE = 120
 const DEFAULT_DISABLE_MAGNIFICATION = false
 
 const dockVariants = cva(
-  'supports-backdrop-blur:bg-background/40 supports-backdrop-blur:dark:bg-background/40 mx-auto mt-8 flex h-[58px] w-max items-center justify-center gap-2 rounded-[17px] border border-zinc-400/40 px-[8px] shadow-md shadow-zinc-900/10 backdrop-blur-3xl dark:border-zinc-600/40',
+  'supports-backdrop-blur:bg-background/40 supports-backdrop-blur:dark:bg-background/40 mx-auto mt-8 flex h-[40px] w-[40px] items-center justify-center rounded-full border border-zinc-400/40 hover:border-brand px-[8px] shadow-md shadow-zinc-900/10 backdrop-blur-3xl dark:border-zinc-600/40',
 )
 
 const Dock = React.forwardRef<HTMLDivElement, DockProps>(
@@ -139,7 +139,7 @@ const DockIcon = ({
       ref={ref}
       style={{width: scaleSize, height: scaleSize, padding}}
       className={cn(
-        'flex aspect-square cursor-pointer items-center justify-center rounded-full',
+        'flex cursor-pointer items-center justify-center rounded-full aspect-square',
         disableMagnification && 'hover:bg-zinc-800/10 transition-colors',
         className,
       )}

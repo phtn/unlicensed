@@ -2,7 +2,6 @@
 
 import {NuqsAdapter} from 'nuqs/adapters/next/app'
 import {ReactNode} from 'react'
-import {RouteProtection} from '../_components/route-protection'
 import {OrderDetailsProvider} from './(routes)/ops/orders/order-details-context'
 import {AdminAccessGuard} from './_components/admin-access-guard'
 import {AdminAlertsListener} from './_components/admin-alerts-listener'
@@ -18,30 +17,28 @@ interface AdminLayoutProps {
 }
 const AdminLayout = ({children, toolbar}: AdminLayoutProps) => {
   return (
-    <RouteProtection>
-      <AdminAccessGuard>
-        <NuqsAdapter>
-          <SidebarProvider>
-            <AdminSidebar />
-            <SettingsPanelProvider>
-              <OrderDetailsProvider>
-                <ProductDetailsProvider>
-                  <SidebarInset className='group/sidebar-inset'>
-                    <AdminAlertsListener />
-                    <Container>
-                      <WrappedContent toolbar={toolbar}>
-                        {children}
-                      </WrappedContent>
-                      <SettingsPanel />
-                    </Container>
-                  </SidebarInset>
-                </ProductDetailsProvider>
-              </OrderDetailsProvider>
-            </SettingsPanelProvider>
-          </SidebarProvider>
-        </NuqsAdapter>
-      </AdminAccessGuard>
-    </RouteProtection>
+    <AdminAccessGuard>
+      <NuqsAdapter>
+        <SidebarProvider>
+          <AdminSidebar />
+          <SettingsPanelProvider>
+            <OrderDetailsProvider>
+              <ProductDetailsProvider>
+                <SidebarInset className='group/sidebar-inset'>
+                  <AdminAlertsListener />
+                  <Container>
+                    <WrappedContent toolbar={toolbar}>
+                      {children}
+                    </WrappedContent>
+                    <SettingsPanel />
+                  </Container>
+                </SidebarInset>
+              </ProductDetailsProvider>
+            </OrderDetailsProvider>
+          </SettingsPanelProvider>
+        </SidebarProvider>
+      </NuqsAdapter>
+    </AdminAccessGuard>
   )
 }
 

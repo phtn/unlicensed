@@ -131,7 +131,7 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
       {
         id: 'chat',
         label: 'Chat',
-        icon: 'chat',
+        icon: 'message-filled',
         onClick: toggle,
       },
     ],
@@ -153,11 +153,11 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
         <div className='pointer-events-none fixed bottom-4 right-4 z-9000 md:bottom-8 md:right-8'>
           <Dock
             direction='middle'
-            className='pointer-events-auto bg-sidebar/90 dark:bg-dark-table/20 backdrop-blur-2xl'>
+            className='pointer-events-auto bg-sidebar/90 dark:bg-dark-table/20 backdrop-blur-2xl flex items-center'>
             {navs.map((nav) => (
               <Tooltip
                 key={nav.id}
-                content='Open Chat'
+                content={isWindowOpen ? 'Minimize' : 'Open Chat'}
                 offset={14}
                 radius='none'
                 className='rounded-lg bg-dark-table text-white'>
@@ -193,10 +193,10 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
                       aria-haspopup='dialog'
                       aria-expanded={isWindowOpen}
                       className={cn(
-                        'flex size-full items-center justify-center transition-colors',
+                        'flex size-full items-center justify-center bg-transparent! mt-1.5',
                         isWindowOpen && 'bg-dark-table/10',
                       )}>
-                      <Icon name={nav.icon} className='size-8' />
+                      <Icon name={nav.icon} className='size-7' />
                     </button>
                   </Badge>
                 </DockIcon>

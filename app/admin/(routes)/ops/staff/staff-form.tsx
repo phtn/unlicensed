@@ -4,6 +4,7 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
+import {canAccessAdminPanel} from '@/lib/staff-access'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
@@ -84,11 +85,7 @@ export const StaffForm = ({
 
   // Check if current user is authorized (admin or manager) to create staff
   const isAuthorizedToCreate = useMemo(() => {
-    if (!currentUserStaff || !currentUserStaff.active) return false
-    return (
-      currentUserStaff.accessRoles.includes('admin') ||
-      currentUserStaff.accessRoles.includes('manager')
-    )
+    return canAccessAdminPanel(currentUserStaff)
   }, [currentUserStaff])
 
   // Fetch all users for email selection

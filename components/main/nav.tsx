@@ -8,6 +8,7 @@ import {useMobile} from '@/hooks/use-mobile'
 import {useScrollY} from '@/hooks/use-scroll-y'
 import {logout} from '@/lib/firebase/auth'
 import {Icon} from '@/lib/icons'
+import {isActiveStaffMember} from '@/lib/staff-access'
 import {cn} from '@/lib/utils'
 import {Badge, Button, useDisclosure} from '@heroui/react'
 import {useQuery} from 'convex/react'
@@ -26,7 +27,9 @@ const AuthModal = dynamic(
 
 const CartDrawer = dynamic(
   () =>
-    import('@/components/store/cart-drawer').then((module) => module.CartDrawer),
+    import('@/components/store/cart-drawer').then(
+      (module) => module.CartDrawer,
+    ),
   {ssr: false},
 )
 
@@ -69,10 +72,7 @@ export const Nav = ({children}: NavProps) => {
     api.staff.q.getStaffByEmail,
     user?.email ? {email: user.email} : 'skip',
   )
-  const isStaff = useMemo(
-    () => !!staff && staff.active && staff.accessRoles.length > 0,
-    [staff],
-  )
+  const canAccessAdmin = useMemo(() => isActiveStaffMember(staff), [staff])
 
   const handleToggleTheme = useCallback(() => {
     setTheme(theme === 'light' ? 'dark' : 'light')
@@ -116,7 +116,8 @@ export const Nav = ({children}: NavProps) => {
           'fixed z-9999 top-0 left-0 right-0 bg-linear-to-b from-transparent to-transparent dark:from-black/15 dark:via-black/10 dark:to-transparent h-14 lg:h-16 xl:h-20 2xl:h-24',
           {
             'bg-white/70 dark:bg-black/70 backdrop-blur-md': scrollY >= 710,
-            'bg-white/70 dark:bg-black/70 backdrop-blur-md ': isMobile && scrollY >= 400,
+            'bg-white/70 dark:bg-black/70 backdrop-blur-md ':
+              isMobile && scrollY >= 400,
             'dark:bg-black/70 dark:text-white dark:backdrop-blur-px bg-white/70 backdrop-blur-3xl':
               !inStoreLobby,
           },
@@ -147,10 +148,12 @@ export const Nav = ({children}: NavProps) => {
                   className={cn(
                     'relative h-8 w-auto text-white transition-colors duration-300 dark:group-hover:text-white md:h-10',
                     {
-                      'text-dark-table dark:text-white dark:group-hover:text-white': !inStoreLobby,
+                      'text-dark-table dark:text-white dark:group-hover:text-white':
+                        !inStoreLobby,
                       'text-dark-table dark:text-white group-hover:text-white .':
                         !isMobile && scrollY >= 710,
-                      'text-dark-table dark:text-white _': isMobile && scrollY >= 400,
+                      'text-dark-table dark:text-white _':
+                        isMobile && scrollY >= 400,
                     },
                   )}
                 />
@@ -172,8 +175,10 @@ export const Nav = ({children}: NavProps) => {
                 'hidden rounded-xs px-2 text-sm font-clash font-semibold text-gray-100 outline-0 hover:text-brand focus-visible:bg-brand focus-visible:ring-0 md:flex md:items-center md:space-x-1 lg:text-lg',
                 {
                   'text-dark-table dark:text-white': !inStoreLobby,
-                  'text-dark-table dark:text-white .': !isMobile && scrollY >= 710,
-                  'text-dark-table dark:text-white _': isMobile && scrollY >= 400,
+                  'text-dark-table dark:text-white .':
+                    !isMobile && scrollY >= 710,
+                  'text-dark-table dark:text-white _':
+                    isMobile && scrollY >= 400,
                 },
               )}>
               <span className='dark:drop-shadow-black group-hover:drop-shadow-sm'>
@@ -222,8 +227,10 @@ export const Nav = ({children}: NavProps) => {
                   name='bag-solid'
                   className={cn('size-6 text-white', {
                     'text-dark-table dark:text-white': !inStoreLobby,
-                    'text-dark-table dark:text-white .': !isMobile && scrollY >= 710,
-                    'text-dark-table dark:text-white _': isMobile && scrollY >= 400,
+                    'text-dark-table dark:text-white .':
+                      !isMobile && scrollY >= 710,
+                    'text-dark-table dark:text-white _':
+                      isMobile && scrollY >= 400,
                   })}
                 />
               </Button>
@@ -233,7 +240,7 @@ export const Nav = ({children}: NavProps) => {
               <UserDropdown
                 loading={authLoading}
                 user={user}
-                isStaff={isStaff}
+                canAccessAdmin={canAccessAdmin}
                 onThemeToggle={handleToggleTheme}
                 onLogout={handleLogout}
               />
@@ -254,8 +261,10 @@ export const Nav = ({children}: NavProps) => {
                   name='user'
                   className={cn('size-6 text-white', {
                     'text-dark-table dark:text-white': !inStoreLobby,
-                    'text-dark-table dark:text-white .': !isMobile && scrollY >= 710,
-                    'text-dark-table dark:text-white _': isMobile && scrollY >= 400,
+                    'text-dark-table dark:text-white .':
+                      !isMobile && scrollY >= 710,
+                    'text-dark-table dark:text-white _':
+                      isMobile && scrollY >= 400,
                   })}
                 />
               </Button>

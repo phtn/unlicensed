@@ -78,7 +78,7 @@ export const Content = () => {
 
   return (
     <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 bg-background'>
-      <div className='relative md:mx-auto md:max-w-7xl min-h-[36rem] md:min-h-[40rem] overflow-hidden'>
+      <div className='relative md:mx-auto md:max-w-7xl min-h-144 md:min-h-160 overflow-hidden'>
         <AnimatePresence initial={false} mode='sync'>
           {!hasCompletedPayment ? (
             <motion.div
