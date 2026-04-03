@@ -15,7 +15,7 @@ export const NewHome = () => {
           fetchPriority='high'
           src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1772603013/hero-mobile-v2_vaiesj.webp'
           alt='Rapid Fire featured cannabis products'
-          className='object-cover sm:hidden w-full'
+          className='object-cover h-full sm:hidden w-full'
         />
         <Image
           priority
@@ -35,7 +35,8 @@ export const NewHome = () => {
         className={cn(
           'absolute left-1/2 z-10 -translate-x-1/2 border border-white/80 bg-white px-8 md:px-12 py-2 text-lg font-clash font-semibold uppercase text-brand hover:border-light-brand hover:bg-brand hover:text-white sm:px-8 sm:py-3 lg:text-xl',
           'bottom-10 sm:bottom-16 md:bottom-20 lg:bottom-22 xl:bottom-24 2xl:bottom-28',
-        )}>
+        )}
+      >
         Shop Now
       </Link>
     </section>
