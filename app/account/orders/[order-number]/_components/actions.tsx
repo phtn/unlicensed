@@ -1,6 +1,6 @@
 import {OrderStatus} from '@/convex/orders/d'
 import {Icon} from '@/lib/icons'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import Link from 'next/link'
 import {Activity, useMemo} from 'react'
 

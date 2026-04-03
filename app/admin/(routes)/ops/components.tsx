@@ -1,5 +1,6 @@
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
+import {useDisclosure} from '@/hooks/use-disclosure'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
@@ -9,8 +10,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  useDisclosure,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {CellContext} from '@tanstack/react-table'
 import {useMutation} from 'convex/react'
 import Link from 'next/link'
@@ -254,7 +254,7 @@ export const paymentMethodCell = () => {
               </p>
             </ModalBody>
             <ModalFooter className='gap-2'>
-              <Button variant='flat' onPress={handleCloseConfirm}>
+              <Button variant='tertiary' onPress={handleCloseConfirm}>
                 Cancel
               </Button>
               <Button

@@ -13,7 +13,7 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {cn} from '@/lib/utils'
-import {Button, Image, Input, Select, SelectItem, Switch} from '@heroui/react'
+import {Button, Image, Input, Select, ListBoxItem, Switch} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {parseAsString, useQueryStates} from 'nuqs'
 import {
@@ -185,7 +185,7 @@ const ProductTile = ({
         radius='none'
         size='sm'
         isIconOnly
-        variant='light'
+        variant='tertiary'
         isLoading={isBusy}
         isDisabled={disabled}
         onPress={() => onAction(String(product._id))}
@@ -984,7 +984,7 @@ export const FireCollectionManager = () => {
                     size='sm'
                     isIconOnly
                     radius='none'
-                    variant='light'
+                    variant='tertiary'
                     color='danger'
                     isDisabled={activeKey !== null}
                     onPress={handleDeleteCollection}
@@ -1014,7 +1014,7 @@ export const FireCollectionManager = () => {
                     size='sm'
                     isIconOnly
                     radius='none'
-                    variant='flat'
+                    variant='tertiary'
                     isDisabled={
                       activeKey !== null ||
                       collectionTitle.trim().length === 0 ||
@@ -1092,7 +1092,7 @@ export const FireCollectionManager = () => {
             <Button
               size='sm'
               radius='none'
-              variant='flat'
+              variant='tertiary'
               isDisabled={
                 activeKey !== null ||
                 !selectedCollection ||
@@ -1126,9 +1126,9 @@ export const FireCollectionManager = () => {
                 isDisabled={activeKey !== null || !selectedCollection}
                 items={randomCategoryOptions}>
                 {(item) => (
-                  <SelectItem key={item.value} textValue={item.label}>
+                  <ListBoxItem key={item.value} textValue={item.label}>
                     {item.label}
-                  </SelectItem>
+                  </ListBoxItem>
                 )}
               </Select>
 
@@ -1163,9 +1163,9 @@ export const FireCollectionManager = () => {
                 disallowEmptySelection
                 items={libraryCategoryOptions}>
                 {(item) => (
-                  <SelectItem key={item.value} textValue={item.label}>
+                  <ListBoxItem key={item.value} textValue={item.label}>
                     {item.label}
-                  </SelectItem>
+                  </ListBoxItem>
                 )}
               </Select>
 
@@ -1184,9 +1184,9 @@ export const FireCollectionManager = () => {
                 disallowEmptySelection
                 items={libraryBrandOptions}>
                 {(item) => (
-                  <SelectItem key={item.value} textValue={item.label}>
+                  <ListBoxItem key={item.value} textValue={item.label}>
                     {item.label}
-                  </SelectItem>
+                  </ListBoxItem>
                 )}
               </Select>
 
@@ -1205,9 +1205,9 @@ export const FireCollectionManager = () => {
                 disallowEmptySelection
                 items={librarySubcategoryOptions}>
                 {(item) => (
-                  <SelectItem key={item.value} textValue={item.label}>
+                  <ListBoxItem key={item.value} textValue={item.label}>
                     {item.label}
-                  </SelectItem>
+                  </ListBoxItem>
                 )}
               </Select>
 
@@ -1226,9 +1226,9 @@ export const FireCollectionManager = () => {
                 disallowEmptySelection
                 items={libraryProductTypeOptions}>
                 {(item) => (
-                  <SelectItem key={item.value} textValue={item.label}>
+                  <ListBoxItem key={item.value} textValue={item.label}>
                     {item.label}
-                  </SelectItem>
+                  </ListBoxItem>
                 )}
               </Select>
             </div>
@@ -1241,7 +1241,7 @@ export const FireCollectionManager = () => {
               <Button
                 size='sm'
                 radius='none'
-                variant='light'
+                variant='tertiary'
                 isDisabled={!hasActiveLibraryFilters}
                 onPress={() => {
                   void setFireState({

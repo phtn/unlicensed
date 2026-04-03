@@ -23,8 +23,8 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Textarea,
-} from '@heroui/react'
+  TextArea,
+} from '@/lib/heroui'
 import {useMutation} from 'convex/react'
 import {useCallback, useEffect, useMemo, useState} from 'react'
 
@@ -866,7 +866,7 @@ export function PrimaryImageConverterModal({
                   <Button
                     size='sm'
                     radius='none'
-                    variant='flat'
+                    variant='tertiary'
                     className='rounded-md bg-cyan-500 text-white'
                     isDisabled={!canGeneratePreview}
                     isLoading={isGenerating}
@@ -932,7 +932,7 @@ export function PrimaryImageConverterModal({
                   }}
                 />
 
-                <Textarea
+                <TextArea
                   label='Tags'
                   labelPlacement='outside'
                   minRows={3}
@@ -972,7 +972,7 @@ export function PrimaryImageConverterModal({
         </ModalBody>
 
         <ModalFooter className='border-t border-foreground/10 bg-background/90'>
-          <Button variant='light' onPress={() => onOpenChangeAction(false)}>
+          <Button variant='tertiary' onPress={() => onOpenChangeAction(false)}>
             Cancel
           </Button>
           <Button

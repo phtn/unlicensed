@@ -1,6 +1,6 @@
 'use client'
 
-import {Input, Textarea} from '@heroui/react'
+import {Input, TextArea} from '@/lib/heroui'
 import {commonInputClassNames} from '../../../../_components/ui/fields'
 import {CategoryFormApi} from '../category-schema'
 import {FormSection, Header} from './components'
@@ -20,7 +20,7 @@ export const Details = ({form}: DetailsProps) => {
               const descValue = (field.state.value as string) ?? ''
               return (
                 <div className='space-y-2 w-full'>
-                  <Textarea
+                  <TextArea
                     value={descValue}
                     label='Description'
                     onChange={(e) => field.handleChange(e.target.value)}
@@ -28,7 +28,7 @@ export const Details = ({form}: DetailsProps) => {
                     placeholder='Describe the category experience...'
                     classNames={commonInputClassNames}
                     minRows={4}
-                    variant='bordered'
+                    variant='secondary'
                   />
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
@@ -45,14 +45,14 @@ export const Details = ({form}: DetailsProps) => {
               const benefitsValue = (field.state.value as string) ?? ''
               return (
                 <div className='space-y-2 w-full'>
-                  <Textarea
+                  <TextArea
                     label='Benefits'
                     value={benefitsValue}
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                     placeholder='Enter one benefit per line e.g. Full-spectrum cannabinoids'
                     minRows={4}
-                    variant='bordered'
+                    variant='secondary'
                     classNames={commonInputClassNames}
                   />
                   {field.state.meta.isTouched &&
@@ -77,7 +77,7 @@ export const Details = ({form}: DetailsProps) => {
                   value={highlightValue}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
-                  variant='bordered'
+                  variant='secondary'
                   placeholder='Hand-trimmed buds with rich terpene expression.'
                   classNames={commonInputClassNames}
                 />

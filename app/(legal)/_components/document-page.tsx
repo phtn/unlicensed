@@ -3,7 +3,7 @@
 import type {LegalDocument} from '@/legal/documents'
 import {legalDocuments} from '@/legal/documents'
 import {Icon} from '@/lib/icons'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import Link from 'next/link'
 import {useState} from 'react'
 import {TocDrawer} from './toc-drawer'

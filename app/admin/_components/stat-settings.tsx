@@ -2,7 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
-import {Card, Switch} from '@heroui/react'
+import {Card, Switch} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useEffect, useRef} from 'react'

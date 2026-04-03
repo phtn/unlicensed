@@ -16,7 +16,7 @@ import {
 } from '@/lib/resend/templates/registry'
 import {getInvitationDefaultProps} from '@/lib/resend/templates/render-with-props'
 import {cn} from '@/lib/utils'
-import {Button, Select, SelectItem} from '@heroui/react'
+import {Button, Select, ListBoxItem} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import {useCallback, useMemo, useState, useTransition} from 'react'
 import {toast} from 'react-hot-toast'
@@ -447,7 +447,7 @@ export const EmailTemplateEditor = ({
         <div className='mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-3'>
           <Button
             type='button'
-            variant='light'
+            variant='tertiary'
             onPress={onCancel}
             className='gap-2 -ml-2 dark:bg-transparent'>
             <Icon name='chevron-left' className='size-4' />
@@ -714,7 +714,7 @@ export const EmailTemplateEditor = ({
                 <Select
                   label='Template'
                   placeholder='Choose a template (optional)'
-                  variant='bordered'
+                  variant='secondary'
                   selectedKeys={
                     selectedTemplateKey ? [selectedTemplateKey] : []
                   }
@@ -726,9 +726,9 @@ export const EmailTemplateEditor = ({
                   classNames={commonSelectClassNames}
                   items={templateSelectOptions}>
                   {(item) => (
-                    <SelectItem key={item.id} textValue={item.label}>
+                    <ListBoxItem key={item.id} textValue={item.label}>
                       {item.label}
-                    </SelectItem>
+                    </ListBoxItem>
                   )}
                 </Select>
 
@@ -748,7 +748,7 @@ export const EmailTemplateEditor = ({
                           ? 'Choose a coupon'
                           : 'No active coupons available'
                       }
-                      variant='bordered'
+                      variant='secondary'
                       selectedKeys={
                         resolvedSelectedCouponId
                           ? [resolvedSelectedCouponId]
@@ -766,9 +766,9 @@ export const EmailTemplateEditor = ({
                       classNames={commonSelectClassNames}
                       items={couponSelectOptions}>
                       {(item) => (
-                        <SelectItem key={item.id} textValue={item.label}>
+                        <ListBoxItem key={item.id} textValue={item.label}>
                           {item.label}
-                        </SelectItem>
+                        </ListBoxItem>
                       )}
                     </Select>
                   </div>
@@ -919,7 +919,7 @@ export const EmailTemplateEditor = ({
           <div className='flex w-full flex-col gap-2 sm:flex-row sm:justify-end lg:w-auto lg:items-center lg:gap-3'>
             <Button
               type='button'
-              variant='light'
+              variant='tertiary'
               onPress={onCancel}
               className='w-full hover:bg-sidebar border-background sm:w-auto'>
               Cancel

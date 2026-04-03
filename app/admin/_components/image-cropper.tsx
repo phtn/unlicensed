@@ -3,7 +3,7 @@
 import {useCallback, useEffect, useState} from 'react'
 
 import {EdgeSlider} from '@/components/ui/slider'
-import {Button, Image as HeroImage} from '@heroui/react'
+import {Button, Image as HeroImage} from '@/lib/heroui'
 import {
   Cropper,
   CropperCropArea,

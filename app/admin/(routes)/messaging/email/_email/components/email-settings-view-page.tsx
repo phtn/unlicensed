@@ -14,14 +14,14 @@ import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
 import {
   Button,
   Card,
-  CardBody,
+  CardContent,
   CardHeader,
   Input,
   Progress,
   Select,
-  SelectItem,
-  Textarea,
-} from '@heroui/react'
+  ListBoxItem,
+  TextArea,
+} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useRouter} from 'next/navigation'
@@ -429,7 +429,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
         <div className='mb-4 flex items-center justify-between'>
           <Button
             type='button'
-            variant='light'
+            variant='tertiary'
             onPress={navigateBackToList}
             className='gap-2 dark:bg-transparent'>
             <Icon name='chevron-left' className='size-4' />
@@ -438,7 +438,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
           <div className='flex items-center gap-3 px-1'>
             <Button
               type='button'
-              variant='light'
+              variant='tertiary'
               onPress={toggleMailingList}
               className='gap-1'>
               <span className='md:hidden'>+ List</span>
@@ -446,14 +446,14 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             </Button>
             <Button
               type='button'
-              variant='light'
+              variant='tertiary'
               onPress={toggleEmailBlast}
               className='gap-1'>
               <span className='hidden md:flex'>Send Email </span>Blast
             </Button>
             <Button
               type='button'
-              variant='light'
+              variant='tertiary'
               onPress={() => setIsEditing(true)}
               className='gap-1'>
               <span className='hidden md:flex'>Edit</span>
@@ -462,7 +462,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             <Button
               type='button'
               color='danger'
-              variant='light'
+              variant='tertiary'
               onPress={handleDelete}
               className='text-mac-red hover:text-mac-red dark:text-red-400 dark:hover:text-red-500 w-4 md:w-fit'>
               <span className='hidden md:flex'>Delete</span>
@@ -501,7 +501,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                   )}
                 </div>
               </CardHeader>
-              <CardBody>
+              <CardContent>
                 <div className='text-base pt-2 font-clash'>
                   <span className='text-xs uppercase opacity-70 mr-2'>
                     subject:
@@ -510,12 +510,12 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                     {emailSetting.subject || 'No subject defined'}
                   </span>
                 </div>
-              </CardBody>
+              </CardContent>
             </Card>
 
             <div className='grid grid-cols-1 md:grid-cols-3 font-figtree'>
               <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none md:rounded-bl-md shadow-none'>
-                <CardBody>
+                <CardContent>
                   <SectionHeader title='Recipients' />
                   <div className='pt-6 space-y-3'>
                     <div>
@@ -543,10 +543,10 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       </div>
                     )}
                   </div>
-                </CardBody>
+                </CardContent>
               </Card>
               <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none shadow-none'>
-                <CardBody>
+                <CardContent>
                   <SectionHeader title='Template' />
                   <div className='pt-6 space-y-3'>
                     <div>
@@ -560,10 +560,10 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       </p>
                     </div>
                   </div>
-                </CardBody>
+                </CardContent>
               </Card>
               <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-t-0 md:border-l-0 border-background rounded-none rounded-b-md md:rounded-bl-md shadow-none'>
-                <CardBody>
+                <CardContent>
                   <SectionHeader title='Metadata' />
                   <div className='pt-6 space-y-3'>
                     {emailSetting.group && (
@@ -583,7 +583,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       </div>
                     )}
                   </div>
-                </CardBody>
+                </CardContent>
               </Card>
             </div>
 
@@ -637,7 +637,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                     description='Select a mailing list and send using this template. Emails are sent one recipient at a time.'
                   />
                 </CardHeader>
-                <CardBody className='space-y-4'>
+                <CardContent className='space-y-4'>
                   <Select
                     label='Mailing list'
                     placeholder='Select a list'
@@ -649,11 +649,11 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                     isDisabled={!mailingLists?.length}
                     classNames={commonSelectClassNames}>
                     {(mailingLists ?? []).map((list: MailingListDoc) => (
-                      <SelectItem
+                      <ListBoxItem
                         key={list._id}
                         textValue={`${list.name} (${list.recipients.length})`}>
                         {list.name} — {list.recipients.length} recipients
-                      </SelectItem>
+                      </ListBoxItem>
                     ))}
                   </Select>
                   {blastProgress && (
@@ -677,7 +677,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                     </div>
                   )}
                   <div className='flex justify-end gap-2'>
-                    <Button variant='light' onPress={toggleEmailBlast}>
+                    <Button variant='tertiary' onPress={toggleEmailBlast}>
                       Cancel
                     </Button>
                     <Button
@@ -696,7 +696,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       Send Blast
                     </Button>
                   </div>
-                </CardBody>
+                </CardContent>
               </Card>
             </motion.div>
           )}
@@ -723,7 +723,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                     classNames={commonInputClassNames}
                   />
                 </CardHeader>
-                <CardBody className='space-y-4'>
+                <CardContent className='space-y-4'>
                   <input
                     ref={csvInputRef}
                     type='file'
@@ -732,7 +732,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                     onChange={handleCsvImport}
                   />
                   <div className='flex items-start space-x-3'>
-                    <Textarea
+                    <TextArea
                       placeholder='PASTE Name and Email on any of these formats: Alice=alice@example.com | Bob: bob@example.com | Carol, carol@example.com'
                       minRows={1}
                       classNames={narrowInputClassNames}
@@ -748,7 +748,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       <Button
                         type='button'
                         radius='none'
-                        variant='flat'
+                        variant='tertiary'
                         onPress={addRecipientRow}
                         className='gap-1 rounded-lg'>
                         <Icon name='plus' className='size-4' />
@@ -757,7 +757,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       <Button
                         type='button'
                         radius='none'
-                        variant='solid'
+                        variant='primary'
                         onPress={() => csvInputRef.current?.click()}
                         className='gap-1 rounded-lg bg-dark-table text-white dark:bg-white dark:text-dark-table'>
                         <Icon name='arrow-up' className='size-4' />
@@ -803,7 +803,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                             <Button
                               type='button'
                               size='sm'
-                              variant='light'
+                              variant='tertiary'
                               color='danger'
                               isIconOnly
                               onPress={() => removeRecipientRow(index)}
@@ -817,7 +817,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                     </div>
                   </div>
                   <div className='flex justify-end gap-2'>
-                    <Button variant='light' onPress={toggleMailingList}>
+                    <Button variant='tertiary' onPress={toggleMailingList}>
                       Cancel
                     </Button>
                     <Button
@@ -828,7 +828,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       Create Mailing List
                     </Button>
                   </div>
-                </CardBody>
+                </CardContent>
               </Card>
             </motion.div>
           )}

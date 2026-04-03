@@ -1,7 +1,7 @@
 import {ClassName} from '@/app/types'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Card, CardBody} from '@heroui/react'
+import {Button, Card, CardContent} from '@/lib/heroui'
 import {motion} from 'motion/react'
 import Link from 'next/link'
 import {PropsWithChildren, ReactNode} from 'react'
@@ -31,7 +31,7 @@ const ArcCard = ({
           'border border-foreground/20 dark:bg-dark-table',
           className,
         )}>
-        <CardBody className='p-4 sm:p-8 space-y-6'>{children}</CardBody>
+        <CardContent className='p-4 sm:p-8 space-y-6'>{children}</CardContent>
       </Card>
     </motion.div>
   )
@@ -111,7 +111,7 @@ const ArcButtonLeft = ({label, fn, href, icon}: ArcButtonProps) => (
     size='lg'
     href={fn ? '#' : (href ?? '#')}
     radius='none'
-    variant='flat'
+    variant='tertiary'
     onPress={fn}
     startContent={icon && <Icon name={icon} className='size-5' />}
     className='w-full font-polysans font-normal! dark:bg-sidebar'>
@@ -125,7 +125,7 @@ const ArcButtonRight = ({label, fn, href, icon}: ArcButtonProps) => (
     size='lg'
     href={fn ? '#' : (href ?? '#')}
     radius='none'
-    variant='solid'
+    variant='primary'
     color='primary'
     onPress={fn}
     endContent={icon && <Icon name={icon} className='size-5' />}
@@ -139,7 +139,7 @@ const ArcButtonFull = ({label, fn, href, icon}: ArcButtonProps) => (
     size='lg'
     onPress={fn}
     radius='none'
-    variant='flat'
+    variant='tertiary'
     href={fn ? '#' : (href ?? '#')}
     endContent={icon && <Icon name={icon} className='size-5' />}
     className='w-full col-span-2 font-polysans font-medium bg-sidebar dark:bg-white dark:text-dark-gray'>

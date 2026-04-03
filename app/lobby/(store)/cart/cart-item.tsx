@@ -3,22 +3,22 @@ import {HyperBadge} from '@/components/main/badge'
 import {AnimatedNumber} from '@/components/ui/animated-number'
 import {Id} from '@/convex/_generated/dataModel'
 import {ProductType} from '@/convex/products/d'
+import {useDisclosure} from '@/hooks/use-disclosure'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {Icon} from '@/lib/icons'
-import {cn} from '@/lib/utils'
-import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {
-  Button,
   Card,
-  CardBody,
+  CardContent,
   Image,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  useDisclosure,
-} from '@heroui/react'
+} from '@/lib/heroui'
+import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
+import {formatDenominationDisplay} from '@/utils/formatDenomination'
+import {Button} from '@heroui/react'
 import {memo, useEffect, useMemo, useState, useTransition} from 'react'
 
 interface CartItemProps {
@@ -114,7 +114,7 @@ export const CartItem = memo(
             'border border-b-0 last:border-b border-foreground/50 bg-white dark:bg-background dark:border-foreground/50 border-dashed first:rounded-t-xs last:rounded-b-xs',
             className,
           )}>
-          <CardBody>
+          <CardContent>
             <div className='flex min-w-0 gap-3 md:gap-4'>
               <div className='relative size-24 md:w-28 md:h-28 shrink-0 overflow-hidden'>
                 <Image
@@ -132,15 +132,15 @@ export const CartItem = memo(
                     </h3>
                     <div
                       id='price-per-denom'
-                      className='flex items-center gap-2 flex-wrap mt-1'>
+                      className='flex items-center gap-2 flex-wrap mt-3'>
                       {item.denomination != null && (
-                        <p className='font-okxs text-sm md:text-base text-muted-foreground'>
+                        <p className='font-okxs font-medium text-base md:text-lg text-foreground'>
                           $<span>{itemPrice / 100}</span>
                         </p>
                       )}
-                      <span className='opacity-40'>/</span>
+                      <span className='opacity-60 font-thin italic'>per</span>
                       {item.denomination != null && (
-                        <p className='font-okxs text-sm md:text-base text-muted-foreground'>
+                        <p className='font-okxs text-sm md:text-base text-foreground/80 tracking-wide'>
                           {formatDenominationDisplay(
                             item.denomination,
                             item.product.unit ?? '',
@@ -159,31 +159,27 @@ export const CartItem = memo(
                   </p>
                 </div>
                 <div className='flex items-center justify-between'>
-                  <div className='flex items-center gap-1'>
+                  <div className='flex items-center gap-x-1'>
                     {!isBundleLine ? (
                       <>
                         <Button
                           isIconOnly
-                          size='sm'
-                          radius='none'
-                          variant='flat'
-                          className='h-7 w-8 rounded-xs'
+                          variant='ghost'
+                          className='h-7 w-8 rounded-xs text-foreground/60 hover:text-foreground'
                           onPress={() => handleQuantityChange(quantity - 1)}>
-                          <Icon name='minus' className='size-4' />
+                          <Icon name='minus' className='size-5 mb-2 mx-auto' />
                         </Button>
 
-                        <p className='font-okxs font-medium text-lg w-10 text-center'>
+                        <p className='font-okxs font-medium text-lg w-10 h-7 text-center'>
                           <AnimatedNumber value={quantity} />
                         </p>
 
                         <Button
                           isIconOnly
-                          size='sm'
-                          radius='none'
-                          variant='flat'
-                          className='h-7 w-8 rounded-xs'
+                          variant='ghost'
+                          className='h-7 w-8 rounded-xs text-foreground/60 hover:text-foreground'
                           onPress={() => handleQuantityChange(quantity + 1)}>
-                          <Icon name='plus' className='size-4' />
+                          <Icon name='plus' className='size-5 mb-2 mx-auto' />
                         </Button>
                       </>
                     ) : (
@@ -200,37 +196,45 @@ export const CartItem = memo(
                   <Button
                     size='sm'
                     isIconOnly
-                    radius='none'
-                    variant='light'
-                    className='h-7 w-8 rounded-sm opacity-60 hover:opacity-100'
+                    variant='ghost'
+                    className='h-7 w-8 flex items-center rounded-sm opacity-60 hover:opacity-100 justify-center hover:bg-transparent'
                     onPress={handleRemoveConfirmation}>
-                    <Icon name='trash' className='size-5 md:size-6' />
+                    <Icon
+                      name='trash'
+                      className='size-5 md:size-6 mb-2 ml-[0.20px]'
+                    />
                   </Button>
                 </div>
               </div>
             </div>
-          </CardBody>
+          </CardContent>
         </Card>
 
         <Modal
+          size='sm'
           isOpen={isOpen}
           onClose={onClose}
-          size='sm'
           placement='center'
-          radius='lg'>
-          <ModalContent>
-            <ModalHeader className='font-okxs font-semibold'>
+          radius='none'>
+          <ModalContent className='mt-28 bg-linear-to-b dark:from-slate-500 dark:to-slate-700 rounded-xs border border-slate-700'>
+            <ModalHeader className='font-bone font-semibold text-lg tracking-wide'>
               Remove item?
             </ModalHeader>
             <ModalBody>
-              <p className='text-muted-foreground text-sm'>
-                Remove {item.product.name}
+              <p className='text-foreground text-sm'>
+                Remove <strong>{item.product.name}</strong>
                 {item.denomination != null ? (
-                  <span className='ml-1 text-foreground'>
+                  <span className='ml-1 dark:text-pink-300 text-brand font-semibold'>
+                    <span className='font-ios text-xs text-foreground/50'>
+                      (
+                    </span>
                     {formatDenominationDisplay(
                       item.denomination,
                       item.product.unit ?? '',
                     )}
+                    <span className='font-ios text-xs text-foreground/50'>
+                      )
+                    </span>
                   </span>
                 ) : (
                   ''
@@ -238,11 +242,19 @@ export const CartItem = memo(
                 from your cart?
               </p>
             </ModalBody>
-            <ModalFooter className='gap-2'>
-              <Button variant='flat' onPress={onClose}>
+            <ModalFooter className='gap-4 dark:bg-background/20 bg-sidebar font-clash p-4 flex items-center'>
+              <Button
+                size='sm'
+                variant='ghost'
+                onPress={onClose}
+                className='dark:hover:bg-black/8 rounded-xs px-4 _border dark:border-transparent hover:border-foreground/10'>
                 Cancel
               </Button>
-              <Button color='danger' onPress={handleConfirmRemove}>
+              <Button
+                size='sm'
+                variant='primary'
+                onPress={handleConfirmRemove}
+                className='bg-red-500/80 rounded-xs px-4 border-0 shadow-none'>
                 Remove
               </Button>
             </ModalFooter>

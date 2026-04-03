@@ -11,7 +11,8 @@ import {adaptProduct} from '@/lib/convexClient'
 import {Icon, IconName} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {cn} from '@/lib/utils'
-import {Button, Image} from '@heroui/react'
+import {Button} from '@heroui/react'
+import Image from 'next/image'
 import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
 import {Activity, useMemo} from 'react'
@@ -101,18 +102,14 @@ export const Content = () => {
                 />
               </div>
               <div className='flex flex-wrap items-center gap-3'>
-                <Button
-                  size='lg'
-                  as={Link}
-                  radius='none'
+                <Link
                   href={`/lobby/products?brand=${selectedBrand.slug}`}
                   className='dark:bg-white opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base'>
                   <span className='drop-shadow-xs'>All Products</span>
-                </Button>
+                </Link>
                 <Button
                   size='lg'
-                  variant='light'
-                  radius='none'
+                  variant='tertiary'
                   onPress={() => void setSelectedBrandId(null)}
                   className='border dark:border-light-gray/40 font-polysans font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-base lg:text-lg'>
                   <span className='tracking-tight'>Clear selection</span>
@@ -201,7 +198,8 @@ export const Content = () => {
                   <div className='relative z-10 mb-6 sm:mb-8 shrink-0'>
                     <div className='relative w-32 sm:w-40 lg:w-48 h-20 sm:h-24 lg:h-28'>
                       <Image
-                        src={brand.icon}
+                        fill
+                        src={`/${brand.icon}`}
                         alt={brand.name}
                         className='w-full h-full object-contain opacity-90 dark:opacity-100'
                         loading='lazy'
@@ -355,41 +353,30 @@ export const Content = () => {
               Try our Bundle-Builder and pick products that match your vibe.
             </p>
             <div className='flex flex-col sm:flex-row items-center justify-center gap-4'>
-              <Button
-                as={Link}
-                href='/lobby'
-                radius='none'
-                prefetch
-                size='lg'
-                className='dark:bg-brand opacity-100 dark:text-white md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base portrait:w-full'>
-                <span className='drop-shadow-xs'>Home</span>
-              </Button>
-
-              <Button
-                size='lg'
-                as={Link}
-                radius='none'
-                href={'/lobby/products'}
-                prefetch
-                variant='light'
-                endContent={
-                  <Icon name={'search'} className='dark:text-white' />
-                }
-                className='sm:flex items-center gap-2 font-clash font-medium bg-dark-table text-white dark:bg-black dark:text-white px-4 sm:px-8 py-2 sm:py-3 text-base lg:text-lg portrait:w-full'>
-                <div className='flex items-center tracking-tight'>
-                  <span className='hidden md:flex mr-1'>Advanced</span> Search
+              <Link prefetch href='/lobby'>
+                <div className='dark:bg-brand opacity-100 dark:text-white md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-12 py-3 sm:py-4 text-base portrait:w-full'>
+                  <span className='drop-shadow-xs'>Shop</span>
                 </div>
-              </Button>
-              <Button
-                as={Link}
-                href='/lobby/deals'
-                radius='none'
+              </Link>
+
+              <Link
                 prefetch
-                size='lg'
-                endContent={<Icon name='box-bold' className=' text-white' />}
+                href={'/lobby/products'}
+                className='sm:flex items-center gap-2 font-clash font-medium bg-dark-table text-white dark:bg-black dark:text-white px-4 sm:px-8 py-2 sm:py-3 text-base lg:text-lg portrait:w-full'>
+                <div className='flex items-center space-x-2'>
+                  <Icon name={'search'} className='dark:text-white' />
+                  <div className='flex items-center tracking-tight'>Search</div>
+                </div>
+              </Link>
+              <Link
+                prefetch
+                href='/lobby/deals'
                 className='bg-terpenes opacity-100 text-white font-clash font-medium px-6 sm:px-8 py-3 sm:py-4 text-base portrait:w-full'>
-                <span className='drop-shadow-xs'>Find Deals</span>
-              </Button>
+                <div className='flex items-center space-x-2'>
+                  <Icon name='box-bold' className=' text-white' />
+                  <span className='drop-shadow-xs'>Find Deals</span>
+                </div>
+              </Link>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import {StoreCategory} from '@/app/types'
 import {Icon} from '@/lib/icons'
-import {Button, Link} from '@heroui/react'
+import {Button, Link} from '@/lib/heroui'
 import NextLink from 'next/link'
 
 interface Props {
@@ -46,7 +46,7 @@ export const StrainFinderMini = ({categories}: Props) => {
               size='lg'
               radius='full'
               disableRipple
-              variant='solid'
+              variant='primary'
               href='/lobby/strain-finder'
               className='px-0 flex items-center justify-center md:justify-start w-full bg-transparent text-sm font-semibold dark:border-light-gray uppercase tracking-[0.35em]'>
               <div className='flex items-center justify-start'>

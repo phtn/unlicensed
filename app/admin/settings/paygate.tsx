@@ -1,7 +1,7 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
-import {Button, Card, CardBody, Divider, Input, Switch} from '@heroui/react'
+import {Button, Card, CardContent, Separator, Input, Switch} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {useEffect, useRef, useState} from 'react'
 
@@ -96,7 +96,7 @@ export function PayGateSettings() {
       shadow='none'
       radius='none'
       className='md:rounded-lg md:w-full w-screen overflow-auto md:p-6 space-y-6'>
-      <CardBody className='p-6 space-y-6'>
+      <CardContent className='p-6 space-y-6'>
         <div>
           <h2 className='text-xl font-semibold mb-2'>
             PayGate Payment Gateway
@@ -108,7 +108,7 @@ export function PayGateSettings() {
           </p>
         </div>
 
-        <Divider />
+        <Separator />
 
         <div className='space-y-4'>
           <Switch isSelected={enabled} onValueChange={setEnabled} size='sm'>
@@ -168,7 +168,7 @@ export function PayGateSettings() {
           </div>
         </div>
 
-        <Divider />
+        <Separator />
 
         <div className='flex justify-end gap-2'>
           {saveStatus === 'success' && (
@@ -188,7 +188,7 @@ export function PayGateSettings() {
             Save Settings
           </Button>
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   )
 }

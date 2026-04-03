@@ -5,7 +5,7 @@ import {api} from '@/convex/_generated/api'
 import {type Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {formatTimestamp} from '@/utils/date'
-import {Button, Card, CardBody} from '@heroui/react'
+import {Button, Card, CardContent} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import Link from 'next/link'
@@ -175,14 +175,14 @@ export const MailingListContent = () => {
       <main className='relative space-y-4 px-2 sm:px-3 lg:px-4'>
         <section className='grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]'>
           <Card className='border border-greyed/15 bg-sidebar/70 shadow-none backdrop-blur-xl'>
-            <CardBody className='gap-3 p-6'>
+            <CardContent className='gap-3 p-6'>
               <div className='flex space-x-4'>
                 <Button
                   as={Link}
                   size='lg'
                   isIconOnly
                   href='/admin/messaging/email'
-                  variant='flat'
+                  variant='tertiary'
                   radius='none'
                   className='rounded-lg'>
                   <Icon name='chevron-left' className='size-4' />
@@ -205,11 +205,11 @@ export const MailingListContent = () => {
                   </div>
                 </div>
               </div>
-            </CardBody>
+            </CardContent>
           </Card>
 
           <Card className='border border-greyed/15 bg-sidebar/70 shadow-none backdrop-blur-xl'>
-            <CardBody className='justify-between gap-4 p-6'>
+            <CardContent className='justify-between gap-4 p-6'>
               <div className='space-y-2'>
                 <p className='text-xs font-ios uppercase tracking-[0.24em] text-foreground/45'>
                   Create
@@ -225,7 +225,7 @@ export const MailingListContent = () => {
                 className='bg-brand font-clash text-white data-[hover=true]:bg-brand/90'>
                 <span>{showCreateForm ? 'Close Creator' : 'Create Mailing List'}</span>
               </Button>
-            </CardBody>
+            </CardContent>
           </Card>
         </section>
 
@@ -242,7 +242,7 @@ export const MailingListContent = () => {
 
         {mailingLists.length === 0 ? (
           <Card className='border border-greyed/15 bg-sidebar/70 shadow-none backdrop-blur-xl'>
-            <CardBody className='flex min-h-72 items-center justify-center p-8'>
+            <CardContent className='flex min-h-72 items-center justify-center p-8'>
               <div className='max-w-xl space-y-4 text-center'>
                 <div className='mx-auto flex size-16 items-center justify-center rounded-3xl border border-cyan-500/15 bg-cyan-500/10 text-cyan-500'>
                   <Icon name='mail-send-fill' className='size-7' />
@@ -263,14 +263,14 @@ export const MailingListContent = () => {
                   <Button
                     as={Link}
                     href='/admin/messaging/email'
-                    variant='light'
+                    variant='tertiary'
                     radius='none'
                     className='rounded-xl border border-greyed/15 bg-background/45'>
                     Open Email Templates
                   </Button>
                 </div>
               </div>
-            </CardBody>
+            </CardContent>
           </Card>
         ) : null}
 

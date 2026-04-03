@@ -19,7 +19,7 @@ import {
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
-import {Badge, Button, Card, CardBody, CardHeader, Image} from '@heroui/react'
+import {Badge, Button, Card, CardContent, CardHeader, Image} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import {
   useCallback,
@@ -640,7 +640,7 @@ export function BundleBuilder({
           )}
         </div>
       </CardHeader>
-      <CardBody className='pt-4 px-0 md:px-3 dark:bg-dark-table'>
+      <CardContent className='pt-4 px-0 md:px-3 dark:bg-dark-table'>
         <div className='grid gap-0 md:gap-3 sm:grid-cols-2 lg:grid-cols-3'>
           {filteredProducts.map((product) => {
             const pid = product._id as Id<'products'>
@@ -810,7 +810,7 @@ export function BundleBuilder({
             </Button>
           </ViewTransition>
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   )
 }

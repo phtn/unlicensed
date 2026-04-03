@@ -10,7 +10,7 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
 import {formatRecordingTime} from '@/utils/time'
-import {Avatar} from '@heroui/react'
+import {Avatar} from '@/lib/heroui'
 import {
   Fragment,
   ReactNode,

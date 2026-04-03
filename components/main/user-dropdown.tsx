@@ -13,7 +13,7 @@ import {
     DropdownTrigger,
     Link,
     Tooltip,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import { useQuery } from 'convex/react'
 import { User } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
@@ -70,7 +70,7 @@ export const UserDropdown = ({
           onPress={() => {
             void router.push('/account')
           }}
-          variant='flat'
+          variant='tertiary'
           classNames={{
             title: 'text-foreground/90 font-polysans',
             base: 'hover:bg-alum/0 bg-background/0 dark:hover:bg-alum/10 dark:bg-white focus-visible:ring-1 outline-none',
@@ -100,7 +100,7 @@ export const UserDropdown = ({
           <DropdownItem
             key='quick-links'
             isReadOnly
-            variant='light'
+            variant='tertiary'
             textValue='Quick links'
             startContent={
               <JustTheTip
@@ -217,7 +217,7 @@ const JustTheTip = ({
         isIconOnly
         href={href}
         radius='full'
-        variant='light'
+        variant='tertiary'
         onPress={onPress}
         className='h-10'>
         <Icon name={icon} className='size-5' />

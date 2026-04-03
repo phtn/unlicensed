@@ -1,6 +1,6 @@
 import {Beams} from '@/components/main/beams'
 import {cn} from '@/lib/utils'
-import {Image} from '@heroui/react'
+import {Image} from '@/lib/heroui'
 import {AnimatePresence, motion} from 'motion/react'
 import {memo, useCallback, useEffect, useMemo, useState} from 'react'
 interface Logo {

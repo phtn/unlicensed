@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
   User,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import React, {ReactNode, useEffect} from 'react'
 
@@ -236,7 +236,7 @@ export const RecentActivities = ({
               className='capitalize border-none gap-1 text-default-600'
               color={getActivityChipColor(activity.type)}
               size='sm'
-              variant='dot'>
+              variant='soft'>
               {getActivityTypeLabel(activity.type)}
             </Chip>
           )

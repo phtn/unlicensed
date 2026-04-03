@@ -2,7 +2,7 @@
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {Icon} from '@/lib/icons'
-import {Input} from '@heroui/react'
+import {Input} from '@/lib/heroui'
 import {ChangeEvent, useCallback} from 'react'
 import {FormData, FormErrors} from '../types'
 

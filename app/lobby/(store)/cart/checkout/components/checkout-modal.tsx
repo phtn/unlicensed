@@ -9,7 +9,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {FormData, FormErrors} from '../types'
 import {ContactForm} from './contact-form'
 import {OrderStatusMessages} from './order-status-messages'
@@ -96,7 +96,7 @@ export function CheckoutModal({
               <Button
                 size='lg'
                 radius='none'
-                variant='light'
+                variant='tertiary'
                 onPress={onClose}
                 className='w-full rounded-xs text-dark-table dark:hover:bg-white/5'
                 isDisabled={isLoading || isPending}>
@@ -106,7 +106,7 @@ export function CheckoutModal({
                 size='lg'
                 radius='none'
                 color='primary'
-                variant='solid'
+                variant='primary'
                 className='w-full rounded-xs bg-black font-polysans font-normal dark:text-white disabled:opacity-50'
                 fullWidth
                 onPress={onPlaceOrder}

@@ -15,12 +15,12 @@ import {
 import {
   Button,
   Card,
-  CardBody,
+  CardContent,
   CardHeader,
   Input,
   Switch,
-  Textarea,
-} from '@heroui/react'
+  TextArea,
+} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {
@@ -273,7 +273,7 @@ const LowStockEmailAlertsEditor = ({
 
         <Button
           color='primary'
-          variant='solid'
+          variant='primary'
           onPress={handleSave}
           isLoading={isSaving}
           isDisabled={!userUid || isSaving || !isDirty}
@@ -282,7 +282,7 @@ const LowStockEmailAlertsEditor = ({
         </Button>
       </CardHeader>
 
-      <CardBody className='space-y-4 p-4 pt-0'>
+      <CardContent className='space-y-4 p-4 pt-0'>
         <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
           <AlertStatCard
             label='Global Status'
@@ -418,7 +418,7 @@ const LowStockEmailAlertsEditor = ({
                   Paste multiple lines or manage each recipient individually.
                 </p>
               </div>
-              <Textarea
+              <TextArea
                 minRows={2}
                 placeholder='Paste Name and Email in any of these formats: Alice=alice@example.com | Bob: bob@example.com | Carol, carol@example.com'
                 classNames={commonInputClassNames}
@@ -427,7 +427,7 @@ const LowStockEmailAlertsEditor = ({
               <div className='flex items-center gap-3'>
                 <Button
                   size='sm'
-                  variant='flat'
+                  variant='tertiary'
                   onPress={addRecipientRow}
                   className='gap-1'>
                   <Icon name='plus' className='size-4' />
@@ -471,7 +471,7 @@ const LowStockEmailAlertsEditor = ({
                       />
                       <div className='flex items-end'>
                         <Button
-                          variant='light'
+                          variant='tertiary'
                           onPress={() => removeRecipientRow(recipient.rowId)}
                           isIconOnly
                           aria-label={`Remove recipient ${index + 1}`}>
@@ -610,7 +610,7 @@ const LowStockEmailAlertsEditor = ({
             ) : null}
           </div>
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   )
 }

@@ -8,7 +8,6 @@ import {
   THEME_ENABLE_COLOR_SCHEME,
   THEME_ENABLE_SYSTEM,
 } from '@/lib/theme'
-import {HeroUIProvider} from '@heroui/react'
 import {ConvexProvider} from 'convex/react'
 import {createContext, useContext, useMemo, type ReactNode} from 'react'
 import {AuthCtxProvider} from './auth'
@@ -28,7 +27,7 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
   const convexClient = useMemo(() => getConvexReactClient(), [])
 
   const content = (
-    <HeroUIProvider locale='en-US' className='min-h-screen'>
+    <div className='min-h-screen'>
       <ThemeProvider
         attribute={THEME_ATTRIBUTE}
         enableColorScheme={THEME_ENABLE_COLOR_SCHEME}
@@ -42,7 +41,7 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
         </AuthCtxProvider>
         <Toasts />
       </ThemeProvider>
-    </HeroUIProvider>
+    </div>
   )
 
   return (

@@ -10,7 +10,7 @@ import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
-import {Badge, Button, Chip, Divider} from '@heroui/react'
+import {Badge, Button, Chip, Separator} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useParams} from 'next/navigation'
@@ -671,7 +671,7 @@ export const Content = () => {
             </div>
             <Chip
               size='sm'
-              variant='flat'
+              variant='tertiary'
               className='bg-foreground/10 text-foreground/80 border border-foreground/20'>
               {order?.payment.method?.split('_').join(' ') ?? 'cash app'}
             </Chip>
@@ -704,7 +704,7 @@ export const Content = () => {
             {setupState === 'ready' ? (
               <Chip
                 size='sm'
-                variant='flat'
+                variant='tertiary'
                 className='dark:bg-emerald-500/10 bg-emerald-300 text-emerald-500 dark:text-emerald-300 border border-emerald-400/30'>
                 {repName}
               </Chip>
@@ -727,7 +727,7 @@ export const Content = () => {
           <p className='text-xs opacity-75'>
             Our representatives will guide you through the payment process.
           </p>
-          <Divider className='border-b-[0.25px] border-foreground/15 border-dotted' />
+          <Separator className='border-b-[0.25px] border-foreground/15 border-dotted' />
           <div className='grid gap-2.5 text-xs'>
             <div className='flex items-start gap-2'>
               <Icon
@@ -766,7 +766,7 @@ export const Content = () => {
             as={NextLink}
             href={orderHref}
             size='lg'
-            variant='flat'
+            variant='tertiary'
             className='font-polysans font-normal dark:bg-sidebar'
             startContent={<Icon name='chevron-left' className='size-4' />}>
             Review Order

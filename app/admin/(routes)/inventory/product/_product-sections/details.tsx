@@ -1,7 +1,7 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
-import {Textarea} from '@heroui/react'
+import {TextArea} from '@/lib/heroui'
 import {ProductFormApi} from '../product-schema'
 import {FormSection, Header} from './components'
 
@@ -19,7 +19,7 @@ export const Details = ({form}: DetailsProps) => {
             const shortDescValue = (field.state.value as string) ?? ''
             return (
               <div className='space-y-2'>
-                <Textarea
+                <TextArea
                   name='shortDescription'
                   label='Short Description'
                   value={shortDescValue}
@@ -30,7 +30,7 @@ export const Details = ({form}: DetailsProps) => {
                   onBlur={field.handleBlur}
                   placeholder='Brief summary for cards and listings...'
                   minRows={2}
-                  variant='bordered'
+                  variant='secondary'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
@@ -49,7 +49,7 @@ export const Details = ({form}: DetailsProps) => {
             const descValue = (field.state.value as string) ?? ''
             return (
               <div className='space-y-2'>
-                <Textarea
+                <TextArea
                   label='Full Description (Markdown)'
                   name='fullDescription'
                   defaultValue={descValue}
@@ -60,7 +60,7 @@ export const Details = ({form}: DetailsProps) => {
                   onBlur={field.handleBlur}
                   placeholder='Detailed product story, lineage, and effects...'
                   minRows={6}
-                  variant='bordered'
+                  variant='secondary'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
@@ -79,14 +79,14 @@ export const Details = ({form}: DetailsProps) => {
             const consumptionValue = (field.state.value as string) ?? ''
             return (
               <div className='space-y-2'>
-                <Textarea
+                <TextArea
                   label='Smoke / Consumption Guide'
                   value={consumptionValue}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='Tips for consumption...'
                   minRows={3}
-                  variant='bordered'
+                  variant='secondary'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&

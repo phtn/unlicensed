@@ -7,7 +7,7 @@
 // import {Icon} from '@/lib/icons'
 // import {paygatePublicConfig} from '@/lib/paygate/config'
 // import {formatPrice} from '@/utils/formatPrice'
-// import {Button, Card, CardBody} from '@heroui/react'
+// import {Button, Card, CardContent} from '@/lib/heroui'
 // import {useQuery} from 'convex/react'
 // import NextLink from 'next/link'
 // import {useParams, useRouter} from 'next/navigation'
@@ -175,7 +175,7 @@
 //         <Card
 //           shadow='none'
 //           className='max-w-md w-full border border-foreground/50 dark:bg-dark-table/40'>
-//           <CardBody className='p-8 text-center space-y-4'>
+//           <CardContent className='p-8 text-center space-y-4'>
 //             <div className='text-6xl mb-4'>⚠️</div>
 //             <h1 className='text-2xl font-semibold'>Configuration Error</h1>
 //             <p className='text-color-muted'>
@@ -188,7 +188,7 @@
 //               className='w-full'>
 //               Back to Order
 //             </Button>
-//           </CardBody>
+//           </CardContent>
 //         </Card>
 //       </div>
 //     )
@@ -207,7 +207,7 @@
 //         <Card
 //           shadow='none'
 //           className='max-w-md w-full border border-foreground/50 dark:bg-dark-table/40'>
-//           <CardBody className='p-8 text-center space-y-4'>
+//           <CardContent className='p-8 text-center space-y-4'>
 //             <Icon
 //               name='check-fill'
 //               className='text-6xl mb-4 text-emerald-500'
@@ -224,7 +224,7 @@
 //               className='w-full'>
 //               View Order
 //             </Button>
-//           </CardBody>
+//           </CardContent>
 //         </Card>
 //       </div>
 //     )
@@ -236,7 +236,7 @@
 //         <Card
 //           shadow='none'
 //           className='max-w-md w-full border border-foreground/50 dark:bg-dark-table/40'>
-//           <CardBody className='p-8 text-center space-y-4'>
+//           <CardContent className='p-8 text-center space-y-4'>
 //             <div className='text-6xl mb-4'>❌</div>
 //             <h1 className='text-2xl font-semibold'>Payment Error</h1>
 //             <p className='text-color-muted'>{response.error}</p>
@@ -244,7 +244,7 @@
 //               <Button
 //                 as={NextLink}
 //                 href={`/account/orders/${orderId}`}
-//                 variant='flat'
+//                 variant='tertiary'
 //                 className='flex-1'>
 //                 View Order
 //               </Button>
@@ -255,7 +255,7 @@
 //                 Retry
 //               </Button>
 //             </div>
-//           </CardBody>
+//           </CardContent>
 //         </Card>
 //       </div>
 //     )
@@ -267,7 +267,7 @@
 //         <Card
 //           shadow='none'
 //           className='w-full border border-dashed border-foreground/50 dark:bg-dark-table/40'>
-//           <CardBody className='p-8 space-y-6'>
+//           <CardContent className='p-8 space-y-6'>
 //             <div>
 //               <h1 className='text-2xl font-semibold mb-2'>
 //                 Processing Payment
@@ -315,12 +315,12 @@
 //               <Button
 //                 as={NextLink}
 //                 href={`/account/orders/${orderId}`}
-//                 variant='flat'
+//                 variant='tertiary'
 //                 className='w-full'>
 //                 Back to Order
 //               </Button>
 //             </div>
-//           </CardBody>
+//           </CardContent>
 //         </Card>
 //       </div>
 //     </div>

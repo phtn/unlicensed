@@ -6,9 +6,9 @@ import {Title} from '@/components/base44/title'
 import {api} from '@/convex/_generated/api'
 import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
+import {Button, ListBoxItem, Select, SharedSelection} from '@/lib/heroui'
 import {Icon} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
-import {Button, Select, SelectItem, SharedSelection} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {
   parseAsString,
@@ -419,7 +419,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                 </div>
                 <Button
                   size='sm'
-                  variant='light'
+                  variant='tertiary'
                   onPress={clearFilters}
                   className='text-xs'>
                   Clear All
@@ -459,7 +459,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                 {hasActiveFilters && (
                   <Button
                     size='lg'
-                    variant='light'
+                    variant='tertiary'
                     onPress={clearFilters}
                     className='mt-4'>
                     Clear Filters
@@ -500,12 +500,7 @@ const FilterSelector = ({
 }: FilterSelectorProps) => {
   const [selectChanged, setSelectChanged] = useState(false)
   const onSelectionChange = (keys: SharedSelection) => {
-    console.log(keys)
-    if ('size' in keys && keys.size === 0) {
-      setSelectChanged(false)
-    } else {
-      setSelectChanged(true)
-    }
+    setSelectChanged(keys === 'all' || keys.size > 0)
   }
   const onClear = () => {
     setSelectChanged(false)
@@ -533,11 +528,11 @@ const FilterSelector = ({
           label: selectChanged ? 'hidden' : 'block',
         }}>
         {data.map((b) => (
-          <SelectItem
+          <ListBoxItem
             key={typeof b === 'string' ? b : b.slug}
             className='ml-2 capitalize'>
             {typeof b === 'string' ? b : b.name}
-          </SelectItem>
+          </ListBoxItem>
         ))}
       </Select>
     </div>

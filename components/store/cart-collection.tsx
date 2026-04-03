@@ -7,7 +7,7 @@ import {useCart} from '@/hooks/use-cart'
 import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptCategory, adaptProduct} from '@/lib/convexClient'
-import {Button, Image} from '@heroui/react'
+import {Button, Image} from '@/lib/heroui'
 import {useMemo, useState} from 'react'
 import {SectionHeader} from '../ui/section-header'
 
@@ -164,7 +164,7 @@ const CollectionItem = ({
         </div>
         <Button
           size='sm'
-          variant='flat'
+          variant='tertiary'
           className='w-full h-8 min-h-0 text-xs font-semibold font-space bg-foreground/5 hover:bg-foreground/10'
           isLoading={isAdding}
           onPress={handleAdd}>

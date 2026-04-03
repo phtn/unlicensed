@@ -12,11 +12,11 @@ import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {useMobile} from '@/hooks/use-mobile'
 import {useSaveAdminProductFormReturn} from '@/hooks/use-save-admin-product-form-return'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
+import {Button, Card, Chip, Image} from '@/lib/heroui'
 import {Icon, IconName} from '@/lib/icons'
 import {formatStockDisplay} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, Chip, Image} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {parseAsString, parseAsStringEnum, useQueryState} from 'nuqs'
@@ -209,7 +209,7 @@ const ProductStackView = ({
 
   return (
     <>
-      <section className='h-[91lvh] overflow-auto px-2 pb-10'>
+      <section className='h-[91lvh] pb-28 overflow-auto px-2 pb-10'>
         {products?.length === 0 ? (
           <p className='px-4 text-sm text-neutral-500'>
             No products in this category.
@@ -316,7 +316,7 @@ const ProductStackView = ({
                               </h3>
                               <Chip
                                 size='sm'
-                                variant='flat'
+                                variant='tertiary'
                                 className={cn(
                                   'font-medium bg-amber-500/10 uppercase text-amber-700 dark:text-amber-300 h-6!',
                                   {
@@ -347,7 +347,7 @@ const ProductStackView = ({
                                   <Chip
                                     key={`${product._id}-${chip}`}
                                     size='sm'
-                                    variant='flat'
+                                    variant='tertiary'
                                     className='bg-sky-500/10 text-sky-700 dark:text-sky-300 uppercase h-6 md:h-6 rounded-sm'>
                                     {chip}
                                   </Chip>
@@ -355,7 +355,7 @@ const ProductStackView = ({
                               ) : (
                                 <Chip
                                   size='sm'
-                                  variant='flat'
+                                  variant='tertiary'
                                   className='bg-black/5 text-neutral-600 dark:bg-white/8 dark:text-neutral-300'>
                                   Missing taxonomy
                                 </Chip>
@@ -365,7 +365,7 @@ const ProductStackView = ({
                               {product.featured ? (
                                 <Chip
                                   size='sm'
-                                  variant='flat'
+                                  variant='tertiary'
                                   className='bg-violet-500/10 text-violet-700 dark:text-violet-300'>
                                   Featured
                                 </Chip>
@@ -373,7 +373,7 @@ const ProductStackView = ({
                               {product.onSale ? (
                                 <Chip
                                   size='sm'
-                                  variant='flat'
+                                  variant='tertiary'
                                   className='bg-rose-500/10 text-rose-700 dark:text-rose-300'>
                                   On Sale
                                 </Chip>
@@ -381,7 +381,7 @@ const ProductStackView = ({
                               {product.limited ? (
                                 <Chip
                                   size='sm'
-                                  variant='flat'
+                                  variant='tertiary'
                                   className='bg-orange-500/10 text-orange-700 dark:text-orange-300'>
                                   Limited
                                 </Chip>
@@ -471,7 +471,7 @@ const ProductStackView = ({
                                 href={`/admin/inventory/product/${product._id}`}
                                 onPress={saveAdminProductFormReturn}
                                 radius='none'
-                                variant='flat'
+                                variant='tertiary'
                                 className='rounded-sm h-8! bg-black/5 dark:bg-white/8'>
                                 Open
                               </Button>
@@ -480,7 +480,7 @@ const ProductStackView = ({
                                 href={`/admin/inventory/product?tabId=edit&id=${product._id}`}
                                 onPress={saveAdminProductFormReturn}
                                 radius='none'
-                                variant='flat'
+                                variant='tertiary'
                                 className='rounded-sm h-8! bg-black text-white dark:bg-white dark:text-black'>
                                 Edit
                               </Button>
@@ -556,7 +556,7 @@ const CategoryProductsContentInner = ({
             size='sm'
             as={Link}
             isIconOnly
-            variant='light'
+            variant='tertiary'
             href='/admin/inventory/category'
             className='text-neutral-500 hover:text-foreground'>
             <Icon name='chevron-left' className='size-4' />
@@ -578,7 +578,7 @@ const CategoryProductsContentInner = ({
             href={`/admin/inventory/category?slug=${categorySlug}&id=${category?._id}&tabId=edit`}
             radius='none'
             isIconOnly={isMobile}
-            variant='solid'
+            variant='primary'
             onPress={handleEdit}
             className='rounded-sm h-6 md:h-8 w-6 aspect-square md:w-fit border-white bg-gray-100/80 font-clash text-zinc-600 dark:border-transparent dark:bg-gray-200/5 dark:text-indigo-100'
             startContent={<Icon name='pen' className='size-3' />}>
@@ -590,7 +590,7 @@ const CategoryProductsContentInner = ({
             prefetch
             isIconOnly={isMobile}
             radius='none'
-            variant='flat'
+            variant='tertiary'
             href={`/admin/inventory/product?tabId=new&category=${categorySlug}`}
             className='rounded-sm h-6 md:h-8 w-6 md:w-fit border-white bg-gray-100/80 text-zinc-600 dark:border-transparent dark:bg-foreground/10 dark:text-blue-100'
             startContent={<Icon name='plus' className='size-4' />}>
@@ -622,19 +622,19 @@ const CategoryProductsContentInner = ({
         <div className='flex flex-wrap items-center gap-2 text-xs px-2 md:px-0'>
           <Chip
             size='sm'
-            variant='flat'
+            variant='tertiary'
             className='bg-blue-500/10 rounded-sm h-6 md:h-8 text-blue-700 dark:text-blue-300'>
             <AnimatedNumber value={products?.length ?? 0} /> items
           </Chip>
           <Chip
             size='sm'
-            variant='flat'
+            variant='tertiary'
             className='bg-emerald-500/10 rounded-sm h-6 md:h-8 text-emerald-700 dark:text-emerald-300'>
             {availableCount} available
           </Chip>
           <Chip
             size='sm'
-            variant='flat'
+            variant='tertiary'
             className='bg-violet-500/10 rounded-sm h-6 md:h-8 text-violet-700 dark:text-violet-300'>
             {featuredCount} featured
           </Chip>

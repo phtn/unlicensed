@@ -3,7 +3,7 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDate} from '@/utils/date'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 
 export const textCell = (value: string) => {
   return (
@@ -37,7 +37,7 @@ export const actionsCell = (selected: boolean, fn: VoidFunction) => {
       <Button
         size='sm'
         isIconOnly
-        variant='light'
+        variant='tertiary'
         className={cn('text-xs text-foreground/60 font-space', {
           'text-primary': selected,
         })}

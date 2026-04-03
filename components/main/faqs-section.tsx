@@ -6,7 +6,7 @@
 //   AccordionTrigger,
 // } from './ui/accordion'
 
-import {Accordion, AccordionItem} from '@heroui/react'
+import {Accordion, AccordionItem} from '@/lib/heroui'
 
 const faqs = [
   {

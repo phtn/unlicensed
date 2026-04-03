@@ -3,7 +3,7 @@
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import {AnimatePresence, motion} from 'motion/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'

@@ -1,6 +1,6 @@
 import {type ClassName} from '@/app/types'
 import {cn} from '@/lib/utils'
-import {Card} from '@heroui/react'
+import {Card} from '@/lib/heroui'
 import {type HTMLAttributes, ReactNode} from 'react'
 
 interface HyperCardProps extends HTMLAttributes<HTMLDivElement> {

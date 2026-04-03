@@ -5,7 +5,7 @@ import {AddressType} from '@/convex/users/d'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Input} from '@heroui/react'
+import {Button, Input} from '@/lib/heroui'
 import {useCallback} from 'react'
 import {FormData, FormErrors} from '../types'
 
@@ -54,7 +54,7 @@ export function ShippingForm({
                   key={address.id}
                   size='sm'
                   radius='sm'
-                  variant='light'
+                  variant='tertiary'
                   onPress={() => onSelectSavedAddress(address.id)}
                   className={cn(
                     'font-medium min-w-8 px-2 bg-transparent border border-foreground/25',
@@ -68,7 +68,7 @@ export function ShippingForm({
         <div className='flex items-center gap-1'>
           <Button
             radius='none'
-            variant='solid'
+            variant='primary'
             onPress={onCreateNewAddress}
             isIconOnly={isMobile}
             className='border-none flex items-center rounded-sm font-okxs dark:bg-white dark:text-dark-gray h-6 px-0 md:px-1'>

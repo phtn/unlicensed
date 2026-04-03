@@ -7,7 +7,7 @@ import {
 } from '@/app/admin/_components/ui/fields'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {Input, Select, SelectItem} from '@heroui/react'
+import {Input, Select, ListBoxItem} from '@/lib/heroui'
 import {useStore} from '@tanstack/react-store'
 import {useEffect, useMemo, useRef} from 'react'
 import {
@@ -150,7 +150,7 @@ export const Pricing = ({
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                     placeholder={batchIdField.placeholder}
-                    variant='bordered'
+                    variant='secondary'
                     classNames={commonInputClassNames}
                   />
                   {field.state.meta.isTouched &&
@@ -181,7 +181,7 @@ export const Pricing = ({
                       }}
                       onBlur={field.handleBlur}
                       placeholder='Select unit'
-                      variant='bordered'
+                      variant='secondary'
                       classNames={{
                         ...commonInputClassNames,
                         ...commonSelectClassNames,
@@ -189,9 +189,9 @@ export const Pricing = ({
                       }}
                       disallowEmptySelection={false}>
                       {categoryUnits.map((u) => (
-                        <SelectItem key={u} textValue={u}>
+                        <ListBoxItem key={u} textValue={u}>
                           {u}
-                        </SelectItem>
+                        </ListBoxItem>
                       ))}
                     </Select>
                   ) : (
@@ -201,7 +201,7 @@ export const Pricing = ({
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
                       placeholder='e.g. g, oz, each'
-                      variant='bordered'
+                      variant='secondary'
                       classNames={commonInputClassNames}
                     />
                   )}
@@ -270,7 +270,7 @@ export const Pricing = ({
                                   />
                                 }
                                 size='sm'
-                                variant='bordered'
+                                variant='secondary'
                                 classNames={{
                                   ...commonInputClassNames,
                                   label: 'mb-4 ml-1',

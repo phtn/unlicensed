@@ -11,7 +11,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {
   Button,
   Card,
-  CardBody,
+  CardContent,
   Checkbox,
   Chip,
   Input,
@@ -20,7 +20,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useState, ViewTransition} from 'react'
 import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
@@ -357,13 +357,13 @@ export const RewardsContent = () => {
               shadow='none'
               radius='none'
               className='border border-alum/30 rounded-xs overflow-hidden transition-colors bg-alum/20 dark:bg-dark-table/40'>
-              <CardBody className='flex flex-row flex-wrap items-center justify-between gap-4 p-4'>
+              <CardContent className='flex flex-row flex-wrap items-center justify-between gap-4 p-4'>
                 <div>
                   <div className='flex items-center gap-2'>
                     <span className='font-medium'>{tier.label}</span>
                     <Chip
                       size='sm'
-                      variant='flat'
+                      variant='tertiary'
                       className='bg-sidebar/80 dark:bg-white/5'>
                       ${tier.minSubtotal}
                       {tier.maxSubtotal !== null
@@ -384,21 +384,21 @@ export const RewardsContent = () => {
                   <Button
                     size='sm'
                     radius='none'
-                    variant='flat'
+                    variant='tertiary'
                     className='rounded-sm'
                     onPress={() => openEditTier(i)}>
                     Edit
                   </Button>
                   <Button
                     size='sm'
-                    variant='light'
+                    variant='tertiary'
                     onPress={() => setDeleteTierIndex(i)}
                     className='rounded-sm text-red-400 dark:text-red-300 hover:bg-red-600/10! dark:hover:bg-red-500/10'
                     isDisabled={config.tiers.length <= 1}>
                     Delete
                   </Button>
                 </div>
-              </CardBody>
+              </CardContent>
             </Card>
           ))}
         </div>
@@ -490,7 +490,7 @@ export const RewardsContent = () => {
             </ViewTransition>
           </ModalBody>
           <ModalFooter className='gap-2'>
-            <Button variant='flat' onPress={closeTierModal}>
+            <Button variant='tertiary' onPress={closeTierModal}>
               Cancel
             </Button>
             <Button
@@ -519,7 +519,7 @@ export const RewardsContent = () => {
             </p>
           </ModalBody>
           <ModalFooter className='gap-2'>
-            <Button variant='flat' onPress={() => setDeleteTierIndex(null)}>
+            <Button variant='tertiary' onPress={() => setDeleteTierIndex(null)}>
               Cancel
             </Button>
             <Button

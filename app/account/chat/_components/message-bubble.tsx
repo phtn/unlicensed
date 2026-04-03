@@ -2,7 +2,7 @@
 
 import type {Id} from '@/convex/_generated/dataModel'
 import {cn} from '@/lib/utils'
-import {Avatar, User} from '@heroui/react'
+import {Avatar, User} from '@/lib/heroui'
 import {useCallback} from 'react'
 import {AudioMessagePlayer} from './audio-message-player'
 import {MessageBubbleAttachments} from './message-bubble-attachments'

@@ -5,12 +5,13 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {useAddCartItem} from '@/hooks/use-add-cart-item'
+import {useDisclosure} from '@/hooks/use-disclosure'
 import {useProductCartQuantity} from '@/hooks/use-product-cart-quantity'
 import {Icon} from '@/lib/icons'
 import {getAvailableCartQuantityForDenomination} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
-import {Button, Tooltip, useDisclosure} from '@heroui/react'
+import {Button, Tooltip} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import dynamic from 'next/dynamic'
 import {useRouter} from 'next/navigation'
@@ -267,7 +268,7 @@ export const ProductInteraction = ({
           <Button
             size='lg'
             color='primary'
-            variant='solid'
+            variant='primary'
             radius='none'
             disableRipple
             className='flex h-14 md:h-13 w-full items-center bg-linear-to-r from-brand hover:via-light-brand via-brand to-brand font-clash text-base font-medium md:text-lg sm:flex-1'
@@ -281,7 +282,7 @@ export const ProductInteraction = ({
           </Button>
           <Button
             size='lg'
-            variant='solid'
+            variant='primary'
             onPress={handleCheckoutPress}
             radius='none'
             isDisabled={user ? isCheckoutDisabled : false}

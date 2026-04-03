@@ -4,7 +4,7 @@ import {
   formatStockDisplay,
   getAvailableCartQuantityForDenomination,
 } from '@/lib/productStock'
-import {Badge, Tooltip} from '@heroui/react'
+import {Badge, Tooltip} from '@/lib/heroui'
 
 interface ProductDetailStatsProps {
   product: StoreProduct
@@ -57,7 +57,7 @@ export const ProductDetailStats = ({
         <Tooltip key='in-cart' content='In The Bag'>
           <Badge
             size='lg'
-            variant='shadow'
+            variant='soft'
             className='px-[0.5px]'
             classNames={{
               badge:

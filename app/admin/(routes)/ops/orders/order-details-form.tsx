@@ -5,7 +5,7 @@ import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Chip, ChipProps, Textarea, User} from '@heroui/react'
+import {Button, Chip, ChipProps, TextArea, User} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
@@ -115,7 +115,7 @@ export function OrderDetailsForm({
             className='capitalize'
             color={statusColorMap[order.orderStatus] || 'default'}
             size='sm'
-            variant='flat'>
+            variant='tertiary'>
             {order.orderStatus
               .split('_')
               .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -256,7 +256,7 @@ export function OrderDetailsForm({
               <label className='text-sm font-medium mb-2 block'>
                 Internal Remarks
               </label>
-              <Textarea
+              <TextArea
                 value={remarks}
                 onValueChange={setRemarks}
                 placeholder='Add internal notes or remarks...'
@@ -322,7 +322,7 @@ export function OrderDetailsForm({
                 <Button
                   size='lg'
                   radius='none'
-                  variant='flat'
+                  variant='tertiary'
                   onPress={handleCancel}
                   className='flex-1 text-base font-medium rounded-lg'
                   isDisabled={isSaving}>
@@ -331,7 +331,7 @@ export function OrderDetailsForm({
                 <Button
                   size='lg'
                   radius='none'
-                  variant='solid'
+                  variant='primary'
                   onPress={handleSave}
                   className='flex-1 text-base font-medium rounded-lg bg-dark-table text-white dark:text-dark-table dark:bg-white'
                   isLoading={isSaving}>

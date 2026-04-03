@@ -6,8 +6,6 @@ import {Doc, Id} from '@/convex/_generated/dataModel'
 import {onError} from '@/ctx/toast'
 import {useSaveAdminProductFormReturn} from '@/hooks/use-save-admin-product-form-return'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {Icon, type IconName} from '@/lib/icons'
-import {cn} from '@/lib/utils'
 import {
   Button,
   Card,
@@ -15,7 +13,9 @@ import {
   CardHeader,
   Image,
   Tooltip,
-} from '@heroui/react'
+} from '@/lib/heroui'
+import {Icon, type IconName} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useCallback, useMemo, useState} from 'react'
@@ -136,7 +136,7 @@ const ProductItem = ({
           as={Link}
           isIconOnly
           radius='none'
-          variant='light'
+          variant='tertiary'
           prefetch={true}
           href={`/admin/inventory/product?tabId=edit&id=${product._id}`}
           onPress={onEditPress}
@@ -297,7 +297,7 @@ export const ProductList = ({
 
   return (
     <>
-      <section className='h-[91lvh] overflow-auto px-2'>
+      <section className='h-[91lvh] pb-28 overflow-auto px-2'>
         {isLoading && products?.length === 0 ? (
           <p className='text-sm text-neutral-500 px-4 font-okxs'>Loading...</p>
         ) : products?.length === 0 ? (
@@ -349,7 +349,7 @@ export const ProductList = ({
               <div className='flex justify-center pb-6'>
                 <Button
                   radius='none'
-                  variant='flat'
+                  variant='tertiary'
                   isLoading={isLoadingMore}
                   isDisabled={isLoadingMore}
                   onPress={onLoadMore}

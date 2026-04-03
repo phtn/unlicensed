@@ -8,7 +8,7 @@ import {useAuth} from '@/hooks/use-auth'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, CardBody, Input, InputProps} from '@heroui/react'
+import {Button, Card, CardContent, Input, InputProps} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useMemo, useState} from 'react'
@@ -206,7 +206,7 @@ export const Content = () => {
   return (
     <main className='px-2 sm:px-4 lg:px-6 space-y-5 pb-8'>
       <Card shadow='none' className='border border-foreground/15'>
-        <CardBody className='p-3 md:p-5 space-y-4 bg-sidebar/40 dark:bg-sidebar'>
+        <CardContent className='p-3 md:p-5 space-y-4 bg-sidebar/40 dark:bg-sidebar'>
           <div className='grid grid-cols-1 lg:grid-cols-4 gap-3 w-full xl:h-15'>
             <Input
               type='search'
@@ -256,7 +256,7 @@ export const Content = () => {
             </div>
             <Button
               size='sm'
-              variant='light'
+              variant='tertiary'
               onPress={clearFilters}
               isDisabled={!hasFilters}>
               Clear filters
@@ -279,7 +279,7 @@ export const Content = () => {
               </p>
             </div>
           </div>
-        </CardBody>
+        </CardContent>
       </Card>
 
       {isLoading ? (
@@ -290,7 +290,7 @@ export const Content = () => {
         <Card
           shadow='none'
           className='border-2 border-dashed border-default-200 dark:border-default-100/20'>
-          <CardBody className='py-16 flex flex-col items-center text-center gap-4'>
+          <CardContent className='py-16 flex flex-col items-center text-center gap-4'>
             <h2 className='text-xl font-semibold'>No orders yet</h2>
             <p className='text-default-500 max-w-md'>
               You have not placed an order yet. Start shopping to see orders
@@ -299,20 +299,20 @@ export const Content = () => {
             <Button as={Link} href='/products' color='primary'>
               Browse Products
             </Button>
-          </CardBody>
+          </CardContent>
         </Card>
       ) : hasInvalidDateRange ? (
         <Card shadow='none' className='border border-danger/30'>
-          <CardBody className='py-8 text-center text-danger'>
+          <CardContent className='py-8 text-center text-danger'>
             Select a valid date range. The start date must be on or before the
             end date.
-          </CardBody>
+          </CardContent>
         </Card>
       ) : filteredOrders.length === 0 ? (
         <Card shadow='none' className='border border-foreground/15'>
-          <CardBody className='py-12 text-center text-default-500'>
+          <CardContent className='py-12 text-center text-default-500'>
             No orders matched your filters.
-          </CardBody>
+          </CardContent>
         </Card>
       ) : (
         <div className='space-y-3'>
@@ -330,9 +330,9 @@ export const Content = () => {
           ))}
 
           <Card shadow='none' className='border border-foreground/15'>
-            <CardBody className='p-3 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between'>
+            <CardContent className='p-3 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between'>
               <Button
-                variant='flat'
+                variant='tertiary'
                 onPress={() => setPage(Math.max(1, currentPage - 1))}
                 isDisabled={currentPage <= 1}>
                 Previous
@@ -361,12 +361,12 @@ export const Content = () => {
               </div>
 
               <Button
-                variant='flat'
+                variant='tertiary'
                 onPress={() => setPage(Math.min(totalPages, currentPage + 1))}
                 isDisabled={currentPage >= totalPages}>
                 Next
               </Button>
-            </CardBody>
+            </CardContent>
           </Card>
         </div>
       )}

@@ -8,7 +8,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useRouter} from 'next/navigation'
 import {useEffect} from 'react'
 import {startTransition} from 'react'

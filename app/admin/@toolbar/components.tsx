@@ -3,7 +3,7 @@
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import Link from 'next/link'
 import {ReactNode, Suspense, type PropsWithChildren} from 'react'
 
@@ -52,7 +52,7 @@ const PrimaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
       href={href}
       disableRipple
       disableAnimation
-      variant='bordered'
+      variant='secondary'
       className={cn(
         'text-sm flex items-center rounded-md py-1 md:px-2.5 md:p-2 dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white dark:bg-sidebar bg-light-gray/25 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight space-x-1.5 shrink-0',
         {
@@ -96,7 +96,7 @@ const SecondaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
       as={Link}
       href={href}
       prefetch
-      variant='bordered'
+      variant='secondary'
       disableRipple
       disableAnimation
       size='sm'

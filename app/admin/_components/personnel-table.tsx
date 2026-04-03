@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
   User,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 import {dateCell} from './ui/cells'

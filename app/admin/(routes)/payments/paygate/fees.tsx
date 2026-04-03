@@ -5,7 +5,7 @@ import {useApiCall} from '@/hooks/use-api-call'
 import {Icon} from '@/lib/icons'
 import type {Provider, ProviderStatusResponse} from '@/lib/paygate/types'
 import {cn} from '@/lib/utils'
-import {Card, CardHeader} from '@heroui/react'
+import {Card, CardHeader} from '@/lib/heroui'
 import {Key, PropsWithChildren, useEffect, useMemo, useState} from 'react'
 
 // Type guard for ProviderStatusResponse

@@ -54,7 +54,7 @@ export const GridFour = () => {
           </p>
         </div>
 
-        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-6'>
+        <div className='grid grid-cols-1 md:gap-4 sm:grid-cols-2 lg:gap-6'>
           {gridFourItems.map((item, index) => (
             <GridItem key={item.title} item={item} index={index} />
           ))}

@@ -1,6 +1,6 @@
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import {useMutation} from 'convex/react'
 import {useCallback, useState} from 'react'
 
@@ -21,7 +21,7 @@ export const PurgeActions = () => {
         <Button
           radius='sm'
           size='sm'
-          variant='solid'
+          variant='primary'
           color='danger'
           onPress={handlePurgeUsers}>
           <span>Purge Test Users</span>

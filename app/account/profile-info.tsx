@@ -9,7 +9,7 @@ import {
   TextureSeparator,
 } from '@/components/ui/texture-card'
 import {Icon} from '@/lib/icons'
-import {Button, Input} from '@heroui/react'
+import {Button, Input} from '@/lib/heroui'
 
 export const ProfileInfo = () => {
   return (

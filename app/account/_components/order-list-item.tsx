@@ -4,7 +4,7 @@ import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon, IconName} from '@/lib/icons'
 import {formatTimestamp} from '@/utils/date'
 import {formatPrice} from '@/utils/formatPrice'
-import {Card, CardBody, Link} from '@heroui/react'
+import {Card, CardContent, Link} from '@/lib/heroui'
 import {useRouter} from 'next/navigation'
 import {OrderStatusBadge} from './order-status'
 
@@ -30,7 +30,7 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
       href={`/account/orders/${orderNumber}`}
       className='w-full rounded-xs border dark:border-dark-table border-dark-table/40 dark:bg-dark-table bg-content/50 dark:hover:bg-dark-table/70'
     >
-      <CardBody className='p-3 md:p-5'>
+      <CardContent className='p-3 md:p-5'>
         <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
           <div className='flex items-start gap-8 flex-1 min-w-0'>
             <div className='p-4 rounded-lg bg-linear-to-br from-default-100 to-default-500/10 hidden sm:flex shrink-0'>
@@ -79,7 +79,7 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
             <Icon name='chevron-right' className='size-4' />
           </div>
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   )
 }

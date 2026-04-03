@@ -1,6 +1,6 @@
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Chip} from '@heroui/react'
+import {Chip} from '@/lib/heroui'
 import {ReactNode, useId} from 'react'
 
 interface TerpeneChipProps {
@@ -47,7 +47,7 @@ export const TerpeneGray = ({id, name, ghost = false}: TerpeneChipProps) => {
         base: `flex justify-between px-0 h-7 grow-0 bg-linear-to-r from-transparent via-transparent to-slate-600/2 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`,
         content: 'font-light text-foreground capitalize text-sm',
       }}
-      variant='flat'>
+      variant='tertiary'>
       {name}
     </Chip>
   )
@@ -100,7 +100,7 @@ export const StatChip = ({
         content:
           'flex items-center justify-center text-foreground uppercase text-xs',
       }}
-      variant='flat'>
+      variant='tertiary'>
       {label && (
         <span className=' text-sm text-zinc-600 font-polysans dark:text-zinc-200'>
           {label}

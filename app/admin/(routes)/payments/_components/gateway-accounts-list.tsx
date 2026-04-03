@@ -5,7 +5,7 @@ import {HyperList} from '@/components/expermtl/hyper-list'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import type {GatewayId} from '@/lib/paygate/gateway-config'
-import {Card, CardBody, CardHeader} from '@heroui/react'
+import {Card, CardContent, CardHeader} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useCallback} from 'react'
@@ -49,9 +49,9 @@ export const GatewayAccountsList = ({
   if (accounts === undefined) {
     return (
       <Card shadow='none' radius='none' className='md:rounded-lg w-full'>
-        <CardBody className='flex items-center justify-center py-12'>
+        <CardContent className='flex items-center justify-center py-12'>
           <Icon name='spinners-ring' className='size-8 animate-spin' />
-        </CardBody>
+        </CardContent>
       </Card>
     )
   }
@@ -62,7 +62,7 @@ export const GatewayAccountsList = ({
         shadow='none'
         radius='none'
         className='md:rounded-lg bg-sidebar/40 dark:bg-dark-table/40 w-full'>
-        <CardBody className='text-center py-12'>
+        <CardContent className='text-center py-12'>
           <p className='text-foreground/60 font-polysans capitalize'>
             {`No ${gateway} Accounts`}.
           </p>
@@ -72,7 +72,7 @@ export const GatewayAccountsList = ({
             <span>Create account</span>
             <Icon name='chevron-right' className='size-3' />
           </Link>
-        </CardBody>
+        </CardContent>
       </Card>
     )
   }
@@ -85,7 +85,7 @@ export const GatewayAccountsList = ({
       <CardHeader>
         <SectionHeader title={`${gateway} Accounts`} />
       </CardHeader>
-      <CardBody className='space-y-4 h-screen overflow-y-scroll md:h-full '>
+      <CardContent className='space-y-4 h-screen overflow-y-scroll md:h-full '>
         <HyperList
           data={accounts
             .filter((a) => !!a.enabled && !!a.isDefault)
@@ -99,7 +99,7 @@ export const GatewayAccountsList = ({
           direction='right'
           container='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
         />
-      </CardBody>
+      </CardContent>
     </Card>
   )
 }

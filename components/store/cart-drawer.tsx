@@ -12,12 +12,13 @@ import {
   isProductCartItemWithProduct,
   useCart,
 } from '@/hooks/use-cart'
+import {useDisclosure} from '@/hooks/use-disclosure'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {formatPrice} from '@/utils/formatPrice'
-import {Avatar, Button, Image, useDisclosure} from '@heroui/react'
+import {Avatar, Button, Image} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
@@ -224,7 +225,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   <Button
                     size='sm'
                     isIconOnly
-                    variant='flat'
+                    variant='tertiary'
                     onPress={() => onOpenChange(false)}
                     radius='full'>
                     <Icon name='x' className='size-4' />
@@ -306,7 +307,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                     isIconOnly
                                     size='sm'
                                     radius='none'
-                                    variant='flat'
+                                    variant='tertiary'
                                     isDisabled={isPending}
                                     className='min-w-7 w-7 h-7 aspect-square rounded-xs'
                                     onPress={() => {
@@ -346,7 +347,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                     isIconOnly
                                     size='sm'
                                     radius='none'
-                                    variant='flat'
+                                    variant='tertiary'
                                     isDisabled={isPending}
                                     className='min-w-7 w-7 h-7 aspect-square rounded-xs'
                                     onPress={() => {
@@ -372,7 +373,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                   size='sm'
                                   radius='none'
                                   isIconOnly
-                                  variant='light'
+                                  variant='tertiary'
                                   className='min-w-8 w-8 h-7 aspect-square rounded-sm text-muted-foreground opacity-80 hover:opacity-100'
                                   isDisabled={isPending}
                                   onPress={() => {

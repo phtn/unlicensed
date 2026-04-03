@@ -5,7 +5,7 @@ import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDate} from '@/utils/date'
-import {Button, Drawer, DrawerContent, DrawerHeader} from '@heroui/react'
+import {Button, Drawer, DrawerContent, DrawerHeader} from '@/lib/heroui'
 import {usePathname} from 'next/navigation'
 import {
   type ComponentProps,

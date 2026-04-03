@@ -13,7 +13,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 import {dateCell, moneyCell} from '../../../_components/ui/cells'
@@ -65,7 +65,7 @@ export const SalesTable = () => {
             className='capitalize'
             color={statusColorMap[order.orderStatus] || 'default'}
             size='sm'
-            variant='flat'>
+            variant='tertiary'>
             {order.orderStatus
               .split('_')
               .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

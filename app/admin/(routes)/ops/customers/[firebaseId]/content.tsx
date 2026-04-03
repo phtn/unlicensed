@@ -19,9 +19,9 @@ import {
   Chip,
   Image,
   Input,
-  Textarea,
+  TextArea,
   Tooltip,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
@@ -245,7 +245,7 @@ export const Content = ({firebaseId}: ContentProps) => {
             <Button
               prefetch
               as={Link}
-              variant='flat'
+              variant='tertiary'
               color='primary'
               href={'/admin/ops/customers'}
             >
@@ -266,7 +266,7 @@ export const Content = ({firebaseId}: ContentProps) => {
             as={Link}
             radius='none'
             isIconOnly
-            variant='faded'
+            variant='secondary'
             className='min-w-0 border-none rounded-lg'
             aria-label='Back to customers'
             href={'/admin/ops/customers'}
@@ -294,7 +294,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                   </span>
                   <Chip
                     size='sm'
-                    variant='faded'
+                    variant='secondary'
                     className='capitalize border-none bg-dark-table text-white'
                   >
                     {(customer.accountStatus ?? 'active').replace(/_/g, ' ')}
@@ -317,7 +317,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                   </div>
                   <Button
                     radius='none'
-                    variant='solid'
+                    variant='primary'
                     size='sm'
                     isLoading={isOpeningChat}
                     isDisabled={isOpeningChat || !customerChatFid}
@@ -406,7 +406,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                     <Button
                       size='sm'
                       radius='none'
-                      variant='flat'
+                      variant='tertiary'
                       isLoading={isSavingRewardPoints}
                       className='rounded-sm'
                       isDisabled={
@@ -478,7 +478,7 @@ export const Content = ({firebaseId}: ContentProps) => {
               <label className='text-base font-semibold mb-2 block'>
                 Internal Remarks
               </label>
-              <Textarea
+              <TextArea
                 value={remarks}
                 onValueChange={setRemarks}
                 onBlur={handleRemarksBlur}
@@ -490,7 +490,7 @@ export const Content = ({firebaseId}: ContentProps) => {
               <div className='mt-2 flex justify-end'>
                 <Button
                   size='sm'
-                  variant='flat'
+                  variant='tertiary'
                   onPress={() => void handleSaveRemarks()}
                   isLoading={isSavingRemarks}
                   isDisabled={isSavingRemarks || remarks === customerNotes}

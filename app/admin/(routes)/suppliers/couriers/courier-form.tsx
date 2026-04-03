@@ -20,7 +20,7 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Input, Switch, Textarea} from '@heroui/react'
+import {Button, Input, Switch, TextArea} from '@/lib/heroui'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useQueryState} from 'nuqs'
@@ -204,7 +204,7 @@ export const CourierForm = ({
               size='md'
               disableRipple
               disableAnimation
-              variant='light'
+              variant='tertiary'
               key={section.id}
               name={section.id}
               onPress={scrollToSection(section.id)}
@@ -346,7 +346,7 @@ export const CourierForm = ({
                         <Button
                           size='sm'
                           type='button'
-                          variant='flat'
+                          variant='tertiary'
                           className='bg-yellow-500 text-white font-medium'
                           onPress={handleAddAccount}>
                           <span className='inline-flex items-center gap-2'>
@@ -372,7 +372,7 @@ export const CourierForm = ({
                                   label='Account Label'
                                   value={account.label}
                                   placeholder='e.g., Main Account'
-                                  variant='bordered'
+                                  variant='secondary'
                                   classNames={commonInputClassNames}
                                   onBlur={field.handleBlur}
                                   onChange={(event) =>
@@ -387,7 +387,7 @@ export const CourierForm = ({
                                   label='Account Value'
                                   value={account.value}
                                   placeholder='e.g., account-001'
-                                  variant='bordered'
+                                  variant='secondary'
                                   classNames={commonInputClassNames}
                                   onBlur={field.handleBlur}
                                   onChange={(event) =>
@@ -400,7 +400,7 @@ export const CourierForm = ({
                                 <Button
                                   size='sm'
                                   type='button'
-                                  variant='flat'
+                                  variant='tertiary'
                                   className='text-rose-500 bg-rose-500/10'
                                   onPress={handleRemoveAccount(index)}>
                                   Remove
@@ -420,12 +420,12 @@ export const CourierForm = ({
                     <p className='text-sm font-medium text-dark-gray/80 dark:text-light-gray/90'>
                       Notes
                     </p>
-                    <Textarea
+                    <TextArea
                       minRows={4}
                       maxRows={10}
                       value={(notesField.state.value as string) ?? ''}
                       placeholder='Internal notes for this courier (optional)'
-                      variant='bordered'
+                      variant='secondary'
                       classNames={commonInputClassNames}
                       onBlur={notesField.handleBlur}
                       onValueChange={(value) => notesField.handleChange(value)}

@@ -1,7 +1,7 @@
 'use client'
 
 import {IconName} from '@/lib/icons'
-import {Card, CardHeader} from '@heroui/react'
+import {Card, CardHeader} from '@/lib/heroui'
 import Link from 'next/link'
 import {useMemo} from 'react'
 

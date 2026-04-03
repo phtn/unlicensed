@@ -1,13 +1,11 @@
 import {api} from '@/convex/_generated/api'
-import {
-  PaymentMethod,
-  PaymentMethod as PaymentMethodType,
-} from '@/convex/orders/d'
+import {PaymentMethod} from '@/convex/orders/d'
+import {ListBoxItem, Select, SelectProps, SelectedItems} from '@/lib/heroui'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Select, SelectItem, SelectProps} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import React, {memo, useCallback, useMemo} from 'react'
+import {normalizePaymentMethod} from '../../constants'
 
 interface IPaymentMethod {
   id: PaymentMethod
@@ -25,18 +23,43 @@ interface PaymentMethodProps {
   onChange: (value: PaymentMethod) => void
 }
 
-// Hoist to module scope to avoid recreation on every render (5.5, 7.2)
-const ID_TO_PAYMENT_METHOD: Record<string, PaymentMethodType> = {
-  cards: 'cards',
-  crypto: 'crypto_commerce',
-  'cash-app': 'cash_app',
-}
-
-const VALUE_TO_KEY: Record<PaymentMethod, string> = {
-  cards: 'card',
-  crypto_commerce: 'crypto',
-  crypto_transfer: 'crypto_transfer',
-  cash_app: 'cash-app',
+const FALLBACK_METHODS: Record<PaymentMethod, IPaymentMethod> = {
+  cards: {
+    id: 'cards',
+    name: 'Cards',
+    label: 'Cards',
+    icon: 'credit-card-2',
+    iconStyle: 'text-cyan-500',
+    description: 'Pay with credit or debit card.',
+    status: 'active',
+  },
+  crypto_commerce: {
+    id: 'crypto_commerce',
+    name: 'Pay with Crypto',
+    label: 'Pay with Crypto',
+    icon: 'ethereum',
+    iconStyle: '',
+    description: 'Fast checkout with supported crypto wallets.',
+    status: 'active',
+  },
+  crypto_transfer: {
+    id: 'crypto_transfer',
+    name: 'Crypto Transfer',
+    label: 'Crypto Transfer',
+    icon: 'ethereum',
+    iconStyle: 'text-ethereum',
+    description: 'Manual crypto transfer.',
+    status: 'active',
+  },
+  cash_app: {
+    id: 'cash_app',
+    name: 'Cash App',
+    label: 'Cash App',
+    icon: 'cash-fast',
+    iconStyle: '',
+    description: 'Pay with Cash App.',
+    status: 'active',
+  },
 }
 
 const SELECT_CLASS_NAMES = {
@@ -45,7 +68,7 @@ const SELECT_CLASS_NAMES = {
   trigger:
     'min-h-14 p-2 md:ps-3 bg-white dark:bg-zinc-500/10 border border-foreground/40 placeholder:text-foreground',
   listboxWrapper:
-    'border-[0.5px] dark:border-foreground/40 rounded-xl outline-none focus-visible:outline-none px-0',
+    'border-2 dark:border-foreground/40 rounded-[1.95rem] outline-none focus-visible:outline-none px-0 dark:bg-zinc-700',
   listbox: 'outline-none focus-visible:outline-none px-1.5 py-1.5',
   selectorIcon: 'translate-x-2',
 } as SelectProps['classNames']
@@ -62,9 +85,11 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
       <div className='flex flex-col w-full md:space-y-0.5 h-14'>
         <div className='flex items-center justify-between w-full h-8 md:h-7'>
           <div className='flex items-center space-x-2 whitespace-nowrap text-base md:text-lg tracking-tight font-medium'>
-            <span>{method.label}</span>
+            <span className='dark:text-white text-foreground'>
+              {method.label}
+            </span>
             {method.id === 'cards' ? (
-              <div className='flex items-center space-x-1'>
+              <div className='flex items-center space-x-1 text-foreground'>
                 <Icon name='applepay' className='size-10' />
                 <Icon name='googlepay' className='size-10' />
               </div>
@@ -75,7 +100,8 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
             className={cn(
               'text-[8px] uppercase font-brk w-fit px-1 py-0 md:px-1 leading-3 md:leading-normal dark:text-white text-right',
               {'': method.id === 'cards'},
-            )}>
+            )}
+          >
             {method.tag}
           </div>
         </div>
@@ -91,12 +117,12 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
 function SelectedValueContent({
   item,
 }: {
-  item: {key?: React.Key; data?: IPaymentMethod | null}
+  item: SelectedItems<IPaymentMethod>[number]
 }) {
-  const data = item.data
+  const data = item.value
   if (!data) return null
   return (
-    <div className='flex items-center justify-between ps-1'>
+    <div className='flex items-center justify-between ps-1 text-foreground'>
       <div className='flex items-center w-full gap-2'>
         {data.icon ? (
           <Icon
@@ -135,58 +161,81 @@ export const PaymentMethods = memo(function PaymentMethods({
   })
 
   const methods = useMemo(
-    () => (setting?.methods ?? []) as IPaymentMethod[],
+    () =>
+      ((setting?.methods ?? []) as IPaymentMethod[]).map((method) => ({
+        ...method,
+        id:
+          normalizePaymentMethod(method.id) ??
+          normalizePaymentMethod(method.name) ??
+          normalizePaymentMethod(method.label) ??
+          method.id,
+      })),
     [setting],
+  )
+  const selectedMethod = useMemo(
+    () =>
+      methods.find((method) => method.id === value) ?? FALLBACK_METHODS[value],
+    [methods, value],
   )
 
   const handleSelectionChange = useCallback(
     (keys: 'all' | Set<React.Key>) => {
       if (keys === 'all' || keys.size === 0) return
       const selectedKey = Array.from(keys)[0] as string
-      if (selectedKey) {
-        const paymentMethod =
-          ID_TO_PAYMENT_METHOD[selectedKey] ?? (selectedKey as PaymentMethod)
-        onChange(paymentMethod)
-      }
+      if (!selectedKey) return
+
+      const selectedMethod = methods.find((method) => method.id === selectedKey)
+      const paymentMethod =
+        selectedMethod?.id ??
+        normalizePaymentMethod(selectedKey) ??
+        (selectedKey as PaymentMethod)
+
+      onChange(paymentMethod)
     },
-    [onChange],
+    [methods, onChange],
   )
 
-  const selectedKey = VALUE_TO_KEY[value] ?? value
-
-  const selectedKeys = useMemo(() => {
-    const key = methods.some((m) => m.id === value) ? value : selectedKey
-    return key ? [key] : []
-  }, [value, selectedKey, methods])
+  const selectedKeys = useMemo(() => [value], [value])
 
   const renderValue = useCallback(
-    (items: Array<{key?: React.Key; data?: IPaymentMethod | null}>) => {
+    (items: SelectedItems<IPaymentMethod>) => {
+      if (items.length === 0 && selectedMethod) {
+        return (
+          <SelectedValueContent
+            item={{key: selectedMethod.id, value: selectedMethod}}
+          />
+        )
+      }
+
       return items.map((item, index) => (
         <SelectedValueContent key={item.key ?? index} item={item} />
       ))
     },
-    [],
+    [selectedMethod],
   )
 
   return (
     <Select
       classNames={SELECT_CLASS_NAMES}
-      className='rounded-none'
+      className=''
       selectedKeys={selectedKeys}
       isMultiline={true}
       multiple={false}
       items={methods}
-      label='Payment Method'
+      label={
+        <h2 className='text-lg font-normal font-bone py-2'>Payment Methods</h2>
+      }
       labelPlacement='outside'
       onSelectionChange={handleSelectionChange}
       placeholder='Select Payment Method'
       renderValue={renderValue}
       selectionMode='single'
       selectorIcon={<Icon name='selector' />}
-      variant='flat'
-      disableAnimation>
+      variant='tertiary'
+      disableAnimation
+    >
       {(method) => (
-        <SelectItem
+        <ListBoxItem
           key={method.id}
           textValue={method.name}
           className={cn({
@@ -194,11 +243,13 @@ export const PaymentMethods = memo(function PaymentMethods({
           })}
           classNames={{
             wrapper: 'placeholder:text-dark-gray',
+            listboxWrapper: 'border-2 border-brand',
             base: 'data-[selected=true]:bg-brand/12 dark:data-[selected=true]:bg-brand gap-0 px-1 py-2',
-            selectedIcon: 'p-0 size-3 mb-7 md:mb-4 mr-2',
-          }}>
+            selectedIcon: ['p-0 size-3 mb-7 md:mb-4 mr-2', method.iconStyle],
+          }}
+        >
           <PaymentMethodOptionRow method={method} />
-        </SelectItem>
+        </ListBoxItem>
       )}
     </Select>
   )
@@ -213,9 +264,10 @@ const TxnSpeed = ({method, selected = false}: TxnSpeedProps) => {
   return method === 'crypto_commerce' ? (
     <span
       className={cn(
-        'text-brand dark:text-white text-[7px] italic uppercase font-medium tracking-normal',
-        {'text-brand dark:text-brand': selected},
-      )}>
+        'text-brand dark:text-white text-[9px] italic uppercase font-semibold tracking-normal opacity-100 mt-1',
+        {'text-brand dark:text-brand ': selected},
+      )}
+    >
       Fastest
     </span>
   ) : (

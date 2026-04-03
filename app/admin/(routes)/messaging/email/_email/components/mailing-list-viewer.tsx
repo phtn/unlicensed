@@ -5,7 +5,7 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {formatTimestamp} from '@/utils/date'
-import {Button, Card, CardBody, CardHeader} from '@heroui/react'
+import {Button, Card, CardContent, CardHeader} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useRouter} from 'next/navigation'
@@ -80,7 +80,7 @@ export const MailingListViewer = ({id}: {id: string}) => {
     return (
       <div className='min-h-screen px-4 py-6 sm:px-6 lg:px-8'>
         <Card className='mx-auto max-w-xl border border-greyed/15 bg-sidebar/70 shadow-none backdrop-blur-xl'>
-          <CardBody className='gap-4 p-8 text-center'>
+          <CardContent className='gap-4 p-8 text-center'>
             <div className='mx-auto flex size-14 items-center justify-center rounded-3xl border border-danger/15 bg-danger/10 text-danger'>
               <Icon name='mail-send-fill' className='size-6' />
             </div>
@@ -91,13 +91,13 @@ export const MailingListViewer = ({id}: {id: string}) => {
             />
             <Button
               type='button'
-              variant='light'
+              variant='tertiary'
               radius='none'
               onPress={navigateBack}
               className='rounded-xl border border-greyed/15 bg-background/45'>
               Back to Mailing Lists
             </Button>
-          </CardBody>
+          </CardContent>
         </Card>
       </div>
     )
@@ -118,7 +118,7 @@ export const MailingListViewer = ({id}: {id: string}) => {
         <div className='flex items-center justify-between gap-4'>
           <Button
             type='button'
-            variant='light'
+            variant='tertiary'
             onPress={navigateBack}
             className='gap-2 dark:bg-transparent'>
             <Icon name='chevron-left' className='size-4' />
@@ -171,7 +171,7 @@ export const MailingListViewer = ({id}: {id: string}) => {
         </Card>
 
         <Card className='bg-sidebar/70 shadow-none backdrop-blur-xl'>
-          <CardBody className='gap-4 p-6'>
+          <CardContent className='gap-4 p-6'>
             <SectionHeader title='Recipients'>
               <div className='flex items-center space-x-2'>
                 <Button
@@ -181,7 +181,7 @@ export const MailingListViewer = ({id}: {id: string}) => {
                   className='rounded-md bg-dark-table text-sm text-white dark:bg-white dark:text-dark-table'>
                   {isEditing ? 'Close Editor' : 'Edit List'}
                 </Button>
-                <Button size='sm' variant='flat' isIconOnly>
+                <Button size='sm' variant='tertiary' isIconOnly>
                   <Icon name='more-v' className='size-4' />
                 </Button>
               </div>
@@ -203,7 +203,7 @@ export const MailingListViewer = ({id}: {id: string}) => {
                 <MailingListTable recipients={mailingList.recipients} />
               )}
             </div>
-          </CardBody>
+          </CardContent>
         </Card>
       </main>
     </div>

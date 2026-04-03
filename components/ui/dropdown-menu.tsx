@@ -1,6 +1,6 @@
 'use client'
 
-import {DropdownItem} from '@heroui/react'
+import {DropdownItem} from '@/lib/heroui'
 import {useId} from 'react'
 import type {ReactNode} from 'react'
 

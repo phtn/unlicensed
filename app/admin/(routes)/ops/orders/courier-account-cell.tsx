@@ -3,7 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {cn} from '@/lib/utils'
-import {Popover, PopoverContent, PopoverTrigger} from '@heroui/react'
+import {Popover, PopoverContent, PopoverTrigger} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {useState} from 'react'
 

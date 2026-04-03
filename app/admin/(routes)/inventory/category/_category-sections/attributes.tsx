@@ -3,7 +3,7 @@
 import type {CategoryType} from '@/convex/categories/d'
 import {Icon} from '@/lib/icons'
 import {slugify} from '@/lib/slug'
-import {Accordion, AccordionItem, Button, Input} from '@heroui/react'
+import {Accordion, AccordionItem, Button, Input} from '@/lib/heroui'
 import {useMemo, useState} from 'react'
 import {narrowInputClassNames} from '../../../../_components/ui/fields'
 import type {CategoryFormApi} from '../category-schema'
@@ -122,7 +122,7 @@ function AttributeEntryListField({
                   }
                 }}
                 placeholder={namePlaceholder ?? 'Name'}
-                variant='bordered'
+                variant='secondary'
                 classNames={narrowInputClassNames}
                 className='flex-1'
               />
@@ -141,14 +141,14 @@ function AttributeEntryListField({
                   }
                 }}
                 placeholder={slugPlaceholder ?? 'Slug'}
-                variant='bordered'
+                variant='secondary'
                 classNames={narrowInputClassNames}
                 className='flex-1'
               />
               <Button
                 size='md'
                 radius='none'
-                variant='solid'
+                variant='primary'
                 color='primary'
                 className='rounded-xs bg-dark-table dark:bg-white dark:text-dark-table shrink-0'
                 onPress={handleAdd}
@@ -233,7 +233,7 @@ export const Attributes = ({form, category: _category}: AttributesProps) => {
     <FormSection id='attributes' position='middle'>
       <Header label='Attributes' />
       <Accordion
-        variant='bordered'
+        variant='secondary'
         className='rounded-lg bg-sidebar/50 border border-gray-300 dark:border-origin px-0'
         itemClasses={{
           base: 'py-0 overflow-hidden',

@@ -1,6 +1,6 @@
 import {useCopy} from '@/hooks/use-copy'
 import {Icon} from '@/lib/icons'
-import {Tooltip} from '@heroui/react'
+import {Tooltip} from '@/lib/heroui'
 import {ReactNode} from 'react'
 
 export const SectionTitle = ({title}: {title: ReactNode}) => {

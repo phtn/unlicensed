@@ -111,8 +111,7 @@ export function useOrderForm({
           initialPaymentMethod === undefined &&
           convexUser?.preferences?.defaultPaymentMethod
         ) {
-          updates.paymentMethod = convexUser.preferences
-            .defaultPaymentMethod as PaymentMethod
+          updates.paymentMethod = getDefaultPaymentMethod(convexUser)
         }
 
         // Populate first and last name from user's name if fields are empty

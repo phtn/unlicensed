@@ -1,7 +1,7 @@
 'use client'
 
 import {cn} from '@/lib/utils'
-import {Chip, Input, Select, SelectItem, Textarea} from '@heroui/react'
+import {Chip, Input, Select, ListBoxItem, TextArea} from '@/lib/heroui'
 import {commonInputClassNames} from '../../../../_components/ui/fields'
 import {CategoryFormApi} from '../category-schema'
 import {FormSection, Header} from './components'
@@ -63,7 +63,7 @@ export const Packaging = ({form}: PackagingProps) => {
                     }}
                     onBlur={field.handleBlur}
                     placeholder='Select units (e.g., g, oz, ml)'
-                    variant='bordered'
+                    variant='secondary'
                     isMultiline
                     classNames={{
                       ...commonInputClassNames,
@@ -86,7 +86,7 @@ export const Packaging = ({form}: PackagingProps) => {
                       )
                     }}>
                     {UNIT_SUGGESTIONS.map((unit) => (
-                      <SelectItem key={unit.key}>{unit.label}</SelectItem>
+                      <ListBoxItem key={unit.key}>{unit.label}</ListBoxItem>
                     ))}
                   </Select>
                   {/*<p className='text-xs opacity-80'>
@@ -100,7 +100,7 @@ export const Packaging = ({form}: PackagingProps) => {
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                     placeholder='Or type custom units separated by commas (e.g., g, oz, ml)'
-                    variant='bordered'
+                    variant='secondary'
                     classNames={commonInputClassNames}
                   />
                   {field.state.meta.isTouched &&
@@ -171,7 +171,7 @@ export const Packaging = ({form}: PackagingProps) => {
 
               return (
                 <div className='w-full'>
-                  <Textarea
+                  <TextArea
                     label='Denominations'
                     value={denominationsValue}
                     onChange={(e) => field.handleChange(e.target.value)}
@@ -179,7 +179,7 @@ export const Packaging = ({form}: PackagingProps) => {
                     placeholder='Enter denominations separated by commas'
                     className='mb-1 w-full'
                     minRows={1}
-                    variant='bordered'
+                    variant='secondary'
                     classNames={commonInputClassNames}
                   />
                   {selectedUnits.length > 0 && suggestions.length > 0 && (

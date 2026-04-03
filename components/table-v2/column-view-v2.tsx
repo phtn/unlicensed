@@ -8,7 +8,7 @@ import {
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Toolbar} from '@base-ui/react'
-import {Badge} from '@heroui/react'
+import {Badge} from '@/lib/heroui'
 import {Column, VisibilityState} from '@tanstack/react-table'
 import {useCallback, useMemo} from 'react'
 

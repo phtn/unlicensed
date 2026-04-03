@@ -3,7 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Drawer, DrawerContent, DrawerHeader, Image} from '@heroui/react'
+import {Button, Drawer, DrawerContent, DrawerHeader, Image} from '@/lib/heroui'
 import {useStore} from '@tanstack/react-store'
 import type {ReadonlyStore} from '@tanstack/store'
 import {useQuery} from 'convex/react'
@@ -175,7 +175,7 @@ export const Media = ({form}: MediaProps) => {
                 <Button
                   size='sm'
                   radius='none'
-                  variant='flat'
+                  variant='tertiary'
                   endContent={<Icon name='image-open-light' />}
                   className='dark:bg-blue-500 dark:text-white rounded-lg'
                   onPress={openLibrary}>
@@ -184,7 +184,7 @@ export const Media = ({form}: MediaProps) => {
                 {heroImageValue ? (
                   <Button
                     size='sm'
-                    variant='light'
+                    variant='tertiary'
                     className='bg-light-gray/0 dark:bg-transparent'
                     onPress={clearHeroImage}>
                     Clear
@@ -251,7 +251,7 @@ export const Media = ({form}: MediaProps) => {
               </div>
               <Button
                 size='sm'
-                variant='flat'
+                variant='tertiary'
                 onPress={() => setIsLibraryOpen(false)}>
                 Done
               </Button>

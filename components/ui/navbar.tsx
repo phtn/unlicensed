@@ -12,7 +12,7 @@ import {
   NavbarMenu,
   NavbarMenuItem,
   NavbarMenuToggle,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {usePathname} from 'next/navigation'
 import {useMemo, useState} from 'react'
 
@@ -70,7 +70,7 @@ const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
       <Button
         isIconOnly
         radius='full'
-        variant='flat'
+        variant='tertiary'
         aria-label='Loading theme preference'
         className='border border-(--nav-border) bg-(--surface-highlight) text-foreground/60'
         isDisabled>
@@ -84,7 +84,7 @@ const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
       <Button
         onPress={handleToggle}
         radius='full'
-        variant='flat'
+        variant='tertiary'
         className='w-full border border-(--nav-border) bg(--surface-highlight) px-4 py-3 text-base font-medium text-foreground hover:bg-(--surface-muted)'>
         {label}
       </Button>
@@ -96,7 +96,7 @@ const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
       isIconOnly
       onPress={handleToggle}
       radius='full'
-      variant='flat'
+      variant='tertiary'
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       className='border border-(--nav-border) bg-(--surface-highlight) text-foreground transition duration-200 hover:bg-(--surface-muted)'>
       {isDark ? <SunIcon /> : <MoonIcon />}
@@ -178,7 +178,7 @@ export const Nav = () => {
           as={Link}
           href='/#menu'
           radius='full'
-          variant='flat'
+          variant='tertiary'
           className='border border-(--nav-border) bg-(--surface-highlight) px-5 py-2 text-sm font-medium text-foreground shadow-[0_14px_40px_-28px_rgba(12,20,45,0.38) transition duration-200 hover:bg-(--surface-muted)'>
           Browse Menu
         </Button>
@@ -186,7 +186,7 @@ export const Nav = () => {
           as={Link}
           href='/signup'
           radius='full'
-          variant='solid'
+          variant='primary'
           className='cta-button px-6 py-2 text-sm font-semibold'>
           Join Waitlist
         </Button>
@@ -217,7 +217,7 @@ export const Nav = () => {
             as={Link}
             href='/#menu'
             radius='full'
-            variant='flat'
+            variant='tertiary'
             className='border border-(--nav-border) bg-(--surface-highlight) text-sm font-semibold text-foreground shadow-[0_14px_40px_-28px_rgba(12,20,45,0.38) transition duration-200 hover:bg-(--surface-muted)'
             onPress={() => setIsMenuOpen(false)}>
             Browse Menu
@@ -226,7 +226,7 @@ export const Nav = () => {
             as={Link}
             href='/signup'
             radius='full'
-            variant='solid'
+            variant='primary'
             className='cta-button text-sm font-semibold'>
             Join Waitlist
           </Button>

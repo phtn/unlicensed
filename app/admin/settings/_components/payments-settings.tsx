@@ -5,7 +5,7 @@ import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon, type IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Input, Switch} from '@heroui/react'
+import {Button, Input, Switch} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {
   startTransition,
@@ -112,7 +112,7 @@ function CardsProcessingFeeField({
         <Button
           radius='none'
           color='default'
-          variant='flat'
+          variant='tertiary'
           fullWidth
           onPress={onSave}
           isDisabled={isDisabled}

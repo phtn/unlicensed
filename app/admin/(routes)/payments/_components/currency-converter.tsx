@@ -5,7 +5,7 @@ import {useCurrencyConversion} from '@/hooks/use-currency-converter'
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Card, Select, SelectItem, Tab, Tabs} from '@heroui/react'
+import {Card, Select, ListBoxItem, Tab, Tabs} from '@/lib/heroui'
 import {
   ChangeEvent,
   useCallback,
@@ -122,9 +122,9 @@ function ConverterField({
               }}
               aria-label='Select currency'>
               {currencies.map((curr) => (
-                <SelectItem key={curr} className='font-brk'>
+                <ListBoxItem key={curr} className='font-brk'>
                   {curr}
-                </SelectItem>
+                </ListBoxItem>
               ))}
             </Select>
           </div>

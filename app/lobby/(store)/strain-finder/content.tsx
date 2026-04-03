@@ -8,7 +8,7 @@ import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import {parseAsString, parseAsStringEnum, useQueryState} from 'nuqs'
 import {
   Activity,
@@ -524,7 +524,7 @@ export const Content = ({initialProducts}: ContentProps) => {
                 size='lg'
                 onPress={resetFinder}
                 radius='full'
-                variant='solid'
+                variant='primary'
                 color='primary'
                 className='bg-foreground font-polysans dark:text-background'>
                 Start Over
@@ -539,7 +539,7 @@ export const Content = ({initialProducts}: ContentProps) => {
             {step !== 'mood' && step !== 'results' && (
               <Button
                 onPress={prevStep}
-                variant='flat'
+                variant='tertiary'
                 radius='full'
                 isDisabled={isPending}
                 className='px-6 ml-2 font-polysans font-semibold bg-sidebar'>
@@ -551,7 +551,7 @@ export const Content = ({initialProducts}: ContentProps) => {
               <Button
                 onPress={nextStep}
                 radius='full'
-                variant='solid'
+                variant='primary'
                 isDisabled={!canProceed || isPending}
                 className={cn(
                   'px-8 bg-brand disabled:bg-zinc-500 text-white font-polysans font-semibold tracking-wide mr-2',
@@ -595,7 +595,7 @@ const LeftSideContent = ({
     <Button
       size='lg'
       radius='full'
-      variant='solid'
+      variant='primary'
       onPress={nextStep}
       className='relative z-200 cta-button w-fit px-8 py-6 mr-4 text-sm font-semibold uppercase tracking-[0.30em] flex items-center bg-dark-gray dark:bg-effects text-white md:place-self-start place-self-end'
       isDisabled={loading}>

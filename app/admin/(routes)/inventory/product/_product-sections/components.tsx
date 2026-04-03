@@ -1,5 +1,5 @@
 import {cn} from '@/lib/utils'
-import {Card, CardHeader} from '@heroui/react'
+import {Card, CardHeader} from '@/lib/heroui'
 import {ReactNode} from 'react'
 
 interface FormSectionProps {

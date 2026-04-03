@@ -9,7 +9,7 @@ import {
   getTotalStock,
   usesSharedWeightInventory,
 } from '@/lib/productStock'
-import {Button, Image, Input, Switch, Textarea} from '@heroui/react'
+import {Button, Image, Input, Switch, TextArea} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useEffect, useState} from 'react'
@@ -151,7 +151,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
       {/* Description */}
       {product.description && (
         <div>
-          <Textarea
+          <TextArea
             value={product.description}
             readOnly
             size='sm'
@@ -208,7 +208,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
             href={`/admin/inventory/product/${product._id}#inventory`}
             onPress={saveAdminProductFormReturn}
             size='sm'
-            variant='bordered'>
+            variant='secondary'>
             Open Inventory Controls
           </Button>
         </div>

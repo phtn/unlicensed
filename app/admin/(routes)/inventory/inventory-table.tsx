@@ -25,7 +25,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useMutation, usePaginatedQuery, useQuery} from 'convex/react'
 import {Key, useCallback, useEffect, useMemo, useState} from 'react'
 import {useProductDetails} from '../../_components/product-details-context'
@@ -384,7 +384,7 @@ export const InventoryTable = () => {
                   : 'danger'
             }
             size='sm'
-            variant='flat'>
+            variant='tertiary'>
             {status === 'featured'
               ? 'Featured'
               : status === 'active'
@@ -529,7 +529,7 @@ export const InventoryTable = () => {
                   </Button>
                   <Button
                     size='sm'
-                    variant='light'
+                    variant='tertiary'
                     onPress={handleCancelPriceChange}>
                     Cancel
                   </Button>
@@ -538,7 +538,7 @@ export const InventoryTable = () => {
                 <Dropdown>
                   <DropdownTrigger>
                     <Button
-                      variant='flat'
+                      variant='tertiary'
                       className='text-blue-400'
                       endContent={
                         <Icon name='arrow-down' className='size-4' />
@@ -563,12 +563,12 @@ export const InventoryTable = () => {
               )}
             </div>
           )}
-          <ButtonGroup variant='flat'>
+          <ButtonGroup variant='tertiary'>
             <Dropdown>
               <DropdownTrigger className='hidden sm:flex'>
                 <Button
                   endContent={<Icon name='3d-box-light' className='size-4' />}
-                  variant='flat'>
+                  variant='tertiary'>
                   Category
                 </Button>
               </DropdownTrigger>
@@ -605,7 +605,7 @@ export const InventoryTable = () => {
                       <Icon name='arrow-swap' className='size-4 rotate-30' />
                     </div>
                   }
-                  variant='flat'>
+                  variant='tertiary'>
                   Status
                 </Button>
               </DropdownTrigger>
@@ -629,7 +629,7 @@ export const InventoryTable = () => {
                   endContent={
                     <Icon name='arrow-down-long-light' className='size-4' />
                   }
-                  variant='flat'>
+                  variant='tertiary'>
                   Columns
                 </Button>
               </DropdownTrigger>
@@ -876,7 +876,7 @@ export const InventoryTable = () => {
           </span>
           <Button
             radius='none'
-            variant='flat'
+            variant='tertiary'
             className='font-brk'
             isLoading={isLoadingMoreProducts}
             isDisabled={isLoadingMoreProducts}

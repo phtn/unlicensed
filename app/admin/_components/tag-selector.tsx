@@ -2,7 +2,7 @@
 
 import {ITEMS} from '@/components/ui/product-profile'
 import {cn} from '@/lib/utils'
-import {Chip, Select, SelectItem, SelectedItems} from '@heroui/react'
+import {Chip, Select, ListBoxItem, SelectedItems} from '@/lib/heroui'
 import {useMemo} from 'react'
 import {commonInputClassNames} from './ui/fields'
 
@@ -52,7 +52,7 @@ export const TagSelector = ({
       selectionMode={multiple ? 'multiple' : 'single'}
       selectedKeys={new Set(selectedKeys)}
       onSelectionChange={handleSelectionChange}
-      variant='bordered'
+      variant='secondary'
       isMultiline={true}
       classNames={{
         ...commonInputClassNames,
@@ -68,7 +68,7 @@ export const TagSelector = ({
               return (
                 <Chip
                   key={item.key}
-                  variant='bordered'
+                  variant='secondary'
                   className={cn('border border-blue-500 bg-background', {
                     'text-terpenes border-terpenes/50': type === 'terpenes',
                     'text-flavors border-flavors/50': type === 'flavors',
@@ -95,14 +95,14 @@ export const TagSelector = ({
       }}
     >
       {items.map((item) => (
-        <SelectItem key={item.id} textValue={item.name}>
+        <ListBoxItem key={item.id} textValue={item.name}>
           <div className='flex items-center gap-2'>
             <div className='flex flex-col'>
               <span className='text-sm font-medium'>{item.name}</span>
               <span className='text-xs'>{item.description}</span>
             </div>
           </div>
-        </SelectItem>
+        </ListBoxItem>
       ))}
     </Select>
   )

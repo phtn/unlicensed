@@ -9,7 +9,7 @@ import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {adaptProduct, RawProduct} from '@/lib/convexClient'
 import {getUnitPriceCents} from '@/utils/cartPrice'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, CardBody, Image} from '@heroui/react'
+import {Button, Card, CardContent, Image} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import {memo, useMemo} from 'react'
 
@@ -194,7 +194,7 @@ const RecommendedCard = memo(function RecommendedCard({
       shadow='none'
       radius='none'
       className='rounded-none bg-linear-to-l from-featured/15 via-light-gray/10 to-transparent dark:bg-dark-gray/15'>
-      <CardBody className='p-0 md:pe-6 md:py-6'>
+      <CardContent className='p-0 md:pe-6 md:py-6'>
         <div className='flex min-w-0 gap-4 items-center'>
           <div className='relative w-24 h-24 aspect-square shrink-0 overflow-hidden'>
             {productImage ? (
@@ -220,7 +220,7 @@ const RecommendedCard = memo(function RecommendedCard({
               <Button
                 size='sm'
                 radius='none'
-                variant='shadow'
+                variant='soft'
                 className='absolute bg-dark-table dark:bg-white/10 dark:backdrop-blur-xl rounded-lg dark:text-white/80 dark:hover:text-white border-b border-l border-white/10 -space-x-1.5 top-3.5 right-0 font-okxs font-medium shrink-0 flex text-white text-sm'
                 onPress={() => onAddToCart(product)}>
                 <span>Add</span>
@@ -229,7 +229,7 @@ const RecommendedCard = memo(function RecommendedCard({
             </div>
           </div>
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   )
 })

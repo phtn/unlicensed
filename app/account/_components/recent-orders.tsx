@@ -1,7 +1,7 @@
 import {Loader} from '@/components/expermtl/loader'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {Button, Card, CardBody} from '@heroui/react'
+import {Button, Card, CardContent} from '@/lib/heroui'
 import Link from 'next/link'
 import {ViewTransition} from 'react'
 import {OrderListItem} from './order-list-item'
@@ -18,7 +18,7 @@ export const RecentOrders = ({orders}: {orders?: Array<Doc<'orders'>>}) => {
           <Button
             as={Link}
             href='/account/orders'
-            variant='light'
+            variant='tertiary'
             endContent={<Icon name='chevron-right' className='size-4' />}
             className='text-default-600 dark:text-default-400 hover:text-foreground font-okxs'>
             View All
@@ -34,7 +34,7 @@ export const RecentOrders = ({orders}: {orders?: Array<Doc<'orders'>>}) => {
             </div>
           ) : orders.length === 0 ? (
             <Card className='border-2 border-dashed border-default-200 dark:border-default-100/20 bg-default-50/50 dark:bg-default-50/5'>
-              <CardBody className='py-16 flex flex-col items-center justify-center text-center'>
+              <CardContent className='py-16 flex flex-col items-center justify-center text-center'>
                 <div className='w-20 h-20 rounded-full bg-default-100 dark:bg-default-50/10 flex items-center justify-center mb-5'>
                   <Icon
                     name='package-car'
@@ -55,7 +55,7 @@ export const RecentOrders = ({orders}: {orders?: Array<Doc<'orders'>>}) => {
                   className='font-semibold'>
                   Browse Products
                 </Button>
-              </CardBody>
+              </CardContent>
             </Card>
           ) : (
             orders

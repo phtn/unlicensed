@@ -2,7 +2,7 @@ import {api} from '@/convex/_generated/api'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, cn, Progress} from '@heroui/react'
+import {Button, Card, cn, Progress} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {useEffect, useMemo, useRef} from 'react'
 import MiniChart from './mini-chart'
@@ -169,7 +169,7 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
               <span>{stats.ongoingDeliveriesCount}</span>
             </div>
           ) : (
-            <Button isIconOnly variant='light' size='sm'>
+            <Button isIconOnly variant='tertiary' size='sm'>
               <Icon
                 name='chevron-right'
                 className='size-5 opacity-60 hover:opacity-100'

@@ -1,5 +1,5 @@
 import {Icon} from '@/lib/icons'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import Link from 'next/link'
 
 export const QuickLinks = () => {
@@ -38,7 +38,7 @@ export const QuickLinks = () => {
         href={'/lobby/products'}
         prefetch
         radius='none'
-        variant='light'
+        variant='tertiary'
         endContent={<Icon name={'search'} className='dark:text-white' />}
         className='w-full sm:w-auto border dark:border-light-gray/40 sm:flex items-center gap-2 font-polysans font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-base lg:text-lg'>
         <span className='tracking-tight'>Product Search</span>

@@ -4,7 +4,7 @@ import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {parseAssistantConfig} from '@/lib/assistant/config'
-import {Button, Switch, Textarea} from '@heroui/react'
+import {Button, Switch, TextArea} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {Activity, startTransition, useCallback, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
@@ -70,7 +70,7 @@ function SeedAssistantButton({
         <Button
           radius='none'
           color='success'
-          variant='solid'
+          variant='primary'
           className='rounded-sm'
           isDisabled={!canSeed || isLoading || isSeeding}
           isLoading={isSeeding}
@@ -165,7 +165,7 @@ function AIAssistantFormInner({
 
       <div className='flex flex-col gap-4 w-full'>
         <div className='flex max-w-6xl flex-col gap-2'>
-          <Textarea
+          <TextArea
             label='Instructions'
             type='text'
             value={instructions}
@@ -216,7 +216,7 @@ function AIAssistantFormInner({
           <Button
             radius='none'
             color='default'
-            variant='flat'
+            variant='tertiary'
             onPress={handleSave}
             isDisabled={isSaving || !configLoaded || !userUid}
             className='rounded-sm'

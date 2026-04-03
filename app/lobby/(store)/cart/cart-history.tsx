@@ -11,7 +11,7 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, CardBody, Image} from '@heroui/react'
+import {Button, Card, CardContent, Image} from '@/lib/heroui'
 import {useMemo, useState, useTransition} from 'react'
 
 interface CartHistoryItemCardProps {
@@ -56,7 +56,7 @@ const CartHistoryItemCard = ({
       shadow='none'
       radius='none'
       className='bg-linear-to-r from-foreground/5 via-transparent to-transparent border border-foreground/10 overflow-visible'>
-      <CardBody className='relative overflow-visible'>
+      <CardContent className='relative overflow-visible'>
         <div className='flex gap-3 items-center'>
           <div className='relative size-14 shrink-0 overflow-hidden'>
             {productImageUrl ? (
@@ -94,7 +94,7 @@ const CartHistoryItemCard = ({
             <Button
               size='md'
               radius='none'
-              variant='solid'
+              variant='primary'
               color='primary'
               isDisabled={isAdding}
               onPress={onAddToCart}
@@ -111,14 +111,14 @@ const CartHistoryItemCard = ({
               size='sm'
               isIconOnly
               radius='full'
-              variant='solid'
+              variant='primary'
               onPress={onRemove}
               className='border absolute -right-4 -top-4 hover:opacity-100'>
               <Icon name='x' className='size-3.5' />
             </Button>
           </div>
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   )
 }
@@ -181,7 +181,7 @@ export const CartHistory = ({onItemAdded}: CartHistoryProps) => {
         <h2 className='font-polysans'>Your cart history</h2>
         <Button
           size='sm'
-          variant='light'
+          variant='tertiary'
           onPress={clearHistory}
           className='group text-sm font-brk opacity-60 hover:opacity-100'>
           <span>Clear</span>

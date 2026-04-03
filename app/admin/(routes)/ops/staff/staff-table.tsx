@@ -11,7 +11,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 import {dateCell} from '../../../_components/ui/cells'
@@ -56,7 +56,7 @@ export const StaffTable = () => {
         return (
           <div className='flex flex-wrap gap-1'>
             {member.accessRoles.map((role) => (
-              <Chip key={role} size='sm' variant='flat'>
+              <Chip key={role} size='sm' variant='tertiary'>
                 {role}
               </Chip>
             ))}
@@ -69,7 +69,7 @@ export const StaffTable = () => {
           <Chip
             size='sm'
             color={member.active ? 'success' : 'default'}
-            variant='flat'>
+            variant='tertiary'>
             {member.active ? 'Active' : 'Inactive'}
           </Chip>
         )

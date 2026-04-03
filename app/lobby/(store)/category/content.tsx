@@ -8,7 +8,7 @@ import {api} from '@/convex/_generated/api'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptCategory} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
-import {Button, Image} from '@heroui/react'
+import {Button, Image} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {Activity, useMemo} from 'react'
@@ -81,7 +81,7 @@ export const Content = ({initialCategories}: ContentProps) => {
                   as={Link}
                   prefetch
                   radius='none'
-                  variant='light'
+                  variant='tertiary'
                   href={'/lobby/deals'}
                   className='hidden border dark:border-light-gray/80 sm:flex items-center gap-2 dark:text-terpenes font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                   <span className='tracking-tight'>Find Deals</span>

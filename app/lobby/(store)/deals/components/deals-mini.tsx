@@ -1,7 +1,7 @@
 'use client'
 
 import {Icon} from '@/lib/icons'
-import {Button, Link} from '@heroui/react'
+import {Button, Link} from '@/lib/heroui'
 import NextLink from 'next/link'
 import {ViewTransition} from 'react'
 import type {BundleConfig} from '../lib/deal-types'
@@ -41,7 +41,7 @@ export const DealsMini = ({featuredDeals}: DealsMiniProps) => {
                 size='lg'
                 radius='full'
                 disableRipple
-                variant='solid'
+                variant='primary'
                 href='/lobby/deals'
                 className='px-0 flex items-center justify-center md:justify-start w-full bg-transparent text-sm font-semibold dark:border-light-gray uppercase tracking-[0.35em]'>
                 <div className='flex items-center justify-start'>

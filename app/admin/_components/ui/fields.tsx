@@ -6,8 +6,8 @@ import {
   Select,
   SelectProps,
   Switch,
-  Textarea,
-} from '@heroui/react'
+  TextArea,
+} from '@/lib/heroui'
 import React, {ChangeEvent, InputHTMLAttributes, ReactNode, Ref} from 'react'
 import {
   CategorySelectItem,
@@ -175,7 +175,7 @@ export function TextField<T>(props?: PartialFormInput<T> | FormInput<T>) {
         description={props?.description}
         disabled={props?.disabled}
         classNames={commonInputClassNames}
-        variant='bordered'
+        variant='secondary'
         suppressHydrationWarning
         spellCheck={props?.spellCheck ? 'true' : 'false'}
       />
@@ -208,7 +208,7 @@ export function NumberField<T>(props?: PartialFormInput<T> | FormInput<T>) {
         placeholder={props?.placeholder}
         description={props?.description}
         size='lg'
-        variant='bordered'
+        variant='secondary'
         classNames={commonInputClassNames}
       />
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
@@ -224,14 +224,14 @@ export function TextAreaField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const field = useFieldContext<string>()
   return (
     <div className='space-y-2'>
-      <Textarea
+      <TextArea
         label={props?.label}
         value={field.state.value}
         onChange={(e) => field.handleChange(e.target.value)}
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
         minRows={props?.minRows ?? 3}
-        variant='bordered'
+        variant='secondary'
         className=' placeholder:text-red-400'
         classNames={commonInputClassNames}
       />
@@ -245,7 +245,7 @@ export function TextAreaField<T>(props?: PartialFormInput<T> | FormInput<T>) {
 }
 
 export function SelectField<T>(
-  props?: SelectFieldProps<T> & Pick<SelectProps, 'classNames'>,
+  props?: SelectFieldProps<T> & Partial<Pick<SelectProps, 'classNames'>>,
 ) {
   const mode = props?.mode ?? 'single'
   const isMultiple = mode === 'multiple'
@@ -303,7 +303,7 @@ export function SelectField<T>(
         onSelectionChange={handleSelectionChange}
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
-        variant='bordered'
+        variant='secondary'
         classNames={{
           ...commonInputClassNames,
           ...(props?.mode === 'multiple'
@@ -336,7 +336,7 @@ export function SelectField<T>(
 
                       return (
                         <Chip
-                          variant='dot'
+                          variant='soft'
                           {...chipProps}
                           key={item.key}
                           size='md'
@@ -365,7 +365,7 @@ export function SelectField<T>(
                 return (
                   <div className='flex flex-wrap gap-x-2'>
                     <Chip
-                      variant='dot'
+                      variant='soft'
                       {...chipProps}
                       key={item[0].textValue}
                       size='md'>
@@ -376,7 +376,7 @@ export function SelectField<T>(
               }
         }>
         {options.map((option) => {
-          // Use CategorySelectItem for category fields, otherwise use regular SelectItem
+          // Use CategorySelectItem for category fields, otherwise use regular ListBoxItem
           if (isCategoryField) {
             const categoryColor = getCategoryColor(option.value)
             // Type assertion needed because extendVariants doesn't fully extend TypeScript types
@@ -415,7 +415,7 @@ export function SelectField<T>(
 
 export function SelectWithCustomField<T>(
   props?: SelectWithCustomFieldProps<T> &
-    Pick<SelectProps, 'classNames' | 'selectionMode'>,
+    Partial<Pick<SelectProps, 'classNames' | 'selectionMode'>>,
 ) {
   const field = useFieldContext<string>()
   const options = props?.options ?? []
@@ -476,7 +476,7 @@ export function SelectWithCustomField<T>(
           onBlur={field.handleBlur}
           placeholder={customPlaceholder}
           classNames={commonInputClassNames}
-          variant='bordered'
+          variant='secondary'
         />
       ) : (
         <Select
@@ -486,7 +486,7 @@ export function SelectWithCustomField<T>(
           onSelectionChange={handleSelectionChange}
           onBlur={field.handleBlur}
           placeholder={props?.placeholder}
-          variant='bordered'
+          variant='secondary'
           classNames={{
             ...commonInputClassNames,
             ...commonSelectClassNames,

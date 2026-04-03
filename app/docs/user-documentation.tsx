@@ -1,4 +1,4 @@
-import {Accordion, AccordionItem} from '@heroui/react'
+import {Accordion, AccordionItem} from '@/lib/heroui'
 import Link from 'next/link'
 
 const HOW_TO_GUIDES = [
@@ -429,7 +429,7 @@ export const UserDocumentation = () => {
               id={section.id}
               className='border border-foreground/10 bg-background'>
               <Accordion
-                variant='light'
+                variant='tertiary'
                 className='w-full'
                 itemClasses={{
                   base: 'shadow-none',
@@ -459,7 +459,7 @@ export const UserDocumentation = () => {
                   }>
                   <div className='border-t border-foreground/10'>
                     <Accordion
-                      variant='light'
+                      variant='tertiary'
                       className='px-1 py-1 sm:px-2 sm:py-2 md:px-3'
                       itemClasses={{
                         base: 'border-b border-foreground/10 last:border-b-0',

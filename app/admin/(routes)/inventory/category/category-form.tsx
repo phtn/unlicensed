@@ -5,7 +5,7 @@ import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
 import {cn} from '@/lib/utils'
-import {Button, Switch} from '@heroui/react'
+import {Button, Switch} from '@/lib/heroui'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useCallback, useEffect, useRef, useState} from 'react'
@@ -211,7 +211,7 @@ export const CategoryForm = ({
               size='md'
               disableRipple
               disableAnimation
-              variant='light'
+              variant='tertiary'
               key={section.id}
               name={section.id}
               onPress={scrollToSection(section.id)}

@@ -1,6 +1,6 @@
 'use client'
 
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
 import {useParams} from 'next/navigation'

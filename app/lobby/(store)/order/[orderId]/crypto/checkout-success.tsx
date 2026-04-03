@@ -4,7 +4,7 @@ import {Typewrite} from '@/components/expermtl/typewrite'
 import {Confetti} from '@/components/magicui/confetti'
 import {useCopy} from '@/hooks/use-copy'
 import {Icon} from '@/lib/icons'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import {motion} from 'motion/react'
 import NextLink from 'next/link'
 

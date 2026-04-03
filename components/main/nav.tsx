@@ -1,24 +1,26 @@
 'use client'
 
-import { AuthModal } from '@/components/auth/auth-modal'
-import { CartDrawer } from '@/components/store/cart-drawer'
-import { useTheme } from '@/components/ui/theme-provider'
-import { api } from '@/convex/_generated/api'
-import { useAuth } from '@/hooks/use-auth'
-import { useCart } from '@/hooks/use-cart'
-import { useMobile } from '@/hooks/use-mobile'
-import { useScrollY } from '@/hooks/use-scroll-y'
-import { logout } from '@/lib/firebase/auth'
-import { Icon } from '@/lib/icons'
-import { cn } from '@/lib/utils'
-import { Badge, Button, useDisclosure } from '@heroui/react'
-import { useQuery } from 'convex/react'
-import { motion } from 'motion/react'
+import {AuthModal} from '@/components/auth/auth-modal'
+import {CartDrawer} from '@/components/store/cart-drawer'
+import {useTheme} from '@/components/ui/theme-provider'
+import {api} from '@/convex/_generated/api'
+import {useAuth} from '@/hooks/use-auth'
+import {useCart} from '@/hooks/use-cart'
+import {useDisclosure} from '@/hooks/use-disclosure'
+import {useMobile} from '@/hooks/use-mobile'
+import {useScrollY} from '@/hooks/use-scroll-y'
+import {logout} from '@/lib/firebase/auth'
+import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
+// import {Badge, Button} from '@/lib/heroui'
+import {Badge, Button} from '@heroui/react'
+import {useQuery} from 'convex/react'
+import {motion} from 'motion/react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useCallback, useMemo, useState } from 'react'
-import { NavMenu } from '../expermtl/nav-menu'
-import { UserDropdown } from './user-dropdown'
+import {usePathname} from 'next/navigation'
+import {useCallback, useMemo, useState} from 'react'
+import {NavMenu} from '../expermtl/nav-menu'
+import {UserDropdown} from './user-dropdown'
 
 interface NavProps {
   children?: React.ReactNode
@@ -88,6 +90,7 @@ export const Nav = ({children}: NavProps) => {
         <div className='w-full max-w-7xl mx-auto xl:px-0 px-4 flex items-center justify-start md:justify-between h-full'>
           <div className='min-w-12 md:w-36'>
             <Link
+              id='home'
               href={'/lobby'}
               onMouseEnter={handleHomeMouseEnter}
               onMouseLeave={handleHomeMouseLeave}
@@ -161,37 +164,15 @@ export const Nav = ({children}: NavProps) => {
             {children}
           </nav>
           <div className='flex w-fit gap-5 md:w-36 items-center justify-between'>
-            <Badge
-              size='sm'
-              variant='shadow'
-              key={`cart-badge-${cartItemCount}`}
-              content={
-                cartItemCount > 0 ? (
-                  <div
-                    suppressHydrationWarning
-                    className='flex items-center justify-center rounded-full py-0.5 px-0.5 md:mx-0 size-5 aspect-square'>
-                    <span className='font-okxs font-semibold text-base text-white leading-none'>
-                      {cartItemCount}
-                    </span>
-                  </div>
-                ) : undefined
-              }
-              isInvisible={cartItemCount === 0}
-              className='px-[0.5px]'
-              classNames={{
-                badge:
-                  'aspect-square size-6 text-base translate-x-2.5 -translate-y-1 rounded-xs flex items-center justify-center rounded-sm border-0.5 dark:border-white/90 shadow-sm shadow-dark-table/50 backdrop-blur-2xl bg-brand',
-              }}
-              shape='rectangle'>
+            <Badge.Anchor>
               <Button
-                isIconOnly
-                data-cart-icon
-                variant='light'
-                className='capitalize outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand!'
+                id='cart-drawer-trigger'
+                variant='ghost'
+                className='capitalize outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand! hover:bg-transparent'
                 onPress={onCartDrawerOpen}>
                 <Icon
                   name='bag-solid'
-                  className={cn('size-6 text-white', {
+                  className={cn('size-6 sm:size-7 text-white', {
                     'text-dark-table dark:text-white': !inStoreLobby,
                     'text-dark-table dark:text-white .':
                       !isMobile && scrollY >= 710,
@@ -200,7 +181,14 @@ export const Nav = ({children}: NavProps) => {
                   })}
                 />
               </Button>
-            </Badge>
+              <Badge
+                size='md'
+                key={`cart-badge-${cartItemCount}`}
+                content={`${cartItemCount}`}
+                className='bg-brand h-4! w-5.5 rounded-md border border-white font-okxs font-semibold text-sm text-white leading-none flex items-center justify-center'>
+                {cartItemCount}
+              </Badge>
+            </Badge.Anchor>
 
             {user ? (
               <UserDropdown

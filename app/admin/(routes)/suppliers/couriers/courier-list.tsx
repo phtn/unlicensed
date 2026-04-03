@@ -4,7 +4,7 @@ import {DataTable} from '@/components/table-v2'
 import {ColumnConfig} from '@/components/table-v2/create-column'
 import {ColHeader} from '@/components/table-v2/headers'
 import {Doc} from '@/convex/_generated/dataModel'
-import {Chip, ChipProps} from '@heroui/react'
+import {Chip, ChipProps} from '@/lib/heroui'
 import Link from 'next/link'
 import {useMemo} from 'react'
 
@@ -60,7 +60,7 @@ export const CourierList = ({couriers}: CourierListProps) => {
                   : statusColorMap.inactive
               }
               size='sm'
-              variant='flat'>
+              variant='tertiary'>
               {row.original.active ? 'Active' : 'Inactive'}
             </Chip>
           ),

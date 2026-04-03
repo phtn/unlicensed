@@ -7,7 +7,7 @@ import {
   DropdownMenu,
   DropdownSection,
   DropdownTrigger,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {Row} from '@tanstack/react-table'
 import {Key, useCallback, useMemo} from 'react'
 import type {ActionAlign, ActionConfig, ActionItem} from './create-column'
@@ -125,7 +125,7 @@ export const RowActions = <T,>({row, actionConfig}: Props<T>) => {
     <Button
       isIconOnly={!triggerConfig?.label}
       size='sm'
-      variant='light'
+      variant='tertiary'
       className={cn(
         'shadow-none rounded-lg cursor-pointer hover:bg-terminal/10 dark:data-[state=open]:bg-terminal/50 data-[state=open]:bg-terminal/10',
         triggerConfig?.className,
@@ -223,7 +223,7 @@ export const RowActions = <T,>({row, actionConfig}: Props<T>) => {
             key={action.id}
             isIconOnly={isIconButton}
             size='sm'
-            variant='light'
+            variant='tertiary'
             color={isDestructive ? 'danger' : 'default'}
             isDisabled={isDisabled}
             className={cn(

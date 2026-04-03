@@ -3,7 +3,7 @@
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Textarea} from '@heroui/react'
+import {TextArea} from '@/lib/heroui'
 import {KeyboardEvent, useCallback, useEffect, useRef, useState} from 'react'
 import {chatInputClassNames} from './message-input'
 
@@ -95,7 +95,7 @@ export function AssistantMessageInput({
       {/* Text Input Area */}
       <div className='flex-1 relative'>
         <div className='relative flex items-end rounded-2xl transition-all focus-within:ring-2 focus-within:ring-primary/20 dark:focus-within:ring-primary/5'>
-          <Textarea
+          <TextArea
             ref={textareaRef}
             value={currentValue}
             onChange={(e) => {

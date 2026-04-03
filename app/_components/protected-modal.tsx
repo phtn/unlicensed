@@ -3,13 +3,13 @@
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {
-  InputOtp,
+  InputOTP,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useRouter} from 'next/navigation'
 import {useState} from 'react'
 
@@ -91,12 +91,12 @@ export function ProtectedModal({
         </ModalBody>
         <ModalFooter className='pt-8 pb-4 flex-col gap-2'>
           <div className='flex w-full justify-center flex-nowrap gap-4'>
-            <InputOtp
+            <InputOTP
               length={6}
               radius='full'
               size='lg'
               type='password'
-              variant='bordered'
+              variant='secondary'
               className='text-xl dark:text-dark-gray'
               classNames={{
                 caret: 'text-4xl font-bold',

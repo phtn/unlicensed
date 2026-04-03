@@ -7,7 +7,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {
   Button,
   Card,
-  CardBody,
+  CardContent,
   Chip,
   Input,
   Modal,
@@ -16,10 +16,10 @@ import {
   ModalFooter,
   ModalHeader,
   Select,
-  SelectItem,
+  ListBoxItem,
   Switch,
-  Textarea,
-} from '@heroui/react'
+  TextArea,
+} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useEffect, useMemo, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
@@ -351,14 +351,14 @@ export const CouponsContent = () => {
       </ContentHeader>
 
       <div className='flex flex-wrap gap-2'>
-        <Chip variant='flat'>Total {counts.total}</Chip>
-        <Chip variant='flat' color='default'>
+        <Chip variant='tertiary'>Total {counts.total}</Chip>
+        <Chip variant='tertiary' color='default'>
           Active {counts.active}
         </Chip>
-        <Chip variant='flat' color='primary'>
+        <Chip variant='tertiary' color='primary'>
           Scheduled {counts.scheduled}
         </Chip>
-        <Chip variant='flat' color='default'>
+        <Chip variant='tertiary' color='default'>
           Expired {counts.expired}
         </Chip>
       </div>
@@ -367,7 +367,7 @@ export const CouponsContent = () => {
         <div className='text-sm text-foreground/60'>Loading coupons...</div>
       ) : coupons.length === 0 ? (
         <Card className='border border-border/50 bg-default-100/40 shadow-none'>
-          <CardBody className='flex flex-col gap-3 p-6'>
+          <CardContent className='flex flex-col gap-3 p-6'>
             <div className='text-lg font-clash'>No coupon codes yet</div>
             <p className='text-sm text-foreground/60'>
               Start with a simple percentage or dollar-off offer, then layer in
@@ -382,7 +382,7 @@ export const CouponsContent = () => {
                 Create first coupon
               </Button>
             </div>
-          </CardBody>
+          </CardContent>
         </Card>
       ) : (
         <div className='grid gap-4 xl:grid-cols-2'>
@@ -392,7 +392,7 @@ export const CouponsContent = () => {
               <Card
                 key={coupon._id}
                 className='border border-border/50 bg-default-100/40 shadow-none'>
-                <CardBody className='flex flex-col gap-4 p-5'>
+                <CardContent className='flex flex-col gap-4 p-5'>
                   <div className='flex flex-wrap items-start justify-between gap-3'>
                     <div className='space-y-1'>
                       <div className='font-mono text-lg font-semibold tracking-[0.18em]'>
@@ -408,7 +408,7 @@ export const CouponsContent = () => {
                     <div className='flex flex-wrap gap-2'>
                       <Chip
                         color={coupon.enabled ? 'success' : 'default'}
-                        variant='bordered'>
+                        variant='secondary'>
                         {status.label ? 'Enabled' : 'Disabled'}
                       </Chip>
                     </div>
@@ -497,7 +497,7 @@ export const CouponsContent = () => {
                   <div className='flex flex-wrap gap-2'>
                     <Button
                       size='sm'
-                      variant='flat'
+                      variant='tertiary'
                       className='rounded-sm'
                       onPress={() =>
                         openEditModal(coupon as Coupon & {_id: string})
@@ -506,7 +506,7 @@ export const CouponsContent = () => {
                     </Button>
                     <Button
                       size='sm'
-                      variant='flat'
+                      variant='tertiary'
                       className='rounded-sm'
                       color={coupon.enabled ? 'default' : 'success'}
                       isLoading={busyCouponId === coupon._id}
@@ -517,7 +517,7 @@ export const CouponsContent = () => {
                     </Button>
                     <Button
                       size='sm'
-                      variant='flat'
+                      variant='tertiary'
                       radius='none'
                       color='danger'
                       className='rounded-sm'
@@ -528,7 +528,7 @@ export const CouponsContent = () => {
                       Delete
                     </Button>
                   </div>
-                </CardBody>
+                </CardContent>
               </Card>
             )
           })}
@@ -577,7 +577,7 @@ export const CouponsContent = () => {
                   value: commonInputClassNames?.input,
                 }}>
                 {discountTypeOptions.map((option) => (
-                  <SelectItem key={option.key}>{option.label}</SelectItem>
+                  <ListBoxItem key={option.key}>{option.label}</ListBoxItem>
                 ))}
               </Select>
               <Input
@@ -669,7 +669,7 @@ export const CouponsContent = () => {
               />
             </div>
 
-            <Textarea
+            <TextArea
               label='Description'
               value={form.description}
               onValueChange={(value) =>
@@ -678,7 +678,7 @@ export const CouponsContent = () => {
               minRows={2}
               classNames={commonInputClassNames}
             />
-            <Textarea
+            <TextArea
               label='Internal notes'
               value={form.notes}
               onValueChange={(value) =>
@@ -710,7 +710,7 @@ export const CouponsContent = () => {
             )}
           </ModalBody>
           <ModalFooter>
-            <Button variant='light' onPress={() => setModalOpen(false)}>
+            <Button variant='tertiary' onPress={() => setModalOpen(false)}>
               Cancel
             </Button>
             <Button color='primary' onPress={handleSave} isLoading={isSaving}>

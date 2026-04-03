@@ -3,7 +3,7 @@
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {Button, Input, Switch} from '@heroui/react'
+import {Button, Input, Switch} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useState, ViewTransition} from 'react'
 import {ContentHeader} from './components'
@@ -110,7 +110,7 @@ function TaxFormInner({
           <Button
             radius='none'
             color='default'
-            variant='flat'
+            variant='tertiary'
             onPress={handleSave}
             isDisabled={isSaving || config === undefined || !userUid}
             className='rounded-sm'

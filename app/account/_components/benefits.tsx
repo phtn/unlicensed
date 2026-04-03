@@ -3,7 +3,7 @@
               shadow='none'
               radius='none'
               className='hidden rounded-3xl border border-foreground/20 bg-content1/50 backdrop-blur-sm'>
-              <CardBody className='p-0'>
+              <CardContent className='p-0'>
                 <div className='px-6 py-4'>
                   <h3 className='font-semibold font-nito text-base tracking-tight'>
                     Member Benefits
@@ -47,7 +47,7 @@
                     icon='user'
                   />
                 </div>
-              </CardBody>
+              </CardContent>
             </Card>
 */
 
@@ -56,7 +56,7 @@
               <Card
                 shadow='none'
                 className='border border-foreground/20 backdrop-blur-sm'>
-                <CardBody className='p-6 space-y-5'>
+                <CardContent className='p-6 space-y-5'>
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2.5'>
                       <div className='p-2 rounded-xl bg-primary/20'>
@@ -71,7 +71,7 @@
                     </div>
                     <Chip
                       size='sm'
-                      variant='flat'
+                      variant='tertiary'
                       className='bg-primary/20 text-primary font-nito font-semibold'>
                       {rewards.nextTier.name}
                     </Chip>
@@ -107,7 +107,7 @@
                       status
                     </p>
                   </div>
-                </CardBody>
+                </CardContent>
               </Card>
             )}
 */

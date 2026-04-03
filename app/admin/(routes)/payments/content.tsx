@@ -3,7 +3,7 @@
 import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
-import {Button, CheckboxGroup} from '@heroui/react'
+import {Button, CheckboxGroup} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {Activity, useCallback} from 'react'
 import {PayCard} from './card-item'
@@ -84,7 +84,7 @@ export const Content = () => {
           }>
           <Button
             onPress={handleSeed}
-            variant='solid'
+            variant='primary'
             size='lg'
             className='w-full'>
             Seed

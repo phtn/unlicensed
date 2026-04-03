@@ -18,9 +18,9 @@ import {
   ModalFooter,
   ModalHeader,
   Select,
-  SelectItem,
-  Textarea,
-} from '@heroui/react'
+  ListBoxItem,
+  TextArea,
+} from '@/lib/heroui'
 import {useMutation} from 'convex/react'
 import {useEffect, useMemo, useState} from 'react'
 import {mapNumericFractions} from '../product-schema'
@@ -271,14 +271,14 @@ export function InventoryAdjustmentModal({
                 }
               }}
               isDisabled={isSubmitting}
-              variant='bordered'
+              variant='secondary'
               classNames={commonSelectClassNames}>
-              <SelectItem key='by_denomination' textValue='By denomination'>
+              <ListBoxItem key='by_denomination' textValue='By denomination'>
                 By denomination
-              </SelectItem>
-              <SelectItem key='shared' textValue='Shared'>
+              </ListBoxItem>
+              <ListBoxItem key='shared' textValue='Shared'>
                 Shared
-              </SelectItem>
+              </ListBoxItem>
             </Select>
             <p className='text-xs text-foreground-500'>
               Switching modes here updates the product inventory mode when this
@@ -310,7 +310,7 @@ export function InventoryAdjustmentModal({
                     ? '0'
                     : formatQuantity(input.currentQuantity)
                 }
-                variant='bordered'
+                variant='secondary'
               />
             ))}
           </div>
@@ -321,16 +321,16 @@ export function InventoryAdjustmentModal({
             onValueChange={setReference}
             placeholder='PO number, delivery note, or supplier reference'
             classNames={narrowInputClassNames}
-            variant='bordered'
+            variant='secondary'
           />
 
-          <Textarea
+          <TextArea
             label='Notes'
             value={note}
             onValueChange={setNote}
             placeholder='Optional context for this inventory change'
             classNames={narrowInputClassNames}
-            variant='bordered'
+            variant='secondary'
             minRows={3}
           />
 
@@ -340,7 +340,7 @@ export function InventoryAdjustmentModal({
         </ModalBody>
         <ModalFooter>
           <Button
-            variant='light'
+            variant='tertiary'
             onPress={() => onOpenChangeAction(false)}
             isDisabled={isSubmitting}>
             Cancel

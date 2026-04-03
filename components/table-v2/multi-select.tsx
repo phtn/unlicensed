@@ -16,8 +16,8 @@ import {
   ModalFooter,
   ModalHeader,
   Select,
-  SelectItem,
-} from '@heroui/react'
+  ListBoxItem,
+} from '@/lib/heroui'
 import {useMemo, useState} from 'react'
 import {
   BulkEditorConfig,
@@ -307,11 +307,11 @@ export const MultiSelect = <T,>({
                               disabled={pending}
                               classNames={bulkSelectClassNames}>
                               {field.options.map((option) => (
-                                <SelectItem
+                                <ListBoxItem
                                   key={option.value}
                                   textValue={option.label}>
                                   {option.label}
-                                </SelectItem>
+                                </ListBoxItem>
                               ))}
                             </Select>
                           ) : (

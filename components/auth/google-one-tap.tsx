@@ -4,7 +4,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {auth} from '@/lib/firebase/config'
 import {loginWithGoogleCredential, loginWithGoogle} from '@/lib/firebase/auth'
 import {Icon} from '@/lib/icons'
-import {Avatar} from '@heroui/react'
+import {Avatar} from '@/lib/heroui'
 import {
   GoogleAuthProvider,
   onAuthStateChanged,

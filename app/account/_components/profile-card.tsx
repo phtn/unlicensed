@@ -1,7 +1,7 @@
 import {Ascend} from '@/components/expermtl/ascend'
 import {UserType} from '@/convex/users/d'
 import {cn} from '@/lib/utils'
-import {Card, CardBody, Image} from '@heroui/react'
+import {Card, CardContent, Image} from '@/lib/heroui'
 import {memo} from 'react'
 
 interface ProfileCardProps {
@@ -15,7 +15,7 @@ export const ProfileCard = ({user}: ProfileCardProps) => {
       radius='none'
       className='relative border border-foreground/20 rounded-xs dark:bg-dark-table/40'>
       <ProfileBackground />
-      <CardBody className='p-6 min-h-80'>
+      <CardContent className='p-6 min-h-80'>
         <div className='flex flex-col items-center text-center space-y-5 justify-center'>
           <div className=''>
             <div className='size-32 mask-b-from-50% mask-radial-[50%_50%] mask-radial-from-80% rounded-full p-0.5 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500'>
@@ -36,7 +36,7 @@ export const ProfileCard = ({user}: ProfileCardProps) => {
           </div>
           <h2 className='text-xl font-bone tracking-tight'>{user?.name}</h2>
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   )
 }

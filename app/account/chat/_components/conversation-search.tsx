@@ -1,7 +1,7 @@
 'use client'
 
 import {Icon} from '@/lib/icons'
-import {Input} from '@heroui/react'
+import {Input} from '@/lib/heroui'
 import {useEffect, useState} from 'react'
 import {searchInputClassNames} from './message-input'
 

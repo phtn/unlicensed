@@ -8,7 +8,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from '@heroui/react'
+} from '@/lib/heroui'
 
 interface DevelopmentModeModalProps {
   isOpen: boolean

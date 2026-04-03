@@ -15,7 +15,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import Link from 'next/link'
 import React, {ReactNode, useMemo} from 'react'
 
@@ -68,7 +68,7 @@ export const Blogposts = ({blogs, deleteFn, isDeleting}: BlogpostsProps) => {
             className='capitalize border-none gap-1 text-default-600'
             color={getStatusChipColor(blog.status)}
             size='sm'
-            variant='dot'>
+            variant='soft'>
             {blog.status}
           </Chip>
         )

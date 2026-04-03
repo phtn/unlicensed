@@ -12,7 +12,7 @@ import {
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, CardBody, Spinner} from '@heroui/react'
+import {Button, Card, CardContent, Spinner} from '@/lib/heroui'
 import {useAction, useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useParams, useRouter} from 'next/navigation'
@@ -147,7 +147,7 @@ export default function PaymentPage() {
     return (
       <div className='min-h-screen flex items-center justify-center px-4'>
         <Card className='max-w-md w-full'>
-          <CardBody className='p-8 text-center space-y-4'>
+          <CardContent className='p-8 text-center space-y-4'>
             <div className='text-6xl mb-4'>✅</div>
             <h1 className='text-2xl font-semibold'>Payment Successful!</h1>
             <p className='text-color-muted'>
@@ -161,7 +161,7 @@ export default function PaymentPage() {
               className='w-full'>
               View Order
             </Button>
-          </CardBody>
+          </CardContent>
         </Card>
       </div>
     )
@@ -171,7 +171,7 @@ export default function PaymentPage() {
     return (
       <div className='min-h-screen flex items-center justify-center px-4'>
         <Card className='max-w-md w-full'>
-          <CardBody className='p-8 text-center space-y-4'>
+          <CardContent className='p-8 text-center space-y-4'>
             <div className='text-6xl mb-4'>❌</div>
             <h1 className='text-2xl font-semibold'>Payment Failed</h1>
             <p className='text-color-muted'>
@@ -182,7 +182,7 @@ export default function PaymentPage() {
               <Button
                 as={NextLink}
                 href={`/account/orders/${orderId}`}
-                variant='flat'
+                variant='tertiary'
                 className='flex-1'>
                 View Order
               </Button>
@@ -194,7 +194,7 @@ export default function PaymentPage() {
                 Try Again
               </Button>
             </div>
-          </CardBody>
+          </CardContent>
         </Card>
       </div>
     )
@@ -204,7 +204,7 @@ export default function PaymentPage() {
     return (
       <div className='min-h-screen flex items-center justify-center px-4'>
         <Card className='max-w-md w-full'>
-          <CardBody className='p-8 text-center space-y-4'>
+          <CardContent className='p-8 text-center space-y-4'>
             <div className='text-6xl mb-4'>⏳</div>
             <h1 className='text-2xl font-semibold'>Payment Pending</h1>
             <p className='text-color-muted'>
@@ -223,7 +223,7 @@ export default function PaymentPage() {
               <Button
                 as={NextLink}
                 href={`/account/orders/${orderId}`}
-                variant='flat'
+                variant='tertiary'
                 className='flex-1'>
                 View Order
               </Button>
@@ -234,7 +234,7 @@ export default function PaymentPage() {
                 Refresh
               </Button>
             </div>
-          </CardBody>
+          </CardContent>
         </Card>
       </div>
     )
@@ -244,7 +244,7 @@ export default function PaymentPage() {
     return (
       <div className='min-h-screen flex items-center justify-center px-4'>
         <Card className='max-w-md w-full'>
-          <CardBody className='p-8 text-center space-y-4'>
+          <CardContent className='p-8 text-center space-y-4'>
             <div className='text-6xl mb-4'>⚠️</div>
             <h1 className='text-2xl font-semibold'>Payment Cancelled</h1>
             <p className='text-color-muted'>
@@ -255,7 +255,7 @@ export default function PaymentPage() {
               <Button
                 as={NextLink}
                 href={`/account/orders/${orderId}`}
-                variant='flat'
+                variant='tertiary'
                 className='flex-1'>
                 View Order
               </Button>
@@ -267,7 +267,7 @@ export default function PaymentPage() {
                 Try Again
               </Button>
             </div>
-          </CardBody>
+          </CardContent>
         </Card>
       </div>
     )
@@ -277,7 +277,7 @@ export default function PaymentPage() {
     return (
       <div className='flex items-center justify-center px-4'>
         <Card shadow='none' className='max-w-md w-full'>
-          <CardBody className='p-8 text-center space-y-4'>
+          <CardContent className='p-8 text-center space-y-4'>
             <div className='text-6xl mb-4'>❌</div>
             <h1 className='text-2xl font-semibold'>Payment Error</h1>
             <p className='text-color-muted'>{error}</p>
@@ -285,7 +285,7 @@ export default function PaymentPage() {
               <Button
                 as={NextLink}
                 href={`/account/orders/${orderId}`}
-                variant='flat'
+                variant='tertiary'
                 className='flex-1'>
                 View Order
               </Button>
@@ -296,7 +296,7 @@ export default function PaymentPage() {
                 Retry
               </Button>
             </div>
-          </CardBody>
+          </CardContent>
         </Card>
       </div>
     )

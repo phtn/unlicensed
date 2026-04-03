@@ -16,7 +16,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {
   useCallback,
@@ -483,7 +483,7 @@ export const ProductGalleryManager = () => {
           </ModalBody>
           <ModalFooter>
             <Button
-              variant='light'
+              variant='tertiary'
               onPress={() => setIsDeleteModalOpen(false)}
               isDisabled={deletingStorageId !== null}>
               Cancel

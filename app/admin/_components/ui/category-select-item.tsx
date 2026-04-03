@@ -1,4 +1,4 @@
-import {extendVariants, SelectItem} from '@heroui/react'
+import {extendVariants, ListBoxItem} from '@/lib/heroui'
 
 /**
  * Category color type - represents all available category color variants
@@ -109,9 +109,9 @@ export function getCategoryChipProps(categoryValue: string) {
 }
 
 /**
- * Extended SelectItem variant specifically designed for product categories.
+ * Extended ListBoxItem variant specifically designed for product categories.
  *
- * This component extends the base SelectItem with custom styling and variants
+ * This component extends the base ListBoxItem with custom styling and variants
  * optimized for category selection in product forms.
  *
  * @example
@@ -121,7 +121,7 @@ export function getCategoryChipProps(categoryValue: string) {
  * </CategorySelectItem>
  * ```
  */
-export const CategorySelectItem = extendVariants(SelectItem, {
+export const CategorySelectItem = extendVariants(ListBoxItem, {
   variants: {
     color: {
       default: {

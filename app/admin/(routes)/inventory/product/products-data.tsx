@@ -24,7 +24,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {CellContext} from '@tanstack/react-table'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
@@ -727,7 +727,7 @@ export const ProductsData = ({
             <Button
               size='sm'
               radius='none'
-              variant='flat'
+              variant='tertiary'
               isLoading={isLoadingMore}
               isDisabled={isLoadingMore}
               onPress={onLoadMore}
@@ -740,7 +740,7 @@ export const ProductsData = ({
               <Button
                 size='sm'
                 radius='none'
-                variant='flat'
+                variant='tertiary'
                 className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk portrait:aspect-square'
                 endContent={
                   <Icon name='chevron-down' className='size-4 md:flex hidden' />

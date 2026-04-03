@@ -1,6 +1,6 @@
 import {ClassName} from '@/app/types'
 import {cn} from '@/lib/utils'
-import {Card, Switch} from '@heroui/react'
+import {Card, Switch} from '@/lib/heroui'
 import {useCallback} from 'react'
 
 interface JunctionBoxProps {

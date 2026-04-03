@@ -10,7 +10,7 @@ import {
 } from '@/lib/paygate/gateway-config'
 import type {Provider, ProviderStatusResponse} from '@/lib/paygate/types'
 import {cn} from '@/lib/utils'
-import {Card, CardHeader} from '@heroui/react'
+import {Card, CardHeader} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'

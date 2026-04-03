@@ -8,7 +8,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
 import {getProductCsvImportRowId} from '@/lib/product-csv-import'
 import {cn} from '@/lib/utils'
-import {Button, Card, Chip, Input} from '@heroui/react'
+import {Button, Card, Chip, Input} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useRef, useState} from 'react'
 import type {ParsedRow} from '../product/csv-import/lib'
@@ -352,7 +352,7 @@ export function ProductCsvUpload() {
               <div className='flex flex-wrap items-center gap-2'>
                 <Chip
                   size='sm'
-                  variant='flat'
+                  variant='tertiary'
                   classNames={{
                     base: 'bg-default-100 dark:bg-default-100/20',
                     content: 'font-medium',
@@ -364,7 +364,7 @@ export function ProductCsvUpload() {
                   <Chip
                     size='sm'
                     radius='none'
-                    variant='solid'
+                    variant='primary'
                     color='danger'
                     className='rounded-sm text-white'>
                     <span className='pe-1.5'>{errorCount}</span>
@@ -376,7 +376,7 @@ export function ProductCsvUpload() {
                     size='sm'
                     radius='none'
                     color='danger'
-                    variant='solid'
+                    variant='primary'
                     className='rounded-sm bg-orange-400'>
                     <span className='pe-1.5'>{conflictCount}</span>
                     <span>Conflict{conflictCount !== 1 ? 's' : ''}</span>
@@ -385,7 +385,7 @@ export function ProductCsvUpload() {
                 {validRows.length > 0 && (
                   <Chip
                     size='sm'
-                    variant='solid'
+                    variant='primary'
                     color='success'
                     className='rounded-sm text-white dark:bg-emerald-500/80 tracking-wide'>
                     <span className='pe-1.5'>{validRows.length}</span>
@@ -398,7 +398,7 @@ export function ProductCsvUpload() {
               </div>
               <Button
                 size='sm'
-                variant='solid'
+                variant='primary'
                 isDisabled={!canImport}
                 isLoading={isImporting}
                 onPress={handleImport}
@@ -559,7 +559,7 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
                   <Chip
                     size='sm'
                     color='danger'
-                    variant='solid'
+                    variant='primary'
                     className='font-medium text-white'>
                     {statusIssue.label}
                   </Chip>
@@ -567,7 +567,7 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
                 {!hasError && (
                   <Chip
                     size='sm'
-                    variant='solid'
+                    variant='primary'
                     color='success'
                     className={cn(
                       'bg-white text-green-700 font-clash tracking-wide',
@@ -581,7 +581,7 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
                 {hasError && row.errors.length === 0 && (
                   <Chip
                     size='sm'
-                    variant='solid'
+                    variant='primary'
                     color='danger'
                     className='text-white'>
                     {rowMode}

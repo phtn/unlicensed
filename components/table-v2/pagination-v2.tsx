@@ -1,5 +1,5 @@
 import {Icon} from '@/lib/icons'
-import {Button, Select, SelectItem} from '@heroui/react'
+import {Button, Select, ListBoxItem} from '@/lib/heroui'
 import {PaginationState} from '@tanstack/react-table'
 import {useId, useMemo} from 'react'
 
@@ -58,7 +58,7 @@ export const Paginator = ({
                 const selectedKey = Array.from(keys)[0] as string
                 if (selectedKey) setPageSize(selectedKey)
               }}
-              variant='bordered'
+              variant='secondary'
               radius='none'
               aria-label='Rows per page'
               classNames={{
@@ -74,9 +74,9 @@ export const Paginator = ({
                 },
               }}>
               {pageSizeOptions.map((size) => (
-                <SelectItem key={size.toString()} textValue={size.toString()}>
+                <ListBoxItem key={size.toString()} textValue={size.toString()}>
                   {size}
-                </SelectItem>
+                </ListBoxItem>
               ))}
             </Select>
             <span className='opacity-80 font-ios text-sm md:text-base mr-2'>
@@ -104,7 +104,7 @@ export const Paginator = ({
       {/* Pagination buttons */}
       <div className='px-4 flex items-center gap-3'>
         <Button
-          variant='light'
+          variant='tertiary'
           isIconOnly
           onPress={pageControl.gotoPrev}
           isDisabled={pageControl.disabledPrev}
@@ -113,7 +113,7 @@ export const Paginator = ({
           <Icon name='chevron-left' className='size-4' />
         </Button>
         <Button
-          variant='light'
+          variant='tertiary'
           isIconOnly
           onPress={pageControl.gotoNext}
           isDisabled={pageControl.disabledNext}

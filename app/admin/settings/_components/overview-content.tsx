@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/texture-card'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Card} from '@heroui/react'
+import {Card} from '@/lib/heroui'
 import {ViewTransition} from 'react'
 import {ContentHeader} from './components'
 

@@ -6,7 +6,7 @@ import {useAuth} from '@/hooks/use-auth'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
-import {Button, Image} from '@heroui/react'
+import {Button, Image} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useMemo, useState} from 'react'
@@ -154,7 +154,7 @@ const SuggestedItem = ({product, imageUrl, onAdd}: ISuggestedItem) => {
         </div>
         <Button
           size='sm'
-          variant='flat'
+          variant='tertiary'
           className='w-full h-8 min-h-0 text-xs font-semibold font-space bg-foreground/5 hover:bg-foreground/10'
           isLoading={isAdding}
           onPress={handleAdd}>

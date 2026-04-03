@@ -5,7 +5,7 @@ import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import type {Doc, Id} from '@/convex/_generated/dataModel'
 import {useApiCall} from '@/hooks/use-api-call'
-import {Button, Card, CardBody} from '@heroui/react'
+import {Button, Card, CardContent} from '@/lib/heroui'
 import {useStore} from '@tanstack/react-store'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
@@ -150,7 +150,7 @@ export const AffiliateAccountForm = ({
 
   return (
     <Card shadow='none' radius='none' className='md:rounded-lg'>
-      <CardBody className='space-y-6 w-full'>
+      <CardContent className='space-y-6 w-full'>
         <SectionHeader
           title={
             isEditMode ? 'Edit Affiliate Account' : 'Add New Affiliate Account'
@@ -257,13 +257,13 @@ export const AffiliateAccountForm = ({
             </Button>
 
             {onCancel && (
-              <Button type='button' variant='light' onPress={onCancel}>
+              <Button type='button' variant='tertiary' onPress={onCancel}>
                 Cancel
               </Button>
             )}
           </div>
         </form>
-      </CardBody>
+      </CardContent>
     </Card>
   )
 }

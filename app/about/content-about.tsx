@@ -86,7 +86,7 @@ const STATS = [
 //                 as={Link}
 //                 href='/lobby/deals'
 //                 radius='full'
-//                 variant='bordered'
+//                 variant='secondary'
 //                 className='h-12 border-foreground/20 bg-transparent px-6 font-polysans text-sm font-semibold uppercase tracking-[0.18em]'>
 //                 Explore deals
 //               </Button>
@@ -175,7 +175,7 @@ const STATS = [
 //               as={Link}
 //               href='/lobby/deals'
 //               radius='full'
-//               variant='light'
+//               variant='tertiary'
 //               className='h-12 px-6 font-polysans text-sm font-semibold uppercase tracking-[0.18em] text-foreground'>
 //               Go to bundles
 //             </Button>

@@ -1,6 +1,6 @@
 'use client'
 import {Icon} from '@/lib/icons'
-import {Link} from '@heroui/react'
+import {Link} from '@/lib/heroui'
 
 export const Footer = () => (
   <footer className='flex-1 border-t border-foreground/20 bg-black'>

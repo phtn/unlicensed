@@ -2,7 +2,7 @@
 import {useHeadings} from '@/hooks/use-headings'
 import {legalDocuments} from '@/legal/documents'
 import {Icon} from '@/lib/icons'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {ReactNode, useState} from 'react'
@@ -59,7 +59,7 @@ export default function LegalDocumentLayout({
           <div className='flex items-center space-x-4'>
             <Button
               size='sm'
-              variant='solid'
+              variant='primary'
               onPress={handlePrint}
               className='bg-transparent font-figtree text-white items-center gap-1 rounded-md px-3 md:px-4 py-2 text-sm font-medium print:hidden hover:bg-muted/40'
               aria-label='Print document'>

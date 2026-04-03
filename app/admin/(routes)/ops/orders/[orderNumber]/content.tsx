@@ -5,7 +5,7 @@ import type {OrderStatus} from '@/convex/orders/d'
 import {useAuthCtx} from '@/ctx/auth'
 import {useCopy} from '@/hooks/use-copy'
 import {Icon} from '@/lib/icons'
-import {Button, Card, Select, SelectItem} from '@heroui/react'
+import {Button, Card, Select, ListBoxItem} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
 import {useCallback} from 'react'
@@ -56,7 +56,7 @@ export const Content = ({orderNumber}: ContentProps) => {
             <p className='text-sm text-gray-400'>
               Order {orderNumber} could not be found.
             </p>
-            <Button onPress={router.back} color='primary' variant='flat'>
+            <Button onPress={router.back} color='primary' variant='tertiary'>
               Back to Orders
             </Button>
           </div>
@@ -74,7 +74,7 @@ export const Content = ({orderNumber}: ContentProps) => {
             size='lg'
             radius='none'
             isIconOnly
-            variant='faded'
+            variant='secondary'
             onPress={router.back}
             aria-label='Back to orders'
             className='min-w-0 rounded-lg border-none'>
@@ -109,7 +109,7 @@ export const Content = ({orderNumber}: ContentProps) => {
               }}
               aria-label='Order status'>
               {statusOptions.map((option) => (
-                <SelectItem key={option.value}>{option.label}</SelectItem>
+                <ListBoxItem key={option.value}>{option.label}</ListBoxItem>
               ))}
             </Select>
           </div>

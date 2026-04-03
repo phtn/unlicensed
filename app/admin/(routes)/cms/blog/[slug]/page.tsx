@@ -5,7 +5,7 @@ import {api} from '@/convex/_generated/api'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
 import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
-import {Button, Image, Input, Select, SelectItem, Textarea} from '@heroui/react'
+import {Button, Image, Input, Select, ListBoxItem, TextArea} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useParams, useRouter} from 'next/navigation'
@@ -144,7 +144,7 @@ export default function BlogEditorPage() {
                   setPostSlug(ensureSlug(e.target.value, ''))
                 }
               }}
-              variant='bordered'
+              variant='secondary'
               classNames={{
                 label: 'font-semibold opacity-75 mb-2',
               }}
@@ -161,7 +161,7 @@ export default function BlogEditorPage() {
                 setSlugManuallyEdited(true)
               }}
               description='URL-friendly version of the title.'
-              variant='bordered'
+              variant='secondary'
               classNames={{
                 label: 'font-semibold opacity-75 mb-2',
               }}
@@ -182,13 +182,13 @@ export default function BlogEditorPage() {
           </div>
 
           <div className='space-y-2'>
-            <Textarea
+            <TextArea
               label='Excerpt'
               placeholder='Short summary for previews...'
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
               minRows={3}
-              variant='bordered'
+              variant='secondary'
             />
           </div>
         </div>
@@ -203,15 +203,15 @@ export default function BlogEditorPage() {
                 const selectedKey = Array.from(keys)[0] as BlogPostStatus
                 if (selectedKey) setStatus(selectedKey)
               }}>
-              <SelectItem key='draft' textValue='Draft'>
+              <ListBoxItem key='draft' textValue='Draft'>
                 Draft
-              </SelectItem>
-              <SelectItem key='published' textValue='Published'>
+              </ListBoxItem>
+              <ListBoxItem key='published' textValue='Published'>
                 Published
-              </SelectItem>
-              <SelectItem key='archived' textValue='Archived'>
+              </ListBoxItem>
+              <ListBoxItem key='archived' textValue='Archived'>
                 Archived
-              </SelectItem>
+              </ListBoxItem>
             </Select>
           </div>
 
@@ -229,7 +229,7 @@ export default function BlogEditorPage() {
             <div className='flex items-center gap-2'>
               <Button
                 as='label'
-                variant='bordered'
+                variant='secondary'
                 isLoading={isUploading}
                 className='w-full cursor-pointer'>
                 <Icon name='upload' className='w-4 h-4 mr-2' />
@@ -252,7 +252,7 @@ export default function BlogEditorPage() {
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               description='Comma separated tags'
-              variant='bordered'
+              variant='secondary'
               classNames={{
                 label: 'font-semibold opacity-75 mb-2',
               }}
@@ -267,7 +267,7 @@ export default function BlogEditorPage() {
               value={flags}
               onChange={(e) => setFlags(e.target.value)}
               description='Required flags to view this post (comma separated)'
-              variant='bordered'
+              variant='secondary'
             />
           </div>
         </div>

@@ -6,7 +6,7 @@ import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
 import {canAccessAdminPanel} from '@/lib/staff-access'
 import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import {useStore} from '@tanstack/react-store'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
@@ -324,7 +324,7 @@ export const StaffForm = ({
             size='md'
             disableRipple
             disableAnimation
-            variant='light'
+            variant='tertiary'
             name='basic-info'
             onPress={scrollToSection('basic-info')}
             className={cn(

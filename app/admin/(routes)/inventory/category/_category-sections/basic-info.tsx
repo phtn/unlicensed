@@ -1,7 +1,7 @@
 'use client'
 
 import {ensureSlug} from '@/lib/slug'
-import {Input} from '@heroui/react'
+import {Input} from '@/lib/heroui'
 import {useState} from 'react'
 import {
   commonInputClassNames,
@@ -45,7 +45,7 @@ export const BasicInfo = ({form, fields}: BasicInfoProps) => {
                     }}
                     onBlur={input.handleBlur}
                     placeholder={nameField.placeholder}
-                    variant='bordered'
+                    variant='secondary'
                     classNames={commonInputClassNames}
                   />
                   {input.state.meta.isTouched &&
@@ -73,7 +73,7 @@ export const BasicInfo = ({form, fields}: BasicInfoProps) => {
                     onBlur={input.handleBlur}
                     placeholder={slugField.placeholder}
                     classNames={commonInputClassNames}
-                    variant='bordered'
+                    variant='secondary'
                   />
                   {input.state.meta.isTouched &&
                     input.state.meta.errors.length > 0 && (

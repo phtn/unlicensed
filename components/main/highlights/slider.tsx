@@ -1,6 +1,6 @@
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import Image from 'next/image'
 import {ReactNode} from 'react'
 

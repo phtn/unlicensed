@@ -7,7 +7,7 @@ import {
 } from '@/app/admin/settings/_components/components'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {Input, Switch} from '@heroui/react'
+import {Input, Switch} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {
   startTransition,

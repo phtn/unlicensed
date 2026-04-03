@@ -1,6 +1,6 @@
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Popover, PopoverContent, PopoverTrigger} from '@heroui/react'
+import {Popover, PopoverContent, PopoverTrigger} from '@/lib/heroui'
 
 type PriceOption = {
   price: string

@@ -4,7 +4,7 @@ import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
-import {Card, CardBody} from '@heroui/react'
+import {Card, CardContent} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import {parseAsString, useQueryState} from 'nuqs'
 import {Suspense} from 'react'
@@ -90,12 +90,12 @@ export const AffiliateContent = () => {
   return (
     <div className='space-y-6'>
       <Card shadow='none' radius='none' className='md:rounded-lg'>
-        <CardBody className='space-y-4 w-full'>
+        <CardContent className='space-y-4 w-full'>
           <SectionHeader
             title='Affiliate Accounts'
             description='Manage affiliate accounts that earn commissions'
           />
-        </CardBody>
+        </CardContent>
       </Card>
 
       <Suspense fallback={<div>Loading...</div>}>

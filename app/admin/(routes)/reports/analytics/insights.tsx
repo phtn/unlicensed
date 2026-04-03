@@ -2,7 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import {useMobile} from '@/hooks/use-mobile'
-import {Card, Chip} from '@heroui/react'
+import {Card, Chip} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import type {
   ExpressionSpecification,
@@ -409,7 +409,7 @@ export const InsightsPage = () => {
                       {page.path}
                     </p>
                   </div>
-                  <Chip size='sm' variant='flat' color='primary'>
+                  <Chip size='sm' variant='tertiary' color='primary'>
                     {page.count}
                   </Chip>
                 </div>
@@ -437,7 +437,7 @@ export const InsightsPage = () => {
                     </span>
                     <p className='text-sm text-foreground'>{country.name}</p>
                   </div>
-                  <Chip size='sm' variant='flat' color='secondary'>
+                  <Chip size='sm' variant='tertiary' color='secondary'>
                     {country.value}
                   </Chip>
                 </div>
@@ -745,7 +745,7 @@ export const GeoPage = () => {
         className='overflow-hidden border border-white/6 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.25),transparent_42%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(5,8,17,1))] p-4 dark:bg-dark-table/60'>
         <div className='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
           <div className='max-w-2xl space-y-3'>
-            <Chip size='sm' variant='flat' color='primary'>
+            <Chip size='sm' variant='tertiary' color='primary'>
               Geo
             </Chip>
             <div>
@@ -832,7 +832,7 @@ export const GeoPage = () => {
                 Where visits are landing
               </h3>
             </div>
-            <Chip size='sm' variant='flat' color='success'>
+            <Chip size='sm' variant='tertiary' color='success'>
               {statesWithData} states
             </Chip>
           </div>
@@ -858,7 +858,7 @@ export const GeoPage = () => {
                           {state.name}
                         </p>
                       </div>
-                      <Chip size='sm' variant='flat' color='primary'>
+                      <Chip size='sm' variant='tertiary' color='primary'>
                         {state.value.toLocaleString()}
                       </Chip>
                     </div>

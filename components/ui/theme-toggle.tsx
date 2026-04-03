@@ -4,7 +4,7 @@ import {useTheme} from '@/components/ui/theme-provider'
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import {useCallback, useMemo} from 'react'
 
 type ThemeToggleProps = {
@@ -30,7 +30,7 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
       <Button
         radius='sm'
         isIconOnly
-        variant='flat'
+        variant='tertiary'
         onPress={handleToggle}
         className={cn(
           'group w-40 flex items-center bg-transparent justify-start space-x-3 py-2 text-sm ps-3',
@@ -53,7 +53,7 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
       isIconOnly
       onPress={handleToggle}
       radius='full'
-      variant='light'
+      variant='tertiary'
       aria-label='theme'
       className={cn(
         'group active:scale-95 border-none bg-transparent hover:bg-accent/20 dark:text-white transition-all duration-200',

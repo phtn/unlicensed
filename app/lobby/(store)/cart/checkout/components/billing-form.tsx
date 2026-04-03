@@ -2,7 +2,7 @@
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {Icon} from '@/lib/icons'
-import {Checkbox, Input} from '@heroui/react'
+import {Checkbox, Input} from '@/lib/heroui'
 import {useCallback, useMemo} from 'react'
 import {FormData, FormErrors} from '../types'
 

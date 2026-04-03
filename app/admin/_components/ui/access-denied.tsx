@@ -1,4 +1,4 @@
-import {Card} from '@heroui/react'
+import {Card} from '@/lib/heroui'
 import {SectionHeader} from './section-header'
 
 export const AccessDenied = () => {

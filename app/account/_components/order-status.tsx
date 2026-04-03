@@ -1,6 +1,6 @@
 import {OrderStatus} from '@/convex/orders/d'
 import {cn} from '@/lib/utils'
-import {Chip, ChipProps} from '@heroui/react'
+import {Chip, ChipProps} from '@/lib/heroui'
 
 interface Props {
   status: OrderStatus
@@ -33,7 +33,7 @@ export const OrderStatusBadge = ({status}: Props) => {
   return (
     <Chip
       color={getStatusColor(status) as ChipProps['color']}
-      variant='faded'
+      variant='secondary'
       radius='none'
       className={cn(
         'ml-1 px-1 border-none rounded-sm uppercase font-ios dark:bg-black/30 bg-dark-table',

@@ -3,7 +3,7 @@
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {Icon} from '@/lib/icons'
 import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
-import {Button, Input} from '@heroui/react'
+import {Button, Input} from '@/lib/heroui'
 import {AnimatePresence, motion} from 'motion/react'
 import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
@@ -200,7 +200,7 @@ export const EmailTemplateDisplay = ({
                 <Button
                   as={Link}
                   href='/admin/messaging/email?tabId=templates'
-                  variant='light'
+                  variant='tertiary'
                   size='sm'
                   className='gap-2'
                   onPress={clearPreview}>
@@ -245,7 +245,7 @@ export const EmailTemplateDisplay = ({
                   <Button
                     size='sm'
                     isIconOnly
-                    variant='solid'
+                    variant='primary'
                     aria-label='Send test email'
                     onPress={sendTestEmail}
                     isDisabled={!canSendTestEmail}>

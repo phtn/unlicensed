@@ -7,7 +7,7 @@ import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatRecordingTime} from '@/utils/time'
-import {InputProps, Textarea} from '@heroui/react'
+import {InputProps, TextArea} from '@/lib/heroui'
 import {useMutation} from 'convex/react'
 import {
   KeyboardEvent,
@@ -655,7 +655,7 @@ export function MessageInput({
         {/* Text Input Area */}
         <div className='flex-1 relative'>
           <div className='relative flex items-end rounded-2xl bg-muted/50 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20'>
-            <Textarea
+            <TextArea
               ref={textareaRef}
               value={message}
               radius='none'

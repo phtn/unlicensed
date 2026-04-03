@@ -15,9 +15,9 @@ import {
   Chip,
   Input,
   Select,
-  SelectItem,
+  ListBoxItem,
   SelectedItems,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useStore} from '@tanstack/react-store'
 import {useQuery} from 'convex/react'
 import {useMemo, useState} from 'react'
@@ -284,9 +284,9 @@ export const Inventory = ({
                       }
                     }}
                     isDisabled={isEditMode}
-                    variant='bordered'
+                    variant='secondary'
                     classNames={commonSelectClassNames}>
-                    <SelectItem
+                    <ListBoxItem
                       key='by_denomination'
                       textValue='By denomination'>
                       <div className='flex flex-col'>
@@ -297,8 +297,8 @@ export const Inventory = ({
                           Track stock per purchasable size.
                         </span>
                       </div>
-                    </SelectItem>
-                    <SelectItem key='shared' textValue='Shared'>
+                    </ListBoxItem>
+                    <ListBoxItem key='shared' textValue='Shared'>
                       <div className='flex flex-col'>
                         <span className='text-sm font-medium'>
                           Shared{' '}
@@ -314,7 +314,7 @@ export const Inventory = ({
                           Master stock is shared across all denominations.
                         </span>
                       </div>
-                    </SelectItem>
+                    </ListBoxItem>
                   </Select>
                   {isEditMode ? (
                     <p className='text-xs text-color-muted'>
@@ -353,7 +353,7 @@ export const Inventory = ({
                       }
                       onBlur={field.handleBlur}
                       placeholder='Leave blank to disable'
-                      variant='bordered'
+                      variant='secondary'
                       classNames={commonInputClassNames}
                     />
                     <div className='space-y-1'>
@@ -366,7 +366,7 @@ export const Inventory = ({
                         <div className='flex items-center gap-2'>
                           <Chip
                             size='sm'
-                            variant='flat'
+                            variant='tertiary'
                             className='bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-100'>
                             Alert active
                           </Chip>
@@ -422,7 +422,7 @@ export const Inventory = ({
                         onSelectionChange={(keys) =>
                           handleSelectionChange(field, keys)
                         }
-                        variant='bordered'
+                        variant='secondary'
                         isMultiline={true}
                         isDisabled={variantOptions.length === 0}
                         classNames={commonSelectClassNames}
@@ -435,7 +435,7 @@ export const Inventory = ({
                               return (
                                 <Chip
                                   key={item.key}
-                                  variant='flat'
+                                  variant='tertiary'
                                   classNames={{
                                     base: 'border border-light-gray dark:border-light-gray/30 h-7',
                                     content: 'text-xs flex items-center gap-1',
@@ -453,7 +453,7 @@ export const Inventory = ({
                             ? formatPrice(Math.round(option.price * 100))
                             : 'No price'
                           return (
-                            <SelectItem
+                            <ListBoxItem
                               key={option.key}
                               textValue={option.displayLabel}>
                               <div className='flex items-center justify-between w-full'>
@@ -469,7 +469,7 @@ export const Inventory = ({
                                   ${priceDisplay}
                                 </span>
                               </div>
-                            </SelectItem>
+                            </ListBoxItem>
                           )
                         })}
                       </Select>
@@ -542,7 +542,7 @@ export const Inventory = ({
                         selectionMode='multiple'
                         selectedKeys={selectedKeys}
                         onSelectionChange={handlePopularSelectionChange}
-                        variant='bordered'
+                        variant='secondary'
                         isMultiline={true}
                         isDisabled={variantOptions.length === 0}
                         classNames={commonSelectClassNames}
@@ -555,7 +555,7 @@ export const Inventory = ({
                               return (
                                 <Chip
                                   key={item.key}
-                                  variant='bordered'
+                                  variant='secondary'
                                   className='border border-blue-500'
                                   classNames={{
                                     base: 'border border-dark-gray bg-background dark:border-yellow-500 h-7',
@@ -570,7 +570,7 @@ export const Inventory = ({
                           </div>
                         )}>
                         {variantOptions.map((option) => (
-                          <SelectItem
+                          <ListBoxItem
                             key={option.key}
                             textValue={option.displayLabel}>
                             <div className='flex items-center justify-between w-full'>
@@ -581,7 +581,7 @@ export const Inventory = ({
                                 {option.label}
                               </span>
                             </div>
-                          </SelectItem>
+                          </ListBoxItem>
                         ))}
                       </Select>
                     </div>
@@ -610,7 +610,7 @@ export const Inventory = ({
                         field.handleChange(Number(event.target.value) || 0)
                       }
                       onBlur={field.handleBlur}
-                      variant='bordered'
+                      variant='secondary'
                       classNames={commonInputClassNames}
                     />
                   )}
@@ -633,12 +633,12 @@ export const Inventory = ({
                           field.handleChange(selected)
                         }
                       }}
-                      variant='bordered'
+                      variant='secondary'
                       classNames={commonSelectClassNames}>
                       {MASTER_STOCK_UNIT_OPTIONS.map((unit) => (
-                        <SelectItem key={unit} textValue={unit}>
+                        <ListBoxItem key={unit} textValue={unit}>
                           {unit}
-                        </SelectItem>
+                        </ListBoxItem>
                       ))}
                     </Select>
                   )}
@@ -699,7 +699,7 @@ export const Inventory = ({
                               }
                               onBlur={field.handleBlur}
                               min={0}
-                              variant='bordered'
+                              variant='secondary'
                               classNames={commonInputClassNames}
                             />
                           ))}
@@ -729,7 +729,7 @@ export const Inventory = ({
                       field.handleChange(Number(event.target.value) || 0)
                     }
                     onBlur={field.handleBlur}
-                    variant='bordered'
+                    variant='secondary'
                     classNames={commonInputClassNames}
                   />
                 )}
@@ -758,7 +758,7 @@ export const Inventory = ({
                     label={input.label}
                     value={`${formatQuantity(input.currentQuantity)}${input.unit ? ` ${input.unit}` : ''}`}
                     isReadOnly
-                    variant='bordered'
+                    variant='secondary'
                     classNames={commonInputClassNames}
                   />
                 ))}
@@ -773,7 +773,7 @@ export const Inventory = ({
                   Restock Inventory
                 </Button>
                 <Button
-                  variant='bordered'
+                  variant='secondary'
                   onPress={() => setIsManualOverrideOpen(true)}
                   className='rounded-md'>
                   Manual Override
@@ -808,7 +808,7 @@ export const Inventory = ({
                         <div className='flex flex-wrap items-center justify-between gap-3'>
                           <div className='flex flex-wrap items-center gap-4'>
                             <Chip
-                              variant='flat'
+                              variant='tertiary'
                               classNames={{
                                 base: `border ${movementTypeStyles[movement.type]}`,
                                 content:

@@ -6,7 +6,7 @@ import {Doc} from '@/convex/_generated/dataModel'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Card, Chip, Image} from '@heroui/react'
+import {Button, Card, Chip, Image} from '@/lib/heroui'
 import {useMutation} from 'convex/react'
 import {formatDistanceToNow} from 'date-fns'
 import Link from 'next/link'
@@ -186,7 +186,7 @@ const CategoryCard = ({
         <div className='absolute left-3 top-3 flex flex-wrap gap-2'>
           <Chip
             size='sm'
-            variant='flat'
+            variant='tertiary'
             radius='none'
             className={cn(
               'border px-2 text-[11px] font-semibold rounded-sm',
@@ -198,7 +198,7 @@ const CategoryCard = ({
           </Chip>
           <Chip
             size='sm'
-            variant='flat'
+            variant='tertiary'
             className='border border-black/10 bg-white/85 px-2 text-[11px] font-semibold text-neutral-700 backdrop-blur dark:border-white/10 dark:bg-black/40 dark:text-neutral-200'>
             {category.productCount} products
           </Chip>
@@ -208,7 +208,7 @@ const CategoryCard = ({
           <Button
             size='sm'
             isIconOnly
-            variant='light'
+            variant='tertiary'
             aria-label={`Drag to reorder ${category.name}`}
             disabled={dragHandleDisabled}
             onPointerDown={() => onDragHandlePointerDown?.()}
@@ -274,7 +274,7 @@ const CategoryCard = ({
                 <Chip
                   key={tag}
                   size='sm'
-                  variant='flat'
+                  variant='tertiary'
                   className='bg-sky-400/10 rounded-md! h-6 text-xs text-sky-700 dark:text-sky-300'>
                   {tag}
                 </Chip>
@@ -292,7 +292,7 @@ const CategoryCard = ({
                 <Chip
                   key={warning}
                   size='sm'
-                  variant='flat'
+                  variant='tertiary'
                   className='bg-amber-500/10 text-xs text-amber-700 dark:text-amber-300'>
                   {warning}
                 </Chip>
@@ -407,7 +407,7 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
           <div className='flex gap-2 text-xs'>
             <Chip
               size='sm'
-              variant='flat'
+              variant='tertiary'
               radius='none'
               className='bg-emerald-500/10 font-okxs text-emerald-700 dark:text-emerald-300 rounded-sm'>
               {liveCategories} Live
@@ -415,7 +415,7 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
             <Chip
               size='sm'
               radius='none'
-              variant='flat'
+              variant='tertiary'
               className='bg-orange-500/10 text-orange-700 dark:text-orange-200 rounded-sm'>
               {totalCategories - liveCategories} Hidden
             </Chip>

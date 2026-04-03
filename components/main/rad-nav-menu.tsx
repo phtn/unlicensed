@@ -1,20 +1,20 @@
 'use client'
 
-import { useMobile } from '@/hooks/use-mobile'
-import { Icon } from '@/lib/icons'
-import { cn } from '@/lib/utils'
-import { AnimatePresence, motion } from 'motion/react'
+import {useMobile} from '@/hooks/use-mobile'
+import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
+import {AnimatePresence, motion} from 'motion/react'
 import Link from 'next/link'
 import {
-    createContext,
-    useCallback,
-    useContext,
-    useLayoutEffect,
-    useMemo,
-    useRef,
-    useState,
+  createContext,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
 } from 'react'
-import { HyperList } from '../expermtl/hyper-list'
+import {HyperList} from '../expermtl/hyper-list'
 
 export interface NavMenuCategory {
   slug: string
@@ -103,7 +103,7 @@ export const InnerMenu = ({
                   type='button'
                   className={cn(
                     'group/cat flex h-auto w-full items-center justify-between text-left text-sm font-semibold transition-colors duration-150 ease-out',
-                    'hover:border-border hover:text-accent-foreground px-6 py-0 md:py-3 data-active:border data-active:border-sidebar',
+                    'hover:border-border dark:hover:text-accent-foreground px-6 py-0 md:py-3 data-active:border data-active:border-sidebar',
                     'focus-visible:ring-2 focus-visible:ring-ring/50 rounded-none dark:bg-black dark:text-white',
                     'border-none dark:data-active:text-white bg-sidebar/30',
                     active === item.slug &&

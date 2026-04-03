@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
   User,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useMutation} from 'convex/react'
 import Link from 'next/link'
 import React, {CSSProperties, ReactNode, useEffect} from 'react'
@@ -247,7 +247,7 @@ export const RecentActivities = ({
               className='border-none gap-1 opacity-70 font-brk uppercase'
               color={getActivityChipColor(activity.type)}
               size='sm'
-              variant='dot'>
+              variant='soft'>
               {getActivityTypeLabel(activity.type)}
             </Chip>
           )
@@ -393,8 +393,8 @@ export const RecentActivities = ({
       radius='none'
       style={fullTable ? translateStyle : undefined}
       className={cn(
-        'relative z-300 border border-black dark:bg-dark-table/40 bg-light-table/0 md:rounded-t-2xl md:w-full mask-[linear-gradient(white,white)] w-[96lvw] overflow-hidden',
-        'transition-transform duration-300 border-t border-light-gray/40',
+        'relative z-300 border dark:bg-dark-table/40 bg-light-table/30 md:rounded-t-lg md:w-full mask-[linear-gradient(white,white)] w-[96lvw] overflow-hidden',
+        'transition-transform duration-300 border-t border-zinc-300 dark:border-dark-table',
         {
           'h-full bg-sidebar/40': fullTable,
           'transform-[translateY(var(--translate-y))]': fullTable,
@@ -407,18 +407,18 @@ export const RecentActivities = ({
             'md:h-[calc(100lvh-66px)]': fullTable,
           },
         )}>
-        <div className='sticky left-0 top-0 font-clash text-sm flex items-center justify-between px-2 md:py-2 py-1 w-full bg-white'>
-          <div className='relative h-8! flex items-center justify-between md:w-full w-[94lvw]'>
-            <div className='flex w-full text-dark-table'>Today</div>
+        <div className='sticky left-0 top-0 font-clash text-sm flex items-center justify-between px-3 md:py-2 py-1 w-full dark:bg-zinc-950/40'>
+          <div className='relative h-4.5! flex items-center justify-between md:w-full w-[94lvw]'>
+            <div className='flex w-full text-foreground'>Today</div>
             <Button
               size='sm'
               isIconOnly
               id='toggle-full-table'
               onPress={toggleFullTable}
-              className='sticky right-2 dark:bg-origin/60 bg-sidebar/60 scale-80 rounded-md px-0 overflow-hidden aspect-square flex-1 opacity-60 hover:opacity-100'>
+              className='sticky h-6 w-7 right-2 text-foreground dark:bg-sidebar/10 bg-sidebar/60 hover:bg-slate-400/40 scale-80 rounded-md px-0 overflow-hidden flex-1 hover:opacity-100'>
               <Icon
-                name='chevron-double-left'
-                className={cn('size-7 rotate-45', fullTable && '-rotate-45')}
+                name='chevron-left'
+                className={cn('size-5 rotate-45', fullTable && '-rotate-45')}
               />
             </Button>
           </div>
@@ -430,7 +430,7 @@ export const RecentActivities = ({
             ...classNames,
             tbody: 'overflow-auto rounded-3xl',
             th: [
-              'sticky top-0 overflow-hidden bg-sidebar dark:bg-dark-table backdrop-blur-3xl z-20 h-9 border-b border-sidebar dark:border-dark-table',
+              'sticky top-0 overflow-hidden bg-slate-200 dark:bg-dark-table backdrop-blur-3xl z-20 h-9 border-b border-sidebar dark:border-dark-table',
             ],
           }}
           aria-label='Recent activities table'>
@@ -439,7 +439,7 @@ export const RecentActivities = ({
               <TableColumn
                 key={column.uid}
                 align='start'
-                className='tracking-wider text-xs font-medium'>
+                className='tracking-wider text-xs font-medium text-slate-500 dark:text-foreground'>
                 <div className='drop-shadow-xs'>{column.name}</div>
               </TableColumn>
             )}

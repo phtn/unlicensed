@@ -4,7 +4,7 @@ import {ScrollArea} from '@/components/ui/scroll-area'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Divider, Input, Skeleton, Tooltip} from '@heroui/react'
+import {Button, Separator, Input, Skeleton, Tooltip} from '@/lib/heroui'
 import {Slot} from '@radix-ui/react-slot'
 import {cva, VariantProps} from 'class-variance-authority'
 import {
@@ -335,8 +335,8 @@ function SidebarFooter({className, ...props}: ComponentProps<'div'>) {
   )
 }
 
-function SidebarSeparator({className}: ComponentProps<typeof Divider>) {
-  return <Divider className={cn('mx-2 w-auto bg-sidebar-border', className)} />
+function SidebarSeparator({className}: ComponentProps<typeof Separator>) {
+  return <Separator className={cn('mx-2 w-auto bg-sidebar-border', className)} />
 }
 
 function SidebarContent({

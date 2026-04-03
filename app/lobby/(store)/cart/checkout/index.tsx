@@ -556,6 +556,10 @@ export function Checkout({
     [handleInputChange, onPaymentMethodUrlChange],
   )
 
+  useEffect(() => {
+    onPaymentMethodUrlChange?.(formData.paymentMethod)
+  }, [formData.paymentMethod, onPaymentMethodUrlChange])
+
   const shouldShowModal = isCheckoutOpen
   return (
     <>

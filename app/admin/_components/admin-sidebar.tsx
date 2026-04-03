@@ -239,11 +239,17 @@ const MenuContent = memo(function MenuContent(
       <span className='font-okxs font-normal tracking-normal text-sm md:text-sm capitalize dark:text-white/90'>
         {item.title}
       </span>
-      {showBadge && (
-        <span className='flex h-5 w-5 aspect-square items-center justify-center rounded-sm bg-foreground/90 px-1.5 text-base font-semibold tabular-nums text-background dark:text-sidebar font-space'>
-          {item.pendingOrdersCount}
-        </span>
-      )}
+      <div className='flex items-center justify-end w-full'>
+        {showBadge && (
+          <span
+            className={cn(
+              'flex h-5 w-7 aspect-square items-center justify-center rounded-sm bg-foreground/60 text-base font-semibold tabular-nums font-space text-amber-100 dark:text-amber-200/80',
+              {'bg-transparent': item.title === 'Orders'},
+            )}>
+            {item.pendingOrdersCount}
+          </span>
+        )}
+      </div>
     </Link>
   )
 })

@@ -1,16 +1,16 @@
-import { api } from '@/convex/_generated/api'
-import { adaptCategory } from '@/lib/convexClient'
-import { Icon } from '@/lib/icons'
-import { cn } from '@/lib/utils'
-import { useQuery } from 'convex/react'
-import { useMemo, useState } from 'react'
-import { InnerMenu, type NavMenuSubItem } from '../main/rad-nav-menu'
+import {api} from '@/convex/_generated/api'
+import {adaptCategory} from '@/lib/convexClient'
+import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
+import {useQuery} from 'convex/react'
+import {useMemo, useState} from 'react'
+import {InnerMenu, type NavMenuSubItem} from '../main/rad-nav-menu'
 import {
-    NavigationMenu,
-    NavigationMenuContent,
-    NavigationMenuItem,
-    NavigationMenuList,
-    NavigationMenuTrigger,
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuList,
+  NavigationMenuTrigger,
 } from '../ui/navigation-menu'
 
 const CATEGORY_ORDER: string[] = [
@@ -66,6 +66,7 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
       <NavigationMenuList className='gap-0'>
         <NavigationMenuItem value={NAV_MENU_VALUE}>
           <NavigationMenuTrigger
+            id='nav-menu-trigger'
             className={cn(
               'rounded-none p-2 aspect-square text-sm font-semibold outline-0 focus-visible:bg-brand focus-visible:ring-0',
             )}>

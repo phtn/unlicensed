@@ -13,7 +13,7 @@ import {Icon} from '@/lib/icons'
 import type {GatewayId} from '@/lib/paygate/gateway-config'
 import type {ApiResponse} from '@/lib/paygate/types'
 import {cn} from '@/lib/utils'
-import {Button, Card, CardBody, CardHeader} from '@heroui/react'
+import {Button, Card, CardContent, CardHeader} from '@/lib/heroui'
 import {useStore} from '@tanstack/react-store'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
@@ -282,7 +282,7 @@ export const GatewayAccountForm = ({
           </span>
         </SectionHeader>
       </CardHeader>
-      <CardBody className='px-3 sm:px-4 md:px-6 h-[calc(100svh-120px)] sm:h-[calc(100lvh-100px)] overflow-y-auto overflow-x-hidden'>
+      <CardContent className='px-3 sm:px-4 md:px-6 h-[calc(100svh-120px)] sm:h-[calc(100lvh-100px)] overflow-y-auto overflow-x-hidden'>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8'>
           <div>
             <div className='mb-3 sm:mb-4 space-y-3 sm:space-y-5'>
@@ -458,7 +458,7 @@ export const GatewayAccountForm = ({
                   {onCancel && (
                     <Button
                       type='button'
-                      variant='flat'
+                      variant='tertiary'
                       size='lg'
                       onPress={onCancel}
                       className='w-full sm:w-auto touch-manipulation'>
@@ -498,7 +498,7 @@ export const GatewayAccountForm = ({
 
           <CreateWalletResponse response={isEditMode ? null : walletResponse} />
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   )
 }

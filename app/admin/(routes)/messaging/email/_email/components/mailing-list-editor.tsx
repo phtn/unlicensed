@@ -9,11 +9,11 @@ import {Icon} from '@/lib/icons'
 import {
   Button,
   Card,
-  CardBody,
+  CardContent,
   CardHeader,
   Input,
-  Textarea,
-} from '@heroui/react'
+  TextArea,
+} from '@/lib/heroui'
 import {
   type ChangeEvent,
   type ClipboardEvent,
@@ -298,7 +298,7 @@ export const MailingListEditor = ({
           className='w-full lg:max-w-sm'
         />
       </CardHeader>
-      <CardBody className='space-y-4 p-5 pt-0'>
+      <CardContent className='space-y-4 p-5 pt-0'>
         <input
           ref={csvInputRef}
           type='file'
@@ -308,7 +308,7 @@ export const MailingListEditor = ({
         />
 
         <div className='flex flex-col gap-3 md:gap-6 lg:flex-row lg:items-start'>
-          <Textarea
+          <TextArea
             minRows={2}
             placeholder='Paste Name and Email in any of these formats: Alice=alice@example.com | Bob: bob@example.com | Carol, carol@example.com'
             classNames={narrowInputClassNames}
@@ -319,7 +319,7 @@ export const MailingListEditor = ({
               size='sm'
               type='button'
               radius='none'
-              variant='solid'
+              variant='primary'
               onPress={addRecipientRow}
               className='gap-1 rounded-md'>
               <Icon name='plus' className='size-4' />
@@ -329,7 +329,7 @@ export const MailingListEditor = ({
               size='sm'
               type='button'
               radius='none'
-              variant='solid'
+              variant='primary'
               onPress={() => csvInputRef.current?.click()}
               className='gap-1 rounded-md bg-dark-table text-white dark:bg-white dark:text-dark-table'>
               <Icon name='arrow-up' className='size-4' />
@@ -375,7 +375,7 @@ export const MailingListEditor = ({
                   <Button
                     type='button'
                     size='sm'
-                    variant='light'
+                    variant='tertiary'
                     isIconOnly
                     onPress={() => removeRecipientRow(recipient.rowId)}
                     aria-label={`Remove recipient ${index + 1}`}
@@ -392,7 +392,7 @@ export const MailingListEditor = ({
         </div>
 
         <div className='flex justify-end gap-2'>
-          <Button variant='light' onPress={onCancel}>
+          <Button variant='tertiary' onPress={onCancel}>
             Cancel
           </Button>
           <Button
@@ -404,7 +404,7 @@ export const MailingListEditor = ({
             {submitLabel}
           </Button>
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   )
 }

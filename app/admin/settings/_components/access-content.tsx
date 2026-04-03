@@ -5,7 +5,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Input, Switch} from '@heroui/react'
+import {Button, Input, Switch} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useRef, useState, ViewTransition} from 'react'
 import {commonInputClassNames} from '../../_components/ui/fields'
@@ -166,7 +166,7 @@ export const AccessContent = () => {
               <Button
                 isIconOnly
                 size='sm'
-                variant='light'
+                variant='tertiary'
                 color='danger'
                 onPress={() => handleDelete(index)}
                 className='mx-2'
@@ -181,7 +181,7 @@ export const AccessContent = () => {
       <div className='flex flex-wrap items-center gap-3'>
         <Button
           size='sm'
-          variant='bordered'
+          variant='secondary'
           onPress={handleAdd}
           startContent={<Icon name='plus' className='size-4' />}>
           Add Passcode

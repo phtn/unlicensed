@@ -4,7 +4,7 @@ import {
   commonInputClassNames,
   commonSelectClassNames,
 } from '@/app/admin/_components/ui/fields'
-import {Input, Select, SelectItem} from '@heroui/react'
+import {Input, Select, ListBoxItem} from '@/lib/heroui'
 import {ProductFormApi} from '../product-schema'
 import {FormSection, Header} from './components'
 
@@ -52,7 +52,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   }}
                   onBlur={field.handleBlur}
                   placeholder='Select packaging mode'
-                  variant='bordered'
+                  variant='secondary'
                   disallowEmptySelection={false}
                   classNames={{
                     ...commonInputClassNames,
@@ -60,9 +60,9 @@ export const Packaging = ({form}: PackagingProps) => {
                     mainWrapper: 'py-0',
                   }}>
                   {PACKAGING_MODE_OPTIONS.map((option) => (
-                    <SelectItem key={option.key} textValue={option.label}>
+                    <ListBoxItem key={option.key} textValue={option.label}>
                       {option.label}
-                    </SelectItem>
+                    </ListBoxItem>
                   ))}
                 </Select>
                 {field.state.meta.isTouched &&
@@ -90,7 +90,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   }}
                   onBlur={field.handleBlur}
                   placeholder='Select stock unit'
-                  variant='bordered'
+                  variant='secondary'
                   disallowEmptySelection={false}
                   classNames={{
                     ...commonInputClassNames,
@@ -98,9 +98,9 @@ export const Packaging = ({form}: PackagingProps) => {
                     mainWrapper: 'py-0',
                   }}>
                   {NET_WEIGHT_UNIT_OPTIONS.map((unit) => (
-                    <SelectItem key={unit.key} textValue={unit.label}>
+                    <ListBoxItem key={unit.key} textValue={unit.label}>
                       {unit.label}
-                    </SelectItem>
+                    </ListBoxItem>
                   ))}
                 </Select>
                 {field.state.meta.isTouched &&
@@ -126,7 +126,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='10'
-                  variant='bordered'
+                  variant='secondary'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
@@ -152,7 +152,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='e.g., 160'
-                  variant='bordered'
+                  variant='secondary'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
@@ -179,7 +179,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='e.g., 142.5'
-                  variant='bordered'
+                  variant='secondary'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
@@ -206,7 +206,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='e.g., 3.5'
-                  variant='bordered'
+                  variant='secondary'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
@@ -234,7 +234,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   }}
                   onBlur={field.handleBlur}
                   placeholder='Select unit'
-                  variant='bordered'
+                  variant='secondary'
                   disallowEmptySelection={false}
                   classNames={{
                     ...commonInputClassNames,
@@ -242,9 +242,9 @@ export const Packaging = ({form}: PackagingProps) => {
                     mainWrapper: 'py-0',
                   }}>
                   {NET_WEIGHT_UNIT_OPTIONS.map((unit) => (
-                    <SelectItem key={unit.key} textValue={unit.label}>
+                    <ListBoxItem key={unit.key} textValue={unit.label}>
                       {unit.label}
-                    </SelectItem>
+                    </ListBoxItem>
                   ))}
                 </Select>
                 {field.state.meta.isTouched &&

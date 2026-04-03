@@ -24,7 +24,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Image as HeroImage} from '@heroui/react'
+import {Button, Image as HeroImage} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 
 type Area = {x: number; y: number; width: number; height: number}
@@ -905,7 +905,7 @@ export const ImageOptimizer = () => {
                   size='sm'
                   radius='full'
                   color='danger'
-                  variant='solid'
+                  variant='primary'
                   onPress={clearSelectedImage}
                   className='absolute bg-dark-table -top-3 -right-3 z-20 hover:opacity-100'
                   aria-label='Clear selected image'>
@@ -976,7 +976,7 @@ export const ImageOptimizer = () => {
               <Button
                 radius='none'
                 color='primary'
-                variant='solid'
+                variant='primary'
                 onPress={handleBrowse}
                 className='rounded-md bg-dark-table'>
                 Select Image
@@ -985,7 +985,7 @@ export const ImageOptimizer = () => {
               <Button
                 radius='none'
                 color='primary'
-                variant='solid'
+                variant='primary'
                 onPress={generatePreviews}
                 isDisabled={!canGenerate}
                 className='rounded-md bg-dark-table'
@@ -1005,7 +1005,7 @@ export const ImageOptimizer = () => {
               size='sm'
               radius='none'
               isIconOnly
-              variant='flat'
+              variant='tertiary'
               className='rounded-md bg-transparent'
               onPress={() => setIsImageDataCollapsed((previous) => !previous)}>
               {isImageDataCollapsed ? (
@@ -1142,7 +1142,7 @@ export const ImageOptimizer = () => {
                   <Button
                     size='sm'
                     radius='none'
-                    variant='solid'
+                    variant='primary'
                     color='primary'
                     onPress={selectAllPreviews}
                     className='rounded-md bg-dark-table'>
@@ -1152,7 +1152,7 @@ export const ImageOptimizer = () => {
                   <Button
                     size='sm'
                     radius='none'
-                    variant='solid'
+                    variant='primary'
                     color='primary'
                     onPress={uploadSelectedToConvex}
                     isDisabled={
@@ -1166,7 +1166,7 @@ export const ImageOptimizer = () => {
                 <Button
                   size='sm'
                   radius='none'
-                  variant='flat'
+                  variant='tertiary'
                   onPress={clearPreviewSelection}
                   isDisabled={selectedPreviewSizes.length === 0}
                   className='rounded-md'>

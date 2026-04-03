@@ -4,6 +4,7 @@ import {ChatWindow} from '@/components/main/chat-window'
 import {DataTable} from '@/components/table-v2'
 import {priceCell} from '@/components/table-v2/cells-v2'
 import {ActionConfig, ColumnConfig} from '@/components/table-v2/create-column'
+import {DateRangeFilter} from '@/components/table-v2/date-range'
 import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
@@ -11,7 +12,9 @@ import {onError} from '@/ctx/toast'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Badge, Button, Input} from '@heroui/react'
+import {Badge, Button} from '@/lib/heroui'
+import type {CalendarDate} from '@internationalized/date'
+import type {RangeValue} from '@react-types/shared'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useCallback, useMemo, useState} from 'react'
@@ -73,10 +76,11 @@ export const OrdersTable = () => {
   const [chatConversationSelectionKey, setChatConversationSelectionKey] =
     useState(0)
   const [isOpeningChat, setIsOpeningChat] = useState(false)
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
-
-  const hasInvalidDateRange = Boolean(fromDate && toDate && fromDate > toDate)
+  const [dateRange, setDateRange] = useState<RangeValue<CalendarDate> | null>(
+    null,
+  )
+  const fromDate = dateRange?.start.toString() ?? ''
+  const toDate = dateRange?.end.toString() ?? ''
 
   const customerProfileIdByUserId = useMemo(() => {
     const map = new Map<string, string>()
@@ -92,7 +96,7 @@ export const OrdersTable = () => {
   }, [users])
 
   const filteredOrders = useMemo(() => {
-    if (!orders || hasInvalidDateRange) {
+    if (!orders) {
       return []
     }
 
@@ -103,7 +107,7 @@ export const OrdersTable = () => {
         toDate,
       ),
     )
-  }, [orders, hasInvalidDateRange, fromDate, toDate])
+  }, [orders, fromDate, toDate])
 
   const tableOrders = useMemo(
     () =>
@@ -283,50 +287,21 @@ export const OrdersTable = () => {
   )
 
   const clearDateRange = useCallback(() => {
-    setFromDate('')
-    setToDate('')
+    setDateRange(null)
   }, [])
 
   const dateRangeControl = useMemo(
     () => (
       <div className='flex flex-wrap items-center gap-2 md:flex-nowrap'>
-        <Input
-          type='date'
-          aria-label='Filter orders from date'
-          value={fromDate}
-          onValueChange={setFromDate}
-          size='sm'
-          radius='sm'
-          className='w-[10.51rem]'
-          classNames={{
-            inputWrapper:
-              'h-8 min-h-8 rounded-sm border border-foreground/10 bg-background shadow-none',
-            input: 'text-sm',
-          }}
+        <DateRangeFilter
+          ariaLabel='Filter orders by placed date'
+          value={dateRange}
+          onChange={setDateRange}
         />
-        <Input
-          type='date'
-          aria-label='Filter orders to date'
-          value={toDate}
-          onValueChange={setToDate}
-          size='sm'
-          radius='none'
-          isInvalid={hasInvalidDateRange}
-          errorMessage={
-            hasInvalidDateRange ? 'End date must be on or after start date' : ''
-          }
-          className='w-[10.51rem]'
-          classNames={{
-            inputWrapper:
-              'h-8 min-h-8 rounded-sm border border-foreground/10 bg-background shadow-none',
-            input: 'text-sm',
-            errorMessage: 'text-xs',
-          }}
-        />
-        {fromDate || toDate ? (
+        {dateRange ? (
           <Button
             size='sm'
-            variant='light'
+            variant='tertiary'
             className='h-9 min-w-0 rounded-md px-3'
             onPress={clearDateRange}>
             Clear
@@ -334,7 +309,7 @@ export const OrdersTable = () => {
         ) : null}
       </div>
     ),
-    [clearDateRange, fromDate, hasInvalidDateRange, toDate],
+    [clearDateRange, dateRange],
   )
 
   const actionConfig = useMemo(
@@ -367,22 +342,22 @@ export const OrdersTable = () => {
                 <Button
                   isIconOnly
                   size='sm'
-                  variant='light'
+                  variant='tertiary'
                   isDisabled={isOpeningChat}
                   className='h-8 w-8 min-w-8 rounded-lg'
                   onPress={() => {
                     void handleOpenCustomerChat(order)
                   }}>
-                  <Icon name='chat' className='size-4 opacity-80' />
+                  <Icon name='message-filled' className='size-4.5 opacity-80' />
                 </Button>
               </Badge>
               <Button
                 isIconOnly
                 size='sm'
-                variant='light'
+                variant='tertiary'
                 className='h-8 w-8 min-w-8 rounded-lg'
                 onPress={() => handleViewOrder(order)}>
-                <Icon name='details' className='size-4' />
+                <Icon name='details' className='size-4.5' />
               </Button>
             </div>
           )

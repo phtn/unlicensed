@@ -2,7 +2,6 @@
  * Test utilities for React component tests
  */
 
-import {HeroUIProvider} from '@heroui/react'
 import type {ReactElement, ReactNode} from 'react'
 import {render, type RenderOptions} from '@testing-library/react'
 import {PendingDealsProvider} from '@/ctx/pending-deals'
@@ -21,11 +20,7 @@ function AllProviders({
   ) : (
     children
   )
-  return (
-    <HeroUIProvider locale='en-US' className='min-h-screen'>
-      {content}
-    </HeroUIProvider>
-  )
+  return <div className='min-h-screen'>{content}</div>
 }
 
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {

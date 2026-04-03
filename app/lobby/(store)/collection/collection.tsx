@@ -2,7 +2,7 @@ import {StoreCategory, StoreProduct} from '@/app/types'
 import {ProductCard} from '@/components/store/product-card'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {resolveProductImage} from '@/lib/resolve-product-image'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import {useMemo} from 'react'
 
 interface CollectionProps {
@@ -55,7 +55,7 @@ export const FullCollection = ({products, categories}: CollectionProps) => {
             as='a'
             href='#finder'
             radius='full'
-            variant='flat'
+            variant='tertiary'
             className='border border-(--surface-outline) bg-(--surface-highlight) text-sm font-semibold text-foreground transition hover:bg-(--surface-muted)'
           >
             Personalize with Strain Finder

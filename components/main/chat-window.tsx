@@ -14,9 +14,9 @@ import {DialogWindow} from '@/components/ui/window'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {useGuestChatCtx} from '@/ctx/guest-chat'
+import {Avatar, ListBoxItem, Select} from '@/lib/heroui'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Avatar, Select, SelectItem} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {
@@ -394,7 +394,7 @@ export function ChatWindow({
                 })
               }}
               size='sm'
-              variant='flat'
+              variant='tertiary'
               classNames={{
                 trigger:
                   'min-h-8 h-8 w-full bg-sidebar/40 shadow-none data-[hover=true]:bg-sidebar',
@@ -406,7 +406,7 @@ export function ChatWindow({
               }}
               aria-label='Select conversation'>
               {(item) => (
-                <SelectItem
+                <ListBoxItem
                   key={item.key}
                   textValue={item.label}
                   className='hover:bg-sidebar!'>
@@ -418,14 +418,14 @@ export function ChatWindow({
                       size='sm'
                       fallback={
                         <span className='font-polysans font-semibold text-xl text-brand'>
-                          {item.label.substring(0, 1).toUpperCase()}
+                          {item.label?.substring(0, 1).toUpperCase()}
                         </span>
                       }
                       src={item.avatarUrl ?? undefined}
                     />
                     <span>{item.label}</span>
                   </div>
-                </SelectItem>
+                </ListBoxItem>
               )}
             </Select>
           </div>

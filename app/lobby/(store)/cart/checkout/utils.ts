@@ -28,8 +28,17 @@ export function splitUserName(user: UserType | null | undefined): {
 export function getDefaultPaymentMethod(
   user: UserType | null | undefined,
 ): PaymentMethod {
-  return (user?.preferences?.defaultPaymentMethod ||
-    'credit_card') as PaymentMethod
+  switch (user?.preferences?.defaultPaymentMethod) {
+    case 'credit_card':
+    case 'debit_card':
+    case 'apple_pay':
+    case 'google_pay':
+      return 'cards'
+    case 'cash':
+      return 'cash_app'
+    default:
+      return 'cards'
+  }
 }
 
 /**

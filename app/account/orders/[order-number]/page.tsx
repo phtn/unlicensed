@@ -7,14 +7,14 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
 import {
-  BreadcrumbItem,
+  BreadcrumbsItem,
   Breadcrumbs,
   Button,
   Card,
-  CardBody,
-  Divider,
+  CardContent,
+  Separator,
   Image,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {default as NextLink} from 'next/link'
@@ -111,7 +111,7 @@ export default function OrderDetailPage() {
         {/* Payment Success Banner */}
         {showSuccessBanner && (
           <Card className='mb-6 border border-terpenes/20 bg-terpenes/5'>
-            <CardBody className='p-4'>
+            <CardContent className='p-4'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-3'>
                   <Icon
@@ -127,7 +127,7 @@ export default function OrderDetailPage() {
                 </div>
                 <Button
                   isIconOnly
-                  variant='light'
+                  variant='tertiary'
                   size='sm'
                   onPress={() => setShowSuccessBanner(false)}
                   className='min-w-0 w-8 h-8'
@@ -135,7 +135,7 @@ export default function OrderDetailPage() {
                   <Icon name='x' className='size-4' />
                 </Button>
               </div>
-            </CardBody>
+            </CardContent>
           </Card>
         )}
 
@@ -144,19 +144,19 @@ export default function OrderDetailPage() {
           <div>
             <h1 className='text-base font-okxs space-x-1 sm:space-x-3'>
               <Breadcrumbs>
-                <BreadcrumbItem href='/account'>
+                <BreadcrumbsItem href='/account'>
                   <span className='md:hidden flex'>
                     <Icon name='user' className='size-3' />
                   </span>
                   <span className='hidden md:flex'>Account</span>
-                </BreadcrumbItem>
-                <BreadcrumbItem href='/account/orders'>Orders</BreadcrumbItem>
-                <BreadcrumbItem>
+                </BreadcrumbsItem>
+                <BreadcrumbsItem href='/account/orders'>Orders</BreadcrumbsItem>
+                <BreadcrumbsItem>
                   {order.orderNumber.substring(5)}{' '}
                   <Activity mode={isMobile ? 'hidden' : 'visible'}>
                     <OrderStatusBadge status={order.orderStatus} />
                   </Activity>
-                </BreadcrumbItem>
+                </BreadcrumbsItem>
               </Breadcrumbs>
             </h1>
           </div>
@@ -170,7 +170,7 @@ export default function OrderDetailPage() {
         <div className='grid gap-6'>
           {/* Order Items */}
           <Card radius='sm' shadow='none' className='dark:bg-dark-table'>
-            <CardBody className='p-4 md:p-6'>
+            <CardContent className='p-4 md:p-6'>
               <SectionTitle title='Items' />
               <div className='grid md:grid-cols-2 md:gap-0 gap-3'>
                 {order.items.map((item, index) => (
@@ -213,13 +213,13 @@ export default function OrderDetailPage() {
                   </div>
                 ))}
               </div>
-            </CardBody>
+            </CardContent>
           </Card>
 
           {/* Order Summary */}
           <div className='grid gap-6 md:grid-cols-2'>
             <Card radius='sm' shadow='none'>
-              <CardBody className='p-4 md:p-6'>
+              <CardContent className='p-4 md:p-6'>
                 <SectionTitle title='Order Summary' />
                 <div className='space-y-2 font-okxs'>
                   <div className='flex justify-between text-sm'>
@@ -256,18 +256,18 @@ export default function OrderDetailPage() {
                       <span>${formatPrice(order.processingFeeCents)}</span>
                     </div>
                   )}
-                  <Divider className='my-2' />
+                  <Separator className='my-2' />
                   <div className='flex justify-between'>
                     <span>Total</span>
                     <span>${formatPrice(payableTotalCents)}</span>
                   </div>
                 </div>
-              </CardBody>
+              </CardContent>
             </Card>
 
             {/* Payment Information */}
             <Card radius='sm' shadow='none'>
-              <CardBody className='p-4 md:p-6'>
+              <CardContent className='p-4 md:p-6'>
                 <div className='flex items-center justify-between'>
                   <SectionTitle title='Payment' />
                   {/*<div className='font-okxs text-cashapp'>
@@ -328,14 +328,14 @@ export default function OrderDetailPage() {
                     </div>
                   )}
                 </div>
-              </CardBody>
+              </CardContent>
             </Card>
           </div>
 
           {/* Shipping Information */}
           <div className='grid gap-6 md:grid-cols-2'>
             <Card radius='sm' shadow='none'>
-              <CardBody className='p-4 md:p-6'>
+              <CardContent className='p-4 md:p-6'>
                 <SectionTitle title='Shipping Address' />
                 <div className='space-y-1 font-okxs text-sm'>
                   {order.shippingAddress.firstName &&
@@ -395,12 +395,12 @@ export default function OrderDetailPage() {
                     )}
                   </div>
                 )}
-              </CardBody>
+              </CardContent>
             </Card>
 
             {/* Order Details */}
             <Card radius='sm' shadow='none'>
-              <CardBody className='p-4 md:p-6'>
+              <CardContent className='p-4 md:p-6'>
                 <SectionTitle title='Order Details' />
                 <div className='space-y-2 font-okxs text-sm'>
                   <div className='flex justify-between'>
@@ -428,7 +428,7 @@ export default function OrderDetailPage() {
                     </div>
                   )}
                 </div>
-              </CardBody>
+              </CardContent>
             </Card>
           </div>
 
@@ -436,7 +436,7 @@ export default function OrderDetailPage() {
           <div className='flex gap-4 justify-end mb-4'>
             <Button
               radius='none'
-              variant='faded'
+              variant='secondary'
               as={NextLink}
               href='/account'
               className='border-transparent dark:bg-dark-table/10 rounded-lg font-okxs font-semibold dark:text-white text-base'
@@ -449,7 +449,7 @@ export default function OrderDetailPage() {
                 <Button
                   size='md'
                   radius='none'
-                  variant='light'
+                  variant='tertiary'
                   className='rounded-xs font-okxs font-semibold dark:text-danger text-base'
                 >
                   Cancel Order

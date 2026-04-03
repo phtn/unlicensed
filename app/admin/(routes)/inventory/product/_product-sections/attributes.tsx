@@ -6,7 +6,7 @@ import {
   NumberField,
   SelectField,
 } from '@/app/admin/_components/ui/fields'
-import {Input, Slider} from '@heroui/react'
+import {Input, Slider} from '@/lib/heroui'
 import {useStore} from '@tanstack/react-store'
 import {ChangeEvent} from 'react'
 import {ProductFormApi} from '../product-schema'
@@ -72,7 +72,7 @@ export const Attributes = ({form}: AttributesProps) => {
                     }
                     onBlur={field.handleBlur}
                     placeholder='0.0'
-                    variant='bordered'
+                    variant='secondary'
                     size='lg'
                     classNames={commonInputClassNames}
                   />
@@ -152,7 +152,7 @@ export const Attributes = ({form}: AttributesProps) => {
                     }
                     onBlur={field.handleBlur}
                     placeholder='limited, kush, afghan'
-                    variant='bordered'
+                    variant='secondary'
                     size='lg'
                     classNames={commonInputClassNames}
                   />
@@ -180,7 +180,7 @@ export const Attributes = ({form}: AttributesProps) => {
                     }
                     onBlur={field.handleBlur}
                     placeholder='e.g., OG Kush x Sour Diesel'
-                    variant='bordered'
+                    variant='secondary'
                     size='lg'
                     classNames={commonInputClassNames}
                   />

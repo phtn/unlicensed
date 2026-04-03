@@ -14,7 +14,7 @@ import {cn} from '@/lib/utils'
 import {
   Button,
   Card,
-  CardBody,
+  CardContent,
   Checkbox,
   Input,
   Modal,
@@ -23,10 +23,10 @@ import {
   ModalFooter,
   ModalHeader,
   Select,
-  SelectItem,
+  ListBoxItem,
   Switch,
   type SharedSelection,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {
   startTransition,
@@ -844,7 +844,7 @@ export const DealsContent = () => {
                 radius='none'
                 shadow='none'
                 className='border border-alum/30 rounded-xs overflow-hidden transition-colors hover:border-default-300/80'>
-                <CardBody className='p-0'>
+                <CardContent className='p-0'>
                   <div className='flex items-start justify-between gap-3 p-4 pb-3'>
                     <div className='flex min-w-0 flex-1 items-start gap-3'>
                       <div className='min-w-0 flex-1'>
@@ -902,7 +902,7 @@ export const DealsContent = () => {
                         size='sm'
                         isIconOnly
                         radius='none'
-                        variant='light'
+                        variant='tertiary'
                         aria-label='Move up'
                         isDisabled={i === 0}
                         onPress={() => handleMove(i, -1)}
@@ -911,7 +911,7 @@ export const DealsContent = () => {
                       </Button>
                       <Button
                         size='sm'
-                        variant='light'
+                        variant='tertiary'
                         radius='none'
                         isIconOnly
                         aria-label='Move down'
@@ -924,7 +924,7 @@ export const DealsContent = () => {
                       <Button
                         size='sm'
                         radius='none'
-                        variant='flat'
+                        variant='tertiary'
                         className='rounded-sm dark:bg-white/10 hover:bg-dark-table dark:hover:bg-white active:bg-dark-table dark:active:bg-white dark:active:text-dark-table hover:opacity-100! hover:text-white dark:hover:text-dark-table'
                         onPress={() => openEdit(deal)}>
                         Edit
@@ -932,7 +932,7 @@ export const DealsContent = () => {
                       <Button
                         size='sm'
                         radius='none'
-                        variant='light'
+                        variant='tertiary'
                         className='rounded-sm text-red-400 dark:text-red-300 hover:bg-red-600/10! dark:hover:bg-red-500/10'
                         onPress={() => setDeleteConfirmId(deal.id)}>
                         <Icon name='trash' className='size-4 md:hidden' />
@@ -940,7 +940,7 @@ export const DealsContent = () => {
                       </Button>
                     </div>
                   </div>
-                </CardBody>
+                </CardContent>
               </Card>
             ))}
           </div>
@@ -1159,11 +1159,11 @@ export const DealsContent = () => {
                           classNames={variationSelectClassNames}
                           isDisabled={variationCategoryOptions.length === 0}>
                           {variationCategoryOptions.map((option) => (
-                            <SelectItem
+                            <ListBoxItem
                               key={option.value}
                               textValue={option.label}>
                               {option.label}
-                            </SelectItem>
+                            </ListBoxItem>
                           ))}
                         </Select>
                         <Input
@@ -1207,11 +1207,11 @@ export const DealsContent = () => {
                           classNames={variationSelectClassNames}
                           isDisabled={!hasCategoryDenominations}>
                           {denominationOptions.map((option) => (
-                            <SelectItem
+                            <ListBoxItem
                               key={option.value}
                               textValue={option.label}>
                               {option.label}
-                            </SelectItem>
+                            </ListBoxItem>
                           ))}
                         </Select>
                         {/*<Input
@@ -1249,11 +1249,11 @@ export const DealsContent = () => {
                           classNames={variationSelectClassNames}
                           isDisabled={!hasCategoryUnits}>
                           {variationCategoryAttributes.units.map((option) => (
-                            <SelectItem
+                            <ListBoxItem
                               key={option.value}
                               textValue={option.label}>
                               {option.label}
-                            </SelectItem>
+                            </ListBoxItem>
                           ))}
                         </Select>
                       </div>
@@ -1275,7 +1275,7 @@ export const DealsContent = () => {
                       <Button
                         size='sm'
                         color='default'
-                        variant='flat'
+                        variant='tertiary'
                         isIconOnly
                         className='absolute -top-4 -right-2 hover:text-danger'
                         isDisabled={form.variations.length <= 1}
@@ -1294,7 +1294,7 @@ export const DealsContent = () => {
                 })}
                 <Button
                   size='sm'
-                  variant='bordered'
+                  variant='secondary'
                   onPress={() =>
                     setForm((f) => ({
                       ...f,
@@ -1370,7 +1370,7 @@ export const DealsContent = () => {
             </ViewTransition>
           </ModalBody>
           <ModalFooter className='gap-2'>
-            <Button variant='flat' onPress={closeModal}>
+            <Button variant='tertiary' onPress={closeModal}>
               Cancel
             </Button>
             <Button
@@ -1401,7 +1401,7 @@ export const DealsContent = () => {
             </p>
           </ModalBody>
           <ModalFooter className='gap-2'>
-            <Button variant='flat' onPress={() => setDeleteConfirmId(null)}>
+            <Button variant='tertiary' onPress={() => setDeleteConfirmId(null)}>
               Cancel
             </Button>
             <Button

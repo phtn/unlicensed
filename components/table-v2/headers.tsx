@@ -1,6 +1,6 @@
 import {ClassName} from '@/app/types'
 import {cn} from '@/lib/utils'
-import {Tooltip} from '@heroui/react'
+import {Tooltip} from '@/lib/heroui'
 import {ReactNode} from 'react'
 
 interface HeaderProps {

@@ -26,12 +26,12 @@ import {Icon} from '@/lib/icons'
 import {
   Button,
   Card,
-  CardBody,
+  CardContent,
   Input,
   Select,
-  SelectItem,
+  ListBoxItem,
   Switch,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useEffect, useMemo, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
@@ -295,7 +295,7 @@ export const AlertsContent = () => {
               key={key}
               shadow='none'
               className='rounded-lg border border-slate-500/60 bg-slate-300 dark:bg-dark-table'>
-              <CardBody className='gap-4 p-4'>
+              <CardContent className='gap-4 p-4'>
                 <div className='flex items-center justify-between gap-3'>
                   <h3 className='text-base font-semibold'>
                     {ALERT_LABELS[key]}
@@ -338,7 +338,7 @@ export const AlertsContent = () => {
                   }}
                   classNames={simpleSelectClassNames}>
                   {ALERT_SYNTH_TYPES.map((synthType) => (
-                    <SelectItem key={synthType}>{synthType}</SelectItem>
+                    <ListBoxItem key={synthType}>{synthType}</ListBoxItem>
                   ))}
                 </Select>
 
@@ -360,7 +360,7 @@ export const AlertsContent = () => {
                     }}
                     classNames={simpleSelectClassNames}>
                     {TONE_OSCILLATORS.map((waveform) => (
-                      <SelectItem key={waveform}>{waveform}</SelectItem>
+                      <ListBoxItem key={waveform}>{waveform}</ListBoxItem>
                     ))}
                   </Select>
                 )}
@@ -397,7 +397,7 @@ export const AlertsContent = () => {
 
                 <Button
                   size='sm'
-                  variant='light'
+                  variant='tertiary'
                   radius='none'
                   onPress={() => void handleTest(key)}
                   isDisabled={!isEnabled || !draft.enabled}
@@ -411,7 +411,7 @@ export const AlertsContent = () => {
                   Play
                   {/*{ALERT_LABELS[key]}*/}
                 </Button>
-              </CardBody>
+              </CardContent>
             </Card>
           )
         })}

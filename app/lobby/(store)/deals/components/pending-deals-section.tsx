@@ -4,7 +4,7 @@ import type {Id} from '@/convex/_generated/dataModel'
 import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
 import type {PendingDeal} from '@/app/lobby/(store)/deals/lib/deal-types'
 import {usePendingDeals} from '@/ctx/pending-deals'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import Link from 'next/link'
 import {useMemo} from 'react'
 import type {CartPageItem} from '@/app/lobby/(store)/cart/types'
@@ -75,7 +75,7 @@ export function PendingDealsSection({cartItems = []}: PendingDealsSectionProps) 
                 as={Link}
                 href='/lobby/deals'
                 size='sm'
-                variant='flat'
+                variant='tertiary'
                 color='warning'>
                 Complete
               </Button>

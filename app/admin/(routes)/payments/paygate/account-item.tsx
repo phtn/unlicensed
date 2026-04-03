@@ -1,5 +1,6 @@
 import {GatewayWallet} from '@/convex/gateways/d'
 import {useCopy} from '@/hooks/use-copy'
+import {useDisclosure} from '@/hooks/use-disclosure'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDate} from '@/utils/date'
@@ -12,8 +13,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  useDisclosure,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import {ReactNode, useEffect, useMemo, useRef, useState} from 'react'
 
 export interface ItemDetailProps {
@@ -195,7 +195,7 @@ export function AccountItemCard({
             </p>
           </ModalBody>
           <ModalFooter className='gap-2'>
-            <Button variant='flat' onPress={onClose}>
+            <Button variant='tertiary' onPress={onClose}>
               Cancel
             </Button>
             <Button color='danger' onPress={handleConfirmDelete}>

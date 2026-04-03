@@ -6,7 +6,7 @@ import {Id} from '@/convex/_generated/dataModel'
 import {computeOrderTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, CardBody} from '@heroui/react'
+import {Button, Card, CardContent} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useParams} from 'next/navigation'
@@ -125,12 +125,12 @@ export default function CardProvidersPage() {
       <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
         <div className='mx-auto max-w-3xl'>
           <Card radius='sm' shadow='none'>
-            <CardBody className='p-6 space-y-4'>
+            <CardContent className='p-6 space-y-4'>
               <h1 className='text-xl font-space'>Order not found</h1>
               <Button as={NextLink} href='/account/orders' color='primary'>
                 View Orders
               </Button>
-            </CardBody>
+            </CardContent>
           </Card>
         </div>
       </main>
@@ -143,7 +143,7 @@ export default function CardProvidersPage() {
     <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 dark:bg-black'>
       <div className='mx-auto max-w-7xl space-y-4'>
         <Card radius='none' shadow='none' className='rounded-sm bg-dark-gray/0'>
-          <CardBody className='p-2 md:p-6'>
+          <CardContent className='p-2 md:p-6'>
             <div className='flex items-center justify-between w-full'>
               <div className='space-y-1'>
                 <div className='flex items-center space-x-5 opacity-60'>
@@ -193,12 +193,12 @@ export default function CardProvidersPage() {
                 </p>
               </div>
             </div>
-          </CardBody>
+          </CardContent>
         </Card>
 
         {topTenProviders.length === 0 ? (
           <Card radius='sm' shadow='none'>
-            <CardBody className='p-6 space-y-4'>
+            <CardContent className='p-6 space-y-4'>
               <p className='text-sm text-default-500'>
                 No providers are configured in top ten for the default{' '}
                 {gatewayLabel} account.
@@ -206,7 +206,7 @@ export default function CardProvidersPage() {
               <Button as={NextLink} href={fallbackHref} color='primary'>
                 Continue with default provider
               </Button>
-            </CardBody>
+            </CardContent>
           </Card>
         ) : (
           <TopProviders
@@ -219,9 +219,9 @@ export default function CardProvidersPage() {
 
         {checkoutError ? (
           <Card radius='sm' shadow='none'>
-            <CardBody className='p-6'>
+            <CardContent className='p-6'>
               <p className='text-sm text-danger'>{checkoutError}</p>
-            </CardBody>
+            </CardContent>
           </Card>
         ) : null}
       </div>
@@ -235,7 +235,7 @@ export default function CardProvidersPage() {
 //   radius='none'
 //   shadow='none'
 //   className='min-h-80 rounded-sm bg-dark-table/10'>
-//   <CardBody className='p-5 flex items-center justify-between gap-4'>
+//   <CardContent className='p-5 flex items-center justify-between gap-4'>
 //     <div className='space-y-1 min-w-0'>
 //       <div className='flex items-center gap-2'>
 //         <div className='flex items-center text-base font-okxs dark:text-background truncate bg-robinhood py-3 px-6 rounded-full space-x-1'>
@@ -263,6 +263,6 @@ export default function CardProvidersPage() {
 //     <Button as={NextLink} href={payHref} color='primary'>
 //       Continue
 //     </Button>
-//   </CardBody>
+//   </CardContent>
 // </Card>
 // )

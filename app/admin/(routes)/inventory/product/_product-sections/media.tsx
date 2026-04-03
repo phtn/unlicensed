@@ -8,7 +8,7 @@ import {useFileUpload} from '@/hooks/use-file-upload'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Drawer, DrawerContent, DrawerHeader, Image} from '@heroui/react'
+import {Button, Drawer, DrawerContent, DrawerHeader, Image} from '@/lib/heroui'
 import {useStore} from '@tanstack/react-store'
 import type {ReadonlyStore} from '@tanstack/store'
 import {useQuery} from 'convex/react'
@@ -626,7 +626,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                 <Button
                   id='converter-trigger'
                   radius='none'
-                  variant='flat'
+                  variant='tertiary'
                   className='rounded-lg bg-indigo-950 text-white dark:text-white'
                   isDisabled={!canConvertPrimaryImage}
                   endContent={
@@ -642,7 +642,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                 </Button>
                 <Button
                   radius='none'
-                  variant='flat'
+                  variant='tertiary'
                   className='rounded-lg bg-blue-500 text-white dark:text-white'
                   endContent={
                     <Icon name='image-plus-light' className='size-5' />
@@ -777,7 +777,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                   <Button
                     size='sm'
                     radius='none'
-                    variant='flat'
+                    variant='tertiary'
                     endContent={
                       <Icon name='image-open-light' className='size-5' />
                     }
@@ -788,7 +788,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                   {primaryImageValue ? (
                     <Button
                       size='sm'
-                      variant='light'
+                      variant='tertiary'
                       className='bg-light-gray/0 dark:bg-transparent'
                       onPress={clearPrimaryImage}>
                       Clear Primary
@@ -998,7 +998,7 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
               </div>
               <Button
                 size='sm'
-                variant='flat'
+                variant='tertiary'
                 onPress={() => setIsLibraryOpen(false)}>
                 Done
               </Button>

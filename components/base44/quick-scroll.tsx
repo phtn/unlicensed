@@ -3,7 +3,7 @@
 import {ClassName} from '@/app/types'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 
 interface QuickScrollProps {
   href?: string

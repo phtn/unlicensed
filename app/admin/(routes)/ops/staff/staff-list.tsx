@@ -5,7 +5,7 @@ import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError, onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
-import {Button, Card, Chip, User} from '@heroui/react'
+import {Button, Card, Chip, User} from '@/lib/heroui'
 import {useMutation} from 'convex/react'
 import {formatDistanceToNow} from 'date-fns'
 import Link from 'next/link'
@@ -64,7 +64,7 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
                   <Chip
                     size='sm'
                     color={member.active ? 'success' : 'default'}
-                    variant='flat'
+                    variant='tertiary'
                     className='bg-emerald-500/10 h-5'>
                     {member.active ? 'Active' : 'Inactive'}
                   </Chip>
@@ -84,7 +84,7 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
                   <Chip
                     key={role}
                     size='sm'
-                    variant='flat'
+                    variant='tertiary'
                     color='primary'
                     className='h-5 bg-sky-500/10'>
                     {role}
@@ -102,7 +102,7 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
             size='sm'
             isIconOnly
             radius='sm'
-            variant='flat'
+            variant='tertiary'
             isDisabled={isConnecting}
             isLoading={isConnecting}
             aria-label='Open chat'
@@ -116,7 +116,7 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
             as={Link}
             isIconOnly
             radius='sm'
-            variant='flat'
+            variant='tertiary'
             prefetch
             href={`/admin/ops/staff?tabId=edit&id=${member._id}`}
             className='text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800 bg-sidebar/50'>

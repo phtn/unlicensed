@@ -5,9 +5,9 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useGuestChatCtx} from '@/ctx/guest-chat'
 import {useWindow} from '@/hooks/use-window'
 import {CHAT_DOCK_OPEN_EVENT, CHAT_DOCK_TOGGLE_EVENT} from '@/lib/chat-dock'
+import {Badge, Tooltip} from '@/lib/heroui'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Badge, Tooltip} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import dynamic from 'next/dynamic'
 import {usePathname} from 'next/navigation'
@@ -156,28 +156,33 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
             className='pointer-events-auto bg-sidebar/90 dark:bg-dark-table/20 backdrop-blur-2xl flex items-center'>
             {navs.map((nav) => (
               <Tooltip
+                id='tool__trigger'
                 key={nav.id}
                 content={isWindowOpen ? 'Minimize' : 'Open Chat'}
                 offset={14}
                 radius='none'
-                className='rounded-lg bg-dark-table text-white'>
+                className='pointer-events-none md:pointer-events-auto rounded-lg bg-dark-table text-white'>
                 <DockIcon>
                   <Badge
                     size='sm'
                     key={`chat-dock-badge-${unreadCount ?? 0}`}
                     content={
-                      (unreadCount ?? 0) > 0 ? (
-                        <span className='font-clash font-medium text-white leading-none'>
-                          {(unreadCount ?? 0) > 99 ? '99+' : unreadCount}
-                        </span>
-                      ) : undefined
+                      (unreadCount ?? 0) > 0
+                        ? (unreadCount ?? 0) > 99
+                          ? '99+'
+                          : unreadCount
+                        : undefined
                     }
                     isInvisible={(unreadCount ?? 0) === 0}
+                    className={cn(
+                      'font-clash font-medium text-white leading-none',
+                    )}
                     classNames={{
                       badge:
                         'absolute top-1 right-1 min-w-5 h-5 w-auto flex items-center justify-center aspect-square rounded-full border-1 border-foreground shadow-sm bg-brand',
                     }}>
                     <button
+                      id='chat-window-trigger'
                       type='button'
                       onClick={nav.onClick}
                       onPointerEnter={() => {
@@ -193,7 +198,7 @@ export const ChatDock = ({hidden = false}: ChatDockProps) => {
                       aria-haspopup='dialog'
                       aria-expanded={isWindowOpen}
                       className={cn(
-                        'flex size-full items-center justify-center bg-transparent! mt-1.5',
+                        'flex size-full items-center justify-center text-foreground bg-transparent! mt-1.5',
                         isWindowOpen && 'bg-dark-table/10',
                       )}>
                       <Icon name={nav.icon} className='size-7' />

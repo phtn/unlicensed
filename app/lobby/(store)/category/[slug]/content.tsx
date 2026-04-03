@@ -9,7 +9,7 @@ import {api} from '@/convex/_generated/api'
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
+import {Button} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import {AnimatePresence, motion, useReducedMotion} from 'motion/react'
 import Link from 'next/link'
@@ -168,7 +168,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   as={Link}
                   prefetch
                   radius='none'
-                  variant='light'
+                  variant='tertiary'
                   onPress={toggleNavigating}
                   href={'/lobby/deals'}
                   className='hidden border dark:border-light-gray/80 sm:flex rounded-xs items-center gap-2 dark:text-terpenes font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
@@ -306,7 +306,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                       <Button
                         size='sm'
                         radius='none'
-                        variant='flat'
+                        variant='tertiary'
                         aria-expanded={isBrandListExpanded}
                         className='min-w-0 h-6 font-semibold uppercase'
                         endContent={

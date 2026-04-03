@@ -6,7 +6,7 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Image} from '@heroui/react'
+import {Button, Image} from '@/lib/heroui'
 import Link from 'next/link'
 import {useMemo} from 'react'
 
@@ -146,7 +146,7 @@ export function BundleCartItem({
             as={Link}
             href='/lobby/deals'
             size='sm'
-            variant='flat'
+            variant='tertiary'
             className='h-7 text-sm font-okxs'
             startContent={<Icon name='pencil-fill' className='size-3.5' />}>
             Edit
@@ -155,7 +155,7 @@ export function BundleCartItem({
             size='sm'
             isIconOnly
             radius='none'
-            variant='light'
+            variant='tertiary'
             className='min-w-8 w-8 h-7 aspect-square rounded-sm text-muted-foreground opacity-80 hover:opacity-100'
             isDisabled={isPending}
             onPress={() => onRemove(itemIndex)}>

@@ -1,9 +1,10 @@
 'use client'
 
 import {Id} from '@/convex/_generated/dataModel'
+import {Button, Card, CardContent, cn} from '@/lib/heroui'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, CardBody, Divider, Input} from '@heroui/react'
+import {Input} from '@heroui/react'
 import {motion} from 'motion/react'
 import {memo, ViewTransition} from 'react'
 import {
@@ -156,14 +157,13 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
           radius='none'
           className='min-w-0 overflow-hidden dark:bg-dark-table/40 border border-foreground/20 border-t-0'
         >
-          <CardBody className='relative space-y-4 p-4 sm:px-5 py-4'>
+          <CardContent className='relative space-y-2 px-4 sm:px-5 py-1'>
             <div className="absolute w-500 h-full scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
-            <h2 className='text-2xl font-normal font-bone'>Order Summary</h2>
-            <Divider className='opacity-60' />
+            <h2 className='text-lg font-normal font-bone'>Order Summary</h2>
             <ViewTransition>
-              <div className='space-y-2 font-sans'>
+              <div className='space-y-2'>
                 <div className='flex justify-between font-okxs text-sm md:text-base'>
-                  <span className=''>Subtotal</span>
+                  <span className='font-clash'>Subtotal</span>
                   <span className=''>
                     <span className=''>$</span>
                     {formatPrice(subtotal)}
@@ -172,7 +172,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                 <ViewTransition>
                   {showTaxRow && (
                     <div className='flex justify-between font-okxs text-sm md:text-base'>
-                      <span className=''>Tax</span>
+                      <span className='font-clash'>Tax</span>
                       <span className=''>
                         <span className=''>$</span>
                         {formatPrice(tax)}
@@ -181,7 +181,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   )}
                 </ViewTransition>
                 <div className='flex justify-between font-okxs text-sm md:text-base'>
-                  <span className=''>Shipping</span>
+                  <span className='font-clash'>Shipping</span>
                   <span className=''>
                     {isFreeShipping ? (
                       <span className='bg-limited px-1.5 uppercase rounded-sm font-bone text-dark-gray border border-dark-gray'>
@@ -215,27 +215,34 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                 )}
               </div>
             </ViewTransition>
-            <Divider className='opacity-60' />
-            <div className='flex justify-between font-medium font-okxs'>
-              <span className=''>Total</span>
+            {/*<Separator className='opacity-60' />*/}
+            <div className='flex justify-between font-medium font-okxs border-t border-dashed dark:border-sidebar/80 border-sidebar pt-2'>
+              <span className='font-clash'>Total</span>
               <span className='font-medium'>${formatPrice(displayTotal)}</span>
             </div>
 
             {isAuthenticated && (
-              <div className='space-y-2 rounded-lg border border-foreground/15 p-3'>
+              <div className='space-y-1 mt-2 rounded-md border border-foreground/30 dark:bg-foreground/5 bg-foreground/2 overflow-hidden'>
                 <div className='flex items-center justify-between gap-3'>
-                  <div className='flex items-center justify-between w-full'>
-                    <p className='font-okxs text-sm md:text-base'>
-                      Coupon code
+                  <div className='flex items-center justify-between w-full p-2'>
+                    <p className='font-clash text-base md:text-[12px] leading-none'>
+                      Coupon Code
                     </p>
                     {couponHelpText ? (
-                      <p className='text-xs text-foreground/70'>
+                      <p className='text-xs text-foreground/80 font-okxs'>
                         {couponHelpText}
                       </p>
                     ) : couponError ? (
-                      <p className='text-xs text-danger'>{couponError}</p>
+                      <p className='flex items-center gap-1 text-xs bg-white/25 dark:bg-rose-500/10 px-1.5 rounded-sm text-danger dark:text-red-100'>
+                        <Icon name='alert-circle' className='size-3.25' />
+                        <span>{couponError}</span>
+                      </p>
                     ) : (
-                      <p className='text-xs text-foreground/60'>
+                      <p
+                        className={cn('text-xs text-foreground/70', {
+                          'text-foreground': couponCode,
+                        })}
+                      >
                         Discounts apply to subtotal only.
                       </p>
                     )}
@@ -243,7 +250,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   {hasAppliedCoupon ? (
                     <Button
                       size='sm'
-                      variant='light'
+                      variant='tertiary'
                       onPress={onRemoveCoupon}
                       className='min-w-fit px-2 text-xs'
                     >
@@ -251,22 +258,25 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                     </Button>
                   ) : null}
                 </div>
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-px border-t border-dark-table/30 dark:bg-foreground/10'>
                   <Input
+                    fullWidth
                     value={couponCode}
-                    onValueChange={onCouponCodeChange}
+                    onChange={(e) => onCouponCodeChange(e.target.value)}
                     placeholder='Enter code'
-                    size='sm'
-                    radius='none'
-                    isDisabled={isPending || isLoading || !!orderId}
-                    classNames={{
-                      inputWrapper: 'bg-foreground/5 shadow-none',
-                    }}
+                    disabled={isPending || isLoading || !!orderId}
+                    className={cn(
+                      'text-brand text-[12px] dark:text-light-brand uppercase tracking-widest font-clash font-medium text-sm',
+                      'rounded-none rounded-bl-sm rounded-e-none dark:bg-background/70 bg-background shadow-none h-9 dark:border-white/40',
+                      'placeholder:font-ios placeholder:font-light placeholder:tracking-[0.4em] placeholder:opacity-60',
+                      'shadow-inner outline-none focus-visible:ring-1 dark:ring-foreground/10 ring-foreground/10',
+                      'rounded-tl-xs',
+                    )}
                   />
                   <Button
-                    radius='none'
                     size='sm'
-                    variant='flat'
+                    radius='none'
+                    variant='tertiary'
                     onPress={hasAppliedCoupon ? onRemoveCoupon : onApplyCoupon}
                     isDisabled={
                       isPending ||
@@ -275,9 +285,20 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                       (!hasAppliedCoupon && couponCode.trim().length === 0)
                     }
                     isLoading={isCouponApplying}
-                    className='min-w-24'
+                    className={cn(
+                      'rounded-br-sm min-w-32 h-9 bg-foreground/70 dark:bg-background text-white font-clash',
+                      {
+                        'text-brand': hasAppliedCoupon,
+                        'text-cyan-100': isCouponApplying,
+                        'bg-dark-table/90': couponCode,
+                      },
+                    )}
                   >
-                    {hasAppliedCoupon ? 'Applied' : 'Apply'}
+                    {isCouponApplying
+                      ? 'Applying ⊛⊛⊛ '
+                      : hasAppliedCoupon
+                        ? 'Applied'
+                        : 'Apply Coupon'}
                   </Button>
                 </div>
               </div>
@@ -285,7 +306,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
 
             {isAuthenticated && onCashBackToggle && (
               <CashBackRedemption
-                availableBalanceCents={cashBackBalanceCents}
+                availableBalanceCents={cashBackBalanceCents} //cashBackBalanceCents
                 appliedBalanceCents={appliedCashBackCents}
                 subtotalCents={subtotal}
                 isEnabled={isUsingCashBack}
@@ -296,7 +317,6 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
             {/* Payment Method Selection */}
             {isAuthenticated && (
               <>
-                <Divider className='opacity-60' />
                 <PaymentMethods
                   value={paymentMethod}
                   onChange={handleOnChange}
@@ -320,7 +340,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
             <Button
               size='lg'
               radius='none'
-              variant='solid'
+              variant='primary'
               className='w-full font-polysans text-lg font-semibold bg-foreground dark:bg-brand text-white h-14 mb-2'
               onPress={onPlaceOrderClick}
               isDisabled={
@@ -336,7 +356,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                 {orderId ? 'Order Placed!' : 'Place Order'}
               </span>
             </Button>
-          </CardBody>
+          </CardContent>
         </Card>
       </motion.div>
     </motion.div>

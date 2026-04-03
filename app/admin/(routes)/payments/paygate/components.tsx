@@ -1,7 +1,7 @@
 import {useCopy} from '@/hooks/use-copy'
 import {Icon} from '@/lib/icons'
 import {ApiResponse} from '@/lib/paygate/types'
-import {Card, CardHeader} from '@heroui/react'
+import {Card, CardHeader} from '@/lib/heroui'
 import {useCallback} from 'react'
 
 interface ResponseDisplayProps {

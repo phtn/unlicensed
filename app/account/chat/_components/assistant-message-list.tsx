@@ -6,7 +6,7 @@ import {
   type AssistantCatalog,
 } from '@/lib/assistant/catalog'
 import {cn} from '@/lib/utils'
-import {Avatar} from '@heroui/react'
+import {Avatar} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 import {ASSISTANT_NAME, type AssistantMessage} from './assistant'

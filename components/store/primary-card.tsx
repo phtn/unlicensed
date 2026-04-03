@@ -1,6 +1,6 @@
 import {StoreProduct} from '@/app/types'
 import {formatPrice} from '@/utils/formatPrice'
-import {Chip, Image} from '@heroui/react'
+import {Chip, Image} from '@/lib/heroui'
 import Link from 'next/link'
 import {ViewTransition} from 'react'
 
@@ -28,7 +28,7 @@ export const PrimaryCard = (item: StoreProduct) => {
                   <Chip
                     key={flavor}
                     size='sm'
-                    variant='flat'
+                    variant='tertiary'
                     className='text-xs bg-flavors/20'>
                     {flavor}
                   </Chip>
@@ -37,7 +37,7 @@ export const PrimaryCard = (item: StoreProduct) => {
                   <Chip
                     key={effect}
                     size='sm'
-                    variant='flat'
+                    variant='tertiary'
                     className='text-xs bg-effects/20'>
                     {effect}
                   </Chip>
@@ -46,7 +46,7 @@ export const PrimaryCard = (item: StoreProduct) => {
                   <Chip
                     key={terpene}
                     size='sm'
-                    variant='flat'
+                    variant='tertiary'
                     className='text-xs bg-terpenes/20'>
                     {terpene}
                   </Chip>
@@ -56,7 +56,7 @@ export const PrimaryCard = (item: StoreProduct) => {
                 <span className='text-lg font-semibold font-space'>
                   {formatPrice(item?.priceCents ?? 0)}
                 </span>
-                <Chip size='sm' variant='flat' className='text-xs capitalize'>
+                <Chip size='sm' variant='tertiary' className='text-xs capitalize'>
                   {item?.potencyLevel}
                 </Chip>
               </div>

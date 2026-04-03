@@ -16,7 +16,7 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
   Button,
-  Divider,
+  Separator,
   Image,
   Input,
   Modal,
@@ -24,7 +24,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from '@heroui/react'
+} from '@/lib/heroui'
 import type {ActionCodeSettings} from 'firebase/auth'
 import {
   ChangeEvent,
@@ -333,7 +333,7 @@ export const AuthModal = ({
           <Button
             isIconOnly
             size='sm'
-            variant='light'
+            variant='tertiary'
             aria-label='Close'
             onPress={handleClose}
             className='text-white/80 hover:text-white hover:bg-white/10 min-w-unit-8 w-8 h-8 z-20'>
@@ -367,7 +367,7 @@ export const AuthModal = ({
               </p>
               <Button
                 size='sm'
-                variant='light'
+                variant='tertiary'
                 onPress={() => {
                   setEmailSent(false)
                   setEmail('')
@@ -388,7 +388,7 @@ export const AuthModal = ({
               </p>
               <Button
                 size='sm'
-                variant='light'
+                variant='tertiary'
                 onPress={() => {
                   setResetEmailSent(false)
                   setError(null)
@@ -505,7 +505,7 @@ export const AuthModal = ({
                   size='lg'
                   radius='none'
                   type='submit'
-                  variant='solid'
+                  variant='primary'
                   disabled={primaryActionDisabled}
                   className={cn(
                     'bg-brand backdrop-blur-2xl w-full text-white rounded-xs',
@@ -524,11 +524,11 @@ export const AuthModal = ({
                   )}
                 </Button>
                 <div className='flex items-center gap-4 w-full'>
-                  <Divider className='flex-1' />
+                  <Separator className='flex-1' />
                   <span className='text-xs dark:text-white opacity-70 font-light'>
                     or
                   </span>
-                  <Divider className='flex-1' />
+                  <Separator className='flex-1' />
                 </div>
                 {completeEmailLink ? (
                   <div className='flex w-full flex-col gap-2'>
@@ -560,7 +560,7 @@ export const AuthModal = ({
                       size='lg'
                       type='button'
                       radius='none'
-                      variant='flat'
+                      variant='tertiary'
                       onPress={handleCompleteEmailLink}
                       disabled={emailLoading}
                       className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-full text-white rounded-lg'
@@ -581,7 +581,7 @@ export const AuthModal = ({
                       size='lg'
                       type='button'
                       radius='none'
-                      variant='flat'
+                      variant='tertiary'
                       onPress={handleGoogleLogin}
                       disabled={loading}
                       className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-full text-white rounded-xs'
@@ -632,9 +632,9 @@ export const InputFields = ({fields}: SignInFieldProps) => {
       ))}
 
       <div className='flex items-center gap-1'>
-        <Divider className='flex-1' />
+        <Separator className='flex-1' />
         <span className='text-xs text-color-muted font-light'>OR</span>
-        <Divider className='flex-1' />
+        <Separator className='flex-1' />
       </div>
     </div>
   )
@@ -645,7 +645,7 @@ export const SignInFooter = () => {
     <div className='flex-col gap-2'>
       <Button
         type='submit'
-        variant='flat'
+        variant='tertiary'
         className='w-full hidden'
         // isLoading={loading}
       >
@@ -654,7 +654,7 @@ export const SignInFooter = () => {
       <Button
         size='sm'
         type='button'
-        variant='light'
+        variant='tertiary'
         className='hidden'></Button>
     </div>
   )
