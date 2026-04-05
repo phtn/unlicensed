@@ -7,7 +7,8 @@ import {
 } from '@/app/admin/settings/_components/components'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {Input, Switch} from '@/lib/heroui'
+import {Input} from '@heroui/input'
+import {Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {
   startTransition,
@@ -254,13 +255,17 @@ function CryptoWalletFormInner({
                 </div>
               </div>
               <Switch
+                className='shrink-0'
                 isSelected={wallets[network.key].active}
-                onValueChange={(active) =>
+                onChange={(active: boolean) =>
                   handleActiveChange(network.key, active)
                 }
                 isDisabled={!configLoaded}
-                size='sm'>
-                Active
+                size='sm'
+                aria-label={`Toggle ${network.label} wallet`}>
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
               </Switch>
             </div>
             <Input

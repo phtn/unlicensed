@@ -5,21 +5,23 @@ import {Id} from '@/convex/_generated/dataModel'
 import {ProductType} from '@/convex/products/d'
 import {useDisclosure} from '@/hooks/use-disclosure'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {
-  Card,
-  CardContent,
-  Image,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from '@/lib/heroui'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
-import {Button} from '@heroui/react'
+import {
+  Button,
+  Card,
+  Modal,
+  ModalBackdrop,
+  ModalBody,
+  ModalContainer,
+  ModalDialog,
+  ModalFooter,
+  ModalHeader,
+} from '@heroui/react'
 import {memo, useEffect, useMemo, useState, useTransition} from 'react'
+
+import {LegacyImage} from '@/components/ui/legacy-image'
 
 interface CartItemProps {
   item: {
@@ -108,19 +110,16 @@ export const CartItem = memo(
     return (
       <>
         <Card
-          shadow='none'
-          radius='none'
           className={cn(
-            'border border-b-0 last:border-b border-foreground/50 bg-white dark:bg-background dark:border-foreground/50 border-dashed first:rounded-t-xs last:rounded-b-xs',
+            'border border-b-0 last:border-b border-foreground/50 bg-white dark:bg-background dark:border-foreground/50 border-dashed rounded-none first:rounded-t-xs! last:rounded-b-xs!',
             className,
           )}>
-          <CardContent>
+          <Card.Content>
             <div className='flex min-w-0 gap-3 md:gap-4'>
               <div className='relative size-24 md:w-28 md:h-28 shrink-0 overflow-hidden'>
-                <Image
+                <LegacyImage
                   src={productImageUrl ?? undefined}
                   alt={item.product.name}
-                  radius='none'
                   className='w-full h-full object-cover'
                 />
               </div>
@@ -207,58 +206,57 @@ export const CartItem = memo(
                 </div>
               </div>
             </div>
-          </CardContent>
+          </Card.Content>
         </Card>
 
-        <Modal
-          size='sm'
-          isOpen={isOpen}
-          onClose={onClose}
-          placement='center'
-          radius='none'>
-          <ModalContent className='mt-28 bg-linear-to-b dark:from-slate-500 dark:to-slate-700 rounded-xs border border-slate-700'>
-            <ModalHeader className='font-bone font-semibold text-lg tracking-wide'>
-              Remove item?
-            </ModalHeader>
-            <ModalBody>
-              <p className='text-foreground text-sm'>
-                Remove <strong>{item.product.name}</strong>
-                {item.denomination != null ? (
-                  <span className='ml-1 dark:text-pink-300 text-brand font-semibold'>
-                    <span className='font-ios text-xs text-foreground/50'>
-                      (
-                    </span>
-                    {formatDenominationDisplay(
-                      item.denomination,
-                      item.product.unit ?? '',
-                    )}
-                    <span className='font-ios text-xs text-foreground/50'>
-                      )
-                    </span>
-                  </span>
-                ) : (
-                  ''
-                )}{' '}
-                from your cart?
-              </p>
-            </ModalBody>
-            <ModalFooter className='gap-4 dark:bg-background/20 bg-sidebar font-clash p-4 flex items-center'>
-              <Button
-                size='sm'
-                variant='ghost'
-                onPress={onClose}
-                className='dark:hover:bg-black/8 rounded-xs px-4 _border dark:border-transparent hover:border-foreground/10'>
-                Cancel
-              </Button>
-              <Button
-                size='sm'
-                variant='primary'
-                onPress={handleConfirmRemove}
-                className='bg-red-500/80 rounded-xs px-4 border-0 shadow-none'>
-                Remove
-              </Button>
-            </ModalFooter>
-          </ModalContent>
+        <Modal isOpen={isOpen}>
+          <ModalBackdrop>
+            <ModalContainer size='sm' placement='center'>
+              <ModalDialog className='mt-28 bg-linear-to-b dark:from-slate-500 dark:to-slate-700 rounded-xs border border-slate-700'>
+                <ModalHeader className='font-bone font-semibold text-lg tracking-wide'>
+                  Remove item?
+                </ModalHeader>
+                <ModalBody>
+                  <p className='text-foreground text-sm'>
+                    Remove <strong>{item.product.name}</strong>
+                    {item.denomination != null ? (
+                      <span className='ml-1 dark:text-pink-300 text-brand font-semibold'>
+                        <span className='font-ios text-xs text-foreground/50'>
+                          (
+                        </span>
+                        {formatDenominationDisplay(
+                          item.denomination,
+                          item.product.unit ?? '',
+                        )}
+                        <span className='font-ios text-xs text-foreground/50'>
+                          )
+                        </span>
+                      </span>
+                    ) : (
+                      ''
+                    )}{' '}
+                    from your cart?
+                  </p>
+                </ModalBody>
+                <ModalFooter className='gap-4 dark:bg-background/20 bg-sidebar font-clash p-4 flex items-center'>
+                  <Button
+                    size='sm'
+                    variant='ghost'
+                    onPress={onClose}
+                    className='dark:hover:bg-black/8 rounded-xs px-4 _border dark:border-transparent hover:border-foreground/10'>
+                    Cancel
+                  </Button>
+                  <Button
+                    size='sm'
+                    variant='primary'
+                    onPress={handleConfirmRemove}
+                    className='bg-red-500/80 rounded-xs px-4 border-0 shadow-none'>
+                    Remove
+                  </Button>
+                </ModalFooter>
+              </ModalDialog>
+            </ModalContainer>
+          </ModalBackdrop>
         </Modal>
       </>
     )

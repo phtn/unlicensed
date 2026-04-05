@@ -5,7 +5,8 @@ import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon, type IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Input, Switch} from '@/lib/heroui'
+import {Input} from '@heroui/input'
+import {Button, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {
   startTransition,
@@ -104,20 +105,23 @@ function CardsProcessingFeeField({
       <div className='flex items-center gap-4'>
         <Switch
           isSelected={enabled}
-          onValueChange={onEnabledChange}
+          onChange={onEnabledChange}
           isDisabled={isDisabled}
           size='sm'>
-          Enable
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+          <Switch.Content>
+            <span>Enable</span>
+          </Switch.Content>
         </Switch>
         <Button
-          radius='none'
-          color='default'
           variant='tertiary'
           fullWidth
           onPress={onSave}
           isDisabled={isDisabled}
           className='rounded-sm'
-          isLoading={isSaving}>
+          isPending={isSaving}>
           {isSaving ? 'Saving…' : 'Save'}
         </Button>
         {saveMessage === 'saved' && (
@@ -277,17 +281,15 @@ export const PaymentsSettings = () => {
                       size='sm'
                       isSelected={method.status === 'active'}
                       isDisabled={togglingId === method.id}
-                      onValueChange={(checked) =>
+                      onChange={(checked: boolean) =>
                         handleToggle(method.id, checked ? 'active' : 'inactive')
                       }
-                      color={method.status === 'active' ? 'success' : 'default'}
-                      classNames={{
-                        base: 'shrink-0',
-                        wrapper:
-                          'group-data-[selected=true]:bg-emerald-500 dark:group-data-[selected=true]:bg-emerald-500',
-                      }}
-                      aria-label={`Toggle ${method.name} to ${method.status === 'active' ? 'inactive' : 'active'}`}
-                    />
+                      className='shrink-0'
+                      aria-label={`Toggle ${method.name} to ${method.status === 'active' ? 'inactive' : 'active'}`}>
+                      <Switch.Control>
+                        <Switch.Thumb />
+                      </Switch.Control>
+                    </Switch>
                   </div>
                 </li>
               </ViewTransition>

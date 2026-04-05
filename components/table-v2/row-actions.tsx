@@ -5,9 +5,10 @@ import {
   Dropdown,
   DropdownItem,
   DropdownMenu,
+  DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {Row} from '@tanstack/react-table'
 import {Key, useCallback, useMemo} from 'react'
 import type {ActionAlign, ActionConfig, ActionItem} from './create-column'
@@ -152,62 +153,46 @@ export const RowActions = <T,>({row, actionConfig}: Props<T>) => {
     : defaultTrigger
 
   const defaultDropdown = (
-    <Dropdown
-      placement='bottom-end'
-      classNames={{
-        base: 'rounded-3xl',
-        content: 'rounded-3xl border-origin md:min-w-44 p-1.5',
-      }}>
+    <Dropdown>
       <DropdownTrigger>{trigger}</DropdownTrigger>
-      <DropdownMenu aria-label='Row actions' onAction={handleMenuAction}>
-        {groupedActions.map((group, groupIndex) => (
-          <DropdownSection
-            key={`${group.title}-${groupIndex}`}
-            title={groupedActions.length > 1 ? group.title : undefined}
-            showDivider={groupIndex < groupedActions.length - 1}>
-            {group.items.map((action) => {
-              const isDestructive = action.variant === 'destructive'
-              const isDisabled = resolveRowCondition(action.disabled, rowData)
+      <DropdownPopover placement='bottom end' className='rounded-3xl border-origin md:min-w-44 p-1.5'>
+        <DropdownMenu aria-label='Row actions' onAction={handleMenuAction}>
+          {groupedActions.map((group, groupIndex) => (
+            <DropdownSection key={`${group.title}-${groupIndex}`}>
+              {group.items.map((action) => {
+                const isDestructive = action.variant === 'destructive'
+                const isDisabled = resolveRowCondition(action.disabled, rowData)
 
-              return (
-                <DropdownItem
-                  key={action.id}
-                  color={isDestructive ? 'danger' : 'default'}
-                  classNames={{
-                    base: cn(
+                return (
+                  <DropdownItem
+                    key={action.id}
+                    className={cn(
                       'h-10 rounded-xl',
                       isDestructive && 'text-danger',
                       action.className,
                       {'pointer-events-none opacity-50': isDisabled},
-                    ),
-                  }}
-                  startContent={
+                    )}>
                     <span className='inline-flex w-4 shrink-0 items-center justify-center'>
                       {action.icon ? (
                         <Icon
                           name={action.icon}
-                          className={cn(
-                            'size-4',
-                            isDestructive && 'text-danger',
-                          )}
+                          className={cn('size-4', isDestructive && 'text-danger')}
                         />
                       ) : null}
                     </span>
-                  }
-                  endContent={
-                    action.shortcut ? (
-                      <span className='text-xs opacity-70 min-w-10 text-right'>
+                    <span>{action.label}</span>
+                    {action.shortcut ? (
+                      <span className='text-xs opacity-70 min-w-10 text-right ml-auto'>
                         {action.shortcut}
                       </span>
-                    ) : null
-                  }>
-                  {action.label}
-                </DropdownItem>
-              )
-            })}
-          </DropdownSection>
-        ))}
-      </DropdownMenu>
+                    ) : null}
+                  </DropdownItem>
+                )
+              })}
+            </DropdownSection>
+          ))}
+        </DropdownMenu>
+      </DropdownPopover>
     </Dropdown>
   )
 
@@ -215,7 +200,6 @@ export const RowActions = <T,>({row, actionConfig}: Props<T>) => {
     <div className={cn('flex w-full items-center gap-1', alignClassMap[align])}>
       {actions.map((action) => {
         const isIconButton = action.appearance === 'icon-button'
-        const isDestructive = action.variant === 'destructive'
         const isDisabled = resolveRowCondition(action.disabled, rowData)
 
         return (
@@ -224,7 +208,6 @@ export const RowActions = <T,>({row, actionConfig}: Props<T>) => {
             isIconOnly={isIconButton}
             size='sm'
             variant='tertiary'
-            color={isDestructive ? 'danger' : 'default'}
             isDisabled={isDisabled}
             className={cn(
               'h-8 rounded-lg',

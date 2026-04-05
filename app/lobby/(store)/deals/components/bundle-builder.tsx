@@ -19,7 +19,7 @@ import {
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
-import {Badge, Button, Card, CardContent, CardHeader, Image} from '@/lib/heroui'
+import {Badge, Button, Card} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {
   useCallback,
@@ -31,6 +31,8 @@ import {
 } from 'react'
 import {DealsBundleDebug} from './deals-bundle-debug'
 import {Stepper} from './stepper'
+
+import {LegacyImage} from '@/components/ui/legacy-image'
 
 /** Denominations equivalent to the given one (e.g. 0.125 oz = 3.5g for flower) */
 function getEquivalentDenominations(
@@ -555,7 +557,7 @@ export function BundleBuilder({
     <Card
       id={config.id}
       className='scroll-mt-28 md:scroll-mt-32 rounded-none! border border-foreground/20 overflow-hidden'>
-      <CardHeader className='flex flex-col items-start gap-2'>
+      <Card.Header className='flex flex-col items-start gap-2'>
         <div className='flex items-center justify-between w-full min-h-12 md:min-h-14'>
           <h2 className='flex items-center pl-1 space-x-4 font-clash text-lg md:text-xl font-semibold'>
             <span>{config.title}</span>
@@ -579,24 +581,20 @@ export function BundleBuilder({
                   <Badge
                     key={i}
                     content={
-                      variationCartCount > 0 ? (
-                        <span className='text-sm font-okxs'>
-                          {variationCartCount}
-                        </span>
-                      ) : null
+                      variationCartCount > 0 ? `${variationCartCount}` : ''
                     }
                     className={cn('shrink-0 hidden', {
                       flex: variationCartCount > 0,
                     })}
-                    classNames={{
-                      badge: [
-                        'min-w-5 size-6 rounded-full bg-brand text-white flex items-center justify-center',
-                      ],
-                    }}
+                    // classNames={{
+                    //   badge: [
+                    //     'min-w-5 size-6 rounded-full bg-brand text-white flex items-center justify-center',
+                    //   ],
+                    // }}
                     placement='top-right'>
                     <Button
                       size='md'
-                      variant={variationIndex === i ? 'solid' : 'flat'}
+                      variant={variationIndex === i ? 'primary' : 'secondary'}
                       onPress={() => setVariationIndex(i)}
                       className={cn(
                         'rounded-none! text-sm md:text-base bg-transparent px-2',
@@ -639,8 +637,8 @@ export function BundleBuilder({
             </span>
           )}
         </div>
-      </CardHeader>
-      <CardContent className='pt-4 px-0 md:px-3 dark:bg-dark-table'>
+      </Card.Header>
+      <Card.Content className='pt-4 px-0 md:px-3 dark:bg-dark-table'>
         <div className='grid gap-0 md:gap-3 sm:grid-cols-2 lg:grid-cols-3'>
           {filteredProducts.map((product) => {
             const pid = product._id as Id<'products'>
@@ -655,27 +653,27 @@ export function BundleBuilder({
                 className='flex items-center gap-3 md:rounded-none border-b first:border-t md:border border-foreground/10 p-2 dark:bg-background/20'>
                 {product.image && (
                   <Badge
-                    isOneChar
-                    content={
-                      inCart ? (
-                        <Icon
-                          name='bag-solid'
-                          className='size-3.5 md:size-4 text-brand dark:text-white'
-                        />
-                      ) : null
-                    }
+                    // content={
+                    //   inCart ? (
+                    //     <Icon
+                    //       name='bag-solid'
+                    //       className='size-3.5 md:size-4 text-brand dark:text-white'
+                    //     />
+                    //   ) : null
+                    // }
                     className={cn('shrink-0 hidden', {flex: inCart})}
-                    classNames={{
-                      badge: [
-                        inCart &&
-                          'rounded-md md:rounded-lg bg-white dark:bg-brand dark:border-2 size-5 md:size-6 border-sidebar border-1 dark:border-brand shadow-xs',
-                        '',
-                      ],
-                    }}
+                    // classNames={{
+                    //   badge: [
+                    //     inCart &&
+                    //       'rounded-md md:rounded-lg bg-white dark:bg-brand dark:border-2 size-5 md:size-6 border-sidebar border-1 dark:border-brand shadow-xs',
+                    //     '',
+                    //   ],
+                    // }}
                     placement='top-right'>
-                    <Image
+                    <LegacyImage
                       src={product.image}
                       alt={product.name}
+                      loading='lazy'
                       className='size-18 shrink-0 rounded-none! object-cover'
                     />
                   </Badge>
@@ -784,33 +782,33 @@ export function BundleBuilder({
           </div>
           <ViewTransition>
             <Button
-              color='primary'
               size='lg'
-              radius='none'
               onPress={handleAddToCart}
               isDisabled={!isComplete || isPending || bundleAlreadyInCart}
               className={cn('bg-terpenes rounded-none! px-3.5', {
                 'opacity-100!': bundleAlreadyInCart,
-              })}
-              startContent={
-                isPending ? (
+              })}>
+              <span className='flex items-center gap-2'>
+                {isPending ? (
                   <Icon name='spinners-ring' className='size-4' />
                 ) : (
                   <Icon
                     name={isComplete ? 'box-checked' : 'box-bold'}
                     className='size-5'
                   />
-                )
-              }>
-              {bundleAlreadyInCart
-                ? 'Bundle in cart'
-                : isComplete
-                  ? 'Add to cart'
-                  : 'Complete bundle'}
+                )}
+                <span>
+                  {bundleAlreadyInCart
+                    ? 'Bundle in cart'
+                    : isComplete
+                      ? 'Add to cart'
+                      : 'Complete bundle'}
+                </span>
+              </span>
             </Button>
           </ViewTransition>
         </div>
-      </CardContent>
+      </Card.Content>
     </Card>
   )
 }

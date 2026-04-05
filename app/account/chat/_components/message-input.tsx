@@ -7,7 +7,7 @@ import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatRecordingTime} from '@/utils/time'
-import {InputProps, TextArea} from '@/lib/heroui'
+import {TextArea} from '@heroui/react'
 import {useMutation} from 'convex/react'
 import {
   KeyboardEvent,
@@ -424,7 +424,7 @@ export function MessageInput({
     }
   }
 
-  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -658,24 +658,13 @@ export function MessageInput({
             <TextArea
               ref={textareaRef}
               value={message}
-              radius='none'
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder='Type a message...'
               disabled={isSending || uploading}
               rows={isMobile ? 2 : 3}
-              className='touch-manipulation'
-              classNames={{
-                ...chatInputClassNames,
-                innerWrapper: 'ps-2!',
-              }}
-              // className={cn(
-              //   'w-full resize-none bg-transparent px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base',
-              //   'placeholder:text-muted-foreground/60',
-              //   'focus:outline-none',
-              //   'max-h-30 overflow-y-auto',
-              //   'touch-manipulation',
-              // )}
+              variant='secondary'
+              className={chatTextAreaClassName}
             />
           </div>
         </div>
@@ -723,19 +712,9 @@ export function MessageInput({
     </div>
   )
 }
-export const searchInputClassNames: InputProps['classNames'] = {
-  label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-brk',
-  input:
-    'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
-  inputWrapper:
-    'shadow-none border rounded-xl border-dark-table/40 dark:border-white/20 bg-alum/10 dark:bg-black/60 data-focus:border-dark-table dark:data-hover:border-dark-table/50 p-2 outline-none min-h-14 md:min-h-16 w-full overflow-hidden',
-  innerWrapper: 'ps-8 overflow-hidden',
-}
-export const chatInputClassNames: InputProps['classNames'] = {
-  label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-brk',
-  input:
-    'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-dark-table/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
-  inputWrapper:
-    'border shadow-none rounded-xl border-dark-table/40 dark:border-black/10 bg-sidebar dark:bg-black/60 dark:hover:bg-black/40 dark:data-focus-visible:bg-white data-focus:border-dark-table dark:data-hover:border-dark-table p-2 outline-none min-h-14 md:min-h-16 w-full',
-  innerWrapper: 'ps-2',
-}
+
+export const searchInputClassName =
+  'min-h-14 w-full overflow-hidden rounded-xl border border-dark-table/40 bg-alum/10 p-2 pl-8 pr-10 text-base font-medium font-okxs text-blue-500 shadow-none outline-none transition-colors placeholder:font-normal placeholder:text-slate-500/60 selection:bg-blue-400 selection:text-white hover:bg-sidebar focus-visible:border-dark-table focus-visible:bg-sidebar md:min-h-16 dark:border-white/20 dark:bg-black/60 dark:text-white dark:placeholder:text-white/40 dark:hover:border-dark-table/50 dark:focus-visible:bg-background'
+
+export const chatTextAreaClassName =
+  'min-h-14 w-full resize-none rounded-xl border border-dark-table/40 bg-sidebar p-2 ps-2 text-base font-medium font-okxs text-blue-500 shadow-none outline-none transition-colors placeholder:font-normal placeholder:text-dark-table/60 selection:bg-blue-400 selection:text-white hover:bg-sidebar focus-visible:border-dark-table md:min-h-16 dark:border-black/10 dark:bg-black/60 dark:text-white dark:placeholder:text-slate-500 dark:hover:bg-black/40 disabled:cursor-not-allowed disabled:opacity-50'

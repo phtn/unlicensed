@@ -1,8 +1,8 @@
 'use client'
 
-import {Button} from '@/lib/heroui'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
+import {Button} from '@heroui/react'
 import {useParams} from 'next/navigation'
 import {ChatContent} from '../content'
 
@@ -18,7 +18,7 @@ export default function ConversationPage() {
           <span>Reloading Messages</span>
           <Icon name='spinners-ring' className='text-orange-300 size-5' />
         </div>
-        <Button className='whitespace-nowrap' color='primary'>
+        <Button className='whitespace-nowrap'>
           Re-authenticate to access chat
         </Button>
       </div>

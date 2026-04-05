@@ -1,7 +1,7 @@
 'use client'
 
 import {IconName} from '@/lib/icons'
-import {Card, CardHeader} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import Link from 'next/link'
 import {useMemo} from 'react'
 
@@ -56,17 +56,15 @@ export const Content = () => {
         <div className='grid gap-6 md:grid-cols-3'>
           {documents.map((doc) => (
             <Link key={doc.slug} href={`/${doc.slug}`}>
-              <Card
-                shadow='sm'
-                className='dark:bg-origin rounded-4xl md:py-8 md:px-4 h-44 md:h-40 flex flex-col justify-center space-y-2'>
-                <CardHeader>
+              <Card className='dark:bg-origin rounded-4xl shadow-sm md:py-8 md:px-4 h-44 md:h-40 flex flex-col justify-center space-y-2'>
+                <Card.Header>
                   <div className='h-full md:h-20 flex flex-col justify-center font-figtree'>
                     <div className='md:text-2xl tracking-tight mb-1 capitalize font-bold'>
                       {doc.slug.split('-').join(' ')}
                     </div>
                     <p className='opacity-60'>{doc.description}</p>
                   </div>
-                </CardHeader>
+                </Card.Header>
               </Card>
             </Link>
           ))}

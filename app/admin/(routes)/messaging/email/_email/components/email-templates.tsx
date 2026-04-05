@@ -3,7 +3,7 @@
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {AnimatePresence, motion} from 'motion/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
@@ -66,8 +66,7 @@ export const EmailTemplateList = ({templates}: EmailTemplateListProps) => {
                   <Button
                     size='sm'
                     isIconOnly
-                    radius='full'
-                    color='primary'
+                                        variant='primary'
                     onPress={navigateToNew}
                     className='bg-foreground dark:text-dark-gray border-0'>
                     <Icon name='plus' className='size-5' />

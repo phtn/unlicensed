@@ -1,11 +1,10 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {AddressType} from '@/convex/users/d'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Input} from '@/lib/heroui'
+import {Button, Input} from '@heroui/react'
 import {useCallback} from 'react'
 import {FormData, FormErrors} from '../types'
 
@@ -53,7 +52,6 @@ export function ShippingForm({
                 <Button
                   key={address.id}
                   size='sm'
-                  radius='sm'
                   variant='tertiary'
                   onPress={() => onSelectSavedAddress(address.id)}
                   className={cn(
@@ -67,7 +65,6 @@ export function ShippingForm({
         </div>
         <div className='flex items-center gap-1'>
           <Button
-            radius='none'
             variant='primary'
             onPress={onCreateNewAddress}
             isIconOnly={isMobile}
@@ -80,78 +77,53 @@ export function ShippingForm({
 
       <div className='grid grid-cols-2 gap-1'>
         <Input
-          label='First Name'
-          radius='sm'
+          required
+          placeholder='First Name'
           value={formData.firstName}
           onChange={handleChange('firstName')}
-          isRequired
-          classNames={commonInputClassNames}
-          isInvalid={!!formErrors.firstName}
-          errorMessage={formErrors.firstName}
           autoFocus={false}
         />
         <Input
-          label='Last Name'
-          radius='sm'
+          placeholder='Last Name'
           value={formData.lastName}
           onChange={handleChange('lastName')}
-          isRequired
-          classNames={commonInputClassNames}
-          isInvalid={!!formErrors.lastName}
-          errorMessage={formErrors.lastName}
+          required
           autoFocus={false}
         />
       </div>
       <div className='mt-1 space-y-1'>
         <Input
-          label='Address Line 1'
-          radius='sm'
+          placeholder='Address Line 1'
           value={formData.addressLine1}
           onChange={handleChange('addressLine1')}
-          isRequired
-          classNames={commonInputClassNames}
-          isInvalid={!!formErrors.addressLine1}
-          errorMessage={formErrors.addressLine1}
+          required
         />
         <Input
-          label='Address Line 2 (Optional)'
-          radius='sm'
-          classNames={commonInputClassNames}
+          placeholder='Address Line 2 (Optional)'
           value={formData.addressLine2}
           onChange={handleChange('addressLine2')}
           autoFocus={false}
         />
         <div className='grid grid-cols-3 gap-1'>
           <Input
-            label='City'
-            radius='sm'
+            placeholder='City'
             value={formData.city}
             onChange={handleChange('city')}
-            isRequired
-            classNames={commonInputClassNames}
-            errorMessage={formErrors.city}
+            required
             autoFocus={false}
           />
           <Input
-            label='State'
-            radius='sm'
+            placeholder='State'
             value={formData.state}
             onChange={handleChange('state')}
-            isRequired
-            classNames={commonInputClassNames}
-            isInvalid={!!formErrors.state}
-            errorMessage={formErrors.state}
+            required
             autoFocus={false}
           />
           <Input
-            label='ZIP Code'
-            radius='sm'
+            placeholder='ZIP Code'
             value={formData.zipCode}
             onChange={handleChange('zipCode')}
-            isRequired
-            classNames={commonInputClassNames}
-            isInvalid={!!formErrors.zipCode}
-            errorMessage={formErrors.zipCode}
+            required
             autoFocus={false}
           />
         </div>

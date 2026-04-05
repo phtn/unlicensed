@@ -6,7 +6,7 @@ import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
 import {canAccessAdminPanel} from '@/lib/staff-access'
 import {cn} from '@/lib/utils'
-import {Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
@@ -322,8 +322,6 @@ export const StaffForm = ({
           </h1>
           <Button
             size='md'
-            disableRipple
-            disableAnimation
             variant='tertiary'
             name='basic-info'
             onPress={scrollToSection('basic-info')}
@@ -344,8 +342,7 @@ export const StaffForm = ({
             type='submit'
             fullWidth
             className='w-full rounded-xl font-medium tracking-tight bg-pink-500 text-white'
-            isLoading={isSubmitting}
-            isDisabled={!isEditMode && !isAuthorizedToCreate}
+            isDisabled={isSubmitting || (!isEditMode && !isAuthorizedToCreate)}
             onPress={form.handleSubmit}>
             {isSubmitting
               ? isEditMode
@@ -479,10 +476,10 @@ export const StaffForm = ({
           <div className='lg:hidden sticky bottom-4 z-20 p-4 bg-neutral-900/80 backdrop-blur-md border border-neutral-800 rounded-xl shadow-2xl'>
             <Button
               type='submit'
-              color='success'
               className='w-full font-semibold'
-              isLoading={isSubmitting}
-              isDisabled={!isEditMode && !isAuthorizedToCreate}>
+              isDisabled={
+                isSubmitting || (!isEditMode && !isAuthorizedToCreate)
+              }>
               {isSubmitting
                 ? isEditMode
                   ? 'Updating...'

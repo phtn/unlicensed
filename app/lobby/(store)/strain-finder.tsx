@@ -1,6 +1,6 @@
 import {StoreCategory} from '@/app/types'
 import {Icon} from '@/lib/icons'
-import {Button, Link} from '@/lib/heroui'
+import {Link} from '@heroui/react'
 import NextLink from 'next/link'
 
 interface Props {
@@ -41,12 +41,7 @@ export const StrainFinderMini = ({categories}: Props) => {
                 </span>
               ))}
             </div>
-            <Button
-              as={NextLink}
-              size='lg'
-              radius='full'
-              disableRipple
-              variant='primary'
+            <NextLink
               href='/lobby/strain-finder'
               className='px-0 flex items-center justify-center md:justify-start w-full bg-transparent text-sm font-semibold dark:border-light-gray uppercase tracking-[0.35em]'>
               <div className='flex items-center justify-start'>
@@ -57,7 +52,7 @@ export const StrainFinderMini = ({categories}: Props) => {
                   Start the Finder
                 </span>
               </div>
-            </Button>
+            </NextLink>
           </div>
           <div className='hidden md:grid gap-4 sm:grid-cols-2 lg:col-span-2'>
             {categories.map((category) => (

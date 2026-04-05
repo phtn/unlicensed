@@ -6,7 +6,7 @@ import {useApiCall} from '@/hooks/use-api-call'
 import {Icon} from '@/lib/icons'
 import type {Provider, ProviderStatusResponse} from '@/lib/paygate/types'
 import {cn} from '@/lib/utils'
-import {Card, CardHeader} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import {useEffect, useMemo} from 'react'
 
 // Type guard for ProviderStatusResponse
@@ -80,8 +80,8 @@ export const FeesList = () => {
 }
 
 const ProviderItem = (item: Provider) => (
-  <Card shadow='none' radius='none' className='border-b border-sidebar w-full'>
-    <CardHeader className='flex items-center justify-between px-2 w-full'>
+  <Card className='border-b border-sidebar w-full'>
+    <Card.Header className='flex items-center justify-between px-2 w-full'>
       <div className='flex items-center flex-1 space-x-2'>
         <span
           className={cn('text-sm', {
@@ -109,6 +109,6 @@ const ProviderItem = (item: Provider) => (
           <span className='w-24'>{item.status}</span>
         </div>
       </div>
-    </CardHeader>
+    </Card.Header>
   </Card>
 )

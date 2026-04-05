@@ -1,7 +1,6 @@
 'use client'
 
-import {Input, TextArea} from '@/lib/heroui'
-import {commonInputClassNames} from '../../../../_components/ui/fields'
+import {Input, Label, TextArea} from '@heroui/react'
 import {CategoryFormApi} from '../category-schema'
 import {FormSection, Header} from './components'
 
@@ -20,14 +19,14 @@ export const Details = ({form}: DetailsProps) => {
               const descValue = (field.state.value as string) ?? ''
               return (
                 <div className='space-y-2 w-full'>
+                  <Label htmlFor='description'>Description</Label>
                   <TextArea
+                    id='description'
                     value={descValue}
-                    label='Description'
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                     placeholder='Describe the category experience...'
-                    classNames={commonInputClassNames}
-                    minRows={4}
+                    rows={4}
                     variant='secondary'
                   />
                   {field.state.meta.isTouched &&
@@ -45,15 +44,16 @@ export const Details = ({form}: DetailsProps) => {
               const benefitsValue = (field.state.value as string) ?? ''
               return (
                 <div className='space-y-2 w-full'>
+                  <Label htmlFor='benefits'>Benefits</Label>
                   <TextArea
-                    label='Benefits'
+                    id='benefits'
                     value={benefitsValue}
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                     placeholder='Enter one benefit per line e.g. Full-spectrum cannabinoids'
-                    minRows={4}
+                    rows={4}
                     variant='secondary'
-                    classNames={commonInputClassNames}
+                    // classNames={commonInputClassNames}
                   />
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
@@ -71,15 +71,15 @@ export const Details = ({form}: DetailsProps) => {
             const highlightValue = (field.state.value as string) ?? ''
             return (
               <div className=''>
+                <Label htmlFor='highlight'>Highlight</Label>
                 <Input
-                  size='lg'
-                  label='Highlight'
+                  id='Highlight'
                   value={highlightValue}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   variant='secondary'
                   placeholder='Hand-trimmed buds with rich terpene expression.'
-                  classNames={commonInputClassNames}
+                  // classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (

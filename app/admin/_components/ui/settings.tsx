@@ -5,7 +5,7 @@ import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDate} from '@/utils/date'
-import {Button, Drawer, DrawerContent, DrawerHeader} from '@/lib/heroui'
+import {Button, Drawer, DrawerContent, DrawerHeader, useOverlayState} from '@heroui/react'
 import {usePathname} from 'next/navigation'
 import {
   type ComponentProps,
@@ -196,21 +196,18 @@ const SettingsPanel = ({
     )
   }
 
+  const drawerState = useOverlayState({isOpen: openMobile, onOpenChange: setOpenMobile})
+
   if (isMobile) {
     return (
-      <Drawer
-        isOpen={openMobile}
-        onOpenChange={setOpenMobile}
-        placement='right'>
+      <Drawer state={drawerState}>
         <DrawerContent
-          className={cn('w-72 px-4 py-0 bg-fade [&>button]:hidden', {})}
-          style={
-            {
-              '--settings-width': SETTINGS_WIDTH_MOBILE,
-            } as CSSProperties
-          }>
+          placement='right'
+          className={cn('w-72 px-4 py-0 bg-fade [&>button]:hidden', {})}>
           <DrawerHeader className='hidden'>Settings</DrawerHeader>
-          <div className='flex h-full w-full flex-col'>
+          <div
+            className='flex h-full w-full flex-col'
+            style={{'--settings-width': SETTINGS_WIDTH_MOBILE} as CSSProperties}>
             <SettingsPanelContent />
           </div>
         </DrawerContent>

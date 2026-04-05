@@ -6,7 +6,7 @@ import {Id} from '@/convex/_generated/dataModel'
 import {computeOrderTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, CardContent} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useParams} from 'next/navigation'
@@ -124,13 +124,11 @@ export default function CardProvidersPage() {
     return (
       <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
         <div className='mx-auto max-w-3xl'>
-          <Card radius='sm' shadow='none'>
-            <CardContent className='p-6 space-y-4'>
+          <Card className='rounded-sm shadow-none'>
+            <Card.Content className='p-6 space-y-4'>
               <h1 className='text-xl font-space'>Order not found</h1>
-              <Button as={NextLink} href='/account/orders' color='primary'>
-                View Orders
-              </Button>
-            </CardContent>
+              <NextLink href='/account/orders'>View Orders</NextLink>
+            </Card.Content>
           </Card>
         </div>
       </main>
@@ -142,8 +140,8 @@ export default function CardProvidersPage() {
   return (
     <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8 dark:bg-black'>
       <div className='mx-auto max-w-7xl space-y-4'>
-        <Card radius='none' shadow='none' className='rounded-sm bg-dark-gray/0'>
-          <CardContent className='p-2 md:p-6'>
+        <Card className='rounded-sm bg-dark-gray/0 shadow-none'>
+          <Card.Content className='p-2 md:p-6'>
             <div className='flex items-center justify-between w-full'>
               <div className='space-y-1'>
                 <div className='flex items-center space-x-5 opacity-60'>
@@ -193,20 +191,20 @@ export default function CardProvidersPage() {
                 </p>
               </div>
             </div>
-          </CardContent>
+          </Card.Content>
         </Card>
 
         {topTenProviders.length === 0 ? (
-          <Card radius='sm' shadow='none'>
-            <CardContent className='p-6 space-y-4'>
+          <Card className='rounded-sm shadow-none'>
+            <Card.Content className='p-6 space-y-4'>
               <p className='text-sm text-default-500'>
                 No providers are configured in top ten for the default{' '}
                 {gatewayLabel} account.
               </p>
-              <Button as={NextLink} href={fallbackHref} color='primary'>
+              <NextLink href={fallbackHref}>
                 Continue with default provider
-              </Button>
-            </CardContent>
+              </NextLink>
+            </Card.Content>
           </Card>
         ) : (
           <TopProviders
@@ -218,10 +216,10 @@ export default function CardProvidersPage() {
         )}
 
         {checkoutError ? (
-          <Card radius='sm' shadow='none'>
-            <CardContent className='p-6'>
+          <Card className='rounded-sm shadow-none'>
+            <Card.Content className='p-6'>
               <p className='text-sm text-danger'>{checkoutError}</p>
-            </CardContent>
+            </Card.Content>
           </Card>
         ) : null}
       </div>
@@ -235,7 +233,7 @@ export default function CardProvidersPage() {
 //   radius='none'
 //   shadow='none'
 //   className='min-h-80 rounded-sm bg-dark-table/10'>
-//   <CardContent className='p-5 flex items-center justify-between gap-4'>
+//   <Card.Content className='p-5 flex items-center justify-between gap-4'>
 //     <div className='space-y-1 min-w-0'>
 //       <div className='flex items-center gap-2'>
 //         <div className='flex items-center text-base font-okxs dark:text-background truncate bg-robinhood py-3 px-6 rounded-full space-x-1'>
@@ -260,9 +258,9 @@ export default function CardProvidersPage() {
 //       </p>
 //     </div>
 
-//     <Button as={NextLink} href={payHref} color='primary'>
+//     <Button as={NextLink} href={payHref} variant='primary'>
 //       Continue
 //     </Button>
-//   </CardContent>
+//   </Card.Content>
 // </Card>
 // )

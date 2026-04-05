@@ -11,7 +11,7 @@ import {Icon} from '@/lib/icons'
 import {getAvailableCartQuantityForDenomination} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
-import {Button, Tooltip} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import dynamic from 'next/dynamic'
 import {useRouter} from 'next/navigation'
@@ -101,23 +101,17 @@ const DenominationPicker = memo(
                 ? 'bg-dark-gray text-white md:hover:bg-black dark:bg-white dark:text-dark-gray dark:md:hover:bg-brand dark:md:hover:text-white'
                 : 'text-foreground/85 hover:border-foreground/35',
             )}>
-            <Tooltip
-              content={
-                <div className='flex items-center space-x-1'>
-                  <Icon name='hot' className='size-3 text-yellow-500' />
-                  <span className='font-medium'>Popular</span>
-                </div>
-              }>
-              {option.isPopular ? (
-                <div className='absolute -right-2 -top-2 inline-flex size-4.5 items-center justify-center rounded-sm rounded-ss-md rounded-ee-md bg-transparent text-yellow-500 -rotate-45'>
-                  <Icon
-                    name='hot'
-                    className='absolute w-5 h-4 translate-y-[0.33px] text-dark-table rotate-25'
-                  />
-                  <Icon name='hot' className='size-3.5 rotate-25' />
-                </div>
-              ) : null}
-            </Tooltip>
+            {option.isPopular ? (
+              <div
+                title='Popular'
+                className='absolute -right-2 -top-2 inline-flex size-4.5 items-center justify-center rounded-sm rounded-ss-md rounded-ee-md bg-transparent text-yellow-500 -rotate-45'>
+                <Icon
+                  name='hot'
+                  className='absolute w-5 h-4 translate-y-[0.33px] text-dark-table rotate-25'
+                />
+                <Icon name='hot' className='size-3.5 rotate-25' />
+              </div>
+            ) : null}
             <span>{option.label}</span>
           </button>
         )
@@ -267,10 +261,7 @@ export const ProductInteraction = ({
         <div className='flex gap-3'>
           <Button
             size='lg'
-            color='primary'
             variant='primary'
-            radius='none'
-            disableRipple
             className='flex h-14 md:h-13 w-full items-center bg-linear-to-r from-brand hover:via-light-brand via-brand to-brand font-clash text-base font-medium md:text-lg sm:flex-1'
             onPress={() => void handleAddToCart()}
             isDisabled={isAddToCartDisabled}>
@@ -284,7 +275,6 @@ export const ProductInteraction = ({
             size='lg'
             variant='primary'
             onPress={handleCheckoutPress}
-            radius='none'
             isDisabled={user ? isCheckoutDisabled : false}
             className='h-14 md:h-13 w-full bg-foreground/95 font-clash text-lg font-medium text-white dark:text-dark-gray sm:flex-1'>
             <span>{user ? 'Checkout' : 'Sign in'}</span>

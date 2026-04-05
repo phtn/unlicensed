@@ -1,8 +1,11 @@
 import {Doc, Id} from '@/convex/_generated/dataModel'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
-import {Card, CardContent, CardFooter, Image} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import Link from 'next/link'
+
+
+import {LegacyImage} from '@/components/ui/legacy-image'
 
 interface CategoryItemProps extends Doc<'categories'> {
   resolveUrl: (storageId: string) => string | null
@@ -13,34 +16,24 @@ export const CategoryItem = (item: CategoryItemProps) => {
   const resolvedImageUrl = useStorageUrls([item.heroImage as Id<'_storage'>])
 
   return (
-    <Card
-      as={Link}
-      prefetch
-      radius='none'
-      isPressable
-      shadow='none'
-      key={item._id}
-      isFooterBlurred
-      className='border-none'
-      href={`/lobby/category/${item.slug}`}>
-      <CardContent className='relative overflow-visible p-0'>
-        <div className="absolute w-500 scale-x-50 top-0 -left-150 inset-0 bg-[url('/svg/noise.svg')] opacity-10 scale-100 pointer-events-none" />
-        <div className='h-24 w-full overflow-hidden opacity-10 flex items-center justify-center'>
-          <Icon name='rapid-fire-logo' className='size-40 animate-pulse' />
-        </div>
-        <Image
-          alt={item.name}
-          radius='none'
-          shadow='none'
-          className='hidden w-full object-cover min-size-[172px]'
-          src={resolvedImageUrl(item.heroImage as Id<'_storage'>) as string}
-          width='100%'
-          loading='lazy'
-        />
-      </CardContent>
-      <CardFooter className='absolute z-30 bottom-0 text-xl flex items-center h-10 font-bone font-light justify-center text-white'>
-        <p className='capitalize'>{item.name}</p>
-      </CardFooter>
-    </Card>
+    <Link href={`/lobby/category/${item.slug}`} prefetch className='block'>
+      <Card key={item._id} className='border-none overflow-hidden'>
+        <Card.Content className='relative overflow-visible p-0'>
+          <div className="absolute w-500 scale-x-50 top-0 -left-150 inset-0 bg-[url('/svg/noise.svg')] opacity-10 scale-100 pointer-events-none" />
+          <div className='h-24 w-full overflow-hidden opacity-10 flex items-center justify-center'>
+            <Icon name='rapid-fire-logo' className='size-40 animate-pulse' />
+          </div>
+          <LegacyImage
+            alt={item.name}
+            className='hidden w-full object-cover min-h-[172px]'
+            src={resolvedImageUrl(item.heroImage as Id<'_storage'>) as string}
+            loading='lazy'
+          />
+        </Card.Content>
+        <Card.Footer className='absolute z-30 bottom-0 flex h-10 items-center justify-center text-xl font-bone font-light text-white'>
+          <p className='capitalize'>{item.name}</p>
+        </Card.Footer>
+      </Card>
+    </Link>
   )
 }

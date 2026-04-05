@@ -12,7 +12,6 @@ import {useScrollY} from '@/hooks/use-scroll-y'
 import {logout} from '@/lib/firebase/auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-// import {Badge, Button} from '@/lib/heroui'
 import {Badge, Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {motion} from 'motion/react'
@@ -148,7 +147,7 @@ export const Nav = ({children}: NavProps) => {
             <Link
               href={'/lobby/category'}
               className={cn(
-                'hidden rounded-xs px-2 group text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-clash font-semibold space-x-1  outline-0 focus-visible:bg-brand focus-visible:ring-0',
+                'hidden rounded-xs px-2 h-7 group text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-clash font-semibold space-x-1  outline-0 focus-visible:bg-brand focus-visible:ring-0',
                 {
                   'text-dark-table dark:text-white': !inStoreLobby,
                   'text-dark-table dark:text-white .':
@@ -166,9 +165,9 @@ export const Nav = ({children}: NavProps) => {
           <div className='flex w-fit gap-5 md:w-36 items-center justify-between'>
             <Badge.Anchor>
               <Button
-                id='cart-drawer-trigger'
                 variant='ghost'
-                className='capitalize outline-0 focus-visible:ring-0 focus-visible:outline-2! focus-visible:outline-brand! hover:bg-transparent'
+                id='cart-drawer-trigger'
+                className='capitalize outline-0 focus-visible:ring-0 aspect-square focus-visible:outline-2! focus-visible:outline-brand! hover:bg-transparent'
                 onPress={onCartDrawerOpen}>
                 <Icon
                   name='bag-solid'
@@ -182,10 +181,9 @@ export const Nav = ({children}: NavProps) => {
                 />
               </Button>
               <Badge
-                size='md'
                 key={`cart-badge-${cartItemCount}`}
                 content={`${cartItemCount}`}
-                className='bg-brand h-4! w-5.5 rounded-md border border-white font-okxs font-semibold text-sm text-white leading-none flex items-center justify-center'>
+                className='-translate-x-2.5 bg-brand w-5.5 rounded-lg border flex items-center justify-center border-white font-okxs font-semibold text-sm text-white leading-none flex items-center justify-center h-2!'>
                 {cartItemCount}
               </Badge>
             </Badge.Anchor>

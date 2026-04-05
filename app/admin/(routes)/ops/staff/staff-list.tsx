@@ -5,10 +5,9 @@ import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError, onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
-import {Button, Card, Chip, User} from '@/lib/heroui'
+import {Avatar, Button, Card, Chip} from '@heroui/react'
 import {useMutation} from 'convex/react'
 import {formatDistanceToNow} from 'date-fns'
-import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {useCallback, useState} from 'react'
 
@@ -19,6 +18,12 @@ interface StaffListProps {
 const StaffItem = ({member}: {member: Doc<'staff'>}) => {
   const {user} = useAuthCtx()
   const router = useRouter()
+  const navigate = useCallback(
+    (path: string) => () => {
+      router.push(path)
+    },
+    [router],
+  )
   const connectStaffForChat = useMutation(api.follows.m.connectStaffForChat)
   const [isConnecting, setIsConnecting] = useState(false)
 
@@ -43,35 +48,14 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
   }, [connectStaffForChat, member._id, router, user?.uid])
 
   return (
-    <Card
-      className='p-2 md:p-4 hover:bg-neutral-50 transition-colors dark:hover:bg-dark-table/30 dark:bg-dark-table/40'
-      radius='none'
-      shadow='none'>
+    <Card className='p-2 md:p-4 hover:bg-neutral-50 transition-colors dark:hover:bg-dark-table/30 dark:bg-dark-table/40'>
       <div className='flex items-start justify-between'>
         <div className='flex'>
           <div className='flex-1 w-64'>
-            <User
-              avatarProps={{src: member.avatarUrl}}
-              classNames={{
-                name: 'mb-1',
-                description: 'text-xs opacity-80 text-foreground',
-              }}
-              name={
-                <div className='flex items-center gap-1'>
-                  <h4 className='font-medium text-base'>
-                    {member.name || 'Unnamed Staff'}
-                  </h4>
-                  <Chip
-                    size='sm'
-                    color={member.active ? 'success' : 'default'}
-                    variant='tertiary'
-                    className='bg-emerald-500/10 h-5'>
-                    {member.active ? 'Active' : 'Inactive'}
-                  </Chip>
-                </div>
-              }
-              description={member.position}
-            />
+            <Avatar>
+              <Avatar.Image alt={member.name} src={member.avatarUrl} />
+              <Avatar.Fallback>{member.name?.substring(0, 2)}</Avatar.Fallback>
+            </Avatar>
           </div>
           <div className='portrait:hidden space-y-1'>
             <div className='flex items-center gap-2'>
@@ -85,7 +69,6 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
                     key={role}
                     size='sm'
                     variant='tertiary'
-                    color='primary'
                     className='h-5 bg-sky-500/10'>
                     {role}
                   </Chip>
@@ -101,10 +84,8 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
           <Button
             size='sm'
             isIconOnly
-            radius='sm'
             variant='tertiary'
             isDisabled={isConnecting}
-            isLoading={isConnecting}
             aria-label='Open chat'
             onPress={handleChatClick}
             className='text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800 bg-sidebar/50'>
@@ -113,12 +94,9 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
 
           <Button
             size='sm'
-            as={Link}
             isIconOnly
-            radius='sm'
             variant='tertiary'
-            prefetch
-            href={`/admin/ops/staff?tabId=edit&id=${member._id}`}
+            onPress={navigate(`/admin/ops/staff?tabId=edit&id=${member._id}`)}
             className='text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800 bg-sidebar/50'>
             <Icon name='pen' className='size-5' />
           </Button>

@@ -2,16 +2,16 @@
 
 import {OrderListItem} from '@/app/account/_components/order-list-item'
 import {Loader} from '@/components/expermtl/loader'
+import {Button as LinkButton} from '@/components/ui/button'
 import {api} from '@/convex/_generated/api'
 import type {OrderType} from '@/convex/orders/d'
 import {useAuth} from '@/hooks/use-auth'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
-import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, CardContent, Input, InputProps} from '@/lib/heroui'
+import {Button, Card, Input} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
-import {useMemo, useState} from 'react'
+import {ChangeEvent, useMemo, useState} from 'react'
 
 const PAGE_SIZE = 10
 
@@ -167,23 +167,23 @@ export const Content = () => {
 
   const setPageToFirst = () => setPage(1)
 
-  const handleSearchQueryChange = (value: string) => {
-    setSearchQuery(value)
+  const handleSearchQueryChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
     setPageToFirst()
   }
 
-  const handleSearchModeChange = (mode: SearchMode) => {
+  const handleSearchModeChange = (mode: SearchMode) => () => {
     setSearchMode(mode)
     setPageToFirst()
   }
 
-  const handleFromDateChange = (value: string) => {
-    setFromDate(value)
+  const handleFromDateChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFromDate(e.target.value)
     setPageToFirst()
   }
 
-  const handleToDateChange = (value: string) => {
-    setToDate(value)
+  const handleToDateChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setToDate(e.target.value)
     setPageToFirst()
   }
 
@@ -205,39 +205,21 @@ export const Content = () => {
 
   return (
     <main className='px-2 sm:px-4 lg:px-6 space-y-5 pb-8'>
-      <Card shadow='none' className='border border-foreground/15'>
-        <CardContent className='p-3 md:p-5 space-y-4 bg-sidebar/40 dark:bg-sidebar'>
+      <Card className='border border-foreground/15'>
+        <Card.Content className='p-3 md:p-5 space-y-4 bg-sidebar/40 dark:bg-sidebar'>
           <div className='grid grid-cols-1 lg:grid-cols-4 gap-3 w-full xl:h-15'>
             <Input
               type='search'
               value={searchQuery}
-              onValueChange={handleSearchQueryChange}
+              onChange={handleSearchQueryChange}
               placeholder='Search order #, date, or amount'
-              startContent={
-                <Icon name='search' className='size-4 opacity-60' />
-              }
-              className='lg:col-span-2'
-              classNames={{
-                base: 'py-2',
-                inputWrapper: [inputClasses?.inputWrapper],
-              }}
             />
             <Input
               type='date'
               value={fromDate}
-              onValueChange={handleFromDateChange}
-              label='From'
-              labelPlacement='outside-left'
-              classNames={inputClasses}
+              onChange={handleFromDateChange}
             />
-            <Input
-              type='date'
-              value={toDate}
-              onValueChange={handleToDateChange}
-              label='To'
-              labelPlacement='outside-left'
-              classNames={inputClasses}
-            />
+            <Input type='date' value={toDate} onChange={handleToDateChange} />
           </div>
 
           <div className='flex flex-wrap items-center justify-between gap-3'>
@@ -246,10 +228,9 @@ export const Content = () => {
                 <Button
                   key={mode.id}
                   size='sm'
-                  radius='full'
-                  variant={searchMode === mode.id ? 'solid' : 'flat'}
-                  color={searchMode === mode.id ? 'primary' : 'default'}
-                  onPress={() => handleSearchModeChange(mode.id)}>
+                  className='rounded-full'
+                  variant={searchMode === mode.id ? 'primary' : 'secondary'}
+                  onPress={handleSearchModeChange(mode.id)}>
                   {mode.label}
                 </Button>
               ))}
@@ -279,7 +260,7 @@ export const Content = () => {
               </p>
             </div>
           </div>
-        </CardContent>
+        </Card.Content>
       </Card>
 
       {isLoading ? (
@@ -287,32 +268,30 @@ export const Content = () => {
           <Loader />
         </div>
       ) : orders && orders.length === 0 ? (
-        <Card
-          shadow='none'
-          className='border-2 border-dashed border-default-200 dark:border-default-100/20'>
-          <CardContent className='py-16 flex flex-col items-center text-center gap-4'>
+        <Card className='border-2 border-dashed border-default-200 dark:border-default-100/20'>
+          <Card.Content className='py-16 flex flex-col items-center text-center gap-4'>
             <h2 className='text-xl font-semibold'>No orders yet</h2>
             <p className='text-default-500 max-w-md'>
               You have not placed an order yet. Start shopping to see orders
               here.
             </p>
-            <Button as={Link} href='/products' color='primary'>
-              Browse Products
-            </Button>
-          </CardContent>
+            <LinkButton asChild>
+              <Link href='/products'>Browse Products</Link>
+            </LinkButton>
+          </Card.Content>
         </Card>
       ) : hasInvalidDateRange ? (
-        <Card shadow='none' className='border border-danger/30'>
-          <CardContent className='py-8 text-center text-danger'>
+        <Card className='border border-danger/30'>
+          <Card.Content className='py-8 text-center text-danger'>
             Select a valid date range. The start date must be on or before the
             end date.
-          </CardContent>
+          </Card.Content>
         </Card>
       ) : filteredOrders.length === 0 ? (
-        <Card shadow='none' className='border border-foreground/15'>
-          <CardContent className='py-12 text-center text-default-500'>
+        <Card className='border border-foreground/15'>
+          <Card.Content className='py-12 text-center text-default-500'>
             No orders matched your filters.
-          </CardContent>
+          </Card.Content>
         </Card>
       ) : (
         <div className='space-y-3'>
@@ -329,8 +308,8 @@ export const Content = () => {
             <OrderListItem key={order.orderNumber} order={order} />
           ))}
 
-          <Card shadow='none' className='border border-foreground/15'>
-            <CardContent className='p-3 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between'>
+          <Card className='border border-foreground/15'>
+            <Card.Content className='p-3 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between'>
               <Button
                 variant='tertiary'
                 onPress={() => setPage(Math.max(1, currentPage - 1))}
@@ -350,9 +329,8 @@ export const Content = () => {
                     <Button
                       key={item}
                       size='sm'
-                      radius='full'
-                      variant={item === currentPage ? 'solid' : 'light'}
-                      color={item === currentPage ? 'primary' : 'default'}
+                      className='rounded-full'
+                      variant={item === currentPage ? 'primary' : 'tertiary'}
                       onPress={() => setPage(item)}>
                       {item}
                     </Button>
@@ -366,7 +344,7 @@ export const Content = () => {
                 isDisabled={currentPage >= totalPages}>
                 Next
               </Button>
-            </CardContent>
+            </Card.Content>
           </Card>
         </div>
       )}
@@ -374,10 +352,10 @@ export const Content = () => {
   )
 }
 
-const inputClasses: InputProps['classNames'] = {
-  label: 'text-sm',
-  mainWrapper: 'h-10',
-  inputWrapper:
-    'lg:col-span-2 w-full placeholder:text-base placeholder:opacity-80 rounded-lg bg-background border border-foreground/10 dark:border-background focus:outline-none focus:ring-2 focus:ring-brand/50',
-  innerWrapper: [],
-}
+// const inputClasses: InputProps['classNames'] = {
+//   label: 'text-sm',
+//   mainWrapper: 'h-10',
+//   inputWrapper:
+//     'lg:col-span-2 w-full placeholder:text-base placeholder:opacity-80 rounded-lg bg-background border border-foreground/10 dark:border-background focus:outline-none focus:ring-2 focus:ring-brand/50',
+//   innerWrapper: [],
+// }

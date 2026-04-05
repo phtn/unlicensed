@@ -9,7 +9,7 @@ import {api} from '@/convex/_generated/api'
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {AnimatePresence, motion, useReducedMotion} from 'motion/react'
 import Link from 'next/link'
@@ -154,22 +154,15 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
               </p>
 
               <div className='hidden md:flex items-center gap-3 sm:gap-4 lg:gap-5 relative z-50 flex-wrap'>
-                <Button
-                  size='lg'
-                  as={Link}
+                <Link
                   prefetch
-                  radius='none'
                   href={'/lobby/brands'}
                   className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand rounded-xs dark:hover:text-white bg-brand hover:text-white text-white font-clash font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                   <span className='drop-shadow-xs'>Shop by Brand</span>
-                </Button>
-                <Button
-                  size='lg'
-                  as={Link}
+                </Link>
+                <Link
                   prefetch
-                  radius='none'
-                  variant='tertiary'
-                  onPress={toggleNavigating}
+                  onClick={toggleNavigating}
                   href={'/lobby/deals'}
                   className='hidden border dark:border-light-gray/80 sm:flex rounded-xs items-center gap-2 dark:text-terpenes font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                   <span className='tracking-tight'>Find Deals</span>
@@ -177,7 +170,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     name={navigating ? 'spinners-ring' : 'search-magic'}
                     className='w-3 h-3 sm:w-4 sm:h-4 dark:text-white'
                   />
-                </Button>
+                </Link>
               </div>
             </div>
 
@@ -214,8 +207,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                 </span>
                 <Button
                   size='sm'
-                  radius='none'
-                  variant={tier === '' ? 'solid' : 'flat'}
+                  variant={tier === '' ? 'primary' : 'secondary'}
                   className={cn('min-w-0 h-6 font-bold uppercase', {
                     'bg-brand text-white': tier === '',
                   })}
@@ -226,8 +218,9 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   <Button
                     key={tierOption.value}
                     size='sm'
-                    radius='none'
-                    variant={tier === tierOption.value ? 'solid' : 'flat'}
+                    variant={
+                      tier === tierOption.value ? 'primary' : 'secondary'
+                    }
                     className={cn('min-w-0 h-6 font-semibold uppercase', {
                       'bg-brand text-white': tier === tierOption.value,
                     })}
@@ -244,8 +237,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                 </span>
                 <Button
                   size='sm'
-                  radius='none'
-                  variant={subcategory === '' ? 'solid' : 'flat'}
+                  variant={subcategory === '' ? 'primary' : 'secondary'}
                   className={cn('min-w-0 h-6 font-bold uppercase', {
                     'bg-brand text-white': subcategory === '',
                   })}
@@ -256,9 +248,10 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   <Button
                     key={subcategoryOption.value}
                     size='sm'
-                    radius='none'
                     variant={
-                      subcategory === subcategoryOption.value ? 'solid' : 'flat'
+                      subcategory === subcategoryOption.value
+                        ? 'primary'
+                        : 'secondary'
                     }
                     className={cn('min-w-0 h-6 font-semibold uppercase', {
                       'bg-brand text-white':
@@ -281,8 +274,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     </span>
                     <Button
                       size='sm'
-                      radius='none'
-                      variant={brand === '' ? 'solid' : 'flat'}
+                      variant={brand === '' ? 'primary' : 'secondary'}
                       className={cn('min-w-0 h-6 font-bold uppercase', {
                         'bg-brand text-white': brand === '',
                       })}
@@ -293,8 +285,9 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                       <Button
                         key={brandOption.value}
                         size='sm'
-                        radius='none'
-                        variant={brand === brandOption.value ? 'solid' : 'flat'}
+                        variant={
+                          brand === brandOption.value ? 'primary' : 'secondary'
+                        }
                         className={cn('min-w-0 h-6 font-semibold uppercase', {
                           'bg-brand text-white': brand === brandOption.value,
                         })}
@@ -305,19 +298,9 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     {hasCollapsibleBrands && (
                       <Button
                         size='sm'
-                        radius='none'
                         variant='tertiary'
                         aria-expanded={isBrandListExpanded}
                         className='min-w-0 h-6 font-semibold uppercase'
-                        endContent={
-                          <Icon
-                            name='chevron-down'
-                            className={cn(
-                              'size-3 transition-transform text-light-brand',
-                              isBrandListExpanded && 'rotate-180',
-                            )}
-                          />
-                        }
                         onPress={toggleBrandList}>
                         {isBrandListExpanded
                           ? 'Show less'
@@ -393,9 +376,10 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                               }}>
                               <Button
                                 size='sm'
-                                radius='none'
                                 variant={
-                                  brand === brandOption.value ? 'solid' : 'flat'
+                                  brand === brandOption.value
+                                    ? 'primary'
+                                    : 'secondary'
                                 }
                                 className={cn(
                                   'min-w-0 h-6 font-semibold uppercase',
@@ -441,43 +425,33 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
               </h2>
             </div>
             <div className='w-full md:w-fit flex items-center justify-between gap-1 md:gap-2'>
-              <Button
-                size='sm'
-                as={Link}
+              <Link
                 href={`/lobby/deals`}
-                radius='none'
                 prefetch
                 className='bg-terpenes opacity-100 text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tight md:tracking-normal'>
                 <span className='drop-shadow-xs'>Deals</span>
-              </Button>
+              </Link>
               {categories
                 ?.filter((cat) => cat.slug !== slug)
                 .map((cat) => (
-                  <Button
+                  <Link
                     key={cat._id}
-                    size='sm'
-                    as={Link}
-                    href={`/lobby/category/${cat.slug}`}
                     prefetch
-                    radius='none'
+                    href={`/lobby/category/${cat.slug}`}
                     className='portrait:w-full dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tighter'>
                     <span className='drop-shadow-xs'>{cat.name}</span>
-                  </Button>
+                  </Link>
                 ))}
             </div>
           </div>
         </div>
       </section>
       <div className='flex justify-center w-full px-4 sm:px-6 md:px-4 md:hidden pb-20'>
-        <Button
-          size='lg'
-          radius='none'
-          as={Link}
+        <Link
           href={'/lobby/brands'}
-          fullWidth
           className='dark:bg-brand dark:text-white h-11 md:h-14 opacity-100 md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-clash font-bold px-4 sm:px-8 py-2 sm:py-3 text-lg'>
           <span className='drop-shadow-xs'>Shop by Brand</span>
-        </Button>
+        </Link>
       </div>
     </div>
   )

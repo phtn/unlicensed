@@ -1,5 +1,5 @@
 import {Icon} from '@/lib/icons'
-import {Button, Select, ListBoxItem} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {PaginationState} from '@tanstack/react-table'
 import {useId, useMemo} from 'react'
 
@@ -51,34 +51,20 @@ export const Paginator = ({
           <label
             htmlFor='showing-rows'
             className='font-okxs tracking-tight md:mx-auto flex items-center'>
-            <Select
+            <select
               id='showing-rows'
-              selectedKeys={[state.pageSize.toString()]}
-              onSelectionChange={(keys) => {
-                const selectedKey = Array.from(keys)[0] as string
-                if (selectedKey) setPageSize(selectedKey)
+              value={state.pageSize.toString()}
+              onChange={(event) => {
+                setPageSize(event.target.value)
               }}
-              variant='secondary'
-              radius='none'
               aria-label='Rows per page'
-              classNames={{
-                trigger:
-                  'min-h-0 bg-transparent md:h-auto py-1 md:px-2 border-none shadow-none min-w-20',
-                value: 'whitespace-nowrap font-clash font-medium',
-                listbox: 'p-1.5',
-              }}
-              popoverProps={{
-                classNames: {
-                  content:
-                    'md:-translate-x-4 mb-2 md:w-[100px] min-w-[100px] md:p-1 rounded-lg',
-                },
-              }}>
+              className='min-h-0 bg-transparent md:h-auto py-1 md:px-2 border-none shadow-none min-w-20 whitespace-nowrap font-clash font-medium outline-none'>
               {pageSizeOptions.map((size) => (
-                <ListBoxItem key={size.toString()} textValue={size.toString()}>
+                <option key={size.toString()} value={size.toString()}>
                   {size}
-                </ListBoxItem>
+                </option>
               ))}
-            </Select>
+            </select>
             <span className='opacity-80 font-ios text-sm md:text-base mr-2'>
               rows
             </span>

@@ -6,14 +6,8 @@ import {
 } from '@/app/admin/_components/ui/fields'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {Icon} from '@/lib/icons'
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  Input,
-  TextArea,
-} from '@/lib/heroui'
+import {Input, Textarea as TextArea} from '@heroui/input'
+import {Button, Card, CardContent, CardHeader} from '@heroui/react'
 import {
   type ChangeEvent,
   type ClipboardEvent,
@@ -274,7 +268,7 @@ export const MailingListEditor = ({
   }, [name, onSubmit, recipients])
 
   return (
-    <Card shadow='none' className='bg-sidebar/60 shadow-none backdrop-blur-xl'>
+    <Card className='bg-sidebar/60 shadow-none backdrop-blur-xl'>
       <CardHeader className='flex flex-col items-start gap-4 p-5 lg:flex-row lg:items-start lg:justify-between'>
         <SectionHeader
           title={title}
@@ -318,8 +312,7 @@ export const MailingListEditor = ({
             <Button
               size='sm'
               type='button'
-              radius='none'
-              variant='primary'
+                            variant='primary'
               onPress={addRecipientRow}
               className='gap-1 rounded-md'>
               <Icon name='plus' className='size-4' />
@@ -328,8 +321,7 @@ export const MailingListEditor = ({
             <Button
               size='sm'
               type='button'
-              radius='none'
-              variant='primary'
+                            variant='primary'
               onPress={() => csvInputRef.current?.click()}
               className='gap-1 rounded-md bg-dark-table text-white dark:bg-white dark:text-dark-table'>
               <Icon name='arrow-up' className='size-4' />
@@ -396,10 +388,9 @@ export const MailingListEditor = ({
             Cancel
           </Button>
           <Button
-            color='primary'
-            radius='none'
-            onPress={handleSubmit}
-            isLoading={isSubmitting}
+            variant='primary'
+                        onPress={handleSubmit}
+            isDisabled={isSubmitting}
             className='rounded-lg bg-dark-table text-white dark:bg-white dark:text-dark-table'>
             {submitLabel}
           </Button>

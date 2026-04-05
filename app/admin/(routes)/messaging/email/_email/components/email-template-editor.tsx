@@ -16,7 +16,10 @@ import {
 } from '@/lib/resend/templates/registry'
 import {getInvitationDefaultProps} from '@/lib/resend/templates/render-with-props'
 import {cn} from '@/lib/utils'
-import {Button, Select, ListBoxItem} from '@/lib/heroui'
+import {ListboxItem as ListBoxItem} from '@heroui/listbox'
+import {Button} from '@heroui/react'
+import {Select} from '@heroui/select'
+import type {SharedSelection} from '@heroui/system'
 import {useQuery} from 'convex/react'
 import {useCallback, useMemo, useState, useTransition} from 'react'
 import {toast} from 'react-hot-toast'
@@ -82,6 +85,15 @@ const stringifyTemplateProps = (value: Record<string, unknown>): string => {
 
 const getCouponPropKey = (templateKey: string) =>
   COUPON_TEMPLATE_PROP_KEYS[templateKey as EmailTemplateId] ?? null
+
+const getSingleSelectedKey = (keys: SharedSelection): React.Key | null => {
+  if (keys === 'all') {
+    return null
+  }
+
+  const key = Array.from(keys)[0]
+  return key ?? null
+}
 
 const editorPaneClassName =
   'w-full min-w-0 px-4 py-5 sm:px-6 sm:py-6 xl:px-8 xl:py-8'
@@ -714,22 +726,20 @@ export const EmailTemplateEditor = ({
                 <Select
                   label='Template'
                   placeholder='Choose a template (optional)'
-                  variant='secondary'
+                  variant='faded'
                   selectedKeys={
                     selectedTemplateKey ? [selectedTemplateKey] : []
                   }
                   onSelectionChange={(keys) => {
-                    const key = Array.from(keys)[0] ?? null
-                    handleTemplateSelect(key)
+                    handleTemplateSelect(getSingleSelectedKey(keys))
                   }}
                   isDisabled={isLoadingTemplate}
-                  classNames={commonSelectClassNames}
-                  items={templateSelectOptions}>
-                  {(item) => (
+                  classNames={commonSelectClassNames}>
+                  {templateSelectOptions.map((item) => (
                     <ListBoxItem key={item.id} textValue={item.label}>
                       {item.label}
                     </ListBoxItem>
-                  )}
+                  ))}
                 </Select>
 
                 {templateCouponPropKey && (
@@ -748,28 +758,26 @@ export const EmailTemplateEditor = ({
                           ? 'Choose a coupon'
                           : 'No active coupons available'
                       }
-                      variant='secondary'
+                      variant='faded'
                       selectedKeys={
                         resolvedSelectedCouponId
                           ? [resolvedSelectedCouponId]
                           : []
                       }
                       onSelectionChange={(keys) => {
-                        const key = Array.from(keys)[0] ?? null
-                        handleCouponSelect(key)
+                        handleCouponSelect(getSingleSelectedKey(keys))
                       }}
                       isDisabled={
                         !couponAttachmentEnabled ||
                         isLoadingTemplate ||
                         activeCoupons.length === 0
                       }
-                      classNames={commonSelectClassNames}
-                      items={couponSelectOptions}>
-                      {(item) => (
+                      classNames={commonSelectClassNames}>
+                      {couponSelectOptions.map((item) => (
                         <ListBoxItem key={item.id} textValue={item.label}>
                           {item.label}
                         </ListBoxItem>
-                      )}
+                      ))}
                     </Select>
                   </div>
                 )}
@@ -927,7 +935,7 @@ export const EmailTemplateEditor = ({
 
             <Button
               type='submit'
-              disabled={isSaving}
+              isDisabled={isSaving}
               className={cn(
                 'w-full gap-2 text-white border-0 shadow-lg sm:w-auto',
                 'bg-linear-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 shadow-cyan-500/25 hover:shadow-cyan-500/40',

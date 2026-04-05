@@ -3,10 +3,12 @@
 import type {CategoryType} from '@/convex/categories/d'
 import {Icon} from '@/lib/icons'
 import {slugify} from '@/lib/slug'
-import {Accordion, AccordionItem, Button, Input} from '@/lib/heroui'
+import {Accordion, Button, Input} from '@heroui/react'
 import {useMemo, useState} from 'react'
-import {narrowInputClassNames} from '../../../../_components/ui/fields'
-import type {CategoryFormApi} from '../category-schema'
+import type {
+  AttributeEntry as CategoryAttributeEntry,
+  CategoryFormApi,
+} from '../category-schema'
 import {FormSection, Header} from './components'
 
 type AttributeFieldName =
@@ -38,7 +40,8 @@ function AttributeAccordionTitle({
   return (
     <form.AppField name={fieldName}>
       {(field) => {
-        const count = ((field.state.value as AttributeEntry[]) ?? []).length
+        const count = ((field.state.value as CategoryAttributeEntry[]) ?? [])
+          .length
 
         return (
           <div className='flex w-full items-center justify-between gap-3'>
@@ -69,7 +72,7 @@ function AttributeEntryListField({
   return (
     <form.AppField name={fieldName}>
       {(field) => {
-        const entries = (field.state.value as AttributeEntry[]) ?? []
+        const entries = (field.state.value as CategoryAttributeEntry[]) ?? []
 
         const handleAdd = () => {
           const name = nameInput.trim()
@@ -92,7 +95,7 @@ function AttributeEntryListField({
 
         // const _handleUpdate = (
         //   index: number,
-        //   patch: Partial<AttributeEntry>,
+        //   patch: Partial<CategoryAttributeEntry>,
         // ) => {
         //   const next = entries.map((e, i) =>
         //     i === index ? {...e, ...patch} : e,
@@ -111,7 +114,6 @@ function AttributeEntryListField({
           <div className='space-y-3'>
             <div className='flex flex-col sm:flex-row gap-2'>
               <Input
-                size='sm'
                 value={nameInput}
                 onChange={(e) => handleNameChange(e.target.value)}
                 onKeyDown={(e) => {
@@ -123,11 +125,9 @@ function AttributeEntryListField({
                 }}
                 placeholder={namePlaceholder ?? 'Name'}
                 variant='secondary'
-                classNames={narrowInputClassNames}
                 className='flex-1'
               />
               <Input
-                size='sm'
                 value={slugInput}
                 onChange={(e) => {
                   setSlugInput(e.target.value)
@@ -142,14 +142,12 @@ function AttributeEntryListField({
                 }}
                 placeholder={slugPlaceholder ?? 'Slug'}
                 variant='secondary'
-                classNames={narrowInputClassNames}
+                // classNames={narrowInputClassNames}
                 className='flex-1'
               />
               <Button
                 size='md'
-                radius='none'
                 variant='primary'
-                color='primary'
                 className='rounded-xs bg-dark-table dark:bg-white dark:text-dark-table shrink-0'
                 onPress={handleAdd}
                 isDisabled={!nameInput.trim()}>
@@ -185,9 +183,8 @@ function AttributeEntryListField({
   )
 }
 
-interface AttributeEntry {
+interface AttributeDefinition {
   name: AttributeFieldName
-  slug: string
   label: string
   emptyLabel: string
 }
@@ -226,40 +223,40 @@ export const Attributes = ({form, category: _category}: AttributesProps) => {
           label: 'Brand',
           emptyLabel: 'No brands configured',
         },
-      ] as Array<AttributeEntry>,
+      ] as Array<AttributeDefinition>,
     [],
   )
   return (
     <FormSection id='attributes' position='middle'>
       <Header label='Attributes' />
       <Accordion
-        variant='secondary'
-        className='rounded-lg bg-sidebar/50 border border-gray-300 dark:border-origin px-0'
-        itemClasses={{
-          base: 'py-0 overflow-hidden',
-          title: 'font-medium tracking-tight',
-          trigger: 'py-3 px-4',
-          content: 'pb-4 pt-0 px-4',
-          titleWrapper: '',
-        }}>
+        variant='surface'
+        className='rounded-lg border border-gray-300 bg-sidebar/50 px-0 dark:border-origin'>
         {attributes.map((attribute) => (
-          <AccordionItem
+          <Accordion.Item
             key={attribute.name}
-            aria-label={attribute.name}
-            title={
-              <AttributeAccordionTitle
-                form={form}
-                fieldName={attribute.name}
-                title={attribute.label}
-              />
-            }
-            className='dark:data-open:bg-sidebar data-open:bg-white rounded-t-lg'>
-            <AttributeEntryListField
-              form={form}
-              fieldName={attribute.name}
-              emptyLabel={attribute.emptyLabel}
-            />
-          </AccordionItem>
+            id={attribute.name}
+            className='overflow-hidden rounded-t-lg py-0 data-[expanded=true]:bg-white dark:data-[expanded=true]:bg-sidebar'>
+            <Accordion.Heading>
+              <Accordion.Trigger className='px-4 py-3 font-medium tracking-tight'>
+                <AttributeAccordionTitle
+                  form={form}
+                  fieldName={attribute.name}
+                  title={attribute.label}
+                />
+                <Accordion.Indicator />
+              </Accordion.Trigger>
+            </Accordion.Heading>
+            <Accordion.Panel>
+              <Accordion.Body className='px-4 pb-4 pt-0'>
+                <AttributeEntryListField
+                  form={form}
+                  fieldName={attribute.name}
+                  emptyLabel={attribute.emptyLabel}
+                />
+              </Accordion.Body>
+            </Accordion.Panel>
+          </Accordion.Item>
         ))}
       </Accordion>
     </FormSection>

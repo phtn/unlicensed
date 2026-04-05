@@ -1,8 +1,11 @@
 import {StoreProduct} from '@/app/types'
 import {formatPrice} from '@/utils/formatPrice'
-import {Chip, Image} from '@/lib/heroui'
+import {Chip} from '@heroui/react'
 import Link from 'next/link'
 import {ViewTransition} from 'react'
+
+
+import {LegacyImage} from '@/components/ui/legacy-image'
 
 export const PrimaryCard = (item: StoreProduct) => {
   return (
@@ -12,10 +15,11 @@ export const PrimaryCard = (item: StoreProduct) => {
           <div>
             {item?.image && (
               <div className='relative aspect-square overflow-hidden bg-foreground/5'>
-                <Image
-                  src={item?.image ?? undefined}
+                <LegacyImage
+                  src={item.image}
                   alt={item.name}
-                  className='object-cover transition-transform duration-300 group-hover:scale-105'
+                  loading='lazy'
+                  className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
                 />
               </div>
             )}
@@ -56,7 +60,10 @@ export const PrimaryCard = (item: StoreProduct) => {
                 <span className='text-lg font-semibold font-space'>
                   {formatPrice(item?.priceCents ?? 0)}
                 </span>
-                <Chip size='sm' variant='tertiary' className='text-xs capitalize'>
+                <Chip
+                  size='sm'
+                  variant='tertiary'
+                  className='text-xs capitalize'>
                   {item?.potencyLevel}
                 </Chip>
               </div>

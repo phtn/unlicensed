@@ -4,7 +4,8 @@ import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {parseAssistantConfig} from '@/lib/assistant/config'
-import {Button, Switch, TextArea} from '@/lib/heroui'
+import {Textarea} from '@heroui/input'
+import {Button, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {Activity, startTransition, useCallback, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
@@ -68,12 +69,10 @@ function SeedAssistantButton({
     <Activity mode={isSeeded ? 'hidden' : 'visible'}>
       <div className='flex flex-col gap-2'>
         <Button
-          radius='none'
-          color='success'
           variant='primary'
-          className='rounded-sm'
+          className='rounded-sm bg-emerald-600 text-white hover:bg-emerald-700'
           isDisabled={!canSeed || isLoading || isSeeding}
-          isLoading={isSeeding}
+          isPending={isSeeding}
           onPress={handleSeed}>
           Seed assistant
         </Button>
@@ -165,9 +164,8 @@ function AIAssistantFormInner({
 
       <div className='flex flex-col gap-4 w-full'>
         <div className='flex max-w-6xl flex-col gap-2'>
-          <TextArea
+          <Textarea
             label='Instructions'
-            type='text'
             value={instructions}
             onValueChange={setInstructions}
             className='w-full'
@@ -186,10 +184,14 @@ function AIAssistantFormInner({
             </div>
             <Switch
               isSelected={isActive}
-              onValueChange={setIsActive}
+              onChange={setIsActive}
               isDisabled={!configLoaded}
               size='sm'
-            />
+              aria-label='Active'>
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch>
           </div>
           <div className='hidden _flex items-center justify-between gap-4'>
             <div className='flex flex-col gap-1'>
@@ -203,10 +205,14 @@ function AIAssistantFormInner({
             </div>
             <Switch
               isSelected={catalogSupportEnabled}
-              onValueChange={setCatalogSupportEnabled}
+              onChange={setCatalogSupportEnabled}
               isDisabled={!configLoaded}
               size='sm'
-            />
+              aria-label='Catalog links and knowledge'>
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch>
           </div>
         </div>
       </div>

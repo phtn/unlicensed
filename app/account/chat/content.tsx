@@ -8,7 +8,7 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Avatar, User} from '@/lib/heroui'
+import {Avatar} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
@@ -43,6 +43,32 @@ import {useAssistantChat} from './_components/use-assistant-chat'
 interface ChatContentProps {
   initialConversationId?: string
 }
+
+const getInitials = (value: string) =>
+  value
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+
+const ChatAvatar = ({
+  src,
+  label,
+  className,
+  fallback,
+}: {
+  src?: string | null
+  label: string
+  className?: string
+  fallback?: string
+}) => (
+  <Avatar className={className}>
+    {src ? <Avatar.Image alt={label} src={src} /> : null}
+    <Avatar.Fallback>{fallback ?? getInitials(label)}</Avatar.Fallback>
+  </Avatar>
+)
 
 export function ChatContent({initialConversationId}: ChatContentProps) {
   const {user, convexUserId} = useAuthCtx()
@@ -619,12 +645,10 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                   )}>
                   <div className='flex items-start gap-2 md:gap-3'>
                     <div className='relative shrink-0'>
-                      <User
-                        avatarProps={{
-                          src: '/svg/rf-logo-round-204-latest.svg',
-                          fallback: 'FG',
-                        }}
-                        name={undefined}
+                      <ChatAvatar
+                        src='/svg/rf-logo-round-204-latest.svg'
+                        label={assistantUser?.name ?? ASSISTANT_NAME}
+                        fallback='RF'
                       />
                       <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border-2 border-background' />
                     </div>
@@ -689,11 +713,10 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                   </button>
                 )}
                 <div className='relative shrink-0'>
-                  <User
-                    avatarProps={{
-                      src: '/svg/rf-logo-round-204-latest.svg',
-                    }}
-                    name={undefined}
+                  <ChatAvatar
+                    src='/svg/rf-logo-round-204-latest.svg'
+                    label={assistantUser?.name ?? ASSISTANT_NAME}
+                    fallback='RF'
                   />
                   <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border-2 border-card' />
                 </div>
@@ -783,10 +806,26 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 <div className='relative shrink-0'>
                   {otherUser?.name ? (
                     <Link href={`/u/${otherUser.name}`}>
-                      <Avatar src={chatDisplayUser.avatarUrl ?? undefined} />
+                      <ChatAvatar
+                        src={chatDisplayUser.avatarUrl ?? undefined}
+                        label={
+                          chatDisplayUser.displayName ??
+                          chatDisplayUser.name ??
+                          chatDisplayUser.email?.split('@')[0] ??
+                          'Unknown User'
+                        }
+                      />
                     </Link>
                   ) : (
-                    <Avatar src={chatDisplayUser.avatarUrl ?? undefined} />
+                    <ChatAvatar
+                      src={chatDisplayUser.avatarUrl ?? undefined}
+                      label={
+                        chatDisplayUser.displayName ??
+                        chatDisplayUser.name ??
+                        chatDisplayUser.email?.split('@')[0] ??
+                        'Unknown User'
+                      }
+                    />
                   )}
                   <div className='absolute bottom-0 right-0 size-2.5 md:size-3 rounded-full bg-green-500 border border-white' />
                 </div>

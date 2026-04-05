@@ -5,7 +5,8 @@ import {useCurrencyConversion} from '@/hooks/use-currency-converter'
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Card, Select, ListBoxItem, Tab, Tabs} from '@/lib/heroui'
+import {Card, Tab, Tabs} from '@heroui/react'
+import {Select, SelectItem} from '@heroui/select'
 import {
   ChangeEvent,
   useCallback,
@@ -102,29 +103,22 @@ function ConverterField({
           )}
           <div>
             <Select
-              disabled={disableCurrencySelect}
+              isDisabled={disableCurrencySelect}
               selectedKeys={
                 currencyId ? new Set([currencyId]) : new Set(['EUR'])
               }
-              onSelectionChange={(keys) => {
-                const selected = Array.from(keys)[0] as string
+              onSelectionChange={(key) => {
+                const selected = key as string
                 if (selected) {
                   onCurrencyChange(selected)
                 }
               }}
-              classNames={{
-                trigger: [
-                  'w-28 flex bg-transparent border-none font-okxs shadow-none bg-white/10',
-                ],
-                value: 'text-lg font-medium font-brk',
-                listbox: 'px-2 py-2',
-                listboxWrapper: '',
-              }}
+              className='w-28'
               aria-label='Select currency'>
               {currencies.map((curr) => (
-                <ListBoxItem key={curr} className='font-brk'>
+                <SelectItem key={curr} className='font-brk'>
                   {curr}
-                </ListBoxItem>
+                </SelectItem>
               ))}
             </Select>
           </div>
@@ -161,16 +155,14 @@ const CURRENCIES: Array<FiatCurrency> = [
 export const Converters = () => {
   return (
     <div className='relative my-2 md:my-6'>
-      <Tabs title='Converter' className='flex-1 ml-54 md:ml-80'>
+      <Tabs className='flex-1 ml-54 md:ml-80'>
         <Tab
-          value='fiat'
-          title='Fiat'
+          id='fiat'
           className='flex-1 data-[state=active]:shadow-none data-[state=active]:bg-transparent relative before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border dark:before:bg-card first:before:hidden'>
           <FiatConverter currencies={CURRENCIES} />
         </Tab>
         <Tab
-          value='crypto'
-          title='Crypto'
+          id='crypto'
           className='flex-1 data-[state=active]:shadow-none data-[state=active]:bg-transparent relative before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border dark:before:bg-card first:before:hidden'>
           <ConverterParamsProvider>
             <CryptoConverter />
@@ -419,7 +411,6 @@ function FiatConverter({currencies}: ConverterContentProps) {
       </div>
       <Card
         id='summary'
-        shadow='none'
         className='p-4 gap-0 rounded-2xl dark:bg-sidebar bg-sidebar/25'>
         <ul className='text-sm'>
           <li className='flex items-center font-medium justify-between pb-3 mb-3'>

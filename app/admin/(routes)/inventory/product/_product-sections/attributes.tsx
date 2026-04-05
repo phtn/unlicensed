@@ -1,12 +1,8 @@
 'use client'
 
 import {TagSelector} from '@/app/admin/_components/tag-selector'
-import {
-  commonInputClassNames,
-  NumberField,
-  SelectField,
-} from '@/app/admin/_components/ui/fields'
-import {Input, Slider} from '@/lib/heroui'
+import {NumberField, SelectField} from '@/app/admin/_components/ui/fields'
+import {Input, Label, Slider} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {ChangeEvent} from 'react'
 import {ProductFormApi} from '../product-schema'
@@ -63,7 +59,6 @@ export const Attributes = ({form}: AttributesProps) => {
               return (
                 <div className='space-y-2'>
                   <Input
-                    label='CBD (mg)'
                     type='number'
                     step='0.1'
                     value={cbdValue}
@@ -73,8 +68,6 @@ export const Attributes = ({form}: AttributesProps) => {
                     onBlur={field.handleBlur}
                     placeholder='0.0'
                     variant='secondary'
-                    size='lg'
-                    classNames={commonInputClassNames}
                   />
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
@@ -143,8 +136,8 @@ export const Attributes = ({form}: AttributesProps) => {
               const value = (field.state.value as string) ?? ''
               return (
                 <div className='space-y-2'>
+                  <Label htmlFor='tags'>Tags · Keywords</Label>
                   <Input
-                    label='Tags · Keywords'
                     type='text'
                     value={value}
                     onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -153,8 +146,6 @@ export const Attributes = ({form}: AttributesProps) => {
                     onBlur={field.handleBlur}
                     placeholder='limited, kush, afghan'
                     variant='secondary'
-                    size='lg'
-                    classNames={commonInputClassNames}
                   />
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
@@ -171,8 +162,9 @@ export const Attributes = ({form}: AttributesProps) => {
               const value = (field.state.value as string) ?? ''
               return (
                 <div className='space-y-2'>
+                  <Label htmlFor='lineage'>Lineage</Label>
                   <Input
-                    label='Lineage'
+                    id='lineage'
                     type='text'
                     value={value}
                     onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -181,8 +173,6 @@ export const Attributes = ({form}: AttributesProps) => {
                     onBlur={field.handleBlur}
                     placeholder='e.g., OG Kush x Sour Diesel'
                     variant='secondary'
-                    size='lg'
-                    classNames={commonInputClassNames}
                   />
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
@@ -202,22 +192,22 @@ export const Attributes = ({form}: AttributesProps) => {
                   typeof field.state.value === 'number' ? field.state.value : 0
                 return (
                   <div className='space-y-2'>
+                    <div className='flex items-center justify-between gap-3'>
+                      <Label htmlFor='noseRating'>Nose Rating</Label>
+                      <span className='text-sm text-foreground/60'>
+                        {value}/10
+                      </span>
+                    </div>
                     <Slider
-                      label='Nose Rating'
+                      id='noseRating'
                       minValue={0}
                       maxValue={10}
                       step={1}
-                      showSteps
                       value={value}
                       onChange={(v) =>
                         field.handleChange(Array.isArray(v) ? (v[0] ?? 0) : v)
                       }
-                      getValue={(v) =>
-                        `${Array.isArray(v) ? (v[0] ?? 0) : v}/10`
-                      }
-                      classNames={{
-                        base: 'max-w-full',
-                      }}
+                      className='max-w-full'
                     />
                     {field.state.meta.isTouched &&
                       field.state.meta.errors.length > 0 && (

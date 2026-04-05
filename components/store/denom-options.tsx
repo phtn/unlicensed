@@ -1,6 +1,11 @@
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Popover, PopoverContent, PopoverTrigger} from '@/lib/heroui'
+import {
+  Popover,
+  PopoverArrow,
+  PopoverContent,
+  PopoverTrigger,
+} from '@heroui/react'
 
 type PriceOption = {
   price: string
@@ -25,13 +30,7 @@ export const PopoverOptions = ({
   return (
     <div className=' flex items-center justify-end whitespace-nowrap text-base sm:text-lg font-okxs text-foreground shrink-0 w-fit'>
       {priceOptions ? (
-        <Popover
-          isOpen={isOpen}
-          onOpenChange={onOpenChange}
-          placement='top'
-          offset={12}
-          crossOffset={4}
-          showArrow>
+        <Popover isOpen={isOpen} onOpenChange={onOpenChange}>
           <PopoverTrigger>
             <button
               type='button'
@@ -47,6 +46,7 @@ export const PopoverOptions = ({
             </button>
           </PopoverTrigger>
           <PopoverContent className='w-44 md:w-52 p-1.5 md:p-2 dark:border-sidebar dark:bg-dark-table'>
+            <PopoverArrow />
             <div className='flex flex-col gap-0.5 w-full'>
               {priceOptions.map((opt) => (
                 <button

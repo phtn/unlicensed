@@ -10,7 +10,7 @@ import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
-import {Badge, Button, Chip, Separator} from '@/lib/heroui'
+import {Badge, Button, Chip, Separator} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useParams} from 'next/navigation'
@@ -762,47 +762,45 @@ export const Content = () => {
         </div>
 
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-          <Button
-            as={NextLink}
+          <NextLink
             href={orderHref}
-            size='lg'
-            variant='tertiary'
-            className='font-polysans font-normal dark:bg-sidebar'
-            startContent={<Icon name='chevron-left' className='size-4' />}>
+            className='font-polysans font-normal dark:bg-sidebar'>
             Review Order
-          </Button>
+          </NextLink>
           {setupState === 'no_rep' ? (
             <Button
               size='lg'
-              color='primary'
               className='font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
-              onPress={handleRetry}
-              endContent={<Icon name='spinners-ring' className='size-5' />}>
+              onPress={handleRetry}>
               Retry Rep Assignment
             </Button>
           ) : (
             <Badge
               key={`cashapp-chat-badge-${orderId}-${unreadRepCount}`}
               content={
-                unreadRepCount > 0 ? (
-                  <span className='font-okxs font-semibold text-white leading-none'>
-                    {unreadRepCount > 99 ? '99+' : unreadRepCount}
-                  </span>
-                ) : undefined
+                unreadRepCount && unreadRepCount > 99
+                  ? '99+'
+                  : `${unreadRepCount}`
               }
-              isInvisible={unreadRepCount === 0}
+              // content={
+              //   unreadRepCount > 0 ? (
+              //     <span className='font-okxs font-semibold text-white leading-none'>
+
+              //     </span>
+              //   ) : undefined
+              // }
+              hidden={unreadRepCount === 0}
               className='w-full'
-              classNames={{
-                base: 'w-full',
-                badge:
-                  'min-w-5 h-5 px-1 flex items-center justify-center rounded-full border-1.5 dark:border-background/90 shadow-md bg-brand/80',
-              }}>
+              // classNames={{
+              //   base: 'w-full',
+              //   badge:
+              //     'min-w-5 h-5 px-1 flex items-center justify-center rounded-full border-1.5 dark:border-background/90 shadow-md bg-brand/80',
+              // }}
+            >
               <Button
                 size='lg'
-                color='primary'
                 className='w-full font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
-                onPress={handleOpenChat}
-                endContent={<Icon name='chat' className='size-5' />}>
+                onPress={handleOpenChat}>
                 {setupState === 'ready' ? 'Open Live Chat' : 'Open Chat'}
               </Button>
             </Badge>

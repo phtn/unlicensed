@@ -1,6 +1,5 @@
 'use client'
 
-import {narrowInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -12,21 +11,15 @@ import {
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {
-  Avatar,
-  Button,
-  Card,
-  Chip,
-  Image,
-  Input,
-  TextArea,
-  Tooltip,
-} from '@/lib/heroui'
+import {Avatar, Button, Card, Chip, Input, TextArea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {mapNumericFractions} from '../../../inventory/product/product-schema'
+
+import {LegacyImage} from '@/components/ui/legacy-image'
+import {getInitials} from '@/utils/initials'
 
 interface ContentProps {
   firebaseId: string
@@ -226,7 +219,7 @@ export const Content = ({firebaseId}: ContentProps) => {
   if (customer === undefined) {
     return (
       <main className='min-h-screen px-4 pb-16'>
-        <Card shadow='sm' className='p-4'>
+        <Card className='p-4'>
           <p className='text-sm text-gray-400'>Loading customer profile...</p>
         </Card>
       </main>
@@ -236,21 +229,15 @@ export const Content = ({firebaseId}: ContentProps) => {
   if (customer === null) {
     return (
       <main className='min-h-screen px-4 pb-16'>
-        <Card shadow='sm' className='p-6'>
+        <Card className='p-6'>
           <div className='space-y-4'>
             <h1 className='text-xl font-semibold'>Customer Not Found</h1>
             <p className='text-sm text-gray-400'>
               No customer exists for ID: {firebaseId}
             </p>
-            <Button
-              prefetch
-              as={Link}
-              variant='tertiary'
-              color='primary'
-              href={'/admin/ops/customers'}
-            >
+            <Link prefetch href={'/admin/ops/customers'}>
               Back to Customers
-            </Button>
+            </Link>
           </div>
         </Card>
       </main>
@@ -261,29 +248,22 @@ export const Content = ({firebaseId}: ContentProps) => {
     <main className='min-h-screen px-4 pb-16'>
       <div className='space-y-2 mt-4'>
         <div className='flex items-center gap-4'>
-          <Button
+          <Link
             prefetch
-            as={Link}
-            radius='none'
-            isIconOnly
-            variant='secondary'
             className='min-w-0 border-none rounded-lg'
             aria-label='Back to customers'
-            href={'/admin/ops/customers'}
-          >
+            href={'/admin/ops/customers'}>
             <Icon name='chevron-left' className='size-4' />
-          </Button>
+          </Link>
           <div className='flex-1'>
             <div className='flex items-center space-x-4 md:space-x-6'>
-              <Avatar
-                src={customer.photoUrl}
-                size='lg'
-                classNames={{
-                  base: 'bg-linear-to-br from-[#FFB457] to-[#FF705B]',
-                  icon: 'text-black/80',
-                }}
-                icon={<Icon name='user-fill' className='size-5' />}
-              />
+              <Avatar className='size-9 shrink-0 border border-foreground/10 bg-background text-foreground shadow-sm dark:border-white/10 dark:bg-dark-table'>
+                <Avatar.Image
+                  alt={customer.photoUrl ?? 'photo'}
+                  src={customer.photoUrl}
+                />
+                <Avatar.Fallback>{getInitials(customerEmail)}</Avatar.Fallback>
+              </Avatar>
               <div className='flex-1 space-y-1'>
                 <h1 className='text-xl font-semibold space-x-3'>
                   <span className='opacity-80'>
@@ -295,8 +275,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                   <Chip
                     size='sm'
                     variant='secondary'
-                    className='capitalize border-none bg-dark-table text-white'
-                  >
+                    className='capitalize border-none bg-dark-table text-white'>
                     {(customer.accountStatus ?? 'active').replace(/_/g, ' ')}
                   </Chip>
                 </h1>
@@ -316,20 +295,11 @@ export const Content = ({firebaseId}: ContentProps) => {
                     <p className='text-sm'>{customerEmail}</p>
                   </div>
                   <Button
-                    radius='none'
-                    variant='primary'
                     size='sm'
-                    isLoading={isOpeningChat}
+                    variant='primary'
                     isDisabled={isOpeningChat || !customerChatFid}
                     onPress={handleOpenChat}
-                    className='flex items-center bg-transparent border-none text-sm space-x-1 hover:bg-sidebar rounded-md'
-                    endContent={
-                      <Icon
-                        name='chat'
-                        className='size-3.5 cursor-pointer opacity-80'
-                      />
-                    }
-                  >
+                    className='flex items-center bg-transparent border-none text-sm space-x-1 hover:bg-sidebar rounded-md'>
                     <span className='-mr-1'>chat</span>
                   </Button>
                 </div>
@@ -340,7 +310,7 @@ export const Content = ({firebaseId}: ContentProps) => {
         <div className='h-2 bg-sidebar' />
         <div className='grid md:grid-cols-2 gap-x-2'>
           <div className='space-y-4 py-4'>
-            <Card shadow='none' className='px-2 space-y-4'>
+            <Card className='px-2 space-y-4'>
               <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 <div className='space-y-1'>
                   <p className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
@@ -375,8 +345,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                 <div className='col-span-2 w-full'>
                   <label
                     htmlFor='reward-points'
-                    className='text-xs font-brk uppercase tracking-wide text-muted-foreground'
-                  >
+                    className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
                     <span className='mr-2'>Edit rewards balance</span>
                   </label>
                   <div className='flex items-center w-full gap-4 p-2 bg-sidebar/40'>
@@ -385,15 +354,11 @@ export const Content = ({firebaseId}: ContentProps) => {
                       type='number'
                       min='0'
                       step='0.01'
-                      size='sm'
-                      radius='sm'
                       value={rewardPointsInput}
-                      onValueChange={setRewardPointsInput}
-                      isDisabled={
+                      onChange={(e) => setRewardPointsInput(e.target.value)}
+                      disabled={
                         isSavingRewardPoints || pointsBalance === undefined
                       }
-                      labelPlacement='outside'
-                      classNames={narrowInputClassNames}
                       className='max-w-48'
                       placeholder='0.00'
                       onKeyDown={(e) => {
@@ -405,9 +370,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                     />
                     <Button
                       size='sm'
-                      radius='none'
                       variant='tertiary'
-                      isLoading={isSavingRewardPoints}
                       className='rounded-sm'
                       isDisabled={
                         isSavingRewardPoints ||
@@ -416,8 +379,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                         !Number.isFinite(normalizedRewardPointsInput) ||
                         normalizedRewardPointsInput < 0
                       }
-                      onPress={() => void handleSaveRewardPoints()}
-                    >
+                      onPress={() => void handleSaveRewardPoints()}>
                       Save Changes
                     </Button>
                   </div>
@@ -436,7 +398,7 @@ export const Content = ({firebaseId}: ContentProps) => {
               </div>
             </Card>
 
-            <Card shadow='none' className='py-6 px-2'>
+            <Card className='py-6 px-2'>
               <h2 className='text-base font-semibold'>Addresses</h2>
               {customerAddresses === undefined ? (
                 <p className='text-sm text-muted-foreground'>
@@ -447,8 +409,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                   {customerAddresses.map((address) => (
                     <div
                       key={address.id}
-                      className='rounded-lg border border-divider p-3 text-sm'
-                    >
+                      className='rounded-lg border border-divider p-3 text-sm'>
                       <p className='font-medium'>
                         {address.firstName} {address.lastName}
                       </p>
@@ -467,7 +428,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                 </p>
               )}
             </Card>
-            <Card shadow='none' className='py-4 px-2'>
+            <Card className='py-4 px-2'>
               <h2 className='text-base font-semibold'>Shipping Accounts</h2>
               <p className='text-sm text-muted-foreground'>
                 No Shipping accounts link to customer&apos;s orders on file.
@@ -480,21 +441,18 @@ export const Content = ({firebaseId}: ContentProps) => {
               </label>
               <TextArea
                 value={remarks}
-                onValueChange={setRemarks}
+                onChange={(e) => setRemarks(e.target.value)}
                 onBlur={handleRemarksBlur}
                 placeholder='Add internal notes or remarks...'
-                minRows={3}
-                maxRows={6}
-                isDisabled={isSavingRemarks}
+                rows={3}
+                disabled={isSavingRemarks}
               />
               <div className='mt-2 flex justify-end'>
                 <Button
                   size='sm'
                   variant='tertiary'
                   onPress={() => void handleSaveRemarks()}
-                  isLoading={isSavingRemarks}
-                  isDisabled={isSavingRemarks || remarks === customerNotes}
-                >
+                  isDisabled={isSavingRemarks || remarks === customerNotes}>
                   Save notes
                 </Button>
               </div>
@@ -515,28 +473,15 @@ export const Content = ({firebaseId}: ContentProps) => {
                         : undefined
                       const hasImage = Boolean(p?.image && imageUrl)
                       return (
-                        <Tooltip
+                        <div
                           key={item.productId}
-                          content={
-                            <div className='flex items-center space-x-1'>
-                              <span>{p?.name}</span>
-                              <span>
-                                {item.denomination &&
-                                  mapNumericFractions[item.denomination]}{' '}
-                                {p?.unit}
-                              </span>
-                              <span>x {item?.quantity}</span>
-                            </div>
-                          }
-                        >
+                          title={`${p?.name ?? 'Product'} ${item.denomination ? mapNumericFractions[item.denomination] : ''} ${p?.unit ?? ''} x ${item?.quantity}`}>
                           <div
                             key={`${item.productId}-${item.denomination ?? 'd'}-${i}`}
-                            className='aspect-square flex flex-col overflow-hidden rounded-lg border border-divider'
-                          >
+                            className='aspect-square flex flex-col overflow-hidden rounded-lg border border-divider'>
                             <div className='relative flex-1 min-h-0 bg-muted'>
                               {hasImage ? (
-                                <Image
-                                  radius='none'
+                                <LegacyImage
                                   src={imageUrl ?? ''}
                                   alt={p?.name ?? 'Product'}
                                   className='size-full object-cover'
@@ -559,7 +504,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                               </div>
                             </div>
                           </div>
-                        </Tooltip>
+                        </div>
                       )
                     }
                     if (isBundleCartItemWithProducts(item)) {
@@ -568,8 +513,7 @@ export const Content = ({firebaseId}: ContentProps) => {
                       return (
                         <div
                           key={`bundle-${i}`}
-                          className='flex items-center justify-between rounded-lg border border-divider p-2 text-sm'
-                        >
+                          className='flex items-center justify-between rounded-lg border border-divider p-2 text-sm'>
                           <span className='font-medium truncate'>{label}</span>
                           <span className='text-muted-foreground shrink-0'>
                             ×1
@@ -584,11 +528,7 @@ export const Content = ({firebaseId}: ContentProps) => {
             </div>
           </div>
           <div className='px-4 border-l border-sidebar'>
-            <Card
-              shadow='none'
-              radius='none'
-              className='py-2 space-y-4 max-h-[calc(82lvh)] overflow-scroll'
-            >
+            <Card className='py-2 space-y-4 max-h-[calc(82lvh)] overflow-scroll'>
               <h2 className='text-base font-semibold'>Recent Orders</h2>
               {orders === undefined ? (
                 <p className='text-sm text-muted-foreground'>
@@ -601,16 +541,14 @@ export const Content = ({firebaseId}: ContentProps) => {
                   {orders.map((order, i) => (
                     <div
                       key={order._id}
-                      className='flex items-center justify-between rounded-lg border border-divider p-3'
-                    >
+                      className='flex items-center justify-between rounded-lg border border-divider p-3'>
                       <div className='flex space-x-3'>
                         <div className='font-brk opacity-70'>{i + 1}</div>
                         <div>
                           <Link
                             prefetch
                             href={`/admin/ops/orders/${order.orderNumber}`}
-                            className='font-medium hover:underline underline-offset-2'
-                          >
+                            className='font-medium hover:underline underline-offset-2'>
                             {order.orderNumber}
                           </Link>
                           <p className='text-xs text-muted-foreground'>

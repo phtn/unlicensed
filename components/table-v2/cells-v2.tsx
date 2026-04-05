@@ -5,7 +5,7 @@ import {OrderStatus} from '@/convex/orders/d'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDate} from '@/utils/date'
-import {Avatar, Button, SwitchProps} from '@/lib/heroui'
+import {Avatar, Button} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMutation} from 'convex/react'
 import {FunctionReference} from 'convex/server'
@@ -448,7 +448,7 @@ type ToggleCellConfig<T, V> = {
   /** Labels for each value state [enabledLabel, disabledLabel] */
   labels?: readonly [string, string]
   /** Colors for each value state [enabledColor, disabledColor] */
-  colors?: readonly [SwitchProps['color'], SwitchProps['color']]
+  colors?: readonly ['']
   /** Build mutation args from row and new value */
   getMutationArgs: (row: T, newValue: V) => Record<string, unknown>
   /** Optional className for the button */
@@ -507,10 +507,11 @@ export const toggleCell = <T, V>(
     // Determine which value is current and which to toggle to
     const isFirstValue = currentValue === values[0]
     const newValue = isFirstValue ? values[1] : values[0]
-    const _currentLabel = isFirstValue ? labels[0] : labels[1]
-    const _currentColor: SwitchProps['color'] = isFirstValue
-      ? colors[0]
-      : colors[1]
+    const _currentLabel = isFirstValue
+      ? labels[0]
+      : labels[1]
+        ? colors[0]
+        : colors[1]
 
     const handleToggle = useCallback(async () => {
       setIsUpdating(true)
@@ -529,7 +530,6 @@ export const toggleCell = <T, V>(
         <Button
           isIconOnly
           size='sm'
-          radius='full'
           isDisabled={isUpdating}
           onPress={handleToggle}
           className={cn('h-8 w-6 aspect-square group/tb bg-alum/10', {
@@ -784,12 +784,10 @@ export const createUserCell = <T,>(options: UserCellOptions<T>) => {
 
     return (
       <div className='flex items-center gap-3'>
-        <Avatar
-          src={photoUrl ?? undefined}
-          fallback={initials}
-          className='size-8 shrink-0 aspect-auto'
-        />
-
+        <Avatar className='size-9 shrink-0 border border-foreground/10 bg-background text-foreground shadow-sm dark:border-white/10 dark:bg-dark-table'>
+          <Avatar.Image alt={name} src={photoUrl ?? undefined} />
+          <Avatar.Fallback>{getInitials(name)}</Avatar.Fallback>
+        </Avatar>
         <div className='flex flex-col min-w-0'>
           {href ? (
             <Link

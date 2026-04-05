@@ -8,7 +8,7 @@ import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {parseAsString, parseAsStringEnum, useQueryState} from 'nuqs'
 import {
   Activity,
@@ -523,9 +523,7 @@ export const Content = ({initialProducts}: ContentProps) => {
               <Button
                 size='lg'
                 onPress={resetFinder}
-                radius='full'
                 variant='primary'
-                color='primary'
                 className='bg-foreground font-polysans dark:text-background'>
                 Start Over
               </Button>
@@ -540,7 +538,6 @@ export const Content = ({initialProducts}: ContentProps) => {
               <Button
                 onPress={prevStep}
                 variant='tertiary'
-                radius='full'
                 isDisabled={isPending}
                 className='px-6 ml-2 font-polysans font-semibold bg-sidebar'>
                 Back
@@ -550,7 +547,6 @@ export const Content = ({initialProducts}: ContentProps) => {
             {step !== 'results' ? (
               <Button
                 onPress={nextStep}
-                radius='full'
                 variant='primary'
                 isDisabled={!canProceed || isPending}
                 className={cn(
@@ -594,7 +590,6 @@ const LeftSideContent = ({
     </p>
     <Button
       size='lg'
-      radius='full'
       variant='primary'
       onPress={nextStep}
       className='relative z-200 cta-button w-fit px-8 py-6 mr-4 text-sm font-semibold uppercase tracking-[0.30em] flex items-center bg-dark-gray dark:bg-effects text-white md:place-self-start place-self-end'

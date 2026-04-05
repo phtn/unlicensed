@@ -1,9 +1,9 @@
 'use client'
 
-import {Button} from '@/lib/heroui'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
+import {Button} from '@heroui/react'
 
 interface CashBackRedemptionProps {
   availableBalanceCents: number
@@ -35,8 +35,7 @@ export function CashBackRedemption({
       className={cn(
         'rounded-md border border-brand/80 bg-brand/5 p-3',
         className,
-      )}
-    >
+      )}>
       <div className='flex items-start justify-between'>
         <div className='space-y-1'>
           <p className='font-clash text-base md:text-[13px] leading-none'>
@@ -63,8 +62,7 @@ export function CashBackRedemption({
             isEnabled={isEnabled}
             canRedeem={canRedeem}
             available={availableBalanceCents}
-            toggleFn={() => onToggle(!isEnabled)}
-          ></UseRewardsPoints>
+            toggleFn={() => onToggle(!isEnabled)}></UseRewardsPoints>
         ) : (
           <span className='text-base font-semibold font-okxs'>
             $
@@ -109,15 +107,13 @@ const UseRewardsPoints = ({
   return (
     <Button
       size='sm'
-      radius='none'
-      variant={isEnabled && canRedeem ? 'solid' : 'flat'}
+      variant={isEnabled && canRedeem ? 'primary' : 'secondary'}
       className={cn('shrink-0 rounded-xs font-okxs h-8! hidden', {
         'flex bg-brand text-background dark:bg-white dark:text-dark-table':
           available > 0 && canRedeem,
       })}
       isDisabled={!canRedeem}
-      onPress={toggleFn}
-    >
+      onPress={toggleFn}>
       {isEnabled && canRedeem ? (
         <div className='flex items-center justify-center space-x-1'>
           <span>Rewards Points applied</span>

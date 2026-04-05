@@ -4,14 +4,15 @@ import {Icon} from '@/lib/icons'
 import {
   Button,
   Modal,
+  ModalBackdrop,
   ModalBody,
-  ModalContent,
+  ModalContainer,
+  ModalDialog,
   ModalFooter,
   ModalHeader,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {useRouter} from 'next/navigation'
-import {useEffect} from 'react'
-import {startTransition} from 'react'
+import {startTransition, useEffect} from 'react'
 
 interface DevelopmentModalProps {
   isOpen: boolean
@@ -26,7 +27,7 @@ export function DevelopmentModal({isOpen, onClose}: DevelopmentModalProps) {
     console.log('[DevelopmentModal] isOpen prop changed:', isOpen)
     if (isOpen) {
       console.log('[DevelopmentModal] Modal is opening')
-      
+
       // Auto-redirect after 3 seconds if user doesn't click the button
       const autoRedirectTimer = setTimeout(() => {
         console.log('[DevelopmentModal] Auto-redirecting to account page')
@@ -35,7 +36,7 @@ export function DevelopmentModal({isOpen, onClose}: DevelopmentModalProps) {
         })
         onClose()
       }, 3000)
-      
+
       return () => clearTimeout(autoRedirectTimer)
     }
   }, [isOpen, router, onClose])
@@ -51,17 +52,10 @@ export function DevelopmentModal({isOpen, onClose}: DevelopmentModalProps) {
   console.log('[DevelopmentModal] Rendering with isOpen:', isOpen)
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      size='md'
-      radius='sm'
-      placement='center'
-      isDismissable={false}
-      hideCloseButton>
-      <ModalContent className='overflow-hidden dark:bg-dark-table'>
-        {() => (
-          <>
+    <Modal isOpen={isOpen}>
+      <ModalBackdrop>
+        <ModalContainer size='md' placement='center'>
+          <ModalDialog className='overflow-hidden dark:bg-dark-table'>
             <ModalHeader className='flex flex-col justify-center gap-1 text-lg font-semibold tracking-tight bg-foreground dark:bg-foreground/60 text-background h-12 mb-1'>
               Development Mode
             </ModalHeader>
@@ -87,22 +81,14 @@ export function DevelopmentModal({isOpen, onClose}: DevelopmentModalProps) {
             </ModalBody>
             <ModalFooter>
               <Button
-                color='primary'
                 className='bg-featured font-medium dark:text-background tracking-tighter text-base'
-                onPress={handleRedirect}
-                endContent={
-                  <Icon
-                    name='arrow-down'
-                    className='-rotate-45 size-6 md:size-8'
-                  />
-                }>
+                onPress={handleRedirect}>
                 Go to Account
               </Button>
             </ModalFooter>
-          </>
-        )}
-      </ModalContent>
+          </ModalDialog>
+        </ModalContainer>
+      </ModalBackdrop>
     </Modal>
   )
 }
-

@@ -11,17 +11,11 @@ import {type Doc, Id} from '@/convex/_generated/dataModel'
 import {onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
 import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  Input,
-  Progress,
-  Select,
-  ListBoxItem,
-  TextArea,
-} from '@/lib/heroui'
+import {Input, Textarea as TextArea} from '@heroui/input'
+import {ListboxItem as ListBoxItem} from '@heroui/listbox'
+import {Button, Card, CardContent, CardHeader, ProgressBar} from '@heroui/react'
+import {Select} from '@heroui/select'
+import type {SharedSelection} from '@heroui/system'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useRouter} from 'next/navigation'
@@ -139,6 +133,15 @@ function parseCsvRecipients(text: string): RecipientRow[] {
     rows.push({name, email})
     return rows
   }, [])
+}
+
+const getSingleSelectedKey = (keys: SharedSelection) => {
+  if (keys === 'all') {
+    return ''
+  }
+
+  const key = Array.from(keys)[0]
+  return key == null ? '' : String(key)
 }
 
 export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
@@ -461,8 +464,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             </Button>
             <Button
               type='button'
-              color='danger'
-              variant='tertiary'
+              variant='danger'
               onPress={handleDelete}
               className='text-mac-red hover:text-mac-red dark:text-red-400 dark:hover:text-red-500 w-4 md:w-fit'>
               <span className='hidden md:flex'>Delete</span>
@@ -477,8 +479,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             animate={{opacity: 1, y: 0}}
             className=''>
             <Card
-              radius='none'
-              className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-t-md rounded-b-none shadow-none font-figtree h-28'>
+                            className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-t-md rounded-b-none shadow-none font-figtree h-28'>
               <CardHeader>
                 <div className='flex items-center gap-3'>
                   <SectionHeader
@@ -629,8 +630,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
               animate={{opacity: 1, height: 'auto'}}
               className='mt-4'>
               <Card
-                shadow='none'
-                className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
+                                className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
                 <CardHeader>
                   <SectionHeader
                     title='Send Email Blast'
@@ -643,8 +643,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                     placeholder='Select a list'
                     selectedKeys={selectedListId ? [selectedListId] : []}
                     onSelectionChange={(keys) => {
-                      const k = Array.from(keys)[0]
-                      setSelectedListId(typeof k === 'string' ? k : '')
+                      setSelectedListId(getSingleSelectedKey(keys))
                     }}
                     isDisabled={!mailingLists?.length}
                     classNames={commonSelectClassNames}>
@@ -658,17 +657,21 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                   </Select>
                   {blastProgress && (
                     <div className='space-y-2'>
-                      <Progress
+                      <ProgressBar
+                        aria-label='Email blast progress'
                         value={
                           blastProgress.total > 0
                             ? (blastProgress.sent / blastProgress.total) * 100
                             : 0
                         }
                         color='success'
-                        showValueLabel
                         valueLabel={`${blastProgress.sent} / ${blastProgress.total}`}
-                        className='max-w-full'
-                      />
+                        className='max-w-full'>
+                        <ProgressBar.Output className='text-sm text-foreground/60' />
+                        <ProgressBar.Track>
+                          <ProgressBar.Fill />
+                        </ProgressBar.Track>
+                      </ProgressBar>
                       {blastProgress.error && (
                         <p className='text-sm text-danger'>
                           {blastProgress.error}
@@ -681,9 +684,8 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       Cancel
                     </Button>
                     <Button
-                      color='primary'
-                      radius='none'
-                      onPress={handleEmailBlastSend}
+                      variant='primary'
+                                            onPress={handleEmailBlastSend}
                       isDisabled={
                         !selectedListId ||
                         !!blastProgress?.sending ||
@@ -691,7 +693,6 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                           (l: MailingListDoc) => l._id === selectedListId,
                         )
                       }
-                      isLoading={!!blastProgress?.sending}
                       className='rounded-lg bg-dark-gray dark:bg-white dark:text-dark-table'>
                       Send Blast
                     </Button>
@@ -708,8 +709,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
               exit={{opacity: 0, height: 0}}
               className='mt-6'>
               <Card
-                shadow='none'
-                className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
+                                className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
                 <CardHeader className='flex items-center justify-between'>
                   <SectionHeader
                     title='Create Mailing List'
@@ -747,8 +747,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       )}
                       <Button
                         type='button'
-                        radius='none'
-                        variant='tertiary'
+                                                variant='tertiary'
                         onPress={addRecipientRow}
                         className='gap-1 rounded-lg'>
                         <Icon name='plus' className='size-4' />
@@ -756,8 +755,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       </Button>
                       <Button
                         type='button'
-                        radius='none'
-                        variant='primary'
+                                                variant='primary'
                         onPress={() => csvInputRef.current?.click()}
                         className='gap-1 rounded-lg bg-dark-table text-white dark:bg-white dark:text-dark-table'>
                         <Icon name='arrow-up' className='size-4' />
@@ -803,8 +801,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                             <Button
                               type='button'
                               size='sm'
-                              variant='tertiary'
-                              color='danger'
+                              variant='danger'
                               isIconOnly
                               onPress={() => removeRecipientRow(index)}
                               aria-label={`Remove recipient ${index + 1}`}
@@ -821,9 +818,8 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       Cancel
                     </Button>
                     <Button
-                      color='primary'
-                      radius='none'
-                      onPress={handleCreateMailingList}
+                      variant='primary'
+                                            onPress={handleCreateMailingList}
                       className='rounded-lg bg-dark-gray dark:bg-white dark:text-dark-table'>
                       Create Mailing List
                     </Button>

@@ -11,8 +11,10 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, CardContent, Image} from '@/lib/heroui'
+import {Button, Card} from '@heroui/react'
 import {useMemo, useState, useTransition} from 'react'
+
+import {LegacyImage} from '@/components/ui/legacy-image'
 
 interface CartHistoryItemCardProps {
   item: CartHistoryItemWithProduct
@@ -52,19 +54,16 @@ const CartHistoryItemCard = ({
   }, [item])
 
   return (
-    <Card
-      shadow='none'
-      radius='none'
-      className='bg-linear-to-r from-foreground/5 via-transparent to-transparent border border-foreground/10 overflow-visible'>
-      <CardContent className='relative overflow-visible'>
+    <Card className='bg-linear-to-r from-foreground/5 via-transparent to-transparent border border-foreground/10 overflow-visible'>
+      <Card.Content className='relative overflow-visible'>
         <div className='flex gap-3 items-center'>
           <div className='relative size-14 shrink-0 overflow-hidden'>
             {productImageUrl ? (
-              <Image
-                radius='none'
+              <LegacyImage
                 src={productImageUrl}
                 alt={item.product.name}
                 className='w-full h-full object-cover'
+                loading='lazy'
               />
             ) : (
               <div className='w-full h-full bg-foreground/10 flex items-center justify-center'>
@@ -93,32 +92,31 @@ const CartHistoryItemCard = ({
           <div className='flex items-end'>
             <Button
               size='md'
-              radius='none'
               variant='primary'
-              color='primary'
               isDisabled={isAdding}
               onPress={onAddToCart}
-              startContent={
+              className='font-clash bg-brand dark:bg-white dark:text-dark-gray font-medium text-base mt-4'
+            >
+              <span className='flex items-center gap-1'>
                 <Icon
                   name={isAdding ? 'spinners-ring' : 'plus'}
-                  className='size-4 -mr-2'
+                  className='size-4'
                 />
-              }
-              className='font-clash bg-brand dark:bg-white dark:text-dark-gray font-medium text-base mt-4'>
-              Add
+                <span>Add</span>
+              </span>
             </Button>
             <Button
               size='sm'
               isIconOnly
-              radius='full'
               variant='primary'
               onPress={onRemove}
-              className='border absolute -right-4 -top-4 hover:opacity-100'>
+              className='border absolute -right-4 -top-4 hover:opacity-100'
+            >
               <Icon name='x' className='size-3.5' />
             </Button>
           </div>
         </div>
-      </CardContent>
+      </Card.Content>
     </Card>
   )
 }
@@ -183,7 +181,8 @@ export const CartHistory = ({onItemAdded}: CartHistoryProps) => {
           size='sm'
           variant='tertiary'
           onPress={clearHistory}
-          className='group text-sm font-brk opacity-60 hover:opacity-100'>
+          className='group text-sm font-brk opacity-60 hover:opacity-100'
+        >
           <span>Clear</span>
           <span className='relative inline-block leading-none'>
             <span className='invisible'>history</span>
@@ -197,7 +196,8 @@ export const CartHistory = ({onItemAdded}: CartHistoryProps) => {
               fuzzRange={6}
               baseIntensity={0.22}
               fontSize='11px'
-              fontFamily='inherit'>
+              fontFamily='inherit'
+            >
               history
             </FuzzyText>
           </span>

@@ -1,6 +1,5 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import type {
   BundleBonus,
   RewardsConfig,
@@ -8,21 +7,9 @@ import type {
 } from '@/app/lobby/(store)/cart/checkout/lib/rewards'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {
-  Button,
-  Card,
-  CardContent,
-  Checkbox,
-  Chip,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from '@/lib/heroui'
+import {Button, Card, Checkbox, Chip, Input, Label, Modal} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {startTransition, useCallback, useState, ViewTransition} from 'react'
+import {useCallback, useEffect, useMemo, useState, ViewTransition} from 'react'
 import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
 
 type TierFormState = {
@@ -55,14 +42,10 @@ function tierToForm(t: RewardsTier): TierFormState {
 
 function BundleAndThresholdsSection({
   config,
-  isSaving,
-  saveMessage,
   onSave,
 }: {
   config: RewardsConfig
-  isSaving: boolean
-  saveMessage: null | 'saved' | 'error'
-  onSave: (next: RewardsConfig) => void
+  onSave: (next: RewardsConfig) => Promise<void>
 }) {
   const [bundleForm, setBundleForm] = useState<BundleBonus>(config.bundleBonus)
   const [freeShipFirst, setFreeShipFirst] = useState(
@@ -74,6 +57,30 @@ function BundleAndThresholdsSection({
   const [topUpThreshold, setTopUpThreshold] = useState(
     String(config.topUpProximityThreshold),
   )
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveMessage, setSaveMessage] = useState<null | 'saved' | 'error'>(null)
+
+  useEffect(() => {
+    setBundleForm(config.bundleBonus)
+    setFreeShipFirst(String(config.freeShippingFirstOrder))
+    setMinRedemption(String(config.minRedemption))
+    setTopUpThreshold(String(config.topUpProximityThreshold))
+  }, [config])
+
+  const freeShippingFirstOrder = parseFloat(freeShipFirst)
+  const minRedemptionVal = parseFloat(minRedemption)
+  const topUpProximityThreshold = parseFloat(topUpThreshold)
+  const isGlobalFormValid =
+    !Number.isNaN(freeShippingFirstOrder) &&
+    !Number.isNaN(minRedemptionVal) &&
+    !Number.isNaN(topUpProximityThreshold) &&
+    freeShippingFirstOrder >= 0 &&
+    minRedemptionVal >= 0 &&
+    topUpProximityThreshold >= 0 &&
+    (!bundleForm.enabled ||
+      (bundleForm.bonusPct >= 0 &&
+        bundleForm.bonusPct <= 100 &&
+        bundleForm.minCategories >= 2))
 
   const hasGlobalChange =
     bundleForm.enabled !== config.bundleBonus.enabled ||
@@ -84,24 +91,36 @@ function BundleAndThresholdsSection({
     topUpThreshold !== String(config.topUpProximityThreshold)
 
   const handleSaveGlobal = useCallback(() => {
-    const freeShippingFirstOrder = parseFloat(freeShipFirst)
-    const minRedemptionVal = parseFloat(minRedemption)
-    const topUpProximityThreshold = parseFloat(topUpThreshold)
-    if (
-      Number.isNaN(freeShippingFirstOrder) ||
-      Number.isNaN(minRedemptionVal) ||
-      Number.isNaN(topUpProximityThreshold)
-    )
-      return
+    if (!isGlobalFormValid) return
 
-    onSave({
+    setIsSaving(true)
+    setSaveMessage(null)
+
+    void onSave({
       ...config,
       bundleBonus: bundleForm,
       freeShippingFirstOrder,
       minRedemption: minRedemptionVal,
       topUpProximityThreshold,
     })
-  }, [config, bundleForm, freeShipFirst, minRedemption, topUpThreshold, onSave])
+      .then(() => {
+        setIsSaving(false)
+        setSaveMessage('saved')
+        window.setTimeout(() => setSaveMessage(null), 2000)
+      })
+      .catch(() => {
+        setIsSaving(false)
+        setSaveMessage('error')
+      })
+  }, [
+    bundleForm,
+    config,
+    freeShippingFirstOrder,
+    isGlobalFormValid,
+    minRedemptionVal,
+    onSave,
+    topUpProximityThreshold,
+  ])
 
   return (
     <section className='flex flex-col gap-4 mt-6'>
@@ -111,70 +130,75 @@ function BundleAndThresholdsSection({
       <Checkbox
         isSelected={bundleForm.enabled}
         className='font-clash font-normal'
-        onValueChange={(v) => setBundleForm((f) => ({...f, enabled: v}))}>
-        Bonus Enabled
+        onChange={(v) => setBundleForm((f) => ({...f, enabled: v}))}>
+        <Checkbox.Control>
+          <Checkbox.Indicator />
+        </Checkbox.Control>
+        <Checkbox.Content>Bonus Enabled</Checkbox.Content>
       </Checkbox>
       <div className='max-w-4xl grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3'>
         <div className='flex flex-col gap-2'>
+          <Label htmlFor='bundle-bonus'>Bundle bonus %</Label>
           <Input
-            label='Bundle bonus %'
+            id='bundle-bonus'
             type='number'
             min={0}
             max={100}
             step={0.1}
             value={String(bundleForm.bonusPct)}
-            onValueChange={(v) =>
+            onChange={(v) =>
               setBundleForm((f) => ({
                 ...f,
-                bonusPct: parseFloat(v) || 0,
+                bonusPct: parseFloat(v.target.value) || 0,
               }))
             }
-            classNames={commonInputClassNames}
-            isDisabled={!bundleForm.enabled}
+            // classNames={commonInputClassNames}
+            disabled={!bundleForm.enabled}
           />
+
+          <Label htmlFor='min-cat'>Min categories for bundle</Label>
           <Input
-            label='Min categories for bundle'
+            id='min-cat'
             type='number'
             min={2}
             value={String(bundleForm.minCategories)}
-            onValueChange={(v) =>
+            onChange={(v) =>
               setBundleForm((f) => ({
                 ...f,
-                minCategories: parseInt(v, 10) || 2,
+                minCategories: parseInt(v.target.value, 10) || 2,
               }))
             }
-            classNames={commonInputClassNames}
-            isDisabled={!bundleForm.enabled}
+            // classNames={commonInputClassNames}
+            disabled={!bundleForm.enabled}
           />
         </div>
         <div className='flex flex-col gap-2'>
+          <Label htmlFor='first-order'>Free shipping first order ($)</Label>
           <Input
-            label='Free shipping first order ($)'
+            id='first-order'
             type='number'
             min={0}
             step={1}
             value={freeShipFirst}
-            onValueChange={setFreeShipFirst}
-            classNames={commonInputClassNames}
-            description='Subtotal threshold for first-order free shipping'
+            onChange={(e) => setFreeShipFirst(e.target.value)}
           />
+          <Label htmlFor='min-redemption'>Min redemption ($)</Label>
           <Input
-            label='Min redemption ($)'
+            id='min-redemption'
             type='number'
             min={0}
             step={0.5}
             value={minRedemption}
-            onValueChange={setMinRedemption}
-            classNames={commonInputClassNames}
+            onChange={(e) => setMinRedemption(e.target.value)}
           />
+
+          <Label htmlFor='top-up-proximity'>Top-up proximity ($)</Label>
           <Input
-            label='Top-up proximity ($)'
+            id='top-up-proximity'
             type='number'
             min={0}
             value={topUpThreshold}
-            onValueChange={setTopUpThreshold}
-            classNames={commonInputClassNames}
-            description='Show top-up suggestions when within this amount'
+            onChange={(e) => setTopUpThreshold(e.target.value)}
           />
         </div>
       </div>
@@ -182,12 +206,11 @@ function BundleAndThresholdsSection({
         <div className='flex items-center gap-3'>
           <Button
             size='sm'
-            color='primary'
+            variant='primary'
             onPress={handleSaveGlobal}
-            isLoading={isSaving}
-            isDisabled={!hasGlobalChange}
+            isDisabled={!hasGlobalChange || !isGlobalFormValid || isSaving}
             className='bg-dark-table dark:bg-white dark:text-dark-table'>
-            Save Changes
+            {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
           {saveMessage === 'saved' && (
             <span className='text-sm text-emerald-600 dark:text-emerald-400'>
@@ -238,16 +261,19 @@ export const RewardsContent = () => {
   const [tierModalOpen, setTierModalOpen] = useState(false)
   const [editingTierIndex, setEditingTierIndex] = useState<number | null>(null)
   const [tierForm, setTierForm] = useState<TierFormState>(emptyTierForm())
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveMessage, setSaveMessage] = useState<null | 'saved' | 'error'>(null)
+  const [isTierSaving, setIsTierSaving] = useState(false)
+  const [tierSaveMessage, setTierSaveMessage] = useState<
+    null | 'saved' | 'error'
+  >(null)
   const [deleteTierIndex, setDeleteTierIndex] = useState<number | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteMessage, setDeleteMessage] = useState<null | 'error'>(null)
 
   const openAddTier = useCallback(() => {
     setEditingTierIndex(null)
     setTierForm(emptyTierForm())
     setTierModalOpen(true)
-    setSaveMessage(null)
+    setTierSaveMessage(null)
   }, [])
 
   const openEditTier = useCallback(
@@ -256,7 +282,7 @@ export const RewardsContent = () => {
       setEditingTierIndex(index)
       setTierForm(tier ? tierToForm(tier) : emptyTierForm())
       setTierModalOpen(true)
-      setSaveMessage(null)
+      setTierSaveMessage(null)
     },
     [config?.tiers],
   )
@@ -265,33 +291,18 @@ export const RewardsContent = () => {
     setTierModalOpen(false)
     setEditingTierIndex(null)
     setTierForm(emptyTierForm())
-    setSaveMessage(null)
+    setTierSaveMessage(null)
   }, [])
 
-  const saveConfig = useCallback(
-    (next: RewardsConfig) => {
-      setIsSaving(true)
-      setSaveMessage(null)
-      startTransition(() => {
-        updateAdmin({
-          identifier: 'rewards_config',
-          value: next,
-          uid: user?.uid ?? 'anonymous',
-        })
-          .then(() => {
-            setIsSaving(false)
-            setSaveMessage('saved')
-            closeTierModal()
-            setDeleteTierIndex(null)
-            setTimeout(() => setSaveMessage(null), 2000)
-          })
-          .catch(() => {
-            setIsSaving(false)
-            setSaveMessage('error')
-          })
+  const persistConfig = useCallback(
+    async (next: RewardsConfig) => {
+      await updateAdmin({
+        identifier: 'rewards_config',
+        value: next,
+        uid: user?.uid ?? 'anonymous',
       })
     },
-    [updateAdmin, user?.uid, closeTierModal],
+    [updateAdmin, user?.uid],
   )
 
   const handleSaveTier = useCallback(() => {
@@ -307,32 +318,54 @@ export const RewardsContent = () => {
     }
     tiers.sort((a, b) => a.minSubtotal - b.minSubtotal)
 
-    saveConfig({
+    setIsTierSaving(true)
+    setTierSaveMessage(null)
+
+    void persistConfig({
       ...config,
       tiers,
     })
-  }, [config, tierForm, editingTierIndex, saveConfig])
+      .then(() => {
+        setIsTierSaving(false)
+        setTierSaveMessage('saved')
+        closeTierModal()
+      })
+      .catch(() => {
+        setIsTierSaving(false)
+        setTierSaveMessage('error')
+      })
+  }, [closeTierModal, config, editingTierIndex, persistConfig, tierForm])
 
   const handleDeleteTier = useCallback(() => {
     if (deleteTierIndex === null || !config) return
     const tiers = config.tiers.filter((_, i) => i !== deleteTierIndex)
     if (tiers.length === 0) return
+
     setIsDeleting(true)
-    startTransition(() => {
-      updateAdmin({
-        identifier: 'rewards_config',
-        value: {...config, tiers},
-        uid: user?.uid ?? 'anonymous',
-      })
-        .then(() => {
-          setDeleteTierIndex(null)
-          setIsDeleting(false)
-        })
-        .catch(() => setIsDeleting(false))
+    setDeleteMessage(null)
+
+    void persistConfig({
+      ...config,
+      tiers,
     })
-  }, [deleteTierIndex, config, updateAdmin, user?.uid])
+      .then(() => {
+        setDeleteTierIndex(null)
+        setIsDeleting(false)
+      })
+      .catch(() => {
+        setIsDeleting(false)
+        setDeleteMessage('error')
+      })
+  }, [config, deleteTierIndex, persistConfig])
 
   const isLoading = config === undefined
+  const sortedTiers = useMemo(
+    () =>
+      (config?.tiers ?? [])
+        .map((tier, index) => ({index, tier}))
+        .sort((a, b) => a.tier.minSubtotal - b.tier.minSubtotal),
+    [config],
+  )
 
   if (isLoading) {
     return <LoadingHeader title='Rewards Manager' />
@@ -351,13 +384,11 @@ export const RewardsContent = () => {
           Shipping & Cash Back Tiers
         </h3>
         <div className='grid md:grid-cols-2 gap-3'>
-          {config.tiers.map((tier, i) => (
+          {sortedTiers.map(({index, tier}) => (
             <Card
-              key={i}
-              shadow='none'
-              radius='none'
+              key={`${tier.label}-${tier.minSubtotal}-${tier.maxSubtotal ?? 'max'}`}
               className='border border-alum/30 rounded-xs overflow-hidden transition-colors bg-alum/20 dark:bg-dark-table/40'>
-              <CardContent className='flex flex-row flex-wrap items-center justify-between gap-4 p-4'>
+              <Card.Content className='flex flex-row flex-wrap items-center justify-between gap-4 p-4'>
                 <div>
                   <div className='flex items-center gap-2'>
                     <span className='font-medium'>{tier.label}</span>
@@ -383,153 +414,168 @@ export const RewardsContent = () => {
                 <div className='flex gap-2'>
                   <Button
                     size='sm'
-                    radius='none'
                     variant='tertiary'
                     className='rounded-sm'
-                    onPress={() => openEditTier(i)}>
+                    onPress={() => openEditTier(index)}>
                     Edit
                   </Button>
                   <Button
                     size='sm'
                     variant='tertiary'
-                    onPress={() => setDeleteTierIndex(i)}
+                    onPress={() => setDeleteTierIndex(index)}
                     className='rounded-sm text-red-400 dark:text-red-300 hover:bg-red-600/10! dark:hover:bg-red-500/10'
                     isDisabled={config.tiers.length <= 1}>
                     Delete
                   </Button>
                 </div>
-              </CardContent>
+              </Card.Content>
             </Card>
           ))}
         </div>
       </section>
 
-      <BundleAndThresholdsSection
-        key={JSON.stringify({
-          b: config.bundleBonus,
-          f: config.freeShippingFirstOrder,
-          m: config.minRedemption,
-          t: config.topUpProximityThreshold,
-        })}
-        config={config}
-        isSaving={isSaving}
-        saveMessage={saveMessage}
-        onSave={saveConfig}
-      />
+      <BundleAndThresholdsSection config={config} onSave={persistConfig} />
 
       <Modal
         isOpen={tierModalOpen}
-        onClose={closeTierModal}
-        size='lg'
-        scrollBehavior='inside'>
-        <ModalContent>
-          <ModalHeader className='font-okxs font-semibold'>
-            {editingTierIndex !== null ? 'Edit Tier' : 'Add Tier'}
-          </ModalHeader>
-          <ModalBody className='gap-4'>
-            <Input
-              label='Label'
-              placeholder='e.g. Starter, Silver, Gold'
-              value={tierForm.label}
-              onValueChange={(v) => setTierForm((f) => ({...f, label: v}))}
-              classNames={commonInputClassNames}
-              isRequired
-            />
-            <div className='grid grid-cols-2 gap-4'>
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            closeTierModal()
+          }
+        }}>
+        <Modal.Backdrop />
+        <Modal.Container scroll='inside' size='lg'>
+          <Modal.Dialog>
+            <Modal.Header className='font-okxs font-semibold'>
+              <Modal.Heading>
+                {editingTierIndex !== null ? 'Edit Tier' : 'Add Tier'}
+              </Modal.Heading>
+            </Modal.Header>
+            <Modal.Body className='gap-4'>
+              <Label htmlFor='tier'>Label</Label>
               <Input
-                label='Min subtotal ($)'
-                type='number'
-                min={0}
-                step={0.01}
-                value={tierForm.minSubtotal}
-                onValueChange={(v) =>
-                  setTierForm((f) => ({...f, minSubtotal: v}))
+                id='tier'
+                placeholder='e.g. Starter, Silver, Gold'
+                value={tierForm.label}
+                onChange={(v) =>
+                  setTierForm((f) => ({...f, label: v.target.value}))
                 }
-                classNames={commonInputClassNames}
+                required
               />
-              <Input
-                label='Max subtotal ($)'
-                type='number'
-                min={0}
-                step={0.01}
-                placeholder='Blank = no max'
-                value={tierForm.maxSubtotal}
-                onValueChange={(v) =>
-                  setTierForm((f) => ({...f, maxSubtotal: v}))
-                }
-                classNames={commonInputClassNames}
-              />
-              <Input
-                label='Shipping cost ($)'
-                type='number'
-                min={0}
-                step={0.01}
-                value={tierForm.shippingCost}
-                onValueChange={(v) =>
-                  setTierForm((f) => ({...f, shippingCost: v}))
-                }
-                classNames={commonInputClassNames}
-              />
-              <Input
-                label='Cash back %'
-                type='number'
-                min={0}
-                max={100}
-                step={0.5}
-                value={tierForm.cashBackPct}
-                onValueChange={(v) =>
-                  setTierForm((f) => ({...f, cashBackPct: v}))
-                }
-                classNames={commonInputClassNames}
-              />
-            </div>
-            <ViewTransition>
-              {saveMessage === 'error' && (
-                <span className='text-sm text-destructive'>Save failed</span>
-              )}
-            </ViewTransition>
-          </ModalBody>
-          <ModalFooter className='gap-2'>
-            <Button variant='tertiary' onPress={closeTierModal}>
-              Cancel
-            </Button>
-            <Button
-              color='primary'
-              onPress={handleSaveTier}
-              isLoading={isSaving}
-              isDisabled={!formToTier(tierForm)}
-              className='bg-dark-table dark:bg-white dark:text-dark-table'>
-              {editingTierIndex !== null ? 'Save Changes' : 'Add'}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
+              <div className='grid grid-cols-2 gap-4'>
+                <Label htmlFor='min-subtotal'>Min subtotal ($)</Label>
+                <Input
+                  id='min-subtotal'
+                  type='number'
+                  min={0}
+                  step={0.01}
+                  value={tierForm.minSubtotal}
+                  onChange={(v) =>
+                    setTierForm((f) => ({...f, minSubtotal: v.target.value}))
+                  }
+                />
+                <Label htmlFor='max-subtotal'>Max subtotal ($)</Label>
+                <Input
+                  id='max-subtotal'
+                  type='number'
+                  min={0}
+                  step={0.01}
+                  placeholder='Blank = no max'
+                  value={tierForm.maxSubtotal}
+                  onChange={(v) =>
+                    setTierForm((f) => ({...f, maxSubtotal: v.target.value}))
+                  }
+                />
+                <Label htmlFor='shipping-cost'>Shipping cost ($)</Label>
+                <Input
+                  id='shipping-cost'
+                  type='number'
+                  min={0}
+                  step={0.01}
+                  value={tierForm.shippingCost}
+                  onChange={(v) =>
+                    setTierForm((f) => ({...f, shippingCost: v.target.value}))
+                  }
+                />
+                <Label htmlFor='cash-back'>Cash back %</Label>
+                <Input
+                  id='cash-back'
+                  type='number'
+                  min={0}
+                  max={100}
+                  step={0.5}
+                  value={tierForm.cashBackPct}
+                  onChange={(v) =>
+                    setTierForm((f) => ({...f, cashBackPct: v.target.value}))
+                  }
+                />
+              </div>
+              <ViewTransition>
+                {tierSaveMessage === 'error' && (
+                  <span className='text-sm text-destructive'>Save failed</span>
+                )}
+              </ViewTransition>
+            </Modal.Body>
+            <Modal.Footer className='gap-2'>
+              <Button variant='tertiary' onPress={closeTierModal}>
+                Cancel
+              </Button>
+              <Button
+                variant='primary'
+                onPress={handleSaveTier}
+                isDisabled={!formToTier(tierForm) || isTierSaving}
+                className='bg-dark-table dark:bg-white dark:text-dark-table'>
+                {isTierSaving
+                  ? 'Saving...'
+                  : editingTierIndex !== null
+                    ? 'Save Changes'
+                    : 'Add'}
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
       </Modal>
 
       <Modal
         isOpen={deleteTierIndex !== null}
-        onClose={() => setDeleteTierIndex(null)}
-        size='sm'>
-        <ModalContent>
-          <ModalHeader className='font-okxs font-semibold'>
-            Delete Tier
-          </ModalHeader>
-          <ModalBody>
-            <p className='text-sm text-foreground/80'>
-              Remove this tier? You must have at least one tier.
-            </p>
-          </ModalBody>
-          <ModalFooter className='gap-2'>
-            <Button variant='tertiary' onPress={() => setDeleteTierIndex(null)}>
-              Cancel
-            </Button>
-            <Button
-              color='danger'
-              onPress={handleDeleteTier}
-              isLoading={isDeleting}>
-              Delete
-            </Button>
-          </ModalFooter>
-        </ModalContent>
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setDeleteTierIndex(null)
+            setDeleteMessage(null)
+          }
+        }}>
+        <Modal.Backdrop />
+        <Modal.Container size='sm'>
+          <Modal.Dialog>
+            <Modal.Header className='font-okxs font-semibold'>
+              <Modal.Heading>Delete Tier</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body className='gap-3'>
+              <p className='text-sm text-foreground/80'>
+                Remove this tier? You must have at least one tier.
+              </p>
+              {deleteMessage === 'error' && (
+                <p className='text-sm text-destructive'>Delete failed</p>
+              )}
+            </Modal.Body>
+            <Modal.Footer className='gap-2'>
+              <Button
+                variant='tertiary'
+                onPress={() => {
+                  setDeleteTierIndex(null)
+                  setDeleteMessage(null)
+                }}>
+                Cancel
+              </Button>
+              <Button
+                variant='danger'
+                onPress={handleDeleteTier}
+                isDisabled={isDeleting}>
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
       </Modal>
     </div>
   )

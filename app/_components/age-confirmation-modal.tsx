@@ -3,15 +3,32 @@
 import {
   Button,
   Modal,
+  ModalBackdrop,
   ModalBody,
-  ModalContent,
+  ModalContainer,
+  ModalDialog,
   ModalFooter,
   ModalHeader,
-} from '@/lib/heroui'
+} from '@heroui/react'
+import type {ReactNode} from 'react'
 import {useState} from 'react'
 
 const VERSION = 'v1'
 const STORAGE_KEY = `age-confirmed:${VERSION}`
+
+const ModalContent = ({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) => (
+  <ModalBackdrop className='bg-black/80 backdrop-opacity-80'>
+    <ModalContainer size='md' placement='center'>
+      <ModalDialog className={className}>{children}</ModalDialog>
+    </ModalContainer>
+  </ModalBackdrop>
+)
 
 export function AgeConfirmationModal() {
   // Initialize state based on localStorage check
@@ -38,19 +55,8 @@ export function AgeConfirmationModal() {
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={() => {}} // Prevent closing without confirmation
-      hideCloseButton
-      isDismissable={false}
-      isKeyboardDismissDisabled={true}
-      placement='center'
-      size='md'
-      classNames={{
-        backdrop: 'bg-black/80 backdrop-opacity-80',
-        base: 'mx-2 sm:mx-4 mt-36',
-      }}>
-      <ModalContent className='age-verification-modal text-foreground w-full max-w-md rounded-none border-0 bg-linear-to-b from-indigo-300/35 from-35% via-slate-800/60 to-slate-950/60 py-4 px-4 sm:py-8 sm:px-6 shadow-2xl relative overflow-hidden'>
+    <Modal isOpen={isOpen}>
+      <ModalContent className='mx-2 sm:mx-4 mt-36 age-verification-modal text-foreground w-full max-w-md rounded-none border-0 bg-linear-to-b from-indigo-300/35 from-35% via-slate-800/60 to-slate-950/60 py-4 px-4 sm:py-8 sm:px-6 shadow-2xl relative overflow-hidden'>
         <div className='absolute -bottom-84 left-1/2 -translate-x-1/2 size-160 aspect-square rounded-t-[14rem] bg-linear-to-t from-slate-950 via-slate-800 to-slate-950/80 blur-sm hidden sm:block' />
         <div className='absolute -bottom-12 -right-18 w-50 h-32 rounded-full bg-linear-to-r from-slate-200/80 to-slate-200 blur-3xl rotate-45 hidden sm:block' />
         <ModalHeader className='flex flex-col gap-1 text-center px-0'>

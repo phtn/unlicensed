@@ -3,13 +3,15 @@
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Drawer, DrawerContent, DrawerHeader, Image} from '@/lib/heroui'
+import {Button, Drawer, DrawerContent, DrawerHeader} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import type {ReadonlyStore} from '@tanstack/store'
 import {useQuery} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
 import {CategoryFormApi, CategoryFormValues} from '../category-schema'
 import {FormSection, Header} from './components'
+
+import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
 interface MediaProps {
   form: CategoryFormApi
@@ -174,9 +176,8 @@ export const Media = ({form}: MediaProps) => {
               <div className='flex gap-2'>
                 <Button
                   size='sm'
-                  radius='none'
                   variant='tertiary'
-                  endContent={<Icon name='image-open-light' />}
+                  // endContent={<Icon name='image-open-light' />}
                   className='dark:bg-blue-500 dark:text-white rounded-lg'
                   onPress={openLibrary}>
                   Browse
@@ -234,10 +235,8 @@ export const Media = ({form}: MediaProps) => {
       </FormSection>
 
       <Drawer
-        placement='right'
         isOpen={isLibraryOpen}
-        onOpenChange={setIsLibraryOpen}
-        size='5xl'>
+        onOpenChange={(isOpen) => setIsLibraryOpen(isOpen)}>
         <DrawerContent className='max-w-6xl bg-background p-0'>
           <DrawerHeader className='border-b border-foreground/10'>
             <div className='flex w-full items-center justify-between gap-3'>

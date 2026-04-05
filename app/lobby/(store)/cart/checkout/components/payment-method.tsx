@@ -1,10 +1,17 @@
 import {api} from '@/convex/_generated/api'
 import {PaymentMethod} from '@/convex/orders/d'
-import {ListBoxItem, Select, SelectProps, SelectedItems} from '@/lib/heroui'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {ListboxItem as ListBoxItem} from '@heroui/listbox'
+import {Label} from '@heroui/react'
+import {
+  Select,
+  type SelectedItemProps,
+  type SelectedItems,
+} from '@heroui/select'
+import type {SharedSelection} from '@heroui/system'
 import {useQuery} from 'convex/react'
-import React, {memo, useCallback, useMemo} from 'react'
+import {memo, useCallback, useMemo} from 'react'
 import {normalizePaymentMethod} from '../../constants'
 
 interface IPaymentMethod {
@@ -62,16 +69,7 @@ const FALLBACK_METHODS: Record<PaymentMethod, IPaymentMethod> = {
   },
 }
 
-const SELECT_CLASS_NAMES = {
-  base: 'w-full',
-  label: 'text-lg font-semibold tracking-tight',
-  trigger:
-    'min-h-14 p-2 md:ps-3 bg-white dark:bg-zinc-500/10 border border-foreground/40 placeholder:text-foreground',
-  listboxWrapper:
-    'border-2 dark:border-foreground/40 rounded-[1.95rem] outline-none focus-visible:outline-none px-0 dark:bg-zinc-700',
-  listbox: 'outline-none focus-visible:outline-none px-1.5 py-1.5',
-  selectorIcon: 'translate-x-2',
-} as SelectProps['classNames']
+type SelectedValueItem = SelectedItemProps<IPaymentMethod>
 
 // Memoized row for list items to reduce re-renders when dropdown opens (5.5, 6.3)
 const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
@@ -100,8 +98,7 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
             className={cn(
               'text-[8px] uppercase font-brk w-fit px-1 py-0 md:px-1 leading-3 md:leading-normal dark:text-white text-right',
               {'': method.id === 'cards'},
-            )}
-          >
+            )}>
             {method.tag}
           </div>
         </div>
@@ -114,12 +111,8 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
 })
 
 // Stable render for selected value in trigger (avoids inline object/array creation)
-function SelectedValueContent({
-  item,
-}: {
-  item: SelectedItems<IPaymentMethod>[number]
-}) {
-  const data = item.value
+function SelectedValueContent({item}: {item: SelectedValueItem}) {
+  const data = item.data ?? undefined
   if (!data) return null
   return (
     <div className='flex items-center justify-between ps-1 text-foreground'>
@@ -160,7 +153,7 @@ export const PaymentMethods = memo(function PaymentMethods({
     identifier: 'payment_methods',
   })
 
-  const methods = useMemo(
+  const methods = useMemo<IPaymentMethod[]>(
     () =>
       ((setting?.methods ?? []) as IPaymentMethod[]).map((method) => ({
         ...method,
@@ -179,7 +172,7 @@ export const PaymentMethods = memo(function PaymentMethods({
   )
 
   const handleSelectionChange = useCallback(
-    (keys: 'all' | Set<React.Key>) => {
+    (keys: SharedSelection) => {
       if (keys === 'all' || keys.size === 0) return
       const selectedKey = Array.from(keys)[0] as string
       if (!selectedKey) return
@@ -196,13 +189,23 @@ export const PaymentMethods = memo(function PaymentMethods({
   )
 
   const selectedKeys = useMemo(() => [value], [value])
-
+  const SELECT_CLASS_NAMES = {
+    base: 'w-full bg-background',
+    label: 'text-lg font-semibold tracking-tight h-10',
+    trigger:
+      'min-h-14 mt-2 p-2 md:ps-3 bg-white dark:bg-zinc-500/10 border border-foreground/40 placeholder:text-foreground rounded-md',
+    listboxWrapper:
+      'border-2 dark:border-foreground/40 rounded-lg outline-none focus-visible:outline-none border-0 border-white/40 w-full',
+    listbox: 'outline-none focus-visible:outline-none px-1.5 py-1.5',
+    selectorIcon: 'translate-x-2',
+    popoverContent: 'w-full bg-black/10 backdrop-blur-xl p-2.5 rounded-xl',
+  }
   const renderValue = useCallback(
     (items: SelectedItems<IPaymentMethod>) => {
       if (items.length === 0 && selectedMethod) {
         return (
           <SelectedValueContent
-            item={{key: selectedMethod.id, value: selectedMethod}}
+            item={{key: selectedMethod.id, data: selectedMethod}}
           />
         )
       }
@@ -215,43 +218,42 @@ export const PaymentMethods = memo(function PaymentMethods({
   )
 
   return (
-    <Select
-      classNames={SELECT_CLASS_NAMES}
-      className=''
-      selectedKeys={selectedKeys}
-      isMultiline={true}
-      multiple={false}
-      items={methods}
-      label={
-        <h2 className='text-lg font-normal font-bone py-2'>Payment Methods</h2>
-      }
-      labelPlacement='outside'
-      onSelectionChange={handleSelectionChange}
-      placeholder='Select Payment Method'
-      renderValue={renderValue}
-      selectionMode='single'
-      selectorIcon={<Icon name='selector' />}
-      variant='tertiary'
-      disableAnimation
-    >
-      {(method) => (
-        <ListBoxItem
-          key={method.id}
-          textValue={method.name}
-          className={cn({
-            'opacity-50 pointer-events-none': method.status === 'inactive',
-          })}
-          classNames={{
-            wrapper: 'placeholder:text-dark-gray',
-            listboxWrapper: 'border-2 border-brand',
-            base: 'data-[selected=true]:bg-brand/12 dark:data-[selected=true]:bg-brand gap-0 px-1 py-2',
-            selectedIcon: ['p-0 size-3 mb-7 md:mb-4 mr-2', method.iconStyle],
-          }}
-        >
-          <PaymentMethodOptionRow method={method} />
-        </ListBoxItem>
-      )}
-    </Select>
+    <div className='space-y-2'>
+      <Label
+        className='text-lg font-normal font-bone mb-2 select-none'
+        htmlFor='payment-method'>
+        Payment Methods
+      </Label>
+      <Select<IPaymentMethod>
+        id='payment-method'
+        classNames={SELECT_CLASS_NAMES}
+        selectedKeys={selectedKeys}
+        items={methods}
+        onSelectionChange={handleSelectionChange}
+        placeholder='Select Payment Method'
+        renderValue={renderValue}
+        selectionMode='single'
+        variant='flat'>
+        {(method) => (
+          <ListBoxItem
+            key={method.id}
+            textValue={method.name}
+            className={cn(' rounded-md', {
+              'opacity-50 pointer-events-none': method.status === 'inactive',
+            })}
+            classNames={{
+              wrapper: 'placeholder:text-dark-gray',
+              base: 'data-[selected=true]:bg-brand/12 dark:data-[selected=true]:bg-brand gap-0 px-1 py-2',
+              selectedIcon: cn(
+                'p-0 size-3 mb-7 md:mb-4 mr-2',
+                method.iconStyle,
+              ),
+            }}>
+            <PaymentMethodOptionRow method={method} />
+          </ListBoxItem>
+        )}
+      </Select>
+    </div>
   )
 })
 
@@ -266,8 +268,7 @@ const TxnSpeed = ({method, selected = false}: TxnSpeedProps) => {
       className={cn(
         'text-brand dark:text-white text-[9px] italic uppercase font-semibold tracking-normal opacity-100 mt-1',
         {'text-brand dark:text-brand ': selected},
-      )}
-    >
+      )}>
       Fastest
     </span>
   ) : (

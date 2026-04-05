@@ -5,7 +5,8 @@ import type {OrderStatus} from '@/convex/orders/d'
 import {useAuthCtx} from '@/ctx/auth'
 import {useCopy} from '@/hooks/use-copy'
 import {Icon} from '@/lib/icons'
-import {Button, Card, Select, ListBoxItem} from '@/lib/heroui'
+import {Button, Card} from '@heroui/react'
+import {Select, SelectItem} from '@heroui/select'
 import {useMutation, useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
 import {useCallback} from 'react'
@@ -40,7 +41,7 @@ export const Content = ({orderNumber}: ContentProps) => {
   if (order === undefined) {
     return (
       <main className='min-h-screen px-4 pb-16'>
-        <Card shadow='sm' className='p-4'>
+        <Card className='p-4'>
           <p className='text-sm text-gray-400'>Loading order...</p>
         </Card>
       </main>
@@ -50,13 +51,13 @@ export const Content = ({orderNumber}: ContentProps) => {
   if (order === null) {
     return (
       <main className='min-h-screen px-4 pb-16'>
-        <Card shadow='sm' className='p-4'>
+        <Card className='p-4'>
           <div className='space-y-4'>
             <h1 className='text-xl font-semibold'>Order Not Found</h1>
             <p className='text-sm text-gray-400'>
               Order {orderNumber} could not be found.
             </p>
-            <Button onPress={router.back} color='primary' variant='tertiary'>
+            <Button onPress={router.back} variant='tertiary'>
               Back to Orders
             </Button>
           </div>
@@ -72,8 +73,7 @@ export const Content = ({orderNumber}: ContentProps) => {
         <div className='flex items-center gap-4'>
           <Button
             size='lg'
-            radius='none'
-            isIconOnly
+                        isIconOnly
             variant='secondary'
             onPress={router.back}
             aria-label='Back to orders'
@@ -99,7 +99,7 @@ export const Content = ({orderNumber}: ContentProps) => {
               size='lg'
               selectedKeys={[order.orderStatus]}
               onSelectionChange={(keys) => {
-                const selected = Array.from(keys)[0] as OrderStatus
+                const selected = (keys instanceof Set ? [...keys][0] : undefined) as OrderStatus | undefined
                 if (selected)
                   updateOrderStatus({
                     orderId: order._id,
@@ -109,14 +109,14 @@ export const Content = ({orderNumber}: ContentProps) => {
               }}
               aria-label='Order status'>
               {statusOptions.map((option) => (
-                <ListBoxItem key={option.value}>{option.label}</ListBoxItem>
+                <SelectItem key={option.value}>{option.label}</SelectItem>
               ))}
             </Select>
           </div>
         </div>
 
         {/* Order Details Form */}
-        <Card shadow='none' className='p-6 border-none'>
+        <Card className='p-6 border-none'>
           <OrderDetailsForm order={order} hideHeader />
         </Card>
       </div>

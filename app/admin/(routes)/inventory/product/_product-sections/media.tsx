@@ -8,7 +8,7 @@ import {useFileUpload} from '@/hooks/use-file-upload'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Drawer, DrawerContent, DrawerHeader, Image} from '@/lib/heroui'
+import {Button, Drawer} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import type {ReadonlyStore} from '@tanstack/store'
 import {useQuery} from 'convex/react'
@@ -16,6 +16,9 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {PrimaryImageConverterModal} from '../primary-image-converter-modal'
 import {ProductFormValues} from '../product-schema'
 import {FormSection, Header} from './components'
+
+
+import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
 interface MediaProps {
   form: ReturnType<typeof useAppForm>
@@ -625,30 +628,24 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
               <div className='flex items-center space-x-4'>
                 <Button
                   id='converter-trigger'
-                  radius='none'
                   variant='tertiary'
                   className='rounded-lg bg-indigo-950 text-white dark:text-white'
                   isDisabled={!canConvertPrimaryImage}
-                  endContent={
-                    <Icon
-                      name='lightning'
-                      className='size-5 rotate-6 text-yellow-500'
-                    />
-                  }
                   onPress={() => setIsConverterOpen(true)}>
                   {!canConvertPrimaryImage
                     ? 'Image Optimized'
                     : 'Optimize Primary Image'}
+                  <Icon
+                    name='lightning'
+                    className='size-5 rotate-6 text-yellow-500'
+                  />
                 </Button>
                 <Button
-                  radius='none'
                   variant='tertiary'
                   className='rounded-lg bg-blue-500 text-white dark:text-white'
-                  endContent={
-                    <Icon name='image-plus-light' className='size-5' />
-                  }
                   onPress={() => openLibrary('gallery')}>
                   Select Primary Image
+                  <Icon name='image-plus-light' className='size-5' />
                 </Button>
               </div>
             </div>
@@ -776,14 +773,11 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                 <div className='flex flex-wrap gap-2'>
                   <Button
                     size='sm'
-                    radius='none'
                     variant='tertiary'
-                    endContent={
-                      <Icon name='image-open-light' className='size-5' />
-                    }
                     className='rounded-lg'
                     onPress={() => openLibrary('gallery')}>
                     Add Gallery Images
+                    <Icon name='image-open-light' className='size-5' />
                   </Button>
                   {primaryImageValue ? (
                     <Button
@@ -979,33 +973,32 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
         suggestedFileNameStem={productName}
       />
 
-      <Drawer
-        placement='right'
-        isOpen={isLibraryOpen}
-        onOpenChange={setIsLibraryOpen}
-        size='5xl'>
-        <DrawerContent className='max-w-6xl bg-background p-0'>
-          <DrawerHeader className='border-b border-foreground/10'>
-            <div className='flex w-full items-center justify-between gap-3'>
-              <div className='space-y-0.5'>
-                <p className='text-sm font-semibold uppercase tracking-[0.08em] text-blue-500'>
-                  Media Library
-                </p>
-                <p className='text-sm text-foreground/70'>
-                  Click any image to add it to the gallery. Use Lead to promote
-                  an image, or remove it from the top-right button.
-                </p>
-              </div>
-              <Button
-                size='sm'
-                variant='tertiary'
-                onPress={() => setIsLibraryOpen(false)}>
-                Done
-              </Button>
-            </div>
-          </DrawerHeader>
+      <Drawer isOpen={isLibraryOpen} onOpenChange={setIsLibraryOpen}>
+        <Drawer.Backdrop>
+          <Drawer.Content placement='right'>
+            <Drawer.Dialog className='w-full max-w-6xl bg-background p-0'>
+              <Drawer.Header className='border-b border-foreground/10'>
+                <div className='flex w-full items-center justify-between gap-3'>
+                  <div className='space-y-0.5'>
+                    <p className='text-sm font-semibold uppercase tracking-[0.08em] text-blue-500'>
+                      Media Library
+                    </p>
+                    <p className='text-sm text-foreground/70'>
+                      Click any image to add it to the gallery. Use Lead to
+                      promote an image, or remove it from the top-right button.
+                    </p>
+                  </div>
+                  <Button
+                    size='sm'
+                    variant='tertiary'
+                    onPress={() => setIsLibraryOpen(false)}>
+                    Done
+                  </Button>
+                </div>
+              </Drawer.Header>
 
-          <div className='grid h-[calc(100vh-8rem)] grid-cols-1 gap-4 p-4 md:grid-cols-[260px_1fr]'>
+              <Drawer.Body className='p-0'>
+                <div className='grid h-[calc(100vh-8rem)] grid-cols-1 gap-4 p-4 md:grid-cols-[260px_1fr]'>
             <aside className='rounded-xl border border-foreground/10 bg-background/80 p-3'>
               <div className='space-y-2'>
                 <label className='text-xs font-medium uppercase tracking-widest opacity-70'>
@@ -1190,8 +1183,11 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
                 </div>
               )}
             </section>
-          </div>
-        </DrawerContent>
+                </div>
+              </Drawer.Body>
+            </Drawer.Dialog>
+          </Drawer.Content>
+        </Drawer.Backdrop>
       </Drawer>
     </>
   )

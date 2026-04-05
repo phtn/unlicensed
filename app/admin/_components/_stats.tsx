@@ -2,7 +2,7 @@ import {api} from '@/convex/_generated/api'
 import {StatConfig} from '@/convex/admin/d'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Card, cn, Progress} from '@/lib/heroui'
+import {Button, Card, cn} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 import MiniChart from './mini-chart'
@@ -104,7 +104,7 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
           : 0
       return (
         <div className='mt-8 h-1 rounded-full overflow-hidden'>
-          <Progress value={deliveryProgress} />
+          <div className='h-full rounded-full bg-primary' style={{width: `${deliveryProgress}%`}} />
         </div>
       )
     }
@@ -116,9 +116,7 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
   const extraContent = getExtraContent(config.id)
 
   return (
-    <Card
-      shadow='sm'
-      className='p-3 sm:p-4 md:p-5 min-w-0 dark:bg-dark-table/20'>
+    <Card className='p-3 sm:p-4 md:p-5 min-w-0 dark:bg-dark-table/20'>
       <div className='flex items-start justify-between mb-3'>
         <div className='flex items-center space-x-2 p-1 rounded-lg'>
           <div

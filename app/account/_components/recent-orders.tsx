@@ -1,7 +1,8 @@
 import {Loader} from '@/components/expermtl/loader'
+import {Button} from '@/components/ui/button'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {Button, Card, CardContent} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import Link from 'next/link'
 import {ViewTransition} from 'react'
 import {OrderListItem} from './order-list-item'
@@ -16,12 +17,14 @@ export const RecentOrders = ({orders}: {orders?: Array<Doc<'orders'>>}) => {
         </div>
         {orders && orders.length > 5 && (
           <Button
-            as={Link}
-            href='/account/orders'
-            variant='tertiary'
-            endContent={<Icon name='chevron-right' className='size-4' />}
+            asChild
+            variant='ghost'
+            size='sm'
             className='text-default-600 dark:text-default-400 hover:text-foreground font-okxs'>
-            View All
+            <Link href='/account/orders'>
+              View All
+              <Icon name='chevron-right' className='size-4' />
+            </Link>
           </Button>
         )}
       </div>
@@ -34,7 +37,7 @@ export const RecentOrders = ({orders}: {orders?: Array<Doc<'orders'>>}) => {
             </div>
           ) : orders.length === 0 ? (
             <Card className='border-2 border-dashed border-default-200 dark:border-default-100/20 bg-default-50/50 dark:bg-default-50/5'>
-              <CardContent className='py-16 flex flex-col items-center justify-center text-center'>
+              <Card.Content className='py-16 flex flex-col items-center justify-center text-center'>
                 <div className='w-20 h-20 rounded-full bg-default-100 dark:bg-default-50/10 flex items-center justify-center mb-5'>
                   <Icon
                     name='package-car'
@@ -47,15 +50,10 @@ export const RecentOrders = ({orders}: {orders?: Array<Doc<'orders'>>}) => {
                 <p className='text-default-500 max-w-sm mb-6 leading-relaxed'>
                   Start shopping to see your orders and earn rewards!
                 </p>
-                <Button
-                  as={Link}
-                  href='/products'
-                  color='primary'
-                  size='lg'
-                  className='font-semibold'>
-                  Browse Products
+                <Button asChild size='lg' className='font-semibold'>
+                  <Link href='/products'>Browse Products</Link>
                 </Button>
-              </CardContent>
+              </Card.Content>
             </Card>
           ) : (
             orders

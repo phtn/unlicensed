@@ -8,10 +8,11 @@ import {api} from '@/convex/_generated/api'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptCategory} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
-import {Button, Image} from '@/lib/heroui'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {Activity, useMemo} from 'react'
+
+import {LegacyImage} from '@/components/ui/legacy-image'
 
 const CATEGORY_ORDER: string[] = [
   'flower',
@@ -67,21 +68,14 @@ export const Content = ({initialCategories}: ContentProps) => {
               </p>
 
               <div className='hidden sm:flex items-center gap-3 sm:gap-4 lg:gap-5 relative z-50 flex-wrap'>
-                <Button
-                  as={Link}
+                <Link
                   href={'/lobby/brands'}
                   prefetch
-                  radius='none'
-                  size='lg'
                   className='dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-brand hover:text-white text-white font-medium px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                   <span className='drop-shadow-xs'>Shop by Brand</span>
-                </Button>
-                <Button
-                  size='lg'
-                  as={Link}
+                </Link>
+                <Link
                   prefetch
-                  radius='none'
-                  variant='tertiary'
                   href={'/lobby/deals'}
                   className='hidden border dark:border-light-gray/80 sm:flex items-center gap-2 dark:text-terpenes font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm md:text-base lg:text-lg'>
                   <span className='tracking-tight'>Find Deals</span>
@@ -89,14 +83,14 @@ export const Content = ({initialCategories}: ContentProps) => {
                     name='search-magic'
                     className='w-3 h-3 sm:w-4 sm:h-4 dark:text-white'
                   />
-                </Button>
+                </Link>
               </div>
             </div>
 
             <div className='relative flex items-center justify-center lg:justify-end h-[40vh] sm:h-[45vh] lg:h-[50lvh] overflow-visible'>
               <div className='h-80 md:h-120 w-full flex items-center justify-center'>
                 <div className='w-full max-w-lg'>
-                  <Image
+                  <LegacyImage
                     src='/rf-layer-latest.png'
                     className='w-full h-full object-cover'
                     alt='branding-rapid-fire'
@@ -124,12 +118,11 @@ export const Content = ({initialCategories}: ContentProps) => {
                 {/* Category Image */}
                 <div className='relative flex items-center justify-center bg-transparent rounded-xs overflow-hidden'>
                   {category.heroImage ? (
-                    <Image
+                    <LegacyImage
                       src={resolveUrl(category.heroImage) as string}
                       alt={category.name}
-                      radius='none'
-                      className='mask mask-parallelogram size-48 aspect-square shrink-0 object-cover w-full h-full'
                       loading='lazy'
+                      className='mask mask-parallelogram size-48 aspect-square shrink-0 object-cover w-full h-full'
                     />
                   ) : (
                     <div className='w-full h-full bg-sidebar/40 dark:bg-sidebar flex items-center justify-center'>

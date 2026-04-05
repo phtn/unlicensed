@@ -9,7 +9,7 @@ import {
   TextureSeparator,
 } from '@/components/ui/texture-card'
 import {Icon} from '@/lib/icons'
-import {Button, Input} from '@/lib/heroui'
+import {Button, Input} from '@heroui/react'
 
 export const ProfileInfo = () => {
   return (
@@ -30,16 +30,18 @@ export const ProfileInfo = () => {
                       <div>
                         <Input
                           id='first'
-                          type='first'
+                          type='text'
                           required
+                          placeholder='First name'
                           className='w-full px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 placeholder-neutral-400 dark:placeholder-neutral-500'
                         />
                       </div>
                       <div>
                         <Input
                           id='last'
-                          type='last'
+                          type='text'
                           required
+                          placeholder='Last name'
                           className='w-full px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 placeholder-neutral-400 dark:placeholder-neutral-500'
                         />
                       </div>
@@ -48,8 +50,9 @@ export const ProfileInfo = () => {
                     <div>
                       <Input
                         id='username'
-                        type='username'
+                        type='text'
                         required
+                        placeholder='Username'
                         className='w-full px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 placeholder-neutral-400 dark:placeholder-neutral-500'
                       />
                     </div>
@@ -58,6 +61,7 @@ export const ProfileInfo = () => {
                         id='email'
                         type='email'
                         required
+                        placeholder='Email'
                         className='w-full px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 placeholder-neutral-400 dark:placeholder-neutral-500'
                       />
                     </div>
@@ -66,6 +70,7 @@ export const ProfileInfo = () => {
                         id='password'
                         type='password'
                         required
+                        placeholder='Password'
                         className='w-full px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 placeholder-neutral-400 dark:placeholder-neutral-500'
                       />
                     </div>
@@ -73,14 +78,12 @@ export const ProfileInfo = () => {
                 </TextureCardContent>
                 <TextureSeparator />
                 <TextureCardFooter className='border-b rounded-b-sm'>
-                  <Button isIconOnly className='w-full'>
-                    <div className='flex gap-1 items-center justify-center'>
-                      Continue
-                      <Icon
-                        name='arrow-right'
-                        className='h-4 w-4 text-neutral-50 mt-1px'
-                      />
-                    </div>
+                  <Button fullWidth>
+                    Continue
+                    <Icon
+                      name='arrow-right'
+                      className='h-4 w-4 text-neutral-50 mt-1px'
+                    />
                   </Button>
                 </TextureCardFooter>
 

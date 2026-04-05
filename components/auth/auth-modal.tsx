@@ -16,16 +16,19 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
   Button,
-  Separator,
-  Image,
   Input,
   Modal,
+  ModalBackdrop,
   ModalBody,
-  ModalContent,
+  ModalContainer,
+  ModalDialog,
   ModalFooter,
   ModalHeader,
-} from '@/lib/heroui'
+  Separator,
+} from '@heroui/react'
 import type {ActionCodeSettings} from 'firebase/auth'
+import Image from 'next/image'
+import type {ReactNode} from 'react'
 import {
   ChangeEvent,
   InputHTMLAttributes,
@@ -42,6 +45,20 @@ interface AuthModalProps {
 }
 
 type AuthView = 'login' | 'signup' | 'email-link'
+
+const ModalContent = ({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) => (
+  <ModalBackdrop>
+    <ModalContainer size='md' placement='center'>
+      <ModalDialog className={className}>{children}</ModalDialog>
+    </ModalContainer>
+  </ModalBackdrop>
+)
 
 export const AuthModal = ({
   isOpen,
@@ -262,21 +279,16 @@ export const AuthModal = ({
   const emailLink = useMemo(() => `https://${email.split('@').pop()}`, [email])
 
   return (
-    <Modal
-      isOpen={canOpen}
-      onClose={handleClose}
-      placement='center'
-      size='md'
-      classNames={{
-        wrapper: 'z-[20000]',
-      }}
-      hideCloseButton>
+    <Modal isOpen={canOpen}>
       <ModalContent className='rounded-xs dark:border-brand border-light-gray/80 w-96 h-120 overflow-hidden flex flex-col'>
         <div className='size-80 absolute left-1/2 -translate-x-1/2 top-1/3 -translate-y-1/2'>
           <Image
-            src={'/svg/rf-logo-hot-pink-2.svg'}
+            src='/svg/rf-logo-hot-pink-2.svg'
             className='size-80'
             alt='rf-logo'
+            width={320}
+            height={320}
+            unoptimized
           />
         </div>
         <ModalHeader className='relative z-10 tracking-tight flex justify-between items-start shrink-0'>
@@ -411,9 +423,7 @@ export const AuthModal = ({
               <ModalFooter className='flex flex-col gap-3 w-full pb-4 pt-2'>
                 <div className='flex flex-col'>
                   <Input
-                    size='lg'
                     fullWidth
-                    radius='none'
                     type='email'
                     inputMode='email'
                     placeholder='Email'
@@ -421,20 +431,18 @@ export const AuthModal = ({
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete='email'
                     className='placeholder:text-white text-white! dark:text-white!'
-                    classNames={{
-                      inputWrapper: cn(
-                        'bg-black/80! dark:bg-black/80 backdrop-blur-2xl text-white!',
-                        isEmailLinkView ? 'rounded-xs!' : 'rounded-t-md!',
-                      ),
-                      input:
-                        'ps-3 placeholder:text-white text-white! dark:text-white!',
-                    }}
+                    // classNames={{
+                    //   inputWrapper: cn(
+                    //     'bg-black/80! dark:bg-black/80 backdrop-blur-2xl text-white!',
+                    //     isEmailLinkView ? 'rounded-xs!' : 'rounded-t-md!',
+                    //   ),
+                    //   input:
+                    //     'ps-3 placeholder:text-white text-white! dark:text-white!',
+                    // }}
                   />
                   {!isEmailLinkView && (
                     <Input
-                      size='lg'
                       fullWidth
-                      radius='none'
                       type='password'
                       placeholder='Password'
                       value={password}
@@ -446,47 +454,45 @@ export const AuthModal = ({
                         'placeholder:text-white text-white! dark:text-white!',
                         isLogin && 'rounded-b-md',
                       )}
-                      classNames={{
-                        inputWrapper: [
-                          'bg-black/70! dark:bg-black/80 backdrop-blur-2xl text-white!',
-                          isLogin && 'rounded-b-md!',
-                        ],
-                        input:
-                          'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
-                      }}
+                      // classNames={{
+                      //   inputWrapper: [
+                      //     'bg-black/70! dark:bg-black/80 backdrop-blur-2xl text-white!',
+                      //     isLogin && 'rounded-b-md!',
+                      //   ],
+                      //   input:
+                      //     'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
+                      // }}
                     />
                   )}
                   {!isLogin && !isEmailLinkView && (
                     <Input
-                      size='lg'
                       fullWidth
-                      radius='none'
                       type='password'
                       placeholder='Confirm password'
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       autoComplete='new-password'
-                      isInvalid={confirmPassword.length > 0 && !passwordsMatch}
-                      errorMessage={
-                        confirmPassword.length > 0 && !passwordsMatch
-                          ? 'Passwords do not match'
-                          : undefined
-                      }
+                      // isInvalid={confirmPassword.length > 0 && !passwordsMatch}
+                      // errorMessage={
+                      //   confirmPassword.length > 0 && !passwordsMatch
+                      //     ? 'Passwords do not match'
+                      //     : undefined
+                      // }
                       className={cn(
                         'placeholder:text-white text-white! dark:text-white! rounded-b-md',
                         confirmPassword &&
                           !passwordsMatch &&
                           'border-b-2 border-red-500',
                       )}
-                      classNames={{
-                        inputWrapper: [
-                          'bg-black/50! dark:bg-black/80 backdrop-blur-2xl text-white!',
-                          'rounded-b-md',
-                        ],
-                        input:
-                          'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
-                        errorMessage: 'text-red-400 text-xs pt-1 px-1',
-                      }}
+                      // classNames={{
+                      //   inputWrapper: [
+                      //     'bg-black/50! dark:bg-black/80 backdrop-blur-2xl text-white!',
+                      //     'rounded-b-md',
+                      //   ],
+                      //   input:
+                      //     'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
+                      //   errorMessage: 'text-red-400 text-xs pt-1 px-1',
+                      // }}
                     />
                   )}
                 </div>
@@ -503,10 +509,9 @@ export const AuthModal = ({
                 )}
                 <Button
                   size='lg'
-                  radius='none'
                   type='submit'
                   variant='primary'
-                  disabled={primaryActionDisabled}
+                  isDisabled={primaryActionDisabled}
                   className={cn(
                     'bg-brand backdrop-blur-2xl w-full text-white rounded-xs',
                     {
@@ -533,9 +538,7 @@ export const AuthModal = ({
                 {completeEmailLink ? (
                   <div className='flex w-full flex-col gap-2'>
                     <Input
-                      size='lg'
                       fullWidth
-                      radius='none'
                       type='email'
                       inputMode='email'
                       placeholder='Email you used for the sign-in link'
@@ -546,32 +549,32 @@ export const AuthModal = ({
                         (e.preventDefault(), handleCompleteEmailLink())
                       }
                       autoComplete='email'
-                      isInvalid={Boolean(emailLinkError)}
-                      errorMessage={emailLinkError ?? undefined}
-                      classNames={{
-                        inputWrapper:
-                          'bg-black/80! dark:bg-black/80 backdrop-blur-2xl text-white! rounded-md!',
-                        input:
-                          'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
-                        errorMessage: 'text-red-400 text-xs pt-1 px-1',
-                      }}
+                      // isInvalid={Boolean(emailLinkError)}
+                      // errorMessage={emailLinkError ?? undefined}
+                      // classNames={{
+                      //   inputWrapper:
+                      //     'bg-black/80! dark:bg-black/80 backdrop-blur-2xl text-white! rounded-md!',
+                      //   input:
+                      //     'ps-3 bg-black/80 placeholder:text-white text-white! dark:text-white!',
+                      //   errorMessage: 'text-red-400 text-xs pt-1 px-1',
+                      // }}
                     />
                     <Button
                       size='lg'
                       type='button'
-                      radius='none'
                       variant='tertiary'
                       onPress={handleCompleteEmailLink}
-                      disabled={emailLoading}
+                      isDisabled={emailLoading}
                       className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-full text-white rounded-lg'
-                      startContent={
-                        emailLoading ? (
-                          <Icon
-                            name='spinners-ring'
-                            className='size-5 text-white'
-                          />
-                        ) : null
-                      }>
+                      // startContent={
+                      //   emailLoading ? (
+                      //     <Icon
+                      //       name='spinners-ring'
+                      //       className='size-5 text-white'
+                      //     />
+                      //   ) : null
+                      // }
+                    >
                       Continue
                     </Button>
                   </div>
@@ -580,17 +583,17 @@ export const AuthModal = ({
                     <Button
                       size='lg'
                       type='button'
-                      radius='none'
                       variant='tertiary'
                       onPress={handleGoogleLogin}
-                      disabled={loading}
+                      isDisabled={loading}
                       className='bg-black/80 backdrop-blur-2xl font-okxs font-medium text-sm w-full text-white rounded-xs'
-                      startContent={
-                        <Icon
-                          name={loading ? 'spinners-ring' : 'google'}
-                          className='size-5'
-                        />
-                      }>
+                      // startContent={
+                      //   <Icon
+                      //     name={loading ? 'spinners-ring' : 'google'}
+                      //     className='size-5'
+                      //   />
+                      // }
+                    >
                       Continue with Google
                     </Button>
                   </div>
@@ -622,7 +625,6 @@ export const InputFields = ({fields}: SignInFieldProps) => {
         <Input
           key={index}
           type={field.type as string}
-          label={field.label}
           placeholder={field.placeholder}
           value={field.value}
           onChange={field.onChange}

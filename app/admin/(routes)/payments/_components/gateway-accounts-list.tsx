@@ -5,7 +5,7 @@ import {HyperList} from '@/components/expermtl/hyper-list'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import type {GatewayId} from '@/lib/paygate/gateway-config'
-import {Card, CardContent, CardHeader} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useCallback} from 'react'
@@ -48,10 +48,10 @@ export const GatewayAccountsList = ({
 
   if (accounts === undefined) {
     return (
-      <Card shadow='none' radius='none' className='md:rounded-lg w-full'>
-        <CardContent className='flex items-center justify-center py-12'>
+      <Card className='md:rounded-lg w-full'>
+        <Card.Content className='flex items-center justify-center py-12'>
           <Icon name='spinners-ring' className='size-8 animate-spin' />
-        </CardContent>
+        </Card.Content>
       </Card>
     )
   }
@@ -59,10 +59,8 @@ export const GatewayAccountsList = ({
   if (accounts.length === 0) {
     return (
       <Card
-        shadow='none'
-        radius='none'
         className='md:rounded-lg bg-sidebar/40 dark:bg-dark-table/40 w-full'>
-        <CardContent className='text-center py-12'>
+        <Card.Content className='text-center py-12'>
           <p className='text-foreground/60 font-polysans capitalize'>
             {`No ${gateway} Accounts`}.
           </p>
@@ -72,20 +70,18 @@ export const GatewayAccountsList = ({
             <span>Create account</span>
             <Icon name='chevron-right' className='size-3' />
           </Link>
-        </CardContent>
+        </Card.Content>
       </Card>
     )
   }
 
   return (
     <Card
-      shadow='none'
-      radius='none'
       className='md:rounded-lg w-full bg-transparent'>
-      <CardHeader>
+      <Card.Header>
         <SectionHeader title={`${gateway} Accounts`} />
-      </CardHeader>
-      <CardContent className='space-y-4 h-screen overflow-y-scroll md:h-full '>
+      </Card.Header>
+      <Card.Content className='space-y-4 h-screen overflow-y-scroll md:h-full '>
         <HyperList
           data={accounts
             .filter((a) => !!a.enabled && !!a.isDefault)
@@ -99,7 +95,7 @@ export const GatewayAccountsList = ({
           direction='right'
           container='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
         />
-      </CardContent>
+      </Card.Content>
     </Card>
   )
 }

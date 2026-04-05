@@ -2,7 +2,7 @@
 
 import type {Id} from '@/convex/_generated/dataModel'
 import {cn} from '@/lib/utils'
-import {Avatar, User} from '@/lib/heroui'
+import {Avatar} from '@heroui/react'
 import {useCallback} from 'react'
 import {AudioMessagePlayer} from './audio-message-player'
 import {MessageBubbleAttachments} from './message-bubble-attachments'
@@ -15,6 +15,15 @@ interface User {
   email: string
   avatarUrl?: string | null
 }
+
+const getInitials = (value: string) =>
+  value
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
 
 interface MessageBubbleProps {
   message: Message
@@ -72,7 +81,8 @@ export function MessageBubble({
     (!audioAttachments || audioAttachments.length === 0)
 
   const isTimestampVisible = clickedMessageId === message._id
-  const bubbleWidthClass = 'max-w-[min(86%,22rem)] sm:max-w-[75%] md:max-w-[70%]'
+  const bubbleWidthClass =
+    'max-w-[min(86%,22rem)] sm:max-w-[75%] md:max-w-[70%]'
 
   const handleToggleTimestamp = () => {
     if (clickedMessageId === message._id) {
@@ -99,11 +109,17 @@ export function MessageBubble({
       {!isCurrentUser && (
         <div className='w-7 md:w-8 shrink-0'>
           {showAvatar && otherUser ? (
-            <Avatar
-              src={otherUser.avatarUrl ?? undefined}
-              name={otherUser.displayName ?? undefined}
-              fallback={otherUser.displayName ?? 'RF'}
-            />
+            <Avatar>
+              {otherUser.avatarUrl ? (
+                <Avatar.Image
+                  alt={otherUser.displayName ?? otherUser.email}
+                  src={otherUser.avatarUrl}
+                />
+              ) : null}
+              <Avatar.Fallback>
+                {getInitials(otherUser.displayName ?? otherUser.email ?? 'RF')}
+              </Avatar.Fallback>
+            </Avatar>
           ) : null}
         </div>
       )}

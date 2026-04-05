@@ -3,7 +3,8 @@
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {Button, Input, Switch} from '@/lib/heroui'
+import {Input} from '@heroui/input'
+import {Button, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useState, ViewTransition} from 'react'
 import {ContentHeader} from './components'
@@ -81,16 +82,19 @@ function TaxFormInner({
   return (
     <section className='flex w-md portrait:-mt-10 md:mt-0 flex-col gap-4'>
       <div className='flex flex-col gap-4'>
-        <label
-          htmlFor='tax-active-switch'
-          className=' flex items-center space-x-4'>
-          <span>Tax active</span>
-          <Switch
-            id='tax-active-switch'
-            isSelected={active}
-            onValueChange={setActive}
-            isDisabled={config === undefined}></Switch>
-        </label>
+        <Switch
+          id='tax-active-switch'
+          isSelected={active}
+          onChange={setActive}
+          isDisabled={config === undefined}
+          size='sm'>
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+          <Switch.Content>
+            <span>Tax active</span>
+          </Switch.Content>
+        </Switch>
         <div className='flex max-w-44 flex-col gap-2'>
           <Input
             label='Tax rate (%)'
@@ -108,13 +112,11 @@ function TaxFormInner({
       <ViewTransition>
         <div className='flex items-center gap-3'>
           <Button
-            radius='none'
-            color='default'
             variant='tertiary'
             onPress={handleSave}
             isDisabled={isSaving || config === undefined || !userUid}
             className='rounded-sm'
-            isLoading={isSaving}>
+            isPending={isSaving}>
             {isSaving ? 'Saving…' : 'Save'}
           </Button>
           {saveMessage === 'saved' && (

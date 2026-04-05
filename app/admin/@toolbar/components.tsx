@@ -3,7 +3,7 @@
 import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@/lib/heroui'
+
 import Link from 'next/link'
 import {ReactNode, Suspense, type PropsWithChildren} from 'react'
 
@@ -43,16 +43,10 @@ const PrimaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
   const isActive = tabId === id
 
   return (
-    <Button
+    <Link
       id={id ?? label}
-      as={Link}
-      size='sm'
-      radius='none'
-      prefetch
       href={href}
-      disableRipple
-      disableAnimation
-      variant='secondary'
+      prefetch
       className={cn(
         'text-sm flex items-center rounded-md py-1 md:px-2.5 md:p-2 dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white dark:bg-sidebar bg-light-gray/25 dark:hover:bg-indigo-500 dark:hover:text-white dark:hover:opacity-100 tracking-tight space-x-1.5 shrink-0',
         {
@@ -74,7 +68,7 @@ const PrimaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
         {/*<span className='portrait:font-brk portrait:text-xs portrait:-tracking-widest'>*/}
         <span>{label}</span>
       </span>
-    </Button>
+    </Link>
   )
 }
 
@@ -91,15 +85,10 @@ const SecondaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
   const isActive = tabId === id
 
   return (
-    <Button
+    <Link
       id={id ?? label}
-      as={Link}
       href={href}
       prefetch
-      variant='secondary'
-      disableRipple
-      disableAnimation
-      size='sm'
       className={cn(
         'p-1 md:p-2 text-sm dark:border-origin focus:bg-transparent active:bg-sidebar/40 border-white bg-white dark:bg-transparent hover:bg-foreground/8 -space-x-1.5',
         {
@@ -118,7 +107,7 @@ const SecondaryTabInner = ({href, label, id, icon}: ToolbarButtonProps) => {
         {/*<span className='portrait:font-brk portrait:text-xs portrait:-tracking-widest'>*/}
         <span>{label}</span>
       </div>
-    </Button>
+    </Link>
   )
 }
 

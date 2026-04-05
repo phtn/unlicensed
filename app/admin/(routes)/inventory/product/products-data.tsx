@@ -24,7 +24,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
@@ -507,7 +507,6 @@ export const ProductsData = ({
           accessorKey: 'available',
           cell: toggleCell('available', api.products.m.toggleAvailability, {
             values: [true, false],
-            colors: ['primary', 'default'],
             getMutationArgs: (row, newValue) => ({
               productId: row._id,
               available: newValue,
@@ -521,7 +520,6 @@ export const ProductsData = ({
           accessorKey: 'eligibleForDeals',
           cell: toggleCell('eligibleForDeals', api.products.m.toggleDeals, {
             values: [true, false],
-            colors: ['primary', 'default'],
             getMutationArgs: (row, newValue) => ({
               productId: row._id,
               deals: newValue,
@@ -535,7 +533,6 @@ export const ProductsData = ({
           accessorKey: 'featured',
           cell: toggleCell('featured', api.products.m.toggleFeatured, {
             values: [true, false],
-            colors: ['primary', 'default'],
             getMutationArgs: (row, newValue) => ({
               productId: row._id,
               featured: newValue,
@@ -552,7 +549,6 @@ export const ProductsData = ({
             api.products.m.toggleRewardEligibility,
             {
               values: [true, false],
-              colors: ['primary', 'default'],
               getMutationArgs: (row, newValue) => ({
                 productId: row._id,
                 eligibleForRewards: newValue,
@@ -567,7 +563,6 @@ export const ProductsData = ({
           accessorKey: 'onSale',
           cell: toggleCell('onSale', api.products.m.toggleOnSale, {
             values: [true, false],
-            colors: ['primary', 'default'],
             getMutationArgs: (row, newValue) => ({
               productId: row._id,
               onSale: newValue,
@@ -598,7 +593,6 @@ export const ProductsData = ({
             api.products.m.toggleUpgradeEligibility,
             {
               values: [true, false],
-              colors: ['primary', 'default'],
               getMutationArgs: (row, newValue) => ({
                 productId: row._id,
                 eligibleForUpgrade: newValue,
@@ -726,27 +720,22 @@ export const ProductsData = ({
           {onLoadMore && (canLoadMore || isLoadingMore) && (
             <Button
               size='sm'
-              radius='none'
               variant='tertiary'
-              isLoading={isLoadingMore}
               isDisabled={isLoadingMore}
               onPress={onLoadMore}
               className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk'>
-              {loadMoreLabel}
+              {isLoadingMore ? 'Loading...' : loadMoreLabel}
             </Button>
           )}
           <Dropdown>
             <DropdownTrigger>
               <Button
                 size='sm'
-                radius='none'
                 variant='tertiary'
-                className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk portrait:aspect-square'
-                endContent={
-                  <Icon name='chevron-down' className='size-4 md:flex hidden' />
-                }>
+                className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk portrait:aspect-square'>
                 <Icon name='download' className='size-4' />
                 <span className='hidden sm:inline'>Export CSV</span>
+                <Icon name='chevron-down' className='size-4 md:flex hidden' />
               </Button>
             </DropdownTrigger>
             <DropdownMenu
@@ -760,20 +749,10 @@ export const ProductsData = ({
                     exportFilePrefix,
                   )
               }}>
-              <DropdownItem
-                key='all'
-                description={
-                  canLoadMore || isLoadingMore
-                    ? 'Export all currently loaded products'
-                    : 'Export all loaded products'
-                }>
+              <DropdownItem key='all'>
                 {canLoadMore || isLoadingMore ? 'Export loaded' : 'Export all'}
               </DropdownItem>
-              <DropdownItem
-                key='current'
-                description='Export only products matching current search and filters'>
-                Export current list
-              </DropdownItem>
+              <DropdownItem key='current'>Export current list</DropdownItem>
             </DropdownMenu>
           </Dropdown>
         </div>

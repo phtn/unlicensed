@@ -7,7 +7,11 @@ import {
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
-import {Avatar, Select, ListBoxItem, TextArea, User} from '@/lib/heroui'
+import {Avatar} from '@heroui/avatar'
+import {Textarea} from '@heroui/input'
+import {ListBoxItem} from '@heroui/react'
+import {Select} from '@heroui/select'
+import {User} from '@heroui/user'
 import {useMutation, useQuery} from 'convex/react'
 import React, {
   startTransition,
@@ -133,7 +137,7 @@ export const RepContent = () => {
             onSelectionChange={(keys) =>
               handleSelectionChange(keys as Set<React.Key> | 'all')
             }
-            variant='secondary'
+            variant='faded'
             classNames={{...commonSelectClassNames, label: 'mb-4'}}
             isDisabled={repOptions.length === 0}
             aria-label='Default Sales Rep'
@@ -170,7 +174,7 @@ export const RepContent = () => {
             )}
           </Select>
 
-          <TextArea
+          <Textarea
             label='Initial message seed for Cash App payments'
             placeholder='e.g. Cash App checkout request for order {orderNumber}. I selected Cash App and need a representative to continue payment in this chat.'
             value={displayInitialMessage}

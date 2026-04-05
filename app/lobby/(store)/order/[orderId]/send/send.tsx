@@ -15,7 +15,7 @@ import {computeCryptoRelayTargetCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react/tabs'
-import {Button, Image, Input} from '@/lib/heroui'
+import {Button, Input} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useParams} from 'next/navigation'
@@ -32,6 +32,8 @@ import {
   useState,
   useTransition,
 } from 'react'
+
+import {LegacyImage} from '@/components/ui/legacy-image'
 
 const CRYPTO_WALLET_IDENTIFIER = 'crypto_wallet_relay'
 const CRYPTO_TOKEN_RELAY_IDENTIFIER = 'crypto-wallet-relay'
@@ -363,7 +365,8 @@ const CryptoSendContent = () => {
           animate={{opacity: 1, scale: 1}}
           exit={{opacity: 0, scale: 0.6}}
           transition={{duration: 0.2}}
-          className='flex flex-col space-y-6 md:justify-between px-3 py-6 w-full'>
+          className='flex flex-col space-y-6 md:justify-between px-3 py-6 w-full'
+        >
           <div className='flex items-center space-x-2 md:space-x-4 ps-2'>
             <Icon name='network' className='opacity-70 md:size-6 size-6' />
             <span className='flex font-brk text-sm uppercase'>
@@ -373,7 +376,8 @@ const CryptoSendContent = () => {
           </div>
           <Tabs.Root
             value={selected}
-            onValueChange={(v) => setSelected(v as SendPageNetwork)}>
+            onValueChange={(v) => setSelected(v as SendPageNetwork)}
+          >
             <Tabs.List className='relative z-0 flex justify-around md:justify-start gap-8 w-full mb-4 md:mb-6'>
               {networks.map((tab) => (
                 <Tabs.Tab
@@ -384,7 +388,8 @@ const CryptoSendContent = () => {
                     'outline-none select-none before:inset-x-0 before:inset-y-1 before:rounded-sm',
                     'transition-colors duration-100 delay-100',
                   )}
-                  value={tab}>
+                  value={tab}
+                >
                   <NetworkButtonRound
                     name={tab}
                     selected={tab === selected}
@@ -704,10 +709,10 @@ export function SendToPanel({
       <div className='flex items-center justify-center md:justify-start md:h-72 h-fit w-full rounded-lg bg-zinc-200/20 dark:bg-dark-table/50 px-3 py-8 md:py-0'>
         {qrDataUrl ? (
           <div className='grid md:grid-cols-2 gap-8 md:gap-0 w-full place-items-center md:place-items-start'>
-            <Image
-              radius='sm'
+            <LegacyImage
               src={qrDataUrl}
               alt='Payment QR code'
+              loading='lazy'
               className='md:size-64 size-full aspect-square mx-auto object-contain shrink-0'
             />
             <div className='w-full place-items-center'>
@@ -734,7 +739,8 @@ export function SendToPanel({
         className={cn(
           'py-2 flex w-full items-center justify-between transition-colors mt-4 md:my-4 border-b border-sidebar',
           'hover:bg-white/5 disabled:opacity-50 disabled:pointer-events-none',
-        )}>
+        )}
+      >
         <span className='font-brk dark:text-white/90'>Send to</span>
         <span className='dark:text-white/80 text-sm'>{walletAddress}</span>
         <Icon
@@ -750,7 +756,6 @@ export function SendToPanel({
         <Input
           id='txn-hash'
           placeholder={network === 'bitcoin' ? 'txid (64 hex chars)' : '0x...'}
-          radius='none'
           value={txnHash}
           onChange={handleChange}
           className='rounded-sm'
@@ -774,14 +779,14 @@ export function SendToPanel({
         <Button
           size='lg'
           type='submit'
-          radius='none'
-          disabled={
+          isDisabled={
             !txnHash.trim() ||
             isPending ||
             isCheckingTxnHash ||
             Boolean(duplicateHashMessage)
           }
-          isLoading={isPending}>
+          isPending={isPending}
+        >
           Verify Payment
         </Button>
       </div>
@@ -823,7 +828,8 @@ const NetworkButtonRound = ({
           'hover:bg-white/2 ': !selected,
           'cursor-pointer': true,
         },
-      )}>
+      )}
+    >
       <Icon
         name={
           name === 'bitcoin'
@@ -846,7 +852,8 @@ const NetworkButtonRound = ({
       <p
         className={cn('font-brk opacity-80 text-sm capitalize', {
           'opacity-100 max-w-[8ch]': selected,
-        })}>
+        })}
+      >
         {name}
       </p>
     </motion.div>

@@ -8,7 +8,8 @@ import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react'
-import {Avatar, Badge} from '@/lib/heroui'
+import {Avatar} from '@heroui/avatar'
+import {Badge} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import dynamic from 'next/dynamic'
 import {parseAsString, useQueryState} from 'nuqs'
@@ -131,7 +132,6 @@ const ParticipantCard = ({
       )}>
       <div className='flex items-start justify-between gap-2'>
         <Badge
-          isOneChar
           variant='primary'
           placement='bottom-right'
           color={isActive ? 'success' : 'warning'}>

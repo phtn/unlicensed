@@ -7,7 +7,7 @@
 // import {Icon} from '@/lib/icons'
 // import {paygatePublicConfig} from '@/lib/paygate/config'
 // import {formatPrice} from '@/utils/formatPrice'
-// import {Button, Card, CardContent} from '@/lib/heroui'
+// import {Button, Card} from '@heroui/react'
 // import {useQuery} from 'convex/react'
 // import NextLink from 'next/link'
 // import {useParams, useRouter} from 'next/navigation'

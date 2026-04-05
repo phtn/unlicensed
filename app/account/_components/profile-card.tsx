@@ -1,7 +1,7 @@
 import {Ascend} from '@/components/expermtl/ascend'
 import {UserType} from '@/convex/users/d'
 import {cn} from '@/lib/utils'
-import {Card, CardContent, Image} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import {memo} from 'react'
 
 interface ProfileCardProps {
@@ -10,21 +10,20 @@ interface ProfileCardProps {
 
 export const ProfileCard = ({user}: ProfileCardProps) => {
   return (
-    <Card
-      shadow='none'
-      radius='none'
-      className='relative border border-foreground/20 rounded-xs dark:bg-dark-table/40'>
+    <Card className='relative border border-foreground/20 rounded-xs dark:bg-dark-table/40'>
       <ProfileBackground />
-      <CardContent className='p-6 min-h-80'>
+      <Card.Content className='p-6 min-h-80'>
         <div className='flex flex-col items-center text-center space-y-5 justify-center'>
           <div className=''>
             <div className='size-32 mask-b-from-50% mask-radial-[50%_50%] mask-radial-from-80% rounded-full p-0.5 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500'>
               <div className='z-200 w-full h-full rounded-full overflow-hidden border-4 border-background bg-background flex items-center justify-center'>
                 {user?.photoUrl ? (
-                  <Image
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
                     src={user.photoUrl}
                     alt='Profile'
                     className='size-full object-cover relative z-100'
+                    loading='lazy'
                   />
                 ) : (
                   <div className='w-full h-full flex items-center justify-center font-polysans font-normal bg-linear-to-br from-indigo-100 to-pink-100 dark:from-indigo-900/30 dark:to-pink-900/30 text-4xl text-white dark:text-indigo-400 '>
@@ -36,7 +35,7 @@ export const ProfileCard = ({user}: ProfileCardProps) => {
           </div>
           <h2 className='text-xl font-bone tracking-tight'>{user?.name}</h2>
         </div>
-      </CardContent>
+      </Card.Content>
     </Card>
   )
 }

@@ -2,7 +2,7 @@
 
 import {StoreProduct} from '@/app/types'
 import {Icon} from '@/lib/icons'
-import {BreadcrumbsItem, Breadcrumbs} from '@/lib/heroui'
+import {Breadcrumbs, BreadcrumbsItem} from '@heroui/react'
 
 interface Props {
   product: StoreProduct
@@ -12,11 +12,7 @@ export const Crumbs = ({product}: Props) => {
   return (
     <Breadcrumbs
       aria-label='Product breadcrumb'
-      className='text-xs sm:text-sm font-brk tracking-tighter'
-      itemClasses={{
-        item: 'capitalize',
-        separator: 'opacity-70',
-      }}>
+      className='text-xs sm:text-sm font-brk tracking-tighter'>
       <BreadcrumbsItem href='/lobby/category' className='group/root'>
         <Icon
           name='t'

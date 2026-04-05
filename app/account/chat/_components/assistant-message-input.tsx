@@ -3,9 +3,9 @@
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {TextArea} from '@/lib/heroui'
+import {TextArea} from '@heroui/react'
 import {KeyboardEvent, useCallback, useEffect, useRef, useState} from 'react'
-import {chatInputClassNames} from './message-input'
+import {chatTextAreaClassName} from './message-input'
 
 interface AssistantMessageInputProps {
   onSendMessage: (content: string) => Promise<void>
@@ -76,7 +76,7 @@ export function AssistantMessageInput({
     }
   }
 
-  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -111,7 +111,8 @@ export function AssistantMessageInput({
             onBlur={handleOnBlur}
             disabled={isLoading}
             rows={isMobile ? 2 : 3}
-            classNames={chatInputClassNames}
+            variant='secondary'
+            className={chatTextAreaClassName}
           />
         </div>
       </div>

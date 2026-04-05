@@ -2,7 +2,6 @@
 
 import {CartHistory} from '@/app/lobby/(store)/cart/cart-history'
 import {PendingDealsSection} from '@/app/lobby/(store)/deals/components/pending-deals-section'
-import {Button} from '@/lib/heroui'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {useTransition} from 'react'
@@ -27,32 +26,24 @@ export const EmptyCart = ({onPress}: EmptyCartProps) => {
       <PendingDealsSection />
       <div className='text-center space-y-4'>
         <div className='hidden _flex items-center justify-center space-x-2'>
-          <Button
-            size='md'
-            radius='none'
-            as={Link}
-            color='primary'
-            href='/lobby/products'
+          <Link
             prefetch
-            onPress={onPress}
+            href='/lobby/products'
+            onClick={onPress}
             className='rounded-lg font-polysans font-medium dark:bg-white dark:text-brand group hover:opacity-100'>
             <span className='dark:text-brand group-hover:opacity-100'>
               All Products
             </span>
-          </Button>
-          <Button
-            size='md'
-            radius='none'
-            as={Link}
-            color='primary'
-            href='/lobby/category'
+          </Link>
+          <Link
             prefetch
-            onPress={onPress}
+            onClick={onPress}
+            href='/lobby/category'
             className='rounded-lg font-polysans font-medium dark:bg-white dark:text-brand group hover:opacity-100'>
             <span className='dark:text-dark-gray group-hover:opacity-100'>
               Browse by Category
             </span>
-          </Button>
+          </Link>
         </div>
       </div>
 

@@ -1,9 +1,8 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {Button, Input} from '@/lib/heroui'
+import {Button, Input, Label} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useState, ViewTransition} from 'react'
 import {ContentHeader} from './components'
@@ -89,40 +88,41 @@ function ShippingFormInner({
     <section className='flex md:w-md flex-col gap-4'>
       <div className='flex space-x-3'>
         <div className='flex md:max-w-44 flex-col gap-2'>
+          <Label htmlFor='shipping-fee'>Shipping fee ($)</Label>
           <Input
-            label='Shipping fee ($)'
+            id='shipping-fee'
             type='number'
             min={0}
             step={0.01}
             value={shippingFeeDollars}
-            onValueChange={setShippingFeeDollars}
-            classNames={commonInputClassNames}
-            isDisabled={config === undefined}
+            onChange={(e) => setShippingFeeDollars(e.target.value)}
+            disabled={config === undefined}
           />
         </div>
         <div className='flex max-w-64 flex-col gap-2'>
+          <Label htmlFor='minimum-order'>
+            Minimum order amount ($) for free shipping
+          </Label>
           <Input
-            label='Minimum order amount ($) for free shipping'
+            id='minimum-order'
             type='number'
             min={0}
             step={0.01}
             value={minimumOrderDollars}
-            onValueChange={setMinimumOrderDollars}
-            classNames={commonInputClassNames}
-            isDisabled={config === undefined}
+            onChange={(e) => setMinimumOrderDollars(e.target.value)}
+            // classNames={commonInputClassNames}
+            disabled={config === undefined}
           />
         </div>
       </div>
       <ViewTransition>
         <div className='flex items-center gap-3'>
           <Button
-            radius='none'
-            color='default'
             variant='tertiary'
             onPress={handleSave}
             isDisabled={isSaving || config === undefined || !userUid}
             className='rounded-sm px-8'
-            isLoading={isSaving}>
+            isPending={isSaving}>
             {isSaving ? 'Saving…' : 'Save'}
           </Button>
           {saveMessage === 'saved' && (

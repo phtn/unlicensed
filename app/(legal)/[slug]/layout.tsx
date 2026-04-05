@@ -2,7 +2,7 @@
 import {useHeadings} from '@/hooks/use-headings'
 import {legalDocuments} from '@/legal/documents'
 import {Icon} from '@/lib/icons'
-import {Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {ReactNode, useState} from 'react'

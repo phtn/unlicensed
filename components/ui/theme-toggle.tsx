@@ -4,7 +4,7 @@ import {useTheme} from '@/components/ui/theme-provider'
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {useCallback, useMemo} from 'react'
 
 type ThemeToggleProps = {
@@ -28,12 +28,11 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
   if (variant !== 'icon') {
     return (
       <Button
-        radius='sm'
         isIconOnly
         variant='tertiary'
         onPress={handleToggle}
         className={cn(
-          'group w-40 flex items-center bg-transparent justify-start space-x-3 py-2 text-sm ps-3',
+          'group w-40 items-center justify-start space-x-3 rounded-sm bg-transparent py-2 ps-3 text-sm',
         )}>
         <Icon
           name='toggle-theme'
@@ -52,11 +51,10 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
     <Button
       isIconOnly
       onPress={handleToggle}
-      radius='full'
       variant='tertiary'
       aria-label='theme'
       className={cn(
-        'group active:scale-95 border-none bg-transparent hover:bg-accent/20 dark:text-white transition-all duration-200',
+        'group rounded-full border-none bg-transparent transition-all duration-200 hover:bg-accent/20 active:scale-95 dark:text-white',
       )}>
       <div
         suppressHydrationWarning

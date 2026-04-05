@@ -1,5 +1,5 @@
 import {Icon} from '@/lib/icons'
-import {Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {Nav} from '../main/nav'
 
 export const Shop = () => {

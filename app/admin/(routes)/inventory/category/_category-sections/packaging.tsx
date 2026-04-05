@@ -1,8 +1,7 @@
 'use client'
 
 import {cn} from '@/lib/utils'
-import {Chip, Input, Select, ListBoxItem, TextArea} from '@/lib/heroui'
-import {commonInputClassNames} from '../../../../_components/ui/fields'
+import {Chip, Input, Label, ListBoxItem, Select, TextArea} from '@heroui/react'
 import {CategoryFormApi} from '../category-schema'
 import {FormSection, Header} from './components'
 
@@ -48,60 +47,45 @@ export const Packaging = ({form}: PackagingProps) => {
                 .split(',')
                 .map((u) => u.trim())
                 .filter((u) => u.length > 0)
-              const selectedKeys = new Set(selectedUnits)
 
               return (
                 <div className='space-y-4 w-full'>
-                  <Select
-                    label='Units'
+                  <Select<object, 'multiple'>
+                    aria-label='Packaging units'
                     selectionMode='multiple'
-                    selectedKeys={selectedKeys}
-                    onSelectionChange={(keys) => {
-                      const selectedArray = Array.from(keys) as string[]
-                      const newValue = selectedArray.join(', ')
-                      field.handleChange(newValue)
-                    }}
+                    value={selectedUnits}
+                    onChange={(value) =>
+                      field.handleChange(
+                        (Array.isArray(value) ? value : []).map(String).join(', '),
+                      )
+                    }
                     onBlur={field.handleBlur}
                     placeholder='Select units (e.g., g, oz, ml)'
                     variant='secondary'
-                    isMultiline
-                    classNames={{
-                      ...commonInputClassNames,
-                      value: 'placeholder:text-slate-400/80',
-                      trigger:
-                        'border h-14 border-light-gray/10 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-                      mainWrapper: '',
-                    }}
-                    renderValue={(items) => {
-                      return (
-                        <div className='flex flex-wrap gap-x-2'>
-                          {items.map((item) => (
-                            <span
-                              key={item.key}
-                              className='text-sm bg-blue-50 dark:bg-blue-100/10 text-blue-500 dark:text-blue-400 px-2 py-1 rounded tracking-tight font-medium'>
-                              {item.textValue}
-                            </span>
-                          ))}
-                        </div>
-                      )
-                    }}>
+                    className='w-full'>
                     {UNIT_SUGGESTIONS.map((unit) => (
-                      <ListBoxItem key={unit.key}>{unit.label}</ListBoxItem>
+                      <ListBoxItem key={unit.key} textValue={unit.label}>
+                        {unit.label}
+                      </ListBoxItem>
                     ))}
                   </Select>
-                  {/*<p className='text-xs opacity-80'>
-                    Select multiple units from the suggestions. You can also
-                    type custom units separated by commas in the input below.
-                  </p>*/}
+
+                  {selectedUnits.length > 0 && (
+                    <div className='flex flex-wrap gap-2'>
+                      {selectedUnits.map((unit) => (
+                        <Chip key={unit} size='sm' variant='secondary'>
+                          {unit}
+                        </Chip>
+                      ))}
+                    </div>
+                  )}
+
                   <Input
-                    size='sm'
-                    label='Add custom units here'
                     value={unitsValue}
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                     placeholder='Or type custom units separated by commas (e.g., g, oz, ml)'
                     variant='secondary'
-                    classNames={commonInputClassNames}
                   />
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
@@ -171,16 +155,17 @@ export const Packaging = ({form}: PackagingProps) => {
 
               return (
                 <div className='w-full'>
+                  <Label htmlFor='denominations'>Denominations</Label>
                   <TextArea
-                    label='Denominations'
+                    id='denominations'
                     value={denominationsValue}
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                     placeholder='Enter denominations separated by commas'
                     className='mb-1 w-full'
-                    minRows={1}
+                    rows={1}
                     variant='secondary'
-                    classNames={commonInputClassNames}
+                    // classNames={commonInputClassNames}
                   />
                   {selectedUnits.length > 0 && suggestions.length > 0 && (
                     <div className='space-y-4 h-full'>
@@ -199,7 +184,7 @@ export const Packaging = ({form}: PackagingProps) => {
                             <Chip
                               key={suggestion}
                               size='sm'
-                              variant={isSelected ? 'light' : 'solid'}
+                              variant={isSelected ? 'primary' : 'secondary'}
                               className={cn(
                                 'cursor-pointer transition-all dark:text-white',
                                 {'': isSelected},

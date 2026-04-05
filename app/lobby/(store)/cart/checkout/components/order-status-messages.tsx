@@ -16,7 +16,7 @@ export function OrderStatusMessages({
     <ViewTransition>
       <Activity mode={isPending ? 'visible' : 'hidden'}>
         {orderError && (
-          <div className='p-3 bg-danger/10 border border-danger/20 rounded-lg'>
+          <div className='p-3 bg-danger/10 border border-danger-soft-hover rounded-lg'>
             <p className='text-sm text-danger'>
               {orderError.message || 'Failed to place order. Please try again.'}
             </p>

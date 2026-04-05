@@ -1,6 +1,6 @@
 'use client'
 
-import {DropdownItem} from '@/lib/heroui'
+import {DropdownItem} from '@heroui/react'
 import {useId} from 'react'
 import type {ReactNode} from 'react'
 
@@ -93,13 +93,13 @@ export const DropdownMenuCheckboxItem = ({
     <DropdownItem
       key={itemKey}
       className={className}
-      isSelected={checked}
-      onPress={() => {
+      onAction={() => {
         onCheckedChange?.(!checked)
         if (onSelect) {
           onSelect(new Event('select'))
         }
       }}>
+      {checked ? <span className='mr-2'>✓</span> : <span className='mr-2 opacity-0'>✓</span>}
       {children}
     </DropdownItem>
   )

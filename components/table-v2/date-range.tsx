@@ -6,7 +6,7 @@ import {
   FieldError,
   Label,
   RangeCalendar,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import type {CalendarDate} from '@internationalized/date'
 import type {RangeValue} from '@react-types/shared'
 import type {ReactNode} from 'react'

@@ -1,15 +1,16 @@
 'use client'
 
 import {AddressType} from '@/convex/users/d'
-import {Icon} from '@/lib/icons'
 import {
   Button,
   Modal,
+  ModalBackdrop,
   ModalBody,
-  ModalContent,
+  ModalContainer,
+  ModalDialog,
   ModalFooter,
   ModalHeader,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {FormData, FormErrors} from '../types'
 import {ContactForm} from './contact-form'
 import {OrderStatusMessages} from './order-status-messages'
@@ -49,22 +50,13 @@ export function CheckoutModal({
   onPlaceOrder,
 }: CheckoutModalProps) {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      size='2xl'
-      radius='none'
-      scrollBehavior='inside'
-      className=''
-      classNames={{
-        wrapper: 'h-[calc(100lvh)] mt-12 md:mt-10 z-9999',
-        body: 'h-full p-2 md:p-4',
-        backdrop: 'bg-black/50',
-      }}
-      placement='top'>
-      <ModalContent className='overflow-hidden dark:bg-dark-table'>
-        {(onClose) => (
-          <>
+    <Modal isOpen={isOpen}>
+      <ModalBackdrop>
+        <ModalContainer
+          scroll='inside'
+          placement='top'
+          className='h-[calc(100lvh)] mt-12 md:mt-10 z-9999'>
+          <ModalDialog className='overflow-hidden dark:bg-dark-table'>
             <ModalHeader className='flex flex-col justify-center gap-1 text-base md:text-lg font-medium md:font-semibold bg-foreground dark:bg-foreground/60 text-background h-9 md:h-12 mb-1'>
               Confirm Shipping & Billing Info
             </ModalHeader>
@@ -95,7 +87,6 @@ export function CheckoutModal({
             <ModalFooter className='w-full px-1.5 md:px-4 h-16 md:h-20 flex items-center bg-alum/40 border-t border-dark-table/40 dark:bg-foreground/60'>
               <Button
                 size='lg'
-                radius='none'
                 variant='tertiary'
                 onPress={onClose}
                 className='w-full rounded-xs text-dark-table dark:hover:bg-white/5'
@@ -104,29 +95,17 @@ export function CheckoutModal({
               </Button>
               <Button
                 size='lg'
-                radius='none'
-                color='primary'
                 variant='primary'
                 className='w-full rounded-xs bg-black font-polysans font-normal dark:text-white disabled:opacity-50'
                 fullWidth
                 onPress={onPlaceOrder}
-                endContent={
-                  <Icon
-                    name={
-                      isLoading || isPending
-                        ? 'spinners-ring'
-                        : 'hand-card-fill'
-                    }
-                    className='size-6 md:size-8'
-                  />
-                }
                 isDisabled={!!orderId}>
                 {orderId ? 'Order Placed!' : 'Pay'}
               </Button>
             </ModalFooter>
-          </>
-        )}
-      </ModalContent>
+          </ModalDialog>
+        </ModalContainer>
+      </ModalBackdrop>
     </Modal>
   )
 }

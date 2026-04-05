@@ -13,7 +13,7 @@ import {Icon} from '@/lib/icons'
 import type {GatewayId} from '@/lib/paygate/gateway-config'
 import type {ApiResponse} from '@/lib/paygate/types'
 import {cn} from '@/lib/utils'
-import {Button, Card, CardContent, CardHeader} from '@/lib/heroui'
+import {Button, Card} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
@@ -269,11 +269,8 @@ export const GatewayAccountForm = ({
     accounts?.filter((account) => account.enabled).length ?? 0
 
   return (
-    <Card
-      shadow='none'
-      radius='none'
-      className='md:rounded-lg dark:bg-dark-table/40 w-full sm:py-4'>
-      <CardHeader className='border-b border-sidebar pt-0'>
+    <Card className='md:rounded-lg dark:bg-dark-table/40 w-full sm:py-4'>
+      <Card.Header className='border-b border-sidebar pt-0'>
         <SectionHeader
           title={<Link href={`/admin/payments/${gateway}`}>{gateway}</Link>}>
           <span className='font-okxs font-medium'>
@@ -281,8 +278,8 @@ export const GatewayAccountForm = ({
             <span className='opacity-70 font-normal'>accounts</span>
           </span>
         </SectionHeader>
-      </CardHeader>
-      <CardContent className='px-3 sm:px-4 md:px-6 h-[calc(100svh-120px)] sm:h-[calc(100lvh-100px)] overflow-y-auto overflow-x-hidden'>
+      </Card.Header>
+      <Card.Content className='px-3 sm:px-4 md:px-6 h-[calc(100svh-120px)] sm:h-[calc(100lvh-100px)] overflow-y-auto overflow-x-hidden'>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8'>
           <div>
             <div className='mb-3 sm:mb-4 space-y-3 sm:space-y-5'>
@@ -467,21 +464,9 @@ export const GatewayAccountForm = ({
                   )}
                   <Button
                     type='submit'
-                    color='primary'
                     className='w-full sm:w-auto sm:min-w-32 font-polysans font-light disabled:cursor-not-allowed disabled:bg-sidebar/40 disabled:opacity-80 disabled:text-foreground/40 touch-manipulation'
                     size='lg'
-                    endContent={
-                      <Icon
-                        name={
-                          addressValidation.isValidating || isSubmitting
-                            ? 'spinners-ring'
-                            : addressValidation.isValid
-                              ? 'chevron-right'
-                              : 'x'
-                        }
-                      />
-                    }
-                    disabled={
+                    isDisabled={
                       useStore(form.store, (state) => state.isSubmitting) ||
                       !canSubmit ||
                       !addressValidation.isValid ||
@@ -490,6 +475,15 @@ export const GatewayAccountForm = ({
                     {isEditMode
                       ? 'Update Account'
                       : `Create ${gatewayLabel(gateway)} Account`}
+                    <Icon
+                      name={
+                        addressValidation.isValidating || isSubmitting
+                          ? 'spinners-ring'
+                          : addressValidation.isValid
+                            ? 'chevron-right'
+                            : 'x'
+                      }
+                    />
                   </Button>
                 </div>
               </div>
@@ -498,7 +492,7 @@ export const GatewayAccountForm = ({
 
           <CreateWalletResponse response={isEditMode ? null : walletResponse} />
         </div>
-      </CardContent>
+      </Card.Content>
     </Card>
   )
 }

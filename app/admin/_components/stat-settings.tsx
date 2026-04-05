@@ -2,7 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
-import {Card, Switch} from '@/lib/heroui'
+import {Card, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useEffect, useRef} from 'react'
@@ -38,32 +38,15 @@ const MiniStatCard = ({config, onToggle}: MiniStatCardProps) => {
 
   return (
     <Card
-      shadow='sm'
-      isPressable
-      disableRipple
-      onPress={() => onToggle(config.id, !config.visible)}
-      className={`relative p-4 min-w-0 transition-all cursor-pointer hover:bg-sidebar/60 ${
+      className={`relative min-w-0 p-0 shadow-sm transition-all ${
         config.visible
           ? 'opacity-100 border-2 border-neutral-700'
           : 'opacity-50 border-2 border-transparent'
       }`}>
-      {/* Toggle overlay */}
-      <div
-        className='absolute top-4 right-3 z-10'
-        onClick={(e) => e.stopPropagation()}>
-        <Switch
-          size='md'
-          isSelected={config.visible}
-          onValueChange={(value) => onToggle(config.id, value)}
-          classNames={{
-            base: 'bg-transparent',
-            wrapper: 'bg-light-gray',
-          }}
-        />
-      </div>
-
-      {/* Mini stat card content */}
-      <div className='pr-12'>
+      <button
+        type='button'
+        onClick={() => onToggle(config.id, !config.visible)}
+        className='w-full cursor-pointer p-4 pr-12 text-left transition-all hover:bg-sidebar/60'>
         <div className='flex items-center space-x-2'>
           <div
             className='w-1 h-6 rounded-full'
@@ -71,6 +54,18 @@ const MiniStatCard = ({config, onToggle}: MiniStatCardProps) => {
           />
           <p className='text-lg font-polysans font-light'>{config.label}</p>
         </div>
+      </button>
+
+      <div className='absolute top-4 right-3 z-10'>
+        <Switch
+          aria-label={`Toggle ${config.label}`}
+          size='md'
+          isSelected={config.visible}
+          onChange={(value) => onToggle(config.id, value)}>
+          <Switch.Control className='bg-light-gray'>
+            <Switch.Thumb />
+          </Switch.Control>
+        </Switch>
       </div>
     </Card>
   )
@@ -129,10 +124,7 @@ export const StatSettings = () => {
   const sortedConfigs = [...configs].sort((a, b) => a.order - b.order)
 
   return (
-    <Card
-      radius='none'
-      shadow='none'
-      className='p-4 sm:p-6 border-0 border-sidebar'>
+    <Card className='rounded-none border-0 border-sidebar p-4 shadow-none sm:p-6'>
       <div className='space-y-4'>
         <SectionHeader
           title='Dashboard Stats'

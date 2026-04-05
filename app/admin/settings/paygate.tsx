@@ -1,7 +1,8 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
-import {Button, Card, CardContent, Separator, Input, Switch} from '@/lib/heroui'
+import {Input} from '@heroui/input'
+import {Button, Card, Separator, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useEffect, useRef, useState} from 'react'
 
@@ -19,7 +20,9 @@ export function PayGateSettings() {
   )
   const [validationError, setValidationError] = useState<string | null>(null)
 
-  const saveStatusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const saveStatusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
 
   // Load settings when available
   useEffect(() => {
@@ -59,13 +62,21 @@ export function PayGateSettings() {
         },
       })
       setSaveStatus('success')
-      if (saveStatusTimeoutRef.current) clearTimeout(saveStatusTimeoutRef.current)
-      saveStatusTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 3000)
+      if (saveStatusTimeoutRef.current)
+        clearTimeout(saveStatusTimeoutRef.current)
+      saveStatusTimeoutRef.current = setTimeout(
+        () => setSaveStatus('idle'),
+        3000,
+      )
     } catch (error) {
       console.error('Failed to save PayGate settings:', error)
       setSaveStatus('error')
-      if (saveStatusTimeoutRef.current) clearTimeout(saveStatusTimeoutRef.current)
-      saveStatusTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 3000)
+      if (saveStatusTimeoutRef.current)
+        clearTimeout(saveStatusTimeoutRef.current)
+      saveStatusTimeoutRef.current = setTimeout(
+        () => setSaveStatus('idle'),
+        3000,
+      )
     } finally {
       setIsSaving(false)
     }
@@ -92,11 +103,8 @@ export function PayGateSettings() {
   }, [])
 
   return (
-    <Card
-      shadow='none'
-      radius='none'
-      className='md:rounded-lg md:w-full w-screen overflow-auto md:p-6 space-y-6'>
-      <CardContent className='p-6 space-y-6'>
+    <Card className='md:rounded-lg md:w-full w-screen overflow-auto md:p-6 space-y-6'>
+      <Card.Content className='p-6 space-y-6'>
         <div>
           <h2 className='text-xl font-semibold mb-2'>
             PayGate Payment Gateway
@@ -111,8 +119,13 @@ export function PayGateSettings() {
         <Separator />
 
         <div className='space-y-4'>
-          <Switch isSelected={enabled} onValueChange={setEnabled} size='sm'>
-            Enable PayGate Integration
+          <Switch isSelected={enabled} onChange={setEnabled} size='sm'>
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
+            <Switch.Content>
+              <span>Enable PayGate Integration</span>
+            </Switch.Content>
           </Switch>
 
           <Input
@@ -179,8 +192,7 @@ export function PayGateSettings() {
           )}
           <Button
             onPress={handleSave}
-            color='primary'
-            isLoading={isSaving}
+            isPending={isSaving}
             isDisabled={
               (enabled && (!usdcWallet || usdcWallet.trim() === '')) ||
               (!enabled && !usdcWallet)
@@ -188,7 +200,7 @@ export function PayGateSettings() {
             Save Settings
           </Button>
         </div>
-      </CardContent>
+      </Card.Content>
     </Card>
   )
 }

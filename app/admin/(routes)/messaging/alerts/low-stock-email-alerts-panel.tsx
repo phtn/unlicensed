@@ -12,15 +12,14 @@ import {
   normalizeLowStockAlertsConfig,
   serializeLowStockAlertsConfig,
 } from '@/lib/low-stock-alerts'
+import {Input, Textarea as TextArea} from '@heroui/input'
 import {
   Button,
   Card,
   CardContent,
   CardHeader,
-  Input,
   Switch,
-  TextArea,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {
@@ -255,13 +254,12 @@ const LowStockEmailAlertsEditor = ({
 
   return (
     <Card
-      shadow='none'
-      className='h-full rounded-lg border border-sidebar bg-default-100/60 dark:border-default-100/70'>
+            className='h-full rounded-lg border border-sidebar bg-default-100/60 dark:border-default-100/70'>
       <CardHeader className='flex flex-col items-start gap-4 p-4 lg:flex-row lg:items-center lg:justify-between'>
         <div className='space-y-1'>
           <div className='flex items-center gap-3'>
             <h3 className='text-base font-semibold'>Low Stock Email Alerts</h3>
-            <Switch isSelected={enabled} onValueChange={setEnabled} size='sm'>
+            <Switch isSelected={enabled} onChange={(isSelected) => setEnabled(isSelected)}>
               Enabled
             </Switch>
           </div>
@@ -272,11 +270,9 @@ const LowStockEmailAlertsEditor = ({
         </div>
 
         <Button
-          color='primary'
           variant='primary'
           onPress={handleSave}
-          isLoading={isSaving}
-          isDisabled={!userUid || isSaving || !isDirty}
+          isDisabled={isSaving || !userUid || !isDirty}
           className='rounded-md bg-dark-table text-white dark:bg-white dark:text-dark-table'>
           Save Alert Settings
         </Button>

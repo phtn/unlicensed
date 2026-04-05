@@ -3,8 +3,11 @@
 import {
   commonInputClassNames,
   commonSelectClassNames,
+  getSingleSelectedKey,
 } from '@/app/admin/_components/ui/fields'
-import {Input, Select, ListBoxItem} from '@/lib/heroui'
+import {Input} from '@heroui/input'
+import {ListboxItem as ListBoxItem} from '@heroui/listbox'
+import {Select} from '@heroui/select'
 import {ProductFormApi} from '../product-schema'
 import {FormSection, Header} from './components'
 
@@ -43,7 +46,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   label='Packaging Mode'
                   selectedKeys={value ? [value] : []}
                   onSelectionChange={(keys) => {
-                    const key = Array.from(keys)[0]
+                    const key = getSingleSelectedKey(keys)
                     field.handleChange(
                       typeof key === 'string'
                         ? (key as 'bulk' | 'prepack')
@@ -52,7 +55,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   }}
                   onBlur={field.handleBlur}
                   placeholder='Select packaging mode'
-                  variant='secondary'
+                  variant='faded'
                   disallowEmptySelection={false}
                   classNames={{
                     ...commonInputClassNames,
@@ -85,12 +88,12 @@ export const Packaging = ({form}: PackagingProps) => {
                   label='Stock Unit'
                   selectedKeys={unitValue ? [unitValue] : []}
                   onSelectionChange={(keys) => {
-                    const key = Array.from(keys)[0]
+                    const key = getSingleSelectedKey(keys)
                     field.handleChange(key != null ? String(key) : '')
                   }}
                   onBlur={field.handleBlur}
                   placeholder='Select stock unit'
-                  variant='secondary'
+                  variant='faded'
                   disallowEmptySelection={false}
                   classNames={{
                     ...commonInputClassNames,
@@ -126,7 +129,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='10'
-                  variant='secondary'
+                  variant='faded'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
@@ -152,7 +155,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='e.g., 160'
-                  variant='secondary'
+                  variant='faded'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
@@ -179,7 +182,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='e.g., 142.5'
-                  variant='secondary'
+                  variant='faded'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
@@ -206,7 +209,7 @@ export const Packaging = ({form}: PackagingProps) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='e.g., 3.5'
-                  variant='secondary'
+                  variant='faded'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
@@ -229,12 +232,12 @@ export const Packaging = ({form}: PackagingProps) => {
                   label='Net Weight Unit'
                   selectedKeys={unitValue ? [unitValue] : []}
                   onSelectionChange={(keys) => {
-                    const key = Array.from(keys)[0]
+                    const key = getSingleSelectedKey(keys)
                     field.handleChange(key != null ? String(key) : '')
                   }}
                   onBlur={field.handleBlur}
                   placeholder='Select unit'
-                  variant='secondary'
+                  variant='faded'
                   disallowEmptySelection={false}
                   classNames={{
                     ...commonInputClassNames,

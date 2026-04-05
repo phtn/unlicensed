@@ -3,9 +3,11 @@
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {Icon} from '@/lib/icons'
 import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
-import {Button, Input} from '@/lib/heroui'
+import {Input} from '@heroui/input'
+import {Button} from '@heroui/react'
 import {AnimatePresence, motion} from 'motion/react'
 import Link from 'next/link'
+import {useRouter} from 'next/navigation'
 import {parseAsString, useQueryState} from 'nuqs'
 import {type KeyboardEvent, useCallback, useEffect, useState} from 'react'
 import {toast} from 'react-hot-toast'
@@ -19,6 +21,7 @@ export type EmailTemplateDisplayProps = {
 export const EmailTemplateDisplay = ({
   previewRefreshKey,
 }: EmailTemplateDisplayProps = {}) => {
+  const router = useRouter()
   const [previewId, setPreviewId] = useQueryState(
     'preview',
     parseAsString.withDefault(''),
@@ -198,12 +201,13 @@ export const EmailTemplateDisplay = ({
               className='space-y-4'>
               <div className='flex items-center justify-between w-full'>
                 <Button
-                  as={Link}
-                  href='/admin/messaging/email?tabId=templates'
                   variant='tertiary'
                   size='sm'
                   className='gap-2'
-                  onPress={clearPreview}>
+                  onPress={() => {
+                    clearPreview()
+                    router.push('/admin/messaging/email?tabId=templates')
+                  }}>
                   <Icon name='chevron-left' className='size-4' />
                   Back to Templates
                 </Button>

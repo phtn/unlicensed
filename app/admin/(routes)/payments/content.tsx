@@ -3,7 +3,7 @@
 import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
-import {Button, CheckboxGroup} from '@/lib/heroui'
+import {Button, CheckboxGroup} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {Activity, useCallback} from 'react'
 import {PayCard} from './card-item'
@@ -51,12 +51,8 @@ export const Content = () => {
       <div className='space-y-6 w-full'>
         <CheckboxGroup
           value={selectedGateways}
-          onValueChange={handleDefaultChange}
-          orientation='horizontal'
-          classNames={{
-            wrapper:
-              'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-4 md:px-0',
-          }}>
+          onChange={handleDefaultChange}
+          className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-4 md:px-0'>
           {gateways?.map((gateway) => (
             <PayCard
               key={gateway._id}

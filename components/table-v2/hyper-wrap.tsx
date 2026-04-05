@@ -1,6 +1,6 @@
 import {type ClassName} from '@/app/types'
 import {cn} from '@/lib/utils'
-import {Card} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import {type HTMLAttributes, ReactNode} from 'react'
 
 interface HyperCardProps extends HTMLAttributes<HTMLDivElement> {
@@ -12,8 +12,6 @@ interface HyperCardProps extends HTMLAttributes<HTMLDivElement> {
 export const HyperWrap = ({children, className}: HyperCardProps) => {
   return (
     <Card
-      shadow='none'
-      radius='none'
       className={cn(
         'relative p-0 md:rounded-sm inset-0 _h-[calc(100lvh-100px)]',
         'group bg-background dark:bg-sidebar/50',

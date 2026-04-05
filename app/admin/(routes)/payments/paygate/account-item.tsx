@@ -1,19 +1,20 @@
 import {GatewayWallet} from '@/convex/gateways/d'
 import {useCopy} from '@/hooks/use-copy'
-import {useDisclosure} from '@/hooks/use-disclosure'
+import {useOverlayState} from '@heroui/react'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDate} from '@/utils/date'
 import {
   Accordion,
-  AccordionItem,
   Button,
   Modal,
   ModalBody,
-  ModalContent,
+  ModalBackdrop,
+  ModalContainer,
+  ModalDialog,
   ModalFooter,
   ModalHeader,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {ReactNode, useEffect, useMemo, useRef, useState} from 'react'
 
 export interface ItemDetailProps {
@@ -83,7 +84,8 @@ export function AccountItemCard({
     }
   }, [])
 
-  const {isOpen, onOpen, onClose} = useDisclosure()
+  const modalState = useOverlayState()
+  const {isOpen, open: onOpen, close: onClose} = modalState
 
   const handleCopyHex = () => copy('address', hexAddress)
   const handleDeleteClick = () => onOpen()
@@ -134,11 +136,12 @@ export function AccountItemCard({
       <div>
         <Accordion className='rounded-lg'>
           {details.map(({id, label, value}) => (
-            <AccordionItem
+            <Accordion.Item
               key={id}
-              aria-label={id}
-              title={
-                <div className='flex items-center space-x-4'>
+              id={id}
+              className='bg-sidebar/0 dark:bg-sidebar px-2 whitespace-normal font-okxs text-xs'>
+              <Accordion.Heading>
+                <Accordion.Trigger className='flex items-center space-x-4'>
                   <span>{label}</span>
                   {copiedDetailId === id && (
                     <div className='flex items-center'>
@@ -146,15 +149,16 @@ export function AccountItemCard({
                       <Icon name='check' className='size-3' />
                     </div>
                   )}
-                </div>
-              }
-              className='bg-sidebar/0 dark:bg-sidebar px-2 whitespace-normal font-okxs text-xs'>
-              <div
-                onClick={handleCopyDetail(id as keyof WalletDetail)}
-                className='cursor-poiter font-mono text-sm'>
-                {value}
-              </div>
-            </AccordionItem>
+                </Accordion.Trigger>
+              </Accordion.Heading>
+              <Accordion.Panel>
+                <Accordion.Body
+                  onClick={handleCopyDetail(id as keyof WalletDetail)}
+                  className='cursor-poiter font-mono text-sm'>
+                  {value}
+                </Accordion.Body>
+              </Accordion.Panel>
+            </Accordion.Item>
           ))}
         </Accordion>
       </div>
@@ -176,33 +180,34 @@ export function AccountItemCard({
         />
       </div>
 
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        size='md'
-        placement='center'
-        radius='lg'>
-        <ModalContent>
-          <ModalHeader className='font-okxs font-semibold'>
-            Delete account?
-          </ModalHeader>
-          <ModalBody>
-            <p className='text-muted-foreground text-sm'>
-              Are you sure you want to delete{' '}
-              <span className='font-semibold'>{label ?? 'this account'} ?</span>
-              <span className='font-mono text-brand'>{hexAddress}</span> <br />
-              <span className='font-brk'>(!)</span> This cannot be undone.
-            </p>
-          </ModalBody>
-          <ModalFooter className='gap-2'>
-            <Button variant='tertiary' onPress={onClose}>
-              Cancel
-            </Button>
-            <Button color='danger' onPress={handleConfirmDelete}>
-              Delete
-            </Button>
-          </ModalFooter>
-        </ModalContent>
+      <Modal state={modalState}>
+        <ModalBackdrop>
+          <ModalContainer size='md' placement='center'>
+            <ModalDialog className='rounded-lg'>
+              <ModalHeader className='font-okxs font-semibold'>
+                Delete account?
+              </ModalHeader>
+              <ModalBody>
+                <p className='text-muted-foreground text-sm'>
+                  Are you sure you want to delete{' '}
+                  <span className='font-semibold'>
+                    {label ?? 'this account'} ?
+                  </span>
+                  <span className='font-mono text-brand'>{hexAddress}</span> <br />
+                  <span className='font-brk'>(!)</span> This cannot be undone.
+                </p>
+              </ModalBody>
+              <ModalFooter className='gap-2'>
+                <Button variant='tertiary' onPress={onClose}>
+                  Cancel
+                </Button>
+                <Button variant='danger' onPress={handleConfirmDelete}>
+                  Delete
+                </Button>
+              </ModalFooter>
+            </ModalDialog>
+          </ModalContainer>
+        </ModalBackdrop>
       </Modal>
     </div>
   )

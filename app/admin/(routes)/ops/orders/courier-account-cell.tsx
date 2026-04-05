@@ -3,9 +3,9 @@
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {cn} from '@/lib/utils'
-import {Popover, PopoverContent, PopoverTrigger} from '@/lib/heroui'
+import {PopoverContent} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {useState} from 'react'
+import {useRef, useState} from 'react'
 
 type Order = Doc<'orders'>
 
@@ -46,31 +46,34 @@ export const CourierAccountCell = ({order}: CourierAccountCellProps) => {
     }
   }
 
+  const triggerRef = useRef<HTMLButtonElement>(null)
+
   const displayText = !hasCourier
     ? 'Select Courier'
     : (selectedAccount?.label ?? 'Select Courier')
 
   return (
-    <Popover
-      isOpen={isOpen}
-      onOpenChange={setIsOpen}
-      placement='bottom-start'
-      showArrow>
-      <PopoverTrigger>
-        <button
-          type='button'
-          className={cn(
-            'flex items-center justify-center px-2 py-1 rounded text-sm transition-colors',
-            'hover:underline',
-            !hasCourier && 'text-muted-foreground',
-            hasCourier && 'text-cyan-600',
-            (isSaving || isLoading) && 'opacity-50 cursor-not-allowed',
-          )}
-          disabled={isSaving || isLoading || !hasCourier}>
-          {isLoading ? '...' : displayText}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className='w-56 p-2'>
+    <>
+      <button
+        ref={triggerRef}
+        type='button'
+        className={cn(
+          'flex items-center justify-center px-2 py-1 rounded text-sm transition-colors',
+          'hover:underline',
+          !hasCourier && 'text-muted-foreground',
+          hasCourier && 'text-cyan-600',
+          (isSaving || isLoading) && 'opacity-50 cursor-not-allowed',
+        )}
+        onClick={() => setIsOpen((v) => !v)}
+        disabled={isSaving || isLoading || !hasCourier}>
+        {isLoading ? '...' : displayText}
+      </button>
+      <PopoverContent
+        triggerRef={triggerRef}
+        isOpen={isOpen}
+        onOpenChange={setIsOpen}
+        placement='bottom start'
+        className='w-56 p-2'>
         <div className='flex flex-col gap-1'>
           {!hasCourier && (
             <div className='px-3 py-2 text-sm text-muted-foreground'>
@@ -121,6 +124,6 @@ export const CourierAccountCell = ({order}: CourierAccountCellProps) => {
           )}
         </div>
       </PopoverContent>
-    </Popover>
+    </>
   )
 }

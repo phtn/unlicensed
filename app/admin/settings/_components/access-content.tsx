@@ -5,7 +5,8 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Input, Switch} from '@/lib/heroui'
+import {Input} from '@heroui/input'
+import {Button, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useRef, useState, ViewTransition} from 'react'
 import {commonInputClassNames} from '../../_components/ui/fields'
@@ -135,8 +136,13 @@ export const AccessContent = () => {
       </ContentHeader>
 
       <div className='max-w-lg rounded-2xl bg-default-100/50 px-4 py-3 dark:bg-default-100/30'>
-        <Switch isSelected={isEnabled} onValueChange={setIsEnabled} size='sm'>
-          Require access code
+        <Switch isSelected={isEnabled} onChange={setIsEnabled} size='sm'>
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+          <Switch.Content>
+            <span>Require access code</span>
+          </Switch.Content>
         </Switch>
       </div>
 
@@ -157,7 +163,7 @@ export const AccessContent = () => {
                 minLength={6}
                 value={pass}
                 onValueChange={(s) => handlePassChange(index, s)}
-                spellCheck={'false'}
+                spellCheck='false'
                 autoComplete='false'
                 autoCorrect='false'
                 className='min-w-0 flex-1'
@@ -166,8 +172,7 @@ export const AccessContent = () => {
               <Button
                 isIconOnly
                 size='sm'
-                variant='tertiary'
-                color='danger'
+                variant='danger'
                 onPress={() => handleDelete(index)}
                 className='mx-2'
                 aria-label={`Delete pass ${index + 1}`}>
@@ -179,11 +184,8 @@ export const AccessContent = () => {
       </ul>
 
       <div className='flex flex-wrap items-center gap-3'>
-        <Button
-          size='sm'
-          variant='secondary'
-          onPress={handleAdd}
-          startContent={<Icon name='plus' className='size-4' />}>
+        <Button size='sm' variant='secondary' onPress={handleAdd}>
+          <Icon name='plus' className='size-4' />
           Add Passcode
         </Button>
         {saveStatus === 'success' && (

@@ -1,5 +1,5 @@
 import {Icon} from '@/lib/icons'
-import {Card, CardContent} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 
 interface RewardPointsBalance {
   availablePoints: number
@@ -12,11 +12,8 @@ interface RewardPointsProps {
 }
 export const RewardPoints = ({pointsBalance}: RewardPointsProps) => {
   return (
-    <Card
-      shadow='none'
-      radius='none'
-      className='border border-foreground/20 bg-linear-to-br from-teal-500/10 via-orange-100/10 to-orange-200/10 backdrop-blur-sm dark:bg-dark-table/20'>
-      <CardContent className='p-6 space-y-6'>
+    <Card className='rounded-none border border-foreground/20 bg-linear-to-br from-teal-500/10 via-orange-100/10 to-orange-200/10 backdrop-blur-sm shadow-none dark:bg-dark-table/20'>
+      <Card.Content className='space-y-6 p-6'>
         <div className='flex items-center justify-between'>
           <h3 className='font-semibold font-polysans text-2xl tracking-tight'>
             Rewards
@@ -31,7 +28,7 @@ export const RewardPoints = ({pointsBalance}: RewardPointsProps) => {
             points={pointsBalance.availablePoints.toLocaleString()}
           />
         </div>
-      </CardContent>
+      </Card.Content>
     </Card>
   )
 }

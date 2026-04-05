@@ -7,7 +7,7 @@ import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDecimalUSD} from '@/utils/currency'
-import {Card, CardContent} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {ViewTransition, memo, useState} from 'react'
 import {
@@ -179,11 +179,8 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
     'bg-purple-500/10 dark:bg-purple-400/10'
 
   return (
-    <Card
-      shadow='none'
-      radius='none'
-      className='overflow-hidden border border-foreground/20 bg-linear-to-br from-sidebar to-slate-400/6 dark:from-foreground/5 dark:to-foreground/10 transition-all duration-200 will-change-transform'>
-      <CardContent className='relative space-y-4 p-3 md:p-5 overflow-hidden'>
+    <Card className='overflow-hidden border border-foreground/20 bg-linear-to-br from-sidebar to-slate-400/6 dark:from-foreground/5 dark:to-foreground/10 transition-all duration-200 will-change-transform rounded-none'>
+      <Card.Content className='relative space-y-4 p-3 md:p-5 overflow-hidden'>
         {/* Decorative glow */}
         <div
           id='tier-aura'
@@ -338,7 +335,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
             onAdd={onAddTopUp}
           />
         )}
-      </CardContent>
+      </Card.Content>
     </Card>
   )
 })

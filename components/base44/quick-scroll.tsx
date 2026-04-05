@@ -1,9 +1,9 @@
 'use client'
 
 import {ClassName} from '@/app/types'
+import {Button} from '@/components/ui/button'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@/lib/heroui'
 
 interface QuickScrollProps {
   href?: string
@@ -11,6 +11,10 @@ interface QuickScrollProps {
 }
 
 export const QuickScroll = ({href, className}: QuickScrollProps) => {
+  const icon = (
+    <Icon name='arrow-down' className='hidden lg:flex size-5 text-black' />
+  )
+
   return (
     <div
       className={cn(
@@ -18,16 +22,26 @@ export const QuickScroll = ({href, className}: QuickScrollProps) => {
         className,
       )}>
       <div className='max-w-7xl w-full flex justify-end mx-auto'>
-        <Button
-          isIconOnly
-          href={href}
-          as={href ? 'a' : 'button'}
-          className='rounded-full size-7 flex items-center justify-center bg-transparent hover:bg-transparent hover:text-teal-600 transition-colors'>
-          <Icon
-            name='arrow-down'
-            className='hidden lg:flex size-5 text-black'
-          />
-        </Button>
+        {href ? (
+          <Button
+            asChild
+            size='icon-xs'
+            variant='ghost'
+            className='size-7 rounded-full bg-transparent hover:bg-transparent hover:text-teal-600'>
+            <a aria-label='Scroll' href={href}>
+              {icon}
+            </a>
+          </Button>
+        ) : (
+          <Button
+            type='button'
+            size='icon-xs'
+            variant='ghost'
+            aria-label='Scroll'
+            className='size-7 rounded-full bg-transparent hover:bg-transparent hover:text-teal-600'>
+            {icon}
+          </Button>
+        )}
       </div>
     </div>
   )

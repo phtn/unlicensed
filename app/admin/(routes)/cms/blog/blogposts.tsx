@@ -8,16 +8,10 @@ import {
   Button,
   Card,
   Chip,
-  ChipProps,
   Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import Link from 'next/link'
-import React, {ReactNode, useMemo} from 'react'
+import type {ChipProps} from '@heroui/react'
 
 interface BlogpostsProps {
   blogs: Array<Doc<'blogs'>>
@@ -31,7 +25,9 @@ const columns = [
   {name: 'STATUS', uid: 'status'},
   {name: 'PUBLISHED', uid: 'published'},
   {name: 'ACTIONS', uid: 'actions'},
-]
+] as const
+
+type ColumnKey = (typeof columns)[number]['uid']
 
 const getStatusChipColor = (
   status: Doc<'blogs'>['status'],
@@ -52,7 +48,7 @@ export const Blogposts = ({blogs, deleteFn, isDeleting}: BlogpostsProps) => {
     await deleteFn(id)
   }
 
-  const renderCell = (blog: Doc<'blogs'>, columnKey: React.Key) => {
+  const renderCell = (blog: Doc<'blogs'>, columnKey: ColumnKey) => {
     switch (columnKey) {
       case 'title':
         return (
@@ -90,7 +86,7 @@ export const Blogposts = ({blogs, deleteFn, isDeleting}: BlogpostsProps) => {
               variant='ghost'
               size='sm'
               className='text-red-500 hover:text-red-600 hover:bg-red-100/10'
-              disabled={isDeleting === blog._id}
+              isDisabled={isDeleting === blog._id}
               onPress={handleDelete(blog._id)}>
               <Icon name='x' className='w-4 h-4' />
             </Button>
@@ -101,26 +97,9 @@ export const Blogposts = ({blogs, deleteFn, isDeleting}: BlogpostsProps) => {
     }
   }
 
-  const classNames = useMemo(
-    () => ({
-      td: [
-        'first:group-data-[first=true]/tr:before:rounded-none',
-        'last:group-data-[first=true]/tr:before:rounded-none',
-        'group-data-[middle=true]/tr:before:rounded-none',
-        'first:group-data-[last=true]/tr:before:rounded-none',
-        'last:group-data-[last=true]/tr:before:rounded-none',
-      ],
-      tbody: '',
-    }),
-    [],
-  )
-
   if (blogs.length === 0) {
     return (
-      <Card
-        shadow='none'
-        radius='none'
-        className='md:rounded-lg md:p-4 dark:bg-dark-table/40'>
+      <Card className='md:rounded-lg md:p-4 dark:bg-dark-table/40'>
         <div className='flex items-center justify-center py-8'>
           <p className='text-sm text-gray-400'>No blog posts found.</p>
         </div>
@@ -130,50 +109,43 @@ export const Blogposts = ({blogs, deleteFn, isDeleting}: BlogpostsProps) => {
 
   return (
     <Card
-      shadow='sm'
-      radius='none'
       className={cn(
         'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden rounded-t-2xl',
       )}>
-      <div className='overflow-scroll'>
-        <div className='flex items-end justify-between text-sm font-medium px-3 py-2'>
-          <span>Blog Posts</span>
-        </div>
-        <Table
-          removeWrapper
-          radius='none'
-          classNames={{
-            ...classNames,
-            tbody: 'overflow-hidden rounded-3xl',
-            thead: '',
-            th: 'sticky first:rounded-tl-[12.5px] last:rounded-tr-[12.5px] top-0 bg-white/60 dark:bg-dark-table/5 z-10 backdrop-blur-xl h-8 border-b border-gray-200 dark:border-dark-table',
-          }}
-          aria-label='Blog posts table'>
-          <TableHeader columns={columns}>
-            {(column) => (
-              <TableColumn
-                key={column.uid}
-                align='start'
-                className='tracking-wider text-xs font-medium'>
-                <div className='drop-shadow-xs'>{column.name}</div>
-              </TableColumn>
-            )}
-          </TableHeader>
-          <TableBody emptyContent={'No blog posts found'} items={blogs}>
-            {(blog) => (
-              <TableRow
-                key={blog._id}
-                className='h-8 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] border-b-light-table last:border-b-0 dark:border-b-dark-table'>
-                {(columnKey) => (
-                  <TableCell>
-                    {renderCell(blog, columnKey) as ReactNode}
-                  </TableCell>
-                )}
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+      <div className='flex items-end justify-between px-3 py-2 text-sm font-medium'>
+        <span>Blog Posts</span>
       </div>
+      <Table variant='secondary'>
+        <Table.ScrollContainer className='overflow-scroll'>
+          <Table.Content aria-label='Blog posts table' className='min-w-[42rem]'>
+            <Table.Header>
+              {columns.map((column) => (
+                <Table.Column
+                  key={column.uid}
+                  className='sticky top-0 h-8 border-b border-gray-200 bg-white/60 text-left text-xs font-medium tracking-wider first:rounded-tl-[12.5px] last:rounded-tr-[12.5px] backdrop-blur-xl dark:border-dark-table dark:bg-dark-table/5'>
+                  <div className='drop-shadow-xs'>{column.name}</div>
+                </Table.Column>
+              ))}
+            </Table.Header>
+            <Table.Body>
+              {blogs.map((blog) => (
+                <Table.Row
+                  key={blog._id}
+                  id={blog._id}
+                  className='h-8 border-b-[0.33px] border-b-light-table hover:bg-light-table/60 last:border-b-0 dark:border-b-dark-table dark:hover:bg-origin/40'>
+                  {columns.map((column) => (
+                    <Table.Cell
+                      key={column.uid}
+                      className='first:group-data-[first=true]/tr:before:rounded-none last:group-data-[first=true]/tr:before:rounded-none group-data-[middle=true]/tr:before:rounded-none first:group-data-[last=true]/tr:before:rounded-none last:group-data-[last=true]/tr:before:rounded-none'>
+                      {renderCell(blog, column.uid)}
+                    </Table.Cell>
+                  ))}
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Content>
+        </Table.ScrollContainer>
+      </Table>
     </Card>
   )
 }

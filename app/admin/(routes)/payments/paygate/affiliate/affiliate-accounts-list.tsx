@@ -6,7 +6,6 @@ import {Icon} from '@/lib/icons'
 import {
   Button,
   Card,
-  CardContent,
   Chip,
   Table,
   TableBody,
@@ -14,7 +13,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useState} from 'react'
 
@@ -50,32 +49,32 @@ export const AffiliateAccountsList = ({
 
   if (affiliates === undefined) {
     return (
-      <Card shadow='none' radius='none' className='md:rounded-lg w-full'>
-        <CardContent className='flex items-center justify-center py-12'>
+      <Card className='md:rounded-lg w-full'>
+        <Card.Content className='flex items-center justify-center py-12'>
           <Icon name='spinners-ring' className='size-8 animate-spin' />
-        </CardContent>
+        </Card.Content>
       </Card>
     )
   }
 
   if (affiliates.length === 0) {
     return (
-      <Card shadow='none' radius='none' className='md:rounded-lg w-full'>
-        <CardContent className='text-center py-12'>
+      <Card className='md:rounded-lg w-full'>
+        <Card.Content className='text-center py-12'>
           <p className='text-foreground/60'>
             No affiliate accounts configured yet.
           </p>
           <p className='text-sm text-foreground/40 mt-2'>
             Create your first affiliate account to get started.
           </p>
-        </CardContent>
+        </Card.Content>
       </Card>
     )
   }
 
   return (
-    <Card shadow='none' radius='none' className='md:rounded-lg w-full'>
-      <CardContent className='space-y-4'>
+    <Card className='md:rounded-lg w-full'>
+      <Card.Content className='space-y-4'>
         <div>
           <h3 className='text-lg font-semibold'>Affiliate Accounts</h3>
           <p className='text-sm text-foreground/60'>
@@ -83,7 +82,7 @@ export const AffiliateAccountsList = ({
           </p>
         </div>
 
-        <Table aria-label='Affiliate accounts table' removeWrapper>
+        <Table aria-label='Affiliate accounts table'>
           <TableHeader>
             <TableColumn>LABEL</TableColumn>
             <TableColumn>WALLET ADDRESS</TableColumn>
@@ -148,10 +147,8 @@ export const AffiliateAccountsList = ({
                     )}
                     <Button
                       size='sm'
-                      variant='tertiary'
-                      color='danger'
-                      onPress={() => handleDelete(affiliate._id)}
-                      isLoading={deletingId === affiliate._id}>
+                      variant='danger'
+                      onPress={() => handleDelete(affiliate._id)}>
                       Delete
                     </Button>
                   </div>
@@ -160,7 +157,7 @@ export const AffiliateAccountsList = ({
             ))}
           </TableBody>
         </Table>
-      </CardContent>
+      </Card.Content>
     </Card>
   )
 }

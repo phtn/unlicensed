@@ -9,15 +9,8 @@ import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {Doc} from '@/convex/_generated/dataModel'
 import {useDisclosure} from '@/hooks/use-disclosure'
 import {ensureSlug} from '@/lib/slug'
-import {
-  Button,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from '@/lib/heroui'
+import {Input} from '@heroui/input'
+import {Button, Modal} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useEffect, useMemo, useState} from 'react'
 import {
@@ -203,12 +196,10 @@ export const BasicInfo = ({
         <Header label='Basic Information'>
           <Button
             size='sm'
-            radius='none'
-            color='danger'
-            variant='secondary'
+            variant='danger-soft'
             onPress={onOpen}
             isDisabled={!onArchiveProduct}
-            isLoading={isArchiving}
+            isPending={isArchiving}
             className='rounded-sm flex-1 border-transparent bg-red-100'>
             Delete
           </Button>
@@ -233,7 +224,7 @@ export const BasicInfo = ({
                     }}
                     onBlur={input.handleBlur}
                     placeholder={nameField.placeholder}
-                    variant='secondary'
+                    variant='faded'
                     classNames={commonInputClassNames}
                   />
                   {input.state.meta.isTouched &&
@@ -261,7 +252,7 @@ export const BasicInfo = ({
                     onBlur={input.handleBlur}
                     placeholder={slugField.placeholder}
                     classNames={commonInputClassNames}
-                    variant='secondary'
+                    variant='faded'
                   />
                   {input.state.meta.isTouched &&
                     input.state.meta.errors.length > 0 && (
@@ -385,7 +376,7 @@ export const BasicInfo = ({
                     onChange={(e) => input.handleChange(e.target.value)}
                     onBlur={input.handleBlur}
                     placeholder={productTypeField.placeholder}
-                    variant='secondary'
+                    variant='faded'
                     classNames={commonInputClassNames}
                   />
                   {input.state.meta.isTouched &&
@@ -400,33 +391,39 @@ export const BasicInfo = ({
           )}
         </div>
       </div>
-      <Modal
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        placement='center'
-        backdrop='blur'>
-        <ModalContent>
-          <ModalHeader>Archive Product</ModalHeader>
-          <ModalBody>
-            <p className='text-sm text-foreground-600'>
-              This will archive the product and remove it from product lists.
-            </p>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant='tertiary' onPress={onClose} isDisabled={isArchiving}>
-              Cancel
-            </Button>
-            <Button
-              color='danger'
-              isLoading={isArchiving}
-              onPress={async () => {
-                await onArchiveProduct?.()
-                onClose()
-              }}>
-              Archive
-            </Button>
-          </ModalFooter>
-        </ModalContent>
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <Modal.Backdrop variant='blur'>
+          <Modal.Container placement='center'>
+            <Modal.Dialog>
+              <Modal.Header>Archive Product</Modal.Header>
+              <Modal.Body>
+                <p className='text-sm text-foreground-600'>
+                  This will archive the product and remove it from product
+                  lists.
+                </p>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant='tertiary'
+                  onPress={onClose}
+                  isDisabled={isArchiving}>
+                  Cancel
+                </Button>
+                <Button
+                  variant='danger'
+                  isPending={isArchiving}
+                  onPress={() => {
+                    void (async () => {
+                      await onArchiveProduct?.()
+                      onClose()
+                    })()
+                  }}>
+                  Archive
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </FormSection>
   )

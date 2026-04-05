@@ -4,7 +4,8 @@ import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon, IconName} from '@/lib/icons'
 import {formatTimestamp} from '@/utils/date'
 import {formatPrice} from '@/utils/formatPrice'
-import {Card, CardContent, Link} from '@/lib/heroui'
+import {Card} from '@heroui/react'
+import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {OrderStatusBadge} from './order-status'
 
@@ -21,66 +22,63 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
   const router = useRouter()
 
   return (
-    <Card
-      shadow='none'
-      radius='none'
-      onMouseEnter={() => router.prefetch(`/account/orders/${orderNumber}`)}
-      key={orderNumber}
-      as={Link}
+    <Link
       href={`/account/orders/${orderNumber}`}
-      className='w-full rounded-xs border dark:border-dark-table border-dark-table/40 dark:bg-dark-table bg-content/50 dark:hover:bg-dark-table/70'
-    >
-      <CardContent className='p-3 md:p-5'>
-        <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
-          <div className='flex items-start gap-8 flex-1 min-w-0'>
-            <div className='p-4 rounded-lg bg-linear-to-br from-default-100 to-default-500/10 hidden sm:flex shrink-0'>
-              <Icon name='box' className='size-5 opacity-50' />
-            </div>
-            <div className='space-y-2.5 portrait:w-full'>
-              <div className='flex items-center flex-wrap'>
-                <h3 className='font-mono font-medium text-base tracking-widest'>
-                  {orderNumber.substring(5)}
-                </h3>
+      className='block'
+      onMouseEnter={() => router.prefetch(`/account/orders/${orderNumber}`)}>
+      <Card className='w-full rounded-xs border dark:border-dark-table border-dark-table/40 dark:bg-dark-table bg-content/50 dark:hover:bg-dark-table/70'>
+        <Card.Content className='p-3 md:p-5'>
+          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+            <div className='flex items-start gap-8 flex-1 min-w-0'>
+              <div className='p-4 rounded-lg bg-linear-to-br from-default-100 to-default-500/10 hidden sm:flex shrink-0'>
+                <Icon name='box' className='size-5 opacity-50' />
               </div>
-              <div className='flex items-center gap-6 text-sm text-default-500 flex-wrap'>
-                <div className='flex items-center gap-2 whitespace-nowrap'>
-                  <span className='font-brk font-normal'>
-                    {formatTimestamp(createdAt)}
-                  </span>
-                  <span>•</span>
-                  <span className='font-space'>
-                    {items.length} item
-                    {items.length !== 1 ? 's' : ''}
-                  </span>
+              <div className='space-y-2.5 portrait:w-full'>
+                <div className='flex items-center flex-wrap'>
+                  <h3 className='font-mono font-medium text-base tracking-widest'>
+                    {orderNumber.substring(5)}
+                  </h3>
+                </div>
+                <div className='flex items-center gap-6 text-sm text-default-500 flex-wrap'>
+                  <div className='flex items-center gap-2 whitespace-nowrap'>
+                    <span className='font-brk font-normal'>
+                      {formatTimestamp(createdAt)}
+                    </span>
+                    <span>•</span>
+                    <span className='font-space'>
+                      {items.length} item
+                      {items.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className='space-y-3 md:px-4 portrait:flex-1 portrait:text-right'>
+                <OrderStatusBadge status={orderStatus} />
+                <div className='flex items-center justify-start portrait:justify-end gap-1.5 px-1 capitalize text-sm font-okxs font-medium'>
+                  <Icon
+                    name={paymentMethodIconMap[payment.method].icon}
+                    className={`size-3.5 ${paymentMethodIconMap[payment.method].style}`}
+                  />
+                  <p className='whitespace-nowrap'>{mmap[payment.method]}</p>
                 </div>
               </div>
             </div>
-            <div className='space-y-3 md:px-4 portrait:flex-1 portrait:text-right'>
-              <OrderStatusBadge status={orderStatus} />
-              <div className='flex items-center justify-start portrait:justify-end gap-1.5 px-1 capitalize text-sm font-okxs font-medium'>
-                <Icon
-                  name={paymentMethodIconMap[payment.method].icon}
-                  className={`size-3.5 ${paymentMethodIconMap[payment.method].style}`}
-                />
-                <p className='whitespace-nowrap'>{mmap[payment.method]}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className='flex items-center justify-between sm:justify-end gap-4 sm:gap-6 border-t border-dotted sm:border-none border-foreground/10 pt-4 sm:pt-0'>
-            <div className='text-left sm:text-right'>
-              <p className='text-xs text-default-500 font-brk uppercase tracking-widest mb-1'>
-                Total
-              </p>
-              <p className='text-xl font-okxs font-medium'>
-                ${formatPrice(payableTotalCents)}
-              </p>
+            <div className='flex items-center justify-between sm:justify-end gap-4 sm:gap-6 border-t border-dotted sm:border-none border-foreground/10 pt-4 sm:pt-0'>
+              <div className='text-left sm:text-right'>
+                <p className='text-xs text-default-500 font-brk uppercase tracking-widest mb-1'>
+                  Total
+                </p>
+                <p className='text-xl font-okxs font-medium'>
+                  ${formatPrice(payableTotalCents)}
+                </p>
+              </div>
+              <Icon name='chevron-right' className='size-4' />
             </div>
-            <Icon name='chevron-right' className='size-4' />
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </Card.Content>
+      </Card>
+    </Link>
   )
 }
 

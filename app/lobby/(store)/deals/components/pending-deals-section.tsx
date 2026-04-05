@@ -1,13 +1,11 @@
 'use client'
 
-import type {Id} from '@/convex/_generated/dataModel'
+import type {CartPageItem} from '@/app/lobby/(store)/cart/types'
 import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
 import type {PendingDeal} from '@/app/lobby/(store)/deals/lib/deal-types'
+import type {Id} from '@/convex/_generated/dataModel'
 import {usePendingDeals} from '@/ctx/pending-deals'
-import {Button} from '@/lib/heroui'
 import Link from 'next/link'
-import {useMemo} from 'react'
-import type {CartPageItem} from '@/app/lobby/(store)/cart/types'
 
 /** Cart "covers" a deal if for each deal item the cart has at least that quantity for that product+denomination. */
 function cartCoversDeal(cartItems: CartPageItem[], deal: PendingDeal): boolean {
@@ -31,21 +29,21 @@ interface PendingDealsSectionProps {
   cartItems?: CartPageItem[]
 }
 
-export function PendingDealsSection({cartItems = []}: PendingDealsSectionProps) {
+export function PendingDealsSection({
+  cartItems = [],
+}: PendingDealsSectionProps) {
   const {configs} = useDealConfigs()
   const pendingCtx = usePendingDeals()
-  const visibleDeals = useMemo(() => {
-    if (!pendingCtx) return []
-    const {pendingDeals} = pendingCtx
-    return pendingDeals.filter((deal) => {
-      if (deal.totalSelected >= deal.requiredTotal) return false
-      if (cartItems.length > 0 && cartCoversDeal(cartItems, deal)) return false
-      return true
-    })
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- pendingCtx?.pendingDeals is the reactive value
-  }, [pendingCtx?.pendingDeals, cartItems])
+  const visibleDeals = pendingCtx
+    ? pendingCtx.pendingDeals.filter((deal) => {
+        if (deal.totalSelected >= deal.requiredTotal) return false
+        if (cartItems.length > 0 && cartCoversDeal(cartItems, deal))
+          return false
+        return true
+      })
+    : []
 
-  if (!pendingCtx || visibleDeals.length === 0) return null
+  if (visibleDeals.length === 0) return null
 
   return (
     <div className='rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 w-full'>
@@ -67,18 +65,14 @@ export function PendingDealsSection({cartItems = []}: PendingDealsSectionProps) 
               key={deal.bundleType}
               className='flex items-center justify-between gap-2 text-sm min-w-0'>
               <span className='min-w-0 truncate'>
-                {config?.title ?? deal.bundleType} — {deal.totalSelected}/{deal.requiredTotal}{' '}
-                selected (${(totalCents / 100).toFixed(2)})
+                {config?.title ?? deal.bundleType} — {deal.totalSelected}/
+                {deal.requiredTotal} selected (${(totalCents / 100).toFixed(2)})
               </span>
-              <Button
-                className='shrink-0'
-                as={Link}
+              <Link
                 href='/lobby/deals'
-                size='sm'
-                variant='tertiary'
-                color='warning'>
+                className='shrink-0 text-warning hover:text-warning/80'>
                 Complete
-              </Button>
+              </Link>
             </li>
           )
         })}

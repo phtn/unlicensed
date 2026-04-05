@@ -7,9 +7,12 @@ import {useCart} from '@/hooks/use-cart'
 import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptCategory, adaptProduct} from '@/lib/convexClient'
-import {Button, Image} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {useMemo, useState} from 'react'
 import {SectionHeader} from '../ui/section-header'
+
+
+import {LegacyImage} from '@/components/ui/legacy-image'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -146,12 +149,18 @@ const CollectionItem = ({
   return (
     <div className='snap-start min-w-40 bg-surface-highlight/50 rounded-2xl overflow-hidden border border-foreground/5 flex flex-col group hover:border-foreground/10 transition-colors md:max-w-sm aspect-square shrink-0'>
       <div className='relative w-full bg-white/5 aspect-square'>
-        <Image
-          src={imageUrl}
-          alt={product.name}
-          isLoading={!imageUrl}
-          className='h-44 w-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity'
-        />
+        {imageUrl ? (
+          <LegacyImage
+            src={imageUrl}
+            alt={product.name}
+            loading='lazy'
+            className='h-44 w-auto object-cover opacity-90 transition-opacity group-hover:opacity-100'
+          />
+        ) : (
+          <div className='flex h-44 items-center justify-center'>
+            <span className='text-sm text-foreground/50'>No image</span>
+          </div>
+        )}
       </div>
       <div className='p-3 flex flex-col flex-1 gap-2'>
         <div className='flex items-center justify-between'>
@@ -166,9 +175,9 @@ const CollectionItem = ({
           size='sm'
           variant='tertiary'
           className='w-full h-8 min-h-0 text-xs font-semibold font-space bg-foreground/5 hover:bg-foreground/10'
-          isLoading={isAdding}
+          isDisabled={isAdding}
           onPress={handleAdd}>
-          Add
+          {isAdding ? 'Adding...' : 'Add'}
         </Button>
       </div>
     </div>

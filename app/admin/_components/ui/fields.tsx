@@ -1,30 +1,35 @@
-import {ClassName} from '@/app/types'
-import {
-  Chip,
-  Input,
-  InputProps,
-  Select,
-  SelectProps,
-  Switch,
-  TextArea,
-} from '@/lib/heroui'
-import React, {ChangeEvent, InputHTMLAttributes, ReactNode, Ref} from 'react'
+import type {ClassName} from '@/app/types'
+import {cn} from '@/lib/utils'
+import {Input, Textarea as TextArea} from '@heroui/input'
+import {Chip, Label} from '@heroui/react'
+import {Select} from '@heroui/select'
+import {Switch} from '@heroui/switch'
+import type {SharedSelection} from '@heroui/system'
+import React, {
+  type ChangeEvent,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type Ref,
+} from 'react'
 import {
   CategorySelectItem,
+  categoryColors,
   getCategoryChipProps,
   getCategoryColor,
 } from './category-select-item'
 import {useAppForm, useFieldContext} from './form-context'
 
-export const commonInputClassNames: InputProps['classNames'] = {
+export const commonInputClassNames = {
   label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-ios',
   input:
     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
   inputWrapper:
     'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 dark:data-hover:bg-background data-hover:bg-blue-200/20! dark:data-focus:bg-background/40 rounded-lg p-2 outline-none min-h-18 w-full',
   innerWrapper: 'px-1',
+  description: 'px-1 text-xs tracking-wide text-slate-500',
 }
-export const darkInputClassNames: InputProps['classNames'] = {
+
+export const darkInputClassNames = {
   label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-ios',
   input:
     'text-blue-500 dark:text-white text-base font-medium font-okxs placeholder:text-slate-500/60 placeholder:font-normal dark:placeholder:text-slate-500 selection:bg-blue-400 selection:text-white',
@@ -33,7 +38,8 @@ export const darkInputClassNames: InputProps['classNames'] = {
   innerWrapper: 'px-1',
   description: 'text-slate-500 tracking-wide',
 }
-export const secondaryInputClassNames: InputProps['classNames'] = {
+
+export const secondaryInputClassNames = {
   label:
     'mb-4 pl-1 opacity-100 dark:opacity-80 tracking-widest uppercase text-xs font-ios',
   input:
@@ -41,8 +47,10 @@ export const secondaryInputClassNames: InputProps['classNames'] = {
   inputWrapper:
     'border shadow-none border-dark-gray/40 dark:border-black/20 bg-light-gray/60 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-md px-2 pt-1 pb-0.5 outline-none min-h-14 w-full',
   innerWrapper: 'px-1',
+  description: 'text-slate-500 tracking-wide',
 }
-export const narrowInputClassNames: InputProps['classNames'] = {
+
+export const narrowInputClassNames = {
   label:
     'mb-3 pl-1 opacity-100 dark:opacity-80 tracking-widest uppercase text-xs font-ios',
   input:
@@ -50,16 +58,18 @@ export const narrowInputClassNames: InputProps['classNames'] = {
   inputWrapper:
     'border shadow-none border-light-gray/50 dark:border-black/20 bg-light-gray/10 dark:bg-black/60 data-focus:border-blue-500 dark:data-hover:border-blue-500 rounded-md px-2 pb-1 pt-1 outline-none min-h-10 w-full',
   innerWrapper: 'px-1',
+  description: 'text-slate-500 tracking-wide',
 }
 
-export const commonSelectClassNames: SelectProps['classNames'] = {
+export const commonSelectClassNames = {
   label: 'ps-1 mb-4 uppercase font-ios text-xs tracking-widest opacity-80',
   value: 'ps-1 placeholder:text-slate-400/80 py-4 mt-2',
   trigger:
     'border p-2 h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
   listbox: 'p-1.5',
 }
-export const narrowSelectClassNames: SelectProps['classNames'] = {
+
+export const narrowSelectClassNames = {
   label: 'ps-1 mb-3 uppercase font-ios text-xs tracking-widest opacity-80',
   value: 'ps-1 placeholder:text-slate-400/80 py-4 mt-2',
   trigger:
@@ -67,7 +77,8 @@ export const narrowSelectClassNames: SelectProps['classNames'] = {
   mainWrapper: '',
   listbox: 'p-1.5',
 }
-export const multiSelectClassNames: SelectProps['classNames'] = {
+
+export const multiSelectClassNames = {
   value: 'placeholder:text-slate-400/80 py-2',
   trigger:
     'border h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
@@ -75,11 +86,27 @@ export const multiSelectClassNames: SelectProps['classNames'] = {
   listbox: 'p-1.5',
 }
 
-export const simpleSelectClassNames: SelectProps['classNames'] = {
+export const simpleSelectClassNames = {
   value: 'px-2',
   listbox: 'py-1.5',
   label: 'font-semibold font-clash tracking-wide text-sm',
   trigger: 'bg-background/40 hover:bg-background/50! rounded-md',
+}
+
+export const getSingleSelectedKey = (keys: SharedSelection) => {
+  if (keys === 'all') {
+    return null
+  }
+
+  return Array.from(keys)[0] ?? null
+}
+
+export const getSelectedKeySet = (keys: SharedSelection) => {
+  if (keys === 'all') {
+    return new Set<React.Key>()
+  }
+
+  return new Set(keys)
 }
 
 type BaseFieldProps<T> = {
@@ -105,7 +132,7 @@ type BaseFieldProps<T> = {
   max?: string | number
   minRows?: number
   spellCheck?: boolean
-  inputMode?: InputHTMLAttributes<'text' | 'email' | 'password' | 'url' | 'tel'>
+  inputMode?: InputHTMLAttributes<HTMLInputElement>['inputMode']
   error?: string
   helperText?: string
   disabled?: boolean
@@ -133,6 +160,31 @@ export type SelectOption = {
   value: string
   label: string
 }
+
+type SelectClassNames = Partial<
+  Record<
+    | 'base'
+    | 'label'
+    | 'value'
+    | 'trigger'
+    | 'mainWrapper'
+    | 'listbox'
+    | 'popoverContent'
+    | 'listboxWrapper'
+    | 'innerWrapper'
+    | 'selectorIcon',
+    string
+  >
+>
+
+type SelectUiProps = {
+  classNames?: SelectClassNames
+}
+
+type ChipColor = 'accent' | 'danger' | 'default' | 'success' | 'warning'
+
+const normalizeChipColor = (color: string): ChipColor =>
+  color === 'primary' ? 'accent' : (color as ChipColor)
 
 type SelectFieldProps<T> = BaseFieldProps<T> & {
   type: 'select'
@@ -163,21 +215,40 @@ export type FormInput<T> =
 
 export function TextField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const field = useFieldContext<string>()
+  const inputType =
+    props?.type === 'number' ||
+    props?.type === 'textarea' ||
+    props?.type === 'select' ||
+    props?.type === 'checkbox'
+      ? 'text'
+      : (props?.type ?? 'text')
   return (
-    <div className='space-y-2 w-full'>
+    <div className={cn('flex flex-col gap-2 w-full', props?.className)}>
       <Input
-        size='lg'
+        id={field.name}
+        name={String(field.name)}
+        type={inputType}
         label={props?.label}
-        value={field.state.value ?? props?.value}
-        onChange={(e) => field.handleChange(e.target.value)}
+        description={props?.description}
+        autoComplete={props?.autoComplete}
+        inputMode={props?.inputMode}
+        isRequired={props?.required}
+        isDisabled={props?.disabled}
+        size='lg'
+        value={String(field.state.value ?? props?.value ?? '')}
+        onValueChange={(value) => field.handleChange(value)}
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
-        description={props?.description}
-        disabled={props?.disabled}
         classNames={commonInputClassNames}
-        variant='secondary'
+        variant='faded'
         suppressHydrationWarning
-        spellCheck={props?.spellCheck ? 'true' : 'false'}
+        spellCheck={
+          props?.spellCheck === undefined
+            ? undefined
+            : props.spellCheck
+              ? 'true'
+              : 'false'
+        }
       />
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
         <p className='text-xs text-rose-400'>
@@ -192,24 +263,29 @@ export function NumberField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const field = useFieldContext<number>()
   const numValue = field.state.value ?? 0
   return (
-    <div className='space-y-2'>
+    <div className={cn('flex flex-col gap-2 w-full', props?.className)}>
       <Input
+        id={field.name}
+        name={String(field.name)}
         label={props?.label}
+        description={props?.description}
         type='number'
+        autoComplete={props?.autoComplete}
+        isRequired={props?.required}
+        isDisabled={props?.disabled}
+        size='lg'
         step={props?.step}
         min={props?.min}
         max={props?.max}
         value={String(numValue)}
-        onChange={(e) => {
-          const numValue = Number(e.target.value)
+        onValueChange={(value) => {
+          const numValue = Number(value)
           field.handleChange(isNaN(numValue) ? 0 : numValue)
         }}
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
-        description={props?.description}
-        size='lg'
-        variant='secondary'
         classNames={commonInputClassNames}
+        variant='faded'
       />
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
         <p className='text-xs text-rose-400'>
@@ -223,17 +299,29 @@ export function NumberField<T>(props?: PartialFormInput<T> | FormInput<T>) {
 export function TextAreaField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const field = useFieldContext<string>()
   return (
-    <div className='space-y-2'>
+    <div className={cn('flex flex-col gap-2 w-full', props?.className)}>
       <TextArea
+        id={field.name}
+        name={String(field.name)}
         label={props?.label}
-        value={field.state.value}
-        onChange={(e) => field.handleChange(e.target.value)}
+        description={props?.description}
+        autoComplete={props?.autoComplete}
+        isRequired={props?.required}
+        isDisabled={props?.disabled}
+        value={field.state.value ?? ''}
+        onValueChange={(value) => field.handleChange(value)}
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
         minRows={props?.minRows ?? 3}
-        variant='secondary'
-        className=' placeholder:text-red-400'
+        className='placeholder:text-red-400'
         classNames={commonInputClassNames}
+        spellCheck={
+          props?.spellCheck === undefined
+            ? undefined
+            : props.spellCheck
+              ? 'true'
+              : 'false'
+        }
       />
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
         <p className='text-xs text-rose-400'>
@@ -244,9 +332,7 @@ export function TextAreaField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   )
 }
 
-export function SelectField<T>(
-  props?: SelectFieldProps<T> & Partial<Pick<SelectProps, 'classNames'>>,
-) {
+export function SelectField<T>(props?: SelectFieldProps<T> & SelectUiProps) {
   const mode = props?.mode ?? 'single'
   const isMultiple = mode === 'multiple'
 
@@ -256,154 +342,174 @@ export function SelectField<T>(
 
   // Determine if this is a category select field
   const isCategoryField = props?.isCategory ?? false
+  const labelId = `${String(field.name)}-label`
 
-  // Convert field value to Set<string> for selectedKeys
-  const getSelectedKeys = (): Set<string> => {
-    if (!field.state.value) return new Set()
+  const multiValue = Array.isArray(field.state.value)
+    ? field.state.value
+    : field.state.value
+      ? [field.state.value]
+      : []
 
-    if (isMultiple) {
-      // For multiple: value should be string[]
-      const values = Array.isArray(field.state.value)
-        ? field.state.value
-        : field.state.value
-          ? [field.state.value]
-          : []
-      return new Set(values)
-    } else {
-      // For single: value should be string
-      const value = Array.isArray(field.state.value)
-        ? (field.state.value[0] ?? '')
-        : (field.state.value ?? '')
-      return value ? new Set([value]) : new Set()
-    }
+  const singleValue = Array.isArray(field.state.value)
+    ? (field.state.value[0] ?? '')
+    : (field.state.value ?? '')
+
+  const selectedKeys = isMultiple
+    ? new Set(multiValue)
+    : singleValue
+      ? new Set([singleValue])
+      : new Set<string>()
+
+  const selectClassNames = {
+    ...(isMultiple
+      ? {...commonSelectClassNames, ...multiSelectClassNames}
+      : commonSelectClassNames),
+    ...props?.classNames,
   }
 
-  // Handle selection change
-  const handleSelectionChange = (keys: Set<React.Key> | 'all') => {
+  const handleSelectionChange = (keys: SharedSelection) => {
     if (keys === 'all') {
-      // Select all options
-      const allValues = options.map((opt) => opt.value)
-      field.handleChange(isMultiple ? allValues : (allValues[0] ?? ''))
-    } else {
-      const selectedArray = Array.from(keys) as string[]
-      if (isMultiple) {
-        field.handleChange(selectedArray)
-      } else {
-        field.handleChange(selectedArray[0] ?? '')
-      }
+      field.handleChange(
+        isMultiple ? options.map((option) => option.value) : '',
+      )
+      return
     }
+
+    const selectedArray = Array.from(keys).map(String)
+    field.handleChange(isMultiple ? selectedArray : (selectedArray[0] ?? ''))
   }
+
+  const renderSelectItems = () =>
+    options.map((option) => {
+      if (isCategoryField) {
+        const categoryColor = getCategoryColor(option.value)
+        return (
+          <CategorySelectItem
+            key={option.value}
+            className={categoryColors[categoryColor].textColor}
+            textValue={option.label}>
+            {option.label}
+          </CategorySelectItem>
+        )
+      }
+
+      return (
+        <CategorySelectItem key={option.value} textValue={option.label}>
+          {option.label}
+        </CategorySelectItem>
+      )
+    })
 
   return (
-    <div className='h-fit'>
-      <Select
-        label={props?.label}
-        selectionMode={mode}
-        selectedKeys={getSelectedKeys()}
-        onSelectionChange={handleSelectionChange}
-        onBlur={field.handleBlur}
-        placeholder={props?.placeholder}
-        variant='secondary'
-        classNames={{
-          ...commonInputClassNames,
-          ...(props?.mode === 'multiple'
-            ? multiSelectClassNames
-            : commonSelectClassNames),
-          ...props?.classNames,
-        }}
-        renderValue={
-          isMultiple
-            ? (items) => {
-                // Find the option for each item to get its value for color mapping
-                const getOptionValue = (itemKey: React.Key) => {
-                  const option = options.find((opt) => opt.value === itemKey)
-                  return option?.value ?? ''
-                }
-
-                return (
-                  <div className='flex items-center space-x-2 overflow-x-auto whitespace-nowrap  pr-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
-                    {items.map((item) => {
-                      const optionValue = item.key
-                        ? getOptionValue(item.key)
-                        : ''
-                      const chipProps =
-                        isCategoryField && optionValue
-                          ? getCategoryChipProps(optionValue)
-                          : {
-                              color: 'primary' as const,
-                              className: 'dark:text-white',
-                            }
-
-                      return (
-                        <Chip
-                          variant='soft'
-                          {...chipProps}
-                          key={item.key}
-                          size='md'
-                          className='shrink-0 border-1'>
-                          <span className='text-foreground'>
-                            {item.textValue}
-                          </span>
-                        </Chip>
-                      )
-                    })}
-                  </div>
-                )
-              }
-            : (item) => {
-                // Find the option for the selected item to get its value for color mapping
-                // item[0] contains the selected item, use its key to find the option value
-                const selectedKey = item[0]?.key ?? ''
-                const selectedValue =
-                  typeof selectedKey === 'string'
-                    ? selectedKey
-                    : String(selectedKey)
-                const chipProps = isCategoryField
-                  ? getCategoryChipProps(selectedValue)
-                  : {color: 'primary' as const, className: 'dark:text-white'}
-
-                return (
-                  <div className='flex flex-wrap gap-x-2'>
-                    <Chip
-                      variant='soft'
-                      {...chipProps}
-                      key={item[0].textValue}
-                      size='md'>
-                      {item[0].textValue}
-                    </Chip>
-                  </div>
-                )
-              }
-        }>
-        {options.map((option) => {
-          // Use CategorySelectItem for category fields, otherwise use regular ListBoxItem
-          if (isCategoryField) {
-            const categoryColor = getCategoryColor(option.value)
-            // Type assertion needed because extendVariants doesn't fully extend TypeScript types
-            const props = {
-              color: categoryColor,
-              variant: 'faded' as const,
-              textValue: option.label,
-            } as React.ComponentProps<typeof CategorySelectItem>
+    <div className={cn('flex flex-col w-full', props?.className)}>
+      {props?.label && (
+        <Label
+          id={labelId}
+          htmlFor={String(field.name)}
+          isRequired={props?.required}
+          isDisabled={props?.disabled}
+          className={commonSelectClassNames.label}>
+          {props.label}
+        </Label>
+      )}
+      {isMultiple ? (
+        <Select
+          id={field.name}
+          name={String(field.name)}
+          aria-label={props?.label ?? props?.placeholder ?? String(field.name)}
+          aria-labelledby={props?.label ? labelId : undefined}
+          selectionMode='multiple'
+          selectedKeys={selectedKeys}
+          onSelectionChange={handleSelectionChange}
+          onBlur={field.handleBlur}
+          placeholder={props?.placeholder}
+          autoComplete={props?.autoComplete}
+          isRequired={props?.required}
+          isDisabled={props?.disabled}
+          variant='faded'
+          classNames={selectClassNames}
+          renderValue={(items) => {
+            const getOptionValue = (itemKey: React.Key) => {
+              const option = options.find((opt) => opt.value === itemKey)
+              return option?.value ?? ''
+            }
 
             return (
-              <CategorySelectItem key={option.value} {...props}>
-                {option.label}
-              </CategorySelectItem>
-            )
-          }
+              <div className='flex items-center space-x-2 overflow-x-auto whitespace-nowrap pr-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
+                {items.map((item) => {
+                  const optionValue = item.key ? getOptionValue(item.key) : ''
+                  const chipProps =
+                    isCategoryField && optionValue
+                      ? getCategoryChipProps(optionValue)
+                      : {color: 'accent' as const, className: 'dark:text-white'}
+                  const chipColor = normalizeChipColor(chipProps.color)
 
-          return (
-            <CategorySelectItem
-              key={option.value}
-              textValue={option.label}
-              // className={cn({'text-indigo-400': option.value === 'extracts'})}
-            >
-              {option.label}
-            </CategorySelectItem>
-          )
-        })}
-      </Select>
+                  return (
+                    <Chip
+                      variant='soft'
+                      color={chipColor}
+                      key={item.key}
+                      size='md'
+                      className={cn(chipProps.className, 'shrink-0 border-1')}>
+                      <span className='text-foreground'>{item.textValue}</span>
+                    </Chip>
+                  )
+                })}
+              </div>
+            )
+          }}>
+          {renderSelectItems()}
+        </Select>
+      ) : (
+        <Select
+          id={field.name}
+          name={String(field.name)}
+          aria-label={props?.label ?? props?.placeholder ?? String(field.name)}
+          aria-labelledby={props?.label ? labelId : undefined}
+          selectionMode='single'
+          selectedKeys={selectedKeys}
+          onSelectionChange={handleSelectionChange}
+          onBlur={field.handleBlur}
+          placeholder={props?.placeholder}
+          autoComplete={props?.autoComplete}
+          isRequired={props?.required}
+          isDisabled={props?.disabled}
+          variant='faded'
+          classNames={selectClassNames}
+          renderValue={(items) => {
+            const selectedItem = items[0]
+            if (!selectedItem) return null
+
+            const selectedKey = selectedItem.key ?? ''
+            const selectedValue =
+              typeof selectedKey === 'string'
+                ? selectedKey
+                : String(selectedKey)
+            const chipProps = isCategoryField
+              ? getCategoryChipProps(selectedValue)
+              : {color: 'accent' as const, className: 'dark:text-white'}
+            const chipColor = normalizeChipColor(chipProps.color)
+
+            return (
+              <div className='flex flex-wrap gap-x-2'>
+                <Chip
+                  variant='soft'
+                  color={chipColor}
+                  key={selectedItem.textValue}
+                  size='md'>
+                  {selectedItem.textValue}
+                </Chip>
+              </div>
+            )
+          }}>
+          {renderSelectItems()}
+        </Select>
+      )}
+      {props?.description && (
+        <p className='px-1 text-xs tracking-wide text-slate-500'>
+          {props.description}
+        </p>
+      )}
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
         <p className='text-xs text-rose-400'>
           {field.state.meta.errors.join(', ')}
@@ -414,8 +520,7 @@ export function SelectField<T>(
 }
 
 export function SelectWithCustomField<T>(
-  props?: SelectWithCustomFieldProps<T> &
-    Partial<Pick<SelectProps, 'classNames' | 'selectionMode'>>,
+  props?: SelectWithCustomFieldProps<T> & SelectUiProps,
 ) {
   const field = useFieldContext<string>()
   const options = props?.options ?? []
@@ -423,7 +528,7 @@ export function SelectWithCustomField<T>(
   const customLabel = props?.customOptionLabel ?? 'Other'
   const customPlaceholder = props?.customPlaceholder ?? 'Enter custom value'
 
-  const optionValues = new Set(options.map((o) => o.value))
+  const optionValues = new Set(options.map((option) => option.value))
   const isCustomValue =
     field.state.value != null &&
     field.state.value !== '' &&
@@ -433,38 +538,49 @@ export function SelectWithCustomField<T>(
     ? [...options, {value: SELECT_CUSTOM_OPTION_KEY, label: customLabel}]
     : options
 
-  const selectedKey =
-    isCustomValue || field.state.value === SELECT_CUSTOM_OPTION_KEY
-      ? SELECT_CUSTOM_OPTION_KEY
-      : (field.state.value ?? '')
-
-  const handleSelectionChange = (keys: Set<React.Key> | 'all') => {
-    if (keys === 'all') return
-    const key = Array.from(keys)[0] as string | undefined
-    if (key === undefined || key === '') {
-      field.handleChange('')
-      return
-    }
-    if (key === SELECT_CUSTOM_OPTION_KEY) {
-      // Keep SELECT_CUSTOM_OPTION_KEY in state so showCustomInput stays true; input shows '' until user types
-      field.handleChange(
-        isCustomValue ? (field.state.value ?? '') : SELECT_CUSTOM_OPTION_KEY,
-      )
-      return
-    }
-    field.handleChange(key)
-  }
+  const selectedValue =
+    !allowCustom && isCustomValue
+      ? ''
+      : isCustomValue || field.state.value === SELECT_CUSTOM_OPTION_KEY
+        ? SELECT_CUSTOM_OPTION_KEY
+        : (field.state.value ?? '')
 
   const showCustomInput =
-    allowCustom && (selectedKey === SELECT_CUSTOM_OPTION_KEY || isCustomValue)
+    allowCustom && (selectedValue === SELECT_CUSTOM_OPTION_KEY || isCustomValue)
+
+  const selectClassNames = {
+    ...commonSelectClassNames,
+    ...props?.classNames,
+  }
+  const labelId = `${String(field.name)}-label`
 
   return (
-    <div className=''>
+    <div className={cn('flex flex-col w-full', props?.className)}>
+      {props?.label && (
+        <Label
+          id={labelId}
+          htmlFor={field.name}
+          isRequired={props?.required}
+          isDisabled={props?.disabled}
+          className={commonSelectClassNames.label}>
+          {props.label}
+        </Label>
+      )}
+      {props?.description && (
+        <p className='px-1 text-xs tracking-wide text-slate-500'>
+          {props.description}
+        </p>
+      )}
       {showCustomInput ? (
         <Input
-          size='lg'
-          label={props?.label}
+          id={field.name}
+          name={String(field.name)}
           aria-label={customLabel}
+          aria-labelledby={props?.label ? labelId : undefined}
+          autoComplete={props?.autoComplete}
+          isRequired={props?.required}
+          isDisabled={props?.disabled}
+          size='lg'
           value={
             isCustomValue
               ? field.state.value
@@ -472,26 +588,53 @@ export function SelectWithCustomField<T>(
                 ? ''
                 : (field.state.value ?? '')
           }
-          onChange={(e) => field.handleChange(e.target.value)}
+          onValueChange={(value) => field.handleChange(value)}
           onBlur={field.handleBlur}
           placeholder={customPlaceholder}
           classNames={commonInputClassNames}
-          variant='secondary'
+          variant='faded'
         />
       ) : (
         <Select
-          label={props?.label}
-          selectionMode={props?.selectionMode ?? 'single'}
-          selectedKeys={selectedKey ? new Set([selectedKey]) : new Set()}
-          onSelectionChange={handleSelectionChange}
+          id={field.name}
+          name={String(field.name)}
+          aria-label={props?.label ?? props?.placeholder ?? customLabel}
+          aria-labelledby={props?.label ? labelId : undefined}
+          selectionMode='single'
+          isDisabled={props?.disabled}
+          selectedKeys={
+            selectedValue ? new Set<string>([selectedValue]) : new Set<string>()
+          }
+          onSelectionChange={(keys: SharedSelection) => {
+            if (keys === 'all') {
+              field.handleChange('')
+              return
+            }
+
+            const key = Array.from(keys).map(String)[0] ?? ''
+
+            if (key === '') {
+              field.handleChange('')
+              return
+            }
+
+            if (key === SELECT_CUSTOM_OPTION_KEY) {
+              field.handleChange(
+                isCustomValue
+                  ? (field.state.value ?? '')
+                  : SELECT_CUSTOM_OPTION_KEY,
+              )
+              return
+            }
+
+            field.handleChange(key)
+          }}
           onBlur={field.handleBlur}
           placeholder={props?.placeholder}
-          variant='secondary'
-          classNames={{
-            ...commonInputClassNames,
-            ...commonSelectClassNames,
-            ...props?.classNames,
-          }}>
+          autoComplete={props?.autoComplete}
+          isRequired={props?.required}
+          variant='faded'
+          classNames={selectClassNames}>
           {displayOptions.map((option) => (
             <CategorySelectItem key={option.value} textValue={option.label}>
               {option.label}
@@ -514,10 +657,12 @@ export function SwitchField<T>(
   const field = useFieldContext<boolean>()
   const value = field.state.value ?? false
   return (
-    <div className='space-y-2'>
+    <div className={cn('flex flex-col gap-2 w-full', props?.className)}>
       <Switch
+        name={String(field.name)}
         isSelected={value}
-        onValueChange={(value) => field.handleChange(value)}
+        isDisabled={props?.disabled}
+        onValueChange={(nextValue) => field.handleChange(nextValue)}
         onBlur={field.handleBlur}
         classNames={{
           wrapper: 'group-data-[selected=true]:bg-amber-500',
@@ -554,6 +699,9 @@ export const renderFields = <T extends Record<string, unknown>>(
                 name={field.name as keyof T}
                 label={field.label}
                 placeholder={field.placeholder}
+                description={field.description}
+                required={field.required}
+                disabled={field.disabled}
               />
             )
           case 'select': {
@@ -572,6 +720,10 @@ export const renderFields = <T extends Record<string, unknown>>(
                 mode={field.mode}
                 label={field.label}
                 placeholder={field.placeholder}
+                description={field.description}
+                required={field.required}
+                disabled={field.disabled}
+                autoComplete={field.autoComplete}
                 isCategory={field.name === 'categorySlug'}
                 className='w-full flex'
                 classNames={{...commonSelectClassNames}}
@@ -579,6 +731,38 @@ export const renderFields = <T extends Record<string, unknown>>(
               />
             )
           }
+          case 'number':
+            return (
+              <input.NumberField
+                {...input}
+                type={field.type}
+                name={field.name as keyof T}
+                label={field.label}
+                placeholder={field.placeholder}
+                description={field.description}
+                required={field.required}
+                disabled={field.disabled}
+                autoComplete={field.autoComplete}
+                step={field.step}
+                min={field.min}
+                max={field.max}
+              />
+            )
+          case 'textarea':
+            return (
+              <input.TextAreaField
+                {...input}
+                type={field.type}
+                name={field.name as keyof T}
+                label={field.label}
+                placeholder={field.placeholder}
+                description={field.description}
+                required={field.required}
+                disabled={field.disabled}
+                autoComplete={field.autoComplete}
+                minRows={field.minRows}
+              />
+            )
           default:
             return (
               <input.TextField
@@ -588,6 +772,12 @@ export const renderFields = <T extends Record<string, unknown>>(
                 label={field.label}
                 defaultValue={field.defaultValue}
                 placeholder={field.placeholder}
+                description={field.description}
+                required={field.required}
+                disabled={field.disabled}
+                autoComplete={field.autoComplete}
+                inputMode={field.inputMode}
+                spellCheck={field.spellCheck}
               />
             )
         }
@@ -621,6 +811,9 @@ export const FieldGroup = <T extends Record<string, unknown>>({
                 name={field.name as keyof T}
                 label={field.label}
                 placeholder={field.placeholder}
+                description={field.description}
+                required={field.required}
+                disabled={field.disabled}
               />
             )
           case 'select': {
@@ -639,11 +832,47 @@ export const FieldGroup = <T extends Record<string, unknown>>({
                 mode={field.mode}
                 label={field.label}
                 placeholder={field.placeholder}
+                description={field.description}
+                required={field.required}
+                disabled={field.disabled}
+                autoComplete={field.autoComplete}
                 isCategory={field.name === 'categorySlug'}
                 options={selectOptions}
               />
             )
           }
+          case 'number':
+            return (
+              <input.NumberField
+                {...input}
+                type={field.type}
+                name={field.name as keyof T}
+                label={field.label}
+                placeholder={field.placeholder}
+                description={field.description}
+                required={field.required}
+                disabled={field.disabled}
+                autoComplete={field.autoComplete}
+                step={field.step}
+                min={field.min}
+                max={field.max}
+              />
+            )
+          case 'textarea':
+            return (
+              <input.TextAreaField
+                {...input}
+                type={field.type}
+                name={field.name as keyof T}
+                label={field.label}
+                placeholder={field.placeholder}
+                description={field.description}
+                required={field.required}
+                disabled={field.disabled}
+                autoComplete={field.autoComplete}
+                minRows={field.minRows}
+              />
+            )
           default:
             return (
               <input.TextField
@@ -652,6 +881,13 @@ export const FieldGroup = <T extends Record<string, unknown>>({
                 name={field.name as keyof T}
                 label={field.label}
                 placeholder={field.placeholder}
+                defaultValue={field.defaultValue}
+                description={field.description}
+                required={field.required}
+                disabled={field.disabled}
+                autoComplete={field.autoComplete}
+                inputMode={field.inputMode}
+                spellCheck={field.spellCheck}
               />
             )
         }

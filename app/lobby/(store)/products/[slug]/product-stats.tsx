@@ -4,7 +4,7 @@ import {
   formatStockDisplay,
   getAvailableCartQuantityForDenomination,
 } from '@/lib/productStock'
-import {Badge, Tooltip} from '@/lib/heroui'
+import {Badge} from '@heroui/react'
 
 interface ProductDetailStatsProps {
   product: StoreProduct
@@ -54,24 +54,25 @@ export const ProductDetailStats = ({
       </div>
 
       {quantityInCart > 0 ? (
-        <Tooltip key='in-cart' content='In The Bag'>
+        <div title='In The Bag'>
           <Badge
             size='lg'
             variant='soft'
-            className='px-[0.5px]'
-            classNames={{
-              badge:
-                'aspect-square size-5 md:size-6 text-sm md:text-base translate-x-0 -translate-y-1 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-background/85 shadow-md backdrop-blur-2xl bg-brand/90',
-            }}
-            content={
-              <div
-                suppressHydrationWarning
-                className='flex items-center justify-center rounded-xs py-0.5 px-1 md:mx-0 size-4 aspect-square'>
-                <span className='font-okxs font-medium text-xs md:text-sm text-white leading-none drop-shadow-xs'>
-                  {quantityInCart}
-                </span>
-              </div>
-            }>
+            className='flex items-center justify-center rounded-xs py-0.5 px-1 md:mx-0 size-4 aspect-square'
+            // classNames={{
+            //   badge:
+            //     'aspect-square size-5 md:size-6 text-sm md:text-base translate-x-0 -translate-y-1 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-background/85 shadow-md backdrop-blur-2xl bg-brand/90',
+            // }}
+            content={`${quantityInCart}`}
+            // content={
+            //   <div
+            //     className=>
+            //     <span className='font-okxs font-medium text-xs md:text-sm text-white leading-none drop-shadow-xs'>
+            //       {}
+            //     </span>
+            //   </div>
+            // }
+          >
             <div className='w-16 md:w-20 flex items-center justify-end pr-1'>
               <Icon
                 name='shopping-bag-fill'
@@ -79,7 +80,7 @@ export const ProductDetailStats = ({
               />
             </div>
           </Badge>
-        </Tooltip>
+        </div>
       ) : (
         <span className='opacity-0 text-[9px] w-16 md:w-20 text-sm whitespace-nowrap capitalize'>
           <span className='font-polysans font-semibold text-base'>

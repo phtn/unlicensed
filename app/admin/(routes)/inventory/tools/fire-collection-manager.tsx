@@ -13,18 +13,17 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {cn} from '@/lib/utils'
-import {Button, Image, Input, Select, ListBoxItem, Switch} from '@/lib/heroui'
+import {Button} from '@heroui/react'
+import {Input} from '@heroui/input'
+import {Select, SelectItem} from '@heroui/select'
+import {Switch} from '@heroui/switch'
 import {useMutation, useQuery} from 'convex/react'
 import {parseAsString, useQueryStates} from 'nuqs'
-import {
-  memo,
-  useCallback,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import {memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState} from 'react'
+
+
+
+import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
 const MAX_LIBRARY_RESULTS = 24
 const RANDOM_INSERT_COUNT = 15
@@ -182,11 +181,9 @@ const ProductTile = ({
 
     {onAction && (
       <Button
-        radius='none'
         size='sm'
         isIconOnly
         variant='tertiary'
-        isLoading={isBusy}
         isDisabled={disabled}
         onPress={() => onAction(String(product._id))}
         className='rounded-none hover:bg-sidebar dark:hover:bg-sidebar text-xs uppercase text-foreground h-6 hover:border-sidebar dark:hover:text-rose-400'>
@@ -899,9 +896,7 @@ export const FireCollectionManager = () => {
               </p>
             </div>
             <Button
-              radius='none'
               onPress={handleCreateCollection}
-              isLoading={activeKey === 'create-collection'}
               className='rounded-lg bg-foreground px-5 font-okxs text-xs uppercase tracking-[0.25em] text-background'
               isDisabled={activeKey !== null}>
               Create Collection
@@ -983,9 +978,7 @@ export const FireCollectionManager = () => {
                   <Button
                     size='sm'
                     isIconOnly
-                    radius='none'
                     variant='tertiary'
-                    color='danger'
                     isDisabled={activeKey !== null}
                     onPress={handleDeleteCollection}
                     className='rounded-xs font-okxs text-xs uppercase tracking-widest h-6 dark:text-rose-400 text-rose-600 dark:hover:bg-rose-400/10'>
@@ -1013,7 +1006,6 @@ export const FireCollectionManager = () => {
                   <Button
                     size='sm'
                     isIconOnly
-                    radius='none'
                     variant='tertiary'
                     isDisabled={
                       activeKey !== null ||
@@ -1091,17 +1083,12 @@ export const FireCollectionManager = () => {
 
             <Button
               size='sm'
-              radius='none'
               variant='tertiary'
               isDisabled={
                 activeKey !== null ||
                 !selectedCollection ||
                 libraryProducts === undefined ||
                 randomCandidateProductIds.length === 0
-              }
-              isLoading={
-                selectedCollection !== null &&
-                activeKey === `random:${selectedCollection.id}`
               }
               onPress={handleInsertRandomProducts}
               className='rounded-sm px-4 font-clash font-normal tracking-wider text-sm bg-sidebar text-foreground'>
@@ -1126,9 +1113,9 @@ export const FireCollectionManager = () => {
                 isDisabled={activeKey !== null || !selectedCollection}
                 items={randomCategoryOptions}>
                 {(item) => (
-                  <ListBoxItem key={item.value} textValue={item.label}>
+                  <SelectItem key={item.value} textValue={item.label}>
                     {item.label}
-                  </ListBoxItem>
+                  </SelectItem>
                 )}
               </Select>
 
@@ -1163,9 +1150,9 @@ export const FireCollectionManager = () => {
                 disallowEmptySelection
                 items={libraryCategoryOptions}>
                 {(item) => (
-                  <ListBoxItem key={item.value} textValue={item.label}>
+                  <SelectItem key={item.value} textValue={item.label}>
                     {item.label}
-                  </ListBoxItem>
+                  </SelectItem>
                 )}
               </Select>
 
@@ -1184,9 +1171,9 @@ export const FireCollectionManager = () => {
                 disallowEmptySelection
                 items={libraryBrandOptions}>
                 {(item) => (
-                  <ListBoxItem key={item.value} textValue={item.label}>
+                  <SelectItem key={item.value} textValue={item.label}>
                     {item.label}
-                  </ListBoxItem>
+                  </SelectItem>
                 )}
               </Select>
 
@@ -1205,9 +1192,9 @@ export const FireCollectionManager = () => {
                 disallowEmptySelection
                 items={librarySubcategoryOptions}>
                 {(item) => (
-                  <ListBoxItem key={item.value} textValue={item.label}>
+                  <SelectItem key={item.value} textValue={item.label}>
                     {item.label}
-                  </ListBoxItem>
+                  </SelectItem>
                 )}
               </Select>
 
@@ -1226,9 +1213,9 @@ export const FireCollectionManager = () => {
                 disallowEmptySelection
                 items={libraryProductTypeOptions}>
                 {(item) => (
-                  <ListBoxItem key={item.value} textValue={item.label}>
+                  <SelectItem key={item.value} textValue={item.label}>
                     {item.label}
-                  </ListBoxItem>
+                  </SelectItem>
                 )}
               </Select>
             </div>
@@ -1240,7 +1227,6 @@ export const FireCollectionManager = () => {
 
               <Button
                 size='sm'
-                radius='none'
                 variant='tertiary'
                 isDisabled={!hasActiveLibraryFilters}
                 onPress={() => {

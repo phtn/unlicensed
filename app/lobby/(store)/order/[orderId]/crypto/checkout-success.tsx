@@ -4,7 +4,6 @@ import {Typewrite} from '@/components/expermtl/typewrite'
 import {Confetti} from '@/components/magicui/confetti'
 import {useCopy} from '@/hooks/use-copy'
 import {Icon} from '@/lib/icons'
-import {Button} from '@/lib/heroui'
 import {motion} from 'motion/react'
 import NextLink from 'next/link'
 
@@ -91,13 +90,11 @@ export const CheckoutSuccess = ({
             ) : (
               <div />
             )}
-            <Button
-              as={NextLink}
-              radius='none'
+            <NextLink
               href={`/account/orders/${orderNumber}`}
               className='h-11 px-6 bg-white text-emerald-700 font-clash font-medium tracking-wider'>
               View Order
-            </Button>
+            </NextLink>
           </div>
         </div>
       </motion.div>

@@ -1,16 +1,8 @@
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {useDisclosure} from '@/hooks/use-disclosure'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from '@/lib/heroui'
+import {Button, Modal, ModalBody, ModalFooter, ModalHeader} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMutation} from 'convex/react'
 import Link from 'next/link'
@@ -27,7 +19,6 @@ export const orderNumberCell = () => {
     return (
       <div className='flex flex-col w-fit'>
         <Link
-          color='foreground'
           prefetch
           href={`/admin/ops/orders/${orderNumber}`}
           className='font-brk opacity-80 text-xs hover:underline hover:opacity-100 underline-offset-4 decoration-dotted decoration-foreground/40 hover:decoration-blue-500 dark:hover:decoration-primary'>
@@ -146,7 +137,7 @@ export const paymentMethodCell = () => {
       null,
     )
     const [isUpdating, setIsUpdating] = useState(false)
-    const {isOpen, onOpen, onClose} = useDisclosure()
+    const [isOpen, setIsOpen] = useState(false)
 
     useEffect(() => {
       setLocalMethod(method ?? null)
@@ -164,12 +155,12 @@ export const paymentMethodCell = () => {
       if (selectedMethod === localMethod) return
 
       setNextMethod(selectedMethod)
-      onOpen()
+      setIsOpen(true)
     }
 
     const handleCloseConfirm = () => {
       setNextMethod(null)
-      onClose()
+      setIsOpen(false)
     }
 
     const handleConfirmMethodChange = async () => {
@@ -238,8 +229,12 @@ export const paymentMethodCell = () => {
           </span>
         </div>
 
-        <Modal isOpen={isOpen} onClose={handleCloseConfirm} size='sm'>
-          <ModalContent>
+        <Modal
+          isOpen={isOpen}
+          onOpenChange={(open) => {
+            if (!open) handleCloseConfirm()
+          }}>
+          <Modal.Container>
             <ModalHeader className='font-okxs font-semibold'>
               Confirm payment method update
             </ModalHeader>
@@ -258,13 +253,13 @@ export const paymentMethodCell = () => {
                 Cancel
               </Button>
               <Button
-                color='primary'
+                variant='primary'
                 onPress={() => void handleConfirmMethodChange()}
-                isLoading={isUpdating}>
+                isDisabled={isUpdating}>
                 Confirm
               </Button>
             </ModalFooter>
-          </ModalContent>
+          </Modal.Container>
         </Modal>
       </>
     )

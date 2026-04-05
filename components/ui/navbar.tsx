@@ -2,9 +2,8 @@
 
 import {useTheme} from '@/components/ui/theme-provider'
 import {cn} from '@/lib/utils'
+import {Button, Link} from '@heroui/react'
 import {
-  Button,
-  Link,
   Navbar,
   NavbarBrand,
   NavbarContent,
@@ -12,7 +11,7 @@ import {
   NavbarMenu,
   NavbarMenuItem,
   NavbarMenuToggle,
-} from '@/lib/heroui'
+} from '@heroui/navbar'
 import {usePathname} from 'next/navigation'
 import {useMemo, useState} from 'react'
 
@@ -69,7 +68,6 @@ const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
     return (
       <Button
         isIconOnly
-        radius='full'
         variant='tertiary'
         aria-label='Loading theme preference'
         className='border border-(--nav-border) bg-(--surface-highlight) text-foreground/60'
@@ -83,7 +81,6 @@ const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
     return (
       <Button
         onPress={handleToggle}
-        radius='full'
         variant='tertiary'
         className='w-full border border-(--nav-border) bg(--surface-highlight) px-4 py-3 text-base font-medium text-foreground hover:bg-(--surface-muted)'>
         {label}
@@ -95,7 +92,6 @@ const ThemeToggle = ({variant = 'icon', onAction}: ThemeToggleProps) => {
     <Button
       isIconOnly
       onPress={handleToggle}
-      radius='full'
       variant='tertiary'
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       className='border border-(--nav-border) bg-(--surface-highlight) text-foreground transition duration-200 hover:bg-(--surface-muted)'>
@@ -132,7 +128,7 @@ export const Nav = () => {
           className='sm:hidden'
         />
         <NavbarBrand className='items-center gap-3'>
-          <div className='flex h-11 w-11 font-extrabold text-xl items-center justify-center rounded-2xl border border-(--nav-border) bg-(--surface-highlight) shadow-[0_18px_40px_-28px_rgba(5,9,21,0.35) backdrop-blur-xl transition-colors duration-300'>
+          <div className='flex h-11 w-11 font-extrabold text-xl items-center justify-center rounded-2xl border border-(--nav-border) bg-(--surface-highlight) shadow-[0_18px_40px_-28px_rgba(5,9,21,0.35)] backdrop-blur-xl transition-colors duration-300'>
             U
           </div>
           <div className='flex flex-col leading-tight'>
@@ -156,7 +152,6 @@ export const Nav = () => {
             className='relative'>
             <Link
               href={link.href}
-              color='foreground'
               className={cn(
                 'transition-colors',
                 activeHref === link.href
@@ -174,22 +169,16 @@ export const Nav = () => {
 
       <NavbarContent className='hidden basis-1/4 items-center justify-end gap-2 sm:flex sm:basis-1/3'>
         <ThemeToggle />
-        <Button
-          as={Link}
+        <Link
           href='/#menu'
-          radius='full'
-          variant='tertiary'
-          className='border border-(--nav-border) bg-(--surface-highlight) px-5 py-2 text-sm font-medium text-foreground shadow-[0_14px_40px_-28px_rgba(12,20,45,0.38) transition duration-200 hover:bg-(--surface-muted)'>
+          className='border border-(--nav-border) bg-(--surface-highlight) px-5 py-2 text-sm font-medium text-foreground shadow-[0_14px_40px_-28px_rgba(12,20,45,0.38)] transition duration-200 hover:bg-(--surface-muted) rounded-lg'>
           Browse Menu
-        </Button>
-        <Button
-          as={Link}
+        </Link>
+        <Link
           href='/signup'
-          radius='full'
-          variant='primary'
-          className='cta-button px-6 py-2 text-sm font-semibold'>
+          className='cta-button px-6 py-2 text-sm font-semibold rounded-lg'>
           Join Waitlist
-        </Button>
+        </Link>
       </NavbarContent>
 
       <NavbarMenu
@@ -204,7 +193,6 @@ export const Nav = () => {
           <NavbarMenuItem key={link.href}>
             <Link
               href={link.href}
-              size='lg'
               className='w-full rounded-xl px-4 py-3 text-base font-medium text-foreground hover:bg-foreground/10'
               onClick={() => setIsMenuOpen(false)}>
               {link.label}
@@ -213,23 +201,17 @@ export const Nav = () => {
         ))}
         <div className='flex flex-col gap-3 px-4 pt-4'>
           <ThemeToggle variant='menu' onAction={() => setIsMenuOpen(false)} />
-          <Button
-            as={Link}
+          <Link
             href='/#menu'
-            radius='full'
-            variant='tertiary'
-            className='border border-(--nav-border) bg-(--surface-highlight) text-sm font-semibold text-foreground shadow-[0_14px_40px_-28px_rgba(12,20,45,0.38) transition duration-200 hover:bg-(--surface-muted)'
-            onPress={() => setIsMenuOpen(false)}>
+            className='border border-(--nav-border) bg-(--surface-highlight) text-sm font-semibold text-foreground shadow-[0_14px_40px_-28px_rgba(12,20,45,0.38)] transition duration-200 hover:bg-(--surface-muted) rounded-lg px-4 py-3 block'
+            onClick={() => setIsMenuOpen(false)}>
             Browse Menu
-          </Button>
-          <Button
-            as={Link}
+          </Link>
+          <Link
             href='/signup'
-            radius='full'
-            variant='primary'
-            className='cta-button text-sm font-semibold'>
+            className='cta-button text-sm font-semibold rounded-lg px-4 py-3 block'>
             Join Waitlist
-          </Button>
+          </Link>
         </div>
       </NavbarMenu>
     </Navbar>

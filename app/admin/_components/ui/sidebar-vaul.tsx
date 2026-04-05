@@ -4,7 +4,7 @@ import {ScrollArea} from '@/components/ui/scroll-area'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Separator, Input, Skeleton, Tooltip} from '@/lib/heroui'
+import {Button, Input, Separator, Skeleton, Tooltip} from '@heroui/react'
 import {Slot} from '@radix-ui/react-slot'
 import {cva, VariantProps} from 'class-variance-authority'
 import {
@@ -243,7 +243,7 @@ function Sidebar({
   )
 }
 
-function SidebarTrigger({className, ...props}: ComponentProps<typeof Button>) {
+function SidebarTrigger({className, ...props}: ComponentProps<'button'>) {
   const {toggleSidebar, open, openMobile, isMobile} = useSidebar()
   const isOpen = isMobile ? openMobile : open
 
@@ -471,8 +471,9 @@ function SidebarMenuButton({
   }
 
   return (
-    <Tooltip content={tooltip?.children}>
-      {tooltip ? tooltip.children : button}
+    <Tooltip delay={0}>
+      <Tooltip.Trigger>{tooltip ? tooltip.children : button}</Tooltip.Trigger>
+      <Tooltip.Content showArrow>{tooltip?.children}</Tooltip.Content>
     </Tooltip>
   )
 }

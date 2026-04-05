@@ -23,15 +23,9 @@ import {
   TONE_OSCILLATORS,
 } from '@/lib/admin-alerts'
 import {Icon} from '@/lib/icons'
-import {
-  Button,
-  Card,
-  CardContent,
-  Input,
-  Select,
-  ListBoxItem,
-  Switch,
-} from '@/lib/heroui'
+import {Input} from '@heroui/input'
+import {Button, Card, ListBoxItem, Switch} from '@heroui/react'
+import {Select} from '@heroui/select'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useEffect, useMemo, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
@@ -271,9 +265,12 @@ export const AlertsContent = () => {
             <span>Admin Alerts</span>
             <Switch
               isSelected={isEnabled}
-              onValueChange={setIsEnabled}
+              onChange={setIsEnabled}
               size='sm'>
-              Enable Audio
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+              <Switch.Content>Enable Audio</Switch.Content>
             </Switch>
           </div>
         }
@@ -293,20 +290,22 @@ export const AlertsContent = () => {
           return (
             <Card
               key={key}
-              shadow='none'
               className='rounded-lg border border-slate-500/60 bg-slate-300 dark:bg-dark-table'>
-              <CardContent className='gap-4 p-4'>
+              <Card.Content className='flex flex-col gap-4 p-4'>
                 <div className='flex items-center justify-between gap-3'>
                   <h3 className='text-base font-semibold'>
                     {ALERT_LABELS[key]}
                   </h3>
                   <Switch
                     isSelected={draft.enabled}
-                    onValueChange={(value) =>
+                    onChange={(value: boolean) =>
                       setDraftField(key, 'enabled', value)
                     }
                     size='sm'>
-                    On
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                    <Switch.Content>On</Switch.Content>
                   </Switch>
                 </div>
 
@@ -325,9 +324,9 @@ export const AlertsContent = () => {
                   size='sm'
                   label='Synth'
                   labelPlacement='outside-left'
-                  selectedKeys={[draft.synthType]}
+                  selectedKeys={new Set([draft.synthType])}
                   onSelectionChange={(keys) => {
-                    const next = Array.from(keys)[0]
+                    const next = keys === 'all' ? null : Array.from(keys)[0]
                     if (typeof next === 'string') {
                       setDraftField(
                         key,
@@ -347,9 +346,9 @@ export const AlertsContent = () => {
                     size='sm'
                     label='Waveform'
                     labelPlacement='outside-left'
-                    selectedKeys={[draft.waveform]}
+                    selectedKeys={new Set([draft.waveform])}
                     onSelectionChange={(keys) => {
-                      const next = Array.from(keys)[0]
+                      const next = keys === 'all' ? null : Array.from(keys)[0]
                       if (typeof next === 'string') {
                         setDraftField(
                           key,
@@ -398,20 +397,18 @@ export const AlertsContent = () => {
                 <Button
                   size='sm'
                   variant='tertiary'
-                  radius='none'
                   onPress={() => void handleTest(key)}
                   isDisabled={!isEnabled || !draft.enabled}
-                  startContent={
+                  className='hover:bg-slate-400! dark:hover:bg-transparent! dark:hover:text-cyan-300 hover:text-orange-100 rounded-sm font-clash'>
+                  <span className='flex items-center gap-2'>
                     <Icon
                       name={testingKey === key ? 'spinners-ring' : 'play-solid'}
                       className='size-4'
                     />
-                  }
-                  className='hover:bg-slate-400! dark:hover:bg-transparent! dark:hover:text-cyan-300 hover:text-orange-100 rounded-sm font-clash'>
-                  Play
-                  {/*{ALERT_LABELS[key]}*/}
+                    <span>Play</span>
+                  </span>
                 </Button>
-              </CardContent>
+              </Card.Content>
             </Card>
           )
         })}

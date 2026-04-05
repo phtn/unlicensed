@@ -1,10 +1,9 @@
 'use client'
 
 import {useAuthCtx} from '@/ctx/auth'
+import {loginWithGoogle, loginWithGoogleCredential} from '@/lib/firebase/auth'
 import {auth} from '@/lib/firebase/config'
-import {loginWithGoogleCredential, loginWithGoogle} from '@/lib/firebase/auth'
 import {Icon} from '@/lib/icons'
-import {Avatar} from '@/lib/heroui'
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -49,7 +48,10 @@ interface GoogleOneTapProps {
   onAuthSuccess?: () => void
 }
 
-export const GoogleOneTap = ({disabled: disabledProp, onAuthSuccess: onAuthSuccessProp}: GoogleOneTapProps = {}) => {
+export const GoogleOneTap = ({
+  disabled: disabledProp,
+  onAuthSuccess: onAuthSuccessProp,
+}: GoogleOneTapProps = {}) => {
   const {isAuthModalOpen, closeAuthModal} = useAuthCtx()
   // Use prop if provided, otherwise use context
   const disabled = disabledProp ?? isAuthModalOpen
@@ -282,7 +284,13 @@ export const GoogleOneTap = ({disabled: disabledProp, onAuthSuccess: onAuthSucce
 
   // Initialize One Tap when script is loaded and user is not authenticated
   useEffect(() => {
-    if (scriptLoaded && !user && !isLoading && !oneTapInitializedRef.current && !disabled) {
+    if (
+      scriptLoaded &&
+      !user &&
+      !isLoading &&
+      !oneTapInitializedRef.current &&
+      !disabled
+    ) {
       // Small delay to ensure DOM is ready and Google script is fully loaded
       const timer = setTimeout(() => {
         if (window.google?.accounts?.id) {
@@ -310,7 +318,11 @@ export const GoogleOneTap = ({disabled: disabledProp, onAuthSuccess: onAuthSucce
 
   // Cancel One Tap when disabled (e.g., when modal opens)
   useEffect(() => {
-    if (disabled && oneTapInitializedRef.current && window.google?.accounts?.id) {
+    if (
+      disabled &&
+      oneTapInitializedRef.current &&
+      window.google?.accounts?.id
+    ) {
       try {
         window.google.accounts.id.cancel()
         console.log('One Tap cancelled due to disabled state')
@@ -366,12 +378,13 @@ export const GoogleOneTap = ({disabled: disabledProp, onAuthSuccess: onAuthSucce
     }
 
     return (
-      <Avatar
-        size='sm'
-        className='cursor-pointer border-2 border-neutral-100 hover:border-white dark:hover:border-white shadow-inner'
-        src={user.photoURL ?? undefined}
-        name={user.displayName ?? user.email ?? 'U'}
-      />
+      // <Avatar
+      //   size='sm'
+      //   className='cursor-pointer border-2 border-neutral-100 hover:border-white dark:hover:border-white shadow-inner'
+      //   src={user.photoURL ?? undefined}
+      //   name={user.displayName ?? user.email ?? 'U'}
+      // />
+      null
     )
   }
 

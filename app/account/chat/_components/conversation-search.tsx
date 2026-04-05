@@ -1,9 +1,10 @@
 'use client'
 
 import {Icon} from '@/lib/icons'
-import {Input} from '@/lib/heroui'
+import {cn} from '@/lib/utils'
+import {Input} from '@heroui/react'
 import {useEffect, useState} from 'react'
-import {searchInputClassNames} from './message-input'
+import {searchInputClassName} from './message-input'
 
 interface ConversationSearchProps {
   onSearch: (query: string) => void
@@ -39,19 +40,16 @@ export function ConversationSearch({
           className='z-20 text-dark-table dark:text-white/40 absolute left-2 top-1/2 -translate-y-1/2 size-4 opacity-90'
         />
         <Input
+          aria-label='Search conversations'
           type='text'
-          radius='full'
+          variant='secondary'
           value={localQuery}
           onChange={handleChange}
-          classNames={{
-            ...searchInputClassNames,
-            inputWrapper: [
-              searchInputClassNames?.inputWrapper,
-              'min-h-12 bg-background/80',
-            ],
-          }}
           placeholder='Search conversations'
-          className='focus:bg-sidebar hover:bg-sidebar placeholder:text-sm dark:placeholder:focus:bg-background placeholder:text-foreground/40 dark:placeholder:text-white/40 shadow-none rounded-xl'
+          className={cn(
+            searchInputClassName,
+            'min-h-12 bg-background/80 placeholder:text-sm placeholder:text-foreground/40',
+          )}
         />
         {localQuery && (
           <button

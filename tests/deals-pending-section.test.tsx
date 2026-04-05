@@ -104,7 +104,7 @@ describe('PendingDealsSection', () => {
     expect(
       screen.getByText(/Build Your Own Oz — 2\/8 selected/i),
     ).toBeInTheDocument()
-    const completeBtn = screen.getByRole('button', {name: /Complete/i})
+    const completeBtn = screen.getByRole('link', {name: /Complete/i})
     expect(completeBtn).toHaveAttribute('href', '/lobby/deals')
   })
 })

@@ -2,7 +2,8 @@
 
 import {ITEMS} from '@/components/ui/product-profile'
 import {cn} from '@/lib/utils'
-import {Chip, Select, ListBoxItem, SelectedItems} from '@/lib/heroui'
+import {Chip} from '@heroui/react'
+import {Select, SelectItem} from '@heroui/select'
 import {useMemo} from 'react'
 import {commonInputClassNames} from './ui/fields'
 
@@ -52,7 +53,7 @@ export const TagSelector = ({
       selectionMode={multiple ? 'multiple' : 'single'}
       selectedKeys={new Set(selectedKeys)}
       onSelectionChange={handleSelectionChange}
-      variant='secondary'
+      variant='faded'
       isMultiline={true}
       classNames={{
         ...commonInputClassNames,
@@ -61,7 +62,7 @@ export const TagSelector = ({
         label:
           'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
       }}
-      renderValue={(items: SelectedItems<object>) => {
+      renderValue={(items) => {
         return (
           <div className='flex flex-wrap gap-2'>
             {items.map((item) => {
@@ -74,15 +75,6 @@ export const TagSelector = ({
                     'text-flavors border-flavors/50': type === 'flavors',
                     'text-effects border-effects/50': type === 'effects',
                   })}
-                  classNames={{
-                    base: cn('border bg-background h-7', {
-                      'border-terpenes dark:border-terpenes':
-                        type === 'terpenes',
-                      'border-flavors dark:border-flavors': type === 'flavors',
-                    }),
-
-                    content: 'text-xs flex items-center gap-1',
-                  }}
                 >
                   <span className='capitalize font-medium'>
                     {item.textValue}
@@ -95,14 +87,14 @@ export const TagSelector = ({
       }}
     >
       {items.map((item) => (
-        <ListBoxItem key={item.id} textValue={item.name}>
+        <SelectItem key={item.id} textValue={item.name}>
           <div className='flex items-center gap-2'>
             <div className='flex flex-col'>
               <span className='text-sm font-medium'>{item.name}</span>
               <span className='text-xs'>{item.description}</span>
             </div>
           </div>
-        </ListBoxItem>
+        </SelectItem>
       ))}
     </Select>
   )

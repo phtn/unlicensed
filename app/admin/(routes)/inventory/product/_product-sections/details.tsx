@@ -1,7 +1,7 @@
 'use client'
 
 import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
-import {TextArea} from '@/lib/heroui'
+import {Textarea as TextArea} from '@heroui/input'
 import {ProductFormApi} from '../product-schema'
 import {FormSection, Header} from './components'
 
@@ -30,7 +30,7 @@ export const Details = ({form}: DetailsProps) => {
                   onBlur={field.handleBlur}
                   placeholder='Brief summary for cards and listings...'
                   minRows={2}
-                  variant='secondary'
+                  variant='faded'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
@@ -60,7 +60,7 @@ export const Details = ({form}: DetailsProps) => {
                   onBlur={field.handleBlur}
                   placeholder='Detailed product story, lineage, and effects...'
                   minRows={6}
-                  variant='secondary'
+                  variant='faded'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
@@ -86,7 +86,7 @@ export const Details = ({form}: DetailsProps) => {
                   onBlur={field.handleBlur}
                   placeholder='Tips for consumption...'
                   minRows={3}
-                  variant='secondary'
+                  variant='faded'
                   classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&

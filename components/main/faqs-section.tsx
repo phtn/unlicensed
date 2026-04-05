@@ -6,7 +6,7 @@
 //   AccordionTrigger,
 // } from './ui/accordion'
 
-import {Accordion, AccordionItem} from '@/lib/heroui'
+import {Accordion} from '@heroui/react'
 
 const faqs = [
   {
@@ -48,17 +48,19 @@ export function FaqSection() {
       </div>
       <Accordion className='-space-y-px w-full rounded-xs bg-sidebar dark:bg-dark-table'>
         {faqs.map((item) => (
-          <AccordionItem
-            className='relative'
-            key={item.value}
-            value={item.value}
-            title={
-              <span className='font-semibold text-lg px-4'>
+          <Accordion.Item className='relative' id={item.value} key={item.value}>
+            <Accordion.Heading>
+              <Accordion.Trigger className='px-4 text-lg font-semibold'>
                 {item.question}
-              </span>
-            }>
-            <span className='text-balance font-okxs p-4'>{item.answer}</span>
-          </AccordionItem>
+                <Accordion.Indicator />
+              </Accordion.Trigger>
+            </Accordion.Heading>
+            <Accordion.Panel>
+              <Accordion.Body className='p-4 font-okxs text-balance'>
+                {item.answer}
+              </Accordion.Body>
+            </Accordion.Panel>
+          </Accordion.Item>
         ))}
       </Accordion>
       <div className='h-12' />

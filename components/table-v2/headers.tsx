@@ -1,6 +1,6 @@
 import {ClassName} from '@/app/types'
 import {cn} from '@/lib/utils'
-import {Tooltip} from '@/lib/heroui'
+import {Tooltip} from '@heroui/react'
 import {ReactNode} from 'react'
 
 interface HeaderProps {
@@ -20,7 +20,10 @@ export const ColHeader = ({
   right = false,
   className,
 }: HeaderProps) => (
-  <Tooltip content={tip} className='font-brk font-normal text-sm' offset={2}>
+  <Tooltip>
+    <Tooltip.Content className='font-brk font-normal text-sm'>
+      {tip}
+    </Tooltip.Content>
     <div
       className={cn(
         'w-full',

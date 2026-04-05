@@ -11,22 +11,23 @@ import type {Deal} from '@/convex/deals/d'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {Input} from '@heroui/input'
 import {
   Button,
   Card,
-  CardContent,
   Checkbox,
-  Input,
+  ListBoxItem,
   Modal,
+  ModalBackdrop,
   ModalBody,
-  ModalContent,
+  ModalContainer,
+  ModalDialog,
   ModalFooter,
   ModalHeader,
-  Select,
-  ListBoxItem,
   Switch,
-  type SharedSelection,
-} from '@/lib/heroui'
+} from '@heroui/react'
+import {Select} from '@heroui/select'
+import type {SharedSelection} from '@heroui/system'
 import {useMutation, useQuery} from 'convex/react'
 import {
   startTransition,
@@ -841,10 +842,8 @@ export const DealsContent = () => {
             {deals.map((deal, i) => (
               <Card
                 key={deal.id}
-                radius='none'
-                shadow='none'
                 className='border border-alum/30 rounded-xs overflow-hidden transition-colors hover:border-default-300/80'>
-                <CardContent className='p-0'>
+                <Card.Content className='p-0'>
                   <div className='flex items-start justify-between gap-3 p-4 pb-3'>
                     <div className='flex min-w-0 flex-1 items-start gap-3'>
                       <div className='min-w-0 flex-1'>
@@ -875,16 +874,15 @@ export const DealsContent = () => {
                       </div>
                       <Switch
                         size='sm'
-                        classNames={{
-                          wrapper: [
-                            'mt-0.5',
-                            deal.enabled ? 'bg-terpenes!' : '',
-                          ],
-                        }}
                         isSelected={deal.enabled}
-                        onValueChange={handleToggleEnabled(deal)}
+                        onChange={handleToggleEnabled(deal)}
                         aria-label={`${deal.enabled ? 'Disable' : 'Enable'} ${deal.title}`}
-                      />
+                        className='mt-0.5'>
+                        <Switch.Control
+                          className={cn(deal.enabled && 'bg-terpenes')}>
+                          <Switch.Thumb />
+                        </Switch.Control>
+                      </Switch>
                     </div>
                   </div>
                   <div className='flex items-center justify-between border-t border-default-200/60 bg-alum/15'>
@@ -901,7 +899,6 @@ export const DealsContent = () => {
                       <Button
                         size='sm'
                         isIconOnly
-                        radius='none'
                         variant='tertiary'
                         aria-label='Move up'
                         isDisabled={i === 0}
@@ -912,7 +909,6 @@ export const DealsContent = () => {
                       <Button
                         size='sm'
                         variant='tertiary'
-                        radius='none'
                         isIconOnly
                         aria-label='Move down'
                         isDisabled={i === deals.length - 1}
@@ -923,7 +919,6 @@ export const DealsContent = () => {
                       <div className='md:mx-3 w-px my-2 md:self-stretch bg-default-200' />
                       <Button
                         size='sm'
-                        radius='none'
                         variant='tertiary'
                         className='rounded-sm dark:bg-white/10 hover:bg-dark-table dark:hover:bg-white active:bg-dark-table dark:active:bg-white dark:active:text-dark-table hover:opacity-100! hover:text-white dark:hover:text-dark-table'
                         onPress={() => openEdit(deal)}>
@@ -931,16 +926,15 @@ export const DealsContent = () => {
                       </Button>
                       <Button
                         size='sm'
-                        radius='none'
-                        variant='tertiary'
-                        className='rounded-sm text-red-400 dark:text-red-300 hover:bg-red-600/10! dark:hover:bg-red-500/10'
+                        variant='danger-soft'
+                        className='rounded-sm'
                         onPress={() => setDeleteConfirmId(deal.id)}>
                         <Icon name='trash' className='size-4 md:hidden' />
                         <span className='hidden md:flex'>Delete</span>
                       </Button>
                     </div>
                   </div>
-                </CardContent>
+                </Card.Content>
               </Card>
             ))}
           </div>
@@ -950,468 +944,513 @@ export const DealsContent = () => {
       {/* Add/Edit modal */}
       <Modal
         isOpen={modalOpen}
-        onClose={closeModal}
-        size='4xl'
-        scrollBehavior='inside'
-        classNames={{
-          base: 'rounded-2xl',
-          header: 'border-b border-default-200 pb-4',
-          body: 'py-6',
-          footer: 'border-t border-default-200 pt-4',
+        onOpenChange={(open) => {
+          if (!open) closeModal()
         }}>
-        <ModalContent>
-          <ModalHeader className='flex flex-col gap-1'>
-            <span className='text-xs font-semibold uppercase tracking-widest text-foreground/50'>
-              {editingId ? 'Edit deal' : 'New deal'}
-            </span>
-            <h2 className='text-xl font-semibold text-foreground'>
-              {editingId ? form.title || form.id : 'Deal details'}
-            </h2>
-          </ModalHeader>
-          <ModalBody className='flex flex-col gap-8'>
-            {/* Identity */}
-            <div className='grid gap-4 sm:grid-cols-2'>
-              <Input
-                label='Deal ID (slug)'
-                placeholder='e.g. build-your-own-oz'
-                value={form.id}
-                onValueChange={(v) => setForm((f) => ({...f, id: v}))}
-                classNames={commonInputClassNames}
-                isRequired
-                isReadOnly={editingId != null}
-                description={
-                  editingId
-                    ? 'Cannot be changed when editing.'
-                    : 'Lowercase, hyphens. Used in cart and URLs.'
-                }
-              />
-              <Input
-                label='Title'
-                placeholder='e.g. Build Your Own Oz'
-                value={form.title}
-                onValueChange={(v) => setForm((f) => ({...f, title: v}))}
-                classNames={commonInputClassNames}
-                isRequired
-              />
-            </div>
-            <Input
-              label='Description'
-              placeholder='Short description shown on the store Deals page'
-              value={form.description}
-              onValueChange={(v) => setForm((f) => ({...f, description: v}))}
-              classNames={commonInputClassNames}
-            />
+        <ModalBackdrop>
+          <ModalContainer size='lg' scroll='inside'>
+            <ModalDialog className='max-w-4xl overflow-hidden rounded-2xl'>
+              <ModalHeader className='flex flex-col gap-1 border-b border-default-200 pb-4'>
+                <span className='text-xs font-semibold uppercase tracking-widest text-foreground/50'>
+                  {editingId ? 'Edit deal' : 'New deal'}
+                </span>
+                <h2 className='text-xl font-semibold text-foreground'>
+                  {editingId ? form.title || form.id : 'Deal details'}
+                </h2>
+              </ModalHeader>
+              <ModalBody className='flex flex-col gap-8 py-6'>
+                {/* Identity */}
+                <div className='grid gap-4 sm:grid-cols-2'>
+                  <Input
+                    label='Deal ID (slug)'
+                    placeholder='e.g. build-your-own-oz'
+                    value={form.id}
+                    onValueChange={(v) => setForm((f) => ({...f, id: v}))}
+                    classNames={commonInputClassNames}
+                    isRequired
+                    isReadOnly={editingId != null}
+                    description={
+                      editingId
+                        ? 'Cannot be changed when editing.'
+                        : 'Lowercase, hyphens. Used in cart and URLs.'
+                    }
+                  />
+                  <Input
+                    label='Title'
+                    placeholder='e.g. Build Your Own Oz'
+                    value={form.title}
+                    onValueChange={(v) => setForm((f) => ({...f, title: v}))}
+                    classNames={commonInputClassNames}
+                    isRequired
+                  />
+                </div>
+                <Input
+                  label='Description'
+                  placeholder='Short description shown on the store Deals page'
+                  value={form.description}
+                  onValueChange={(v) =>
+                    setForm((f) => ({...f, description: v}))
+                  }
+                  classNames={commonInputClassNames}
+                />
 
-            {/* Categories */}
-            <div className='space-y-5'>
-              <div>
-                <p className='text-base font-medium text-foreground'>
-                  Product Categories
-                </p>
-                <p className='text-xs text-foreground/55'>
-                  Which category slugs this deal applies to.
-                </p>
-              </div>
-              <div className='flex flex-wrap gap-5'>
-                {(categories ?? []).map((c) => (
-                  <Checkbox
-                    key={c._id}
-                    size='sm'
-                    color='default'
-                    icon={<Icon name='check' className='text-terpenes' />}
-                    classNames={{
-                      icon: 'bg-white text-terpenes rounded-full h-6 w-auto aspect-square flex items-center justify-center p-0.5',
-                      label: [
-                        'text-sm py-0 pe-3 font-medium capitalize',
-                        form.categorySlugs.includes(c.slug ?? '') &&
-                          'text-white',
-                      ],
-                      base:
-                        form.categorySlugs.includes(c.slug ?? '') &&
-                        'bg-terpenes rounded-full ps-2.5',
-                      wrapper:
-                        form.categorySlugs.includes(c.slug ?? '') &&
-                        'bg-terpenes! rounded-ful',
-                    }}
-                    isSelected={form.categorySlugs.includes(c.slug ?? '')}
-                    onValueChange={() => toggleCategory(c.slug ?? '')}>
-                    {c.slug ?? c.name}
-                  </Checkbox>
-                ))}
-                {(!categories || categories.length === 0) && (
-                  <span className='text-xs text-foreground/55'>
-                    No categories yet. Add them in Inventory first.
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Exclusions */}
-            <div className='space-y-3 p-4 dark:bg-dark-table/40'>
-              <div>
-                <p className='text-base font-medium text-foreground'>
-                  Exclusions
-                </p>
-                <p className='text-xs text-foreground/55'>
-                  Exclude specific tiers, subcategories, product types, bases,
-                  or brands from this deal.
-                </p>
-              </div>
-              <div className='space-y-6'>
-                {exclusionOptions.map(({field, label, options}) => (
-                  <div key={field} className='space-y-2'>
-                    <p className='text-xs font-bold uppercase tracking-wide text-foreground/60'>
-                      {label}
+                {/* Categories */}
+                <div className='space-y-5'>
+                  <div>
+                    <p className='text-base font-medium text-foreground'>
+                      Product Categories
                     </p>
-                    {options.length > 0 ? (
-                      <div className={cn('flex flex-wrap gap-5')}>
-                        {options.map((option) => (
-                          <Checkbox
-                            icon={<Icon name='x' />}
-                            key={`${field}-${option.slug}`}
-                            color='default'
-                            classNames={{
-                              label: [
-                                'text-sm py-0 pe-3 font-medium',
-                                form[field].includes(option.slug) &&
-                                  'text-white',
-                              ],
-                              base:
-                                form[field].includes(option.slug) &&
-                                'bg-rose-400 rounded-full',
-                            }}
-                            isSelected={form[field].includes(option.slug)}
-                            onValueChange={() =>
-                              toggleExclusion(field, option.slug)
-                            }>
-                            {option.name}
-                          </Checkbox>
-                        ))}
-                      </div>
-                    ) : (
+                    <p className='text-xs text-foreground/55'>
+                      Which category slugs this deal applies to.
+                    </p>
+                  </div>
+                  <div className='flex flex-wrap gap-5'>
+                    {(categories ?? []).map((c) => {
+                      const isSelected = form.categorySlugs.includes(
+                        c.slug ?? '',
+                      )
+                      return (
+                        <Checkbox
+                          key={c._id}
+                          variant='secondary'
+                          isSelected={isSelected}
+                          onChange={() => toggleCategory(c.slug ?? '')}
+                          className={cn(
+                            'inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 transition-colors',
+                            isSelected
+                              ? 'border-terpenes bg-terpenes text-white'
+                              : 'border-foreground/25 bg-transparent',
+                          )}>
+                          <Checkbox.Control className='shrink-0'>
+                            <Checkbox.Indicator>
+                              {({isSelected}) =>
+                                isSelected ? (
+                                  <Icon
+                                    name='check'
+                                    className='size-4 text-current'
+                                  />
+                                ) : null
+                              }
+                            </Checkbox.Indicator>
+                          </Checkbox.Control>
+                          <Checkbox.Content className='py-0 pe-3 text-sm font-medium capitalize'>
+                            {c.slug ?? c.name}
+                          </Checkbox.Content>
+                        </Checkbox>
+                      )
+                    })}
+                    {(!categories || categories.length === 0) && (
                       <span className='text-xs text-foreground/55'>
-                        Select categories with configured {label.toLowerCase()}.
+                        No categories yet. Add them in Inventory first.
                       </span>
                     )}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
 
-            {/* Variations */}
-            <div className='space-y-5'>
-              <div>
-                <p className='text-base font-medium text-foreground'>
-                  Variations
-                </p>
-                <p className='text-xs text-foreground/55'>
-                  {`Each variation is one option (e.g. 8 × 3.5g or 4 × 7g). At least one
+                {/* Exclusions */}
+                <div className='space-y-3 p-4 dark:bg-dark-table/40'>
+                  <div>
+                    <p className='text-base font-medium text-foreground'>
+                      Exclusions
+                    </p>
+                    <p className='text-xs text-foreground/55'>
+                      Exclude specific tiers, subcategories, product types,
+                      bases, or brands from this deal.
+                    </p>
+                  </div>
+                  <div className='space-y-6'>
+                    {exclusionOptions.map(({field, label, options}) => (
+                      <div key={field} className='space-y-2'>
+                        <p className='text-xs font-bold uppercase tracking-wide text-foreground/60'>
+                          {label}
+                        </p>
+                        {options.length > 0 ? (
+                          <div className={cn('flex flex-wrap gap-5')}>
+                            {options.map((option) => {
+                              const isSelected = form[field].includes(
+                                option.slug,
+                              )
+                              return (
+                                <Checkbox
+                                  key={`${field}-${option.slug}`}
+                                  variant='secondary'
+                                  isSelected={isSelected}
+                                  onChange={() =>
+                                    toggleExclusion(field, option.slug)
+                                  }
+                                  className={cn(
+                                    'inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 transition-colors',
+                                    isSelected
+                                      ? 'border-rose-400 bg-rose-400 text-white'
+                                      : 'border-foreground/25 bg-transparent',
+                                  )}>
+                                  <Checkbox.Control className='shrink-0'>
+                                    <Checkbox.Indicator>
+                                      {({isSelected}) =>
+                                        isSelected ? (
+                                          <Icon
+                                            name='x'
+                                            className='size-4 text-current'
+                                          />
+                                        ) : null
+                                      }
+                                    </Checkbox.Indicator>
+                                  </Checkbox.Control>
+                                  <Checkbox.Content className='py-0 pe-3 text-sm font-medium'>
+                                    {option.name}
+                                  </Checkbox.Content>
+                                </Checkbox>
+                              )
+                            })}
+                          </div>
+                        ) : (
+                          <span className='text-xs text-foreground/55'>
+                            Select categories with configured{' '}
+                            {label.toLowerCase()}.
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Variations */}
+                <div className='space-y-5'>
+                  <div>
+                    <p className='text-base font-medium text-foreground'>
+                      Variations
+                    </p>
+                    <p className='text-xs text-foreground/55'>
+                      {`Each variation is one option (e.g. 8 × 3.5g or 4 × 7g). At least one
                   required.`}
-                </p>
-              </div>
-              <div className='space-y-5'>
-                {form.variations.map((v, idx) => {
-                  const variationCategory = selectedCategories.find(
-                    (category) => category.slug === v.categorySlug,
-                  )
-                  const variationCategoryAttributes = getCategoryAttributes(
-                    variationCategory ? [variationCategory] : [],
-                  )
-                  const denominationOptions = getDenominationOptions(
-                    variationCategoryAttributes,
-                    v.unitLabel,
-                  )
-                  const hasCategoryDenominations =
-                    variationCategoryAttributes.denominations.length > 0
-                  const hasCategoryUnits =
-                    variationCategoryAttributes.units.length > 0
+                    </p>
+                  </div>
+                  <div className='space-y-5'>
+                    {form.variations.map((v, idx) => {
+                      const variationCategory = selectedCategories.find(
+                        (category) => category.slug === v.categorySlug,
+                      )
+                      const variationCategoryAttributes = getCategoryAttributes(
+                        variationCategory ? [variationCategory] : [],
+                      )
+                      const denominationOptions = getDenominationOptions(
+                        variationCategoryAttributes,
+                        v.unitLabel,
+                      )
+                      const hasCategoryDenominations =
+                        variationCategoryAttributes.denominations.length > 0
+                      const hasCategoryUnits =
+                        variationCategoryAttributes.units.length > 0
 
-                  return (
-                    <div
-                      key={idx}
-                      className='relative rounded-lg border border-default-200/80 bg-default-50/30 dark:bg-default-100/5 p-4'>
-                      <div className='grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4'>
-                        <Select
-                          label='Category'
-                          placeholder={
-                            variationCategoryOptions.length > 0
-                              ? 'Select category'
-                              : 'Select categories first'
-                          }
-                          selectedKeys={
-                            v.categorySlug
-                              ? new Set([v.categorySlug])
-                              : new Set()
-                          }
-                          onSelectionChange={(keys) => {
-                            const nextValue = getSingleSelectedKey(keys)
-                            if (!nextValue) return
+                      return (
+                        <div
+                          key={idx}
+                          className='relative rounded-lg border border-default-200/80 bg-default-50/30 dark:bg-default-100/5 p-4'>
+                          <div className='grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4'>
+                            <Select
+                              label='Category'
+                              placeholder={
+                                variationCategoryOptions.length > 0
+                                  ? 'Select category'
+                                  : 'Select categories first'
+                              }
+                              selectedKeys={
+                                v.categorySlug
+                                  ? new Set([v.categorySlug])
+                                  : new Set()
+                              }
+                              onSelectionChange={(keys) => {
+                                const nextValue = getSingleSelectedKey(keys)
+                                if (!nextValue) return
 
-                            updateVariation(
-                              idx,
-                              (variation) =>
-                                syncVariationsWithCategoryAttributes(
-                                  [{...variation, categorySlug: nextValue}],
-                                  selectedCategories,
-                                )[0],
-                            )
-                          }}
-                          classNames={variationSelectClassNames}
-                          isDisabled={variationCategoryOptions.length === 0}>
-                          {variationCategoryOptions.map((option) => (
-                            <ListBoxItem
-                              key={option.value}
-                              textValue={option.label}>
-                              {option.label}
-                            </ListBoxItem>
-                          ))}
-                        </Select>
-                        <Input
-                          label='Total units'
-                          type='number'
-                          min={1}
-                          value={v.totalUnits}
-                          onValueChange={(val) =>
-                            updateVariation(idx, (variation) => ({
-                              ...variation,
-                              totalUnits: val,
-                            }))
-                          }
-                          classNames={commonInputClassNames}
-                        />
-                        <Select
-                          label='Size per unit'
-                          placeholder={
-                            hasCategoryDenominations
-                              ? 'Select denomination'
-                              : 'Select categories first'
-                          }
-                          selectedKeys={
-                            hasCategoryDenominations
-                              ? new Set([v.denominationPerUnit])
-                              : new Set()
-                          }
-                          onSelectionChange={(keys) => {
-                            const nextValue = getSingleSelectedKey(keys)
-                            if (!nextValue) return
+                                updateVariation(
+                                  idx,
+                                  (variation) =>
+                                    syncVariationsWithCategoryAttributes(
+                                      [{...variation, categorySlug: nextValue}],
+                                      selectedCategories,
+                                    )[0],
+                                )
+                              }}
+                              classNames={variationSelectClassNames}
+                              isDisabled={
+                                variationCategoryOptions.length === 0
+                              }>
+                              {variationCategoryOptions.map((option) => (
+                                <ListBoxItem
+                                  key={option.value}
+                                  textValue={option.label}>
+                                  {option.label}
+                                </ListBoxItem>
+                              ))}
+                            </Select>
+                            <Input
+                              label='Total units'
+                              type='number'
+                              min={1}
+                              value={v.totalUnits}
+                              onValueChange={(val) =>
+                                updateVariation(idx, (variation) => ({
+                                  ...variation,
+                                  totalUnits: val,
+                                }))
+                              }
+                              classNames={commonInputClassNames}
+                            />
+                            <Select
+                              label='Size per unit'
+                              placeholder={
+                                hasCategoryDenominations
+                                  ? 'Select denomination'
+                                  : 'Select categories first'
+                              }
+                              selectedKeys={
+                                hasCategoryDenominations
+                                  ? new Set([v.denominationPerUnit])
+                                  : new Set()
+                              }
+                              onSelectionChange={(keys) => {
+                                const nextValue = getSingleSelectedKey(keys)
+                                if (!nextValue) return
 
-                            updateVariation(idx, (variation) => ({
-                              ...variation,
-                              denominationPerUnit: nextValue,
-                              denominationLabel: getDenominationLabel(
-                                nextValue,
-                                variation.unitLabel,
-                              ),
-                            }))
-                          }}
-                          classNames={variationSelectClassNames}
-                          isDisabled={!hasCategoryDenominations}>
-                          {denominationOptions.map((option) => (
-                            <ListBoxItem
-                              key={option.value}
-                              textValue={option.label}>
-                              {option.label}
-                            </ListBoxItem>
-                          ))}
-                        </Select>
-                        {/*<Input
+                                updateVariation(idx, (variation) => ({
+                                  ...variation,
+                                  denominationPerUnit: nextValue,
+                                  denominationLabel: getDenominationLabel(
+                                    nextValue,
+                                    variation.unitLabel,
+                                  ),
+                                }))
+                              }}
+                              classNames={variationSelectClassNames}
+                              isDisabled={!hasCategoryDenominations}>
+                              {denominationOptions.map((option) => (
+                                <ListBoxItem
+                                  key={option.value}
+                                  textValue={option.label}>
+                                  {option.label}
+                                </ListBoxItem>
+                              ))}
+                            </Select>
+                            {/*<Input
                           label='Display label'
                           value={v.denominationLabel}
                           isReadOnly
                           description='Auto-derived from the selected size and unit.'
                           classNames={commonInputClassNames}
                         />*/}
-                        <Select
-                          label='Unit'
-                          placeholder={
-                            hasCategoryUnits
-                              ? 'Select unit'
-                              : 'Select categories first'
-                          }
-                          selectedKeys={
-                            hasCategoryUnits
-                              ? new Set([v.unitLabel])
-                              : new Set()
-                          }
-                          onSelectionChange={(keys) => {
-                            const nextValue = getSingleSelectedKey(keys)
-                            if (!nextValue) return
+                            <Select
+                              label='Unit'
+                              placeholder={
+                                hasCategoryUnits
+                                  ? 'Select unit'
+                                  : 'Select categories first'
+                              }
+                              selectedKeys={
+                                hasCategoryUnits
+                                  ? new Set([v.unitLabel])
+                                  : new Set()
+                              }
+                              onSelectionChange={(keys) => {
+                                const nextValue = getSingleSelectedKey(keys)
+                                if (!nextValue) return
 
-                            updateVariation(idx, (variation) => ({
-                              ...variation,
-                              unitLabel: nextValue,
-                              denominationLabel: getDenominationLabel(
-                                variation.denominationPerUnit,
-                                nextValue,
-                              ),
-                            }))
-                          }}
-                          classNames={variationSelectClassNames}
-                          isDisabled={!hasCategoryUnits}>
-                          {variationCategoryAttributes.units.map((option) => (
-                            <ListBoxItem
-                              key={option.value}
-                              textValue={option.label}>
-                              {option.label}
-                            </ListBoxItem>
-                          ))}
-                        </Select>
-                      </div>
-                      {variationCategoryOptions.length === 0 && (
-                        <p className='mt-3 text-xs text-foreground/55'>
-                          Choose at least one deal category before configuring
-                          variation categories.
-                        </p>
-                      )}
-                      {variationCategoryOptions.length > 0 &&
-                        !hasCategoryDenominations &&
-                        !hasCategoryUnits && (
-                          <p className='mt-3 text-xs text-foreground/55'>
-                            The selected variation category has no packaging
-                            data yet. Add denominations and units in Inventory
-                            first.
-                          </p>
-                        )}
-                      <Button
-                        size='sm'
-                        color='default'
-                        variant='tertiary'
-                        isIconOnly
-                        className='absolute -top-4 -right-2 hover:text-danger'
-                        isDisabled={form.variations.length <= 1}
-                        onPress={() =>
-                          setForm((f) => ({
-                            ...f,
-                            variations: f.variations.filter(
-                              (_, i) => i !== idx,
-                            ),
-                          }))
-                        }>
-                        <Icon name='x' />
-                      </Button>
-                    </div>
-                  )
-                })}
-                <Button
-                  size='sm'
-                  variant='secondary'
-                  onPress={() =>
-                    setForm((f) => ({
-                      ...f,
-                      variations: [
-                        ...f.variations,
-                        emptyVariation(selectedCategories),
-                      ],
-                    }))
-                  }>
-                  Add variation
+                                updateVariation(idx, (variation) => ({
+                                  ...variation,
+                                  unitLabel: nextValue,
+                                  denominationLabel: getDenominationLabel(
+                                    variation.denominationPerUnit,
+                                    nextValue,
+                                  ),
+                                }))
+                              }}
+                              classNames={variationSelectClassNames}
+                              isDisabled={!hasCategoryUnits}>
+                              {variationCategoryAttributes.units.map(
+                                (option) => (
+                                  <ListBoxItem
+                                    key={option.value}
+                                    textValue={option.label}>
+                                    {option.label}
+                                  </ListBoxItem>
+                                ),
+                              )}
+                            </Select>
+                          </div>
+                          {variationCategoryOptions.length === 0 && (
+                            <p className='mt-3 text-xs text-foreground/55'>
+                              Choose at least one deal category before
+                              configuring variation categories.
+                            </p>
+                          )}
+                          {variationCategoryOptions.length > 0 &&
+                            !hasCategoryDenominations &&
+                            !hasCategoryUnits && (
+                              <p className='mt-3 text-xs text-foreground/55'>
+                                The selected variation category has no packaging
+                                data yet. Add denominations and units in
+                                Inventory first.
+                              </p>
+                            )}
+                          <Button
+                            size='sm'
+                            variant='tertiary'
+                            isIconOnly
+                            className='absolute -top-4 -right-2 hover:text-danger'
+                            isDisabled={form.variations.length <= 1}
+                            onPress={() =>
+                              setForm((f) => ({
+                                ...f,
+                                variations: f.variations.filter(
+                                  (_, i) => i !== idx,
+                                ),
+                              }))
+                            }>
+                            <Icon name='x' />
+                          </Button>
+                        </div>
+                      )
+                    })}
+                    <Button
+                      size='sm'
+                      variant='secondary'
+                      onPress={() =>
+                        setForm((f) => ({
+                          ...f,
+                          variations: [
+                            ...f.variations,
+                            emptyVariation(selectedCategories),
+                          ],
+                        }))
+                      }>
+                      Add variation
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Rules */}
+                <div className='space-y-3'>
+                  <p className='text-base font-medium text-foreground'>Rules</p>
+                  <div className='grid gap-4 sm:grid-cols-3'>
+                    <Input
+                      label='Default variation'
+                      type='number'
+                      min={0}
+                      value={form.defaultVariationIndex}
+                      onValueChange={(v) =>
+                        setForm((f) => ({...f, defaultVariationIndex: v}))
+                      }
+                      classNames={commonInputClassNames}
+                      description='Index (0 = first)'
+                    />
+                    <Input
+                      label='Max per strain'
+                      type='number'
+                      min={1}
+                      value={form.maxPerStrain}
+                      onValueChange={(v) =>
+                        setForm((f) => ({...f, maxPerStrain: v}))
+                      }
+                      classNames={commonInputClassNames}
+                      description='Same product per bundle'
+                    />
+                    <Input
+                      label='Low stock limit'
+                      type='number'
+                      min={0}
+                      placeholder='Optional'
+                      value={form.lowStockThreshold}
+                      onValueChange={(v) =>
+                        setForm((f) => ({...f, lowStockThreshold: v}))
+                      }
+                      classNames={commonInputClassNames}
+                      description='When stock ≤ this, 1 per strain'
+                    />
+                  </div>
+                </div>
+
+                {editingId != null && (
+                  <div className='rounded-lg border border-default-200/80 bg-default-50/30 dark:bg-default-100/5 p-3'>
+                    <Checkbox
+                      variant='secondary'
+                      isSelected={form.enabled}
+                      onChange={(isSelected) =>
+                        setForm((f) => ({...f, enabled: isSelected}))
+                      }
+                      className='flex items-center gap-2'>
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Content className='text-sm'>
+                        Visible on store Deals page
+                      </Checkbox.Content>
+                    </Checkbox>
+                  </div>
+                )}
+
+                <ViewTransition>
+                  {saveMessage === 'error' && (
+                    <p className='text-sm text-destructive'>
+                      Save failed. Try again.
+                    </p>
+                  )}
+                </ViewTransition>
+              </ModalBody>
+              <ModalFooter className='gap-2 border-t border-default-200 pt-4'>
+                <Button variant='tertiary' onPress={closeModal}>
+                  Cancel
                 </Button>
-              </div>
-            </div>
-
-            {/* Rules */}
-            <div className='space-y-3'>
-              <p className='text-base font-medium text-foreground'>Rules</p>
-              <div className='grid gap-4 sm:grid-cols-3'>
-                <Input
-                  label='Default variation'
-                  type='number'
-                  min={0}
-                  value={form.defaultVariationIndex}
-                  onValueChange={(v) =>
-                    setForm((f) => ({...f, defaultVariationIndex: v}))
-                  }
-                  classNames={commonInputClassNames}
-                  description='Index (0 = first)'
-                />
-                <Input
-                  label='Max per strain'
-                  type='number'
-                  min={1}
-                  value={form.maxPerStrain}
-                  onValueChange={(v) =>
-                    setForm((f) => ({...f, maxPerStrain: v}))
-                  }
-                  classNames={commonInputClassNames}
-                  description='Same product per bundle'
-                />
-                <Input
-                  label='Low stock limit'
-                  type='number'
-                  min={0}
-                  placeholder='Optional'
-                  value={form.lowStockThreshold}
-                  onValueChange={(v) =>
-                    setForm((f) => ({...f, lowStockThreshold: v}))
-                  }
-                  classNames={commonInputClassNames}
-                  description='When stock ≤ this, 1 per strain'
-                />
-              </div>
-            </div>
-
-            {editingId != null && (
-              <div className='rounded-lg border border-default-200/80 bg-default-50/30 dark:bg-default-100/5 p-3'>
-                <Checkbox
-                  classNames={{label: 'text-sm'}}
-                  isSelected={form.enabled}
-                  onValueChange={(v) => setForm((f) => ({...f, enabled: v}))}>
-                  Visible on store Deals page
-                </Checkbox>
-              </div>
-            )}
-
-            <ViewTransition>
-              {saveMessage === 'error' && (
-                <p className='text-sm text-destructive'>
-                  Save failed. Try again.
-                </p>
-              )}
-            </ViewTransition>
-          </ModalBody>
-          <ModalFooter className='gap-2'>
-            <Button variant='tertiary' onPress={closeModal}>
-              Cancel
-            </Button>
-            <Button
-              color='primary'
-              onPress={handleSave}
-              isLoading={isSaving}
-              isDisabled={!formToDealPatch(form)}
-              className='bg-dark-table dark:bg-white dark:text-dark-table'>
-              {editingId ? 'Save changes' : 'Add deal'}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
+                <Button
+                  variant='primary'
+                  onPress={handleSave}
+                  isDisabled={!formToDealPatch(form) || isSaving}
+                  className='bg-dark-table dark:bg-white dark:text-dark-table'>
+                  {isSaving
+                    ? 'Saving...'
+                    : editingId
+                      ? 'Save changes'
+                      : 'Add deal'}
+                </Button>
+              </ModalFooter>
+            </ModalDialog>
+          </ModalContainer>
+        </ModalBackdrop>
       </Modal>
 
       {/* Delete confirm */}
       <Modal
         isOpen={deleteConfirmId != null}
-        onClose={() => setDeleteConfirmId(null)}
-        size='sm'>
-        <ModalContent>
-          <ModalHeader className='font-okxs font-semibold'>
-            Delete deal
-          </ModalHeader>
-          <ModalBody>
-            <p className='text-sm text-foreground/80'>
-              Remove this deal? It will disappear from the store. Existing cart
-              bundles may still reference it until cleared.
-            </p>
-          </ModalBody>
-          <ModalFooter className='gap-2'>
-            <Button variant='tertiary' onPress={() => setDeleteConfirmId(null)}>
-              Cancel
-            </Button>
-            <Button
-              color='danger'
-              onPress={handleDelete}
-              isLoading={isDeleting}>
-              Delete
-            </Button>
-          </ModalFooter>
-        </ModalContent>
+        onOpenChange={(open) => {
+          if (!open) setDeleteConfirmId(null)
+        }}>
+        <ModalBackdrop>
+          <ModalContainer size='sm'>
+            <ModalDialog className='rounded-2xl overflow-hidden'>
+              <ModalHeader className='font-okxs font-semibold'>
+                Delete deal
+              </ModalHeader>
+              <ModalBody>
+                <p className='text-sm text-foreground/80'>
+                  Remove this deal? It will disappear from the store. Existing
+                  cart bundles may still reference it until cleared.
+                </p>
+              </ModalBody>
+              <ModalFooter className='gap-2'>
+                <Button
+                  variant='tertiary'
+                  onPress={() => setDeleteConfirmId(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant='danger'
+                  onPress={handleDelete}
+                  isDisabled={isDeleting}>
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </Button>
+              </ModalFooter>
+            </ModalDialog>
+          </ModalContainer>
+        </ModalBackdrop>
       </Modal>
     </div>
   )

@@ -6,11 +6,14 @@ import {Doc} from '@/convex/_generated/dataModel'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Card, Chip, Image} from '@/lib/heroui'
+import {Button, Card, Chip} from '@heroui/react'
 import {useMutation} from 'convex/react'
 import {formatDistanceToNow} from 'date-fns'
 import Link from 'next/link'
 import {startTransition, useState} from 'react'
+
+
+import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
 type CategoryListItem = Doc<'categories'> & {
   productCount: number
@@ -153,7 +156,6 @@ const CategoryCard = ({
 
   return (
     <Card
-      shadow='none'
       className={cn(
         'h-full overflow-hidden border border-black/10 bg-white/80 hover:border-emerald-500/20 hover:bg-white dark:border-white/10 dark:bg-dark-table/45 dark:hover:border-emerald-400/30 dark:hover:bg-dark-table/60 transition-all duration-300',
         {
@@ -187,7 +189,6 @@ const CategoryCard = ({
           <Chip
             size='sm'
             variant='tertiary'
-            radius='none'
             className={cn(
               'border px-2 text-[11px] font-semibold rounded-sm',
               category.visible === false
@@ -210,7 +211,7 @@ const CategoryCard = ({
             isIconOnly
             variant='tertiary'
             aria-label={`Drag to reorder ${category.name}`}
-            disabled={dragHandleDisabled}
+            isDisabled={dragHandleDisabled}
             onPointerDown={() => onDragHandlePointerDown?.()}
             className='group/handle flex cursor-grab active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40 text-white'>
             <Icon name='dots-fill' className='size-5' />
@@ -408,13 +409,11 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
             <Chip
               size='sm'
               variant='tertiary'
-              radius='none'
               className='bg-emerald-500/10 font-okxs text-emerald-700 dark:text-emerald-300 rounded-sm'>
               {liveCategories} Live
             </Chip>
             <Chip
               size='sm'
-              radius='none'
               variant='tertiary'
               className='bg-orange-500/10 text-orange-700 dark:text-orange-200 rounded-sm'>
               {totalCategories - liveCategories} Hidden
@@ -428,8 +427,7 @@ export const CategoryList = ({categories}: CurrentCategoriesProps) => {
           <Button
             key={filter.id}
             size='sm'
-            radius='none'
-            variant={activeFilter === filter.id ? 'solid' : 'flat'}
+            variant={activeFilter === filter.id ? 'primary' : 'tertiary'}
             className={cn(
               'text-sm h-6! gap-1.5 rounded-md pe-1.5',
               activeFilter === filter.id

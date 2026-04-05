@@ -5,12 +5,15 @@ import {Icon} from '@/lib/icons'
 import {
   InputOTP,
   Modal,
+  ModalBackdrop,
   ModalBody,
-  ModalContent,
+  ModalContainer,
+  ModalDialog,
   ModalFooter,
   ModalHeader,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {useRouter} from 'next/navigation'
+import type {ReactNode} from 'react'
 import {useState} from 'react'
 
 interface ProtectedModalProps {
@@ -18,6 +21,20 @@ interface ProtectedModalProps {
   storageKey: string
   access: ReturnType<typeof useToggle>
 }
+
+const ModalContent = ({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) => (
+  <ModalBackdrop className='bg-black backdrop-opacity-80'>
+    <ModalContainer size='md'>
+      <ModalDialog className={className}>{children}</ModalDialog>
+    </ModalContainer>
+  </ModalBackdrop>
+)
 
 export function ProtectedModal({
   accessCode,
@@ -59,20 +76,8 @@ export function ProtectedModal({
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={() => {}} // Prevent closing without confirmation
-      hideCloseButton
-      isDismissable={false}
-      isKeyboardDismissDisabled={true}
-      placement='top-center'
-      size='md'
-      classNames={{
-        backdrop: 'bg-black backdrop-opacity-80',
-        body: 'border-0 border-white',
-        wrapper: 'flex items-start!',
-      }}>
-      <ModalContent className='age-verification-modal mt-20 w-full max-w-md rounded-none border-0 bg-linear-to-b from-indigo-300/35 from-35% via-slate-800/60 to-slate-950/60 py-8 px-6 shadow-2xl relative'>
+    <Modal isOpen={isOpen}>
+      <ModalContent className='flex items-start! mt-20 w-full max-w-md rounded-none border-0 bg-linear-to-b from-indigo-300/35 from-35% via-slate-800/60 to-slate-950/60 py-8 px-6 shadow-2xl relative'>
         <div className='absolute -bottom-84 left-1/2 -translate-x-1/2 size-160 aspect-square rounded-t-[14rem] bg-linear-to-t from-slate-950 via-slate-800 to-slate-950/80 blur-sm' />
         <div className='absolute -bottom-12 -right-18 w-50 h-32 rounded-full bg-linear-to-r from-slate-200/80 to-slate-200 blur-3xl rotate-45' />
         <ModalHeader className='pb-32 pt-10 flex items-start justify-between'>
@@ -85,28 +90,34 @@ export function ProtectedModal({
           <div className='max-w-[22ch] text-center mx-auto relative z-100 pt-3 text-lg font-semibold text-white'>
             Dev Layer Access Required
           </div>
-          <div className=' relative z-100 text-center text-sm font-normal text-light-gray'>
+          <div className='relative z-100 text-center text-sm font-normal text-light-gray'>
             Obtain your 6 digit code from our comms channel
           </div>
         </ModalBody>
         <ModalFooter className='pt-8 pb-4 flex-col gap-2'>
           <div className='flex w-full justify-center flex-nowrap gap-4'>
             <InputOTP
-              length={6}
-              radius='full'
-              size='lg'
+              maxLength={6}
               type='password'
               variant='secondary'
               className='text-xl dark:text-dark-gray'
-              classNames={{
-                caret: 'text-4xl font-bold',
-                segmentWrapper: 'space-x-1 md:space-x-2',
-                segment: 'dark:bg-white/40 text-black',
-                input: 'dark:text-dark-gray text-4xl',
-              }}
-              errorMessage=''
-              onComplete={handleComplete}
-            />
+              // classNames={{
+              //   caret: 'text-4xl font-bold',
+              //   segmentWrapper: 'space-x-1 md:space-x-2',
+              //   segment: 'dark:bg-white/40 text-black',
+              //   input: 'dark:text-dark-gray text-4xl',
+              // }}
+              // errorMessage=''
+              onComplete={handleComplete}>
+              <InputOTP.Group>
+                <InputOTP.Slot index={0} />
+                <InputOTP.Slot index={1} />
+                <InputOTP.Slot index={2} />
+                <InputOTP.Slot index={3} />
+                <InputOTP.Slot index={4} />
+                <InputOTP.Slot index={5} />
+              </InputOTP.Group>
+            </InputOTP>
           </div>
           <div className='space-y-4 pt-4'>
             <button

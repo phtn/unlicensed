@@ -14,9 +14,10 @@ import {DialogWindow} from '@/components/ui/window'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {useGuestChatCtx} from '@/ctx/guest-chat'
-import {Avatar, ListBoxItem, Select} from '@/lib/heroui'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {getInitials} from '@/utils/initials'
+import {Avatar, ListBox, Select} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {
@@ -41,6 +42,12 @@ type ConversationItem = {
   id: string
   fid: string
   displayName: string
+  avatarUrl: string | null
+}
+
+type ChatSelectItem = {
+  id: string
+  label: string
   avatarUrl: string | null
 }
 
@@ -293,14 +300,14 @@ export function ChatWindow({
     : ASSISTANT_VALUE
 
   const selectItems = useMemo(
-    () => [
+    (): ChatSelectItem[] => [
       {
-        key: ASSISTANT_VALUE,
+        id: ASSISTANT_VALUE,
         label: ASSISTANT_NAME,
         avatarUrl: ASSISTANT_AVATAR,
       },
       ...conversationItems.map((conversation) => ({
-        key: conversation.fid,
+        id: conversation.fid,
         label: conversation.displayName,
         avatarUrl: conversation.avatarUrl,
       })),
@@ -313,12 +320,9 @@ export function ChatWindow({
 
   const guestHeader = (
     <div className='flex min-w-0 items-center gap-2 ps-1'>
-      <Avatar
-        alt={activeConversationItem?.displayName ?? 'Support'}
-        className='shrink-0 bg-sidebar dark:bg-dark-table'
-        name={activeConversationItem?.displayName ?? 'Support'}
-        size='sm'
-        src={activeConversationItem?.avatarUrl ?? undefined}
+      <ChatParticipantAvatar
+        label={activeConversationItem?.displayName ?? 'Support'}
+        avatarUrl={activeConversationItem?.avatarUrl ?? null}
       />
       <div className='min-w-0'>
         <p className='truncate text-sm font-clash font-medium'>
@@ -384,49 +388,46 @@ export function ChatWindow({
         ) : (
           <div className='w-1/2 min-w-0'>
             <Select
-              items={selectItems}
-              selectedKeys={[conversationSelectValue]}
-              onSelectionChange={(keys) => {
-                const key = Array.from(keys)[0] as string
+              selectedKey={conversationSelectValue}
+              onSelectionChange={(key) => {
+                const nextFid =
+                  key == null
+                    ? null
+                    : typeof key === 'string'
+                      ? key
+                      : String(key)
+
                 setSelectedConversation({
-                  fid: key === ASSISTANT_VALUE || !key ? null : key,
+                  fid: nextFid === ASSISTANT_VALUE || !nextFid ? null : nextFid,
                   requestKey: conversationSelectionKey,
                 })
               }}
-              size='sm'
-              variant='tertiary'
-              classNames={{
-                trigger:
-                  'min-h-8 h-8 w-full bg-sidebar/40 shadow-none data-[hover=true]:bg-sidebar',
-                value:
-                  'text-sm md:text-base font-medium font-clash ring-brand outline-brand',
-                popoverContent: '-mt-1',
-                listbox: 'px-2',
-                innerWrapper: 'ps-1',
-              }}
+              variant='secondary'
+              className='w-full'
               aria-label='Select conversation'>
-              {(item) => (
-                <ListBoxItem
-                  key={item.key}
-                  textValue={item.label}
-                  className='hover:bg-sidebar!'>
-                  <div className='flex items-center gap-2'>
-                    <Avatar
-                      alt={item.label}
-                      className='shrink-0 bg-sidebar dark:bg-dark-table'
-                      name={item.label}
-                      size='sm'
-                      fallback={
-                        <span className='font-polysans font-semibold text-xl text-brand'>
-                          {item.label?.substring(0, 1).toUpperCase()}
-                        </span>
-                      }
-                      src={item.avatarUrl ?? undefined}
-                    />
-                    <span>{item.label}</span>
-                  </div>
-                </ListBoxItem>
-              )}
+              <Select.Trigger className='min-h-8 h-8 w-full bg-sidebar/40 shadow-none data-[hover=true]:bg-sidebar'>
+                <Select.Value className='text-sm md:text-base font-medium font-clash ring-brand outline-brand' />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover className='-mt-1'>
+                <ListBox className='px-2'>
+                  {selectItems.map((item) => (
+                    <ListBox.Item
+                      id={item.id}
+                      key={item.id}
+                      textValue={item.label}
+                      className='hover:bg-sidebar!'>
+                      <div className='flex items-center gap-2'>
+                        <ChatParticipantAvatar
+                          label={item.label}
+                          avatarUrl={item.avatarUrl}
+                        />
+                        <span>{item.label}</span>
+                      </div>
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
             </Select>
           </div>
         )
@@ -492,5 +493,22 @@ export function ChatWindow({
         </div>
       </div>
     </DialogWindow>
+  )
+}
+
+const ChatParticipantAvatar = ({
+  label,
+  avatarUrl,
+}: {
+  label: string
+  avatarUrl: string | null
+}) => {
+  return (
+    <Avatar className='shrink-0 bg-sidebar dark:bg-dark-table' size='sm'>
+      {avatarUrl ? <Avatar.Image alt={label} src={avatarUrl} /> : null}
+      <Avatar.Fallback className='font-polysans font-semibold text-sm text-brand'>
+        {getInitials(label)}
+      </Avatar.Fallback>
+    </Avatar>
   )
 }

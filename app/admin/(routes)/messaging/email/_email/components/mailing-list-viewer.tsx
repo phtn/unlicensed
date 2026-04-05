@@ -5,7 +5,7 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {formatTimestamp} from '@/utils/date'
-import {Button, Card, CardContent, CardHeader} from '@/lib/heroui'
+import {Button, Card, CardContent, CardHeader} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useRouter} from 'next/navigation'
@@ -92,8 +92,7 @@ export const MailingListViewer = ({id}: {id: string}) => {
             <Button
               type='button'
               variant='tertiary'
-              radius='none'
-              onPress={navigateBack}
+                            onPress={navigateBack}
               className='rounded-xl border border-greyed/15 bg-background/45'>
               Back to Mailing Lists
             </Button>
@@ -176,7 +175,7 @@ export const MailingListViewer = ({id}: {id: string}) => {
               <div className='flex items-center space-x-2'>
                 <Button
                   size='sm'
-                  variant={isEditing ? 'flat' : 'solid'}
+                  variant={isEditing ? 'secondary' : 'primary'}
                   onPress={() => setIsEditing((current) => !current)}
                   className='rounded-md bg-dark-table text-sm text-white dark:bg-white dark:text-dark-table'>
                   {isEditing ? 'Close Editor' : 'Edit List'}

@@ -2,6 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
+import {Avatar} from '@heroui/avatar'
 import {
   Card,
   Table,
@@ -10,8 +11,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  User,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 import {dateCell} from './ui/cells'
@@ -32,14 +32,17 @@ export const PersonnelTable = () => {
     switch (columnKey) {
       case 'user':
         return (
-          <User
-            name={user.name}
-            description={user.email}
-            avatarProps={{
-              src: user.photoUrl,
-              size: 'sm',
-            }}
-          />
+          <div className='flex items-center gap-2'>
+            <Avatar
+              src={user.photoUrl}
+              size='sm'
+              className='shrink-0'
+            />
+            <div>
+              <p className='text-sm font-medium'>{user.name}</p>
+              {user.email && <p className='text-xs text-default-400'>{user.email}</p>}
+            </div>
+          </div>
         )
       case 'email':
         return (
@@ -76,28 +79,24 @@ export const PersonnelTable = () => {
   )
 
   return (
-    <Card shadow='sm' className='p-4'>
+    <Card className='p-4'>
       {/*<div className='flex items-center justify-between mb-4'>
         <h2 className='text-lg font-semibold font-space'>Personnel</h2>
         <p className='text-sm text-gray-400'>{users?.length} users</p>
       </div>*/}
-      <Table
-        isCompact
-        removeWrapper
-        aria-label='Personnel table'
-        classNames={classNames}>
+      <Table aria-label='Personnel table'>
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn key={column.uid} align='start'>
+            <TableColumn key={column.uid}>
               {column.name}
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={'No users found'} items={users ?? []}>
+        <TableBody items={users ?? []}>
           {(user) => (
-            <TableRow key={user._id} className='h-16'>
+            <TableRow key={String(user._id)} className='h-16'>
               {(columnKey) => (
-                <TableCell>{renderCell(user, columnKey)}</TableCell>
+                <TableCell>{renderCell(user, columnKey as unknown as React.Key)}</TableCell>
               )}
             </TableRow>
           )}

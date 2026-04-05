@@ -6,12 +6,22 @@ import {
   type AssistantCatalog,
 } from '@/lib/assistant/catalog'
 import {cn} from '@/lib/utils'
-import {Avatar} from '@/lib/heroui'
+import {Avatar} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 import {ASSISTANT_NAME, type AssistantMessage} from './assistant'
 import {AssistantMarkdown} from './assistant-markdown'
 import {ScrollToBottomButton} from './scroll-to-bottom-button'
+
+const AssistantAvatar = ({className}: {className?: string}) => (
+  <Avatar className={className}>
+    <Avatar.Image
+      alt={ASSISTANT_NAME}
+      src='/svg/rf-logo-round-204-latest.svg'
+    />
+    <Avatar.Fallback>RF</Avatar.Fallback>
+  </Avatar>
+)
 
 interface AssistantMessageListProps {
   messages: AssistantMessage[]
@@ -111,7 +121,7 @@ export function AssistantMessageList({
         <div className='text-center space-y-4 px-4 max-w-md'>
           <div className='space-y-2'>
             <div className='flex items-center space-x-2 py-2'>
-              <Avatar src='/svg/rf-logo-round-204-latest.svg' />
+              <AssistantAvatar />
               <h3 className='text-lg font-polysans font-medium'>
                 Hi! I&apos;m {ASSISTANT_NAME}
               </h3>
@@ -169,10 +179,7 @@ export function AssistantMessageList({
                 {!isUser && (
                   <div className='w-4 md:w-8 shrink-0'>
                     {showAvatar ? (
-                      <Avatar
-                        src='/svg/rf-logo-round-204-latest.svg'
-                        className='portrait:size-5'
-                      />
+                      <AssistantAvatar className='portrait:size-5' />
                     ) : null}
                   </div>
                 )}
@@ -235,7 +242,7 @@ export function AssistantMessageList({
         messages[messages.length - 1].role === 'user' && (
           <div className='flex gap-2 items-end'>
             <div className='w-7 md:w-8 shrink-0'>
-              <Avatar src={'/svg/rf-logo-round-204-latest.svg'} />
+              <AssistantAvatar />
             </div>
             <div className='rounded-2xl rounded-tl-sm px-3 md:px-4 py-2 shadow-sm bg-muted'>
               <span className='inline-flex gap-1'>

@@ -12,7 +12,7 @@ import {onError} from '@/ctx/toast'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {formatPrice} from '@/utils/formatPrice'
-import {Badge, Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import type {CalendarDate} from '@internationalized/date'
 import type {RangeValue} from '@react-types/shared'
 import {useMutation, useQuery} from 'convex/react'
@@ -325,20 +325,7 @@ export const OrdersTable = () => {
 
           return (
             <div className='flex w-full items-center justify-end gap-1 pr-1'>
-              <Badge
-                key={`orders-chat-badge-${String(order._id)}-${unreadCount}`}
-                content={
-                  unreadCount > 0 ? (
-                    <span className='font-okxs font-semibold text-white leading-none'>
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                  ) : undefined
-                }
-                isInvisible={unreadCount === 0}
-                classNames={{
-                  badge:
-                    'min-w-5 h-5 px-1 flex items-center justify-center rounded-full border-1.5 dark:border-background/90 shadow-md bg-brand/80',
-                }}>
+              <div className='relative'>
                 <Button
                   isIconOnly
                   size='sm'
@@ -350,7 +337,12 @@ export const OrdersTable = () => {
                   }}>
                   <Icon name='message-filled' className='size-4.5 opacity-80' />
                 </Button>
-              </Badge>
+                {unreadCount > 0 && (
+                  <span className='absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full border-1.5 border-background/90 bg-brand/80 px-1 text-[10px] font-semibold leading-none text-white shadow-md'>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </div>
               <Button
                 isIconOnly
                 size='sm'

@@ -4,22 +4,22 @@ import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import type {Coupon, CouponDiscountType} from '@/convex/coupons/d'
 import {useAuthCtx} from '@/ctx/auth'
+import {Input, Textarea} from '@heroui/input'
 import {
   Button,
   Card,
-  CardContent,
   Chip,
-  Input,
+  ListBoxItem,
   Modal,
+  ModalBackdrop,
   ModalBody,
-  ModalContent,
+  ModalContainer,
+  ModalDialog,
   ModalFooter,
   ModalHeader,
-  Select,
-  ListBoxItem,
   Switch,
-  TextArea,
-} from '@/lib/heroui'
+} from '@heroui/react'
+import {Select} from '@heroui/select'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useEffect, useMemo, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
@@ -130,12 +130,24 @@ function getCouponStatus(coupon: Coupon, now: number) {
     return {label: 'Disabled', color: 'default' as const}
   }
   if (coupon.startsAt !== undefined && coupon.startsAt > now) {
-    return {label: 'Scheduled', color: 'secondary' as const}
+    return {label: 'Scheduled', color: 'accent' as const}
   }
   if (coupon.expiresAt !== undefined && coupon.expiresAt <= now) {
     return {label: 'Expired', color: 'danger' as const}
   }
   return {label: 'Active', color: 'success' as const}
+}
+
+function closeCouponModal(
+  setModalOpen: (value: boolean) => void,
+  setEditingCouponId: (value: string | null) => void,
+  setForm: (value: CouponFormState) => void,
+  setFormError: (value: string | null) => void,
+) {
+  setModalOpen(false)
+  setEditingCouponId(null)
+  setForm(emptyCouponForm())
+  setFormError(null)
 }
 
 function buildCouponPayload(form: CouponFormState) {
@@ -274,6 +286,9 @@ export const CouponsContent = () => {
     setModalOpen(true)
   }
 
+  const closeModal = () =>
+    closeCouponModal(setModalOpen, setEditingCouponId, setForm, setFormError)
+
   const handleSave = () => {
     const payload = buildCouponPayload(form)
     if ('error' in payload) {
@@ -298,9 +313,7 @@ export const CouponsContent = () => {
       action
         .then(() => {
           setIsSaving(false)
-          setModalOpen(false)
-          setEditingCouponId(null)
-          setForm(emptyCouponForm())
+          closeModal()
         })
         .catch((error: unknown) => {
           setIsSaving(false)
@@ -355,7 +368,7 @@ export const CouponsContent = () => {
         <Chip variant='tertiary' color='default'>
           Active {counts.active}
         </Chip>
-        <Chip variant='tertiary' color='primary'>
+        <Chip variant='tertiary' color='accent'>
           Scheduled {counts.scheduled}
         </Chip>
         <Chip variant='tertiary' color='default'>
@@ -367,7 +380,7 @@ export const CouponsContent = () => {
         <div className='text-sm text-foreground/60'>Loading coupons...</div>
       ) : coupons.length === 0 ? (
         <Card className='border border-border/50 bg-default-100/40 shadow-none'>
-          <CardContent className='flex flex-col gap-3 p-6'>
+          <Card.Content className='flex flex-col gap-3 p-6'>
             <div className='text-lg font-clash'>No coupon codes yet</div>
             <p className='text-sm text-foreground/60'>
               Start with a simple percentage or dollar-off offer, then layer in
@@ -375,24 +388,24 @@ export const CouponsContent = () => {
             </p>
             <div>
               <Button
-                color='default'
-                radius='none'
+                variant='secondary'
                 onPress={openCreateModal}
                 className='rounded-sm bg-black text-white dark:bg-white dark:text-dark-table'>
                 Create first coupon
               </Button>
             </div>
-          </CardContent>
+          </Card.Content>
         </Card>
       ) : (
         <div className='grid gap-4 xl:grid-cols-2'>
           {coupons.map((coupon) => {
             const status = getCouponStatus(coupon, now)
+            const isBusy = busyCouponId === coupon._id
             return (
               <Card
                 key={coupon._id}
                 className='border border-border/50 bg-default-100/40 shadow-none'>
-                <CardContent className='flex flex-col gap-4 p-5'>
+                <Card.Content className='flex flex-col gap-4 p-5'>
                   <div className='flex flex-wrap items-start justify-between gap-3'>
                     <div className='space-y-1'>
                       <div className='font-mono text-lg font-semibold tracking-[0.18em]'>
@@ -406,10 +419,8 @@ export const CouponsContent = () => {
                       )}
                     </div>
                     <div className='flex flex-wrap gap-2'>
-                      <Chip
-                        color={coupon.enabled ? 'success' : 'default'}
-                        variant='secondary'>
-                        {status.label ? 'Enabled' : 'Disabled'}
+                      <Chip color={status.color} variant='secondary'>
+                        {status.label}
                       </Chip>
                     </div>
                   </div>
@@ -499,6 +510,7 @@ export const CouponsContent = () => {
                       size='sm'
                       variant='tertiary'
                       className='rounded-sm'
+                      isDisabled={isBusy}
                       onPress={() =>
                         openEditModal(coupon as Coupon & {_id: string})
                       }>
@@ -506,218 +518,250 @@ export const CouponsContent = () => {
                     </Button>
                     <Button
                       size='sm'
-                      variant='tertiary'
+                      variant={coupon.enabled ? 'secondary' : 'primary'}
                       className='rounded-sm'
-                      color={coupon.enabled ? 'default' : 'success'}
-                      isLoading={busyCouponId === coupon._id}
+                      isDisabled={isBusy}
                       onPress={() =>
                         handleToggleEnabled(coupon as Coupon & {_id: string})
                       }>
-                      {coupon.enabled ? 'Disable' : 'Enable'}
+                      {isBusy
+                        ? 'Working...'
+                        : coupon.enabled
+                          ? 'Disable'
+                          : 'Enable'}
                     </Button>
                     <Button
                       size='sm'
-                      variant='tertiary'
-                      radius='none'
-                      color='danger'
+                      variant='danger'
                       className='rounded-sm'
-                      isLoading={busyCouponId === coupon._id}
+                      isDisabled={isBusy}
                       onPress={() =>
                         handleDelete(coupon as Coupon & {_id: string})
                       }>
-                      Delete
+                      {isBusy ? 'Working...' : 'Delete'}
                     </Button>
                   </div>
-                </CardContent>
+                </Card.Content>
               </Card>
             )
           })}
         </div>
       )}
 
-      <Modal isOpen={modalOpen} onOpenChange={setModalOpen} size='4xl'>
-        <ModalContent>
-          <ModalHeader>
-            {editingCouponId ? 'Edit coupon' : 'Create coupon'}
-          </ModalHeader>
-          <ModalBody className='gap-4'>
-            <div className='grid gap-4 md:grid-cols-2'>
-              <Input
-                label='Coupon code'
-                value={form.code}
-                onValueChange={(value) =>
-                  setForm((current) => ({
-                    ...current,
-                    code: value.toUpperCase(),
-                  }))
-                }
-                classNames={commonInputClassNames}
-                description='Example: SPRING20'
-              />
-              <Input
-                label='Internal name'
-                value={form.name}
-                onValueChange={(value) =>
-                  setForm((current) => ({...current, name: value}))
-                }
-                classNames={commonInputClassNames}
-                description='How admins will recognize this offer'
-              />
-              <Select
-                label='Discount type'
-                selectedKeys={[form.discountType]}
-                onSelectionChange={(keys) => {
-                  const next = Array.from(keys)[0] as CouponDiscountType
-                  if (!next) return
-                  setForm((current) => ({...current, discountType: next}))
-                }}
-                classNames={{
-                  label: commonInputClassNames?.label,
-                  trigger: commonInputClassNames?.inputWrapper,
-                  value: commonInputClassNames?.input,
-                }}>
-                {discountTypeOptions.map((option) => (
-                  <ListBoxItem key={option.key}>{option.label}</ListBoxItem>
-                ))}
-              </Select>
-              <Input
-                label={
-                  form.discountType === 'percentage'
-                    ? 'Discount percent'
-                    : 'Discount amount ($)'
-                }
-                type='number'
-                min={0}
-                step={form.discountType === 'percentage' ? 0.1 : 0.01}
-                value={form.discountValue}
-                onValueChange={(value) =>
-                  setForm((current) => ({...current, discountValue: value}))
-                }
-                classNames={commonInputClassNames}
-              />
-              <Input
-                label='Minimum subtotal ($)'
-                type='number'
-                min={0}
-                step={0.01}
-                value={form.minimumSubtotalDollars}
-                onValueChange={(value) =>
-                  setForm((current) => ({
-                    ...current,
-                    minimumSubtotalDollars: value,
-                  }))
-                }
-                classNames={commonInputClassNames}
-              />
-              <Input
-                label='Max discount ($)'
-                type='number'
-                min={0}
-                step={0.01}
-                value={form.maximumDiscountDollars}
-                onValueChange={(value) =>
-                  setForm((current) => ({
-                    ...current,
-                    maximumDiscountDollars: value,
-                  }))
-                }
-                classNames={commonInputClassNames}
-                isDisabled={form.discountType !== 'percentage'}
-                description='Optional cap for percentage discounts'
-              />
-              <Input
-                label='Starts at'
-                type='datetime-local'
-                value={form.startsAt}
-                onValueChange={(value) =>
-                  setForm((current) => ({...current, startsAt: value}))
-                }
-                classNames={commonInputClassNames}
-              />
-              <Input
-                label='Expires at'
-                type='datetime-local'
-                value={form.expiresAt}
-                onValueChange={(value) =>
-                  setForm((current) => ({...current, expiresAt: value}))
-                }
-                classNames={commonInputClassNames}
-              />
-              <Input
-                label='Usage limit'
-                type='number'
-                min={1}
-                step={1}
-                value={form.usageLimit}
-                onValueChange={(value) =>
-                  setForm((current) => ({...current, usageLimit: value}))
-                }
-                classNames={commonInputClassNames}
-                description='Leave blank for unlimited'
-              />
-              <Input
-                label='Per-user limit'
-                type='number'
-                min={1}
-                step={1}
-                value={form.perUserLimit}
-                onValueChange={(value) =>
-                  setForm((current) => ({...current, perUserLimit: value}))
-                }
-                classNames={commonInputClassNames}
-                description='Leave blank for unlimited'
-              />
-            </div>
+      <Modal
+        isOpen={modalOpen}
+        onOpenChange={(open) => {
+          if (open) {
+            setModalOpen(true)
+            return
+          }
 
-            <TextArea
-              label='Description'
-              value={form.description}
-              onValueChange={(value) =>
-                setForm((current) => ({...current, description: value}))
-              }
-              minRows={2}
-              classNames={commonInputClassNames}
-            />
-            <TextArea
-              label='Internal notes'
-              value={form.notes}
-              onValueChange={(value) =>
-                setForm((current) => ({...current, notes: value}))
-              }
-              minRows={2}
-              classNames={commonInputClassNames}
-            />
+          closeModal()
+        }}>
+        <ModalBackdrop>
+          <ModalContainer size='lg' scroll='inside'>
+            <ModalDialog className='max-w-4xl overflow-hidden rounded-2xl'>
+              <ModalHeader className='border-b border-default-200 pb-4'>
+                {editingCouponId ? 'Edit coupon' : 'Create coupon'}
+              </ModalHeader>
+              <ModalBody className='gap-4 py-6'>
+                <div className='grid gap-4 md:grid-cols-2'>
+                  <Input
+                    label='Coupon code'
+                    value={form.code}
+                    onValueChange={(value) =>
+                      setForm((current) => ({
+                        ...current,
+                        code: value.toUpperCase(),
+                      }))
+                    }
+                    classNames={commonInputClassNames}
+                    description='Example: SPRING20'
+                  />
+                  <Input
+                    label='Internal name'
+                    value={form.name}
+                    onValueChange={(value) =>
+                      setForm((current) => ({...current, name: value}))
+                    }
+                    classNames={commonInputClassNames}
+                    description='How admins will recognize this offer'
+                  />
+                  <Select
+                    label='Discount type'
+                    selectedKeys={new Set([form.discountType])}
+                    onSelectionChange={(keys) => {
+                      const next =
+                        keys === 'all'
+                          ? null
+                          : (Array.from(keys)[0] as CouponDiscountType)
+                      if (!next) return
+                      setForm((current) => ({...current, discountType: next}))
+                    }}
+                    classNames={{
+                      label: commonInputClassNames?.label,
+                      trigger: commonInputClassNames?.inputWrapper,
+                      value: commonInputClassNames?.input,
+                    }}>
+                    {discountTypeOptions.map((option) => (
+                      <ListBoxItem key={option.key}>{option.label}</ListBoxItem>
+                    ))}
+                  </Select>
+                  <Input
+                    label={
+                      form.discountType === 'percentage'
+                        ? 'Discount percent'
+                        : 'Discount amount ($)'
+                    }
+                    type='number'
+                    min={0}
+                    step={form.discountType === 'percentage' ? 0.1 : 0.01}
+                    value={form.discountValue}
+                    onValueChange={(value) =>
+                      setForm((current) => ({...current, discountValue: value}))
+                    }
+                    classNames={commonInputClassNames}
+                  />
+                  <Input
+                    label='Minimum subtotal ($)'
+                    type='number'
+                    min={0}
+                    step={0.01}
+                    value={form.minimumSubtotalDollars}
+                    onValueChange={(value) =>
+                      setForm((current) => ({
+                        ...current,
+                        minimumSubtotalDollars: value,
+                      }))
+                    }
+                    classNames={commonInputClassNames}
+                  />
+                  <Input
+                    label='Max discount ($)'
+                    type='number'
+                    min={0}
+                    step={0.01}
+                    value={form.maximumDiscountDollars}
+                    onValueChange={(value) =>
+                      setForm((current) => ({
+                        ...current,
+                        maximumDiscountDollars: value,
+                      }))
+                    }
+                    classNames={commonInputClassNames}
+                    isDisabled={form.discountType !== 'percentage'}
+                    description='Optional cap for percentage discounts'
+                  />
+                  <Input
+                    label='Starts at'
+                    type='datetime-local'
+                    value={form.startsAt}
+                    onValueChange={(value) =>
+                      setForm((current) => ({...current, startsAt: value}))
+                    }
+                    classNames={commonInputClassNames}
+                  />
+                  <Input
+                    label='Expires at'
+                    type='datetime-local'
+                    value={form.expiresAt}
+                    onValueChange={(value) =>
+                      setForm((current) => ({...current, expiresAt: value}))
+                    }
+                    classNames={commonInputClassNames}
+                  />
+                  <Input
+                    label='Usage limit'
+                    type='number'
+                    min={1}
+                    step={1}
+                    value={form.usageLimit}
+                    onValueChange={(value) =>
+                      setForm((current) => ({...current, usageLimit: value}))
+                    }
+                    classNames={commonInputClassNames}
+                    description='Leave blank for unlimited'
+                  />
+                  <Input
+                    label='Per-user limit'
+                    type='number'
+                    min={1}
+                    step={1}
+                    value={form.perUserLimit}
+                    onValueChange={(value) =>
+                      setForm((current) => ({...current, perUserLimit: value}))
+                    }
+                    classNames={commonInputClassNames}
+                    description='Leave blank for unlimited'
+                  />
+                </div>
 
-            <div className='flex flex-wrap gap-6'>
-              <Switch
-                isSelected={form.enabled}
-                onValueChange={(value) =>
-                  setForm((current) => ({...current, enabled: value}))
-                }>
-                Enabled
-              </Switch>
-              <Switch
-                isSelected={form.stackable}
-                onValueChange={(value) =>
-                  setForm((current) => ({...current, stackable: value}))
-                }>
-                Stackable with other discounts
-              </Switch>
-            </div>
+                <Textarea
+                  label='Description'
+                  value={form.description}
+                  onValueChange={(value) =>
+                    setForm((current) => ({...current, description: value}))
+                  }
+                  minRows={2}
+                  classNames={commonInputClassNames}
+                />
+                <Textarea
+                  label='Internal notes'
+                  value={form.notes}
+                  onValueChange={(value) =>
+                    setForm((current) => ({...current, notes: value}))
+                  }
+                  minRows={2}
+                  classNames={commonInputClassNames}
+                />
 
-            {formError && (
-              <div className='text-sm text-danger'>{formError}</div>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button variant='tertiary' onPress={() => setModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button color='primary' onPress={handleSave} isLoading={isSaving}>
-              {editingCouponId ? 'Save changes' : 'Create coupon'}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
+                <div className='flex flex-wrap gap-6'>
+                  <Switch
+                    isSelected={form.enabled}
+                    onChange={(value: boolean) =>
+                      setForm((current) => ({...current, enabled: value}))
+                    }>
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                    <Switch.Content>Enabled</Switch.Content>
+                  </Switch>
+                  <Switch
+                    isSelected={form.stackable}
+                    onChange={(value: boolean) =>
+                      setForm((current) => ({...current, stackable: value}))
+                    }>
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                    <Switch.Content>
+                      Stackable with other discounts
+                    </Switch.Content>
+                  </Switch>
+                </div>
+
+                {formError && (
+                  <div className='text-sm text-danger'>{formError}</div>
+                )}
+              </ModalBody>
+              <ModalFooter className='border-t border-default-200 pt-4'>
+                <Button variant='tertiary' onPress={closeModal}>
+                  Cancel
+                </Button>
+                <Button
+                  variant='primary'
+                  onPress={handleSave}
+                  isDisabled={isSaving}>
+                  {isSaving
+                    ? 'Saving...'
+                    : editingCouponId
+                      ? 'Save changes'
+                      : 'Create coupon'}
+                </Button>
+              </ModalFooter>
+            </ModalDialog>
+          </ModalContainer>
+        </ModalBackdrop>
       </Modal>
     </div>
   )

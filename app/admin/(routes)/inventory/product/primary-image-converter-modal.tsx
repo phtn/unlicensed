@@ -14,19 +14,21 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {Input, Textarea as TextArea} from '@heroui/input'
 import {
   Button,
-  Image as HeroImage,
-  Input,
   Modal,
   ModalBody,
-  ModalContent,
   ModalFooter,
   ModalHeader,
-  TextArea,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {useMutation} from 'convex/react'
 import {useCallback, useEffect, useMemo, useState} from 'react'
+
+
+import {LegacyImage as Image} from '@/components/ui/legacy-image'
+
+const ModalContent = Modal.Container
 
 type Area = {x: number; y: number; width: number; height: number}
 
@@ -132,7 +134,7 @@ const mimeSupportsAlpha = (mimeType: string) =>
 
 const loadImage = (src: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
-    const image = new Image()
+    const image = new window.Image()
     image.addEventListener('load', () => resolve(image))
     image.addEventListener('error', () =>
       reject(new Error('Failed to load image')),
@@ -715,11 +717,8 @@ export function PrimaryImageConverterModal({
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={onOpenChangeAction}
-      size='5xl'
-      placement='top-center'
-      scrollBehavior='inside'>
-      <ModalContent className='overflow-hidden border border-foreground/10 bg-background shadow-2xl'>
+      onOpenChange={onOpenChangeAction}>
+      <ModalContent size='cover' placement='top' scroll='inside' className='overflow-hidden border border-foreground/10 bg-background shadow-2xl'>
         <ModalHeader className='border-b border-foreground/10 pb-4'>
           <div className='space-y-1'>
             <p className='text-xs font-medium uppercase tracking-[0.24em] text-light-brand'>
@@ -865,11 +864,9 @@ export function PrimaryImageConverterModal({
                   </div>
                   <Button
                     size='sm'
-                    radius='none'
                     variant='tertiary'
                     className='rounded-md bg-cyan-500 text-white'
                     isDisabled={!canGeneratePreview}
-                    isLoading={isGenerating}
                     onPress={() => {
                       void generatePreview()
                     }}>
@@ -880,7 +877,7 @@ export function PrimaryImageConverterModal({
                 <div className='p-4'>
                   <div className='relative aspect-square overflow-hidden rounded-[1.15rem] border border-foreground/10 bg-foreground/5'>
                     {preview?.url ? (
-                      <HeroImage
+                      <Image
                         src={preview.url}
                         alt='Converted preview'
                         radius='none'
@@ -976,10 +973,8 @@ export function PrimaryImageConverterModal({
             Cancel
           </Button>
           <Button
-            radius='none'
             className='rounded-xl bg-cyan-600 text-white shadow-lg shadow-cyan-600/20'
             isDisabled={!canSubmit}
-            isLoading={isSubmitting || isUploading}
             onPress={() => {
               void handleSubmit()
             }}>

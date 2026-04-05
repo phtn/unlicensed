@@ -1,7 +1,7 @@
 import {Typewrite} from '@/components/expermtl/typewrite'
 import {SectionHeader} from '@/components/ui/section-header'
 import {Icon, type IconName} from '@/lib/icons'
-import {Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {type ReactNode} from 'react'
 
 interface PrimaryButtonProps {
@@ -22,10 +22,8 @@ export const PrimaryButton = ({
   return (
     <Button
       size='md'
-      radius='none'
-      color='primary'
       onPress={onPress}
-      disabled={disabled}
+      isDisabled={disabled}
       isIconOnly={isMobile}
       className='bg-dark-table dark:bg-white dark:text-dark-table rounded-md'>
       <Icon name={icon} className='size-5 opacity-80' />
@@ -50,7 +48,7 @@ export const LoadingHeader = ({title}: LoadingHeaderProps) => {
           />
         }
         className='sm:ps-1'>
-        <Button size='md' disabled variant='tertiary'>
+        <Button size='md' isDisabled variant='tertiary'>
           <Icon name='spinner-dots' className='mr-1 size-5 opacity-80' />
         </Button>
       </SectionHeader>

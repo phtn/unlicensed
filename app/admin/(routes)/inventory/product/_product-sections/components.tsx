@@ -1,5 +1,5 @@
 import {cn} from '@/lib/utils'
-import {Card, CardHeader} from '@/lib/heroui'
+import {Card, CardHeader} from '@heroui/react'
 import {ReactNode} from 'react'
 
 interface FormSectionProps {
@@ -13,8 +13,6 @@ export const FormSection = ({
 }: FormSectionProps) => {
   return (
     <Card
-      radius='none'
-      shadow='none'
       className={cn(
         'dark:bg-dark-table/40 px-4 pb-4 border-x border-t border-gray-300 dark:border-origin',
         {

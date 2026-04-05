@@ -68,11 +68,11 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
           <NavigationMenuTrigger
             id='nav-menu-trigger'
             className={cn(
-              'rounded-none p-2 aspect-square text-sm font-semibold outline-0 focus-visible:bg-brand focus-visible:ring-0',
+              'rounded-xs px-2 h-7 text-sm font-semibold outline-0 focus-visible:bg-brand focus-visible:ring-0',
             )}>
             <Icon
               name='details'
-              className={cn('size-5 md:size-6 shrink-0 text-white', {
+              className={cn('size-5 md:size-5 shrink-0 text-white', {
                 'text-dark-table dark:text-white': !inStoreLobby,
                 'text-dark-table dark:text-white .':
                   !isMobile && scrollY >= 710,

@@ -1,9 +1,8 @@
 import {ClassName} from '@/app/types'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Card, CardContent} from '@/lib/heroui'
+import {Button, Card} from '@heroui/react'
 import {motion} from 'motion/react'
-import Link from 'next/link'
 import {PropsWithChildren, ReactNode} from 'react'
 import {HyperList} from './hyper-list'
 import ShimmerText from './shimmer'
@@ -25,13 +24,13 @@ const ArcCard = ({
   return (
     <motion.div className='max-w-2xl mx-auto'>
       <Card
-        shadow={shadow}
-        radius={radius}
         className={cn(
           'border border-foreground/20 dark:bg-dark-table',
+          shadow !== 'none' && `shadow-${shadow}`,
+          radius === 'none' && 'rounded-none',
           className,
         )}>
-        <CardContent className='p-4 sm:p-8 space-y-6'>{children}</CardContent>
+        <Card.Content className='p-4 sm:p-8 space-y-6'>{children}</Card.Content>
       </Card>
     </motion.div>
   )
@@ -105,47 +104,39 @@ interface ArcButtonProps {
   icon?: IconName
 }
 
-const ArcButtonLeft = ({label, fn, href, icon}: ArcButtonProps) => (
-  <Button
-    as={fn ? Button : Link}
-    size='lg'
-    href={fn ? '#' : (href ?? '#')}
-    radius='none'
-    variant='tertiary'
-    onPress={fn}
-    startContent={icon && <Icon name={icon} className='size-5' />}
-    className='w-full font-polysans font-normal! dark:bg-sidebar'>
-    {label}
-  </Button>
-)
+const ArcButtonLeft = ({label, fn, href, icon}: ArcButtonProps) => {
+  return fn ? (
+    <Button
+      size='lg'
+      variant='tertiary'
+      onPress={fn}
+      className='w-full font-polysans font-normal! dark:bg-sidebar'>
+      {label}
+    </Button>
+  ) : null
+}
 
-const ArcButtonRight = ({label, fn, href, icon}: ArcButtonProps) => (
-  <Button
-    as={fn ? Link : Button}
-    size='lg'
-    href={fn ? '#' : (href ?? '#')}
-    radius='none'
-    variant='primary'
-    color='primary'
-    onPress={fn}
-    endContent={icon && <Icon name={icon} className='size-5' />}
-    className='w-full font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'>
-    {label}
-  </Button>
-)
-const ArcButtonFull = ({label, fn, href, icon}: ArcButtonProps) => (
-  <Button
-    as={fn ? Link : Button}
-    size='lg'
-    onPress={fn}
-    radius='none'
-    variant='tertiary'
-    href={fn ? '#' : (href ?? '#')}
-    endContent={icon && <Icon name={icon} className='size-5' />}
-    className='w-full col-span-2 font-polysans font-medium bg-sidebar dark:bg-white dark:text-dark-gray'>
-    {label}
-  </Button>
-)
+const ArcButtonRight = ({label, fn, href, icon}: ArcButtonProps) => {
+  return fn ? (
+    <Button
+      size='lg'
+      variant='primary'
+      onPress={fn}
+      className='w-full font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'>
+      {label}
+    </Button>
+  ) : null
+}
+const ArcButtonFull = ({label, fn, href, icon}: ArcButtonProps) => {
+  return fn ? (
+    <Button
+      onPress={fn}
+      variant='tertiary'
+      className='w-full col-span-2 font-polysans font-medium bg-sidebar dark:bg-white dark:text-dark-gray'>
+      {label}
+    </Button>
+  ) : null
+}
 
 interface ArcLineItemsProps<T> {
   data: T & {label: string; value: string}[]

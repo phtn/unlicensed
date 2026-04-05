@@ -1,7 +1,7 @@
 import {useCopy} from '@/hooks/use-copy'
 import {Icon} from '@/lib/icons'
 import {ApiResponse} from '@/lib/paygate/types'
-import {Card, CardHeader} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import {useCallback} from 'react'
 
 interface ResponseDisplayProps {
@@ -19,8 +19,8 @@ export const ResponseDisplay = ({response}: ResponseDisplayProps) => {
   if (!response) return null
 
   return (
-    <Card shadow='sm' className='p-3 sm:p-4 md:p-6'>
-      <CardHeader className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3 sm:mb-4'>
+    <Card className='p-3 sm:p-4 md:p-6'>
+      <Card.Header className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3 sm:mb-4'>
         <h2 className='text-xl sm:text-2xl font-polysans font-semibold'>API Response</h2>
         <div
           className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
@@ -30,7 +30,7 @@ export const ResponseDisplay = ({response}: ResponseDisplayProps) => {
           }`}>
           {response.success ? 'Success' : 'Error'}
         </div>
-      </CardHeader>
+      </Card.Header>
       {/*<div className='mb-4'>
 
       </div>*/}

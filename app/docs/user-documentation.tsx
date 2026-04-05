@@ -1,4 +1,4 @@
-import {Accordion, AccordionItem} from '@/lib/heroui'
+import {Accordion, AccordionItem} from '@heroui/react'
 import Link from 'next/link'
 
 const HOW_TO_GUIDES = [
@@ -429,51 +429,52 @@ export const UserDocumentation = () => {
               id={section.id}
               className='border border-foreground/10 bg-background'>
               <Accordion
-                variant='tertiary'
+                variant='default'
                 className='w-full'
-                itemClasses={{
-                  base: 'shadow-none',
-                  title: 'w-full',
-                  trigger: 'px-4 py-4 sm:px-5 sm:py-5 md:px-6',
-                  content: 'px-0 pb-0',
-                }}>
-                <AccordionItem
-                  key={section.id}
-                  aria-label={section.title}
-                  title={
-                    <div className='pr-6 text-left'>
-                      <p className='hidden font-clash text-[11px] uppercase tracking-[0.22em] text-brand sm:text-xs sm:tracking-[0.28em]'>
-                        {section.eyebrow}
-                      </p>
-                      <div className='mt-3 flex flex-col gap-3 md:flex-row md:items-end md:justify-between'>
-                        <div>
-                          <h3 className='font-clash text-xl font-semibold sm:text-2xl md:text-3xl'>
-                            {section.title}
-                          </h3>
-                          <p className='hidden mt-2 max-w-2xl text-sm leading-6 text-foreground/62'>
-                            {section.description}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  }>
+                // itemClasses={{
+                //   base: 'shadow-none',
+                //   title: 'w-full',
+                //   trigger: 'px-4 py-4 sm:px-5 sm:py-5 md:px-6',
+                //   content: 'px-0 pb-0',
+                // }}
+              >
+                <AccordionItem key={section.id} aria-label={section.title}>
+                  {/*
+                      title={
+                                          <div className='pr-6 text-left'>
+                                            <p className='hidden font-clash text-[11px] uppercase tracking-[0.22em] text-brand sm:text-xs sm:tracking-[0.28em]'>
+                                              {section.eyebrow}
+                                            </p>
+                                            <div className='mt-3 flex flex-col gap-3 md:flex-row md:items-end md:justify-between'>
+                                              <div>
+                                                <h3 className='font-clash text-xl font-semibold sm:text-2xl md:text-3xl'>
+                                                  {section.title}
+                                                </h3>
+                                                <p className='hidden mt-2 max-w-2xl text-sm leading-6 text-foreground/62'>
+                                                  {section.description}
+                                                </p>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        }
+                      */}
                   <div className='border-t border-foreground/10'>
                     <Accordion
-                      variant='tertiary'
+                      variant='default'
                       className='px-1 py-1 sm:px-2 sm:py-2 md:px-3'
-                      itemClasses={{
-                        base: 'border-b border-foreground/10 last:border-b-0',
-                        title:
-                          'font-clash text-sm font-medium leading-6 text-foreground sm:text-base',
-                        content:
-                          'pb-4 text-sm leading-6 text-foreground/68 px-3 sm:px-4 sm:pb-5 sm:leading-7',
-                        trigger: 'px-2 py-3 sm:px-3 sm:py-4',
-                      }}>
+                      // itemClasses={{
+                      //   base: 'border-b border-foreground/10 last:border-b-0',
+                      //   title:
+                      //     'font-clash text-sm font-medium leading-6 text-foreground sm:text-base',
+                      //   content:
+                      //     'pb-4 text-sm leading-6 text-foreground/68 px-3 sm:px-4 sm:pb-5 sm:leading-7',
+                      //   trigger: 'px-2 py-3 sm:px-3 sm:py-4',
+                      // }}
+                    >
                       {section.items.map((item) => (
                         <AccordionItem
                           key={item.question}
-                          aria-label={item.question}
-                          title={item.question}>
+                          aria-label={item.question}>
                           {typeof item.answer === 'string' ? (
                             <p>{item.answer}</p>
                           ) : (

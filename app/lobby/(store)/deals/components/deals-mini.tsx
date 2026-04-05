@@ -1,7 +1,7 @@
 'use client'
 
 import {Icon} from '@/lib/icons'
-import {Button, Link} from '@/lib/heroui'
+import {Link} from '@heroui/react'
 import NextLink from 'next/link'
 import {ViewTransition} from 'react'
 import type {BundleConfig} from '../lib/deal-types'
@@ -36,12 +36,7 @@ export const DealsMini = ({featuredDeals}: DealsMiniProps) => {
             </p>
 
             <ViewTransition enter='auto'>
-              <Button
-                as={NextLink}
-                size='lg'
-                radius='full'
-                disableRipple
-                variant='primary'
+              <NextLink
                 href='/lobby/deals'
                 className='px-0 flex items-center justify-center md:justify-start w-full bg-transparent text-sm font-semibold dark:border-light-gray uppercase tracking-[0.35em]'>
                 <div className='flex items-center justify-start'>
@@ -52,7 +47,7 @@ export const DealsMini = ({featuredDeals}: DealsMiniProps) => {
                     Bundle Builder
                   </span>
                 </div>
-              </Button>
+              </NextLink>
             </ViewTransition>
           </div>
           <div className='hidden md:grid gap-4 sm:grid-cols-2 lg:col-span-2'>

@@ -18,7 +18,7 @@ import {Icon} from '@/lib/icons'
 import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {formatPrice} from '@/utils/formatPrice'
-import {Avatar, Button, Image} from '@/lib/heroui'
+import {Avatar, Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
@@ -28,6 +28,10 @@ import {DrawerFooter} from '../ui/drawer'
 import {BundleCartItem} from './bundle-cart-item'
 import {EmptyCart} from './empty-cart'
 import {SuggestedCartItems} from './suggested-cart-items'
+
+// import {LegacyImage} from '@/components/ui/legacy-image'
+import {getInitials} from '@/utils/initials'
+import Image from 'next/image'
 
 type OptimisticAction =
   | {
@@ -215,20 +219,23 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
 
                 <div className='flex items-center mb-4 mr-4 space-x-4 md:space-x-6'>
                   {user && (
-                    <Avatar
-                      size='sm'
-                      src={user.photoURL ?? undefined}
-                      name={user.displayName ?? user.email ?? undefined}
-                      className=''
-                    />
+                    <Avatar className='relative size-9 border border-white/50 bg-background/90 text-foreground shadow-[0_10px_30px_rgba(15,23,42,0.18)] dark:border-white/10 dark:bg-dark-table'>
+                      <Avatar.Image
+                        alt={user.displayName ?? 'pfp'}
+                        src={user.photoURL ?? undefined}
+                      />
+                      <Avatar.Fallback className='bg-background/90 text-[11px] font-medium tracking-tight text-foreground dark:bg-dark-table'>
+                        {getInitials(user.displayName)}
+                      </Avatar.Fallback>
+                    </Avatar>
                   )}
                   <Button
                     size='sm'
                     isIconOnly
                     variant='tertiary'
-                    onPress={() => onOpenChange(false)}
-                    radius='full'>
-                    <Icon name='x' className='size-4' />
+                    className='flex items-center justify-center size-8'
+                    onPress={() => onOpenChange(false)}>
+                    <Icon name='x' className='size-4 m-auto' />
                   </Button>
                 </div>
               </div>
@@ -262,10 +269,11 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                           <div
                             key={`${product._id}-${item.denomination ?? 'default'}`}
                             className='flex gap-3 p-1 md:p-3 first:rounded-t-lg last:rounded-b-lg border border-b-0 last:border-b border-foreground/15 bg-card/50'>
-                            <div className='relative w-20 h-20 shrink-0 rounded-xs overflow-hidden bg-muted'>
+                            <div className='relative w-21 h-21 shrink-0 rounded-xs overflow-hidden bg-muted'>
                               {hasImage ? (
                                 <Image
-                                  radius={'none'}
+                                  width={1000}
+                                  height={1000}
                                   src={productImageUrl ?? ''}
                                   alt={product.name ?? 'Product'}
                                   className='w-full h-full object-cover'
@@ -284,7 +292,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                 <div className='min-w-0'>
                                   <Link
                                     href={`/lobby/products/${product.slug}`}>
-                                    <h3 className='font-medium font-okxs text-base truncate'>
+                                    <h3 className='font-medium font-okxs md:text-lg truncate'>
                                       {product.name ?? 'Product'}
                                     </h3>
                                   </Link>
@@ -306,10 +314,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                   <Button
                                     isIconOnly
                                     size='sm'
-                                    radius='none'
-                                    variant='tertiary'
+                                    variant='ghost'
                                     isDisabled={isPending}
-                                    className='min-w-7 w-7 h-7 aspect-square rounded-xs'
+                                    className='h-7 w-8 rounded-xs'
                                     onPress={() => {
                                       const newQty = item.quantity - 1
                                       startTransition(async () => {
@@ -338,7 +345,10 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                         }
                                       })
                                     }}>
-                                    <Icon name='minus' className='size-3.5' />
+                                    <Icon
+                                      name='minus'
+                                      className='size-4 m-auto'
+                                    />
                                   </Button>
                                   <span className='font-okxs text-base font-medium w-8 text-center'>
                                     {item.quantity}
@@ -346,10 +356,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                   <Button
                                     isIconOnly
                                     size='sm'
-                                    radius='none'
-                                    variant='tertiary'
+                                    variant='ghost'
                                     isDisabled={isPending}
-                                    className='min-w-7 w-7 h-7 aspect-square rounded-xs'
+                                    className='h-7 w-8 rounded-xs'
                                     onPress={() => {
                                       const newQty = item.quantity + 1
                                       startTransition(async () => {
@@ -366,15 +375,17 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                         )
                                       })
                                     }}>
-                                    <Icon name='plus' className='size-3.5' />
+                                    <Icon
+                                      name='plus'
+                                      className='size-4 m-auto'
+                                    />
                                   </Button>
                                 </div>
                                 <Button
                                   size='sm'
-                                  radius='none'
                                   isIconOnly
-                                  variant='tertiary'
-                                  className='min-w-8 w-8 h-7 aspect-square rounded-sm text-muted-foreground opacity-80 hover:opacity-100'
+                                  variant='ghost'
+                                  className='w-8 h-7 rounded-xs text-muted-foreground opacity-80 hover:opacity-100'
                                   isDisabled={isPending}
                                   onPress={() => {
                                     startTransition(async () => {
@@ -389,7 +400,10 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                                       )
                                     })
                                   }}>
-                                  <Icon name='trash' className='size-6' />
+                                  <Icon
+                                    name='trash'
+                                    className='size-5 m-auto'
+                                  />
                                 </Button>
                               </div>
                             </div>
@@ -417,11 +431,9 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                     })}
                   </div>
 
-                  <div className='font-okxs space-y-3 px-4 mb-6'>
+                  <div className='font-clash space-y-3 px-4 mb-6'>
                     <div className='flex justify-between px-2'>
-                      <span className='text-color-muted font-medium'>
-                        Subtotal
-                      </span>
+                      <span className='text-lg font-medium'>Subtotal</span>
                       <span className='font-medium text-lg'>
                         ${formatPrice(subtotal)}
                       </span>
@@ -444,19 +456,18 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                       </div>
                     )}
                     <div className='flex justify-between px-2'>
-                      <span className='text-color-muted font-medium'>
+                      <span className='text-lg font-medium'>
                         {appliedCashBackCents > 0
                           ? 'Due today'
                           : 'Current total'}
                       </span>
+
                       <span className='font-medium text-lg'>
                         ${formatPrice(discountedSubtotal)}
                       </span>
                     </div>
                     <div className='flex justify-between px-2'>
-                      <span className='text-color-muted font-medium'>
-                        Total Items
-                      </span>
+                      <span className='text-lg font-medium'>Total Items</span>
                       <span className='font-okxs font-medium text-lg'>
                         {optimisticCartItemCount}
                       </span>
@@ -466,7 +477,6 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   <div className='mx-auto mb-3 px-4'>
                     <Button
                       size='lg'
-                      radius='none'
                       className='w-full sm:flex-1 h-15 font-polysans font-normal text-lg bg-foreground/95 text-white dark:text-dark-gray rounded-xs'
                       onPress={handleCartCheckout}>
                       <span className='font-bold font-polysans text-lg'>
@@ -487,13 +497,10 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
               <div className=' pb-24'></div>
             </div>
             <DrawerFooter className='p-0'>
-              <div className='h-10 p-0 w-full border-t border-foreground/5 flex items-center justify-center bg-black'>
-                <Icon
-                  name='rapid-fire-latest'
-                  className='mr-2 w-20 text-white/80'
-                />
-                <span className='text-white text-sm'>
-                  <span className='font-space font-light tracking-tight'>
+              <div className='h-10 p-0 w-full text-light-brand flex items-center justify-center'>
+                <Icon name='rapid-fire-latest' className='mr-2 w-20' />
+                <span className='text-sm'>
+                  <span className='font-clash tracking-tight'>
                     &copy;{new Date().getFullYear()}
                   </span>
                 </span>

@@ -1,6 +1,6 @@
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Chip} from '@/lib/heroui'
+import {Chip} from '@heroui/react'
 import {ReactNode, useId} from 'react'
 
 interface TerpeneChipProps {
@@ -18,16 +18,9 @@ export const TerpeneChip = ({
 }: TerpeneChipProps) => {
   return (
     <Chip
-      id={id}
-      radius='md'
-      startContent={
-        <Icon name={name} className='text-slate-100 size-8 aspect-square' />
-      }
-      classNames={{
-        base: `flex justify-between px-0 h-10 bg-background/80 shadow-pink-100/30 ${ghost ? 'bg-transparent' : ' border-small border-white'}`,
-        content: 'drop-shadow-xs shadow-black text-foreground capitalize',
-      }}>
-      {label}
+      className={`flex justify-between px-0 h-10 bg-background/80 shadow-pink-100/30 ${ghost ? 'bg-transparent' : ' border-small border-white'}`}>
+      <Icon name={name} className='text-slate-100 size-8 aspect-square' />
+      <span className='drop-shadow-xs shadow-black text-foreground capitalize'>{label}</span>
     </Chip>
   )
 }
@@ -35,20 +28,13 @@ export const TerpeneChip = ({
 export const TerpeneGray = ({id, name, ghost = false}: TerpeneChipProps) => {
   return (
     <Chip
-      id={id}
-      radius='md'
-      startContent={
-        <Icon
-          name={name}
-          className='text-[#FF9F1C] dark:text-[#FF9F1C] size-7 aspect-square'
-        />
-      }
-      classNames={{
-        base: `flex justify-between px-0 h-7 grow-0 bg-linear-to-r from-transparent via-transparent to-slate-600/2 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`,
-        content: 'font-light text-foreground capitalize text-sm',
-      }}
-      variant='tertiary'>
-      {name}
+      className={`flex justify-between px-0 h-7 grow-0 bg-linear-to-r from-transparent via-transparent to-slate-600/2 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`}
+      variant='secondary'>
+      <Icon
+        name={name}
+        className='text-[#FF9F1C] dark:text-[#FF9F1C] size-7 aspect-square'
+      />
+      <span className='font-light text-foreground capitalize text-sm'>{name}</span>
     </Chip>
   )
 }
@@ -93,14 +79,8 @@ export const StatChip = ({
 }: StatChipProps) => {
   return (
     <Chip
-      radius='sm'
-      className='flex items-center justify-center h-8 border-[0.33px] border-foreground/15'
-      classNames={{
-        base: `ps-2 grow-0 bg-linear-to-r from-transparent via-transparent to-sidebar/5 dark:from-background dark:via-background/60 dark:to-background/80 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`,
-        content:
-          'flex items-center justify-center text-foreground uppercase text-xs',
-      }}
-      variant='tertiary'>
+      className={`flex items-center justify-center h-8 border-[0.33px] border-foreground/15 ps-2 grow-0 bg-linear-to-r from-transparent via-transparent to-sidebar/5 dark:from-background dark:via-background/60 dark:to-background/80 overflow-hidden ${ghost ? 'bg-transparent' : 'border-r-[0.33px] border-foreground/10'}`}
+      variant='secondary'>
       {label && (
         <span className=' text-sm text-zinc-600 font-polysans dark:text-zinc-200'>
           {label}

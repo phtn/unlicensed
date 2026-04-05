@@ -13,7 +13,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
 import {dateCell, moneyCell} from '../../../_components/ui/cells'
@@ -93,24 +93,10 @@ export const SalesTable = () => {
     return sales.reduce((sum, order) => sum + order.totalCents, 0)
   }, [sales])
 
-  const classNames = useMemo(
-    () => ({
-      wrapper: ['max-h-[382px]', 'max-w-3xl'],
-      th: ['bg-transparent', 'text-gray-400', 'border-b', 'border-divider'],
-      td: [
-        'group-data-[first=true]:first:before:rounded-none',
-        'group-data-[first=true]:last:before:rounded-none',
-        'group-data-[middle=true]:before:rounded-none',
-        'group-data-[last=true]:first:before:rounded-none',
-        'group-data-[last=true]:last:before:rounded-none',
-      ],
-    }),
-    [],
-  )
 
   if (!allOrders) {
     return (
-      <Card shadow='sm' className='p-4'>
+      <Card className='p-4'>
         <p className='text-sm text-gray-400'>Loading sales...</p>
       </Card>
     )
@@ -118,8 +104,6 @@ export const SalesTable = () => {
 
   return (
     <Card
-      shadow='none'
-      radius='none'
       className='md:rounded-lg md:w-full w-screen overflow-auto p-4 dark:bg-dark-table/40'>
       <div className='flex items-center justify-between mb-4'>
         <div>
@@ -130,22 +114,19 @@ export const SalesTable = () => {
         <p className='text-sm text-gray-400'>{sales.length} transactions</p>
       </div>
       <Table
-        isCompact
-        removeWrapper
-        aria-label='Sales table'
-        classNames={classNames}>
+        aria-label='Sales table'>
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn key={column.uid} align='start'>
+            <TableColumn key={column.uid}>
               {column.name}
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={'No sales found'} items={sales}>
+        <TableBody items={sales}>
           {(order) => (
-            <TableRow key={order._id} className='h-16'>
+            <TableRow key={order._id as string} className='h-16'>
               {(columnKey) => (
-                <TableCell>{renderCell(order, columnKey)}</TableCell>
+                <TableCell>{renderCell(order, columnKey as unknown as React.Key)}</TableCell>
               )}
             </TableRow>
           )}

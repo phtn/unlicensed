@@ -7,20 +7,8 @@ import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
-import {
-  Button,
-  Card,
-  Chip,
-  ChipProps,
-  Image,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-  User,
-} from '@/lib/heroui'
+import {getInitials} from '@/utils/initials'
+import {Avatar, Button, Card, Chip, ChipProps, Table} from '@heroui/react'
 import {useMutation} from 'convex/react'
 import Link from 'next/link'
 import React, {CSSProperties, ReactNode, useEffect} from 'react'
@@ -35,6 +23,17 @@ const columns = [
   {name: 'SEEN BY', uid: 'seenBy'},
   {name: 'TIME', uid: 'time'},
 ]
+
+type ActivityColumnKey = (typeof columns)[number]['uid']
+
+const columnClassNameMap: Record<ActivityColumnKey, string> = {
+  user: 'min-w-[18rem]',
+  activity: 'min-w-[16rem]',
+  type: 'min-w-[11rem]',
+  details: 'min-w-[12rem]',
+  seenBy: 'min-w-[10rem]',
+  time: 'min-w-[9rem] whitespace-nowrap',
+}
 
 const getActivityIcon = (type: Activity['type']): IconName => {
   switch (type) {
@@ -59,9 +58,8 @@ const getActivityIcon = (type: Activity['type']): IconName => {
     case 'payment_failed':
       return 'x'
     case 'product_created':
-      return 't'
     case 'product_updated':
-      return 't'
+      return 'bag-solid'
     case 'category_created':
     case 'category_updated':
       return 'eye'
@@ -92,14 +90,14 @@ const getActivityChipColor = (type: Activity['type']): ChipProps['color'] => {
   if (type.startsWith('order_')) {
     if (type.includes('delivered')) return 'success'
     if (type.includes('cancelled') || type.includes('refunded')) return 'danger'
-    return 'primary'
+    return 'danger'
   }
   if (type.startsWith('payment_')) {
     if (type.includes('completed')) return 'success'
     if (type.includes('failed')) return 'danger'
     return 'warning'
   }
-  if (type.startsWith('user_')) return 'secondary'
+  if (type.startsWith('user_')) return 'default'
   if (type.startsWith('product_')) return 'default'
   if (type.startsWith('category_')) return 'default'
   return 'default'
@@ -124,7 +122,9 @@ interface RecentActivitiesProps {
 export const RecentActivities = ({
   fullTable,
   toggleFullTable,
-  isMobile,
+  isMobile: _isMobile,
+  visibleStatsCount: _visibleStatsCount,
+  breakpoint: _breakpoint,
   statsHeight,
 }: RecentActivitiesProps) => {
   const {convexUserId} = useAuth()
@@ -187,39 +187,46 @@ export const RecentActivities = ({
         }>
         viewerCount?: number
       },
-      columnKey: React.Key,
-    ) => {
+      columnKey: ActivityColumnKey,
+    ): ReactNode => {
       const cellValue = activity[columnKey as keyof Activity]
+      const activityUserName = activity.user?.name?.trim() || 'Unknown user'
+      const activityUserEmail = activity.user?.email?.trim() || 'No email'
 
       switch (columnKey) {
         case 'user':
           if (activity.user) {
             return (
-              // <Link href={`/admin/users/${activity.user.firebaseIdb}`}>
-              <User
-                avatarProps={{
-                  size: 'sm',
-                  radius: 'full',
-                  src: activity.user.photoUrl,
-                }}
-                classNames={{
-                  description: 'text-default-500',
-                }}
-                name={
-                  isMobile
-                    ? activity.user.name.split(' ').shift()
-                    : activity.user.name
-                }>
-                {activity.user.email}
-              </User>
-              // </Link>
+              <div className='flex min-w-0 items-center gap-3'>
+                <Avatar className='size-9 shrink-0 border border-foreground/10 bg-background text-foreground shadow-sm dark:border-white/10 dark:bg-dark-table'>
+                  <Avatar.Image
+                    alt={activityUserName}
+                    src={activity.user.photoUrl ?? undefined}
+                  />
+                  <Avatar.Fallback>
+                    {getInitials(activityUserName)}
+                  </Avatar.Fallback>
+                </Avatar>
+                <div className='min-w-0'>
+                  <p className='truncate text-sm font-medium text-foreground'>
+                    {activityUserName}
+                  </p>
+                  <p className='truncate text-xs text-foreground/55'>
+                    {activityUserEmail}
+                  </p>
+                </div>
+              </div>
             )
           }
           return (
-            <div className='flex items-center gap-2'>
-              <div className='flex flex-col'>
-                <p className='font-brk text-xs uppercase text-default-400'>
-                  System
+            <div className='flex min-w-0 items-center gap-3'>
+              <div className='flex size-9 shrink-0 items-center justify-center rounded-full border border-foreground/10 bg-foreground/[0.04] text-foreground/50 dark:border-white/10 dark:bg-white/[0.04]'>
+                <Icon name='eye' className='size-4' />
+              </div>
+              <div className='min-w-0'>
+                <p className='text-sm font-medium text-foreground'>System</p>
+                <p className='text-xs text-foreground/55'>
+                  Automated platform activity
                 </p>
               </div>
             </div>
@@ -253,23 +260,23 @@ export const RecentActivities = ({
           )
         case 'details':
           return (
-            <div className='flex flex-col whitespace-nowrap'>
+            <div className='flex min-w-0 flex-col'>
               {activity.metadata?.orderNumber && (
                 <Link
                   href={`/admin/ops/orders/${activity.metadata.orderNumber}`}>
-                  <div className='text-bold text-small capitalize flex items-center opacity-70 hover:underline underline-offset-4 decoration-dotted decoration-blue-500 dark:decoration-primary hover:opacity-100'>
+                  <div className='flex items-center gap-1 text-sm font-medium capitalize text-foreground/70 hover:text-foreground hover:underline underline-offset-4 decoration-dotted decoration-blue-500 dark:decoration-primary'>
                     <Icon name='hash' className='' />
                     <span>{activity.metadata.orderNumber?.substring(5)}</span>
                   </div>
                 </Link>
               )}
               {activity.metadata?.productName && (
-                <p className='text-bold text-small capitalize'>
+                <p className='truncate text-sm font-medium capitalize text-foreground'>
                   {activity.metadata.productName}
                 </p>
               )}
               {activity.metadata?.categoryName && (
-                <p className='text-bold text-small capitalize'>
+                <p className='truncate text-sm font-medium capitalize text-foreground'>
                   {activity.metadata.categoryName}
                 </p>
               )}
@@ -289,29 +296,25 @@ export const RecentActivities = ({
             )
           }
           return (
-            <div className='flex items-center gap-1'>
+            <div className='flex items-center'>
               {viewers.slice(0, 5).map((viewer, i) => (
                 <div
                   key={viewer.userId}
-                  className={cn('shrink-0', {'-translate-x-3': i !== 0})}
+                  className={cn('shrink-0', {'-ml-2.5': i !== 0})}
                   title={`${viewer.name} (${viewer.email})`}>
-                  <div className='flex size-6 items-center justify-center overflow-hidden rounded-full shadow-md'>
-                    {viewer.photoUrl ? (
-                      <Image
-                        src={viewer.photoUrl}
-                        alt={viewer.name}
-                        className='h-full w-full object-cover border-[1.5px] border-white'
-                      />
-                    ) : (
-                      <span className='text-xs font-medium text-default-600'>
-                        {viewer.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
+                  <Avatar className='size-7 border-2 border-background bg-default-100 text-default-600 shadow-sm dark:border-dark-table'>
+                    <Avatar.Image
+                      alt={viewer.name}
+                      src={viewer.photoUrl ?? undefined}
+                    />
+                    <Avatar.Fallback>
+                      {getInitials(viewer.name)}
+                    </Avatar.Fallback>
+                  </Avatar>
                 </div>
               ))}
               {totalViewers > viewers.length && (
-                <div className='flex h-8 w-8 items-center justify-center rounded-full bg-default-100 ring-2 ring-background'>
+                <div className='ml-1 flex h-7 min-w-7 items-center justify-center rounded-full bg-default-100 px-1.5 ring-2 ring-background dark:bg-white/10'>
                   <span className='text-xs font-medium text-default-600'>
                     +{totalViewers - viewers.length}
                   </span>
@@ -326,10 +329,10 @@ export const RecentActivities = ({
             </p>
           )
         default:
-          return cellValue
+          return String(cellValue ?? '—')
       }
     },
-    [isMobile],
+    [],
   )
 
   // Calculate translate values based on measured stats height
@@ -350,25 +353,9 @@ export const RecentActivities = ({
     } as CSSProperties
   }, [statsHeight, fullTable])
 
-  const classNames = React.useMemo(
-    () => ({
-      // wrapper: ['h-[calc(100vh-240px)] overflow-scroll', 'max-w-full'],
-      // th: ['bg-transparent', 'text-default-500', 'border-b', 'border-divider'],
-      td: [
-        'first:group-data-[first=true]/tr:before:rounded-none',
-        'last:group-data-[first=true]/tr:before:rounded-none',
-        'group-data-[middle=true]/tr:before:rounded-none',
-        'first:group-data-[last=true]/tr:before:rounded-none',
-        'last:group-data-[last=true]/tr:before:rounded-none',
-      ],
-      tbody: '',
-    }),
-    [],
-  )
-
   if (activities === undefined) {
     return (
-      <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
+      <Card className='p-4 dark:bg-dark-table/60'>
         <div className='flex items-center justify-center py-8'>
           <p className='text-sm text-gray-400'>Loading activities...</p>
         </div>
@@ -378,7 +365,7 @@ export const RecentActivities = ({
 
   if (activities.length === 0) {
     return (
-      <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
+      <Card className='p-4 dark:bg-dark-table/60'>
         <h2 className='text-lg font-polysans mb-4 px-4'>Recent Activity</h2>
         <div className='flex items-center justify-center py-8'>
           <p className='text-sm text-gray-400'>No activities yet</p>
@@ -389,12 +376,9 @@ export const RecentActivities = ({
 
   return (
     <Card
-      shadow='none'
-      radius='none'
       style={fullTable ? translateStyle : undefined}
       className={cn(
-        'relative z-300 border dark:bg-dark-table/40 bg-light-table/30 md:rounded-t-lg md:w-full mask-[linear-gradient(white,white)] w-[96lvw] overflow-hidden',
-        'transition-transform duration-300 border-t border-zinc-300 dark:border-dark-table',
+        'relative z-300 w-full overflow-hidden rounded-t-2xl border border-zinc-300 bg-light-table/30 transition-transform duration-300 mask-[linear-gradient(white,white)] dark:border-dark-table dark:bg-dark-table/40',
         {
           'h-full bg-sidebar/40': fullTable,
           'transform-[translateY(var(--translate-y))]': fullTable,
@@ -402,20 +386,31 @@ export const RecentActivities = ({
       )}>
       <div
         className={cn(
-          'h-lvh md:h-[calc(100lvh-203px)] overflow-scroll transition-transform duration-300',
+          'flex h-lvh min-h-0 flex-col transition-transform duration-300 md:h-[calc(100lvh-203px)]',
           {
             'md:h-[calc(100lvh-66px)]': fullTable,
           },
         )}>
-        <div className='sticky left-0 top-0 font-clash text-sm flex items-center justify-between px-3 md:py-2 py-1 w-full dark:bg-zinc-950/40'>
-          <div className='relative h-4.5! flex items-center justify-between md:w-full w-[94lvw]'>
-            <div className='flex w-full text-foreground'>Today</div>
+        <div className='flex shrink-0 items-center justify-between border-b border-foreground/10 bg-background/85 px-3 py-2 backdrop-blur-xl dark:border-white/10 dark:bg-dark-table/80'>
+          <div className='flex items-center gap-2'>
+            <span className='font-polysans text-sm text-foreground'>
+              Recent activity
+            </span>
+            <span className='inline-flex min-w-6 items-center justify-center rounded-full bg-foreground/8 px-1.5 py-0.5 text-[10px] font-brk uppercase tracking-[0.18em] text-foreground/65'>
+              {activities.length}
+            </span>
+          </div>
+          <div className='flex items-center gap-2'>
+            <span className='hidden text-[10px] font-brk uppercase tracking-[0.18em] text-foreground/45 md:inline'>
+              {fullTable ? 'Collapse' : 'Expand'}
+            </span>
             <Button
               size='sm'
               isIconOnly
+              variant='tertiary'
               id='toggle-full-table'
               onPress={toggleFullTable}
-              className='sticky h-6 w-7 right-2 text-foreground dark:bg-sidebar/10 bg-sidebar/60 hover:bg-slate-400/40 scale-80 rounded-md px-0 overflow-hidden flex-1 hover:opacity-100'>
+              className='h-7 w-7 rounded-lg bg-sidebar/60 px-0 text-foreground hover:bg-slate-400/20 dark:bg-sidebar/10'>
               <Icon
                 name='chevron-left'
                 className={cn('size-5 rotate-45', fullTable && '-rotate-45')}
@@ -423,40 +418,51 @@ export const RecentActivities = ({
             </Button>
           </div>
         </div>
-        <Table
-          removeWrapper
-          radius='none'
-          classNames={{
-            ...classNames,
-            tbody: 'overflow-auto rounded-3xl',
-            th: [
-              'sticky top-0 overflow-hidden bg-slate-200 dark:bg-dark-table backdrop-blur-3xl z-20 h-9 border-b border-sidebar dark:border-dark-table',
-            ],
-          }}
-          aria-label='Recent activities table'>
-          <TableHeader columns={columns}>
-            {(column) => (
-              <TableColumn
-                key={column.uid}
-                align='start'
-                className='tracking-wider text-xs font-medium text-slate-500 dark:text-foreground'>
-                <div className='drop-shadow-xs'>{column.name}</div>
-              </TableColumn>
-            )}
-          </TableHeader>
-          <TableBody emptyContent={'No activities found'} items={activities}>
-            {(activity) => (
-              <TableRow
-                key={activity._id}
-                className='h-8 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] border-b-light-table last:border-b-0 dark:border-b-dark-table'>
-                {(columnKey) => (
-                  <TableCell>
-                    {renderCell(activity, columnKey) as ReactNode}
-                  </TableCell>
+        <Table variant='secondary' className='min-h-0 flex-1 bg-transparent'>
+          <Table.ScrollContainer className='min-h-0 flex-1 overflow-auto'>
+            <Table.Content
+              aria-label='Recent activities table'
+              className='min-w-[980px]'>
+              <Table.Header columns={columns}>
+                {(column) => (
+                  <Table.Column
+                    key={column.uid}
+                    isRowHeader={column.uid === 'user'}
+                    className={cn(
+                      'sticky top-0 z-20 h-10 border-b border-sidebar bg-slate-200/90 text-xs font-medium tracking-[0.18em] text-slate-500 backdrop-blur-3xl dark:border-dark-table dark:bg-dark-table/95 dark:text-foreground/75',
+                      columnClassNameMap[column.uid],
+                    )}>
+                    <div className='drop-shadow-xs'>{column.name}</div>
+                  </Table.Column>
                 )}
-              </TableRow>
-            )}
-          </TableBody>
+              </Table.Header>
+              <Table.Body
+                items={activities}
+                renderEmptyState={() => (
+                  <div className='px-4 py-10 text-sm text-foreground/55'>
+                    No activities found
+                  </div>
+                )}>
+                {(activity) => (
+                  <Table.Row
+                    key={activity._id}
+                    id={String(activity._id)}
+                    className='border-b border-light-table transition-colors last:border-b-0 data-[hovered=true]:bg-light-table/60 dark:border-dark-table dark:data-[hovered=true]:bg-origin/40'>
+                    {columns.map((column) => (
+                      <Table.Cell
+                        key={column.uid}
+                        className={cn(
+                          'py-3 align-middle',
+                          columnClassNameMap[column.uid],
+                        )}>
+                        {renderCell(activity, column.uid)}
+                      </Table.Cell>
+                    ))}
+                  </Table.Row>
+                )}
+              </Table.Body>
+            </Table.Content>
+          </Table.ScrollContainer>
         </Table>
       </div>
     </Card>

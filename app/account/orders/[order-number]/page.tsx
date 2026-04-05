@@ -1,20 +1,13 @@
 'use client'
 
+import {Button as LinkButton} from '@/components/ui/button'
 import {api} from '@/convex/_generated/api'
 import {useMobile} from '@/hooks/use-mobile'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
-import {
-  BreadcrumbsItem,
-  Breadcrumbs,
-  Button,
-  Card,
-  CardContent,
-  Separator,
-  Image,
-} from '@/lib/heroui'
+import {Breadcrumbs, Button, Card, Separator} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {default as NextLink} from 'next/link'
@@ -87,8 +80,7 @@ export default function OrderDetailPage() {
       <motion.div
         initial={{opacity: 0}}
         animate={{opacity: 1}}
-        className='min-h-screen flex items-center justify-center'
-      >
+        className='min-h-screen flex items-center justify-center'>
         <p>Loading order...</p>
       </motion.div>
     )
@@ -111,7 +103,7 @@ export default function OrderDetailPage() {
         {/* Payment Success Banner */}
         {showSuccessBanner && (
           <Card className='mb-6 border border-terpenes/20 bg-terpenes/5'>
-            <CardContent className='p-4'>
+            <Card.Content className='p-4'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-3'>
                   <Icon
@@ -130,12 +122,11 @@ export default function OrderDetailPage() {
                   variant='tertiary'
                   size='sm'
                   onPress={() => setShowSuccessBanner(false)}
-                  className='min-w-0 w-8 h-8'
-                >
+                  className='min-w-0 w-8 h-8'>
                   <Icon name='x' className='size-4' />
                 </Button>
               </div>
-            </CardContent>
+            </Card.Content>
           </Card>
         )}
 
@@ -144,19 +135,21 @@ export default function OrderDetailPage() {
           <div>
             <h1 className='text-base font-okxs space-x-1 sm:space-x-3'>
               <Breadcrumbs>
-                <BreadcrumbsItem href='/account'>
+                <Breadcrumbs.Item href='/account'>
                   <span className='md:hidden flex'>
                     <Icon name='user' className='size-3' />
                   </span>
                   <span className='hidden md:flex'>Account</span>
-                </BreadcrumbsItem>
-                <BreadcrumbsItem href='/account/orders'>Orders</BreadcrumbsItem>
-                <BreadcrumbsItem>
+                </Breadcrumbs.Item>
+                <Breadcrumbs.Item href='/account/orders'>
+                  Orders
+                </Breadcrumbs.Item>
+                <Breadcrumbs.Item>
                   {order.orderNumber.substring(5)}{' '}
                   <Activity mode={isMobile ? 'hidden' : 'visible'}>
                     <OrderStatusBadge status={order.orderStatus} />
                   </Activity>
-                </BreadcrumbsItem>
+                </Breadcrumbs.Item>
               </Breadcrumbs>
             </h1>
           </div>
@@ -169,8 +162,8 @@ export default function OrderDetailPage() {
 
         <div className='grid gap-6'>
           {/* Order Items */}
-          <Card radius='sm' shadow='none' className='dark:bg-dark-table'>
-            <CardContent className='p-4 md:p-6'>
+          <Card className='dark:bg-dark-table'>
+            <Card.Content className='p-4 md:p-6'>
               <SectionTitle title='Items' />
               <div className='grid md:grid-cols-2 md:gap-0 gap-3'>
                 {order.items.map((item, index) => (
@@ -179,14 +172,14 @@ export default function OrderDetailPage() {
                     className={cn('p', {
                       'md:pe-8 md:border-r border-dotted border-foreground/15':
                         index % 2 === 0,
-                    })}
-                  >
+                    })}>
                     <div className='flex gap-4'>
-                      <Image
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
                         src={item.productImage}
                         alt={item.productName}
                         className='w-20 h-20 aspect-square object-cover rounded-lg shrink-0'
-                        radius='lg'
+                        loading='lazy'
                       />
                       <div className='font-okxs flex-1 w-full'>
                         <h3 className=''>{item.productName}</h3>
@@ -213,13 +206,13 @@ export default function OrderDetailPage() {
                   </div>
                 ))}
               </div>
-            </CardContent>
+            </Card.Content>
           </Card>
 
           {/* Order Summary */}
           <div className='grid gap-6 md:grid-cols-2'>
-            <Card radius='sm' shadow='none'>
-              <CardContent className='p-4 md:p-6'>
+            <Card>
+              <Card.Content className='p-4 md:p-6'>
                 <SectionTitle title='Order Summary' />
                 <div className='space-y-2 font-okxs'>
                   <div className='flex justify-between text-sm'>
@@ -262,12 +255,12 @@ export default function OrderDetailPage() {
                     <span>${formatPrice(payableTotalCents)}</span>
                   </div>
                 </div>
-              </CardContent>
+              </Card.Content>
             </Card>
 
             {/* Payment Information */}
-            <Card radius='sm' shadow='none'>
-              <CardContent className='p-4 md:p-6'>
+            <Card>
+              <Card.Content className='p-4 md:p-6'>
                 <div className='flex items-center justify-between'>
                   <SectionTitle title='Payment' />
                   {/*<div className='font-okxs text-cashapp'>
@@ -304,17 +297,15 @@ export default function OrderDetailPage() {
                   {order.payment.gateway?.transactionId &&
                     order.payment.status === 'pending' && (
                       <div className='mt-4 pt-4 border-t border-divider'>
-                        <Button
-                          as={NextLink}
-                          href={getPaymentRoute(
-                            order._id,
-                            order.payment.method,
-                          )}
-                          color='primary'
-                          className='w-full'
-                        >
-                          Complete Payment
-                        </Button>
+                        <LinkButton asChild className='w-full'>
+                          <NextLink
+                            href={getPaymentRoute(
+                              order._id,
+                              order.payment.method,
+                            )}>
+                            Complete Payment
+                          </NextLink>
+                        </LinkButton>
                       </div>
                     )}
                   {order.payment.paidAt && (
@@ -328,14 +319,14 @@ export default function OrderDetailPage() {
                     </div>
                   )}
                 </div>
-              </CardContent>
+              </Card.Content>
             </Card>
           </div>
 
           {/* Shipping Information */}
           <div className='grid gap-6 md:grid-cols-2'>
-            <Card radius='sm' shadow='none'>
-              <CardContent className='p-4 md:p-6'>
+            <Card>
+              <Card.Content className='p-4 md:p-6'>
                 <SectionTitle title='Shipping Address' />
                 <div className='space-y-1 font-okxs text-sm'>
                   {order.shippingAddress.firstName &&
@@ -395,12 +386,12 @@ export default function OrderDetailPage() {
                     )}
                   </div>
                 )}
-              </CardContent>
+              </Card.Content>
             </Card>
 
             {/* Order Details */}
-            <Card radius='sm' shadow='none'>
-              <CardContent className='p-4 md:p-6'>
+            <Card>
+              <Card.Content className='p-4 md:p-6'>
                 <SectionTitle title='Order Details' />
                 <div className='space-y-2 font-okxs text-sm'>
                   <div className='flex justify-between'>
@@ -428,30 +419,25 @@ export default function OrderDetailPage() {
                     </div>
                   )}
                 </div>
-              </CardContent>
+              </Card.Content>
             </Card>
           </div>
 
           {/* Actions */}
           <div className='flex gap-4 justify-end mb-4'>
-            <Button
-              radius='none'
+            <LinkButton
+              asChild
               variant='secondary'
-              as={NextLink}
-              href='/account'
-              className='border-transparent dark:bg-dark-table/10 rounded-lg font-okxs font-semibold dark:text-white text-base'
-            >
-              Back to Account
-            </Button>
+              className='border-transparent dark:bg-dark-table/10 rounded-lg font-okxs font-semibold dark:text-white text-base'>
+              <NextLink href='/account'>Back to Account</NextLink>
+            </LinkButton>
             {order.orderStatus !== 'shipped' &&
               order.orderStatus !== 'delivered' &&
               order.orderStatus !== 'cancelled' && (
                 <Button
                   size='md'
-                  radius='none'
                   variant='tertiary'
-                  className='rounded-xs font-okxs font-semibold dark:text-danger text-base'
-                >
+                  className='rounded-xs font-okxs font-semibold dark:text-danger text-base'>
                   Cancel Order
                 </Button>
               )}

@@ -1,10 +1,10 @@
 'use client'
 
 import {Id} from '@/convex/_generated/dataModel'
-import {Button, Card, CardContent, cn} from '@/lib/heroui'
 import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
-import {Input} from '@heroui/react'
+import {Button, Card, Input} from '@heroui/react'
 import {motion} from 'motion/react'
 import {memo, ViewTransition} from 'react'
 import {
@@ -140,24 +140,17 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
     <motion.div
       layout
       transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}
-      className='lg:sticky lg:top-20 h-fit min-h-[calc(90lvh)] space-y-0'
-    >
+      className='lg:sticky lg:top-20 h-fit min-h-[calc(90lvh)] space-y-0'>
       <motion.div
         layout
-        transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}
-      >
+        transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}>
         <CheckoutRewardsContent>{rewardsPanel}</CheckoutRewardsContent>
       </motion.div>
       <motion.div
         layout
-        transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}
-      >
-        <Card
-          shadow='none'
-          radius='none'
-          className='min-w-0 overflow-hidden dark:bg-dark-table/40 border border-foreground/20 border-t-0'
-        >
-          <CardContent className='relative space-y-2 px-4 sm:px-5 py-1'>
+        transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}>
+        <Card className='min-w-0 overflow-hidden dark:bg-dark-table/40 border border-foreground/20 border-t-0 rounded-none'>
+          <Card.Content className='relative space-y-2 px-4 sm:px-5 py-1'>
             <div className="absolute w-500 h-full scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
             <h2 className='text-lg font-normal font-bone'>Order Summary</h2>
             <ViewTransition>
@@ -241,8 +234,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                       <p
                         className={cn('text-xs text-foreground/70', {
                           'text-foreground': couponCode,
-                        })}
-                      >
+                        })}>
                         Discounts apply to subtotal only.
                       </p>
                     )}
@@ -252,8 +244,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                       size='sm'
                       variant='tertiary'
                       onPress={onRemoveCoupon}
-                      className='min-w-fit px-2 text-xs'
-                    >
+                      className='min-w-fit px-2 text-xs'>
                       Remove
                     </Button>
                   ) : null}
@@ -275,7 +266,6 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   />
                   <Button
                     size='sm'
-                    radius='none'
                     variant='tertiary'
                     onPress={hasAppliedCoupon ? onRemoveCoupon : onApplyCoupon}
                     isDisabled={
@@ -284,16 +274,14 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                       !!orderId ||
                       (!hasAppliedCoupon && couponCode.trim().length === 0)
                     }
-                    isLoading={isCouponApplying}
                     className={cn(
-                      'rounded-br-sm min-w-32 h-9 bg-foreground/70 dark:bg-background text-white font-clash',
+                      'rounded-none rounded-br-sm min-w-32 h-9 bg-foreground/70 dark:bg-background text-white font-clash',
                       {
                         'text-brand': hasAppliedCoupon,
                         'text-cyan-100': isCouponApplying,
                         'bg-dark-table/90': couponCode,
                       },
-                    )}
-                  >
+                    )}>
                     {isCouponApplying
                       ? 'Applying ⊛⊛⊛ '
                       : hasAppliedCoupon
@@ -328,8 +316,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
               <div
                 id='auth-check'
                 onClick={onOpen}
-                className='flex items-center justify-center space-x-1 p-3 bg-brand/10 border border-brand/10 rounded-lg cursor-pointer'
-              >
+                className='flex items-center justify-center space-x-1 p-3 bg-brand/10 border border-brand/10 rounded-lg cursor-pointer'>
                 <Icon name='user' className='size-3.5' />
                 <p className='text-sm hover:underline underline-offset-4'>
                   <span className='font-bold'>Sign in</span> to proceed to
@@ -339,24 +326,17 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
             )}
             <Button
               size='lg'
-              radius='none'
               variant='primary'
-              className='w-full font-polysans text-lg font-semibold bg-foreground dark:bg-brand text-white h-14 mb-2'
+              className='w-full font-polysans text-lg font-semibold bg-foreground dark:bg-brand text-white h-14 mb-2 rounded-none'
               onPress={onPlaceOrderClick}
               isDisabled={
                 !isAuthenticated || isLoading || isPending || !!orderId
-              }
-              endContent={
-                isLoading || isPending || orderId ? (
-                  <Icon name='spinners-ring' className='size-4' />
-                ) : null
-              }
-            >
+              }>
               <span className='drop-shadow-sm'>
                 {orderId ? 'Order Placed!' : 'Place Order'}
               </span>
             </Button>
-          </CardContent>
+          </Card.Content>
         </Card>
       </motion.div>
     </motion.div>

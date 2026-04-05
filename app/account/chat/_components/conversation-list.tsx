@@ -10,7 +10,7 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
 import {formatRecordingTime} from '@/utils/time'
-import {Avatar} from '@/lib/heroui'
+import {Avatar} from '@heroui/react'
 import {
   Fragment,
   ReactNode,
@@ -45,6 +45,15 @@ interface ConversationListProps {
 
 const ARCHIVE_BUTTON_WIDTH = 80
 const UNFILED_FOLDER_VALUE = '__unfiled__'
+
+const getInitials = (value: string) =>
+  value
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
 
 function SwipeableConversationRow({
   conversation,
@@ -237,9 +246,17 @@ export function ConversationList({
               className='w-full cursor-pointer px-2 py-3 text-left active:bg-blue-100/10'>
               <div className='flex items-start gap-2.5 md:gap-3'>
                 <div className='relative shrink-0'>
-                  <Avatar
-                    src={conversation.otherUser?.avatarUrl ?? undefined}
-                  />
+                  <Avatar>
+                    {conversation.otherUser?.avatarUrl ? (
+                      <Avatar.Image
+                        alt={displayName}
+                        src={conversation.otherUser.avatarUrl}
+                      />
+                    ) : null}
+                    <Avatar.Fallback>
+                      {getInitials(displayName)}
+                    </Avatar.Fallback>
+                  </Avatar>
                   <div className='absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background bg-green-500 md:size-3' />
                 </div>
                 <div className='min-w-0 flex-1'>

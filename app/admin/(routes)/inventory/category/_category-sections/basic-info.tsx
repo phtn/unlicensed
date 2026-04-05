@@ -1,12 +1,9 @@
 'use client'
 
 import {ensureSlug} from '@/lib/slug'
-import {Input} from '@/lib/heroui'
+import {Input, Label} from '@heroui/react'
 import {useState} from 'react'
-import {
-  commonInputClassNames,
-  FormInput,
-} from '../../../../_components/ui/fields'
+import {FormInput} from '../../../../_components/ui/fields'
 import {useAppForm} from '../../../../_components/ui/form-context'
 import {CategoryFormValues} from '../category-schema'
 import {FormSection, Header} from './components'
@@ -32,9 +29,9 @@ export const BasicInfo = ({form, fields}: BasicInfoProps) => {
             <form.AppField name='name'>
               {(input) => (
                 <div className='space-y-2 w-full'>
+                  <Label htmlFor='name'>{input.name}</Label>
                   <Input
-                    size='lg'
-                    label={nameField.label}
+                    id={input.name}
                     value={String(input.state.value ?? '')}
                     onChange={(e) => {
                       const nextName = e.target.value
@@ -46,7 +43,7 @@ export const BasicInfo = ({form, fields}: BasicInfoProps) => {
                     onBlur={input.handleBlur}
                     placeholder={nameField.placeholder}
                     variant='secondary'
-                    classNames={commonInputClassNames}
+                    // classNames={commonInputClassNames}
                   />
                   {input.state.meta.isTouched &&
                     input.state.meta.errors.length > 0 && (
@@ -62,9 +59,9 @@ export const BasicInfo = ({form, fields}: BasicInfoProps) => {
             <form.AppField name='slug'>
               {(input) => (
                 <div className='space-y-2 w-full'>
+                  <Label htmlFor='slug'>{slugField.label}</Label>
                   <Input
-                    size='lg'
-                    label={slugField.label}
+                    id='slug'
                     value={String(input.state.value ?? '')}
                     onChange={(e) => {
                       input.handleChange(e.target.value)
@@ -72,7 +69,7 @@ export const BasicInfo = ({form, fields}: BasicInfoProps) => {
                     }}
                     onBlur={input.handleBlur}
                     placeholder={slugField.placeholder}
-                    classNames={commonInputClassNames}
+                    // classNames={commonInputClassNames}
                     variant='secondary'
                   />
                   {input.state.meta.isTouched &&

@@ -2,7 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import {useMobile} from '@/hooks/use-mobile'
-import {Card, Chip} from '@/lib/heroui'
+import {Card, Chip} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import type {
   ExpressionSpecification,
@@ -231,7 +231,7 @@ export const InsightsPage = () => {
 
   if (!stats || !logs) {
     return (
-      <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
+      <Card className='p-4 dark:bg-dark-table/60'>
         <div className='flex items-center justify-center py-8'>
           <p className='text-sm text-gray-400'>Loading insights...</p>
         </div>
@@ -243,7 +243,7 @@ export const InsightsPage = () => {
     <div className='space-y-6 p-4 h-screen overflow-auto pb-32'>
       {/* Key Metrics Cards */}
       <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-        <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+        <Card className='p-4 dark:bg-dark-table/40'>
           <div className='flex flex-col'>
             <p className='text-sm text-default-500 mb-1'>Total Visits</p>
             <p className='text-2xl font-bold font-space'>
@@ -257,7 +257,7 @@ export const InsightsPage = () => {
           </div>
         </Card>
 
-        <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+        <Card className='p-4 dark:bg-dark-table/40'>
           <div className='flex flex-col'>
             <p className='text-sm text-default-500 mb-1'>Unique Visitors</p>
             <p className='text-2xl font-bold font-space'>
@@ -269,7 +269,7 @@ export const InsightsPage = () => {
           </div>
         </Card>
 
-        <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+        <Card className='p-4 dark:bg-dark-table/40'>
           <div className='flex flex-col'>
             <p className='text-sm text-default-500 mb-1'>Avg Response Time</p>
             <p className='text-2xl font-bold font-space'>{avgResponseTime}ms</p>
@@ -279,7 +279,7 @@ export const InsightsPage = () => {
           </div>
         </Card>
 
-        <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+        <Card className='p-4 dark:bg-dark-table/40'>
           <div className='flex flex-col'>
             <p className='text-sm text-default-500 mb-1'>Bounce Rate</p>
             <p className='text-2xl font-bold font-space'>
@@ -301,7 +301,7 @@ export const InsightsPage = () => {
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
         {/* Daily Visits Chart */}
         {timeBasedStats && (
-          <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+          <Card className='p-4 dark:bg-dark-table/40'>
             <h3 className='text-lg font-semibold font-space mb-4'>
               Daily Visits (Last 7 Days)
             </h3>
@@ -319,7 +319,7 @@ export const InsightsPage = () => {
 
         {/* Hourly Distribution */}
         {timeBasedStats && (
-          <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+          <Card className='p-4 dark:bg-dark-table/40'>
             <h3 className='text-lg font-semibold font-space mb-4'>
               Hourly Distribution (Last 24 Hours)
             </h3>
@@ -344,7 +344,7 @@ export const InsightsPage = () => {
       {/* Charts Row 2: Distribution charts */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
         {/* Device Distribution */}
-        <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+        <Card className='p-4 dark:bg-dark-table/40'>
           <h3 className='text-lg font-semibold font-space mb-4'>
             Device Distribution
           </h3>
@@ -374,7 +374,7 @@ export const InsightsPage = () => {
         </Card>
 
         {/* Browser Distribution */}
-        <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+        <Card className='p-4 dark:bg-dark-table/40'>
           <h3 className='text-lg font-semibold font-space mb-4'>
             Browser Distribution
           </h3>
@@ -393,7 +393,7 @@ export const InsightsPage = () => {
       {/* Top Pages and Countries */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
         {/* Top Pages */}
-        <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+        <Card className='p-4 dark:bg-dark-table/40'>
           <h3 className='text-lg font-semibold font-space mb-4'>Top Pages</h3>
           <div className='space-y-2'>
             {topPages.length > 0 ? (
@@ -409,7 +409,7 @@ export const InsightsPage = () => {
                       {page.path}
                     </p>
                   </div>
-                  <Chip size='sm' variant='tertiary' color='primary'>
+                  <Chip size='sm' variant='tertiary' color='accent'>
                     {page.count}
                   </Chip>
                 </div>
@@ -421,7 +421,7 @@ export const InsightsPage = () => {
         </Card>
 
         {/* Top Countries */}
-        <Card shadow='sm' className='p-4 dark:bg-dark-table/40'>
+        <Card className='p-4 dark:bg-dark-table/40'>
           <h3 className='text-lg font-semibold font-space mb-4'>
             Top Countries
           </h3>
@@ -437,7 +437,7 @@ export const InsightsPage = () => {
                     </span>
                     <p className='text-sm text-foreground'>{country.name}</p>
                   </div>
-                  <Chip size='sm' variant='tertiary' color='secondary'>
+                  <Chip size='sm' variant='tertiary' color='default'>
                     {country.value}
                   </Chip>
                 </div>
@@ -730,7 +730,7 @@ export const GeoPage = () => {
 
   if (!stats) {
     return (
-      <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
+      <Card className='p-4 dark:bg-dark-table/60'>
         <div className='flex items-center justify-center py-8'>
           <p className='text-sm text-gray-400'>Loading geo analytics...</p>
         </div>
@@ -741,11 +741,10 @@ export const GeoPage = () => {
   return (
     <div className='space-y-6 h-screen overflow-auto pb-32'>
       <Card
-        shadow='sm'
-        className='overflow-hidden border border-white/6 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.25),transparent_42%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(5,8,17,1))] p-4 dark:bg-dark-table/60'>
+                className='overflow-hidden border border-white/6 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.25),transparent_42%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(5,8,17,1))] p-4 dark:bg-dark-table/60'>
         <div className='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
           <div className='max-w-2xl space-y-3'>
-            <Chip size='sm' variant='tertiary' color='primary'>
+            <Chip size='sm' variant='tertiary' color='accent'>
               Geo
             </Chip>
             <div>
@@ -813,8 +812,8 @@ export const GeoPage = () => {
 
       <div className='grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.65fr)_22rem] rounded-b-3xl overflow-hidden'>
         <Card
-          shadow='none'
-          radius='none'
+          
+          
           className='dark:bg-dark-table/40 overflow-hidden bg-white'>
           <MapboxUsChoropleth
             defaultState={topState}
@@ -822,7 +821,7 @@ export const GeoPage = () => {
           />
         </Card>
 
-        <Card shadow='sm' className='p-5 dark:bg-dark-table/40'>
+        <Card className='p-5 dark:bg-dark-table/40'>
           <div className='flex items-start justify-between gap-3'>
             <div>
               <p className='text-xs uppercase tracking-[0.28em] text-default-400'>
@@ -858,7 +857,7 @@ export const GeoPage = () => {
                           {state.name}
                         </p>
                       </div>
-                      <Chip size='sm' variant='tertiary' color='primary'>
+                      <Chip size='sm' variant='tertiary' color='accent'>
                         {state.value.toLocaleString()}
                       </Chip>
                     </div>

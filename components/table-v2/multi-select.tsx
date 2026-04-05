@@ -10,14 +10,17 @@ import {Table, TableBody, TableCell, TableRow} from '@/components/ui/table'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
+  ListBoxItem,
   Modal,
+  ModalBackdrop,
   ModalBody,
-  ModalContent,
+  ModalContainer,
+  ModalDialog,
   ModalFooter,
   ModalHeader,
   Select,
-  ListBoxItem,
-} from '@/lib/heroui'
+} from '@heroui/react'
+import type {ReactNode} from 'react'
 import {useMemo, useState} from 'react'
 import {
   BulkEditorConfig,
@@ -28,6 +31,20 @@ import {
 
 type EditableValue = string | number | boolean | null | undefined
 type EditableInputKind = 'text' | 'number' | 'select'
+
+const ModalContent = ({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) => (
+  <ModalBackdrop>
+    <ModalContainer size='lg' placement='center'>
+      <ModalDialog className={className}>{children}</ModalDialog>
+    </ModalContainer>
+  </ModalBackdrop>
+)
 
 interface EditableField<T> {
   id: string
@@ -289,23 +306,27 @@ export const MultiSelect = <T,>({
                         <div className='flex flex-col'>
                           {field.inputKind === 'select' ? (
                             <Select
-                              size='sm'
-                              selectedKeys={
-                                draftValues[field.id]
-                                  ? [draftValues[field.id]]
-                                  : []
-                              }
-                              onSelectionChange={(keys) => {
-                                const key = Array.from(keys)[0]
+                              value={draftValues[field.id]}
+                              onChange={(value) =>
                                 setDraftValues((current) => ({
                                   ...current,
-                                  [field.id]: key != null ? String(key) : '',
+                                  [field.id]: (Array.isArray(value)
+                                    ? value
+                                    : []
+                                  )
+                                    .map(String)
+                                    .join(', '),
                                 }))
-                              }}
+                              }
+                              // onChange={(keys) => {
+                              //   const key = Array.from(keys)[0]
+                              //   setDraftValues((current) => ({
+                              //     ...current,
+                              //     [field.id]: key != null ? String(key) : '',
+                              //   }))
+                              // }}
                               placeholder={field.placeholder}
-                              disallowEmptySelection={false}
-                              disabled={pending}
-                              classNames={bulkSelectClassNames}>
+                              isDisabled={pending}>
                               {field.options.map((option) => (
                                 <ListBoxItem
                                   key={option.value}
@@ -384,12 +405,7 @@ export const MultiSelect = <T,>({
         </FrameFooter>
       </Frame>
 
-      <Modal
-        isOpen={isConfirmOpen}
-        onOpenChange={setIsConfirmOpen}
-        placement='center'
-        backdrop='blur'
-        size='lg'>
+      <Modal isOpen={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <ModalContent className='border border-border/60 bg-background/95 shadow-2xl'>
           <ModalHeader className='flex flex-col gap-1 pb-2'>
             <span className='text-base font-semibold tracking-tight'>
@@ -474,12 +490,7 @@ export const MultiSelect = <T,>({
         </ModalContent>
       </Modal>
 
-      <Modal
-        isOpen={isDeleteConfirmOpen}
-        onOpenChange={setIsDeleteConfirmOpen}
-        placement='center'
-        backdrop='blur'
-        size='md'>
+      <Modal isOpen={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
         <ModalContent className='border border-border/60 bg-background/95 shadow-2xl'>
           <ModalHeader className='flex flex-col gap-1 pb-2'>
             <span className='text-base font-semibold tracking-tight'>

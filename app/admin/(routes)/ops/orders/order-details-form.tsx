@@ -5,7 +5,7 @@ import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button, Chip, ChipProps, TextArea, User} from '@/lib/heroui'
+import {Avatar, Button, Chip, ChipProps, TextArea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
@@ -18,8 +18,8 @@ type Order = Doc<'orders'>
 
 const statusColorMap: Record<string, ChipProps['color']> = {
   pending_payment: 'warning',
-  order_processing: 'primary',
-  awaiting_courier_pickup: 'secondary',
+  order_processing: 'default',
+  awaiting_courier_pickup: 'default',
   shipping: 'default',
   resend: 'warning',
   shipped: 'success',
@@ -30,6 +30,26 @@ const statusColorMap: Record<string, ChipProps['color']> = {
 interface OrderDetailsFormProps {
   order: Order
   hideHeader?: boolean
+}
+
+const panelClassName =
+  'w-full rounded-xl border border-dotted border-neutral-900/20 bg-white/80 px-3 pb-3 pt-2 dark:border-white/10 dark:bg-purple-100/10'
+
+const getInitials = (value: string) => {
+  const parts = value
+    .split(/\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+
+  if (parts.length === 0) {
+    return '??'
+  }
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase()
+  }
+
+  return `${parts[0][0] ?? ''}${parts[parts.length - 1][0] ?? ''}`.toUpperCase()
 }
 
 export function OrderDetailsForm({
@@ -64,7 +84,7 @@ export function OrderDetailsForm({
         settingsPanelContext.setOpen(false)
         orderDetailsContext?.clearSelectedOrder()
       } else {
-        router.push('/admin/orders')
+        router.push('/admin/ops/orders')
       }
     } catch (error) {
       console.error('Failed to update order:', error)
@@ -80,18 +100,30 @@ export function OrderDetailsForm({
       settingsPanelContext.setOpen(false)
       orderDetailsContext?.clearSelectedOrder()
     } else {
-      router.push('/admin/orders')
+      router.push('/admin/ops/orders')
     }
   }
 
-  const user = useQuery(
+  const customerParticipant = useQuery(
     api.messages.q.getParticipantById,
     (order.chatUserId ?? order.userId)
       ? {id: (order.chatUserId ?? order.userId)!}
       : 'skip',
   )
   const customerProfileFid =
-    user && 'guestId' in user ? null : (user?.fid ?? user?.firebaseId ?? null)
+    customerParticipant && 'guestId' in customerParticipant
+      ? null
+      : (customerParticipant?.fid ?? customerParticipant?.firebaseId ?? null)
+  const customerName =
+    customerParticipant?.name?.trim() ||
+    [order.shippingAddress.firstName, order.shippingAddress.lastName]
+      .filter(Boolean)
+      .join(' ')
+      .trim() ||
+    order.contactEmail
+  const customerEmail = order.contactEmail
+  const customerPhone = order.contactPhone || 'No phone provided'
+  const customerAvatarUrl = customerParticipant?.photoUrl ?? undefined
   const payableTotalCents = resolveOrderPayableTotalCents({
     paymentMethod: order.payment.method,
     totalCents: order.totalCents,
@@ -126,39 +158,44 @@ export function OrderDetailsForm({
 
       {/* Order Info */}
       <div className='space-y-4 mb-2 overflow-y-auto'>
-        <div className='flex items-center w-full gap-8'>
+        <div className='grid gap-4 md:grid-cols-2 md:gap-8'>
           {/* Customer Info */}
-          <div className='rounded-xl border border-neutral-900/20 bg-white/80 dark:bg-purple-100/10 border-dotted px-3 pb-3 pt-2 w-full'>
+          <div className={panelClassName}>
             <div className='flex items-center justify-between'>
               <h3 className='text-sm font-space tracking-tight font-medium mb-2'>
                 Customer
               </h3>
             </div>
-            <User
-              name={
-                customerProfileFid ? (
-                  <Link href={`/admin/ops/customers/${customerProfileFid}`}>
-                    {order.contactEmail}
+            <div className='flex items-center gap-3'>
+              <Avatar
+                size='md'
+                className='shrink-0 border border-foreground/10 bg-background text-foreground dark:border-white/10 dark:bg-dark-table'>
+                <Avatar.Image alt={customerName} src={customerAvatarUrl} />
+                <Avatar.Fallback>{getInitials(customerName)}</Avatar.Fallback>
+              </Avatar>
+              <div className='min-w-0'>
+                {customerProfileFid ? (
+                  <Link
+                    href={`/admin/ops/customers/${customerProfileFid}`}
+                    className='block truncate text-sm font-medium text-foreground underline-offset-4 hover:underline'>
+                    {customerName}
                   </Link>
                 ) : (
-                  order.contactEmail
-                )
-              }
-              description={order.contactPhone}
-              avatarProps={{
-                fallback: order.contactEmail.slice(0, 2),
-                size: 'sm',
-              }}
-              classNames={{
-                name: 'lowercase',
-                description:
-                  'font-space text-mac-blue dark:text-blue-400 lowercase',
-                base: 'uppercase',
-              }}
-            />
+                  <p className='truncate text-sm font-medium text-foreground'>
+                    {customerName}
+                  </p>
+                )}
+                <p className='truncate text-sm lowercase text-mac-blue dark:text-blue-400'>
+                  {customerEmail}
+                </p>
+                <p className='truncate text-xs text-muted-foreground'>
+                  {customerPhone}
+                </p>
+              </div>
+            </div>
           </div>
           {/* Shipping Address */}
-          <div className='rounded-xl border border-neutral-900/20 bg-white/80 dark:bg-purple-100/10 border-dotted px-3 pb-3 pt-2 w-full'>
+          <div className={panelClassName}>
             <div className='flex items-start justify-between'>
               <h3 className='text-sm font-medium block'>Shipping Address</h3>
               <div className='text-right text-sm text-muted-foreground min-h-16.5'>
@@ -176,7 +213,7 @@ export function OrderDetailsForm({
           {/* Order Items */}
           <div className=''>
             <h3 className='text-sm font-medium mb-2'>Line Items</h3>
-            <div className='h-[35lvh] overflow-y-scroll border border-neutral-500/60 border-dashed bg-white/80 dark:bg-purple-100/10 rounded-xl'>
+            <div className='h-[35lvh] overflow-y-auto rounded-xl border border-dashed border-neutral-500/60 bg-white/80 dark:bg-purple-100/10'>
               {order.items.map((item, idx) => (
                 <div
                   key={idx}
@@ -258,10 +295,13 @@ export function OrderDetailsForm({
               </label>
               <TextArea
                 value={remarks}
-                onValueChange={setRemarks}
+                onChange={(e) => setRemarks(e.target.value)}
                 placeholder='Add internal notes or remarks...'
-                minRows={6}
-                maxRows={8}
+                rows={6}
+                variant='secondary'
+                className={
+                  'border border-neutral-500/40 bg-white/80 shadow-none dark:border-white/10 dark:bg-purple-100/10'
+                }
               />
             </div>
           </div>
@@ -270,8 +310,8 @@ export function OrderDetailsForm({
           <div>
             {/*PAYMENT*/}
             <h3 className='text-sm font-medium mb-2'>Payment Details</h3>
-            <div className='rounded-xl border border-neutral-900/20 bg-white/80 dark:bg-purple-100/10 border-dotted px-3 pb-3 pt-2 w-full'>
-              <div className='pb-2 h-96 overflow-scroll'>
+            <div className={panelClassName}>
+              <div className='h-96 overflow-auto pb-2'>
                 {order.payment &&
                   Object.entries(order.payment).map(([k, v]) => (
                     <div
@@ -312,8 +352,8 @@ export function OrderDetailsForm({
             {/* Customer Notes */}
             <div className='pt-4'>
               <h3 className='text-sm font-medium mb-2'>Customer Notes</h3>
-              <div className='h-16  bg-alum/40 rounded-lg text-sm text-muted-foreground'>
-                {order.customerNotes}
+              <div className='min-h-16 rounded-lg bg-alum/40 px-3 py-2 text-sm text-muted-foreground'>
+                {order.customerNotes?.trim() || 'No customer notes'}
               </div>
             </div>
             <div className='space-y-4 pt-6 shrink-0'>
@@ -321,7 +361,6 @@ export function OrderDetailsForm({
               <div className='flex gap-2 pt-2'>
                 <Button
                   size='lg'
-                  radius='none'
                   variant='tertiary'
                   onPress={handleCancel}
                   className='flex-1 text-base font-medium rounded-lg'
@@ -330,11 +369,9 @@ export function OrderDetailsForm({
                 </Button>
                 <Button
                   size='lg'
-                  radius='none'
                   variant='primary'
                   onPress={handleSave}
-                  className='flex-1 text-base font-medium rounded-lg bg-dark-table text-white dark:text-dark-table dark:bg-white'
-                  isLoading={isSaving}>
+                  className='flex-1 text-base font-medium rounded-lg bg-dark-table text-white dark:text-dark-table dark:bg-white'>
                   <span className='drop-shadow-sm'>Save Changes</span>
                 </Button>
               </div>

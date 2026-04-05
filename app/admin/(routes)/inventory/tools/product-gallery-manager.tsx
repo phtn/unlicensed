@@ -10,21 +10,18 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
   Button,
-  Image,
   Modal,
   ModalBody,
-  ModalContent,
   ModalFooter,
   ModalHeader,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {
-  useCallback,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import {useCallback, useDeferredValue, useEffect, useMemo, useState} from 'react'
+
+
+import {LegacyImage as Image} from '@/components/ui/legacy-image'
+
+const ModalContent = Modal.Container
 
 type GalleryItem = {
   recordId: string
@@ -445,7 +442,7 @@ export const ProductGalleryManager = () => {
                   )}
 
                   <Button
-                    color='danger'
+                    variant='danger'
                     className='h-10 rounded-xl'
                     onPress={() => setIsDeleteModalOpen(true)}
                     isDisabled={deletingStorageId !== null}>
@@ -464,10 +461,8 @@ export const ProductGalleryManager = () => {
 
       <Modal
         isOpen={isDeleteModalOpen}
-        onOpenChange={setIsDeleteModalOpen}
-        placement='center'
-        backdrop='blur'>
-        <ModalContent>
+        onOpenChange={setIsDeleteModalOpen}>
+        <ModalContent placement='center'>
           <ModalHeader>Delete Gallery Image</ModalHeader>
           <ModalBody>
             <p className='text-sm text-foreground/70'>
@@ -489,8 +484,7 @@ export const ProductGalleryManager = () => {
               Cancel
             </Button>
             <Button
-              color='danger'
-              isLoading={deletingStorageId === selectedItem?.storageId}
+              variant='danger'
               onPress={() => void handleDeleteSelectedImage()}>
               Delete
             </Button>

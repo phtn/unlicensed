@@ -1,6 +1,6 @@
+import {Button} from '@/components/ui/button'
 import {OrderStatus} from '@/convex/orders/d'
 import {Icon} from '@/lib/icons'
-import {Button} from '@/lib/heroui'
 import Link from 'next/link'
 import {Activity, useMemo} from 'react'
 
@@ -16,18 +16,17 @@ export const Actions = ({status, href, isMobile}: Props) => {
       case 'pending_payment':
         return (
           <Button
-            size={'md'}
-            as={Link}
-            href={href}
-            radius='none'
-            color='success'
-            className='border-none dark:bg-brand/80 bg-brand rounded-xs font-okxs font-semibold text-white text-base'>
-            <Activity mode={isMobile ? 'hidden' : 'visible'}>
-              <span className='drop-shadow-xs'>Complete Payment</span>
-            </Activity>
-            <Activity mode={isMobile ? 'visible' : 'hidden'}>
-              <span className='drop-shadow-xs'>Pay</span>
-            </Activity>
+            asChild
+            size='lg'
+            className='rounded-xs border-none bg-brand text-base font-okxs font-semibold text-white dark:bg-brand/80'>
+            <Link href={href}>
+              <Activity mode={isMobile ? 'hidden' : 'visible'}>
+                <span className='drop-shadow-xs'>Complete Payment</span>
+              </Activity>
+              <Activity mode={isMobile ? 'visible' : 'hidden'}>
+                <span className='drop-shadow-xs'>Pay</span>
+              </Activity>
+            </Link>
           </Button>
         )
       case 'cancelled':

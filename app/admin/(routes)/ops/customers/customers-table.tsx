@@ -6,7 +6,8 @@ import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {formatPrice} from '@/utils/formatPrice'
-import {User} from '@/lib/heroui'
+import {getInitials} from '@/utils/initials'
+import {Avatar} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useMemo} from 'react'
@@ -85,19 +86,13 @@ export const CustomersTable = () => {
             )
 
             return (
-              <User
-                name={nameNode}
-                avatarProps={{
-                  src: row.original.photoUrl,
-                  size: 'sm',
-                  className: 'scale-80',
-                }}
-                classNames={{
-                  name: 'text-base font-okxs capitalize hover:text-mac-blue hover:underline underline-offset-4 decoration-dotted decoration-[0.5px]',
-                  description: 'text-default-500 text-xs',
-                  base: 'mt-2 ',
-                }}
-              />
+              <Avatar className='size-9 shrink-0 border border-foreground/10 bg-background text-foreground shadow-sm dark:border-white/10 dark:bg-dark-table'>
+                <Avatar.Image
+                  alt={displayName}
+                  src={row.original.photoUrl ?? undefined}
+                />
+                <Avatar.Fallback>{getInitials(displayName)}</Avatar.Fallback>
+              </Avatar>
             )
           },
         },

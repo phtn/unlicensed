@@ -5,7 +5,7 @@ import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
 import {cn} from '@/lib/utils'
-import {Button, Switch} from '@/lib/heroui'
+import {Button, Switch} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useCallback, useEffect, useRef, useState} from 'react'
@@ -209,8 +209,6 @@ export const CategoryForm = ({
           {SECTIONS.map((section) => (
             <Button
               size='md'
-              disableRipple
-              disableAnimation
               variant='tertiary'
               key={section.id}
               name={section.id}
@@ -238,11 +236,8 @@ export const CategoryForm = ({
                 <Switch
                   size='sm'
                   isSelected={visible}
-                  onValueChange={(value) => field.handleChange(value)}
+                  onChange={(value: boolean) => field.handleChange(value)}
                   onBlur={field.handleBlur}
-                  classNames={{
-                    wrapper: 'group-data-[selected=true]:bg-emerald-500',
-                  }}
                 />
               </div>
             )
@@ -255,8 +250,10 @@ export const CategoryForm = ({
             type='submit'
             fullWidth
             className='w-full rounded-xl font-medium tracking-tight bg-emerald-500 text-white'
-            isLoading={isSubmitting}
-            onPress={form.handleSubmit}>
+            isPending={isSubmitting}
+            onPress={() => {
+              void form.handleSubmit()
+            }}>
             {isSubmitting
               ? isEditMode
                 ? 'Updating...'
@@ -312,11 +309,8 @@ export const CategoryForm = ({
                       <Switch
                         size='sm'
                         isSelected={visible}
-                        onValueChange={(value) => field.handleChange(value)}
+                        onChange={(value: boolean) => field.handleChange(value)}
                         onBlur={field.handleBlur}
-                        classNames={{
-                          wrapper: 'group-data-[selected=true]:bg-emerald-500',
-                        }}
                       />
                     </div>
                   )
@@ -354,9 +348,9 @@ export const CategoryForm = ({
           <div className='sticky bottom-0 z-20 mt-4 border border-neutral-800 bg-neutral-900/85 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl backdrop-blur-md lg:hidden rounded-t-xl'>
             <Button
               type='submit'
-              color='success'
-              className='w-full font-semibold'
-              isLoading={isSubmitting}>
+              variant='primary'
+              className='w-full font-semibold bg-emerald-500 text-white'
+              isPending={isSubmitting}>
               {isSubmitting
                 ? isEditMode
                   ? 'Updating...'

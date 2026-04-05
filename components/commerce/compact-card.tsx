@@ -2,7 +2,8 @@ import {StoreProduct} from '@/app/types'
 import {cn} from '@/lib/utils'
 import {mapCurrencyToSign} from '@/utils/currency'
 import {createMultiOptionSlug} from '@/utils/visual-options'
-import {Image, Link} from '@/lib/heroui'
+import {Link} from '@heroui/react'
+import Image from 'next/image'
 
 interface CompactProductCardProps extends StoreProduct {
   className?: string

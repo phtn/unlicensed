@@ -4,10 +4,13 @@ import {
   commonInputClassNames,
   commonSelectClassNames,
   FormInput,
+  getSingleSelectedKey,
 } from '@/app/admin/_components/ui/fields'
 import {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
-import {Input, Select, ListBoxItem} from '@/lib/heroui'
+import {Input} from '@heroui/input'
+import {ListboxItem as ListBoxItem} from '@heroui/listbox'
+import {Select} from '@heroui/select'
 import {useStore} from '@tanstack/react-store'
 import {useEffect, useMemo, useRef} from 'react'
 import {
@@ -150,7 +153,7 @@ export const Pricing = ({
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                     placeholder={batchIdField.placeholder}
-                    variant='secondary'
+                    variant='faded'
                     classNames={commonInputClassNames}
                   />
                   {field.state.meta.isTouched &&
@@ -176,12 +179,12 @@ export const Pricing = ({
                       label='Unit'
                       selectedKeys={unitValue ? [unitValue] : []}
                       onSelectionChange={(keys) => {
-                        const key = Array.from(keys)[0]
+                        const key = getSingleSelectedKey(keys)
                         field.handleChange(key != null ? String(key) : '')
                       }}
                       onBlur={field.handleBlur}
                       placeholder='Select unit'
-                      variant='secondary'
+                      variant='faded'
                       classNames={{
                         ...commonInputClassNames,
                         ...commonSelectClassNames,
@@ -201,7 +204,7 @@ export const Pricing = ({
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
                       placeholder='e.g. g, oz, each'
-                      variant='secondary'
+                      variant='faded'
                       classNames={commonInputClassNames}
                     />
                   )}
@@ -270,7 +273,7 @@ export const Pricing = ({
                                   />
                                 }
                                 size='sm'
-                                variant='secondary'
+                                variant='faded'
                                 classNames={{
                                   ...commonInputClassNames,
                                   label: 'mb-4 ml-1',

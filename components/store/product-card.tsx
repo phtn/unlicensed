@@ -265,7 +265,7 @@ const ProductCardComponent = ({
                 <div>
                   <div>
                     {brandLabel && (
-                      <div className='mb-0.5 h-4 truncate text-[9px] font-okxs font-light capitalize tracking-wide opacity-80'>
+                      <div className='mb-0.5 h-4 truncate text-sm font-okxs font-light capitalize tracking-wide opacity-80'>
                         <span
                           className={cn('font-light', {
                             'font-bone font-normal text-sm tracking-widest uppercase text-orange-200 -mt-2':
@@ -314,7 +314,7 @@ const ProductCardComponent = ({
                       {subcategoryLabel && (
                         <span
                           className={cn(
-                            'text-[8px] font-okxs font-light capitalize opacity-85 sm:text-xs',
+                            'text-[8px] font-okxs font-light capitalize opacity-85 sm:text-sm',
                             {'text-[9px]! font-medium': isDemoProduct},
                           )}>
                           {isDemoProduct ? ' USE ONLY' : subcategoryLabel}

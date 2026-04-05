@@ -10,7 +10,7 @@ import {
 } from '@/lib/paygate/gateway-config'
 import type {Provider, ProviderStatusResponse} from '@/lib/paygate/types'
 import {cn} from '@/lib/utils'
-import {Card, CardHeader} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
@@ -254,8 +254,6 @@ const ProviderItem = ({
   }
   return (
     <Card
-      shadow='none'
-      radius='none'
       className={cn(
         'border border-sidebar w-full transition-colors p-2',
         isSelected && 'ring-2 ring-primary ring-inset bg-primary/5',
@@ -278,7 +276,7 @@ const ProviderItem = ({
             ? undefined
             : `${item.provider_name}, ${item.status}. ${isSelected ? 'In top 10. Click to remove.' : 'Click to add to top 10.'}`
         }>
-        <CardHeader className='flex w-full justify-between text-left px-2 pointer-events-none'>
+        <Card.Header className='flex w-full justify-between text-left px-2 pointer-events-none'>
           <div className=''>
             <div className='flex items-center gap-2'>
               <span className='font-medium'>{item.provider_name}</span>
@@ -320,7 +318,7 @@ const ProviderItem = ({
                 },
               )}></div>
           </div>
-        </CardHeader>
+        </Card.Header>
       </button>
     </Card>
   )

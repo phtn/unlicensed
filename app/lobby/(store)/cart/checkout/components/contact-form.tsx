@@ -1,8 +1,7 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {Icon} from '@/lib/icons'
-import {Input} from '@/lib/heroui'
+import {Input} from '@heroui/react'
 import {ChangeEvent, useCallback} from 'react'
 import {FormData, FormErrors} from '../types'
 
@@ -39,24 +38,16 @@ export function ContactForm({
       </h3>
       <div className='space-y-1'>
         <Input
-          label='Email'
+          required
           type='email'
-          radius='sm'
-          classNames={commonInputClassNames}
           value={formData.contactEmail}
           onChange={handleEmailChange}
-          isRequired
           spellCheck='false'
-          isInvalid={!!formErrors.contactEmail}
-          errorMessage={formErrors.contactEmail}
           autoFocus={false}
         />
         <Input
-          label='Phone'
-          radius='sm'
           type='tel'
           spellCheck='false'
-          classNames={commonInputClassNames}
           value={formData.contactPhone}
           onChange={handlePhoneChange}
           autoFocus={false}

@@ -4,7 +4,7 @@ import {DataTable} from '@/components/table-v2'
 import {ColumnConfig} from '@/components/table-v2/create-column'
 import {ColHeader} from '@/components/table-v2/headers'
 import {Doc} from '@/convex/_generated/dataModel'
-import {Chip, ChipProps} from '@/lib/heroui'
+import {Chip, ChipProps} from '@heroui/react'
 import Link from 'next/link'
 import {useMemo} from 'react'
 

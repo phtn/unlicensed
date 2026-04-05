@@ -6,12 +6,14 @@ import {useAuth} from '@/hooks/use-auth'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
-import {Button, Image} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useMemo, useState} from 'react'
 import {CtaSection} from '../main/cta-section'
 import {ProductCard} from './product-card'
+
+import {LegacyImage} from '@/components/ui/legacy-image'
 
 const formatPrice = (priceCents: number) => {
   const dollars = priceCents / 100
@@ -93,16 +95,13 @@ export const SuggestedCartItems = () => {
       />
       <div className='w-full flex items-center justify-center gap-px md:gap-2'>
         {categories.map((cat) => (
-          <Button
-            key={cat}
-            size='sm'
-            as={Link}
-            href={`/lobby/category/${cat}`}
+          <Link
             prefetch
-            radius='none'
+            key={cat}
+            href={`/lobby/category/${cat}`}
             className='portrait:w-full dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-clash font-medium px-2 md:px-5 py-5 text-base lg:text-lg capitalize tracking-tight'>
             <span className='drop-shadow-xs'>{cat}</span>
-          </Button>
+          </Link>
         ))}
       </div>
     </div>
@@ -114,9 +113,9 @@ interface ISuggestedItem {
   imageUrl: string
   onAdd: () => Promise<void> | undefined
 }
-// Used in commented JSX; keep for future use
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- reserved for SuggestedItem UI
-const SuggestedItem = ({product, imageUrl, onAdd}: ISuggestedItem) => {
+// Used in commented JSX; keep for future use.
+
+export const SuggestedItem = ({product, imageUrl, onAdd}: ISuggestedItem) => {
   const [isAdding, setIsAdding] = useState(false)
 
   const handleAdd = async () => {
@@ -131,12 +130,11 @@ const SuggestedItem = ({product, imageUrl, onAdd}: ISuggestedItem) => {
   return (
     <div className='snap-start min-w-64 max-w-64 bg-surface-highlight/50 rounded-xs overflow-hidden border border-foreground/10 flex flex-col group md:hover:border-foreground/20'>
       {imageUrl ? (
-        <Image
+        <LegacyImage
           src={imageUrl}
           alt={product.name}
-          radius='none'
-          shadow='none'
-          className='aspect-square object-cover opacity-90 group-hover:opacity-100 transition-opacity'
+          loading='lazy'
+          className='aspect-square object-cover opacity-90 transition-opacity group-hover:opacity-100'
         />
       ) : (
         <div className='min-h-64 w-auto aspect-auto flex items-center justify-center'>
@@ -156,9 +154,9 @@ const SuggestedItem = ({product, imageUrl, onAdd}: ISuggestedItem) => {
           size='sm'
           variant='tertiary'
           className='w-full h-8 min-h-0 text-xs font-semibold font-space bg-foreground/5 hover:bg-foreground/10'
-          isLoading={isAdding}
+          isDisabled={isAdding}
           onPress={handleAdd}>
-          Add
+          {isAdding ? 'Adding...' : 'Add'}
         </Button>
       </div>
     </div>

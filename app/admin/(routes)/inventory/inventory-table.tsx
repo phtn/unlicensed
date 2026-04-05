@@ -10,27 +10,19 @@ import {
   Button,
   ButtonGroup,
   Card,
-  Checkbox,
   Chip,
   Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Image,
-  Input,
-  SharedSelection,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from '@/lib/heroui'
+} from '@heroui/react'
+import {Input} from '@heroui/input'
+import type {SharedSelection} from '@heroui/system'
 import {useMutation, usePaginatedQuery, useQuery} from 'convex/react'
 import {Key, useCallback, useEffect, useMemo, useState} from 'react'
 import {useProductDetails} from '../../_components/product-details-context'
 import {actionsCell, moneyCell, textCell} from '../../_components/ui/cells'
 import {useSettingsPanel} from '../../_components/ui/settings'
+
+
+import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
 type Product = Doc<'products'>
 
@@ -98,6 +90,19 @@ export const InventoryTable = () => {
 
   const [hoveredColumn, setHoveredColumn] = useState<string | null>(null)
   const [showCheckboxes, setShowCheckboxes] = useState(true)
+  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
+    new Set(columns.map((col) => col.uid)),
+  )
+  const [statusFilter, setStatusFilter] = useState<Set<string>>(
+    new Set(statusOptions.map((s) => s.uid)),
+  )
+  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(
+    new Set(['all']),
+  )
+  const visibleColumnDefs = useMemo(
+    () => columns.filter((column) => visibleColumns.has(column.uid)),
+    [visibleColumns],
+  )
 
   // Apply widths directly to DOM elements
   useEffect(() => {
@@ -134,7 +139,7 @@ export const InventoryTable = () => {
           // Skip first column (checkbox) if visible and apply widths starting from index checkboxOffset
           headerCells.forEach((cell, index) => {
             if (showCheckboxes && index === 0) return // Skip checkbox column
-            const uid = columns[index - checkboxOffset]?.uid
+            const uid = visibleColumnDefs[index - checkboxOffset]?.uid
             const width = getColumnWidth(uid)
             if (width && uid) {
               const htmlCell = cell as HTMLElement
@@ -149,7 +154,7 @@ export const InventoryTable = () => {
             const cells = row.querySelectorAll('td')
             cells.forEach((cell, index) => {
               if (showCheckboxes && index === 0) return // Skip checkbox column
-              const uid = columns[index - checkboxOffset]?.uid
+              const uid = visibleColumnDefs[index - checkboxOffset]?.uid
               const width = getColumnWidth(uid)
               if (width && uid) {
                 const htmlCell = cell as HTMLElement
@@ -164,22 +169,20 @@ export const InventoryTable = () => {
       }
     }
    
-  }, [columnWidths, getColumnWidth, hoveredColumn, showCheckboxes, tableRef])
+  }, [
+    columnWidths,
+    getColumnWidth,
+    hoveredColumn,
+    showCheckboxes,
+    tableRef,
+    visibleColumnDefs,
+  ])
 
   const [filterValue, setFilterValue] = useState('')
   const [selectedRow, setSelectedRow] = useState<Id<'products'> | null>(null)
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [isChangingPrice, setIsChangingPrice] = useState(false)
   const [priceInput, setPriceInput] = useState('')
-  const [visibleColumns, setVisibleColumns] = useState<Set<string> | 'all'>(
-    new Set(columns.map((col) => col.uid)),
-  )
-  const [statusFilter, setStatusFilter] = useState<Set<string>>(
-    new Set(statusOptions.map((s) => s.uid)),
-  )
-  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(
-    new Set(['all']),
-  )
 
   const hasSearchFilter = Boolean(filterValue)
 
@@ -293,25 +296,12 @@ export const InventoryTable = () => {
 
   const onVisibleColumnsChange = useCallback((keys: SharedSelection) => {
     if (keys === 'all') {
-      setVisibleColumns('all')
+      setVisibleColumns(new Set(columns.map((column) => column.uid)))
     } else {
       const keySet = new Set(Array.from(keys).map((k) => String(k)))
       setVisibleColumns(keySet)
     }
   }, [])
-
-  const onSelectionChange = useCallback(
-    (keys: SharedSelection) => {
-      if (keys === 'all') {
-        const allKeys = new Set(filteredItems?.map((p) => getKey(p)) ?? [])
-        setSelectedRows(allKeys)
-      } else {
-        const keySet = new Set(Array.from(keys).map((k) => String(k)))
-        setSelectedRows(keySet)
-      }
-    },
-    [filteredItems],
-  )
 
   const handleViewProduct = (product: Product) => () => {
     if (product) {
@@ -402,39 +392,6 @@ export const InventoryTable = () => {
     }
   }
 
-  const classNames = useMemo(
-    () => ({
-      wrapper: ['max-h-[382px]', 'max-w-3xl'],
-      table: [
-        'md:table-fixed',
-        'w-full',
-        'md:!table-fixed',
-        'table-auto',
-        'min-w-full',
-      ],
-      th: [
-        'bg-transparent',
-        'text-gray-400',
-        'border-b',
-        'border-divider',
-        showCheckboxes && '[&:first-child]:w-14',
-        showCheckboxes && '[&:first-child]:min-w-14',
-        showCheckboxes && '[&:first-child]:max-w-14',
-      ].filter(Boolean),
-      td: [
-        'group-data-[first=true]:first:before:rounded-none',
-        'group-data-[first=true]:last:before:rounded-none',
-        'group-data-[middle=true]:before:rounded-none',
-        'group-data-[last=true]:first:before:rounded-none',
-        'group-data-[last=true]:last:before:rounded-none',
-        showCheckboxes && '[&:first-child]:w-14',
-        showCheckboxes && '[&:first-child]:min-w-14',
-        showCheckboxes && '[&:first-child]:max-w-14',
-      ].filter(Boolean),
-    }),
-    [showCheckboxes],
-  )
-
   const handleChangePrice = useCallback(() => {
     setIsChangingPrice(true)
     setPriceInput('')
@@ -474,11 +431,17 @@ export const InventoryTable = () => {
       <div className='flex flex-col w-full portrait:w-screen gap-4'>
         <div className='flex justify-between items-center gap-3 px-4'>
           <div className='flex items-center gap-3 flex-1'>
-            <Checkbox
+            <input
               type='checkbox'
-              radius='sm'
               checked={showCheckboxes}
-              onChange={(e) => setShowCheckboxes(e.target.checked)}
+              onChange={(event) => {
+                const nextChecked = event.target.checked
+                setShowCheckboxes(nextChecked)
+                if (!nextChecked) {
+                  setSelectedRows(new Set())
+                }
+              }}
+              className='size-4 accent-emerald-500'
             />
             <Input
               isClearable
@@ -522,8 +485,10 @@ export const InventoryTable = () => {
                   />
                   <Button
                     size='sm'
-                    color='primary'
-                    onPress={handleSubmitPriceChange}
+                    variant='primary'
+                    onPress={() => {
+                      void handleSubmitPriceChange()
+                    }}
                     isDisabled={!priceInput || isNaN(parseFloat(priceInput))}>
                     Save
                   </Button>
@@ -536,116 +501,118 @@ export const InventoryTable = () => {
                 </div>
               ) : (
                 <Dropdown>
-                  <DropdownTrigger>
+                  <Dropdown.Trigger>
                     <Button
                       variant='tertiary'
-                      className='text-blue-400'
-                      endContent={
-                        <Icon name='arrow-down' className='size-4' />
-                      }>
+                      className='text-blue-400'>
                       Actions
+                      <Icon name='arrow-down' className='size-4' />
                     </Button>
-                  </DropdownTrigger>
-                  <DropdownMenu
-                    aria-label='Bulk Actions'
-                    onAction={(key) => {
-                      if (key === 'change-price') {
-                        handleChangePrice()
-                      }
-                    }}>
-                    <DropdownItem
-                      key='change-price'
-                      startContent={<Icon name='dollar' className='size-5' />}>
-                      Change Price
-                    </DropdownItem>
-                  </DropdownMenu>
+                  </Dropdown.Trigger>
+                  <Dropdown.Popover>
+                    <Dropdown.Menu
+                      aria-label='Bulk Actions'
+                      onAction={(key) => {
+                        if (key === 'change-price') {
+                          handleChangePrice()
+                        }
+                      }}>
+                      <Dropdown.Item id='change-price'>
+                        <div className='flex items-center gap-2'>
+                          <Icon name='dollar' className='size-5' />
+                          <span>Change Price</span>
+                        </div>
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown.Popover>
                 </Dropdown>
               )}
             </div>
           )}
           <ButtonGroup variant='tertiary'>
             <Dropdown>
-              <DropdownTrigger className='hidden sm:flex'>
-                <Button
-                  endContent={<Icon name='3d-box-light' className='size-4' />}
-                  variant='tertiary'>
+              <Dropdown.Trigger className='hidden sm:flex'>
+                <Button variant='tertiary'>
                   Category
+                  <Icon name='3d-box-light' className='size-4' />
                 </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                aria-label='Category Filter'
-                closeOnSelect={false}
-                selectedKeys={categoryFilter}
-                selectionMode='multiple'
-                onSelectionChange={onCategoryFilterChange}>
-                <>
-                  <DropdownItem key='all' className='capitalize'>
+              </Dropdown.Trigger>
+              <Dropdown.Popover>
+                <Dropdown.Menu
+                  aria-label='Category Filter'
+                  selectedKeys={categoryFilter}
+                  selectionMode='multiple'
+                  onSelectionChange={onCategoryFilterChange}>
+                  <Dropdown.Item id='all' className='capitalize'>
                     All Categories
-                  </DropdownItem>
+                  </Dropdown.Item>
                   {categories.map((category, i) => (
-                    <DropdownItem
+                    <Dropdown.Item
                       key={category.slug ?? i}
+                      id={category.slug ?? i}
                       className='capitalize'>
                       {category.name}
-                    </DropdownItem>
+                    </Dropdown.Item>
                   ))}
-                  <DropdownItem
-                    key='uncategorized'
+                  <Dropdown.Item
+                    id='uncategorized'
                     className='capitalize opacity-60'>
                     Uncategorized
-                  </DropdownItem>
-                </>
-              </DropdownMenu>
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown.Popover>
             </Dropdown>
             <Dropdown>
-              <DropdownTrigger className='hidden sm:flex'>
-                <Button
-                  endContent={
-                    <div className='-scale-x-100'>
-                      <Icon name='arrow-swap' className='size-4 rotate-30' />
-                    </div>
-                  }
-                  variant='tertiary'>
+              <Dropdown.Trigger className='hidden sm:flex'>
+                <Button variant='tertiary'>
                   Status
+                  <div className='-scale-x-100'>
+                    <Icon name='arrow-swap' className='size-4 rotate-30' />
+                  </div>
                 </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label='Status Filter'
-                closeOnSelect={false}
-                selectedKeys={statusFilter}
-                selectionMode='multiple'
-                onSelectionChange={onStatusFilterChange}>
-                {statusOptions.map((status) => (
-                  <DropdownItem key={status.uid} className='capitalize'>
-                    {status.name}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
+              </Dropdown.Trigger>
+              <Dropdown.Popover>
+                <Dropdown.Menu
+                  disallowEmptySelection
+                  aria-label='Status Filter'
+                  selectedKeys={statusFilter}
+                  selectionMode='multiple'
+                  onSelectionChange={onStatusFilterChange}>
+                  {statusOptions.map((status) => (
+                    <Dropdown.Item
+                      key={status.uid}
+                      id={status.uid}
+                      className='capitalize'>
+                      {status.name}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown.Popover>
             </Dropdown>
             <Dropdown>
-              <DropdownTrigger className='hidden sm:flex'>
-                <Button
-                  endContent={
-                    <Icon name='arrow-down-long-light' className='size-4' />
-                  }
-                  variant='tertiary'>
+              <Dropdown.Trigger className='hidden sm:flex'>
+                <Button variant='tertiary'>
                   Columns
+                  <Icon name='arrow-down-long-light' className='size-4' />
                 </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label='Table Columns'
-                closeOnSelect={false}
-                selectedKeys={visibleColumns}
-                selectionMode='multiple'
-                onSelectionChange={onVisibleColumnsChange}>
-                {columns.map((column) => (
-                  <DropdownItem key={column.uid} className='capitalize'>
-                    {column.uid}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
+              </Dropdown.Trigger>
+              <Dropdown.Popover>
+                <Dropdown.Menu
+                  disallowEmptySelection
+                  aria-label='Table Columns'
+                  selectedKeys={visibleColumns}
+                  selectionMode='multiple'
+                  onSelectionChange={onVisibleColumnsChange}>
+                  {columns.map((column) => (
+                    <Dropdown.Item
+                      key={column.uid}
+                      id={column.uid}
+                      className='capitalize'>
+                      {column.uid}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown.Popover>
             </Dropdown>
           </ButtonGroup>
         </div>
@@ -690,7 +657,7 @@ export const InventoryTable = () => {
 
   if (isLoadingInitialProducts) {
     return (
-      <Card shadow='sm' className='p-4'>
+      <Card className='p-4'>
         <p className='text-sm text-gray-400'>Loading inventory...</p>
       </Card>
     )
@@ -700,28 +667,47 @@ export const InventoryTable = () => {
     <>
       {topContent}
       <Card
-        shadow='none'
-        radius='none'
         className='md:rounded-xl md:w-full w-screen overflow-x-auto overflow-y-visible p-4 bg-sidebar/30 dark:bg-dark-table/40'>
         <div ref={tableRef} className='relative min-w-full'>
-          <Table
-            key={`table-${selectedProductId || 'none'}-${open}-${showCheckboxes}`}
-            isCompact
-            removeWrapper
-            aria-label='Inventory table'
-            classNames={classNames}
-            selectionMode={showCheckboxes ? 'multiple' : 'none'}
-            selectedKeys={showCheckboxes ? selectedRows : undefined}
-            onSelectionChange={showCheckboxes ? onSelectionChange : undefined}>
-            <TableHeader columns={columns} className='select-none'>
-              {(column) => {
+          <div className='overflow-x-auto'>
+            <table
+              key={`table-${selectedProductId || 'none'}-${open}-${showCheckboxes}`}
+              aria-label='Inventory table'
+              className='min-w-full table-auto md:table-fixed'>
+              <thead className='select-none'>
+                <tr>
+                  {showCheckboxes ? (
+                    <th className='w-14 min-w-14 max-w-14 border-b border-divider bg-transparent px-3 py-2 text-left text-gray-400'>
+                      <input
+                        type='checkbox'
+                        checked={
+                          filteredItems.length > 0 &&
+                          filteredItems.every((product) =>
+                            selectedRows.has(getKey(product)),
+                          )
+                        }
+                        onChange={(event) => {
+                          if (event.target.checked) {
+                            setSelectedRows(
+                              new Set(filteredItems.map((product) => getKey(product))),
+                            )
+                          } else {
+                            setSelectedRows(new Set())
+                          }
+                        }}
+                        className='size-4 accent-emerald-500'
+                        aria-label='Select all rows'
+                      />
+                    </th>
+                  ) : null}
+                  {visibleColumnDefs.map((column) => {
                 const width = getColumnWidth(column.uid)
                 // const isResizing = resizingColumn === column.uid
                 const isHovered = hoveredColumn === column.uid
-                const columnIndex = columns.findIndex(
+                const columnIndex = visibleColumnDefs.findIndex(
                   (col) => col.uid === column.uid,
                 )
-                const isLastColumn = columnIndex === columns.length - 1
+                const isLastColumn = columnIndex === visibleColumnDefs.length - 1
 
                 const columnStyle = width
                   ? {
@@ -732,7 +718,7 @@ export const InventoryTable = () => {
                   : undefined
 
                 return (
-                  <TableColumn
+                  <th
                     key={column.uid}
                     className={cn('text-start relative group/column h-fit', {
                       'md:w-16 w-16': column.uid === 'actions' && !width,
@@ -747,7 +733,7 @@ export const InventoryTable = () => {
                       'w-28': column.uid === 'status' && !width,
                     })}
                     style={columnStyle}
-                    align={column.uid === 'actions' ? 'center' : 'start'}>
+                  >
                     <div
                       className='relative md:w-full w-fit select-none'
                       onMouseEnter={() => {
@@ -791,12 +777,22 @@ export const InventoryTable = () => {
                         </div>
                       </>
                     )}
-                  </TableColumn>
+                  </th>
                 )
-              }}
-            </TableHeader>
-            <TableBody emptyContent={'No products found'} items={filteredItems}>
-              {(product) => {
+              })}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredItems.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={visibleColumnDefs.length + (showCheckboxes ? 1 : 0)}
+                      className='px-4 py-6 text-center text-sm text-gray-400'>
+                      No products found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredItems.map((product) => {
                 const isSelected = Boolean(
                   selectedProductId &&
                   product._id &&
@@ -804,7 +800,7 @@ export const InventoryTable = () => {
                   open,
                 )
                 return (
-                  <TableRow
+                  <tr
                     key={getKey(product)}
                     data-product-selected={isSelected ? 'true' : 'false'}
                     className={cn(
@@ -813,14 +809,37 @@ export const InventoryTable = () => {
                         ? 'bg-emerald-400/15 border-emerald-400/30'
                         : '',
                     )}>
-                    {(columnKey) => {
-                      const width = getColumnWidth(String(columnKey))
-                      const columnIndex = columns.findIndex(
-                        (col) => col.uid === String(columnKey),
+                    {showCheckboxes ? (
+                      <td className='w-14 min-w-14 max-w-14 px-3 py-2 align-middle'>
+                        <input
+                          type='checkbox'
+                          checked={selectedRows.has(getKey(product))}
+                          onChange={(event) => {
+                            setSelectedRows((current) => {
+                              const next = new Set(current)
+                              const key = getKey(product)
+                              if (event.target.checked) {
+                                next.add(key)
+                              } else {
+                                next.delete(key)
+                              }
+                              return next
+                            })
+                          }}
+                          className='size-4 accent-emerald-500'
+                          aria-label={`Select ${product.name}`}
+                        />
+                      </td>
+                    ) : null}
+                    {visibleColumnDefs.map((column) => {
+                      const width = getColumnWidth(column.uid)
+                      const columnIndex = visibleColumnDefs.findIndex(
+                        (col) => col.uid === column.uid,
                       )
-                      const isLastColumn = columnIndex === columns.length - 1
-                      const isResizing = resizingColumn === String(columnKey)
-                      const isHovered = hoveredColumn === String(columnKey)
+                      const isLastColumn =
+                        columnIndex === visibleColumnDefs.length - 1
+                      const isResizing = resizingColumn === column.uid
+                      const isHovered = hoveredColumn === column.uid
 
                       const cellStyle = width
                         ? {
@@ -833,18 +852,19 @@ export const InventoryTable = () => {
                         : undefined
 
                       return (
-                        <TableCell
+                        <td
+                          key={column.uid}
                           className='relative'
                           style={cellStyle}
                           onMouseEnter={() =>
-                            setHoveredColumn(String(columnKey))
+                            setHoveredColumn(column.uid)
                           }
                           onMouseLeave={() => setHoveredColumn(null)}>
                           {isHovered && (
                             <div className='absolute inset-0 bg-primary/15 pointer-events-none z-0' />
                           )}
                           <div className='relative z-10'>
-                            {renderCell(product, columnKey)}
+                            {renderCell(product, column.uid)}
                           </div>
                           {!isLastColumn && (
                             <div
@@ -859,14 +879,16 @@ export const InventoryTable = () => {
                               }}
                             />
                           )}
-                        </TableCell>
+                        </td>
                       )
-                    }}
-                  </TableRow>
+                    })}
+                  </tr>
                 )
-              }}
-            </TableBody>
-          </Table>
+              })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </Card>
       {(canLoadMoreProducts || isLoadingMoreProducts) && (
@@ -875,10 +897,9 @@ export const InventoryTable = () => {
             {products.length} loaded
           </span>
           <Button
-            radius='none'
             variant='tertiary'
             className='font-brk'
-            isLoading={isLoadingMoreProducts}
+            isPending={isLoadingMoreProducts}
             isDisabled={isLoadingMoreProducts}
             onPress={handleLoadMoreProducts}>
             {`Load ${INVENTORY_PAGE_SIZE} more`}

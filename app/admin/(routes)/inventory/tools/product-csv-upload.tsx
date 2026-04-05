@@ -8,7 +8,8 @@ import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
 import {getProductCsvImportRowId} from '@/lib/product-csv-import'
 import {cn} from '@/lib/utils'
-import {Button, Card, Chip, Input} from '@/lib/heroui'
+import {Button, Card, Chip} from '@heroui/react'
+import {Input} from '@heroui/input'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useRef, useState} from 'react'
 import type {ParsedRow} from '../product/csv-import/lib'
@@ -265,8 +266,6 @@ export function ProductCsvUpload() {
         {/* Drop zone / file picker */}
         {fileName ? null : (
           <Card
-            radius='lg'
-            shadow='none'
             className={cn(
               'border-2 border-dashed transition-colors duration-200',
               isDragging
@@ -319,8 +318,6 @@ export function ProductCsvUpload() {
         {/* Metadata */}
         {displayRows.length > 0 && (
           <Card
-            radius='sm'
-            shadow='none'
             className='min-w-0 p-0 bg-transparent'>
             <div className='grid min-w-0 grid-cols-1 gap-0 md:grid-cols-4'>
               <div className='col-span-3'>
@@ -330,11 +327,7 @@ export function ProductCsvUpload() {
                   value={title}
                   onValueChange={setTitle}
                   size='sm'
-                  radius='lg'
                   className='w-5xl'
-                  classNames={{
-                    ...commonInputClassNames,
-                  }}
                 />
               </div>
             </div>
@@ -352,20 +345,14 @@ export function ProductCsvUpload() {
               <div className='flex flex-wrap items-center gap-2'>
                 <Chip
                   size='sm'
-                  variant='tertiary'
-                  classNames={{
-                    base: 'bg-default-100 dark:bg-default-100/20',
-                    content: 'font-medium',
-                  }}>
+                  variant='tertiary'>
                   <span className='pe-1.5'>{displayRows.length}</span>
                   <span>Row{displayRows.length !== 1 ? 's' : ''}</span>
                 </Chip>
                 {errorCount > 0 && (
                   <Chip
                     size='sm'
-                    radius='none'
                     variant='primary'
-                    color='danger'
                     className='rounded-sm text-white'>
                     <span className='pe-1.5'>{errorCount}</span>
                     <span>Error{errorCount !== 1 ? 's' : ''}</span>
@@ -374,8 +361,6 @@ export function ProductCsvUpload() {
                 {conflictCount > 0 && (
                   <Chip
                     size='sm'
-                    radius='none'
-                    color='danger'
                     variant='primary'
                     className='rounded-sm bg-orange-400'>
                     <span className='pe-1.5'>{conflictCount}</span>
@@ -386,7 +371,6 @@ export function ProductCsvUpload() {
                   <Chip
                     size='sm'
                     variant='primary'
-                    color='success'
                     className='rounded-sm text-white dark:bg-emerald-500/80 tracking-wide'>
                     <span className='pe-1.5'>{validRows.length}</span>
                     <span className=''>
@@ -400,30 +384,24 @@ export function ProductCsvUpload() {
                 size='sm'
                 variant='primary'
                 isDisabled={!canImport}
-                isLoading={isImporting}
                 onPress={handleImport}
-                radius='none'
-                className='bg-foreground text-background/80 rounded-md min-w-[181.1px] text-sm font-medium'
-                startContent={
-                  !isImporting ? (
-                    <Icon name='arrow-up-fat' className='size-4' />
-                  ) : undefined
-                }>
+                className='bg-foreground text-background/80 rounded-md min-w-[181.1px] text-sm font-medium'>
                 {isImporting ? (
                   'Importing…'
                 ) : (
-                  <span>
-                    Import <span className='px-1.5'>{validRows.length}</span>{' '}
-                    product{validRows.length !== 1 ? 's' : ''}
-                  </span>
+                  <>
+                    <Icon name='arrow-up-fat' className='size-4' />
+                    <span>
+                      Import <span className='px-1.5'>{validRows.length}</span>{' '}
+                      product{validRows.length !== 1 ? 's' : ''}
+                    </span>
+                  </>
                 )}
               </Button>
             </div>
 
             {previewIssues.length > 0 && (
               <Card
-                radius='none'
-                shadow='none'
                 className='rounded-md border border-warning-200 bg-white px-4 py-3 dark:border-warning-900/50 dark:bg-warning-950/20'>
                 <p className='flex items-center space-x-1 text-sm font-medium text-warning-800 dark:text-dark-table'>
                   <Icon name='alert-circle' className='size-4' />
@@ -455,8 +433,6 @@ export function ProductCsvUpload() {
             )}
 
             <Card
-              radius='lg'
-              shadow='none'
               className='flex h-[min(55vh,480px)] min-h-50 min-w-0 w-full flex-col overflow-hidden border-0'>
               <div className='min-h-0 w-full flex-1 overflow-x-auto overflow-y-auto'>
                 <table className='min-w-full table-fixed text-sm'>
@@ -489,8 +465,6 @@ export function ProductCsvUpload() {
         {/* Result message */}
         {(importError || importSuccess) && (
           <Card
-            radius='lg'
-            shadow='none'
             className={cn(
               'border px-4 py-3',
               importError
@@ -558,7 +532,6 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
                 {statusIssue && (
                   <Chip
                     size='sm'
-                    color='danger'
                     variant='primary'
                     className='font-medium text-white'>
                     {statusIssue.label}
@@ -568,7 +541,6 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
                   <Chip
                     size='sm'
                     variant='primary'
-                    color='success'
                     className={cn(
                       'bg-white text-green-700 font-clash tracking-wide',
                       {
@@ -582,7 +554,6 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
                   <Chip
                     size='sm'
                     variant='primary'
-                    color='danger'
                     className='text-white'>
                     {rowMode}
                   </Chip>

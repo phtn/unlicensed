@@ -2,6 +2,7 @@
 
 import {
   commonSelectClassNames,
+  getSingleSelectedKey,
   narrowInputClassNames,
 } from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
@@ -9,18 +10,10 @@ import type {Doc} from '@/convex/_generated/dataModel'
 import type {InventoryMode} from '@/convex/products/d'
 import {useFirebaseAuthUser} from '@/hooks/use-firebase-auth-user'
 import {normalizeInventoryMode} from '@/lib/productStock'
-import {
-  Button,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Select,
-  ListBoxItem,
-  TextArea,
-} from '@/lib/heroui'
+import {Input, Textarea as TextArea} from '@heroui/input'
+import {ListboxItem as ListBoxItem} from '@heroui/listbox'
+import {Button, Modal} from '@heroui/react'
+import {Select} from '@heroui/select'
 import {useMutation} from 'convex/react'
 import {useEffect, useMemo, useState} from 'react'
 import {mapNumericFractions} from '../product-schema'
@@ -241,118 +234,125 @@ export function InventoryAdjustmentModal({
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onOpenChange={onOpenChangeAction}
-      placement='center'
-      backdrop='blur'>
-      <ModalContent className='rounded-lg border border-slate-400'>
-        <ModalHeader>
-          <div>
-            <div className='font-bold uppercase'>
-              {adjustmentType === 'restock' ? 'Restock' : 'Manual Override'}
-            </div>
-            <span className='dark:text-light-brand text-light-brand font-medium text-sm'>
-              {product.name}
-            </span>
-          </div>
-        </ModalHeader>
-        <ModalBody className='space-y-4'>
-          <p className='text-sm text-foreground-600'>{description}</p>
+    <Modal isOpen={isOpen} onOpenChange={onOpenChangeAction}>
+      <Modal.Backdrop variant='blur'>
+        <Modal.Container placement='center'>
+          <Modal.Dialog className='rounded-lg border border-slate-400'>
+            <Modal.Header>
+              <div>
+                <div className='font-bold uppercase'>
+                  {adjustmentType === 'restock'
+                    ? 'Restock'
+                    : 'Manual Override'}
+                </div>
+                <span className='dark:text-light-brand text-light-brand font-medium text-sm'>
+                  {product.name}
+                </span>
+              </div>
+            </Modal.Header>
+            <Modal.Body className='space-y-4'>
+              <p className='text-sm text-foreground-600'>{description}</p>
 
-          <div className='space-y-2'>
-            <Select
-              label='Inventory Mode'
-              selectedKeys={[inventoryMode]}
-              onSelectionChange={(keys) => {
-                const selected = Array.from(keys)[0]
-                if (selected === 'by_denomination' || selected === 'shared') {
-                  setInventoryMode(selected)
-                }
-              }}
-              isDisabled={isSubmitting}
-              variant='secondary'
-              classNames={commonSelectClassNames}>
-              <ListBoxItem key='by_denomination' textValue='By denomination'>
-                By denomination
-              </ListBoxItem>
-              <ListBoxItem key='shared' textValue='Shared'>
-                Shared
-              </ListBoxItem>
-            </Select>
-            <p className='text-xs text-foreground-500'>
-              Switching modes here updates the product inventory mode when this
-              adjustment is submitted. Stock values are not auto-converted
-              between modes, so enter the quantities you want to track for the
-              selected structure.
-            </p>
-          </div>
+              <div className='space-y-2'>
+                <Select
+                  label='Inventory Mode'
+                  selectedKeys={[inventoryMode]}
+                  onSelectionChange={(keys) => {
+                    const selected = getSingleSelectedKey(keys)
+                    if (
+                      selected === 'by_denomination' ||
+                      selected === 'shared'
+                    ) {
+                      setInventoryMode(selected)
+                    }
+                  }}
+                  isDisabled={isSubmitting}
+                  variant='faded'
+                  classNames={commonSelectClassNames}>
+                  <ListBoxItem
+                    key='by_denomination'
+                    textValue='By denomination'>
+                    By denomination
+                  </ListBoxItem>
+                  <ListBoxItem key='shared' textValue='Shared'>
+                    Shared
+                  </ListBoxItem>
+                </Select>
+                <p className='text-xs text-foreground-500'>
+                  Switching modes here updates the product inventory mode when
+                  this adjustment is submitted. Stock values are not
+                  auto-converted between modes, so enter the quantities you want
+                  to track for the selected structure.
+                </p>
+              </div>
 
-          <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
-            {inventoryInputs.map((input) => (
+              <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
+                {inventoryInputs.map((input) => (
+                  <Input
+                    key={input.key}
+                    label={input.label}
+                    type='number'
+                    min={0}
+                    step='0.001'
+                    value={quantities[input.key] ?? ''}
+                    classNames={narrowInputClassNames}
+                    onChange={(event) =>
+                      setQuantities((current) => ({
+                        ...current,
+                        [input.key]: event.target.value,
+                      }))
+                    }
+                    description={`Current: ${formatQuantity(input.currentQuantity)}${input.unit ? ` ${input.unit}` : ''}`}
+                    placeholder={
+                      adjustmentType === 'restock'
+                        ? '0'
+                        : formatQuantity(input.currentQuantity)
+                    }
+                    variant='faded'
+                  />
+                ))}
+              </div>
+
               <Input
-                key={input.key}
-                label={input.label}
-                type='number'
-                min={0}
-                step='0.001'
-                value={quantities[input.key] ?? ''}
+                label='Reference'
+                value={reference}
+                onValueChange={setReference}
+                placeholder='PO number, delivery note, or supplier reference'
                 classNames={narrowInputClassNames}
-                onChange={(event) =>
-                  setQuantities((current) => ({
-                    ...current,
-                    [input.key]: event.target.value,
-                  }))
-                }
-                description={`Current: ${formatQuantity(input.currentQuantity)}${input.unit ? ` ${input.unit}` : ''}`}
-                placeholder={
-                  adjustmentType === 'restock'
-                    ? '0'
-                    : formatQuantity(input.currentQuantity)
-                }
-                variant='secondary'
+                variant='faded'
               />
-            ))}
-          </div>
 
-          <Input
-            label='Reference'
-            value={reference}
-            onValueChange={setReference}
-            placeholder='PO number, delivery note, or supplier reference'
-            classNames={narrowInputClassNames}
-            variant='secondary'
-          />
+              <TextArea
+                label='Notes'
+                value={note}
+                onValueChange={setNote}
+                placeholder='Optional context for this inventory change'
+                classNames={narrowInputClassNames}
+                variant='faded'
+                minRows={3}
+              />
 
-          <TextArea
-            label='Notes'
-            value={note}
-            onValueChange={setNote}
-            placeholder='Optional context for this inventory change'
-            classNames={narrowInputClassNames}
-            variant='secondary'
-            minRows={3}
-          />
-
-          {errorMessage ? (
-            <p className='text-sm text-rose-500'>{errorMessage}</p>
-          ) : null}
-        </ModalBody>
-        <ModalFooter>
-          <Button
-            variant='tertiary'
-            onPress={() => onOpenChangeAction(false)}
-            isDisabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button
-            color='primary'
-            isLoading={isSubmitting}
-            onPress={handleSubmit}>
-            {submitLabel}
-          </Button>
-        </ModalFooter>
-      </ModalContent>
+              {errorMessage ? (
+                <p className='text-sm text-rose-500'>{errorMessage}</p>
+              ) : null}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant='tertiary'
+                onPress={() => onOpenChangeAction(false)}
+                isDisabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button
+                variant='primary'
+                isPending={isSubmitting}
+                onPress={handleSubmit}>
+                {submitLabel}
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
     </Modal>
   )
 }

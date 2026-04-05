@@ -24,8 +24,11 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Image as HeroImage} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
+
+
+import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
 type Area = {x: number; y: number; width: number; height: number}
 
@@ -129,7 +132,7 @@ const mimeSupportsAlpha = (mimeType: string) =>
 
 const loadImage = (src: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
-    const image = new Image()
+    const image = new window.Image()
     image.addEventListener('load', () => resolve(image))
     image.addEventListener('error', () =>
       reject(new Error('Failed to load image')),
@@ -858,7 +861,7 @@ export const ImageOptimizer = () => {
                 <Icon name='check-fill' />
               </span>
             )}
-            <HeroImage
+            <Image
               src={preview.url}
               alt={`Cropped ${preview.size}px preview`}
               className='aspect-square w-full object-cover'
@@ -903,8 +906,6 @@ export const ImageOptimizer = () => {
                 <Button
                   isIconOnly
                   size='sm'
-                  radius='full'
-                  color='danger'
                   variant='primary'
                   onPress={clearSelectedImage}
                   className='absolute bg-dark-table -top-3 -right-3 z-20 hover:opacity-100'
@@ -974,8 +975,6 @@ export const ImageOptimizer = () => {
 
             {!sourceImageUrl ? (
               <Button
-                radius='none'
-                color='primary'
                 variant='primary'
                 onPress={handleBrowse}
                 className='rounded-md bg-dark-table'>
@@ -983,13 +982,10 @@ export const ImageOptimizer = () => {
               </Button>
             ) : (
               <Button
-                radius='none'
-                color='primary'
                 variant='primary'
                 onPress={generatePreviews}
                 isDisabled={!canGenerate}
-                className='rounded-md bg-dark-table'
-                isLoading={generating}>
+                className='rounded-md bg-dark-table'>
                 Generate Previews
               </Button>
             )}
@@ -1003,7 +999,6 @@ export const ImageOptimizer = () => {
             <SectionTitle>Image Data</SectionTitle>
             <Button
               size='sm'
-              radius='none'
               isIconOnly
               variant='tertiary'
               className='rounded-md bg-transparent'
@@ -1141,9 +1136,7 @@ export const ImageOptimizer = () => {
                 <div className='flex items-center gap-2'>
                   <Button
                     size='sm'
-                    radius='none'
                     variant='primary'
-                    color='primary'
                     onPress={selectAllPreviews}
                     className='rounded-md bg-dark-table'>
                     Select All
@@ -1151,21 +1144,17 @@ export const ImageOptimizer = () => {
 
                   <Button
                     size='sm'
-                    radius='none'
                     variant='primary'
-                    color='primary'
                     onPress={uploadSelectedToConvex}
                     isDisabled={
                       selectedUploadableCount === 0 || !report || isUploading
                     }
-                    isLoading={isUploading}
                     className='rounded-md bg-dark-table'>
                     Upload &nbsp;&middot;&nbsp; {selectedUploadableCount}
                   </Button>
                 </div>
                 <Button
                   size='sm'
-                  radius='none'
                   variant='tertiary'
                   onPress={clearPreviewSelection}
                   isDisabled={selectedPreviewSizes.length === 0}

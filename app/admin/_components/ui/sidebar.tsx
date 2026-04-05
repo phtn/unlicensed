@@ -6,13 +6,14 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
   Button,
-  Separator,
   Drawer,
   DrawerContent,
   Input,
+  Separator,
   Skeleton,
   Tooltip,
-} from '@/lib/heroui'
+  useOverlayState,
+} from '@heroui/react'
 import {Slot} from '@radix-ui/react-slot'
 import {cva, VariantProps} from 'class-variance-authority'
 import {
@@ -173,33 +174,13 @@ function Sidebar({
     )
   }
 
+  const sidebarDrawerState = useOverlayState({isOpen: openMobile, onOpenChange: setOpenMobile})
+
   if (isMobile) {
     return (
-      <Drawer
-        placement={side}
-        isOpen={openMobile}
-        backdrop='transparent'
-        onOpenChange={setOpenMobile}
-        motionProps={{
-          variants: {
-            enter: {
-              x: 0,
-              opacity: 1,
-              transition: {
-                bounce: 0,
-                duration: 0.15,
-                ease: 'easeInOut',
-                stiffness: 200,
-              },
-            },
-            exit: {
-              x: -192,
-              opacity: 0.5,
-            },
-          },
-        }}
-        {...props}>
+      <Drawer state={sidebarDrawerState} {...props}>
         <DrawerContent
+          placement={side as 'left' | 'right' | 'top' | 'bottom'}
           data-sidebar='sidebar'
           data-mobile='true'
           className={cn(
@@ -255,7 +236,7 @@ function Sidebar({
 const SidebarTrigger = memo(function SidebarTrigger({
   className,
   ...props
-}: ComponentProps<typeof Button>) {
+}: ComponentProps<'button'>) {
   const {toggleSidebar, open, openMobile, isMobile} = useSidebar()
   const isOpen = isMobile ? openMobile : open
 
@@ -483,8 +464,9 @@ function SidebarMenuButton({
   }
 
   return (
-    <Tooltip content={tooltip?.children}>
-      {tooltip ? tooltip.children : button}
+    <Tooltip delay={0}>
+      <Tooltip.Trigger>{tooltip ? tooltip.children : button}</Tooltip.Trigger>
+      <Tooltip.Content showArrow>{tooltip?.children}</Tooltip.Content>
     </Tooltip>
   )
 }

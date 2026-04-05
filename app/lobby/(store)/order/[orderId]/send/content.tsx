@@ -3,7 +3,7 @@
 import {Loader} from '@/components/expermtl/loader'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
-import {Button, Card, CardContent} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {AnimatePresence, motion} from 'motion/react'
 import NextLink from 'next/link'
@@ -34,13 +34,11 @@ export const Content = () => {
     return (
       <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
         <div className='mx-auto max-w-3xl'>
-          <Card radius='sm' shadow='none'>
-            <CardContent className='p-6 space-y-4'>
+          <Card className='rounded-sm shadow-none'>
+            <Card.Content className='p-6 space-y-4'>
               <h1 className='text-xl font-space'>Order not found</h1>
-              <Button as={NextLink} href='/account/orders' color='primary'>
-                View Orders
-              </Button>
-            </CardContent>
+              <NextLink href='/account/orders'>View Orders</NextLink>
+            </Card.Content>
           </Card>
         </div>
       </main>
@@ -56,18 +54,16 @@ export const Content = () => {
     return (
       <main className='min-h-screen pt-16 lg:pt-28 px-4 sm:px-6 lg:px-8 py-8'>
         <div className='mx-auto max-w-3xl'>
-          <Card radius='sm' shadow='none'>
-            <CardContent className='p-6 space-y-4'>
+          <Card className='rounded-sm shadow-none'>
+            <Card.Content className='p-6 space-y-4'>
               <h1 className='text-xl font-space'>Invalid payment route</h1>
               <p className='text-sm text-default-500'>
                 This order uses{' '}
                 <span className='font-mono'>{paymentMethod}</span> and cannot be
                 paid on the crypto transfer screen.
               </p>
-              <Button as={NextLink} href={fallbackHref} color='primary'>
-                Go to payment page
-              </Button>
-            </CardContent>
+              <NextLink href={fallbackHref}>Go to payment page</NextLink>
+            </Card.Content>
           </Card>
         </div>
       </main>

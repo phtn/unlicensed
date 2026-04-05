@@ -5,8 +5,9 @@ import {api} from '@/convex/_generated/api'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
 import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
-import {Button, Image, Input, Select, ListBoxItem, TextArea} from '@/lib/heroui'
+import {Button, Input, ListBoxItem, Select, TextArea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
+import Image from 'next/image'
 import Link from 'next/link'
 import {useParams, useRouter} from 'next/navigation'
 import {useEffect, useState} from 'react'
@@ -125,9 +126,9 @@ export default function BlogEditorPage() {
             {isNew ? 'Create Post' : 'Edit Post'}
           </h1>
         </div>
-        <Button color='primary' onPress={handleSubmit} isLoading={isSaving}>
+        <Button variant='primary' isDisabled={isSaving} onPress={handleSubmit}>
           <Icon name='save' className='w-4 h-4 mr-2' />
-          Save
+          {isSaving ? 'Saving...' : 'Save'}
         </Button>
       </div>
 
@@ -135,7 +136,6 @@ export default function BlogEditorPage() {
         <div className='lg:col-span-2 space-y-6'>
           <div className='space-y-2'>
             <Input
-              label='Title'
               placeholder='Post Title'
               value={title}
               onChange={(e) => {
@@ -145,26 +145,18 @@ export default function BlogEditorPage() {
                 }
               }}
               variant='secondary'
-              classNames={{
-                label: 'font-semibold opacity-75 mb-2',
-              }}
             />
           </div>
 
           <div className='space-y-2'>
             <Input
-              label='Slug'
               placeholder='post-slug'
               value={postSlug}
               onChange={(e) => {
                 setPostSlug(e.target.value)
                 setSlugManuallyEdited(true)
               }}
-              description='URL-friendly version of the title.'
               variant='secondary'
-              classNames={{
-                label: 'font-semibold opacity-75 mb-2',
-              }}
             />
           </div>
 
@@ -183,11 +175,10 @@ export default function BlogEditorPage() {
 
           <div className='space-y-2'>
             <TextArea
-              label='Excerpt'
               placeholder='Short summary for previews...'
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
-              minRows={3}
+              rows={3}
               variant='secondary'
             />
           </div>
@@ -197,11 +188,14 @@ export default function BlogEditorPage() {
           <div className='p-4 border rounded-lg bg-content1 space-y-4'>
             <h3 className='font-semibold'>Publishing</h3>
             <Select
-              label='Status'
-              selectedKeys={[status]}
-              onSelectionChange={(keys) => {
-                const selectedKey = Array.from(keys)[0] as BlogPostStatus
-                if (selectedKey) setStatus(selectedKey)
+              aria-label='Post status'
+              value={status}
+              variant='secondary'
+              placeholder='Select status'
+              onChange={(value) => {
+                if (typeof value === 'string') {
+                  setStatus(value as BlogPostStatus)
+                }
               }}>
               <ListBoxItem key='draft' textValue='Draft'>
                 Draft
@@ -220,20 +214,25 @@ export default function BlogEditorPage() {
             {coverImage && (
               <div className='relative aspect-video rounded-lg overflow-hidden mb-2'>
                 <Image
-                  src={coverImage}
+                  fill
                   alt='Cover'
-                  className='w-full h-full object-cover'
+                  unoptimized
+                  src={coverImage}
+                  className='object-cover'
                 />
               </div>
             )}
             <div className='flex items-center gap-2'>
               <Button
-                as='label'
                 variant='secondary'
-                isLoading={isUploading}
+                isDisabled={isUploading}
                 className='w-full cursor-pointer'>
                 <Icon name='upload' className='w-4 h-4 mr-2' />
-                {coverImage ? 'Change Image' : 'Upload Image'}
+                {isUploading
+                  ? 'Uploading...'
+                  : coverImage
+                    ? 'Change Image'
+                    : 'Upload Image'}
                 <input
                   type='file'
                   className='hidden'
@@ -247,26 +246,16 @@ export default function BlogEditorPage() {
           <div className='p-4 border rounded-lg bg-content1 space-y-4'>
             <h3 className='font-semibold'>Metadata</h3>
             <Input
-              label='Tags'
               placeholder='news, tutorial, update'
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              description='Comma separated tags'
               variant='secondary'
-              classNames={{
-                label: 'font-semibold opacity-75 mb-2',
-              }}
             />
             <Input
               disabled
-              label='Feature Flags'
               placeholder='feature_flag_key'
-              classNames={{
-                label: 'font-semibold opacity-75 mb-2',
-              }}
               value={flags}
               onChange={(e) => setFlags(e.target.value)}
-              description='Required flags to view this post (comma separated)'
               variant='secondary'
             />
           </div>

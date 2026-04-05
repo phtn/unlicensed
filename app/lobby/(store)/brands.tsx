@@ -1,8 +1,11 @@
 import {Beams} from '@/components/main/beams'
 import {cn} from '@/lib/utils'
-import {Image} from '@/lib/heroui'
 import {AnimatePresence, motion} from 'motion/react'
 import {memo, useCallback, useEffect, useMemo, useState} from 'react'
+
+
+import {LegacyImage} from '@/components/ui/legacy-image'
+
 interface Logo {
   name: string
   id: number
@@ -177,7 +180,7 @@ const LogoColumn: React.FC<LogoColumnProps> = memo(
               },
             }}>
             {/*<CurrentLogo className='size-14 max-w-[80%] max-h-[80%] object-contain' />*/}
-            <Image
+            <LegacyImage
               src={currentLogo}
               alt={currentLogo}
               className={cn(

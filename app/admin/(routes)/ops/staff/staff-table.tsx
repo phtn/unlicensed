@@ -11,9 +11,8 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {useQuery} from 'convex/react'
-import {useMemo} from 'react'
 import {dateCell} from '../../../_components/ui/cells'
 
 type StaffDoc = Doc<'staff'>
@@ -78,44 +77,27 @@ export const StaffTable = () => {
     }
   }
 
-  const classNames = useMemo(
-    () => ({
-      wrapper: ['max-h-[382px]', 'max-w-3xl'],
-      th: ['bg-transparent', 'text-gray-400', 'border-b', 'border-divider'],
-      td: [
-        'group-data-[first=true]:first:before:rounded-none',
-        'group-data-[first=true]:last:before:rounded-none',
-        'group-data-[middle=true]:before:rounded-none',
-        'group-data-[last=true]:first:before:rounded-none',
-        'group-data-[last=true]:last:before:rounded-none',
-      ],
-    }),
-    [],
-  )
 
   return (
-    <Card shadow='sm' className='p-4'>
+    <Card className='p-4'>
       {/*<div className='flex items-center justify-between mb-4'>
         <h2 className='text-lg font-semibold font-space'>Personnel</h2>
         <p className='text-sm text-gray-400'>{users?.length} users</p>
       </div>*/}
       <Table
-        isCompact
-        removeWrapper
-        aria-label='Staff table'
-        classNames={classNames}>
+        aria-label='Staff table'>
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn key={column.uid} align='start'>
+            <TableColumn key={column.uid}>
               {column.name}
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={'No staff members found'} items={staff ?? []}>
+        <TableBody items={staff ?? []}>
           {(member) => (
-            <TableRow key={member._id} className='h-16'>
+            <TableRow key={member._id as string} className='h-16'>
               {(columnKey) => (
-                <TableCell>{renderCell(member, columnKey)}</TableCell>
+                <TableCell>{renderCell(member, columnKey as unknown as React.Key)}</TableCell>
               )}
             </TableRow>
           )}

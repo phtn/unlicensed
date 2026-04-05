@@ -6,6 +6,7 @@ import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
 import {toEmoji} from '@/utils/fingerprint'
+import {Avatar} from '@heroui/avatar'
 import {
   Card,
   Table,
@@ -14,8 +15,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  User,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import React, {ReactNode} from 'react'
 
@@ -102,18 +102,17 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
             photoUrl?: string
           }
           return (
-            <User
-              avatarProps={{
-                radius: 'full',
-                size: 'sm',
-                src: user.photoUrl,
-              }}
-              classNames={{
-                description: 'text-default-500',
-              }}
-              name={isMobile ? user.name.split(' ').shift() : user.name}>
-              {user.email}
-            </User>
+            <div className='flex items-center gap-2'>
+              <Avatar
+                src={user.photoUrl}
+                name={isMobile ? user.name.split(' ').shift() : user.name}
+                className='size-7 shrink-0'
+              />
+              <div className='flex flex-col'>
+                <span className='text-sm'>{isMobile ? user.name.split(' ').shift() : user.name}</span>
+                <span className='text-xs text-default-500'>{user.email}</span>
+              </div>
+            </div>
           )
         }
         return (
@@ -259,23 +258,10 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
         return null
     }
   }
-  const classNames = React.useMemo(
-    () => ({
-      td: [
-        'first:group-data-[first=true]/tr:before:rounded-none',
-        'last:group-data-[first=true]/tr:before:rounded-none',
-        'group-data-[middle=true]/tr:before:rounded-none',
-        'first:group-data-[last=true]/tr:before:rounded-none',
-        'last:group-data-[last=true]/tr:before:rounded-none',
-      ],
-      tbody: '',
-    }),
-    [],
-  )
 
   if (logs === undefined) {
     return (
-      <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
+      <Card className='p-4 dark:bg-dark-table/60'>
         <div className='flex items-center justify-center py-8'>
           <p className='text-sm text-gray-400'>Loading logs...</p>
         </div>
@@ -285,7 +271,7 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
 
   if (logs.logs.length === 0) {
     return (
-      <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
+      <Card className='p-4 dark:bg-dark-table/60'>
         <h2 className='text-lg font-semibold font-space mb-4 px-4'>
           Visit Logs
         </h2>
@@ -298,8 +284,8 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
 
   return (
     <Card
-      shadow='none'
-      radius='none'
+      
+      
       className={cn(
         'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden md:rounded-t-2xl md:w-full w-screen overflow-x-scroll',
         'transition-transform duration-300',
@@ -310,33 +296,24 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
           'h-lvh md:h-[calc(100lvh-64px)] overflow-scroll transition-transform duration-300',
         )}>
         <Table
-          removeWrapper
-          radius='none'
-          classNames={{
-            ...classNames,
-            tbody: 'overflow-hidden rounded-3xl',
-            thead: '',
-            th: 'sticky first:rounded-tl-[12.5px] last:rounded-tr-[12.5px] top-0 bg-white/60 dark:bg-dark-table/5 z-10 backdrop-blur-xl h-8 border-b border-gray-200 dark:border-dark-table',
-          }}
           aria-label='Visit logs table'>
           <TableHeader columns={columns}>
             {(column) => (
               <TableColumn
                 key={column.uid}
-                align='start'
-                className='tracking-wider text-xs font-medium'>
+                className='tracking-wider text-xs font-medium sticky first:rounded-tl-[12.5px] last:rounded-tr-[12.5px] top-0 bg-white/60 dark:bg-dark-table/5 z-10 backdrop-blur-xl h-8 border-b border-gray-200 dark:border-dark-table'>
                 <div className='drop-shadow-xs'>{column.name}</div>
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody emptyContent={'No logs found'} items={logs.logs}>
+          <TableBody items={logs.logs}>
             {(log) => (
               <TableRow
-                key={log._id}
+                key={log._id as string}
                 className='h-8 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] border-b-light-table last:border-b-0 dark:border-b-dark-table'>
                 {(columnKey) => (
                   <TableCell>
-                    {renderCell(log, columnKey) as ReactNode}
+                    {renderCell(log, columnKey as unknown as React.Key) as ReactNode}
                   </TableCell>
                 )}
               </TableRow>

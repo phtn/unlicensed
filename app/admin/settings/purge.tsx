@@ -1,6 +1,6 @@
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
-import {Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {useMutation} from 'convex/react'
 import {useCallback, useState} from 'react'
 
@@ -18,12 +18,7 @@ export const PurgeActions = () => {
   return (
     <div className='flex flex-col gap-4 px-4 py-4 border-t'>
       <div className='flex items-center gap-6'>
-        <Button
-          radius='sm'
-          size='sm'
-          variant='primary'
-          color='danger'
-          onPress={handlePurgeUsers}>
+        <Button size='sm' variant='danger' onPress={handlePurgeUsers}>
           <span>Purge Test Users</span>
           <Icon name={purgingUsers ? 'spinners-ring' : 'x'} />
         </Button>

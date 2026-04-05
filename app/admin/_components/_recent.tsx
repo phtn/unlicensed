@@ -6,21 +6,22 @@ import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
+import {Avatar} from '@heroui/avatar'
 import {
   Card,
   Chip,
   ChipProps,
-  Image,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-  User,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import React, {ReactNode, useEffect} from 'react'
+
+import {LegacyImage} from '@/components/ui/legacy-image'
 
 type Activity = Doc<'activities'>
 
@@ -83,14 +84,14 @@ const getActivityChipColor = (type: Activity['type']): ChipProps['color'] => {
   if (type.startsWith('order_')) {
     if (type.includes('delivered')) return 'success'
     if (type.includes('cancelled') || type.includes('refunded')) return 'danger'
-    return 'primary'
+    return 'accent'
   }
   if (type.startsWith('payment_')) {
     if (type.includes('completed')) return 'success'
     if (type.includes('failed')) return 'danger'
     return 'warning'
   }
-  if (type.startsWith('user_')) return 'secondary'
+  if (type.startsWith('user_')) return 'default'
   if (type.startsWith('product_')) return 'default'
   if (type.startsWith('category_')) return 'default'
   return 'default'
@@ -173,19 +174,16 @@ export const RecentActivities = ({
         case 'user':
           if (activity.user) {
             return (
-              <User
-                avatarProps={{
-                  radius: 'full',
-                  size: 'sm',
-                  src: activity.user.photoUrl,
-                }}
-                classNames={{
-                  description: 'text-default-500',
-                }}
-                // description={activity.user.email}
-                name={activity.user.name}>
-                {activity.user.email}
-              </User>
+              <div className='flex items-center gap-2'>
+                <Avatar
+                  src={activity.user.photoUrl}
+                  size='sm'
+                  className='shrink-0'
+                />
+                <div>
+                  <p className='text-sm font-medium'>{activity.user.name}</p>
+                </div>
+              </div>
             )
           }
           return (
@@ -212,7 +210,8 @@ export const RecentActivities = ({
           return (
             <div className='flex items-center gap-3'>
               <div
-                className={`shrink-0 ${getActivityIconColor(activity.type)}`}>
+                className={`shrink-0 ${getActivityIconColor(activity.type)}`}
+              >
                 <Icon
                   name={getActivityIcon(activity.type)}
                   className='w-5 h-5'
@@ -236,7 +235,8 @@ export const RecentActivities = ({
               className='capitalize border-none gap-1 text-default-600'
               color={getActivityChipColor(activity.type)}
               size='sm'
-              variant='soft'>
+              variant='soft'
+            >
               {getActivityTypeLabel(activity.type)}
             </Chip>
           )
@@ -279,10 +279,11 @@ export const RecentActivities = ({
                 <div
                   key={viewer.userId}
                   className='shrink-0'
-                  title={`${viewer.name} (${viewer.email})`}>
+                  title={`${viewer.name} (${viewer.email})`}
+                >
                   <div className='flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-default-100 ring-1 ring-white'>
                     {viewer.photoUrl ? (
-                      <Image
+                      <LegacyImage
                         src={viewer.photoUrl}
                         alt={viewer.name}
                         className='h-full w-full object-cover'
@@ -335,7 +336,7 @@ export const RecentActivities = ({
 
   if (activities === undefined) {
     return (
-      <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
+      <Card className='p-4 dark:bg-dark-table/60'>
         <div className='flex items-center justify-center py-8'>
           <p className='text-sm text-gray-400'>Loading activities...</p>
         </div>
@@ -345,7 +346,7 @@ export const RecentActivities = ({
 
   if (activities.length === 0) {
     return (
-      <Card shadow='sm' className='p-4 dark:bg-dark-table/60'>
+      <Card className='p-4 dark:bg-dark-table/60'>
         <h2 className='text-lg font-semibold font-space mb-4 px-4'>
           Recent Activity
         </h2>
@@ -358,20 +359,20 @@ export const RecentActivities = ({
 
   return (
     <Card
-      shadow='sm'
-      radius='none'
       className={cn(
         'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden rounded-t-2xl',
         'transition-transform duration-300',
         {'-translate-y-46 h-full': fullTable},
-      )}>
+      )}
+    >
       <div
         className={cn(
           'md:h-[calc(100lvh-203px)] overflow-scroll transition-transform duration-300',
           {
             'md:h-[calc(100lvh-66px)]': fullTable,
           },
-        )}>
+        )}
+      >
         <div className='flex items-end justify-between text-sm font-medium px-3 py-2'>
           <span>Recent Activity</span>
           <Icon
@@ -381,33 +382,27 @@ export const RecentActivities = ({
           />
         </div>
         <Table
-          removeWrapper
-          radius='none'
-          classNames={{
-            ...classNames,
-            tbody: 'overflow-hidden rounded-3xl',
-            thead: '',
-            th: 'sticky first:rounded-tl-[12.5px] last:rounded-tr-[12.5px] top-0 bg-white/60 dark:bg-dark-table/5 z-10 backdrop-blur-xl h-8 border-b border-gray-200 dark:border-dark-table',
-          }}
-          aria-label='Recent activities table'>
+          aria-label='Recent activities table'
+        >
           <TableHeader columns={columns}>
             {(column) => (
               <TableColumn
                 key={column.uid}
-                align='start'
-                className='tracking-wider text-xs font-medium'>
+                className='tracking-wider text-xs font-medium'
+              >
                 <div className='drop-shadow-xs'>{column.name}</div>
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody emptyContent={'No activities found'} items={activities}>
+          <TableBody items={activities}>
             {(activity) => (
               <TableRow
-                key={activity._id}
-                className='h-8 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] border-b-light-table last:border-b-0 dark:border-b-dark-table'>
+                key={String(activity._id)}
+                className='h-8 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] border-b-light-table last:border-b-0 dark:border-b-dark-table'
+              >
                 {(columnKey) => (
                   <TableCell>
-                    {renderCell(activity, columnKey) as ReactNode}
+                    {renderCell(activity, columnKey as unknown as React.Key) as ReactNode}
                   </TableCell>
                 )}
               </TableRow>

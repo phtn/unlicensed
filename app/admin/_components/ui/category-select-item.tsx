@@ -1,4 +1,5 @@
-import {extendVariants, ListBoxItem} from '@/lib/heroui'
+import {ListboxItem as ListBoxItem} from '@heroui/listbox'
+import {extendVariants} from '@heroui/system'
 
 /**
  * Category color type - represents all available category color variants
@@ -43,7 +44,7 @@ export const categoryColors = {
   },
   concentrates: {
     textColor: 'text-purple-600 dark:text-purple-400',
-    chipColor: 'secondary' as const,
+    chipColor: 'default' as const,
     chipClassName:
       'bg-purple-100 text-purple-700 dark:bg-purple-950/20 dark:text-purple-300 border border-light-gray dark:border-light-gray/50',
   },
@@ -116,7 +117,7 @@ export function getCategoryChipProps(categoryValue: string) {
  *
  * @example
  * ```tsx
- * <CategorySelectItem key="flower" value="flower" color="flower">
+ * <CategorySelectItem key="flower" color="flower">
  *   Flower
  * </CategorySelectItem>
  * ```

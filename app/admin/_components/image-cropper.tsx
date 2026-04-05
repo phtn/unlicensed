@@ -3,13 +3,16 @@
 import {useCallback, useEffect, useState} from 'react'
 
 import {EdgeSlider} from '@/components/ui/slider'
-import {Button, Image as HeroImage} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {
   Cropper,
   CropperCropArea,
   CropperDescription,
   CropperImage,
 } from './ui/cropper'
+
+
+import {LegacyImage} from '@/components/ui/legacy-image'
 
 // Define type for pixel crop area
 type Area = {x: number; y: number; width: number; height: number}
@@ -164,17 +167,15 @@ export const ImageCropper = () => {
         {/*<AnimatePresence mode='popLayout'>*/}
         <div className='aspect-square size-24 overflow-hidden rounded-full'>
           {croppedImageUrl && (
-            <HeroImage
+            <LegacyImage
               src={croppedImageUrl}
               alt='Cropped result'
-              width={1000}
-              height={1000}
               className='h-24 w-24 object-cover'
             />
           )}
         </div>
         {/*</AnimatePresence>*/}
-        <Button onPress={handleCrop} disabled={!croppedAreaPixels}>
+        <Button onPress={handleCrop} isDisabled={!croppedAreaPixels}>
           Crop preview
         </Button>
       </div>

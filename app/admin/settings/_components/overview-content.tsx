@@ -1,13 +1,10 @@
 'use client'
 
 import {useAdminTab} from '@/app/admin/_components/use-admin-tab'
-import {
-  TextureCardContent,
-  TextureCardDescription,
-} from '@/components/ui/texture-card'
+import {TextureCardDescription} from '@/components/ui/texture-card'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Card} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import {ViewTransition} from 'react'
 import {ContentHeader} from './components'
 
@@ -90,9 +87,7 @@ export const OverviewContent = () => {
     <div className='flex w-full flex-col gap-2 ml-1.5 md:ml-0'>
       <ContentHeader title={'Settings Overview'} />
       {/*<section className='space-y-0 h-[90lvh] overflow-y-scroll'>*/}
-      <Card
-        shadow='none'
-        className='grid md:grid-cols-2 w-full md:w-fit bg-linear-to-br from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5 md:p-4 p-2 portrait:-mt-10'>
+      <Card className='grid w-full md:w-fit md:grid-cols-2 bg-linear-to-br from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5 md:p-4 p-2 portrait:-mt-10'>
         {SETTINGS_FEATURES.map((feature, index) => (
           <ViewTransition key={feature.id}>
             <button
@@ -135,7 +130,6 @@ export const OverviewContent = () => {
                   </TextureCardDescription>
                 </div>
               </div>
-              <TextureCardContent className='relative pt-0'></TextureCardContent>
             </button>
           </ViewTransition>
         ))}

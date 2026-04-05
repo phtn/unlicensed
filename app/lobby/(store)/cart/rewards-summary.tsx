@@ -1,7 +1,7 @@
 'use client'
 
 import {Icon} from '@/lib/icons'
-import {Card, CardContent} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 import {memo} from 'react'
 
 export interface NVMultiplier {
@@ -31,11 +31,8 @@ export const RewardsSummary = memo(function RewardsSummary({
 }: RewardsSummaryProps) {
   return (
     <div className='lg:top-24 h-fit'>
-      <Card
-        radius='none'
-        shadow='none'
-        className='dark:bg-dark-table/40 border border-foreground/20'>
-        <CardContent className='space-y-4 px-4 md:px-8 py-5'>
+      <Card className='dark:bg-dark-table/40 border border-foreground/20'>
+        <Card.Content className='space-y-4 px-4 md:px-8 py-5'>
           <div className='flex items-center justify-between'>
             <div>
               <h2 className='text-2xl font-normal font-bone'>
@@ -56,7 +53,7 @@ export const RewardsSummary = memo(function RewardsSummary({
               <span className='text-2xl'>x</span>
             </span>
           </div>
-        </CardContent>
+        </Card.Content>
         {/* Estimated Points */}
         {isAuthenticated && estimatedPoints !== null && nextVisitMultiplier && (
           <>

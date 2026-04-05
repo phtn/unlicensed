@@ -5,10 +5,11 @@ import {api} from '@/convex/_generated/api'
 import {type Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {formatTimestamp} from '@/utils/date'
-import {Button, Card, CardContent} from '@/lib/heroui'
+import {Button, Card, CardContent} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import Link from 'next/link'
+import {useRouter} from 'next/navigation'
 import {useCallback, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {MailingListEditor, type MailingListRecipientRow} from './mailing-list-editor'
@@ -110,6 +111,7 @@ const MailingListCard = ({
 }
 
 export const MailingListContent = () => {
+  const router = useRouter()
   const createMailingList = useMutation(api.mailingLists.m.create)
   const mailingLists = useQuery(api.mailingLists.q.list)
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -178,12 +180,12 @@ export const MailingListContent = () => {
             <CardContent className='gap-3 p-6'>
               <div className='flex space-x-4'>
                 <Button
-                  as={Link}
                   size='lg'
                   isIconOnly
-                  href='/admin/messaging/email'
                   variant='tertiary'
-                  radius='none'
+                  onPress={() => {
+                    router.push('/admin/messaging/email')
+                  }}
                   className='rounded-lg'>
                   <Icon name='chevron-left' className='size-4' />
                 </Button>
@@ -221,7 +223,7 @@ export const MailingListContent = () => {
               <Button
                 size='lg'
                 onPress={() => setShowCreateForm((current) => !current)}
-                variant={showCreateForm ? 'flat' : 'solid'}
+                variant={showCreateForm ? 'secondary' : 'primary'}
                 className='bg-brand font-clash text-white data-[hover=true]:bg-brand/90'>
                 <span>{showCreateForm ? 'Close Creator' : 'Create Mailing List'}</span>
               </Button>
@@ -255,16 +257,15 @@ export const MailingListContent = () => {
                 <div className='flex justify-center gap-3'>
                   <Button
                     onPress={() => setShowCreateForm(true)}
-                    color='primary'
-                    radius='none'
-                    className='rounded-xl bg-dark-gray dark:bg-white dark:text-dark-table'>
+                    variant='primary'
+                                        className='rounded-xl bg-dark-gray dark:bg-white dark:text-dark-table'>
                     Create Mailing List
                   </Button>
                   <Button
-                    as={Link}
-                    href='/admin/messaging/email'
                     variant='tertiary'
-                    radius='none'
+                    onPress={() => {
+                      router.push('/admin/messaging/email')
+                    }}
                     className='rounded-xl border border-greyed/15 bg-background/45'>
                     Open Email Templates
                   </Button>

@@ -222,6 +222,7 @@ export function useOrderForm({
     userNameFirst,
     userNameLast,
     formData.useSameBilling, // React to useSameBilling changes to auto-populate billing when unchecked
+    convexUser,
   ])
 
   const handleInputChange = useCallback(

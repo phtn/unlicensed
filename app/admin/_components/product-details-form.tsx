@@ -9,12 +9,15 @@ import {
   getTotalStock,
   usesSharedWeightInventory,
 } from '@/lib/productStock'
-import {Button, Image, Input, Switch, TextArea} from '@/lib/heroui'
+import {Button, Switch} from '@heroui/react'
+import {Input, Textarea as TextArea} from '@heroui/input'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useEffect, useState} from 'react'
 import {useProductDetailsSafe} from './product-details-context'
 import {useSettingsPanelSafe} from './ui/settings'
+
+import {LegacyImage} from '@/components/ui/legacy-image'
 
 type Product = Doc<'products'>
 
@@ -129,7 +132,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
     <div className='flex flex-col min-h-0 gap-x-4 gap-y-8'>
       {/* Product Image */}
       <div className='flex justify-center'>
-        <Image
+        <LegacyImage
           src={productImageUrl ?? '/default-product-image.svg'}
           alt={product.name}
           className='w-32 h-32 object-cover rounded-lg'
@@ -203,14 +206,17 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
         Inventory counts now use the dedicated inventory adjustment flow so
         every restock and correction is logged.
         <div className='mt-3'>
-          <Button
-            as={Link}
+          <Link
             href={`/admin/inventory/product/${product._id}#inventory`}
-            onPress={saveAdminProductFormReturn}
-            size='sm'
-            variant='secondary'>
-            Open Inventory Controls
-          </Button>
+            onClick={saveAdminProductFormReturn}
+          >
+            <Button
+              size='sm'
+              variant='secondary'
+            >
+              Open Inventory Controls
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -228,11 +234,14 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
             </div>
             <Switch
               isSelected={available}
-              onValueChange={handleToggleAvailable}
+              onChange={handleToggleAvailable}
               isDisabled={isSaving}
-              color='success'
               size='sm'
-            />
+            >
+              <Switch.Control className='bg-emerald-500'>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch>
           </div>
           <div className='flex items-center justify-between w-full border border-featured bg-featured/5 rounded p-3'>
             <div className='flex flex-col'>
@@ -243,12 +252,14 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
             </div>
             <Switch
               isSelected={featured}
-              onValueChange={handleToggleFeatured}
+              onChange={handleToggleFeatured}
               isDisabled={isSaving}
-              classNames={{wrapper: 'bg-featured'}}
-              className=''
               size='sm'
-            />
+            >
+              <Switch.Control className='bg-featured'>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch>
           </div>
         </div>
       </div>
@@ -261,11 +272,8 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
         <Button
           size='lg'
           className='flex-1 bg-featured'
-          isLoading={isSaving}
-          spinnerPlacement='end'
-          disableRipple
-          spinner={<Icon name='spinners-ring' className='size-5' />}
-          onPress={handleSaveAllChanges}>
+          onPress={handleSaveAllChanges}
+        >
           Save Changes
         </Button>
       </div>

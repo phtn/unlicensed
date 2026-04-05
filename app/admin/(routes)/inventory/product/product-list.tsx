@@ -11,14 +11,16 @@ import {
   Card,
   CardFooter,
   CardHeader,
-  Image,
   Tooltip,
-} from '@/lib/heroui'
+} from '@heroui/react'
 import {Icon, type IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useCallback, useMemo, useState} from 'react'
+
+
+import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
 interface ProductItemProps {
   product: Doc<'products'>
@@ -40,8 +42,6 @@ const ProductItem = ({
   optimizerIconName,
 }: ProductItemProps) => (
   <Card
-    radius='none'
-    isFooterBlurred
     className='w-full h-40 col-span-4 sm:col-span-6 md:col-span-8 bg-linear-to-b from-dark-gray/50 from-10% via-transparent to-transparent dark:border-dark-gray/80'>
     <CardHeader className='absolute z-10 top-0 flex-col items-start p-2 bg-background/20 backdrop-blur-xs h-fit'>
       <h4 className='font-base capitalize text-white/90 font-clash font-normal tracking-tight'>
@@ -80,8 +80,36 @@ const ProductItem = ({
         </div>
       </div>
       <div className='flex items-center gap-1'>
-        <Tooltip
-          content={
+        <Tooltip>
+          <Tooltip.Trigger>
+            <Button
+              size='sm'
+              isIconOnly
+              variant='tertiary'
+              onPress={onOptimizePress}
+              aria-label={optimizeLabel}
+              className={cn(
+                'rounded-sm text-white font-semibold hover:bg-dark-gray/40 dark:hover:bg-dark-table/80',
+                {
+                  'text-yellow-300': !isOptimizeDisabled,
+                  'text-indigo-500 dark:indigo-400 hover:bg-transparent dark:hover:bg-transparent':
+                    optimizerIconName === 'gallery-check-bold',
+                  'pointer-events-none':
+                    isOptimizeDisabled &&
+                    optimizerIconName !== 'gallery-check-bold',
+                },
+              )}>
+              <Icon
+                name={optimizerIconName}
+                className={cn('size-4', {
+                  'rotate-6':
+                    optimizerIconName === 'lightning' && !isOptimizeDisabled,
+                  'size-5': optimizerIconName === 'gallery-check-bold',
+                })}
+              />
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>
             <div className='flex items-center space-x-1'>
               {isOptimizeDisabled ? (
                 <>
@@ -101,48 +129,21 @@ const ProductItem = ({
                 </>
               )}
             </div>
-          }>
+          </Tooltip.Content>
+        </Tooltip>
+        <Link
+          prefetch={true}
+          href={`/admin/inventory/product?tabId=edit&id=${product._id}`}
+          onClick={onEditPress}
+          className='rounded-sm'>
           <Button
             size='sm'
             isIconOnly
-            radius='none'
-            variant={isOptimizeDisabled ? 'light' : 'flat'}
-            onPress={onOptimizePress}
-            aria-label={optimizeLabel}
-            title={optimizeLabel}
-            className={cn(
-              'rounded-sm text-white font-semibold hover:bg-dark-gray/40 dark:hover:bg-dark-table/80',
-              {
-                'text-yellow-300': !isOptimizeDisabled,
-                'text-indigo-500 dark:indigo-400 hover:bg-transparent dark:hover:bg-transparent':
-                  optimizerIconName === 'gallery-check-bold',
-                'pointer-events-none':
-                  isOptimizeDisabled &&
-                  optimizerIconName !== 'gallery-check-bold',
-              },
-            )}>
-            <Icon
-              name={optimizerIconName}
-              className={cn('size-4', {
-                'rotate-6':
-                  optimizerIconName === 'lightning' && !isOptimizeDisabled,
-                'size-5': optimizerIconName === 'gallery-check-bold',
-              })}
-            />
+            variant='tertiary'
+            className='rounded-sm text-white font-semibold hover:bg-dark-gray/40 dark:hover:bg-dark-table/80'>
+            <Icon name='pen' className='size-4' />
           </Button>
-        </Tooltip>
-        <Button
-          size='sm'
-          as={Link}
-          isIconOnly
-          radius='none'
-          variant='tertiary'
-          prefetch={true}
-          href={`/admin/inventory/product?tabId=edit&id=${product._id}`}
-          onPress={onEditPress}
-          className='rounded-sm text-white font-semibold hover:bg-dark-gray/40 dark:hover:bg-dark-table/80'>
-          <Icon name='pen' className='size-4' />
-        </Button>
+        </Link>
       </div>
     </CardFooter>
   </Card>
@@ -348,13 +349,11 @@ export const ProductList = ({
             {onLoadMore && (canLoadMore || isLoadingMore) && (
               <div className='flex justify-center pb-6'>
                 <Button
-                  radius='none'
                   variant='tertiary'
-                  isLoading={isLoadingMore}
                   isDisabled={isLoadingMore}
                   onPress={onLoadMore}
                   className='font-brk'>
-                  Load more
+                  {isLoadingMore ? 'Loading...' : 'Load more'}
                 </Button>
               </div>
             )}

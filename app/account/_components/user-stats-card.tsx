@@ -1,5 +1,5 @@
 import {Icon, IconName} from '@/lib/icons'
-import {Card, CardContent} from '@/lib/heroui'
+import {Card} from '@heroui/react'
 
 interface UserStatsCardProps {
   label: string
@@ -9,8 +9,8 @@ interface UserStatsCardProps {
 
 export const UserStatsCard = ({label, value, icon}: UserStatsCardProps) => {
   return (
-    <Card shadow='sm'>
-      <CardContent className='p-0 bg-sidebar border-sidebar'>
+    <Card className='shadow-sm'>
+      <Card.Content className='border-sidebar bg-sidebar p-0'>
         <div className='p-4 flex items-start justify-between size-full'>
           <div>
             <p className='text-[14px] capitalize tracking-tight -space-y-1 [word-spacing:100vw]'>
@@ -31,7 +31,7 @@ export const UserStatsCard = ({label, value, icon}: UserStatsCardProps) => {
         <div className='size-full flex flex-1 justify-end p-4'>
           <p className='text-2xl font-medium tracking-tight'>{value}</p>
         </div>
-      </CardContent>
+      </Card.Content>
     </Card>
   )
 }

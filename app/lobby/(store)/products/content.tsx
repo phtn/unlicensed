@@ -6,9 +6,9 @@ import {Title} from '@/components/base44/title'
 import {api} from '@/convex/_generated/api'
 import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {Button, ListBoxItem, Select, SharedSelection} from '@/lib/heroui'
 import {Icon} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
+import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {
   parseAsString,
@@ -16,7 +16,7 @@ import {
   useQueryState,
   useQueryStates,
 } from 'nuqs'
-import {Activity, ChangeEvent, useCallback, useMemo, useState} from 'react'
+import {Activity, ChangeEvent, useCallback, useMemo} from 'react'
 import {Products} from '../category/[slug]/products'
 
 interface ContentProps {
@@ -254,19 +254,19 @@ export const Content = ({initialProducts}: ContentProps) => {
     search
 
   const handleBrandChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setBrand(e.target.value)
+    setBrand(e.target.value || null)
   }
 
   const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setCategory(e.target.value)
+    setCategory(e.target.value || null)
   }
 
   const handlePotencyChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setPotency(e.target.value as PotencyLevel)
+    setPotency((e.target.value || null) as PotencyLevel | null)
   }
 
   const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setSortParams({sort: e.target.value as SortField})
+    setSortParams({sort: (e.target.value || 'name') as SortField})
   }
   const getImageUrl = useCallback(
     (image: string | null | undefined) =>
@@ -315,6 +315,7 @@ export const Content = ({initialProducts}: ContentProps) => {
               <FilterSelector
                 label='Brand'
                 innerLabel='All Brands'
+                value={brand || ''}
                 onSelect={handleBrandChange}
                 data={uniqueBrands}
               />
@@ -322,6 +323,7 @@ export const Content = ({initialProducts}: ContentProps) => {
               <FilterSelector
                 label='Category'
                 innerLabel='All Categories'
+                value={category || ''}
                 onSelect={handleCategoryChange}
                 data={uniqueCategories}
               />
@@ -329,6 +331,7 @@ export const Content = ({initialProducts}: ContentProps) => {
               <FilterSelector
                 label='Potency'
                 innerLabel='All Potencies'
+                value={potency || ''}
                 onSelect={handlePotencyChange}
                 data={['mild', 'medium', 'high'] as PotencyLevel[]}
               />
@@ -336,6 +339,7 @@ export const Content = ({initialProducts}: ContentProps) => {
               <FilterSelector
                 label='Sort By'
                 innerLabel='Name'
+                value={sortParams.sort}
                 onSelect={handleSortChange}
                 data={['name', 'price', 'thc', 'rating'] as SortField[]}
               />
@@ -489,6 +493,7 @@ interface FilterSelectorProps {
   label: string
   innerLabel: string
   data: Array<{slug: string; name: string} | string>
+  value: string
   onSelect: (e: ChangeEvent<HTMLSelectElement>) => void
 }
 
@@ -496,45 +501,33 @@ const FilterSelector = ({
   label,
   innerLabel,
   data,
+  value,
   onSelect,
 }: FilterSelectorProps) => {
-  const [selectChanged, setSelectChanged] = useState(false)
-  const onSelectionChange = (keys: SharedSelection) => {
-    setSelectChanged(keys === 'all' || keys.size > 0)
-  }
-  const onClear = () => {
-    setSelectChanged(false)
-  }
   return (
     <div>
       <label className='block select-none text-sm font-okxs font-medium ml-2 mb-2 opacity-70'>
         {label}
       </label>
-      <Select
-        size='sm'
-        value={typeof data[0] === 'object' ? data[0].name : data[0]}
-        label={innerLabel}
-        onChange={onSelect}
-        onClear={onClear}
-        onSelectionChange={onSelectionChange}
-        selectorIcon={<Icon name='selector' />}
-        className='w-full text-sm font-okxs'
-        classNames={{
-          trigger:
-            'ps-4 pe-0 bg-background dark:hover:bg-background/70 transition-colors duration-300 rounded-lg dark:border-background',
-          popoverContent:
-            'rounded-lg bg-background dark:bg-dark-table dark:text-white',
-          value: 'ml-2 mb-4 capitalize',
-          label: selectChanged ? 'hidden' : 'block',
-        }}>
-        {data.map((b) => (
-          <ListBoxItem
-            key={typeof b === 'string' ? b : b.slug}
-            className='ml-2 capitalize'>
-            {typeof b === 'string' ? b : b.name}
-          </ListBoxItem>
-        ))}
-      </Select>
+      <div className='relative'>
+        <select
+          value={value}
+          onChange={onSelect}
+          className='w-full appearance-none rounded-lg border border-foreground/10 bg-background px-4 py-3 pr-10 text-sm font-okxs capitalize transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-brand/50 dark:bg-dark-table dark:border-background dark:text-white'>
+          <option value=''>{innerLabel}</option>
+          {data.map((b) => (
+            <option
+              key={typeof b === 'string' ? b : b.slug}
+              value={typeof b === 'string' ? b : b.slug}>
+              {typeof b === 'string' ? b : b.name}
+            </option>
+          ))}
+        </select>
+        <Icon
+          name='selector'
+          className='pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 opacity-60'
+        />
+      </div>
     </div>
   )
 }

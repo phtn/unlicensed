@@ -2,7 +2,7 @@
 
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 
 interface StepperProps {
   value: number
@@ -45,7 +45,6 @@ export function Stepper({
       <Button
         isIconOnly
         size={size}
-        radius='none'
         variant='tertiary'
         className={cn(
           'min-w-0 rounded-none!',

@@ -20,7 +20,8 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Input, Switch, TextArea} from '@/lib/heroui'
+import {Button, Switch} from '@heroui/react'
+import {Input, Textarea as TextArea} from '@heroui/input'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useQueryState} from 'nuqs'
@@ -202,8 +203,6 @@ export const CourierForm = ({
           {SECTIONS.map((section) => (
             <Button
               size='md'
-              disableRipple
-              disableAnimation
               variant='tertiary'
               key={section.id}
               name={section.id}
@@ -226,7 +225,7 @@ export const CourierForm = ({
             type='submit'
             fullWidth
             className='w-full rounded-xl font-medium tracking-tight bg-yellow-500 text-white'
-            isLoading={isSubmitting}
+            isDisabled={isSubmitting}
             onPress={form.handleSubmit}>
             {isSubmitting
               ? isEditMode
@@ -272,12 +271,12 @@ export const CourierForm = ({
                   </div>
                   <Switch
                     isSelected={active}
-                    onValueChange={(value) => field.handleChange(value)}
-                    onBlur={field.handleBlur}
-                    classNames={{
-                      wrapper: 'group-data-[selected=true]:bg-yellow-500',
-                    }}
-                  />
+                    onChange={(isSelected) => field.handleChange(isSelected)}
+                    onBlur={field.handleBlur}>
+                    <Switch.Control className='group-data-[selected=true]:bg-yellow-500'>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                  </Switch>
                 </div>
               )
             }}
@@ -372,7 +371,7 @@ export const CourierForm = ({
                                   label='Account Label'
                                   value={account.label}
                                   placeholder='e.g., Main Account'
-                                  variant='secondary'
+                                  variant='faded'
                                   classNames={commonInputClassNames}
                                   onBlur={field.handleBlur}
                                   onChange={(event) =>
@@ -387,7 +386,7 @@ export const CourierForm = ({
                                   label='Account Value'
                                   value={account.value}
                                   placeholder='e.g., account-001'
-                                  variant='secondary'
+                                  variant='faded'
                                   classNames={commonInputClassNames}
                                   onBlur={field.handleBlur}
                                   onChange={(event) =>
@@ -425,7 +424,7 @@ export const CourierForm = ({
                       maxRows={10}
                       value={(notesField.state.value as string) ?? ''}
                       placeholder='Internal notes for this courier (optional)'
-                      variant='secondary'
+                      variant='faded'
                       classNames={commonInputClassNames}
                       onBlur={notesField.handleBlur}
                       onValueChange={(value) => notesField.handleChange(value)}
@@ -440,9 +439,9 @@ export const CourierForm = ({
           <div className='lg:hidden sticky bottom-4 z-20 p-4 bg-neutral-900/80 backdrop-blur-md border border-neutral-800 rounded-xl shadow-2xl'>
             <Button
               type='submit'
-              color='success'
-              className='w-full font-semibold'
-              isLoading={isSubmitting}>
+              variant='primary'
+              className='w-full font-semibold bg-success text-white'
+              isDisabled={isSubmitting}>
               {isSubmitting
                 ? isEditMode
                   ? 'Updating...'

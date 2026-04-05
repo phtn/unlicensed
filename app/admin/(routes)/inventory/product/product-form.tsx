@@ -6,7 +6,7 @@ import {Doc, Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
 import {cn} from '@/lib/utils'
-import {Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useCallback, useEffect, useRef, useState} from 'react'
@@ -636,8 +636,6 @@ export const ProductForm = ({
           {SECTIONS.map((section) => (
             <Button
               size='md'
-              disableRipple
-              disableAnimation
               variant='tertiary'
               key={section.id}
               onPress={() => scrollToSection(section.id)}
@@ -659,7 +657,7 @@ export const ProductForm = ({
             size='lg'
             type='submit'
             className='w-full rounded-xl font-medium tracking-tight bg-blue-500 text-white'
-            isLoading={isSubmitting}
+            isDisabled={isSubmitting}
             onPress={form.handleSubmit}
           >
             {isSubmitting
@@ -756,10 +754,7 @@ export const ProductForm = ({
             <Button
               size='lg'
               type='submit'
-              radius='none'
-              color='success'
               className='h-12 mb-2 w-full font-medium font-okxs'
-              isLoading={isSubmitting}
             >
               {isSubmitting
                 ? isEditMode

@@ -3,7 +3,7 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatDate} from '@/utils/date'
 import {formatPrice} from '@/utils/formatPrice'
-import {Button} from '@/lib/heroui'
+import {Button} from '@heroui/react'
 
 export const textCell = (value: string) => {
   return (
