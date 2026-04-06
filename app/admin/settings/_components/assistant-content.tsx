@@ -1,11 +1,9 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {parseAssistantConfig} from '@/lib/assistant/config'
-import {Textarea} from '@heroui/input'
-import {Button, Switch} from '@heroui/react'
+import {Button, Switch, TextArea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {Activity, startTransition, useCallback, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
@@ -164,14 +162,12 @@ function AIAssistantFormInner({
 
       <div className='flex flex-col gap-4 w-full'>
         <div className='flex max-w-6xl flex-col gap-2'>
-          <Textarea
-            label='Instructions'
+          <TextArea
             value={instructions}
-            onValueChange={setInstructions}
+            onChange={() => setInstructions}
             className='w-full'
-            classNames={commonInputClassNames}
-            isDisabled={!configLoaded}
-            minRows={12}
+            disabled={!configLoaded}
+            rows={12}
           />
         </div>
         <div className='flex flex-col gap-4'>

@@ -1,11 +1,10 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
+import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon, type IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Input} from '@heroui/input'
 import {Button, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {
@@ -98,9 +97,8 @@ function CardsProcessingFeeField({
         min={0}
         step={0.01}
         value={value}
-        onValueChange={onChange}
-        classNames={commonInputClassNames}
-        isDisabled={isDisabled || !enabled}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={isDisabled || !enabled}
       />
       <div className='flex items-center gap-4'>
         <Switch

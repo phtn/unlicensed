@@ -1,13 +1,12 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {
   ContentHeader,
   PrimaryButton,
 } from '@/app/admin/settings/_components/components'
+import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {Input} from '@heroui/input'
 import {Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {
@@ -257,9 +256,7 @@ function CryptoWalletFormInner({
               <Switch
                 className='shrink-0'
                 isSelected={wallets[network.key].active}
-                onChange={(active: boolean) =>
-                  handleActiveChange(network.key, active)
-                }
+                onChange={(active) => handleActiveChange(network.key, active)}
                 isDisabled={!configLoaded}
                 size='sm'
                 aria-label={`Toggle ${network.label} wallet`}>
@@ -272,12 +269,8 @@ function CryptoWalletFormInner({
               label={`${network.label} wallet address`}
               placeholder={network.placeholder}
               value={wallets[network.key].address}
-              onValueChange={(address) =>
-                handleAddressChange(network.key, address)
-              }
-              classNames={commonInputClassNames}
-              className='mt-4 w-full'
-              isDisabled={!configLoaded}
+              onChange={(e) => handleAddressChange(network.key, e.target.value)}
+              disabled={!configLoaded}
             />
           </div>
         ))}

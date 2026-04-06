@@ -1,33 +1,15 @@
 'use client'
 
 import {mapNumericFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
-import {
-  commonInputClassNames,
-  commonSelectClassNames,
-} from '@/app/admin/_components/ui/fields'
+import {Input} from '@/components/hero-v3/input'
+import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import type {AttributeEntry} from '@/convex/categories/d'
 import type {Deal} from '@/convex/deals/d'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Input} from '@heroui/input'
-import {
-  Button,
-  Card,
-  Checkbox,
-  ListBoxItem,
-  Modal,
-  ModalBackdrop,
-  ModalBody,
-  ModalContainer,
-  ModalDialog,
-  ModalFooter,
-  ModalHeader,
-  Switch,
-} from '@heroui/react'
-import {Select} from '@heroui/select'
-import type {SharedSelection} from '@heroui/system'
+import {Button, Card, Checkbox, Modal, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {
   startTransition,
@@ -35,8 +17,8 @@ import {
   useMemo,
   useState,
   ViewTransition,
-  type Key,
 } from 'react'
+import {getSingleSelectedKey} from '../../_components/ui/fields'
 import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
 
 type VariationForm = {
@@ -132,14 +114,6 @@ const DEAL_EXCLUSION_CONFIG: Array<{
     label: 'Brands',
   },
 ]
-
-const variationSelectClassNames = {
-  label: commonInputClassNames?.label,
-  trigger: commonSelectClassNames?.trigger,
-  value: commonSelectClassNames?.value,
-  // value: commonInputClassNames.input,
-  listbox: commonSelectClassNames?.listbox,
-}
 
 function collectAttributeOptions(
   categories: DealCategory[],
@@ -299,17 +273,6 @@ function syncDealFormWithCategoryAttributes(
       selectedCategories,
     ),
   }
-}
-
-function getSingleSelectedKey(keys: SharedSelection): string | null {
-  if (keys === 'all') return null
-
-  const [value] = Array.from(keys) as Key[]
-  return typeof value === 'string'
-    ? value
-    : value != null
-      ? String(value)
-      : null
 }
 
 function getDenominationOptions(
@@ -947,51 +910,47 @@ export const DealsContent = () => {
         onOpenChange={(open) => {
           if (!open) closeModal()
         }}>
-        <ModalBackdrop>
-          <ModalContainer size='lg' scroll='inside'>
-            <ModalDialog className='max-w-4xl overflow-hidden rounded-2xl'>
-              <ModalHeader className='flex flex-col gap-1 border-b border-default-200 pb-4'>
+        <Modal.Backdrop>
+          <Modal.Container size='lg' scroll='inside'>
+            <Modal.Dialog className='max-w-4xl overflow-hidden rounded-2xl'>
+              <Modal.Header className='flex flex-col gap-1 border-b border-default-200 pb-4'>
                 <span className='text-xs font-semibold uppercase tracking-widest text-foreground/50'>
                   {editingId ? 'Edit deal' : 'New deal'}
                 </span>
                 <h2 className='text-xl font-semibold text-foreground'>
                   {editingId ? form.title || form.id : 'Deal details'}
                 </h2>
-              </ModalHeader>
-              <ModalBody className='flex flex-col gap-8 py-6'>
+              </Modal.Header>
+              <Modal.Body className='flex flex-col gap-8 py-6'>
                 {/* Identity */}
                 <div className='grid gap-4 sm:grid-cols-2'>
                   <Input
                     label='Deal ID (slug)'
                     placeholder='e.g. build-your-own-oz'
                     value={form.id}
-                    onValueChange={(v) => setForm((f) => ({...f, id: v}))}
-                    classNames={commonInputClassNames}
-                    isRequired
-                    isReadOnly={editingId != null}
-                    description={
-                      editingId
-                        ? 'Cannot be changed when editing.'
-                        : 'Lowercase, hyphens. Used in cart and URLs.'
+                    onChange={(e) =>
+                      setForm((f) => ({...f, id: e.target.value}))
                     }
+                    required
+                    readOnly={editingId != null}
                   />
                   <Input
                     label='Title'
                     placeholder='e.g. Build Your Own Oz'
                     value={form.title}
-                    onValueChange={(v) => setForm((f) => ({...f, title: v}))}
-                    classNames={commonInputClassNames}
-                    isRequired
+                    onChange={(e) =>
+                      setForm((f) => ({...f, title: e.target.value}))
+                    }
+                    required
                   />
                 </div>
                 <Input
                   label='Description'
                   placeholder='Short description shown on the store Deals page'
                   value={form.description}
-                  onValueChange={(v) =>
-                    setForm((f) => ({...f, description: v}))
+                  onChange={(e) =>
+                    setForm((f) => ({...f, description: e.target.value}))
                   }
-                  classNames={commonInputClassNames}
                 />
 
                 {/* Categories */}
@@ -1154,48 +1113,37 @@ export const DealsContent = () => {
                                   ? 'Select category'
                                   : 'Select categories first'
                               }
-                              selectedKeys={
-                                v.categorySlug
-                                  ? new Set([v.categorySlug])
-                                  : new Set()
-                              }
-                              onSelectionChange={(keys) => {
-                                const nextValue = getSingleSelectedKey(keys)
-                                if (!nextValue) return
-
+                              value={v.categorySlug || null}
+                              onChange={(next) => {
+                                if (!next) return
                                 updateVariation(
                                   idx,
                                   (variation) =>
                                     syncVariationsWithCategoryAttributes(
-                                      [{...variation, categorySlug: nextValue}],
+                                      [{...variation, categorySlug: next}],
                                       selectedCategories,
                                     )[0],
                                 )
                               }}
-                              classNames={variationSelectClassNames}
-                              isDisabled={
-                                variationCategoryOptions.length === 0
-                              }>
-                              {variationCategoryOptions.map((option) => (
-                                <ListBoxItem
-                                  key={option.value}
-                                  textValue={option.label}>
-                                  {option.label}
-                                </ListBoxItem>
-                              ))}
-                            </Select>
+                              isDisabled={variationCategoryOptions.length === 0}
+                              options={variationCategoryOptions.map(
+                                (option) => ({
+                                  value: option.value,
+                                  label: option.label,
+                                }),
+                              )}
+                            />
                             <Input
                               label='Total units'
                               type='number'
                               min={1}
-                              value={v.totalUnits}
-                              onValueChange={(val) =>
+                              value={String(v.totalUnits)}
+                              onChange={(e) =>
                                 updateVariation(idx, (variation) => ({
                                   ...variation,
-                                  totalUnits: val,
+                                  totalUnits: e.target.value,
                                 }))
                               }
-                              classNames={commonInputClassNames}
                             />
                             <Select
                               label='Size per unit'
@@ -1204,34 +1152,28 @@ export const DealsContent = () => {
                                   ? 'Select denomination'
                                   : 'Select categories first'
                               }
-                              selectedKeys={
+                              value={
                                 hasCategoryDenominations
-                                  ? new Set([v.denominationPerUnit])
-                                  : new Set()
+                                  ? v.denominationPerUnit || null
+                                  : null
                               }
-                              onSelectionChange={(keys) => {
-                                const nextValue = getSingleSelectedKey(keys)
-                                if (!nextValue) return
-
+                              onChange={(next) => {
+                                if (!next) return
                                 updateVariation(idx, (variation) => ({
                                   ...variation,
-                                  denominationPerUnit: nextValue,
+                                  denominationPerUnit: next,
                                   denominationLabel: getDenominationLabel(
-                                    nextValue,
+                                    next,
                                     variation.unitLabel,
                                   ),
                                 }))
                               }}
-                              classNames={variationSelectClassNames}
-                              isDisabled={!hasCategoryDenominations}>
-                              {denominationOptions.map((option) => (
-                                <ListBoxItem
-                                  key={option.value}
-                                  textValue={option.label}>
-                                  {option.label}
-                                </ListBoxItem>
-                              ))}
-                            </Select>
+                              isDisabled={!hasCategoryDenominations}
+                              options={denominationOptions.map((option) => ({
+                                value: option.value,
+                                label: option.label,
+                              }))}
+                            />
                             {/*<Input
                           label='Display label'
                           value={v.denominationLabel}
@@ -1246,36 +1188,34 @@ export const DealsContent = () => {
                                   ? 'Select unit'
                                   : 'Select categories first'
                               }
-                              selectedKeys={
+                              value={String(
                                 hasCategoryUnits
                                   ? new Set([v.unitLabel])
-                                  : new Set()
-                              }
-                              onSelectionChange={(keys) => {
-                                const nextValue = getSingleSelectedKey(keys)
+                                  : new Set(),
+                              )}
+                              onChange={(keys) => {
+                                const nextValue = getSingleSelectedKey(
+                                  String(keys),
+                                )
                                 if (!nextValue) return
 
                                 updateVariation(idx, (variation) => ({
                                   ...variation,
-                                  unitLabel: nextValue,
+                                  unitLabel: String(nextValue),
                                   denominationLabel: getDenominationLabel(
                                     variation.denominationPerUnit,
-                                    nextValue,
+                                    String(nextValue),
                                   ),
                                 }))
                               }}
-                              classNames={variationSelectClassNames}
-                              isDisabled={!hasCategoryUnits}>
-                              {variationCategoryAttributes.units.map(
-                                (option) => (
-                                  <ListBoxItem
-                                    key={option.value}
-                                    textValue={option.label}>
-                                    {option.label}
-                                  </ListBoxItem>
-                                ),
+                              isDisabled={!hasCategoryUnits}
+                              options={variationCategoryAttributes.units.map(
+                                (option) => ({
+                                  value: option.value,
+                                  label: option.label,
+                                }),
                               )}
-                            </Select>
+                            />
                           </div>
                           {variationCategoryOptions.length === 0 && (
                             <p className='mt-3 text-xs text-foreground/55'>
@@ -1337,22 +1277,21 @@ export const DealsContent = () => {
                       type='number'
                       min={0}
                       value={form.defaultVariationIndex}
-                      onValueChange={(v) =>
-                        setForm((f) => ({...f, defaultVariationIndex: v}))
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          defaultVariationIndex: e.target.value,
+                        }))
                       }
-                      classNames={commonInputClassNames}
-                      description='Index (0 = first)'
                     />
                     <Input
                       label='Max per strain'
                       type='number'
                       min={1}
                       value={form.maxPerStrain}
-                      onValueChange={(v) =>
-                        setForm((f) => ({...f, maxPerStrain: v}))
+                      onChange={(e) =>
+                        setForm((f) => ({...f, maxPerStrain: e.target.value}))
                       }
-                      classNames={commonInputClassNames}
-                      description='Same product per bundle'
                     />
                     <Input
                       label='Low stock limit'
@@ -1360,11 +1299,12 @@ export const DealsContent = () => {
                       min={0}
                       placeholder='Optional'
                       value={form.lowStockThreshold}
-                      onValueChange={(v) =>
-                        setForm((f) => ({...f, lowStockThreshold: v}))
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          lowStockThreshold: e.target.value,
+                        }))
                       }
-                      classNames={commonInputClassNames}
-                      description='When stock ≤ this, 1 per strain'
                     />
                   </div>
                 </div>
@@ -1395,8 +1335,8 @@ export const DealsContent = () => {
                     </p>
                   )}
                 </ViewTransition>
-              </ModalBody>
-              <ModalFooter className='gap-2 border-t border-default-200 pt-4'>
+              </Modal.Body>
+              <Modal.Footer className='gap-2 border-t border-default-200 pt-4'>
                 <Button variant='tertiary' onPress={closeModal}>
                   Cancel
                 </Button>
@@ -1411,10 +1351,10 @@ export const DealsContent = () => {
                       ? 'Save changes'
                       : 'Add deal'}
                 </Button>
-              </ModalFooter>
-            </ModalDialog>
-          </ModalContainer>
-        </ModalBackdrop>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
 
       {/* Delete confirm */}
@@ -1423,19 +1363,19 @@ export const DealsContent = () => {
         onOpenChange={(open) => {
           if (!open) setDeleteConfirmId(null)
         }}>
-        <ModalBackdrop>
-          <ModalContainer size='sm'>
-            <ModalDialog className='rounded-2xl overflow-hidden'>
-              <ModalHeader className='font-okxs font-semibold'>
+        <Modal.Backdrop>
+          <Modal.Container size='sm'>
+            <Modal.Dialog className='rounded-2xl overflow-hidden'>
+              <Modal.Header className='font-okxs font-semibold'>
                 Delete deal
-              </ModalHeader>
-              <ModalBody>
+              </Modal.Header>
+              <Modal.Body>
                 <p className='text-sm text-foreground/80'>
                   Remove this deal? It will disappear from the store. Existing
                   cart bundles may still reference it until cleared.
                 </p>
-              </ModalBody>
-              <ModalFooter className='gap-2'>
+              </Modal.Body>
+              <Modal.Footer className='gap-2'>
                 <Button
                   variant='tertiary'
                   onPress={() => setDeleteConfirmId(null)}>
@@ -1447,10 +1387,10 @@ export const DealsContent = () => {
                   isDisabled={isDeleting}>
                   {isDeleting ? 'Deleting...' : 'Delete'}
                 </Button>
-              </ModalFooter>
-            </ModalDialog>
-          </ModalContainer>
-        </ModalBackdrop>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </div>
   )

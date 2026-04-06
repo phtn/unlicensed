@@ -1,10 +1,7 @@
 'use client'
 
-import {
-  darkInputClassNames,
-  secondaryInputClassNames,
-  simpleSelectClassNames,
-} from '@/app/admin/_components/ui/fields'
+import {Input} from '@/components/hero-v3/input'
+import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError, onSuccess} from '@/ctx/toast'
@@ -23,9 +20,7 @@ import {
   TONE_OSCILLATORS,
 } from '@/lib/admin-alerts'
 import {Icon} from '@/lib/icons'
-import {Input} from '@heroui/input'
-import {Button, Card, ListBoxItem, Switch} from '@heroui/react'
-import {Select} from '@heroui/select'
+import {Button, Card, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useEffect, useMemo, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
@@ -265,7 +260,7 @@ export const AlertsContent = () => {
             <span>Admin Alerts</span>
             <Switch
               isSelected={isEnabled}
-              onChange={setIsEnabled}
+              onChange={() => setIsEnabled(!isEnabled)}
               size='sm'>
               <Switch.Control>
                 <Switch.Thumb />
@@ -298,9 +293,7 @@ export const AlertsContent = () => {
                   </h3>
                   <Switch
                     isSelected={draft.enabled}
-                    onChange={(value: boolean) =>
-                      setDraftField(key, 'enabled', value)
-                    }
+                    onChange={(value) => setDraftField(key, 'enabled', value)}
                     size='sm'>
                     <Switch.Control>
                       <Switch.Thumb />
@@ -312,21 +305,16 @@ export const AlertsContent = () => {
                 <Input
                   label='Notes'
                   value={draft.notesInput}
-                  onValueChange={(value) =>
-                    setDraftField(key, 'notesInput', value)
+                  onChange={(e) =>
+                    setDraftField(key, 'notesInput', e.target.value)
                   }
                   placeholder='C5, E5, G5'
-                  description='Comma-separated notes.'
-                  classNames={darkInputClassNames}
                 />
 
                 <Select
-                  size='sm'
                   label='Synth'
-                  labelPlacement='outside-left'
-                  selectedKeys={new Set([draft.synthType])}
-                  onSelectionChange={(keys) => {
-                    const next = keys === 'all' ? null : Array.from(keys)[0]
+                  value={draft.synthType}
+                  onChange={(next) => {
                     if (typeof next === 'string') {
                       setDraftField(
                         key,
@@ -335,20 +323,17 @@ export const AlertsContent = () => {
                       )
                     }
                   }}
-                  classNames={simpleSelectClassNames}>
-                  {ALERT_SYNTH_TYPES.map((synthType) => (
-                    <ListBoxItem key={synthType}>{synthType}</ListBoxItem>
-                  ))}
-                </Select>
+                  options={ALERT_SYNTH_TYPES.map((synthType) => ({
+                    value: synthType,
+                    label: synthType,
+                  }))}
+                />
 
                 {draft.synthType === 'basic' && (
                   <Select
-                    size='sm'
                     label='Waveform'
-                    labelPlacement='outside-left'
-                    selectedKeys={new Set([draft.waveform])}
-                    onSelectionChange={(keys) => {
-                      const next = keys === 'all' ? null : Array.from(keys)[0]
+                    value={draft.waveform}
+                    onChange={(next) => {
                       if (typeof next === 'string') {
                         setDraftField(
                           key,
@@ -357,11 +342,11 @@ export const AlertsContent = () => {
                         )
                       }
                     }}
-                    classNames={simpleSelectClassNames}>
-                    {TONE_OSCILLATORS.map((waveform) => (
-                      <ListBoxItem key={waveform}>{waveform}</ListBoxItem>
-                    ))}
-                  </Select>
+                    options={TONE_OSCILLATORS.map((waveform) => ({
+                      value: waveform,
+                      label: waveform,
+                    }))}
+                  />
                 )}
 
                 <div className='grid grid-cols-3 gap-3'>
@@ -369,28 +354,25 @@ export const AlertsContent = () => {
                     type='number'
                     label='Note ms'
                     value={draft.noteDurationMs}
-                    onValueChange={(value) =>
-                      setDraftField(key, 'noteDurationMs', value)
+                    onChange={(e) =>
+                      setDraftField(key, 'noteDurationMs', e.target.value)
                     }
-                    classNames={secondaryInputClassNames}
                   />
                   <Input
                     type='number'
                     label='Gap ms'
                     value={draft.gapMs}
-                    onValueChange={(value) =>
-                      setDraftField(key, 'gapMs', value)
+                    onChange={(e) =>
+                      setDraftField(key, 'gapMs', e.target.value)
                     }
-                    classNames={secondaryInputClassNames}
                   />
                   <Input
                     type='number'
                     label='Volume dB'
                     value={draft.volumeDb}
-                    onValueChange={(value) =>
-                      setDraftField(key, 'volumeDb', value)
+                    onChange={(e) =>
+                      setDraftField(key, 'volumeDb', e.target.value)
                     }
-                    classNames={secondaryInputClassNames}
                   />
                 </div>
 

@@ -1,9 +1,8 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
+import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {Input} from '@heroui/input'
 import {Button, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useState, ViewTransition} from 'react'
@@ -103,9 +102,8 @@ function TaxFormInner({
             max={100}
             step={0.01}
             value={taxRatePercent}
-            onValueChange={setTaxRatePercent}
-            classNames={commonInputClassNames}
-            isDisabled={config === undefined || !active || isSaving}
+            onChange={() => setTaxRatePercent}
+            disabled={config === undefined || !active || isSaving}
           />
         </div>
       </div>

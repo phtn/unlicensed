@@ -141,12 +141,19 @@ type TextFieldProps<T> = BaseFieldProps<T> & {
 
 export const SELECT_CUSTOM_OPTION_KEY = '__custom__'
 
-type SharedSelectionCompat = 'all' | Set<React.Key> | Iterable<React.Key>
+type SharedSelectionCompat =
+  | 'all'
+  | Set<React.Key>
+  | Iterable<React.Key>
+  | string
+  | null
 
 export const getSingleSelectedKey = (
   keys: SharedSelectionCompat,
 ): React.Key | null => {
   if (keys === 'all') return null
+  if (keys === null) return null
+  if (typeof keys === 'string') return keys
   return Array.from(keys as Iterable<React.Key>)[0] ?? null
 }
 
@@ -154,6 +161,8 @@ export const getSelectedKeySet = (
   keys: SharedSelectionCompat,
 ): Set<React.Key> => {
   if (keys === 'all') return new Set<React.Key>()
+  if (keys === null) return new Set<React.Key>()
+  if (typeof keys === 'string') return new Set<React.Key>([keys])
   return new Set(keys as Iterable<React.Key>)
 }
 

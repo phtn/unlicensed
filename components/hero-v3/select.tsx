@@ -1,9 +1,14 @@
 import {SelectOption} from '@/app/admin/_components/ui/fields'
 import {Label, ListBox, Select as S} from '@heroui/react'
-import {ComponentPropsWithoutRef} from 'react'
+import {ComponentPropsWithoutRef, Key} from 'react'
 
-interface SelectProps extends ComponentPropsWithoutRef<typeof S> {
+interface SelectProps extends Omit<
+  ComponentPropsWithoutRef<typeof S>,
+  'onChange' | 'value'
+> {
   label?: string
+  value?: string | null
+  onChange?: (value: string | null) => void
   type?: 'select' | 'text'
   mode?: 'single' | 'multiple'
   options?: SelectOption[]
@@ -36,10 +41,14 @@ export const Select = ({
   type: _type,
   ...rest
 }: SelectProps) => {
+  const handleChange = (raw: string | number | null | Key | Key[]) => {
+    if (!onChange) return
+    onChange(raw == null || raw === '' ? null : String(raw))
+  }
   return (
     <S
-      value={value}
-      onChange={onChange}
+      value={value ?? null}
+      onChange={handleChange}
       selectionMode={mode}
       placeholder={placeholder}
       className={selectClass.mainWrapper}

@@ -1,25 +1,12 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
+import {Input} from '@/components/hero-v3/input'
+import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import type {Coupon, CouponDiscountType} from '@/convex/coupons/d'
 import {useAuthCtx} from '@/ctx/auth'
-import {Input, Textarea} from '@heroui/input'
-import {
-  Button,
-  Card,
-  Chip,
-  ListBoxItem,
-  Modal,
-  ModalBackdrop,
-  ModalBody,
-  ModalContainer,
-  ModalDialog,
-  ModalFooter,
-  ModalHeader,
-  Switch,
-} from '@heroui/react'
-import {Select} from '@heroui/select'
+import {Textarea as TextArea} from '@heroui/input'
+import {Button, Card, Chip, Modal, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useEffect, useMemo, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
@@ -558,55 +545,46 @@ export const CouponsContent = () => {
 
           closeModal()
         }}>
-        <ModalBackdrop>
-          <ModalContainer size='lg' scroll='inside'>
-            <ModalDialog className='max-w-4xl overflow-hidden rounded-2xl'>
-              <ModalHeader className='border-b border-default-200 pb-4'>
+        <Modal.Backdrop>
+          <Modal.Container size='lg' scroll='inside'>
+            <Modal.Dialog className='max-w-4xl overflow-hidden rounded-2xl'>
+              <Modal.Header className='border-b border-default-200 pb-4'>
                 {editingCouponId ? 'Edit coupon' : 'Create coupon'}
-              </ModalHeader>
-              <ModalBody className='gap-4 py-6'>
+              </Modal.Header>
+              <Modal.Body className='gap-4 py-6'>
                 <div className='grid gap-4 md:grid-cols-2'>
                   <Input
                     label='Coupon code'
                     value={form.code}
-                    onValueChange={(value) =>
+                    onChange={(e) =>
                       setForm((current) => ({
                         ...current,
-                        code: value.toUpperCase(),
+                        code: e.target.value.toUpperCase(),
                       }))
                     }
-                    classNames={commonInputClassNames}
-                    description='Example: SPRING20'
                   />
                   <Input
                     label='Internal name'
                     value={form.name}
-                    onValueChange={(value) =>
-                      setForm((current) => ({...current, name: value}))
+                    onChange={(e) =>
+                      setForm((current) => ({...current, name: e.target.value}))
                     }
-                    classNames={commonInputClassNames}
-                    description='How admins will recognize this offer'
                   />
                   <Select
                     label='Discount type'
-                    selectedKeys={new Set([form.discountType])}
-                    onSelectionChange={(keys) => {
-                      const next =
-                        keys === 'all'
-                          ? null
-                          : (Array.from(keys)[0] as CouponDiscountType)
+                    value={form.discountType}
+                    onChange={(next) => {
                       if (!next) return
-                      setForm((current) => ({...current, discountType: next}))
+                      setForm((current) => ({
+                        ...current,
+                        discountType: next as CouponDiscountType,
+                      }))
                     }}
-                    classNames={{
-                      label: commonInputClassNames?.label,
-                      trigger: commonInputClassNames?.inputWrapper,
-                      value: commonInputClassNames?.input,
-                    }}>
-                    {discountTypeOptions.map((option) => (
-                      <ListBoxItem key={option.key}>{option.label}</ListBoxItem>
-                    ))}
-                  </Select>
+                    options={discountTypeOptions.map((option) => ({
+                      value: option.key,
+                      label: option.label,
+                    }))}
+                  />
                   <Input
                     label={
                       form.discountType === 'percentage'
@@ -614,61 +592,61 @@ export const CouponsContent = () => {
                         : 'Discount amount ($)'
                     }
                     type='number'
-                    min={0}
                     step={form.discountType === 'percentage' ? 0.1 : 0.01}
                     value={form.discountValue}
-                    onValueChange={(value) =>
-                      setForm((current) => ({...current, discountValue: value}))
+                    onChange={(e) =>
+                      setForm((current) => ({
+                        ...current,
+                        discountValue: e.target.value,
+                      }))
                     }
-                    classNames={commonInputClassNames}
                   />
                   <Input
                     label='Minimum subtotal ($)'
                     type='number'
-                    min={0}
                     step={0.01}
                     value={form.minimumSubtotalDollars}
-                    onValueChange={(value) =>
+                    onChange={(e) =>
                       setForm((current) => ({
                         ...current,
-                        minimumSubtotalDollars: value,
+                        minimumSubtotalDollars: e.target.value,
                       }))
                     }
-                    classNames={commonInputClassNames}
                   />
                   <Input
                     label='Max discount ($)'
                     type='number'
-                    min={0}
                     step={0.01}
                     value={form.maximumDiscountDollars}
-                    onValueChange={(value) =>
+                    onChange={(e) =>
                       setForm((current) => ({
                         ...current,
-                        maximumDiscountDollars: value,
+                        maximumDiscountDollars: e.target.value,
                       }))
                     }
-                    classNames={commonInputClassNames}
-                    isDisabled={form.discountType !== 'percentage'}
-                    description='Optional cap for percentage discounts'
+                    disabled={form.discountType !== 'percentage'}
                   />
                   <Input
                     label='Starts at'
                     type='datetime-local'
                     value={form.startsAt}
-                    onValueChange={(value) =>
-                      setForm((current) => ({...current, startsAt: value}))
+                    onChange={(e) =>
+                      setForm((current) => ({
+                        ...current,
+                        startsAt: e.target.value,
+                      }))
                     }
-                    classNames={commonInputClassNames}
                   />
                   <Input
                     label='Expires at'
                     type='datetime-local'
                     value={form.expiresAt}
-                    onValueChange={(value) =>
-                      setForm((current) => ({...current, expiresAt: value}))
+                    onChange={(e) =>
+                      setForm((current) => ({
+                        ...current,
+                        expiresAt: e.target.value,
+                      }))
                     }
-                    classNames={commonInputClassNames}
                   />
                   <Input
                     label='Usage limit'
@@ -676,11 +654,12 @@ export const CouponsContent = () => {
                     min={1}
                     step={1}
                     value={form.usageLimit}
-                    onValueChange={(value) =>
-                      setForm((current) => ({...current, usageLimit: value}))
+                    onChange={(e) =>
+                      setForm((current) => ({
+                        ...current,
+                        usageLimit: e.target.value,
+                      }))
                     }
-                    classNames={commonInputClassNames}
-                    description='Leave blank for unlimited'
                   />
                   <Input
                     label='Per-user limit'
@@ -688,37 +667,40 @@ export const CouponsContent = () => {
                     min={1}
                     step={1}
                     value={form.perUserLimit}
-                    onValueChange={(value) =>
-                      setForm((current) => ({...current, perUserLimit: value}))
+                    onChange={(e) =>
+                      setForm((current) => ({
+                        ...current,
+                        perUserLimit: e.target.value,
+                      }))
                     }
-                    classNames={commonInputClassNames}
-                    description='Leave blank for unlimited'
                   />
                 </div>
 
-                <Textarea
-                  label='Description'
+                <TextArea
                   value={form.description}
                   onValueChange={(value) =>
                     setForm((current) => ({...current, description: value}))
                   }
                   minRows={2}
-                  classNames={commonInputClassNames}
+                  maxRows={4}
+                  placeholder='Description (optional)'
+                  variant='faded'
                 />
-                <Textarea
-                  label='Internal notes'
+                <TextArea
                   value={form.notes}
                   onValueChange={(value) =>
                     setForm((current) => ({...current, notes: value}))
                   }
                   minRows={2}
-                  classNames={commonInputClassNames}
+                  maxRows={4}
+                  placeholder='Internal notes (optional)'
+                  variant='faded'
                 />
 
                 <div className='flex flex-wrap gap-6'>
                   <Switch
                     isSelected={form.enabled}
-                    onChange={(value: boolean) =>
+                    onChange={(value) =>
                       setForm((current) => ({...current, enabled: value}))
                     }>
                     <Switch.Control>
@@ -728,7 +710,7 @@ export const CouponsContent = () => {
                   </Switch>
                   <Switch
                     isSelected={form.stackable}
-                    onChange={(value: boolean) =>
+                    onChange={(value) =>
                       setForm((current) => ({...current, stackable: value}))
                     }>
                     <Switch.Control>
@@ -743,8 +725,8 @@ export const CouponsContent = () => {
                 {formError && (
                   <div className='text-sm text-danger'>{formError}</div>
                 )}
-              </ModalBody>
-              <ModalFooter className='border-t border-default-200 pt-4'>
+              </Modal.Body>
+              <Modal.Footer className='border-t border-default-200 pt-4'>
                 <Button variant='tertiary' onPress={closeModal}>
                   Cancel
                 </Button>
@@ -758,10 +740,10 @@ export const CouponsContent = () => {
                       ? 'Save changes'
                       : 'Create coupon'}
                 </Button>
-              </ModalFooter>
-            </ModalDialog>
-          </ModalContainer>
-        </ModalBackdrop>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </div>
   )

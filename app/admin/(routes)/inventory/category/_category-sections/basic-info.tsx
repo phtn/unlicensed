@@ -1,7 +1,6 @@
 'use client'
 
 import {ensureSlug} from '@/lib/slug'
-import {Input, Label} from '@heroui/react'
 import {useState} from 'react'
 import {FormInput} from '../../../../_components/ui/fields'
 import {useAppForm} from '../../../../_components/ui/form-context'
@@ -29,8 +28,9 @@ export const BasicInfo = ({form, fields}: BasicInfoProps) => {
             <form.AppField name='name'>
               {(input) => (
                 <div className='space-y-2 w-full'>
-                  <Label htmlFor='name'>{input.name}</Label>
-                  <Input
+                  <input.TextField
+                    type='text'
+                    label={'name'}
                     id={input.name}
                     value={String(input.state.value ?? '')}
                     onChange={(e) => {
@@ -42,7 +42,6 @@ export const BasicInfo = ({form, fields}: BasicInfoProps) => {
                     }}
                     onBlur={input.handleBlur}
                     placeholder={nameField.placeholder}
-                    variant='secondary'
                     // classNames={commonInputClassNames}
                   />
                   {input.state.meta.isTouched &&
@@ -59,8 +58,9 @@ export const BasicInfo = ({form, fields}: BasicInfoProps) => {
             <form.AppField name='slug'>
               {(input) => (
                 <div className='space-y-2 w-full'>
-                  <Label htmlFor='slug'>{slugField.label}</Label>
-                  <Input
+                  <input.TextField
+                    type='text'
+                    label={'Slug'}
                     id='slug'
                     value={String(input.state.value ?? '')}
                     onChange={(e) => {
@@ -70,7 +70,6 @@ export const BasicInfo = ({form, fields}: BasicInfoProps) => {
                     onBlur={input.handleBlur}
                     placeholder={slugField.placeholder}
                     // classNames={commonInputClassNames}
-                    variant='secondary'
                   />
                   {input.state.meta.isTouched &&
                     input.state.meta.errors.length > 0 && (

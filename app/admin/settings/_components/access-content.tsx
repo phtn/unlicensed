@@ -1,15 +1,14 @@
 'use client'
 
+import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Input} from '@heroui/input'
 import {Button, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useRef, useState, ViewTransition} from 'react'
-import {commonInputClassNames} from '../../_components/ui/fields'
 import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
 
 function getHaltPassConfig(
@@ -136,7 +135,10 @@ export const AccessContent = () => {
       </ContentHeader>
 
       <div className='max-w-lg rounded-2xl bg-default-100/50 px-4 py-3 dark:bg-default-100/30'>
-        <Switch isSelected={isEnabled} onChange={setIsEnabled} size='sm'>
+        <Switch
+          isSelected={isEnabled}
+          onChange={() => setIsEnabled(!isEnabled)}
+          size='sm'>
           <Switch.Control>
             <Switch.Thumb />
           </Switch.Control>
@@ -156,17 +158,14 @@ export const AccessContent = () => {
               )}
               role='listitem'>
               <Input
-                size='sm'
                 placeholder='PIN code'
-                classNames={commonInputClassNames}
                 maxLength={6}
                 minLength={6}
                 value={pass}
-                onValueChange={(s) => handlePassChange(index, s)}
+                onChange={(e) => handlePassChange(index, e.target.value)}
                 spellCheck='false'
                 autoComplete='false'
                 autoCorrect='false'
-                className='min-w-0 flex-1'
                 aria-label={`Pass ${index + 1}`}
               />
               <Button
