@@ -457,6 +457,8 @@ function SidebarMenuButton({
     />
   )
 
+  if (!tooltip) return button
+
   if (typeof tooltip === 'string') {
     tooltip = {
       children: tooltip,
@@ -465,8 +467,8 @@ function SidebarMenuButton({
 
   return (
     <Tooltip delay={0}>
-      <Tooltip.Trigger>{tooltip ? tooltip.children : button}</Tooltip.Trigger>
-      <Tooltip.Content showArrow>{tooltip?.children}</Tooltip.Content>
+      <Tooltip.Trigger>{button}</Tooltip.Trigger>
+      <Tooltip.Content showArrow>{tooltip.children}</Tooltip.Content>
     </Tooltip>
   )
 }

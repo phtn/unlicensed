@@ -96,7 +96,7 @@ export const Paginator = ({
           isDisabled={pageControl.disabledPrev}
           className='aspect-square size-8 aria-disabled:pointer-events-none aria-disabled:opacity-30'
           aria-label='Go to previous page'>
-          <Icon name='chevron-left' className='size-4' />
+          <Icon name='chevron-left' className='size-4 m-auto' />
         </Button>
         <Button
           variant='tertiary'
@@ -105,7 +105,7 @@ export const Paginator = ({
           isDisabled={pageControl.disabledNext}
           className='aspect-square size-8 aria-disabled:pointer-events-none aria-disabled:opacity-30'
           aria-label='Go to next page'>
-          <Icon name='chevron-right' className='size-4' />
+          <Icon name='chevron-right' className='size-4 m-auto' />
         </Button>
       </div>
     </div>

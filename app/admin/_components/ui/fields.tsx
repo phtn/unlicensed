@@ -70,12 +70,17 @@ export const commonSelectClassNames = {
 }
 
 export const narrowSelectClassNames = {
-  label: 'ps-1 mb-3 uppercase font-ios text-xs tracking-widest opacity-80',
-  value: 'ps-1 placeholder:text-slate-400/80 py-4 mt-2',
-  trigger:
-    'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-  mainWrapper: '',
-  listbox: 'p-1.5',
+  label: 'uppercase font-ios text-[8px] tracking-widest pl-2 pt-1.5',
+  value:
+    'p-0 ps-3 placeholder:text-slate-400/80 bg-linear-to-r from-sidebar/60 via-sidebar/40 to-transparent shadow-none font-medium h-9 w-full flex items-center',
+  trigger: 'bg-transparent rounded-none shadow-none p-0',
+  mainWrapper:
+    'border h-16 p-0 w-full border-light-gray/80 dark:border-dark-table/80 bg-background shadow-none dark:bg-black/60 rounded-md outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500 overflow-hidden',
+  popover:
+    'rounded-md -mt-1 bg-background/50 dark:bg-dark-table/50 backdrop-blur-md max-h-96',
+  listbox: 'p-1.5 rounded-xs',
+  listboxItem: 'rounded-sm hover:bg-foreground/10',
+  selectIndicator: 'size-2.5 text-foreground',
 }
 
 export const multiSelectClassNames = {
@@ -450,7 +455,7 @@ export function SelectField<T>(props?: SelectFieldProps<T> & SelectUiProps) {
                       color={chipColor}
                       key={item.key}
                       size='md'
-                      className={cn(chipProps.className, 'shrink-0 border-1')}>
+                      className={cn(chipProps.className, 'shrink-0 border')}>
                       <span className='text-foreground'>{item.textValue}</span>
                     </Chip>
                   )

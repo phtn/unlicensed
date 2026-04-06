@@ -265,10 +265,10 @@ const ProductCardComponent = ({
                 <div>
                   <div>
                     {brandLabel && (
-                      <div className='mb-0.5 h-4 truncate text-sm font-okxs font-light capitalize tracking-wide opacity-80'>
+                      <div className='mb-0.5 h-4 truncate text-base font-okxs font-light capitalize tracking-wide opacity-80'>
                         <span
                           className={cn('font-light', {
-                            'font-bone font-normal text-sm tracking-widest uppercase text-orange-200 -mt-2':
+                            'font-bone font-normal text-base tracking-widest uppercase text-orange-200 -mt-2':
                               isDemoProduct,
                           })}>
                           {isDemoProduct ? (
@@ -281,7 +281,7 @@ const ProductCardComponent = ({
                         </span>
                         {productTypeLabel && !isTestProduct && (
                           <span>
-                            <span className='px-1 text-[8px] font-thin opacity-70 font-okxs'>
+                            <span className='px-1 text-sm font-thin opacity-70 font-okxs'>
                               &middot;
                             </span>
                             {productTypeLabel}
@@ -466,7 +466,7 @@ const ProductCardComponent = ({
               height={512}
               quality={70}
               sizes={PRODUCT_CARD_IMAGE_SIZES}
-              className='aspect-square min-w-44 rounded-xs object-cover transition-transform duration-300 group-hover:scale-[1.03] xl:min-w-64'
+              className='aspect-square! min-w-44 rounded-xs object-cover transition-transform duration-300 group-hover:scale-[1.03] xl:min-w-64'
             />
           ) : (
             <div className='flex aspect-square h-44 min-h-48 w-auto items-center justify-center xl:min-w-64'>
@@ -478,12 +478,12 @@ const ProductCardComponent = ({
         <div className='flex flex-col border-0 border-orange-300 h-fit'>
           <section
             id='info-details'
-            className='relative flex shrink-0 items-start justify-between  sm:h-28 md:h-28 overflow-hidden bg-amber-200/0 p-2'>
+            className='relative flex shrink-0 items-start justify-between h-28 overflow-hidden bg-amber-200/0 p-2'>
             <div className='min-w-0 flex-1'>
               <div>
-                <div className=''>
+                <div className='h-4 md:h-5'>
                   {brandLabel && (
-                    <div className='mb-1 md:mb-0.5 h-4 md:h-5 truncate text-[9px] md:text-xs font-okxs font-light capitalize tracking-wide opacity-75'>
+                    <div className='mb-1 md:mb-0.5 h-4 md:h-5 truncate text-xs md:text-sm font-okxs font-light capitalize tracking-wide opacity-75'>
                       <span
                         className={cn('font-light', {
                           'font-bone font-normal text-sm tracking-widest uppercase dark:text-orange-300 -mt-2':
@@ -499,7 +499,7 @@ const ProductCardComponent = ({
                       </span>
                       {productTypeLabel && !isTestProduct && (
                         <span>
-                          <span className='px-1 text-[8px] font-thin opacity-80 font-okxs'>
+                          <span className='px-1 text-sm font-thin opacity-80 font-okxs'>
                             &middot;
                           </span>
                           {productTypeLabel}
@@ -519,16 +519,16 @@ const ProductCardComponent = ({
                 <NextLink
                   href={productHref}
                   prefetch={false}
-                  className='relative z-20 inline-flex min-h-6 max-w-full items-center py-1 text-left pointer-events-auto'>
-                  <h3 className='truncate capitalize leading-5 font-clash text-lg md:leading-5 lg:text-base lg:leading-5'>
+                  className='relative z-20 inline-flex min-h-6 max-w-full items-center pt-0.5 text-left pointer-events-auto'>
+                  <h3 className='line-clamp-2 capitalize leading-5 font-clash text-lg md:leading-4 lg:text-base lg:leading-4'>
                     {product.name}
                   </h3>
                 </NextLink>
               </div>
 
               <div className='flex items-center justify-between relative top-1'>
-                <div className='whitespace-nowrap'>
-                  <div className='mt-0.5 flex h-4 items-center'>
+                <div className='whitespace-nowrap md:space-y-0.5'>
+                  <div className='md:mt-0.5 flex h-4 items-center'>
                     {tierLabel !== '' && (
                       <span className='text-[8px] md:text-xs md:font-medium font-okxs font-medium uppercase tracking-widest opacity-70 dark:text-alum dark:opacity-100'>
                         {isDemoProduct ? 'For testing' : tierLabel}
@@ -540,7 +540,7 @@ const ProductCardComponent = ({
                     {subcategoryLabel && (
                       <span
                         className={cn(
-                          'text-[8px] sm:text-xs font-light capitalize opacity-80 dark:text-alum dark:opacity-100 md:text-sm font-okxs',
+                          'text-[8px] sm:text-[8px] font-light capitalize opacity-80 dark:text-alum dark:opacity-100 md:text-sm font-okxs',
                           {'text-[9px]! md:font-medium': isDemoProduct},
                         )}>
                         {isDemoProduct ? ' USE ONLY' : subcategoryLabel}

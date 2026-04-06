@@ -6,19 +6,12 @@ import {Doc, Id} from '@/convex/_generated/dataModel'
 import {onError} from '@/ctx/toast'
 import {useSaveAdminProductFormReturn} from '@/hooks/use-save-admin-product-form-return'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {
-  Button,
-  Card,
-  CardFooter,
-  CardHeader,
-  Tooltip,
-} from '@heroui/react'
 import {Icon, type IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {Button, Card, CardFooter, CardHeader, Tooltip} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useCallback, useMemo, useState} from 'react'
-
 
 import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
@@ -41,9 +34,8 @@ const ProductItem = ({
   optimizeLabel,
   optimizerIconName,
 }: ProductItemProps) => (
-  <Card
-    className='w-full h-40 col-span-4 sm:col-span-6 md:col-span-8 bg-linear-to-b from-dark-gray/50 from-10% via-transparent to-transparent dark:border-dark-gray/80'>
-    <CardHeader className='absolute z-10 top-0 flex-col items-start p-2 bg-background/20 backdrop-blur-xs h-fit'>
+  <Card className='w-full h-40 col-span-4 sm:col-span-6 md:col-span-8 bg-linear-to-b from-dark-gray/50 from-10% via-transparent to-transparent dark:border-dark-gray/80 p-0 rounded-xs'>
+    <CardHeader className='absolute z-10 top-0 flex-col items-start px-2 bg-background/20 backdrop-blur-xs h-fit w-full'>
       <h4 className='font-base capitalize text-white/90 font-clash font-normal tracking-tight'>
         {product.name}
       </h4>
@@ -55,8 +47,8 @@ const ProductItem = ({
       className='z-0 w-full h-full object-cover rounded-xs'
       src={imageUrl}
     />
-    <CardFooter className='p-1.5 absolute bg-black/80 bottom-0 z-10 border border-dark-gray/20 dark:border-dark-gray/80 rounded-b-xs'>
-      <div className='flex grow gap-2 items-center'>
+    <CardFooter className='absolute bg-black/50 bottom-0 z-10 w-full flex justify-between'>
+      <div className='flex grow gap-2 items-center w-full'>
         <div className='flex flex-col'>
           <p className='text-xs text-white'>
             <span
@@ -79,29 +71,26 @@ const ProductItem = ({
           </p>*/}
         </div>
       </div>
-      <div className='flex items-center gap-1'>
+      <div className='flex items-center justify-end gap-1 w-full'>
         <Tooltip>
           <Tooltip.Trigger>
             <Button
               size='sm'
               isIconOnly
-              variant='tertiary'
+              variant='outline'
               onPress={onOptimizePress}
               aria-label={optimizeLabel}
-              className={cn(
-                'rounded-sm text-white font-semibold hover:bg-dark-gray/40 dark:hover:bg-dark-table/80',
-                {
-                  'text-yellow-300': !isOptimizeDisabled,
-                  'text-indigo-500 dark:indigo-400 hover:bg-transparent dark:hover:bg-transparent':
-                    optimizerIconName === 'gallery-check-bold',
-                  'pointer-events-none':
-                    isOptimizeDisabled &&
-                    optimizerIconName !== 'gallery-check-bold',
-                },
-              )}>
+              className={cn('rounded-xs border-transparent', {
+                'text-yellow-300': !isOptimizeDisabled,
+                'text-indigo-500 dark:text-indigo-400 hover:bg-transparent dark:hover:bg-transparent':
+                  optimizerIconName === 'gallery-check-bold',
+                'pointer-events-none':
+                  isOptimizeDisabled &&
+                  optimizerIconName !== 'gallery-check-bold',
+              })}>
               <Icon
                 name={optimizerIconName}
-                className={cn('size-4', {
+                className={cn('size-4 m-auto', {
                   'rotate-6':
                     optimizerIconName === 'lightning' && !isOptimizeDisabled,
                   'size-5': optimizerIconName === 'gallery-check-bold',
@@ -139,9 +128,9 @@ const ProductItem = ({
           <Button
             size='sm'
             isIconOnly
-            variant='tertiary'
-            className='rounded-sm text-white font-semibold hover:bg-dark-gray/40 dark:hover:bg-dark-table/80'>
-            <Icon name='pen' className='size-4' />
+            variant='outline'
+            className='rounded-xs border-transparent'>
+            <Icon name='pen' className='size-4 m-auto' />
           </Button>
         </Link>
       </div>

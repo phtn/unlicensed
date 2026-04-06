@@ -13,7 +13,8 @@ export const NewHome = () => {
           quality={75}
           sizes={'100vw'}
           fetchPriority='high'
-          src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1772603013/hero-mobile-v2_vaiesj.webp'
+          // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1772603013/hero-mobile-v2_vaiesj.webp'
+          src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775501423/banner-mobile_uycmyn.webp'
           alt='Rapid Fire featured cannabis products'
           className='object-cover h-full sm:hidden w-full'
         />
@@ -23,7 +24,9 @@ export const NewHome = () => {
           height={1536}
           quality={75}
           fetchPriority='high'
-          src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1772552114/hero-image_ivcsbu.webp'
+          src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775501618/banner-desktop_gs5xzr.png'
+          // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775501420/banner-desktop_tf555y.webp'
+          // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1772552114/hero-image_ivcsbu.webp'
           alt='Rapid Fire featured cannabis products'
           className='hidden object-cover sm:block h-full w-full'
         />
@@ -35,8 +38,7 @@ export const NewHome = () => {
         className={cn(
           'absolute left-1/2 z-10 -translate-x-1/2 border border-white/80 bg-white px-8 md:px-12 py-2 text-lg font-clash font-semibold uppercase text-brand hover:border-light-brand hover:bg-brand hover:text-white sm:px-8 sm:py-3 lg:text-xl',
           'bottom-10 sm:bottom-16 md:bottom-20 lg:bottom-22 xl:bottom-24 2xl:bottom-28',
-        )}
-      >
+        )}>
         Shop Now
       </Link>
     </section>

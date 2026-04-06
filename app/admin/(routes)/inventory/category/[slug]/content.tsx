@@ -12,17 +12,16 @@ import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
 import {useMobile} from '@/hooks/use-mobile'
 import {useSaveAdminProductFormReturn} from '@/hooks/use-save-admin-product-form-return'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
-import {Button, Card, Chip} from '@heroui/react'
 import {Icon, IconName} from '@/lib/icons'
 import {formatStockDisplay} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
+import {Button, Card, Chip} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
 import {parseAsString, parseAsStringEnum, useQueryState} from 'nuqs'
 import {Suspense, useCallback, useMemo, useState} from 'react'
 import {ProductsData} from '../../product/products-data'
-
 
 import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
@@ -213,7 +212,7 @@ const ProductStackView = ({
 
   return (
     <>
-      <section className='h-[91lvh] pb-28 overflow-auto px-2 pb-10'>
+      <section className='h-[91lvh] overflow-auto px-2 pb-28'>
         {products?.length === 0 ? (
           <p className='px-4 text-sm text-neutral-500'>
             No products in this category.
@@ -246,7 +245,7 @@ const ProductStackView = ({
               return (
                 <Card
                   key={product._id}
-                  className='overflow-hidden border border-black/5 bg-white/80 dark:border-white/10 dark:bg-dark-table/45'>
+                  className='overflow-hidden border border-black/5 bg-white/80 dark:border-white/10 dark:bg-dark-table/45 rounded-xs p-0'>
                   <div className='flex flex-col md:flex-row'>
                     <div
                       className={cn(
@@ -457,7 +456,7 @@ const ProductStackView = ({
                                       : 'gallery-check-bold'
                                   }
                                   className={cn(
-                                    'size-4 rotate-6 text-yellow-500',
+                                    'size-4 rotate-6 text-yellow-500 m-auto',
                                     {
                                       'rotate-0 size-6 text-indigo-500 pointer-events-none':
                                         !canConvertPrimaryImage,
@@ -553,18 +552,18 @@ const CategoryProductsContentInner = ({
   const isMobile = useMobile()
 
   return (
-    <div className='space-y-4 pt-2'>
+    <div className='space-y-2 pt-2'>
       <div className='flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between'>
         <div className='flex flex-wrap items-center gap-2 px-2'>
           <Button
             size='sm'
             isIconOnly
-            variant='tertiary'
-            className='text-neutral-500 hover:text-foreground'
+            variant='outline'
+            className='hover:text-foreground h-7 border-transparent rounded-sm'
             onPress={() => {
               void router.push('/admin/inventory/category')
             }}>
-            <Icon name='chevron-left' className='size-4' />
+            <Icon name='chevron-left' className='size-4 m-auto' />
           </Button>
 
           <div className='min-w-20'>
@@ -580,27 +579,27 @@ const CategoryProductsContentInner = ({
 
           <Button
             isIconOnly={isMobile}
-            variant='primary'
+            variant='outline'
             onPress={handleEdit}
-            className='rounded-sm h-6 md:h-8 w-6 aspect-square md:w-fit border-white bg-gray-100/80 font-clash text-zinc-600 dark:border-transparent dark:bg-gray-200/5 dark:text-indigo-100'>
-            <Icon name='pen' className='size-3' />
+            className='rounded-sm h-6 md:h-8 w-6 md:w-fit font-clash'>
+            <Icon name='pen' className='size-3 m-auto' />
             <span className='text-sm font-clash hidden md:flex'>Edit</span>
           </Button>
 
           <Button
             isIconOnly={isMobile}
-            variant='tertiary'
-            className='rounded-sm h-6 md:h-8 w-6 md:w-fit border-white bg-gray-100/80 text-zinc-600 dark:border-transparent dark:bg-foreground/10 dark:text-blue-100'
+            variant='outline'
+            className='rounded-sm h-6 md:h-7 w-6 md:w-fit'
             onPress={() => {
               void router.push(
                 `/admin/inventory/product?tabId=new&category=${categorySlug}`,
               )
             }}>
-            <Icon name='plus' className='size-4' />
+            <Icon name='plus' className='size-4 m-auto' />
             <span className='text-sm font-clash hidden md:flex'>Add</span>
           </Button>
           <div className='flex flex-col flex-1 gap-3 md:px-2 items-end'>
-            <div className='flex flex-wrap items-center gap-0 border border-foreground/10'>
+            <div className='flex flex-wrap items-center gap-0 border rounded-xs'>
               {CATEGORY_PRODUCT_VIEWS.map((option) => (
                 <Button
                   key={option.id}
@@ -611,12 +610,12 @@ const CategoryProductsContentInner = ({
                     void setView(option.id)
                   }}
                   className={cn(
-                    'rounded-xs h-6 md:h-8',
+                    'rounded-xs h-6 md:h-7',
                     view === option.id
                       ? 'bg-neutral-900 text-white dark:bg-white/5 '
                       : 'bg-black/5 text-neutral-700 dark:bg-transparent dark:text-neutral-200',
                   )}>
-                  <Icon name={option.icon} className='size-4' />
+                  <Icon name={option.icon} className='size-4 m-auto' />
                 </Button>
               ))}
             </div>
@@ -627,19 +626,19 @@ const CategoryProductsContentInner = ({
           <Chip
             size='sm'
             variant='tertiary'
-            className='bg-blue-500/10 rounded-sm h-6 md:h-8 text-blue-700 dark:text-blue-300'>
+            className='bg-blue-500/10 rounded-sm h-6 md:h-7 text-blue-700 dark:text-blue-300 px-2'>
             <AnimatedNumber value={products?.length ?? 0} /> items
           </Chip>
           <Chip
             size='sm'
             variant='tertiary'
-            className='bg-emerald-500/10 rounded-sm h-6 md:h-8 text-emerald-700 dark:text-emerald-300'>
+            className='bg-emerald-500/10 rounded-sm h-6 md:h-8 text-emerald-700 dark:text-emerald-300 px-2'>
             {availableCount} available
           </Chip>
           <Chip
             size='sm'
             variant='tertiary'
-            className='bg-violet-500/10 rounded-sm h-6 md:h-8 text-violet-700 dark:text-violet-300'>
+            className='bg-violet-500/10 rounded-sm h-6 md:h-8 text-violet-700 dark:text-violet-300 px-2'>
             {featuredCount} featured
           </Chip>
         </div>

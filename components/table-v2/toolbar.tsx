@@ -36,9 +36,9 @@ interface RightTableToolbarProps {
 
 export const RightTableToolbar = ({left, search}: RightTableToolbarProps) => {
   return (
-    <Toolbar.Root className='order-2 flex h-9 w-full items-start justify-end gap-px pb-1 overflow-visible md:order-3 md:w-auto'>
+    <Toolbar.Root className='order-2 flex h-9 w-full items-center justify-end gap-px pb-1 overflow-visible md:order-3 md:w-auto'>
       <ToggleGroup
-        className='flex items-start gap-1 md:gap-2'
+        className='flex items-center gap-1 md:gap-2'
         aria-label='Alignment'>
         {left}
         {search}

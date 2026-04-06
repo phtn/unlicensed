@@ -68,7 +68,7 @@
   --color-tertiary-foreground: var(--tertiary-foreground);
   --color-panel: var(--panel);
   --color-muted: var(--muted);
-  --color-border: var(--border);
+  --color-border: var(--sidebar);
   --color-hue: var(--hue);
   --color-alum: oklch(0.773 0.011 212.53);
   --font-geist-sans: var(--font-geist-sans);

@@ -262,7 +262,7 @@ export const ProductInteraction = ({
           <Button
             size='lg'
             variant='primary'
-            className='flex h-14 md:h-13 w-full items-center bg-linear-to-r from-brand hover:via-light-brand via-brand to-brand font-clash text-base font-medium md:text-lg sm:flex-1'
+            className='flex h-14 md:h-13 w-full items-center rounded-none bg-linear-to-r from-brand hover:via-light-brand via-brand to-brand font-clash text-base font-medium md:text-lg sm:flex-1'
             onPress={() => void handleAddToCart()}
             isDisabled={isAddToCartDisabled}>
             <span>Add to Cart</span>
@@ -276,7 +276,7 @@ export const ProductInteraction = ({
             variant='primary'
             onPress={handleCheckoutPress}
             isDisabled={user ? isCheckoutDisabled : false}
-            className='h-14 md:h-13 w-full bg-foreground/95 font-clash text-lg font-medium text-white dark:text-dark-gray sm:flex-1'>
+            className='h-14 md:h-13 w-full bg-foreground/95 rounded-none font-clash text-lg font-medium text-white dark:text-dark-gray sm:flex-1'>
             <span>{user ? 'Checkout' : 'Sign in'}</span>
           </Button>
         </div>

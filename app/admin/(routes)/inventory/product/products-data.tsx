@@ -18,13 +18,7 @@ import {useSaveAdminProductFormReturn} from '@/hooks/use-save-admin-product-form
 import {Icon} from '@/lib/icons'
 import {formatTimestamp} from '@/utils/date'
 import {formatPrice} from '@/utils/formatPrice'
-import {
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-} from '@heroui/react'
+import {Button, Dropdown} from '@heroui/react'
 import {CellContext} from '@tanstack/react-table'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
@@ -464,43 +458,43 @@ export const ProductsData = ({
           size: 100,
           meta: {filterOptions: productTypeFilterOptions},
         },
-        {
-          id: 'leadImageOptimized',
-          header: (
-            <ColHeader
-              tip='Lead Image in Optimized Gallery'
-              symbol={
-                <Icon name='image-bold' className='size-5 text-indigo-700' />
-              }
-              center
-            />
-          ),
-          accessorKey: 'image',
-          cell: ({row}) => {
-            const imageId = row.original.image
+        // {
+        //   id: 'leadImageOptimized',
+        //   header: (
+        //     <ColHeader
+        //       tip='Lead Image in Optimized Gallery'
+        //       symbol={
+        //         <Icon name='image-bold' className='size-5 text-indigo-700' />
+        //       }
+        //       center
+        //     />
+        //   ),
+        //   accessorKey: 'image',
+        //   cell: ({row}) => {
+        //     const imageId = row.original.image
 
-            if (!imageId || optimizedLeadImageIds === undefined) {
-              return (
-                <div className='text-center font-brk text-sm opacity-60'>
-                  ····
-                </div>
-              )
-            }
+        //     if (!imageId || optimizedLeadImageIds === undefined) {
+        //       return (
+        //         <div className='text-center font-brk text-sm opacity-60'>
+        //           ····
+        //         </div>
+        //       )
+        //     }
 
-            return (
-              <div className='flex items-center justify-center'>
-                {optimizedStorageIds.has(String(imageId)) ? (
-                  <Icon
-                    name='checkbox-checked'
-                    className='size-5 text-indigo-500'
-                  />
-                ) : null}
-              </div>
-            )
-          },
-          size: 56,
-          enableFiltering: false,
-        },
+        //     return (
+        //       <div className='flex items-center justify-center'>
+        //         {optimizedStorageIds.has(String(imageId)) ? (
+        //           <Icon
+        //             name='checkbox-checked'
+        //             className='size-5 text-indigo-500'
+        //           />
+        //         ) : null}
+        //       </div>
+        //     )
+        //   },
+        //   size: 56,
+        //   enableFiltering: false,
+        // },
         {
           id: 'available',
           header: <ColHeader tip='Available' symbol='avl' center />,
@@ -702,8 +696,8 @@ export const ProductsData = ({
       brandFilterOptions,
       categories,
       categorySlugs,
-      optimizedLeadImageIds,
-      optimizedStorageIds,
+      // optimizedLeadImageIds,
+      // optimizedStorageIds,
       productTypeFilterOptions,
       saveAdminProductFormReturn,
       subcategoryFilterOptions,
@@ -714,7 +708,7 @@ export const ProductsData = ({
     (context: TableToolbarContext<Doc<'products'>>) => {
       return (
         <div className='flex items-center gap-2'>
-          <span className='hidden text-xs font-brk uppercase tracking-tight text-foreground/55 md:inline'>
+          <span className='text-xs font-brk uppercase tracking-tight text-foreground/55'>
             {safeData.length} loaded
           </span>
           {onLoadMore && (canLoadMore || isLoadingMore) && (
@@ -723,37 +717,44 @@ export const ProductsData = ({
               variant='tertiary'
               isDisabled={isLoadingMore}
               onPress={onLoadMore}
-              className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk'>
+              className='rounded-sm min-w-0 gap-1.5 font-brk'>
               {isLoadingMore ? 'Loading...' : loadMoreLabel}
             </Button>
           )}
           <Dropdown>
-            <DropdownTrigger>
+            <Dropdown.Trigger>
               <Button
                 size='sm'
                 variant='tertiary'
                 className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk portrait:aspect-square'>
-                <Icon name='download' className='size-4' />
+                <Icon name='download' className='size-3 m-auto' />
                 <span className='hidden sm:inline'>Export CSV</span>
                 <Icon name='chevron-down' className='size-4 md:flex hidden' />
               </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              aria-label='Export CSV options'
-              onAction={(key) => {
-                if (key === 'all')
-                  exportProductsToCsv(safeData, exportFilePrefix)
-                if (key === 'current')
-                  exportProductsToCsv(
-                    context.getFilteredData(),
-                    exportFilePrefix,
-                  )
-              }}>
-              <DropdownItem key='all'>
-                {canLoadMore || isLoadingMore ? 'Export loaded' : 'Export all'}
-              </DropdownItem>
-              <DropdownItem key='current'>Export current list</DropdownItem>
-            </DropdownMenu>
+            </Dropdown.Trigger>
+            <Dropdown.Popover>
+              <Dropdown.Menu aria-label='Export CSV options'>
+                <Dropdown.Item
+                  id='all'
+                  onPress={() =>
+                    exportProductsToCsv(safeData, exportFilePrefix)
+                  }>
+                  {canLoadMore || isLoadingMore
+                    ? 'Export loaded'
+                    : 'Export all'}
+                </Dropdown.Item>
+                <Dropdown.Item
+                  id='current'
+                  onPress={() =>
+                    exportProductsToCsv(
+                      context.getFilteredData(),
+                      exportFilePrefix,
+                    )
+                  }>
+                  Export current list
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
           </Dropdown>
         </div>
       )
@@ -767,8 +768,6 @@ export const ProductsData = ({
       safeData,
     ],
   )
-
-  const exportToolbar = useMemo(() => ExportCsvToolbar, [ExportCsvToolbar])
   const handleArchiveSelected = useCallback(
     async (ids: string[]) => {
       await Promise.all(
@@ -821,7 +820,7 @@ export const ProductsData = ({
         defaultPageSize={25}
         defaultLoadedCount={defaultLoadedCount}
         loadedCountParamKey='loaded'
-        rightToolbarLeft={exportToolbar}
+        rightToolbarLeft={ExportCsvToolbar}
         deleteIdAccessor='_id'
         deleteActionLabel='Delete Selected'
         onDeleteSelected={handleArchiveSelected}

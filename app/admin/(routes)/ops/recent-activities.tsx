@@ -413,7 +413,10 @@ export const RecentActivities = ({
               className='h-7 w-7 rounded-lg bg-sidebar/60 px-0 text-foreground hover:bg-slate-400/20 dark:bg-sidebar/10'>
               <Icon
                 name='chevron-left'
-                className={cn('size-5 rotate-45', fullTable && '-rotate-45')}
+                className={cn(
+                  'size-4 rotate-45 m-auto',
+                  fullTable && '-rotate-45',
+                )}
               />
             </Button>
           </div>
@@ -423,13 +426,13 @@ export const RecentActivities = ({
             <Table.Content
               aria-label='Recent activities table'
               className='min-w-245'>
-              <Table.Header>
+              <Table.Header className='rounded-none'>
                 {columns.map((column) => (
                   <Table.Column
                     key={column.uid}
                     isRowHeader={column.uid === 'user'}
                     className={cn(
-                      'sticky top-0 z-20 h-10 border-b border-sidebar bg-slate-200/90 text-xs font-medium tracking-[0.18em] text-slate-500 backdrop-blur-3xl dark:border-dark-table dark:bg-dark-table/95 dark:text-foreground/75',
+                      'sticky top-0 z-20 h-10 border-b border-sidebar bg-slate-200/90 text-xs font-medium tracking-[0.18em] text-slate-500 backdrop-blur-3xl dark:border-dark-table dark:bg-dark-table/95 dark:text-foreground/75 rounded-xs',
                       columnClassNameMap[column.uid],
                     )}>
                     <div className='drop-shadow-xs'>{column.name}</div>

@@ -552,14 +552,14 @@ export const MultiSelect = <T,>({
   )
 }
 
-const bulkSelectClassNames = {
-  trigger:
-    'min-h-10 h-10 border border-border bg-background rounded-lg shadow-none px-3 data-[hover=true]:bg-background data-[focus=true]:bg-background data-[focus=true]:border-foreground/30',
-  value: 'text-sm',
-  selectorIcon: 'text-muted-foreground',
-  listbox: 'p-1.5',
-  popoverContent: 'rounded-xl',
-}
+// const bulkSelectClassNames = {
+//   trigger:
+//     'min-h-10 h-10 border border-border bg-background rounded-lg shadow-none px-3 data-[hover=true]:bg-background data-[focus=true]:bg-background data-[focus=true]:border-foreground/30',
+//   value: 'text-sm',
+//   selectorIcon: 'text-muted-foreground',
+//   listbox: 'p-1.5',
+//   popoverContent: 'rounded-xl',
+// }
 
 const normalizeBulkEditorConfig = <T,>(
   bulkEditor: ColumnMeta<T>['bulkEditor'],

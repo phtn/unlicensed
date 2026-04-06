@@ -25,10 +25,12 @@ import type {NavGroup, NavItem} from './ui/types'
 // Global Set to track prefetched routes across all instances
 const prefetchedRoutes = new Set<string>()
 
+const isRouteActive = (url: string, pathname: string) =>
+  pathname === url || (url !== '/admin/ops' && pathname.startsWith(url + '/'))
+
 export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const router = useRouter()
-  const pendingOrdersCount = useQuery(api.orders.q.getPendingOrdersCount) ?? 0
 
   // Collect all routes from navMain data
   const allRoutes = useMemo(() => {
@@ -80,26 +82,22 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               {data.navMain[0] &&
                 data.navMain[0]?.items?.map((item) => {
-                  const isActive = pathname
-                    .split('/')
-                    .splice(2)
-                    .filter((r) => r !== 'ops')
-                    .includes(item.url.split('/').pop()!)
+                  const isActive = isRouteActive(item.url, pathname)
                   return (
                     <SidebarMenuItem
-                      className={cn('text-sm tracking-tight rounded-xl', {
-                        'bg-dark-gray text-white dark:bg-blue-100/15 md:hover:bg-dark-gray/90 md:dark:hover:bg-blue-100/20':
-                          isActive,
-                      })}
-                      key={item.title}>
+                      key={item.title}
+                      className={cn(
+                        'text-sm font-semibold tracking-tight w-full rounded-lg',
+                        {
+                          'bg-dark-gray text-white dark:bg-blue-100/15 md:hover:bg-dark-gray/90 md:dark:hover:bg-blue-100/20 rounded-lg':
+                            isActive,
+                        },
+                      )}>
                       <SidebarMenuButton
                         asChild
-                        className='capitalize group/menu-button data-[active=true]:hover:bg-background data-[active=true]:bg-linear-to-b data-[active=true]:from-sidebar-primary data-[active=true]:to-sidebar-primary/50 data-[active=true]:shadow-[0_1px_2px_0_rgb(0_0_0/.05),inset_0_1px_0_0_rgb(255_255_255/.12)] [&>svg]:size-auto'
+                        size='default'
                         isActive={isActive}>
-                        <MenuContent
-                          {...item}
-                          pendingOrdersCount={pendingOrdersCount}
-                        />
+                        <MenuContent {...item} />
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )
@@ -116,11 +114,11 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupContent className='scrollbar-hide'>
               <SidebarMenu>
                 {section.items?.map((item, x) => {
-                  const isActive = pathname === item.url
+                  const isActive = isRouteActive(item.url, pathname)
                   return (
                     <SidebarMenuItem
                       className={cn(
-                        'text-sm font-semibold tracking-tight rounded-xl',
+                        'text-sm font-semibold tracking-tight w-full rounded-lg',
                         {
                           'bg-dark-gray text-white dark:bg-blue-100/15 md:hover:bg-dark-gray/90 md:dark:hover:bg-blue-100/20':
                             isActive,
@@ -129,15 +127,9 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                       key={item.title + x}>
                       <SidebarMenuButton
                         asChild
-                        size='lg'
-                        className={cn(
-                          'group/menu-button font-medium h-7 [&>svg]:size-auto',
-                        )}
+                        size='default'
                         isActive={isActive}>
-                        <MenuContent
-                          {...item}
-                          pendingOrdersCount={pendingOrdersCount}
-                        />
+                        <MenuContent {...item} />
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )
@@ -156,11 +148,11 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu>
               {data.navMain[6]?.items?.map((item) => {
-                const isActive = pathname === item.url
+                const isActive = isRouteActive(item.url, pathname)
                 return (
                   <SidebarMenuItem
                     className={cn(
-                      'text-sm font-semibold tracking-tight rounded-xl',
+                      'text-sm font-semibold tracking-tight rounded-lg',
                       {
                         'bg-dark-gray text-white dark:bg-blue-100/15 md:hover:bg-dark-gray/90 md:dark:hover:bg-blue-100/20':
                           isActive,
@@ -169,13 +161,9 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                     key={item.title}>
                     <SidebarMenuButton
                       asChild
-                      size='lg'
-                      className='group/menu-button h-8 [&>svg]:size-auto'
+                      size='default'
                       isActive={isActive}>
-                      <MenuContent
-                        {...item}
-                        pendingOrdersCount={pendingOrdersCount}
-                      />
+                      <MenuContent {...item} />
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )
@@ -202,14 +190,19 @@ const Logo = () => {
   )
 }
 
-const MenuContent = memo(function MenuContent(
-  item: NavItem & {pendingOrdersCount: number},
-) {
-  const showBadge =
-    item.url === '/admin/ops/orders' && item.pendingOrdersCount > 0
+const PendingOrdersBadge = memo(function PendingOrdersBadge() {
+  const count = useQuery(api.orders.q.getPendingOrdersCount) ?? 0
+  if (count === 0) return null
+  return (
+    <span className='flex h-5 w-7 items-center justify-center rounded-sm text-base font-semibold tabular-nums font-space text-amber-100 dark:text-amber-200/80'>
+      {count}
+    </span>
+  )
+})
+
+const MenuContent = memo(function MenuContent(item: NavItem) {
   const router = useRouter()
 
-  // Prefetch on hover as a fallback (in case it wasn't prefetched yet)
   const handleMouseEnter = useCallback(() => {
     if (!prefetchedRoutes.has(item.url)) {
       router.prefetch(item.url)
@@ -217,7 +210,6 @@ const MenuContent = memo(function MenuContent(
     }
   }, [item.url, router])
 
-  // Handle navigation with transition
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault()
@@ -234,21 +226,13 @@ const MenuContent = memo(function MenuContent(
       prefetch={true}
       onMouseEnter={handleMouseEnter}
       onClick={handleClick}
-      className='group/menu-content hover:bg-foreground/5 rounded-xl flex items-center px-3 h-8 relative w-full'>
+      className='group/menu-content hover:bg-foreground/5 flex items-center px-3 h-8 relative w-full rounded-lg'>
       <Icon name={item.icon as IconName} className='mr-2.5 size-4' />
-      <span className='font-okxs font-normal tracking-normal text-sm md:text-sm capitalize dark:text-white/90'>
+      <span className='font-okxs font-normal tracking-normal text-sm md:text-sm capitalize dark:text-white/90 w-full'>
         {item.title}
       </span>
       <div className='flex items-center justify-end w-full'>
-        {showBadge && (
-          <span
-            className={cn(
-              'flex h-5 w-7 aspect-square items-center justify-center rounded-sm bg-foreground/60 text-base font-semibold tabular-nums font-space text-amber-100 dark:text-amber-200/80',
-              {'bg-transparent': item.title === 'Orders'},
-            )}>
-            {item.pendingOrdersCount}
-          </span>
-        )}
+        {item.url === '/admin/ops/orders' && <PendingOrdersBadge />}
       </div>
     </Link>
   )

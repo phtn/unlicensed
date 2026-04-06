@@ -13,15 +13,19 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
 import {Input} from '@heroui/input'
-import {Select, SelectItem} from '@heroui/select'
-import {Switch} from '@heroui/switch'
+import {Button, Label, ListBox, Select, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {parseAsString, useQueryStates} from 'nuqs'
-import {memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState} from 'react'
-
-
+import {
+  memo,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
@@ -183,13 +187,13 @@ const ProductTile = ({
       <Button
         size='sm'
         isIconOnly
-        variant='tertiary'
+        variant='outline'
         isDisabled={disabled}
         onPress={() => onAction(String(product._id))}
-        className='rounded-none hover:bg-sidebar dark:hover:bg-sidebar text-xs uppercase text-foreground h-6 hover:border-sidebar dark:hover:text-rose-400'>
+        className='rounded-none border-transparent hover:bg-sidebar dark:hover:bg-sidebar text-xs uppercase text-foreground h-6 hover:border-sidebar'>
         <Icon
           name={actionLabel?.toLowerCase() === 'add' ? 'plus' : 'trash'}
-          className='size-3.5'
+          className='size-3.5 m-auto'
         />
       </Button>
     )}
@@ -220,7 +224,7 @@ const CollectionCard = memo(
     <button
       type='button'
       onClick={() => onSelect(collection.id)}
-      className={`rounded-2xl border p-4 text-left transition-colors ${
+      className={`rounded-xs border p-4 text-left transition-colors ${
         isSelected
           ? 'border-foreground/30 bg-sidebar dark:bg-sidebar/30 shadow-inner'
           : 'border-foreground/15 bg-background/80 hover:border-foreground/20'
@@ -863,7 +867,7 @@ export const FireCollectionManager = () => {
 
   return (
     <section className='flex w-full flex-col gap-4'>
-      <div className='flex flex-col gap-2 border-b-2 border-foreground/10 p-2 max-h-23'>
+      <div className='flex flex-col gap-2 border-b-2 border-foreground/10 p-2'>
         <div className='flex flex-col gap-1 lg:flex-row lg:items-end lg:justify-between'>
           <div className='flex items-center justify-between w-full'>
             <div>
@@ -969,20 +973,28 @@ export const FireCollectionManager = () => {
                     <Switch
                       isSelected={selectedCollection.enabled}
                       isDisabled={activeKey !== null}
-                      onValueChange={handleToggleCollection}
+                      onChange={handleToggleCollection}
                       className='scale-75'
-                      size='sm'
-                    />
+                      size='sm'>
+                      <Switch.Control
+                        className={
+                          selectedCollection.enabled
+                            ? 'bg-emerald-600'
+                            : 'bg-zinc-400'
+                        }>
+                        <Switch.Thumb />
+                      </Switch.Control>
+                    </Switch>
                   </div>
 
                   <Button
                     size='sm'
                     isIconOnly
-                    variant='tertiary'
+                    variant='outline'
                     isDisabled={activeKey !== null}
                     onPress={handleDeleteCollection}
-                    className='rounded-xs font-okxs text-xs uppercase tracking-widest h-6 dark:text-rose-400 text-rose-600 dark:hover:bg-rose-400/10'>
-                    <Icon name='trash' className='size-4' />
+                    className='rounded-xs border-transparent h-6 dark:text-rose-400 text-rose-600 dark:hover:bg-rose-400/10'>
+                    <Icon name='trash' className='size-4 m-auto' />
                   </Button>
                 </div>
               )}
@@ -1014,7 +1026,7 @@ export const FireCollectionManager = () => {
                     }
                     onPress={handleSaveCollectionTitle}
                     className='rounded-xs px-4 font-clash font-medium text-sm tracking-widest bg-dark-table text-white'>
-                    <Icon name='save' className='size-4' />
+                    <Icon name='save' className='size-4 m-auto' />
                   </Button>
                 </div>
               </div>
@@ -1099,24 +1111,38 @@ export const FireCollectionManager = () => {
           <ScrollArea className='h-[70lvh] overflow-scroll'>
             <div className='mt-2 flex flex-col gap-3 sm:flex-row sm:items-center'>
               <Select
-                label='Source Category'
-                placeholder='Random category'
-                selectedKeys={[selectedSourceCategorySlug]}
-                onSelectionChange={(keys) => {
-                  const key = Array.from(keys)[0]
+                value={selectedSourceCategorySlug}
+                onChange={(key) => {
+                  if (key === null) return
                   void handleUpdateSourceCategory(
                     typeof key === 'string' ? key : RANDOM_CATEGORY_ALL,
                   )
                 }}
-                classNames={narrowSelectClassNames}
-                disallowEmptySelection
                 isDisabled={activeKey !== null || !selectedCollection}
-                items={randomCategoryOptions}>
-                {(item) => (
-                  <SelectItem key={item.value} textValue={item.label}>
-                    {item.label}
-                  </SelectItem>
-                )}
+                className={narrowSelectClassNames.mainWrapper}>
+                <Label className={narrowSelectClassNames.label}>
+                  Source Category
+                </Label>
+                <Select.Trigger className={narrowSelectClassNames.trigger}>
+                  <Select.Value className={narrowSelectClassNames.value} />
+                  <Select.Indicator
+                    className={narrowSelectClassNames.selectIndicator}
+                  />
+                </Select.Trigger>
+                <Select.Popover className={narrowSelectClassNames.popover}>
+                  <ListBox className={narrowSelectClassNames.listbox}>
+                    {randomCategoryOptions.map((item) => (
+                      <ListBox.Item
+                        className={narrowSelectClassNames.listboxItem}
+                        key={item.value}
+                        id={item.value}
+                        textValue={item.label}>
+                        {item.label}
+                        <ListBox.ItemIndicator className='text-foreground size-2.5' />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
               </Select>
 
               <span className='pb-1 text-[8px] uppercase tracking-[0.22em] text-foreground/50 text-center text-balance'>
@@ -1136,87 +1162,139 @@ export const FireCollectionManager = () => {
 
             <div className='mt-3 grid gap-3 md:grid-cols-2'>
               <Select
-                label='Category'
-                placeholder='All categories'
-                selectedKeys={[libraryCategory]}
-                onSelectionChange={(keys) => {
-                  const key = Array.from(keys)[0]
+                value={libraryCategory}
+                onChange={(key) => {
+                  if (key === null) return
                   void setFireState({
                     fireLibraryCategory:
                       typeof key === 'string' ? key : FILTER_OPTION_ALL,
                   })
                 }}
-                classNames={narrowSelectClassNames}
-                disallowEmptySelection
-                items={libraryCategoryOptions}>
-                {(item) => (
-                  <SelectItem key={item.value} textValue={item.label}>
-                    {item.label}
-                  </SelectItem>
-                )}
+                className={narrowSelectClassNames.mainWrapper}>
+                <Label className={narrowSelectClassNames.label}>Category</Label>
+                <Select.Trigger className={narrowSelectClassNames.trigger}>
+                  <Select.Value className={narrowSelectClassNames.value} />
+                  <Select.Indicator
+                    className={narrowSelectClassNames.selectIndicator}
+                  />
+                </Select.Trigger>
+                <Select.Popover className={narrowSelectClassNames.popover}>
+                  <ListBox className={narrowSelectClassNames.listbox}>
+                    {libraryCategoryOptions.map((item) => (
+                      <ListBox.Item
+                        key={item.value}
+                        id={item.value}
+                        textValue={item.label}
+                        className={narrowSelectClassNames.listboxItem}>
+                        {item.label}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
               </Select>
 
               <Select
-                label='Brand'
-                placeholder='All brands'
-                selectedKeys={[libraryBrand]}
-                onSelectionChange={(keys) => {
-                  const key = Array.from(keys)[0]
+                value={libraryBrand}
+                onChange={(key) => {
+                  if (key === null) return
                   void setFireState({
                     fireLibraryBrand:
                       typeof key === 'string' ? key : FILTER_OPTION_ALL,
                   })
                 }}
-                classNames={narrowSelectClassNames}
-                disallowEmptySelection
-                items={libraryBrandOptions}>
-                {(item) => (
-                  <SelectItem key={item.value} textValue={item.label}>
-                    {item.label}
-                  </SelectItem>
-                )}
+                className={narrowSelectClassNames.mainWrapper}>
+                <Label className={narrowSelectClassNames.label}>Brand</Label>
+                <Select.Trigger className={narrowSelectClassNames.trigger}>
+                  <Select.Value className={narrowSelectClassNames.value} />
+                  <Select.Indicator
+                    className={narrowSelectClassNames.selectIndicator}
+                  />
+                </Select.Trigger>
+                <Select.Popover className={narrowSelectClassNames.popover}>
+                  <ListBox className={narrowSelectClassNames.listbox}>
+                    {libraryBrandOptions.map((item) => (
+                      <ListBox.Item
+                        key={item.value}
+                        id={item.value}
+                        textValue={item.label}
+                        className={narrowSelectClassNames.listboxItem}>
+                        {item.label}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
               </Select>
 
               <Select
-                label='Subcategory'
-                placeholder='All subcategories'
-                selectedKeys={[librarySubcategory]}
-                onSelectionChange={(keys) => {
-                  const key = Array.from(keys)[0]
+                value={librarySubcategory}
+                onChange={(key) => {
+                  if (key === null) return
                   void setFireState({
                     fireLibrarySubcategory:
                       typeof key === 'string' ? key : FILTER_OPTION_ALL,
                   })
                 }}
-                classNames={narrowSelectClassNames}
-                disallowEmptySelection
-                items={librarySubcategoryOptions}>
-                {(item) => (
-                  <SelectItem key={item.value} textValue={item.label}>
-                    {item.label}
-                  </SelectItem>
-                )}
+                className={narrowSelectClassNames.mainWrapper}>
+                <Label className={narrowSelectClassNames.label}>
+                  Subcategory
+                </Label>
+                <Select.Trigger className={narrowSelectClassNames.trigger}>
+                  <Select.Value className={narrowSelectClassNames.value} />
+                  <Select.Indicator
+                    className={narrowSelectClassNames.selectIndicator}
+                  />
+                </Select.Trigger>
+                <Select.Popover className={narrowSelectClassNames.popover}>
+                  <ListBox className={narrowSelectClassNames.listbox}>
+                    {librarySubcategoryOptions.map((item) => (
+                      <ListBox.Item
+                        key={item.value}
+                        id={item.value}
+                        textValue={item.label}
+                        className={narrowSelectClassNames.listboxItem}>
+                        {item.label}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
               </Select>
 
               <Select
-                label='Product Type'
-                placeholder='All product types'
-                selectedKeys={[libraryProductType]}
-                onSelectionChange={(keys) => {
-                  const key = Array.from(keys)[0]
+                value={libraryProductType}
+                onChange={(key) => {
+                  if (key === null) return
                   void setFireState({
                     fireLibraryProductType:
                       typeof key === 'string' ? key : FILTER_OPTION_ALL,
                   })
                 }}
-                classNames={narrowSelectClassNames}
-                disallowEmptySelection
-                items={libraryProductTypeOptions}>
-                {(item) => (
-                  <SelectItem key={item.value} textValue={item.label}>
-                    {item.label}
-                  </SelectItem>
-                )}
+                className={narrowSelectClassNames.mainWrapper}>
+                <Label className={narrowSelectClassNames.label}>
+                  Product Type
+                </Label>
+                <Select.Trigger className={narrowSelectClassNames.trigger}>
+                  <Select.Value className={narrowSelectClassNames.value} />
+                  <Select.Indicator
+                    className={narrowSelectClassNames.selectIndicator}
+                  />
+                </Select.Trigger>
+                <Select.Popover className={narrowSelectClassNames.popover}>
+                  <ListBox className={narrowSelectClassNames.listbox}>
+                    {libraryProductTypeOptions.map((item) => (
+                      <ListBox.Item
+                        key={item.value}
+                        id={item.value}
+                        textValue={item.label}
+                        className={narrowSelectClassNames.listboxItem}>
+                        {item.label}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
               </Select>
             </div>
 

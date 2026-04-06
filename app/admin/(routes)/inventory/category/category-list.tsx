@@ -8,10 +8,8 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button, Card, Chip} from '@heroui/react'
 import {useMutation} from 'convex/react'
-import {formatDistanceToNow} from 'date-fns'
 import Link from 'next/link'
 import {startTransition, useState} from 'react'
-
 
 import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
@@ -157,7 +155,7 @@ const CategoryCard = ({
   return (
     <Card
       className={cn(
-        'h-full overflow-hidden border border-black/10 bg-white/80 hover:border-emerald-500/20 hover:bg-white dark:border-white/10 dark:bg-dark-table/45 dark:hover:border-emerald-400/30 dark:hover:bg-dark-table/60 transition-all duration-300',
+        'h-full overflow-hidden border border-black/10 bg-white/80 hover:border-emerald-500/20 hover:bg-white dark:border-white/10 dark:bg-dark-table/45 dark:hover:border-emerald-400/30 dark:hover:bg-dark-table/60 transition-all duration-300 p-0 rounded-lg',
         {
           'scale-[0.985] opacity-60': isDragging,
           'border-emerald-500/60 ring-2 ring-emerald-500/30 dark:border-emerald-400/60 dark:ring-emerald-400/20':
@@ -180,7 +178,7 @@ const CategoryCard = ({
             </div>
           </div>
         )}
-        <h4 className='absolute top-4 left-4 z-100 truncate text-3xl font-semibold tracking-tight text-white bg-linear-to-r from-transparent to-black/40 pl-2 pr-4 rounded-e-full'>
+        <h4 className='absolute top-10 left-2 z-100 truncate text-3xl font-semibold tracking-tight text-white bg-linear-to-r from-transparent to-black/40 pl-2 pr-4 rounded-e-full'>
           {category.name}
         </h4>
         <div className='absolute inset-0 bg-linear-to-t from-white via-white/20 to-transparent dark:from-[#0a0c10] dark:via-[#0a0c10]/25' />
@@ -209,12 +207,12 @@ const CategoryCard = ({
           <Button
             size='sm'
             isIconOnly
-            variant='tertiary'
+            variant='outline'
             aria-label={`Drag to reorder ${category.name}`}
             isDisabled={dragHandleDisabled}
             onPointerDown={() => onDragHandlePointerDown?.()}
             className='group/handle flex cursor-grab active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40 text-white'>
-            <Icon name='dots-fill' className='size-5' />
+            <Icon name='dots-fill' className='size-5 m-auto -rotate-45' />
           </Button>
           {/*<div className='flex size-9 items-center justify-center rounded-full border border-black/10 bg-white/80 text-neutral-700 backdrop-blur dark:border-white/10 dark:bg-black/35 dark:text-white/85'>
             <Icon name='circle-in' className='size-4' />
@@ -257,8 +255,8 @@ const CategoryCard = ({
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className='rounded-md border border-black/5 bg-neutral-50/80 px-3 py-1 dark:border-white/10 dark:bg-white/5 space-y-1'>
-              <dt className='text-xs font-ios uppercase tracking-[0.18em] text-neutral-500'>
+              className='rounded-sm border border-black/5 bg-neutral-50/80 px-2 py-1 dark:border-white/10 dark:bg-white/5 space-y-1'>
+              <dt className='text-xs font-ios uppercase tracking-wider text-neutral-500'>
                 {stat.label}
               </dt>
               <dd className='text-lg font-medium tracking-tight text-foreground'>
@@ -300,14 +298,6 @@ const CategoryCard = ({
               ))}
             </div>
           ) : null}
-        </div>
-
-        <div className='mt-auto flex items-center justify-between gap-3 pt-3 text-xs text-neutral-500 font-ios'>
-          <span>
-            Created{' '}
-            {formatDistanceToNow(category._creationTime, {addSuffix: true})}
-          </span>
-          <span className='font-ios text-foreground transition-colors group-hover:text-emerald-600 dark:group-hover:text-emerald-300'></span>
         </div>
       </div>
     </Card>

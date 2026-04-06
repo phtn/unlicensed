@@ -54,7 +54,7 @@ export const Content = () => {
   return (
     <MainWrapper className='min-w-0 overflow-x-hidden px-2 pt-2 pb-20 md:h-[92lvh] md:overflow-y-scroll md:p-4 md:border-t-0'>
       <Tabs.Root value={activeTab} onValueChange={handleTabChange}>
-        <div className='flex min-h-0 flex-col gap-3 md:gap-4'>
+        <div className='flex min-h-0 flex-col gap-2'>
           <div className='-mx-2 overflow-x-auto px-2 pb-1 md:mx-0 md:px-0'>
             <Tabs.List className='relative z-0 flex w-max min-w-full gap-1 rounded-xl border border-default-200/70 bg-background/80 p-1 backdrop-blur-sm'>
               {tabs.map((tab) => (
