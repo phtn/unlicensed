@@ -90,6 +90,7 @@ export const Nav = ({children}: NavProps) => {
           <div className='min-w-12 md:w-36'>
             <Link
               id='home'
+              aria-label='Go back to homepage'
               href={'/lobby'}
               onMouseEnter={handleHomeMouseEnter}
               onMouseLeave={handleHomeMouseLeave}
@@ -145,6 +146,7 @@ export const Nav = ({children}: NavProps) => {
             </div>
             <div className='sm:hidden portrait:flex portrait:w-full' />
             <Link
+              aria-label='Go to shop by category'
               href={'/lobby/category'}
               className={cn(
                 'hidden rounded-xs px-2 h-7 group text-sm lg:text-lg text-gray-100 hover:text-brand md:flex items-center font-clash font-semibold space-x-1  outline-0 focus-visible:bg-brand focus-visible:ring-0',
@@ -165,6 +167,7 @@ export const Nav = ({children}: NavProps) => {
           <div className='flex w-fit gap-5 md:w-36 items-center justify-between'>
             <Badge.Anchor>
               <Button
+                aria-label='Open cart drawer'
                 variant='ghost'
                 id='cart-drawer-trigger'
                 className='capitalize outline-0 focus-visible:ring-0 aspect-square focus-visible:outline-2! focus-visible:outline-brand! hover:bg-transparent'

@@ -66,6 +66,7 @@ export const NavMenu = ({isMobile, scrollY, inStoreLobby}: NavMenuProps) => {
       <NavigationMenuList className='gap-0'>
         <NavigationMenuItem value={NAV_MENU_VALUE}>
           <NavigationMenuTrigger
+            aria-label='Open navigation menu'
             id='nav-menu-trigger'
             className={cn(
               'rounded-xs px-2 h-7 text-sm font-semibold outline-0 focus-visible:bg-brand focus-visible:ring-0',
