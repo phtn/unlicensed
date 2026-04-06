@@ -1,15 +1,14 @@
 'use client'
 
 import {
-  commonInputClassNames,
   commonSelectClassNames,
   FormInput,
 } from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
+import {Input} from '@/components/hero-v3/input'
 import {Doc} from '@/convex/_generated/dataModel'
 import {useDisclosure} from '@/hooks/use-disclosure'
 import {ensureSlug} from '@/lib/slug'
-import {Input} from '@heroui/input'
 import {Button, Modal} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useEffect, useMemo, useState} from 'react'
@@ -192,18 +191,17 @@ export const BasicInfo = ({
 
   return (
     <FormSection position='top'>
-      <div className='flex items-center'>
-        <Header label='Basic Information'>
-          <Button
-            size='sm'
-            variant='danger-soft'
-            onPress={onOpen}
-            isDisabled={!onArchiveProduct}
-            isPending={isArchiving}
-            className='rounded-sm flex-1 border-transparent bg-red-100'>
-            Delete
-          </Button>
-        </Header>
+      <div className='flex items-center justify-between'>
+        <Header label='Basic Information'></Header>
+        <Button
+          size='sm'
+          onPress={onOpen}
+          variant='danger-soft'
+          isDisabled={!onArchiveProduct}
+          isPending={isArchiving}
+          className='rounded-sm h-7 flex-1 border-transparent bg-red-100'>
+          Delete
+        </Button>
       </div>
       <div className='grid gap-4 w-full'>
         <div className='grid gap-4 md:grid-cols-3 items-start w-full'>
@@ -212,7 +210,6 @@ export const BasicInfo = ({
               {(input) => (
                 <div className='space-y-2 w-full'>
                   <Input
-                    size='lg'
                     label={nameField.label}
                     value={String(input.state.value ?? '')}
                     onChange={(e) => {
@@ -224,8 +221,6 @@ export const BasicInfo = ({
                     }}
                     onBlur={input.handleBlur}
                     placeholder={nameField.placeholder}
-                    variant='faded'
-                    classNames={commonInputClassNames}
                   />
                   {input.state.meta.isTouched &&
                     input.state.meta.errors.length > 0 && (
@@ -242,7 +237,6 @@ export const BasicInfo = ({
               {(input) => (
                 <div className='space-y-2 w-full'>
                   <Input
-                    size='lg'
                     label={slugField.label}
                     value={String(input.state.value ?? '')}
                     onChange={(e) => {
@@ -251,8 +245,6 @@ export const BasicInfo = ({
                     }}
                     onBlur={input.handleBlur}
                     placeholder={slugField.placeholder}
-                    classNames={commonInputClassNames}
-                    variant='faded'
                   />
                   {input.state.meta.isTouched &&
                     input.state.meta.errors.length > 0 && (
@@ -275,7 +267,6 @@ export const BasicInfo = ({
                   label={baseField.label}
                   placeholder={baseField.placeholder}
                   options={baseOptions}
-                  classNames={{mainWrapper: 'py-0'}}
                 />
               )}
             </form.AppField>
@@ -293,9 +284,6 @@ export const BasicInfo = ({
                   mode='single'
                   label={categorySlugField.label}
                   placeholder={categorySlugField.placeholder}
-                  isCategory
-                  className='w-full flex'
-                  classNames={commonSelectClassNames}
                   options={selectCategories}
                 />
               )}
@@ -311,7 +299,6 @@ export const BasicInfo = ({
                   mode='multiple'
                   label={brandField.label}
                   placeholder={brandField.placeholder}
-                  classNames={{...commonSelectClassNames}}
                   options={brandOptions}
                 />
               )}
@@ -370,14 +357,12 @@ export const BasicInfo = ({
               {(input) => (
                 <div className='space-y-2 w-full'>
                   <Input
-                    size='lg'
+                    name='productType'
                     label={productTypeField.label}
                     value={String(input.state.value ?? '')}
                     onChange={(e) => input.handleChange(e.target.value)}
                     onBlur={input.handleBlur}
                     placeholder={productTypeField.placeholder}
-                    variant='faded'
-                    classNames={commonInputClassNames}
                   />
                   {input.state.meta.isTouched &&
                     input.state.meta.errors.length > 0 && (

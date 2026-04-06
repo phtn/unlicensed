@@ -1,16 +1,7 @@
 'use client'
 
-import {
-  commonInputClassNames,
-  commonSelectClassNames,
-  FormInput,
-  getSingleSelectedKey,
-} from '@/app/admin/_components/ui/fields'
+import {FormInput} from '@/app/admin/_components/ui/fields'
 import {Doc} from '@/convex/_generated/dataModel'
-import {Icon} from '@/lib/icons'
-import {Input} from '@heroui/input'
-import {ListboxItem as ListBoxItem} from '@heroui/listbox'
-import {Select} from '@heroui/select'
 import {useStore} from '@tanstack/react-store'
 import {useEffect, useMemo, useRef} from 'react'
 import {
@@ -147,14 +138,13 @@ export const Pricing = ({
             <form.AppField name='batchId'>
               {(field) => (
                 <div className='space-y-2'>
-                  <Input
+                  <field.TextField
+                    type='text'
                     label={batchIdField.label}
                     value={String(field.state.value ?? '')}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
                     placeholder={batchIdField.placeholder}
-                    variant='faded'
-                    classNames={commonInputClassNames}
+                    onBlur={field.handleBlur}
                   />
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
@@ -175,37 +165,22 @@ export const Pricing = ({
               return (
                 <div className='space-y-2'>
                   {hasCategoryUnits ? (
-                    <Select
+                    <field.SelectField
+                      name={field.name}
+                      type='select'
                       label='Unit'
-                      selectedKeys={unitValue ? [unitValue] : []}
-                      onSelectionChange={(keys) => {
-                        const key = getSingleSelectedKey(keys)
-                        field.handleChange(key != null ? String(key) : '')
-                      }}
-                      onBlur={field.handleBlur}
+                      mode='single'
                       placeholder='Select unit'
-                      variant='faded'
-                      classNames={{
-                        ...commonInputClassNames,
-                        ...commonSelectClassNames,
-                        mainWrapper: 'py-0',
-                      }}
-                      disallowEmptySelection={false}>
-                      {categoryUnits.map((u) => (
-                        <ListBoxItem key={u} textValue={u}>
-                          {u}
-                        </ListBoxItem>
-                      ))}
-                    </Select>
+                      options={categoryUnits.map((u) => ({label: u, value: u}))}
+                    />
                   ) : (
-                    <Input
+                    <field.TextField
+                      type='text'
                       label='Unit of Measurement'
                       value={unitValue}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
                       placeholder='e.g. g, oz, each'
-                      variant='faded'
-                      classNames={commonInputClassNames}
+                      onBlur={field.handleBlur}
                     />
                   )}
                   {field.state.meta.isTouched &&
@@ -227,7 +202,7 @@ export const Pricing = ({
                 | Array<{label: string; price: number}>
                 | undefined) || []
             return (
-              <div className='space-y-3 p-1 md:p-4'>
+              <div className='space-y-3 p-1 md:p-2'>
                 <div className='flex items-center justify-between'>
                   <label className='text-sm font-medium'>
                     Price by Denomination
@@ -238,7 +213,7 @@ export const Pricing = ({
                 </div>
 
                 {variants.length > 0 ? (
-                  <form.Field name='priceByDenomination'>
+                  <form.AppField name='priceByDenomination'>
                     {(priceField) => {
                       const priceByDenomination =
                         (priceField.state.value as Record<string, number>) ?? {}
@@ -251,7 +226,7 @@ export const Pricing = ({
                             if (denomKey == null) return null
                             const value = priceByDenomination[denomKey] ?? 0
                             return (
-                              <Input
+                              <priceField.NumberField
                                 key={variant.label}
                                 type='number'
                                 label={
@@ -266,25 +241,13 @@ export const Pricing = ({
                                   priceField.handleChange(next)
                                 }}
                                 onBlur={priceField.handleBlur}
-                                startContent={
-                                  <Icon
-                                    name='dollar'
-                                    className='size-4 opacity-80 mb-1 -mr-2'
-                                  />
-                                }
-                                size='sm'
-                                variant='faded'
-                                classNames={{
-                                  ...commonInputClassNames,
-                                  label: 'mb-4 ml-1',
-                                }}
                               />
                             )
                           })}
                         </div>
                       )
                     }}
-                  </form.Field>
+                  </form.AppField>
                 ) : (
                   <div className='text-center py-4 text-xs'>
                     {selectedCategory?.units && selectedCategory?.denominations

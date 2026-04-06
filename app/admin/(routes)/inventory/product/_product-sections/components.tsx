@@ -14,7 +14,7 @@ export const FormSection = ({
   return (
     <Card
       className={cn(
-        'dark:bg-dark-table/40 px-4 pb-4 border-x border-t border-gray-300 dark:border-origin',
+        'dark:bg-dark-table/40 px-4 pb-4 border-x border-t border-gray-300 dark:border-origin rounded-xs',
         {
           'rounded-sm': position === 'top',
           'border-b rounded-b-sm': position === 'bottom',
@@ -31,10 +31,8 @@ interface HeaderProps {
 }
 export const Header = ({label, children}: HeaderProps) => {
   return (
-    <CardHeader className='px-0 font-polysans font-medium'>
-      <div className='flex items-center justify-between w-full'>
-        <h2>{label}</h2>
-      </div>
+    <CardHeader className='px-0 font-clash font-medium w-full'>
+      <h2>{label}</h2>
       <div>{children}</div>
     </CardHeader>
   )

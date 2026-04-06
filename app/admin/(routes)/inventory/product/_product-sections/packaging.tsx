@@ -1,13 +1,5 @@
 'use client'
 
-import {
-  commonInputClassNames,
-  commonSelectClassNames,
-  getSingleSelectedKey,
-} from '@/app/admin/_components/ui/fields'
-import {Input} from '@heroui/input'
-import {ListboxItem as ListBoxItem} from '@heroui/listbox'
-import {Select} from '@heroui/select'
 import {ProductFormApi} from '../product-schema'
 import {FormSection, Header} from './components'
 
@@ -16,20 +8,20 @@ interface PackagingProps {
 }
 
 const NET_WEIGHT_UNIT_OPTIONS = [
-  {key: 'mg', label: 'mg (milligrams)'},
-  {key: 'g', label: 'g (grams)'},
-  {key: 'kg', label: 'kg (kilograms)'},
-  {key: 'oz', label: 'oz (ounces)'},
-  {key: 'lb', label: 'lb (pounds)'},
-  {key: 'ml', label: 'ml (milliliters)'},
-  {key: 'l', label: 'l (liters)'},
-  {key: 'each', label: 'each'},
-  {key: 'unit', label: 'unit'},
+  {value: 'mg', label: 'mg (milligrams)'},
+  {value: 'g', label: 'g (grams)'},
+  {value: 'kg', label: 'kg (kilograms)'},
+  {value: 'oz', label: 'oz (ounces)'},
+  {value: 'lb', label: 'lb (pounds)'},
+  {value: 'ml', label: 'ml (milliliters)'},
+  {value: 'l', label: 'l (liters)'},
+  {value: 'each', label: 'each'},
+  {value: 'unit', label: 'unit'},
 ]
 
 const PACKAGING_MODE_OPTIONS = [
-  {key: 'bulk', label: 'Bulk'},
-  {key: 'prepack', label: 'Prepack'},
+  {value: 'bulk', label: 'Bulk'},
+  {value: 'prepack', label: 'Prepack'},
 ]
 
 export const Packaging = ({form}: PackagingProps) => {
@@ -37,37 +29,23 @@ export const Packaging = ({form}: PackagingProps) => {
     <FormSection>
       <Header label='Packaging' />
       <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-        <form.Field name='packagingMode'>
+        <form.AppField name='packagingMode'>
           {(field) => {
-            const value = (field.state.value as string | undefined) ?? ''
             return (
               <div className='space-y-2 col-span-2'>
-                <Select
+                <field.SelectField
+                  name='packagingMode'
+                  type='select'
+                  mode='single'
+                  value={String(field.state.value) ?? ''}
+                  // onChange={(keys) => {
+                  //   const key = getSingleSelectedKey(keys)
+                  //   field.handleChange(key != null ? String(key) : '')
+                  // }}
                   label='Packaging Mode'
-                  selectedKeys={value ? [value] : []}
-                  onSelectionChange={(keys) => {
-                    const key = getSingleSelectedKey(keys)
-                    field.handleChange(
-                      typeof key === 'string'
-                        ? (key as 'bulk' | 'prepack')
-                        : undefined,
-                    )
-                  }}
-                  onBlur={field.handleBlur}
                   placeholder='Select packaging mode'
-                  variant='faded'
-                  disallowEmptySelection={false}
-                  classNames={{
-                    ...commonInputClassNames,
-                    ...commonSelectClassNames,
-                    mainWrapper: 'py-0',
-                  }}>
-                  {PACKAGING_MODE_OPTIONS.map((option) => (
-                    <ListBoxItem key={option.key} textValue={option.label}>
-                      {option.label}
-                    </ListBoxItem>
-                  ))}
-                </Select>
+                  options={PACKAGING_MODE_OPTIONS}
+                />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
                     <p className='text-xs text-rose-400'>
@@ -77,35 +55,27 @@ export const Packaging = ({form}: PackagingProps) => {
               </div>
             )
           }}
-        </form.Field>
+        </form.AppField>
 
-        <form.Field name='stockUnit'>
+        <form.AppField name='stockUnit'>
           {(field) => {
             const unitValue = (field.state.value as string) ?? ''
             return (
               <div className='space-y-2'>
-                <Select
+                <field.SelectField
+                  name='stockUnit'
+                  type='select'
+                  mode='single'
                   label='Stock Unit'
-                  selectedKeys={unitValue ? [unitValue] : []}
-                  onSelectionChange={(keys) => {
-                    const key = getSingleSelectedKey(keys)
-                    field.handleChange(key != null ? String(key) : '')
-                  }}
-                  onBlur={field.handleBlur}
+                  value={unitValue ? [unitValue] : []}
+                  // onChange={(keys) => {
+                  //   const key = getSingleSelectedKey(keys)
+                  //   field.handleChange(key != null ? String(key) : '')
+                  // }}
                   placeholder='Select stock unit'
-                  variant='faded'
-                  disallowEmptySelection={false}
-                  classNames={{
-                    ...commonInputClassNames,
-                    ...commonSelectClassNames,
-                    mainWrapper: 'py-0',
-                  }}>
-                  {NET_WEIGHT_UNIT_OPTIONS.map((unit) => (
-                    <ListBoxItem key={unit.key} textValue={unit.label}>
-                      {unit.label}
-                    </ListBoxItem>
-                  ))}
-                </Select>
+                  options={NET_WEIGHT_UNIT_OPTIONS}
+                />
+
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
                     <p className='text-xs text-rose-400'>
@@ -115,13 +85,13 @@ export const Packaging = ({form}: PackagingProps) => {
               </div>
             )
           }}
-        </form.Field>
-        <form.Field name='packSize'>
+        </form.AppField>
+        <form.AppField name='packSize'>
           {(field) => {
             const value = (field.state.value as string) ?? ''
             return (
               <div className='space-y-2'>
-                <Input
+                <field.NumberField
                   label='Pack Size'
                   type='number'
                   step='1'
@@ -129,8 +99,6 @@ export const Packaging = ({form}: PackagingProps) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='10'
-                  variant='faded'
-                  classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
@@ -141,13 +109,13 @@ export const Packaging = ({form}: PackagingProps) => {
               </div>
             )
           }}
-        </form.Field>
-        <form.Field name='startingWeight'>
+        </form.AppField>
+        <form.AppField name='startingWeight'>
           {(field) => {
             const value = (field.state.value as string) ?? ''
             return (
               <div className='space-y-2'>
-                <Input
+                <field.TextField
                   label='Starting Weight / Count'
                   type='number'
                   step='0.01'
@@ -155,8 +123,6 @@ export const Packaging = ({form}: PackagingProps) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='e.g., 160'
-                  variant='faded'
-                  classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
@@ -167,14 +133,14 @@ export const Packaging = ({form}: PackagingProps) => {
               </div>
             )
           }}
-        </form.Field>
+        </form.AppField>
 
-        <form.Field name='remainingWeight'>
+        <form.AppField name='remainingWeight'>
           {(field) => {
             const value = (field.state.value as string) ?? ''
             return (
               <div className='space-y-2'>
-                <Input
+                <field.NumberField
                   label='Remaining Weight / Count'
                   type='number'
                   step='0.01'
@@ -182,8 +148,6 @@ export const Packaging = ({form}: PackagingProps) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='e.g., 142.5'
-                  variant='faded'
-                  classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
@@ -194,14 +158,14 @@ export const Packaging = ({form}: PackagingProps) => {
               </div>
             )
           }}
-        </form.Field>
+        </form.AppField>
 
-        <form.Field name='netWeight'>
+        <form.AppField name='netWeight'>
           {(field) => {
             const value = (field.state.value as string) ?? ''
             return (
               <div className='space-y-2'>
-                <Input
+                <field.NumberField
                   label='Net Weight'
                   type='number'
                   step='0.01'
@@ -209,8 +173,6 @@ export const Packaging = ({form}: PackagingProps) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder='e.g., 3.5'
-                  variant='faded'
-                  classNames={commonInputClassNames}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
@@ -221,35 +183,27 @@ export const Packaging = ({form}: PackagingProps) => {
               </div>
             )
           }}
-        </form.Field>
+        </form.AppField>
 
-        <form.Field name='netWeightUnit'>
+        <form.AppField name='netWeightUnit'>
           {(field) => {
             const unitValue = (field.state.value as string) ?? ''
             return (
               <div className='space-y-2'>
-                <Select
+                <field.SelectField
+                  name='netWeightUnit'
+                  type='select'
+                  mode='single'
                   label='Net Weight Unit'
-                  selectedKeys={unitValue ? [unitValue] : []}
-                  onSelectionChange={(keys) => {
-                    const key = getSingleSelectedKey(keys)
-                    field.handleChange(key != null ? String(key) : '')
-                  }}
-                  onBlur={field.handleBlur}
+                  value={unitValue ? [unitValue] : []}
+                  // onChange={(keys) => {
+                  //   const key = getSingleSelectedKey(keys)
+                  //   field.handleChange(key != null ? String(key) : '')
+                  // }}
                   placeholder='Select unit'
-                  variant='faded'
-                  disallowEmptySelection={false}
-                  classNames={{
-                    ...commonInputClassNames,
-                    ...commonSelectClassNames,
-                    mainWrapper: 'py-0',
-                  }}>
-                  {NET_WEIGHT_UNIT_OPTIONS.map((unit) => (
-                    <ListBoxItem key={unit.key} textValue={unit.label}>
-                      {unit.label}
-                    </ListBoxItem>
-                  ))}
-                </Select>
+                  options={NET_WEIGHT_UNIT_OPTIONS}
+                />
+
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
                     <p className='text-xs text-rose-400'>
@@ -259,7 +213,7 @@ export const Packaging = ({form}: PackagingProps) => {
               </div>
             )
           }}
-        </form.Field>
+        </form.AppField>
       </div>
     </FormSection>
   )

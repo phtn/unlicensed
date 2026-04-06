@@ -155,7 +155,6 @@ const ProductTile = ({
   onAction,
   actionLabel = 'Add',
   disabled = false,
-  isBusy = false,
 }: ProductTileProps) => (
   <article className='flex items-end gap-3 border border-foreground/0 bg-background/80 hover:bg-sidebar/50 transition-colors duration-200 ease-out'>
     <div className='flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xs bg-sidebar/70'>

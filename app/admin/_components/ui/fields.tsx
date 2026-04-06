@@ -1,22 +1,18 @@
 import type {ClassName} from '@/app/types'
+import {Input, inputClass} from '@/components/hero-v3/input'
+import {selectClass} from '@/components/hero-v3/select'
 import {cn} from '@/lib/utils'
-import {Input, Textarea as TextArea} from '@heroui/input'
-import {Chip, Label} from '@heroui/react'
-import {Select} from '@heroui/select'
+import {Textarea as TextArea} from '@heroui/input'
+import {Label, ListBox, Select as S} from '@heroui/react'
 import {Switch} from '@heroui/switch'
-import type {SharedSelection} from '@heroui/system'
 import React, {
+  FocusEvent,
   type ChangeEvent,
   type InputHTMLAttributes,
   type ReactNode,
   type Ref,
 } from 'react'
-import {
-  CategorySelectItem,
-  categoryColors,
-  getCategoryChipProps,
-  getCategoryColor,
-} from './category-select-item'
+import {categoryColors, getCategoryColor} from './category-select-item'
 import {useAppForm, useFieldContext} from './form-context'
 
 export const commonInputClassNames = {
@@ -63,7 +59,7 @@ export const narrowInputClassNames = {
 
 export const commonSelectClassNames = {
   label: 'ps-1 mb-4 uppercase font-ios text-xs tracking-widest opacity-80',
-  value: 'ps-1 placeholder:text-slate-400/80 py-4 mt-2',
+  value: 'ps-1 py-4 mt-2 data-[placeholder=true]:text-slate-400/80',
   trigger:
     'border p-2 h-18 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
   listbox: 'p-1.5',
@@ -96,22 +92,6 @@ export const simpleSelectClassNames = {
   listbox: 'py-1.5',
   label: 'font-semibold font-clash tracking-wide text-sm',
   trigger: 'bg-background/40 hover:bg-background/50! rounded-md',
-}
-
-export const getSingleSelectedKey = (keys: SharedSelection) => {
-  if (keys === 'all') {
-    return null
-  }
-
-  return Array.from(keys)[0] ?? null
-}
-
-export const getSelectedKeySet = (keys: SharedSelection) => {
-  if (keys === 'all') {
-    return new Set<React.Key>()
-  }
-
-  return new Set(keys)
 }
 
 type BaseFieldProps<T> = {
@@ -152,6 +132,7 @@ type BaseFieldProps<T> = {
 // Partial type for when name comes from AppField context
 export type PartialFormInput<T> = Omit<FormInput<T>, 'name'> & {
   name?: keyof T
+  onBlur?: (e: FocusEvent<HTMLInputElement>) => void
 }
 
 type TextFieldProps<T> = BaseFieldProps<T> & {
@@ -159,6 +140,22 @@ type TextFieldProps<T> = BaseFieldProps<T> & {
 }
 
 export const SELECT_CUSTOM_OPTION_KEY = '__custom__'
+
+type SharedSelectionCompat = 'all' | Set<React.Key> | Iterable<React.Key>
+
+export const getSingleSelectedKey = (
+  keys: SharedSelectionCompat,
+): React.Key | null => {
+  if (keys === 'all') return null
+  return Array.from(keys as Iterable<React.Key>)[0] ?? null
+}
+
+export const getSelectedKeySet = (
+  keys: SharedSelectionCompat,
+): Set<React.Key> => {
+  if (keys === 'all') return new Set<React.Key>()
+  return new Set(keys as Iterable<React.Key>)
+}
 
 export type SelectOption = {
   key?: string
@@ -186,10 +183,10 @@ type SelectUiProps = {
   classNames?: SelectClassNames
 }
 
-type ChipColor = 'accent' | 'danger' | 'default' | 'success' | 'warning'
+// type ChipColor = 'accent' | 'danger' | 'default' | 'success' | 'warning'
 
-const normalizeChipColor = (color: string): ChipColor =>
-  color === 'primary' ? 'accent' : (color as ChipColor)
+// const normalizeChipColor = (color: string): ChipColor =>
+//   color === 'primary' ? 'accent' : (color as ChipColor)
 
 type SelectFieldProps<T> = BaseFieldProps<T> & {
   type: 'select'
@@ -228,24 +225,20 @@ export function TextField<T>(props?: PartialFormInput<T> | FormInput<T>) {
       ? 'text'
       : (props?.type ?? 'text')
   return (
-    <div className={cn('flex flex-col gap-2 w-full', props?.className)}>
+    <div>
       <Input
         id={field.name}
+        label={props?.label}
         name={String(field.name)}
         type={inputType}
-        label={props?.label}
-        description={props?.description}
         autoComplete={props?.autoComplete}
         inputMode={props?.inputMode}
-        isRequired={props?.required}
-        isDisabled={props?.disabled}
-        size='lg'
+        disabled={props?.disabled}
         value={String(field.state.value ?? props?.value ?? '')}
-        onValueChange={(value) => field.handleChange(value)}
+        onChange={props?.onChange}
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
-        classNames={commonInputClassNames}
-        variant='faded'
+        className={inputClass.input}
         suppressHydrationWarning
         spellCheck={
           props?.spellCheck === undefined
@@ -255,8 +248,13 @@ export function TextField<T>(props?: PartialFormInput<T> | FormInput<T>) {
               : 'false'
         }
       />
+      {props?.description && (
+        <p className='px-2 text-xs tracking-wide text-slate-500'>
+          {props.description}
+        </p>
+      )}
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-        <p className='text-xs text-rose-400'>
+        <p className='px-2 text-xs text-rose-400'>
           {field.state.meta.errors.join(', ')}
         </p>
       )}
@@ -266,34 +264,35 @@ export function TextField<T>(props?: PartialFormInput<T> | FormInput<T>) {
 
 export function NumberField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const field = useFieldContext<number>()
-  const numValue = field.state.value ?? 0
+  // When caller passes an explicit value (e.g. a sub-key of a Record field),
+  // use it directly rather than the whole field context value.
+  const controlled = props?.value !== undefined
+  const raw = controlled ? props!.value : field.state.value
+  const numValue = isNaN(Number(raw)) ? 0 : Number(raw ?? 0)
   return (
-    <div className={cn('flex flex-col gap-2 w-full', props?.className)}>
+    <div>
       <Input
+        label={props?.label}
         id={field.name}
         name={String(field.name)}
-        label={props?.label}
-        description={props?.description}
         type='number'
         autoComplete={props?.autoComplete}
-        isRequired={props?.required}
-        isDisabled={props?.disabled}
-        size='lg'
+        disabled={props?.disabled}
         step={props?.step}
         min={props?.min}
         max={props?.max}
         value={String(numValue)}
-        onValueChange={(value) => {
-          const numValue = Number(value)
-          field.handleChange(isNaN(numValue) ? 0 : numValue)
-        }}
+        onChange={controlled ? props?.onChange : undefined}
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
-        classNames={commonInputClassNames}
-        variant='faded'
       />
+      {props?.description && (
+        <p className='px-2 text-xs tracking-wide text-slate-500'>
+          {props.description}
+        </p>
+      )}
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-        <p className='text-xs text-rose-400'>
+        <p className='px-2 text-xs text-rose-400'>
           {field.state.meta.errors.join(', ')}
         </p>
       )}
@@ -304,32 +303,40 @@ export function NumberField<T>(props?: PartialFormInput<T> | FormInput<T>) {
 export function TextAreaField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const field = useFieldContext<string>()
   return (
-    <div className={cn('flex flex-col gap-2 w-full', props?.className)}>
-      <TextArea
-        id={field.name}
-        name={String(field.name)}
-        label={props?.label}
-        description={props?.description}
-        autoComplete={props?.autoComplete}
-        isRequired={props?.required}
-        isDisabled={props?.disabled}
-        value={field.state.value ?? ''}
-        onValueChange={(value) => field.handleChange(value)}
-        onBlur={field.handleBlur}
-        placeholder={props?.placeholder}
-        minRows={props?.minRows ?? 3}
-        className='placeholder:text-red-400'
-        classNames={commonInputClassNames}
-        spellCheck={
-          props?.spellCheck === undefined
-            ? undefined
-            : props.spellCheck
-              ? 'true'
-              : 'false'
-        }
-      />
+    <div className={cn('flex flex-col gap-1 w-full', props?.className)}>
+      <div className={cn(inputClass.mainWrapper, 'h-auto min-h-18 py-1')}>
+        {props?.label && (
+          <Label htmlFor={field.name} className={inputClass.label}>
+            {props.label}
+          </Label>
+        )}
+        <TextArea
+          id={field.name}
+          name={String(field.name)}
+          autoComplete={props?.autoComplete}
+          isDisabled={props?.disabled}
+          value={field.state.value ?? ''}
+          onValueChange={(value) => field.handleChange(value)}
+          onBlur={field.handleBlur}
+          placeholder={props?.placeholder}
+          minRows={props?.minRows ?? 3}
+          className={cn(inputClass.input, 'h-auto')}
+          spellCheck={
+            props?.spellCheck === undefined
+              ? undefined
+              : props.spellCheck
+                ? 'true'
+                : 'false'
+          }
+        />
+      </div>
+      {props?.description && (
+        <p className='px-2 text-xs tracking-wide text-slate-500'>
+          {props.description}
+        </p>
+      )}
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-        <p className='text-xs text-rose-400'>
+        <p className='px-2 text-xs text-rose-400'>
           {field.state.meta.errors.join(', ')}
         </p>
       )}
@@ -340,14 +347,9 @@ export function TextAreaField<T>(props?: PartialFormInput<T> | FormInput<T>) {
 export function SelectField<T>(props?: SelectFieldProps<T> & SelectUiProps) {
   const mode = props?.mode ?? 'single'
   const isMultiple = mode === 'multiple'
-
-  // Use conditional typing based on mode
   const field = useFieldContext<string | string[]>()
   const options = props?.options ?? []
-
-  // Determine if this is a category select field
   const isCategoryField = props?.isCategory ?? false
-  const labelId = `${String(field.name)}-label`
 
   const multiValue = Array.isArray(field.state.value)
     ? field.state.value
@@ -359,157 +361,86 @@ export function SelectField<T>(props?: SelectFieldProps<T> & SelectUiProps) {
     ? (field.state.value[0] ?? '')
     : (field.state.value ?? '')
 
-  const selectedKeys = isMultiple
-    ? new Set(multiValue)
-    : singleValue
-      ? new Set([singleValue])
-      : new Set<string>()
+  const listboxItems = options.map((option) => {
+    const extraClass = isCategoryField
+      ? categoryColors[getCategoryColor(option.value)]?.textColor
+      : undefined
+    return (
+      <ListBox.Item
+        key={option.value}
+        id={option.value}
+        textValue={option.label}
+        className={cn(selectClass.listboxItem, extraClass)}>
+        {option.label}
+        <ListBox.ItemIndicator />
+      </ListBox.Item>
+    )
+  })
 
-  const selectClassNames = {
-    ...(isMultiple
-      ? {...commonSelectClassNames, ...multiSelectClassNames}
-      : commonSelectClassNames),
-    ...props?.classNames,
-  }
-
-  const handleSelectionChange = (keys: SharedSelection) => {
-    if (keys === 'all') {
-      field.handleChange(
-        isMultiple ? options.map((option) => option.value) : '',
-      )
-      return
-    }
-
-    const selectedArray = Array.from(keys).map(String)
-    field.handleChange(isMultiple ? selectedArray : (selectedArray[0] ?? ''))
-  }
-
-  const renderSelectItems = () =>
-    options.map((option) => {
-      if (isCategoryField) {
-        const categoryColor = getCategoryColor(option.value)
-        return (
-          <CategorySelectItem
-            key={option.value}
-            className={categoryColors[categoryColor].textColor}
-            textValue={option.label}>
-            {option.label}
-          </CategorySelectItem>
-        )
-      }
-
-      return (
-        <CategorySelectItem key={option.value} textValue={option.label}>
-          {option.label}
-        </CategorySelectItem>
-      )
-    })
+  // const renderMultiValue = isMultiple
+  //   ? (items: {key: React.Key; textValue: string}[]) => (
+  //       <div className='flex items-center space-x-2 overflow-x-auto whitespace-nowrap pr-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
+  //         {items.map((item) => {
+  //           const optionValue = item.key ? String(item.key) : ''
+  //           const chipProps =
+  //             isCategoryField && optionValue
+  //               ? getCategoryChipProps(optionValue)
+  //               : {color: 'accent' as const, className: 'dark:text-white'}
+  //           const chipColor =
+  //             chipProps.color === 'primary'
+  //               ? ('accent' as const)
+  //               : (chipProps.color as
+  //                   | 'accent'
+  //                   | 'danger'
+  //                   | 'default'
+  //                   | 'success'
+  //                   | 'warning')
+  //           return (
+  //             <Chip
+  //               variant='soft'
+  //               color={chipColor}
+  //               key={String(item.key)}
+  //               size='md'
+  //               className={cn(chipProps.className, 'shrink-0 border')}>
+  //               <span className='text-foreground'>{item.textValue}</span>
+  //             </Chip>
+  //           )
+  //         })}
+  //       </div>
+  //     )
+  //   : undefined
 
   return (
     <div className={cn('flex flex-col w-full', props?.className)}>
-      {props?.label && (
-        <Label
-          id={labelId}
-          htmlFor={String(field.name)}
-          isRequired={props?.required}
-          isDisabled={props?.disabled}
-          className={commonSelectClassNames.label}>
-          {props.label}
-        </Label>
-      )}
-      {isMultiple ? (
-        <Select
-          id={field.name}
-          name={String(field.name)}
-          aria-label={props?.label ?? props?.placeholder ?? String(field.name)}
-          aria-labelledby={props?.label ? labelId : undefined}
-          selectionMode='multiple'
-          selectedKeys={selectedKeys}
-          onSelectionChange={handleSelectionChange}
-          onBlur={field.handleBlur}
-          placeholder={props?.placeholder}
-          autoComplete={props?.autoComplete}
-          isRequired={props?.required}
-          isDisabled={props?.disabled}
-          variant='faded'
-          classNames={selectClassNames}
-          renderValue={(items) => {
-            const getOptionValue = (itemKey: React.Key) => {
-              const option = options.find((opt) => opt.value === itemKey)
-              return option?.value ?? ''
-            }
-
-            return (
-              <div className='flex items-center space-x-2 overflow-x-auto whitespace-nowrap pr-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
-                {items.map((item) => {
-                  const optionValue = item.key ? getOptionValue(item.key) : ''
-                  const chipProps =
-                    isCategoryField && optionValue
-                      ? getCategoryChipProps(optionValue)
-                      : {color: 'accent' as const, className: 'dark:text-white'}
-                  const chipColor = normalizeChipColor(chipProps.color)
-
-                  return (
-                    <Chip
-                      variant='soft'
-                      color={chipColor}
-                      key={item.key}
-                      size='md'
-                      className={cn(chipProps.className, 'shrink-0 border')}>
-                      <span className='text-foreground'>{item.textValue}</span>
-                    </Chip>
-                  )
-                })}
-              </div>
+      <S
+        name={String(field.name)}
+        value={isMultiple ? multiValue : singleValue || null}
+        onChange={(keys) => {
+          if (isMultiple) {
+            field.handleChange(
+              Array.isArray(keys) ? keys.map(String) : [String(keys)],
             )
-          }}>
-          {renderSelectItems()}
-        </Select>
-      ) : (
-        <Select
-          id={field.name}
-          name={String(field.name)}
-          aria-label={props?.label ?? props?.placeholder ?? String(field.name)}
-          aria-labelledby={props?.label ? labelId : undefined}
-          selectionMode='single'
-          selectedKeys={selectedKeys}
-          onSelectionChange={handleSelectionChange}
-          onBlur={field.handleBlur}
-          placeholder={props?.placeholder}
-          autoComplete={props?.autoComplete}
-          isRequired={props?.required}
-          isDisabled={props?.disabled}
-          variant='faded'
-          classNames={selectClassNames}
-          renderValue={(items) => {
-            const selectedItem = items[0]
-            if (!selectedItem) return null
-
-            const selectedKey = selectedItem.key ?? ''
-            const selectedValue =
-              typeof selectedKey === 'string'
-                ? selectedKey
-                : String(selectedKey)
-            const chipProps = isCategoryField
-              ? getCategoryChipProps(selectedValue)
-              : {color: 'accent' as const, className: 'dark:text-white'}
-            const chipColor = normalizeChipColor(chipProps.color)
-
-            return (
-              <div className='flex flex-wrap gap-x-2'>
-                <Chip
-                  variant='soft'
-                  color={chipColor}
-                  key={selectedItem.textValue}
-                  size='md'>
-                  {selectedItem.textValue}
-                </Chip>
-              </div>
-            )
-          }}>
-          {renderSelectItems()}
-        </Select>
-      )}
+          } else {
+            field.handleChange(keys ? String(keys) : '')
+          }
+        }}
+        selectionMode={isMultiple ? 'multiple' : 'single'}
+        onBlur={field.handleBlur}
+        isDisabled={props?.disabled}
+        isRequired={props?.required}
+        // renderValue={renderMultiValue}
+        className={selectClass.mainWrapper}>
+        {props?.label && (
+          <Label className={selectClass.label}>{props.label}</Label>
+        )}
+        <S.Trigger className={selectClass.trigger}>
+          <S.Value className={selectClass.value} />
+          <S.Indicator className={selectClass.selectIndicator} />
+        </S.Trigger>
+        <S.Popover className={selectClass.popover}>
+          <ListBox className={selectClass.listbox}>{listboxItems}</ListBox>
+        </S.Popover>
+      </S>
       {props?.description && (
         <p className='px-1 text-xs tracking-wide text-slate-500'>
           {props.description}
@@ -553,24 +484,8 @@ export function SelectWithCustomField<T>(
   const showCustomInput =
     allowCustom && (selectedValue === SELECT_CUSTOM_OPTION_KEY || isCustomValue)
 
-  const selectClassNames = {
-    ...commonSelectClassNames,
-    ...props?.classNames,
-  }
-  const labelId = `${String(field.name)}-label`
-
   return (
     <div className={cn('flex flex-col w-full', props?.className)}>
-      {props?.label && (
-        <Label
-          id={labelId}
-          htmlFor={field.name}
-          isRequired={props?.required}
-          isDisabled={props?.disabled}
-          className={commonSelectClassNames.label}>
-          {props.label}
-        </Label>
-      )}
       {props?.description && (
         <p className='px-1 text-xs tracking-wide text-slate-500'>
           {props.description}
@@ -581,11 +496,10 @@ export function SelectWithCustomField<T>(
           id={field.name}
           name={String(field.name)}
           aria-label={customLabel}
-          aria-labelledby={props?.label ? labelId : undefined}
+          aria-labelledby={props?.label ?? undefined}
           autoComplete={props?.autoComplete}
-          isRequired={props?.required}
-          isDisabled={props?.disabled}
-          size='lg'
+          required={props?.required}
+          disabled={props?.disabled}
           value={
             isCustomValue
               ? field.state.value
@@ -593,37 +507,20 @@ export function SelectWithCustomField<T>(
                 ? ''
                 : (field.state.value ?? '')
           }
-          onValueChange={(value) => field.handleChange(value)}
           onBlur={field.handleBlur}
           placeholder={customPlaceholder}
-          classNames={commonInputClassNames}
-          variant='faded'
         />
       ) : (
-        <Select
-          id={field.name}
+        <S
           name={String(field.name)}
-          aria-label={props?.label ?? props?.placeholder ?? customLabel}
-          aria-labelledby={props?.label ? labelId : undefined}
-          selectionMode='single'
-          isDisabled={props?.disabled}
-          selectedKeys={
-            selectedValue ? new Set<string>([selectedValue]) : new Set<string>()
-          }
-          onSelectionChange={(keys: SharedSelection) => {
-            if (keys === 'all') {
+          value={selectedValue || null}
+          onChange={(key) => {
+            const k = key ? String(key) : ''
+            if (k === '') {
               field.handleChange('')
               return
             }
-
-            const key = Array.from(keys).map(String)[0] ?? ''
-
-            if (key === '') {
-              field.handleChange('')
-              return
-            }
-
-            if (key === SELECT_CUSTOM_OPTION_KEY) {
+            if (k === SELECT_CUSTOM_OPTION_KEY) {
               field.handleChange(
                 isCustomValue
                   ? (field.state.value ?? '')
@@ -631,21 +528,35 @@ export function SelectWithCustomField<T>(
               )
               return
             }
-
-            field.handleChange(key)
+            field.handleChange(k)
           }}
+          selectionMode='single'
           onBlur={field.handleBlur}
-          placeholder={props?.placeholder}
-          autoComplete={props?.autoComplete}
+          isDisabled={props?.disabled}
           isRequired={props?.required}
-          variant='faded'
-          classNames={selectClassNames}>
-          {displayOptions.map((option) => (
-            <CategorySelectItem key={option.value} textValue={option.label}>
-              {option.label}
-            </CategorySelectItem>
-          ))}
-        </Select>
+          className={selectClass.mainWrapper}>
+          {props?.label && (
+            <Label className={selectClass.label}>{props.label}</Label>
+          )}
+          <S.Trigger className={selectClass.trigger}>
+            <S.Value className={selectClass.value} />
+            <S.Indicator className={selectClass.selectIndicator} />
+          </S.Trigger>
+          <S.Popover className={selectClass.popover}>
+            <ListBox className={selectClass.listbox}>
+              {displayOptions.map((option) => (
+                <ListBox.Item
+                  key={option.value}
+                  id={option.value}
+                  textValue={option.label}
+                  className={selectClass.listboxItem}>
+                  {option.label}
+                  <ListBox.ItemIndicator />
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </S.Popover>
+        </S>
       )}
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
         <p className='text-xs text-rose-400'>

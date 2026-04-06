@@ -241,9 +241,7 @@ export function InventoryAdjustmentModal({
             <Modal.Header>
               <div>
                 <div className='font-bold uppercase'>
-                  {adjustmentType === 'restock'
-                    ? 'Restock'
-                    : 'Manual Override'}
+                  {adjustmentType === 'restock' ? 'Restock' : 'Manual Override'}
                 </div>
                 <span className='dark:text-light-brand text-light-brand font-medium text-sm'>
                   {product.name}

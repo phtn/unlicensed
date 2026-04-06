@@ -321,32 +321,32 @@ export const ProductsData = ({
   const archiveProduct = useMutation(api.products.m.archiveProduct)
   const updateProduct = useMutation(api.products.m.updateProduct)
   const safeData = useMemo(() => data ?? [], [data])
-  const leadImageStorageIds = useMemo(
-    () => [
-      ...new Set(
-        safeData.flatMap((product) => (product.image ? [product.image] : [])),
-      ),
-    ],
-    [safeData],
-  )
-  const optimizedLeadImageIds = useQuery(
-    api.files.upload.getTaggedStorageIds,
-    leadImageStorageIds.length > 0
-      ? {
-          storageIds: leadImageStorageIds,
-          requiredTag: 'gallery:optimized',
-        }
-      : 'skip',
-  )
-  const optimizedStorageIds = useMemo(() => {
-    const ids = new Set<string>()
+  // const leadImageStorageIds = useMemo(
+  //   () => [
+  //     ...new Set(
+  //       safeData.flatMap((product) => (product.image ? [product.image] : [])),
+  //     ),
+  //   ],
+  //   [safeData],
+  // )
+  // const optimizedLeadImageIds = useQuery(
+  //   api.files.upload.getTaggedStorageIds,
+  //   leadImageStorageIds.length > 0
+  //     ? {
+  //         storageIds: leadImageStorageIds,
+  //         requiredTag: 'gallery:optimized',
+  //       }
+  //     : 'skip',
+  // )
+  // const optimizedStorageIds = useMemo(() => {
+  //   const ids = new Set<string>()
 
-    for (const storageId of optimizedLeadImageIds ?? []) {
-      ids.add(String(storageId))
-    }
+  //   for (const storageId of optimizedLeadImageIds ?? []) {
+  //     ids.add(String(storageId))
+  //   }
 
-    return ids
-  }, [optimizedLeadImageIds])
+  //   return ids
+  // }, [optimizedLeadImageIds])
   const categorySlugs = useMemo(
     () =>
       (categories ?? [])

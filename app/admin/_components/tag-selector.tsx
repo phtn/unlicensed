@@ -1,11 +1,8 @@
 'use client'
 
+import {Select} from '@/components/hero-v3/select'
 import {ITEMS} from '@/components/ui/product-profile'
-import {cn} from '@/lib/utils'
-import {Chip} from '@heroui/react'
-import {Select, SelectItem} from '@heroui/select'
 import {useMemo} from 'react'
-import {commonInputClassNames} from './ui/fields'
 
 interface TagSelectorProps {
   selectedKeys: string[]
@@ -49,53 +46,10 @@ export const TagSelector = ({
   return (
     <Select
       label={label}
+      mode={multiple ? 'multiple' : 'single'}
       placeholder={placeholder}
-      selectionMode={multiple ? 'multiple' : 'single'}
-      selectedKeys={new Set(selectedKeys)}
-      onSelectionChange={handleSelectionChange}
-      variant='faded'
-      isMultiline={true}
-      classNames={{
-        ...commonInputClassNames,
-        trigger:
-          'border h-16 border-light-gray/50 dark:border-black/20 bg-light-gray/10 shadow-none dark:bg-black/60 rounded-lg p-2 outline-none data-focus:border-blue-500 dark:data-hover:border-blue-500',
-        label:
-          'mb-2 pl-0.5 opacity-80 font-medium tracking-widest uppercase text-sm',
-      }}
-      renderValue={(items) => {
-        return (
-          <div className='flex flex-wrap gap-2'>
-            {items.map((item) => {
-              return (
-                <Chip
-                  key={item.key}
-                  variant='secondary'
-                  className={cn('border border-blue-500 bg-background', {
-                    'text-terpenes border-terpenes/50': type === 'terpenes',
-                    'text-flavors border-flavors/50': type === 'flavors',
-                    'text-effects border-effects/50': type === 'effects',
-                  })}
-                >
-                  <span className='capitalize font-medium'>
-                    {item.textValue}
-                  </span>
-                </Chip>
-              )
-            })}
-          </div>
-        )
-      }}
-    >
-      {items.map((item) => (
-        <SelectItem key={item.id} textValue={item.name}>
-          <div className='flex items-center gap-2'>
-            <div className='flex flex-col'>
-              <span className='text-sm font-medium'>{item.name}</span>
-              <span className='text-xs'>{item.description}</span>
-            </div>
-          </div>
-        </SelectItem>
-      ))}
-    </Select>
+      value={String(new Set(selectedKeys))}
+      options={items.map((item) => ({value: item.id, label: item.name}))}
+    />
   )
 }

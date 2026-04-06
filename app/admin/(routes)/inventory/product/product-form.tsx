@@ -636,17 +636,17 @@ export const ProductForm = ({
           {SECTIONS.map((section) => (
             <Button
               size='md'
-              variant='tertiary'
+              variant='outline'
+              fullWidth
               key={section.id}
               onPress={() => scrollToSection(section.id)}
               className={cn(
-                'flex justify-start items-center gap-3 px-4 text-base font-medium tracking-tight rounded-lg transition-all text-left',
+                'flex items-center justify-start gap-3 px-4 text-base font-medium tracking-tight rounded-lg transition-all text-left',
                 activeSection === section.id
                   ? 'dark:bg-zinc-700 dark:text-blue-300 bg-dark-gray/5 text-blue-500'
                   : 'text-dark-gray/60 dark:text-light-gray/80 dark:hover:text-blue-100  hover:bg-dark-gray/5 hover:text-dark-gray/90',
-              )}
-            >
-              <Icon name={section.icon} className='size-4' />
+              )}>
+              <Icon name={section.icon} className='size-4 mb-2' />
               <span>{section.label}</span>
             </Button>
           ))}
@@ -658,8 +658,7 @@ export const ProductForm = ({
             type='submit'
             className='w-full rounded-xl font-medium tracking-tight bg-blue-500 text-white'
             isDisabled={isSubmitting}
-            onPress={form.handleSubmit}
-          >
+            onPress={form.handleSubmit}>
             {isSubmitting
               ? isEditMode
                 ? 'Updating...'
@@ -695,30 +694,26 @@ export const ProductForm = ({
       {/* Main Content Area */}
       <main
         ref={mainScrollRef}
-        className='col-span-1 h-full overflow-y-auto space-y-0 scroll-smooth md:px-1 md:pb-28 dark:bg-dark-table/40 lg:col-span-10 lg:pb-0'
-      >
+        className='col-span-1 h-full overflow-y-auto space-y-0 scroll-smooth md:px-1 md:pb-28 dark:bg-dark-table/40 lg:col-span-10 lg:pb-0'>
         <form
           onSubmit={(e) => {
             e.preventDefault()
             e.stopPropagation()
             void form.handleSubmit()
           }}
-          className='space-y-0 pt-1'
-        >
+          className='space-y-0 pt-1'>
           <div id='basic-info' className='scroll-mt-4'>
             <BasicInfo
               form={form as ProductFormApi}
               fields={productFields.slice(0, 10)}
               categories={categories}
               onArchiveProduct={isEditMode ? handleArchiveProduct : undefined}
-              isArchiving={isArchiving}
-            ></BasicInfo>
+              isArchiving={isArchiving}></BasicInfo>
           </div>
           <div id='media' className='scroll-mt-4'>
             <Media
               form={form as ProductFormApi}
-              fields={productFields.slice(10, 10)}
-            ></Media>
+              fields={productFields.slice(10, 10)}></Media>
           </div>
           <div id='pricing' className='scroll-mt-4'>
             <Pricing
@@ -754,8 +749,7 @@ export const ProductForm = ({
             <Button
               size='lg'
               type='submit'
-              className='h-12 mb-2 w-full font-medium font-okxs'
-            >
+              className='h-12 mb-2 w-full font-medium font-okxs'>
               {isSubmitting
                 ? isEditMode
                   ? 'Updating...'

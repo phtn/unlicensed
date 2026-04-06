@@ -1,20 +1,13 @@
 'use client'
 
-import {
-  commonInputClassNames,
-  commonSelectClassNames,
-  getSingleSelectedKey,
-} from '@/app/admin/_components/ui/fields'
+import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {InventoryMode} from '@/convex/products/d'
 import {Icon} from '@/lib/icons'
 import {getStockDisplayUnit, getTotalStock} from '@/lib/productStock'
-import {formatPrice} from '@/utils/formatPrice'
 import {Input} from '@heroui/input'
-import {ListboxItem as ListBoxItem} from '@heroui/listbox'
 import {Button, Chip} from '@heroui/react'
-import {Select} from '@heroui/select'
 import {useStore} from '@tanstack/react-store'
 import {useQuery} from 'convex/react'
 import {useMemo, useState} from 'react'
@@ -33,13 +26,18 @@ interface InventoryProps {
 }
 
 const MASTER_STOCK_UNIT_OPTIONS = [
-  'mg',
-  'g',
-  'kg',
-  'oz',
-  'lb',
-  'units',
-] as const
+  {value: 'mg', label: 'mg'},
+  {value: 'g', label: 'g'},
+  {value: 'kg', label: 'kg'},
+  {value: 'oz', label: 'oz'},
+  {value: 'lb', label: 'lb'},
+  {value: 'units', label: 'units'},
+]
+
+const INVENTORY_MODE_OPTIONS = [
+  {value: 'by_denomination', label: 'By denomination'},
+  {value: 'shared', label: 'Shared (Count / Weight)'},
+]
 
 const extractDenomination = (label: string): number | null => {
   const match = label.match(/^(\d+\.?\d*)/)
@@ -266,53 +264,18 @@ export const Inventory = ({
       <div className='w-full space-y-8'>
         <div className='grid grid-cols-1 md:grid-cols-6 md:gap-x-4 gap-y-6 w-full'>
           <div className='w-full col-span-6 md:col-span-3'>
-            <form.Field name='inventoryMode'>
+            <form.AppField name='inventoryMode'>
               {(field) => (
                 <div className='space-y-2'>
-                  <Select
+                  <field.SelectField
+                    name='inventoryMode'
+                    type='select'
+                    mode='single'
                     label='Inventory Mode'
-                    selectedKeys={[
-                      String(field.state.value ?? 'by_denomination'),
-                    ]}
-                    onSelectionChange={(keys) => {
-                      const selected = getSingleSelectedKey(keys)
-                      if (typeof selected === 'string') {
-                        field.handleChange(selected as InventoryMode)
-                      }
-                    }}
-                    isDisabled={isEditMode}
-                    variant='faded'
-                    classNames={commonSelectClassNames}>
-                    <ListBoxItem
-                      key='by_denomination'
-                      textValue='By denomination'>
-                      <div className='flex flex-col'>
-                        <span className='text-sm font-medium'>
-                          By denomination
-                        </span>
-                        <span className='text-xs opacity-70'>
-                          Track stock per purchasable size.
-                        </span>
-                      </div>
-                    </ListBoxItem>
-                    <ListBoxItem key='shared' textValue='Shared'>
-                      <div className='flex flex-col'>
-                        <span className='text-sm font-medium'>
-                          Shared{' '}
-                          <span className='text-xs font-ios font-normal opacity-70'>
-                            (
-                          </span>
-                          Count / Weight
-                          <span className='text-xs font-ios font-normal opacity-70'>
-                            )
-                          </span>
-                        </span>
-                        <span className='text-xs opacity-70'>
-                          Master stock is shared across all denominations.
-                        </span>
-                      </div>
-                    </ListBoxItem>
-                  </Select>
+                    disabled={isEditMode}
+                    placeholder='Select inventory mode'
+                    options={INVENTORY_MODE_OPTIONS}
+                  />
                   {isEditMode ? (
                     <p className='text-xs text-color-muted'>
                       Change inventory mode through the restock or manual
@@ -322,11 +285,11 @@ export const Inventory = ({
                   ) : null}
                 </div>
               )}
-            </form.Field>
+            </form.AppField>
           </div>
 
           <div className='w-full col-span-6 md:col-span-3'>
-            <form.Field name='lowStockThreshold'>
+            <form.AppField name='lowStockThreshold'>
               {(field) => {
                 const value = (field.state.value as string) ?? ''
                 const thresholdLabel =
@@ -340,7 +303,7 @@ export const Inventory = ({
 
                 return (
                   <div className='space-y-2'>
-                    <Input
+                    <field.NumberField
                       label='Low Stock Threshold'
                       type='number'
                       step='0.01'
@@ -350,8 +313,6 @@ export const Inventory = ({
                       }
                       onBlur={field.handleBlur}
                       placeholder='Leave blank to disable'
-                      variant='faded'
-                      classNames={commonInputClassNames}
                     />
                     <div className='space-y-1'>
                       <p className='text-xs text-color-muted'>
@@ -393,11 +354,11 @@ export const Inventory = ({
                   </div>
                 )
               }}
-            </form.Field>
+            </form.AppField>
           </div>
           <div className=' grid md:grid-cols-2 gap-4 col-span-6'>
             <div className='col-span-1'>
-              <form.Field name='availableDenominationsRaw'>
+              <form.AppField name='availableDenominationsRaw'>
                 {(field) => {
                   const selectedKeys = new Set(
                     variantOptions
@@ -407,42 +368,42 @@ export const Inventory = ({
 
                   return (
                     <div className='space-y-1 w-full'>
-                      <Select
+                      <field.SelectField
+                        type='select'
+                        name='availableDenominationsRaw'
                         label='Available Denominations'
                         placeholder={
                           variantOptions.length === 0
                             ? 'No variants available. Configure variants in Pricing section.'
                             : 'Select denominations...'
                         }
-                        selectionMode='multiple'
-                        selectedKeys={selectedKeys}
-                        onSelectionChange={(keys) =>
-                          handleSelectionChange(field, keys)
-                        }
-                        variant='faded'
-                        isMultiline={true}
-                        isDisabled={variantOptions.length === 0}
-                        classNames={commonSelectClassNames}
-                        renderValue={(items) => (
-                          <div className='flex flex-wrap gap-2'>
-                            {items.map((item) => {
-                              const variant = variantOptions.find(
-                                (option) => option.key === item.key,
-                              )
-                              return (
-                                <Chip
-                                  key={item.key}
-                                  variant='tertiary'
-                                  className='h-7 border border-light-gray text-xs dark:border-light-gray/30'>
-                                  <span className='capitalize'>
-                                    {variant?.displayLabel ?? item.textValue}
-                                  </span>
-                                </Chip>
-                              )
-                            })}
-                          </div>
-                        )}>
-                        {variantOptions.map((option) => {
+                        mode='multiple'
+                        value={String(selectedKeys)}
+                        disabled={variantOptions.length === 0}
+                        // renderValue={(items) => (
+                        //   <div className='flex flex-wrap gap-2'>
+                        //     {items.map((item) => {
+                        //       const variant = variantOptions.find(
+                        //         (option) => option.key === item.key,
+                        //       )
+                        //       return (
+                        //         <Chip
+                        //           key={item.key}
+                        //           variant='tertiary'
+                        //           className='h-7 border border-light-gray text-xs dark:border-light-gray/30'>
+                        //           <span className='capitalize'>
+                        //             {variant?.displayLabel ?? item.textValue}
+                        //           </span>
+                        //         </Chip>
+                        //       )
+                        //     })}
+                        //   </div>
+                        // )}
+                        options={variantOptions.map((option) => ({
+                          value: option.key,
+                          label: option.displayLabel,
+                        }))}>
+                        {/*{variantOptions.map((option) => {
                           const priceDisplay = option.price
                             ? formatPrice(Math.round(option.price * 100))
                             : 'No price'
@@ -465,8 +426,8 @@ export const Inventory = ({
                               </div>
                             </ListBoxItem>
                           )
-                        })}
-                      </Select>
+                        })}*/}
+                      </field.SelectField>
                       {variantOptions.length === 0 ? (
                         <p className='text-xs text-color-muted mt-1'>
                           Configure variants with prices in the Pricing section
@@ -476,10 +437,10 @@ export const Inventory = ({
                     </div>
                   )
                 }}
-              </form.Field>
+              </form.AppField>
             </div>
             <div className=''>
-              <form.Field name='popularDenomination'>
+              <form.AppField name='popularDenomination'>
                 {(field) => {
                   const popularDenominationValue =
                     (field.state.value as number[] | undefined) ?? []
@@ -526,113 +487,81 @@ export const Inventory = ({
 
                   return (
                     <div className='space-y-1 w-full'>
-                      <Select
+                      <field.SelectField
+                        type='select'
+                        name='popularDenomination'
                         label='Popular Denomination'
                         placeholder={
                           variantOptions.length === 0
                             ? 'No variants available. Configure variants in Pricing section.'
                             : 'Select popular denominations...'
                         }
-                        selectionMode='multiple'
-                        selectedKeys={selectedKeys}
-                        onSelectionChange={handlePopularSelectionChange}
-                        variant='faded'
-                        isMultiline={true}
-                        isDisabled={variantOptions.length === 0}
-                        classNames={commonSelectClassNames}
-                        renderValue={(items) => (
-                          <div className='flex flex-wrap gap-2'>
-                            {items.map((item) => {
-                              const variant = variantOptions.find(
-                                (option) => option.key === item.key,
-                              )
-                              return (
-                                <Chip
-                                  key={item.key}
-                                  variant='secondary'
-                                  className='h-7 border border-dark-gray bg-background text-xs dark:border-yellow-500'>
-                                  <span className='capitalize'>
-                                    {variant?.displayLabel ?? item.textValue}
-                                  </span>
-                                </Chip>
-                              )
-                            })}
-                          </div>
-                        )}>
-                        {variantOptions.map((option) => (
-                          <ListBoxItem
-                            key={option.key}
-                            textValue={option.displayLabel}>
-                            <div className='flex items-center justify-between w-full'>
-                              <span className='text-sm font-medium'>
-                                {option.displayLabel}
-                              </span>
-                              <span className='text-xs opacity-70'>
-                                {option.label}
-                              </span>
-                            </div>
-                          </ListBoxItem>
-                        ))}
-                      </Select>
+                        mode='multiple'
+                        value={String(selectedKeys)}
+                        // onChange={(e) =>
+                        //   handlePopularSelectionChange(e, selectedKeys)
+                        // }
+                        disabled={variantOptions.length === 0}
+                        // renderValue={(items) => (
+                        //                           <div className='flex flex-wrap gap-2'>
+                        //                             {items.map((item) => {
+                        //                               const variant = variantOptions.find(
+                        //                                 (option) => option.key === item.key,
+                        //                               )
+                        //                               return (
+                        //                                 <Chip
+                        //                                   key={item.key}
+                        //                                   variant='secondary'
+                        //                                   className='h-7 border border-dark-gray bg-background text-xs dark:border-yellow-500'>
+                        //                                   <span className='capitalize'>
+                        //                                     {variant?.displayLabel ?? item.textValue}
+                        //                                   </span>
+                        //                                 </Chip>
+                        //                               )
+                        //                             })}
+                        //                           </div>
+                        //                         )}
+                        options={variantOptions.map((option) => ({
+                          value: option.key,
+                          label: option.displayLabel,
+                        }))}></field.SelectField>
                     </div>
                   )
                 }}
-              </form.Field>
+              </form.AppField>
             </div>
           </div>
 
           {!isEditMode && inventoryMode === 'shared' ? (
             <div className='w-full grid grid-cols-8'>
               <div className='w-full col-span-1'>
-                <form.Field name='masterStockQuantity'>
+                <form.AppField name='masterStockQuantity'>
                   {(field) => (
-                    <Input
-                      label='Master Stock'
+                    <field.NumberField
                       type='number'
+                      label='Master Stock'
                       min={0}
                       step='0.001'
-                      value={
-                        field.state.value == null
-                          ? ''
-                          : String(field.state.value)
-                      }
-                      onChange={(event) =>
-                        field.handleChange(Number(event.target.value) || 0)
-                      }
-                      onBlur={field.handleBlur}
-                      variant='faded'
-                      classNames={commonInputClassNames}
                     />
                   )}
-                </form.Field>
+                </form.AppField>
               </div>
 
               <div className='w-full'>
-                <form.Field name='masterStockUnit'>
+                <form.AppField name='masterStockUnit'>
                   {(field) => (
-                    <Select
+                    <field.SelectField
+                      name='masterStockUnit'
+                      type='select'
+                      value={String(field.state.value)}
+                      onChange={field.handleChange}
+                      mode='single'
                       label='Master Unit'
-                      selectedKeys={
-                        field.state.value
-                          ? [String(field.state.value)]
-                          : undefined
-                      }
-                      onSelectionChange={(keys) => {
-                        const selected = getSingleSelectedKey(keys)
-                        if (typeof selected === 'string') {
-                          field.handleChange(selected)
-                        }
-                      }}
-                      variant='faded'
-                      classNames={commonSelectClassNames}>
-                      {MASTER_STOCK_UNIT_OPTIONS.map((unit) => (
-                        <ListBoxItem key={unit} textValue={unit}>
-                          {unit}
-                        </ListBoxItem>
-                      ))}
-                    </Select>
+                      placeholder='Select unit'
+                      options={MASTER_STOCK_UNIT_OPTIONS}
+                    />
                   )}
-                </form.Field>
+                </form.AppField>
               </div>
 
               <div className='col-span-6 rounded-xl border border-black/5 bg-black/2 p-4 text-sm text-color-muted dark:border-white/10 dark:bg-white/3 overflow-scroll'>
@@ -646,7 +575,7 @@ export const Inventory = ({
 
           {!isEditMode && inventoryMode === 'by_denomination' ? (
             <div className='w-full col-span-6'>
-              <form.Field name='stockByDenomination'>
+              <form.AppField name='stockByDenomination'>
                 {(field) => {
                   const stockByDenomination =
                     (field.state.value as Record<string, number>) ?? {}
@@ -667,7 +596,7 @@ export const Inventory = ({
                       ) : (
                         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
                           {selectedVariantOptions.map((option) => (
-                            <Input
+                            <field.NumberField
                               key={option.key}
                               label={
                                 mapFractions[option.label] ??
@@ -689,8 +618,6 @@ export const Inventory = ({
                               }
                               onBlur={field.handleBlur}
                               min={0}
-                              variant='faded'
-                              classNames={commonInputClassNames}
                             />
                           ))}
                         </div>
@@ -698,7 +625,7 @@ export const Inventory = ({
                     </div>
                   )
                 }}
-              </form.Field>
+              </form.AppField>
             </div>
           ) : null}
 
@@ -706,24 +633,15 @@ export const Inventory = ({
           inventoryMode === 'by_denomination' &&
           variantOptions.length === 0 ? (
             <div className='w-full col-span-6 md:col-span-2'>
-              <form.Field name='stock'>
+              <form.AppField name='stock'>
                 {(field) => (
-                  <Input
-                    label='Fallback Stock'
+                  <field.NumberField
                     type='number'
+                    label='Fallback Stock'
                     min={0}
-                    value={
-                      field.state.value == null ? '' : String(field.state.value)
-                    }
-                    onChange={(event) =>
-                      field.handleChange(Number(event.target.value) || 0)
-                    }
-                    onBlur={field.handleBlur}
-                    variant='faded'
-                    classNames={commonInputClassNames}
                   />
                 )}
-              </form.Field>
+              </form.AppField>
             </div>
           ) : null}
 
@@ -740,8 +658,7 @@ export const Inventory = ({
                   manual override only when you need to correct counts.
                 </p>
               </div>
-
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
+              <div className='hidden _grid grid-cols-1 gap-4 md:grid-cols-3'>
                 {persistedInventoryInputs.map((input) => (
                   <Input
                     key={input.key}
@@ -758,11 +675,11 @@ export const Inventory = ({
                 <Button
                   variant='primary'
                   onPress={() => setIsRestockOpen(true)}
-                  className='dark:bg-white dark:text-dark-table rounded-md'>
+                  className='dark:bg-white bg-dark-table text-white dark:text-dark-table rounded-md'>
                   Restock Inventory
                 </Button>
                 <Button
-                  variant='secondary'
+                  variant='outline'
                   onPress={() => setIsManualOverrideOpen(true)}
                   className='rounded-md'>
                   Manual Override

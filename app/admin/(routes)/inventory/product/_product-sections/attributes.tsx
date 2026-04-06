@@ -1,8 +1,7 @@
 'use client'
 
 import {TagSelector} from '@/app/admin/_components/tag-selector'
-import {NumberField, SelectField} from '@/app/admin/_components/ui/fields'
-import {Input, Label, Slider} from '@heroui/react'
+import {Label, Slider} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {ChangeEvent} from 'react'
 import {ProductFormApi} from '../product-schema'
@@ -26,7 +25,7 @@ export const Attributes = ({form}: AttributesProps) => {
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4 items-center'>
           <form.AppField name='potencyLevel'>
             {(field) => (
-              <SelectField
+              <field.SelectField
                 {...field}
                 type='select'
                 name='potencyLevel'
@@ -43,7 +42,7 @@ export const Attributes = ({form}: AttributesProps) => {
 
           <form.AppField name='thcPercentage'>
             {(field) => (
-              <NumberField
+              <field.NumberField
                 {...field}
                 type='number'
                 name='thcPercentage'
@@ -53,12 +52,13 @@ export const Attributes = ({form}: AttributesProps) => {
             )}
           </form.AppField>
 
-          <form.Field name='cbdPercentage'>
+          <form.AppField name='cbdPercentage'>
             {(field) => {
               const cbdValue = (field.state.value as string) ?? ''
               return (
                 <div className='space-y-2'>
-                  <Input
+                  <field.NumberField
+                    label='CBD (mg)'
                     type='number'
                     step='0.1'
                     value={cbdValue}
@@ -67,7 +67,6 @@ export const Attributes = ({form}: AttributesProps) => {
                     }
                     onBlur={field.handleBlur}
                     placeholder='0.0'
-                    variant='secondary'
                   />
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
@@ -78,7 +77,7 @@ export const Attributes = ({form}: AttributesProps) => {
                 </div>
               )
             }}
-          </form.Field>
+          </form.AppField>
         </div>
 
         <div className='grid grid-cols-1 sm:grid-cols-3 w-full gap-4 mt-4'>
@@ -131,13 +130,13 @@ export const Attributes = ({form}: AttributesProps) => {
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mt-4'>
-          <form.Field name='tags'>
+          <form.AppField name='tags'>
             {(field) => {
               const value = (field.state.value as string) ?? ''
               return (
-                <div className='space-y-2'>
-                  <Label htmlFor='tags'>Tags · Keywords</Label>
-                  <Input
+                <div className='space-y-1'>
+                  <field.TextField
+                    label='Tags · Keywords'
                     type='text'
                     value={value}
                     onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -145,7 +144,6 @@ export const Attributes = ({form}: AttributesProps) => {
                     }
                     onBlur={field.handleBlur}
                     placeholder='limited, kush, afghan'
-                    variant='secondary'
                   />
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
@@ -156,14 +154,14 @@ export const Attributes = ({form}: AttributesProps) => {
                 </div>
               )
             }}
-          </form.Field>
-          <form.Field name='lineage'>
+          </form.AppField>
+          <form.AppField name='lineage'>
             {(field) => {
               const value = (field.state.value as string) ?? ''
               return (
                 <div className='space-y-2'>
-                  <Label htmlFor='lineage'>Lineage</Label>
-                  <Input
+                  <field.TextField
+                    label='Lineage'
                     id='lineage'
                     type='text'
                     value={value}
@@ -172,7 +170,6 @@ export const Attributes = ({form}: AttributesProps) => {
                     }
                     onBlur={field.handleBlur}
                     placeholder='e.g., OG Kush x Sour Diesel'
-                    variant='secondary'
                   />
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
@@ -183,10 +180,10 @@ export const Attributes = ({form}: AttributesProps) => {
                 </div>
               )
             }}
-          </form.Field>
+          </form.AppField>
 
           {!isVapeCategory && (
-            <form.Field name='noseRating'>
+            <form.AppField name='noseRating'>
               {(field) => {
                 const value =
                   typeof field.state.value === 'number' ? field.state.value : 0
@@ -200,15 +197,21 @@ export const Attributes = ({form}: AttributesProps) => {
                     </div>
                     <Slider
                       id='noseRating'
+                      step={1}
                       minValue={0}
                       maxValue={10}
-                      step={1}
+                      className='w-full'
                       value={value}
+                      defaultValue={value}
                       onChange={(v) =>
                         field.handleChange(Array.isArray(v) ? (v[0] ?? 0) : v)
-                      }
-                      className='max-w-full'
-                    />
+                      }>
+                      <Slider.Track className='bg-sidebar'>
+                        <Slider.Fill className='bg-mac-blue' />
+                        <Slider.Thumb />
+                      </Slider.Track>
+                    </Slider>
+
                     {field.state.meta.isTouched &&
                       field.state.meta.errors.length > 0 && (
                         <p className='text-xs text-rose-400'>
@@ -218,7 +221,7 @@ export const Attributes = ({form}: AttributesProps) => {
                   </div>
                 )
               }}
-            </form.Field>
+            </form.AppField>
           )}
         </div>
       </div>
