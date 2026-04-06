@@ -133,19 +133,23 @@ export default function OrderDetailPage() {
         {/* Header */}
         <div className='flex items-center justify-between mb-5'>
           <div>
-            <h1 className='text-base font-okxs space-x-1 sm:space-x-3'>
-              <Breadcrumbs>
-                <Breadcrumbs.Item href='/account'>
+            <h1 className='text-base font-okxs space-x-1 sm:space-x-3 text-foreground'>
+              <Breadcrumbs className='text-foreground'>
+                <Breadcrumbs.Item href='/account' className='text-foreground'>
                   <span className='md:hidden flex'>
-                    <Icon name='user' className='size-3' />
+                    <Icon name='user' className='size-3 m-auto' />
                   </span>
-                  <span className='hidden md:flex'>Account</span>
+                  <span className='hidden md:flex text-foreground'>
+                    Account
+                  </span>
                 </Breadcrumbs.Item>
-                <Breadcrumbs.Item href='/account/orders'>
-                  Orders
+                <Breadcrumbs.Item
+                  href='/account/orders'
+                  className='text-foreground'>
+                  <span className='text-foreground'>Orders</span>
                 </Breadcrumbs.Item>
                 <Breadcrumbs.Item>
-                  {order.orderNumber.substring(5)}{' '}
+                  {order.orderNumber.substring(5)}
                   <Activity mode={isMobile ? 'hidden' : 'visible'}>
                     <OrderStatusBadge status={order.orderStatus} />
                   </Activity>

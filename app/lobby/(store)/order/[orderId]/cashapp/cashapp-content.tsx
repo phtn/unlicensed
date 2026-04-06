@@ -770,40 +770,26 @@ export const Content = () => {
           {setupState === 'no_rep' ? (
             <Button
               size='lg'
-              className='font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
+              className='font-clash font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
               onPress={handleRetry}>
               Retry Rep Assignment
             </Button>
           ) : (
-            <Badge
-              key={`cashapp-chat-badge-${orderId}-${unreadRepCount}`}
-              content={
-                unreadRepCount && unreadRepCount > 99
-                  ? '99+'
-                  : `${unreadRepCount}`
-              }
-              // content={
-              //   unreadRepCount > 0 ? (
-              //     <span className='font-okxs font-semibold text-white leading-none'>
-
-              //     </span>
-              //   ) : undefined
-              // }
-              hidden={unreadRepCount === 0}
-              className='w-full'
-              // classNames={{
-              //   base: 'w-full',
-              //   badge:
-              //     'min-w-5 h-5 px-1 flex items-center justify-center rounded-full border-1.5 dark:border-background/90 shadow-md bg-brand/80',
-              // }}
-            >
-              <Button
-                size='lg'
-                className='w-full font-polysans font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
-                onPress={handleOpenChat}>
-                {setupState === 'ready' ? 'Open Live Chat' : 'Open Chat'}
-              </Button>
-            </Badge>
+            <div className='w-full'>
+              <Badge
+                key={`cashapp-chat-badge-${orderId}-${unreadRepCount}`}
+                content={unreadRepCount > 99 ? '99+' : `${unreadRepCount}`}
+                hidden={unreadRepCount === 0}
+                className='w-full'>
+                <Button
+                  size='lg'
+                  id='chat-button'
+                  className='w-full font-clash font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
+                  onPress={handleOpenChat}>
+                  {setupState === 'ready' ? 'Open Live Chat' : 'Open Chat'}
+                </Button>
+              </Badge>
+            </div>
           )}
         </div>
       </ArcCard>

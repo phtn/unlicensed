@@ -207,15 +207,18 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
           <h1 className='font-clash text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight'>
             Deals <span className='text-brand'>&</span> Bundles
           </h1>
-          <p className='mt-2 text-sm md:text-base text-muted-foreground'>
+          {/*<p className='mt-2 text-sm md:text-base text-muted-foreground'>
             Save more when you mix and match custom bundles.{' '}
+          </p>*/}
+          <p className='mt-2 text-sm md:text-base text-muted-foreground'>
+            Development Build In-Progress
           </p>
         </header>
 
         {dealsLoading ? (
           <p className='text-sm text-muted-foreground'>Loading deals…</p>
         ) : (
-          <div className='space-y-10'>
+          <div className='hidden space-y-10'>
             {configsList.map((config) => (
               <ControlledBundleBuilder
                 key={config.id}

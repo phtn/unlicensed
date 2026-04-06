@@ -92,7 +92,7 @@ export const CheckoutSuccess = ({
             )}
             <NextLink
               href={`/account/orders/${orderNumber}`}
-              className='h-11 px-6 bg-white text-emerald-700 font-clash font-medium tracking-wider'>
+              className='h-11 px-6 bg-white text-emerald-700 font-clash font-medium tracking-wider flex items-center justify-center'>
               View Order
             </NextLink>
           </div>

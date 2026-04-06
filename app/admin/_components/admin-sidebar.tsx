@@ -194,7 +194,7 @@ const PendingOrdersBadge = memo(function PendingOrdersBadge() {
   const count = useQuery(api.orders.q.getPendingOrdersCount) ?? 0
   if (count === 0) return null
   return (
-    <span className='flex h-5 w-7 items-center justify-center rounded-sm text-base font-semibold tabular-nums font-space text-amber-100 dark:text-amber-200/80'>
+    <span className='flex h-5 w-7 items-center justify-center rounded-sm text-base font-semibold tabular-nums font-space text-light-gray dark:text-amber-200/80'>
       {count}
     </span>
   )

@@ -180,7 +180,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
 
   return (
     <Card className='overflow-hidden border border-foreground/20 bg-linear-to-br from-sidebar to-slate-400/6 dark:from-foreground/5 dark:to-foreground/10 transition-all duration-200 will-change-transform rounded-none'>
-      <Card.Content className='relative space-y-4 p-3 md:p-5 overflow-hidden'>
+      <Card.Content className='relative space-y-2 p-3 md:p-5 overflow-hidden'>
         {/* Decorative glow */}
         <div
           id='tier-aura'
