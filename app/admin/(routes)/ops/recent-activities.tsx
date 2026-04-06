@@ -220,7 +220,7 @@ export const RecentActivities = ({
           }
           return (
             <div className='flex min-w-0 items-center gap-3'>
-              <div className='flex size-9 shrink-0 items-center justify-center rounded-full border border-foreground/10 bg-foreground/[0.04] text-foreground/50 dark:border-white/10 dark:bg-white/[0.04]'>
+              <div className='flex size-9 shrink-0 items-center justify-center rounded-full border border-foreground/10 bg-foreground/4 text-foreground/50 dark:border-white/10 dark:bg-white/4'>
                 <Icon name='eye' className='size-4' />
               </div>
               <div className='min-w-0'>
@@ -422,9 +422,9 @@ export const RecentActivities = ({
           <Table.ScrollContainer className='min-h-0 flex-1 overflow-auto'>
             <Table.Content
               aria-label='Recent activities table'
-              className='min-w-[980px]'>
-              <Table.Header columns={columns}>
-                {(column) => (
+              className='min-w-245'>
+              <Table.Header>
+                {columns.map((column) => (
                   <Table.Column
                     key={column.uid}
                     isRowHeader={column.uid === 'user'}
@@ -434,16 +434,19 @@ export const RecentActivities = ({
                     )}>
                     <div className='drop-shadow-xs'>{column.name}</div>
                   </Table.Column>
-                )}
+                ))}
               </Table.Header>
               <Table.Body
-                items={activities}
-                renderEmptyState={() => (
-                  <div className='px-4 py-10 text-sm text-foreground/55'>
-                    No activities found
-                  </div>
-                )}>
-                {(activity) => (
+                renderEmptyState={
+                  activities.length === 0
+                    ? () => (
+                        <div className='px-4 py-10 text-sm text-foreground/55'>
+                          No activities found
+                        </div>
+                      )
+                    : undefined
+                }>
+                {activities.map((activity) => (
                   <Table.Row
                     key={activity._id}
                     id={String(activity._id)}
@@ -459,7 +462,7 @@ export const RecentActivities = ({
                       </Table.Cell>
                     ))}
                   </Table.Row>
-                )}
+                ))}
               </Table.Body>
             </Table.Content>
           </Table.ScrollContainer>

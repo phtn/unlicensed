@@ -14,13 +14,11 @@ import {
 
 interface DevelopmentModeModalProps {
   isOpen: boolean
-  onClose: VoidFunction
   onRedirect: VoidFunction
 }
 
 export function DevelopmentModeModal({
   isOpen,
-  onClose,
   onRedirect,
 }: DevelopmentModeModalProps) {
   return (
@@ -33,7 +31,7 @@ export function DevelopmentModeModal({
             </ModalHeader>
             <ModalBody className='py-6'>
               <div className='flex flex-col items-center gap-4 text-center'>
-                <div className='flex items-center justify-center w-16 h-16 rounded-full bg-warning/20'>
+                <div className='flex items-center justify-center w-16 h-16 rounded-full bg-warning-soft-hover'>
                   <Icon name='info' className='size-8 text-warning' />
                 </div>
                 <div className='space-y-2'>

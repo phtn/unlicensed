@@ -149,7 +149,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
             <div className=''>
               <Tag text={slug} />
               <Title title={slug} subtitle={category?.highlight} />
-              <p className='hidden md:flex text-sm sm:text-base lg:text-base opacity-60 mb-6 sm:mb-8 lg:mb-12 max-w-md leading-relaxed'>
+              <p className='hidden text-sm sm:text-base lg:text-base opacity-60 mb-6 sm:mb-8 lg:mb-12 max-w-md leading-relaxed'>
                 {category?.description}
               </p>
 
@@ -207,10 +207,13 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                 </span>
                 <Button
                   size='sm'
-                  variant={tier === '' ? 'primary' : 'secondary'}
-                  className={cn('min-w-0 h-6 font-bold uppercase', {
-                    'bg-brand text-white': tier === '',
-                  })}
+                  variant={tier === '' ? 'primary' : 'outline'}
+                  className={cn(
+                    'min-w-0 h-6 font-bold uppercase font-clash rounded-xs',
+                    {
+                      'bg-brand text-white': tier === '',
+                    },
+                  )}
                   onPress={() => handleTierChange('')}>
                   All
                 </Button>
@@ -218,12 +221,13 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   <Button
                     key={tierOption.value}
                     size='sm'
-                    variant={
-                      tier === tierOption.value ? 'primary' : 'secondary'
-                    }
-                    className={cn('min-w-0 h-6 font-semibold uppercase', {
-                      'bg-brand text-white': tier === tierOption.value,
-                    })}
+                    variant={tier === tierOption.value ? 'primary' : 'tertiary'}
+                    className={cn(
+                      'min-w-0 h-6 font-medium uppercase rounded-xs font-clash',
+                      {
+                        'bg-brand text-white': tier === tierOption.value,
+                      },
+                    )}
                     onPress={() => handleTierChange(tierOption.value)}>
                     {tierOption.label}
                   </Button>
@@ -231,16 +235,19 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
               </div>
             )}
             {filterOptions.subcategories.length > 0 && (
-              <div className='flex flex-wrap items-center gap-2 mt-0.5'>
+              <div className='flex flex-wrap items-center gap-1 mt-0.5'>
                 <span className='text-sm font-clash font-semibold mr-2 uppercase'>
                   Subcategory
                 </span>
                 <Button
                   size='sm'
-                  variant={subcategory === '' ? 'primary' : 'secondary'}
-                  className={cn('min-w-0 h-6 font-bold uppercase', {
-                    'bg-brand text-white': subcategory === '',
-                  })}
+                  variant={subcategory === '' ? 'primary' : 'tertiary'}
+                  className={cn(
+                    'min-w-0 h-6 font-clash font-medium uppercase rounded-xs',
+                    {
+                      'bg-brand text-white': subcategory === '',
+                    },
+                  )}
                   onPress={() => handleSubcategoryChange('')}>
                   All
                 </Button>
@@ -251,12 +258,15 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     variant={
                       subcategory === subcategoryOption.value
                         ? 'primary'
-                        : 'secondary'
+                        : 'tertiary'
                     }
-                    className={cn('min-w-0 h-6 font-semibold uppercase', {
-                      'bg-brand text-white':
-                        subcategory === subcategoryOption.value,
-                    })}
+                    className={cn(
+                      'min-w-0 h-6 font-clash font-medium uppercase rounded-xs',
+                      {
+                        'bg-brand text-white':
+                          subcategory === subcategoryOption.value,
+                      },
+                    )}
                     onPress={() =>
                       handleSubcategoryChange(subcategoryOption.value)
                     }>
@@ -274,10 +284,13 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     </span>
                     <Button
                       size='sm'
-                      variant={brand === '' ? 'primary' : 'secondary'}
-                      className={cn('min-w-0 h-6 font-bold uppercase', {
-                        'bg-brand text-white': brand === '',
-                      })}
+                      variant={brand === '' ? 'primary' : 'tertiary'}
+                      className={cn(
+                        'min-w-0 h-6 font-clash font-semibold uppercase rounded-xs',
+                        {
+                          'bg-brand text-white': brand === '',
+                        },
+                      )}
                       onPress={() => handleBrandChange('')}>
                       All
                     </Button>
@@ -286,11 +299,14 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                         key={brandOption.value}
                         size='sm'
                         variant={
-                          brand === brandOption.value ? 'primary' : 'secondary'
+                          brand === brandOption.value ? 'primary' : 'tertiary'
                         }
-                        className={cn('min-w-0 h-6 font-semibold uppercase', {
-                          'bg-brand text-white': brand === brandOption.value,
-                        })}
+                        className={cn(
+                          'min-w-0 h-6 font-clash font-medium uppercase rounded-xs',
+                          {
+                            'bg-brand text-white': brand === brandOption.value,
+                          },
+                        )}
                         onPress={() => handleBrandChange(brandOption.value)}>
                         {brandOption.label}
                       </Button>
@@ -300,7 +316,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                         size='sm'
                         variant='tertiary'
                         aria-expanded={isBrandListExpanded}
-                        className='min-w-0 h-6 font-semibold uppercase'
+                        className='min-w-0 h-6 font-clash font-medium uppercase rounded-xs'
                         onPress={toggleBrandList}>
                         {isBrandListExpanded
                           ? 'Show less'
@@ -379,10 +395,10 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                                 variant={
                                   brand === brandOption.value
                                     ? 'primary'
-                                    : 'secondary'
+                                    : 'tertiary'
                                 }
                                 className={cn(
-                                  'min-w-0 h-6 font-semibold uppercase',
+                                  'min-w-0 h-6 font-clash font-medium uppercase rounded-xs',
                                   {
                                     'bg-brand text-white':
                                       brand === brandOption.value,
@@ -420,7 +436,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         <div className='flex flex-col gap-20'>
           <div className='flex flex-wrap items-center justify-between gap-4'>
             <div className='space-y-1'>
-              <h2 className='text-2xl font-clash font-bold tracking-normal sm:text-4xl'>
+              <h2 className='text-2xl font-clash font-bold tracking-normal md:text-3xl lg:text-4xl'>
                 Browse Category
               </h2>
             </div>
@@ -438,7 +454,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     key={cat._id}
                     prefetch
                     href={`/lobby/category/${cat.slug}`}
-                    className='portrait:w-full dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tighter'>
+                    className='portrait:w-full whitespace-nowrap dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tighter'>
                     <span className='drop-shadow-xs'>{cat.name}</span>
                   </Link>
                 ))}
@@ -446,13 +462,6 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
           </div>
         </div>
       </section>
-      <div className='flex justify-center w-full px-4 sm:px-6 md:px-4 md:hidden pb-20'>
-        <Link
-          href={'/lobby/brands'}
-          className='dark:bg-brand dark:text-white h-11 md:h-14 opacity-100 md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-clash font-bold px-4 sm:px-8 py-2 sm:py-3 text-lg'>
-          <span className='drop-shadow-xs'>Shop by Brand</span>
-        </Link>
-      </div>
     </div>
   )
 }

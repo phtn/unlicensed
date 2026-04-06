@@ -180,12 +180,14 @@ export const Nav = ({children}: NavProps) => {
                   })}
                 />
               </Button>
-              <Badge
-                key={`cart-badge-${cartItemCount}`}
-                content={`${cartItemCount}`}
-                className='-translate-x-2.5 bg-brand w-5.5 rounded-lg border flex items-center justify-center border-white font-okxs font-semibold text-sm text-white leading-none flex items-center justify-center h-2!'>
-                {cartItemCount}
-              </Badge>
+              {cartItemCount > 0 && (
+                <Badge
+                  key={`cart-badge-${cartItemCount}`}
+                  content={`${cartItemCount}`}
+                  className='-translate-x-2.5 bg-brand w-5.5 rounded-lg border flex items-center justify-center border-white font-okxs font-semibold text-sm text-white leading-none flex items-center justify-center h-2!'>
+                  {cartItemCount}
+                </Badge>
+              )}
             </Badge.Anchor>
 
             {user ? (

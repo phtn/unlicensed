@@ -162,10 +162,10 @@ export default function OrderDetailPage() {
 
         <div className='grid gap-6'>
           {/* Order Items */}
-          <Card className='dark:bg-dark-table'>
+          <Card className='dark:bg-dark-table rounded-xs'>
             <Card.Content className='p-4 md:p-6'>
               <SectionTitle title='Items' />
-              <div className='grid md:grid-cols-2 md:gap-0 gap-3'>
+              <div className='grid md:grid-cols-2 md:gap-2 gap-3'>
                 {order.items.map((item, index) => (
                   <div
                     key={item.productId}
@@ -178,10 +178,10 @@ export default function OrderDetailPage() {
                       <img
                         src={item.productImage}
                         alt={item.productName}
-                        className='w-20 h-20 aspect-square object-cover rounded-lg shrink-0'
+                        className='w-20 h-20 aspect-square object-cover rounded-xs shrink-0'
                         loading='lazy'
                       />
-                      <div className='font-okxs flex-1 w-full'>
+                      <div className='font-okxs flex-1 w-full space-y-1.5'>
                         <h3 className=''>{item.productName}</h3>
                         <div className='flex items-center text-sm opacity-80'>
                           <span className='hidden md:flex mr-1'>Quantity:</span>
@@ -211,7 +211,7 @@ export default function OrderDetailPage() {
 
           {/* Order Summary */}
           <div className='grid gap-6 md:grid-cols-2'>
-            <Card>
+            <Card className='rounded-xs'>
               <Card.Content className='p-4 md:p-6'>
                 <SectionTitle title='Order Summary' />
                 <div className='space-y-2 font-okxs'>
@@ -259,7 +259,7 @@ export default function OrderDetailPage() {
             </Card>
 
             {/* Payment Information */}
-            <Card>
+            <Card className='rounded-xs'>
               <Card.Content className='p-4 md:p-6'>
                 <div className='flex items-center justify-between'>
                   <SectionTitle title='Payment' />
@@ -325,7 +325,7 @@ export default function OrderDetailPage() {
 
           {/* Shipping Information */}
           <div className='grid gap-6 md:grid-cols-2'>
-            <Card>
+            <Card className='rounded-xs'>
               <Card.Content className='p-4 md:p-6'>
                 <SectionTitle title='Shipping Address' />
                 <div className='space-y-1 font-okxs text-sm'>
@@ -390,7 +390,7 @@ export default function OrderDetailPage() {
             </Card>
 
             {/* Order Details */}
-            <Card>
+            <Card className='rounded-xs'>
               <Card.Content className='p-4 md:p-6'>
                 <SectionTitle title='Order Details' />
                 <div className='space-y-2 font-okxs text-sm'>
@@ -427,7 +427,7 @@ export default function OrderDetailPage() {
           <div className='flex gap-4 justify-end mb-4'>
             <LinkButton
               asChild
-              variant='secondary'
+              variant='ghost'
               className='border-transparent dark:bg-dark-table/10 rounded-lg font-okxs font-semibold dark:text-white text-base'>
               <NextLink href='/account'>Back to Account</NextLink>
             </LinkButton>
@@ -437,7 +437,7 @@ export default function OrderDetailPage() {
                 <Button
                   size='md'
                   variant='tertiary'
-                  className='rounded-xs font-okxs font-semibold dark:text-danger text-base'>
+                  className='hidden rounded-xs font-okxs font-semibold dark:text-danger text-base'>
                   Cancel Order
                 </Button>
               )}

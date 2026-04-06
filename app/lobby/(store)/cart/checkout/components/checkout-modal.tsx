@@ -55,9 +55,9 @@ export function CheckoutModal({
         <ModalContainer
           scroll='inside'
           placement='top'
-          className='h-[calc(100lvh)] mt-12 md:mt-10 z-9999'>
-          <ModalDialog className='overflow-hidden dark:bg-dark-table'>
-            <ModalHeader className='flex flex-col justify-center gap-1 text-base md:text-lg font-medium md:font-semibold bg-foreground dark:bg-foreground/60 text-background h-9 md:h-12 mb-1'>
+          className='h-[calc(100lvh)]mt-12 md:mt-28 z-9999'>
+          <ModalDialog className='overflow-hidden dark:bg-dark-table border border-foreground/40 rounded-xs!'>
+            <ModalHeader className='flex flex-col justify-center gap-1 text-base md:text-lg font-medium h-9 md:h-12 mb-1'>
               Confirm Shipping & Billing Info
             </ModalHeader>
             <ModalBody className='h-full pb-6'>
@@ -84,12 +84,12 @@ export function CheckoutModal({
                 />
               </div>
             </ModalBody>
-            <ModalFooter className='w-full px-1.5 md:px-4 h-16 md:h-20 flex items-center bg-alum/40 border-t border-dark-table/40 dark:bg-foreground/60'>
+            <ModalFooter className='w-full h-16 md:h-20 flex items-center'>
               <Button
                 size='lg'
-                variant='tertiary'
+                variant='outline'
                 onPress={onClose}
-                className='w-full rounded-xs text-dark-table dark:hover:bg-white/5'
+                className='w-full rounded-xs border-dark-table'
                 isDisabled={isLoading || isPending}>
                 Cancel
               </Button>

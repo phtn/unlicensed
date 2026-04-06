@@ -4,11 +4,7 @@ import {api} from '@/convex/_generated/api'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {getInitials} from '@/utils/initials'
-import {
-  Avatar,
-  Badge,
-  Dropdown,
-} from '@heroui/react'
+import {Avatar, Badge, Dropdown} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {User} from 'firebase/auth'
 import {useTheme} from 'next-themes'
@@ -134,42 +130,46 @@ export const UserDropdown = ({
       </Dropdown.Trigger>
 
       <Dropdown.Popover
-        className='min-w-[18rem] rounded-xl p-2'
+        className='min-w-[18rem] rounded-sm p-2'
         placement='bottom end'>
         <Dropdown.Menu
           aria-label='User menu'
           onAction={handleAction}
           className='p-0'>
           <Dropdown.Section aria-label='Profile'>
-            <Dropdown.Item id='account' textValue={displayName}>
+            <Dropdown.Item
+              id='account'
+              textValue={displayName}
+              className='rounded-xs'>
               <MenuItemContent
                 icon='user-setting-line'
-                label={displayName}
+                label={'Account'}
                 description={profileDescription}
-                endContent={
-                  isStaff ? <MenuPill tone='brand'>Staff</MenuPill> : null
-                }
               />
             </Dropdown.Item>
           </Dropdown.Section>
 
           <Dropdown.Section aria-label='Quick actions'>
-            <Dropdown.Item id='messages' textValue='Messages'>
+            <Dropdown.Item
+              id='messages'
+              textValue='Messages'
+              className='rounded-xs'>
               <MenuItemContent
                 icon='message-filled'
                 label='Messages'
                 description='Open your inbox'
                 endContent={
-                  unreadTotal > 0 ? (
+                  unreadTotal > 0 && (
                     <MenuPill tone='brand'>{unreadLabel}</MenuPill>
-                  ) : (
-                    <MenuPill>Open</MenuPill>
                   )
                 }
               />
             </Dropdown.Item>
 
-            <Dropdown.Item id='orders' textValue='Orders'>
+            <Dropdown.Item
+              id='orders'
+              textValue='Orders'
+              className='rounded-xs'>
               <MenuItemContent
                 icon='box'
                 label='Orders'
@@ -177,20 +177,21 @@ export const UserDropdown = ({
               />
             </Dropdown.Item>
 
-            <Dropdown.Item id='theme' textValue='Theme'>
+            <Dropdown.Item id='theme' textValue='Theme' className='rounded-xs'>
               <MenuItemContent
                 icon='toggle-theme'
                 label={isDarkMode ? 'Light mode' : 'Dark mode'}
-                description='Switch between light and dark modes'
               />
             </Dropdown.Item>
 
             {isStaff ? (
-              <Dropdown.Item id='admin' textValue='Admin'>
+              <Dropdown.Item
+                id='admin'
+                textValue='Admin'
+                className='rounded-xs'>
                 <MenuItemContent
                   icon='settings'
                   label='Admin'
-                  description='Open the staff dashboard'
                   endContent={<MenuPill tone='brand'>Staff</MenuPill>}
                 />
               </Dropdown.Item>
@@ -198,13 +199,12 @@ export const UserDropdown = ({
           </Dropdown.Section>
 
           <Dropdown.Section aria-label='Session'>
-            <Dropdown.Item id='logout' textValue='Sign out' variant='danger'>
-              <MenuItemContent
-                icon='signout'
-                label='Sign out'
-                description='End this session on this device'
-                tone='danger'
-              />
+            <Dropdown.Item
+              id='logout'
+              textValue='Sign out'
+              variant='danger'
+              className='rounded-xs'>
+              <MenuItemContent icon='signout' label='Sign out' tone='danger' />
             </Dropdown.Item>
           </Dropdown.Section>
         </Dropdown.Menu>
@@ -229,19 +229,21 @@ const MenuItemContent = ({
   iconClassName?: string
 }) => {
   return (
-    <div className='flex min-w-0 items-center gap-3 py-0.5'>
+    <div className='flex min-w-0 items-center gap-3 py-0.5 w-full'>
       <MenuGlyph icon={icon} tone={tone} iconClassName={iconClassName} />
-      <div className='min-w-0 flex-1'>
-        <div className='truncate text-sm font-medium tracking-tight'>
-          {label}
-        </div>
-        {description ? (
-          <div className='truncate text-xs text-foreground/60'>
-            {description}
+      <div className='flex items-center justify-between w-full'>
+        <div className='min-w-0 flex-1 -space-y-1'>
+          <div className='font-clash truncate text-base font-medium tracking-tight'>
+            {label}
           </div>
-        ) : null}
+          {description ? (
+            <div className='truncate text-xs text-foreground/60'>
+              {description}
+            </div>
+          ) : null}
+        </div>
+        {endContent ? <div className='shrink-0'>{endContent}</div> : null}
       </div>
-      {endContent ? <div className='shrink-0'>{endContent}</div> : null}
     </div>
   )
 }
@@ -258,9 +260,9 @@ const MenuGlyph = ({
   return (
     <span
       className={cn(
-        'flex size-9 items-center justify-center text-foreground/75',
+        'flex w-10 h-8 items-center justify-center text-foreground/75',
         tone === 'brand' && 'border-brand/15 bg-brand/10 text-brand',
-        tone === 'danger' && 'border-danger/15 bg-danger/10 text-danger',
+        tone === 'danger' && 'border-danger-soft bg-danger/10 text-danger',
       )}>
       <Icon name={icon} className={cn('size-6', iconClassName)} />
     </span>
@@ -277,7 +279,7 @@ const MenuPill = ({
   return (
     <span
       className={cn(
-        'inline-flex min-w-6 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-clash font-medium leading-none uppercase tracking-[0.12em]',
+        'inline-flex min-w-6 items-center justify-center rounded-sm px-1 py-px text-xs font-clash font-medium leading-none uppercase tracking-wide',
         tone === 'brand'
           ? 'bg-brand text-white shadow-sm'
           : 'bg-foreground/10 text-foreground/70',

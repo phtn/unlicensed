@@ -5,7 +5,7 @@ import {ReactNode} from 'react'
 
 export const SectionTitle = ({title}: {title: ReactNode}) => {
   return (
-    <h2 className='text-xl tracking-wide font-polysans font-semibold mb-4 opacity-70'>
+    <h2 className='text-lg tracking-wide font-clash font-semibold mb-2 opacity-70'>
       {title}
     </h2>
   )
@@ -13,7 +13,7 @@ export const SectionTitle = ({title}: {title: ReactNode}) => {
 
 export const Section = ({children}: {children: ReactNode}) => {
   return (
-    <h2 className='text-xl tracking-wide font-polysans font-semibold mb-4'>
+    <h2 className='text-lg tracking-wide font-polysans font-semibold mb-4'>
       {children}
     </h2>
   )
@@ -21,6 +21,11 @@ export const Section = ({children}: {children: ReactNode}) => {
 
 interface TxnIdProps {
   id: string
+}
+
+const getTxnExplorerUrl = (id: string) => {
+  if (id.startsWith('0x')) return `https://etherscan.io/tx/${id}`
+  return `https://mempool.space/tx/${id}`
 }
 
 export const TxnId = ({id}: TxnIdProps) => {
@@ -38,12 +43,16 @@ export const TxnId = ({id}: TxnIdProps) => {
         </Tooltip.Trigger>
         <Tooltip.Content>Copy Transaction ID</Tooltip.Content>
       </Tooltip>
-      <div className='flex items-center'>
-        <p className='max-w-[10ch] truncate font-brk text-sm tracking-wide'>
-          <span className=''>{id}</span>
+      <a
+        href={getTxnExplorerUrl(id)}
+        target='_blank'
+        rel='noopener noreferrer'
+        className='flex items-center'>
+        <p className='max-w-[18ch] truncate font-brk text-sm tracking-wide'>
+          {id}
         </p>
         <Icon name='external-link-line' className='size-4' />
-      </div>
+      </a>
     </div>
   )
 }

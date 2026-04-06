@@ -2,6 +2,7 @@
 
 import {OrderListItem} from '@/app/account/_components/order-list-item'
 import {Loader} from '@/components/expermtl/loader'
+import {DateRangePickerComponent} from '@/components/hero-v3/date-range-picker'
 import {Button as LinkButton} from '@/components/ui/button'
 import {api} from '@/convex/_generated/api'
 import type {OrderType} from '@/convex/orders/d'
@@ -177,13 +178,13 @@ export const Content = () => {
     setPageToFirst()
   }
 
-  const handleFromDateChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFromDate(e.target.value)
+  const handleFromDateChange = (date: string) => {
+    setFromDate(date)
     setPageToFirst()
   }
 
-  const handleToDateChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setToDate(e.target.value)
+  const handleToDateChange = (date: string) => {
+    setToDate(date)
     setPageToFirst()
   }
 
@@ -205,21 +206,23 @@ export const Content = () => {
 
   return (
     <main className='px-2 sm:px-4 lg:px-6 space-y-5 pb-8'>
-      <Card className='border border-foreground/15'>
+      <Card className='border border-foreground/15 rounded-xs p-0'>
         <Card.Content className='p-3 md:p-5 space-y-4 bg-sidebar/40 dark:bg-sidebar'>
-          <div className='grid grid-cols-1 lg:grid-cols-4 gap-3 w-full xl:h-15'>
+          <div className='grid grid-cols-2 lg:grid-cols-3 gap-3 w-full xl:h-15'>
             <Input
+              size={10}
               type='search'
               value={searchQuery}
               onChange={handleSearchQueryChange}
               placeholder='Search order #, date, or amount'
+              className='placeholder:text-foreground/50 rounded-xs h-12'
             />
-            <Input
-              type='date'
-              value={fromDate}
-              onChange={handleFromDateChange}
+            <DateRangePickerComponent
+              startDate={fromDate}
+              endDate={toDate}
+              onStartDateChange={handleFromDateChange}
+              onEndDateChange={handleToDateChange}
             />
-            <Input type='date' value={toDate} onChange={handleToDateChange} />
           </div>
 
           <div className='flex flex-wrap items-center justify-between gap-3'>
@@ -229,7 +232,7 @@ export const Content = () => {
                   key={mode.id}
                   size='sm'
                   className='rounded-full'
-                  variant={searchMode === mode.id ? 'primary' : 'secondary'}
+                  variant={searchMode === mode.id ? 'ghost' : 'tertiary'}
                   onPress={handleSearchModeChange(mode.id)}>
                   {mode.label}
                 </Button>
@@ -245,16 +248,16 @@ export const Content = () => {
           </div>
 
           <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-            <div className='rounded-xl dark:bg-background/20 p-3'>
-              <p className='text-xs text-default-500'>Total Orders</p>
+            <div className='rounded-xs dark:bg-background/20 p-3 space-y-1'>
+              <p className='text-xs text-foreground/70'>Total Orders</p>
               <p className='text-xl font-semibold'>{orders?.length ?? 0}</p>
             </div>
-            <div className='rounded-xl dark:bg-background/20 p-3'>
-              <p className='text-xs text-default-500'>Filtered Results</p>
+            <div className='rounded-xs dark:bg-background/20 p-3 space-y-1'>
+              <p className='text-xs text-foreground/70'>Filtered Results</p>
               <p className='text-xl font-semibold'>{filteredOrders.length}</p>
             </div>
-            <div className='rounded-xl dark:bg-background/20 p-3'>
-              <p className='text-xs text-default-500'>Filtered Amount</p>
+            <div className='rounded-xs dark:bg-background/20 p-3 space-y-1'>
+              <p className='text-xs text-foreground/70'>Filtered Amount</p>
               <p className='text-xl font-semibold'>
                 ${formatPrice(filteredTotalSpend)}
               </p>
@@ -264,8 +267,8 @@ export const Content = () => {
       </Card>
 
       {isLoading ? (
-        <div className='w-full flex justify-center py-20'>
-          <Loader />
+        <div className='w-full flex justify-center py-4'>
+          <Loader className='scale-50' />
         </div>
       ) : orders && orders.length === 0 ? (
         <Card className='border-2 border-dashed border-default-200 dark:border-default-100/20'>
@@ -308,12 +311,13 @@ export const Content = () => {
             <OrderListItem key={order.orderNumber} order={order} />
           ))}
 
-          <Card className='border border-foreground/15'>
+          <Card className='border border-foreground/15 rounded-xs'>
             <Card.Content className='p-3 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between'>
               <Button
                 variant='tertiary'
                 onPress={() => setPage(Math.max(1, currentPage - 1))}
-                isDisabled={currentPage <= 1}>
+                isDisabled={currentPage <= 1}
+                className='rounded-md'>
                 Previous
               </Button>
 
@@ -341,7 +345,8 @@ export const Content = () => {
               <Button
                 variant='tertiary'
                 onPress={() => setPage(Math.min(totalPages, currentPage + 1))}
-                isDisabled={currentPage >= totalPages}>
+                isDisabled={currentPage >= totalPages}
+                className='rounded-md'>
                 Next
               </Button>
             </Card.Content>

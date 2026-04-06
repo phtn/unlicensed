@@ -190,15 +190,16 @@ export const PaymentMethods = memo(function PaymentMethods({
 
   const selectedKeys = useMemo(() => [value], [value])
   const SELECT_CLASS_NAMES = {
-    base: 'w-full bg-background',
+    base: 'w-full',
     label: 'text-lg font-semibold tracking-tight h-10',
     trigger:
-      'min-h-14 mt-2 p-2 md:ps-3 bg-white dark:bg-zinc-500/10 border border-foreground/40 placeholder:text-foreground rounded-md',
+      'min-h-14 mt-2 p-2 md:ps-3 border border-foreground/40 placeholder:text-foreground rounded-md',
     listboxWrapper:
       'border-2 dark:border-foreground/40 rounded-lg outline-none focus-visible:outline-none border-0 border-white/40 w-full',
     listbox: 'outline-none focus-visible:outline-none px-1.5 py-1.5',
     selectorIcon: 'translate-x-2',
-    popoverContent: 'w-full bg-black/10 backdrop-blur-xl p-2.5 rounded-xl',
+    popoverContent:
+      'w-full bg-background backdrop-blur-xl p-2.5 rounded-lg border border-foreground/40',
   }
   const renderValue = useCallback(
     (items: SelectedItems<IPaymentMethod>) => {
@@ -243,7 +244,7 @@ export const PaymentMethods = memo(function PaymentMethods({
             })}
             classNames={{
               wrapper: 'placeholder:text-dark-gray',
-              base: 'data-[selected=true]:bg-brand/12 dark:data-[selected=true]:bg-brand gap-0 px-1 py-2',
+              base: 'data-[selected=true]:bg-brand/12 dark:data-[selected=true]:bg-brand gap-0 px-1 pb-4',
               selectedIcon: cn(
                 'p-0 size-3 mb-7 md:mb-4 mr-2',
                 method.iconStyle,
