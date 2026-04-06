@@ -1,17 +1,11 @@
 'use client'
 
-import {
-  commonInputClassNames,
-  commonSelectClassNames,
-} from '@/app/admin/_components/ui/fields'
+import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
-import {Avatar} from '@heroui/avatar'
-import {Textarea} from '@heroui/input'
-import {ListBoxItem} from '@heroui/react'
-import {Select} from '@heroui/select'
-import {User} from '@heroui/user'
+import {getInitials} from '@/utils/initials'
+import {Avatar, TextArea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import React, {
   startTransition,
@@ -130,58 +124,22 @@ export const RepContent = () => {
             Select A Rep
           </h3>
           <Select
-            items={repOptions}
+            options={repOptions.map((opt) => ({
+              value: opt.id,
+              label: opt.label,
+            }))}
             label='Sales Rep'
             placeholder='Select a rep'
-            selectedKeys={selectedKeys}
-            onSelectionChange={(keys) =>
-              handleSelectionChange(keys as Set<React.Key> | 'all')
-            }
-            variant='faded'
-            classNames={{...commonSelectClassNames, label: 'mb-4'}}
-            isDisabled={repOptions.length === 0}
-            aria-label='Default Sales Rep'
-            renderValue={(items) => {
-              const selected = items[0]
-              const opt = repOptions.find((o) => o.key === selected?.key)
-              if (!opt) return null
-              return (
-                <div className='flex items-center gap-2'>
-                  <Avatar
-                    alt={opt.label}
-                    className='size-6 shrink-0'
-                    name={opt.label}
-                    size='sm'
-                    src={opt.avatarUrl ?? undefined}
-                  />
-                  <span>{opt.label}</span>
-                </div>
-              )
-            }}>
-            {(opt) => (
-              <ListBoxItem key={opt.key} textValue={opt.label}>
-                <div className='flex items-center gap-2'>
-                  <Avatar
-                    alt={opt.label}
-                    className='size-6 shrink-0'
-                    name={opt.label}
-                    size='sm'
-                    src={opt.avatarUrl ?? undefined}
-                  />
-                  <span>{opt.label}</span>
-                </div>
-              </ListBoxItem>
-            )}
-          </Select>
+            value={String(selectedKeys)}
+            aria-label='Default Sales Rep'></Select>
 
-          <Textarea
-            label='Initial message seed for Cash App payments'
+          <TextArea
+            // label='Initial message seed for Cash App payments'
             placeholder='e.g. Cash App checkout request for order {orderNumber}. I selected Cash App and need a representative to continue payment in this chat.'
             value={displayInitialMessage}
-            onValueChange={setPendingInitialMessageSeed}
+            onChange={() => setPendingInitialMessageSeed}
             className='w-full max-w-3xl'
-            classNames={commonInputClassNames}
-            minRows={3}
+            rows={3}
           />
 
           <div className='w-fit flex flex-wrap'>
@@ -231,15 +189,10 @@ function RepUserItem({member}: {member: Doc<'staff'>}) {
   const description = member.email ?? member.position ?? ''
   return (
     <li className='rounded-lg border border-default-200/50 bg-default-50/30 p-3 dark:bg-default-100/10'>
-      <User
-        avatarProps={{src: member.avatarUrl}}
-        classNames={{
-          name: 'mb-0.5',
-          description: 'text-xs text-foreground/70',
-        }}
-        name={name}
-        description={description}
-      />
+      <Avatar>
+        <Avatar.Image alt={name} src={member.avatarUrl} />
+        <Avatar.Fallback>{getInitials(name)}</Avatar.Fallback>
+      </Avatar>
     </li>
   )
 }

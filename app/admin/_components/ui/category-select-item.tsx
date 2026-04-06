@@ -1,6 +1,3 @@
-import {ListboxItem as ListBoxItem} from '@heroui/listbox'
-import {extendVariants} from '@heroui/system'
-
 /**
  * Category color type - represents all available category color variants
  */
@@ -122,73 +119,73 @@ export function getCategoryChipProps(categoryValue: string) {
  * </CategorySelectItem>
  * ```
  */
-export const CategorySelectItem = extendVariants(ListBoxItem, {
-  variants: {
-    color: {
-      default: {
-        base: categoryColors.default.textColor,
-      },
-      flower: {
-        base: categoryColors.flower.textColor,
-      },
-      extracts: {
-        base: categoryColors.extracts.textColor,
-      },
-      edibles: {
-        base: categoryColors.edibles.textColor,
-      },
-      concentrates: {
-        base: categoryColors.concentrates.textColor,
-      },
-      vapes: {
-        base: categoryColors.vapes.textColor,
-      },
-      accessories: {
-        base: categoryColors.accessories.textColor,
-      },
-    },
-    size: {
-      sm: {
-        base: 'text-sm',
-      },
-      md: {
-        base: 'text-base',
-      },
-      lg: {
-        base: 'text-lg',
-      },
-    },
-  },
-  defaultVariants: {
-    color: 'default',
-    size: 'md',
-    variant: 'faded',
-  },
-  compoundVariants: [
-    {
-      color: 'flower',
-      variant: 'faded',
-      class: 'hover:bg-green-50 dark:hover:bg-green-950/20',
-    },
-    {
-      color: 'extracts',
-      variant: 'faded',
-      class: 'hover:bg-indigo-50 dark:hover:bg-indigo-950/20',
-    },
-    {
-      color: 'edibles',
-      variant: 'faded',
-      class: 'hover:bg-amber-50 dark:hover:bg-amber-950/20',
-    },
-    {
-      color: 'concentrates',
-      variant: 'faded',
-      class: 'hover:bg-purple-50 dark:hover:bg-purple-950/20',
-    },
-    {
-      color: 'vapes',
-      variant: 'faded',
-      class: 'hover:bg-blue-50 dark:hover:bg-blue-950/20',
-    },
-  ],
-})
+// export const CategorySelectItem = extendVariants(ListBoxItem, {
+//   variants: {
+//     color: {
+//       default: {
+//         base: categoryColors.default.textColor,
+//       },
+//       flower: {
+//         base: categoryColors.flower.textColor,
+//       },
+//       extracts: {
+//         base: categoryColors.extracts.textColor,
+//       },
+//       edibles: {
+//         base: categoryColors.edibles.textColor,
+//       },
+//       concentrates: {
+//         base: categoryColors.concentrates.textColor,
+//       },
+//       vapes: {
+//         base: categoryColors.vapes.textColor,
+//       },
+//       accessories: {
+//         base: categoryColors.accessories.textColor,
+//       },
+//     },
+//     size: {
+//       sm: {
+//         base: 'text-sm',
+//       },
+//       md: {
+//         base: 'text-base',
+//       },
+//       lg: {
+//         base: 'text-lg',
+//       },
+//     },
+//   },
+//   defaultVariants: {
+//     color: 'default',
+//     size: 'md',
+//     variant: 'faded',
+//   },
+//   compoundVariants: [
+//     {
+//       color: 'flower',
+//       variant: 'faded',
+//       class: 'hover:bg-green-50 dark:hover:bg-green-950/20',
+//     },
+//     {
+//       color: 'extracts',
+//       variant: 'faded',
+//       class: 'hover:bg-indigo-50 dark:hover:bg-indigo-950/20',
+//     },
+//     {
+//       color: 'edibles',
+//       variant: 'faded',
+//       class: 'hover:bg-amber-50 dark:hover:bg-amber-950/20',
+//     },
+//     {
+//       color: 'concentrates',
+//       variant: 'faded',
+//       class: 'hover:bg-purple-50 dark:hover:bg-purple-950/20',
+//     },
+//     {
+//       color: 'vapes',
+//       variant: 'faded',
+//       class: 'hover:bg-blue-50 dark:hover:bg-blue-950/20',
+//     },
+//   ],
+// })
