@@ -201,7 +201,7 @@ export const PaymentMethods = memo(function PaymentMethods({
           <Select.Positioner
             className='outline-hidden select-none z-10'
             sideOffset={8}>
-            <Select.Popup className='group min-w-(--anchor-width) origin-(--transform-origin) bg-clip-padding rounded-md bg-background text-foreground shadow-lg outline outline-1 outline-foreground/20 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0'>
+            <Select.Popup className='group min-w-(--anchor-width) origin-(--transform-origin) bg-clip-padding rounded-md bg-background text-foreground shadow-lg outline outline-foreground/20 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0'>
               <Select.List className='relative py-1 overflow-y-auto max-h-(--available-height)'>
                 {methods.map((method) => (
                   <Select.Item

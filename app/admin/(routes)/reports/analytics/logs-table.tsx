@@ -1,12 +1,12 @@
 'use client'
 
+import {User} from '@/components/hero-v3/user'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
 import {toEmoji} from '@/utils/fingerprint'
-import {Avatar} from '@heroui/avatar'
 import {
   Card,
   Table,
@@ -103,13 +103,19 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
           }
           return (
             <div className='flex items-center gap-2'>
-              <Avatar
-                src={user.photoUrl}
-                name={isMobile ? user.name.split(' ').shift() : user.name}
+              <User
+                avatar={user.photoUrl}
+                name={
+                  isMobile
+                    ? String(user.name.split(' ').shift())
+                    : String(user.name)
+                }
                 className='size-7 shrink-0'
               />
               <div className='flex flex-col'>
-                <span className='text-sm'>{isMobile ? user.name.split(' ').shift() : user.name}</span>
+                <span className='text-sm'>
+                  {isMobile ? user.name.split(' ').shift() : user.name}
+                </span>
                 <span className='text-xs text-default-500'>{user.email}</span>
               </div>
             </div>
@@ -284,8 +290,6 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
 
   return (
     <Card
-      
-      
       className={cn(
         'dark:bg-dark-table/40 bg-light-table/0 overflow-hidden md:rounded-t-2xl md:w-full w-screen overflow-x-scroll',
         'transition-transform duration-300',
@@ -295,8 +299,7 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
         className={cn(
           'h-lvh md:h-[calc(100lvh-64px)] overflow-scroll transition-transform duration-300',
         )}>
-        <Table
-          aria-label='Visit logs table'>
+        <Table aria-label='Visit logs table'>
           <TableHeader columns={columns}>
             {(column) => (
               <TableColumn
@@ -313,7 +316,12 @@ export const LogsTable = ({fullTable, isMobile}: LogsTableProps) => {
                 className='h-8 hover:bg-light-table/60 dark:hover:bg-origin/40 border-b-[0.33px] border-b-light-table last:border-b-0 dark:border-b-dark-table'>
                 {(columnKey) => (
                   <TableCell>
-                    {renderCell(log, columnKey as unknown as React.Key) as ReactNode}
+                    {
+                      renderCell(
+                        log,
+                        columnKey as unknown as React.Key,
+                      ) as ReactNode
+                    }
                   </TableCell>
                 )}
               </TableRow>

@@ -740,8 +740,7 @@ export const GeoPage = () => {
 
   return (
     <div className='space-y-6 h-screen overflow-auto pb-32'>
-      <Card
-                className='overflow-hidden border border-white/6 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.25),transparent_42%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(5,8,17,1))] p-4 dark:bg-dark-table/60'>
+      <Card className='overflow-hidden border border-white/6 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.25),transparent_42%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(5,8,17,1))] p-4 dark:bg-dark-table/60'>
         <div className='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
           <div className='max-w-2xl space-y-3'>
             <Chip size='sm' variant='tertiary' color='accent'>
@@ -811,10 +810,7 @@ export const GeoPage = () => {
       </Card>
 
       <div className='grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.65fr)_22rem] rounded-b-3xl overflow-hidden'>
-        <Card
-          
-          
-          className='dark:bg-dark-table/40 overflow-hidden bg-white'>
+        <Card className='dark:bg-dark-table/40 overflow-hidden bg-white'>
           <MapboxUsChoropleth
             defaultState={topState}
             stateVisits={stats.visitsByUsState ?? {}}
