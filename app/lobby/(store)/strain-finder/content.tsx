@@ -17,6 +17,7 @@ import {
   useTransition,
   ViewTransition,
 } from 'react'
+import dynamic from 'next/dynamic'
 import {
   CheckPin,
   ProgressIndicator,
@@ -24,7 +25,11 @@ import {
   StepHeader,
   StepWrapper,
 } from './components'
-import {OrbScene} from './orbs'
+
+const OrbScene = dynamic(() => import('./orbs').then((m) => m.OrbScene), {
+  ssr: false,
+  loading: () => <div className='absolute inset-0 z-100 pointer-events-none' />,
+})
 
 interface ContentProps {
   initialProducts: StoreProduct[]

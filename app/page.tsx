@@ -1,6 +1,7 @@
 import {PinAccessGate} from './_components/pin-access-gate'
 import {api} from '@/convex/_generated/api'
 import {ConvexHttpClient} from 'convex/browser'
+import {unstable_cache} from 'next/cache'
 import {redirect} from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
@@ -11,14 +12,24 @@ function isAccessCodeEnabled(
   return haltPass?.value?.enabled !== false
 }
 
-export default async function RootPage() {
-  const convexUrl =
-    process.env.NEXT_PUBLIC_CONVEX_URL ?? process.env.CONVEX_URL ?? null
+const _convexUrl =
+  process.env.NEXT_PUBLIC_CONVEX_URL ?? process.env.CONVEX_URL ?? null
 
-  if (convexUrl) {
+const fetchHaltPass = _convexUrl
+  ? unstable_cache(
+      async () => {
+        const convex = new ConvexHttpClient(_convexUrl)
+        return convex.query(api.admin.q.getHaltPass, {})
+      },
+      ['root-halt-pass'],
+      {revalidate: 30},
+    )
+  : null
+
+export default async function RootPage() {
+  if (fetchHaltPass) {
     try {
-      const convex = new ConvexHttpClient(convexUrl)
-      const haltPass = await convex.query(api.admin.q.getHaltPass, {})
+      const haltPass = await fetchHaltPass()
 
       if (!isAccessCodeEnabled(haltPass)) {
         redirect('/lobby')

@@ -8,7 +8,6 @@ import {
   GeistPixelSquare,
   GeistPixelTriangle,
 } from 'geist/font/pixel'
-import 'mapbox-gl/dist/mapbox-gl.css'
 import type {Metadata, Viewport} from 'next'
 import {
   Bakbak_One as BakbakOne,
@@ -19,7 +18,6 @@ import {
   Nunito_Sans as NunitoSans,
   Space_Grotesk,
 } from 'next/font/google'
-import {AgeConfirmationModal} from './_components/age-confirmation-modal'
 import {ConditionalNavbar} from './_components/conditional-navbar'
 import {DeferredRootClient} from './_components/deferred-root-client'
 import './globals.css'
@@ -49,12 +47,14 @@ const space = Space_Grotesk({
 const fugaz = Fugaz_One({
   variable: '--font-fugaz',
   weight: ['400'],
+  subsets: ['latin'],
   display: 'swap',
 })
 const bone = BakbakOne({
   variable: '--font-bone',
   weight: ['400'],
   subsets: ['latin'],
+  display: 'swap',
 })
 
 const nito = NunitoSans({
@@ -188,13 +188,19 @@ export default function RootLayout({
     <html lang='en' suppressHydrationWarning>
       <head>
         <ThemeScript />
+        <link
+          rel='preload'
+          href='/fonts/okxs-regular.woff2'
+          as='font'
+          type='font/woff2'
+          crossOrigin='anonymous'
+        />
       </head>
       <body
         className={`${GeistPixelSquare.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelGrid.variable} ${GeistPixelLine.variable} ${nito.variable} ${bone.variable} ${figtree.variable} ${fugaz.variable} ${space.variable} ${geistSans.variable} ${geistMono.variable} antialiased font-okxs font-normal selection:bg-brand selection:text-white`}>
         <WagmiContext>
           <ProvidersCtxProvider>
             <DeferredRootClient />
-            <AgeConfirmationModal />
             <ConditionalNavbar navbar={navbar} />
             {children}
           </ProvidersCtxProvider>

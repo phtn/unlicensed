@@ -33,6 +33,12 @@ const DynamicUserLocationTracker = dynamic(
   {ssr: false},
 )
 
+const DynamicAgeConfirmationModal = dynamic(
+  () =>
+    import('./age-confirmation-modal').then((m) => m.AgeConfirmationModal),
+  {ssr: false},
+)
+
 export function DeferredRootClient() {
   const [mountDeferredClients, setMountDeferredClients] = useState(false)
 
@@ -60,6 +66,7 @@ export function DeferredRootClient() {
 
   return (
     <>
+      <DynamicAgeConfirmationModal />
       {mountDeferredClients ? (
         <>
           <DynamicEmailLinkHandler />

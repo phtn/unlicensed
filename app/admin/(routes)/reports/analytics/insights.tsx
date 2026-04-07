@@ -1,5 +1,6 @@
 'use client'
 
+import 'mapbox-gl/dist/mapbox-gl.css'
 import {api} from '@/convex/_generated/api'
 import {useMobile} from '@/hooks/use-mobile'
 import {Card, Chip} from '@heroui/react'
