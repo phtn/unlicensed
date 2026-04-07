@@ -1,8 +1,8 @@
 'use client'
 
+import {User} from '@/components/hero-v3/user'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
-import {Avatar} from '@heroui/avatar'
 import {
   Card,
   Table,
@@ -33,14 +33,16 @@ export const PersonnelTable = () => {
       case 'user':
         return (
           <div className='flex items-center gap-2'>
-            <Avatar
-              src={user.photoUrl}
-              size='sm'
+            <User
+              avatar={user.photoUrl}
+              name={user.name}
               className='shrink-0'
             />
             <div>
               <p className='text-sm font-medium'>{user.name}</p>
-              {user.email && <p className='text-xs text-default-400'>{user.email}</p>}
+              {user.email && (
+                <p className='text-xs text-default-400'>{user.email}</p>
+              )}
             </div>
           </div>
         )
@@ -87,16 +89,16 @@ export const PersonnelTable = () => {
       <Table aria-label='Personnel table'>
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn key={column.uid}>
-              {column.name}
-            </TableColumn>
+            <TableColumn key={column.uid}>{column.name}</TableColumn>
           )}
         </TableHeader>
         <TableBody items={users ?? []}>
           {(user) => (
             <TableRow key={String(user._id)} className='h-16'>
               {(columnKey) => (
-                <TableCell>{renderCell(user, columnKey as unknown as React.Key)}</TableCell>
+                <TableCell>
+                  {renderCell(user, columnKey as unknown as React.Key)}
+                </TableCell>
               )}
             </TableRow>
           )}
