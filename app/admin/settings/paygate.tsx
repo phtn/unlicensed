@@ -1,7 +1,7 @@
 'use client'
 
+import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
-import {Input} from '@heroui/input'
 import {Button, Card, Separator, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useEffect, useRef, useState} from 'react'
@@ -132,32 +132,32 @@ export function PayGateSettings() {
             label='API URL'
             placeholder='https://api.paygate.to'
             value={apiUrl}
-            onValueChange={setApiUrl}
-            description='PayGate API endpoint (use custom domain for white-label)'
-            isDisabled={!enabled}
+            onChange={(e) => setApiUrl(e.target.value)}
+            // description='PayGate API endpoint (use custom domain for white-label)'
+            disabled={!enabled}
           />
 
           <Input
             label='Checkout URL'
             placeholder='https://checkout.paygate.to'
             value={checkoutUrl}
-            onValueChange={setCheckoutUrl}
-            description='PayGate checkout page URL (use custom domain for white-label)'
-            isDisabled={!enabled}
+            onChange={(e) => setCheckoutUrl(e.target.value)}
+            // description='PayGate checkout page URL (use custom domain for white-label)'
+            disabled={!enabled}
           />
 
           <Input
             label='USDC Polygon Wallet Address'
             placeholder='0x...'
             value={usdcWallet}
-            onValueChange={setUsdcWallet}
-            description='Your USDC (Polygon) wallet address to receive payments'
-            isDisabled={!enabled}
-            isRequired={enabled}
-            errorMessage={
-              validationError && enabled ? validationError : undefined
-            }
-            isInvalid={enabled && (!usdcWallet || usdcWallet.trim() === '')}
+            onChange={(e) => setUsdcWallet(e.target.value)}
+            // description='Your USDC (Polygon) wallet address to receive payments'
+            disabled={!enabled}
+            required={enabled}
+            // errorMessage={
+            //   validationError && enabled ? validationError : undefined
+            // }
+            // isInvalid={enabled && (!usdcWallet || usdcWallet.trim() === '')}
           />
 
           <div className='bg-default-100 p-4 rounded-lg space-y-2 text-sm'>
