@@ -1,6 +1,7 @@
 'use client'
 
 import {CategoryProductsSection} from '@/app/lobby/(store)/category/[slug]/category-products-section'
+import {FlowerTierCarousels} from '@/app/lobby/(store)/category/[slug]/flower-tier-carousels'
 import {StoreProduct} from '@/app/types'
 import {Tag} from '@/components/base44/tag'
 import {Title} from '@/components/base44/title'
@@ -199,19 +200,22 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         filterOptions.tiers.length > 0 ||
         filterOptions.subcategories.length > 0) && (
         <section className='px-4 sm:px-6 pb-4'>
-          <div className='max-w-7xl mx-auto flex flex-col gap-3 min-h-64'>
-            {filterOptions.tiers.length > 0 && (
+          <div
+            className={cn('max-w-7xl mx-auto flex flex-col gap-3 min-h-64', {
+              'min-h-24': slug === 'flower',
+            })}>
+            {slug !== 'flower' && filterOptions.tiers.length > 0 && (
               <div className='flex flex-wrap items-center gap-1'>
-                <span className='text-sm font-clash font-semibold mr-2 uppercase'>
+                <span className='text-base font-clash font-bold mr-2 uppercase'>
                   Tiers
                 </span>
                 <Button
                   size='sm'
                   variant={tier === '' ? 'primary' : 'outline'}
                   className={cn(
-                    'min-w-0 h-6 font-bold uppercase font-clash rounded-xs',
+                    'min-w-0 h-6 text-sm font-semibold uppercase font-clash rounded-xs',
                     {
-                      'bg-brand text-white': tier === '',
+                      'bg-foreground text-white': tier === '',
                     },
                   )}
                   onPress={() => handleTierChange('')}>
@@ -236,14 +240,14 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
             )}
             {filterOptions.subcategories.length > 0 && (
               <div className='flex flex-wrap items-center gap-1 mt-0.5'>
-                <span className='text-sm font-clash font-semibold mr-2 uppercase'>
+                <span className='text-base font-clash font-semibold mr-2 uppercase'>
                   Subcategory
                 </span>
                 <Button
                   size='sm'
                   variant={subcategory === '' ? 'primary' : 'tertiary'}
                   className={cn(
-                    'min-w-0 h-6 font-clash font-medium uppercase rounded-xs',
+                    'min-w-0 h-6 text-sm font-clash font-medium uppercase rounded-xs',
                     {
                       'bg-brand text-white': subcategory === '',
                     },
@@ -279,16 +283,16 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
               <div className='grid min-h-22 gap-1.5 sm:grid-cols-[auto_1fr] sm:items-start'>
                 <div className='flex flex-col gap-1.5'>
                   <div className='flex flex-wrap items-center gap-1'>
-                    <span className='text-sm font-clash font-semibold uppercase sm:pt-1'>
-                      Brand
+                    <span className='text-base font-clash font-bold uppercase h-7.5 sm:pt-1'>
+                      Brands
                     </span>
                     <Button
                       size='sm'
                       variant={brand === '' ? 'primary' : 'tertiary'}
                       className={cn(
-                        'min-w-0 h-6 font-clash font-semibold uppercase rounded-xs',
+                        'min-w-0 h-6 text-sm font-clash font-semibold uppercase rounded-xs',
                         {
-                          'bg-brand text-white': brand === '',
+                          'bg-foreground text-white': brand === '',
                         },
                       )}
                       onPress={() => handleBrandChange('')}>
@@ -422,16 +426,25 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         </section>
       )}
       {/**/}
-      <CategoryProductsSection
-        slug={slug}
-        category={category}
-        brand={brand}
-        productType={productType}
-        tier={tier}
-        subcategory={subcategory}
-        initialProducts={initialProducts}
-        isFilterPending={isFilterPending}
-      />
+      {slug === 'flower' ? (
+        <FlowerTierCarousels
+          slug={slug}
+          category={category}
+          brand={brand}
+          initialProducts={initialProducts}
+        />
+      ) : (
+        <CategoryProductsSection
+          slug={slug}
+          category={category}
+          brand={brand}
+          productType={productType}
+          tier={tier}
+          subcategory={subcategory}
+          initialProducts={initialProducts}
+          isFilterPending={isFilterPending}
+        />
+      )}
       <section className='py-6 sm:py-10 lg:py-20 px-4 sm:px-6 max-w-7xl mx-auto'>
         <div className='flex flex-col gap-20'>
           <div className='flex flex-wrap items-center justify-between gap-4'>
