@@ -2,8 +2,7 @@ import type {ClassName} from '@/app/types'
 import {Input, inputClass} from '@/components/hero-v3/input'
 import {selectClass} from '@/components/hero-v3/select'
 import {cn} from '@/lib/utils'
-import {Textarea as TextArea} from '@heroui/input'
-import {Label, ListBox, Select as S, Switch} from '@heroui/react'
+import {Label, ListBox, Select as S, Switch, TextArea} from '@heroui/react'
 import React, {
   FocusEvent,
   type ChangeEvent,
@@ -322,12 +321,12 @@ export function TextAreaField<T>(props?: PartialFormInput<T> | FormInput<T>) {
           id={field.name}
           name={String(field.name)}
           autoComplete={props?.autoComplete}
-          isDisabled={props?.disabled}
+          disabled={props?.disabled}
           value={field.state.value ?? ''}
-          onValueChange={(value) => field.handleChange(value)}
+          onChange={(e) => field.handleChange(e.target.value)}
           onBlur={field.handleBlur}
           placeholder={props?.placeholder}
-          minRows={props?.minRows ?? 3}
+          rows={props?.minRows ?? 3}
           className={cn(inputClass.input, 'h-auto')}
           spellCheck={
             props?.spellCheck === undefined

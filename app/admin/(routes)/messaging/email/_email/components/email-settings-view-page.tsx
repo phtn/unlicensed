@@ -1,18 +1,21 @@
 'use client'
 
-import {
-  commonInputClassNames,
-  narrowInputClassNames,
-} from '@/app/admin/_components/ui/fields'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
+import {Input} from '@/components/hero-v3/input'
 import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import {type Doc, Id} from '@/convex/_generated/dataModel'
 import {onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
 import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
-import {Input, Textarea as TextArea} from '@heroui/input'
-import {Button, Card, CardContent, CardHeader, ProgressBar} from '@heroui/react'
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  ProgressBar,
+  TextArea,
+} from '@heroui/react'
 import type {SharedSelection} from '@heroui/system'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
@@ -707,8 +710,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                     label='List name (optional)'
                     placeholder='My mailing list'
                     value={mailingListName}
-                    onValueChange={setMailingListName}
-                    classNames={commonInputClassNames}
+                    onChange={(e) => setMailingListName(e.target.value)}
                   />
                 </CardHeader>
                 <CardContent className='space-y-4'>
@@ -722,8 +724,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                   <div className='flex items-start space-x-3'>
                     <TextArea
                       placeholder='PASTE Name and Email on any of these formats: Alice=alice@example.com | Bob: bob@example.com | Carol, carol@example.com'
-                      minRows={1}
-                      classNames={narrowInputClassNames}
+                      rows={1}
                       onPaste={handlePasteRecipients}
                     />
                     <div className='flex items-center gap-3'>
