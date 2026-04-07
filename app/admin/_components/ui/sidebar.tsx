@@ -5,7 +5,6 @@ import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
-  Button,
   Drawer,
   DrawerContent,
   Input,
@@ -161,6 +160,10 @@ function Sidebar({
 }) {
   const {isMobile, state, openMobile, setOpenMobile} = useSidebar()
 
+  const sidebarDrawerState = useOverlayState({
+    isOpen: openMobile,
+    onOpenChange: setOpenMobile,
+  })
   if (collapsible === 'none') {
     return (
       <div
@@ -173,8 +176,6 @@ function Sidebar({
       </div>
     )
   }
-
-  const sidebarDrawerState = useOverlayState({isOpen: openMobile, onOpenChange: setOpenMobile})
 
   if (isMobile) {
     return (
@@ -329,7 +330,9 @@ function SidebarFooter({className, ...props}: ComponentProps<'div'>) {
 }
 
 function SidebarSeparator({className}: ComponentProps<typeof Separator>) {
-  return <Separator className={cn('mx-2 w-auto bg-sidebar-border', className)} />
+  return (
+    <Separator className={cn('mx-2 w-auto bg-sidebar-border', className)} />
+  )
 }
 
 function SidebarContent({
