@@ -17,7 +17,7 @@ const TextureCardStyled = forwardRef<
       <div className='h-full rounded-[22px] border  dark:border-dark-gray/70 border-light-gray/25'>
         <div className='h-full rounded-[21px] border  dark:border-dark-gray/40  border-light-gray/32'>
           {/* Inner content wrapper */}
-          <div className='h-full w-full border border-light-gray/40 dark:border-dark-gray/10 rounded-[20px] text-neutral-500 overflow-hidden'>
+          <div className='h-full w-full border border-light-gray/40 dark:border-dark-gray/10 rounded-2xl text-neutral-500 overflow-hidden'>
             {children}
           </div>
         </div>
@@ -42,7 +42,7 @@ const TextureCard = forwardRef<
       )}
       {...props}>
       <div className='border dark:border-neutral-900/80 border-black/10 rounded-[calc(var(--radius)-1px)]'>
-        <div className='border dark:border-neutral-950 border-white/50 rounded-[calc(var(--radius)-2px)]'>
+        <div className='border dark:border-neutral-950 border-white/50 rounded-md'>
           <div className='border dark:border-neutral-900/70 border-neutral-950/20 rounded-[calc(var(--radius)-3px)]'>
             <div className=' w-full border border-white/50 dark:border-neutral-700/50 text-neutral-500 bg-linear-to-b from-card/70 to-secondary/50 rounded-[calc(var(--radius)-4px)] '>
               {children}

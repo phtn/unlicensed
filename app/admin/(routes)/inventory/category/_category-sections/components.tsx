@@ -17,7 +17,7 @@ export const FormSection = ({
     <Card
       id={id}
       className={cn(
-        'scroll-mt-4 border-x border-t border-gray-300 p-4 dark:border-origin dark:bg-zinc-600',
+        'scroll-mt-4 border-x border-t border-gray-300 p-4 dark:border-origin dark:bg-zinc-600 rounded-xs',
         {
           'rounded-t-2xl': position === 'top',
           'border-b rounded-b-2xl': position === 'bottom',

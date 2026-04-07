@@ -54,7 +54,7 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
       variant='tertiary'
       aria-label='theme'
       className={cn(
-        'group rounded-full border-none bg-transparent transition-all duration-200 hover:bg-accent/20 active:scale-95 dark:text-white',
+        'group rounded-full border-none bg-transparent transition-all duration-200 hover:bg-accent-soft-hover active:scale-95 dark:text-white',
       )}>
       <div
         suppressHydrationWarning

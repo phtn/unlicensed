@@ -5,9 +5,10 @@ import type {
   RewardsConfig,
   RewardsTier,
 } from '@/app/lobby/(store)/cart/checkout/lib/rewards'
+import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {Button, Card, Checkbox, Chip, Input, Label, Modal} from '@heroui/react'
+import {Button, Card, Checkbox, Chip, Label, Modal} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useState, ViewTransition} from 'react'
 import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
@@ -443,97 +444,100 @@ export const RewardsContent = () => {
             closeTierModal()
           }
         }}>
-        <Modal.Backdrop />
-        <Modal.Container scroll='inside' size='lg'>
-          <Modal.Dialog>
-            <Modal.Header className='font-okxs font-semibold'>
-              <Modal.Heading>
-                {editingTierIndex !== null ? 'Edit Tier' : 'Add Tier'}
-              </Modal.Heading>
-            </Modal.Header>
-            <Modal.Body className='gap-4'>
-              <Label htmlFor='tier'>Label</Label>
-              <Input
-                id='tier'
-                placeholder='e.g. Starter, Silver, Gold'
-                value={tierForm.label}
-                onChange={(v) =>
-                  setTierForm((f) => ({...f, label: v.target.value}))
-                }
-                required
-              />
-              <div className='grid grid-cols-2 gap-4'>
-                <Label htmlFor='min-subtotal'>Min subtotal ($)</Label>
+        <Modal.Backdrop>
+          <Modal.Container scroll='inside' size='lg'>
+            <Modal.Dialog>
+              <Modal.Header className='font-okxs font-semibold'>
+                <Modal.Heading>
+                  {editingTierIndex !== null ? 'Edit Tier' : 'Add Tier'}
+                </Modal.Heading>
+              </Modal.Header>
+              <Modal.Body className='space-y-4'>
                 <Input
-                  id='min-subtotal'
-                  type='number'
-                  min={0}
-                  step={0.01}
-                  value={tierForm.minSubtotal}
+                  id='tier'
+                  label='Label'
+                  placeholder='e.g. Starter, Silver, Gold'
+                  value={tierForm.label}
                   onChange={(v) =>
-                    setTierForm((f) => ({...f, minSubtotal: v.target.value}))
+                    setTierForm((f) => ({...f, label: v.target.value}))
                   }
+                  required
                 />
-                <Label htmlFor='max-subtotal'>Max subtotal ($)</Label>
-                <Input
-                  id='max-subtotal'
-                  type='number'
-                  min={0}
-                  step={0.01}
-                  placeholder='Blank = no max'
-                  value={tierForm.maxSubtotal}
-                  onChange={(v) =>
-                    setTierForm((f) => ({...f, maxSubtotal: v.target.value}))
-                  }
-                />
-                <Label htmlFor='shipping-cost'>Shipping cost ($)</Label>
-                <Input
-                  id='shipping-cost'
-                  type='number'
-                  min={0}
-                  step={0.01}
-                  value={tierForm.shippingCost}
-                  onChange={(v) =>
-                    setTierForm((f) => ({...f, shippingCost: v.target.value}))
-                  }
-                />
-                <Label htmlFor='cash-back'>Cash back %</Label>
-                <Input
-                  id='cash-back'
-                  type='number'
-                  min={0}
-                  max={100}
-                  step={0.5}
-                  value={tierForm.cashBackPct}
-                  onChange={(v) =>
-                    setTierForm((f) => ({...f, cashBackPct: v.target.value}))
-                  }
-                />
-              </div>
-              <ViewTransition>
-                {tierSaveMessage === 'error' && (
-                  <span className='text-sm text-destructive'>Save failed</span>
-                )}
-              </ViewTransition>
-            </Modal.Body>
-            <Modal.Footer className='gap-2'>
-              <Button variant='tertiary' onPress={closeTierModal}>
-                Cancel
-              </Button>
-              <Button
-                variant='primary'
-                onPress={handleSaveTier}
-                isDisabled={!formToTier(tierForm) || isTierSaving}
-                className='bg-dark-table dark:bg-white dark:text-dark-table'>
-                {isTierSaving
-                  ? 'Saving...'
-                  : editingTierIndex !== null
-                    ? 'Save Changes'
-                    : 'Add'}
-              </Button>
-            </Modal.Footer>
-          </Modal.Dialog>
-        </Modal.Container>
+                <div className='grid grid-cols-2 gap-4'>
+                  <Input
+                    id='min-subtotal'
+                    label='Min subtotal ($)'
+                    type='number'
+                    min={0}
+                    step={0.01}
+                    value={tierForm.minSubtotal}
+                    onChange={(v) =>
+                      setTierForm((f) => ({...f, minSubtotal: v.target.value}))
+                    }
+                  />
+                  <Input
+                    id='max-subtotal'
+                    label='Max subtotal ($)'
+                    type='number'
+                    min={0}
+                    step={0.01}
+                    placeholder='Blank = no max'
+                    value={tierForm.maxSubtotal}
+                    onChange={(v) =>
+                      setTierForm((f) => ({...f, maxSubtotal: v.target.value}))
+                    }
+                  />
+                  <Input
+                    id='shipping-cost'
+                    label='Shipping cost ($)'
+                    type='number'
+                    min={0}
+                    step={0.01}
+                    value={tierForm.shippingCost}
+                    onChange={(v) =>
+                      setTierForm((f) => ({...f, shippingCost: v.target.value}))
+                    }
+                  />
+                  <Input
+                    id='cash-back'
+                    label='Cash back %'
+                    type='number'
+                    min={0}
+                    max={100}
+                    step={0.5}
+                    value={tierForm.cashBackPct}
+                    onChange={(v) =>
+                      setTierForm((f) => ({...f, cashBackPct: v.target.value}))
+                    }
+                  />
+                </div>
+                <ViewTransition>
+                  {tierSaveMessage === 'error' && (
+                    <span className='text-sm text-destructive'>
+                      Save failed
+                    </span>
+                  )}
+                </ViewTransition>
+              </Modal.Body>
+              <Modal.Footer className='gap-2'>
+                <Button variant='tertiary' onPress={closeTierModal}>
+                  Cancel
+                </Button>
+                <Button
+                  variant='primary'
+                  onPress={handleSaveTier}
+                  isDisabled={!formToTier(tierForm) || isTierSaving}
+                  className='bg-dark-table dark:bg-white dark:text-dark-table'>
+                  {isTierSaving
+                    ? 'Saving...'
+                    : editingTierIndex !== null
+                      ? 'Save Changes'
+                      : 'Add'}
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
 
       <Modal
@@ -544,38 +548,39 @@ export const RewardsContent = () => {
             setDeleteMessage(null)
           }
         }}>
-        <Modal.Backdrop />
-        <Modal.Container size='sm'>
-          <Modal.Dialog>
-            <Modal.Header className='font-okxs font-semibold'>
-              <Modal.Heading>Delete Tier</Modal.Heading>
-            </Modal.Header>
-            <Modal.Body className='gap-3'>
-              <p className='text-sm text-foreground/80'>
-                Remove this tier? You must have at least one tier.
-              </p>
-              {deleteMessage === 'error' && (
-                <p className='text-sm text-destructive'>Delete failed</p>
-              )}
-            </Modal.Body>
-            <Modal.Footer className='gap-2'>
-              <Button
-                variant='tertiary'
-                onPress={() => {
-                  setDeleteTierIndex(null)
-                  setDeleteMessage(null)
-                }}>
-                Cancel
-              </Button>
-              <Button
-                variant='danger'
-                onPress={handleDeleteTier}
-                isDisabled={isDeleting}>
-                {isDeleting ? 'Deleting...' : 'Delete'}
-              </Button>
-            </Modal.Footer>
-          </Modal.Dialog>
-        </Modal.Container>
+        <Modal.Backdrop>
+          <Modal.Container size='sm'>
+            <Modal.Dialog>
+              <Modal.Header className='font-okxs font-semibold'>
+                <Modal.Heading>Delete Tier</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body className='gap-3'>
+                <p className='text-sm text-foreground/80'>
+                  Remove this tier? You must have at least one tier.
+                </p>
+                {deleteMessage === 'error' && (
+                  <p className='text-sm text-destructive'>Delete failed</p>
+                )}
+              </Modal.Body>
+              <Modal.Footer className='gap-2'>
+                <Button
+                  variant='tertiary'
+                  onPress={() => {
+                    setDeleteTierIndex(null)
+                    setDeleteMessage(null)
+                  }}>
+                  Cancel
+                </Button>
+                <Button
+                  variant='danger'
+                  onPress={handleDeleteTier}
+                  isDisabled={isDeleting}>
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </div>
   )

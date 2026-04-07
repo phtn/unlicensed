@@ -155,7 +155,7 @@ const CategoryCard = ({
   return (
     <Card
       className={cn(
-        'h-full overflow-hidden border border-black/10 bg-white/80 hover:border-emerald-500/20 hover:bg-white dark:border-white/10 dark:bg-dark-table/45 dark:hover:border-emerald-400/30 dark:hover:bg-dark-table/60 transition-all duration-300 p-0 rounded-lg',
+        'h-full border border-black/10 bg-white/80 hover:border-emerald-500/20 hover:bg-white dark:border-white/10 dark:bg-dark-table/45 dark:hover:border-emerald-400/30 dark:hover:bg-dark-table/60 transition-all duration-300 p-0 rounded-lg overflow-hidden shadow-none',
         {
           'scale-[0.985] opacity-60': isDragging,
           'border-emerald-500/60 ring-2 ring-emerald-500/30 dark:border-emerald-400/60 dark:ring-emerald-400/20':
@@ -178,40 +178,19 @@ const CategoryCard = ({
             </div>
           </div>
         )}
-        <h4 className='absolute top-10 left-2 z-100 truncate text-3xl font-semibold tracking-tight text-white bg-linear-to-r from-transparent to-black/40 pl-2 pr-4 rounded-e-full'>
+        <h4 className='absolute top-4 left-2 z-100 truncate text-3xl font-semibold tracking-tight text-white bg-linear-to-r from-transparent to-black/40 pl-2 pr-4 rounded-e-full'>
           {category.name}
         </h4>
         <div className='absolute inset-0 bg-linear-to-t from-white via-white/20 to-transparent dark:from-[#0a0c10] dark:via-[#0a0c10]/25' />
-
-        <div className='absolute left-3 top-3 flex flex-wrap gap-2'>
-          <Chip
-            size='sm'
-            variant='tertiary'
-            className={cn(
-              'border px-2 text-[11px] font-semibold rounded-sm',
-              category.visible === false
-                ? 'border-amber-500/20 bg-amber-500/15 text-amber-700 dark:text-amber-300'
-                : 'border-emerald-500/20 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
-            )}>
-            {category.visible === false ? 'Hidden' : 'Live'}
-          </Chip>
-          <Chip
-            size='sm'
-            variant='tertiary'
-            className='border border-black/10 bg-white/85 px-2 text-[11px] font-semibold text-neutral-700 backdrop-blur dark:border-white/10 dark:bg-black/40 dark:text-neutral-200'>
-            {category.productCount} products
-          </Chip>
-        </div>
-
         <div className='absolute right-4 top-4 z-100 flex items-center gap-2'>
           <Button
             size='sm'
             isIconOnly
-            variant='outline'
+            variant='tertiary'
             aria-label={`Drag to reorder ${category.name}`}
             isDisabled={dragHandleDisabled}
             onPointerDown={() => onDragHandlePointerDown?.()}
-            className='group/handle flex cursor-grab active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40 text-white'>
+            className='group/handle bg-black/20 h-6 rounded-sm flex items-center cursor-grab active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40 text-white'>
             <Icon name='dots-fill' className='size-5 m-auto -rotate-45' />
           </Button>
           {/*<div className='flex size-9 items-center justify-center rounded-full border border-black/10 bg-white/80 text-neutral-700 backdrop-blur dark:border-white/10 dark:bg-black/35 dark:text-white/85'>

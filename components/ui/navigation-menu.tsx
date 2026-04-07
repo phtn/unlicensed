@@ -94,7 +94,7 @@ function NavigationMenuContent({
         dropdown &&
           'absolute left-1/2 -translate-x-1/2 top-full mt-1.5 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 **:data-[slot=navigation-menu-link]:focus:ring-0 **:data-[slot=navigation-menu-link]:focus:outline-none md:absolute md:left-1/2 md:-translate-x-1/2 md:top-full md:mt-1.5 md:max-h-none md:w-auto',
         dropdown &&
-          'max-sm:fixed max-sm:left-4 max-sm:right-4 max-sm:top-[4.5rem] max-sm:translate-x-0 max-sm:w-[calc(100vw-2rem)] max-sm:max-h-[calc(100dvh-6rem)] max-sm:overflow-auto',
+          'max-sm:fixed max-sm:left-4 max-sm:right-4 max-sm:top-18 max-sm:translate-x-0 max-sm:w-[calc(100vw-2rem)] max-sm:max-h-[calc(100dvh-6rem)] max-sm:overflow-auto',
         className,
       )}
       {...props}
@@ -114,7 +114,7 @@ function NavigationMenuViewport({
       <NavigationMenuPrimitive.Viewport
         data-slot='navigation-menu-viewport'
         className={cn(
-          'origin-top-center relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-xs border bg-white!  dark:bg-black! text-popover-foreground shadow data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:zoom-in-90 md:w-[var(--radix-navigation-menu-viewport-width)]',
+          'origin-top-center relative mt-1.5 h-(--radix-navigation-menu-viewport-height) w-full overflow-hidden rounded-xs border bg-white!  dark:bg-black! text-popover-foreground shadow data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:zoom-in-90 md:w-(--radix-navigation-menu-viewport-width)',
           className,
         )}
         {...props}
@@ -147,7 +147,7 @@ function NavigationMenuIndicator({
     <NavigationMenuPrimitive.Indicator
       data-slot='navigation-menu-indicator'
       className={cn(
-        'top-full z-[1] flex h-1.5 items-end justify-center overflow-hidden data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:animate-in data-[state=visible]:fade-in',
+        'top-full z-1 flex h-1.5 items-end justify-center overflow-hidden data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:animate-in data-[state=visible]:fade-in',
         className,
       )}
       {...props}>

@@ -184,7 +184,7 @@ export const AccessContent = () => {
 
       <div className='flex flex-wrap items-center gap-3'>
         <Button size='sm' variant='secondary' onPress={handleAdd}>
-          <Icon name='plus' className='size-4' />
+          <Icon name='plus' className='size-4 m-auto' />
           Add Passcode
         </Button>
         {saveStatus === 'success' && (

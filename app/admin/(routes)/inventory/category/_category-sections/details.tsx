@@ -18,7 +18,7 @@ export const Details = ({form}: DetailsProps) => {
             {(field) => {
               const descValue = (field.state.value as string) ?? ''
               return (
-                <div className='space-y-2 w-full'>
+                <div className='flex flex-col space-y-2 w-full'>
                   <Label htmlFor='description'>Description</Label>
                   <TextArea
                     id='description'
@@ -43,7 +43,7 @@ export const Details = ({form}: DetailsProps) => {
             {(field) => {
               const benefitsValue = (field.state.value as string) ?? ''
               return (
-                <div className='space-y-2 w-full'>
+                <div className='flex flex-col space-y-2 w-full'>
                   <Label htmlFor='benefits'>Benefits</Label>
                   <TextArea
                     id='benefits'
@@ -70,7 +70,7 @@ export const Details = ({form}: DetailsProps) => {
           {(field) => {
             const highlightValue = (field.state.value as string) ?? ''
             return (
-              <div className=''>
+              <div className='flex flex-col space-y-2 w-full'>
                 <Label htmlFor='highlight'>Highlight</Label>
                 <Input
                   id='Highlight'

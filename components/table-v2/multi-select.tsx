@@ -10,7 +10,6 @@ import {Table, TableBody, TableCell, TableRow} from '@/components/ui/table'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {
-  ListBoxItem,
   Modal,
   ModalBackdrop,
   ModalBody,
@@ -18,10 +17,10 @@ import {
   ModalDialog,
   ModalFooter,
   ModalHeader,
-  Select,
 } from '@heroui/react'
 import type {ReactNode} from 'react'
 import {useMemo, useState} from 'react'
+import {Select} from '../hero-v3/select'
 import {
   BulkEditorConfig,
   BulkEditorOption,
@@ -307,6 +306,7 @@ export const MultiSelect = <T,>({
                           {field.inputKind === 'select' ? (
                             <Select
                               value={draftValues[field.id]}
+                              options={field.options}
                               onChange={(value) =>
                                 setDraftValues((current) => ({
                                   ...current,
@@ -326,15 +326,7 @@ export const MultiSelect = <T,>({
                               //   }))
                               // }}
                               placeholder={field.placeholder}
-                              isDisabled={pending}>
-                              {field.options.map((option) => (
-                                <ListBoxItem
-                                  key={option.value}
-                                  textValue={option.label}>
-                                  {option.label}
-                                </ListBoxItem>
-                              ))}
-                            </Select>
+                              isDisabled={pending}></Select>
                           ) : (
                             <input
                               type={field.inputKind}

@@ -62,7 +62,7 @@
   --color-brand: var(--brand);
   --color-light-brand: var(--light-brand);
   --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
+  --color-secondary: var(--foreground);
   --color-secondary-foreground: var(--foreground);
   --color-tertiary: var(--tertiary);
   --color-tertiary-foreground: var(--tertiary-foreground);

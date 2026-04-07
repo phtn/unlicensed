@@ -345,11 +345,11 @@ export const CategoryForm = ({
           </div>
 
           {/* Mobile Actions */}
-          <div className='sticky bottom-0 z-20 mt-4 border border-neutral-800 bg-neutral-900/85 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl backdrop-blur-md lg:hidden rounded-t-xl'>
+          <div className='fixed w-[calc(94.5lvw)] bottom-0 z-20 mt-4 border border-neutral-800 bg-neutral-900/85 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl backdrop-blur-md lg:hidden rounded-t-xl'>
             <Button
               type='submit'
               variant='primary'
-              className='w-full font-semibold bg-emerald-500 text-white'
+              className='w-full rounded-sm font-semibold bg-emerald-500 text-white'
               isPending={isSubmitting}>
               {isSubmitting
                 ? isEditMode

@@ -1,7 +1,7 @@
 'use client'
 
-import {cn} from '@/lib/utils'
-import {Chip, Input, Label, ListBoxItem, Select, TextArea} from '@heroui/react'
+import {selectClass} from '@/components/hero-v3/select'
+import {Chip, Label, ListBox, Select as S} from '@heroui/react'
 import {CategoryFormApi} from '../category-schema'
 import {FormSection, Header} from './components'
 
@@ -43,36 +43,50 @@ export const Packaging = ({form}: PackagingProps) => {
           <form.AppField name='unitsRaw'>
             {(field) => {
               const unitsValue = (field.state.value as string) ?? ''
-              const selectedUnits = unitsValue
-                .split(',')
-                .map((u) => u.trim())
-                .filter((u) => u.length > 0)
+              const selectedUnits = new Set(
+                unitsValue
+                  .split(',')
+                  .map((u) => u.trim())
+                  .filter((u) => u.length > 0),
+              )
 
               return (
                 <div className='space-y-4 w-full'>
-                  <Select<object, 'multiple'>
-                    aria-label='Packaging units'
+                  <S
                     selectionMode='multiple'
-                    value={selectedUnits}
-                    onChange={(value) =>
+                    value={Array.from(selectedUnits)}
+                    onChange={(keys) => {
                       field.handleChange(
-                        (Array.isArray(value) ? value : []).map(String).join(', '),
+                        (Array.isArray(keys) ? keys : []).map(String).join(', '),
                       )
-                    }
+                    }}
                     onBlur={field.handleBlur}
                     placeholder='Select units (e.g., g, oz, ml)'
-                    variant='secondary'
-                    className='w-full'>
-                    {UNIT_SUGGESTIONS.map((unit) => (
-                      <ListBoxItem key={unit.key} textValue={unit.label}>
-                        {unit.label}
-                      </ListBoxItem>
-                    ))}
-                  </Select>
+                    className={selectClass.mainWrapper}>
+                    <Label className={selectClass.label}>Packaging Units</Label>
+                    <S.Trigger className={selectClass.trigger}>
+                      <S.Value className={selectClass.value} />
+                      <S.Indicator className={selectClass.selectIndicator} />
+                    </S.Trigger>
+                    <S.Popover className={selectClass.popover}>
+                      <ListBox className={selectClass.listbox}>
+                        {UNIT_SUGGESTIONS.map((unit) => (
+                          <ListBox.Item
+                            key={unit.key}
+                            id={unit.key}
+                            textValue={unit.label}
+                            className={selectClass.listboxItem}>
+                            {unit.label}
+                            <ListBox.ItemIndicator />
+                          </ListBox.Item>
+                        ))}
+                      </ListBox>
+                    </S.Popover>
+                  </S>
 
-                  {selectedUnits.length > 0 && (
+                  {selectedUnits.size > 0 && (
                     <div className='flex flex-wrap gap-2'>
-                      {selectedUnits.map((unit) => (
+                      {Array.from(selectedUnits).map((unit) => (
                         <Chip key={unit} size='sm' variant='secondary'>
                           {unit}
                         </Chip>
@@ -80,13 +94,12 @@ export const Packaging = ({form}: PackagingProps) => {
                     </div>
                   )}
 
-                  <Input
-                    value={unitsValue}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder='Or type custom units separated by commas (e.g., g, oz, ml)'
-                    variant='secondary'
+                  <field.TextField
+                    label='Custom Units'
+                    type='text'
+                    placeholder='Or type custom units separated by commas (e.g., dozen, case)'
                   />
+
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
                       <p className='text-xs text-rose-400'>
@@ -101,10 +114,12 @@ export const Packaging = ({form}: PackagingProps) => {
           <form.AppField name='denominationsRaw'>
             {(field) => {
               const denominationsValue = (field.state.value as string) ?? ''
-              const currentDenominations = denominationsValue
-                .split(/[,\n]/)
-                .map((d) => Number.parseFloat(d.trim()))
-                .filter((d) => !Number.isNaN(d))
+              const selectedDenominations = new Set(
+                denominationsValue
+                  .split(/[,\n]/)
+                  .map((d) => d.trim())
+                  .filter((d) => d.length > 0),
+              )
 
               // Get units from the form to determine suggestions
               const unitsValue = form.getFieldValue('unitsRaw') as
@@ -115,99 +130,62 @@ export const Packaging = ({form}: PackagingProps) => {
                 .map((u) => u.trim())
                 .filter((u) => u.length > 0)
 
-              // Get denomination suggestions based on selected units
-              const getSuggestions = () => {
-                if (selectedUnits.length === 0) {
-                  // Default suggestions if no units selected
-                  return DENOMINATION_SUGGESTIONS.g
-                }
-
-                // Combine suggestions from all selected units, removing duplicates
-                const allSuggestions = new Set<number>()
-                selectedUnits.forEach((unit) => {
-                  const unitSuggestions =
-                    DENOMINATION_SUGGESTIONS[unit.toLowerCase()]
-                  if (unitSuggestions) {
-                    unitSuggestions.forEach((s) => allSuggestions.add(s))
-                  }
-                })
-
-                // If no matches found, use default
-                if (allSuggestions.size === 0) {
-                  return DENOMINATION_SUGGESTIONS.g
-                }
-
-                return Array.from(allSuggestions).sort((a, b) => a - b)
+              // Combine suggestions from all selected units, sorted numerically
+              const getSuggestions = (): number[] => {
+                const base =
+                  selectedUnits.length === 0
+                    ? DENOMINATION_SUGGESTIONS.g
+                    : (() => {
+                        const all = new Set<number>()
+                        selectedUnits.forEach((unit) => {
+                          DENOMINATION_SUGGESTIONS[unit.toLowerCase()]?.forEach(
+                            (s) => all.add(s),
+                          )
+                        })
+                        return all.size === 0
+                          ? DENOMINATION_SUGGESTIONS.g
+                          : Array.from(all)
+                      })()
+                return [...base].sort((a, b) => a - b)
               }
 
               const suggestions = getSuggestions()
 
-              const handleSuggestionClick = (value: number) => {
-                if (!currentDenominations.includes(value)) {
-                  const newDenominations = [
-                    ...currentDenominations,
-                    value,
-                  ].sort((a, b) => a - b)
-                  const newValue = newDenominations.join(', ')
-                  field.handleChange(newValue)
-                }
-              }
-
               return (
-                <div className='w-full'>
-                  <Label htmlFor='denominations'>Denominations</Label>
-                  <TextArea
-                    id='denominations'
-                    value={denominationsValue}
-                    onChange={(e) => field.handleChange(e.target.value)}
+                <div className='space-y-4 w-full'>
+                  <S
+                    selectionMode='multiple'
+                    value={Array.from(selectedDenominations)}
+                    onChange={(keys) => {
+                      const sorted = (Array.isArray(keys) ? keys : [])
+                        .map(String)
+                        .sort((a, b) => Number(a) - Number(b))
+                      field.handleChange(sorted.join(', '))
+                    }}
                     onBlur={field.handleBlur}
-                    placeholder='Enter denominations separated by commas'
-                    className='mb-1 w-full'
-                    rows={1}
-                    variant='secondary'
-                    // classNames={commonInputClassNames}
-                  />
-                  {selectedUnits.length > 0 && suggestions.length > 0 && (
-                    <div className='space-y-4 h-full'>
-                      <p className='text-sm opacity-80'>
-                        Click on suggested denominations for{' '}
-                        <span className='font-semibold'>
-                          {selectedUnits.map((u) => `(${u})`).join(', ')}
-                        </span>
-                        :
-                      </p>
-                      <div className='flex flex-wrap gap-1 md:gap-3 font-okxs font-semibold min-h-16'>
-                        {suggestions.map((suggestion) => {
-                          const isSelected =
-                            currentDenominations.includes(suggestion)
-                          return (
-                            <Chip
-                              key={suggestion}
-                              size='sm'
-                              variant={isSelected ? 'primary' : 'secondary'}
-                              className={cn(
-                                'cursor-pointer transition-all dark:text-white',
-                                {'': isSelected},
-                              )}
-                              onClick={() => handleSuggestionClick(suggestion)}>
-                              {suggestion}
-                            </Chip>
-                          )
-                        })}
-                      </div>
-                      {/*<p className='text-xs text-neutral-500'>
-                        Click a suggestion to add it, or type custom values
-                        separated by commas or newlines.
-                      </p>*/}
-                    </div>
-                  )}
-                  {selectedUnits.length === 0 && (
-                    <p className='text-sm opacity-50'>
-                      Select units above to see denomination suggestions, or
-                      enter numeric values separated by commas or newlines
-                      (e.g., 1, 3.5, 7, 14, 28)
-                    </p>
-                  )}
+                    placeholder='Select denominations'
+                    className={selectClass.mainWrapper}>
+                    <Label className={selectClass.label}>Denominations</Label>
+                    <S.Trigger className={selectClass.trigger}>
+                      <S.Value className={selectClass.value} />
+                      <S.Indicator className={selectClass.selectIndicator} />
+                    </S.Trigger>
+                    <S.Popover className={selectClass.popover}>
+                      <ListBox className={selectClass.listbox}>
+                        {suggestions.map((s) => (
+                          <ListBox.Item
+                            key={String(s)}
+                            id={String(s)}
+                            textValue={String(s)}
+                            className={selectClass.listboxItem}>
+                            {s}
+                            <ListBox.ItemIndicator />
+                          </ListBox.Item>
+                        ))}
+                      </ListBox>
+                    </S.Popover>
+                  </S>
+
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
                       <p className='text-xs text-rose-400'>

@@ -42,7 +42,7 @@ export const Editor = ({value, onChange, placeholder}: EditorProps) => {
   ]
 
   return (
-    <div className='bg-background text-foreground [&_.ql-toolbar]:bg-muted [&_.ql-container]:bg-background [&_.ql-container]:text-foreground [&_.ql-editor]:min-h-[300px]'>
+    <div className='bg-background text-foreground [&_.ql-toolbar]:bg-muted [&_.ql-container]:bg-background [&_.ql-container]:text-foreground [&_.ql-editor]:min-h-75'>
       <ReactQuill
         theme='snow'
         value={value}

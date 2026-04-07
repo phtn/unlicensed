@@ -112,7 +112,7 @@ function AttributeEntryListField({
 
         return (
           <div className='space-y-3'>
-            <div className='flex flex-col sm:flex-row gap-2'>
+            <div className='flex flex-col sm:flex-row gap-4'>
               <Input
                 value={nameInput}
                 onChange={(e) => handleNameChange(e.target.value)}
@@ -125,7 +125,7 @@ function AttributeEntryListField({
                 }}
                 placeholder={namePlaceholder ?? 'Name'}
                 variant='secondary'
-                className='flex-1'
+                className='flex-1 text-foreground shadow-none placeholder:text-foreground/60'
               />
               <Input
                 value={slugInput}
@@ -142,11 +142,10 @@ function AttributeEntryListField({
                 }}
                 placeholder={slugPlaceholder ?? 'Slug'}
                 variant='secondary'
-                // classNames={narrowInputClassNames}
-                className='flex-1'
+                className='flex-1 text-foreground shadow-none placeholder:text-foreground/60'
               />
               <Button
-                size='md'
+                size='sm'
                 variant='primary'
                 className='rounded-xs bg-dark-table dark:bg-white dark:text-dark-table shrink-0'
                 onPress={handleAdd}
@@ -159,7 +158,7 @@ function AttributeEntryListField({
                 {entries.map((entry, index) => (
                   <li
                     key={`${entry.slug}-${index}`}
-                    className='flex flex-wrap items-center gap-2 rounded-lg bg-dark-gray/10 dark:bg-white/10 px-3 py-1 w-fit'>
+                    className='flex flex-wrap items-center gap-2 text-foreground rounded-lg bg-dark-gray/10 dark:bg-white/10 px-3 py-1 w-fit'>
                     <span className='ps-1'>{entry.name}</span>
                     <button
                       type='button'
@@ -231,14 +230,14 @@ export const Attributes = ({form, category: _category}: AttributesProps) => {
       <Header label='Attributes' />
       <Accordion
         variant='surface'
-        className='rounded-lg border border-gray-300 bg-sidebar/50 px-0 dark:border-origin'>
+        className='rounded-lg overflow-hidden border border-gray-300 bg-sidebar/50 px-0 dark:border-origin'>
         {attributes.map((attribute) => (
           <Accordion.Item
             key={attribute.name}
             id={attribute.name}
-            className='overflow-hidden rounded-t-lg py-0 data-[expanded=true]:bg-white dark:data-[expanded=true]:bg-sidebar'>
+            className='overflow-hidden py-0 data-[expanded=true]:bg-white dark:data-[expanded=true]:bg-sidebar'>
             <Accordion.Heading>
-              <Accordion.Trigger className='px-4 py-3 font-medium tracking-tight'>
+              <Accordion.Trigger className='rounded-none px-4 py-3 font-medium tracking-tight'>
                 <AttributeAccordionTitle
                   form={form}
                   fieldName={attribute.name}

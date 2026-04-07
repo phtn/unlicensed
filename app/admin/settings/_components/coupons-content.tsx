@@ -504,7 +504,7 @@ export const CouponsContent = () => {
                     </Button>
                     <Button
                       size='sm'
-                      variant={coupon.enabled ? 'secondary' : 'primary'}
+                      variant={coupon.enabled ? 'tertiary' : 'ghost'}
                       className='rounded-sm'
                       isDisabled={isBusy}
                       onPress={() =>

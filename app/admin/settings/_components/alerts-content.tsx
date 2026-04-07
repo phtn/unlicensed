@@ -286,7 +286,7 @@ export const AlertsContent = () => {
             <Card
               key={key}
               className='rounded-lg border border-slate-500/60 bg-slate-300 dark:bg-dark-table'>
-              <Card.Content className='flex flex-col gap-4 p-4'>
+              <Card.Content className='flex flex-col gap-4 p-0'>
                 <div className='flex items-center justify-between gap-3'>
                   <h3 className='text-base font-semibold'>
                     {ALERT_LABELS[key]}

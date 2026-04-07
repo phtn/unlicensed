@@ -913,7 +913,7 @@ export const DealsContent = () => {
         <Modal.Backdrop>
           <Modal.Container size='lg' scroll='inside'>
             <Modal.Dialog className='max-w-4xl overflow-hidden rounded-2xl'>
-              <Modal.Header className='flex flex-col gap-1 border-b border-default-200 pb-4'>
+              <Modal.Header className='flex flex-col gap-1 pb-4'>
                 <span className='text-xs font-semibold uppercase tracking-widest text-foreground/50'>
                   {editingId ? 'Edit deal' : 'New deal'}
                 </span>
@@ -921,7 +921,7 @@ export const DealsContent = () => {
                   {editingId ? form.title || form.id : 'Deal details'}
                 </h2>
               </Modal.Header>
-              <Modal.Body className='flex flex-col gap-8 py-6'>
+              <Modal.Body className='flex flex-col gap-8 pb-6'>
                 {/* Identity */}
                 <div className='grid gap-4 sm:grid-cols-2'>
                   <Input
@@ -975,18 +975,18 @@ export const DealsContent = () => {
                           isSelected={isSelected}
                           onChange={() => toggleCategory(c.slug ?? '')}
                           className={cn(
-                            'inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 transition-colors',
+                            'font-clash inline-flex text-foreground items-center gap-2 rounded-full border px-2.5 py-1.5 transition-colors',
                             isSelected
                               ? 'border-terpenes bg-terpenes text-white'
                               : 'border-foreground/25 bg-transparent',
                           )}>
                           <Checkbox.Control className='shrink-0'>
-                            <Checkbox.Indicator>
+                            <Checkbox.Indicator className=''>
                               {({isSelected}) =>
                                 isSelected ? (
                                   <Icon
                                     name='check'
-                                    className='size-4 text-current'
+                                    className='size-4 rounded-full bg-foreground/60 dark:bg-dark-table'
                                   />
                                 ) : null
                               }
@@ -1038,7 +1038,7 @@ export const DealsContent = () => {
                                     toggleExclusion(field, option.slug)
                                   }
                                   className={cn(
-                                    'inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 transition-colors',
+                                    'inline-flex text-foreground items-center gap-2 rounded-full border px-2.5 py-1.5 transition-colors',
                                     isSelected
                                       ? 'border-rose-400 bg-rose-400 text-white'
                                       : 'border-foreground/25 bg-transparent',
@@ -1049,7 +1049,7 @@ export const DealsContent = () => {
                                         isSelected ? (
                                           <Icon
                                             name='x'
-                                            className='size-4 text-current'
+                                            className='size-4 rounded-full bg-foreground/60 dark:bg-dark-table'
                                           />
                                         ) : null
                                       }
@@ -1319,7 +1319,7 @@ export const DealsContent = () => {
                       }
                       className='flex items-center gap-2'>
                       <Checkbox.Control>
-                        <Checkbox.Indicator />
+                        <Checkbox.Indicator className='aspect-square' />
                       </Checkbox.Control>
                       <Checkbox.Content className='text-sm'>
                         Visible on store Deals page
