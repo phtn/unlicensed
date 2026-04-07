@@ -12,7 +12,10 @@ import {useRouter} from 'next/navigation'
 import {startTransition, useCallback, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {withViewTransition} from '../utils'
-import {MailingListEditor, type MailingListRecipientRow} from './mailing-list-editor'
+import {
+  MailingListEditor,
+  type MailingListRecipientRow,
+} from './mailing-list-editor'
 import {MailingListTable} from './mailing-list-table'
 
 export const MailingListViewer = ({id}: {id: string}) => {
@@ -53,7 +56,9 @@ export const MailingListViewer = ({id}: {id: string}) => {
       } catch (error) {
         console.error(error)
         toast.error(
-          error instanceof Error ? error.message : 'Failed to update mailing list',
+          error instanceof Error
+            ? error.message
+            : 'Failed to update mailing list',
         )
       } finally {
         setIsUpdating(false)
@@ -81,7 +86,7 @@ export const MailingListViewer = ({id}: {id: string}) => {
       <div className='min-h-screen px-4 py-6 sm:px-6 lg:px-8'>
         <Card className='mx-auto max-w-xl border border-greyed/15 bg-sidebar/70 shadow-none backdrop-blur-xl'>
           <CardContent className='gap-4 p-8 text-center'>
-            <div className='mx-auto flex size-14 items-center justify-center rounded-3xl border border-danger/15 bg-danger/10 text-danger'>
+            <div className='mx-auto flex size-14 items-center justify-center rounded-3xl border border-danger-soft bg-danger/10 text-danger'>
               <Icon name='mail-send-fill' className='size-6' />
             </div>
             <SectionHeader
@@ -92,7 +97,7 @@ export const MailingListViewer = ({id}: {id: string}) => {
             <Button
               type='button'
               variant='tertiary'
-                            onPress={navigateBack}
+              onPress={navigateBack}
               className='rounded-xl border border-greyed/15 bg-background/45'>
               Back to Mailing Lists
             </Button>

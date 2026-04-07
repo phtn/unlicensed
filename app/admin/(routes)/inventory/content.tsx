@@ -2,7 +2,7 @@
 
 import {Icon} from '@/lib/icons'
 import {Activity, useCallback, useState, useTransition} from 'react'
-import {InventoryTable} from './inventory-table'
+// import {InventoryTable} from './inventory-table'
 
 export const Content = () => {
   const [showDescription, setShowDescription] = useState(true)
@@ -36,7 +36,7 @@ export const Content = () => {
             />
           </header>
         </Activity>
-        <InventoryTable />
+        {/*<InventoryTable />*/}
       </div>
     </main>
   )
