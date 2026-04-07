@@ -6,14 +6,7 @@ import {useResizableColumns} from '@/hooks/use-resizable-columns'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  Chip,
-  Dropdown,
-} from '@heroui/react'
-import {Input} from '@heroui/input'
+import {Button, ButtonGroup, Card, Chip, Dropdown} from '@heroui/react'
 import type {SharedSelection} from '@heroui/system'
 import {useMutation, usePaginatedQuery, useQuery} from 'convex/react'
 import {Key, useCallback, useEffect, useMemo, useState} from 'react'
@@ -21,7 +14,7 @@ import {useProductDetails} from '../../_components/product-details-context'
 import {actionsCell, moneyCell, textCell} from '../../_components/ui/cells'
 import {useSettingsPanel} from '../../_components/ui/settings'
 
-
+import {Input} from '@/components/hero-v3/input'
 import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
 type Product = Doc<'products'>
@@ -57,10 +50,7 @@ export const InventoryTable = () => {
     {initialNumItems: INVENTORY_PAGE_SIZE},
   )
   const categoriesData = useQuery(api.categories.q.listCategories)
-  const categories = useMemo(
-    () => categoriesData ?? [],
-    [categoriesData],
-  )
+  const categories = useMemo(() => categoriesData ?? [], [categoriesData])
   const products = useMemo(() => paginatedProducts, [paginatedProducts])
   const {selectedProduct, setSelectedProduct} = useProductDetails()
   const {open, setOpen} = useSettingsPanel()
@@ -168,7 +158,6 @@ export const InventoryTable = () => {
         }
       }
     }
-   
   }, [
     columnWidths,
     getColumnWidth,
@@ -444,16 +433,9 @@ export const InventoryTable = () => {
               className='size-4 accent-emerald-500'
             />
             <Input
-              isClearable
-              className='w-full sm:max-w-[44%]'
-              classNames={{
-                inputWrapper: 'border-gray-400 dark:bg-neutral-600/20',
-              }}
               placeholder='Search by name...'
-              startContent={<Icon name='search' />}
               value={filterValue}
-              onClear={onClear}
-              onValueChange={onSearchChange}
+              onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
           {selectedRows.size > 0 && (
@@ -467,12 +449,7 @@ export const InventoryTable = () => {
                     type='number'
                     placeholder='Enter new price'
                     value={priceInput}
-                    onValueChange={setPriceInput}
-                    startContent={<Icon name='dollar' className='size-4' />}
-                    classNames={{
-                      inputWrapper:
-                        'border-gray-400 dark:bg-neutral-600/20 w-40',
-                    }}
+                    onChange={(e) => setPriceInput(e.target.value)}
                     min='0'
                     step='0.01'
                     onKeyDown={(e) => {
@@ -502,9 +479,7 @@ export const InventoryTable = () => {
               ) : (
                 <Dropdown>
                   <Dropdown.Trigger>
-                    <Button
-                      variant='tertiary'
-                      className='text-blue-400'>
+                    <Button variant='tertiary' className='text-blue-400'>
                       Actions
                       <Icon name='arrow-down' className='size-4' />
                     </Button>
@@ -666,8 +641,7 @@ export const InventoryTable = () => {
   return (
     <>
       {topContent}
-      <Card
-        className='md:rounded-xl md:w-full w-screen overflow-x-auto overflow-y-visible p-4 bg-sidebar/30 dark:bg-dark-table/40'>
+      <Card className='md:rounded-xl md:w-full w-screen overflow-x-auto overflow-y-visible p-4 bg-sidebar/30 dark:bg-dark-table/40'>
         <div ref={tableRef} className='relative min-w-full'>
           <div className='overflow-x-auto'>
             <table
@@ -689,7 +663,9 @@ export const InventoryTable = () => {
                         onChange={(event) => {
                           if (event.target.checked) {
                             setSelectedRows(
-                              new Set(filteredItems.map((product) => getKey(product))),
+                              new Set(
+                                filteredItems.map((product) => getKey(product)),
+                              ),
                             )
                           } else {
                             setSelectedRows(new Set())
@@ -701,190 +677,193 @@ export const InventoryTable = () => {
                     </th>
                   ) : null}
                   {visibleColumnDefs.map((column) => {
-                const width = getColumnWidth(column.uid)
-                // const isResizing = resizingColumn === column.uid
-                const isHovered = hoveredColumn === column.uid
-                const columnIndex = visibleColumnDefs.findIndex(
-                  (col) => col.uid === column.uid,
-                )
-                const isLastColumn = columnIndex === visibleColumnDefs.length - 1
+                    const width = getColumnWidth(column.uid)
+                    // const isResizing = resizingColumn === column.uid
+                    const isHovered = hoveredColumn === column.uid
+                    const columnIndex = visibleColumnDefs.findIndex(
+                      (col) => col.uid === column.uid,
+                    )
+                    const isLastColumn =
+                      columnIndex === visibleColumnDefs.length - 1
 
-                const columnStyle = width
-                  ? {
-                      width: `${width}px`,
-                      minWidth: `${width}px`,
-                      maxWidth: `${width}px`,
-                    }
-                  : undefined
+                    const columnStyle = width
+                      ? {
+                          width: `${width}px`,
+                          minWidth: `${width}px`,
+                          maxWidth: `${width}px`,
+                        }
+                      : undefined
 
-                return (
-                  <th
-                    key={column.uid}
-                    className={cn('text-start relative group/column h-fit', {
-                      'md:w-16 w-16': column.uid === 'actions' && !width,
-                      'md:text-center md:w-18 w-20':
-                        column.uid === 'price' && !width,
-                      'md:text-center md:w-16 w-16':
-                        column.uid === 'stock' && !width,
-                      'md:text-center md:w-64 w-48':
-                        column.uid === 'product' && !width,
-                      'w-24': column.uid === 'category' && !width,
-                      'w-20': column.uid === 'unit' && !width,
-                      'w-28': column.uid === 'status' && !width,
-                    })}
-                    style={columnStyle}
-                  >
-                    <div
-                      className='relative md:w-full w-fit select-none'
-                      onMouseEnter={() => {
-                        setHoveredColumn(column.uid)
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredColumn(null)
-                      }}>
-                      {isHovered && (
-                        <div className='absolute inset-0 bg-primary/20 pointer-events-none z-0' />
-                      )}
-                      <div className='flex items-center justify-between w-full relative z-10'>
-                        <span className='flex items-center select-none'>
-                          {column.name.toLowerCase() === 'price' && (
-                            <Icon name='dollar' className='size-3.5' />
-                          )}
-                          {column.name}
-                        </span>
-                      </div>
-                    </div>
-                    {!isLastColumn && (
-                      <>
+                    return (
+                      <th
+                        key={column.uid}
+                        className={cn(
+                          'text-start relative group/column h-fit',
+                          {
+                            'md:w-16 w-16': column.uid === 'actions' && !width,
+                            'md:text-center md:w-18 w-20':
+                              column.uid === 'price' && !width,
+                            'md:text-center md:w-16 w-16':
+                              column.uid === 'stock' && !width,
+                            'md:text-center md:w-64 w-48':
+                              column.uid === 'product' && !width,
+                            'w-24': column.uid === 'category' && !width,
+                            'w-20': column.uid === 'unit' && !width,
+                            'w-28': column.uid === 'status' && !width,
+                          },
+                        )}
+                        style={columnStyle}>
                         <div
-                          className={cn(
-                            'absolute right-0 top-1/4 bottom-0 cursor-col-resize z-30 size-4 aspect-square',
+                          className='relative md:w-full w-fit select-none'
+                          onMouseEnter={() => {
+                            setHoveredColumn(column.uid)
+                          }}
+                          onMouseLeave={() => {
+                            setHoveredColumn(null)
+                          }}>
+                          {isHovered && (
+                            <div className='absolute inset-0 bg-primary/20 pointer-events-none z-0' />
                           )}
-                          style={{
-                            right: '3px',
-                            width: '6px',
-                            marginRight: '3px',
-                          }}
-                          onMouseDown={(e) => {
-                            handleMouseDown(column.uid, e)
-                          }}
-                          role='separator'
-                          aria-label={`Resize ${column.name} column`}>
-                          <Icon
-                            name='width-rounded'
-                            className='size-4 hidden group-hover/column:flex'
-                          />
+                          <div className='flex items-center justify-between w-full relative z-10'>
+                            <span className='flex items-center select-none'>
+                              {column.name.toLowerCase() === 'price' && (
+                                <Icon name='dollar' className='size-3.5' />
+                              )}
+                              {column.name}
+                            </span>
+                          </div>
                         </div>
-                      </>
-                    )}
-                  </th>
-                )
-              })}
+                        {!isLastColumn && (
+                          <>
+                            <div
+                              className={cn(
+                                'absolute right-0 top-1/4 bottom-0 cursor-col-resize z-30 size-4 aspect-square',
+                              )}
+                              style={{
+                                right: '3px',
+                                width: '6px',
+                                marginRight: '3px',
+                              }}
+                              onMouseDown={(e) => {
+                                handleMouseDown(column.uid, e)
+                              }}
+                              role='separator'
+                              aria-label={`Resize ${column.name} column`}>
+                              <Icon
+                                name='width-rounded'
+                                className='size-4 hidden group-hover/column:flex'
+                              />
+                            </div>
+                          </>
+                        )}
+                      </th>
+                    )
+                  })}
                 </tr>
               </thead>
               <tbody>
                 {filteredItems.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={visibleColumnDefs.length + (showCheckboxes ? 1 : 0)}
+                      colSpan={
+                        visibleColumnDefs.length + (showCheckboxes ? 1 : 0)
+                      }
                       className='px-4 py-6 text-center text-sm text-gray-400'>
                       No products found
                     </td>
                   </tr>
                 ) : (
                   filteredItems.map((product) => {
-                const isSelected = Boolean(
-                  selectedProductId &&
-                  product._id &&
-                  String(selectedProductId) === String(product._id) &&
-                  open,
-                )
-                return (
-                  <tr
-                    key={getKey(product)}
-                    data-product-selected={isSelected ? 'true' : 'false'}
-                    className={cn(
-                      'h-16 border-b-[0.5px] last:border-b-0 border-neutral-500/20 hover:bg-emerald-400/10 transition-colors duration-75 relative',
-                      selectedRow === product._id && isSelected
-                        ? 'bg-emerald-400/15 border-emerald-400/30'
-                        : '',
-                    )}>
-                    {showCheckboxes ? (
-                      <td className='w-14 min-w-14 max-w-14 px-3 py-2 align-middle'>
-                        <input
-                          type='checkbox'
-                          checked={selectedRows.has(getKey(product))}
-                          onChange={(event) => {
-                            setSelectedRows((current) => {
-                              const next = new Set(current)
-                              const key = getKey(product)
-                              if (event.target.checked) {
-                                next.add(key)
-                              } else {
-                                next.delete(key)
-                              }
-                              return next
-                            })
-                          }}
-                          className='size-4 accent-emerald-500'
-                          aria-label={`Select ${product.name}`}
-                        />
-                      </td>
-                    ) : null}
-                    {visibleColumnDefs.map((column) => {
-                      const width = getColumnWidth(column.uid)
-                      const columnIndex = visibleColumnDefs.findIndex(
-                        (col) => col.uid === column.uid,
-                      )
-                      const isLastColumn =
-                        columnIndex === visibleColumnDefs.length - 1
-                      const isResizing = resizingColumn === column.uid
-                      const isHovered = hoveredColumn === column.uid
-
-                      const cellStyle = width
-                        ? {
-                            width: `${width}px`,
-                            minWidth: `${width}px`,
-                            maxWidth: `${width}px`,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }
-                        : undefined
-
-                      return (
-                        <td
-                          key={column.uid}
-                          className='relative'
-                          style={cellStyle}
-                          onMouseEnter={() =>
-                            setHoveredColumn(column.uid)
-                          }
-                          onMouseLeave={() => setHoveredColumn(null)}>
-                          {isHovered && (
-                            <div className='absolute inset-0 bg-primary/15 pointer-events-none z-0' />
-                          )}
-                          <div className='relative z-10'>
-                            {renderCell(product, column.uid)}
-                          </div>
-                          {!isLastColumn && (
-                            <div
-                              className={cn(
-                                'absolute right-0 top-0 bottom-0 pointer-events-none z-20',
-                                isResizing && 'bg-primary',
-                              )}
-                              style={{
-                                right: '0px',
-                                width: '1px',
-                                height: '100%',
+                    const isSelected = Boolean(
+                      selectedProductId &&
+                      product._id &&
+                      String(selectedProductId) === String(product._id) &&
+                      open,
+                    )
+                    return (
+                      <tr
+                        key={getKey(product)}
+                        data-product-selected={isSelected ? 'true' : 'false'}
+                        className={cn(
+                          'h-16 border-b-[0.5px] last:border-b-0 border-neutral-500/20 hover:bg-emerald-400/10 transition-colors duration-75 relative',
+                          selectedRow === product._id && isSelected
+                            ? 'bg-emerald-400/15 border-emerald-400/30'
+                            : '',
+                        )}>
+                        {showCheckboxes ? (
+                          <td className='w-14 min-w-14 max-w-14 px-3 py-2 align-middle'>
+                            <input
+                              type='checkbox'
+                              checked={selectedRows.has(getKey(product))}
+                              onChange={(event) => {
+                                setSelectedRows((current) => {
+                                  const next = new Set(current)
+                                  const key = getKey(product)
+                                  if (event.target.checked) {
+                                    next.add(key)
+                                  } else {
+                                    next.delete(key)
+                                  }
+                                  return next
+                                })
                               }}
+                              className='size-4 accent-emerald-500'
+                              aria-label={`Select ${product.name}`}
                             />
-                          )}
-                        </td>
-                      )
-                    })}
-                  </tr>
-                )
-              })
+                          </td>
+                        ) : null}
+                        {visibleColumnDefs.map((column) => {
+                          const width = getColumnWidth(column.uid)
+                          const columnIndex = visibleColumnDefs.findIndex(
+                            (col) => col.uid === column.uid,
+                          )
+                          const isLastColumn =
+                            columnIndex === visibleColumnDefs.length - 1
+                          const isResizing = resizingColumn === column.uid
+                          const isHovered = hoveredColumn === column.uid
+
+                          const cellStyle = width
+                            ? {
+                                width: `${width}px`,
+                                minWidth: `${width}px`,
+                                maxWidth: `${width}px`,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }
+                            : undefined
+
+                          return (
+                            <td
+                              key={column.uid}
+                              className='relative'
+                              style={cellStyle}
+                              onMouseEnter={() => setHoveredColumn(column.uid)}
+                              onMouseLeave={() => setHoveredColumn(null)}>
+                              {isHovered && (
+                                <div className='absolute inset-0 bg-primary/15 pointer-events-none z-0' />
+                              )}
+                              <div className='relative z-10'>
+                                {renderCell(product, column.uid)}
+                              </div>
+                              {!isLastColumn && (
+                                <div
+                                  className={cn(
+                                    'absolute right-0 top-0 bottom-0 pointer-events-none z-20',
+                                    isResizing && 'bg-primary',
+                                  )}
+                                  style={{
+                                    right: '0px',
+                                    width: '1px',
+                                    height: '100%',
+                                  }}
+                                />
+                              )}
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    )
+                  })
                 )}
               </tbody>
             </table>

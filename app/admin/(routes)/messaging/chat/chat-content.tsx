@@ -2,13 +2,13 @@
 
 import {ASSISTANT_PRO_ID} from '@/app/account/chat/_components/assistant'
 import {MainWrapper} from '@/app/admin/_components/main-wrapper'
+import {User} from '@/components/hero-v3/user'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Tabs} from '@base-ui/react'
-import {Avatar} from '@heroui/avatar'
 import {Badge} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import dynamic from 'next/dynamic'
@@ -135,8 +135,8 @@ const ParticipantCard = ({
           variant='primary'
           placement='bottom-right'
           color={isActive ? 'success' : 'warning'}>
-          <Avatar
-            src={avatarUrl ?? undefined}
+          <User
+            avatar={avatarUrl ?? undefined}
             name={name}
             className='size-10 shrink-0 bg-dark-table/10 dark:bg-alum text-dark-table'
           />

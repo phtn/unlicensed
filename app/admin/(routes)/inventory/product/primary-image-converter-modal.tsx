@@ -14,18 +14,18 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useStorageUpload} from '@/hooks/use-storage-upload'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Input, Textarea as TextArea} from '@heroui/input'
 import {
   Button,
   Modal,
   ModalBody,
   ModalFooter,
   ModalHeader,
+  TextArea,
 } from '@heroui/react'
 import {useMutation} from 'convex/react'
 import {useCallback, useEffect, useMemo, useState} from 'react'
 
-
+import {Input} from '@/components/hero-v3/input'
 import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
 const ModalContent = Modal.Container
@@ -715,10 +715,12 @@ export function PrimaryImageConverterModal({
   )
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onOpenChange={onOpenChangeAction}>
-      <ModalContent size='cover' placement='top' scroll='inside' className='overflow-hidden border border-foreground/10 bg-background shadow-2xl'>
+    <Modal isOpen={isOpen} onOpenChange={onOpenChangeAction}>
+      <ModalContent
+        size='cover'
+        placement='top'
+        scroll='inside'
+        className='overflow-hidden border border-foreground/10 bg-background shadow-2xl'>
         <ModalHeader className='border-b border-foreground/10 pb-4'>
           <div className='space-y-1'>
             <p className='text-xs font-medium uppercase tracking-[0.24em] text-light-brand'>
@@ -918,29 +920,16 @@ export function PrimaryImageConverterModal({
               <div className='space-y-4 rounded-[1.25rem] border border-foreground/10 bg-background/80 p-4'>
                 <Input
                   label='File name'
-                  labelPlacement='outside'
                   placeholder='converted-primary-sq-1000'
                   value={fileNameStem}
-                  onValueChange={setFileNameStem}
-                  description='The file extension is added automatically when uploaded.'
-                  classNames={{
-                    inputWrapper:
-                      'rounded-xl border border-foreground/12 bg-background shadow-none',
-                  }}
+                  onChange={(e) => setFileNameStem(e.target.value)}
                 />
 
                 <TextArea
-                  label='Tags'
-                  labelPlacement='outside'
-                  minRows={3}
+                  rows={3}
                   placeholder='flower, indoor, featured'
                   value={tagsInput}
-                  onValueChange={setTagsInput}
-                  description='Separate tags with commas or new lines. gallery:optimized is added automatically.'
-                  classNames={{
-                    inputWrapper:
-                      'rounded-xl border border-foreground/12 bg-background shadow-none',
-                  }}
+                  onChange={(e) => setTagsInput(e.target.value)}
                 />
 
                 <div className='rounded-xl border border-foreground/10 bg-foreground/3 p-3 text-sm text-foreground/65'>

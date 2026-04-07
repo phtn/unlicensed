@@ -2,19 +2,17 @@
 
 import {
   commonInputClassNames,
-  commonSelectClassNames,
   narrowInputClassNames,
 } from '@/app/admin/_components/ui/fields'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
+import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import {type Doc, Id} from '@/convex/_generated/dataModel'
 import {onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
 import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
 import {Input, Textarea as TextArea} from '@heroui/input'
-import {ListboxItem as ListBoxItem} from '@heroui/listbox'
 import {Button, Card, CardContent, CardHeader, ProgressBar} from '@heroui/react'
-import {Select} from '@heroui/select'
 import type {SharedSelection} from '@heroui/system'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
@@ -478,8 +476,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             initial={{opacity: 0, y: 20}}
             animate={{opacity: 1, y: 0}}
             className=''>
-            <Card
-                            className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-t-md rounded-b-none shadow-none font-figtree h-28'>
+            <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-t-md rounded-b-none shadow-none font-figtree h-28'>
               <CardHeader>
                 <div className='flex items-center gap-3'>
                   <SectionHeader
@@ -629,8 +626,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
               initial={{opacity: 0, height: 0}}
               animate={{opacity: 1, height: 'auto'}}
               className='mt-4'>
-              <Card
-                                className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
+              <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
                 <CardHeader>
                   <SectionHeader
                     title='Send Email Blast'
@@ -641,20 +637,13 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                   <Select
                     label='Mailing list'
                     placeholder='Select a list'
-                    selectedKeys={selectedListId ? [selectedListId] : []}
-                    onSelectionChange={(keys) => {
-                      setSelectedListId(getSingleSelectedKey(keys))
-                    }}
+                    value={String(selectedListId ? [selectedListId] : [])}
                     isDisabled={!mailingLists?.length}
-                    classNames={commonSelectClassNames}>
-                    {(mailingLists ?? []).map((list: MailingListDoc) => (
-                      <ListBoxItem
-                        key={list._id}
-                        textValue={`${list.name} (${list.recipients.length})`}>
-                        {list.name} — {list.recipients.length} recipients
-                      </ListBoxItem>
-                    ))}
-                  </Select>
+                    options={mailingLists?.map((list: MailingListDoc) => ({
+                      value: list._id,
+                      label: `${list.name} (${list.recipients.length})`,
+                    }))}
+                  />
                   {blastProgress && (
                     <div className='space-y-2'>
                       <ProgressBar
@@ -685,7 +674,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                     </Button>
                     <Button
                       variant='primary'
-                                            onPress={handleEmailBlastSend}
+                      onPress={handleEmailBlastSend}
                       isDisabled={
                         !selectedListId ||
                         !!blastProgress?.sending ||
@@ -708,8 +697,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
               animate={{opacity: 1, height: 'auto'}}
               exit={{opacity: 0, height: 0}}
               className='mt-6'>
-              <Card
-                                className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
+              <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
                 <CardHeader className='flex items-center justify-between'>
                   <SectionHeader
                     title='Create Mailing List'
@@ -747,7 +735,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       )}
                       <Button
                         type='button'
-                                                variant='tertiary'
+                        variant='tertiary'
                         onPress={addRecipientRow}
                         className='gap-1 rounded-lg'>
                         <Icon name='plus' className='size-4' />
@@ -755,7 +743,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       </Button>
                       <Button
                         type='button'
-                                                variant='primary'
+                        variant='primary'
                         onPress={() => csvInputRef.current?.click()}
                         className='gap-1 rounded-lg bg-dark-table text-white dark:bg-white dark:text-dark-table'>
                         <Icon name='arrow-up' className='size-4' />
@@ -819,7 +807,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                     </Button>
                     <Button
                       variant='primary'
-                                            onPress={handleCreateMailingList}
+                      onPress={handleCreateMailingList}
                       className='rounded-lg bg-dark-gray dark:bg-white dark:text-dark-table'>
                       Create Mailing List
                     </Button>

@@ -1,9 +1,6 @@
 'use client'
 
-import {
-  narrowInputClassNames,
-  narrowSelectClassNames,
-} from '@/app/admin/_components/ui/fields'
+import {narrowSelectClassNames} from '@/app/admin/_components/ui/fields'
 import {ScrollArea} from '@/components/ui/scroll-area'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
@@ -13,7 +10,6 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {cn} from '@/lib/utils'
-import {Input} from '@heroui/input'
 import {Button, Label, ListBox, Select, Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {parseAsString, useQueryStates} from 'nuqs'
@@ -27,6 +23,7 @@ import {
   useState,
 } from 'react'
 
+import {Input} from '@/components/hero-v3/input'
 import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
 const MAX_LIBRARY_RESULTS = 24
@@ -1008,11 +1005,10 @@ export const FireCollectionManager = () => {
                 <div className='flex items-center gap-2'>
                   <Input
                     value={collectionTitle}
-                    onValueChange={(value) => {
-                      void setFireState({fireCollectionTitle: value})
+                    onChange={(e) => {
+                      void setFireState({fireCollectionTitle: e.target.value})
                     }}
                     placeholder='Collection title'
-                    classNames={narrowInputClassNames}
                   />
                   <Button
                     size='sm'
@@ -1151,11 +1147,10 @@ export const FireCollectionManager = () => {
 
             <Input
               value={query}
-              onValueChange={(value) => {
-                void setFireState({fireQuery: value})
+              onChange={(e) => {
+                void setFireState({fireQuery: e.target.value})
               }}
               placeholder='Search products by name, brand, category, subtype, or slug'
-              classNames={narrowInputClassNames}
               className='mt-4'
             />
 

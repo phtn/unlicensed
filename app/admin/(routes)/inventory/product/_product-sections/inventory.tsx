@@ -1,12 +1,11 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
+import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {InventoryMode} from '@/convex/products/d'
 import {Icon} from '@/lib/icons'
 import {getStockDisplayUnit, getTotalStock} from '@/lib/productStock'
-import {Input} from '@heroui/input'
 import {Button, Chip} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useQuery} from 'convex/react'
@@ -664,9 +663,6 @@ export const Inventory = ({
                     key={input.key}
                     label={input.label}
                     value={`${formatQuantity(input.currentQuantity)}${input.unit ? ` ${input.unit}` : ''}`}
-                    isReadOnly
-                    variant='faded'
-                    classNames={commonInputClassNames}
                   />
                 ))}
               </div>

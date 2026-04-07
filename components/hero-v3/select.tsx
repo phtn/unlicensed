@@ -1,4 +1,4 @@
-import {SelectOption} from '@/app/admin/_components/ui/fields'
+import type {SelectOption} from '@/app/admin/_components/ui/fields'
 import {Label, ListBox, Select as S} from '@heroui/react'
 import {ComponentPropsWithoutRef, Key} from 'react'
 

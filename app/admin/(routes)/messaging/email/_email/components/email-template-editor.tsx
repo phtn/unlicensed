@@ -1,12 +1,10 @@
 'use client'
 
-import {
-  commonSelectClassNames,
-  SelectOption,
-} from '@/app/admin/_components/ui/fields'
+import {SelectOption} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {JunctionBox} from '@/app/admin/_components/ui/junction-box'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
+import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
@@ -16,9 +14,7 @@ import {
 } from '@/lib/resend/templates/registry'
 import {getInvitationDefaultProps} from '@/lib/resend/templates/render-with-props'
 import {cn} from '@/lib/utils'
-import {ListboxItem as ListBoxItem} from '@heroui/listbox'
 import {Button} from '@heroui/react'
-import {Select} from '@heroui/select'
 import type {SharedSelection} from '@heroui/system'
 import {useQuery} from 'convex/react'
 import {useCallback, useMemo, useState, useTransition} from 'react'
@@ -726,21 +722,16 @@ export const EmailTemplateEditor = ({
                 <Select
                   label='Template'
                   placeholder='Choose a template (optional)'
-                  variant='faded'
-                  selectedKeys={
-                    selectedTemplateKey ? [selectedTemplateKey] : []
-                  }
-                  onSelectionChange={(keys) => {
+                  value={selectedTemplateKey ? [selectedTemplateKey] : []}
+                  onChange={(keys) => {
                     handleTemplateSelect(getSingleSelectedKey(keys))
                   }}
                   isDisabled={isLoadingTemplate}
-                  classNames={commonSelectClassNames}>
-                  {templateSelectOptions.map((item) => (
-                    <ListBoxItem key={item.id} textValue={item.label}>
-                      {item.label}
-                    </ListBoxItem>
-                  ))}
-                </Select>
+                  options={templateSelectOptions.map((item) => ({
+                    value: item.id,
+                    label: item.label,
+                  }))}
+                />
 
                 {templateCouponPropKey && (
                   <div className='space-y-4'>
@@ -772,13 +763,11 @@ export const EmailTemplateEditor = ({
                         isLoadingTemplate ||
                         activeCoupons.length === 0
                       }
-                      classNames={commonSelectClassNames}>
-                      {couponSelectOptions.map((item) => (
-                        <ListBoxItem key={item.id} textValue={item.label}>
-                          {item.label}
-                        </ListBoxItem>
-                      ))}
-                    </Select>
+                      options={couponSelectOptions.map((item) => ({
+                        value: item.id,
+                        label: item.label,
+                      }))}
+                    />
                   </div>
                 )}
 

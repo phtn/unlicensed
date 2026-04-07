@@ -1,6 +1,6 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
+import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError, onSuccess} from '@/ctx/toast'
@@ -12,13 +12,13 @@ import {
   normalizeLowStockAlertsConfig,
   serializeLowStockAlertsConfig,
 } from '@/lib/low-stock-alerts'
-import {Input, Textarea as TextArea} from '@heroui/input'
 import {
   Button,
   Card,
   CardContent,
   CardHeader,
   Switch,
+  TextArea,
 } from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
@@ -253,13 +253,14 @@ const LowStockEmailAlertsEditor = ({
   }, [normalizedDraftConfig, onSaveConfig, userUid])
 
   return (
-    <Card
-            className='h-full rounded-lg border border-sidebar bg-default-100/60 dark:border-default-100/70'>
+    <Card className='h-full rounded-lg border border-sidebar bg-default-100/60 dark:border-default-100/70'>
       <CardHeader className='flex flex-col items-start gap-4 p-4 lg:flex-row lg:items-center lg:justify-between'>
         <div className='space-y-1'>
           <div className='flex items-center gap-3'>
             <h3 className='text-base font-semibold'>Low Stock Email Alerts</h3>
-            <Switch isSelected={enabled} onChange={(isSelected) => setEnabled(isSelected)}>
+            <Switch
+              isSelected={enabled}
+              onChange={(isSelected) => setEnabled(isSelected)}>
               Enabled
             </Switch>
           </div>
@@ -415,9 +416,8 @@ const LowStockEmailAlertsEditor = ({
                 </p>
               </div>
               <TextArea
-                minRows={2}
+                rows={2}
                 placeholder='Paste Name and Email in any of these formats: Alice=alice@example.com | Bob: bob@example.com | Carol, carol@example.com'
-                classNames={commonInputClassNames}
                 onPaste={handlePasteRecipients}
               />
               <div className='flex items-center gap-3'>
@@ -450,20 +450,18 @@ const LowStockEmailAlertsEditor = ({
                         label={index === 0 ? 'Name' : undefined}
                         placeholder='Name'
                         value={recipient.name}
-                        onValueChange={(value) =>
-                          setRecipient(recipient.rowId, 'name', value)
+                        onChange={(e) =>
+                          setRecipient(recipient.rowId, 'name', e.target.value)
                         }
-                        classNames={commonInputClassNames}
                       />
                       <Input
                         label={index === 0 ? 'Email' : undefined}
                         type='email'
                         placeholder='email@example.com'
                         value={recipient.email}
-                        onValueChange={(value) =>
-                          setRecipient(recipient.rowId, 'email', value)
+                        onChange={(e) =>
+                          setRecipient(recipient.rowId, 'email', e.target.value)
                         }
-                        classNames={commonInputClassNames}
                       />
                       <div className='flex items-end'>
                         <Button

@@ -1,13 +1,9 @@
 'use client'
 
-import {
-  commonInputClassNames,
-  narrowInputClassNames,
-} from '@/app/admin/_components/ui/fields'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
+import {Input} from '@/components/hero-v3/input'
 import {Icon} from '@/lib/icons'
-import {Input, Textarea as TextArea} from '@heroui/input'
-import {Button, Card, CardContent, CardHeader} from '@heroui/react'
+import {Button, Card, CardContent, CardHeader, TextArea} from '@heroui/react'
 import {
   type ChangeEvent,
   type ClipboardEvent,
@@ -287,9 +283,7 @@ export const MailingListEditor = ({
           label='List name (optional)'
           placeholder='My mailing list'
           value={name}
-          onValueChange={setName}
-          classNames={commonInputClassNames}
-          className='w-full lg:max-w-sm'
+          onChange={(e) => setName(e.target.value)}
         />
       </CardHeader>
       <CardContent className='space-y-4 p-5 pt-0'>
@@ -303,16 +297,15 @@ export const MailingListEditor = ({
 
         <div className='flex flex-col gap-3 md:gap-6 lg:flex-row lg:items-start'>
           <TextArea
-            minRows={2}
+            rows={2}
             placeholder='Paste Name and Email in any of these formats: Alice=alice@example.com | Bob: bob@example.com | Carol, carol@example.com'
-            classNames={narrowInputClassNames}
             onPaste={handlePasteRecipients}
           />
           <div className='flex portrait:flex-wrap items-center gap-4'>
             <Button
               size='sm'
               type='button'
-                            variant='primary'
+              variant='primary'
               onPress={addRecipientRow}
               className='gap-1 rounded-md'>
               <Icon name='plus' className='size-4' />
@@ -321,7 +314,7 @@ export const MailingListEditor = ({
             <Button
               size='sm'
               type='button'
-                            variant='primary'
+              variant='primary'
               onPress={() => csvInputRef.current?.click()}
               className='gap-1 rounded-md bg-dark-table text-white dark:bg-white dark:text-dark-table'>
               <Icon name='arrow-up' className='size-4' />
@@ -389,7 +382,7 @@ export const MailingListEditor = ({
           </Button>
           <Button
             variant='primary'
-                        onPress={handleSubmit}
+            onPress={handleSubmit}
             isDisabled={isSubmitting}
             className='rounded-lg bg-dark-table text-white dark:bg-white dark:text-dark-table'>
             {submitLabel}

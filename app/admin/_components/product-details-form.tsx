@@ -3,20 +3,19 @@
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useSaveAdminProductFormReturn} from '@/hooks/use-save-admin-product-form-return'
-import {Icon} from '@/lib/icons'
 import {
   getStockDisplayUnit,
   getTotalStock,
   usesSharedWeightInventory,
 } from '@/lib/productStock'
-import {Button, Switch} from '@heroui/react'
-import {Input, Textarea as TextArea} from '@heroui/input'
+import {Button, Switch, TextArea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useEffect, useState} from 'react'
 import {useProductDetailsSafe} from './product-details-context'
 import {useSettingsPanelSafe} from './ui/settings'
 
+import {Input} from '@/components/hero-v3/input'
 import {LegacyImage} from '@/components/ui/legacy-image'
 
 type Product = Doc<'products'>
@@ -157,8 +156,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
           <TextArea
             value={product.description}
             readOnly
-            size='sm'
-            minRows={3}
+            rows={3}
             className='text-xs bg-transparent! dark:bg-transparent!'
           />
         </div>
@@ -169,10 +167,9 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
         <div className='w-full'>
           <Input
             label='Price'
-            size='md'
             type='number'
             value={String(priceCents)}
-            onValueChange={(value) => setPriceCents(Number(value))}
+            onChange={(value) => setPriceCents(Number(value))}
             placeholder='Price in cents'
           />
         </div>
@@ -180,9 +177,8 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
           <div className='w-full'>
             <Input
               label='Unit'
-              size='md'
               value={unit}
-              onValueChange={(value) => setUnit(value)}
+              onChange={(e) => setUnit(e.target.value)}
               placeholder='Unit'
             />
           </div>
@@ -194,9 +190,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
                 ? `Master stock${getStockDisplayUnit(product) ? ` (${getStockDisplayUnit(product)})` : ''}`
                 : 'Qty in stock'
             }
-            size='md'
             value={String(currentStock)}
-            isReadOnly
             placeholder='Stock quantity'
           />
         </div>
@@ -208,12 +202,8 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
         <div className='mt-3'>
           <Link
             href={`/admin/inventory/product/${product._id}#inventory`}
-            onClick={saveAdminProductFormReturn}
-          >
-            <Button
-              size='sm'
-              variant='secondary'
-            >
+            onClick={saveAdminProductFormReturn}>
+            <Button size='sm' variant='secondary'>
               Open Inventory Controls
             </Button>
           </Link>
@@ -236,8 +226,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
               isSelected={available}
               onChange={handleToggleAvailable}
               isDisabled={isSaving}
-              size='sm'
-            >
+              size='sm'>
               <Switch.Control className='bg-emerald-500'>
                 <Switch.Thumb />
               </Switch.Control>
@@ -254,8 +243,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
               isSelected={featured}
               onChange={handleToggleFeatured}
               isDisabled={isSaving}
-              size='sm'
-            >
+              size='sm'>
               <Switch.Control className='bg-featured'>
                 <Switch.Thumb />
               </Switch.Control>
@@ -272,8 +260,7 @@ export function ProductDetailsForm({product}: ProductDetailsFormProps) {
         <Button
           size='lg'
           className='flex-1 bg-featured'
-          onPress={handleSaveAllChanges}
-        >
+          onPress={handleSaveAllChanges}>
           Save Changes
         </Button>
       </div>

@@ -1,9 +1,9 @@
 'use client'
 
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
+import {Input} from '@/components/hero-v3/input'
 import {Icon} from '@/lib/icons'
 import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
-import {Input} from '@heroui/input'
 import {Button} from '@heroui/react'
 import {AnimatePresence, motion} from 'motion/react'
 import Link from 'next/link'
@@ -230,19 +230,17 @@ export const EmailTemplateDisplay = ({
                 <div className='flex items-center gap-2'>
                   <Input
                     id='test-email'
-                    size='sm'
                     type='email'
                     placeholder='Send test to…'
                     value={testEmail}
-                    onValueChange={setTestEmail}
-                    onKeyDown={handleTestEmailKeyDown}
-                    isDisabled={previewLoading}
-                    isInvalid={showTestEmailError}
-                    errorMessage={
-                      showTestEmailError
-                        ? 'Enter a valid email address'
-                        : undefined
-                    }
+                    onChange={(e) => setTestEmail(e.target.value)}
+                    disabled={previewLoading}
+                    // isInvalid={showTestEmailError}
+                    // errorMessage={
+                    //   showTestEmailError
+                    //     ? 'Enter a valid email address'
+                    //     : undefined
+                    // }
                     autoComplete='email'
                     spellCheck='false'
                   />

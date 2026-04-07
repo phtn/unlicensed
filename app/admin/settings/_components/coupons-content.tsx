@@ -5,8 +5,7 @@ import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import type {Coupon, CouponDiscountType} from '@/convex/coupons/d'
 import {useAuthCtx} from '@/ctx/auth'
-import {Textarea as TextArea} from '@heroui/input'
-import {Button, Card, Chip, Modal, Switch} from '@heroui/react'
+import {Button, Card, Chip, Modal, Switch, TextArea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useEffect, useMemo, useState} from 'react'
 import {ContentHeader, PrimaryButton} from './components'
@@ -678,23 +677,22 @@ export const CouponsContent = () => {
 
                 <TextArea
                   value={form.description}
-                  onValueChange={(value) =>
-                    setForm((current) => ({...current, description: value}))
+                  onChange={(e) =>
+                    setForm((current) => ({
+                      ...current,
+                      description: e.target.value,
+                    }))
                   }
-                  minRows={2}
-                  maxRows={4}
+                  rows={2}
                   placeholder='Description (optional)'
-                  variant='faded'
                 />
                 <TextArea
                   value={form.notes}
-                  onValueChange={(value) =>
-                    setForm((current) => ({...current, notes: value}))
+                  onChange={(e) =>
+                    setForm((current) => ({...current, notes: e.target.value}))
                   }
-                  minRows={2}
-                  maxRows={4}
+                  rows={2}
                   placeholder='Internal notes (optional)'
-                  variant='faded'
                 />
 
                 <div className='flex flex-wrap gap-6'>

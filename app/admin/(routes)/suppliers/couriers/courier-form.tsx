@@ -11,17 +11,14 @@ import {
   courierSchema,
   defaultValues,
 } from '@/app/admin/_components/courier-schema'
-import {
-  commonInputClassNames,
-  renderFields,
-} from '@/app/admin/_components/ui/fields'
+import {renderFields} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
+import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Switch} from '@heroui/react'
-import {Input, Textarea as TextArea} from '@heroui/input'
+import {Button, Switch, TextArea} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useQueryState} from 'nuqs'
@@ -367,12 +364,9 @@ export const CourierForm = ({
                               className='rounded-xl border border-light-gray/40 dark:border-black/30 p-3 lg:p-4 bg-light-gray/5 dark:bg-black/20'>
                               <div className='grid gap-3 lg:grid-cols-[1fr_1fr_auto] items-end'>
                                 <Input
-                                  size='lg'
                                   label='Account Label'
                                   value={account.label}
                                   placeholder='e.g., Main Account'
-                                  variant='faded'
-                                  classNames={commonInputClassNames}
                                   onBlur={field.handleBlur}
                                   onChange={(event) =>
                                     handleAccountChange(
@@ -382,12 +376,9 @@ export const CourierForm = ({
                                   }
                                 />
                                 <Input
-                                  size='lg'
                                   label='Account Value'
                                   value={account.value}
                                   placeholder='e.g., account-001'
-                                  variant='faded'
-                                  classNames={commonInputClassNames}
                                   onBlur={field.handleBlur}
                                   onChange={(event) =>
                                     handleAccountChange(
@@ -420,14 +411,11 @@ export const CourierForm = ({
                       Notes
                     </p>
                     <TextArea
-                      minRows={4}
-                      maxRows={10}
+                      rows={4}
                       value={(notesField.state.value as string) ?? ''}
                       placeholder='Internal notes for this courier (optional)'
-                      variant='faded'
-                      classNames={commonInputClassNames}
                       onBlur={notesField.handleBlur}
-                      onValueChange={(value) => notesField.handleChange(value)}
+                      onChange={(e) => notesField.handleChange(e.target.value)}
                     />
                   </div>
                 )}

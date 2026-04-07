@@ -1,15 +1,14 @@
 'use client'
 
-import {commonInputClassNames} from '@/app/admin/_components/ui/fields'
 import {useSidebar} from '@/app/admin/_components/ui/sidebar'
 import {TabContentContainer} from '@/app/admin/_components/ui/tab-content'
+import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
 import {getProductCsvImportRowId} from '@/lib/product-csv-import'
 import {cn} from '@/lib/utils'
 import {Button, Card, Chip} from '@heroui/react'
-import {Input} from '@heroui/input'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useMemo, useRef, useState} from 'react'
 import type {ParsedRow} from '../product/csv-import/lib'
@@ -317,17 +316,14 @@ export function ProductCsvUpload() {
 
         {/* Metadata */}
         {displayRows.length > 0 && (
-          <Card
-            className='min-w-0 p-0 bg-transparent'>
+          <Card className='min-w-0 p-0 bg-transparent'>
             <div className='grid min-w-0 grid-cols-1 gap-0 md:grid-cols-4'>
               <div className='col-span-3'>
                 <Input
                   label='Upload title'
                   placeholder='e.g. 2026-03-03T12-34-56'
                   value={title}
-                  onValueChange={setTitle}
-                  size='sm'
-                  className='w-5xl'
+                  onChange={(e) => setTitle(e.target.value)}
                 />
               </div>
             </div>
@@ -343,9 +339,7 @@ export function ProductCsvUpload() {
             )}>
             <div className='flex flex-wrap items-center justify-between gap-3'>
               <div className='flex flex-wrap items-center gap-2'>
-                <Chip
-                  size='sm'
-                  variant='tertiary'>
+                <Chip size='sm' variant='tertiary'>
                   <span className='pe-1.5'>{displayRows.length}</span>
                   <span>Row{displayRows.length !== 1 ? 's' : ''}</span>
                 </Chip>
@@ -401,8 +395,7 @@ export function ProductCsvUpload() {
             </div>
 
             {previewIssues.length > 0 && (
-              <Card
-                className='rounded-md border border-warning-200 bg-white px-4 py-3 dark:border-warning-900/50 dark:bg-warning-950/20'>
+              <Card className='rounded-md border border-warning-200 bg-white px-4 py-3 dark:border-warning-900/50 dark:bg-warning-950/20'>
                 <p className='flex items-center space-x-1 text-sm font-medium text-warning-800 dark:text-dark-table'>
                   <Icon name='alert-circle' className='size-4' />
                   <span>Validation issues</span>
@@ -432,8 +425,7 @@ export function ProductCsvUpload() {
               </Card>
             )}
 
-            <Card
-              className='flex h-[min(55vh,480px)] min-h-50 min-w-0 w-full flex-col overflow-hidden border-0'>
+            <Card className='flex h-[min(55vh,480px)] min-h-50 min-w-0 w-full flex-col overflow-hidden border-0'>
               <div className='min-h-0 w-full flex-1 overflow-x-auto overflow-y-auto'>
                 <table className='min-w-full table-fixed text-sm'>
                   <thead className='sticky top-0 z-10'>
@@ -551,10 +543,7 @@ function PreviewRow({row, columns}: {row: ParsedRow; columns: string[]}) {
                   </Chip>
                 )}
                 {hasError && row.errors.length === 0 && (
-                  <Chip
-                    size='sm'
-                    variant='primary'
-                    className='text-white'>
+                  <Chip size='sm' variant='primary' className='text-white'>
                     {rowMode}
                   </Chip>
                 )}

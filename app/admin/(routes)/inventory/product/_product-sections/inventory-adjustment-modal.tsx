@@ -1,19 +1,14 @@
 'use client'
 
-import {
-  commonSelectClassNames,
-  getSingleSelectedKey,
-  narrowInputClassNames,
-} from '@/app/admin/_components/ui/fields'
+import {getSingleSelectedKey} from '@/app/admin/_components/ui/fields'
+import {Input} from '@/components/hero-v3/input'
+import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import type {InventoryMode} from '@/convex/products/d'
 import {useFirebaseAuthUser} from '@/hooks/use-firebase-auth-user'
 import {normalizeInventoryMode} from '@/lib/productStock'
-import {Input, Textarea as TextArea} from '@heroui/input'
-import {ListboxItem as ListBoxItem} from '@heroui/listbox'
-import {Button, Modal} from '@heroui/react'
-import {Select} from '@heroui/select'
+import {Button, Modal, TextArea} from '@heroui/react'
 import {useMutation} from 'convex/react'
 import {useEffect, useMemo, useState} from 'react'
 import {mapNumericFractions} from '../product-schema'
@@ -254,8 +249,8 @@ export function InventoryAdjustmentModal({
               <div className='space-y-2'>
                 <Select
                   label='Inventory Mode'
-                  selectedKeys={[inventoryMode]}
-                  onSelectionChange={(keys) => {
+                  value={String([inventoryMode])}
+                  onChange={(keys) => {
                     const selected = getSingleSelectedKey(keys)
                     if (
                       selected === 'by_denomination' ||
@@ -265,17 +260,11 @@ export function InventoryAdjustmentModal({
                     }
                   }}
                   isDisabled={isSubmitting}
-                  variant='faded'
-                  classNames={commonSelectClassNames}>
-                  <ListBoxItem
-                    key='by_denomination'
-                    textValue='By denomination'>
-                    By denomination
-                  </ListBoxItem>
-                  <ListBoxItem key='shared' textValue='Shared'>
-                    Shared
-                  </ListBoxItem>
-                </Select>
+                  options={[
+                    {value: 'by_denomination', label: 'By denomination'},
+                    {value: 'shared', label: 'Shared'},
+                  ]}
+                />
                 <p className='text-xs text-foreground-500'>
                   Switching modes here updates the product inventory mode when
                   this adjustment is submitted. Stock values are not
@@ -293,20 +282,17 @@ export function InventoryAdjustmentModal({
                     min={0}
                     step='0.001'
                     value={quantities[input.key] ?? ''}
-                    classNames={narrowInputClassNames}
                     onChange={(event) =>
                       setQuantities((current) => ({
                         ...current,
                         [input.key]: event.target.value,
                       }))
                     }
-                    description={`Current: ${formatQuantity(input.currentQuantity)}${input.unit ? ` ${input.unit}` : ''}`}
                     placeholder={
                       adjustmentType === 'restock'
                         ? '0'
                         : formatQuantity(input.currentQuantity)
                     }
-                    variant='faded'
                   />
                 ))}
               </div>
@@ -314,20 +300,15 @@ export function InventoryAdjustmentModal({
               <Input
                 label='Reference'
                 value={reference}
-                onValueChange={setReference}
+                onChange={(e) => setReference(e.target.value)}
                 placeholder='PO number, delivery note, or supplier reference'
-                classNames={narrowInputClassNames}
-                variant='faded'
               />
 
               <TextArea
-                label='Notes'
                 value={note}
-                onValueChange={setNote}
+                onChange={(e) => setNote(e.target.value)}
                 placeholder='Optional context for this inventory change'
-                classNames={narrowInputClassNames}
-                variant='faded'
-                minRows={3}
+                rows={3}
               />
 
               {errorMessage ? (
