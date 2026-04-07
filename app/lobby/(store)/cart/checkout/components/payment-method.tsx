@@ -1,14 +1,14 @@
 import {api} from '@/convex/_generated/api'
 import {PaymentMethod} from '@/convex/orders/d'
 import {Icon, IconName} from '@/lib/icons'
-import {ListboxItem} from '@/lib/listbox/dist'
+import {cn} from '@/lib/utils'
+import {ListboxItem} from '@heroui/listbox'
+import {Label} from '@heroui/react'
 import {
   Select,
   type SelectedItemProps,
   type SelectedItems,
-} from '@/lib/select/dist'
-import {cn} from '@/lib/utils'
-import {Label} from '@heroui/react'
+} from '@heroui/select'
 import type {SharedSelection} from '@heroui/system'
 import {useQuery} from 'convex/react'
 import {memo, useCallback, useMemo} from 'react'
