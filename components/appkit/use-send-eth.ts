@@ -1,10 +1,10 @@
 'use client'
 import {api} from '@/convex/_generated/api'
+import {useCrypto} from '@/hooks/use-crypto'
 import {useQuery} from 'convex/react'
 import {useCallback, useMemo} from 'react'
 import {type Address, type Chain, formatEther, parseEther} from 'viem'
 import {useSendTransaction, useWaitForTransactionReceipt} from 'wagmi'
-import {useCrypto} from './use-crypto'
 
 interface SendParams {
   /** Recipient address. Defaults to a predefined address if not provided. */
@@ -15,7 +15,7 @@ interface SendParams {
   chainId?: Chain['id']
 }
 
-interface UseSendReturn {
+interface UseSendEthReturn {
   /** Send a transaction with USD amount */
   send: (params: SendParams) => void
   /** Current ETH price in USD */
@@ -54,7 +54,7 @@ const RECEIPT_REFETCH_INTERVAL_MS = (query: {
  * Hook for sending ETH transactions with USD amount conversion.
  * Uses real-time ETH price from the crypto API when available.
  */
-export const useSend = (): UseSendReturn => {
+export const useSendEth = (): UseSendEthReturn => {
   const {getBySymbol} = useCrypto()
   const {mutate, isPending, error, data: transactionHash} = useSendTransaction()
 
@@ -197,17 +197,4 @@ export const useSend = (): UseSendReturn => {
     ethToUsd,
     usdToEth,
   }
-}
-
-/**
- * Convert ETH amount (in wei) to USD using a static price.
- * @deprecated Use useSend().ethToUsd() for real-time prices
- */
-export const eth_2_usd = (eth: bigint, price: number | null): number => {
-  if (!price) {
-    console.warn('ETH price not available')
-    return 0
-  }
-  const ethAmount = Number(formatEther(eth))
-  return ethAmount * price
 }

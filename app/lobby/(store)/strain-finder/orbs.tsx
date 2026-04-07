@@ -26,7 +26,6 @@ function Ball({
   speed: number
 }) {
   const [ref, api] = useSphere(() => {
-    console.log('[v0] Initializing ball at', position)
     return {
       mass: 3,
       position,

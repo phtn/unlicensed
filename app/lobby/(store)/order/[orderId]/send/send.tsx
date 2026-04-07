@@ -5,7 +5,7 @@ import {TxData} from '@/app/api/crypto/types'
 import {
   SearchParamsProvider,
   useSearchParams,
-} from '@/components/sepolia/search-params-context'
+} from '@/components/appkit/search-params-context'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {ITxData} from '@/convex/orders/d'

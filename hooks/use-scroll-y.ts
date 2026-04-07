@@ -17,9 +17,5 @@ function subscribeScrollY(callback: () => void): () => void {
  * Uses useSyncExternalStore so no setState-in-effect; safe for SSR (returns 0 on server).
  */
 export function useScrollY(): number {
-  return useSyncExternalStore(
-    subscribeScrollY,
-    getScrollYSnapshot,
-    () => 0,
-  )
+  return useSyncExternalStore(subscribeScrollY, getScrollYSnapshot, () => 0)
 }

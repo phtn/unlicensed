@@ -1,11 +1,10 @@
-import {useSearchParams} from '@/components/sepolia/search-params-context'
+import {useSearchParams} from '@/components/appkit/search-params-context'
 import {api} from '@/convex/_generated/api'
 import {useBitcoinBalance} from '@/hooks/use-bitcoin-balance'
 import {useBitcoinTransfer} from '@/hooks/use-bitcoin-transfer'
 import {useCrypto} from '@/hooks/use-crypto'
 import {useNetworkTokens, type TokenBalance} from '@/hooks/use-network-tokens'
 import {usePayButtonState} from '@/hooks/use-pay-button-state'
-import {useSend} from '@/hooks/x-use-send'
 import {getTransactionExplorerUrl} from '@/lib/explorer'
 import {Icon} from '@/lib/icons'
 import {getUsdcAddress, isUsdcSupportedChain} from '@/lib/usdc'
@@ -63,6 +62,7 @@ import {tickerSymbol} from './ticker'
 import type {Token} from './token-coaster'
 import {Tokens} from './token-list'
 import {PayTabProps, type PaymentSuccessContext} from './types'
+import {useSendEth} from './use-send-eth'
 
 const ERC20_TRANSFER_ABI = [
   {
@@ -662,7 +662,7 @@ export const PayTab = ({
     isConfirming: isEthConfirming,
     hash: ethHash,
     receipt: ethReceipt,
-  } = useSend()
+  } = useSendEth()
 
   // Hook for writing contracts (USDC and USDT transfers)
   const {mutate, data: usdcHash, isPending: isUsdcPending} = useWriteContract()

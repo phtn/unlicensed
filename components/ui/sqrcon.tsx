@@ -20,16 +20,12 @@ export const Sqrcon = ({
   base,
   style,
 }: SqrconProps) => {
-  const handleClick = () => {
-    console.log(`Clicked on ${label}`)
-  }
   return (
     <div id={id} className='flex items-start justify-center size-16 w-full'>
       <div className='relative aspect-square h-1/2'>
         <div className='relative flex items-center justify-center'>
           <Icon
             name='sqrc'
-            onClick={handleClick}
             className={cn(
               'size-16 drop-shadow-xs md:drop-shadow-sm active:scale-95 transition-transform duration-300 ease-in-out cursor-pointer',
               base,

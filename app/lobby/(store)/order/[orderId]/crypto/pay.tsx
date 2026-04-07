@@ -5,11 +5,11 @@ import {
   DEFAULT_ALLOWED_PAY_NETWORKS,
   type PayNetworkName,
 } from '@/components/appkit/pay-config'
-import type {PaymentSuccessContext} from '@/components/appkit/types'
 import {
   SearchParamsProvider,
   useSearchParams,
-} from '@/components/sepolia/search-params-context'
+} from '@/components/appkit/search-params-context'
+import type {PaymentSuccessContext} from '@/components/appkit/types'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useCrypto} from '@/hooks/use-crypto'

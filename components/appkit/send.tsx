@@ -1,4 +1,4 @@
-import {useSearchParams} from '@/components/sepolia/search-params-context'
+import {useSearchParams} from '@/components/appkit/search-params-context'
 import {useNetworkTokens} from '@/hooks/use-network-tokens'
 import {usePaste} from '@/hooks/use-paste'
 import {Icon} from '@/lib/icons'

@@ -13,8 +13,7 @@ export type GatewayUrlConfig = {apiUrl?: string; checkoutUrl?: string}
  */
 export function useGateway(gateway: GatewayId, gatewayUrls?: GatewayUrlConfig) {
   const fallback = getGatewayPublicConfig(gateway)
-  const apiUrl =
-    gatewayUrls?.apiUrl?.trim() || fallback.apiUrl
+  const apiUrl = gatewayUrls?.apiUrl?.trim() || fallback.apiUrl
 
   const createWallet = async (
     address: string,
