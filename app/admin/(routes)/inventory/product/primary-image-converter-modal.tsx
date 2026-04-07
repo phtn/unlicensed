@@ -750,7 +750,7 @@ export function PrimaryImageConverterModal({
             <section className='space-y-4'>
               <div
                 className={cn(
-                  'relative overflow-hidden rounded-[1.25rem] border bg-background',
+                  'relative overflow-hidden rounded-2xl border bg-background',
                   loadingSource ? 'border-cyan-500/30' : 'border-foreground/10',
                 )}>
                 {workingSourceUrl ? (
@@ -811,7 +811,7 @@ export function PrimaryImageConverterModal({
                 )}
               </div>
 
-              <div className='grid gap-3 rounded-[1.25rem] border border-foreground/10 bg-background/70 p-4 sm:grid-cols-3'>
+              <div className='grid gap-3 rounded-2xl border border-foreground/10 bg-background/70 p-4 sm:grid-cols-3'>
                 <div className='space-y-1'>
                   <p className='text-[8px] font-medium uppercase tracking-[0.16em] text-foreground/45'>
                     Original
@@ -852,7 +852,7 @@ export function PrimaryImageConverterModal({
             </section>
 
             <aside className='space-y-4'>
-              <div className='overflow-hidden rounded-[1.25rem] border border-foreground/10 bg-background/80'>
+              <div className='overflow-hidden rounded-2xl border border-foreground/10 bg-background/80'>
                 <div className='flex items-center justify-between border-b border-foreground/10 px-4 py-3'>
                   <div>
                     <p className='text-[8px] font-medium uppercase tracking-[0.16em] text-foreground/50'>
@@ -917,7 +917,7 @@ export function PrimaryImageConverterModal({
                 </div>
               </div>
 
-              <div className='space-y-4 rounded-[1.25rem] border border-foreground/10 bg-background/80 p-4'>
+              <div className='space-y-4 rounded-2xl border border-foreground/10 bg-background/80 p-4'>
                 <Input
                   label='File name'
                   placeholder='converted-primary-sq-1000'

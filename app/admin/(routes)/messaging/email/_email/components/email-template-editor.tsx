@@ -15,7 +15,6 @@ import {
 import {getInvitationDefaultProps} from '@/lib/resend/templates/render-with-props'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
-import type {SharedSelection} from '@heroui/system'
 import {useQuery} from 'convex/react'
 import {useCallback, useMemo, useState, useTransition} from 'react'
 import {toast} from 'react-hot-toast'
@@ -82,14 +81,14 @@ const stringifyTemplateProps = (value: Record<string, unknown>): string => {
 const getCouponPropKey = (templateKey: string) =>
   COUPON_TEMPLATE_PROP_KEYS[templateKey as EmailTemplateId] ?? null
 
-const getSingleSelectedKey = (keys: SharedSelection): React.Key | null => {
-  if (keys === 'all') {
-    return null
-  }
+// const getSingleSelectedKey = (keys: SharedSelection): React.Key | null => {
+//   if (keys === 'all') {
+//     return null
+//   }
 
-  const key = Array.from(keys)[0]
-  return key ?? null
-}
+//   const key = Array.from(keys)[0]
+//   return key ?? null
+// }
 
 const editorPaneClassName =
   'w-full min-w-0 px-4 py-5 sm:px-6 sm:py-6 xl:px-8 xl:py-8'

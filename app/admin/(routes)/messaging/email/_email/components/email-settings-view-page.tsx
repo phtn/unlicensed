@@ -16,7 +16,6 @@ import {
   ProgressBar,
   TextArea,
 } from '@heroui/react'
-import type {SharedSelection} from '@heroui/system'
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useRouter} from 'next/navigation'
@@ -136,14 +135,14 @@ function parseCsvRecipients(text: string): RecipientRow[] {
   }, [])
 }
 
-const getSingleSelectedKey = (keys: SharedSelection) => {
-  if (keys === 'all') {
-    return ''
-  }
+// const getSingleSelectedKey = (keys: Set<string>) => {
+//   if (keys === 'all') {
+//     return ''
+//   }
 
-  const key = Array.from(keys)[0]
-  return key == null ? '' : String(key)
-}
+//   const key = Array.from(keys)[0]
+//   return key == null ? '' : String(key)
+// }
 
 export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   const router = useRouter()

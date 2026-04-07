@@ -185,7 +185,7 @@ export const PaymentMethods = memo(function PaymentMethods({
         id='payment-method'
         value={value}
         onValueChange={handleValueChange}>
-        <Select.Trigger className='flex w-full min-h-14 mt-2 items-center justify-between gap-3 rounded-md border border-foreground/40 pr-3 pl-3.5 bg-[canvas] text-gray-900 dark:text-foreground select-none hover:bg-gray-100 dark:hover:bg-white/5 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-[popup-open]:bg-gray-100 dark:data-[popup-open]:bg-white/5'>
+        <Select.Trigger className='flex w-full min-h-14 mt-2 items-center justify-between gap-3 rounded-md border border-foreground/40 pr-3 pl-3.5 bg-[canvas] text-gray-900 dark:text-foreground select-none hover:bg-gray-100 dark:hover:bg-white/5 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-popup-open:bg-gray-100 dark:data-popup-open:bg-white/5'>
           <Select.Value placeholder='Select Payment Method'>
             {selectedMethod ? (
               <SelectedMethodRow method={selectedMethod} />
@@ -201,8 +201,8 @@ export const PaymentMethods = memo(function PaymentMethods({
           <Select.Positioner
             className='outline-hidden select-none z-10'
             sideOffset={8}>
-            <Select.Popup className='group min-w-[var(--anchor-width)] origin-[var(--transform-origin)] bg-clip-padding rounded-md bg-background text-foreground shadow-lg outline outline-1 outline-foreground/20 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0'>
-              <Select.List className='relative py-1 overflow-y-auto max-h-[var(--available-height)]'>
+            <Select.Popup className='group min-w-(--anchor-width) origin-(--transform-origin) bg-clip-padding rounded-md bg-background text-foreground shadow-lg outline outline-1 outline-foreground/20 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0'>
+              <Select.List className='relative py-1 overflow-y-auto max-h-(--available-height)'>
                 {methods.map((method) => (
                   <Select.Item
                     key={method.id}
@@ -210,7 +210,7 @@ export const PaymentMethods = memo(function PaymentMethods({
                     label={method.label}
                     disabled={method.status === 'inactive'}
                     className={cn(
-                      'cursor-default outline-none rounded-sm data-[highlighted]:bg-foreground/10 data-[disabled]:opacity-50 data-[disabled]:pointer-events-none',
+                      'cursor-default outline-none rounded-sm data-highlighted:bg-foreground/10 data-disabled:opacity-50 data-disabled:pointer-events-none',
                     )}>
                     <PaymentMethodOptionRow method={method} />
                   </Select.Item>

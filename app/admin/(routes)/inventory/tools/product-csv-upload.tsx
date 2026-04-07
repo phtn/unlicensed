@@ -294,7 +294,7 @@ export function ProductCsvUpload() {
                 </>
               ) : (
                 <>
-                  <div className='flex size-12 items-center justify-center rounded-xl bg-success/20'>
+                  <div className='flex size-12 items-center justify-center rounded-xl bg-success-soft-hover'>
                     <Icon name='check' className='size-6 text-success' />
                   </div>
                   <span className='font-mono text-sm text-foreground'>
