@@ -725,9 +725,6 @@ export const EmailTemplateEditor = ({
                   value={String(
                     selectedTemplateKey ? [selectedTemplateKey] : [],
                   )}
-                  // onChange={(keys) => {
-                  //   handleTemplateSelect(getSingleSelectedKey(keys))
-                  // }}
                   isDisabled={isLoadingTemplate}
                   options={templateSelectOptions.map((item) => ({
                     value: item.id,

@@ -2,14 +2,8 @@ import {api} from '@/convex/_generated/api'
 import {PaymentMethod} from '@/convex/orders/d'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {ListboxItem} from '@heroui/listbox'
+import {Select} from '@base-ui/react'
 import {Label} from '@heroui/react'
-import {
-  Select,
-  type SelectedItemProps,
-  type SelectedItems,
-} from '@heroui/select'
-import type {SharedSelection} from '@heroui/system'
 import {useQuery} from 'convex/react'
 import {memo, useCallback, useMemo} from 'react'
 import {normalizePaymentMethod} from '../../constants'
@@ -34,7 +28,7 @@ const FALLBACK_METHODS: Record<PaymentMethod, IPaymentMethod> = {
   cards: {
     id: 'cards',
     name: 'Cards',
-    label: 'Cards',
+    label: 'Credit/Debit Card',
     icon: 'credit-card-2',
     iconStyle: 'text-cyan-500',
     description: 'Pay with credit or debit card.',
@@ -69,18 +63,15 @@ const FALLBACK_METHODS: Record<PaymentMethod, IPaymentMethod> = {
   },
 }
 
-type SelectedValueItem = SelectedItemProps<IPaymentMethod>
-
-// Memoized row for list items to reduce re-renders when dropdown opens (5.5, 6.3)
 const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
   method,
 }: {
   method: IPaymentMethod
 }) {
   return (
-    <div className='h-14 flex gap-2 md:gap-3 px-2 md:p-2'>
+    <div className='h-16 flex gap-2 md:gap-3 px-2 md:p-2 pb-3'>
       <Icon name={method.icon} className={cn('shrink-0 size-4 mt-1')} />
-      <div className='flex flex-col w-full md:space-y-0.5 h-14'>
+      <div className='flex flex-col w-full md:space-y-0.5'>
         <div className='flex items-center justify-between w-full h-8 md:h-7'>
           <div className='flex items-center space-x-2 whitespace-nowrap text-base md:text-lg tracking-tight font-medium'>
             <span className='dark:text-white text-foreground'>
@@ -97,12 +88,11 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
           <div
             className={cn(
               'text-[8px] uppercase font-brk w-fit px-1 py-0 md:px-1 leading-3 md:leading-normal dark:text-white text-right',
-              {'': method.id === 'cards'},
             )}>
             {method.tag}
           </div>
         </div>
-        <span className='text-tiny opacity-70 line-clamp-1'>
+        <span className='text-xs opacity-70 line-clamp-1'>
           {method.description}
         </span>
       </div>
@@ -110,40 +100,39 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
   )
 })
 
-// Stable render for selected value in trigger (avoids inline object/array creation)
-function SelectedValueContent({item}: {item: SelectedValueItem}) {
-  const data = item.data ?? undefined
-  if (!data) return null
+const SelectedMethodRow = memo(function SelectedMethodRow({
+  method,
+}: {
+  method: IPaymentMethod
+}) {
   return (
     <div className='flex items-center justify-between ps-1 text-foreground'>
       <div className='flex items-center w-full gap-2'>
-        {data.icon ? (
-          <Icon
-            name={data.icon}
-            className={cn('shrink-0 size-5', data.iconStyle)}
-          />
-        ) : null}
-        <div className='flex flex-col pl-0.5 gap-4'>
-          <div className='flex items-center space-x-2'>
-            <span className='text-lg whitespace-nowrap tracking-tight'>
-              {data.label}
-            </span>
-            {data.id === 'cards' ? (
-              <div className='flex items-center space-x-2'>
-                <Icon name='applepay' className='size-10' />
-                <Icon name='googlepay' className='size-10' />
-              </div>
-            ) : null}
-            <TxnSpeed method={data.id} selected />
-          </div>
+        <Icon
+          name={method.icon}
+          className={cn('shrink-0 size-5', method.iconStyle)}
+        />
+        <div className='flex items-center space-x-2'>
+          <span className='text-lg whitespace-nowrap tracking-tight'>
+            {method.label}
+          </span>
+          {method.id === 'cards' ? (
+            <div className='flex items-center space-x-2'>
+              <Icon name='applepay' className='size-10' />
+              <Icon name='googlepay' className='size-10' />
+            </div>
+          ) : null}
+          <TxnSpeed method={method.id} selected />
         </div>
       </div>
-      <div className='flex-1 text-[8px] font-brk uppercase font-normal px-2.5 py-px md:whitespace-nowrap leading-3'>
-        {data.tag}
-      </div>
+      {method.tag ? (
+        <div className='flex-1 text-[8px] font-brk uppercase font-normal px-2.5 py-px md:whitespace-nowrap leading-3'>
+          {method.tag}
+        </div>
+      ) : null}
     </div>
   )
-}
+})
 
 export const PaymentMethods = memo(function PaymentMethods({
   value,
@@ -165,57 +154,24 @@ export const PaymentMethods = memo(function PaymentMethods({
       })),
     [setting],
   )
+
   const selectedMethod = useMemo(
     () =>
       methods.find((method) => method.id === value) ?? FALLBACK_METHODS[value],
     [methods, value],
   )
 
-  const handleSelectionChange = useCallback(
-    (keys: SharedSelection) => {
-      if (keys === 'all' || keys.size === 0) return
-      const selectedKey = Array.from(keys)[0] as string
-      if (!selectedKey) return
-
-      const selectedMethod = methods.find((method) => method.id === selectedKey)
+  const handleValueChange = useCallback(
+    (next: PaymentMethod | null) => {
+      if (!next) return
+      const method =
+        methods.find((m) => m.id === next) ??
+        FALLBACK_METHODS[next as PaymentMethod]
       const paymentMethod =
-        selectedMethod?.id ??
-        normalizePaymentMethod(selectedKey) ??
-        (selectedKey as PaymentMethod)
-
+        method?.id ?? normalizePaymentMethod(next) ?? (next as PaymentMethod)
       onChange(paymentMethod)
     },
     [methods, onChange],
-  )
-
-  const selectedKeys = useMemo(() => [value], [value])
-  const SELECT_CLASS_NAMES = {
-    base: 'w-full',
-    label: 'text-lg font-semibold tracking-tight h-10',
-    trigger:
-      'min-h-14 mt-2 p-2 md:ps-3 border border-foreground/40 placeholder:text-foreground rounded-md',
-    listboxWrapper:
-      'border-2 dark:border-foreground/40 rounded-lg outline-none focus-visible:outline-none border-0 border-white/40 w-full',
-    listbox: 'outline-none focus-visible:outline-none px-1.5 py-1.5',
-    selectorIcon: 'translate-x-2',
-    popoverContent:
-      'w-full bg-background backdrop-blur-xl p-2.5 rounded-lg border border-foreground/40',
-  }
-  const renderValue = useCallback(
-    (items: SelectedItems<IPaymentMethod>) => {
-      if (items.length === 0 && selectedMethod) {
-        return (
-          <SelectedValueContent
-            item={{key: selectedMethod.id, data: selectedMethod}}
-          />
-        )
-      }
-
-      return items.map((item, index) => (
-        <SelectedValueContent key={item.key ?? index} item={item} />
-      ))
-    },
-    [selectedMethod],
   )
 
   return (
@@ -225,34 +181,45 @@ export const PaymentMethods = memo(function PaymentMethods({
         htmlFor='payment-method'>
         Payment Methods
       </Label>
-      <Select<IPaymentMethod>
+      <Select.Root<PaymentMethod>
         id='payment-method'
-        classNames={SELECT_CLASS_NAMES}
-        selectedKeys={selectedKeys}
-        items={methods}
-        onSelectionChange={(key) => handleSelectionChange(key)}
-        placeholder='Select Payment Method'
-        renderValue={renderValue}
-        selectionMode='single'>
-        {(method) => (
-          <ListboxItem
-            key={method.id}
-            textValue={method.name}
-            className={cn(' rounded-md', {
-              'opacity-50 pointer-events-none': method.status === 'inactive',
-            })}
-            classNames={{
-              wrapper: 'placeholder:text-dark-gray',
-              base: 'data-[selected=true]:bg-brand/12 dark:data-[selected=true]:bg-brand gap-0 px-1 pb-4',
-              selectedIcon: cn(
-                'p-0 size-3 mb-7 md:mb-4 mr-2',
-                method.iconStyle,
-              ),
-            }}>
-            <PaymentMethodOptionRow method={method} />
-          </ListboxItem>
-        )}
-      </Select>
+        value={value}
+        onValueChange={handleValueChange}>
+        <Select.Trigger className='flex w-full min-h-14 mt-2 items-center justify-between gap-3 rounded-md border border-foreground/40 pr-3 pl-3.5 bg-[canvas] text-gray-900 dark:text-foreground select-none hover:bg-gray-100 dark:hover:bg-white/5 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-[popup-open]:bg-gray-100 dark:data-[popup-open]:bg-white/5'>
+          <Select.Value placeholder='Select Payment Method'>
+            {selectedMethod ? (
+              <SelectedMethodRow method={selectedMethod} />
+            ) : (
+              <span className='opacity-60 text-sm'>Select Payment Method</span>
+            )}
+          </Select.Value>
+          <Select.Icon className='flex shrink-0'>
+            <Icon name='chevron-down' className='size-3' />
+          </Select.Icon>
+        </Select.Trigger>
+        <Select.Portal>
+          <Select.Positioner
+            className='outline-hidden select-none z-10'
+            sideOffset={8}>
+            <Select.Popup className='group min-w-[var(--anchor-width)] origin-[var(--transform-origin)] bg-clip-padding rounded-md bg-background text-foreground shadow-lg outline outline-1 outline-foreground/20 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0'>
+              <Select.List className='relative py-1 overflow-y-auto max-h-[var(--available-height)]'>
+                {methods.map((method) => (
+                  <Select.Item
+                    key={method.id}
+                    value={method.id}
+                    label={method.label}
+                    disabled={method.status === 'inactive'}
+                    className={cn(
+                      'cursor-default outline-none rounded-sm data-[highlighted]:bg-foreground/10 data-[disabled]:opacity-50 data-[disabled]:pointer-events-none',
+                    )}>
+                    <PaymentMethodOptionRow method={method} />
+                  </Select.Item>
+                ))}
+              </Select.List>
+            </Select.Popup>
+          </Select.Positioner>
+        </Select.Portal>
+      </Select.Root>
     </div>
   )
 })
@@ -267,11 +234,9 @@ const TxnSpeed = ({method, selected = false}: TxnSpeedProps) => {
     <span
       className={cn(
         'text-brand dark:text-white text-[9px] italic uppercase font-semibold tracking-normal opacity-100 mt-1',
-        {'text-brand dark:text-brand ': selected},
+        {'text-brand dark:text-brand': selected},
       )}>
       Fastest
     </span>
-  ) : (
-    ''
-  )
+  ) : null
 }
