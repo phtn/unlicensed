@@ -3,8 +3,7 @@ import {Input, inputClass} from '@/components/hero-v3/input'
 import {selectClass} from '@/components/hero-v3/select'
 import {cn} from '@/lib/utils'
 import {Textarea as TextArea} from '@heroui/input'
-import {Label, ListBox, Select as S} from '@heroui/react'
-import {Switch} from '@heroui/switch'
+import {Label, ListBox, Select as S, Switch} from '@heroui/react'
 import React, {
   FocusEvent,
   type ChangeEvent,
@@ -587,11 +586,8 @@ export function SwitchField<T>(
         name={String(field.name)}
         isSelected={value}
         isDisabled={props?.disabled}
-        onValueChange={(nextValue) => field.handleChange(nextValue)}
-        onBlur={field.handleBlur}
-        classNames={{
-          wrapper: 'group-data-[selected=true]:bg-amber-500',
-        }}>
+        onChange={(nextValue) => field.handleChange(nextValue)}
+        onBlur={field.handleBlur}>
         <div className='flex flex-col gap-px'>
           <span className='text-base font-medium'>{props?.label}</span>
           <span className='text-xs opacity-70'>{props?.description}</span>

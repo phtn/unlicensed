@@ -1,14 +1,14 @@
 import {api} from '@/convex/_generated/api'
 import {PaymentMethod} from '@/convex/orders/d'
 import {Icon, IconName} from '@/lib/icons'
-import {cn} from '@/lib/utils'
-import {ListboxItem as ListBoxItem} from '@heroui/listbox'
-import {Label} from '@heroui/react'
+import {ListboxItem} from '@/lib/listbox/dist'
 import {
   Select,
   type SelectedItemProps,
   type SelectedItems,
-} from '@heroui/select'
+} from '@/lib/select/dist'
+import {cn} from '@/lib/utils'
+import {Label} from '@heroui/react'
 import type {SharedSelection} from '@heroui/system'
 import {useQuery} from 'convex/react'
 import {memo, useCallback, useMemo} from 'react'
@@ -230,13 +230,12 @@ export const PaymentMethods = memo(function PaymentMethods({
         classNames={SELECT_CLASS_NAMES}
         selectedKeys={selectedKeys}
         items={methods}
-        onSelectionChange={handleSelectionChange}
+        onSelectionChange={(key) => handleSelectionChange(key)}
         placeholder='Select Payment Method'
         renderValue={renderValue}
-        selectionMode='single'
-        variant='flat'>
+        selectionMode='single'>
         {(method) => (
-          <ListBoxItem
+          <ListboxItem
             key={method.id}
             textValue={method.name}
             className={cn(' rounded-md', {
@@ -251,7 +250,7 @@ export const PaymentMethods = memo(function PaymentMethods({
               ),
             }}>
             <PaymentMethodOptionRow method={method} />
-          </ListBoxItem>
+          </ListboxItem>
         )}
       </Select>
     </div>

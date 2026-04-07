@@ -1,12 +1,12 @@
 'use client'
 
+import {Select} from '@/components/hero-v3/select'
 import {ConverterParamsProvider} from '@/ctx/converter-params'
 import {useCurrencyConversion} from '@/hooks/use-currency-converter'
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Card, Tab, Tabs} from '@heroui/react'
-import {Select, SelectItem} from '@heroui/select'
 import {
   ChangeEvent,
   useCallback,
@@ -104,23 +104,18 @@ function ConverterField({
           <div>
             <Select
               isDisabled={disableCurrencySelect}
-              selectedKeys={
-                currencyId ? new Set([currencyId]) : new Set(['EUR'])
-              }
-              onSelectionChange={(key) => {
+              value={String(
+                currencyId ? new Set([currencyId]) : new Set(['EUR']),
+              )}
+              onChange={(key) => {
                 const selected = key as string
                 if (selected) {
                   onCurrencyChange(selected)
                 }
               }}
-              className='w-28'
-              aria-label='Select currency'>
-              {currencies.map((curr) => (
-                <SelectItem key={curr} className='font-brk'>
-                  {curr}
-                </SelectItem>
-              ))}
-            </Select>
+              aria-label='Select currency'
+              options={currencies.map((curr) => ({value: curr, label: curr}))}
+            />
           </div>
         </div>
       </Card>

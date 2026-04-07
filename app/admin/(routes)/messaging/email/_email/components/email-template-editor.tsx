@@ -722,10 +722,12 @@ export const EmailTemplateEditor = ({
                 <Select
                   label='Template'
                   placeholder='Choose a template (optional)'
-                  value={selectedTemplateKey ? [selectedTemplateKey] : []}
-                  onChange={(keys) => {
-                    handleTemplateSelect(getSingleSelectedKey(keys))
-                  }}
+                  value={String(
+                    selectedTemplateKey ? [selectedTemplateKey] : [],
+                  )}
+                  // onChange={(keys) => {
+                  //   handleTemplateSelect(getSingleSelectedKey(keys))
+                  // }}
                   isDisabled={isLoadingTemplate}
                   options={templateSelectOptions.map((item) => ({
                     value: item.id,
@@ -749,15 +751,14 @@ export const EmailTemplateEditor = ({
                           ? 'Choose a coupon'
                           : 'No active coupons available'
                       }
-                      variant='faded'
-                      selectedKeys={
+                      value={String(
                         resolvedSelectedCouponId
                           ? [resolvedSelectedCouponId]
-                          : []
-                      }
-                      onSelectionChange={(keys) => {
-                        handleCouponSelect(getSingleSelectedKey(keys))
-                      }}
+                          : [],
+                      )}
+                      // onChange={(keys) => {
+                      //   handleCouponSelect(getSingleSelectedKey(keys))
+                      // }}
                       isDisabled={
                         !couponAttachmentEnabled ||
                         isLoadingTemplate ||

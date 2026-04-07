@@ -1,12 +1,12 @@
 'use client'
 
+import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import type {OrderStatus} from '@/convex/orders/d'
 import {useAuthCtx} from '@/ctx/auth'
 import {useCopy} from '@/hooks/use-copy'
 import {Icon} from '@/lib/icons'
 import {Button, Card} from '@heroui/react'
-import {Select, SelectItem} from '@heroui/select'
 import {useMutation, useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
 import {useCallback} from 'react'
@@ -73,7 +73,7 @@ export const Content = ({orderNumber}: ContentProps) => {
         <div className='flex items-center gap-4'>
           <Button
             size='lg'
-                        isIconOnly
+            isIconOnly
             variant='secondary'
             onPress={router.back}
             aria-label='Back to orders'
@@ -96,22 +96,21 @@ export const Content = ({orderNumber}: ContentProps) => {
           {/* Status */}
           <div className='min-w-sm'>
             <Select
-              size='lg'
-              selectedKeys={[order.orderStatus]}
-              onSelectionChange={(keys) => {
-                const selected = (keys instanceof Set ? [...keys][0] : undefined) as OrderStatus | undefined
-                if (selected)
+              value={order.orderStatus}
+              onChange={(key) => {
+                if (key)
                   updateOrderStatus({
                     orderId: order._id,
-                    status: selected,
+                    status: key as OrderStatus,
                     updatedBy: user?.uid,
                   })
               }}
-              aria-label='Order status'>
-              {statusOptions.map((option) => (
-                <SelectItem key={option.value}>{option.label}</SelectItem>
-              ))}
-            </Select>
+              aria-label='Order status'
+              options={statusOptions.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
+            />
           </div>
         </div>
 
