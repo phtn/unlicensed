@@ -201,21 +201,22 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         filterOptions.subcategories.length > 0) && (
         <section className='px-4 sm:px-6 pb-4'>
           <div
-            className={cn('max-w-7xl mx-auto flex flex-col gap-3 min-h-64', {
+            className={cn('max-w-7xl mx-auto flex flex-col gap-4 min-h-64', {
               'min-h-24': slug === 'flower',
             })}>
             {slug !== 'flower' && filterOptions.tiers.length > 0 && (
-              <div className='flex flex-wrap items-center gap-1'>
-                <span className='text-base font-clash font-bold mr-2 uppercase'>
+              <div className='flex flex-wrap items-center gap-3'>
+                <span className='text-base font-clash font-semibold mr-2 uppercase'>
                   Tiers
                 </span>
                 <Button
                   size='sm'
-                  variant={tier === '' ? 'primary' : 'outline'}
+                  variant={tier === '' ? 'primary' : 'tertiary'}
                   className={cn(
-                    'min-w-0 h-6 text-sm font-semibold uppercase font-clash rounded-xs',
+                    'min-w-0 h-6 font-clash font-medium text-sm tracking-wide uppercase rounded-xs text-foreground bg-background',
                     {
-                      'bg-foreground text-white': tier === '',
+                      'bg-foreground text-white dark:text-dark-table':
+                        tier === '',
                     },
                   )}
                   onPress={() => handleTierChange('')}>
@@ -239,7 +240,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
               </div>
             )}
             {filterOptions.subcategories.length > 0 && (
-              <div className='flex flex-wrap items-center gap-1 mt-0.5'>
+              <div className='flex flex-wrap items-center gap-3 mt-0.5'>
                 <span className='text-base font-clash font-semibold mr-2 uppercase'>
                   Subcategory
                 </span>
@@ -247,9 +248,10 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                   size='sm'
                   variant={subcategory === '' ? 'primary' : 'tertiary'}
                   className={cn(
-                    'min-w-0 h-6 text-sm font-clash font-medium uppercase rounded-xs',
+                    'min-w-0 h-6 font-clash font-medium text-sm tracking-wide uppercase rounded-xs text-foreground bg-background',
                     {
-                      'bg-brand text-white': subcategory === '',
+                      'bg-foreground text-white dark:text-dark-table':
+                        subcategory === '',
                     },
                   )}
                   onPress={() => handleSubcategoryChange('')}>
@@ -281,8 +283,8 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
             )}
             {filterOptions.brands.length > 0 && (
               <div className='grid min-h-22 gap-1.5 sm:grid-cols-[auto_1fr] sm:items-start'>
-                <div className='flex flex-col gap-1.5'>
-                  <div className='flex flex-wrap items-center gap-1'>
+                <div className='flex flex-col gap-3'>
+                  <div className='flex flex-wrap items-center gap-3'>
                     <span className='text-base font-clash font-bold uppercase h-7.5 sm:pt-1'>
                       Brands
                     </span>
@@ -290,9 +292,10 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                       size='sm'
                       variant={brand === '' ? 'primary' : 'tertiary'}
                       className={cn(
-                        'min-w-0 h-6 text-sm font-clash font-semibold uppercase rounded-xs',
+                        'min-w-0 h-6 font-clash font-medium text-sm tracking-wide uppercase rounded-xs text-foreground bg-background',
                         {
-                          'bg-foreground text-white': brand === '',
+                          'bg-foreground text-white dark:bg-white dark:text-dark-table':
+                            brand === '',
                         },
                       )}
                       onPress={() => handleBrandChange('')}>
@@ -364,7 +367,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                           },
                         }}
                         className='overflow-hidden'>
-                        <motion.div className='flex flex-wrap items-center gap-1'>
+                        <motion.div className='flex flex-wrap items-center gap-3'>
                           {overflowBrandOptions.map((brandOption) => (
                             <motion.div
                               key={brandOption.value}

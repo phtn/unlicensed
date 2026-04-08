@@ -204,7 +204,7 @@ export const UserDropdown = ({
               textValue='Sign out'
               variant='danger'
               className='rounded-xs'>
-              <MenuItemContent icon='signout' label='Sign out' tone='danger' />
+              <MenuItemContent icon='signout' label='Sign out' />
             </Dropdown.Item>
           </Dropdown.Section>
         </Dropdown.Menu>

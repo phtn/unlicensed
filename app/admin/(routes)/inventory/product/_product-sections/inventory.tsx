@@ -10,7 +10,7 @@ import {getStockDisplayUnit, getTotalStock} from '@/lib/productStock'
 import {Button, Chip} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useQuery} from 'convex/react'
-import {useMemo, useState} from 'react'
+import {Key, useMemo, useState} from 'react'
 import {ProductFormApi, mapFractions} from '../product-schema'
 import {FormSection, Header} from './components'
 import {
@@ -216,7 +216,7 @@ export const Inventory = ({
     field: {
       handleChange: (value: string) => void
     },
-    keys: Set<React.Key> | 'all',
+    keys: Set<Key> | 'all',
   ) => {
     const newKeys =
       keys === 'all'

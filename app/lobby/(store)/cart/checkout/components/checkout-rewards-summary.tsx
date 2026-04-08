@@ -179,18 +179,17 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
     'bg-purple-500/10 dark:bg-purple-400/10'
 
   return (
-    <Card className='overflow-hidden border border-foreground/20 bg-linear-to-br from-sidebar to-slate-400/6 dark:from-foreground/5 dark:to-foreground/10 transition-all duration-200 will-change-transform rounded-none'>
+    <Card className='relative overflow-hidden border border-foreground/20 bg-linear-to-br from-sidebar to-slate-400/6 dark:from-foreground/5 dark:to-foreground/10 transition-all duration-200 will-change-transform rounded-none'>
+      {/* Decorative glow */}
+      <div
+        id='tier-aura'
+        className={cn(
+          'pointer-events-none absolute z-800 opacity-80 -right-16 -top-16 h-64 w-64 rounded-full blur-3xl transition-colors duration-500',
+          tierAuraClassName,
+        )}
+        aria-hidden
+      />
       <Card.Content className='relative space-y-2 p-3 md:p-5 overflow-hidden'>
-        {/* Decorative glow */}
-        <div
-          id='tier-aura'
-          className={cn(
-            'pointer-events-none absolute z-800 opacity-80 -right-16 -top-16 h-64 w-64 rounded-full blur-3xl transition-colors duration-500',
-            tierAuraClassName,
-          )}
-          aria-hidden
-        />
-
         {/* Tier row */}
         <div className='flex items-center justify-between overflow-hidden'>
           <span className='text-base md:text-lg font-clash font-medium'>

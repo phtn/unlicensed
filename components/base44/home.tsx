@@ -24,11 +24,12 @@ export const NewHome = () => {
           height={1536}
           quality={75}
           fetchPriority='high'
+          // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775670911/no-color-banner_ludy6f.webp'
           src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775501618/banner-desktop_gs5xzr.png'
           // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775501420/banner-desktop_tf555y.webp'
           // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1772552114/hero-image_ivcsbu.webp'
           alt='Rapid Fire featured cannabis products'
-          className='hidden object-cover sm:block h-full w-full'
+          className='hidden object-cover sm:block h-full w-full grayscale'
         />
       </div>
 
