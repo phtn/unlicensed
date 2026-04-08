@@ -2,6 +2,7 @@
 
 import {cn} from '@/lib/utils'
 import {usePathname} from 'next/navigation'
+import {NuqsAdapter} from 'nuqs/adapters/next/app'
 import type {ReactNode} from 'react'
 import {RouteProtection} from '../_components/route-protection'
 import {UserRequiredGuard} from '../_components/user-required-guard'
@@ -15,6 +16,7 @@ export default function AccountLayout({children}: AccountLayoutProps) {
   const isChatRoute = pathname.startsWith('/account/chat')
 
   return (
+    <NuqsAdapter>
     <RouteProtection>
       <UserRequiredGuard>
         <div className='min-h-dvh overflow-x-hidden bg-white dark:bg-black'>
@@ -30,5 +32,6 @@ export default function AccountLayout({children}: AccountLayoutProps) {
         </div>
       </UserRequiredGuard>
     </RouteProtection>
+    </NuqsAdapter>
   )
 }

@@ -9,31 +9,52 @@ interface ProfileCardProps {
 }
 
 export const ProfileCard = ({user}: ProfileCardProps) => {
+  const initial = (user?.name ?? '').charAt(0).toUpperCase()
+  const memberYear = user?.createdAt
+    ? new Date(user.createdAt).getFullYear()
+    : null
+
   return (
-    <Card className='relative border border-foreground/20 rounded-xs dark:bg-dark-table/40'>
+    <Card className='relative overflow-hidden rounded-xs border border-foreground/10 dark:bg-dark-table/40'>
       <ProfileBackground />
-      <Card.Content className='p-6 min-h-80'>
-        <div className='flex flex-col items-center text-center space-y-5 justify-center'>
-          <div className=''>
-            <div className='size-32 mask-b-from-50% mask-radial-[50%_50%] mask-radial-from-80% rounded-full p-0.5 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500'>
-              <div className='z-200 w-full h-full rounded-full overflow-hidden border-4 border-background bg-background flex items-center justify-center'>
-                {user?.photoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={user.photoUrl}
-                    alt='Profile'
-                    className='size-full object-cover relative z-100'
-                    loading='lazy'
-                  />
-                ) : (
-                  <div className='w-full h-full flex items-center justify-center font-polysans font-normal bg-linear-to-br from-indigo-100 to-pink-100 dark:from-indigo-900/30 dark:to-pink-900/30 text-4xl text-white dark:text-indigo-400 '>
-                    {(user?.name ?? '').charAt(0).toUpperCase()}
-                  </div>
-                )}
+      <Card.Content className='relative z-10 p-6'>
+        <div className='flex flex-col items-center gap-4 text-center'>
+          {/* Avatar */}
+          <div className='size-20 overflow-hidden rounded-full ring-2 ring-foreground/10 ring-offset-2 ring-offset-background'>
+            {user?.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.photoUrl}
+                alt='Profile'
+                className='size-full object-cover'
+                loading='lazy'
+              />
+            ) : (
+              <div className='flex size-full items-center justify-center bg-linear-to-br from-indigo-100 to-pink-100 text-3xl font-medium text-foreground/60 dark:from-indigo-900/30 dark:to-pink-900/30'>
+                {initial}
               </div>
-            </div>
+            )}
           </div>
-          <h2 className='text-xl font-bone tracking-tight'>{user?.name}</h2>
+
+          {/* Info */}
+          <div className='space-y-1.5'>
+            <h2 className='font-bone text-lg leading-none tracking-tight'>
+              {user?.name}
+            </h2>
+            {user?.email && (
+              <p className='font-okxs text-xs text-default-400'>{user.email}</p>
+            )}
+            {/*{user?.contact?.phone && (
+              <p className='font-okxs text-xs text-default-400'>
+                {user.contact.phone}
+              </p>
+            )}*/}
+            {memberYear && (
+              <p className='font-okxs text-[10px] uppercase tracking-widest text-default-300'>
+                Member since {memberYear}
+              </p>
+            )}
+          </div>
         </div>
       </Card.Content>
     </Card>
@@ -41,16 +62,11 @@ export const ProfileCard = ({user}: ProfileCardProps) => {
 }
 
 const ProfileBackground = memo(() => {
-  // Derive star color during render (simple expression, no need for useMemo)
-  // const starColor = theme === 'dark' ? '#d0499a' : '#d0499a'
-
   return (
     <Ascend
       starColor={'#d0499a'}
       className={cn(
-        'flex items-center justify-center absolute z-0 pointer-events-none inset-0',
-        '',
-        // 'dark:bg-[radial-gradient(ellipse_at_bottom,#262626_0%,#000_60%)] _bg-[radial-gradient(ellipse_at_bottom,_#f5f5f5_0%,_#fff_50%)]',
+        'pointer-events-none absolute inset-0 z-0 flex items-center justify-center',
       )}
     />
   )

@@ -641,12 +641,12 @@ export const ProductForm = ({
               key={section.id}
               onPress={() => scrollToSection(section.id)}
               className={cn(
-                'flex items-center justify-start gap-3 px-4 text-base font-medium tracking-tight rounded-lg transition-all text-left',
+                'flex items-center justify-start gap-3 px-4 text-base font-medium tracking-tight rounded-lg transition-all text-left border-transparent',
                 activeSection === section.id
                   ? 'dark:bg-zinc-700 dark:text-blue-300 bg-dark-gray/5 text-blue-500'
                   : 'text-dark-gray/60 dark:text-light-gray/80 dark:hover:text-blue-100  hover:bg-dark-gray/5 hover:text-dark-gray/90',
               )}>
-              <Icon name={section.icon} className='size-4 mb-2' />
+              <Icon name={section.icon} className='size-4' />
               <span>{section.label}</span>
             </Button>
           ))}

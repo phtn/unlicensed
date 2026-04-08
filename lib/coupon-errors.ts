@@ -1,35 +1,12 @@
-import {ConvexError} from 'convex/values'
-
-const COUPON_ERROR_KIND = 'coupon_error'
-
-type CouponErrorData = {
-  kind: typeof COUPON_ERROR_KIND
-  message: string
-}
+import {createAppError, getAppErrorMessage, isAppError} from './errors'
 
 export function createCouponError(message: string) {
-  return new ConvexError<CouponErrorData>({
-    kind: COUPON_ERROR_KIND,
-    message,
-  })
+  return createAppError('validation', message, 'coupon_error')
 }
 
 export function getCouponErrorMessage(error: unknown): string | null {
-  if (!(error instanceof ConvexError)) {
-    return null
-  }
-
-  const {data} = error
-  if (
-    typeof data === 'object' &&
-    data !== null &&
-    'kind' in data &&
-    data.kind === COUPON_ERROR_KIND &&
-    'message' in data &&
-    typeof data.message === 'string'
-  ) {
-    return data.message
-  }
-
-  return null
+  if (!isAppError(error, 'validation')) return null
+  const data = error.data as {code?: string; message: string}
+  if (data.code !== 'coupon_error') return null
+  return getAppErrorMessage(error)
 }

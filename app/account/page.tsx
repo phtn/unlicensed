@@ -1,187 +1,79 @@
 'use client'
 
-import {Loader} from '@/components/expermtl/loader'
-import {api} from '@/convex/_generated/api'
-import {onError} from '@/ctx/toast'
 import {useAccount} from '@/hooks/use-account'
-import {Icon} from '@/lib/icons'
-import {useMutation} from 'convex/react'
-import {useEffect, useRef, useState} from 'react'
-import {AccountNav} from './_components/account-nav'
-import {ProfileCard} from './_components/profile-card'
-import {RecentOrders} from './_components/recent-orders'
-import {RewardPoints} from './_components/reward-points'
+import {cn} from '@/lib/utils'
+import {Tabs} from '@base-ui/react'
+import {parseAsString, useQueryState} from 'nuqs'
+import {ReactNode, useMemo} from 'react'
+import {AccountSettings} from './_components/account-settings'
+import {Overview} from './_components/overview'
+
+type AccountTab = {id: 'ovw' | 'set'; label: string}
+const TABS: Array<AccountTab> = [
+  {id: 'ovw', label: 'Overview'},
+  {id: 'set', label: 'Settings'},
+]
 
 export default function AccountPage() {
-  const {user, orders, pointsBalance} = useAccount()
-  const updateContact = useMutation(api.users.m.updateContact)
-  const [isEditingPhone, setIsEditingPhone] = useState(false)
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [phoneStatus, setPhoneStatus] = useState<'idle' | 'saving' | 'error'>(
-    'idle',
+  const {user, orders, pointsBalance, orderStats} = useAccount()
+
+  const [selectedTab, setSelectedTab] = useQueryState(
+    'tab',
+    parseAsString.withDefault('ovw'),
   )
-  const phoneInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (!isEditingPhone || !phoneInputRef.current) return
-
-    phoneInputRef.current.focus()
-    phoneInputRef.current.select()
-  }, [isEditingPhone])
-
-  const savedPhoneNumber = user?.contact?.phone ?? ''
-
-  function startPhoneEditing() {
-    setPhoneNumber(savedPhoneNumber)
-    setPhoneStatus('idle')
-    setIsEditingPhone(true)
-  }
-
-  function cancelPhoneEditing() {
-    setPhoneNumber(savedPhoneNumber)
-    setPhoneStatus('idle')
-    setIsEditingPhone(false)
-  }
-
-  async function savePhoneNumber() {
-    const fid = user?.fid
-    if (!fid) return
-
-    const nextPhoneNumber = phoneNumber.trim()
-
-    if (nextPhoneNumber === savedPhoneNumber) {
-      setPhoneStatus('idle')
-      setPhoneNumber(nextPhoneNumber)
-      setIsEditingPhone(false)
-      return
-    }
-
-    setPhoneNumber(nextPhoneNumber)
-    setPhoneStatus('saving')
-
-    try {
-      await updateContact({
-        fid,
-        contact: {
-          phone: nextPhoneNumber,
-        },
-      })
-      setPhoneStatus('idle')
-      setIsEditingPhone(false)
-    } catch (error) {
-      console.error('Failed to update phone number:', error)
-      setPhoneStatus('error')
-      onError('Failed to update phone number')
-    }
-  }
-
-  // Loading State (Initial page load only)
-  const isLoading = !user
-
-  if (isLoading) {
-    return (
-      <div className='min-h-140 w-full flex'>
-        <Loader className='scale-50' />
-      </div>
-    )
-  }
+  const activeTab = TABS.some((t) => t.id === selectedTab) ? selectedTab : 'ovw'
+  const pmap = useMemo(() => {
+    return {
+      ovw: (
+        <Overview
+          user={user}
+          orders={orders}
+          pointsBalance={pointsBalance}
+          orderStats={orderStats}
+        />
+      ),
+      set: <AccountSettings user={user} />,
+    } as Record<AccountTab['id'], ReactNode>
+  }, [user, orders, pointsBalance, orderStats])
 
   return (
-    <div className='h-[calc(100lvh-140px)]'>
-      {/* Header Section */}
-      <AccountNav />
-      <div className='px-4 xl:px-6 2xl:px-0 pb-10'>
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-          {/* Left Column: Profile & Rewards (1/3 width) */}
-          <div className='space-y-3 lg:col-span-1 pt-3'>
-            {/* Profile Card */}
-            <ProfileCard user={user} />
-            {/* Points Balance Card */}
-            <div className='space-y-1'>
-              <div className='h-10.5 bg-white/10 flex items-center justify-between w-full space-x-2 px-2 border border-sidebar/50'>
-                <div className='flex items-center space-x-2 w-full min-w-0'>
-                  <Icon name='phone' className='size-6 shrink-0' />
-                  {isEditingPhone ? (
-                    <input
-                      ref={phoneInputRef}
-                      type='tel'
-                      value={phoneNumber}
-                      onChange={(event) => {
-                        setPhoneNumber(event.target.value)
-                        if (phoneStatus !== 'idle') setPhoneStatus('idle')
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          event.preventDefault()
-                          void savePhoneNumber()
-                        }
-
-                        if (event.key === 'Escape') {
-                          event.preventDefault()
-                          cancelPhoneEditing()
-                        }
-                      }}
-                      placeholder='Add phone number'
-                      autoComplete='tel'
-                      spellCheck='false'
-                      aria-label='Phone number'
-                      disabled={phoneStatus === 'saving'}
-                      className='w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-foreground/40 disabled:cursor-wait'
-                    />
-                  ) : (
-                    <span className='text-sm truncate'>
-                      {savedPhoneNumber || 'Add phone number'}
-                    </span>
-                  )}
-                </div>
-                <div className='flex items-center justify-end min-w-12 shrink-0'>
-                  {phoneStatus === 'saving' && (
-                    <span className='text-[10px] uppercase tracking-[0.18em] opacity-60'>
-                      Saving
-                    </span>
-                  )}
-                  {phoneStatus !== 'saving' && (
-                    <button
-                      type='button'
-                      onClick={() => {
-                        if (isEditingPhone) {
-                          void savePhoneNumber()
-                          return
-                        }
-
-                        startPhoneEditing()
-                      }}
-                      aria-label={
-                        isEditingPhone
-                          ? 'Save phone number'
-                          : 'Edit phone number'
-                      }
-                      className='inline-flex items-center justify-center'>
-                      <Icon
-                        name={isEditingPhone ? 'check' : 'pen'}
-                        className='size-5'
-                      />
-                    </button>
-                  )}
-                </div>
-              </div>
-              {phoneStatus === 'error' && (
-                <p className='px-2 text-xs text-rose-400'>
-                  Unable to save. Press Enter or click away to retry.
-                </p>
-              )}
-            </div>
-            {pointsBalance && <RewardPoints pointsBalance={pointsBalance} />}
-            {/* Loyalty Progress Card */}
+    <div className='min-h-[calc(100lvh-140px)]'>
+      <Tabs.Root
+        value={activeTab}
+        onValueChange={(v) => void setSelectedTab(v)}>
+        <div className='flex flex-col gap-3'>
+          <div className='-mx-2 overflow-x-auto px-2 pb-1 md:mx-0 md:px-0'>
+            <Tabs.List className='relative z-0 flex w-max min-w-full gap-1 rounded-xl border border-default-200/70 bg-default-200/50 p-1 backdrop-blur-sm'>
+              {TABS.map((tab) => (
+                <Tabs.Tab
+                  key={tab.id}
+                  value={tab.id}
+                  className={cn(
+                    'relative z-10 flex h-10 shrink-0 items-center justify-center rounded-lg border-0 px-4 sm:px-5',
+                    'whitespace-nowrap break-keep text-xs sm:text-sm font-medium font-okxs tracking-wide text-default-600',
+                    'outline-none select-none data-active:text-white',
+                    'transition-colors duration-150',
+                  )}>
+                  {tab.label}
+                </Tabs.Tab>
+              ))}
+              <Tabs.Indicator className='absolute inset-y-1 left-0 z-0 h-auto w-(--active-tab-width) translate-x-(--active-tab-left) rounded-lg bg-linear-to-r from-slate-600/90 via-slate-900/90 to-origin transition-all duration-300 ease-in-out dark:via-dark-table dark:to-dark-table' />
+            </Tabs.List>
           </div>
 
-          {/* Right Column: Orders (2/3 width) */}
-          <div className='lg:col-span-2'>
-            {/* Recent Orders Section */}
-            <RecentOrders orders={orders} />
+          <div className='min-h-0 min-w-0'>
+            {TABS.map((tab) => (
+              <Tabs.Panel
+                key={tab.id}
+                value={tab.id}
+                className='relative flex min-h-32 min-w-0 flex-1 flex-col px-0 py-1'>
+                {pmap[tab.id]}
+              </Tabs.Panel>
+            ))}
           </div>
         </div>
-      </div>
+      </Tabs.Root>
     </div>
   )
 }

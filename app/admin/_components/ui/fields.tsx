@@ -311,7 +311,7 @@ export function TextAreaField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const field = useFieldContext<string>()
   return (
     <div className={cn('flex flex-col gap-1 w-full', props?.className)}>
-      <div className={cn(inputClass.mainWrapper, 'h-auto min-h-18 py-1')}>
+      <div className={cn(inputClass.mainWrapper, 'h-auto min-h-18 pb-0.5')}>
         {props?.label && (
           <Label htmlFor={field.name} className={inputClass.label}>
             {props.label}

@@ -1,16 +1,14 @@
 import {ClassName} from '@/app/types'
-import {OrderType, PaymentMethod} from '@/convex/orders/d'
+import {OrderStatus, OrderType, PaymentMethod} from '@/convex/orders/d'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
 import {Icon, IconName} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {formatTimestamp} from '@/utils/date'
 import {formatPrice} from '@/utils/formatPrice'
-import {Card} from '@heroui/react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
-import {OrderStatusBadge} from './order-status'
 
 export const OrderListItem = ({order}: {order: OrderType}) => {
-  // Helper for Order Status Color
   const {orderNumber, items, orderStatus, createdAt, payment} = order
   const payableTotalCents = resolveOrderPayableTotalCents({
     paymentMethod: order.payment.method,
@@ -24,69 +22,115 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
   return (
     <Link
       href={`/account/orders/${orderNumber}`}
-      className='block'
+      className='group block'
       onMouseEnter={() => router.prefetch(`/account/orders/${orderNumber}`)}>
-      <Card className='w-full rounded-xs border dark:border-dark-table border-dark-table/40 dark:bg-dark-table bg-content/50 dark:hover:bg-dark-table/70'>
-        <Card.Content className='p-3 md:p-5'>
-          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
-            <div className='flex items-start gap-8 flex-1 min-w-0'>
-              <div className='p-4 rounded-lg bg-linear-to-br from-default-100 to-default-500/10 hidden sm:flex shrink-0'>
-                <Icon name='box' className='size-5 opacity-50' />
-              </div>
-              <div className='space-y-2.5 portrait:w-full'>
-                <div className='flex items-center flex-wrap'>
-                  <h3 className='font-mono font-medium text-base tracking-widest'>
-                    {orderNumber.substring(5)}
-                  </h3>
-                </div>
-                <div className='flex items-center gap-6 text-sm text-default-500 flex-wrap'>
-                  <div className='flex items-center gap-2 whitespace-nowrap'>
-                    <span className='font-brk font-normal'>
-                      {formatTimestamp(createdAt)}
-                    </span>
-                    <span>•</span>
-                    <span className='font-space'>
-                      {items.length} item
-                      {items.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className='space-y-3 md:px-4 portrait:flex-1 portrait:text-right'>
-                <OrderStatusBadge status={orderStatus} />
-                <div className='flex items-center justify-start portrait:justify-end gap-1.5 px-1 capitalize text-sm font-okxs font-medium'>
-                  <Icon
-                    name={paymentMethodIconMap[payment.method].icon}
-                    className={`size-3.5 ${paymentMethodIconMap[payment.method].style}`}
-                  />
-                  <p className='whitespace-nowrap'>{mmap[payment.method]}</p>
-                </div>
-              </div>
-            </div>
+      <div className='grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-2.5 rounded-xs border border-foreground/8 bg-background px-5 py-4 transition-colors duration-150 hover:bg-default-50/80 dark:border-foreground/10 dark:bg-dark-table/50 dark:hover:bg-dark-table/80'>
+        {/* Row 1 left — date */}
+        <span className='font-okxs text-sm font-medium'>
+          {formatTimestamp(createdAt)}
+        </span>
 
-            <div className='flex items-center justify-between sm:justify-end gap-4 sm:gap-6 border-t border-dotted sm:border-none border-foreground/10 pt-4 sm:pt-0'>
-              <div className='text-left sm:text-right'>
-                <p className='text-xs text-default-500 font-brk uppercase tracking-widest mb-1'>
-                  Total
-                </p>
-                <p className='text-xl font-okxs font-medium'>
-                  ${formatPrice(payableTotalCents)}
-                </p>
-              </div>
-              <Icon name='chevron-right' className='size-4' />
-            </div>
-          </div>
-        </Card.Content>
-      </Card>
+        {/* Row 1 right — price + chevron */}
+        <div className='flex items-center gap-3 justify-self-end'>
+          <span className='font-okxs text-base font-semibold tabular-nums'>
+            ${formatPrice(payableTotalCents)}
+          </span>
+          <Icon
+            name='chevron-right'
+            className='size-3.5 text-default-300 transition-transform duration-150 group-hover:translate-x-0.5'
+          />
+        </div>
+
+        {/* Row 2 left — order # · items · payment */}
+        <div className='flex items-center gap-2 text-xs text-default-400'>
+          <span className='font-mono tracking-widest'>
+            #{orderNumber.substring(5)}
+          </span>
+          <span className='opacity-30'>·</span>
+          <span className='font-okxs'>
+            {items.length} item{items.length !== 1 ? 's' : ''}
+          </span>
+          <span className='opacity-30'>·</span>
+          <span className='flex items-center gap-1.5 font-okxs'>
+            <Icon
+              name={paymentMethodIconMap[payment.method].icon}
+              className={`size-3 ${paymentMethodIconMap[payment.method].style}`}
+            />
+            {mmap[payment.method]}
+          </span>
+        </div>
+
+        {/* Row 2 right — status */}
+        <StatusIndicator status={orderStatus} />
+      </div>
     </Link>
   )
 }
+
+// ─── Status indicator ────────────────────────────────────────────────────────
+
+const statusConfig: Record<
+  OrderStatus,
+  {label: string; dotClass: string; textClass: string}
+> = {
+  pending_payment: {
+    label: 'Pending Payment',
+    dotClass: 'bg-orange-300',
+    textClass: 'text-orange-400 dark:text-orange-200',
+  },
+  order_processing: {
+    label: 'Paid',
+    dotClass: 'bg-emerald-500',
+    textClass: 'text-emerald-500 dark:text-emerald-400',
+  },
+  awaiting_courier_pickup: {
+    label: 'Awaiting Pickup',
+    dotClass: 'bg-default-400',
+    textClass: 'text-default-500',
+  },
+  resend: {
+    label: 'Resend',
+    dotClass: 'bg-orange-400',
+    textClass: 'text-orange-500 dark:text-orange-400',
+  },
+  shipped: {
+    label: 'Shipped',
+    dotClass: 'bg-emerald-400',
+    textClass: 'text-emerald-500 dark:text-emerald-400',
+  },
+  delivered: {
+    label: 'Delivered',
+    dotClass: 'bg-emerald-500',
+    textClass: 'text-emerald-600 dark:text-emerald-400',
+  },
+  cancelled: {
+    label: 'Cancelled',
+    dotClass: 'bg-rose-400',
+    textClass: 'text-rose-500 dark:text-rose-400',
+  },
+}
+
+const StatusIndicator = ({status}: {status: OrderStatus}) => {
+  const {label, dotClass, textClass} = statusConfig[status]
+  return (
+    <span
+      className={cn(
+        'flex shrink-0 items-center gap-1.5 font-okxs text-xs justify-self-end',
+        textClass,
+      )}>
+      <span className={cn('size-1.5 shrink-0 rounded-full', dotClass)} />
+      {label}
+    </span>
+  )
+}
+
+// ─── Payment method maps ─────────────────────────────────────────────────────
 
 const paymentMethodIconMap: Record<
   PaymentMethod,
   {icon: IconName; style: ClassName}
 > = {
-  cards: {icon: 'credit-card-2', style: 'text-foreground'},
+  cards: {icon: 'credit-card-2', style: 'text-foreground/60'},
   crypto_commerce: {icon: 'ethereum', style: 'text-indigo-400'},
   crypto_transfer: {icon: 'polygon', style: 'text-sky-500'},
   cash_app: {icon: 'cashapp', style: 'text-cashapp'},

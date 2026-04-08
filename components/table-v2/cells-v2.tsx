@@ -17,7 +17,6 @@ import {
   useEffect,
   useRef,
   useState,
-  ViewTransition,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react'
@@ -532,21 +531,19 @@ export const toggleCell = <T, V>(
           size='sm'
           isDisabled={isUpdating}
           onPress={handleToggle}
-          className={cn('h-8 w-6 aspect-square group/tb bg-alum/10', {
+          className={cn('h-6 w-6 aspect-square group/tb bg-alum/10', {
             'opacity-85': !isFirstValue,
           })}>
-          <ViewTransition>
-            <Icon
-              name={isFirstValue ? 'confirm-circle' : 'circ'}
-              className={cn(
-                'size-7 dark:text-blue-400/80 text-blue-400 dark:group-hover/tb:text-slate-600 ',
-                {
-                  'text-slate-400 group-hover/tb:text-slate-600 dark:text-slate-600 group-hover/tb:opacity-90':
-                    !isFirstValue,
-                },
-              )}
-            />
-          </ViewTransition>
+          <Icon
+            name={isFirstValue ? 'confirm-circle' : 'circ'}
+            className={cn(
+              'size-7 dark:text-mac-blue text-mac-blue dark:group-hover/tb:text-slate-600 ',
+              {
+                'text-slate-300 group-hover/tb:text-slate-600 dark:text-slate-600 group-hover/tb:opacity-90':
+                  !isFirstValue,
+              },
+            )}
+          />
         </Button>
       </div>
     )

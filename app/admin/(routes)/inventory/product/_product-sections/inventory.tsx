@@ -1,5 +1,6 @@
 'use client'
 
+import {JunctionBox} from '@/app/admin/_components/ui/junction-box'
 import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
@@ -276,7 +277,7 @@ export const Inventory = ({
                     options={INVENTORY_MODE_OPTIONS}
                   />
                   {isEditMode ? (
-                    <p className='text-xs text-color-muted'>
+                    <p className='text-xs opacity-70 w-full h-fit whitespace-normal'>
                       Change inventory mode through the restock or manual
                       override modal so this form stays aligned with the logged
                       inventory history.
@@ -314,7 +315,7 @@ export const Inventory = ({
                       placeholder='Leave blank to disable'
                     />
                     <div className='space-y-1'>
-                      <p className='text-xs text-color-muted'>
+                      <p className='text-xs opacity-70 h-fit whitespace-normal'>
                         {product && persistedCurrentStock != null
                           ? `Current stock: ${formatAlertQuantityLabel(persistedCurrentStock, persistedStockUnit)}.${thresholdLabel ? ` Email alerts trigger when stock reaches ${thresholdLabel} or lower.` : ' Leave blank to disable low-stock email alerts for this product.'}`
                           : 'Leave blank to disable low-stock email alerts for this product.'}
@@ -645,13 +646,17 @@ export const Inventory = ({
           ) : null}
 
           {isEditMode && product ? (
-            <div className='col-span-6 space-y-4'>
+            <div className='col-span-12 space-y-4'>
               <div className='rounded-lg border-2 border-light-brand dark:border-brand bg-light-brand/5 p-4 dark:bg-brand/5'>
-                <p className='text-base font-okxs font-semibold tracking-wide'>
+                <p className='text-lg font-clash font-medium'>
                   Official inventory Controls{' '}
-                  <span className='font-ios px-3'>( ADMIN ONLY )</span>
+                  <span className='font-polysans font-semibold text-sm px-3'>
+                    <span className='font-ios font-light opacity-50'>(</span>{' '}
+                    ADMIN ONLY{' '}
+                    <span className='font-ios font-light opacity-50'>)</span>
+                  </span>
                 </p>
-                <p className='mt-1 text-sm text-color-muted'>
+                <p className='mt-1 text-sm text-color-muted whitespace-normal w-full'>
                   Stock quantities are now managed through logged inventory
                   adjustments. Use restock when new supply arrives, and use
                   manual override only when you need to correct counts.
@@ -822,6 +827,91 @@ export const Inventory = ({
               />
             </div>
           ) : null}
+          <div className='col-span-12'>
+            <div className='flex items-center pt-8 space-x-2'>
+              <span className='font-polysans font-medium'>Status</span>
+            </div>
+
+            <div className='grid md:grid-cols-4 items-center gap-4 py-4 w-full'>
+              <form.Field name='available'>
+                {(field) => {
+                  return (
+                    <JunctionBox
+                      title='Active'
+                      description='Visible in store.'
+                      checked={(field.state.value as boolean) ?? false}
+                      onUpdate={field.handleChange}
+                    />
+                  )
+                }}
+              </form.Field>
+              <form.Field name='eligibleForDeals'>
+                {(field) => {
+                  const currentState = (field.state.value as boolean) ?? false
+                  return (
+                    <JunctionBox
+                      title='Deals'
+                      description='Discounts and package deals.'
+                      checked={currentState}
+                      onUpdate={field.handleChange}
+                    />
+                  )
+                }}
+              </form.Field>
+
+              <form.Field name='eligibleForRewards'>
+                {(field) => {
+                  return (
+                    <JunctionBox
+                      title='Rewards'
+                      description='+Rewards for purchasing this product.'
+                      checked={(field.state.value as boolean) ?? false}
+                      onUpdate={field.handleChange}
+                    />
+                  )
+                }}
+              </form.Field>
+              <form.Field name='featured'>
+                {(field) => {
+                  return (
+                    <JunctionBox
+                      title='Featured'
+                      description='Highlighted in featured sections.'
+                      checked={(field.state.value as boolean) ?? false}
+                      onUpdate={field.handleChange}
+                    />
+                  )
+                }}
+              </form.Field>
+              <form.Field name='sale'>
+                {(field) => {
+                  return (
+                    <JunctionBox
+                      title='On Sale'
+                      description='Product is on-sale.'
+                      checked={(field.state.value as boolean) ?? false}
+                      onUpdate={field.handleChange}
+                    />
+                  )
+                }}
+              </form.Field>
+
+              <form.Field name='eligibleForUpgrade'>
+                {(field) => {
+                  const currentState = (field.state.value as boolean) ?? false
+
+                  return (
+                    <JunctionBox
+                      title='Upgradable'
+                      description='Eligible for deals upgrade.'
+                      checked={currentState}
+                      onUpdate={field.handleChange}
+                    />
+                  )
+                }}
+              </form.Field>
+            </div>
+          </div>
         </div>
       </div>
     </FormSection>

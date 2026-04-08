@@ -7,38 +7,52 @@ interface RewardPointsBalance {
   redeemedPoints: number
   lastPaymentDate?: number
 }
+
 interface RewardPointsProps {
   pointsBalance: RewardPointsBalance
 }
+
 export const RewardPoints = ({pointsBalance}: RewardPointsProps) => {
+  const {availablePoints, totalPoints, redeemedPoints} = pointsBalance
+
   return (
-    <Card className='rounded-none border border-foreground/20 bg-linear-to-br from-teal-500/10 via-orange-100/10 to-orange-200/10 backdrop-blur-sm shadow-none dark:bg-dark-table/20'>
-      <Card.Content className='space-y-6 p-6'>
+    <Card className='rounded-xs border border-foreground/10 bg-linear-to-br from-indigo-500/5 via-purple-500/5 to-pink-500/5 shadow-none dark:bg-dark-table/20'>
+      <Card.Content className='space-y-4 p-5'>
+        {/* Header */}
         <div className='flex items-center justify-between'>
-          <h3 className='font-semibold font-polysans text-2xl tracking-tight'>
+          <span className='font-okxs text-[9px] uppercase tracking-widest text-default-400'>
             Rewards
-          </h3>
+          </span>
+          <Icon name='coins' className='size-3.5 text-default-300' />
         </div>
 
-        <div className='flex items-end justify-between px-4 py-4'>
-          <div className=''>
-            <Icon name='coins' className='size-14 dark:text-purple-100' />
+        {/* Balance */}
+        <div className='flex items-baseline gap-1.5'>
+          <span className='font-clash text-3xl leading-none tracking-tight'>
+            ${availablePoints.toLocaleString()}
+          </span>
+        </div>
+
+        {/* Breakdown */}
+        <div className='grid grid-cols-2 gap-3 border-t border-foreground/8 pt-3 dark:border-foreground/10'>
+          <div>
+            <p className='font-okxs text-[9px] uppercase tracking-widest text-default-400'>
+              Total Earned
+            </p>
+            <p className='mt-0.5 font-clash font-medium text-sm tracking-wider'>
+              ${totalPoints.toLocaleString()}
+            </p>
           </div>
-          <PointsBalance
-            points={pointsBalance.availablePoints.toLocaleString()}
-          />
+          <div>
+            <p className='font-okxs text-[9px] uppercase tracking-widest text-default-400'>
+              Redeemed
+            </p>
+            <p className='mt-0.5 font-clash font-medium text-sm tracking-wider'>
+              ${redeemedPoints.toLocaleString()}
+            </p>
+          </div>
         </div>
       </Card.Content>
     </Card>
-  )
-}
-
-const PointsBalance = ({points}: {points: string}) => {
-  return (
-    <div className='flex items-baseline gap-2'>
-      <span className='text-2xl md:text-3xl font-semibold font-okxs dark:text-white tracking-wide'>
-        ${points}
-      </span>
-    </div>
   )
 }
