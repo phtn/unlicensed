@@ -669,9 +669,7 @@ export const ProductForm = ({
           </Button>
           {status === 'success' && (
             <p className='mt-2 text-sm text-center text-emerald-500'>
-              {isEditMode
-                ? 'Product updated successfully!'
-                : 'Product created successfully!'}
+              {isEditMode ? 'Update Successful!' : 'Product Created!'}
             </p>
           )}
           <div className='my-4'>

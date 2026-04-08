@@ -8,18 +8,23 @@ import {Id} from '@/convex/_generated/dataModel'
 import {onError, onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-} from '@heroui/react'
+import {Button, Modal, ModalBody, ModalFooter, ModalHeader} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {useCallback, useDeferredValue, useEffect, useMemo, useState} from 'react'
-
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 import {LegacyImage as Image} from '@/components/ui/legacy-image'
+import {
+  extractImageDetails,
+  normalizeTag,
+  summarizeStorageId,
+  titleCaseTag,
+} from '../helpers'
 
 const ModalContent = Modal.Container
 
@@ -39,32 +44,6 @@ type TagGalleryGroup = {
 }
 
 const REQUIRED_TAG = 'gallery:optimized'
-
-const normalizeTag = (value: string) => value.trim().toLowerCase()
-
-const titleCaseTag = (value: string) =>
-  value
-    .replace(/[-_]+/g, ' ')
-    .split(' ')
-    .filter(Boolean)
-    .map((part) => part[0]?.toUpperCase() + part.slice(1))
-    .join(' ')
-
-const summarizeStorageId = (value: string) =>
-  value.length <= 18 ? value : `${value.slice(0, 8)}...${value.slice(-6)}`
-
-const uploadedAtFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-})
-
-const formatUploadedAt = (value: number | null | undefined) => {
-  if (!value) {
-    return 'Unknown'
-  }
-
-  return uploadedAtFormatter.format(value)
-}
 
 export const ProductGalleryManager = () => {
   const [tagSearch, setTagSearch] = useState('')
@@ -248,18 +227,18 @@ export const ProductGalleryManager = () => {
           />
         )}
 
-        <div className='grid min-h-0 flex-1 gap-2 xl:grid-cols-[240px_minmax(0,1fr)_340px]'>
-          <aside className='min-h-0 rounded-2xl border border-foreground/10 bg-background/80 p-4 backdrop-blur-sm'>
+        <div className='grid min-h-0 flex-1 xl:grid-cols-[200px_minmax(0,1fr)_340px]'>
+          <aside className='min-h-0 md:max-h-[82vh] bg-slate-200 dark:bg-dark-table/50 rounded-s-xl border border-r-0 border-slate-400 dark:border-background/80 p-4 backdrop-blur-sm'>
             <div className='space-y-2'>
               <input
                 value={tagSearch}
                 onChange={(event) => setTagSearch(event.target.value)}
                 placeholder='Search tags'
-                className='w-full rounded-xl border border-foreground/15 bg-background px-3 py-2.5 text-sm outline-none transition-colors focus:border-blue-500'
+                className='w-full rounded-lg border border-slate-400 dark:border-background/60 bg-background dark:bg-background/50 px-3 py-1 text-sm outline-none transition-colors focus:border-blue-500'
               />
             </div>
 
-            <div className='mt-4 flex max-h-[48vh] flex-col gap-1 overflow-y-auto pr-1 xl:max-h-full xl:min-h-0'>
+            <div className='mt-4 flex max-h-[48vh] md:max-h-[75vh] flex-col gap-1 overflow-y-auto pr-1 xl:min-h-0'>
               {filteredTagGroups.map((group) => {
                 const isActive = activeGroup?.tag === group.tag
 
@@ -269,13 +248,13 @@ export const ProductGalleryManager = () => {
                     type='button'
                     onClick={() => setActiveTag(group.tag)}
                     className={cn(
-                      'flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition-colors',
+                      'flex w-full items-center justify-between rounded-lg pl-3 py-0.5 text-left text-sm transition-colors',
                       isActive
-                        ? 'bg-blue-500/10 text-blue-500'
+                        ? 'bg-mac-blue/10 dark:bg-background/40 text-mac-blue'
                         : 'text-foreground/75 hover:bg-foreground/5',
                     )}>
                     <span className='truncate'>{titleCaseTag(group.tag)}</span>
-                    <span className='rounded-full bg-foreground/10 px-2 py-0.5 text-[11px]'>
+                    <span className='rounded-full px-2 py-0.5 text-[11px]'>
                       {group.total}
                     </span>
                   </button>
@@ -287,20 +266,19 @@ export const ProductGalleryManager = () => {
                   Loading gallery index...
                 </div>
               ) : null}
-
               {galleryResponse !== undefined &&
               filteredTagGroups.length === 0 ? (
-                <div className='rounded-xl border border-dashed border-foreground/15 px-3 py-6 text-sm text-foreground/55'>
+                <div className='rounded-xl border border-dashed border-foreground/15 px-3 py-1 text-sm text-foreground/55'>
                   No matching tags found.
                 </div>
               ) : null}
             </div>
           </aside>
 
-          <section className='flex min-h-0 flex-col rounded-2xl border border-foreground/10 bg-background/80 p-4 backdrop-blur-sm'>
+          <section className='flex min-h-0 md:max-h-[82vh] flex-col rounded-none border border-mac-blue bg-background/80 p-2 backdrop-blur-sm'>
             {activeGroup ? (
               <>
-                <div className='mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+                <div className='mb-2 flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between'>
                   <div>
                     <h3 className='text-base font-semibold text-foreground'>
                       {titleCaseTag(activeGroup.tag)}
@@ -308,59 +286,71 @@ export const ProductGalleryManager = () => {
                   </div>
 
                   <p className='text-sm text-foreground/60'>
-                    {activeGroup.total} optimized image
-                    {activeGroup.total === 1 ? '' : 's'} in this tag group
+                    {activeGroup.total} image
+                    {activeGroup.total === 1 ? '' : 's'}
                   </p>
                 </div>
 
-                <div className='grid min-h-0 flex-1 grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5'>
-                  {activeGroup.items.map((item) => {
-                    const isSelected =
-                      item.storageId === selectedItem?.storageId
-                    const displayTitle =
-                      item.caption?.trim() || summarizeStorageId(item.storageId)
+                <div className='flex-1 min-h-0 overflow-y-scroll'>
+                  <div className='grid content-start grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 p-1 gap-1'>
+                    {activeGroup.items.map((item) => {
+                      const isSelected =
+                        item.storageId === selectedItem?.storageId
+                      const displayTitle =
+                        item.caption?.trim() ||
+                        summarizeStorageId(item.storageId)
 
-                    return (
-                      <button
-                        key={item.storageId}
-                        type='button'
-                        onClick={() => setSelectedStorageId(item.storageId)}
-                        className={cn(
-                          'group relative overflow-hidden rounded-md border bg-background text-left transition-all aspect-square',
-                          isSelected
-                            ? 'border-blue-500 ring-2 ring-blue-500/35'
-                            : 'border-foreground/15 hover:border-foreground/35',
-                        )}>
-                        {item.url ? (
-                          <Image
-                            src={item.url}
-                            alt={displayTitle}
-                            radius='none'
-                            className='aspect-square w-full object-cover'
-                          />
-                        ) : (
-                          <div className='flex aspect-square w-full items-center justify-center bg-foreground/5 text-foreground/40'>
-                            <Icon name='image-open-light' className='size-6' />
-                          </div>
-                        )}
+                      return (
+                        <button
+                          key={item.storageId}
+                          type='button'
+                          onClick={() => setSelectedStorageId(item.storageId)}
+                          className={cn(
+                            'group relative overflow-hidden rounded-xs bg-background text-left transition-all aspect-square',
+                            isSelected
+                              ? 'ring-3 ring-mac-blue'
+                              : 'hover:ring-light-brand',
+                          )}>
+                          {item.url ? (
+                            <Image
+                              src={item.url}
+                              alt={displayTitle}
+                              radius='none'
+                              className='aspect-square w-full object-cover'
+                            />
+                          ) : (
+                            <div className='flex aspect-square w-full items-center justify-center bg-foreground/5 text-foreground/40'>
+                              <Icon
+                                name='image-open-light'
+                                className='size-6'
+                              />
+                            </div>
+                          )}
 
-                        <div className='absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/45 to-transparent px-3 pt-10 pb-3 text-white'>
-                          <div className='truncate text-xs font-medium'>
-                            {displayTitle}
+                          <div className='absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/45 to-transparent px-1.5 pt-10 pb-1 text-white'>
+                            <div className='truncate text-xs font-medium capitalize'>
+                              {extractImageDetails(displayTitle).name}
+                            </div>
+                            <div className='flex items-end justify-between text-[8px] text-white/75'>
+                              <span>
+                                {extractImageDetails(displayTitle).size}
+                                <span className='text-[10px]'>²</span>
+                              </span>
+                              <span className='text-[7px] uppercase font-semibold opacity-80 tracking-wide'>
+                                {extractImageDetails(displayTitle).type}
+                              </span>
+                            </div>
                           </div>
-                          <div className='mt-1 text-[11px] text-white/75'>
-                            {formatUploadedAt(item.uploadedAt)}
-                          </div>
-                        </div>
 
-                        {isSelected ? (
-                          <div className='absolute left-2 top-2 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white'>
-                            Selected
-                          </div>
-                        ) : null}
-                      </button>
-                    )
-                  })}
+                          {isSelected ? (
+                            <div className='absolute right-2 top-2 p-1 rounded-full bg-mac-blue text-white'>
+                              <Icon name='checked' className='h-4 w-4' />
+                            </div>
+                          ) : null}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               </>
             ) : (
@@ -370,10 +360,10 @@ export const ProductGalleryManager = () => {
             )}
           </section>
 
-          <section className='flex min-h-0 flex-col rounded-2xl border border-foreground/10 bg-background/80 p-4 backdrop-blur-sm'>
+          <section className='flex min-h-0 flex-col rounded-e-xl border border-l-0 border-slate-400 dark:border-dark-table/50 bg-slate-100 dark:bg-dark-table/50 p-4 backdrop-blur-sm'>
             {selectedItem ? (
               <div className='flex min-h-0 flex-1 flex-col gap-4'>
-                <div className='overflow-hidden rounded-lg border border-foreground/10 bg-foreground/5'>
+                <div className='overflow-hidden rounded-xs bg-foreground/5'>
                   {selectedItem.url ? (
                     <Image
                       src={selectedItem.url}
@@ -393,11 +383,10 @@ export const ProductGalleryManager = () => {
 
                 <div className='min-h-0 space-y-4 overflow-y-auto pr-1'>
                   <div className='space-y-1'>
-                    <p className='text-xs font-semibold uppercase tracking-[0.16em] text-blue-500'>
-                      Asset Details
-                    </p>
-                    <h3 className='text-base font-normal text-foreground'>
-                      {selectedItem.caption?.trim() ||
+                    <h3 className='text-base font-normal text-foreground capitalize'>
+                      {(selectedItem.caption?.trim() &&
+                        extractImageDetails(selectedItem.caption?.trim())
+                          .name) ||
                         summarizeStorageId(selectedItem.storageId)}
                     </h3>
                   </div>
@@ -459,9 +448,7 @@ export const ProductGalleryManager = () => {
         </div>
       </div>
 
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onOpenChange={setIsDeleteModalOpen}>
+      <Modal isOpen={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <ModalContent placement='center'>
           <ModalHeader>Delete Gallery Image</ModalHeader>
           <ModalBody>

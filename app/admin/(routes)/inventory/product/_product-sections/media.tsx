@@ -17,8 +17,13 @@ import {PrimaryImageConverterModal} from '../primary-image-converter-modal'
 import {ProductFormValues} from '../product-schema'
 import {FormSection, Header} from './components'
 
-
 import {LegacyImage as Image} from '@/components/ui/legacy-image'
+import {
+  extractImageDetails,
+  normalizeTag,
+  summarizeStorageId,
+  titleCaseTag,
+} from '../../helpers'
 
 interface MediaProps {
   form: ReturnType<typeof useAppForm>
@@ -48,19 +53,6 @@ type UploadState = {
 
 const MAX_UPLOAD_FILES = 12
 const MAX_UPLOAD_SIZE = 10 * 1024 * 1024
-
-const normalizeTag = (value: string) => value.trim().toLowerCase()
-
-const titleCaseTag = (value: string) =>
-  value
-    .replace(/[-_]+/g, ' ')
-    .split(' ')
-    .filter(Boolean)
-    .map((part) => part[0]?.toUpperCase() + part.slice(1))
-    .join(' ')
-
-const summarizeStorageId = (value: string) =>
-  value.length <= 16 ? value : `${value.slice(0, 8)}...${value.slice(-4)}`
 
 export const Media = ({form, fields: _fields}: MediaProps) => {
   const {uploadFile} = useStorageUpload()
@@ -107,9 +99,8 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
   )
 
   const libraryResponse = useQuery(api.files.upload.listImageGalleriesByTag, {
-    requiredTag: 'gallery:optimized',
-    maxTags: 48,
-    limitPerTag: 40,
+    maxTags: 100,
+    limitPerTag: 200,
   })
 
   const [
@@ -974,215 +965,223 @@ export const Media = ({form, fields: _fields}: MediaProps) => {
       />
 
       <Drawer isOpen={isLibraryOpen} onOpenChange={setIsLibraryOpen}>
-        <Drawer.Backdrop>
+        <Drawer.Backdrop variant='transparent'>
           <Drawer.Content placement='right'>
-            <Drawer.Dialog className='w-full max-w-6xl bg-background p-0'>
-              <Drawer.Header className='border-b border-foreground/10'>
-                <div className='flex w-full items-center justify-between gap-3'>
-                  <div className='space-y-0.5'>
-                    <p className='text-sm font-semibold uppercase tracking-[0.08em] text-blue-500'>
-                      Media Library
-                    </p>
-                    <p className='text-sm text-foreground/70'>
-                      Click any image to add it to the gallery. Use Lead to
-                      promote an image, or remove it from the top-right button.
-                    </p>
-                  </div>
+            <Drawer.Dialog className='w-full max-w-6xl bg-transparent p-0 shadow-none'>
+              <Drawer.Header className='h-6 mt-2'>
+                <div className='flex w-full items-center justify-between px-4'>
+                  <p className='font-clash text-sm capitalize tracking-[0.08em] text-white rounded bg-foreground/50 px-3 py-1'>
+                    Media Library
+                  </p>
                   <Button
                     size='sm'
                     variant='tertiary'
-                    onPress={() => setIsLibraryOpen(false)}>
-                    Done
+                    onPress={() => setIsLibraryOpen(false)}
+                    className=' rounded bg-foreground/50 px-2 py-1 text-white'>
+                    <Icon name='x' className='text-xl' />
                   </Button>
                 </div>
               </Drawer.Header>
 
-              <Drawer.Body className='p-0'>
-                <div className='grid h-[calc(100vh-8rem)] grid-cols-1 gap-4 p-4 md:grid-cols-[260px_1fr]'>
-            <aside className='rounded-xl border border-foreground/10 bg-background/80 p-3'>
-              <div className='space-y-2'>
-                <label className='text-xs font-medium uppercase tracking-widest opacity-70'>
-                  Gallery Tags
-                </label>
-                <input
-                  value={tagSearch}
-                  onChange={(event) => setTagSearch(event.target.value)}
-                  placeholder='Search tags'
-                  className='w-full rounded-lg border border-foreground/20 bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500'
-                />
-              </div>
-
-              <div className='mt-3 max-h-[calc(100vh-16rem)] space-y-1 overflow-y-auto pr-1'>
-                {filteredTagGroups.map((group) => {
-                  const isActive = activeGroup?.tag === group.tag
-                  return (
-                    <button
-                      key={group.tag}
-                      type='button'
-                      onClick={() => setActiveTag(group.tag)}
-                      className={cn(
-                        'flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-sm transition-colors',
-                        isActive
-                          ? 'bg-blue-500/10 text-blue-500'
-                          : 'hover:bg-foreground/5',
-                      )}>
-                      <span className='truncate'>
-                        {titleCaseTag(group.tag)}
-                      </span>
-                      <span className='rounded bg-foreground/10 px-1.5 py-0.5 text-[11px]'>
-                        {group.total}
-                      </span>
-                    </button>
-                  )
-                })}
-
-                {filteredTagGroups.length === 0 ? (
-                  <div className='rounded-lg border border-dashed border-foreground/20 px-3 py-4 text-xs text-foreground/60'>
-                    No tagged gallery images found.
-                  </div>
-                ) : null}
-              </div>
-            </aside>
-
-            <section className='rounded-xl border border-foreground/10 bg-background/80 p-3 md:p-4'>
-              {activeGroup ? (
-                <>
-                  <div className='mb-3 flex items-center justify-between'>
-                    <div>
-                      <h3 className='text-base font-semibold'>
-                        {titleCaseTag(activeGroup.tag)}
-                      </h3>
-                      <p className='text-xs opacity-70'>
-                        {activeGroup.total} tagged image
-                        {activeGroup.total === 1 ? '' : 's'}
-                      </p>
+              <Drawer.Body className='p-0 text-foreground bg-transparent!'>
+                <div className='h-[calc(100vh-8rem)] grid grid-cols-1 p-4 md:grid-cols-[200px_1fr]'>
+                  <aside className='min-h-0 md:max-h-[88vh] bg-slate-800/20 backdrop-blur-lg dark:bg-dark-table/50 rounded-s-xl border border-slate-400 dark:border-background/80 p-4'>
+                    <div className='space-y-2'>
+                      <input
+                        value={tagSearch}
+                        onChange={(event) => setTagSearch(event.target.value)}
+                        placeholder='Search tags'
+                        className='w-full rounded-lg border border-slate-400 dark:border-background/60 bg-background dark:bg-background/50 px-3 py-1 text-sm outline-none transition-colors focus:border-blue-500'
+                      />
                     </div>
-                    {preferredTagFromCategory &&
-                    preferredTagFromCategory === activeGroup.tag ? (
-                      <span className='rounded bg-blue-500/10 px-2 py-1 text-[11px] font-medium text-blue-500'>
-                        Matches category
-                      </span>
-                    ) : null}
-                  </div>
 
-                  <div className='grid max-h-[calc(100vh-16rem)] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 lg:grid-cols-4'>
-                    {activeGroup.items.map((item) => {
-                      const itemLabel = item.caption?.trim() || item.storageId
-                      const isLead = item.storageId === primaryImageValue
-                      const isSelected =
-                        libraryTarget === 'primary'
-                          ? isLead
-                          : galleryValue.includes(item.storageId)
-                      const isActive = isLead || isSelected
+                    <div className='mt-3 max-h-[78vh] space-y-1 overflow-y-auto pr-1'>
+                      {filteredTagGroups.map((group) => {
+                        const isActive = activeGroup?.tag === group.tag
+                        return (
+                          <button
+                            key={group.tag}
+                            type='button'
+                            onClick={() => setActiveTag(group.tag)}
+                            className={cn(
+                              'flex w-full items-center justify-between rounded-lg pl-3 py-0.5 text-left text-sm transition-colors',
+                              isActive
+                                ? 'bg-mac-blue/10 dark:bg-background/40 text-mac-blue'
+                                : 'text-foreground/75 hover:bg-foreground/5',
+                            )}>
+                            <span className='truncate'>
+                              {titleCaseTag(group.tag)}
+                            </span>
+                            <span className='rounded-full px-2 py-0.5 text-[11px]'>
+                              {group.total}
+                            </span>
+                          </button>
+                        )
+                      })}
 
-                      return (
-                        <div
-                          key={item.storageId}
-                          role='button'
-                          tabIndex={0}
-                          onClick={() => selectLibraryImage(item.storageId)}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter' || event.key === ' ') {
-                              event.preventDefault()
-                              selectLibraryImage(item.storageId)
-                            }
-                          }}
-                          aria-label={
-                            libraryTarget === 'primary'
-                              ? `Select ${itemLabel} as primary image`
-                              : isLead
-                                ? `${itemLabel} is the current lead image`
-                                : isSelected
-                                  ? `Remove ${itemLabel} from gallery`
-                                  : `Add ${itemLabel} to gallery`
-                          }
-                          aria-pressed={
-                            libraryTarget === 'gallery' ? isActive : undefined
-                          }
-                          className={cn(
-                            'group relative overflow-hidden rounded-xl border-2 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40',
-                            {
-                              'border-blue-500 ring-2 ring-blue-500/40':
-                                isActive,
-                              'border-foreground/20 hover:border-foreground/40':
-                                !isActive,
-                            },
-                          )}>
-                          {item.url ? (
-                            <Image
-                              src={item.url}
-                              alt={item.caption ?? item.storageId}
-                              radius='none'
-                              className='aspect-square w-full object-cover'
-                            />
-                          ) : (
-                            <div className='flex aspect-square w-full items-center justify-center bg-foreground/5 text-foreground/50'>
-                              <Icon name='image-open-light' />
-                            </div>
-                          )}
+                      {filteredTagGroups.length === 0 ? (
+                        <div className='rounded-lg border border-dashed border-foreground/20 px-3 py-4 text-xs text-foreground/60'>
+                          No tagged gallery images found.
+                        </div>
+                      ) : null}
+                    </div>
+                  </aside>
 
-                          <div className='pointer-events-none absolute inset-x-0 bottom-0 truncate bg-black/50 px-2 py-1 text-[10px] text-white'>
-                            {itemLabel}
-                          </div>
-
-                          {isActive ? (
-                            <div className='pointer-events-none absolute left-1.5 top-1.5 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-medium uppercase text-white'>
-                              {isLead
-                                ? 'Lead'
-                                : libraryTarget === 'primary'
-                                  ? 'Selected'
-                                  : 'Added'}
-                            </div>
-                          ) : null}
-
-                          <div className='absolute right-1.5 top-1.5 z-20 flex gap-1.5'>
-                            <button
-                              type='button'
-                              onClick={(event) => {
-                                event.preventDefault()
-                                event.stopPropagation()
-                                setLeadFromLibrary(item.storageId)
-                              }}
-                              disabled={isLead}
-                              className={cn(
-                                'rounded-full px-2 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-white transition-colors',
-                                isLead
-                                  ? 'cursor-default bg-blue-600'
-                                  : 'bg-black/60 hover:bg-blue-600',
-                              )}
-                              aria-label={
-                                isLead
-                                  ? `${itemLabel} is already the lead image`
-                                  : `Set ${itemLabel} as the lead image`
-                              }>
-                              Lead
-                            </button>
-
-                            {isSelected && !isLead ? (
-                              <button
-                                type='button'
-                                onClick={(event) => {
-                                  event.preventDefault()
-                                  event.stopPropagation()
-                                  removeGalleryItem(item.storageId)
-                                }}
-                                className='flex size-7 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-500'
-                                aria-label={`Remove ${itemLabel} from gallery`}>
-                                <Icon name='x' size={12} />
-                              </button>
-                            ) : null}
+                  <section className='flex min-h-0 flex-col rounded-e-xl border border-l-0 border-slate-400 dark:border-dark-table/50 bg-slate-100 dark:bg-background px-4 pt-2'>
+                    {activeGroup ? (
+                      <>
+                        <div className='flex flex-col gap-4'>
+                          <div className='flex items-center justify-between'>
+                            <h3 className='text-base font-semibold space-x-2'>
+                              <span>{titleCaseTag(activeGroup.tag)}</span>
+                              {preferredTagFromCategory &&
+                              preferredTagFromCategory === activeGroup.tag ? (
+                                <span className='rounded border border-mac-blue/60 px-2 py-1 font-semibold text-mac-blue text-xs tracking-wide'>
+                                  Matches Category
+                                </span>
+                              ) : null}
+                            </h3>
+                            <p className='text-xs opacity-70'>
+                              {activeGroup.total} image
+                              {activeGroup.total === 1 ? '' : 's'}
+                            </p>
                           </div>
                         </div>
-                      )
-                    })}
-                  </div>
-                </>
-              ) : (
-                <div className='flex h-full items-center justify-center rounded-lg border border-dashed border-foreground/20 text-sm text-foreground/60'>
-                  Choose a tag to view gallery images.
-                </div>
-              )}
-            </section>
+
+                        <div className='flex-1 min-h-0 overflow-y-auto pr-1'>
+                          <div className='grid content-start grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'>
+                            {activeGroup.items.map((item) => {
+                              const itemLabel =
+                                item.caption?.trim() || item.storageId
+                              const isLead =
+                                item.storageId === primaryImageValue
+                              const isSelected =
+                                libraryTarget === 'primary'
+                                  ? isLead
+                                  : galleryValue.includes(item.storageId)
+                              const isActive = isLead || isSelected
+
+                              return (
+                                <div
+                                  key={item.storageId}
+                                  role='button'
+                                  tabIndex={0}
+                                  onClick={() =>
+                                    selectLibraryImage(item.storageId)
+                                  }
+                                  onKeyDown={(event) => {
+                                    if (
+                                      event.key === 'Enter' ||
+                                      event.key === ' '
+                                    ) {
+                                      event.preventDefault()
+                                      selectLibraryImage(item.storageId)
+                                    }
+                                  }}
+                                  aria-label={
+                                    libraryTarget === 'primary'
+                                      ? `Select ${itemLabel} as primary image`
+                                      : isLead
+                                        ? `${itemLabel} is the current lead image`
+                                        : isSelected
+                                          ? `Remove ${itemLabel} from gallery`
+                                          : `Add ${itemLabel} to gallery`
+                                  }
+                                  aria-pressed={
+                                    libraryTarget === 'gallery'
+                                      ? isActive
+                                      : undefined
+                                  }
+                                  className={cn(
+                                    'group relative overflow-hidden rounded-lg border-2 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40',
+                                    {
+                                      'border-blue-500 ring-2 ring-blue-500/40':
+                                        isActive,
+                                      'border-foreground/20 hover:border-foreground/40':
+                                        !isActive,
+                                    },
+                                  )}>
+                                  {item.url ? (
+                                    <Image
+                                      src={item.url}
+                                      alt={item.caption ?? item.storageId}
+                                      radius='none'
+                                      className='aspect-square w-full object-cover'
+                                    />
+                                  ) : (
+                                    <div className='flex aspect-square w-full items-center justify-center bg-foreground/5 text-foreground/50'>
+                                      <Icon name='image-open-light' />
+                                    </div>
+                                  )}
+
+                                  <div className='flex items-center justify-between pointer-events-none absolute inset-x-0 bottom-0 truncate bg-black/50 px-2 py-1 text-[10px] text-white'>
+                                    <span className='capitalize'>
+                                      {extractImageDetails(itemLabel).name}
+                                    </span>
+                                    <span className='text-[7px] uppercase font-semibold opacity-80 tracking-wide'>
+                                      {extractImageDetails(itemLabel).type}
+                                    </span>
+                                  </div>
+
+                                  {isActive ? (
+                                    <div className='pointer-events-none absolute left-1.5 top-1.5 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-medium uppercase text-white'>
+                                      {isLead
+                                        ? 'Lead'
+                                        : libraryTarget === 'primary'
+                                          ? 'Selected'
+                                          : 'Added'}
+                                    </div>
+                                  ) : null}
+
+                                  <div className='absolute right-1.5 top-1.5 z-20 flex gap-1.5'>
+                                    <button
+                                      type='button'
+                                      onClick={(event) => {
+                                        event.preventDefault()
+                                        event.stopPropagation()
+                                        setLeadFromLibrary(item.storageId)
+                                      }}
+                                      disabled={isLead}
+                                      className={cn(
+                                        'rounded-full px-2 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-white transition-colors',
+                                        isLead
+                                          ? 'cursor-default bg-blue-600'
+                                          : 'bg-black/60 hover:bg-blue-600',
+                                      )}
+                                      aria-label={
+                                        isLead
+                                          ? `${itemLabel} is already the lead image`
+                                          : `Set ${itemLabel} as the lead image`
+                                      }>
+                                      Lead
+                                    </button>
+
+                                    {isSelected && !isLead ? (
+                                      <button
+                                        type='button'
+                                        onClick={(event) => {
+                                          event.preventDefault()
+                                          event.stopPropagation()
+                                          removeGalleryItem(item.storageId)
+                                        }}
+                                        className='flex size-7 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-500'
+                                        aria-label={`Remove ${itemLabel} from gallery`}>
+                                        <Icon name='x' size={12} />
+                                      </button>
+                                    ) : null}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className='flex h-full items-center justify-center rounded-lg border border-dashed border-foreground/20 text-sm text-foreground/60'>
+                        Choose a tag to view gallery images.
+                      </div>
+                    )}
+                  </section>
                 </div>
               </Drawer.Body>
             </Drawer.Dialog>

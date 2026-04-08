@@ -28,9 +28,9 @@ export const Input = ({
       </Label>
       <I
         name={name}
-        value={value}
-        onChange={onChange}
         onBlur={onBlur}
+        onChange={onChange}
+        defaultValue={value}
         placeholder={placeholder}
         className={inputClass.input}
       />

@@ -232,7 +232,7 @@ export const listImageGalleriesByTag = query({
     const maxTags = Math.min(Math.max(Math.floor(args.maxTags ?? 24), 1), 60)
     const limitPerTag = Math.min(
       Math.max(Math.floor(args.limitPerTag ?? 32), 1),
-      80,
+      120,
     )
 
     const allFiles = await ctx.db.query('files').collect()

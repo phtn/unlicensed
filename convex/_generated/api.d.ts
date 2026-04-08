@@ -56,6 +56,7 @@ import type * as deals_q from "../deals/q.js";
 import type * as emailSettings_d from "../emailSettings/d.js";
 import type * as emailSettings_m from "../emailSettings/m.js";
 import type * as emailSettings_q from "../emailSettings/q.js";
+import type * as files_cleanup from "../files/cleanup.js";
 import type * as files_get from "../files/get.js";
 import type * as files_upload from "../files/upload.js";
 import type * as follows_d from "../follows/d.js";
@@ -180,6 +181,7 @@ declare const fullApi: ApiFromModules<{
   "emailSettings/d": typeof emailSettings_d;
   "emailSettings/m": typeof emailSettings_m;
   "emailSettings/q": typeof emailSettings_q;
+  "files/cleanup": typeof files_cleanup;
   "files/get": typeof files_get;
   "files/upload": typeof files_upload;
   "follows/d": typeof follows_d;

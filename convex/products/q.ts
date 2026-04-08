@@ -455,6 +455,48 @@ export const listLowStockProducts = query({
   },
 })
 
+export const countCategoryProductsByTiers = query({
+  args: {
+    categorySlug: v.string(),
+    tierSlugs: v.array(v.string()),
+    brand: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<Record<string, number>> => {
+    const counts: Record<string, number> = {}
+
+    for (const tierSlug of args.tierSlugs) {
+      let count = 0
+
+      const iter = ctx.db
+        .query('products')
+        .withIndex('by_category', (q) => q.eq('categorySlug', args.categorySlug))
+        .filter((q) =>
+          q.and(
+            q.neq(q.field('archived'), true),
+            q.eq(q.field('tier'), tierSlug),
+          ),
+        )
+
+      if (args.brand) {
+        const normalizedBrand = normalizeBrandValue(args.brand)
+        for await (const product of iter) {
+          if (normalizeBrandValues(product.brand).includes(normalizedBrand)) {
+            count++
+          }
+        }
+      } else {
+        for await (const product of iter) {
+          count++
+        }
+      }
+
+      counts[tierSlug] = count
+    }
+
+    return counts
+  },
+})
+
 const normalizeBrandValue = (brand?: string) =>
   (brand ?? '').trim().toLowerCase().replace(/\s+/g, '-')
 

@@ -48,7 +48,7 @@ export const TagSelector = ({
       label={label}
       mode={multiple ? 'multiple' : 'single'}
       placeholder={placeholder}
-      value={String(new Set(selectedKeys))}
+      value={multiple ? selectedKeys : String(new Set(selectedKeys))}
       options={items.map((item) => ({value: item.id, label: item.name}))}
     />
   )

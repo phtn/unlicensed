@@ -7,7 +7,7 @@ interface SelectProps extends Omit<
   'onChange' | 'value'
 > {
   label?: string
-  value?: string | null
+  value?: string | string[] | null
   onChange?: (value: string | null) => void
   type?: 'select' | 'text'
   mode?: 'single' | 'multiple'
@@ -47,7 +47,7 @@ export const Select = ({
   }
   return (
     <S
-      value={value ?? null}
+      value={value ?? []}
       onChange={handleChange}
       selectionMode={mode}
       placeholder={placeholder}
