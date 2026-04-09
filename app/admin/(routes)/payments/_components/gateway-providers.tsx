@@ -179,9 +179,9 @@ export const ProvidersList = ({gateway}: ProvidersListProps) => {
   const canSelect = gatewayDoc != null
 
   return (
-    <div className='dark:text-white py-4'>
+    <div className='dark:text-white space-y-4 pt-5'>
       <SectionHeader title={`${gatewayLabel} Providers`}>
-        <div className='flex items-center gap-2 text-xs'>
+        <div className='flex items-center gap-2 mt-4 text-xs'>
           {PROVIDER_STATUS_ORDER.map((status) => (
             <div
               key={status}
@@ -255,7 +255,7 @@ const ProviderItem = ({
   return (
     <Card
       className={cn(
-        'border border-sidebar w-full transition-colors p-2',
+        'rounded-lg border border-sidebar w-full transition-colors p-2',
         isSelected && 'ring-2 ring-primary ring-inset bg-primary/5',
       )}>
       <button
@@ -276,47 +276,49 @@ const ProviderItem = ({
             ? undefined
             : `${item.provider_name}, ${item.status}. ${isSelected ? 'In top 10. Click to remove.' : 'Click to add to top 10.'}`
         }>
-        <Card.Header className='flex w-full justify-between text-left px-2 pointer-events-none'>
-          <div className=''>
-            <div className='flex items-center gap-2'>
-              <span className='font-medium'>{item.provider_name}</span>
-              {isDefault ? (
-                <span className='text-[8px] uppercase tracking-[0.18em] px-1.5 py-0.5 rounded-md bg-primary/15 text-primary font-ios'>
-                  Default
+        <Card.Header className='flex! w-full justify-between text-left px-2 pointer-events-none'>
+          <div className='flex items-center justify-between'>
+            <div className=''>
+              <div className='flex items-center gap-2'>
+                <span className='font-medium'>{item.provider_name}</span>
+                {isDefault ? (
+                  <span className='text-[8px] uppercase tracking-[0.18em] px-1.5 py-0.5 rounded-md bg-primary/15 text-primary font-ios'>
+                    Default
+                  </span>
+                ) : null}
+              </div>
+              <div className='flex items-center space-x-2'>
+                <span
+                  className={cn('text-xs', {
+                    'text-emerald-500': item.status === 'active',
+                    'text-flavors': item.status === 'redirected',
+                    'text-danger': item.status === 'unstable',
+                  })}>
+                  ⬤
                 </span>
-              ) : null}
+                <span className='w-24'>{item.status}</span>
+              </div>
             </div>
-            <div className='flex items-center space-x-2'>
-              <span
-                className={cn('text-xs', {
-                  'text-emerald-500': item.status === 'active',
-                  'text-flavors': item.status === 'redirected',
-                  'text-danger': item.status === 'unstable',
-                })}>
-                ⬤
-              </span>
-              <span className='w-24'>{item.status}</span>
-            </div>
-          </div>
 
-          <div className='flex items-start justify-end'>
-            <div className='text-sm font-ios'>
-              <p>
-                {item.minimum_amount}{' '}
-                <span className='font-light'>{item.minimum_currency}</span>
-              </p>
-              <p className='text-xs text-center'>minimum</p>
+            <div className='flex items-start justify-end'>
+              <div className='text-sm font-ios'>
+                <p>
+                  {item.minimum_amount}{' '}
+                  <span className='font-light'>{item.minimum_currency}</span>
+                </p>
+                <p className='text-xs text-center'>minimum</p>
+              </div>
+              <div
+                className={cn(
+                  'font-brk tracking-tighter w-full flex items-center justify-end',
+                  {
+                    'text-emerald-500': item.status === 'active',
+                    'text-flavors': item.status === 'redirected',
+                    'text-danger': item.status === 'unstable',
+                    'text-primary': isDefault,
+                  },
+                )}></div>
             </div>
-            <div
-              className={cn(
-                'font-brk tracking-tighter w-full flex items-center justify-end',
-                {
-                  'text-emerald-500': item.status === 'active',
-                  'text-flavors': item.status === 'redirected',
-                  'text-danger': item.status === 'unstable',
-                  'text-primary': isDefault,
-                },
-              )}></div>
           </div>
         </Card.Header>
       </button>

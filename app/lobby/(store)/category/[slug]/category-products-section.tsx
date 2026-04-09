@@ -1,14 +1,14 @@
 'use client'
 
-import type { StoreProduct } from '@/app/types'
-import { api } from '@/convex/_generated/api'
-import { adaptProduct, type RawCategory } from '@/lib/convexClient'
-import { Icon } from '@/lib/icons'
-import { cn } from '@/lib/utils'
-import { usePaginatedQuery } from 'convex/react'
-import { useEffect, useMemo, useRef } from 'react'
-import { CATEGORY_PRODUCTS_PAGE_SIZE } from './constants'
-import { Products } from './products'
+import type {StoreProduct} from '@/app/types'
+import {api} from '@/convex/_generated/api'
+import {adaptProduct, type RawCategory} from '@/lib/convexClient'
+import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
+import {usePaginatedQuery} from 'convex/react'
+import {useEffect, useMemo, useRef} from 'react'
+import {CATEGORY_PRODUCTS_PAGE_SIZE} from './constants'
+import {Products} from './products'
 
 interface CategoryProductsSectionProps {
   slug: string

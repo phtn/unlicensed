@@ -58,8 +58,7 @@ export const GatewayAccountsList = ({
 
   if (accounts.length === 0) {
     return (
-      <Card
-        className='md:rounded-lg bg-sidebar/40 dark:bg-dark-table/40 w-full'>
+      <Card className='md:rounded-md bg-sidebar/40 dark:bg-dark-table/40 w-full'>
         <Card.Content className='text-center py-12'>
           <p className='text-foreground/60 font-polysans capitalize'>
             {`No ${gateway} Accounts`}.
@@ -76,8 +75,7 @@ export const GatewayAccountsList = ({
   }
 
   return (
-    <Card
-      className='md:rounded-lg w-full bg-transparent'>
+    <Card className='md:rounded-lg w-full bg-transparent'>
       <Card.Header>
         <SectionHeader title={`${gateway} Accounts`} />
       </Card.Header>

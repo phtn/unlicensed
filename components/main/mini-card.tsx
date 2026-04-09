@@ -1,6 +1,6 @@
 'use client'
 
-import {Icon, IconName} from '@/lib/icons'
+import {Icon, type IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import Link from 'next/link'
 import {useState} from 'react'
@@ -17,7 +17,7 @@ export const MiniCard = ({id, title, description, icon}: MiniCardProps) => {
   return (
     <li
       key={id}
-      className='text-white bg-brand flex flex-col group hover:bg-black p-8 rounded-xs'>
+      className='relative z-0 isolate text-white bg-brand flex flex-col group hover:bg-black p-8 rounded-xs'>
       <Icon
         name={icon}
         className='size-8 opacity-80 group-hover:text-white'
@@ -47,11 +47,11 @@ export const MiniCardV2 = ({
       onClick={() => setClicked(!clicked)}
       prefetch='auto'
       href={href as string}
-      className='cursor-pointer'>
+      className='relative z-0 block cursor-pointer'>
       <div
         key={id}
         className={cn(
-          'flex items-center space-x-6 text-white! bg-brand group p-5 rounded-xs portrait:min-h-28!',
+          'relative z-0 isolate flex items-center space-x-6 text-white! bg-brand group p-5 rounded-xs portrait:min-h-28!',
           {'bg-black dark:bg-sidebar': dark},
         )}>
         <Icon

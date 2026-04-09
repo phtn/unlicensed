@@ -117,7 +117,10 @@ const UseRewardsPoints = ({
       {isEnabled && canRedeem ? (
         <div className='flex items-center justify-center space-x-1'>
           <span>Rewards Points applied</span>
-          <Icon name='checked' className='text-white size-3.5' />
+          <Icon
+            name='checked'
+            className='dark:text-white text-emerald-500 size-3.5'
+          />
         </div>
       ) : (
         `Use rewards ($${formatPrice(available)})`

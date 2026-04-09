@@ -6,7 +6,8 @@ import {useCurrencyConversion} from '@/hooks/use-currency-converter'
 import {useToggle} from '@/hooks/use-toggle'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Card, Tab, Tabs} from '@heroui/react'
+import {Tabs} from '@base-ui/react/tabs'
+import {Card} from '@heroui/react'
 import {
   ChangeEvent,
   useCallback,
@@ -66,7 +67,7 @@ function ConverterField({
       )}
       <Card
         className={cn(
-          'relative w-full flex-row items-center justify-between gap-2 p-4 dark:bg-sidebar bg-sidebar/60',
+          'relative w-full flex-row items-center justify-between gap-2 p-4 dark:bg-sidebar bg-sidebar/60 rounded-lg',
           isLast
             ? 'mask-[radial-gradient(ellipse_26px_24px_at_50%_0%,transparent_0,transparent_24px,black_25px)]'
             : 'mask-[radial-gradient(ellipse_26px_24px_at_50%_100%,transparent_0,transparent_24px,black_25px)]',
@@ -101,19 +102,19 @@ function ConverterField({
               )}
             </div>
           )}
-          <div>
+          <div className='w-28'>
             <Select
+              label={isLast ? 'To' : 'From'}
               isDisabled={disableCurrencySelect}
-              value={String(
-                currencyId ? new Set([currencyId]) : new Set(['EUR']),
-              )}
+              placeholder='Currency'
+              value={currencyId ?? 'EUR'}
               onChange={(key) => {
                 const selected = key as string
                 if (selected) {
                   onCurrencyChange(selected)
                 }
               }}
-              aria-label='Select currency'
+              aria-label='Currency'
               options={currencies.map((curr) => ({value: curr, label: curr}))}
             />
           </div>
@@ -150,24 +151,44 @@ const CURRENCIES: Array<FiatCurrency> = [
 export const Converters = () => {
   return (
     <div className='relative my-2 md:my-6'>
-      <Tabs className='flex-1 ml-54 md:ml-80'>
-        <Tab
-          id='fiat'
-          className='flex-1 data-[state=active]:shadow-none data-[state=active]:bg-transparent relative before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border dark:before:bg-card first:before:hidden'>
+      <Tabs.Root defaultValue='fiat' className='flex min-w-0 flex-col gap-3'>
+        <div className='flex items-center justify-between gap-3 pr-6'>
+          <h2 className='text-xl md:text-xl font-polysans font-semibold'>
+            Converter
+          </h2>
+
+          <Tabs.List className='relative z-0 ml-auto flex gap-1 rounded-xs border border-default-200/70 bg-background/80 p-1 backdrop-blur-sm'>
+            <Tabs.Tab
+              value='fiat'
+              className={cn(
+                'relative z-10 flex h-9 shrink-0 items-center justify-center rounded-xs border-0 px-3',
+                'whitespace-nowrap text-xs font-medium uppercase tracking-[0.24em] text-default-600',
+                'outline-none select-none data-active:text-white transition-colors duration-150',
+              )}>
+              Fiat
+            </Tabs.Tab>
+            <Tabs.Tab
+              value='crypto'
+              className={cn(
+                'relative z-10 flex h-9 shrink-0 items-center justify-center rounded-xs border-0 px-3',
+                'whitespace-nowrap text-xs font-medium uppercase tracking-[0.24em] text-default-600',
+                'outline-none select-none data-active:text-white transition-colors duration-150',
+              )}>
+              Crypto
+            </Tabs.Tab>
+            <Tabs.Indicator className='absolute inset-y-1 left-0 z-0 h-auto w-(--active-tab-width) translate-x-(--active-tab-left) rounded-xs bg-linear-to-r from-slate-600/90 via-slate-900/90 to-origin transition-all duration-300 ease-in-out dark:via-dark-table dark:to-dark-table' />
+          </Tabs.List>
+        </div>
+
+        <Tabs.Panel value='fiat' className='min-w-0'>
           <FiatConverter currencies={CURRENCIES} />
-        </Tab>
-        <Tab
-          id='crypto'
-          className='flex-1 data-[state=active]:shadow-none data-[state=active]:bg-transparent relative before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border dark:before:bg-card first:before:hidden'>
+        </Tabs.Panel>
+        <Tabs.Panel value='crypto' className='min-w-0'>
           <ConverterParamsProvider>
             <CryptoConverter />
           </ConverterParamsProvider>
-        </Tab>
-      </Tabs>
-
-      <h2 className='text-xl md:text-xl font-polysans font-semibold absolute top-1.5 left-2'>
-        Converter
-      </h2>
+        </Tabs.Panel>
+      </Tabs.Root>
     </div>
   )
 }
