@@ -14,6 +14,7 @@ import {conversationFolderSchema} from './conversationFolders/d'
 import {couponSchema} from './coupons/d'
 import {courierSchema} from './couriers/d'
 import {dealSchema} from './deals/d'
+import {emailBlastSchema} from './emailBlasts/d'
 import {emailSettingsSchema} from './emailSettings/d'
 import {fileSchema} from './files/upload'
 import {followSchema} from './follows/d'
@@ -117,6 +118,10 @@ export default defineSchema({
     .index('by_title', ['title'])
     .index('by_intent', ['intent'])
     .index('by_group', ['group']),
+  emailBlasts: defineTable(emailBlastSchema)
+    .index('by_created_at', ['createdAt'])
+    .index('by_status_and_created_at', ['status', 'createdAt'])
+    .index('by_email_setting_and_created_at', ['emailSettingId', 'createdAt']),
   mailingLists: defineTable(mailingListSchema).index('by_created_at', [
     'createdAt',
   ]),

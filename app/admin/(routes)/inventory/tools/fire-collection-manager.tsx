@@ -26,7 +26,7 @@ import {
 import {Input} from '@/components/hero-v3/input'
 import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
-const MAX_LIBRARY_RESULTS = 24
+const MAX_LIBRARY_RESULTS = 120
 const RANDOM_INSERT_COUNT = 15
 const FILTER_OPTION_ALL = '__all__'
 const RANDOM_CATEGORY_ALL = FILTER_OPTION_ALL

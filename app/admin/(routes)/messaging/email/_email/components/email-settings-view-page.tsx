@@ -5,6 +5,7 @@ import {Input} from '@/components/hero-v3/input'
 import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import {type Doc, Id} from '@/convex/_generated/dataModel'
+import {useAuthCtx} from '@/ctx/auth'
 import {onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
 import {EMAIL_TEMPLATE_OPTIONS} from '@/lib/resend/templates/registry'
@@ -19,20 +20,24 @@ import {
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useRouter} from 'next/navigation'
-import {startTransition, useCallback, useRef, useState} from 'react'
+import {
+  startTransition,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {toast} from 'react-hot-toast'
 import type {EmailSettingsConvexArgs} from '../email-settings-form-schema'
 import {toFormValues, withViewTransition} from '../utils'
 import {EmailTemplateEditor} from './email-template-editor'
-
-const MAILING_LIST_BLAST_FROM = 'hello@rapidfirenow.com'
 
 interface EmailTemplateViewerProps {
   id: string
 }
 export type RecipientRow = {name: string; email: string}
 type MailingListDoc = Doc<'mailingLists'>
-type MailingListRecipient = MailingListDoc['recipients'][number]
+type EmailBlastDoc = Doc<'emailBlasts'>
 
 /** Parse pasted text into name/email rows. Separators: =, :, or , (one per line). */
 function parsePastedRecipients(text: string): RecipientRow[] {
@@ -144,7 +149,43 @@ function parseCsvRecipients(text: string): RecipientRow[] {
 //   return key == null ? '' : String(key)
 // }
 
+async function startEmailBlastRequest({
+  emailSettingId,
+  mailingListId,
+  idToken,
+}: {
+  emailSettingId: string
+  mailingListId: string
+  idToken: string
+}) {
+  const response = await fetch('/api/admin/email-blasts', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${idToken}`,
+    },
+    body: JSON.stringify({
+      emailSettingId,
+      mailingListId,
+    }),
+  })
+
+  const payload = (await response.json().catch(() => null)) as
+    | {
+        blastId?: string
+        error?: string
+      }
+    | null
+
+  if (!response.ok) {
+    throw new Error(payload?.error || 'Failed to start email blast.')
+  }
+
+  return payload?.blastId ?? null
+}
+
 export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
+  const {user} = useAuthCtx()
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [showMailingList, setShowMailingList] = useState(false)
@@ -152,12 +193,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   const [mailingListName, setMailingListName] = useState('')
   const [recipients, setRecipients] = useState<RecipientRow[]>([])
   const [selectedListId, setSelectedListId] = useState<string>('')
-  const [blastProgress, setBlastProgress] = useState<{
-    sent: number
-    total: number
-    sending: boolean
-    error?: string
-  } | null>(null)
+  const [isStartingBlast, setIsStartingBlast] = useState(false)
   const csvInputRef = useRef<HTMLInputElement | null>(null)
 
   const emailSetting = useQuery(
@@ -168,6 +204,19 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   const deleteEmailSetting = useMutation(api.emailSettings.m.remove)
   const createMailingList = useMutation(api.mailingLists.m.create)
   const mailingLists = useQuery(api.mailingLists.q.list)
+  const recentBlasts = useQuery(
+    api.emailBlasts.q.listRecent,
+    id ? {emailSettingId: id as Id<'emailSettings'>, limit: 6} : 'skip',
+  )
+
+  const activeBlast = useMemo<EmailBlastDoc | null>(
+    () =>
+      (recentBlasts ?? []).find(
+        (blast) => blast.status === 'queued' || blast.status === 'sending',
+      ) ?? null,
+    [recentBlasts],
+  )
+  const displayBlast = activeBlast ?? recentBlasts?.[0] ?? null
 
   const navigateBackToList = useCallback(() => {
     withViewTransition(() => {
@@ -289,10 +338,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
   )
 
   const toggleEmailBlast = useCallback(() => {
-    setShowEmailBlast((prev) => {
-      if (!prev) setBlastProgress(null)
-      return !prev
-    })
+    setShowEmailBlast((prev) => !prev)
   }, [])
 
   const handleEmailBlastSend = useCallback(async () => {
@@ -304,74 +350,34 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
       return
     }
     if (!emailSetting) return
-    const valid = list.recipients.filter((r: MailingListRecipient) =>
-      r.email.trim(),
-    )
+    const valid = list.recipients.filter((r) => r.email.trim())
     if (valid.length === 0) {
       toast.error('The selected list has no valid email addresses.')
       return
     }
-    setBlastProgress({sent: 0, total: valid.length, sending: true})
-    let sent = 0
-    const delay = (ms: number) =>
-      new Promise((resolve) => setTimeout(resolve, ms))
-    for (let i = 0; i < valid.length; i++) {
-      if (i > 0) await delay(600)
-      const recipient = valid[i]!
-      try {
-        const useInvitation =
-          emailSetting.template === 'invitation' && emailSetting.templateProps
-        const body: Record<string, unknown> = {
-          subject: emailSetting.subject ?? '',
-          from: MAILING_LIST_BLAST_FROM,
-          cc: emailSetting.cc ?? undefined,
-          bcc: emailSetting.bcc ?? undefined,
-        }
-        if (useInvitation) {
-          body.template = 'invitation'
-          body.templateProps = emailSetting.templateProps
-          body.recipients = [{email: recipient.email, name: recipient.name}]
-        } else {
-          body.to = [recipient.email]
-          body.html = emailSetting.html ?? undefined
-          body.body = emailSetting.body ?? undefined
-        }
-        const res = await fetch('/api/resend/send-job', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(body),
-        })
-        const data = (await res.json()) as {ok: boolean; error?: string}
-        if (!data.ok) {
-          setBlastProgress((p) =>
-            p
-              ? {
-                  ...p,
-                  sent,
-                  sending: false,
-                  error: `${recipient.email}: ${data.error ?? 'Failed'}`,
-                }
-              : null,
-          )
-          toast.error(`Blast stopped at ${recipient.email}: ${data.error}`)
-          return
-        }
-        sent++
-        setBlastProgress((p) => (p ? {...p, sent} : null))
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Network error'
-        setBlastProgress((p) =>
-          p
-            ? {...p, sent, sending: false, error: `${recipient.email}: ${msg}`}
-            : null,
-        )
-        toast.error(`Blast failed at ${recipient.email}`)
-        return
-      }
+    if (!user) {
+      toast.error('You must be signed in to start an email blast.')
+      return
     }
-    setBlastProgress((p) => (p ? {...p, sending: false} : null))
-    toast.success(`Email blast complete: ${sent} of ${valid.length} sent`)
-  }, [mailingLists, selectedListId, emailSetting])
+
+    setIsStartingBlast(true)
+
+    try {
+      const idToken = await user.getIdToken()
+      await startEmailBlastRequest({
+        emailSettingId: id,
+        mailingListId: selectedListId,
+        idToken,
+      })
+      toast.success(
+        `Background blast started for ${valid.length} recipients. You can leave this page.`,
+      )
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to start blast')
+    } finally {
+      setIsStartingBlast(false)
+    }
+  }, [emailSetting, id, mailingLists, selectedListId, user])
 
   if (emailSetting === undefined) {
     return (
@@ -632,40 +638,59 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                 <CardHeader>
                   <SectionHeader
                     title='Send Email Blast'
-                    description='Select a mailing list and send using this template. Emails are sent one recipient at a time.'
+                    description='Start a background mailing list blast for this template. It keeps running even if you leave this page.'
                   />
                 </CardHeader>
                 <CardContent className='space-y-4'>
                   <Select
                     label='Mailing list'
                     placeholder='Select a list'
-                    value={String(selectedListId ? [selectedListId] : [])}
+                    value={selectedListId || null}
+                    onChange={(value) => setSelectedListId(value ?? '')}
                     isDisabled={!mailingLists?.length}
                     options={mailingLists?.map((list: MailingListDoc) => ({
                       value: list._id,
                       label: `${list.name} (${list.recipients.length})`,
                     }))}
                   />
-                  {blastProgress && (
+                  {displayBlast && (
                     <div className='space-y-2'>
                       <ProgressBar
                         aria-label='Email blast progress'
                         value={
-                          blastProgress.total > 0
-                            ? (blastProgress.sent / blastProgress.total) * 100
+                          displayBlast.totalRecipients > 0
+                            ? (displayBlast.processedRecipients /
+                                displayBlast.totalRecipients) *
+                              100
                             : 0
                         }
-                        color='success'
-                        valueLabel={`${blastProgress.sent} / ${blastProgress.total}`}
+                        color={
+                          displayBlast.status === 'failed' ? 'danger' : 'success'
+                        }
+                        valueLabel={`${displayBlast.processedRecipients} / ${displayBlast.totalRecipients}`}
                         className='max-w-full'>
                         <ProgressBar.Output className='text-sm text-foreground/60' />
                         <ProgressBar.Track>
                           <ProgressBar.Fill />
                         </ProgressBar.Track>
                       </ProgressBar>
-                      {blastProgress.error && (
+                      <div className='flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-foreground/60'>
+                        <span className='font-medium uppercase tracking-[0.12em]'>
+                          {displayBlast.status}
+                        </span>
+                        <span>
+                          Sent {displayBlast.sentRecipients} of{' '}
+                          {displayBlast.totalRecipients}
+                        </span>
+                        {displayBlast.currentRecipientEmail ? (
+                          <span>
+                            Sending to {displayBlast.currentRecipientEmail}
+                          </span>
+                        ) : null}
+                      </div>
+                      {displayBlast.lastError && (
                         <p className='text-sm text-danger'>
-                          {blastProgress.error}
+                          {displayBlast.lastError}
                         </p>
                       )}
                     </div>
@@ -679,13 +704,14 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       onPress={handleEmailBlastSend}
                       isDisabled={
                         !selectedListId ||
-                        !!blastProgress?.sending ||
+                        isStartingBlast ||
+                        !!activeBlast ||
                         !mailingLists?.some(
                           (l: MailingListDoc) => l._id === selectedListId,
                         )
                       }
                       className='rounded-lg bg-dark-gray dark:bg-white dark:text-dark-table'>
-                      Send Blast
+                      {isStartingBlast ? 'Starting...' : 'Send Blast'}
                     </Button>
                   </div>
                 </CardContent>
