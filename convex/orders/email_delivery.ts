@@ -7,7 +7,6 @@ import type {
 type OrderEmailState = PaymentSuccessEmailState | PendingPaymentEmailState
 
 export const PAYMENT_SUCCESS_EMAIL_ELIGIBLE_METHODS = [
-  'cards',
   'crypto_commerce',
   'crypto_transfer',
   'cash_app',

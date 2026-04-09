@@ -38,7 +38,7 @@ function registerModuleMocks() {
     useMutation: () => async () => null,
   }))
 
-  mock.module('@/components/sepolia/search-params-context', () => ({
+  mock.module('@/components/appkit/search-params-context', () => ({
     SearchParamsProvider: ({children}: {children: ReactNode}) => children,
     useSearchParams: () => ({params: new URLSearchParams()}),
   }))
@@ -76,6 +76,9 @@ function registerModuleMocks() {
 
   mock.module('next/navigation', () => ({
     useParams: () => ({orderId: 'orders_test_123'}),
+    useSearchParams: () => new URLSearchParams(),
+    useRouter: () => ({push: () => {}, replace: () => {}, back: () => {}}),
+    usePathname: () => '/lobby/order/orders_test_123/send',
   }))
 }
 

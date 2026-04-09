@@ -19,7 +19,7 @@ const DEFAULT_MINIMUM_REDEMPTION_ORDER_CENTS = 5000
 
 export function CashBackRedemption({
   availableBalanceCents,
-  appliedBalanceCents,
+  // appliedBalanceCents,
   subtotalCents,
   isEnabled,
   onToggle,
