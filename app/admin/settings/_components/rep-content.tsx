@@ -59,7 +59,6 @@ export const RepContent = () => {
     pendingInitialMessageSeed !== null
       ? pendingInitialMessageSeed
       : initialMessageSeedValue
-  const selectedKeys = new Set<string>(displayValue ? [displayValue] : [])
   const serverValue = value ?? ''
   const hasStaffChange =
     pendingStaffId !== null && pendingStaffId !== serverValue
@@ -68,9 +67,8 @@ export const RepContent = () => {
     pendingInitialMessageSeed !== initialMessageSeedValue
   const hasChange = hasStaffChange || hasMessageChange
 
-  const handleSelectionChange = useCallback((keys: Set<React.Key> | 'all') => {
-    const next = keys === 'all' ? '' : ([...keys].map(String)[0] ?? '')
-    setPendingStaffId(next)
+  const handleSelectionChange = useCallback((next: string | null) => {
+    setPendingStaffId(next ?? '')
   }, [])
 
   const handleSave = useCallback(() => {
@@ -130,14 +128,15 @@ export const RepContent = () => {
             }))}
             label='Sales Rep'
             placeholder='Select a rep'
-            value={String(selectedKeys)}
+            value={displayValue || null}
+            onChange={handleSelectionChange}
             aria-label='Default Sales Rep'></Select>
 
           <TextArea
             // label='Initial message seed for Cash App payments'
             placeholder='e.g. Cash App checkout request for order {orderNumber}. I selected Cash App and need a representative to continue payment in this chat.'
             value={displayInitialMessage}
-            onChange={() => setPendingInitialMessageSeed}
+            onChange={(event) => setPendingInitialMessageSeed(event.target.value)}
             className='w-full max-w-3xl'
             rows={3}
           />
@@ -186,7 +185,6 @@ export const RepContent = () => {
 
 function RepUserItem({member}: {member: Doc<'staff'>}) {
   const name = member.name || member.email || 'Unnamed Rep'
-  const description = member.email ?? member.position ?? ''
   return (
     <li className='rounded-lg border border-default-200/50 bg-default-50/30 p-3 dark:bg-default-100/10'>
       <Avatar>

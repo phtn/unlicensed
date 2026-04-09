@@ -116,7 +116,7 @@ export const ProductCarousel = ({
       }}>
       <div
         ref={emblaRef}
-        className='overflow-hidden'
+        className='ml-[calc(50%-50vw)] mr-[calc(50%-50vw)] w-screen overflow-hidden sm:mx-0 sm:w-full'
         role='region'
         aria-roledescription='carousel'
         aria-label={`Fire Collection products, showing ${products.length} of ${totalProducts}`}>

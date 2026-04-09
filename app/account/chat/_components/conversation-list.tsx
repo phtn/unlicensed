@@ -126,8 +126,8 @@ function SwipeableConversationRow({
           <button
             type='button'
             onClick={handleArchiveClick}
-            className='flex flex-col items-center justify-center text-white gap-1 py-2 touch-manipulation'>
-            <Icon name='archive' className='size-5 text-white' />
+            className='flex flex-col items-center justify-center text-white gap-1 px-3 py-2 touch-manipulation bg-light-brand active:scale-85 transition-transform duration-200'>
+            <Icon name='archive-fill' className='size-5 text-white' />
             <span className='text-xs font-medium'>Archive</span>
           </button>
         </div>

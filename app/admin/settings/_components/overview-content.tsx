@@ -18,26 +18,26 @@ interface SettingItem {
 const SETTINGS_FEATURES: Array<SettingItem> = [
   {
     id: 'access',
-    title: 'Access',
+    title: 'Access Code',
     description: 'Halt Gate Access codes',
     icon: 'finger-press-line',
   },
   {
     id: 'payments',
-    title: 'Payments',
+    title: 'Payment Methods',
     description:
       'Configure payment providers, gateways, and billing. Manage payouts, invoices, and payment methods.',
     icon: 'credit-card',
   },
   {
     id: 'crypto',
-    title: 'Crypto',
+    title: 'Crypto Wallets',
     description: 'Manage crypto wallets.',
     icon: 'wallet',
   },
   {
     id: 'shipping',
-    title: 'Shipping',
+    title: 'Shipping Fee',
     description:
       'Configure shipping fees and minimum purchase amount to cover shipping.',
     icon: 'airplane-takeoff',
@@ -62,7 +62,7 @@ const SETTINGS_FEATURES: Array<SettingItem> = [
   },
   {
     id: 'rep',
-    title: 'Rep',
+    title: 'CS Rep',
     description: 'Assign Default Rep account and seed message.',
     icon: 'user-fill',
   },

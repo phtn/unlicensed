@@ -6,11 +6,16 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {openChatDockWindow} from '@/lib/chat-dock'
-import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
+import {
+  CASH_APP_PROCESSING_FEE_PERCENT,
+  formatProcessingFeePercent,
+  getCashAppProcessingFeePercent,
+  resolveOrderPayableTotalCents,
+} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
-import {Badge, Button, Chip, Separator} from '@heroui/react'
+import {Button, Chip, Separator} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import NextLink from 'next/link'
 import {useParams} from 'next/navigation'
@@ -98,6 +103,9 @@ export const Content = () => {
   )
   const salesRepSetting = useQuery(api.admin.q.getAdminByIdentifier, {
     identifier: 'sales-rep',
+  })
+  const paymentMethodsSetting = useQuery(api.admin.q.getAdminByIdentifier, {
+    identifier: 'payment_methods',
   })
   const connectStaffForChat = useMutation(api.follows.m.connectStaffForChat)
   const sendMessage = useMutation(api.messages.m.sendMessage)
@@ -574,6 +582,12 @@ export const Content = () => {
   const orderHref = order ? `/account/orders/${order.orderNumber}` : '#'
   const repName =
     assignedRep?.name ?? assignedRep?.email?.split('@')[0] ?? 'Representative'
+  const cashAppProcessingFeePercent =
+    getCashAppProcessingFeePercent(paymentMethodsSetting?.value) ??
+    CASH_APP_PROCESSING_FEE_PERCENT
+  const cashAppProcessingFeeLabel = formatProcessingFeePercent(
+    cashAppProcessingFeePercent,
+  )
 
   const payableTotalCents = order
     ? resolveOrderPayableTotalCents({
@@ -693,7 +707,7 @@ export const Content = () => {
           </div>
           {processingFeeLabel ? (
             <p className='text-xs opacity-70'>
-              Includes {processingFeeLabel} Cash App processing fee.
+              Includes {processingFeeLabel} (5%) Cash App processing fee.
             </p>
           ) : null}
         </div>
@@ -755,42 +769,45 @@ export const Content = () => {
               <span>
                 {processingFeeLabel
                   ? `${processingFeeLabel} Cash App processing fee is included in your order total.`
-                  : 'An 8% Cash App processing fee is included in your order total.'}
+                  : `${cashAppProcessingFeeLabel} Cash App processing fee is included in your order total.`}
               </span>
             </div>
           </div>
         </div>
 
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+        <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
           <NextLink
             href={orderHref}
-            className='font-polysans font-normal dark:bg-sidebar'>
+            className='font-clash font-normal dark:bg-sidebar'>
             Review Order
           </NextLink>
-          {setupState === 'no_rep' ? (
-            <Button
-              size='lg'
-              className='font-clash font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
-              onPress={handleRetry}>
-              Retry Rep Assignment
-            </Button>
-          ) : (
-            <div className='w-full'>
-              <Badge
-                key={`cashapp-chat-badge-${orderId}-${unreadRepCount}`}
-                content={unreadRepCount > 99 ? '99+' : `${unreadRepCount}`}
-                hidden={unreadRepCount === 0}
-                className='w-full'>
+          <div className=''>
+            <div className='relative w-full'>
+              {unreadRepCount > 0 ? (
+                <span className='absolute -top-2 -right-2 z-10 flex min-w-5 h-5 items-center justify-center rounded-full border border-background bg-brand px-1.5 text-[10px] font-clash font-medium leading-none text-white shadow-sm'>
+                  {unreadRepCount > 99 ? '99+' : `${unreadRepCount}`}
+                </span>
+              ) : null}
+              <div className='relative'>
                 <Button
                   size='lg'
                   id='chat-button'
-                  className='w-full font-clash font-medium bg-dark-gray dark:bg-white dark:text-dark-gray'
+                  className='w-full font-clash font-medium rounded-lg bg-dark-gray dark:bg-white dark:text-dark-gray'
                   onPress={handleOpenChat}>
-                  {setupState === 'ready' ? 'Open Live Chat' : 'Open Chat'}
+                  {setupState === 'ready' ? 'Open Live Chat' : 'Chat With Rep'}
                 </Button>
-              </Badge>
+              </div>
             </div>
-          )}
+            {setupState === 'no_rep' ? (
+              <Button
+                size='lg'
+                variant='outline'
+                className='font-clash font-medium'
+                onPress={handleRetry}>
+                Retry Rep Assignment
+              </Button>
+            ) : null}
+          </div>
         </div>
       </ArcCard>
     </main>

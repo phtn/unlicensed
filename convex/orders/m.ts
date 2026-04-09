@@ -2,6 +2,7 @@ import {v} from 'convex/values'
 import {
   computeOrderTotalCents,
   computePersistedOrderPaymentAmounts,
+  getCashAppProcessingFeePercent,
 } from '../../lib/checkout/processing-fee'
 import {resolveOrderShippingCents} from '../../lib/checkout/shipping'
 import {createCouponError} from '../../lib/coupon-errors'
@@ -745,6 +746,10 @@ export const createOrder = mutation({
       ctx,
       'cards_processing_fee',
     )
+    const paymentMethodsConfig = await getAdminSettingValue(
+      ctx,
+      'payment_methods',
+    )
 
     const isProcessingFeeEnabled =
       cardsProcessingFeeConfig &&
@@ -771,6 +776,7 @@ export const createOrder = mutation({
       cryptoProcessingFeeConfig.acc > 0
         ? cryptoProcessingFeeConfig.acc
         : 1
+    const cashAppPercent = getCashAppProcessingFeePercent(paymentMethodsConfig)
     const totalDiscountCents = couponDiscountCents + redeemedStoreCreditCents
     const discountedSubtotalCents = Math.max(
       0,
@@ -794,6 +800,7 @@ export const createOrder = mutation({
         shippingCents,
         processingFeeEnabled: isProcessingFeeEnabled,
         processingFeePercent,
+        cashAppPercent,
         cryptoFeeEnabled: isCryptoFeeEnabled,
         cryptoFeeAcc,
       })

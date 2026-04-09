@@ -3,7 +3,10 @@
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {AddressType} from '@/convex/users/d'
-import {computeProcessingFeeCents} from '@/lib/checkout/processing-fee'
+import {
+  computeProcessingFeeCents,
+  getCashAppProcessingFeePercent,
+} from '@/lib/checkout/processing-fee'
 import {getCouponErrorMessage} from '@/lib/coupon-errors'
 import {useConvex, useQuery} from 'convex/react'
 import {useRouter} from 'next/navigation'
@@ -113,6 +116,12 @@ export function Checkout({
   //     identifier: 'cards_processing_fee',
   //   },
   // )
+  const paymentMethodsSetting = useQuery(
+    api.admin.q.getAdminByIdentifier,
+    {
+      identifier: 'payment_methods',
+    },
+  )
 
   // Query the order to get the actual payment method stored in the order
   const order = useQuery(api.orders.q.getById, orderId ? {id: orderId} : 'skip')
@@ -175,6 +184,7 @@ export function Checkout({
     enabled: false,
     paymentMethod: formData.paymentMethod,
     percent: 0,
+    cashAppPercent: getCashAppProcessingFeePercent(paymentMethodsSetting?.value),
     shippingCents: shipping,
   })
   const totalWithProcessingFee = totalBeforeProcessingFee + processingFeeCents
@@ -593,6 +603,9 @@ export function Checkout({
         appliedCashBackCents={appliedCashBackCents}
         isUsingCashBack={isCashBackEnabled}
         onCashBackToggle={setCashBackEnabled}
+        cashAppProcessingFeePercent={getCashAppProcessingFeePercent(
+          paymentMethodsSetting?.value,
+        )}
         couponCode={couponCode}
         couponDiscountCents={couponDiscountCents}
         couponError={couponError}

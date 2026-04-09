@@ -36,7 +36,7 @@ describe('checkout pricing helpers', () => {
     ).toBe(345)
   })
 
-  test('applies a fixed 8% processing fee to cash app orders', () => {
+  test('applies the default 5% processing fee to cash app orders', () => {
     expect(
       computeProcessingFeeCents({
         discountedSubtotalCents: 10_000,
@@ -45,7 +45,20 @@ describe('checkout pricing helpers', () => {
         percent: 0,
         shippingCents: 500,
       }),
-    ).toBe(840)
+    ).toBe(525)
+  })
+
+  test('uses the configured cash app fee when provided', () => {
+    expect(
+      computeProcessingFeeCents({
+        discountedSubtotalCents: 10_000,
+        enabled: false,
+        paymentMethod: 'cash_app',
+        percent: 0,
+        cashAppPercent: 7.5,
+        shippingCents: 500,
+      }),
+    ).toBe(788)
   })
 
   test('resolves a fee-inclusive payable total for cash app orders', () => {
@@ -72,7 +85,7 @@ describe('checkout pricing helpers', () => {
         cryptoFeeAcc: 1.03,
       }),
     ).toEqual({
-      processingFeeCents: 840,
+      processingFeeCents: 525,
       cryptoFeeCents: undefined,
       totalWithCryptoFeeCents: undefined,
     })

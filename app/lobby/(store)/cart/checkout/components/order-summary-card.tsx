@@ -1,6 +1,10 @@
 'use client'
 
 import {Id} from '@/convex/_generated/dataModel'
+import {
+  CASH_APP_PROCESSING_FEE_PERCENT,
+  formatProcessingFeePercent,
+} from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
@@ -60,6 +64,7 @@ interface OrderSummaryCardProps {
   appliedCashBackCents?: number
   isUsingCashBack?: boolean
   onCashBackToggle?: (nextValue: boolean) => void
+  cashAppProcessingFeePercent?: number
   couponCode: string
   couponDiscountCents?: number
   couponError?: string | null
@@ -97,6 +102,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   appliedCashBackCents = 0,
   isUsingCashBack = false,
   onCashBackToggle,
+  cashAppProcessingFeePercent,
   couponCode,
   couponDiscountCents = 0,
   couponError,
@@ -116,8 +122,12 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   const effectiveVariant: RewardsVariant =
     rewardsVariant ?? (computedRewards != null ? 'tier' : 'off')
   const displayTotal = Math.max(0, total - appliedCashBackCents)
+  const cashAppFeePercent =
+    cashAppProcessingFeePercent ?? CASH_APP_PROCESSING_FEE_PERCENT
   const processingFeeLabel =
-    paymentMethod === 'cash_app' ? 'Cash App Processing Fee' : 'Processing Fee'
+    paymentMethod === 'cash_app'
+      ? `Cash App Transaction Fee (${formatProcessingFeePercent(cashAppFeePercent)})`
+      : 'Processing Fee'
 
   const rewardsPanel =
     effectiveVariant === 'tier' && computedRewards != null ? (
@@ -196,7 +206,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                 )}
                 {appliedCashBackCents > 0 && (
                   <div className='flex justify-between font-okxs text-sm md:text-base text-emerald-600 dark:text-emerald-400'>
-                    <span>Cash back</span>
+                    <span>Rewards</span>
                     <span>- ${formatPrice(appliedCashBackCents)}</span>
                   </div>
                 )}

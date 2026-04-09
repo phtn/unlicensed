@@ -1,19 +1,13 @@
 'use client'
 
-import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon, type IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Switch} from '@heroui/react'
+import {Button, Input, Modal, TextArea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {
-  startTransition,
-  useCallback,
-  useMemo,
-  useState,
-  ViewTransition,
-} from 'react'
+import {useEffect, useMemo, useState} from 'react'
+import {Toggle} from '../../_components/ui/toggle'
 import {ContentHeader} from './components'
 
 export type PaymentMethodStatus = 'active' | 'inactive'
@@ -25,6 +19,14 @@ export interface PaymentMethodRow {
   icon: IconName
   description: string
   status: PaymentMethodStatus
+  transactionFee?: number
+}
+
+type PaymentMethodDraft = {
+  active: boolean
+  description: string
+  label: string
+  transactionFee: string
 }
 
 const DEFAULT_CARDS_PROCESSING_FEE = '0'
@@ -54,85 +56,27 @@ function getInitialFeeValue(setting: unknown) {
   return DEFAULT_CARDS_PROCESSING_FEE
 }
 
-function getInitialFeeEnabled(setting: unknown) {
+function getPaymentMethodFee(method: PaymentMethodRow, cardsSetting: unknown) {
   if (
-    setting &&
-    typeof setting === 'object' &&
-    !('error' in setting) &&
-    'enabled' in setting &&
-    typeof setting.enabled === 'boolean'
+    typeof method.transactionFee === 'number' &&
+    Number.isFinite(method.transactionFee)
   ) {
-    return setting.enabled
+    return String(method.transactionFee)
   }
 
-  return false
+  if (method.id === 'cards') {
+    return getInitialFeeValue(cardsSetting)
+  }
+
+  return ''
 }
 
-interface CardsProcessingFeeFieldProps {
-  value: string
-  onChange: (value: string) => void
-  enabled: boolean
-  onEnabledChange: (value: boolean) => void
-  onSave: VoidFunction
-  isDisabled: boolean
-  isSaving: boolean
-  saveMessage: null | 'saved' | 'error'
-}
+function formatFeeLabel(fee: number | undefined) {
+  if (typeof fee !== 'number' || !Number.isFinite(fee)) {
+    return null
+  }
 
-function CardsProcessingFeeField({
-  value,
-  onChange,
-  enabled,
-  onEnabledChange,
-  onSave,
-  isDisabled,
-  isSaving,
-  saveMessage,
-}: CardsProcessingFeeFieldProps) {
-  return (
-    <div className='flex min-w-0 flex-col gap-4 md:min-w-64 md:max-w-72'>
-      <Input
-        label='Processing fee (%)'
-        type='number'
-        min={0}
-        step={0.01}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={isDisabled || !enabled}
-      />
-      <div className='flex items-center gap-4'>
-        <Switch
-          isSelected={enabled}
-          onChange={onEnabledChange}
-          isDisabled={isDisabled}
-          size='sm'>
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
-          <Switch.Content>
-            <span>Enable</span>
-          </Switch.Content>
-        </Switch>
-        <Button
-          variant='tertiary'
-          fullWidth
-          onPress={onSave}
-          isDisabled={isDisabled}
-          className='rounded-sm'
-          isPending={isSaving}>
-          {isSaving ? 'Saving…' : 'Save'}
-        </Button>
-        {saveMessage === 'saved' && (
-          <span className='text-sm text-emerald-600 dark:text-emerald-400'>
-            Saved
-          </span>
-        )}
-        {saveMessage === 'error' && (
-          <span className='text-sm text-destructive'>Save failed</span>
-        )}
-      </div>
-    </div>
-  )
+  return `${fee.toFixed(fee % 1 === 0 ? 0 : 2)}% fee`
 }
 
 export const PaymentsSettings = () => {
@@ -147,105 +91,152 @@ export const PaymentsSettings = () => {
     },
   )
   const updateAdmin = useMutation(api.admin.m.updateAdminByIdentifier)
-  const [togglingId, setTogglingId] = useState<string | null>(null)
-  const [cardsFeeDraft, setCardsFeeDraft] = useState<string | null>(null)
-  const [cardsFeeEnabledDraft, setCardsFeeEnabledDraft] = useState<
-    boolean | null
-  >(null)
-  const [isSavingCardsFee, setIsSavingCardsFee] = useState(false)
-  const [cardsFeeMessage, setCardsFeeMessage] = useState<
-    null | 'saved' | 'error'
-  >(null)
+  const [editingMethodId, setEditingMethodId] = useState<string | null>(null)
+  const [draft, setDraft] = useState<PaymentMethodDraft | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const paymentMethods = useMemo(() => {
     const methods = ((setting && setting)?.methods as PaymentMethodRow[]) ?? []
-    if (methods && methods.length > 0) {
-      return methods.map((m) => ({
-        id: m.id,
-        name: m.name ?? m.label ?? m.id,
-        label: m.label ?? m.name ?? m.id,
-        icon: (m.icon ?? 'credit-card') as IconName,
-        description: m.description ?? '',
-        status:
-          m.status === 'active' || m.status === 'inactive'
-            ? m.status
-            : 'inactive',
-      }))
-    }
-    return []
+
+    return methods.map((method) => ({
+      id: method.id,
+      name: method.name ?? method.label ?? method.id,
+      label: method.label ?? method.name ?? method.id,
+      icon: (method.icon ?? 'credit-card') as IconName,
+      description: method.description ?? '',
+      status:
+        method.status === 'active' || method.status === 'inactive'
+          ? method.status
+          : 'inactive',
+      transactionFee:
+        typeof method.transactionFee === 'number' &&
+        Number.isFinite(method.transactionFee)
+          ? method.transactionFee
+          : undefined,
+    }))
   }, [setting])
-  const hasCardsMethod = useMemo(
-    () => paymentMethods.some((method) => method.id === 'cards'),
-    [paymentMethods],
-  )
-  const cardsFeePercent =
-    cardsFeeDraft ?? getInitialFeeValue(cardsProcessingFeeSetting)
-  const cardsFeeEnabled =
-    cardsFeeEnabledDraft ?? getInitialFeeEnabled(cardsProcessingFeeSetting)
 
-  const handleToggle = useCallback(
-    (methodId: string, nextStatus: PaymentMethodStatus) => {
-      setTogglingId(methodId)
-      const nextMethods: PaymentMethodRow[] = paymentMethods.map((m) =>
-        m.id === methodId ? {...m, status: nextStatus} : m,
+  const editingMethod = useMemo(
+    () =>
+      paymentMethods.find((method) => method.id === editingMethodId) ?? null,
+    [editingMethodId, paymentMethods],
+  )
+
+  useEffect(() => {
+    if (!editingMethod) {
+      setDraft(null)
+      setErrorMessage(null)
+      setIsSaving(false)
+      return
+    }
+
+    setDraft({
+      label: editingMethod.label,
+      description: editingMethod.description,
+      transactionFee: getPaymentMethodFee(
+        editingMethod,
+        cardsProcessingFeeSetting,
+      ),
+      active: editingMethod.status === 'active',
+    })
+    setErrorMessage(null)
+    setIsSaving(false)
+  }, [cardsProcessingFeeSetting, editingMethod])
+
+  const openEditor = (methodId: string) => {
+    setEditingMethodId(methodId)
+  }
+
+  const closeEditor = () => {
+    setEditingMethodId(null)
+  }
+
+  const handleSaveMethod = async () => {
+    if (!editingMethod || !draft) return
+
+    const normalizedLabel = draft.label.trim()
+    if (!normalizedLabel) {
+      setErrorMessage('Label is required.')
+      return
+    }
+
+    const normalizedDescription = draft.description.trim()
+    const feeInput = draft.transactionFee.trim()
+    const feeValue = feeInput.length > 0 ? Number(feeInput) : 0
+
+    if (!Number.isFinite(feeValue) || feeValue < 0) {
+      setErrorMessage(
+        'Transaction fee must be a valid number greater than or equal to 0.',
       )
-      startTransition(() => {
-        updateAdmin({
-          identifier: 'payment_methods',
-          value: {methods: nextMethods},
-          uid: user?.uid ?? 'anonymous',
-        })
-          .then(() => setTogglingId(null))
-          .catch(() => setTogglingId(null))
-      })
-    },
-    [paymentMethods, updateAdmin, user?.uid],
-  )
+      return
+    }
 
-  const handleSaveCardsFee = useCallback(() => {
-    const percent = parseFloat(cardsFeePercent || '0')
-    if (Number.isNaN(percent) || percent < 0) return
+    const nextMethods = paymentMethods.map((method) =>
+      method.id === editingMethod.id
+        ? {
+            ...method,
+            label: normalizedLabel,
+            description: normalizedDescription,
+            status: draft.active ? 'active' : 'inactive',
+            ...(feeInput.length > 0 || method.id === 'cards'
+              ? {transactionFee: feeValue}
+              : {}),
+          }
+        : method,
+    )
 
-    setIsSavingCardsFee(true)
-    setCardsFeeMessage(null)
-    startTransition(() => {
-      updateAdmin({
-        identifier: 'cards_processing_fee',
-        value: {percent, enabled: cardsFeeEnabled},
+    setIsSaving(true)
+    setErrorMessage(null)
+
+    try {
+      await updateAdmin({
+        identifier: 'payment_methods',
+        value: {methods: nextMethods},
         uid: user?.uid ?? 'anonymous',
       })
-        .then(() => {
-          setIsSavingCardsFee(false)
-          setCardsFeeDraft(String(percent))
-          setCardsFeeEnabledDraft(cardsFeeEnabled)
-          setCardsFeeMessage('saved')
-          setTimeout(() => setCardsFeeMessage(null), 2000)
+
+      if (editingMethod.id === 'cards') {
+        await updateAdmin({
+          identifier: 'cards_processing_fee',
+          value: {percent: feeValue, enabled: draft.active},
+          uid: user?.uid ?? 'anonymous',
         })
-        .catch(() => {
-          setIsSavingCardsFee(false)
-          setCardsFeeMessage('error')
-        })
-    })
-  }, [cardsFeeEnabled, cardsFeePercent, updateAdmin, user?.uid])
+      }
+
+      closeEditor()
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Failed to save payment method.',
+      )
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const hasMethods = paymentMethods.length > 0
 
   return (
-    <div className='flex w-full flex-col gap-4 md:px-0 px-4'>
-      <ContentHeader title='Payments Methods' />
+    <div className='flex w-full flex-col gap-4 px-4 md:px-0'>
+      <ContentHeader title='Payment Methods' />
 
       <section className='grid gap-6 md:grid-cols-3 portrait:-mt-10 md:mt-0'>
-        <div className='space-y-3 min-w-0'>
-          <ul className='flex flex-col gap-1 rounded-3xl' role='list'>
-            {paymentMethods.map((method) => (
-              <ViewTransition key={method.id}>
+        <div className='space-y-3 min-w-0 md:col-span-2'>
+          <ul className='flex flex-col gap-3' role='list'>
+            {hasMethods ? (
+              paymentMethods.map((method) => (
                 <li
+                  key={method.id}
                   className={cn(
-                    'flex items-center gap-4 rounded-2xl border border-border/50 bg-default-100/50 px-4 py-3 transition-colors dark:bg-default-100/30',
+                    'rounded-lg border border-sidebar bg-default-100/50 px-4 py-4 transition-colors dark:bg-default-100/30',
                     'hover:border-border/80 dark:hover:border-border/60',
                   )}
                   role='listitem'>
-                  <div className='flex min-w-0 flex-1 items-start gap-4'>
+                  <div className='flex items-start gap-4'>
                     <div
-                      className='flex size-10 shrink-0 items-center justify-center rounded-xl bg-foreground/10 dark:bg-foreground/15'
+                      className='flex size-11 shrink-0 items-center justify-center rounded-xl bg-foreground/10 dark:bg-foreground/15'
                       aria-hidden>
                       <Icon
                         name={method.icon}
@@ -253,75 +244,203 @@ export const PaymentsSettings = () => {
                         aria-hidden
                       />
                     </div>
-                    <div className='min-w-0 flex-1'>
-                      <div className='font-okxs font-medium text-foreground'>
-                        {method.name}
+                    <div className='min-w-0 flex-1 space-y-2'>
+                      <div className='flex flex-wrap items-center gap-2'>
+                        <span className='font-okxs text-base font-medium text-foreground'>
+                          {method.label}
+                        </span>
+                        {formatFeeLabel(method.transactionFee) ? (
+                          <span className='rounded-full border border-border/60 bg-background/70 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-foreground/60'>
+                            {formatFeeLabel(method.transactionFee)}
+                          </span>
+                        ) : null}
+                        <span
+                          className={cn(
+                            'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em]',
+                            method.status === 'active'
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
+                              : 'bg-foreground/5 text-foreground/50',
+                          )}>
+                          {method.status === 'active' ? 'Active' : 'Inactive'}
+                        </span>
                       </div>
-                      {method.description && (
-                        <div className='font-okxs text-xs text-foreground/60'>
-                          {method.description}
-                        </div>
-                      )}
+                      <p className='text-sm leading-6 text-foreground/60'>
+                        {method.description || 'No description set.'}
+                      </p>
+                      <p className='text-xs uppercase tracking-[0.22em] text-foreground/35'>
+                        Identifier: {method.name}
+                      </p>
+                    </div>
+                    <div className='shrink-0'>
+                      <Button
+                        variant='secondary'
+                        size='sm'
+                        onPress={() => openEditor(method.id)}
+                        className='bg-brand text-white px-4'>
+                        Edit
+                      </Button>
                     </div>
                   </div>
-                  <div className='flex shrink-0 items-center gap-2'>
-                    <span
-                      className={cn(
-                        'font-okxs text-xs tabular-nums',
-                        method.status === 'active'
-                          ? 'text-emerald-600 dark:text-emerald-400'
-                          : 'text-foreground/50',
-                      )}
-                      aria-hidden>
-                      {method.status === 'active' ? 'Active' : 'Inactive'}
-                    </span>
-                    <Switch
-                      size='sm'
-                      isSelected={method.status === 'active'}
-                      isDisabled={togglingId === method.id}
-                      onChange={(checked: boolean) =>
-                        handleToggle(method.id, checked ? 'active' : 'inactive')
-                      }
-                      className='shrink-0'
-                      aria-label={`Toggle ${method.name} to ${method.status === 'active' ? 'inactive' : 'active'}`}>
-                      <Switch.Control>
-                        <Switch.Thumb />
-                      </Switch.Control>
-                    </Switch>
-                  </div>
                 </li>
-              </ViewTransition>
-            ))}
+              ))
+            ) : (
+              <li className='rounded-2xl border border-border/50 bg-default-100/50 px-4 py-6 text-sm text-foreground/60 dark:bg-default-100/30'>
+                No payment methods are configured yet.
+              </li>
+            )}
           </ul>
         </div>
-
-        {hasCardsMethod ? (
-          <div className='rounded-2xl border border-border/50 bg-default-100/50 p-4 dark:bg-default-100/30 h-fit'>
-            <div className='mb-4'>
-              <div className='font-okxs font-medium text-foreground'>
-                Cards Processing Fee
-              </div>
-              <div className='font-okxs text-xs text-foreground/60'>
-                Applied to card payments at checkout.
-              </div>
-            </div>
-            <CardsProcessingFeeField
-              value={cardsFeePercent}
-              onChange={setCardsFeeDraft}
-              enabled={cardsFeeEnabled}
-              onEnabledChange={setCardsFeeEnabledDraft}
-              onSave={handleSaveCardsFee}
-              isDisabled={
-                isSavingCardsFee ||
-                cardsProcessingFeeSetting === undefined ||
-                !user?.uid
-              }
-              isSaving={isSavingCardsFee}
-              saveMessage={cardsFeeMessage}
-            />
-          </div>
-        ) : null}
       </section>
+
+      <Modal
+        isOpen={editingMethodId !== null}
+        onOpenChange={(open) => {
+          if (!open) closeEditor()
+        }}>
+        <Modal.Backdrop variant='blur'>
+          <Modal.Container placement='center'>
+            <Modal.Dialog className='rounded-2xl border border-sidebar bg-background/95 shadow-2xl'>
+              <Modal.Header className='items-start'>
+                {editingMethod ? (
+                  <div className='flex items-center gap-3'>
+                    <div
+                      className='flex size-11 shrink-0 items-center justify-center rounded-xl bg-foreground/10 dark:bg-foreground/15'
+                      aria-hidden>
+                      <Icon
+                        name={editingMethod.icon}
+                        className='size-5 text-foreground/80'
+                        aria-hidden
+                      />
+                    </div>
+                    <div className='min-w-0'>
+                      <div className='text-xs uppercase tracking-[0.22em] text-foreground/45'>
+                        Edit payment method
+                      </div>
+                      <div className='text-lg font-semibold text-foreground'>
+                        {editingMethod.label}
+                      </div>
+                      <div className='text-sm text-foreground/55'>
+                        Identifier: {editingMethod.name}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className='text-lg font-semibold text-foreground'>
+                    Edit payment method
+                  </div>
+                )}
+              </Modal.Header>
+
+              <Modal.Body className='space-y-4 p-1'>
+                <div className='space-y-2'>
+                  <div className='text-xs uppercase tracking-[0.22em] text-foreground/45'>
+                    Label
+                  </div>
+                  <Input
+                    value={draft?.label ?? ''}
+                    onChange={(e) =>
+                      setDraft((current) =>
+                        current ? {...current, label: e.target.value} : current,
+                      )
+                    }
+                    className='w-full shadow-none rounded-sm border border-sidebar'
+                  />
+                </div>
+
+                <div className='space-y-2'>
+                  <div className='text-xs uppercase tracking-[0.22em] text-foreground/45'>
+                    Description
+                  </div>
+                  <TextArea
+                    value={draft?.description ?? ''}
+                    onChange={(e) =>
+                      setDraft((current) =>
+                        current
+                          ? {...current, description: e.target.value}
+                          : current,
+                      )
+                    }
+                    rows={4}
+                    placeholder='Describe how this payment method should appear to customers.'
+                    className='w-full shadow-none rounded-sm border border-sidebar'
+                  />
+                </div>
+
+                <div className='space-y-2'>
+                  <div className='text-xs uppercase tracking-[0.22em] text-foreground/45'>
+                    Transaction fee (%)
+                  </div>
+                  <Input
+                    type='number'
+                    min={0}
+                    step={0.01}
+                    value={draft?.transactionFee ?? ''}
+                    onChange={(e) =>
+                      setDraft((current) =>
+                        current
+                          ? {...current, transactionFee: e.target.value}
+                          : current,
+                      )
+                    }
+                    className='rounded-sm shadow-none border border-sidebar'
+                  />
+                  <div className='text-xs text-foreground/45'>
+                    Set the fee percentage shown for this payment method.
+                  </div>
+                </div>
+
+                <div className='flex items-center justify-between gap-4 rounded-2xl border border-sidebar bg-default-100/60 px-4 py-3 dark:bg-default-100/30'>
+                  <div className='min-w-0'>
+                    <div className='font-medium text-foreground'>Active</div>
+                    <div className='text-sm text-foreground/55'>
+                      {draft?.active
+                        ? 'Visible and selectable at checkout.'
+                        : 'Hidden from checkout until re-enabled.'}
+                    </div>
+                  </div>
+                  <Toggle
+                    title='Active'
+                    checked={draft?.active ?? false}
+                    onChange={(value) =>
+                      setDraft((current) =>
+                        current ? {...current, active: value} : current,
+                      )
+                    }
+                    // isDisabled={isSaving}
+                  />
+                </div>
+
+                {errorMessage ? (
+                  <div className='text-sm text-danger'>{errorMessage}</div>
+                ) : null}
+
+                {editingMethod?.id === 'cards' ? (
+                  <div className='rounded-2xl border border-amber-400/30 bg-amber-500/5 px-4 py-3 text-sm text-foreground/65'>
+                    Card fee changes also update the existing checkout
+                    processing fee setting so payment totals stay in sync.
+                  </div>
+                ) : null}
+              </Modal.Body>
+
+              <Modal.Footer className='pt-4'>
+                <Button
+                  variant='tertiary'
+                  onPress={closeEditor}
+                  isDisabled={isSaving}>
+                  Cancel
+                </Button>
+                <Button
+                  variant='primary'
+                  onPress={handleSaveMethod}
+                  isDisabled={isSaving}
+                  className='bg-brand'>
+                  {isSaving ? 'Saving…' : 'Save changes'}
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
     </div>
   )
 }

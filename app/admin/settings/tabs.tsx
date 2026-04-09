@@ -21,17 +21,17 @@ const DEFAULT_TAB = 'overview'
 export const SettingsTabs = () => {
   const tabs = [
     {id: 'overview', label: 'Overview', panel: <OverviewContent />},
-    {id: 'access', label: 'Access', panel: <AccessContent />},
-    {id: 'payments', label: 'Payments', panel: <PaymentsSettings />},
+    {id: 'access', label: 'Access Code', panel: <AccessContent />},
+    {id: 'payments', label: 'Payment Methods', panel: <PaymentsSettings />},
     {id: 'coupons', label: 'Coupons', panel: <CouponsContent />},
-    {id: 'crypto', label: 'Crypto', panel: <CryptoContent />},
-    {id: 'shipping', label: 'Shipping', panel: <ShippingContent />},
+    {id: 'crypto', label: 'Crypto Wallets', panel: <CryptoContent />},
+    {id: 'shipping', label: 'Shipping Fee', panel: <ShippingContent />},
     {id: 'tax', label: 'Tax', panel: <TaxContent />},
     {id: 'rewards', label: 'Rewards', panel: <RewardsContent />},
     {id: 'deals', label: 'Deals', panel: <DealsContent />},
-    {id: 'rep', label: 'Rep', panel: <RepContent />},
-    {id: 'assistant', label: 'Assistant', panel: <AssistantContent />},
-    {id: 'alerts', label: 'Alerts', panel: <AlertsContent />},
+    {id: 'rep', label: 'CS Rep', panel: <RepContent />},
+    {id: 'assistant', label: 'AI Assistant', panel: <AssistantContent />},
+    {id: 'alerts', label: 'Alert Tones', panel: <AlertsContent />},
   ]
 
   const [tabParam, setTabParam] = useAdminTab(DEFAULT_TAB)

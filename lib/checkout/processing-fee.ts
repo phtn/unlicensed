@@ -16,6 +16,7 @@ type ComputeProcessingFeeCentsArgs = {
   enabled: boolean
   paymentMethod: ProcessingFeePaymentMethod
   percent: number
+  cashAppPercent?: number
   shippingCents?: number
 }
 
@@ -58,11 +59,45 @@ type ComputePersistedOrderPaymentAmountsArgs = {
   shippingCents?: number
   processingFeeEnabled?: boolean
   processingFeePercent?: number
+  cashAppPercent?: number
   cryptoFeeEnabled?: boolean
   cryptoFeeAcc?: number
 }
 
-export const CASH_APP_PROCESSING_FEE_PERCENT = 8
+export const CASH_APP_PROCESSING_FEE_PERCENT = 5
+
+const normalizePercent = (value: unknown) =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0
+    ? value
+    : undefined
+
+export const formatProcessingFeePercent = (percent: number) => {
+  const normalizedPercent = Number.isInteger(percent)
+    ? String(percent)
+    : percent.toFixed(2).replace(/\.?0+$/, '')
+
+  return `${normalizedPercent}%`
+}
+
+export const getCashAppProcessingFeePercent = (paymentMethodsSetting: unknown) => {
+  if (!paymentMethodsSetting || typeof paymentMethodsSetting !== 'object') {
+    return undefined
+  }
+
+  const methods = (paymentMethodsSetting as {methods?: unknown}).methods
+  if (!Array.isArray(methods)) {
+    return undefined
+  }
+
+  const cashAppMethod = methods.find(
+    (method): method is {id?: unknown; transactionFee?: unknown} =>
+      !!method &&
+      typeof method === 'object' &&
+      (method as {id?: unknown}).id === 'cash_app',
+  )
+
+  return normalizePercent(cashAppMethod?.transactionFee)
+}
 
 const normalizeMoneyCents = (value?: number) =>
   Number.isFinite(value) ? Math.max(0, value ?? 0) : 0
@@ -164,6 +199,7 @@ export const computeProcessingFeeCents = ({
   enabled,
   paymentMethod,
   percent,
+  cashAppPercent,
   shippingCents = 0,
 }: ComputeProcessingFeeCentsArgs) => {
   if (!isProcessingFeePaymentMethod(paymentMethod)) {
@@ -172,7 +208,9 @@ export const computeProcessingFeeCents = ({
 
   const normalizedSubtotalCents = Math.max(0, discountedSubtotalCents)
   const effectivePercent =
-    paymentMethod === 'cash_app' ? CASH_APP_PROCESSING_FEE_PERCENT : percent
+    paymentMethod === 'cash_app'
+      ? normalizePercent(cashAppPercent) ?? CASH_APP_PROCESSING_FEE_PERCENT
+      : percent
   const normalizedPercent =
     Number.isFinite(effectivePercent) && effectivePercent > 0
       ? effectivePercent / 100
@@ -195,6 +233,7 @@ export const computePersistedOrderPaymentAmounts = ({
   shippingCents = 0,
   processingFeeEnabled = false,
   processingFeePercent = 0,
+  cashAppPercent,
   cryptoFeeEnabled = false,
   cryptoFeeAcc = 1,
 }: ComputePersistedOrderPaymentAmountsArgs) => {
@@ -203,6 +242,7 @@ export const computePersistedOrderPaymentAmounts = ({
     enabled: processingFeeEnabled,
     paymentMethod,
     percent: processingFeePercent,
+    cashAppPercent,
     shippingCents,
   })
 

@@ -76,10 +76,10 @@ export function CashBackRedemption({
 
       <div className='mt-2 flex items-end justify-between gap-3'>
         <div className='min-w-0'>
-          <p className='text-xs text-foreground/80 font-okxs font-normal tracking-wide'>
+          {/*<p className='text-xs text-foreground/80 font-okxs font-normal tracking-wide'>
             {appliedBalanceCents > 0 &&
               `Applied: -$${formatPrice(appliedBalanceCents)}`}
-          </p>
+          </p>*/}
           {/*'Complete orders to build up cash back.'*/}
           {/* {!canRedeem ? ( */}
           {/*   <p className='text-xs text-muted-foreground'> */}
@@ -117,7 +117,7 @@ const UseRewardsPoints = ({
       {isEnabled && canRedeem ? (
         <div className='flex items-center justify-center space-x-1'>
           <span>Rewards Points applied</span>
-          <Icon name='check' className='text-emerald-500 size-3.5' />
+          <Icon name='checked' className='text-white size-3.5' />
         </div>
       ) : (
         `Use rewards ($${formatPrice(available)})`

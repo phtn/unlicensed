@@ -29,7 +29,7 @@ export const NewHome = () => {
           // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775501420/banner-desktop_tf555y.webp'
           // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1772552114/hero-image_ivcsbu.webp'
           alt='Rapid Fire featured cannabis products'
-          className='hidden object-cover sm:block h-full w-full grayscale'
+          className='hidden object-cover sm:block h-full w-full'
         />
       </div>
 
