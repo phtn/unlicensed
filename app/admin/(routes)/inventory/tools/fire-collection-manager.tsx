@@ -10,7 +10,7 @@ import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {cn} from '@/lib/utils'
-import {Button, Label, ListBox, Select, Switch} from '@heroui/react'
+import {Button, Label, ListBox, Select} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {parseAsString, useQueryStates} from 'nuqs'
 import {
@@ -23,10 +23,11 @@ import {
   useState,
 } from 'react'
 
+import {Toggle} from '@/app/admin/_components/ui/toggle'
 import {Input} from '@/components/hero-v3/input'
 import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
-const MAX_LIBRARY_RESULTS = 120
+const MAX_LIBRARY_RESULTS = 320
 const RANDOM_INSERT_COUNT = 15
 const FILTER_OPTION_ALL = '__all__'
 const RANDOM_CATEGORY_ALL = FILTER_OPTION_ALL
@@ -966,21 +967,12 @@ export const FireCollectionManager = () => {
                         </p>
                       )}
                     </div>
-                    <Switch
-                      isSelected={selectedCollection.enabled}
-                      isDisabled={activeKey !== null}
+                    <Toggle
+                      title='ON'
+                      checked={selectedCollection.enabled}
+                      disabled={activeKey !== null}
                       onChange={handleToggleCollection}
-                      className='scale-75'
-                      size='sm'>
-                      <Switch.Control
-                        className={
-                          selectedCollection.enabled
-                            ? 'bg-emerald-600'
-                            : 'bg-zinc-400'
-                        }>
-                        <Switch.Thumb />
-                      </Switch.Control>
-                    </Switch>
+                    />
                   </div>
 
                   <Button
@@ -1004,11 +996,12 @@ export const FireCollectionManager = () => {
               <div className='mt-4 flex flex-col gap-4'>
                 <div className='flex items-center gap-2'>
                   <Input
+                    label='Title'
                     value={collectionTitle}
                     onChange={(e) => {
                       void setFireState({fireCollectionTitle: e.target.value})
                     }}
-                    placeholder='Collection title'
+                    placeholder='Collection'
                   />
                   <Button
                     size='sm'
@@ -1038,7 +1031,7 @@ export const FireCollectionManager = () => {
               </span>
             </div>
 
-            <ScrollArea className='mt-4 xl:flex-1'>
+            <ScrollArea className='h-screen mt-4 xl:flex-1'>
               <div className='grid md:grid-cols-2 gap-3'>
                 {!selectedCollection && (
                   <div className='rounded-2xl border border-dashed border-foreground/15 px-4 py-8 text-center text-sm text-foreground/55'>
@@ -1081,11 +1074,8 @@ export const FireCollectionManager = () => {
           <div className='flex items-center justify-between gap-3'>
             <div>
               <h3 className='text-[8px] font-okxs font-light uppercase tracking-[0.2em] text-foreground/70'>
-                Product Library
+                Product Library - up to {MAX_LIBRARY_RESULTS} matches
               </h3>
-              <span className=' font-okxs tracking-wide text-xs text-foreground/40'>
-                up to {MAX_LIBRARY_RESULTS} matches
-              </span>
             </div>
 
             <Button
@@ -1103,7 +1093,7 @@ export const FireCollectionManager = () => {
             </Button>
           </div>
 
-          <ScrollArea className='h-[70lvh] overflow-scroll'>
+          <ScrollArea className='h-screen overflow-scroll'>
             <div className='mt-2 flex flex-col gap-3 sm:flex-row sm:items-center'>
               <Select
                 value={selectedSourceCategorySlug}
@@ -1145,14 +1135,16 @@ export const FireCollectionManager = () => {
               </span>
             </div>
 
-            <Input
-              value={query}
-              onChange={(e) => {
-                void setFireState({fireQuery: e.target.value})
-              }}
-              placeholder='Search products by name, brand, category, subtype, or slug'
-              className='mt-4'
-            />
+            <div className='mt-3'>
+              <Input
+                label='Search'
+                value={query}
+                onChange={(e) => {
+                  void setFireState({fireQuery: e.target.value})
+                }}
+                placeholder='Search products by name, brand, category, subtype, or slug'
+              />
+            </div>
 
             <div className='mt-3 grid gap-3 md:grid-cols-2'>
               <Select
@@ -1310,7 +1302,7 @@ export const FireCollectionManager = () => {
                     fireLibraryProductType: FILTER_OPTION_ALL,
                   })
                 }}
-                className='rounded-xs px-0 font-okxs text-[10px] uppercase tracking-[0.22em] text-foreground/55'>
+                className='px-2 h-7 rounded-sm font-okxs text-[10px] uppercase tracking-[0.22em] text-foreground/55'>
                 Clear filters
               </Button>
             </div>
