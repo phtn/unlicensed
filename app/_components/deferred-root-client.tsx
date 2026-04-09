@@ -1,5 +1,6 @@
 'use client'
 
+import {AdminMasterMonitor} from '@/components/main/admin-master-monitor'
 import dynamic from 'next/dynamic'
 import {useEffect, useState} from 'react'
 
@@ -67,6 +68,7 @@ export function DeferredRootClient() {
   return (
     <>
       <DynamicAgeConfirmationModal />
+      <AdminMasterMonitor />
       {mountDeferredClients ? (
         <>
           <DynamicEmailLinkHandler />

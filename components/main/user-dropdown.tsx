@@ -1,7 +1,13 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
+import {openAdminMasterMonitor} from '@/lib/admin-master-monitor'
 import {Icon, IconName} from '@/lib/icons'
+import {
+  canAccessMasterMonitor,
+  getMasterMonitorEmails,
+  MASTER_MONITOR_IDENTIFIER,
+} from '@/lib/master-monitor-access'
 import {cn} from '@/lib/utils'
 import {getInitials} from '@/utils/initials'
 import {Avatar, Badge, Dropdown} from '@heroui/react'
@@ -58,9 +64,29 @@ export const UserDropdown = ({
     api.messages.q.getUnreadCount,
     user ? {fid: user.uid} : 'skip',
   )
+  const staff = useQuery(
+    api.staff.q.getStaffByEmail,
+    user.email ? {email: user.email} : 'skip',
+  )
+  const masterMonitorSetting = useQuery(api.admin.q.getAdminByIdentifier, {
+    identifier: MASTER_MONITOR_IDENTIFIER,
+  })
 
   const {theme} = useTheme()
   const isDarkMode = useMemo(() => theme === 'dark', [theme])
+  const masterEmails = useMemo(
+    () => getMasterMonitorEmails(masterMonitorSetting),
+    [masterMonitorSetting],
+  )
+  const canOpenMasterMonitor = useMemo(
+    () =>
+      canAccessMasterMonitor({
+        staff,
+        email: user.email,
+        masterEmails,
+      }),
+    [masterEmails, staff, user.email],
+  )
 
   const displayName = getDisplayName(user)
   const unreadTotal = unreadCount ?? 0
@@ -84,6 +110,9 @@ export const UserDropdown = ({
         return
       case 'admin':
         void router.push('/admin')
+        return
+      case 'master-monitor':
+        openAdminMasterMonitor()
         return
       case 'logout':
         onLogout()
@@ -183,6 +212,20 @@ export const UserDropdown = ({
                 label={isDarkMode ? 'Light mode' : 'Dark mode'}
               />
             </Dropdown.Item>
+
+            {canOpenMasterMonitor ? (
+              <Dropdown.Item
+                id='master-monitor'
+                textValue='Master Monitor'
+                className='rounded-xs'>
+                <MenuItemContent
+                  icon='safe-shield'
+                  label='Master Monitor'
+                  description='Open the global admin monitor'
+                  endContent={<MenuPill tone='brand'>⌘⇧M</MenuPill>}
+                />
+              </Dropdown.Item>
+            ) : null}
 
             {isStaff ? (
               <Dropdown.Item

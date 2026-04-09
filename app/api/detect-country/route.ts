@@ -1,17 +1,7 @@
-import {api} from '@/convex/_generated/api'
-import {getGeo} from '@/lib/ipapi'
 import {type DetectedUserLocation} from '@/lib/user-location'
-import {cleanIpAddress, getClientIp} from '@/utils/fingerprint'
-import {ConvexHttpClient} from 'convex/browser'
 import {NextRequest, NextResponse} from 'next/server'
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/reverse'
-
-const getConvexClient = () => {
-  const url = process.env.NEXT_PUBLIC_CONVEX_URL
-  if (!url) return null
-  return new ConvexHttpClient(url)
-}
 
 const getCountryName = (countryCode: string) => {
   try {
@@ -121,71 +111,6 @@ function getHeaderLocation(request: NextRequest): DetectedUserLocation | null {
   }
 }
 
-async function getIpLocation(
-  request: NextRequest,
-): Promise<DetectedUserLocation | null> {
-  const ipAddress = cleanIpAddress(getClientIp(request))
-  if (!ipAddress || ipAddress === 'unknown') {
-    return null
-  }
-
-  const client = getConvexClient()
-  let ipapiEnabled = Boolean(
-    process.env.IPAPI_API_KEY && process.env.IPAPI_PRO_URL,
-  )
-
-  if (client) {
-    try {
-      ipapiEnabled = await client.query(
-        api.admin.q.getIpapiGeolocationEnabled,
-        {},
-      )
-    } catch (error) {
-      console.warn(
-        'Failed to read IPAPI geolocation setting for detect-country route:',
-        error,
-      )
-    }
-  }
-
-  const checkConvexGeo = client
-    ? async (ip: string) => {
-        const result = await client.query(api.logs.q.getGeoByIp, {
-          ipAddress: ip,
-        })
-        if (!result?.country && !result?.city) {
-          return null
-        }
-
-        return {
-          country: result.country ?? '',
-          city: result.city ?? '',
-        }
-      }
-    : undefined
-
-  const geo = await getGeo(ipAddress, checkConvexGeo, ipapiEnabled)
-  if (!geo) {
-    return null
-  }
-
-  const country = geo.country.trim()
-  const city = geo.city.trim()
-
-  if (!country && !city) {
-    return null
-  }
-
-  return {
-    country: country || null,
-    countryCode: geo.countryCode ?? null,
-    city: city || null,
-    latitude: geo.latitude ?? null,
-    longitude: geo.longitude ?? null,
-    source: 'ip',
-  }
-}
-
 async function detectLocation(
   request: NextRequest,
 ): Promise<DetectedUserLocation> {
@@ -204,11 +129,6 @@ async function detectLocation(
   const headerLocation = getHeaderLocation(request)
   if (headerLocation) {
     return headerLocation
-  }
-
-  const ipLocation = await getIpLocation(request)
-  if (ipLocation) {
-    return ipLocation
   }
 
   return unknownLocation()
