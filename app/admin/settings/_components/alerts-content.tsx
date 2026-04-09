@@ -20,9 +20,10 @@ import {
   TONE_OSCILLATORS,
 } from '@/lib/admin-alerts'
 import {Icon} from '@/lib/icons'
-import {Button, Card, Switch} from '@heroui/react'
+import {Button, Card} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useCallback, useEffect, useMemo, useState} from 'react'
+import {Toggle} from '../../_components/ui/toggle'
 import {ContentHeader, PrimaryButton} from './components'
 
 const ALERT_LABELS: Record<AdminAlertEventKey, string> = {
@@ -258,15 +259,11 @@ export const AlertsContent = () => {
         title={
           <div className='flex items-center space-x-4'>
             <span>Admin Alerts</span>
-            <Switch
-              isSelected={isEnabled}
+            <Toggle
+              title='Enable Audio'
+              checked={isEnabled}
               onChange={() => setIsEnabled(!isEnabled)}
-              size='sm'>
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-              <Switch.Content>Enable Audio</Switch.Content>
-            </Switch>
+            />
           </div>
         }
         description='Configure Tone.js audio alerts for new orders, completed payments, new user sign-ups, and new customer chat messages.'>
@@ -291,15 +288,11 @@ export const AlertsContent = () => {
                   <h3 className='text-base font-semibold'>
                     {ALERT_LABELS[key]}
                   </h3>
-                  <Switch
-                    isSelected={draft.enabled}
+                  <Toggle
+                    title={'On'}
+                    checked={draft.enabled}
                     onChange={(value) => setDraftField(key, 'enabled', value)}
-                    size='sm'>
-                    <Switch.Control>
-                      <Switch.Thumb />
-                    </Switch.Control>
-                    <Switch.Content>On</Switch.Content>
-                  </Switch>
+                  />
                 </div>
 
                 <Input

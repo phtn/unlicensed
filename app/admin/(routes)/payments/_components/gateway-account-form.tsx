@@ -310,7 +310,7 @@ export const GatewayAccountForm = ({
                 {(errorMessage || status === 'success') && (
                   <div className='flex flex-col sm:flex-row gap-2 sm:gap-3 font-mono text-xs uppercase tracking-widest'>
                     {errorMessage && (
-                      <div className='rounded-full bg-danger/9 border border-danger/20 text-danger px-2 sm:px-3 py-1 text-center sm:text-left wrap-break-words'>
+                      <div className='rounded-full bg-danger/9 border border-danger-soft-hover text-danger px-2 sm:px-3 py-1 text-center sm:text-left wrap-break-words'>
                         {errorMessage}
                       </div>
                     )}
@@ -464,7 +464,7 @@ export const GatewayAccountForm = ({
                   )}
                   <Button
                     type='submit'
-                    className='w-full sm:w-auto sm:min-w-32 font-polysans font-light disabled:cursor-not-allowed disabled:bg-sidebar/40 disabled:opacity-80 disabled:text-foreground/40 touch-manipulation'
+                    className='w-full sm:w-auto sm:min-w-32 font-clash font-light bg-polygon disabled:cursor-not-allowed disabled:bg-sidebar/40 disabled:opacity-80 disabled:text-foreground/40 touch-manipulation'
                     size='lg'
                     isDisabled={
                       useStore(form.store, (state) => state.isSubmitting) ||

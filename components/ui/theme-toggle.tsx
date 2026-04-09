@@ -32,7 +32,7 @@ export const ThemeToggle = ({variant = 'icon'}: ThemeToggleProps) => {
         variant='tertiary'
         onPress={handleToggle}
         className={cn(
-          'group w-40 items-center justify-start space-x-3 rounded-sm bg-transparent py-2 ps-3 text-sm',
+          'group w-40 items-center justify-start rounded-sm bg-transparent py-2 ps-3 text-sm',
         )}>
         <Icon
           name='toggle-theme'

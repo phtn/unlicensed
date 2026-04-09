@@ -28,14 +28,16 @@ const fetchHaltPass = _convexUrl
 
 export default async function RootPage() {
   if (fetchHaltPass) {
-    try {
-      const haltPass = await fetchHaltPass()
+    let haltPass: Awaited<ReturnType<typeof fetchHaltPass>> | null = null
 
-      if (!isAccessCodeEnabled(haltPass)) {
-        redirect('/lobby')
-      }
+    try {
+      haltPass = await fetchHaltPass()
     } catch (error) {
       console.error('Failed to load halt gate config:', error)
+    }
+
+    if (haltPass && !isAccessCodeEnabled(haltPass)) {
+      redirect('/lobby')
     }
   }
 

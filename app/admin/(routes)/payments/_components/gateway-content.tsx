@@ -4,6 +4,7 @@ import {useAdminTabId} from '@/app/admin/_components/use-admin-tab'
 import {api} from '@/convex/_generated/api'
 import type {GatewayId} from '@/lib/paygate/gateway-config'
 import {useMutation, useQuery} from 'convex/react'
+import {useRouter} from 'next/navigation'
 import {Suspense, useCallback} from 'react'
 import {GatewayAccountForm} from './gateway-account-form'
 import {GatewayAccountsList} from './gateway-accounts-list'
@@ -15,6 +16,7 @@ interface GatewayContentProps {
 
 const GatewayContentInner = ({gateway, basePath}: GatewayContentProps) => {
   const [tabId, setTabId, id, setId] = useAdminTabId()
+  const router = useRouter()
 
   const gatewayDoc = useQuery(api.gateways.q.getByGateway, {gateway})
   const editingAccount = useQuery(
@@ -27,10 +29,17 @@ const GatewayContentInner = ({gateway, basePath}: GatewayContentProps) => {
     setId(null)
   }, [setTabId, setId])
 
-  const handleEdit = (hexAddress: string) => {
-    setId(hexAddress)
-    setTabId('edit')
-  }
+  const handleEdit = useCallback(
+    (hexAddress: string) => {
+      const params = new URLSearchParams({
+        tabId: 'edit',
+        id: hexAddress,
+      })
+
+      router.push(`${basePath}?${params.toString()}`)
+    },
+    [basePath, router],
+  )
 
   const handleCancel = () => {
     setTabId(null)

@@ -6,9 +6,10 @@ import {useAuthCtx} from '@/ctx/auth'
 import {useMobile} from '@/hooks/use-mobile'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Switch} from '@heroui/react'
+import {Button} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useRef, useState, ViewTransition} from 'react'
+import {Toggle} from '../../_components/ui/toggle'
 import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
 
 function getHaltPassConfig(
@@ -135,17 +136,11 @@ export const AccessContent = () => {
       </ContentHeader>
 
       <div className='max-w-lg rounded-2xl bg-default-100/50 px-4 py-3 dark:bg-default-100/30'>
-        <Switch
-          isSelected={isEnabled}
+        <Toggle
+          title='Require access code'
+          checked={isEnabled}
           onChange={() => setIsEnabled(!isEnabled)}
-          size='sm'>
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
-          <Switch.Content>
-            <span>Require access code</span>
-          </Switch.Content>
-        </Switch>
+        />
       </div>
 
       <ul className='flex flex-col gap-2 max-w-lg' role='list'>
@@ -158,6 +153,7 @@ export const AccessContent = () => {
               )}
               role='listitem'>
               <Input
+                label={`Pass Code ${index + 1}`}
                 placeholder='PIN code'
                 maxLength={6}
                 minLength={6}
@@ -173,7 +169,7 @@ export const AccessContent = () => {
                 size='sm'
                 variant='danger'
                 onPress={() => handleDelete(index)}
-                className='mx-2'
+                className='size-8 aspect-square rounded-md'
                 aria-label={`Delete pass ${index + 1}`}>
                 <Icon name='trash' className='size-4 dark:text-white' />
               </Button>
@@ -183,7 +179,11 @@ export const AccessContent = () => {
       </ul>
 
       <div className='flex flex-wrap items-center gap-3'>
-        <Button size='sm' variant='secondary' onPress={handleAdd}>
+        <Button
+          size='sm'
+          variant='primary'
+          onPress={handleAdd}
+          className='bg-light-brand'>
           <Icon name='plus' className='size-4 m-auto' />
           Add Passcode
         </Button>

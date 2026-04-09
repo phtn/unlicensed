@@ -3,10 +3,12 @@
 import {MainWrapper} from '@/app/admin/_components/main-wrapper'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
-import {Button, CheckboxGroup} from '@heroui/react'
+import {Button, RadioGroup} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {Activity, useCallback} from 'react'
+import {Activity, useCallback, useEffect} from 'react'
 import {PayCard} from './card-item'
+
+const SUPPORTED_GATEWAYS = ['paygate', 'paylex', 'rampex'] as const
 
 export const Content = () => {
   const gateways = useQuery(api.gateways.q.list)
@@ -25,15 +27,43 @@ export const Content = () => {
       ? (paymentGatewaySetting.value.defaultGateway as string)
       : undefined
 
-  const selectedGateways =
-    defaultGateway && ['paygate', 'paylex', 'rampex'].includes(defaultGateway)
-      ? [defaultGateway]
-      : []
+  const fallbackGateway =
+    gateways?.find(
+      (gateway): gateway is (typeof gateways)[number] & {
+        gateway: (typeof SUPPORTED_GATEWAYS)[number]
+      } =>
+        !!gateway.gateway &&
+        SUPPORTED_GATEWAYS.includes(
+          gateway.gateway as (typeof SUPPORTED_GATEWAYS)[number],
+        ),
+    )?.gateway ?? ''
+
+  const selectedGateway =
+    defaultGateway && SUPPORTED_GATEWAYS.includes(defaultGateway as never)
+      ? defaultGateway
+      : fallbackGateway
+
+  useEffect(() => {
+    if (gateways === undefined || paymentGatewaySetting === undefined) return
+    if (!fallbackGateway) return
+    if (defaultGateway && SUPPORTED_GATEWAYS.includes(defaultGateway as never)) {
+      return
+    }
+
+    void updatePaymentGatewayDefault({
+      defaultGateway: fallbackGateway,
+    })
+  }, [
+    defaultGateway,
+    fallbackGateway,
+    gateways,
+    paymentGatewaySetting,
+    updatePaymentGatewayDefault,
+  ])
 
   const handleDefaultChange = useCallback(
-    (selected: string[]) => {
-      const gateway = selected[selected.length - 1]
-      if (gateway && ['paygate', 'paylex', 'rampex'].includes(gateway)) {
+    (gateway: string) => {
+      if (gateway && SUPPORTED_GATEWAYS.includes(gateway as never)) {
         void updatePaymentGatewayDefault({
           defaultGateway: gateway as 'paygate' | 'paylex' | 'rampex',
         })
@@ -49,14 +79,17 @@ export const Content = () => {
   return (
     <MainWrapper className='border-t-0'>
       <div className='space-y-6 w-full'>
-        <CheckboxGroup
-          value={selectedGateways}
+        <RadioGroup
+          aria-label='Default payment gateway'
+          name='default-payment-gateway'
+          variant='primary'
+          value={selectedGateway}
           onChange={handleDefaultChange}
           className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-4 md:px-0'>
           {gateways?.map((gateway) => (
             <PayCard
               key={gateway._id}
-              checkboxValue={gateway.gateway}
+              radioValue={gateway.gateway}
               title={gateway.label ?? gateway.gateway}
               description={gateway.description ?? 'Multi-provider'}
               isDefault={gateway.gateway === defaultGateway}
@@ -68,7 +101,7 @@ export const Content = () => {
               }
             />
           ))}
-        </CheckboxGroup>
+        </RadioGroup>
         <Activity mode={!gateways ? 'visible' : 'hidden'}>
           <Icon name='spinner-dots' />
         </Activity>

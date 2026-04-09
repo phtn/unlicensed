@@ -2,12 +2,12 @@ import {SectionHeader} from '@/components/ui/section-header'
 import {Sqrcon} from '@/components/ui/sqrcon'
 import {GatewayWallet} from '@/convex/gateways/d'
 import {Icon} from '@/lib/icons'
-import {Card, Checkbox} from '@heroui/react'
+import {Card, Radio} from '@heroui/react'
 import Link from 'next/link'
 import {ViewTransition} from 'react'
 
 interface PayCardProps {
-  checkboxValue?: string
+  radioValue?: string
   title?: string
   description?: string
   href?: string
@@ -16,7 +16,7 @@ interface PayCardProps {
 }
 
 export const PayCard = ({
-  checkboxValue,
+  radioValue,
   isDefault,
   title,
   description,
@@ -24,10 +24,10 @@ export const PayCard = ({
   accounts,
 }: PayCardProps) => {
   return (
-    <Card className='p-0 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-table/30 dark:bg-dark-table/40 transition-colors cursor-pointer min-h-32 border border-foreground/30'>
+    <Card className='relative p-0 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-table/30 dark:bg-dark-table/40 transition-colors cursor-pointer min-h-32 border border-foreground/30'>
       <Card.Content className='p-4 flex flex-col items-start space-y-3'>
-        <div className='flex w-full items-start justify-between gap-3'>
-          <div className='flex min-w-0 items-center space-x-3'>
+        <div className='flex w-full items-start gap-3'>
+          <div className='flex min-w-0 items-center space-x-3 pe-10'>
             <Sqrcon id='gateway-accounts'>
               <span className='text-lg font-polysans text-background'>
                 {accounts?.length ?? 0}
@@ -35,12 +35,19 @@ export const PayCard = ({
             </Sqrcon>
             <SectionHeader title={title} description={description} />
           </div>
-          {checkboxValue != null && (
-            <Checkbox
-              value={checkboxValue}
+          {radioValue != null && (
+            <Radio
+              value={radioValue}
               aria-label={`Set ${title ?? 'gateway'} as default`}
-              className='shrink-0'
-            />
+              className='absolute top-2 right-2 z-10'>
+              <Radio.Control className='flex size-5 items-center justify-center rounded-full border border-foreground/30 bg-background/80 shadow-sm backdrop-blur-sm'>
+                <Radio.Indicator className='flex size-full items-center justify-center rounded-full bg-indigo-500 text-white'>
+                  {({isSelected}) =>
+                    isSelected ? <Icon name='check' className='size-3' /> : null
+                  }
+                </Radio.Indicator>
+              </Radio.Control>
+            </Radio>
           )}
         </div>
       </Card.Content>

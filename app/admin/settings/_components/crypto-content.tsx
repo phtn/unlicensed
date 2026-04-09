@@ -7,7 +7,6 @@ import {
 import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {Switch} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {
   startTransition,
@@ -16,6 +15,7 @@ import {
   useState,
   ViewTransition,
 } from 'react'
+import {Toggle} from '../../_components/ui/toggle'
 
 const CRYPTO_WALLET_IDENTIFIER = 'crypto_wallet_addresses'
 
@@ -237,10 +237,10 @@ function CryptoWalletFormInner({
         {NETWORKS.map((network) => (
           <div
             key={network.key}
-            className='rounded-lg border border-default-200 bg-content1 p-4'>
+            className='rounded-lg border border-default-200 dark:bg-dark-tabled p-4'>
             <div className='flex items-start justify-between gap-4'>
-              <div className='w-fit'>
-                <div className='text-sm font-clash font-semibold tracking-wider text-foreground'>
+              <div className='w-fit space-x-2'>
+                <div className='text-sm font-clash font-semibold tracking-wider text-foreground space-y-2'>
                   {network.label}{' '}
                   {(network.label === 'Sepolia' ||
                     network.label === 'Amoy') && (
@@ -253,17 +253,12 @@ function CryptoWalletFormInner({
                   {network.shortLabel} network address
                 </div>
               </div>
-              <Switch
-                className='shrink-0'
-                isSelected={wallets[network.key].active}
+              <Toggle
+                title='Enabled'
+                checked={wallets[network.key].active}
                 onChange={(active) => handleActiveChange(network.key, active)}
-                isDisabled={!configLoaded}
-                size='sm'
-                aria-label={`Toggle ${network.label} wallet`}>
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-              </Switch>
+                disabled={!configLoaded}
+              />
             </div>
             <Input
               label={`${network.label} wallet address`}

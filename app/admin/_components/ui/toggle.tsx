@@ -5,13 +5,23 @@ interface ToggleProps {
   title: string
   checked: boolean
   onChange?: (checked: boolean) => void
+  disabled?: boolean
+  id?: string
 }
-export const Toggle = ({title, checked, onChange}: ToggleProps) => {
+export const Toggle = ({
+  title,
+  checked,
+  onChange,
+  disabled,
+  id,
+}: ToggleProps) => {
   return (
     <Switch
+      id={id}
       aria-label={`Toggle ${title}`}
       size='sm'
       isSelected={checked}
+      isDisabled={disabled}
       onChange={onChange ? onChange : (v) => !v}
       className='scale-80'>
       {({isSelected}) => (

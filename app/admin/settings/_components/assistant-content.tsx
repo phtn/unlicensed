@@ -3,9 +3,10 @@
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {parseAssistantConfig} from '@/lib/assistant/config'
-import {Button, Switch, TextArea} from '@heroui/react'
+import {Button, TextArea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {Activity, startTransition, useCallback, useState} from 'react'
+import {Toggle} from '../../_components/ui/toggle'
 import {ContentHeader, PrimaryButton} from './components'
 
 export const AssistantContent = () => {
@@ -178,16 +179,13 @@ function AIAssistantFormInner({
                 Allow customers to chat with the assistant.
               </span>
             </div>
-            <Switch
-              isSelected={isActive}
+            <Toggle
+              title={'Active'}
+              checked={isActive}
               onChange={setIsActive}
-              isDisabled={!configLoaded}
-              size='sm'
-              aria-label='Active'>
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-            </Switch>
+              disabled={!configLoaded}
+              aria-label='Active'
+            />
           </div>
           <div className='hidden _flex items-center justify-between gap-4'>
             <div className='flex flex-col gap-1'>
@@ -199,16 +197,12 @@ function AIAssistantFormInner({
                 answers and auto-linked product/category mentions.
               </span>
             </div>
-            <Switch
-              isSelected={catalogSupportEnabled}
+            <Toggle
+              title='Catalog links and knowledge'
+              checked={catalogSupportEnabled}
               onChange={setCatalogSupportEnabled}
-              isDisabled={!configLoaded}
-              size='sm'
-              aria-label='Catalog links and knowledge'>
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-            </Switch>
+              disabled={!configLoaded}
+            />
           </div>
         </div>
       </div>

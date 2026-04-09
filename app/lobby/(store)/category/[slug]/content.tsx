@@ -1,21 +1,21 @@
 'use client'
 
-import {CategoryProductsSection} from '@/app/lobby/(store)/category/[slug]/category-products-section'
-import {FlowerTierCarousels} from '@/app/lobby/(store)/category/[slug]/flower-tier-carousels'
-import {StoreProduct} from '@/app/types'
-import {Tag} from '@/components/base44/tag'
-import {Title} from '@/components/base44/title'
-import {Loader} from '@/components/expermtl/loader'
-import {api} from '@/convex/_generated/api'
-import {useToggle} from '@/hooks/use-toggle'
-import {Icon} from '@/lib/icons'
-import {cn} from '@/lib/utils'
-import {Button} from '@heroui/react'
-import {useQuery} from 'convex/react'
-import {AnimatePresence, motion, useReducedMotion} from 'motion/react'
+import { CategoryProductsSection } from '@/app/lobby/(store)/category/[slug]/category-products-section'
+import { FlowerTierCarousels } from '@/app/lobby/(store)/category/[slug]/flower-tier-carousels'
+import { StoreProduct } from '@/app/types'
+import { Tag } from '@/components/base44/tag'
+import { Title } from '@/components/base44/title'
+import { Loader } from '@/components/expermtl/loader'
+import { api } from '@/convex/_generated/api'
+import { useToggle } from '@/hooks/use-toggle'
+import { Icon } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+import { Button } from '@heroui/react'
+import { useQuery } from 'convex/react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import Link from 'next/link'
-import {parseAsString, useQueryState} from 'nuqs'
-import {useCallback, useMemo, useTransition, ViewTransition} from 'react'
+import { parseAsString, useQueryState } from 'nuqs'
+import { useCallback, useMemo, useTransition, ViewTransition } from 'react'
 
 interface ContentProps {
   slug: string
@@ -456,11 +456,11 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                 Browse Category
               </h2>
             </div>
-            <div className='w-full md:w-fit flex items-center justify-between gap-1 md:gap-2'>
+            <div className='grid w-full grid-cols-1 gap-2 min-[360px]:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] xl:w-fit xl:auto-cols-max xl:grid-flow-col'>
               <Link
                 href={`/lobby/deals`}
                 prefetch
-                className='bg-terpenes opacity-100 text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tight md:tracking-normal'>
+                className='flex min-w-0 items-center justify-center bg-terpenes px-4 py-4 text-center text-sm font-medium capitalize tracking-tight text-white opacity-100 sm:px-5 sm:py-5 sm:text-base lg:text-lg'>
                 <span className='drop-shadow-xs'>Deals</span>
               </Link>
               {categories
@@ -470,8 +470,10 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                     key={cat._id}
                     prefetch
                     href={`/lobby/category/${cat.slug}`}
-                    className='portrait:w-full whitespace-nowrap dark:bg-white opacity-100 dark:text-dark-gray hover:bg-brand dark:hover:text-white bg-foreground hover:text-white text-white font-medium px-5 py-5 text-base lg:text-lg capitalize tracking-tighter'>
-                    <span className='drop-shadow-xs'>{cat.name}</span>
+                    className='flex min-w-0 items-center justify-center bg-foreground px-4 py-4 text-center text-sm font-medium capitalize tracking-tight text-white opacity-100 hover:bg-brand hover:text-white dark:bg-white dark:text-dark-gray dark:hover:text-white sm:px-5 sm:py-5 sm:text-base lg:text-lg'>
+                    <span className='max-w-full wrap-break-word whitespace-normal drop-shadow-xs'>
+                      {cat.name}
+                    </span>
                   </Link>
                 ))}
             </div>

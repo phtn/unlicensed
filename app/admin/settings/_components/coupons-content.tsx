@@ -5,9 +5,10 @@ import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import type {Coupon, CouponDiscountType} from '@/convex/coupons/d'
 import {useAuthCtx} from '@/ctx/auth'
-import {Button, Card, Chip, Modal, Switch, TextArea} from '@heroui/react'
+import {Button, Card, Chip, Label, Modal, TextArea} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {startTransition, useEffect, useMemo, useState} from 'react'
+import {Toggle} from '../../_components/ui/toggle'
 import {ContentHeader, PrimaryButton} from './components'
 
 type CouponFormState = {
@@ -675,49 +676,62 @@ export const CouponsContent = () => {
                   />
                 </div>
 
-                <TextArea
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm((current) => ({
-                      ...current,
-                      description: e.target.value,
-                    }))
-                  }
-                  rows={2}
-                  placeholder='Description (optional)'
-                />
-                <TextArea
-                  value={form.notes}
-                  onChange={(e) =>
-                    setForm((current) => ({...current, notes: e.target.value}))
-                  }
-                  rows={2}
-                  placeholder='Internal notes (optional)'
-                />
-
+                <div className='flex items-center justify-start space-x-4 py-4'>
+                  <div className='flex flex-col space-y-2 text-left'>
+                    <Label htmlFor='description'>Description (optional)</Label>
+                    <TextArea
+                      id='description'
+                      value={form.description}
+                      onChange={(e) =>
+                        setForm((current) => ({
+                          ...current,
+                          description: e.target.value,
+                        }))
+                      }
+                      rows={2}
+                      placeholder='Description (optional)'
+                      className='bg-dark-table/50 rounded-md'
+                    />
+                  </div>
+                  <div className='flex flex-col space-y-2'>
+                    <Label htmlFor='notes'>Internal notes (optional)</Label>
+                    <TextArea
+                      id='notes'
+                      value={form.notes}
+                      onChange={(e) =>
+                        setForm((current) => ({
+                          ...current,
+                          notes: e.target.value,
+                        }))
+                      }
+                      rows={2}
+                      placeholder='Internal notes (optional)'
+                      className='bg-dark-table/50 rounded-md'
+                    />
+                  </div>
+                </div>
                 <div className='flex flex-wrap gap-6'>
-                  <Switch
-                    isSelected={form.enabled}
-                    onChange={(value) =>
-                      setForm((current) => ({...current, enabled: value}))
-                    }>
-                    <Switch.Control>
-                      <Switch.Thumb />
-                    </Switch.Control>
-                    <Switch.Content>Enabled</Switch.Content>
-                  </Switch>
-                  <Switch
-                    isSelected={form.stackable}
-                    onChange={(value) =>
-                      setForm((current) => ({...current, stackable: value}))
-                    }>
-                    <Switch.Control>
-                      <Switch.Thumb />
-                    </Switch.Control>
-                    <Switch.Content>
-                      Stackable with other discounts
-                    </Switch.Content>
-                  </Switch>
+                  <div className='flex items-center space-x-2'>
+                    <Label htmlFor='enabled'>Enabled</Label>
+                    <Toggle
+                      id='enabled'
+                      title='Enabled'
+                      checked={form.enabled}
+                      onChange={(value) =>
+                        setForm((current) => ({...current, enabled: value}))
+                      }
+                    />
+                  </div>
+                  <div className='flex items-center space-x-2'>
+                    <Label htmlFor='stackable'>Stackable</Label>
+                    <Toggle
+                      title='Stackable'
+                      checked={form.stackable}
+                      onChange={(value) =>
+                        setForm((current) => ({...current, stackable: value}))
+                      }
+                    />
+                  </div>
                 </div>
 
                 {formError && (
@@ -731,7 +745,8 @@ export const CouponsContent = () => {
                 <Button
                   variant='primary'
                   onPress={handleSave}
-                  isDisabled={isSaving}>
+                  isDisabled={isSaving}
+                  className='bg-light-brand'>
                   {isSaving
                     ? 'Saving...'
                     : editingCouponId

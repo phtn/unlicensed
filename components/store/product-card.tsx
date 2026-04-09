@@ -42,15 +42,24 @@ const formatPrice = (priceCents: number) => {
 const priceOptionsFromDenomination = (
   priceByDenomination: Record<string, number> | undefined,
   salePriceByDenomination: Record<string, number> | undefined,
+  availableDenominations: readonly number[] | undefined,
   unit: string,
   onSale: boolean,
 ): PriceOption[] | null => {
-  if (!priceByDenomination || Object.keys(priceByDenomination).length === 0) {
+  if (
+    !priceByDenomination ||
+    Object.keys(priceByDenomination).length === 0 ||
+    !availableDenominations ||
+    availableDenominations.length === 0
+  ) {
     return null
   }
 
+  const allowedDenominations = new Set(availableDenominations)
   const entries = Object.entries(priceByDenomination)
-    .filter(([, cents]) => cents > 0)
+    .filter(
+      ([denom, cents]) => cents > 0 && allowedDenominations.has(Number(denom)),
+    )
     .sort(([a], [b]) => Number(a) - Number(b))
 
   if (entries.length === 0) return null
@@ -76,6 +85,22 @@ const priceOptionsFromDenomination = (
 const areStringArraysEqual = (
   left?: readonly string[],
   right?: readonly string[],
+) => {
+  if (left === right) return true
+
+  const leftLength = left?.length ?? 0
+  if (leftLength !== (right?.length ?? 0)) return false
+
+  for (let index = 0; index < leftLength; index += 1) {
+    if (left?.[index] !== right?.[index]) return false
+  }
+
+  return true
+}
+
+const areNumberArraysEqual = (
+  left?: readonly number[],
+  right?: readonly number[],
 ) => {
   if (left === right) return true
 
@@ -121,6 +146,10 @@ const areProductsEqual = (left: StoreProduct, right: StoreProduct) =>
   left.netWeightUnit === right.netWeightUnit &&
   left.packSize === right.packSize &&
   left.unit === right.unit &&
+  areNumberArraysEqual(
+    left.availableDenominations,
+    right.availableDenominations,
+  ) &&
   areStringArraysEqual(left.brand, right.brand) &&
   arePriceMapsEqual(left.priceByDenomination, right.priceByDenomination) &&
   arePriceMapsEqual(left.salePriceByDenomination, right.salePriceByDenomination)
@@ -220,6 +249,7 @@ const ProductCardComponent = ({
       priceOptionsFromDenomination(
         product.priceByDenomination,
         product.salePriceByDenomination,
+        product.availableDenominations,
         product.unit,
         product.onSale,
       )?.slice(0, 3) ?? EMPTY_PRICE_OPTIONS
@@ -240,6 +270,7 @@ const ProductCardComponent = ({
     }
   }, [
     product.packSize,
+    product.availableDenominations,
     product.brand,
     product.netWeight,
     product.netWeightUnit,
@@ -457,10 +488,14 @@ const ProductCardComponent = ({
                     key={option.denominationValue}
                     type='button'
                     aria-label={`Select ${option.denom}`}
-                    aria-pressed={selectedIndex === index}
+                    aria-pressed={
+                      selectedOption?.denominationValue ===
+                      option.denominationValue
+                    }
                     className={cn(
                       'relative z-20 flex h-10 flex-1 items-center justify-center bg-white/14 text-xs text-white font-okxs backdrop-blur-sm transition-colors duration-300',
-                      selectedIndex === index
+                      selectedOption?.denominationValue ===
+                        option.denominationValue
                         ? 'bg-white text-brand hover:bg-white/85'
                         : 'hover:bg-white/28',
                     )}
@@ -676,11 +711,15 @@ const ProductCardComponent = ({
                   key={option.denominationValue}
                   type='button'
                   aria-label={`Select ${option.denom}`}
-                  aria-pressed={selectedIndex === index}
+                  aria-pressed={
+                    selectedOption?.denominationValue ===
+                    option.denominationValue
+                  }
                   className={cn(
                     'relative z-20 flex h-10 flex-1 items-center justify-center bg-sidebar/50 text-xs md:text-sm text-white dark:bg-dark-table font-okxs',
                     'transition-colors duration-300',
-                    selectedIndex === index
+                    selectedOption?.denominationValue ===
+                      option.denominationValue
                       ? 'bg-white text-brand hover:bg-sidebar/80 dark:bg-white/90 dark:hover:bg-white/75'
                       : 'hover:bg-white/85 hover:text-light-brand dark:hover:bg-white/80',
                   )}

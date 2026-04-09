@@ -8,7 +8,7 @@ import type {
 import {Input} from '@/components/hero-v3/input'
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
-import {Button, Card, Checkbox, Chip, Label, Modal} from '@heroui/react'
+import {Button, Card, Checkbox, Chip, Modal} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {useCallback, useEffect, useMemo, useState, ViewTransition} from 'react'
 import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
@@ -137,11 +137,11 @@ function BundleAndThresholdsSection({
         </Checkbox.Control>
         <Checkbox.Content>Bonus Enabled</Checkbox.Content>
       </Checkbox>
-      <div className='max-w-4xl grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3'>
+      <div className='max-w-4xl md:max-w-7xl grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3'>
         <div className='flex flex-col gap-2'>
-          <Label htmlFor='bundle-bonus'>Bundle bonus %</Label>
           <Input
             id='bundle-bonus'
+            label='Bundle bonus %'
             type='number'
             min={0}
             max={100}
@@ -157,9 +157,9 @@ function BundleAndThresholdsSection({
             disabled={!bundleForm.enabled}
           />
 
-          <Label htmlFor='min-cat'>Min categories for bundle</Label>
           <Input
             id='min-cat'
+            label='Min categories for bundle'
             type='number'
             min={2}
             value={String(bundleForm.minCategories)}
@@ -174,18 +174,18 @@ function BundleAndThresholdsSection({
           />
         </div>
         <div className='flex flex-col gap-2'>
-          <Label htmlFor='first-order'>Free shipping first order ($)</Label>
           <Input
             id='first-order'
+            label='Free shipping first order ($)'
             type='number'
             min={0}
             step={1}
             value={freeShipFirst}
             onChange={(e) => setFreeShipFirst(e.target.value)}
           />
-          <Label htmlFor='min-redemption'>Min redemption ($)</Label>
           <Input
             id='min-redemption'
+            label='Min redemption ($)'
             type='number'
             min={0}
             step={0.5}
@@ -193,9 +193,9 @@ function BundleAndThresholdsSection({
             onChange={(e) => setMinRedemption(e.target.value)}
           />
 
-          <Label htmlFor='top-up-proximity'>Top-up proximity ($)</Label>
           <Input
             id='top-up-proximity'
+            label='Top-up proximity ($)'
             type='number'
             min={0}
             value={topUpThreshold}
