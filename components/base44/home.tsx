@@ -33,15 +33,15 @@ export const NewHome = () => {
         />
       </div>
 
-      <Link
-        id='shop-now'
-        href='/lobby/category'
+      <div
         className={cn(
           'absolute left-1/2 z-10 -translate-x-1/2 border border-white/80 bg-white px-8 md:px-12 py-2 text-lg font-clash font-semibold uppercase text-brand hover:border-light-brand hover:bg-brand hover:text-white sm:px-8 sm:py-3 lg:text-xl',
-          'bottom-10 sm:bottom-16 md:bottom-20 lg:bottom-22 xl:bottom-24 2xl:bottom-28',
+          'bottom-40 sm:bottom-36 md:bottom-24 lg:bottom-22 xl:bottom-24 2xl:bottom-28',
         )}>
-        Shop Now
-      </Link>
+        <Link id='shop-now' href='/lobby/category'>
+          <span className=' whitespace-nowrap'>Shop Now</span>
+        </Link>
+      </div>
     </section>
   )
 }

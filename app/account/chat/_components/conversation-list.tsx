@@ -108,7 +108,7 @@ function SwipeableConversationRow({
   return (
     <div className='relative overflow-hidden'>
       <div
-        className='flex touch-none'
+        className='flex touch-pan-y'
         style={{
           width: `calc(100% + ${ARCHIVE_BUTTON_WIDTH}px)`,
           transform: `translateX(${translateX}px)`,
