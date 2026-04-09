@@ -214,6 +214,10 @@ export const productSchema = z.object({
   priceByDenomination: z.optional(
     z.record(z.string(), z.number().min(0, 'Price must be 0 or more.')),
   ),
+  /** Per-denomination sale price in dollars. Key = denomination as string (e.g. "0.125", "1", "3.5"), value = sale price. */
+  salePriceByDenomination: z.optional(
+    z.record(z.string(), z.number().min(0, 'Sale price must be 0 or more.')),
+  ),
   rating: z.optional(
     z
       .number()
@@ -651,6 +655,7 @@ export const defaultValues: ProductFormValues = {
   ),
   stockByDenomination: {},
   priceByDenomination: {},
+  salePriceByDenomination: {},
   inventoryMode: 'by_denomination',
   masterStockQuantity: undefined,
   masterStockUnit: '',

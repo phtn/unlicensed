@@ -54,3 +54,20 @@ export const update = mutation({
     return args.id
   },
 })
+
+export const remove = mutation({
+  args: {
+    id: v.id('mailingLists'),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db.get(args.id)
+
+    if (!existing) {
+      throw new Error('Mailing list not found')
+    }
+
+    await ctx.db.delete(args.id)
+
+    return args.id
+  },
+})

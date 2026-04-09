@@ -11,6 +11,7 @@ import NextImage from 'next/image'
 import NextLink from 'next/link'
 import {memo, type MouseEvent, useMemo, useState} from 'react'
 import ShimmerText from '../expermtl/shimmer'
+import {CrossOut} from './cross-out'
 
 type ProductCardProps = {
   product: StoreProduct
@@ -24,6 +25,8 @@ type PriceOption = {
   price: string
   denom: string
   denominationValue: number
+  originalPrice?: string
+  isOnSale: boolean
 }
 
 const EMPTY_PRICE_OPTIONS: PriceOption[] = []
@@ -38,7 +41,9 @@ const formatPrice = (priceCents: number) => {
 /** Builds price options; 1 oz is displayed as "Oz" (no space), other oz/units via formatDenominationDisplay. */
 const priceOptionsFromDenomination = (
   priceByDenomination: Record<string, number> | undefined,
+  salePriceByDenomination: Record<string, number> | undefined,
   unit: string,
+  onSale: boolean,
 ): PriceOption[] | null => {
   if (!priceByDenomination || Object.keys(priceByDenomination).length === 0) {
     return null
@@ -50,11 +55,22 @@ const priceOptionsFromDenomination = (
 
   if (entries.length === 0) return null
 
-  return entries.map(([denom, cents]) => ({
-    price: formatPrice(cents),
-    denom: formatDenominationDisplay(denom, unit),
-    denominationValue: Number(denom),
-  }))
+  return entries.map(([denom, cents]) => {
+    const saleCents = salePriceByDenomination?.[denom]
+    const hasSalePrice =
+      onSale &&
+      typeof saleCents === 'number' &&
+      saleCents >= 0 &&
+      saleCents < cents
+
+    return {
+      price: formatPrice(hasSalePrice ? saleCents : cents),
+      denom: formatDenominationDisplay(denom, unit),
+      denominationValue: Number(denom),
+      originalPrice: hasSalePrice ? formatPrice(cents) : undefined,
+      isOnSale: hasSalePrice,
+    }
+  })
 }
 
 const areStringArraysEqual = (
@@ -96,6 +112,7 @@ const areProductsEqual = (left: StoreProduct, right: StoreProduct) =>
   left.slug === right.slug &&
   left.image === right.image &&
   left.name === right.name &&
+  left.onSale === right.onSale &&
   left.productType === right.productType &&
   left.productTier === right.productTier &&
   left.productTierLabel === right.productTierLabel &&
@@ -105,7 +122,8 @@ const areProductsEqual = (left: StoreProduct, right: StoreProduct) =>
   left.packSize === right.packSize &&
   left.unit === right.unit &&
   areStringArraysEqual(left.brand, right.brand) &&
-  arePriceMapsEqual(left.priceByDenomination, right.priceByDenomination)
+  arePriceMapsEqual(left.priceByDenomination, right.priceByDenomination) &&
+  arePriceMapsEqual(left.salePriceByDenomination, right.salePriceByDenomination)
 
 const isRenderableImageSrc = (value: string | null | undefined) =>
   typeof value === 'string' &&
@@ -114,6 +132,68 @@ const isRenderableImageSrc = (value: string | null | undefined) =>
     value.startsWith('/') ||
     value.startsWith('data:') ||
     value.startsWith('blob:'))
+
+type ProductPriceProps = {
+  option: PriceOption | null
+  isTestProduct: boolean
+  variant: 'compact' | 'default'
+}
+
+const ProductPrice = ({option, isTestProduct, variant}: ProductPriceProps) => {
+  if (!option) {
+    return <span className='text-sm text-white/60'>—</span>
+  }
+
+  const isCompact = variant === 'compact'
+
+  return (
+    <div className='flex flex-col-reverse items-end leading-none text-right'>
+      {option.isOnSale && option.originalPrice ? (
+        <div className='relative mt-0.5 inline-flex leading-none items-center justify-end self-end px-px'>
+          <span
+            className={cn(
+              'font-clash font-medium text-slate-400/70',
+              isCompact
+                ? 'text-[0.65rem] sm:text-[0.75rem]'
+                : 'text-[0.6rem] md:text-xl',
+            )}>
+            ${option.originalPrice}
+          </span>
+          <CrossOut
+            className={cn(
+              '',
+              isCompact ? 'h-3 sm:h-3.5' : 'h-6 md:size-14 -mt-1',
+            )}
+            pathClassName={cn(
+              isTestProduct ? 'stroke-cyan-300/85' : 'stroke-light-brand/90',
+            )}
+          />
+        </div>
+      ) : null}
+
+      {isCompact ? (
+        <span
+          className={cn(
+            'font-medium tracking-tighter text-[1.45rem] text-light-brand sm:text-[1.75rem]',
+            isTestProduct &&
+              'text-cyan-300 drop-shadow-[0_0_12px_rgba(34,211,238,0.22)]',
+          )}>
+          <span className='font-bone'>${option.price}</span>
+        </span>
+      ) : (
+        <div
+          className={cn(
+            'flex items-center font-clash font-light leading-none tracking-tighter text-[1.65rem] text-transparent bg-clip-text bg-linear-to-r from-foreground/80 via-light-brand to-light-brand',
+            isTestProduct &&
+              'text-cyan-600 drop-shadow-[0_0_12px_rgba(34,211,238,0.22)] dark:text-cyan-300',
+          )}>
+          <span className='pr-px text-[1.40rem]'>$</span>
+          <span className='drop-shadow-2xs'>{option.price}</span>
+        </div>
+      )}
+    </div>
+  )
+}
 
 const ProductCardComponent = ({
   product,
@@ -139,7 +219,9 @@ const ProductCardComponent = ({
     const firstThreeOptions =
       priceOptionsFromDenomination(
         product.priceByDenomination,
+        product.salePriceByDenomination,
         product.unit,
+        product.onSale,
       )?.slice(0, 3) ?? EMPTY_PRICE_OPTIONS
 
     return {
@@ -161,7 +243,9 @@ const ProductCardComponent = ({
     product.brand,
     product.netWeight,
     product.netWeightUnit,
+    product.onSale,
     product.priceByDenomination,
+    product.salePriceByDenomination,
     product.productTier,
     product.productTierLabel,
     product.slug,
@@ -173,6 +257,7 @@ const ProductCardComponent = ({
     firstThreeOptions[Math.min(selectedIndex, firstThreeOptions.length - 1)] ??
     firstThreeOptions[0] ??
     null
+  const hasSaleOption = firstThreeOptions.some((option) => option.isOnSale)
   const imageSrc = isRenderableImageSrc(imageUrlProp)
     ? imageUrlProp
     : isRenderableImageSrc(product.image)
@@ -238,6 +323,13 @@ const ProductCardComponent = ({
                 </div>
               </>
             ) : null}
+            {hasSaleOption ? (
+              <div className='pointer-events-none absolute right-2 top-2 z-20 overflow-hidden rounded-xs bg-terpenes px-2.5 py-1 shadow-[0_0_20px_rgba(29,155,125,0.25)]'>
+                <p className='text-xs font-ios uppercase tracking-widest text-white'>
+                  On Sale
+                </p>
+              </div>
+            ) : null}
             {imageSrc ? (
               <NextImage
                 src={imageSrc}
@@ -301,7 +393,7 @@ const ProductCardComponent = ({
                 </div>
 
                 <div className='flex items-center justify-between relative top-1'>
-                  <div className='whitespace-nowrap'>
+                  <div className='whitespace-nowrap pr-16 sm:pr-20'>
                     <div className='mt-0.5 flex h-4 items-center'>
                       {tierLabel !== '' && (
                         <span className='text-[8px] font-okxs font-medium uppercase tracking-widest opacity-75 sm:text-xs'>
@@ -344,19 +436,12 @@ const ProductCardComponent = ({
                       )}
                     </div>
                   </div>
-                  <div className='pointer-events-none absolute right-0 flex aspect-square grow-0 items-center justify-end overflow-hidden font-medium'>
-                    {selectedOption ? (
-                      <span
-                        className={cn(
-                          'font-medium tracking-tighter text-[1.45rem] text-light-brand sm:text-[1.75rem]',
-                          isTestProduct &&
-                            'text-cyan-300 drop-shadow-[0_0_12px_rgba(34,211,238,0.22)]',
-                        )}>
-                        ${selectedOption.price}
-                      </span>
-                    ) : (
-                      '—'
-                    )}
+                  <div className='pointer-events-none absolute right-0 top-0 flex min-w-0 items-start justify-end font-medium'>
+                    <ProductPrice
+                      option={selectedOption}
+                      isTestProduct={isTestProduct}
+                      variant='compact'
+                    />
                   </div>
                 </div>
               </div>
@@ -458,6 +543,13 @@ const ProductCardComponent = ({
               </div>
             </>
           ) : null}
+          {hasSaleOption ? (
+            <div className='pointer-events-none absolute right-2 top-2 z-20 overflow-hidden rounded-xs bg-terpenes px-2.5 py-1 shadow-[0_0_20px_rgba(29,155,125,0.25)]'>
+              <p className='text-xs font-ios uppercase tracking-widest text-white'>
+                On Sale
+              </p>
+            </div>
+          ) : null}
           {imageSrc ? (
             <NextImage
               src={imageSrc}
@@ -508,14 +600,7 @@ const ProductCardComponent = ({
                     </div>
                   )}
                 </div>
-                {/*{isTestProduct ? (
-                  <div className='mb-1 flex items-center gap-2'>
-                    <span className='h-px w-4 bg-cyan-400/70 shadow-[0_0_12px_rgba(34,211,238,0.7)]' />
-                    <span className='font-okxs text-[9px] uppercase tracking-[0.24em] text-cyan-500 dark:text-cyan-300'>
-                      Test Product
-                    </span>
-                  </div>
-                ) : null}*/}
+
                 <NextLink
                   href={productHref}
                   prefetch={false}
@@ -527,7 +612,7 @@ const ProductCardComponent = ({
               </div>
 
               <div className='flex items-center justify-between relative top-1'>
-                <div className='whitespace-nowrap md:space-y-0.5'>
+                <div className='whitespace-nowrap pr-16 md:space-y-0.5 md:pr-20'>
                   <div className='md:mt-0.5 flex h-4 items-center'>
                     {tierLabel !== '' && (
                       <span className='text-[8px] md:text-xs md:font-medium font-okxs font-medium uppercase tracking-widest opacity-70 dark:text-alum dark:opacity-100'>
@@ -570,21 +655,12 @@ const ProductCardComponent = ({
                     )}
                   </div>
                 </div>
-                <div className='pointer-events-none absolute right-0 flex aspect-square font-medium h-auto grow-0 items-center justify-end overflow-hidden'>
-                  {selectedOption ? (
-                    <span>
-                      <span
-                        className={cn(
-                          'font-medium tracking-tighter text-[1.75rem] text-light-brand',
-                          isTestProduct &&
-                            'text-cyan-600 drop-shadow-[0_0_12px_rgba(34,211,238,0.22)] dark:text-cyan-300',
-                        )}>
-                        ${selectedOption.price}
-                      </span>
-                    </span>
-                  ) : (
-                    '—'
-                  )}
+                <div className='pointer-events-none absolute right-0 top-0 flex min-w-0 items-start justify-end font-medium'>
+                  <ProductPrice
+                    option={selectedOption}
+                    isTestProduct={isTestProduct}
+                    variant='default'
+                  />
                 </div>
               </div>
             </div>

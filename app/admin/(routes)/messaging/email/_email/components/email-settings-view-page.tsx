@@ -466,7 +466,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
               type='button'
               variant='danger'
               onPress={handleDelete}
-              className='text-mac-red hover:text-mac-red dark:text-red-400 dark:hover:text-red-500 w-4 md:w-fit'>
+              className='text-mac-red hover:text-mac-red w-4 md:w-fit'>
               <span className='hidden md:flex'>Delete</span>
               <Icon name='trash-fill' className='size-4 md:hidden' />
             </Button>

@@ -13,14 +13,16 @@ import {
 
 interface Props<T> {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void
+  onClear?: VoidFunction
   value: string
   col?: Column<T, unknown>
 }
 
 export const Search = forwardRef<HTMLInputElement, Props<unknown>>(
-  ({col, value, onChange}, ref) => {
-    const getFilterValue = col?.getFilterValue
+  ({col, value, onChange, onClear}, ref) => {
     const id = useId()
+    const hasValue =
+      value.trim().length > 0 || Boolean(col?.getFilterValue?.()?.toString())
 
     const handleKeyDown = useCallback(
       (event: KeyboardEvent) => {
@@ -61,7 +63,7 @@ export const Search = forwardRef<HTMLInputElement, Props<unknown>>(
           ref={ref}
           className={cn(
             'peer h-8 dark:bg-background/40 w-48 md:min-w-60 bg-sidebar ps-3 rounded-sm outline-0 border-none placeholder:text-foreground/60 placeholder:font-brk font-brk text-sm',
-            Boolean(getFilterValue) && 'pe-10',
+            hasValue && 'pe-10',
           )}
           value={value}
           onChange={onChange}
@@ -73,12 +75,13 @@ export const Search = forwardRef<HTMLInputElement, Props<unknown>>(
         <div className='text-foreground/80 pointer-events-none absolute inset-y-0 inset-e-0 flex items-center justify-center pe-2 peer-disabled:opacity-50'>
           <Icon name='slash' aria-hidden='true' className='size-5' />
         </div>
-        {Boolean(col?.getFilterValue()) && (
+        {hasValue && (
           <button
-            className='hidden text-muted-foreground/80 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 absolute inset-y-0 inset-e-0 _flex h-full w-9 items-center justify-center rounded-e-md transition-[color,box-shadow] outline-none focus:z-10 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50'
+            className='text-muted-foreground/80 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 absolute inset-y-0 inset-e-0 flex h-full w-9 items-center justify-center rounded-e-md transition-[color,box-shadow] outline-none focus:z-10 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50'
             aria-label='Clear filter'
             onClick={() => {
               col?.setFilterValue('')
+              onClear?.()
               if (ref && 'current' in ref && ref.current) {
                 ref.current.focus()
               }

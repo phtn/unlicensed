@@ -10,7 +10,7 @@ import {getStockDisplayUnit, getTotalStock} from '@/lib/productStock'
 import {Button, Chip} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useQuery} from 'convex/react'
-import {Key, useMemo, useState} from 'react'
+import {useMemo, useState} from 'react'
 import {ProductFormApi, mapFractions} from '../product-schema'
 import {FormSection, Header} from './components'
 import {
@@ -18,6 +18,7 @@ import {
   buildInventoryInputs,
   formatQuantity,
 } from './inventory-adjustment-modal'
+import {SalePriceModal} from './sale-price-modal'
 
 interface InventoryProps {
   form: ProductFormApi
@@ -141,6 +142,18 @@ export const Inventory = ({
     const values = state.values as {lowStockThreshold?: string}
     return values.lowStockThreshold ?? ''
   })
+  const priceByDenomination = useStore(form.store, (state) => {
+    const values = state.values as {
+      priceByDenomination?: Record<string, number>
+    }
+    return values.priceByDenomination ?? {}
+  })
+  const salePriceByDenomination = useStore(form.store, (state) => {
+    const values = state.values as {
+      salePriceByDenomination?: Record<string, number>
+    }
+    return values.salePriceByDenomination ?? {}
+  })
 
   const currentDenominations = useMemo(() => {
     if (!availableDenominationsRaw) return new Set<string>()
@@ -156,6 +169,13 @@ export const Inventory = ({
     }
     return new Set<string>()
   }, [availableDenominationsRaw])
+  const selectedAvailableDenominations = useMemo(
+    () =>
+      [...currentDenominations]
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value)),
+    [currentDenominations],
+  )
 
   const variantOptions = useMemo(() => {
     return variants
@@ -188,6 +208,34 @@ export const Inventory = ({
 
   const [isRestockOpen, setIsRestockOpen] = useState(false)
   const [isManualOverrideOpen, setIsManualOverrideOpen] = useState(false)
+  const [isSalePriceModalOpen, setIsSalePriceModalOpen] = useState(false)
+  const [shouldResetOnSaleOnClose, setShouldResetOnSaleOnClose] =
+    useState(false)
+
+  const variantOptionsByKey = useMemo(
+    () => new Map(variantOptions.map((option) => [option.key, option])),
+    [variantOptions],
+  )
+  const salePriceOptions = useMemo(() => {
+    return [...currentDenominations]
+      .sort((a, b) => Number(a) - Number(b))
+      .map((key) => {
+        const variant = variantOptionsByKey.get(key)
+        return {
+          key,
+          label:
+            variant?.displayLabel ??
+            variant?.label ??
+            (productUnit ? `${key} ${productUnit}` : key),
+          regularPrice: priceByDenomination[key] ?? variant?.price ?? 0,
+        }
+      })
+  }, [
+    currentDenominations,
+    priceByDenomination,
+    productUnit,
+    variantOptionsByKey,
+  ])
 
   const syncInventoryStateToForm = (nextInventoryState: {
     inventoryMode: InventoryMode
@@ -210,36 +258,6 @@ export const Inventory = ({
       'stockByDenomination',
       nextInventoryState.stockByDenomination,
     )
-  }
-
-  const handleSelectionChange = (
-    field: {
-      handleChange: (value: string) => void
-    },
-    keys: Set<Key> | 'all',
-  ) => {
-    const newKeys =
-      keys === 'all'
-        ? variantOptions.map((option) => option.key)
-        : Array.from(keys).map((key) => String(key))
-
-    field.handleChange(
-      keys === 'all'
-        ? variantOptions.map((option) => option.key).join(', ')
-        : newKeys.join(', '),
-    )
-
-    const current =
-      (form.getFieldValue('stockByDenomination') as
-        | Record<string, number>
-        | undefined) ?? {}
-    const next = {...current}
-
-    for (const key of newKeys) {
-      if (next[key] === undefined) next[key] = 0
-    }
-
-    form.setFieldValue('stockByDenomination', next)
   }
 
   const persistedInventoryInputs = useMemo(
@@ -462,28 +480,6 @@ export const Inventory = ({
                         .map((option) => option.key),
                     )
                   })()
-
-                  const handlePopularSelectionChange = (
-                    keys: Set<React.Key> | 'all',
-                  ) => {
-                    if (keys === 'all') {
-                      field.handleChange(
-                        variantOptions
-                          .map((option) => option.denomination)
-                          .filter((value): value is number => value !== null),
-                      )
-                      return
-                    }
-
-                    field.handleChange(
-                      Array.from(keys)
-                        .map((key) =>
-                          variantOptions.find((option) => option.key === key),
-                        )
-                        .map((option) => option?.denomination ?? null)
-                        .filter((value): value is number => value !== null),
-                    )
-                  }
 
                   return (
                     <div className='space-y-1 w-full'>
@@ -814,6 +810,7 @@ export const Inventory = ({
               <InventoryAdjustmentModal
                 product={product}
                 adjustmentType='restock'
+                availableDenominations={selectedAvailableDenominations}
                 isOpen={isRestockOpen}
                 onOpenChangeAction={setIsRestockOpen}
                 onAppliedAction={syncInventoryStateToForm}
@@ -821,6 +818,7 @@ export const Inventory = ({
               <InventoryAdjustmentModal
                 product={product}
                 adjustmentType='manual_override'
+                availableDenominations={selectedAvailableDenominations}
                 isOpen={isManualOverrideOpen}
                 onOpenChangeAction={setIsManualOverrideOpen}
                 onAppliedAction={syncInventoryStateToForm}
@@ -883,15 +881,76 @@ export const Inventory = ({
                   )
                 }}
               </form.Field>
-              <form.Field name='sale'>
+              <form.Field name='onSale'>
                 {(field) => {
+                  const isOnSale = (field.state.value as boolean) ?? false
+
+                  const handleSaleToggle = (nextValue: boolean) => {
+                    if (!nextValue) {
+                      field.handleChange(false)
+                      setIsSalePriceModalOpen(false)
+                      setShouldResetOnSaleOnClose(false)
+                      return
+                    }
+
+                    field.handleChange(true)
+                    setShouldResetOnSaleOnClose(!isOnSale)
+                    setIsSalePriceModalOpen(true)
+                  }
+
+                  const handleSaleModalOpenChange = (isOpen: boolean) => {
+                    setIsSalePriceModalOpen(isOpen)
+
+                    if (!isOpen && shouldResetOnSaleOnClose) {
+                      field.handleChange(false)
+                      setShouldResetOnSaleOnClose(false)
+                    }
+                  }
+
+                  const handleSalePricesSave = (
+                    nextSalePrices: Record<string, number>,
+                  ) => {
+                    form.setFieldValue(
+                      'salePriceByDenomination',
+                      nextSalePrices,
+                    )
+                    field.handleChange(true)
+                    setShouldResetOnSaleOnClose(false)
+                    setIsSalePriceModalOpen(false)
+                  }
+
                   return (
-                    <JunctionBox
-                      title='On Sale'
-                      description='Product is on-sale.'
-                      checked={(field.state.value as boolean) ?? false}
-                      onUpdate={field.handleChange}
-                    />
+                    <div className='space-y-2'>
+                      <JunctionBox
+                        title='On Sale'
+                        description='Product is on-sale.'
+                        checked={isOnSale}
+                        onUpdate={handleSaleToggle}>
+                        {isOnSale ? (
+                          <Button
+                            size='sm'
+                            variant='ghost'
+                            className='flex items-center space-x-1 w-full px-2.5 text-xs rounded-md h-6 bg-white dark:bg-background/30 text-indigo-500 dark:text-indigo-400'
+                            onPress={() => {
+                              setShouldResetOnSaleOnClose(false)
+                              setIsSalePriceModalOpen(true)
+                            }}>
+                            <span>Prices</span>
+                            <Icon name='cf-pen-2' className='size-3' />
+                          </Button>
+                        ) : null}
+                      </JunctionBox>
+
+                      {isSalePriceModalOpen ? (
+                        <SalePriceModal
+                          initialSalePrices={salePriceByDenomination}
+                          isOpen={isSalePriceModalOpen}
+                          onOpenChangeAction={handleSaleModalOpenChange}
+                          onSaveAction={handleSalePricesSave}
+                          options={salePriceOptions}
+                        />
+                      ) : null}
+                    </div>
                   )
                 }}
               </form.Field>
@@ -917,3 +976,56 @@ export const Inventory = ({
     </FormSection>
   )
 }
+
+/*
+const handleSelectionChange = (
+    field: {
+      handleChange: (value: string) => void
+    },
+    keys: Set<Key> | 'all',
+  ) => {
+    const newKeys =
+      keys === 'all'
+        ? variantOptions.map((option) => option.key)
+        : Array.from(keys).map((key) => String(key))
+
+    field.handleChange(
+      keys === 'all'
+        ? variantOptions.map((option) => option.key).join(', ')
+        : newKeys.join(', '),
+    )
+
+    const current =
+      (form.getFieldValue('stockByDenomination') as
+        | Record<string, number>
+        | undefined) ?? {}
+    const next = {...current}
+
+    for (const key of newKeys) {
+      if (next[key] === undefined) next[key] = 0
+    }
+
+    form.setFieldValue('stockByDenomination', next)
+  }
+  const handlePopularSelectionChange = (
+                      keys: Set<React.Key> | 'all',
+                    ) => {
+                      if (keys === 'all') {
+                        field.handleChange(
+                          variantOptions
+                            .map((option) => option.denomination)
+                            .filter((value): value is number => value !== null),
+                        )
+                        return
+                      }
+
+                      field.handleChange(
+                        Array.from(keys)
+                          .map((key) =>
+                            variantOptions.find((option) => option.key === key),
+                          )
+                          .map((option) => option?.denomination ?? null)
+                          .filter((value): value is number => value !== null),
+                      )
+                    }
+*/

@@ -69,6 +69,7 @@ const PRODUCT_FIELD_SECTION_MAP: Partial<
   availableDenominationsRaw: 'pricing',
   popularDenomination: 'pricing',
   priceByDenomination: 'pricing',
+  salePriceByDenomination: 'inventory',
   variants: 'pricing',
   packagingMode: 'packaging',
   stockUnit: 'packaging',
@@ -288,6 +289,7 @@ export const ProductForm = ({
           terpenes: data.terpenes || [],
           featured: data.featured,
           available: data.available,
+          eligibleForRewards: data.eligibleForRewards,
           eligibleForDeals: data.eligibleForDeals,
           onSale: data.onSale,
           inventoryMode: data.inventoryMode,
@@ -347,6 +349,16 @@ export const ProductForm = ({
             Object.keys(data.priceByDenomination).length > 0
               ? Object.fromEntries(
                   Object.entries(data.priceByDenomination).map(([k, v]) => [
+                    k,
+                    Math.round(Number(v) * 100),
+                  ]),
+                )
+              : undefined,
+          salePriceByDenomination:
+            data.salePriceByDenomination &&
+            Object.keys(data.salePriceByDenomination).length > 0
+              ? Object.fromEntries(
+                  Object.entries(data.salePriceByDenomination).map(([k, v]) => [
                     k,
                     Math.round(Number(v) * 100),
                   ]),
@@ -488,6 +500,10 @@ export const ProductForm = ({
     form.setFieldValue(
       'priceByDenomination',
       initialValues.priceByDenomination ?? {},
+    )
+    form.setFieldValue(
+      'salePriceByDenomination',
+      initialValues.salePriceByDenomination ?? {},
     )
     form.setFieldValue('tier', initialValues.tier)
     form.setFieldValue(

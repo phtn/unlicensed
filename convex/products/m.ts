@@ -308,6 +308,7 @@ async function buildProductDoc(
     remainingWeight: args.remainingWeight,
     variants: args.variants,
     priceByDenomination: args.priceByDenomination,
+    salePriceByDenomination: args.salePriceByDenomination,
     eligibleForRewards: args.eligibleForRewards,
     eligibleForDeals: args.eligibleForDeals,
     onSale: args.onSale,
@@ -452,6 +453,9 @@ export const updateProduct = mutation({
     }
     if (fields.available !== undefined) {
       updates.available = fields.available
+    }
+    if (fields.eligibleForRewards !== undefined) {
+      updates.eligibleForRewards = fields.eligibleForRewards
     }
     if (fields.inventoryMode !== undefined) {
       updates.inventoryMode = fields.inventoryMode
@@ -604,6 +608,9 @@ export const updateProduct = mutation({
     }
     if (fields.onSale !== undefined) {
       updates.onSale = fields.onSale
+    }
+    if (fields.salePriceByDenomination !== undefined) {
+      updates.salePriceByDenomination = fields.salePriceByDenomination
     }
     if (fields.eligibleForUpgrade !== undefined) {
       updates.eligibleForUpgrade = fields.eligibleForUpgrade

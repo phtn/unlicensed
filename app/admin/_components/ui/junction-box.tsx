@@ -1,7 +1,7 @@
 import {ClassName} from '@/app/types'
 import {cn} from '@/lib/utils'
 import {Card, Switch} from '@heroui/react'
-import {useCallback} from 'react'
+import {ReactNode, useCallback} from 'react'
 
 interface JunctionBoxProps {
   title: string
@@ -9,6 +9,7 @@ interface JunctionBoxProps {
   checked: boolean
   description?: string
   className?: ClassName
+  children?: ReactNode
 }
 export const JunctionBox = ({
   title,
@@ -16,6 +17,7 @@ export const JunctionBox = ({
   onUpdate,
   description,
   className,
+  children,
 }: JunctionBoxProps) => {
   const handleCardToggle = useCallback(
     () => onUpdate(!checked),
@@ -34,10 +36,13 @@ export const JunctionBox = ({
         <div className='flex w-full items-center justify-between'>
           <h2 className='text-lg font-clash font-medium'>{title}</h2>
         </div>
-        <p className='font-okxs text-left text-xs dark:opacity-60'>
-          {description}
-        </p>
+        <div className='flex items-center justify-between w-full'>
+          <p className='font-okxs text-left text-xs dark:opacity-60'>
+            {description}
+          </p>
+        </div>
       </button>
+      <div className='absolute bottom-2 right-3'>{children}</div>
 
       <div className='absolute top-2.5 right-3'>
         <Switch

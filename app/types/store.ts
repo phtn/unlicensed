@@ -48,6 +48,8 @@ export interface StoreProduct {
   stockByDenomination?: Record<string, number>
   /** Per-denomination price in cents. Key = denomination as string (e.g. "0.125", "1", "3.5"). */
   priceByDenomination?: Record<string, number>
+  /** Per-denomination sale price in cents. Key = denomination as string (e.g. "0.125", "1", "3.5"). */
+  salePriceByDenomination?: Record<string, number>
   rating: number
   image: string | null
   gallery: string[]

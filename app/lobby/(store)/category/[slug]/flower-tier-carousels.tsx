@@ -5,7 +5,7 @@ import {ProductCarousel} from '@/components/store/product-carousel'
 import {api} from '@/convex/_generated/api'
 import {adaptProduct, type RawCategory} from '@/lib/convexClient'
 import {usePaginatedQuery, useQuery} from 'convex/react'
-import {useMemo} from 'react'
+import {Activity, useMemo} from 'react'
 
 const TIER_CAROUSEL_PAGE_SIZE = 20
 
@@ -43,14 +43,27 @@ const TierCarouselSection = ({
 
   return (
     <div className='space-y-3'>
-      <h3 className='font-clash font-bold text-xl md:text-2xl uppercase tracking-tight flex items-baseline gap-2'>
-        {tierName}
-        {count !== undefined && (
+      <div className='flex items-center justify-between w-full'>
+        <h3 className='flex items-center font-bone font-bold text-xl md:text-2xl uppercase tracking-widest gap-5'>
+          {tierName}
+          <Activity mode={count === undefined ? 'hidden' : 'visible'}>
+            <span className='flex items-center text-base md:text-lg uppercase tracking-[0.15em] text-color-muted transition-opacity hover:opacity-70'>
+              <span className='text-foreground/20 font-ios font-thin text-3xl'>
+                (
+              </span>
+              <span className='font-clash text-light-brand'>{count}</span>
+              <span className='text-foreground/20 font-ios font-thin text-3xl'>
+                )
+              </span>
+            </span>
+          </Activity>
+          {/*{count !== undefined && (
           <span className='text-sm font-medium font-clash opacity-40 normal-case tracking-normal'>
             {count} {count === 1 ? 'product' : 'products'}
           </span>
-        )}
-      </h3>
+        )}*/}
+        </h3>
+      </div>
       <ProductCarousel products={products} productCount={products.length} />
     </div>
   )

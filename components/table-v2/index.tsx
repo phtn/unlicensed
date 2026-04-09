@@ -226,6 +226,10 @@ function DataTableContent<T>({
     setGlobalFilter(e.target.value || null)
   }
 
+  const clearGlobalFilter = useCallback(() => {
+    setGlobalFilter(null)
+  }, [setGlobalFilter])
+
   const handlePaginationChange = useCallback(
     (
       updater: PaginationState | ((old: PaginationState) => PaginationState),
@@ -541,36 +545,6 @@ function DataTableContent<T>({
 
   const isMobile = useMobile()
 
-  // Listen for '/' keypress to focus search input
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Check if '/' key is pressed
-      if (event.key !== '/') return
-
-      // Don't trigger if user is typing in an input or textarea
-      const target = event.target as HTMLElement
-      const isTyping =
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.isContentEditable
-
-      // Only focus if not already typing and input is not already focused
-      if (
-        !isTyping &&
-        inputRef.current &&
-        document.activeElement !== inputRef.current
-      ) {
-        event.preventDefault()
-        inputRef.current.focus()
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [])
-
   const id = useId()
   const {open: sidebarOpen} = useSidebar()
 
@@ -629,6 +603,7 @@ function DataTableContent<T>({
               <Search
                 ref={inputRef}
                 onChange={handleFilterChange}
+                onClear={clearGlobalFilter}
                 value={globalFilter ?? ''}
               />
             }

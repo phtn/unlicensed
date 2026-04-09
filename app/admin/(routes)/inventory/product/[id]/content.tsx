@@ -171,6 +171,16 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
               }),
             )
           : {},
+    salePriceByDenomination:
+      product.salePriceByDenomination &&
+      Object.keys(product.salePriceByDenomination).length > 0
+        ? Object.fromEntries(
+            Object.entries(product.salePriceByDenomination).map(([k, v]) => [
+              k,
+              Number(v) / 100,
+            ]),
+          )
+        : {},
     tier:
       resolveAttributeValue(product.tier ?? '', tierOptions) ??
       product.tier ??

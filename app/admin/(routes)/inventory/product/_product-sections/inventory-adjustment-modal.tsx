@@ -24,6 +24,10 @@ export type InventoryInput = {
   unit?: string
 }
 
+type BuildInventoryInputsOptions = {
+  availableDenominations?: number[]
+}
+
 export const formatQuantity = (value: number) =>
   Number.isInteger(value) ? String(value) : String(Number(value.toFixed(3)))
 
@@ -36,9 +40,29 @@ const formatDenominationLabel = (
   return unit ? `${label} ${unit}` : label
 }
 
+const buildPerDenominationInputs = (
+  denominationKeys: string[],
+  stockByDenomination: Record<string, number>,
+  unit: string | undefined,
+): InventoryInput[] =>
+  denominationKeys
+    .map((key) => ({
+      key,
+      denomination: Number(key),
+      currentQuantity: stockByDenomination[key] ?? 0,
+      label: formatDenominationLabel(Number(key), unit),
+      unit,
+    }))
+    .sort((a, b) => {
+      if (a.denomination == null) return -1
+      if (b.denomination == null) return 1
+      return a.denomination - b.denomination
+    })
+
 export const buildInventoryInputs = (
   product: Product,
   inventoryMode: InventoryMode = normalizeInventoryMode(product.inventoryMode),
+  options: BuildInventoryInputsOptions = {},
 ): InventoryInput[] => {
   if (inventoryMode === 'shared') {
     return [
@@ -52,44 +76,55 @@ export const buildInventoryInputs = (
   }
 
   const stockByDenomination = product.stockByDenomination ?? {}
-  const denominationKeys = new Set<string>()
+  const unit = product.unit ?? undefined
+  const selectedAvailableDenominations = options.availableDenominations
 
-  for (const denomination of product.availableDenominations ?? []) {
-    denominationKeys.add(String(denomination))
+  if (selectedAvailableDenominations) {
+    const denominationKeys = [
+      ...new Set(
+        selectedAvailableDenominations
+          .filter((value) => Number.isFinite(value))
+          .map(String),
+      ),
+    ]
+
+    return buildPerDenominationInputs(denominationKeys, stockByDenomination, unit)
   }
 
-  for (const denominationKey of Object.keys(stockByDenomination)) {
-    denominationKeys.add(denominationKey)
+  const configuredDenominationKeys = [
+    ...new Set(
+      (product.availableDenominations ?? [])
+        .filter((value) => Number.isFinite(value))
+        .map(String),
+    ),
+  ]
+
+  if (configuredDenominationKeys.length > 0) {
+    return buildPerDenominationInputs(
+      configuredDenominationKeys,
+      stockByDenomination,
+      unit,
+    )
   }
 
-  if (denominationKeys.size === 0) {
+  const stockedDenominationKeys = Object.keys(stockByDenomination)
+  if (stockedDenominationKeys.length === 0) {
     return [
       {
         key: 'default',
         label: 'Stock',
         currentQuantity: product.stock ?? 0,
-        unit: product.unit ?? undefined,
+        unit,
       },
     ]
   }
 
-  return [...denominationKeys]
-    .map((key) => ({
-      key,
-      denomination: Number(key),
-      currentQuantity: stockByDenomination[key] ?? 0,
-      label: formatDenominationLabel(Number(key), product.unit ?? undefined),
-      unit: product.unit ?? undefined,
-    }))
-    .sort((a, b) => {
-      if (a.denomination == null) return -1
-      if (b.denomination == null) return 1
-      return a.denomination - b.denomination
-    })
+  return buildPerDenominationInputs(stockedDenominationKeys, stockByDenomination, unit)
 }
 
 type InventoryAdjustmentModalProps = {
   adjustmentType: AdjustmentType
+  availableDenominations?: number[]
   isOpen: boolean
   onOpenChangeAction: (isOpen: boolean) => void
   onAppliedAction?: (nextInventoryState: {
@@ -104,6 +139,7 @@ type InventoryAdjustmentModalProps = {
 
 export function InventoryAdjustmentModal({
   adjustmentType,
+  availableDenominations,
   isOpen,
   onOpenChangeAction,
   onAppliedAction,
@@ -120,8 +156,11 @@ export function InventoryAdjustmentModal({
   const [inventoryMode, setInventoryMode] =
     useState<InventoryMode>(initialInventoryMode)
   const inventoryInputs = useMemo(
-    () => buildInventoryInputs(product, inventoryMode),
-    [inventoryMode, product],
+    () =>
+      buildInventoryInputs(product, inventoryMode, {
+        availableDenominations,
+      }),
+    [availableDenominations, inventoryMode, product],
   )
   const [quantities, setQuantities] = useState<Record<string, string>>({})
   const [note, setNote] = useState('')
@@ -273,29 +312,38 @@ export function InventoryAdjustmentModal({
                 </p>
               </div>
 
-              <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
-                {inventoryInputs.map((input) => (
-                  <Input
-                    key={input.key}
-                    label={input.label}
-                    type='number'
-                    min={0}
-                    step='0.001'
-                    value={quantities[input.key] ?? ''}
-                    onChange={(event) =>
-                      setQuantities((current) => ({
-                        ...current,
-                        [input.key]: event.target.value,
-                      }))
-                    }
-                    placeholder={
-                      adjustmentType === 'restock'
-                        ? '0'
-                        : formatQuantity(input.currentQuantity)
-                    }
-                  />
-                ))}
-              </div>
+              {inventoryMode === 'by_denomination' &&
+              inventoryInputs.length === 0 ? (
+                <p className='rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-foreground-600 dark:border-slate-800 dark:bg-slate-950/40'>
+                  No available denominations are selected for this product.
+                  Choose one or more denominations in the Inventory section
+                  first, then record the adjustment.
+                </p>
+              ) : (
+                <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
+                  {inventoryInputs.map((input) => (
+                    <Input
+                      key={input.key}
+                      label={input.label}
+                      type='number'
+                      min={0}
+                      step='0.001'
+                      value={quantities[input.key] ?? ''}
+                      onChange={(event) =>
+                        setQuantities((current) => ({
+                          ...current,
+                          [input.key]: event.target.value,
+                        }))
+                      }
+                      placeholder={
+                        adjustmentType === 'restock'
+                          ? '0'
+                          : formatQuantity(input.currentQuantity)
+                      }
+                    />
+                  ))}
+                </div>
+              )}
 
               <Input
                 label='Reference'

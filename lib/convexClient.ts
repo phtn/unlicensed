@@ -53,6 +53,8 @@ export type RawProduct = {
   stockByDenomination?: Record<string, number>
   /** Per-denomination price in cents. */
   priceByDenomination?: Record<string, number>
+  /** Per-denomination sale price in cents. */
+  salePriceByDenomination?: Record<string, number>
   rating?: number
   image?: string
   gallery?: string[]
@@ -171,6 +173,7 @@ export const adaptProduct = (
   masterStockUnit: product.masterStockUnit,
   stockByDenomination: product.stockByDenomination,
   priceByDenomination: product.priceByDenomination,
+  salePriceByDenomination: product.salePriceByDenomination,
   rating: product.rating ?? 0,
   image: product.image ?? '',
   gallery: product.gallery ?? [],
