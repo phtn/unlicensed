@@ -1,6 +1,5 @@
 'use client'
 
-import {mapNumericGrams} from '@/app/admin/(routes)/inventory/product/product-schema'
 import {
   type BundleConfig,
   type BundleVariation,
@@ -9,15 +8,18 @@ import {
 import {serializeSelections} from '@/app/lobby/(store)/deals/searchParams'
 import type {StoreProduct} from '@/app/types'
 import {api} from '@/convex/_generated/api'
-import {Id} from '@/convex/_generated/dataModel'
+import type {Id} from '@/convex/_generated/dataModel'
 import {usePendingDeals} from '@/ctx/pending-deals'
 import {
   type CartItemWithProduct,
+  isBundleCartItemWithProducts,
   isProductCartItemWithProduct,
   useCart,
 } from '@/hooks/use-cart'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
+import {mapNumericGrams} from '@/utils/denominationMaps'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {Badge, Button, Card} from '@heroui/react'
 import {useQuery} from 'convex/react'
@@ -34,13 +36,26 @@ import {Stepper} from './stepper'
 
 import {LegacyImage} from '@/components/ui/legacy-image'
 
+type BundleSelection = {productId: Id<'products'>; quantity: number}
+type BundleSelections = Map<string, BundleSelection>
+
+const EMPTY_AVAILABLE_MAP: Record<string, number> = {}
+
+function countSelectedUnits(selections: BundleSelections): number {
+  let total = 0
+  for (const selection of selections.values()) {
+    total += selection.quantity
+  }
+  return total
+}
+
 /** Denominations equivalent to the given one (e.g. 0.125 oz = 3.5g for flower) */
 function getEquivalentDenominations(
   denom: number,
   unitLabel: string,
 ): Set<number> {
   const equiv = new Set<number>([denom])
-  if (unitLabel === 'oz') {
+  if (unitLabel.toLowerCase() === 'oz') {
     const gram = mapNumericGrams[String(denom)]
     if (gram) equiv.add(Number(gram))
     if (denom === 3.5) equiv.add(0.125)
@@ -49,14 +64,6 @@ function getEquivalentDenominations(
     if (denom === 28) equiv.add(1)
   }
   return equiv
-}
-
-function getUnitPriceCents(
-  product: StoreProduct,
-  denomination: number,
-): number {
-  const key = String(denomination)
-  return product.priceByDenomination?.[key] ?? product.priceCents ?? 0
 }
 
 function normalizeDealAttributeValue(value?: string): string {
@@ -120,13 +127,11 @@ interface BundleBuilderProps {
   /** Controlled: variation index from URL/parent */
   variationIndex?: number
   /** Controlled: selections from URL/parent */
-  selections?: Map<string, {productId: Id<'products'>; quantity: number}>
+  selections?: BundleSelections
   /** Controlled: called when variation changes */
   onVariationChange?: (index: number) => void
   /** Controlled: called when selections change */
-  onSelectionsChange?: (
-    selections: Map<string, {productId: Id<'products'>; quantity: number}>,
-  ) => void
+  onSelectionsChange?: (selections: BundleSelections) => void
 }
 
 /** Build map of productId-denomination -> quantity in cart */
@@ -139,12 +144,8 @@ function cartQtyByProductDenom(
     if (isProductCartItemWithProduct(item)) {
       const key = `${item.productId}-${item.denomination ?? 'default'}`
       map[key] = (map[key] ?? 0) + item.quantity
-    } else if ('bundleItems' in item && Array.isArray(item.bundleItems)) {
-      for (const bi of item.bundleItems as Array<{
-        productId: Id<'products'>
-        quantity: number
-        denomination: number
-      }>) {
+    } else if (isBundleCartItemWithProducts(item)) {
+      for (const bi of item.bundleItems) {
         const key = `${bi.productId}-${bi.denomination}`
         map[key] = (map[key] ?? 0) + bi.quantity
       }
@@ -173,9 +174,8 @@ export function BundleBuilder({
   const [internalVariationIndex, setInternalVariationIndex] = useState(
     config.defaultVariationIndex ?? 0,
   )
-  const [internalSelections, setInternalSelections] = useState<
-    Map<string, {productId: Id<'products'>; quantity: number}>
-  >(new Map())
+  const [internalSelections, setInternalSelections] =
+    useState<BundleSelections>(new Map())
   const [isPending, startTransition] = useTransition()
 
   const variationIndex = Math.max(
@@ -191,20 +191,37 @@ export function BundleBuilder({
 
   const setVariationIndex = useCallback(
     (index: number | ((prev: number) => number)) => {
-      const next = typeof index === 'function' ? index(variationIndex) : index
+      const requested =
+        typeof index === 'function' ? index(variationIndex) : index
+      const next = Math.max(
+        0,
+        Math.min(requested, config.variations.length - 1),
+      )
+      if (next === variationIndex) return
       if (isControlled) onVariationChange?.(next)
       else setInternalVariationIndex(next)
+
+      if (isSelectionsControlled) {
+        if (!isControlled) onSelectionsChange?.(new Map())
+      } else {
+        setInternalSelections(new Map())
+      }
     },
-    [isControlled, onVariationChange, variationIndex],
+    [
+      config.variations.length,
+      isControlled,
+      isSelectionsControlled,
+      onSelectionsChange,
+      onVariationChange,
+      variationIndex,
+    ],
   )
 
   const setSelections = useCallback(
     (
       updater:
-        | Map<string, {productId: Id<'products'>; quantity: number}>
-        | ((
-            prev: Map<string, {productId: Id<'products'>; quantity: number}>,
-          ) => Map<string, {productId: Id<'products'>; quantity: number}>),
+        | BundleSelections
+        | ((prev: BundleSelections) => BundleSelections),
     ) => {
       const next = typeof updater === 'function' ? updater(selections) : updater
       if (isSelectionsControlled) onSelectionsChange?.(next)
@@ -228,6 +245,8 @@ export function BundleBuilder({
   const availableMap = useQuery(api.productHolds.q.getAvailableQuantities, {
     pairs,
   })
+  const isAvailabilityLoading = availableMap === undefined
+  const availableQuantities = availableMap ?? EMPTY_AVAILABLE_MAP
 
   const productMap = useMemo(
     () => new Map(products.map((p) => [String(p._id), p])),
@@ -239,15 +258,19 @@ export function BundleBuilder({
       products,
       variation,
       config,
-      availableMap ?? {},
+      availableQuantities,
     )
-  }, [products, variation, config, availableMap])
+  }, [products, variation, config, availableQuantities])
 
-  const totalSelected = useMemo(() => {
-    return Array.from(selections.values()).reduce((s, v) => s + v.quantity, 0)
-  }, [selections])
+  const totalSelected = useMemo(
+    () => countSelectedUnits(selections),
+    [selections],
+  )
 
-  const isComplete = totalSelected >= variation.totalUnits
+  const requiredUnits = variation.totalUnits
+  const remainingUnits = Math.max(0, requiredUnits - totalSelected)
+  const isComplete = totalSelected === requiredUnits
+  const isOverSelected = totalSelected > requiredUnits
   const maxPerStrain = config.maxPerStrain
   const lowThreshold = config.lowStockThreshold
 
@@ -278,7 +301,7 @@ export function BundleBuilder({
   }, [rawCartQtyMap, equivalentDenoms, denom])
 
   const selectionsFromCart = useMemo(() => {
-    const map = new Map<string, {productId: Id<'products'>; quantity: number}>()
+    const map: BundleSelections = new Map()
     if (!cart?.items?.length) return map
     for (const item of cart.items) {
       if (isProductCartItemWithProduct(item)) {
@@ -290,13 +313,8 @@ export function BundleBuilder({
         const existing = map.get(key)
         const qty = (existing?.quantity ?? 0) + item.quantity
         if (qty > 0) map.set(key, {productId: item.productId, quantity: qty})
-      } else if ('bundleItems' in item && Array.isArray(item.bundleItems)) {
-        const bundleItems = item.bundleItems as Array<{
-          productId: Id<'products'>
-          quantity: number
-          denomination: number
-        }>
-        for (const bi of bundleItems) {
+      } else if (isBundleCartItemWithProducts(item)) {
+        for (const bi of item.bundleItems) {
           if (!productIdSet.has(String(bi.productId))) continue
           if (!equivalentDenoms.has(bi.denomination)) continue
           const key = String(bi.productId)
@@ -310,11 +328,7 @@ export function BundleBuilder({
   }, [cart, equivalentDenoms, productIdSet])
 
   const totalFromCart = useMemo(
-    () =>
-      Array.from(selectionsFromCart.values()).reduce(
-        (sum, v) => sum + v.quantity,
-        0,
-      ),
+    () => countSelectedUnits(selectionsFromCart),
     [selectionsFromCart],
   )
 
@@ -333,12 +347,11 @@ export function BundleBuilder({
           if (!equiv.has(item.denomination)) continue
           count += item.quantity
         } else if (
-          'bundleType' in item &&
+          isBundleCartItemWithProducts(item) &&
           item.bundleType === config.id &&
-          'variationIndex' in item &&
           item.variationIndex === vi
         ) {
-          count += 1
+          count += item.bundleItems.reduce((sum, bi) => sum + bi.quantity, 0)
         }
       }
       return count
@@ -351,9 +364,8 @@ export function BundleBuilder({
     if (isAuthenticated) {
       return cart.items.some(
         (item) =>
-          'bundleType' in item &&
+          isBundleCartItemWithProducts(item) &&
           item.bundleType === config.id &&
-          'variationIndex' in item &&
           item.variationIndex === variationIndex,
       )
     }
@@ -382,7 +394,7 @@ export function BundleBuilder({
   const effectiveMaxPerProduct = useCallback(
     (product: StoreProduct) => {
       const availKey = `${product._id}-${denom}`
-      const available = availableMap ? availableMap[availKey] : 0
+      const available = availableQuantities[availKey] ?? 0
       const inCart = cartQtyMap[availKey] ?? 0
       const remaining = Math.max(0, available - inCart)
       if (remaining <= 0) return 0
@@ -395,7 +407,22 @@ export function BundleBuilder({
       }
       return Math.min(maxPerStrain, remaining)
     },
-    [availableMap, cartQtyMap, config.id, denom, lowThreshold, maxPerStrain],
+    [
+      availableQuantities,
+      cartQtyMap,
+      config.id,
+      denom,
+      lowThreshold,
+      maxPerStrain,
+    ],
+  )
+
+  const maxSelectableForProduct = useCallback(
+    (product: StoreProduct, currentQuantity: number) => {
+      const inventoryMax = effectiveMaxPerProduct(product)
+      return Math.min(inventoryMax, currentQuantity + remainingUnits)
+    },
+    [effectiveMaxPerProduct, remainingUnits],
   )
 
   const {setPendingDeal, clearPendingDeal} = pendingCtx ?? {}
@@ -436,10 +463,17 @@ export function BundleBuilder({
   const handleIncrement = useCallback(
     (productId: Id<'products'>, product: StoreProduct) => {
       const key = String(productId)
-      const current = selections.get(key)?.quantity ?? 0
-      const max = effectiveMaxPerProduct(product)
-      if (current >= max) return
       setSelections((prev) => {
+        const current = prev.get(key)?.quantity ?? 0
+        const remainingForPrev = Math.max(
+          0,
+          requiredUnits - countSelectedUnits(prev),
+        )
+        const max = Math.min(
+          effectiveMaxPerProduct(product),
+          current + remainingForPrev,
+        )
+        if (current >= max) return prev
         const next = new Map(prev)
         next.set(key, {
           productId,
@@ -448,7 +482,7 @@ export function BundleBuilder({
         return next
       })
     },
-    [effectiveMaxPerProduct, selections, setSelections],
+    [effectiveMaxPerProduct, requiredUnits, setSelections],
   )
 
   const handleDecrement = useCallback(
@@ -526,20 +560,14 @@ export function BundleBuilder({
     }
     if (selectedProducts.length === 0) return null
     const bundleAmount = variation.totalUnits * variation.denominationPerUnit
-    let sumCents = 0
-    for (const p of selectedProducts) {
-      const direct = getUnitPriceCents(p, bundleAmount)
-      const derived =
-        denom > 0 ? getUnitPriceCents(p, denom) * (bundleAmount / denom) : 0
-      const priceCents = direct > 0 ? direct : derived
-      sumCents += priceCents
-    }
-    const avgCents = sumCents / selectedProducts.length
-    if (avgCents <= 0) return null
-    const bundleTotalCents = Math.ceil(avgCents / 500) * 500
+    const bundleTotalCents = getBundleTotalCents(
+      selectedProducts,
+      denom,
+      bundleAmount,
+    )
+    if (bundleTotalCents <= 0) return null
     return {
       bundleTotalCents,
-      avgCents,
       selectedProducts,
       unitLabel: variation.unitLabel,
       bundleAmount,
@@ -552,13 +580,17 @@ export function BundleBuilder({
     variation.denominationPerUnit,
     variation.unitLabel,
   ])
+  const bundleSavingsCents =
+    bundleTotalDisplay && isComplete
+      ? Math.max(0, subtotalCents - bundleTotalDisplay.bundleTotalCents)
+      : 0
 
   return (
     <Card
       id={config.id}
-      className='scroll-mt-28 md:scroll-mt-32 rounded-none! border border-foreground/20 overflow-hidden'>
-      <Card.Header className='flex flex-col items-start gap-2'>
-        <div className='flex items-center justify-between w-full min-h-12 md:min-h-14'>
+      className='scroll-mt-28 md:scroll-mt-32 rounded-none! border border-foreground/20 overflow-hidden p-0'>
+      <Card.Header className='flex flex-col items-start'>
+        <div className='flex items-center justify-between w-full min-h-12 md:min-h-14 px-2'>
           <h2 className='flex items-center pl-1 space-x-4 font-clash text-lg md:text-xl font-semibold'>
             <span>{config.title}</span>
             {config.variations.length === 1 && (
@@ -566,7 +598,7 @@ export function BundleBuilder({
                 {config.categorySlugs.map((slug) => (
                   <span
                     key={slug}
-                    className='font-okxs capitalize font-medium md:text-lg text-base px-2.5 py-1 rounded-full bg-sidebar border border-dark-table/20 whitespace-nowrap'>
+                    className='font-clash font-medium md:text-base text-base capitalize px-2.5 py-0.5 rounded-full bg-foreground text-background whitespace-nowrap'>
                     {slug}
                   </span>
                 ))}
@@ -578,26 +610,13 @@ export function BundleBuilder({
               {config.variations.map((v, i) => {
                 const variationCartCount = cartCountByVariationIndex[i] ?? 0
                 return (
-                  <Badge
-                    key={i}
-                    content={
-                      variationCartCount > 0 ? `${variationCartCount}` : ''
-                    }
-                    className={cn('shrink-0 hidden', {
-                      flex: variationCartCount > 0,
-                    })}
-                    // classNames={{
-                    //   badge: [
-                    //     'min-w-5 size-6 rounded-full bg-brand text-white flex items-center justify-center',
-                    //   ],
-                    // }}
-                    placement='top-right'>
+                  <Badge.Anchor key={i} className='shrink-0'>
                     <Button
                       size='md'
                       variant={variationIndex === i ? 'primary' : 'secondary'}
                       onPress={() => setVariationIndex(i)}
                       className={cn(
-                        'rounded-none! text-sm md:text-base bg-transparent px-2',
+                        'rounded-none! text-sm md:text-base bg-transparent text-foreground px-2',
                         {
                           'bg-dark-table text-white dark:bg-white dark:text-dark-table px-2.5':
                             variationIndex === i,
@@ -611,109 +630,193 @@ export function BundleBuilder({
                         )}
                       </span>
                     </Button>
-                  </Badge>
+                    {variationCartCount > 0 && (
+                      <Badge color='accent' placement='top-right' size='sm'>
+                        {variationCartCount}
+                      </Badge>
+                    )}
+                  </Badge.Anchor>
                 )
               })}
             </div>
           )}
         </div>
-        <p className='py-2 text-xs md:text-base text-muted-foreground'>
+        <p className='text-sm md:text-base text-muted-foreground px-3'>
           {config.description}
         </p>
-        <div className='flex items-center gap-4'>
-          <span
-            className={
-              isComplete
-                ? 'font-medium text-terpenes'
-                : 'font-medium text-foreground/70'
-            }>
-            {totalSelected} / {variation.totalUnits} selected
-          </span>
-          {totalFromCart > 0 && (
+        <div className='flex items-center justify-between px-3 w-full'>
+          <div className='flex items-center font-clash font-medium gap-4 py-2'>
             <span
-              id='from-cart'
-              className='bg-brand text-white rounded-xs px-4 py-1 text-sm'>
-              {totalFromCart} {totalFromCart === 1 ? 'item' : 'items'} from cart
+              className={cn({
+                'text-terpenes': isComplete,
+                'text-danger': isOverSelected,
+                'text-foreground/70': !isComplete && !isOverSelected,
+              })}>
+              {totalSelected} / {variation.totalUnits}
             </span>
-          )}
+            {totalFromCart > 0 && (
+              <span
+                id='from-cart'
+                className='bg-brand text-white rounded-xs px-4 py-1 text-sm'>
+                {totalFromCart} {totalFromCart === 1 ? 'item' : 'items'} from
+                cart
+              </span>
+            )}
+            {isOverSelected && (
+              <span className='text-xs text-danger'>
+                Remove {totalSelected - requiredUnits} to continue
+              </span>
+            )}
+          </div>
+          <div className='flex items-center justify-between px-3 space-x-2 md:px-0'>
+            <div className='flex flex-col md:flex-row md:items-center space-x-2'>
+              <span className='font-clash font-medium opacity-80 md:text-base text-sm'>
+                Total:{' '}
+                {isComplete && (
+                  <span
+                    className={cn({
+                      'line-through decoration-brand dark:decoration-light-brand/80 decoration-2 font-medium opacity-80 text-base':
+                        isComplete,
+                    })}>
+                    ${(subtotalCents / 100).toFixed(0)}
+                  </span>
+                )}
+              </span>
+              <div className='font-clash font-medium flex items-center space-x-1 md:space-x-2'>
+                <span
+                  className={cn({
+                    hidden: isComplete,
+                  })}>
+                  ${(subtotalCents / 100).toFixed(0)}
+                </span>
+                <span
+                  id='bundle-total'
+                  className='text-terpenes font-semibold text-lg'>
+                  {bundleTotalDisplay && isComplete
+                    ? ` $${(bundleTotalDisplay.bundleTotalCents / 100).toFixed(0)} `
+                    : null}
+                </span>
+                {isComplete && bundleTotalDisplay && bundleSavingsCents > 0 && (
+                  <div className='hidden _flex items-center justify-center bg-terpenes dark:bg-white rounded-md px-1 md:px-2 md:py-0.5'>
+                    <span className='dark:text-terpenes text-white text-sm font-normal md:font-medium'>
+                      <span className='text-xs tracking-tight md:tracking-normal'>
+                        Saved
+                      </span>
+                      <span className='font-medium md:font-semibold ml-1'>
+                        ${(bundleSavingsCents / 100).toFixed(0)}
+                      </span>
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <ViewTransition>
+              <Button
+                size='lg'
+                onPress={handleAddToCart}
+                isDisabled={!isComplete || isPending || bundleAlreadyInCart}
+                className={cn('bg-terpenes rounded-none! px-3.5', {
+                  'opacity-100!': bundleAlreadyInCart,
+                })}>
+                <span className='flex items-center gap-2'>
+                  {isPending ? (
+                    <Icon name='spinners-ring' className='size-4' />
+                  ) : (
+                    <Icon
+                      name={isComplete ? 'bag-solid' : 'box-bold'}
+                      className='size-5'
+                    />
+                  )}
+                  <span>
+                    {bundleAlreadyInCart
+                      ? 'Bundle in cart'
+                      : isOverSelected
+                        ? 'Reduce selection'
+                        : isComplete
+                          ? 'Add to cart'
+                          : 'Complete bundle'}
+                  </span>
+                </span>
+              </Button>
+            </ViewTransition>
+          </div>
         </div>
       </Card.Header>
-      <Card.Content className='pt-4 px-0 md:px-3 dark:bg-dark-table'>
-        <div className='grid gap-0 md:gap-3 sm:grid-cols-2 lg:grid-cols-3'>
-          {filteredProducts.map((product) => {
-            const pid = product._id as Id<'products'>
-            const qty = selections.get(String(pid))?.quantity ?? 0
-            const max = effectiveMaxPerProduct(product)
-            const price = getUnitPriceCents(product, denom)
-            const inCart = (cartQtyMap[`${pid}-${denom}`] ?? 0) > 0
+      <Card.Content className='pt-1 px-0 md:px-1 dark:bg-dark-table/20'>
+        {!isAvailabilityLoading && (
+          <div className='grid gap-1 md:gap-1 sm:grid-cols-2 lg:grid-cols-3'>
+            {filteredProducts.map((product) => {
+              const pid = product._id as Id<'products'>
+              const qty = selections.get(String(pid))?.quantity ?? 0
+              const max = maxSelectableForProduct(product, qty)
+              const price = getUnitPriceCents(product, denom)
+              const inCart = (cartQtyMap[`${pid}-${denom}`] ?? 0) > 0
 
-            return (
-              <div
-                key={product._id}
-                className='flex items-center gap-3 md:rounded-none border-b first:border-t md:border border-foreground/10 p-2 dark:bg-background/20'>
-                {product.image && (
-                  <Badge
-                    // content={
-                    //   inCart ? (
-                    //     <Icon
-                    //       name='bag-solid'
-                    //       className='size-3.5 md:size-4 text-brand dark:text-white'
-                    //     />
-                    //   ) : null
-                    // }
-                    className={cn('shrink-0 hidden', {flex: inCart})}
-                    // classNames={{
-                    //   badge: [
-                    //     inCart &&
-                    //       'rounded-md md:rounded-lg bg-white dark:bg-brand dark:border-2 size-5 md:size-6 border-sidebar border-1 dark:border-brand shadow-xs',
-                    //     '',
-                    //   ],
-                    // }}
-                    placement='top-right'>
-                    <LegacyImage
-                      src={product.image}
-                      alt={product.name}
-                      loading='lazy'
-                      className='size-18 shrink-0 rounded-none! object-cover'
-                    />
-                  </Badge>
-                )}
-                <div className='min-w-0 flex-1'>
-                  <div className='flex items-center justify-between'>
-                    <p className='truncate font-medium text-base'>
-                      {product.name}
-                    </p>
-                    <Stepper
-                      value={qty}
-                      max={max}
-                      onIncrement={() => handleIncrement(pid, product)}
-                      onDecrement={() => handleDecrement(pid)}
-                      disabled={isPending}
-                      isComplete={isComplete}
-                    />
-                  </div>
-                  <p className='md:text-base text-sm text-muted-foreground'>
-                    <div className='md:flex md:items-center md:space-x-2 whitespace-nowrap'>
-                      <span className='text-foreground/80'>
-                        ${(price / 100).toFixed(2)}
-                      </span>{' '}
-                      <span className='md:flex hidden'>&middot;</span>
-                      <br className='md:hidden flex' />
-                      <span className='md:pt-0 -pt-2'>
-                        {formatDenominationDisplay(
-                          variation.denominationPerUnit,
-                          variation.unitLabel,
-                        )}
-                      </span>
+              return (
+                <div
+                  key={product._id}
+                  className='flex items-center gap-3 rounded-none p-2 dark:bg-background/20'>
+                  {product.image && (
+                    <Badge.Anchor className='shrink-0'>
+                      <LegacyImage
+                        src={product.image}
+                        alt={product.name}
+                        loading='lazy'
+                        className='size-16 shrink-0 rounded-none! object-cover'
+                      />
+                      {inCart && (
+                        <Badge color='accent' placement='top-right' size='sm'>
+                          <Icon
+                            name='bag-solid'
+                            className='size-3 text-white'
+                          />
+                        </Badge>
+                      )}
+                    </Badge.Anchor>
+                  )}
+                  <div className='min-w-0 flex-1'>
+                    <div className='flex items-center justify-between'>
+                      <p className='truncate font-medium text-base'>
+                        {product.name}
+                      </p>
+                      <Stepper
+                        value={qty}
+                        max={max}
+                        onIncrement={() => handleIncrement(pid, product)}
+                        onDecrement={() => handleDecrement(pid)}
+                        disabled={isPending}
+                        isComplete={isComplete}
+                      />
                     </div>
-                  </p>
+                    <div className='md:text-base text-sm text-muted-foreground'>
+                      <div className='md:flex md:items-center md:space-x-2 whitespace-nowrap'>
+                        <span className='font-clash font-medium text-foreground/80'>
+                          ${(price / 100).toFixed(2)}
+                        </span>{' '}
+                        <span className='md:flex hidden'>&middot;</span>
+                        <br className='md:hidden flex' />
+                        <span className='md:pt-0 -pt-2'>
+                          {formatDenominationDisplay(
+                            variation.denominationPerUnit,
+                            variation.unitLabel,
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        )}
 
-        {filteredProducts.length === 0 && (
+        {isAvailabilityLoading && (
+          <p className='py-6 text-center text-sm text-muted-foreground'>
+            Checking availability…
+          </p>
+        )}
+
+        {!isAvailabilityLoading && filteredProducts.length === 0 && (
           <p className='py-6 text-center text-sm text-muted-foreground'>
             No products available for this deal right now.
           </p>
@@ -732,82 +835,6 @@ export function BundleBuilder({
             selectedProducts={bundleTotalDisplay?.selectedProducts ?? []}
           />
         )}
-
-        <div className='mt-4 flex items-center justify-between pt-4 px-3 md:px-0'>
-          <div className='flex flex-col md:flex-row md:items-center space-x-2'>
-            <span className='font-medium opacity-80 md:text-base text-sm'>
-              Total:{' '}
-              {isComplete && (
-                <span
-                  className={cn({
-                    'line-through decoration-dark-table dark:decoration-zinc-700 decoration-1 font-light opacity-50 text-base':
-                      isComplete,
-                  })}>
-                  ${(subtotalCents / 100).toFixed(2)}
-                </span>
-              )}
-            </span>
-            <div className='font-semibold flex items-center space-x-1 md:space-x-2'>
-              <span
-                className={cn({
-                  hidden: isComplete,
-                })}>
-                ${(subtotalCents / 100).toFixed(2)}
-              </span>
-              <span
-                id='bundle-total'
-                className='text-terpenes font-semibold text-lg'>
-                {bundleTotalDisplay && isComplete
-                  ? ` $${(bundleTotalDisplay.bundleTotalCents / 100).toFixed(2)} `
-                  : null}
-              </span>
-              {isComplete && (
-                <div className='flex items-center justify-center bg-terpenes dark:bg-white rounded-md px-1 md:px-2 md:py-0.5'>
-                  <span className='dark:text-terpenes text-white text-sm font-normal md:font-medium'>
-                    <span className='text-xs tracking-tight md:tracking-normal'>
-                      Saved
-                    </span>
-                    <span className='font-medium md:font-semibold ml-1'>
-                      $
-                      {(
-                        (subtotalCents -
-                          (bundleTotalDisplay?.bundleTotalCents ?? 0)) /
-                        100
-                      ).toFixed(0)}
-                    </span>
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-          <ViewTransition>
-            <Button
-              size='lg'
-              onPress={handleAddToCart}
-              isDisabled={!isComplete || isPending || bundleAlreadyInCart}
-              className={cn('bg-terpenes rounded-none! px-3.5', {
-                'opacity-100!': bundleAlreadyInCart,
-              })}>
-              <span className='flex items-center gap-2'>
-                {isPending ? (
-                  <Icon name='spinners-ring' className='size-4' />
-                ) : (
-                  <Icon
-                    name={isComplete ? 'box-checked' : 'box-bold'}
-                    className='size-5'
-                  />
-                )}
-                <span>
-                  {bundleAlreadyInCart
-                    ? 'Bundle in cart'
-                    : isComplete
-                      ? 'Add to cart'
-                      : 'Complete bundle'}
-                </span>
-              </span>
-            </Button>
-          </ViewTransition>
-        </div>
       </Card.Content>
     </Card>
   )

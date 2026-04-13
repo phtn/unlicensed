@@ -695,34 +695,4 @@ export const mapFractions: Record<string, string> = {
   '8oz': '8 oz',
 }
 
-export const mapNumericFractions: Record<string, string> = {
-  0.125: '⅛',
-  0.25: '¼',
-  0.5: '½',
-  1: '1',
-  2: '2',
-  3: '3',
-  4: '4',
-  5: '5',
-  6: '6',
-  7: '7',
-  8: '8',
-  9: '9',
-  10: '10',
-}
-
-export const mapNumericGrams: Record<string, string> = {
-  0.125: '3.5',
-  0.25: '7',
-  0.5: '14',
-  1: '28',
-  2: '',
-  3: '',
-  4: '',
-  5: '',
-  6: '',
-  7: '',
-  8: '',
-  9: '',
-  10: '',
-}
+export {mapNumericFractions, mapNumericGrams} from '@/utils/denominationMaps'

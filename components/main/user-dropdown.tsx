@@ -133,17 +133,17 @@ export const UserDropdown = ({
         }
         className='group flex items-center justify-center relative rounded-full transition-transform duration-200 hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/70 disabled:cursor-wait disabled:opacity-70'>
         {loading ? (
-          <span className='relative flex items-center justify-center rounded-full border border-white/50 bg-background/90 shadow-[0_10px_30px_rgba(15,23,42,0.18)] dark:border-white/10 dark:bg-dark-table'>
+          <span className='relative flex items-center justify-center rounded-full border border-white/50 bg-background/90 dark:border-white/10 dark:bg-dark-table'>
             <Icon name='spinners-ring' className='size-4 text-foreground/70' />
           </span>
         ) : (
           <Badge.Anchor>
-            <Avatar className='relative size-9 border border-white/50 bg-background/90 text-foreground shadow-[0_10px_30px_rgba(15,23,42,0.18)] dark:border-white/10 dark:bg-dark-table'>
+            <Avatar className='relative size-9 border border-white/50 bg-background/90 text-foreground dark:border-white/10 dark:bg-dark-table'>
               <Avatar.Image
                 alt={displayName}
                 src={user.photoURL ?? undefined}
               />
-              <Avatar.Fallback className='bg-background/90 text-[11px] font-medium tracking-tight text-foreground dark:bg-dark-table'>
+              <Avatar.Fallback className='bg-background/90 text-sm font-clash font-medium md:font-bold text-foreground dark:bg-dark-table/50'>
                 {getInitials(displayName)}
               </Avatar.Fallback>
             </Avatar>

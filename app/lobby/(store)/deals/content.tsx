@@ -7,7 +7,7 @@ import type {
   BundleType,
 } from '@/app/lobby/(store)/deals/lib/deal-types'
 import type {StoreProduct} from '@/app/types'
-import {Id} from '@/convex/_generated/dataModel'
+import type {Id} from '@/convex/_generated/dataModel'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {useSearchParams} from 'next/navigation'
@@ -77,7 +77,11 @@ function ControlledBundleBuilder({
     .filter((id): id is Id<'products'> => id != null)
 
   const onVariationChange = useCallback(
-    (index: number) => setBundleState(bundleId, {variationIndex: index}),
+    (index: number) =>
+      setBundleState(bundleId, {
+        variationIndex: index,
+        selections: new Map(),
+      }),
     [setBundleState, bundleId],
   )
   const onSelectionsChange = useCallback(
@@ -218,7 +222,7 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
         {dealsLoading ? (
           <p className='text-sm text-muted-foreground'>Loading deals…</p>
         ) : (
-          <div className='hidden space-y-10'>
+          <div className='space-y-10'>
             {configsList.map((config) => (
               <ControlledBundleBuilder
                 key={config.id}

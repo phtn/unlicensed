@@ -1,14 +1,18 @@
 'use client'
 
-import {mapNumericFractions} from '@/app/admin/(routes)/inventory/product/product-schema'
 import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
 import {formatPrice} from '@/utils/formatPrice'
+import {mapNumericFractions} from '@/utils/denominationMaps'
+import {
+  getParamKeysForDealId,
+  serializeSelections,
+} from '@/app/lobby/(store)/deals/searchParams'
 import {Button} from '@heroui/react'
-import Link from 'next/link'
-import {useMemo} from 'react'
+import {useRouter} from 'next/navigation'
+import {useMemo, useTransition} from 'react'
 
 import {LegacyImage} from '@/components/ui/legacy-image'
 
@@ -33,18 +37,46 @@ interface BundleCartItemProps {
   item: BundleCartItemData
   itemIndex: number
   onRemove: (itemIndex: number) => Promise<void>
+  onEdit?: (itemIndex: number) => Promise<void>
   isPending?: boolean
+}
+
+function getBundleEditHref(item: BundleCartItemData): string {
+  const keys = getParamKeysForDealId(item.bundleType)
+  const selections = new Map<
+    string,
+    {productId: string; quantity: number}
+  >()
+
+  for (const bundleItem of item.bundleItemsWithProducts) {
+    if (bundleItem.quantity <= 0) continue
+    const existing = selections.get(bundleItem.productId)
+    selections.set(bundleItem.productId, {
+      productId: bundleItem.productId,
+      quantity: (existing?.quantity ?? 0) + bundleItem.quantity,
+    })
+  }
+
+  const params = new URLSearchParams({
+    [keys.v]: String(item.variationIndex),
+    [keys.s]: serializeSelections(selections),
+  })
+
+  return `/lobby/deals?${params.toString()}#${encodeURIComponent(item.bundleType)}`
 }
 
 export function BundleCartItem({
   item,
   itemIndex,
   onRemove,
+  onEdit,
   isPending = false,
 }: BundleCartItemProps) {
+  const router = useRouter()
   const {configs} = useDealConfigs()
   const config = configs[item.bundleType]
   const variation = config?.variations[item.variationIndex]
+  const [isEditing, startEditTransition] = useTransition()
 
   const productImageIds = useMemo(
     () =>
@@ -75,6 +107,17 @@ export function BundleCartItem({
   const savingsCents = Math.max(0, subtotalCents - totalPriceCents)
 
   const title = config?.title ?? 'Bundle'
+  const editHref = useMemo(() => getBundleEditHref(item), [item])
+  const isActionPending = isPending || isEditing
+
+  const handleEdit = () => {
+    if (isActionPending) return
+
+    startEditTransition(async () => {
+      await (onEdit ?? onRemove)(itemIndex)
+      router.push(editHref)
+    })
+  }
 
   return (
     <div className='flex gap-3 p-3 first:rounded-t-2xl last:rounded-b-2xl border-terpenes border border-b-0 last:border-b bg-card/50'>
@@ -144,18 +187,23 @@ export function BundleCartItem({
           </p>
         </div>
         <div className='flex items-center justify-end gap-2'>
-          <Link href='/lobby/deals' className='h-7 text-sm font-okxs'>
+          <Button
+            size='sm'
+            variant='ghost'
+            className='h-7 rounded-xs px-2 text-sm font-okxs'
+            isDisabled={isActionPending}
+            onPress={handleEdit}>
             <span className='flex items-center gap-1'>
               <Icon name='pencil-fill' className='size-3.5' />
               <span>Edit</span>
             </span>
-          </Link>
+          </Button>
           <Button
             size='sm'
             isIconOnly
             variant='tertiary'
             className='min-w-8 w-8 h-7 aspect-square rounded-sm text-muted-foreground opacity-80 hover:opacity-100'
-            isDisabled={isPending}
+            isDisabled={isActionPending}
             onPress={() => onRemove(itemIndex)}>
             <Icon name='trash' className='size-6' />
           </Button>

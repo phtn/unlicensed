@@ -5,7 +5,7 @@ type ProductPriceLike = {
 
 /**
  * Unit price in cents for one unit of the selected denomination.
- * Uses priceByDenomination when available (values in dollars), otherwise
+ * Uses priceByDenomination when available (values in cents), otherwise
  * falls back to priceCents * denomination.
  * Accepts Convex Doc<'products'>, StoreProduct, or any object with price fields.
  */

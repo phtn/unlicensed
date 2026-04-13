@@ -1,7 +1,4 @@
-import {
-  mapNumericFractions,
-  mapNumericGrams,
-} from '@/app/admin/(routes)/inventory/product/product-schema'
+import {mapNumericFractions, mapNumericGrams} from './denominationMaps'
 
 /**
  * Formats denomination + unit for display. Unit is compared case-insensitively.

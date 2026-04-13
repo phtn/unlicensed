@@ -55,6 +55,14 @@ export const CartDrawerItems = ({
   removeItem,
   removeBundle,
 }: CartDrawerItemsProps) => {
+  const removeBundleItem = async (itemIndex: number) => {
+    applyOptimisticCartAction({
+      type: 'removeBundle',
+      itemIndex,
+    })
+    await removeBundle(itemIndex)
+  }
+
   return (
     <div className='px-4 mb-6'>
       {cartItems.map((item, index) => {
@@ -203,13 +211,10 @@ export const CartDrawerItems = ({
             itemIndex={index}
             onRemove={async (idx) => {
               startTransition(async () => {
-                applyOptimisticCartAction({
-                  type: 'removeBundle',
-                  itemIndex: idx,
-                })
-                await removeBundle(idx)
+                await removeBundleItem(idx)
               })
             }}
+            onEdit={removeBundleItem}
             isPending={isPending}
           />
         )

@@ -364,7 +364,7 @@
   --backdrop-secondary:
     radial-gradient(
       circle at 52% 112%,
-      rgba(196, 63, 53, 0.54),
+      rgba(225, 89, 169, 0.5),
       transparent 74%
     ),
     radial-gradient(circle at 10% 44%, rgba(225, 89, 169, 0.2), transparent 62%);

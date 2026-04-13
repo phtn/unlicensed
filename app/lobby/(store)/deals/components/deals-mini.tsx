@@ -55,7 +55,7 @@ export const DealsMini = ({featuredDeals}: DealsMiniProps) => {
               <ViewTransition key={deal.id} enter='auto'>
                 <Link
                   href={`/lobby/deals#${deal.id}`}
-                  className='group relative overflow-hidden rounded-3xl border border-foreground/10 dark:bg-black bg-slate-500/15 p-5 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:bg-panel/40'>
+                  className='group relative overflow-hidden rounded-3xl border border-foreground/10 dark:bg-black bg-slate-500/15 p-5 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:bg-panel/40 decoration-0'>
                   <div className='flex flex-col gap-3'>
                     <span className='text-xs uppercase font-polysans font-semibold opacity-80 dark:text-light-gray text-dark-gray'>
                       {deal.categorySlugs.join(' · ')}
