@@ -165,7 +165,12 @@ export const Inventory = ({
       return new Set(nums)
     }
     if (Array.isArray(availableDenominationsRaw)) {
-      return new Set(availableDenominationsRaw.map(String))
+      return new Set(
+        availableDenominationsRaw
+          .map(String)
+          .map((value) => value.trim())
+          .filter((value) => value.length > 0),
+      )
     }
     return new Set<string>()
   }, [availableDenominationsRaw])
@@ -378,12 +383,6 @@ export const Inventory = ({
             <div className='col-span-1'>
               <form.AppField name='availableDenominationsRaw'>
                 {(field) => {
-                  const selectedKeys = new Set(
-                    variantOptions
-                      .filter((option) => currentDenominations.has(option.key))
-                      .map((option) => option.key),
-                  )
-
                   return (
                     <div className='space-y-1 w-full'>
                       <field.SelectField
@@ -396,7 +395,6 @@ export const Inventory = ({
                             : 'Select denominations...'
                         }
                         mode='multiple'
-                        value={String(selectedKeys)}
                         disabled={variantOptions.length === 0}
                         // renderValue={(items) => (
                         //   <div className='flex flex-wrap gap-2'>
@@ -460,27 +458,6 @@ export const Inventory = ({
             <div className=''>
               <form.AppField name='popularDenomination'>
                 {(field) => {
-                  const popularDenominationValue =
-                    (field.state.value as number[] | undefined) ?? []
-
-                  const selectedKeys = (() => {
-                    if (!popularDenominationValue.length) {
-                      return new Set<string>()
-                    }
-
-                    return new Set(
-                      variantOptions
-                        .filter((option) =>
-                          popularDenominationValue.some(
-                            (value) =>
-                              option.denomination !== null &&
-                              Math.abs(option.denomination - value) < 0.0001,
-                          ),
-                        )
-                        .map((option) => option.key),
-                    )
-                  })()
-
                   return (
                     <div className='space-y-1 w-full'>
                       <field.SelectField
@@ -493,7 +470,6 @@ export const Inventory = ({
                             : 'Select popular denominations...'
                         }
                         mode='multiple'
-                        value={String(selectedKeys)}
                         // onChange={(e) =>
                         //   handlePopularSelectionChange(e, selectedKeys)
                         // }

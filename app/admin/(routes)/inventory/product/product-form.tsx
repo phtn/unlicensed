@@ -66,8 +66,8 @@ const PRODUCT_FIELD_SECTION_MAP: Partial<
   priceCents: 'pricing',
   batchId: 'pricing',
   unit: 'pricing',
-  availableDenominationsRaw: 'pricing',
-  popularDenomination: 'pricing',
+  availableDenominationsRaw: 'inventory',
+  popularDenomination: 'inventory',
   priceByDenomination: 'pricing',
   salePriceByDenomination: 'inventory',
   variants: 'pricing',
@@ -254,13 +254,14 @@ export const ProductForm = ({
             ? parseOptionalNumber(packSizeFromForm)
             : parseOptionalNumber(data.packSize)
 
-        // Helper to parse comma-separated numbers
-        const parseNumbers = (val?: string) => {
+        const parseNumbers = (
+          val?: string | Array<string | number> | '',
+        ) => {
           if (!val) return undefined
-          const nums = val
-            .split(',')
-            .map((s) => Number(s.trim()))
-            .filter((n) => !isNaN(n) && isFinite(n))
+          const values = Array.isArray(val) ? val : val.split(',')
+          const nums = values
+            .map((value) => Number(String(value).trim()))
+            .filter((value) => Number.isFinite(value))
           return nums.length > 0 ? nums : undefined
         }
 
@@ -276,10 +277,7 @@ export const ProductForm = ({
           batchId: data.batchId?.trim() || undefined,
           unit: data.unit.trim(),
           availableDenominations: parseNumbers(data.availableDenominationsRaw),
-          popularDenomination:
-            data.popularDenomination && data.popularDenomination.length > 0
-              ? data.popularDenomination
-              : undefined,
+          popularDenomination: parseNumbers(data.popularDenomination),
           thcPercentage: data.thcPercentage,
           cbdPercentage:
             data.cbdPercentage && data.cbdPercentage.length > 0
@@ -441,7 +439,7 @@ export const ProductForm = ({
     form.setFieldValue('unit', initialValues.unit ?? '')
     form.setFieldValue(
       'availableDenominationsRaw',
-      initialValues.availableDenominationsRaw ?? '',
+      initialValues.availableDenominationsRaw ?? [],
     )
     form.setFieldValue(
       'popularDenomination',
@@ -550,13 +548,19 @@ export const ProductForm = ({
       )
     }
 
-    const currentAvailableDenominations = (
-      (form.getFieldValue('availableDenominationsRaw') as string) ?? ''
-    ).trim()
-    if (!currentAvailableDenominations) {
+    const currentAvailableDenominations = form.getFieldValue(
+      'availableDenominationsRaw',
+    ) as string | string[] | undefined
+    const hasCurrentAvailableDenominations = Array.isArray(
+      currentAvailableDenominations,
+    )
+      ? currentAvailableDenominations.length > 0
+      : !!currentAvailableDenominations?.trim()
+
+    if (!hasCurrentAvailableDenominations) {
       form.setFieldValue(
         'availableDenominationsRaw',
-        denominations.map(String).join(', '),
+        denominations.map(String),
       )
     }
 

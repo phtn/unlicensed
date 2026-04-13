@@ -107,8 +107,9 @@ export const EditProductContent = ({id}: EditProductContentProps) => {
     priceCents: (product.priceCents ?? 0) / 100, // Convert from cents to dollars
     batchId: product.batchId ?? '',
     unit: product.unit ?? '',
-    availableDenominationsRaw: product.availableDenominations?.join(', ') ?? '',
-    popularDenomination: product.popularDenomination ?? [],
+    availableDenominationsRaw:
+      product.availableDenominations?.map(String) ?? [],
+    popularDenomination: product.popularDenomination?.map(String) ?? [],
     thcPercentage: product.thcPercentage ?? 0,
     cbdPercentage: product.cbdPercentage?.toString() ?? '',
     effects: product.effects ?? [],

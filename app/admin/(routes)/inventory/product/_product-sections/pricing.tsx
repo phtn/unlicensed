@@ -106,7 +106,7 @@ export const Pricing = ({
     form.setFieldValue('variants', generatedVariants)
     form.setFieldValue(
       'availableDenominationsRaw',
-      denominations.map(String).join(', '),
+      denominations.map(String),
     )
     const currentStock =
       (form.getFieldValue('stockByDenomination') as

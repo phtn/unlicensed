@@ -177,29 +177,6 @@ const ProductPrice = ({option, isTestProduct, variant}: ProductPriceProps) => {
 
   return (
     <div className='flex flex-col-reverse items-end leading-none text-right'>
-      {option.isOnSale && option.originalPrice ? (
-        <div className='relative mt-0.5 inline-flex leading-none items-center justify-end self-end px-px'>
-          <span
-            className={cn(
-              'font-clash font-medium text-slate-400/70',
-              isCompact
-                ? 'text-[0.65rem] sm:text-[0.75rem]'
-                : 'text-[0.6rem] md:text-xl',
-            )}>
-            ${option.originalPrice}
-          </span>
-          <CrossOut
-            className={cn(
-              '',
-              isCompact ? 'h-3 sm:h-3.5' : 'h-6 md:size-14 -mt-1',
-            )}
-            pathClassName={cn(
-              isTestProduct ? 'stroke-cyan-300/85' : 'stroke-light-brand/90',
-            )}
-          />
-        </div>
-      ) : null}
-
       {isCompact ? (
         <span
           className={cn(
@@ -220,6 +197,31 @@ const ProductPrice = ({option, isTestProduct, variant}: ProductPriceProps) => {
           <span className='drop-shadow-2xs'>{option.price}</span>
         </div>
       )}
+      {option.isOnSale && option.originalPrice ? (
+        <div className='bg-background/80 dark:bg-foreground/30 relative flex leading-none items-center justify-center px-1.5 h-7'>
+          <span
+            className={cn(
+              'font-clash font-medium text-foreground',
+              isCompact ? 'text-[0.65rem] sm:text-base' : 'text-lg md:text-xl',
+            )}>
+            <span className='pr-px text-lg sm:text-lg'>$</span>
+            {option.originalPrice}
+          </span>
+          <CrossOut
+            className={cn(
+              '',
+              isCompact
+                ? 'h-3 sm:h-3.5'
+                : 'size-11 md:size-14 -mt-0.75 md:-mt-1',
+            )}
+            pathClassName={cn(
+              isTestProduct
+                ? 'stroke-cyan-300/85'
+                : 'stroke-light-brand/80 dark:stroke-light-brand/80',
+            )}
+          />
+        </div>
+      ) : null}
     </div>
   )
 }
