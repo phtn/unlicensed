@@ -1,56 +1,6 @@
-import {api} from '@/convex/_generated/api'
 import {getAdminAuth} from '@/lib/firebase/admin'
-import {canAccessAdminPanel} from '@/lib/staff-access'
-import {ConvexHttpClient} from 'convex/browser'
+import {requireStaffAdminRequest} from '@/lib/firebase/server-auth'
 import {NextRequest, NextResponse} from 'next/server'
-
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
-
-type AuthResult =
-  | {ok: true; email: string; uid: string}
-  | {ok: false; response: NextResponse}
-
-function getBearerToken(request: NextRequest): string | null {
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader) return null
-  if (authHeader.startsWith('Bearer ')) {
-    return authHeader.slice('Bearer '.length).trim() || null
-  }
-  return authHeader.trim() || null
-}
-
-async function requireStaffAdmin(request: NextRequest): Promise<AuthResult> {
-  const token = getBearerToken(request)
-  if (!token) {
-    return {
-      ok: false,
-      response: NextResponse.json({error: 'Unauthorized'}, {status: 401}),
-    }
-  }
-
-  const adminAuth = getAdminAuth()
-  const decoded = await adminAuth.verifyIdToken(token)
-  const email = decoded.email
-
-  if (!email) {
-    return {
-      ok: false,
-      response: NextResponse.json({error: 'Unauthorized'}, {status: 401}),
-    }
-  }
-
-  const staff = await convex.query(api.staff.q.getStaffByEmail, {email})
-  const isAdmin = canAccessAdminPanel(staff)
-
-  if (!isAdmin) {
-    return {
-      ok: false,
-      response: NextResponse.json({error: 'Forbidden'}, {status: 403}),
-    }
-  }
-
-  return {ok: true, email, uid: decoded.uid}
-}
 
 /**
  * API Route to set custom claims for a Firebase user
@@ -58,16 +8,15 @@ async function requireStaffAdmin(request: NextRequest): Promise<AuthResult> {
  * POST /api/admin/users/[uid]/claims
  * Body: { claims: { role?: string, admin?: boolean, ... } }
  *
- * This endpoint requires proper authentication/authorization in production.
- * You should verify that the requester has admin privileges before allowing
- * them to set custom claims.
+ * Requires a verified Firebase server session or bearer token for an active
+ * staff member.
  */
 export async function POST(
   request: NextRequest,
   {params}: {params: Promise<{uid: string}>},
 ) {
   try {
-    const auth = await requireStaffAdmin(request)
+    const auth = await requireStaffAdminRequest(request)
     if (!auth.ok) return auth.response
 
     const {uid} = await params
@@ -119,7 +68,7 @@ export async function GET(
   {params}: {params: Promise<{uid: string}>},
 ) {
   try {
-    const auth = await requireStaffAdmin(request)
+    const auth = await requireStaffAdminRequest(request)
     if (!auth.ok) return auth.response
 
     const {uid} = await params
@@ -156,7 +105,7 @@ export async function DELETE(
   {params}: {params: Promise<{uid: string}>},
 ) {
   try {
-    const auth = await requireStaffAdmin(request)
+    const auth = await requireStaffAdminRequest(request)
     if (!auth.ok) return auth.response
 
     const {uid} = await params

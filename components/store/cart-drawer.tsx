@@ -16,22 +16,19 @@ import {useDisclosure} from '@/hooks/use-disclosure'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
-import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {formatPrice} from '@/utils/formatPrice'
 import {Avatar, Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
-import Link from 'next/link'
 import {useRouter} from 'next/navigation'
-import {useMemo, useOptimistic, useTransition} from 'react'
+import {useMemo, useOptimistic, useTransition, ViewTransition} from 'react'
 import {Drawer} from 'vaul'
 import {DrawerFooter} from '../ui/drawer'
-import {BundleCartItem} from './bundle-cart-item'
 import {EmptyCart} from './empty-cart'
 import {SuggestedCartItems} from './suggested-cart-items'
 
 // import {LegacyImage} from '@/components/ui/legacy-image'
 import {getInitials} from '@/utils/initials'
-import Image from 'next/image'
+import {CartDrawerItems} from './cart-drawer-items'
 
 type OptimisticAction =
   | {
@@ -49,6 +46,26 @@ interface CartDrawerProps {
 }
 
 const CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS = 5000
+const CASH_BACK_APPLIED_VIEW_TRANSITION = 'cart-cash-back-applied'
+const CART_SUMMARY_FOLLOW_VIEW_TRANSITION = 'cart-summary-follow-shift'
+
+function CashBackAppliedRow({amountCents}: {amountCents: number}) {
+  if (amountCents <= 0) {
+    return null
+  }
+
+  return (
+    <ViewTransition
+      enter={CASH_BACK_APPLIED_VIEW_TRANSITION}
+      exit={CASH_BACK_APPLIED_VIEW_TRANSITION}
+      default='none'>
+      <div className='flex justify-between font-clash text-lg text-emerald-600 dark:text-emerald-400 px-2'>
+        <span className='font-medium'>Cash back applied</span>
+        <span className='font-medium'>-${formatPrice(amountCents)}</span>
+      </div>
+    </ViewTransition>
+  )
+}
 
 export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   const {
@@ -181,6 +198,12 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
       : 0
   const discountedSubtotal = Math.max(0, subtotal - appliedCashBackCents)
 
+  const handleCashBackToggle = (nextValue: boolean) => {
+    startTransition(() => {
+      setCashBackEnabled(nextValue)
+    })
+  }
+
   const handleCartCheckout = () => {
     if (!user) {
       onOpenChange(false)
@@ -250,186 +273,16 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                 </div>
               ) : (
                 <>
-                  <div className='px-4 mb-6'>
-                    {cartItems.map((item, index) => {
-                      if (isProductCartItemWithProduct(item)) {
-                        const product = item.product
-                        const denomination = item.denomination
-                        const itemPrice = getUnitPriceCents(
-                          product,
-                          denomination,
-                        )
-                        const totalPrice = itemPrice * item.quantity
-                        const productImageUrl = resolveUrl(product.image ?? '')
-                        const hasImage = Boolean(
-                          product.image && productImageUrl,
-                        )
-
-                        return (
-                          <div
-                            key={`${product._id}-${item.denomination ?? 'default'}`}
-                            className='flex gap-3 p-1 md:p-3 first:rounded-t-lg last:rounded-b-lg border border-b-0 last:border-b border-foreground/15 bg-card/50'>
-                            <div className='relative w-21 h-21 shrink-0 rounded-xs overflow-hidden bg-muted'>
-                              {hasImage ? (
-                                <Image
-                                  width={1000}
-                                  height={1000}
-                                  src={productImageUrl ?? ''}
-                                  alt={product.name ?? 'Product'}
-                                  className='w-full h-full object-cover'
-                                />
-                              ) : (
-                                <div className='w-full h-full flex items-center justify-center'>
-                                  <Icon
-                                    name='bag-solid'
-                                    className='size-6 text-muted-foreground'
-                                  />
-                                </div>
-                              )}
-                            </div>
-                            <div className='flex-1 min-w-0 flex flex-col justify-between gap-1'>
-                              <div className='flex items-start justify-between gap-2'>
-                                <div className='min-w-0'>
-                                  <Link
-                                    href={`/lobby/products/${product.slug}`}>
-                                    <h3 className='font-medium font-okxs md:text-lg truncate'>
-                                      {product.name ?? 'Product'}
-                                    </h3>
-                                  </Link>
-                                  {item.denomination != null && (
-                                    <p className='text-base text-muted-foreground font-okxs'>
-                                      {formatDenominationDisplay(
-                                        item.denomination,
-                                        product.unit ?? '',
-                                      )}
-                                    </p>
-                                  )}
-                                </div>
-                                <p className='font-okxs font-medium text-lg shrink-0'>
-                                  ${formatPrice(totalPrice)}
-                                </p>
-                              </div>
-                              <div className='flex items-center justify-between'>
-                                <div className='flex items-center gap-1'>
-                                  <Button
-                                    isIconOnly
-                                    size='sm'
-                                    variant='ghost'
-                                    isDisabled={isPending}
-                                    className='h-7 w-8 rounded-xs'
-                                    onPress={() => {
-                                      const newQty = item.quantity - 1
-                                      startTransition(async () => {
-                                        if (newQty < 1) {
-                                          applyOptimisticCartAction({
-                                            type: 'remove',
-                                            productId: product._id,
-                                            denomination: item.denomination,
-                                          })
-                                          await removeItem(
-                                            product._id,
-                                            item.denomination,
-                                          )
-                                        } else {
-                                          applyOptimisticCartAction({
-                                            type: 'update',
-                                            productId: product._id,
-                                            quantity: newQty,
-                                            denomination: item.denomination,
-                                          })
-                                          await updateItem(
-                                            product._id,
-                                            newQty,
-                                            item.denomination,
-                                          )
-                                        }
-                                      })
-                                    }}>
-                                    <Icon
-                                      name='minus'
-                                      className='size-4 m-auto'
-                                    />
-                                  </Button>
-                                  <span className='font-okxs text-base font-medium w-8 text-center'>
-                                    {item.quantity}
-                                  </span>
-                                  <Button
-                                    isIconOnly
-                                    size='sm'
-                                    variant='ghost'
-                                    isDisabled={isPending}
-                                    className='h-7 w-8 rounded-xs'
-                                    onPress={() => {
-                                      const newQty = item.quantity + 1
-                                      startTransition(async () => {
-                                        applyOptimisticCartAction({
-                                          type: 'update',
-                                          productId: product._id,
-                                          quantity: newQty,
-                                          denomination: item.denomination,
-                                        })
-                                        await updateItem(
-                                          product._id,
-                                          newQty,
-                                          item.denomination,
-                                        )
-                                      })
-                                    }}>
-                                    <Icon
-                                      name='plus'
-                                      className='size-4 m-auto'
-                                    />
-                                  </Button>
-                                </div>
-                                <Button
-                                  size='sm'
-                                  isIconOnly
-                                  variant='ghost'
-                                  className='w-8 h-7 rounded-xs text-muted-foreground opacity-80 hover:opacity-100'
-                                  isDisabled={isPending}
-                                  onPress={() => {
-                                    startTransition(async () => {
-                                      applyOptimisticCartAction({
-                                        type: 'remove',
-                                        productId: product._id,
-                                        denomination: item.denomination,
-                                      })
-                                      await removeItem(
-                                        product._id,
-                                        item.denomination,
-                                      )
-                                    })
-                                  }}>
-                                  <Icon
-                                    name='trash'
-                                    className='size-5 m-auto'
-                                  />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      }
-
-                      return (
-                        <BundleCartItem
-                          key={`bundle-${item.bundleType}-${index}`}
-                          item={item}
-                          itemIndex={index}
-                          onRemove={async (idx) => {
-                            startTransition(async () => {
-                              applyOptimisticCartAction({
-                                type: 'removeBundle',
-                                itemIndex: idx,
-                              })
-                              await removeBundle(idx)
-                            })
-                          }}
-                          isPending={isPending}
-                        />
-                      )
-                    })}
-                  </div>
+                  <CartDrawerItems
+                    cartItems={cartItems}
+                    resolveUrl={resolveUrl}
+                    isPending={isPending}
+                    startTransition={startTransition}
+                    applyOptimisticCartAction={applyOptimisticCartAction}
+                    updateItem={updateItem}
+                    removeItem={removeItem}
+                    removeBundle={removeBundle}
+                  />
 
                   <div className='font-clash space-y-3 px-4 mb-6'>
                     <div className='flex justify-between px-2'>
@@ -444,54 +297,63 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                         appliedBalanceCents={appliedCashBackCents}
                         subtotalCents={subtotal}
                         isEnabled={isCashBackEnabled}
-                        onToggle={setCashBackEnabled}
+                        onToggle={handleCashBackToggle}
                       />
                     )}
-                    {appliedCashBackCents > 0 && (
-                      <div className='flex justify-between text-emerald-600 dark:text-emerald-400'>
-                        <span className='font-medium'>Cash back applied</span>
+                    <CashBackAppliedRow amountCents={appliedCashBackCents} />
+                    <ViewTransition
+                      update={CART_SUMMARY_FOLLOW_VIEW_TRANSITION}
+                      default='none'>
+                      <div className='flex justify-between font-clash px-2'>
+                        <span className='text-lg font-medium'>
+                          {appliedCashBackCents > 0
+                            ? 'Due today'
+                            : 'Current total'}
+                        </span>
+
                         <span className='font-medium text-lg'>
-                          -${formatPrice(appliedCashBackCents)}
+                          ${formatPrice(discountedSubtotal)}
                         </span>
                       </div>
-                    )}
-                    <div className='flex justify-between px-2'>
-                      <span className='text-lg font-medium'>
-                        {appliedCashBackCents > 0
-                          ? 'Due today'
-                          : 'Current total'}
-                      </span>
-
-                      <span className='font-medium text-lg'>
-                        ${formatPrice(discountedSubtotal)}
-                      </span>
-                    </div>
-                    <div className='flex justify-between px-2'>
-                      <span className='text-lg font-medium'>Total Items</span>
-                      <span className='font-okxs font-medium text-lg'>
-                        {optimisticCartItemCount}
-                      </span>
-                    </div>
+                    </ViewTransition>
+                    <ViewTransition
+                      update={CART_SUMMARY_FOLLOW_VIEW_TRANSITION}
+                      default='none'>
+                      <div className='flex justify-between font-clash px-2'>
+                        <span className='text-lg font-medium'>Total Items</span>
+                        <span className='font-medium text-lg'>
+                          {optimisticCartItemCount}
+                        </span>
+                      </div>
+                    </ViewTransition>
                   </div>
 
-                  <div className='mx-auto mb-3 px-4'>
-                    <Button
-                      size='lg'
-                      className='w-full sm:flex-1 h-15 font-polysans font-normal text-lg bg-foreground/95 text-white dark:text-dark-gray rounded-xs'
-                      onPress={handleCartCheckout}>
-                      <span className='font-bold font-polysans text-lg'>
-                        {user ? 'Checkout' : 'Sign in'}
-                      </span>
-                    </Button>
-                  </div>
-                  <button
-                    type='button'
-                    onClick={() => {
-                      onOpenChange(false)
-                    }}
-                    className='font-okxs w-full text-sm text-color-muted hover:text-foreground transition-colors text-center py-2'>
-                    Continue Shopping
-                  </button>
+                  <ViewTransition
+                    update={CART_SUMMARY_FOLLOW_VIEW_TRANSITION}
+                    default='none'>
+                    <div className='mx-auto mb-3 px-4'>
+                      <Button
+                        size='lg'
+                        className='w-full sm:flex-1 h-15 font-polysans font-normal text-lg bg-foreground/95 text-white dark:text-dark-gray rounded-xs'
+                        onPress={handleCartCheckout}>
+                        <span className='font-bold font-polysans text-lg'>
+                          {user ? 'Checkout' : 'Sign in'}
+                        </span>
+                      </Button>
+                    </div>
+                  </ViewTransition>
+                  <ViewTransition
+                    update={CART_SUMMARY_FOLLOW_VIEW_TRANSITION}
+                    default='none'>
+                    <button
+                      type='button'
+                      onClick={() => {
+                        onOpenChange(false)
+                      }}
+                      className='font-okxs w-full text-sm text-color-muted hover:text-foreground transition-colors text-center py-2'>
+                      Continue Shopping
+                    </button>
+                  </ViewTransition>
                 </>
               )}
               <div className=' pb-24'></div>

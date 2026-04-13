@@ -361,7 +361,7 @@ export const AuthModal = ({
         {/* Bottom section */}
         <div className='relative z-10 shrink-0'>
           {emailSent ? (
-            <div className='bg-foreground/50 dark:bg-background/50 backdrop-blur-3xl flex flex-col items-center justify-center py-6 px-4 gap-4 text-center rounded-xs'>
+            <div className='bg-linear-to-t from-black/80 to-black/30 dark:bg-background/50 backdrop-blur-lg flex flex-col items-center justify-center py-6 px-4 gap-4 text-center rounded-xs'>
               <a
                 rel='noopener noreferrer'
                 href={emailProviderLink}
@@ -388,7 +388,7 @@ export const AuthModal = ({
                   setEmail('')
                   setError(null)
                 }}
-                className='text-white/80 hover:text-white'>
+                className='dark:text-white/80 hover:text-featured rounded-md hover:bg-foreground'>
                 Use a different email
               </Button>
             </div>
@@ -428,7 +428,7 @@ export const AuthModal = ({
               </Button>
             </div>
           ) : (
-            <div className='bg-foreground/40 dark:bg-background/40 backdrop-blur-3xl rounded-xs'>
+            <div className='bg-linear-to-t from-black/80 to-black/40 dark:bg-background/40 backdrop-blur-lg rounded-none'>
               {/* Tabs */}
               <div className='flex px-4 pt-3'>
                 <div className='bg-black/0 text-white text-sm rounded-xs w-fit whitespace-nowrap flex'>
@@ -438,7 +438,7 @@ export const AuthModal = ({
                     className={cn(
                       'px-3 py-1 h-7 rounded-sm font-medium transition-colors',
                       tab === 'login'
-                        ? 'bg-foreground/20 text-white drop-shadow-xs'
+                        ? 'bg-foreground/40 text-white drop-shadow-xs'
                         : 'text-white/70 hover:text-white',
                     )}>
                     Sign in

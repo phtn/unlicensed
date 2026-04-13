@@ -1,5 +1,5 @@
 import {api} from '@/convex/_generated/api'
-import {getAdminAuth} from '@/lib/firebase/admin'
+import {requireFirebaseRequestAuth} from '@/lib/firebase/server-auth'
 import {
   canAccessMasterMonitor,
   getMasterMonitorEntries,
@@ -18,29 +18,13 @@ type AuthResult =
   | {ok: true; email: string; uid: string; currentEntries: MasterEntry[]}
   | {ok: false; response: NextResponse}
 
-function getBearerToken(request: NextRequest): string | null {
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader) return null
-  if (authHeader.startsWith('Bearer ')) {
-    return authHeader.slice('Bearer '.length).trim() || null
-  }
-  return authHeader.trim() || null
-}
-
 async function requireAuthorizedMasterEditor(
   request: NextRequest,
 ): Promise<AuthResult> {
-  const token = getBearerToken(request)
-  if (!token) {
-    return {
-      ok: false,
-      response: NextResponse.json({error: 'Unauthorized'}, {status: 401}),
-    }
-  }
+  const requestAuth = await requireFirebaseRequestAuth(request)
+  if (!requestAuth.ok) return requestAuth
 
-  const adminAuth = getAdminAuth()
-  const decoded = await adminAuth.verifyIdToken(token)
-  const email = decoded.email?.trim().toLowerCase()
+  const email = requestAuth.user.email?.trim().toLowerCase()
 
   if (!email) {
     return {
@@ -68,7 +52,7 @@ async function requireAuthorizedMasterEditor(
     }
   }
 
-  return {ok: true, email, uid: decoded.uid, currentEntries}
+  return {ok: true, email, uid: requestAuth.user.uid, currentEntries}
 }
 
 export async function POST(request: NextRequest) {

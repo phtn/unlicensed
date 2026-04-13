@@ -78,11 +78,11 @@ export function EmailLinkHandler() {
   if (status === 'error') {
     return (
       <div
-        className='fixed inset-x-0 top-6 z-9999 flex justify-center p-4'
+        className='fixed inset-x-0 top-6 z-9999 flex justify-center p-4 mt-16 md:mt-28'
         role='alert'>
         <div className='w-full max-w-md rounded-[1.75rem] border border-white/12 bg-background/88 p-5 shadow-2xl backdrop-blur-2xl'>
-          <p className='font-clash text-lg text-white'>Sign-in failed</p>
-          <p className='mt-1 text-sm text-white/72'>{errorMessage}</p>
+          <p className='font-clash text-lg'>Sign-in failed</p>
+          <p className='mt-1 text-sm'>{errorMessage}</p>
           <button
             type='button'
             onClick={() => {
@@ -92,7 +92,7 @@ export function EmailLinkHandler() {
               const url = new URL(window.location.href)
               window.history.replaceState({}, '', url.pathname)
             }}
-            className='mt-4 w-full rounded-2xl bg-white/10 px-4 py-2.5 font-medium text-white transition hover:bg-white/16'>
+            className='mt-4 w-full rounded-2xl bg-white/10 px-4 py-2.5 font-medium transition hover:bg-white/16'>
             Dismiss
           </button>
         </div>

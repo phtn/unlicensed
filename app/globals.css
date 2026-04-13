@@ -352,7 +352,7 @@
     ),
     radial-gradient(
       circle at 86% -5%,
-      rgba(255, 118, 86, 0.52),
+      rgba(225, 89, 169, 0.2),
       transparent 65%
     ),
     linear-gradient(
@@ -367,11 +367,7 @@
       rgba(196, 63, 53, 0.54),
       transparent 74%
     ),
-    radial-gradient(
-      circle at 10% 44%,
-      rgba(96, 178, 195, 0.24),
-      transparent 62%
-    );
+    radial-gradient(circle at 10% 44%, rgba(225, 89, 169, 0.2), transparent 62%);
 }
 
 @layer base {
@@ -420,6 +416,84 @@
   /* Default View Transition Animation */
   ::view-transition-group(root) {
     animation-duration: 0.4s;
+  }
+
+  ::view-transition-group(.cart-cash-back-applied) {
+    animation-duration: 200ms;
+    animation-timing-function: linear;
+  }
+
+  ::view-transition-group(.cart-summary-follow-shift) {
+    animation-duration: 200ms;
+    animation-timing-function: linear;
+  }
+
+  ::view-transition-image-pair(.cart-cash-back-applied) {
+    isolation: isolate;
+  }
+
+  ::view-transition-old(.cart-cash-back-applied),
+  ::view-transition-new(.cart-cash-back-applied) {
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-old(.cart-summary-follow-shift),
+  ::view-transition-new(.cart-summary-follow-shift) {
+    animation-duration: 180ms;
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-new(.cart-cash-back-applied) {
+    animation: cart-cash-back-enter 200ms linear both;
+  }
+
+  ::view-transition-old(.cart-cash-back-applied) {
+    animation: cart-cash-back-exit 180ms linear both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(.cart-cash-back-applied),
+    ::view-transition-group(.cart-summary-follow-shift),
+    ::view-transition-old(.cart-cash-back-applied),
+    ::view-transition-new(.cart-cash-back-applied),
+    ::view-transition-old(.cart-summary-follow-shift),
+    ::view-transition-new(.cart-summary-follow-shift) {
+      animation-duration: 1ms;
+    }
+  }
+}
+
+@keyframes cart-cash-back-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes cookie-confirmation-in {
+  from {
+    opacity: 0;
+    transform: translate3d(-0.75rem, 0.75rem, 0) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes cart-cash-back-exit {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-10px);
   }
 }
 

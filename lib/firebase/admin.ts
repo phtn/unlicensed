@@ -1,90 +1,125 @@
-import {initializeApp, getApps, cert, type App} from 'firebase-admin/app'
+import 'server-only'
+
+import {
+  cert,
+  getApp,
+  getApps,
+  initializeApp,
+  type ServiceAccount,
+} from 'firebase-admin/app'
 import {getAuth, type Auth} from 'firebase-admin/auth'
 
-/**
- * Initialize Firebase Admin SDK (server-side only)
- * 
- * This can be initialized in two ways:
- * 1. Using a service account JSON (recommended for production)
- * 2. Using Application Default Credentials (for Cloud environments)
- * 
- * Set FIREBASE_SERVICE_ACCOUNT_KEY as a JSON string in your environment variables,
- * or use Application Default Credentials if running on Google Cloud.
- */
-let adminApp: App | undefined
-let adminAuth: Auth | undefined
-
-function initializeAdminApp(): App {
-  if (adminApp) {
-    return adminApp
-  }
-
-  // Check if already initialized
-  const existingApps = getApps()
-  if (existingApps.length > 0) {
-    adminApp = existingApps[0]
-    adminAuth = getAuth(adminApp)
-    return adminApp
-  }
-
-  // Try to initialize with service account key
-  const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-
-  if (serviceAccountKey) {
-    try {
-      const serviceAccount = JSON.parse(serviceAccountKey)
-      adminApp = initializeApp({
-        credential: cert(serviceAccount),
-        projectId: serviceAccount.project_id || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      })
-    } catch (error) {
-      console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY:', error)
-      throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT_KEY format')
-    }
-  } else {
-    // Fall back to Application Default Credentials
-    // This works automatically on Google Cloud, Cloud Run, etc.
-    try {
-      adminApp = initializeApp({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      })
-    } catch (error) {
-      console.error('Failed to initialize Firebase Admin:', error)
-      throw new Error(
-        'Firebase Admin initialization failed. Set FIREBASE_SERVICE_ACCOUNT_KEY or use Application Default Credentials.',
-      )
-    }
-  }
-
-  adminAuth = getAuth(adminApp)
-  return adminApp
+type FirebaseServiceAccountInput = {
+  project_id?: string
+  projectId?: string
+  client_email?: string
+  clientEmail?: string
+  private_key?: string
+  privateKey?: string
 }
 
-/**
- * Get Firebase Admin Auth instance
- * Initializes the app if not already initialized
- */
+let cachedAuth: Auth | null | undefined
+
+function normalizePrivateKey(privateKey: string) {
+  return privateKey.replace(/\\n/g, '\n')
+}
+
+function buildServiceAccount(
+  projectId: string | undefined,
+  clientEmail: string | undefined,
+  privateKey: string | undefined,
+) {
+  if (!projectId || !clientEmail || !privateKey) {
+    return null
+  }
+
+  return {
+    projectId,
+    clientEmail,
+    privateKey: normalizePrivateKey(privateKey),
+  }
+}
+
+function readServiceAccountFromJson(): ServiceAccount | null {
+  const rawServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.trim()
+
+  if (!rawServiceAccount?.startsWith('{')) {
+    return null
+  }
+
+  try {
+    const parsed = JSON.parse(rawServiceAccount) as FirebaseServiceAccountInput
+    return (
+      buildServiceAccount(
+        parsed.project_id ??
+          parsed.projectId ??
+          process.env.FIREBASE_PROJECT_ID,
+        parsed.client_email ??
+          parsed.clientEmail ??
+          process.env.FIREBASE_CLIENT_EMAIL,
+        parsed.private_key ??
+          parsed.privateKey ??
+          process.env.FIREBASE_PRIVATE_KEY,
+      ) ?? null
+    )
+  } catch {
+    return null
+  }
+}
+
+function readServiceAccountFromEnv(): ServiceAccount | null {
+  const projectId = process.env.FIREBASE_PROJECT_ID
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL
+  const rawServiceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+  const privateKey =
+    rawServiceAccountKey && rawServiceAccountKey.includes('BEGIN PRIVATE KEY')
+      ? rawServiceAccountKey
+      : process.env.FIREBASE_PRIVATE_KEY
+
+  const serviceAccount = buildServiceAccount(projectId, clientEmail, privateKey)
+
+  if (serviceAccount) {
+    return serviceAccount
+  }
+
+  return null
+}
+
+function readServiceAccount(): ServiceAccount | null {
+  return readServiceAccountFromJson() ?? readServiceAccountFromEnv()
+}
+
+export function getFirebaseAdminAuth(): Auth | null {
+  if (cachedAuth !== undefined) {
+    return cachedAuth
+  }
+
+  if (getApps().length > 0) {
+    cachedAuth = getAuth(getApp())
+    return cachedAuth
+  }
+
+  const serviceAccount = readServiceAccount()
+
+  if (!serviceAccount) {
+    cachedAuth = null
+    return null
+  }
+
+  const app = initializeApp({
+    credential: cert(serviceAccount),
+  })
+
+  cachedAuth = getAuth(app)
+  return cachedAuth
+}
+
 export function getAdminAuth(): Auth {
-  if (!adminAuth) {
-    initializeAdminApp()
-  }
-  if (!adminAuth) {
-    throw new Error('Failed to initialize Firebase Admin Auth')
-  }
-  return adminAuth
-}
+  const auth = getFirebaseAdminAuth()
 
-/**
- * Get Firebase Admin App instance
- * Initializes the app if not already initialized
- */
-export function getAdminApp(): App {
-  if (!adminApp) {
-    initializeAdminApp()
+  if (!auth) {
+    throw new Error('Firebase Admin credentials are not configured.')
   }
-  if (!adminApp) {
-    throw new Error('Failed to initialize Firebase Admin App')
-  }
-  return adminApp
-}
 
+  return auth
+}

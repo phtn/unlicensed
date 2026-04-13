@@ -3,9 +3,10 @@
 import {api} from '@/convex/_generated/api'
 import type {Doc, Id} from '@/convex/_generated/dataModel'
 import {auth, firestore} from '@/lib/firebase/config'
+import {clearFirebaseSession, createFirebaseSession} from '@/lib/firebase/session'
 import {createOrUpdateUserInFirestore} from '@/lib/firebase/users'
 import {useMutation, useQuery} from 'convex/react'
-import {User} from 'firebase/auth'
+import {onIdTokenChanged, type User} from 'firebase/auth'
 import {
   createContext,
   useContext,
@@ -107,14 +108,23 @@ const AuthCtxProvider = ({children}: AuthProviderProps) => {
       return
     }
 
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user)
+    const unsubscribe = onIdTokenChanged(auth, (nextUser) => {
+      setUser(nextUser)
       setLoading(false)
-      if (user) {
-        // Perform additional actions when user is authenticated
-        // onSuccess(`Welcome back, ${user.displayName?.split(' ')[0]}!`)
-      }
+
+      void (async () => {
+        try {
+          if (nextUser) {
+            await createFirebaseSession(await nextUser.getIdToken())
+          } else {
+            await clearFirebaseSession()
+          }
+        } catch (error) {
+          console.error('Failed to sync Firebase server session:', error)
+        }
+      })()
     })
+
     return () => unsubscribe()
   }, [])
 

@@ -108,18 +108,18 @@ const UseRewardsPoints = ({
     <Button
       size='sm'
       variant={isEnabled && canRedeem ? 'primary' : 'secondary'}
-      className={cn('shrink-0 rounded-xs font-okxs h-8! hidden', {
+      className={cn('shrink-0 rounded-xs font-okxs h-9 hidden', {
         'flex bg-brand text-background dark:bg-white dark:text-dark-table':
           available > 0 && canRedeem,
       })}
       isDisabled={!canRedeem}
       onPress={toggleFn}>
       {isEnabled && canRedeem ? (
-        <div className='flex items-center justify-center space-x-1'>
+        <div className='font-clash font-medium flex items-center justify-center space-x-2'>
           <span>Rewards Points applied</span>
           <Icon
             name='checked'
-            className='dark:text-white text-emerald-500 size-3.5'
+            className='dark:text-white text-white size-3.5'
           />
         </div>
       ) : (

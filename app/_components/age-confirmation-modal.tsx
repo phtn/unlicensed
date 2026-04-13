@@ -23,8 +23,8 @@ const ModalContent = ({
   children: ReactNode
   className?: string
 }) => (
-  <ModalBackdrop className='z-[10000] bg-black/55 backdrop-blur-sm'>
-    <ModalContainer className='z-[10001]' size='md' placement='center'>
+  <ModalBackdrop className='z-10000 bg-black/55 backdrop-blur-sm'>
+    <ModalContainer className='z-10001' size='md' placement='center'>
       <ModalDialog className={className}>{children}</ModalDialog>
     </ModalContainer>
   </ModalBackdrop>

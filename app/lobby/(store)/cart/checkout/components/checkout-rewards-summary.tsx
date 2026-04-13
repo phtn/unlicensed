@@ -189,7 +189,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
         )}
         aria-hidden
       />
-      <Card.Content className='relative space-y-2 p-3 md:p-5 overflow-hidden'>
+      <Card.Content className='relative space-y-2 p-2 md:p-4 lg:p-5 overflow-hidden'>
         {/* Tier row */}
         <div className='flex items-center justify-between overflow-hidden'>
           <span className='text-base md:text-lg font-clash font-medium'>
@@ -198,10 +198,10 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
           <div className='flex items-center gap-1 md:gap-2 overflow-hidden'>
             <TierBadge label={r.currentTier.label} active />
             {r.isBundleBonusActive && (
-              <span className='flex rounded-full bg-amber-950 dark:bg-slate-950 px-2 py-0.5 text-[11px] font-semibold text-white'>
+              <p className='flex rounded-full bg-amber-950 dark:bg-slate-950 px-2 py-0.5 text-[11px] font-semibold text-white whitespace-nowrap'>
                 +0.5%{' '}
                 <span className='hidden md:flex md:px-1'>Bundle Bonus</span> ✦
-              </span>
+              </p>
             )}
           </div>
         </div>
@@ -262,7 +262,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
 
         {/* Next milestone */}
         {r.nextTier && r.amountToNextTier !== null && (
-          <div className=' '>
+          <div className='font-clash'>
             <div className='flex items-baseline justify-between'>
               <span className='text-[13px] text-muted-foreground'>
                 Add{' '}
@@ -283,7 +283,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
                 </ShimmerText>
               </span>
             </div>
-            <div className='text-sm font-semibold text-foreground/90 dark:text-foreground'>
+            <div className='text-sm font-medium text-foreground/90 dark:text-foreground'>
               {r.nextTier.shippingCost === 0
                 ? 'Free shipping'
                 : `${formatRewardsCurrency(r.nextTier.shippingCost)} shipping`}{' '}
@@ -294,7 +294,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
         )}
 
         {!r.nextTier && (
-          <div className='py-2 text-center text-sm md:text-lg font-clash font-medium tracking-wide text-foreground dark:text-foreground'>
+          <div className='py-1 text-center text-sm md:text-lg font-clash font-medium tracking-wide text-foreground dark:text-foreground'>
             ✦ Maximum Rewards Unlocked ✦
           </div>
         )}

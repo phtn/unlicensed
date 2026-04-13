@@ -1,21 +1,21 @@
 'use client'
 
-import { CategoryProductsSection } from '@/app/lobby/(store)/category/[slug]/category-products-section'
-import { FlowerTierCarousels } from '@/app/lobby/(store)/category/[slug]/flower-tier-carousels'
-import { StoreProduct } from '@/app/types'
-import { Tag } from '@/components/base44/tag'
-import { Title } from '@/components/base44/title'
-import { Loader } from '@/components/expermtl/loader'
-import { api } from '@/convex/_generated/api'
-import { useToggle } from '@/hooks/use-toggle'
-import { Icon } from '@/lib/icons'
-import { cn } from '@/lib/utils'
-import { Button } from '@heroui/react'
-import { useQuery } from 'convex/react'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import {CategoryProductsSection} from '@/app/lobby/(store)/category/[slug]/category-products-section'
+import {FlowerTierCarousels} from '@/app/lobby/(store)/category/[slug]/flower-tier-carousels'
+import {StoreProduct} from '@/app/types'
+import {Tag} from '@/components/base44/tag'
+import {Title} from '@/components/base44/title'
+import {Loader} from '@/components/expermtl/loader'
+import {api} from '@/convex/_generated/api'
+import {useToggle} from '@/hooks/use-toggle'
+import {Icon} from '@/lib/icons'
+import {cn} from '@/lib/utils'
+import {Button} from '@heroui/react'
+import {useQuery} from 'convex/react'
+import {AnimatePresence, motion, useReducedMotion} from 'motion/react'
 import Link from 'next/link'
-import { parseAsString, useQueryState } from 'nuqs'
-import { useCallback, useMemo, useTransition, ViewTransition } from 'react'
+import {parseAsString, useQueryState} from 'nuqs'
+import {useCallback, useMemo, useTransition, ViewTransition} from 'react'
 
 interface ContentProps {
   slug: string
@@ -456,7 +456,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
                 Browse Category
               </h2>
             </div>
-            <div className='grid w-full grid-cols-1 gap-2 min-[360px]:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] xl:w-fit xl:auto-cols-max xl:grid-flow-col'>
+            <div className='grid w-full grid-cols-1 gap-2 min-[360px]:grid-cols-2 xl:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] 2xl:w-fit 2xl:auto-cols-max xl:grid-flow-col'>
               <Link
                 href={`/lobby/deals`}
                 prefetch

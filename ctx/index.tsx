@@ -1,6 +1,7 @@
 'use client'
 
 import {ThemeProvider} from '@/components/ui/theme-provider'
+import {useFirebaseAuthUser} from '@/hooks/use-firebase-auth-user'
 import {getConvexReactClient} from '@/lib/convexReactClient'
 import {
   THEME_ATTRIBUTE,
@@ -8,8 +9,8 @@ import {
   THEME_ENABLE_COLOR_SCHEME,
   THEME_ENABLE_SYSTEM,
 } from '@/lib/theme'
-import {ConvexProvider} from 'convex/react'
-import {createContext, useContext, useMemo, type ReactNode} from 'react'
+import {ConvexProviderWithAuth} from 'convex/react'
+import {createContext, useCallback, useContext, useMemo, type ReactNode} from 'react'
 import {AuthCtxProvider} from './auth'
 import {CartAnimationProvider} from './cart-animation'
 import {GuestChatProvider} from './guest-chat'
@@ -22,6 +23,30 @@ interface ProvidersProviderProps {
 }
 
 const ProvidersCtx = createContext(null)
+
+function useFirebaseConvexAuth() {
+  const {user, isLoading} = useFirebaseAuthUser()
+
+  const fetchAccessToken = useCallback(
+    async ({forceRefreshToken}: {forceRefreshToken: boolean}) => {
+      if (!user) {
+        return null
+      }
+
+      return user.getIdToken(forceRefreshToken)
+    },
+    [user],
+  )
+
+  return useMemo(
+    () => ({
+      isLoading,
+      isAuthenticated: Boolean(user),
+      fetchAccessToken,
+    }),
+    [fetchAccessToken, isLoading, user],
+  )
+}
 
 const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
   const convexClient = useMemo(() => getConvexReactClient(), [])
@@ -45,11 +70,13 @@ const ProvidersCtxProvider = ({children}: ProvidersProviderProps) => {
   )
 
   return (
-    <ConvexProvider client={convexClient}>
+    <ConvexProviderWithAuth
+      client={convexClient}
+      useAuth={useFirebaseConvexAuth}>
       <PinAccessProvider>
         <CartAnimationProvider>{content}</CartAnimationProvider>
       </PinAccessProvider>
-    </ConvexProvider>
+    </ConvexProviderWithAuth>
   )
 }
 

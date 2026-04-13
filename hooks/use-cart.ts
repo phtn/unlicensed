@@ -30,7 +30,7 @@ import {useAuth} from './use-auth'
  * - Authenticated: Uses Convex queries which automatically subscribe and update
  * - Unauthenticated: Uses localStorage + LOCAL_STORAGE_CART_UPDATED_EVENT for sync across instances
  */
-type ProductCartItemWithProduct = {
+export type ProductCartItemWithProduct = {
   productId: Id<'products'>
   quantity: number
   denomination?: number

@@ -210,7 +210,7 @@ const RecommendedCard = memo(function RecommendedCard({
               {product.name}
             </h3>
 
-            <div className='relative flex font-okxs items-center justify-between'>
+            <div className='relative flex font-clash items-center justify-between'>
               <p className='text-base font-medium mt-1'>
                 <span className='opacity-80'>$</span>
                 {formatPrice(lowestPriceCents)}
@@ -219,7 +219,7 @@ const RecommendedCard = memo(function RecommendedCard({
               <Button
                 size='sm'
                 variant='primary'
-                className='absolute bg-dark-table dark:bg-white/10 dark:backdrop-blur-xl rounded-lg dark:text-white/80 dark:hover:text-white border-b border-l border-white/10 -space-x-1.5 top-3.5 right-0 font-okxs font-medium shrink-0 flex text-white text-sm'
+                className='absolute bg-dark-table dark:bg-white/10 dark:backdrop-blur-xl h-7 rounded-md dark:text-white/80 dark:hover:text-white border-b border-l border-white/10 -space-x-1.5 top-3.5 right-0 font-okxs font-medium shrink-0 flex text-white text-sm min-w-16'
                 onPress={() => onAddToCart(product)}>
                 <span>Add</span>
                 <span className='md:flex hidden'> to Cart</span>

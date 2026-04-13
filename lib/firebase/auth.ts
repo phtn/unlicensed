@@ -15,6 +15,7 @@ import {
   type User,
 } from 'firebase/auth'
 import {auth, firestore} from './config'
+import {clearFirebaseSession, createFirebaseSession} from './session'
 import {createOrUpdateUserInFirestore} from './users'
 
 export const getPostEmailLinkRedirectUrl = () => {
@@ -52,6 +53,7 @@ export const loginWithEmail = async (email: string, password: string) => {
   if (!auth) throw new Error('Firebase auth not initialized')
 
   const userCredential = await signInWithEmailAndPassword(auth, email, password)
+  await syncServerSessionAfterSignIn(userCredential.user)
 
   // Ensure user exists in Firestore (in case they were created before this feature)
   await syncUserProfileAfterSignIn(userCredential.user)
@@ -67,6 +69,7 @@ export const signupWithEmail = async (email: string, password: string) => {
     email,
     password,
   )
+  await syncServerSessionAfterSignIn(userCredential.user)
 
   // Create user document in Firestore
   await syncUserProfileAfterSignIn(userCredential.user)
@@ -79,6 +82,7 @@ export const loginWithGoogle = async () => {
 
   const provider = new GoogleAuthProvider()
   const userCredential = await signInWithPopup(auth, provider)
+  await syncServerSessionAfterSignIn(userCredential.user)
 
   // Create or update user document in Firestore
   await syncUserProfileAfterSignIn(userCredential.user)
@@ -92,6 +96,7 @@ export const loginWithGoogleCredential = async (
   if (!auth) throw new Error('Firebase auth not initialized')
 
   const userCredential = await signInWithCredential(auth, credential)
+  await syncServerSessionAfterSignIn(userCredential.user)
 
   // Create or update user document in Firestore
   await syncUserProfileAfterSignIn(userCredential.user)
@@ -116,6 +121,11 @@ export const sendEmailLink = async (
   if (typeof window !== 'undefined') {
     window.localStorage.setItem('emailForSignIn', email)
   }
+}
+
+const syncServerSessionAfterSignIn = async (user: User) => {
+  const idToken = await user.getIdToken()
+  await createFirebaseSession(idToken)
 }
 
 /**
@@ -166,6 +176,7 @@ export const loginWithEmailLink = async (email: string, emailLink?: string) => {
   }
 
   const userCredential = await signInWithEmailLink(auth, email, link)
+  await syncServerSessionAfterSignIn(userCredential.user)
 
   // Clear email from localStorage after successful sign-in
   if (typeof window !== 'undefined') {
@@ -183,6 +194,7 @@ export const loginWithEmailLink = async (email: string, emailLink?: string) => {
 
 export const logout = async () => {
   if (!auth) throw new Error('Firebase auth not initialized')
+  await clearFirebaseSession()
   return signOut(auth)
 }
 

@@ -160,7 +160,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
         layout
         transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}>
         <Card className='min-w-0 overflow-hidden dark:bg-dark-table/40 border border-foreground/20 border-t-0 rounded-none'>
-          <Card.Content className='relative space-y-2 px-4 sm:px-5 pb-1'>
+          <Card.Content className='relative space-y-2 px-2 md:px-4 lg:px-5 pb-1'>
             <div className="absolute w-500 h-full scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
             <h2 className='text-lg font-normal font-bone'>Order Summary</h2>
             <ViewTransition>

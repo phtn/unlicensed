@@ -182,6 +182,10 @@ const SettingsPanel = ({
 }: SettingsPanelProps) => {
   const {isMobile, open, openMobile, setOpenMobile, collapsible, state} =
     useSettingsPanel()
+  const drawerState = useOverlayState({
+    isOpen: openMobile,
+    onOpenChange: setOpenMobile,
+  })
 
   if (collapsible === 'none') {
     return (
@@ -195,8 +199,6 @@ const SettingsPanel = ({
       </div>
     )
   }
-
-  const drawerState = useOverlayState({isOpen: openMobile, onOpenChange: setOpenMobile})
 
   if (isMobile) {
     return (
