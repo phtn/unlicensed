@@ -48,6 +48,9 @@ const attachTierLabels = (
     ),
   }))
 
+const isStorefrontAvailableProduct = (product: Doc<'products'>) =>
+  product.available === true && product.archived !== true
+
 const resolveProductImageUrl = async (
   ctx: QueryCtx,
   image: string | undefined,
@@ -329,14 +332,22 @@ export const getProductsByIds = query({
     // Accept string IDs from client-side localStorage history and sanitize server-side.
     // This prevents one malformed legacy entry from failing the whole query.
     productIds: v.array(v.string()),
+    availableOnly: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const products = await Promise.all(
       args.productIds.map((id) => safeGet(ctx.db, 'products', id)),
     )
+    const visibleProducts = products
+      .filter((p): p is NonNullable<typeof p> => p !== null)
+      .filter((product) =>
+        args.availableOnly === true
+          ? isStorefrontAvailableProduct(product)
+          : true,
+      )
     const categories = await ctx.db.query('categories').collect()
     return attachTierLabels(
-      products.filter((p): p is NonNullable<typeof p> => p !== null),
+      visibleProducts,
       buildCategoriesBySlug(categories),
     )
   },
@@ -485,7 +496,7 @@ export const countCategoryProductsByTiers = query({
           }
         }
       } else {
-        for await (const product of iter) {
+        for await (const _product of iter) {
           count++
         }
       }
@@ -675,7 +686,9 @@ export const getPreviouslyBoughtProducts = query({
     )
     const categories = await ctx.db.query('categories').collect()
     return attachTierLabels(
-      products.filter((p): p is NonNullable<typeof p> => p !== null),
+      products
+        .filter((p): p is NonNullable<typeof p> => p !== null)
+        .filter(isStorefrontAvailableProduct),
       buildCategoriesBySlug(categories),
     )
   },

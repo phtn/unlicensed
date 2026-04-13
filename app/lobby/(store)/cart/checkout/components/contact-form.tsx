@@ -4,6 +4,7 @@ import {Icon} from '@/lib/icons'
 import {Input} from '@heroui/react'
 import {ChangeEvent, useCallback} from 'react'
 import {FormData, FormErrors} from '../types'
+import {inputClass} from '../utils'
 
 interface ContactFormProps {
   formData: FormData
@@ -43,7 +44,7 @@ export function ContactForm({formData, onInputChange}: ContactFormProps) {
             onChange={handleEmailChange}
             spellCheck='false'
             autoFocus={false}
-            className='rounded-xs shadow-none bg-sidebar/50 placeholder:text-foreground/50'
+            className={inputClass}
           />
         </div>
 
@@ -56,7 +57,7 @@ export function ContactForm({formData, onInputChange}: ContactFormProps) {
             value={formData.contactPhone}
             onChange={handlePhoneChange}
             autoFocus={false}
-            className='rounded-xs tracking-widest shadow-none bg-sidebar/50 outline-none placeholder:text-foreground/50'
+            className={inputClass}
           />
         </div>
       </div>

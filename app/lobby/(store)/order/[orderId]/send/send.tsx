@@ -702,7 +702,7 @@ export function SendToPanel({
   )
 
   return (
-    <form onSubmit={handleSubmit} className='space-y-2 w-full mt-4'>
+    <form onSubmit={handleSubmit} className='space-y-2 w-full lg:w-3xl mt-4'>
       <div className='flex items-center justify-center md:justify-start md:h-72 h-fit w-full rounded-lg bg-zinc-200/20 dark:bg-dark-table/50 px-3 py-8 md:py-0'>
         {qrDataUrl ? (
           <div className='grid md:grid-cols-2 gap-8 md:gap-0 w-full place-items-center md:place-items-start'>
@@ -713,10 +713,10 @@ export function SendToPanel({
               className='md:size-64 size-full aspect-square mx-auto object-contain shrink-0'
             />
             <div className='w-full place-items-center'>
-              <p className='font-semibold text-lg text-center md:text-start w-full'>
+              <p className='font-semibold text-lg text-center md:text-start w-full mt-2'>
                 Send Crypto Guide
               </p>
-              <ol className='list-decimal pl-1 mt-3'>
+              <ol className='list-decimal pl-1 mt-3 text-base md:text-sm lg:text-base'>
                 <li>Select network/chain</li>
                 <li>Open your crypto wallet</li>
                 <li>Scan the QR code from your wallet</li>
@@ -737,8 +737,10 @@ export function SendToPanel({
           'py-2 flex w-full items-center justify-between transition-colors mt-4 md:my-4 border-b border-sidebar',
           'hover:bg-white/5 disabled:opacity-50 disabled:pointer-events-none',
         )}>
-        <span className='font-brk dark:text-white/90'>Send to</span>
-        <span className='dark:text-white/80 text-sm'>{walletAddress}</span>
+        <span className='font-ios dark:text-white/90'>Send to</span>
+        <span className='font-ios dark:text-white/80 text-sm'>
+          {walletAddress}
+        </span>
         <Icon
           name={isCopied ? 'check' : 'copy'}
           className='dark:text-white/70 size-4'
@@ -755,7 +757,7 @@ export function SendToPanel({
           value={txnHash}
           onChange={handleChange}
           fullWidth
-          className='rounded-sm placeholder:text-foreground/50 shadow-none bg-sidebar/50'
+          className='rounded-xs shadow-none bg-sidebar/60 dark:bg-background/25 focus-visible:ring-1 focus-visible:ring-brand placeholder:text-foreground/50 font-ios'
         />
       </div>
       {duplicateHashMessage ? (
@@ -772,10 +774,12 @@ export function SendToPanel({
           {error}
         </p>
       ) : null}
-      <div className='flex items-center justify-end py-3'>
+      <div className='flex items-center justify-end py-2'>
         <Button
           size='lg'
+          variant='primary'
           type='submit'
+          className='dark:bg-brand bg-light-brand font-clash font-medium rounded-xs'
           isDisabled={
             !txnHash.trim() ||
             isPending ||

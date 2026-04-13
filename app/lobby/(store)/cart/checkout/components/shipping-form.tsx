@@ -7,6 +7,7 @@ import {cn} from '@/lib/utils'
 import {Button, Input} from '@heroui/react'
 import {useCallback} from 'react'
 import {FormData, FormErrors} from '../types'
+import {inputClass} from '../utils'
 
 interface ShippingFormProps {
   formData: FormData
@@ -82,7 +83,7 @@ export function ShippingForm({
           value={formData.firstName}
           onChange={handleChange('firstName')}
           autoFocus={false}
-          className='rounded-xs shadow-none bg-sidebar/50 placeholder:text-foreground/50'
+          className={inputClass}
         />
         <Input
           placeholder='Last Name'
@@ -90,7 +91,7 @@ export function ShippingForm({
           onChange={handleChange('lastName')}
           required
           autoFocus={false}
-          className='rounded-xs shadow-none bg-sidebar/50 placeholder:text-foreground/50'
+          className={inputClass}
         />
       </div>
       <div className='mt-1 space-y-2 px-1'>
@@ -100,7 +101,7 @@ export function ShippingForm({
           placeholder='Address Line 1'
           value={formData.addressLine1}
           onChange={handleChange('addressLine1')}
-          className='rounded-xs shadow-none bg-sidebar/50 placeholder:text-foreground/50'
+          className={inputClass}
         />
         <Input
           fullWidth
@@ -108,7 +109,7 @@ export function ShippingForm({
           value={formData.addressLine2}
           onChange={handleChange('addressLine2')}
           autoFocus={false}
-          className='rounded-xs shadow-none bg-sidebar/50 placeholder:text-foreground/50'
+          className={inputClass}
         />
         <div className='grid grid-cols-3 gap-2'>
           <Input
@@ -117,7 +118,7 @@ export function ShippingForm({
             onChange={handleChange('city')}
             required
             autoFocus={false}
-            className='rounded-xs shadow-none bg-sidebar/50 placeholder:text-foreground/50'
+            className={inputClass}
           />
           <Input
             placeholder='State'
@@ -125,7 +126,7 @@ export function ShippingForm({
             onChange={handleChange('state')}
             required
             autoFocus={false}
-            className='rounded-xs shadow-none bg-sidebar/50 placeholder:text-foreground/50'
+            className={inputClass}
           />
           <Input
             placeholder='ZIP Code'
@@ -133,7 +134,7 @@ export function ShippingForm({
             onChange={handleChange('zipCode')}
             required
             autoFocus={false}
-            className='rounded-xs shadow-none bg-sidebar/50 placeholder:text-foreground/50'
+            className={inputClass}
           />
         </div>
       </div>

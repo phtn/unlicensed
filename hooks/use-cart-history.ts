@@ -49,7 +49,7 @@ export const useCartHistory = (): UseCartHistoryResult => {
   // Fetch products for history items
   const products = useQuery(
     api.products.q.getProductsByIds,
-    productIds.length > 0 ? {productIds} : 'skip',
+    productIds.length > 0 ? {productIds, availableOnly: true} : 'skip',
   )
 
   // Build history items with product data

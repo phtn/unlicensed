@@ -37,7 +37,7 @@ export const OrderSummaryWidget = () => {
   const processingFee = total - subtotal
 
   return (
-    <main className='md:w-3xl z-80'>
+    <main className='lg:w-3xl z-80'>
       <ArcCard className='md:h-160 md:rounded-xs'>
         <ArcHeader
           title={

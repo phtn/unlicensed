@@ -1,3 +1,4 @@
+import {ClassName} from '@/app/types'
 import {PaymentMethod} from '@/convex/orders/d'
 import {UserType} from '@/convex/users/d'
 import {FormData, FormErrors} from './types'
@@ -108,6 +109,9 @@ export function validateForm(formData: FormData): FormErrors {
 
   return errors
 }
+
+export const inputClass: ClassName =
+  'rounded-xs shadow-none bg-sidebar/60 dark:bg-background/25 focus-visible:ring-1 focus-visible:ring-brand placeholder:text-foreground/50'
 
 // const cardsProcessingFeeSetting = useQuery(
 //   api.admin.q.getAdminByIdentStrict,
