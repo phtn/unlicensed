@@ -1,4 +1,5 @@
 import {v} from 'convex/values'
+import type {Id} from '../_generated/dataModel'
 import {query} from '../_generated/server'
 
 function compareCategoriesByOrderThenName(
@@ -82,7 +83,10 @@ export const getHeroImage = query({
     if (!category || !category.heroImage) {
       return null
     }
-    const primaryImage = await ctx.storage.getUrl(category.heroImage)
+    if (String(category.heroImage).startsWith('http')) {
+      return category.heroImage
+    }
+    const primaryImage = await ctx.storage.getUrl(category.heroImage as Id<'_storage'>)
     return primaryImage
   },
 })

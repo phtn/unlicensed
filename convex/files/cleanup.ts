@@ -1,4 +1,5 @@
 import {v} from 'convex/values'
+import type {Id} from '../_generated/dataModel'
 import {internal} from '../_generated/api'
 import {internalMutation, mutation} from '../_generated/server'
 
@@ -22,13 +23,19 @@ export const deleteNonWebpBatch = internalMutation({
     let kept = 0
 
     for (const file of result.page) {
-      const metadata = await ctx.db.system.get('_storage', file.body)
+      // Skip R2-backed files (already WebP from client-side optimization)
+      if (String(file.body).startsWith('http')) {
+        kept++
+        continue
+      }
+
+      const metadata = await ctx.db.system.get('_storage', file.body as Id<'_storage'>)
       const isWebp = metadata?.contentType === 'image/webp'
 
       if (!isWebp) {
         // Delete the storage object if it still exists
         if (metadata) {
-          await ctx.storage.delete(file.body)
+          await ctx.storage.delete(file.body as Id<'_storage'>)
         }
         // Always remove the files table record
         await ctx.db.delete(file._id)

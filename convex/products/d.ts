@@ -42,7 +42,7 @@ const productFields = {
   stockByDenomination: v.optional(v.record(v.string(), v.number())),
   priceByDenomination: v.optional(v.record(v.string(), v.number())),
   rating: v.optional(v.number()),
-  image: v.optional(v.id('_storage')),
+  image: v.optional(v.union(v.id('_storage'), v.string())),
   gallery: v.optional(v.array(v.union(v.id('_storage'), v.string()))),
   consumption: v.optional(v.string()),
   flavorNotes: v.optional(v.array(v.string())),

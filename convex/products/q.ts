@@ -629,7 +629,10 @@ export const getPrimaryImage = query({
     if (!product || !product.image) {
       return null
     }
-    const primaryImage = await ctx.storage.getUrl(product.image)
+    if (String(product.image).startsWith('http')) {
+      return product.image as string
+    }
+    const primaryImage = await ctx.storage.getUrl(product.image as Id<'_storage'>)
     return primaryImage
   },
 })

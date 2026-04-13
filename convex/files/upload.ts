@@ -1,9 +1,10 @@
 import {Infer, v} from 'convex/values'
 import type {Doc, Id} from '../_generated/dataModel'
+import {internal} from '../_generated/api'
 import {mutation, query} from '../_generated/server'
 
 export const fileSchema = v.object({
-  body: v.id('_storage'),
+  body: v.union(v.id('_storage'), v.string()),
   author: v.string(),
   format: v.string(),
   caption: v.optional(v.string()),
@@ -21,7 +22,7 @@ export const url = mutation({
 
 export const file = mutation({
   args: {
-    storageId: v.id('_storage'),
+    storageId: v.union(v.id('_storage'), v.string()),
     author: v.string(),
     format: v.optional(v.string()),
     caption: v.optional(v.string()),
@@ -54,7 +55,9 @@ export const file = mutation({
       })
 
       if (duplicate) {
-        await ctx.storage.delete(args.storageId)
+        if (!String(args.storageId).startsWith('http')) {
+          await ctx.storage.delete(args.storageId as Id<'_storage'>)
+        }
         return {
           duplicate: true,
           recordId: duplicate._id,
@@ -80,7 +83,7 @@ export const file = mutation({
 
 export const deleteManagedImage = mutation({
   args: {
-    storageId: v.id('_storage'),
+    storageId: v.union(v.id('_storage'), v.string()),
   },
   handler: async (ctx, args) => {
     const fileRecords = await ctx.db
@@ -142,7 +145,16 @@ export const deleteManagedImage = mutation({
       await ctx.db.delete(fileRecord._id)
     }
 
-    await ctx.storage.delete(args.storageId)
+    const isR2Url = String(args.storageId).startsWith('http')
+    if (isR2Url) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.r2.mutations.scheduleR2Delete,
+        {url: String(args.storageId)},
+      )
+    } else {
+      await ctx.storage.delete(args.storageId as Id<'_storage'>)
+    }
 
     return {
       deletedFileRecords: fileRecords.length,
@@ -192,13 +204,13 @@ export const existingPreviewSizes = query({
 
 export const getTaggedStorageIds = query({
   args: {
-    storageIds: v.array(v.id('_storage')),
+    storageIds: v.array(v.union(v.id('_storage'), v.string())),
     requiredTag: v.string(),
   },
   handler: async (ctx, args) => {
     const requiredTag = args.requiredTag.trim().toLowerCase()
     const uniqueStorageIds = [...new Set(args.storageIds)]
-    const taggedStorageIds: Id<'_storage'>[] = []
+    const taggedStorageIds: (Id<'_storage'> | string)[] = []
 
     for (const storageId of uniqueStorageIds) {
       const files = ctx.db
@@ -316,6 +328,10 @@ export const listImageGalleriesByTag = query({
     const storageUrlMap = new Map<string, string | null>()
     await Promise.all(
       [...uniqueStorageIds].map(async (storageId) => {
+        if (storageId.startsWith('http')) {
+          storageUrlMap.set(storageId, storageId)
+          return
+        }
         try {
           const url = await ctx.storage.getUrl(storageId as Id<'_storage'>)
           storageUrlMap.set(storageId, url ?? null)

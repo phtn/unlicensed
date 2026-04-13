@@ -13,7 +13,7 @@ export const categorySchema = {
   order: v.optional(v.number()),
   slug: v.optional(v.string()),
   description: v.optional(v.string()),
-  heroImage: v.optional(v.id('_storage')),
+  heroImage: v.optional(v.union(v.id('_storage'), v.string())),
   highlight: v.optional(v.string()),
   benefits: v.optional(v.array(v.string())),
   productType: v.optional(v.any()),

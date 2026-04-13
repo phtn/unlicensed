@@ -1,8 +1,10 @@
 'use client'
 
 import {useCallback, useState} from 'react'
-import {useConvex, useMutation} from 'convex/react'
+import {useAction, useConvex, useMutation} from 'convex/react'
 import {api} from '@/convex/_generated/api'
+
+const USE_R2 = process.env.NEXT_PUBLIC_USE_R2 === 'true'
 
 type UploadResult = {
   storageId: string
@@ -13,6 +15,8 @@ type UseStorageUploadOptions = {
   optimizeImages?: boolean
   maxImageDimension?: number
   imageQuality?: number
+  /** R2 key prefix, e.g. "products/my-product" */
+  r2KeyPrefix?: string
 }
 
 const DEFAULT_MAX_IMAGE_DIMENSION = 1600
@@ -87,9 +91,17 @@ const optimizeImageFile = async (
   }
 }
 
+function generateR2Key(prefix: string, file: File): string {
+  const timestamp = Date.now()
+  const random = Math.random().toString(36).slice(2, 10)
+  const ext = file.name.split('.').pop() || 'webp'
+  return `${prefix}/${timestamp}-${random}.${ext}`
+}
+
 export const useStorageUpload = (options: UseStorageUploadOptions = {}) => {
   const convex = useConvex()
   const generateUploadUrl = useMutation(api.uploads.generateUploadUrl)
+  const generateR2UploadUrl = useAction(api.r2.actions.generateR2UploadUrl)
   const [isUploading, setIsUploading] = useState(false)
   const optimizeImages = options.optimizeImages !== false
   const maxImageDimension =
@@ -116,6 +128,29 @@ export const useStorageUpload = (options: UseStorageUploadOptions = {}) => {
           }
         }
 
+        if (USE_R2) {
+          const prefix = options.r2KeyPrefix || 'uploads'
+          const key = generateR2Key(prefix, fileToUpload)
+          const contentType = fileToUpload.type || 'application/octet-stream'
+
+          const {uploadUrl, publicUrl} = await generateR2UploadUrl({
+            key,
+            contentType,
+          })
+
+          const response = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: {'Content-Type': contentType},
+            body: fileToUpload,
+          })
+
+          if (!response.ok) {
+            throw new Error('Failed to upload file to R2.')
+          }
+
+          return {storageId: publicUrl, url: publicUrl}
+        }
+
         const uploadUrl = await generateUploadUrl()
         const response = await fetch(uploadUrl, {
           method: 'POST',
@@ -139,7 +174,7 @@ export const useStorageUpload = (options: UseStorageUploadOptions = {}) => {
         setIsUploading(false)
       }
     },
-    [convex, generateUploadUrl, imageQuality, maxImageDimension, optimizeImages],
+    [convex, generateUploadUrl, generateR2UploadUrl, imageQuality, maxImageDimension, optimizeImages, options.r2KeyPrefix],
   )
 
   return {
@@ -147,9 +182,3 @@ export const useStorageUpload = (options: UseStorageUploadOptions = {}) => {
     isUploading,
   }
 }
-
-
-
-
-
-

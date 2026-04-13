@@ -16,6 +16,7 @@ import {AnimatePresence, motion, useReducedMotion} from 'motion/react'
 import Link from 'next/link'
 import {parseAsString, useQueryState} from 'nuqs'
 import {useCallback, useMemo, useTransition, ViewTransition} from 'react'
+import {FooterQuickLinks} from './footer-quicklinks'
 
 interface ContentProps {
   slug: string
@@ -448,38 +449,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
           isFilterPending={isFilterPending}
         />
       )}
-      <section className='py-6 sm:py-10 lg:py-20 px-4 sm:px-6 max-w-7xl mx-auto'>
-        <div className='flex flex-col gap-20'>
-          <div className='flex flex-wrap items-center justify-between gap-4'>
-            <div className='space-y-1'>
-              <h2 className='text-2xl font-clash font-bold tracking-normal md:text-3xl lg:text-4xl'>
-                Browse Category
-              </h2>
-            </div>
-            <div className='grid w-full grid-cols-1 gap-2 min-[360px]:grid-cols-2 xl:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] 2xl:w-fit 2xl:auto-cols-max xl:grid-flow-col'>
-              <Link
-                href={`/lobby/deals`}
-                prefetch
-                className='flex min-w-0 items-center justify-center bg-terpenes px-4 py-4 text-center text-sm font-medium capitalize tracking-tight text-white opacity-100 sm:px-5 sm:py-5 sm:text-base lg:text-lg'>
-                <span className='drop-shadow-xs'>Deals</span>
-              </Link>
-              {categories
-                ?.filter((cat) => cat.slug !== slug)
-                .map((cat) => (
-                  <Link
-                    key={cat._id}
-                    prefetch
-                    href={`/lobby/category/${cat.slug}`}
-                    className='flex min-w-0 items-center justify-center bg-foreground px-4 py-4 text-center text-sm font-medium capitalize tracking-tight text-white opacity-100 hover:bg-brand hover:text-white dark:bg-white dark:text-dark-gray dark:hover:text-white sm:px-5 sm:py-5 sm:text-base lg:text-lg'>
-                    <span className='max-w-full wrap-break-word whitespace-normal drop-shadow-xs'>
-                      {cat.name}
-                    </span>
-                  </Link>
-                ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <FooterQuickLinks categories={categories} slug={slug} />
     </div>
   )
 }

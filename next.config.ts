@@ -105,6 +105,33 @@ const buildConvexRemoteImagePatterns = () => {
 
 const convexRemoteImagePatterns = buildConvexRemoteImagePatterns()
 
+const buildR2RemoteImagePatterns = () => {
+  const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
+  if (!r2PublicUrl) return []
+  try {
+    const parsed = new URL(r2PublicUrl)
+    return [
+      {
+        protocol: parsed.protocol.replace(':', '') as 'http' | 'https',
+        hostname: parsed.hostname,
+      },
+    ]
+  } catch {
+    return []
+  }
+}
+
+const r2RemoteImagePatterns = buildR2RemoteImagePatterns()
+const r2CspHost = (() => {
+  const url = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
+  if (!url) return ''
+  try {
+    return new URL(url).hostname
+  } catch {
+    return ''
+  }
+})()
+
 if (
   process.env.NODE_ENV === 'production' &&
   !process.env.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
@@ -148,6 +175,7 @@ const nextConfig: NextConfig = {
         hostname: 'res.cloudinary.com',
       },
       ...convexRemoteImagePatterns,
+      ...r2RemoteImagePatterns,
     ],
   },
   generateBuildId: async () => {
@@ -158,9 +186,9 @@ const nextConfig: NextConfig = {
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' accounts.google.com apis.google.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com api.web3modal.org rpc.walletconnect.org *.coinbase.com *.rapidfirenow.com static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline' embed.hel.io *.walletconnect.org *.reown.com firestore.googleapis.com api.web3modal.org *.rapidfirenow.com",
-      "img-src 'self' data: blob: https: images.unsplash.com res.cloudinary.com *.reown.com *.rapidfirenow.com",
+      `img-src 'self' data: blob: https: images.unsplash.com res.cloudinary.com *.reown.com *.rapidfirenow.com${r2CspHost ? ` ${r2CspHost}` : ''}`,
       "font-src 'self' data: *.reown.com",
-      "connect-src 'self' *.convex.cloud wss://*.convex.cloud *.paygate.to *.paylex.org *.rampex.io *.firebaseio.com *.googleapis.com *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.alchemy.com *.g.alchemy.com *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com *.coinbase.com api.web3modal.org *.rapidfirenow.com mempool.space *.walletconnect.org wss://relay.walletconnect.org *.mapbox.com",
+      `connect-src 'self' *.convex.cloud wss://*.convex.cloud *.paygate.to *.paylex.org *.rampex.io *.firebaseio.com *.googleapis.com *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.alchemy.com *.g.alchemy.com *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com *.coinbase.com api.web3modal.org *.rapidfirenow.com mempool.space *.walletconnect.org wss://relay.walletconnect.org *.mapbox.com${r2CspHost ? ` ${r2CspHost}` : ''}`,
       "frame-src 'self' accounts.google.com *.paygate.to *.firebaseapp.com *.moonpay.com *.wert.io polygonscan.com *.transak.com *.kryptonim.com *.hel.io embed.hel.io *.matic.quicknode.pro tiplink.io *.helius-rpc.com *.walletconnect.com *.walletconnect.org  *.coinbase.com *.rapidfirenow.com *.youtube.com",
       "worker-src 'self' blob:",
       "object-src 'none'",

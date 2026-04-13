@@ -238,7 +238,9 @@ async function buildOrderItems(
       )
       const totalPriceCents = unitPriceCents * cartItem.quantity
       const productImage = product.image
-        ? ((await ctx.storage.getUrl(product.image)) ?? '')
+        ? String(product.image).startsWith('http')
+          ? (product.image as string)
+          : ((await ctx.storage.getUrl(product.image as Id<'_storage'>)) ?? '')
         : ''
 
       if (product.categorySlug) {
@@ -283,7 +285,9 @@ async function buildOrderItems(
         }
 
         const productImage = product.image
-          ? ((await ctx.storage.getUrl(product.image)) ?? '')
+          ? String(product.image).startsWith('http')
+            ? (product.image as string)
+            : ((await ctx.storage.getUrl(product.image as Id<'_storage'>)) ?? '')
           : ''
         const lineUnitQtyCents =
           getProductUnitPriceCents(product, bundleItem.denomination) *

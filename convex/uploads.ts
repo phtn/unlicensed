@@ -14,6 +14,9 @@ export const getStorageUrl = query({
     storageId: v.string(),
   },
   handler: async (ctx, args) => {
+    if (args.storageId.startsWith('http')) {
+      return args.storageId
+    }
     const storageId = args.storageId as Id<'_storage'>
     const url = await ctx.storage.getUrl(storageId)
     return url
@@ -27,6 +30,9 @@ export const getStorageUrls = query({
   handler: async (ctx, args) => {
     const urls = await Promise.all(
       args.storageIds.map(async (storageId) => {
+        if (storageId.startsWith('http')) {
+          return {storageId, url: storageId}
+        }
         try {
           const url = await ctx.storage.getUrl(storageId as Id<'_storage'>)
           return {storageId, url}
