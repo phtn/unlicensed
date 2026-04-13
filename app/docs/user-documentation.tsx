@@ -1,4 +1,4 @@
-import {Accordion, AccordionItem} from '@heroui/react'
+import {Accordion} from '@heroui/react'
 import Link from 'next/link'
 
 const HOW_TO_GUIDES = [
@@ -47,8 +47,10 @@ const DOC_SECTIONS = [
         question: 'How do rewards work?',
         answer: (
           <>
-            <p>Earn cash back on every order based on your cart total:</p>
-            <ul className='mt-3 space-y-1 text-sm text-white/72'>
+            <p className='font-clash font-medium text-light-brand'>
+              Earn cash back on every order based on your cart total:
+            </p>
+            <ul className='mt-3 space-y-1 text-sm text-foreground/72'>
               <li>1.5% cash back under $99</li>
               <li>2% cash back on $99+</li>
               <li>3% cash back on $149+</li>
@@ -88,8 +90,10 @@ const DOC_SECTIONS = [
         question: 'How much is delivery?',
         answer: (
           <>
-            <p>We offer free shipping on orders over $149.</p>
-            <ul className='mt-3 space-y-1 text-sm text-white/72'>
+            <p className='font-clash font-medium text-light-brand'>
+              We offer free shipping on orders over $149.
+            </p>
+            <ul className='mt-3 space-y-1 text-sm text-foreground/72'>
               <li>$3.99 on orders between $99 and $149</li>
               <li>$12.99 on orders under $99</li>
             </ul>
@@ -122,21 +126,23 @@ const DOC_SECTIONS = [
         answer: (
           <div className='space-y-4'>
             <div>
-              <p className='font-medium text-white'>Debit/Credit</p>
+              <p className='font-clash font-medium text-light-brand'>
+                Debit/Credit
+              </p>
               <p>
                 At the payment window, enter your credit or debit card info and
                 follow the instructions provided to process payment.
               </p>
             </div>
             <div>
-              <p className='font-medium text-white'>Crypto</p>
+              <p className='font-clash font-medium text-light-brand'>Crypto</p>
               <p>
                 Choose the Crypto option and a wallet address will be provided.
                 Next, access your wallet and send the payment.
               </p>
             </div>
             <div>
-              <p className='font-medium text-white'>CashApp</p>
+              <p className='font-clash font-medium text-light-brand'>CashApp</p>
               <p>
                 Select CashApp at checkout. You will be provided a $Cashtag.
                 Proceed to CashApp, enter the address, send the order total, and
@@ -192,7 +198,7 @@ const DOC_SECTIONS = [
         answer: (
           <div className='space-y-4'>
             <div>
-              <p className='font-medium text-white'>
+              <p className='font-clash font-medium text-light-brand'>
                 Build Your Own Oz (Flower)
               </p>
               <p>
@@ -202,14 +208,16 @@ const DOC_SECTIONS = [
               </p>
             </div>
             <div>
-              <p className='font-medium text-white'>Mix and Match 4 Oz</p>
+              <p className='font-clash font-medium text-light-brand'>
+                Mix and Match 4 Oz
+              </p>
               <p>
                 Pick 4 different ounces from the same tier. The total reflects
                 the average value of each selection. Limit 1 per strain.
               </p>
             </div>
             <div>
-              <p className='font-medium text-white'>
+              <p className='font-clash font-medium text-light-brand'>
                 3 x 1G Mix & Match (Extracts)
               </p>
               <p>
@@ -218,7 +226,7 @@ const DOC_SECTIONS = [
               </p>
             </div>
             <div>
-              <p className='font-medium text-white'>
+              <p className='font-clash font-medium text-light-brand'>
                 7 x 1G Mix & Match (Extracts)
               </p>
               <p>
@@ -227,7 +235,7 @@ const DOC_SECTIONS = [
               </p>
             </div>
             <div>
-              <p className='font-medium text-white'>
+              <p className='font-clash font-medium text-light-brand'>
                 5 x 1 Unit Mix & Match (Pre-Rolls & Edibles)
               </p>
               <p>
@@ -236,7 +244,7 @@ const DOC_SECTIONS = [
               </p>
             </div>
             <div>
-              <p className='font-medium text-white'>
+              <p className='font-clash font-medium text-light-brand'>
                 10 x 1 Unit Mix & Match (Pre-Rolls & Edibles)
               </p>
               <p>
@@ -428,63 +436,60 @@ export const UserDocumentation = () => {
               key={section.id}
               id={section.id}
               className='border border-foreground/10 bg-background'>
-              <Accordion
-                variant='default'
-                className='w-full'
-                // itemClasses={{
-                //   base: 'shadow-none',
-                //   title: 'w-full',
-                //   trigger: 'px-4 py-4 sm:px-5 sm:py-5 md:px-6',
-                //   content: 'px-0 pb-0',
-                // }}
-              >
-                <AccordionItem key={section.id} aria-label={section.title}>
-                  {/*
-                      title={
-                                          <div className='pr-6 text-left'>
-                                            <p className='hidden font-clash text-[11px] uppercase tracking-[0.22em] text-brand sm:text-xs sm:tracking-[0.28em]'>
-                                              {section.eyebrow}
-                                            </p>
-                                            <div className='mt-3 flex flex-col gap-3 md:flex-row md:items-end md:justify-between'>
-                                              <div>
-                                                <h3 className='font-clash text-xl font-semibold sm:text-2xl md:text-3xl'>
-                                                  {section.title}
-                                                </h3>
-                                                <p className='hidden mt-2 max-w-2xl text-sm leading-6 text-foreground/62'>
-                                                  {section.description}
-                                                </p>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        }
-                      */}
-                  <div className='border-t border-foreground/10'>
-                    <Accordion
-                      variant='default'
-                      className='px-1 py-1 sm:px-2 sm:py-2 md:px-3'
-                      // itemClasses={{
-                      //   base: 'border-b border-foreground/10 last:border-b-0',
-                      //   title:
-                      //     'font-clash text-sm font-medium leading-6 text-foreground sm:text-base',
-                      //   content:
-                      //     'pb-4 text-sm leading-6 text-foreground/68 px-3 sm:px-4 sm:pb-5 sm:leading-7',
-                      //   trigger: 'px-2 py-3 sm:px-3 sm:py-4',
-                      // }}
-                    >
-                      {section.items.map((item) => (
-                        <AccordionItem
-                          key={item.question}
-                          aria-label={item.question}>
-                          {typeof item.answer === 'string' ? (
-                            <p>{item.answer}</p>
-                          ) : (
-                            item.answer
-                          )}
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  </div>
-                </AccordionItem>
+              <Accordion variant='default' className='w-full' hideSeparator>
+                <Accordion.Item
+                  id={`${section.id}-section`}
+                  className='overflow-hidden'>
+                  <Accordion.Heading>
+                    <Accordion.Trigger className='flex w-full items-start justify-between gap-4 px-4 py-4 text-left sm:px-5 sm:py-5 md:px-6'>
+                      <span className='pr-2'>
+                        {/*<span className='block font-clash text-[11px] uppercase tracking-[0.22em] text-brand sm:text-xs sm:tracking-[0.28em]'>
+                          {section.eyebrow}
+                        </span>*/}
+                        <span className='mt-3 block font-clash text-xl font-semibold leading-tight sm:text-2xl md:text-3xl'>
+                          {section.title}
+                        </span>
+                        <span className='mt-2 hidden max-w-2xl text-sm leading-6 text-foreground/62 sm:block'>
+                          {section.description}
+                        </span>
+                      </span>
+                      <Accordion.Indicator className='mt-1 shrink-0 text-foreground/55' />
+                    </Accordion.Trigger>
+                  </Accordion.Heading>
+                  <Accordion.Panel>
+                    <Accordion.Body className='border-t border-foreground/10 bg-foreground/8 p-0 text-foreground'>
+                      <Accordion
+                        variant='default'
+                        className='px-1 py-1 sm:px-2 sm:py-2 md:px-3'
+                        hideSeparator>
+                        {section.items.map((item, index) => (
+                          <Accordion.Item
+                            key={item.question}
+                            id={`${section.id}-${index}`}
+                            className='border-b border-foreground/10 last:border-b-0'>
+                            <Accordion.Heading>
+                              <Accordion.Trigger className='flex w-full items-center justify-between gap-4 px-2 py-3 text-left sm:px-3 sm:py-4'>
+                                <span className='font-clash text-sm font-medium leading-6 text-foreground sm:text-base'>
+                                  {item.question}
+                                </span>
+                                <Accordion.Indicator className='shrink-0 text-foreground/45' />
+                              </Accordion.Trigger>
+                            </Accordion.Heading>
+                            <Accordion.Panel>
+                              <Accordion.Body className='px-3 pb-4 text-sm leading-6 text-foreground sm:px-4 sm:pb-5 sm:leading-7'>
+                                {typeof item.answer === 'string' ? (
+                                  <p>{item.answer}</p>
+                                ) : (
+                                  item.answer
+                                )}
+                              </Accordion.Body>
+                            </Accordion.Panel>
+                          </Accordion.Item>
+                        ))}
+                      </Accordion>
+                    </Accordion.Body>
+                  </Accordion.Panel>
+                </Accordion.Item>
               </Accordion>
             </section>
           ))}

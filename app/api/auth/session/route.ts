@@ -26,10 +26,9 @@ export async function POST(request: NextRequest) {
     const auth = getFirebaseAdminAuth()
 
     if (!auth) {
-      return jsonResponse(
-        {error: 'Firebase Admin credentials are not configured.'},
-        500,
-      )
+      // Allow auth to work without server session support in environments
+      // where Firebase Admin credentials are intentionally unavailable.
+      return new NextResponse(null, {status: 204})
     }
 
     const body = (await request.json().catch(() => null)) as SessionBody | null
