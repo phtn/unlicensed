@@ -72,7 +72,7 @@ const BLOCKCHAIN_COLORS: Record<string, string> = {
   'bitcoin-cash': '#0CC18F',
 }
 
-const DEFAULT_BLOCKCHAIN = 'Ethereum'
+const CRYPTO_CONVERTER_ENDPOINT = '/api/crypto/coinmarketcap'
 
 const normalizeBlockchainValue = (value: string) =>
   value
@@ -83,22 +83,6 @@ const normalizeBlockchainValue = (value: string) =>
 /** Testnet → mainnet. Used to fetch mainnet exchange rates and USD value when user selects a testnet. */
 const TESTNET_TO_MAINNET: Record<string, string> = {
   'polygon amoy': 'Polygon',
-}
-
-const supportsCurrencyOnBlockchain = (
-  blockchain: Blockchain,
-  currencySymbol: string,
-) => {
-  if (!currencySymbol || !blockchain.currencies?.length) return false
-
-  const target = currencySymbol.toUpperCase()
-  return blockchain.currencies.some((entry) => {
-    if (typeof entry === 'string') {
-      return entry.toUpperCase() === target
-    }
-
-    return entry.symbol.toUpperCase() === target
-  })
 }
 
 const resolveMainnetBlockchain = (value: string) =>
@@ -184,7 +168,7 @@ export const useCryptoConverter = () => {
 
   const fetchCurrencies = useCallback(async () => {
     try {
-      const response = await fetch('/api/crypto/swapped', {
+      const response = await fetch(CRYPTO_CONVERTER_ENDPOINT, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -229,7 +213,7 @@ export const useCryptoConverter = () => {
 
   const fetchBlockchains = useCallback(async () => {
     try {
-      const response = await fetch('/api/crypto/swapped', {
+      const response = await fetch(CRYPTO_CONVERTER_ENDPOINT, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -324,7 +308,8 @@ export const useCryptoConverter = () => {
         return
       }
 
-      // Use mainnet for quote when on testnet so we get real exchange rates and USD value
+      // Keep testnets mapped to mainnet for API compatibility. CMC spot
+      // prices are not network-specific, but the selected network remains in UI state.
       const quoteBlockchain = resolveMainnetBlockchain(params.toBlockchain)
 
       const quoteParams = {
@@ -343,47 +328,16 @@ export const useCryptoConverter = () => {
         setError(null)
 
         try {
-          // Fetch main quote and USDC quote in parallel (both use mainnet when user chose testnet)
-          const [mainResponse, usdcResponse] = await Promise.all([
-            fetch('/api/crypto/swapped', {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({
-                category: 'quotes',
-                method: 'get',
-                params: quoteParams,
-              }),
-              signal: abortController.signal,
+          const mainResponse = await fetch(CRYPTO_CONVERTER_ENDPOINT, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              category: 'quotes',
+              method: 'get',
+              params: quoteParams,
             }),
-            // Fetch USDC quote (skip if already USDC) — use mainnet for USD value
-            params.toCurrency.toUpperCase() !== 'USDC'
-              ? (() => {
-                  // Prefer mainnet that supports USDC for USD valuation
-                  const usdcBlockchain =
-                    blockchains.find(
-                      (b) =>
-                        !TESTNET_TO_MAINNET[normalizeBlockchainValue(b.name)] &&
-                        !TESTNET_TO_MAINNET[normalizeBlockchainValue(b.id)] &&
-                        supportsCurrencyOnBlockchain(b, 'USDC'),
-                    )?.name ?? DEFAULT_BLOCKCHAIN
-
-                  return fetch('/api/crypto/swapped', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                      category: 'quotes',
-                      method: 'get',
-                      params: {
-                        ...quoteParams,
-                        toCurrency: 'USDC',
-                        toBlockchain: usdcBlockchain,
-                      },
-                    }),
-                    signal: abortController.signal,
-                  })
-                })()
-              : Promise.resolve(null),
-          ])
+            signal: abortController.signal,
+          })
 
           if (
             abortController.signal.aborted ||
@@ -402,6 +356,8 @@ export const useCryptoConverter = () => {
             const data = mainResult.data as {
               fromAmount?: {amount?: string}
               toAmount?: {afterFees?: string; beforeFees?: string}
+              toAmountUsdc?: string
+              rateUsdc?: string
             }
 
             // Extract nested amounts (quote is for mainnet when user picked testnet)
@@ -422,45 +378,16 @@ export const useCryptoConverter = () => {
             // Calculate rate (how much crypto per 1 fiat)
             const rate = fromAmt > 0 ? toAmt / fromAmt : 0
 
-            // Process USDC quote if available
-            let toAmountUsdc: string | undefined
-            let rateUsdc: string | undefined
-
-            if (usdcResponse) {
-              try {
-                const usdcResult = await usdcResponse.json()
-                if (usdcResult.success && usdcResult.data) {
-                  const usdcData = usdcResult.data as {
-                    fromAmount?: {amount?: string}
-                    toAmount?: {afterFees?: string; beforeFees?: string}
-                  }
-                  const usdcFromAmt = parseFloat(
-                    usdcData.fromAmount?.amount ?? params.fromAmount,
-                  )
-                  const usdcToAmt = parseFloat(
-                    usdcData.toAmount?.afterFees ??
-                      usdcData.toAmount?.beforeFees ??
-                      '0',
-                  )
-                  const usdcRate = usdcFromAmt > 0 ? usdcToAmt / usdcFromAmt : 0
-                  toAmountUsdc = usdcToAmt.toString()
-                  rateUsdc = usdcRate.toString()
-                }
-              } catch (usdcErr) {
-                if (
-                  usdcErr instanceof DOMException &&
-                  usdcErr.name === 'AbortError'
-                ) {
-                  return
-                }
-                // Silently fail USDC quote - it's optional
-                console.warn('Failed to fetch USDC quote:', usdcErr)
-              }
-            } else if (params.toCurrency.toUpperCase() === 'USDC') {
-              // If already USDC, use the same values
-              toAmountUsdc = toAmt.toString()
-              rateUsdc = rate.toString()
-            }
+            const toAmountUsdc =
+              data.toAmountUsdc ??
+              (params.toCurrency.toUpperCase() === 'USDC'
+                ? toAmt.toString()
+                : undefined)
+            const rateUsdc =
+              data.rateUsdc ??
+              (params.toCurrency.toUpperCase() === 'USDC'
+                ? rate.toString()
+                : undefined)
 
             if (
               abortController.signal.aborted ||
@@ -498,7 +425,7 @@ export const useCryptoConverter = () => {
         }
       }, 300)
     },
-    [blockchains, cancelPendingQuote],
+    [cancelPendingQuote],
   )
 
   const clearQuote = useCallback(() => {

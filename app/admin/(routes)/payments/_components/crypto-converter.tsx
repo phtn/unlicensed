@@ -759,11 +759,11 @@ export const CryptoConverter = ({className}: ConverterProps) => {
           <p className='text-xs text-zinc-500 text-center'>
             Powered by{' '}
             <a
-              href='https://www.npmjs.com/package/swapped-commerce-sdk'
+              href='https://coinmarketcap.com/api/'
               target='_blank'
               rel='noopener noreferrer'
               className='text-zinc-400 font-clash'>
-              Swapped Commerce SDK
+              CoinMarketCap
             </a>
           </p>
         </div>

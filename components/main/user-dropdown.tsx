@@ -219,9 +219,8 @@ export const UserDropdown = ({
                 textValue='Master Monitor'
                 className='rounded-xs'>
                 <MenuItemContent
-                  icon='safe-shield'
+                  icon='monitor'
                   label='Master Monitor'
-                  description='Open the global admin monitor'
                   endContent={<MenuPill tone='brand'>⌘⇧M</MenuPill>}
                 />
               </Dropdown.Item>
