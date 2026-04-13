@@ -8,7 +8,7 @@ import {useSaveAdminProductFormReturn} from '@/hooks/use-save-admin-product-form
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon, type IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Card, CardFooter, CardHeader, Tooltip} from '@heroui/react'
+import {Button, Card, CardFooter, CardHeader} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import Link from 'next/link'
 import {useCallback, useMemo, useState} from 'react'
@@ -18,22 +18,14 @@ import {LegacyImage as Image} from '@/components/ui/legacy-image'
 interface ProductItemProps {
   product: Doc<'products'>
   imageUrl?: string
-  isOptimizeDisabled: boolean
+  isOptimizeDisabled?: boolean
   onEditPress: VoidFunction
-  onOptimizePress: VoidFunction
-  optimizeLabel: string
-  optimizerIconName: IconName
+  onOptimizePress?: VoidFunction
+  optimizeLabel?: string
+  optimizerIconName?: IconName
 }
 
-const ProductItem = ({
-  product,
-  imageUrl,
-  isOptimizeDisabled,
-  onEditPress,
-  onOptimizePress,
-  optimizeLabel,
-  optimizerIconName,
-}: ProductItemProps) => (
+const ProductItem = ({product, imageUrl, onEditPress}: ProductItemProps) => (
   <Card className='w-full h-40 col-span-4 sm:col-span-6 md:col-span-8 bg-linear-to-b from-dark-gray/50 from-10% via-transparent to-transparent dark:border-dark-gray/80 p-0 rounded-xs'>
     <CardHeader className='absolute z-10 top-0 flex-col items-start px-2 bg-background/20 backdrop-blur-xs h-fit w-full'>
       <h4 className='font-base capitalize text-white/90 font-clash font-normal tracking-tight'>
@@ -72,54 +64,6 @@ const ProductItem = ({
         </div>
       </div>
       <div className='flex items-center justify-end gap-1 w-full'>
-        <Tooltip>
-          <Tooltip.Trigger>
-            <Button
-              size='sm'
-              isIconOnly
-              variant='outline'
-              onPress={onOptimizePress}
-              aria-label={optimizeLabel}
-              className={cn('rounded-xs border-transparent', {
-                'text-yellow-300': !isOptimizeDisabled,
-                'text-indigo-500 dark:text-indigo-400 hover:bg-transparent dark:hover:bg-transparent':
-                  optimizerIconName === 'gallery-check-bold',
-                'pointer-events-none':
-                  isOptimizeDisabled &&
-                  optimizerIconName !== 'gallery-check-bold',
-              })}>
-              <Icon
-                name={optimizerIconName}
-                className={cn('size-4 m-auto', {
-                  'rotate-6':
-                    optimizerIconName === 'lightning' && !isOptimizeDisabled,
-                  'size-5': optimizerIconName === 'gallery-check-bold',
-                })}
-              />
-            </Button>
-          </Tooltip.Trigger>
-          <Tooltip.Content>
-            <div className='flex items-center space-x-1'>
-              {isOptimizeDisabled ? (
-                <>
-                  <Icon
-                    name='check'
-                    className='size-3.5 text-indigo-500 dark:text-yellow-500'
-                  />
-                  <span>Optimized</span>
-                </>
-              ) : (
-                <>
-                  <Icon
-                    name='lightning'
-                    className='size-3.5 text-indigo-500 dark:text-yellow-400'
-                  />
-                  <span>Optimize Primary Image</span>
-                </>
-              )}
-            </div>
-          </Tooltip.Content>
-        </Tooltip>
         <Link
           prefetch={true}
           href={`/admin/inventory/product?tabId=edit&id=${product._id}`}

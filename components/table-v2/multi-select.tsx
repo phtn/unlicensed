@@ -248,7 +248,7 @@ export const MultiSelect = <T,>({
               <Badge
                 size='sm'
                 variant='secondary'
-                className='px-1.5 text-sm dark:text-white'>
+                className='px-1.5 font-clash text-sm dark:text-white dark:bg-dark-table'>
                 <span className='drop-shadow-xs'>
                   {editableFields.length} fields
                 </span>
@@ -257,7 +257,7 @@ export const MultiSelect = <T,>({
           </div>
         </FrameHeader>
 
-        <FramePanel className='min-h-0 flex-1 overflow-hidden p-0!'>
+        <FramePanel className='min-h-0 flex-1 overflow-hidden p-0! rounded-md'>
           {editableFields.length > 0 ? (
             <div className='h-full overflow-y-auto'>
               <Table>
@@ -340,7 +340,7 @@ export const MultiSelect = <T,>({
                               }}
                               placeholder={field.placeholder}
                               disabled={pending}
-                              className='h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none transition-colors placeholder:text-muted-foreground/80 focus:border-foreground/30 disabled:cursor-not-allowed disabled:opacity-60'
+                              className='h-10 rounded-sm border border-border bg-background dark:bg-dark-table px-3 font-clash text-sm outline-none transition-colors placeholder:text-muted-foreground/80 focus:border-foreground/30 disabled:cursor-not-allowed disabled:opacity-60'
                             />
                           )}
                         </div>

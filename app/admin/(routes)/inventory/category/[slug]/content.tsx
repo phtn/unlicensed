@@ -83,42 +83,46 @@ const ProductStackView = ({
   const router = useRouter()
   const saveAdminProductFormReturn = useSaveAdminProductFormReturn()
   const updateProduct = useMutation(api.products.m.updateProduct)
-  const [activeConverterProductId, setActiveConverterProductId] = useState<
-    string | null
-  >(null)
+  const [activeConverterProductId] = useState<string | null>(null)
   const [isConverterOpen, setIsConverterOpen] = useState(false)
   const [convertedPreviewByProductId, setConvertedPreviewByProductId] =
     useState<Record<string, string>>({})
   const [convertedImageIdByProductId, setConvertedImageIdByProductId] =
     useState<Record<string, string>>({})
-  const leadImageStorageIds = useMemo(
-    () => [
-      ...new Set(
-        (products ?? []).flatMap((product) => {
-          const imageId =
-            convertedImageIdByProductId[product._id] ?? product.image
-          return imageId ? [imageId] : []
-        }),
-      ),
-    ],
-    [convertedImageIdByProductId, products],
-  )
-  const optimizedLeadImageIds = useQuery(
-    api.files.upload.getTaggedStorageIds,
-    leadImageStorageIds.length > 0
-      ? {
-          storageIds: leadImageStorageIds as Id<'_storage'>[],
-          requiredTag: 'gallery:optimized',
-        }
-      : 'skip',
-  )
-  const optimizedStorageIds = useMemo(
-    () =>
-      new Set(
-        (optimizedLeadImageIds ?? []).map((storageId) => String(storageId)),
-      ),
-    [optimizedLeadImageIds],
-  )
+  // const leadImageStorageIds = useMemo(
+
+  //   () => [
+  //     ...new Set(
+  //       (products ?? []).flatMap((product) => {
+  //         const imageId =
+  //           convertedImageIdByProductId[product._id] ?? product.image
+  //         return imageId ? [imageId] : []
+  //       }),
+  //     ),
+  //   ],
+  //   [convertedImageIdByProductId, products],
+  // )
+
+  // const optimizedLeadImageIds = useQuery(
+
+  //   api.files.upload.getTaggedStorageIds,
+  //   leadImageStorageIds.length > 0
+  //     ? {
+  //         storageIds: leadImageStorageIds as Id<'_storage'>[],
+  //         requiredTag: 'gallery:optimized',
+  //       }
+  //     : 'skip',
+  // )
+
+  // const optimizedStorageIds = useMemo(
+
+  //   () =>
+  //     new Set(
+  //       (optimizedLeadImageIds ?? []).map((storageId) => String(storageId)),
+  //     ),
+  //   [optimizedLeadImageIds],
+  // )
+
   const imageIds = useMemo(
     () => [
       ...new Set(
@@ -159,10 +163,12 @@ const ProductStackView = ({
     convertedPreviewByProductId,
     resolveUrl,
   ])
-  const openConverter = useCallback((productId: string) => {
-    setActiveConverterProductId(productId)
-    setIsConverterOpen(true)
-  }, [])
+  // const openConverter = useCallback((productId: string) => {
+
+  //   setActiveConverterProductId(productId)
+  //   setIsConverterOpen(true)
+  // }, [])
+
   const handleConvertedPrimary = useCallback(
     async ({storageId, url}: {storageId: string; url: string | null}) => {
       const productId = activeConverterProductId
@@ -227,12 +233,12 @@ const ProductStackView = ({
                 (currentImageId
                   ? (resolveUrl(currentImageId) ?? undefined)
                   : undefined)
-              const isLeadImageOptimized = currentImageId
-                ? optimizedStorageIds.has(String(currentImageId))
-                : false
-              const canConvertPrimaryImage = Boolean(
-                currentImageId && currentImageUrl && !isLeadImageOptimized,
-              )
+              // const isLeadImageOptimized = currentImageId
+              //   ? optimizedStorageIds.has(String(currentImageId))
+              //   : false
+              // const canConvertPrimaryImage = Boolean(
+              //   currentImageId && currentImageUrl && !isLeadImageOptimized,
+              // )
               const stock = formatStockDisplay(product)
               const startingPrice = getStartingPrice(product)
               const metaChips = [
@@ -430,7 +436,7 @@ const ProductStackView = ({
 
                           <div className='flex flex-col gap-2 pt-3 md:pt-0 md:flex-row items-end justify-end h-16 w-full'>
                             <div className='flex shrink-0 gap-2 md:pl-4'>
-                              <Button
+                              {/*<Button
                                 variant={
                                   canConvertPrimaryImage ? 'primary' : 'ghost'
                                 }
@@ -464,6 +470,7 @@ const ProductStackView = ({
                                   )}
                                 />
                               </Button>
+                              */}
                               <Button
                                 variant='tertiary'
                                 className='rounded-sm h-8! bg-black/5 dark:bg-white/8'

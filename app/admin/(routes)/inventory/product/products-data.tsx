@@ -722,16 +722,14 @@ export const ProductsData = ({
             </Button>
           )}
           <Dropdown>
-            <Dropdown.Trigger>
-              <Button
-                size='sm'
-                variant='tertiary'
-                className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk portrait:aspect-square'>
-                <Icon name='download' className='size-3 m-auto' />
-                <span className='hidden sm:inline'>Export CSV</span>
-                <Icon name='chevron-down' className='size-4 md:flex hidden' />
-              </Button>
-            </Dropdown.Trigger>
+            <Button
+              size='sm'
+              variant='tertiary'
+              className='rounded-sm bg-sidebar/60 min-w-0 gap-1.5 font-brk portrait:aspect-square'>
+              <Icon name='download' className='size-3 m-auto' />
+              <span className='hidden sm:inline'>Export CSV</span>
+              <Icon name='chevron-down' className='size-4 md:flex hidden' />
+            </Button>
             <Dropdown.Popover>
               <Dropdown.Menu aria-label='Export CSV options'>
                 <Dropdown.Item
