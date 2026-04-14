@@ -119,7 +119,7 @@ const UseRewardsPoints = ({
           <span>Rewards Points applied</span>
           <Icon
             name='checked'
-            className='dark:text-white text-white size-3.5'
+            className='dark:text-emerald-500 text-white size-3.5'
           />
         </div>
       ) : (

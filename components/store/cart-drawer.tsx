@@ -77,7 +77,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     cartItemCount,
     isAuthenticated,
   } = useCart()
-  const {user, convexUserId} = useAuthCtx()
+  const {user, convexUser, convexUserId} = useAuthCtx()
   const {configs} = useDealConfigs()
   const {
     isOpen: isAuthOpen,
@@ -197,6 +197,12 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
       ? Math.min(availableCashBackCents, subtotal)
       : 0
   const discountedSubtotal = Math.max(0, subtotal - appliedCashBackCents)
+  const userAvatarLabel =
+    user?.displayName?.trim() ||
+    convexUser?.name?.trim() ||
+    user?.email?.split('@')[0]?.trim() ||
+    user?.email?.trim() ||
+    'User'
 
   const handleCashBackToggle = (nextValue: boolean) => {
     startTransition(() => {
@@ -244,11 +250,11 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   {user && (
                     <Avatar className='relative size-9 border border-white/50 bg-background/90 text-foreground shadow-[0_10px_30px_rgba(15,23,42,0.18)] dark:border-white/10 dark:bg-dark-table'>
                       <Avatar.Image
-                        alt={user.displayName ?? 'pfp'}
+                        alt={userAvatarLabel}
                         src={user.photoURL ?? undefined}
                       />
                       <Avatar.Fallback className='bg-background/90 text-[11px] font-medium tracking-tight text-foreground dark:bg-dark-table'>
-                        {getInitials(user.displayName)}
+                        {getInitials(userAvatarLabel)}
                       </Avatar.Fallback>
                     </Avatar>
                   )}

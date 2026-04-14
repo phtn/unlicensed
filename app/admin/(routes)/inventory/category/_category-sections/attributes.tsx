@@ -112,7 +112,7 @@ function AttributeEntryListField({
 
         return (
           <div className='space-y-3'>
-            <div className='flex flex-col sm:flex-row gap-4'>
+            <div className='flex flex-col sm:flex-row sm:items-center gap-4 py-1'>
               <Input
                 value={nameInput}
                 onChange={(e) => handleNameChange(e.target.value)}
@@ -125,7 +125,7 @@ function AttributeEntryListField({
                 }}
                 placeholder={namePlaceholder ?? 'Name'}
                 variant='secondary'
-                className='flex-1 text-foreground shadow-none placeholder:text-foreground/60'
+                className='flex-1 text-foreground shadow-none placeholder:text-foreground/60 ring-mac-blue rounded-md'
               />
               <Input
                 value={slugInput}
@@ -142,12 +142,12 @@ function AttributeEntryListField({
                 }}
                 placeholder={slugPlaceholder ?? 'Slug'}
                 variant='secondary'
-                className='flex-1 text-foreground shadow-none placeholder:text-foreground/60'
+                className='flex-1 text-foreground shadow-none placeholder:text-foreground/60 ring-mac-blue rounded-md'
               />
               <Button
                 size='sm'
                 variant='primary'
-                className='rounded-xs bg-dark-table dark:bg-white dark:text-dark-table shrink-0'
+                className='rounded-sm h-7 bg-dark-table dark:bg-white dark:text-dark-table shrink-0 px-4 font-clash'
                 onPress={handleAdd}
                 isDisabled={!nameInput.trim()}>
                 Add

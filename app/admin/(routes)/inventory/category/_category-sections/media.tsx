@@ -1,5 +1,6 @@
 'use client'
 
+import {LegacyImage as Image} from '@/components/ui/legacy-image'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
@@ -10,8 +11,6 @@ import {useQuery} from 'convex/react'
 import {useCallback, useMemo, useState} from 'react'
 import {CategoryFormApi, CategoryFormValues} from '../category-schema'
 import {FormSection, Header} from './components'
-
-import {LegacyImage as Image} from '@/components/ui/legacy-image'
 
 interface MediaProps {
   form: CategoryFormApi
@@ -168,10 +167,10 @@ export const Media = ({form}: MediaProps) => {
             <div className='flex items-center justify-between'>
               <label
                 className={cn(
-                  'text-base font-medium tracking-tight dark:text-light-gray',
+                  'text-base font-medium tracking-tight dark:text-light-gray capitalize',
                   {'text-blue-500': heroImageValue},
                 )}>
-                {heroImageValue ? heroImageValue : 'Hero Image'}
+                {`${categorySlug} Hero Image`}
               </label>
               <div className='flex gap-2'>
                 <Button

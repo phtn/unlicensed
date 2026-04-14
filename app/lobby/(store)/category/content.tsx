@@ -22,6 +22,24 @@ const CATEGORY_ORDER: string[] = [
   'edibles',
 ]
 
+const isDirectImageSrc = (src: string) =>
+  src.startsWith('http://') ||
+  src.startsWith('https://') ||
+  src.startsWith('/') ||
+  src.startsWith('data:') ||
+  src.startsWith('blob:')
+
+const resolveCategoryHeroImage = (
+  heroImage: string,
+  resolveUrl: (value: string) => string | null,
+) => {
+  if (isDirectImageSrc(heroImage)) {
+    return heroImage
+  }
+
+  return resolveUrl(heroImage) ?? undefined
+}
+
 interface ContentProps {
   initialCategories: StoreCategory[]
 }
@@ -46,7 +64,7 @@ export const Content = ({initialCategories}: ContentProps) => {
     () =>
       categories
         .map((c) => c.heroImage)
-        .filter((img): img is string => !!img && !img.startsWith('http')),
+        .filter((img): img is string => !!img && !isDirectImageSrc(img)),
     [categories],
   )
 
@@ -109,40 +127,46 @@ export const Content = ({initialCategories}: ContentProps) => {
             <EmptyCategory />
           </Activity>
           <div className='grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-4 md:gap-6 w-full'>
-            {categories.map((category) => (
-              <Link
-                key={category.slug}
-                href={`/lobby/category/${category.slug}`}
-                prefetch={true}
-                className='group/item cursor-pointer w-full border-x border-b border-dark-gray/50 rounded-xs'>
-                {/* Category Image */}
-                <div className='relative flex items-center justify-center bg-transparent rounded-xs overflow-hidden'>
-                  {category.heroImage ? (
-                    <LegacyImage
-                      src={resolveUrl(category.heroImage) as string}
-                      alt={category.name}
-                      loading='lazy'
-                      className='mask mask-parallelogram size-48 aspect-square shrink-0 object-cover w-full h-full'
-                    />
-                  ) : (
-                    <div className='w-full h-full bg-sidebar/40 dark:bg-sidebar flex items-center justify-center'>
-                      <Icon name='image' className='w-16 h-16 opacity-40' />
-                    </div>
-                  )}
-                </div>
+            {categories.map((category) => {
+              const heroImageSrc = category.heroImage
+                ? resolveCategoryHeroImage(category.heroImage, resolveUrl)
+                : undefined
 
-                {/* Card Content */}
-                <div className='w-full p-3 sm:p-4'>
-                  <div className='flex-1 min-w-0'>
-                    <h4 className='flex items-center justify-center text-lg sm:text-base lg:text-lg font-clash font-semibold mb-1'>
-                      <span className='capitalize truncate'>
-                        {category.name}
-                      </span>
-                    </h4>
+              return (
+                <Link
+                  key={category.slug}
+                  href={`/lobby/category/${category.slug}`}
+                  prefetch={true}
+                  className='group/item cursor-pointer w-full border-x border-b border-dark-gray/50 rounded-xs'>
+                  {/* Category Image */}
+                  <div className='relative aspect-square flex items-center justify-center bg-sidebar/20 dark:bg-sidebar/60 rounded-xs overflow-hidden'>
+                    {heroImageSrc ? (
+                      <LegacyImage
+                        src={heroImageSrc}
+                        alt={category.name}
+                        loading='lazy'
+                        className='mask mask-parallelogram h-full w-full shrink-0 object-cover transition-transform duration-500 group-hover/item:scale-105'
+                      />
+                    ) : (
+                      <div className='w-full h-full bg-sidebar/40 dark:bg-sidebar flex items-center justify-center'>
+                        <Icon name='image' className='w-16 h-16 opacity-40' />
+                      </div>
+                    )}
                   </div>
-                </div>
-              </Link>
-            ))}
+
+                  {/* Card Content */}
+                  <div className='w-full p-3 sm:p-4'>
+                    <div className='flex-1 min-w-0'>
+                      <h4 className='flex items-center justify-center text-lg sm:text-base lg:text-lg font-clash font-semibold mb-1'>
+                        <span className='capitalize truncate'>
+                          {category.name}
+                        </span>
+                      </h4>
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </section>

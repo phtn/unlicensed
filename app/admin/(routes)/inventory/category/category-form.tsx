@@ -1,11 +1,12 @@
 'use client'
 
+import {Toggle} from '@/app/admin/_components/ui/toggle'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {Icon} from '@/lib/icons'
 import {ensureSlug} from '@/lib/slug'
 import {cn} from '@/lib/utils'
-import {Button, Switch} from '@heroui/react'
+import {Button} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
 import {useMutation} from 'convex/react'
 import {useCallback, useEffect, useRef, useState} from 'react'
@@ -233,11 +234,10 @@ export const CategoryForm = ({
                 <span className='text-sm font-medium tracking-tight text-dark-gray dark:text-foreground'>
                   Active Category
                 </span>
-                <Switch
-                  size='sm'
-                  isSelected={visible}
+                <Toggle
+                  title='Active Category'
+                  checked={visible}
                   onChange={(value: boolean) => field.handleChange(value)}
-                  onBlur={field.handleBlur}
                 />
               </div>
             )
@@ -303,14 +303,10 @@ export const CategoryForm = ({
                   const visible = (field.state.value as boolean) ?? false
                   return (
                     <div className='flex w-fit shrink-0 items-center gap-3 rounded-xl border border-dark-gray/10 bg-white/70 px-3 py-2 dark:border-zinc-700/50 dark:bg-zinc-900/60'>
-                      <span className='text-sm font-medium tracking-tight text-dark-gray dark:text-foreground'>
-                        Active
-                      </span>
-                      <Switch
-                        size='sm'
-                        isSelected={visible}
+                      <Toggle
+                        title='Active'
+                        checked={visible}
                         onChange={(value: boolean) => field.handleChange(value)}
-                        onBlur={field.handleBlur}
                       />
                     </div>
                   )

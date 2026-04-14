@@ -1,381 +1,461 @@
 'use client'
 
-import {StoreProduct} from '@/app/types'
+import {Products} from '@/app/lobby/(store)/category/[slug]/products'
 import {Tag} from '@/components/base44/tag'
-import {Title, TitleV4} from '@/components/base44/title'
-import {ProductCard} from '@/components/store/product-card'
+import {Title} from '@/components/base44/title'
 import {api} from '@/convex/_generated/api'
-import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
-import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProduct} from '@/lib/convexClient'
-import {Icon, IconName} from '@/lib/icons'
-import {resolveProductImage} from '@/lib/resolve-product-image'
+import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
-import Image from 'next/image'
+import {usePaginatedQuery, useQuery} from 'convex/react'
 import Link from 'next/link'
-import {parseAsString, useQueryState} from 'nuqs'
-import {Activity, useMemo} from 'react'
-import {type EnhancedBrand, brands} from './all-brands'
+import {
+  Activity,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import {type IEnhancedBrand, brands} from './all-brands'
+
+const BRAND_PRODUCTS_PAGE_SIZE = 20
+const BRAND_SLUGS = brands.map((brand) => brand.slug)
+
+const formatProductCount = (count: number) =>
+  `${count} ${count === 1 ? 'product' : 'products'}`
+
+interface BrandCardProps {
+  brand: IEnhancedBrand
+  isCountLoading: boolean
+  isSelected: boolean
+  onSelect: (brandSlug: string) => void
+}
+
+const BrandCard = ({
+  brand,
+  isCountLoading,
+  isSelected,
+  onSelect,
+}: BrandCardProps) => (
+  <button
+    type='button'
+    onClick={() => onSelect(brand.slug)}
+    aria-pressed={isSelected}
+    aria-label={`Browse ${brand.name}`}
+    className={cn(
+      'group relative isolate min-h-28 overflow-hidden rounded-xs border text-left transition-all duration-300',
+      'border-foreground/10 bg-[#141414] text-white shadow-sm hover:-translate-y-0.5 hover:border-brand/60 hover:shadow-xl',
+      'dark:border-white/10 dark:bg-white dark:text-dark-table dark:hover:border-brand',
+      isSelected &&
+        'border-brand shadow-xl shadow-brand/10 dark:border-brand dark:shadow-brand/15',
+    )}>
+    <div className='absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_38%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent_55%)] opacity-70 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[radial-gradient(circle_at_top_right,rgba(0,0,0,0.16),transparent_40%),linear-gradient(135deg,rgba(0,0,0,0.05),transparent_55%)]' />
+    <div className='flex h-full flex-col justify-between p-5 sm:p-6'>
+      <div className='flex items-center justify-between gap-4'>
+        <Icon
+          name={brand.icon}
+          className='size-18 opacity-95 transition-transform duration-300 group-hover:scale-105 sm:size-24'
+        />
+        <span className='font-okxs text-sm text-white/60 dark:text-dark-table/60'>
+          {isCountLoading
+            ? 'Counting products'
+            : formatProductCount(brand.productCount)}
+        </span>
+      </div>
+
+      <div className='hidden space-y-3'>
+        <div>
+          <h3 className='font-clash text-xl font-semibold tracking-tight sm:text-2xl'>
+            {brand.name}
+          </h3>
+          {brand.description && (
+            <p className='mt-1 line-clamp-2 max-w-xs text-xs leading-relaxed text-white/55 dark:text-dark-table/60'>
+              {brand.description}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  </button>
+)
+
+interface SelectedBrandPanelProps {
+  brand: IEnhancedBrand
+  isCountLoading: boolean
+  onClear: VoidFunction
+  onViewProducts: VoidFunction
+}
+
+const SelectedBrandPanel = ({
+  brand,
+  isCountLoading,
+  onClear,
+  onViewProducts,
+}: SelectedBrandPanelProps) => (
+  <section className='px-4 pb-4 sm:px-6 sm:pb-8'>
+    <div className='mx-auto max-w-7xl'>
+      <div className='relative overflow-hidden rounded-xs border border-foreground/10 bg-sidebar/60 p-5 shadow-sm dark:border-white/10 dark:bg-dark-table/60 sm:p-7'>
+        <div className='absolute right-0 top-0 h-48 w-48 translate-x-12 -translate-y-16 rounded-full bg-brand/10 blur-3xl' />
+        <div className='relative z-10 grid gap-6 md:grid-cols-[auto_1fr_auto] md:items-center'>
+          <div className='flex size-24 items-center justify-center rounded-xs bg-foreground text-white dark:bg-white dark:text-dark-table sm:size-28'>
+            <Icon name={brand.icon} className='size-18 sm:size-22' />
+          </div>
+          <div className='space-y-2'>
+            <Tag text='Selected Brand' />
+            <h2 className='font-clash text-4xl font-semibold tracking-tight sm:text-5xl'>
+              {brand.name}
+            </h2>
+            <p className='max-w-2xl text-sm leading-relaxed text-foreground/60 dark:text-white/60 sm:text-base'>
+              {brand.description ??
+                'Browse this partner collection using the same product grid as categories.'}
+            </p>
+            <p className='font-okxs text-sm uppercase tracking-[0.22em] text-light-brand'>
+              {isCountLoading
+                ? 'Counting products'
+                : formatProductCount(brand.productCount)}
+            </p>
+          </div>
+          <div className='flex flex-wrap items-center gap-3 md:justify-end'>
+            <Button
+              size='md'
+              onPress={onViewProducts}
+              className='rounded-xs bg-foreground px-5 py-3 font-clash text-sm font-medium text-white transition-colors hover:bg-brand dark:bg-white dark:text-dark-table dark:hover:bg-brand dark:hover:text-white'>
+              View all products
+            </Button>
+            <Button
+              size='md'
+              variant='tertiary'
+              onPress={onClear}
+              className='rounded-xs border border-foreground/10 bg-background/70 font-clash dark:border-white/10 dark:bg-background/20'>
+              Clear
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+)
+
+interface BrandProductsSectionProps {
+  brand: IEnhancedBrand
+}
+
+const BrandProductsSection = ({brand}: BrandProductsSectionProps) => {
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+  const {
+    results,
+    status,
+    loadMore: loadMoreProducts,
+  } = usePaginatedQuery(
+    api.products.q.listBrandProductsPaginated,
+    {availableOnly: true, brand: brand.slug},
+    {initialNumItems: BRAND_PRODUCTS_PAGE_SIZE},
+  )
+
+  const products = useMemo(
+    () => results.map((product) => adaptProduct(product)),
+    [results],
+  )
+
+  const canLoadMoreProducts = status === 'CanLoadMore'
+  const isLoadingMoreProducts = status === 'LoadingMore'
+  const isLoadingInitialProducts =
+    status === 'LoadingFirstPage' && products.length === 0
+  const isRefreshingProducts =
+    status === 'LoadingFirstPage' && products.length > 0
+
+  useEffect(() => {
+    if (!canLoadMoreProducts) return
+
+    const currentTarget = loadMoreRef.current
+    if (!currentTarget) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          loadMoreProducts(BRAND_PRODUCTS_PAGE_SIZE)
+        }
+      },
+      {rootMargin: '640px 0px'},
+    )
+
+    observer.observe(currentTarget)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [canLoadMoreProducts, loadMoreProducts])
+
+  return (
+    <div id='brand-products' className='scroll-mt-24'>
+      <Products
+        products={products}
+        isLoading={isLoadingInitialProducts}
+        isRefreshing={isRefreshingProducts}
+        footer={
+          (canLoadMoreProducts || isLoadingMoreProducts) && (
+            <div className='flex h-96 justify-center pt-6'>
+              <div
+                ref={loadMoreRef}
+                aria-hidden
+                className='flex h-10 w-full items-center justify-center'>
+                <Icon
+                  name='spinners-ring'
+                  className={cn(
+                    'size-4 transition-opacity',
+                    isLoadingMoreProducts ? 'opacity-60' : 'opacity-25',
+                  )}
+                />
+              </div>
+            </div>
+          )
+        }
+      />
+    </div>
+  )
+}
 
 export const Content = () => {
-  const [selectedBrandId, setSelectedBrandId] = useQueryState(
-    'id',
-    parseAsString.withDefault(''),
-  )
-  const {data: productsQuery} = useConvexSnapshotQuery(
-    api.products.q.listProducts,
-    {limit: 100},
-  )
-  const {data: selectedBrandProductsQuery} = useConvexSnapshotQuery(
-    api.products.q.listProducts,
-    selectedBrandId ? {brand: selectedBrandId, limit: 24} : 'skip',
-  )
-  const getProductBrands = (brands?: string | string[]) =>
-    Array.isArray(brands) ? brands : brands ? [brands] : []
+  const [selectedBrandId, setSelectedBrandId] = useState('')
+  const brandCounts = useQuery(api.products.q.countProductsByBrands, {
+    availableOnly: true,
+    brandSlugs: BRAND_SLUGS,
+  })
+  const isCountLoading = brandCounts === undefined
 
-  // Group products by brand and count them
-  const brandCounts = useMemo(() => {
-    if (!productsQuery) return new Map<string, number>()
-    const counts = new Map<string, number>()
-    productsQuery.forEach((product) => {
-      getProductBrands(product.brand).forEach((brand) => {
-        const brandSlug = brand.toLowerCase().replace(/\s+/g, '-')
-        counts.set(brandSlug, (counts.get(brandSlug) || 0) + 1)
-      })
-    })
-    return counts
-  }, [productsQuery])
-
-  // Enhance brands with product counts
-  const enhancedBrands = useMemo<EnhancedBrand[]>(() => {
+  const enhancedBrands = useMemo<IEnhancedBrand[]>(() => {
     return brands.map((brand) => ({
       ...brand,
-      productCount: brandCounts.get(brand.slug) || 0,
+      productCount: brandCounts?.[brand.slug] ?? 0,
     }))
   }, [brandCounts])
 
-  const featuredBrands = enhancedBrands.filter((b) => b.featured)
   const selectedBrand =
     enhancedBrands.find((brand) => brand.slug === selectedBrandId) ?? null
-  const selectedBrandProducts = useMemo<StoreProduct[]>(() => {
-    return (
-      selectedBrandProductsQuery?.map((product) => adaptProduct(product)) ?? []
-    )
-  }, [selectedBrandProductsQuery])
-  const isSelectedBrandLoading =
-    selectedBrandId !== '' && selectedBrandProductsQuery === undefined
-  const selectedBrandImageIds = useMemo(
-    () =>
-      selectedBrandProducts
-        .map((product) => product.image)
-        .filter(
-          (image): image is string => !!image && !image.startsWith('http'),
-        ),
-    [selectedBrandProducts],
+  const featuredBrands = useMemo(
+    () => enhancedBrands.filter((brand) => brand.featured),
+    [enhancedBrands],
   )
-  const resolveSelectedBrandImage = useStorageUrls(selectedBrandImageIds)
+  const activeBrandCount = enhancedBrands.filter(
+    (brand) => brand.productCount > 0,
+  ).length
+  const totalProductCount = enhancedBrands.reduce(
+    (total, brand) => total + brand.productCount,
+    0,
+  )
 
-  const toggleBrand = (brandSlug: string) => {
-    void setSelectedBrandId(brandSlug === selectedBrandId ? null : brandSlug)
-  }
+  const scrollToBrandProducts = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      document.getElementById('brand-products')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    })
+  }, [])
+
+  const toggleBrand = useCallback(
+    (brandSlug: string) => {
+      const nextBrandSlug = selectedBrandId === brandSlug ? '' : brandSlug
+
+      setSelectedBrandId(nextBrandSlug)
+
+      if (nextBrandSlug) {
+        scrollToBrandProducts()
+      }
+    },
+    [scrollToBrandProducts, selectedBrandId],
+  )
+
+  const clearBrand = useCallback(() => {
+    setSelectedBrandId('')
+  }, [])
 
   return (
-    <div className='min-h-screen pt-16 sm:pt-20 md:pt-24 lg:pt-28 xl:pt-28 pb-16 sm:pb-20 lg:pb-24 px-4 sm:px-6 overflow-x-hidden bg-background'>
-      {selectedBrand && (
-        <section className='px-4 sm:px-6 pb-10 sm:pb-14 lg:pb-16'>
-          <div className='max-w-7xl mx-auto'>
-            <div className='mb-6 sm:mb-8 flex flex-col gap-4'>
-              <div className='space-y-4'>
-                <Tag text={selectedBrand.name} />
-                <TitleV4
-                  title={`${selectedBrand.name}`}
-                  subtitle={
-                    <div>
-                      Found <span className='opacity-50 font-ios ml-2'>(</span>
-                      {selectedBrandProducts.length}
-                      <span className='opacity-50 font-ios mr-2'>)</span>{' '}
-                      product
-                      {selectedBrandProducts.length !== 1 ? 's' : ''}
-                    </div>
-                  }
-                />
-              </div>
-              <div className='flex flex-wrap items-center gap-3'>
-                <Link
-                  href={`/lobby/products?brand=${selectedBrand.slug}`}
-                  className='dark:bg-white opacity-100 dark:text-dark-gray md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-8 py-3 sm:py-4 text-base'>
-                  <span className='drop-shadow-xs'>All Products</span>
-                </Link>
-                <Button
-                  size='lg'
-                  variant='tertiary'
-                  onPress={() => void setSelectedBrandId(null)}
-                  className='border dark:border-light-gray/40 font-polysans font-medium bg-light-gray/25 dark:bg-dark-gray/20 px-4 sm:px-8 py-2 sm:py-3 text-base lg:text-lg'>
-                  <span className='tracking-tight'>Clear selection</span>
-                </Button>
-              </div>
-            </div>
-
-            {isSelectedBrandLoading && (
-              <div className='rounded-lg border border-foreground/10 dark:border-dark-gray/40 bg-sidebar/30 px-6 py-16 text-center'>
-                <div className='flex items-center justify-center gap-3 text-sm sm:text-base opacity-70'>
-                  <Icon name='spinners-ring' className='size-4 animate-spin' />
-                  <span>Loading {selectedBrand.name} products...</span>
+    <div className='min-h-screen overflow-x-hidden bg-background pb-16 pt-16 sm:pt-20 md:pt-24 lg:pt-28'>
+      <section className='relative px-4 pb-8 sm:px-6 sm:pb-12'>
+        <div className='mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-end'>
+          <div className='space-y-6'>
+            <Tag text='Brands' />
+            <Title title='Brand Wall' subtitle='Browse by maker' />
+            <p className='max-w-2xl text-sm leading-relaxed text-foreground/60 dark:text-white/60 sm:text-base'>
+              Pick a partner, then shop its live product shelf with the same
+              grid, loading states, and pagination used across category pages.
+            </p>
+            <div className='grid max-w-lg grid-cols-2 gap-3 sm:grid-cols-3'>
+              <div className='rounded-xs border border-foreground/10 bg-sidebar/50 p-4 dark:border-white/10 dark:bg-dark-table/50'>
+                <div className='font-clash text-3xl font-semibold'>
+                  {isCountLoading ? '...' : activeBrandCount}
+                </div>
+                <div className='font-okxs text-xs uppercase tracking-[0.2em] text-foreground/50'>
+                  Active brands
                 </div>
               </div>
-            )}
-
-            {selectedBrandProducts.length > 0 && (
-              <div className='flex w-screen md:w-7xl overflow-x-auto gap-3 snap-x snap-mandatory scroll-smooth hide-scrollbar ml-3 pr-8'>
-                {selectedBrandProducts.map((product) => (
-                  <ProductCard
-                    key={product._id ?? product.slug}
-                    product={product}
-                    imageUrl={resolveProductImage(
-                      product.image,
-                      resolveSelectedBrandImage,
-                    )}
-                  />
-                ))}
+              <div className='rounded-xs border border-foreground/10 bg-sidebar/50 p-4 dark:border-white/10 dark:bg-dark-table/50'>
+                <div className='font-clash text-3xl font-semibold'>
+                  {isCountLoading ? '...' : totalProductCount}
+                </div>
+                <div className='font-okxs text-xs uppercase tracking-[0.2em] text-foreground/50'>
+                  Products
+                </div>
               </div>
-            )}
-
-            {!isSelectedBrandLoading && selectedBrandProducts.length === 0 && (
-              <div className='rounded-lg border border-foreground/10 dark:border-dark-gray/40 bg-sidebar/30 px-6 py-16 text-center'>
-                <p className='text-sm sm:text-base opacity-70'>
-                  No products are currently available for {selectedBrand.name}.
-                </p>
-              </div>
-            )}
+              <Link
+                href='/lobby/products'
+                className='col-span-2 flex items-center justify-between rounded-xs bg-foreground p-4 font-clash text-white transition-colors hover:bg-brand dark:bg-white dark:text-dark-table dark:hover:bg-brand dark:hover:text-white sm:col-span-1'>
+                <span>Search all</span>
+                <Icon name='arrow-right' className='size-4' />
+              </Link>
+            </div>
           </div>
-        </section>
-      )}
-      {/* Hero Section - Asymmetric Layout */}
-      <section className='relative'>
-        <div className='max-w-7xl mx-auto'>
-          {/* Header */}
-          <Activity mode={selectedBrandId ? 'hidden' : 'visible'}>
-            <div className={cn('mb-12 sm:mb-16 lg:mb-20')}>
-              <Tag text='Brands' />
-              <Title
-                title='Curated Excellence'
-                subtitle='Partner Brands We Trust'
-              />
-              <p className='hidden text-sm sm:text-base lg:text-lg opacity-60 mt-6 sm:mt-8 max-w-2xl leading-relaxed'>
-                Each brand in our collection represents a commitment to quality,
-                innovation, and the highest standards of cultivation. Discover
-                the stories behind the names that define excellence.
-              </p>
+
+          <div className='rounded-xs border border-foreground/10 bg-[#111] p-4 text-white shadow-sm dark:border-white/10 dark:bg-white dark:text-dark-table sm:p-5'>
+            <div className='mb-4 flex items-center justify-between'>
+              <span className='font-okxs text-xs uppercase tracking-[0.24em] opacity-60'>
+                Featured
+              </span>
+              <span className='text-xs opacity-50'>
+                {featuredBrands.length} partners
+              </span>
             </div>
-          </Activity>
-
-          {/* Featured Brands - Large Showcase */}
-          <div className='hidden _grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 mb-12 sm:mb-16'>
-            {featuredBrands.map((brand, index) => (
-              <button
-                type='button'
-                key={brand.slug}
-                onClick={() => toggleBrand(brand.slug)}
-                aria-pressed={selectedBrandId === brand.slug}
-                className={cn(
-                  'group relative overflow-hidden rounded-3xl sm:rounded-4xl bg-sidebar/40 dark:bg-sidebar border border-foreground/10 dark:border-dark-gray/50 transition-all duration-500 hover:border-foreground/30 hover:shadow-2xl',
-                  selectedBrandId === brand.slug &&
-                    'border-brand shadow-2xl shadow-brand/10',
-                  index === 0 && 'lg:row-span-2',
-                )}>
-                <div
+            <div className='grid grid-cols-2 gap-3'>
+              {featuredBrands.map((brand) => (
+                <button
+                  key={brand.slug}
+                  type='button'
+                  onClick={() => toggleBrand(brand.slug)}
                   className={cn(
-                    'relative flex flex-col p-8 sm:p-10 lg:p-12 min-h-75 sm:min-h-100 lg:min-h-125',
-                    index === 0 && 'lg:min-h-150',
+                    'group flex min-h-32 flex-col justify-between rounded-xs border border-white/10 bg-white/5 p-4 text-left transition-colors hover:border-brand/70 hover:bg-white/10',
+                    'dark:border-dark-table/10 dark:bg-dark-table/4 dark:hover:bg-dark-table/8',
+                    selectedBrandId === brand.slug && 'border-brand',
                   )}>
-                  {/* Background Pattern */}
-                  <div className='absolute inset-0 opacity-5 dark:opacity-10'>
-                    <div className='absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.1),transparent_70%)]' />
-                  </div>
-
-                  {/* Brand Logo */}
-                  <div className='relative z-10 mb-6 sm:mb-8 shrink-0'>
-                    <div className='relative w-32 sm:w-40 lg:w-48 h-20 sm:h-24 lg:h-28'>
-                      <Image
-                        fill
-                        src={`/${brand.icon}`}
-                        alt={brand.name}
-                        className='w-full h-full object-contain opacity-90 dark:opacity-100'
-                        loading='lazy'
-                      />
+                  <Icon name={brand.icon} className='size-16' />
+                  <div>
+                    <div className='font-clash text-lg font-semibold'>
+                      {brand.name}
+                    </div>
+                    <div className='font-okxs text-xs uppercase tracking-[0.16em] opacity-55'>
+                      {isCountLoading
+                        ? 'Counting'
+                        : formatProductCount(brand.productCount)}
                     </div>
                   </div>
-
-                  {/* Brand Info */}
-                  <div className='relative z-10 flex-1 flex flex-col justify-between'>
-                    <div>
-                      {/*<h3 className='text-2xl sm:text-3xl lg:text-4xl font-polysans font-bold mb-3 sm:mb-4 capitalize'>
-                        {brand.name}
-                      </h3>*/}
-                      {brand.description && (
-                        <p className='text-sm sm:text-base opacity-70 mb-4 sm:mb-6 leading-relaxed max-w-md'>
-                          {brand.description}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Product Count & CTA */}
-                    <div className='flex items-center justify-between pt-6 border-t border-foreground/10 dark:border-dark-gray/30'>
-                      <div className='flex items-center gap-2'>
-                        <span className='text-xs sm:text-sm opacity-60 font-medium'>
-                          {brand.productCount} Products
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-2 text-brand group-hover:gap-3 transition-all duration-300'>
-                        <span className='text-sm sm:text-base font-medium'>
-                          Explore
-                        </span>
-                        <Icon name='arrow-right' className='size-4 sm:size-5' />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Hover Effect Overlay */}
-                  <div className='absolute inset-0 bg-linear-to-br from-brand/0 via-brand/0 to-brand/0 group-hover:from-brand/5 group-hover:via-brand/3 group-hover:to-brand/5 transition-all duration-500 rounded-3xl sm:rounded-4xl' />
-                </div>
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Regular Brands Grid - Masonry Style */}
-      <section className='py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-24 lg:pb-32'>
-        <div className='max-w-7xl mx-auto'>
-          <div className='mb-8 sm:mb-12'>
-            <h2 className='text-xl sm:text-2xl lg:text-3xl font-clash font-bold mb-2'>
-              All <span>Brands</span>
-            </h2>
-            <p className='text-sm sm:text-base opacity-60'>
-              Explore our complete collection of trusted partners
-            </p>
+      <section className='px-4 py-8 sm:px-6 sm:py-10'>
+        <div className='mx-auto max-w-7xl'>
+          <div className='mb-6 flex flex-col gap-2 sm:mb-8 sm:flex-row sm:items-end sm:justify-between'>
+            <div>
+              <h2 className='font-clash text-2xl font-semibold tracking-tight sm:text-3xl'>
+                All Brands
+              </h2>
+              <p className='text-sm text-foreground/55 dark:text-white/55'>
+                Select a brand to load its available products.
+              </p>
+            </div>
+            {selectedBrand && (
+              <a
+                href='#brand-products'
+                className='font-okxs text-xs uppercase tracking-[0.22em] text-light-brand'>
+                Jump to products
+              </a>
+            )}
           </div>
 
           <Activity mode={enhancedBrands.length === 0 ? 'visible' : 'hidden'}>
-            <div className='max-w-7xl mx-auto pt-20'>
-              <div className='flex flex-col items-center justify-center gap-4 px-6 py-24 text-center'>
-                <Title
-                  titleStyle='lowercase'
-                  title='Nothing here yet.'
-                  subtitle={
-                    <div className='flex items-center relative'>
-                      <Icon
-                        name='chevron-double-left'
-                        className='rotate-90 size-12 text-featured opacity-100 relative z-30'
-                      />
-                      <span>check back soon</span>
-                    </div>
-                  }
-                />
-              </div>
+            <div className='flex flex-col items-center justify-center gap-4 px-6 py-24 text-center'>
+              <Title
+                titleStyle='lowercase'
+                title='Nothing here yet.'
+                subtitle={
+                  <div className='flex items-center relative'>
+                    <Icon
+                      name='chevron-double-left'
+                      className='rotate-90 size-12 text-featured opacity-100 relative z-30'
+                    />
+                    <span>check back soon</span>
+                  </div>
+                }
+              />
             </div>
           </Activity>
 
-          {/* Asymmetric Grid Layout */}
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8'>
-            {enhancedBrands.map((brand, index) => (
-              <button
-                type='button'
+          <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+            {enhancedBrands.map((brand) => (
+              <BrandCard
                 key={brand.slug}
-                onClick={() => toggleBrand(brand.slug)}
-                aria-pressed={selectedBrandId === brand.slug}
-                className={cn(
-                  'group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-foreground/10 dark:border-dark-gray/50 transition-all duration-500 hover:border-foreground/30 hover:shadow-xl',
-                  selectedBrandId === brand.slug &&
-                    'border-brand shadow-xl shadow-brand/10',
-                  // Create visual interest with varying heights
-                  index % 3 === 0 && 'sm:row-span-1',
-                  index % 3 === 1 && 'sm:row-span-1',
-                  index % 3 === 2 && 'sm:row-span-1',
-                )}>
-                <div className='relative flex flex-col p-6 dark:bg-background bg-foreground sm:p-8 min-h-50 sm:min-h-62.5'>
-                  {/* Background Accent */}
-                  <div className='absolute top-0 right-0 w-32 h-32 bg-brand/5 dark:bg-brand/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500' />
-
-                  {/* Brand Logo */}
-                  <div className='relative z-10 mb-4 sm:mb-6 shrink-0'>
-                    <div className='relative w-24 sm:w-28 lg:w-32 h-14 sm:h-16 lg:h-20'>
-                      <Icon
-                        name={brand.icon as IconName}
-                        className='size-32 text-white opacity-90 dark:opacity-100'
-                      />
-                    </div>
-                  </div>
-
-                  {/* Brand Info */}
-                  <div className='relative z-10 flex-1 flex flex-col justify-between'>
-                    <div>
-                      {/*<h3 className='text-xl sm:text-2xl text-brand font-polysans font-bold mb-2 sm:mb-3 capitalize'>
-                        {brand.name}
-                      </h3>*/}
-                      {/*{brand.description && (
-                        <p className='text-xs sm:text-sm opacity-70 mb-4 leading-relaxed line-clamp-2'>
-                          {brand.description}
-                        </p>
-                      )}*/}
-                    </div>
-
-                    {/* Product Count */}
-                    <div className='flex items-center justify-between pt-4 border-t border-foreground/10 dark:border-dark-gray/30'>
-                      <span className='text-sm text-white opacity-60 font-okxs'>
-                        {brand.productCount} Products
-                      </span>
-                      <Icon
-                        name='arrow-right'
-                        className='size-4 text-white group-hover:translate-x-1 transition-transform duration-300'
-                      />
-                    </div>
-                  </div>
-
-                  {/* Hover Effect */}
-                  <div className='absolute inset-0 bg-linear-to-br from-brand/0 to-brand/0 group-hover:from-brand/5 group-hover:to-brand/3 transition-all duration-500 rounded-2xl sm:rounded-3xl' />
-                </div>
-              </button>
+                brand={brand}
+                isCountLoading={isCountLoading}
+                isSelected={selectedBrandId === brand.slug}
+                onSelect={toggleBrand}
+              />
             ))}
           </div>
         </div>
       </section>
+      {selectedBrand && (
+        <SelectedBrandPanel
+          brand={selectedBrand}
+          isCountLoading={isCountLoading}
+          onClear={clearBrand}
+          onViewProducts={scrollToBrandProducts}
+        />
+      )}
+      {selectedBrand ? (
+        <BrandProductsSection key={selectedBrand.slug} brand={selectedBrand} />
+      ) : (
+        <section className='px-4 py-8 sm:px-6 sm:py-12'>
+          <div className='mx-auto max-w-7xl rounded-xs border border-dashed border-foreground/15 bg-sidebar/30 p-8 text-center dark:border-white/10 dark:bg-dark-table/30'>
+            <p className='font-clash text-2xl font-semibold tracking-tight'>
+              Choose a brand to browse its product shelf.
+            </p>
+            <p className='mx-auto mt-2 max-w-xl text-sm text-foreground/55 dark:text-white/55'>
+              Product cards will load below with the same layout used on
+              category pages, including infinite loading.
+            </p>
+          </div>
+        </section>
+      )}
 
-      {/* CTA Section */}
-      <section className='py-12 sm:py-16 lg:py-20 px-4 sm:px-6'>
-        <div className='max-w-4xl mx-auto text-center'>
-          <div className='bg-sidebar/40 dark:bg-sidebar border border-foreground/10 dark:border-dark-gray/50 p-8 sm:p-12 lg:p-16'>
-            <h2 className='text-xl sm:text-3xl lg:text-4xl font-clash font-bold mb-4 sm:mb-6'>
+      <section className='px-4 py-12 sm:px-6 sm:py-16 lg:py-20'>
+        <div className='mx-auto max-w-4xl text-center'>
+          <div className='border border-foreground/10 bg-sidebar/40 p-8 dark:border-dark-gray/50 dark:bg-sidebar sm:p-12 lg:p-16'>
+            <h2 className='mb-4 font-clash text-xl font-bold sm:mb-6 sm:text-3xl lg:text-4xl'>
               Looking for something specific?
             </h2>
-            <p className='text-sm sm:text-base lg:text-lg opacity-70 mb-6 sm:mb-8 max-w-2xl mx-auto'>
-              Try our Bundle-Builder and pick products that match your vibe.
+            <p className='mx-auto mb-6 max-w-2xl text-sm opacity-70 sm:mb-8 sm:text-base lg:text-lg'>
+              Try search, deals, or browse the full lobby when brand is not the
+              only filter that matters.
             </p>
-            <div className='flex flex-col sm:flex-row items-center justify-center gap-4'>
-              <Link prefetch href='/lobby'>
-                <div className='dark:bg-brand opacity-100 dark:text-white md:hover:bg-brand dark:hover:text-white bg-brand md:hover:text-white text-white font-polysans font-medium px-6 sm:px-12 py-3 sm:py-4 text-base portrait:w-full'>
-                  <span className='drop-shadow-xs'>Shop</span>
-                </div>
-              </Link>
-
+            <div className='flex flex-col items-center justify-center gap-4 sm:flex-row'>
               <Link
                 prefetch
-                href={'/lobby/products'}
-                className='sm:flex items-center gap-2 font-clash font-medium bg-dark-table text-white dark:bg-black dark:text-white px-4 sm:px-8 py-2 sm:py-3 text-base lg:text-lg portrait:w-full'>
-                <div className='flex items-center space-x-2'>
-                  <Icon name={'search'} className='dark:text-white' />
-                  <div className='flex items-center tracking-tight'>Search</div>
-                </div>
+                href='/lobby'
+                className='w-full bg-brand px-6 py-3 font-polysans text-base font-medium text-white sm:w-auto sm:px-12 sm:py-4'>
+                Shop
+              </Link>
+              <Link
+                prefetch
+                href='/lobby/products'
+                className='w-full bg-dark-table px-6 py-3 font-clash text-base font-medium text-white dark:bg-black sm:w-auto sm:px-8'>
+                <span className='inline-flex items-center gap-2'>
+                  <Icon name='search' className='size-4' />
+                  Search
+                </span>
               </Link>
               <Link
                 prefetch
                 href='/lobby/deals'
-                className='bg-terpenes opacity-100 text-white font-clash font-medium px-6 sm:px-8 py-3 sm:py-4 text-base portrait:w-full'>
-                <div className='flex items-center space-x-2'>
-                  <Icon name='box-bold' className=' text-white' />
-                  <span className='drop-shadow-xs'>Find Deals</span>
-                </div>
+                className='w-full bg-terpenes px-6 py-3 font-clash text-base font-medium text-white sm:w-auto sm:px-8 sm:py-4'>
+                <span className='inline-flex items-center gap-2'>
+                  <Icon name='box-bold' className='size-4 text-white' />
+                  Find Deals
+                </span>
               </Link>
             </div>
           </div>

@@ -198,6 +198,45 @@ export const countCategoryProducts = query({
   },
 })
 
+export const countProductsByBrands = query({
+  args: {
+    availableOnly: v.optional(v.boolean()),
+    brandSlugs: v.array(v.string()),
+  },
+  handler: async (ctx, args): Promise<Record<string, number>> => {
+    const normalizedBrandSlugs = [
+      ...new Set(args.brandSlugs.map(normalizeBrandValue)),
+    ].filter((brandSlug) => brandSlug.length > 0)
+    const requestedBrands = new Set(normalizedBrandSlugs)
+    const counts: Record<string, number> = Object.fromEntries(
+      normalizedBrandSlugs.map((brandSlug) => [brandSlug, 0]),
+    )
+
+    if (requestedBrands.size === 0) {
+      return counts
+    }
+
+    for await (const product of ctx.db.query('products')) {
+      if (product.archived === true) {
+        continue
+      }
+
+      if (args.availableOnly === true && product.available !== true) {
+        continue
+      }
+
+      const productBrands = new Set(normalizeBrandValues(product.brand))
+      for (const brandSlug of productBrands) {
+        if (requestedBrands.has(brandSlug)) {
+          counts[brandSlug] = (counts[brandSlug] ?? 0) + 1
+        }
+      }
+    }
+
+    return counts
+  },
+})
+
 export const listProductsPaginated = query({
   args: {
     archived: v.optional(v.boolean()),
@@ -222,6 +261,65 @@ export const listProductsPaginated = query({
           : q.neq(q.field('archived'), true),
       )
       .paginate(args.paginationOpts)
+  },
+})
+
+export const listBrandProductsPaginated = query({
+  args: {
+    availableOnly: v.optional(v.boolean()),
+    brand: v.string(),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (
+    ctx,
+    args,
+  ): Promise<PaginationResult<ProductWithResolvedImage>> => {
+    const normalizedBrand = normalizeBrandValue(args.brand)
+    const startOffset = decodeBrandPaginationCursor(args.paginationOpts.cursor)
+    const page: Doc<'products'>[] = []
+    let matchingOffset = 0
+    let hasMore = false
+
+    for await (const product of ctx.db.query('products').order('desc')) {
+      if (product.archived === true) {
+        continue
+      }
+
+      if (args.availableOnly === true && product.available !== true) {
+        continue
+      }
+
+      if (!normalizeBrandValues(product.brand).includes(normalizedBrand)) {
+        continue
+      }
+
+      if (matchingOffset < startOffset) {
+        matchingOffset += 1
+        continue
+      }
+
+      if (page.length >= args.paginationOpts.numItems) {
+        hasMore = true
+        break
+      }
+
+      page.push(product)
+      matchingOffset += 1
+    }
+
+    const categories = await ctx.db.query('categories').collect()
+
+    return {
+      continueCursor: hasMore
+        ? encodeBrandPaginationCursor(startOffset + page.length)
+        : '',
+      isDone: !hasMore,
+      page: await hydrateCategoryPageProducts(
+        ctx,
+        page,
+        buildCategoriesBySlug(categories),
+      ),
+    }
   },
 })
 

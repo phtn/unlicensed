@@ -6,7 +6,7 @@ import {useTheme} from '@/components/ui/theme-provider'
 import {api} from '@/convex/_generated/api'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {formatDecimalUSD} from '@/utils/currency'
+import {decimalUSD} from '@/utils/currency'
 import {Card} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {ViewTransition, memo, useState} from 'react'
@@ -238,7 +238,7 @@ export const CheckoutRewardsSummary = memo(function CheckoutRewardsSummary({
                   stiffness={240}
                   damping={180}
                   precision={3}
-                  format={formatDecimalUSD}
+                  format={decimalUSD}
                   value={r.cashBackAmount}
                 />
                 {/*{formatRewardsCurrency(r.cashBackAmount)}*/}
