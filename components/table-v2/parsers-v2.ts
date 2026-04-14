@@ -7,13 +7,13 @@ import type {
   VisibilityState,
 } from '@tanstack/react-table'
 
-// Pagination parser factory (default page size 15 for backward compatibility)
-export const createPaginationParser = (defaultPageSize = 15) => ({
+// Pagination parser factory (default page size 100)
+export const createPaginationParser = (defaultPageSize = 100) => ({
   pageIndex: parseAsInteger.withDefault(0),
   pageSize: parseAsInteger.withDefault(defaultPageSize),
 })
 
-export const paginationParser = createPaginationParser(15)
+export const paginationParser = createPaginationParser(100)
 
 export const createLoadedCountParser = (defaultLoadedCount = 100) => ({
   parse: (value: string | null): number => {
@@ -105,34 +105,56 @@ export const createColumnFiltersParser = () => ({
   defaultValue: [] as ColumnFiltersState,
 })
 
-// Column visibility parser - format: "id1,id2" (hidden columns)
-export const createColumnVisibilityParser = () => ({
+// Column visibility parser - format: "id1,id2" for hidden columns,
+// "id:1" for columns explicitly shown over a hidden default.
+export const createColumnVisibilityParser = (
+  defaultColumnVisibility: VisibilityState = {},
+) => ({
   parse: (value: string | null): VisibilityState => {
     if (!value) {
-      return {}
+      return defaultColumnVisibility
     }
     try {
-      const hiddenColumns = value.split(',').filter(Boolean)
-      const visibility: VisibilityState = {}
-      // All columns are visible by default, so we only track hidden ones
-      hiddenColumns.forEach((id) => {
-        visibility[id] = false
+      const visibility: VisibilityState = {...defaultColumnVisibility}
+      const columns = value.split(',').filter(Boolean)
+      columns.forEach((column) => {
+        const [id, visibilityValue] = column.split(':')
+        if (!id) {
+          return
+        }
+
+        visibility[id] =
+          visibilityValue === '1' || visibilityValue === 'true'
       })
       return visibility
     } catch {
-      return {}
+      return defaultColumnVisibility
     }
   },
   serialize: (value: VisibilityState): string => {
     if (!value) {
       return ''
     }
-    const hiddenColumns = Object.entries(value)
-      .filter(([, visible]) => visible === false)
-      .map(([id]) => id)
-    return hiddenColumns.join(',')
+
+    const columnIds = new Set([
+      ...Object.keys(defaultColumnVisibility),
+      ...Object.keys(value),
+    ])
+
+    return Array.from(columnIds)
+      .flatMap((id) => {
+        const visible = value[id] !== false
+        const defaultVisible = defaultColumnVisibility[id] !== false
+
+        if (visible === defaultVisible) {
+          return []
+        }
+
+        return visible ? `${id}:1` : id
+      })
+      .join(',')
   },
-  defaultValue: {} as VisibilityState,
+  defaultValue: defaultColumnVisibility,
 })
 
 // Row selection parser - format: "id1,id2,id3"

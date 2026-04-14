@@ -13,6 +13,7 @@ import {
   RowSelectionState,
   SortingState,
   useReactTable,
+  VisibilityState,
 } from '@tanstack/react-table'
 
 import {useQueryState, useQueryStates} from 'nuqs'
@@ -102,12 +103,14 @@ interface TableProps<T> {
   ) => void | Promise<void>
   deleteIdAccessor?: keyof T
   selectedItemId?: string | null
-  /** Default rows per page when no URL param is set. Defaults to 15. */
+  /** Default rows per page when no URL param is set. Defaults to 100. */
   defaultPageSize?: number
   /** Default loaded row count when no URL param is set. */
   defaultLoadedCount?: number
   /** Query param key used to persist the current loaded row count. */
   loadedCountParamKey?: string
+  /** Initial column visibility when no column visibility URL param is set. */
+  defaultColumnVisibility?: VisibilityState
   centerToolbarDateRange?: ReactNode
   rightToolbarLeft?:
     | ReactNode
@@ -125,7 +128,7 @@ function DataTableContent<T>({
   onBulkUpdateSelected,
   deleteIdAccessor = 'id' as keyof T,
   selectedItemId,
-  defaultPageSize = 15,
+  defaultPageSize = 100,
   defaultLoadedCount = 100,
   loadedCountParamKey,
   centerToolbarDateRange,
@@ -610,9 +613,11 @@ function DataTableContent<T>({
           />
         </div>
         {/* Table */}
-        <HyperWrap className='pb-5 h-[92lvh] md:h-[93lvh] md:pb-12 w-[96lvw] md:w-full overflow-scroll'>
+        <HyperWrap className='pb-2 md:pb-12 h-[92lvh] md:h-[93lvh] w-[96lvw] md:w-full overflow-scroll'>
           <TableContainer>
-            <Table className='w-fit min-w-4xl'>
+            <Table
+              className='w-fit min-w-4xl table-fixed'
+              style={{width: `${table.getTotalSize()}px`}}>
               <TableHeader className='w-full'>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
@@ -621,10 +626,15 @@ function DataTableContent<T>({
                     {headerGroup.headers
                       .filter((header) => header.column.getIsVisible())
                       .map((header) => {
+                        const headerSize = header.getSize()
                         return (
                           <TableHead
                             key={header.id + id}
-                            style={{width: `${header.getSize()}px`}}
+                            style={{
+                              width: `${headerSize}px`,
+                              minWidth: `${headerSize}px`,
+                              maxWidth: `${headerSize}px`,
+                            }}
                             className={cn(
                               'sticky top-0 z-20 bg-[#eceef2] md:h-8 h-7 uppercase overflow-hidden',
                               'font-clash font-medium tracking-tight text-dark-table/80 dark:text-white md:tracking-tight text-xs md:text-sm',
@@ -710,8 +720,8 @@ function DataTableContent<T>({
 
 export const DataTable = <T,>(props: TableProps<T>) => {
   const columnVisibilityParser = useMemo(
-    () => createColumnVisibilityParser(),
-    [],
+    () => createColumnVisibilityParser(props.defaultColumnVisibility),
+    [props.defaultColumnVisibility],
   )
   const [columnVisibilityParam, setColumnVisibilityParam] = useQueryState(
     'columns',

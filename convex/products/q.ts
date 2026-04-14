@@ -170,6 +170,34 @@ export const getActiveProductCount = query({
   },
 })
 
+export const countCategoryProducts = query({
+  args: {
+    availableOnly: v.optional(v.boolean()),
+    categorySlug: v.string(),
+  },
+  handler: async (ctx, args): Promise<number> => {
+    let count = 0
+
+    const products = ctx.db
+      .query('products')
+      .withIndex('by_category', (q) => q.eq('categorySlug', args.categorySlug))
+
+    for await (const product of products) {
+      if (product.archived === true) {
+        continue
+      }
+
+      if (args.availableOnly === true && product.available !== true) {
+        continue
+      }
+
+      count += 1
+    }
+
+    return count
+  },
+})
+
 export const listProductsPaginated = query({
   args: {
     archived: v.optional(v.boolean()),

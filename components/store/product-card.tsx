@@ -5,6 +5,7 @@ import type {Id} from '@/convex/_generated/dataModel'
 import {useAddCartItem} from '@/hooks/use-add-cart-item'
 import {Icon} from '@/lib/icons'
 import {isTestProductType, TEST_PRODUCT_TYPE} from '@/lib/product-type'
+import {getAvailableCartQuantityForDenomination} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import NextImage from 'next/image'
@@ -38,34 +39,65 @@ const formatPrice = (priceCents: number) => {
   return dollars % 1 === 0 ? `${dollars.toFixed(0)}` : `${dollars.toFixed(2)}`
 }
 
+const getDenominationCents = (
+  priceMap: Record<string, number> | undefined,
+  denomination: number,
+) => {
+  if (!priceMap) return undefined
+
+  const exact = priceMap[String(denomination)]
+  if (typeof exact === 'number') return exact
+
+  const matched = Object.entries(priceMap).find(
+    ([key]) => Number(key) === denomination,
+  )
+
+  return matched?.[1]
+}
+
 /** Builds price options; 1 oz is displayed as "Oz" (no space), other oz/units via formatDenominationDisplay. */
 const priceOptionsFromDenomination = (
   priceByDenomination: Record<string, number> | undefined,
   salePriceByDenomination: Record<string, number> | undefined,
   availableDenominations: readonly number[] | undefined,
+  basePriceCents: number | undefined,
   unit: string,
   onSale: boolean,
 ): PriceOption[] | null => {
-  if (
-    !priceByDenomination ||
-    Object.keys(priceByDenomination).length === 0 ||
-    !availableDenominations ||
-    availableDenominations.length === 0
-  ) {
+  if (!availableDenominations || availableDenominations.length === 0) {
     return null
   }
 
-  const allowedDenominations = new Set(availableDenominations)
-  const entries = Object.entries(priceByDenomination)
-    .filter(
-      ([denom, cents]) => cents > 0 && allowedDenominations.has(Number(denom)),
-    )
-    .sort(([a], [b]) => Number(a) - Number(b))
+  const seenDenominations = new Set<number>()
+  const entries = availableDenominations.flatMap((denomination) => {
+    if (
+      !Number.isFinite(denomination) ||
+      denomination <= 0 ||
+      seenDenominations.has(denomination)
+    ) {
+      return []
+    }
+
+    seenDenominations.add(denomination)
+
+    const cents =
+      getDenominationCents(priceByDenomination, denomination) ??
+      basePriceCents ??
+      0
+    if (cents <= 0) {
+      return []
+    }
+
+    return [{denomination, cents}]
+  })
 
   if (entries.length === 0) return null
 
-  return entries.map(([denom, cents]) => {
-    const saleCents = salePriceByDenomination?.[denom]
+  return entries.map(({denomination, cents}) => {
+    const saleCents = getDenominationCents(
+      salePriceByDenomination,
+      denomination,
+    )
     const hasSalePrice =
       onSale &&
       typeof saleCents === 'number' &&
@@ -74,8 +106,8 @@ const priceOptionsFromDenomination = (
 
     return {
       price: formatPrice(hasSalePrice ? saleCents : cents),
-      denom: formatDenominationDisplay(denom, unit),
-      denominationValue: Number(denom),
+      denom: formatDenominationDisplay(String(denomination), unit),
+      denominationValue: denomination,
       originalPrice: hasSalePrice ? formatPrice(cents) : undefined,
       isOnSale: hasSalePrice,
     }
@@ -138,6 +170,11 @@ const areProductsEqual = (left: StoreProduct, right: StoreProduct) =>
   left.image === right.image &&
   left.name === right.name &&
   left.onSale === right.onSale &&
+  left.available === right.available &&
+  left.stock === right.stock &&
+  left.inventoryMode === right.inventoryMode &&
+  left.masterStockQuantity === right.masterStockQuantity &&
+  left.masterStockUnit === right.masterStockUnit &&
   left.productType === right.productType &&
   left.productTier === right.productTier &&
   left.productTierLabel === right.productTierLabel &&
@@ -151,6 +188,7 @@ const areProductsEqual = (left: StoreProduct, right: StoreProduct) =>
     right.availableDenominations,
   ) &&
   areStringArraysEqual(left.brand, right.brand) &&
+  arePriceMapsEqual(left.stockByDenomination, right.stockByDenomination) &&
   arePriceMapsEqual(left.priceByDenomination, right.priceByDenomination) &&
   arePriceMapsEqual(left.salePriceByDenomination, right.salePriceByDenomination)
 
@@ -252,6 +290,7 @@ const ProductCardComponent = ({
         product.priceByDenomination,
         product.salePriceByDenomination,
         product.availableDenominations,
+        product.priceCents,
         product.unit,
         product.onSale,
       )?.slice(0, 3) ?? EMPTY_PRICE_OPTIONS
@@ -277,6 +316,7 @@ const ProductCardComponent = ({
     product.netWeight,
     product.netWeightUnit,
     product.onSale,
+    product.priceCents,
     product.priceByDenomination,
     product.salePriceByDenomination,
     product.productTier,
@@ -300,12 +340,33 @@ const ProductCardComponent = ({
   const hasMetaBeforePackSize = subcategoryLabel !== '' || netWeightLabel !== ''
   const productTypeLabel = product.productType?.trim() ?? ''
   const isTestProduct = isTestProductType(productTypeLabel)
+  const selectedAvailableQuantity = selectedOption
+    ? getAvailableCartQuantityForDenomination(
+        product,
+        selectedOption.denominationValue,
+      )
+    : 0
+  const isProductUnavailable = product.available === false
+  const isSelectedOptionOutOfStock =
+    selectedOption !== null && selectedAvailableQuantity < 1
+  const isAddToCartDisabled =
+    !productId ||
+    !selectedOption ||
+    isProductUnavailable ||
+    isSelectedOptionOutOfStock
+  const addToCartLabel = !selectedOption
+    ? 'Unavailable'
+    : isProductUnavailable
+      ? 'Unavailable'
+      : isSelectedOptionOutOfStock
+        ? 'Not Available'
+        : 'Add to Cart'
 
   const handleAddToCart = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
     event.stopPropagation()
 
-    if (!productId || !selectedOption) return
+    if (isAddToCartDisabled || !productId || !selectedOption) return
 
     addItem(productId, 1, selectedOption.denominationValue)
   }
@@ -524,10 +585,10 @@ const ProductCardComponent = ({
                     ? 'border border-cyan-300/60 bg-cyan-700 text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.24)] hover:bg-cyan-400 active:bg-cyan-600 dark:border-cyan-300/40 dark:bg-cyan-600 dark:text-white dark:hover:bg-cyan-500 dark:active:bg-cyan-500'
                     : 'bg-brand text-white hover:bg-light-brand active:bg-brand',
                 )}
-                disabled={!productId || !selectedOption}
+                disabled={isAddToCartDisabled}
                 onClick={handleAddToCart}>
-                <div className='group-active:scale-94 transition-transform duration-200'>
-                  Add to Cart
+                <div className='group-active:scale-94 transition-transform duration-200 disabled:opacity-50'>
+                  {addToCartLabel}
                 </div>
               </button>
             </section>
@@ -748,10 +809,10 @@ const ProductCardComponent = ({
                   ? 'border border-cyan-300/60 bg-cyan-700 text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.24)] hover:bg-cyan-400 active:bg-cyan-600 dark:border-cyan-300/40 dark:bg-cyan-600 dark:text-white dark:hover:bg-cyan-500 dark:active:bg-cyan-500'
                   : 'bg-brand text-white hover:bg-light-brand active:bg-brand',
               )}
-              disabled={!productId || !selectedOption}
+              disabled={isAddToCartDisabled}
               onClick={handleAddToCart}>
               <div className='group-active:scale-94 transition-transform duration-200'>
-                Add to Cart
+                {addToCartLabel}
               </div>
             </button>
           </section>

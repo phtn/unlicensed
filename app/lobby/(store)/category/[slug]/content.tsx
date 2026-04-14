@@ -44,6 +44,10 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
 
   const category = useQuery(api.categories.q.getCategoryBySlug, {slug})
   const categories = useQuery(api.categories.q.listCategories)
+  const categoryProductCount = useQuery(api.products.q.countCategoryProducts, {
+    availableOnly: true,
+    categorySlug: slug,
+  })
   const heroImage = useQuery(
     api.categories.q.getHeroImage,
     category ? {id: category._id} : 'skip',
@@ -142,6 +146,10 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
   const hiddenBrandCount = overflowBrandOptions.length
 
   const {on: navigating, toggle: toggleNavigating} = useToggle()
+  const displayedProductCount = categoryProductCount ?? initialProducts.length
+  const productCountLabel = `${displayedProductCount} ${
+    displayedProductCount === 1 ? 'item' : 'items'
+  }`
 
   return (
     <div className='min-h-screen overflow-x-hidden'>
@@ -149,7 +157,7 @@ export const Content = ({initialProducts, slug}: ContentProps) => {
         <div className='max-w-7xl mx-auto overflow-hidden'>
           <div className='grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center'>
             <div className=''>
-              <Tag text={slug} />
+              <Tag text={productCountLabel} />
               <Title title={slug} subtitle={category?.highlight} />
               <p className='hidden text-sm sm:text-base lg:text-base opacity-60 mb-6 sm:mb-8 lg:mb-12 max-w-md leading-relaxed'>
                 {category?.description}

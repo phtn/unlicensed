@@ -10,17 +10,26 @@ interface RenderCellProps<TData, TValue> {
 export const RenderCell = <TData, TValue>({
   cell,
   isEditing,
-}: RenderCellProps<TData, TValue>) => (
-  <TableCell
-    key={cell.id}
-    className={cn(
-      'last:py-0 overflow-hidden',
-      'transition-colors duration-300',
-      {
-        // Apply editing cell styles - same as hover but persistent
-        'dark:bg-chalk-100/0': isEditing,
-      },
-    )}>
-    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-  </TableCell>
-)
+}: RenderCellProps<TData, TValue>) => {
+  const cellSize = cell.column.getSize()
+
+  return (
+    <TableCell
+      key={cell.id}
+      style={{
+        width: `${cellSize}px`,
+        minWidth: `${cellSize}px`,
+        maxWidth: `${cellSize}px`,
+      }}
+      className={cn(
+        'last:py-0 overflow-hidden',
+        'transition-colors duration-300',
+        {
+          // Apply editing cell styles - same as hover but persistent
+          'dark:bg-chalk-100/0': isEditing,
+        },
+      )}>
+      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+    </TableCell>
+  )
+}

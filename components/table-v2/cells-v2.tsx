@@ -741,7 +741,7 @@ export const createUserCell = <T,>(options: UserCellOptions<T>) => {
     const photoUrl = options.getPhotoUrl?.(row) ?? null
     const secondary = options.getSecondary?.(row) ?? null
     const href = options.getHref?.(pathname, row) ?? null
-    const initials = getInitials(name)
+    // const initials = getInitials(name)
 
     const withViewTransition = useCallback((fn: () => void) => {
       const doc = document as Document & {

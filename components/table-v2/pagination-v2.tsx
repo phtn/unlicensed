@@ -36,7 +36,7 @@ export const Paginator = ({
   }, [state.pageSize])
 
   return (
-    <div className='z-10 flex-1 grow-0 flex bg-linear-to-r from-transparent via-sidebar to-transparent items-center justify-between md:py-2 border-0 border-gray-800'>
+    <div className='flex flex-1 grow-0 bg-linear-to-r from-transparent via-sidebar to-transparent items-center justify-between md:pb-4 md:pt-1 mt-0 border-t'>
       {/* Results per page */}
       <div className='flex items-center md:justify-between md:w-fit md:space-x-8 space-x-2 px-6 md:px-6'>
         <label
@@ -94,7 +94,7 @@ export const Paginator = ({
           isIconOnly
           onPress={pageControl.gotoPrev}
           isDisabled={pageControl.disabledPrev}
-          className='aspect-square size-8 aria-disabled:pointer-events-none aria-disabled:opacity-30'
+          className='aspect-square rounded-md size-8 aria-disabled:pointer-events-none aria-disabled:opacity-30 dark:bg-sidebar disabled:bg-transparent'
           aria-label='Go to previous page'>
           <Icon name='chevron-left' className='size-4 m-auto' />
         </Button>
@@ -103,7 +103,7 @@ export const Paginator = ({
           isIconOnly
           onPress={pageControl.gotoNext}
           isDisabled={pageControl.disabledNext}
-          className='aspect-square size-8 aria-disabled:pointer-events-none aria-disabled:opacity-30'
+          className='aspect-square rounded-md size-8 aria-disabled:pointer-events-none aria-disabled:opacity-30 dark:bg-sidebar disabled:bg-transparent'
           aria-label='Go to next page'>
           <Icon name='chevron-right' className='size-4 m-auto' />
         </Button>

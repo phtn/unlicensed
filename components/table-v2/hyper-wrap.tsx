@@ -13,8 +13,8 @@ export const HyperWrap = ({children, className}: HyperCardProps) => {
   return (
     <Card
       className={cn(
-        'relative p-0 md:rounded-sm inset-0 _h-[calc(100lvh-100px)]',
-        'group bg-background dark:bg-sidebar/50',
+        'relative p-0 md:rounded-sm',
+        'group bg-background dark:bg-sidebar/50 overflow-hidden',
         'border border-dark-table/0 dark:border-zinc-700',
         className,
       )}>

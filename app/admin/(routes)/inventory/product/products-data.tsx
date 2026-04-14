@@ -254,6 +254,11 @@ interface ProductsDataProps {
   loadMoreLabel?: string
 }
 
+const PRODUCT_DEFAULT_COLUMN_VISIBILITY = {
+  brand: false,
+  productType: false,
+}
+
 const toBulkEditableProductFields = (
   updates: Partial<Doc<'products'>>,
 ): ProductType => {
@@ -392,10 +397,10 @@ export const ProductsData = ({
         },
         {
           id: 'name',
-          header: 'Name',
+          header: <ColHeader tip='Name' symbol='name' />,
           accessorKey: 'name',
           cell: textCell('name'),
-          size: 200,
+          size: 100,
           enableFiltering: false,
         },
         {
@@ -815,9 +820,9 @@ export const ProductsData = ({
         loading={loading ?? !data}
         columnConfigs={columns}
         editingRowId={null}
-        defaultPageSize={25}
         defaultLoadedCount={defaultLoadedCount}
         loadedCountParamKey='loaded'
+        defaultColumnVisibility={PRODUCT_DEFAULT_COLUMN_VISIBILITY}
         rightToolbarLeft={ExportCsvToolbar}
         deleteIdAccessor='_id'
         deleteActionLabel='Delete Selected'
