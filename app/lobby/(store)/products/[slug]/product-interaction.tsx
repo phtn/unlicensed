@@ -10,6 +10,7 @@ import {useProductCartQuantity} from '@/hooks/use-product-cart-quantity'
 import {Icon} from '@/lib/icons'
 import {getAvailableCartQuantityForDenomination} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
+import {getUnitPriceBreakdown} from '@/utils/cartPrice'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
@@ -160,11 +161,6 @@ export const ProductInteraction = ({
   ])
 
   // Selected denomination value (e.g. 0.125, 1, 3.5) for price/stock lookups.
-  const currentDenominationValue =
-    denominationOptions[
-      Math.min(selectedDenominationIndex, denominationOptions.length - 1)
-    ]?.value ?? 0
-  const currentDenominationKey = String(currentDenominationValue)
   const denominationForQuery =
     denominationOptions[
       Math.min(selectedDenominationIndex, denominationOptions.length - 1)
@@ -211,11 +207,12 @@ export const ProductInteraction = ({
     }
   }
 
-  const priceByDenomination = formatPrice(
-    product.priceByDenomination?.[currentDenominationKey] ??
-      product.priceCents ??
-      0,
+  const priceBreakdown = useMemo(
+    () => getUnitPriceBreakdown(product, denominationForQuery),
+    [denominationForQuery, product],
   )
+  const priceByDenomination = formatPrice(priceBreakdown.unitCents)
+  const regularPriceByDenomination = formatPrice(priceBreakdown.regularCents)
   const fallbackAvailableQuantity = getAvailableCartQuantityForDenomination(
     product,
     denominationForQuery,
@@ -238,9 +235,21 @@ export const ProductInteraction = ({
         <ProductSummary product={product} />
 
         <div className='flex items-start justify-between gap-4 py-3 sm:py-4'>
-          <div className='flex items-center font-okxs text-3xl sm:text-4xl font-semibold text-foreground w-36 md:w-28'>
-            <div className='font-light opacity-80 scale-95'>$</div>
-            {priceByDenomination}
+          <div className='flex min-w-36 flex-col font-okxs text-foreground md:min-w-28'>
+            <div className='flex items-center text-3xl font-semibold sm:text-4xl'>
+              <div className='font-light opacity-80 scale-95'>$</div>
+              {priceByDenomination}
+            </div>
+            {priceBreakdown.isOnSale ? (
+              <div className='mt-1 flex items-center gap-2 text-sm font-medium'>
+                <span className='text-foreground/55 line-through decoration-foreground/70 decoration-2'>
+                  was ${regularPriceByDenomination}
+                </span>
+                <span className='rounded-xs bg-terpenes px-1.5 py-0.5 text-[10px] uppercase tracking-widest text-white'>
+                  Sale
+                </span>
+              </div>
+            ) : null}
           </div>
 
           <div className='flex items-center justify-end md:w-95'>

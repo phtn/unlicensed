@@ -5,7 +5,7 @@ import {
   isProductCartItemWithProduct,
 } from '@/hooks/use-cart'
 import {Icon} from '@/lib/icons'
-import {getUnitPriceCents} from '@/utils/cartPrice'
+import {getUnitPriceBreakdown} from '@/utils/cartPrice'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {formatPrice} from '@/utils/formatPrice'
 import type {Id} from '@/convex/_generated/dataModel'
@@ -69,8 +69,11 @@ export const CartDrawerItems = ({
         if (isProductCartItemWithProduct(item)) {
           const product = item.product
           const denomination = item.denomination
-          const itemPrice = getUnitPriceCents(product, denomination)
+          const priceBreakdown = getUnitPriceBreakdown(product, denomination)
+          const itemPrice = priceBreakdown.unitCents
           const totalPrice = itemPrice * item.quantity
+          const regularTotalPrice =
+            priceBreakdown.regularCents * item.quantity
           const productImageUrl = resolveUrl(product.image ?? '')
           const hasImage = Boolean(product.image && productImageUrl)
 
@@ -113,9 +116,16 @@ export const CartDrawerItems = ({
                       </p>
                     )}
                   </div>
-                  <p className='font-okxs font-medium text-lg shrink-0'>
-                    ${formatPrice(totalPrice)}
-                  </p>
+                  <div className='shrink-0 text-right font-okxs'>
+                    <p className='font-medium text-lg'>
+                      ${formatPrice(totalPrice)}
+                    </p>
+                    {priceBreakdown.isOnSale ? (
+                      <p className='text-xs text-muted-foreground line-through'>
+                        ${formatPrice(regularTotalPrice)}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-1'>

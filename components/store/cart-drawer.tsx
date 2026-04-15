@@ -15,7 +15,12 @@ import {
 import {useDisclosure} from '@/hooks/use-disclosure'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
-import {getBundleTotalCents, getUnitPriceCents} from '@/utils/cartPrice'
+import {
+  getBundleTotalCents,
+  getRegularBundleTotalCents,
+  getRegularUnitPriceCents,
+  getUnitPriceCents,
+} from '@/utils/cartPrice'
 import {formatPrice} from '@/utils/formatPrice'
 import {Avatar, Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
@@ -172,22 +177,44 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     }, 0)
   }, [cartItems])
 
-  const subtotal = useMemo(() => {
-    return cartItems.reduce((total, item) => {
-      if (isProductCartItemWithProduct(item)) {
-        const unitCents = getUnitPriceCents(item.product, item.denomination)
-        return total + unitCents * item.quantity
-      }
-      const config = configs[item.bundleType]
-      const variation = config?.variations[item.variationIndex]
-      if (!variation) return total
-      const denom = variation.denominationPerUnit
-      const bundleAmount = variation.totalUnits * denom
-      const products = item.bundleItemsWithProducts.map((bi) => bi.product)
-      const bundleCents = getBundleTotalCents(products, denom, bundleAmount)
-      return total + bundleCents
-    }, 0)
+  const {subtotal, regularSubtotal} = useMemo(() => {
+    return cartItems.reduce(
+      (totals, item) => {
+        if (isProductCartItemWithProduct(item)) {
+          const unitCents = getUnitPriceCents(item.product, item.denomination)
+          const regularUnitCents = getRegularUnitPriceCents(
+            item.product,
+            item.denomination,
+          )
+          return {
+            subtotal: totals.subtotal + unitCents * item.quantity,
+            regularSubtotal:
+              totals.regularSubtotal + regularUnitCents * item.quantity,
+          }
+        }
+
+        const config = configs[item.bundleType]
+        const variation = config?.variations[item.variationIndex]
+        if (!variation) return totals
+
+        const denom = variation.denominationPerUnit
+        const bundleAmount = variation.totalUnits * denom
+        const products = item.bundleItemsWithProducts.map((bi) => bi.product)
+        const bundleCents = getBundleTotalCents(products, denom, bundleAmount)
+        const regularBundleCents = getRegularBundleTotalCents(
+          products,
+          denom,
+          bundleAmount,
+        )
+        return {
+          subtotal: totals.subtotal + bundleCents,
+          regularSubtotal: totals.regularSubtotal + regularBundleCents,
+        }
+      },
+      {subtotal: 0, regularSubtotal: 0},
+    )
   }, [cartItems, configs])
+  const saleSavingsCents = Math.max(0, regularSubtotal - subtotal)
   const availableCashBackCents = Math.max(
     0,
     Math.round((pointsBalance?.availablePoints ?? 0) * 100),
@@ -293,10 +320,27 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                   <div className='font-clash space-y-3 px-4 mb-6'>
                     <div className='flex justify-between px-2'>
                       <span className='text-lg font-medium'>Subtotal</span>
-                      <span className='font-medium text-lg'>
-                        ${formatPrice(subtotal)}
+                      <span className='flex flex-col items-end'>
+                        {saleSavingsCents > 0 ? (
+                          <span className='text-sm font-medium text-foreground/45 line-through decoration-foreground/60 decoration-2'>
+                            ${formatPrice(regularSubtotal)}
+                          </span>
+                        ) : null}
+                        <span className='font-medium text-lg'>
+                          ${formatPrice(subtotal)}
+                        </span>
                       </span>
                     </div>
+                    {saleSavingsCents > 0 ? (
+                      <div className='flex justify-between px-2 text-terpenes dark:text-light-brand'>
+                        <span className='text-sm font-medium'>
+                          Sale savings
+                        </span>
+                        <span className='text-sm font-medium'>
+                          -${formatPrice(saleSavingsCents)}
+                        </span>
+                      </div>
+                    ) : null}
                     {isAuthenticated && (
                       <CashBackRedemption
                         availableBalanceCents={availableCashBackCents}

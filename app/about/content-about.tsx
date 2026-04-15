@@ -12,7 +12,7 @@ export const Content = () => {
     <main className='relative overflow-x-hidden bg-background pt-16 text-foreground md:pt-24'>
       {/*<Principles />*/}
       <FireManifesto />
-      <section className='px-4 pb-6 sm:px-6 md:pb-10'>
+      <section className='hidden px-4 pb-6 sm:px-6 md:pb-10'>
         <div className='mx-auto max-w-7xl overflow-hidden rounded-xs border border-foreground/10 bg-black'>
           <div className='aspect-video w-full min-h-[220.1px] sm:min-h-0'>
             <iframe

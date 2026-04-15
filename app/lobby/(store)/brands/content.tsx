@@ -19,9 +19,11 @@ import {
   useState,
 } from 'react'
 import {type IEnhancedBrand, brands} from './all-brands'
+import {BrandCloud} from './brand-cloud'
 
 const BRAND_PRODUCTS_PAGE_SIZE = 20
 const BRAND_SLUGS = brands.map((brand) => brand.slug)
+const BRAND_ICONS = brands.map((brand) => brand.icon)
 
 const formatProductCount = (count: number) =>
   `${count} ${count === 1 ? 'product' : 'products'}`
@@ -234,10 +236,10 @@ export const Content = () => {
 
   const selectedBrand =
     enhancedBrands.find((brand) => brand.slug === selectedBrandId) ?? null
-  const featuredBrands = useMemo(
-    () => enhancedBrands.filter((brand) => brand.featured),
-    [enhancedBrands],
-  )
+  // const featuredBrands = useMemo(
+  //   () => enhancedBrands.filter((brand) => brand.featured),
+  //   [enhancedBrands],
+  // )
   const activeBrandCount = enhancedBrands.filter(
     (brand) => brand.productCount > 0,
   ).length
@@ -275,7 +277,7 @@ export const Content = () => {
   return (
     <div className='min-h-screen overflow-x-hidden bg-background pb-16 pt-16 sm:pt-20 md:pt-24 lg:pt-28'>
       <section className='relative px-4 pb-8 sm:px-6 sm:pb-12'>
-        <div className='mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-end'>
+        <div className='mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-center'>
           <div className='space-y-6'>
             <Tag text='Brands' />
             <Title title='Brand Wall' subtitle='Browse by maker' />
@@ -309,7 +311,7 @@ export const Content = () => {
             </div>
           </div>
 
-          <div className='rounded-xs border border-foreground/10 bg-[#111] p-4 text-white shadow-sm dark:border-white/10 dark:bg-white dark:text-dark-table sm:p-5'>
+          {/*<div className='rounded-xs border border-foreground/10 bg-[#111] p-4 text-white shadow-sm dark:border-white/10 dark:bg-white dark:text-dark-table sm:p-5'>
             <div className='mb-4 flex items-center justify-between'>
               <span className='font-okxs text-xs uppercase tracking-[0.24em] opacity-60'>
                 Featured
@@ -343,6 +345,10 @@ export const Content = () => {
                 </button>
               ))}
             </div>
+          </div>
+          */}
+          <div className='lg:size-96 overflow-hidden'>
+            <BrandCloud iconNames={BRAND_ICONS} />
           </div>
         </div>
       </section>
@@ -414,7 +420,7 @@ export const Content = () => {
             <p className='font-clash text-2xl font-semibold tracking-tight'>
               Choose a brand to browse its product shelf.
             </p>
-            <p className='mx-auto mt-2 max-w-xl text-sm text-foreground/55 dark:text-white/55'>
+            <p className='mx-auto mt-2 max-w-md text-sm text-foreground/55 dark:text-white/55'>
               Product cards will load below with the same layout used on
               category pages, including infinite loading.
             </p>

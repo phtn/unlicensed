@@ -7,7 +7,9 @@ import {useDisclosure} from '@/hooks/use-disclosure'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
+import {getUnitPriceBreakdown} from '@/utils/cartPrice'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
+import {formatPrice} from '@/utils/formatPrice'
 import {
   Button,
   Card,
@@ -70,6 +72,16 @@ export const CartItem = memo(
     )
 
     const isBundleLine = item.bundleCartItemIndex !== undefined
+    const priceBreakdown = useMemo(
+      () =>
+        isBundleLine
+          ? null
+          : getUnitPriceBreakdown(item.product, item.denomination),
+      [isBundleLine, item.denomination, item.product],
+    )
+    const isOnSale = priceBreakdown?.isOnSale === true
+    const regularItemPrice = priceBreakdown?.regularCents ?? itemPrice
+    const regularLinePrice = regularItemPrice * quantity
 
     const handleQuantityChange = async (newQuantity: number) => {
       if (newQuantity < 1) {
@@ -133,9 +145,16 @@ export const CartItem = memo(
                       id='price-per-denom'
                       className='flex items-center gap-2 flex-wrap mt-3'>
                       {item.denomination != null && (
-                        <p className='font-okxs font-medium text-base md:text-lg text-foreground'>
-                          $<span>{itemPrice / 100}</span>
-                        </p>
+                        <div className='flex items-baseline gap-2'>
+                          <p className='font-okxs font-medium text-base md:text-lg text-foreground'>
+                            ${formatPrice(itemPrice)}
+                          </p>
+                          {isOnSale ? (
+                            <p className='font-okxs text-xs text-foreground/45 line-through md:text-sm'>
+                              ${formatPrice(regularItemPrice)}
+                            </p>
+                          ) : null}
+                        </div>
                       )}
                       <span className='opacity-60 font-thin italic'>per</span>
                       {item.denomination != null && (
@@ -148,14 +167,21 @@ export const CartItem = memo(
                       )}
                     </div>
                   </div>
-                  <p className='font-medium text-xl font-okxs mr-1'>
-                    $
-                    <AnimatedNumber
-                      mass={1.2}
-                      stiffness={60}
-                      value={(itemPrice * quantity) / 100}
-                    />
-                  </p>
+                  <div className='mr-1 text-right font-okxs'>
+                    <p className='font-medium text-xl'>
+                      $
+                      <AnimatedNumber
+                        mass={1.2}
+                        stiffness={60}
+                        value={(itemPrice * quantity) / 100}
+                      />
+                    </p>
+                    {isOnSale ? (
+                      <p className='text-xs text-foreground/45 line-through md:text-sm'>
+                        ${formatPrice(regularLinePrice)}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-x-1'>

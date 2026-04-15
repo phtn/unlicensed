@@ -27,8 +27,10 @@ export interface BundleCartItemData {
       _id: string
       name?: string
       image?: string
+      onSale?: boolean
       priceCents?: number
       priceByDenomination?: Record<string, number>
+      salePriceByDenomination?: Record<string, number>
     }
   }>
 }

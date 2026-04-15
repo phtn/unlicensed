@@ -13,7 +13,6 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {
   SelectField,
   SelectOption,
-  SwitchField,
   TextField,
 } from '../../../_components/ui/fields'
 import {useAppForm} from '../../../_components/ui/form-context'
@@ -122,6 +121,8 @@ export const StaffForm = ({
     () => initialValues ?? defaultValues,
     [initialValues],
   )
+  const previousEmailRef = useRef<string>('')
+  const autoPopulatedNameRef = useRef<string | null>(null)
 
   const form = useAppForm({
     defaultValues: formValues,
@@ -194,6 +195,8 @@ export const StaffForm = ({
           }
           await createStaff(createPayload)
           formApi.reset()
+          previousEmailRef.current = ''
+          autoPopulatedNameRef.current = null
           setStatus('success')
           const scrollContainer = mainScrollRef.current
           const basicInfoElement = document.getElementById('basic-info')
@@ -235,9 +238,6 @@ export const StaffForm = ({
     (state) => state.values.name as string | undefined,
   )
 
-  // Track previous email to detect changes
-  const previousEmailRef = useRef<string>('')
-
   // Handle email selection change to auto-populate name and avatarUrl
   useEffect(() => {
     if (
@@ -248,11 +248,13 @@ export const StaffForm = ({
     ) {
       const user = emailToUserMap.get(emailValue)
       if (user) {
-        // Auto-populate name when email is selected
-        // Only overwrite if name is empty or if we're in create mode (not edit mode)
-        const currentName = nameValue
-        if (!currentName?.trim() || !isEditMode) {
+        const currentName = nameValue?.trim() ?? ''
+        const shouldPopulateName =
+          !currentName || currentName === autoPopulatedNameRef.current
+
+        if (shouldPopulateName) {
           form.setFieldValue('name', user.name)
+          autoPopulatedNameRef.current = user.name
         }
         // Auto-populate avatarUrl from user's photoUrl
         if (user.photoUrl) {
@@ -279,6 +281,7 @@ export const StaffForm = ({
       form.setFieldValue('avatarUrl', initialValues.avatarUrl ?? '')
       // Reset previousEmailRef when initialValues change to prevent auto-populate on initial load
       previousEmailRef.current = initialValues.email ?? ''
+      autoPopulatedNameRef.current = null
       hasPopulatedInitialValues.current = true
     }
   }, [initialValues, isEditMode, form])
@@ -405,22 +408,29 @@ export const StaffForm = ({
 
                 {/* Name */}
                 <form.AppField name='name'>
-                  {(field) => (
-                    <TextField
-                      {...field}
-                      type='text'
-                      name='name'
-                      label='Name'
-                      placeholder='John Doe'
-                    />
-                  )}
+                  {(field) => {
+                    const name = String(field.state.value ?? '')
+
+                    return (
+                      <field.TextField
+                        type='text'
+                        name='name'
+                        label='Name'
+                        value={name}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value)
+                        }
+                        placeholder='John Doe'
+                      />
+                    )
+                  }}
                 </form.AppField>
 
                 <div className='w-full flex items-cenzer space-x-4'>
                   {/* Sector */}
                   <form.AppField name='division'>
                     {(field) => (
-                      <TextField
+                      <field.TextField
                         {...field}
                         type='text'
                         name='division'
@@ -444,7 +454,7 @@ export const StaffForm = ({
                 {/* Access Roles */}
                 <form.AppField name='accessRoles'>
                   {(field) => (
-                    <SelectField
+                    <field.SelectField
                       {...field}
                       type='select'
                       name='accessRoles'
@@ -459,7 +469,7 @@ export const StaffForm = ({
                 {/* Active Switch */}
                 <form.AppField name='active'>
                   {(field) => (
-                    <SwitchField
+                    <field.SwitchField
                       {...field}
                       type='checkbox'
                       name='active'

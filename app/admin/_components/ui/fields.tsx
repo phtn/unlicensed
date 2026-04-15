@@ -2,7 +2,7 @@ import type {ClassName} from '@/app/types'
 import {Input, inputClass} from '@/components/hero-v3/input'
 import {selectClass} from '@/components/hero-v3/select'
 import {cn} from '@/lib/utils'
-import {Label, ListBox, Select as S, Switch, TextArea} from '@heroui/react'
+import {Label, ListBox, Select as S, TextArea} from '@heroui/react'
 import React, {
   FocusEvent,
   type ChangeEvent,
@@ -12,6 +12,7 @@ import React, {
 } from 'react'
 import {categoryColors, getCategoryColor} from './category-select-item'
 import {useAppForm, useFieldContext} from './form-context'
+import {Toggle} from './toggle'
 
 export const commonInputClassNames = {
   label: 'mb-5 pl-1 opacity-80 tracking-widest uppercase text-xs font-ios',
@@ -581,17 +582,16 @@ export function SwitchField<T>(
   const value = field.state.value ?? false
   return (
     <div className={cn('flex flex-col gap-2 w-full', props?.className)}>
-      <Switch
-        name={String(field.name)}
-        isSelected={value}
-        isDisabled={props?.disabled}
+      <div className='flex flex-col gap-px'>
+        <span className='text-base font-medium'>{props?.label}</span>
+        <span className='text-xs opacity-70'>{props?.description}</span>
+      </div>
+      <Toggle
+        title={String(field.name)}
+        checked={value}
         onChange={(nextValue) => field.handleChange(nextValue)}
-        onBlur={field.handleBlur}>
-        <div className='flex flex-col gap-px'>
-          <span className='text-base font-medium'>{props?.label}</span>
-          <span className='text-xs opacity-70'>{props?.description}</span>
-        </div>
-      </Switch>
+      />
+
       {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
         <p className='text-xs text-rose-400'>
           {field.state.meta.errors.join(', ')}

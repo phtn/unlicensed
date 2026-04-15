@@ -152,27 +152,57 @@ async function findOrderUsingPaymentReference(
 
 function getProductUnitPriceCents(
   product: {
+    onSale?: boolean
     priceCents?: number
     priceByDenomination?: Record<string, number>
+    salePriceByDenomination?: Record<string, number>
   },
   denomination: number | undefined,
 ): number {
   const denom = denomination ?? 1
-  const byDenom = product.priceByDenomination
-  if (byDenom && Object.keys(byDenom).length > 0) {
-    const direct = byDenom[String(denom)]
-    if (typeof direct === 'number' && direct >= 0) {
-      return Math.round(direct)
-    }
+  const getDenominationPriceCents = (
+    priceMap: Record<string, number> | undefined,
+  ) => {
+    if (!priceMap) return undefined
+
+    const direct = priceMap[String(denom)]
+    if (typeof direct === 'number') return Math.round(direct)
+
+    const matched = Object.entries(priceMap).find(
+      ([key]) => Number(key) === denom,
+    )
+    return typeof matched?.[1] === 'number'
+      ? Math.round(matched[1])
+      : undefined
   }
 
-  return (product.priceCents ?? 0) * denom
+  const denominationCents = getDenominationPriceCents(
+    product.priceByDenomination,
+  )
+  const regularCents =
+    denominationCents !== undefined && denominationCents >= 0
+      ? denominationCents
+      : (product.priceCents ?? 0) * denom
+  const saleCents = getDenominationPriceCents(product.salePriceByDenomination)
+
+  if (
+    product.onSale === true &&
+    saleCents !== undefined &&
+    saleCents >= 0 &&
+    saleCents < regularCents
+  ) {
+    return saleCents
+  }
+
+  return regularCents
 }
 
 function getBundleTotalCents(
   products: Array<{
+    onSale?: boolean
     priceCents?: number
     priceByDenomination?: Record<string, number>
+    salePriceByDenomination?: Record<string, number>
   }>,
   denom: number,
   bundleAmount: number,
