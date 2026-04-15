@@ -590,7 +590,7 @@ export function BundleBuilder({
       id={config.id}
       className='scroll-mt-28 md:scroll-mt-32 rounded-none! border border-foreground/20 overflow-hidden p-0'>
       <Card.Header className='flex flex-col items-start'>
-        <div className='flex items-center justify-between w-full min-h-12 md:min-h-14 px-2'>
+        <div className='flex items-center justify-between w-full min-h-12 md:min-h-14 md:px-2 px-1'>
           <h2 className='flex items-center pl-1 space-x-4 font-clash text-lg md:text-xl font-semibold'>
             <span>{config.title}</span>
             {config.variations.length === 1 && (
@@ -641,13 +641,13 @@ export function BundleBuilder({
             </div>
           )}
         </div>
-        <p className='text-sm md:text-base text-muted-foreground px-3'>
+        <p className='text-xs sm:text-sm md:text-base text-muted-foreground md:px-3 px-1.5'>
           {config.description}
         </p>
-        <div className='flex items-center justify-between px-3 w-full'>
-          <div className='flex items-center font-clash font-medium gap-4 py-2'>
+        <div className='flex items-center justify-between md:px-3 px-2 w-full'>
+          <div className='flex items-center font-clash font-medium md:gap-4 gap-1 py-1.5'>
             <span
-              className={cn({
+              className={cn('md:text-xl', {
                 'text-terpenes': isComplete,
                 'text-danger': isOverSelected,
                 'text-foreground/70': !isComplete && !isOverSelected,
@@ -668,21 +668,21 @@ export function BundleBuilder({
               </span>
             )}
           </div>
-          <div className='flex items-center justify-between px-3 space-x-2 md:px-0'>
+          <div className='flex items-center justify-between space-x-2 px-0'>
             <div className='flex flex-col md:flex-row md:items-center space-x-2'>
-              <span className='font-clash font-medium opacity-80 md:text-base text-sm'>
-                Total:{' '}
+              <span className='font-clash font-medium opacity-80 md:text-base text-sm space-x-2'>
+                <span>Total:</span>
                 {isComplete && (
                   <span
                     className={cn({
-                      'line-through decoration-brand dark:decoration-light-brand/80 decoration-2 font-medium opacity-80 text-base':
+                      'line-through decoration-brand dark:decoration-light-brand/60 decoration-3 font-medium text-base px-1':
                         isComplete,
                     })}>
                     ${(subtotalCents / 100).toFixed(0)}
                   </span>
                 )}
               </span>
-              <div className='font-clash font-medium flex items-center space-x-1 md:space-x-2'>
+              <div className='font-clash font-medium flex items-center space-x-1 md:space-x-2 md:min-w-14 min-w-10'>
                 <span
                   className={cn({
                     hidden: isComplete,
@@ -733,7 +733,7 @@ export function BundleBuilder({
                       : isOverSelected
                         ? 'Reduce selection'
                         : isComplete
-                          ? 'Add to cart'
+                          ? 'Add bundle to cart'
                           : 'Complete bundle'}
                   </span>
                 </span>
@@ -742,9 +742,9 @@ export function BundleBuilder({
           </div>
         </div>
       </Card.Header>
-      <Card.Content className='pt-1 px-0 md:px-1 dark:bg-dark-table/20'>
+      <Card.Content className='px-0 pb-0 border-t md:px-1 dark:bg-dark-table/20'>
         {!isAvailabilityLoading && (
-          <div className='grid gap-1 md:gap-1 sm:grid-cols-2 lg:grid-cols-3'>
+          <div className='grid gap-1 sm:gap-0 sm:grid-cols-2 lg:grid-cols-3 max-h-80 overflow-y-auto'>
             {filteredProducts.map((product) => {
               const pid = product._id as Id<'products'>
               const qty = selections.get(String(pid))?.quantity ?? 0
@@ -755,7 +755,7 @@ export function BundleBuilder({
               return (
                 <div
                   key={product._id}
-                  className='flex items-center gap-3 rounded-none p-2 dark:bg-background/20'>
+                  className='flex items-center gap-2 rounded-none p-1 dark:bg-background/20 hover:bg-sidebar/30'>
                   {product.image && (
                     <Badge.Anchor className='shrink-0'>
                       <LegacyImage
@@ -782,6 +782,7 @@ export function BundleBuilder({
                       <Stepper
                         value={qty}
                         max={max}
+                        size='lg'
                         onIncrement={() => handleIncrement(pid, product)}
                         onDecrement={() => handleDecrement(pid)}
                         disabled={isPending}

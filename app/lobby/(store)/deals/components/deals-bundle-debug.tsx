@@ -1,7 +1,10 @@
 'use client'
 
+import type {
+  BundleConfig,
+  BundleVariation,
+} from '@/app/lobby/(store)/deals/lib/deal-types'
 import type {StoreProduct} from '@/app/types'
-import type {BundleConfig, BundleVariation} from '@/app/lobby/(store)/deals/lib/deal-types'
 import type {Id} from '@/convex/_generated/dataModel'
 import {cn} from '@/lib/utils'
 
@@ -83,11 +86,11 @@ export function DealsBundleDebug({
   }))
 
   return (
-    <details className='mt-4 rounded-xl border border-amber-500/40 bg-amber-500/5'>
-      <summary className='cursor-pointer px-4 py-3 font-mono text-sm font-medium text-amber-700 dark:text-amber-400'>
+    <details className='m-2 rounded-none border border-orange-500/40 bg-orange-500/5'>
+      <summary className='cursor-pointer px-4 py-3 font-mono text-sm font-medium text-orange-500 dark:text-orange-300'>
         [Debug] {config.title} — why {filteredProducts.length} products shown
       </summary>
-      <div className='space-y-4 border-t border-amber-500/20 px-4 py-3 font-mono text-xs'>
+      <div className='space-y-4 border-t border-orange-500/20 px-4 py-3 font-mono text-xs'>
         {/* Pipeline counts */}
         <section>
           <h4 className='mb-1 font-semibold text-foreground'>Pipeline</h4>
@@ -98,7 +101,7 @@ export function DealsBundleDebug({
                 <td className='text-right'>
                   {products.length}
                   {productsWithoutId.length > 0 && (
-                    <span className='ml-1 text-amber-600'>
+                    <span className='ml-1 text-orange-600'>
                       ({productsWithoutId.length} without _id)
                     </span>
                   )}
@@ -109,7 +112,7 @@ export function DealsBundleDebug({
                 <td className='text-right'>
                   {productIds.length}
                   {productIds.length === 0 && (
-                    <span className='ml-1 text-amber-600'>
+                    <span className='ml-1 text-orange-600'>
                       ← likely cause if products exist
                     </span>
                   )}
@@ -123,12 +126,12 @@ export function DealsBundleDebug({
                 <td className='text-muted-foreground'>availableMap</td>
                 <td className='text-right'>
                   {availabilityLoading ? (
-                    <span className='text-amber-600'>loading (undefined)</span>
+                    <span className='text-orange-600'>loading (undefined)</span>
                   ) : (
                     <span>
                       {Object.keys(availableMap ?? {}).length} keys
                       {Object.keys(availableMap ?? {}).length === 0 && (
-                        <span className='ml-1 text-amber-600'>
+                        <span className='ml-1 text-orange-600'>
                           ← filters all out when loading
                         </span>
                       )}
@@ -141,7 +144,7 @@ export function DealsBundleDebug({
                 <td className='text-right'>
                   {filteredProducts.length}
                   {filteredProducts.length === 0 && products.length > 0 && (
-                    <span className='ml-1 text-amber-600'>← empty result</span>
+                    <span className='ml-1 text-orange-600'>← empty result</span>
                   )}
                 </td>
               </tr>
@@ -153,8 +156,8 @@ export function DealsBundleDebug({
         <section>
           <h4 className='mb-1 font-semibold text-foreground'>Variation</h4>
           <p className='text-muted-foreground'>
-            denom={denom}, totalUnits={variation.totalUnits},{' '}
-            unitLabel={variation.unitLabel}
+            denom={denom}, totalUnits={variation.totalUnits}, unitLabel=
+            {variation.unitLabel}
           </p>
         </section>
 
@@ -169,7 +172,7 @@ export function DealsBundleDebug({
             $5
           </p>
           {selectedProducts.length === 0 ? (
-            <p className='text-amber-600'>Select items to see calculation</p>
+            <p className='text-orange-600'>Select items to see calculation</p>
           ) : (
             <table className='w-full table-auto'>
               <tbody>
@@ -191,7 +194,7 @@ export function DealsBundleDebug({
                         ${(priceCents / 100).toFixed(2)}/{bundleAmount}{' '}
                         {variation.unitLabel}
                         {direct === 0 && derived > 0 && (
-                          <span className='ml-1 text-amber-600'>
+                          <span className='ml-1 text-orange-600'>
                             (derived)
                           </span>
                         )}

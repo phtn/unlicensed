@@ -37,7 +37,7 @@ export function Stepper({
   }
 
   return (
-    <div className={cn('inline-flex items-center gap-x-1', className)}>
+    <div className={cn('inline-flex items-center gap-x-1 max-h-8', className)}>
       <Button
         isIconOnly
         size={size}
@@ -54,10 +54,11 @@ export function Stepper({
       </Button>
       <span
         className={cn(
-          'font-clash text-base font-medium w-7 text-center',
+          'font-clash font-medium text-foreground/60 text-base text-center w-7',
           size === 'sm' && 'text-xs',
           size === 'md' && 'text-sm',
-          size === 'lg' && 'text-base',
+          size === 'lg' && 'text-lg',
+          {'text-terpenes': value > 0},
         )}
         aria-live='polite'>
         {value}
@@ -67,8 +68,8 @@ export function Stepper({
         size={size}
         variant='ghost'
         className={cn(
-          'h-7 w-8 rounded-xs',
-          !canIncrement && 'opacity-40 cursor-not-allowed',
+          'h-7 w-8 rounded-xs hover:bg-sidebar',
+          !canIncrement && 'opacity-40 hover:bg-transparent cursor-not-allowed',
         )}
         isDisabled={!canIncrement || disabled || isComplete}
         onPress={onIncrement}
