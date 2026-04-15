@@ -199,7 +199,9 @@ function Sidebar({
             'w-48 overflow-hidden bg-sidebar dark:bg-dark-table p-0 [&>button]:hidden',
             className,
           )}>
-          <div className='flex h-full w-full flex-col'>{children}</div>
+          <div className='flex h-full w-full flex-col pointer-events-auto'>
+            {children}
+          </div>
         </DrawerContent>
       </Drawer>
     )

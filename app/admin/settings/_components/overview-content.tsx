@@ -25,8 +25,7 @@ const SETTINGS_FEATURES: Array<SettingItem> = [
   {
     id: 'payments',
     title: 'Payment Methods',
-    description:
-      'Configure payment providers, gateways, and billing. Manage payouts, invoices, and payment methods.',
+    description: 'Configure payment providers, gateways, and billing.',
     icon: 'credit-card',
   },
   {
@@ -90,10 +89,10 @@ export const OverviewContent = () => {
   const [, setTab] = useAdminTab('overview')
 
   return (
-    <div className='flex w-full flex-col gap-2 ml-1.5 md:ml-0'>
+    <div className='flex w-full flex-col gap-2 p-0'>
       <ContentHeader title={'Settings Overview'} />
       {/*<section className='space-y-0 h-[90lvh] overflow-y-scroll'>*/}
-      <Card className='grid w-full md:w-fit md:grid-cols-2 bg-linear-to-br from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5 md:p-4 p-2 portrait:-mt-10'>
+      <Card className='grid w-full md:w-fit md:grid-cols-2 bg-linear-to-br from-slate-600/10 to-slate-800/5 dark:from-slate-400/10 dark:to-slate-600/5 md:p-4 p-1 portrait:-mt-10 rounded-md md:rounded-lg overflow-y-scroll h-[80lvh] md:h-full'>
         {SETTINGS_FEATURES.map((feature, index) => (
           <ViewTransition key={feature.id}>
             <button

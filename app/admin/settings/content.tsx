@@ -5,7 +5,7 @@ import {SettingsTabs} from './tabs'
 
 export const Content = () => {
   return (
-    <MainWrapper className='min-w-0 max-w-full overflow-hidden whitespace-normal px-0 sm:px-4 sm:py-4 md:p-4'>
+    <MainWrapper className='overflow-hidden whitespace-normal p-0! lg:px-4 sm:py-4 lg:p-4'>
       <SettingsTabs />
     </MainWrapper>
   )

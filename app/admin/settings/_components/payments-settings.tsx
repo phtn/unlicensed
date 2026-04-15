@@ -236,7 +236,7 @@ export const PaymentsSettings = () => {
                   role='listitem'>
                   <div className='flex items-start gap-4'>
                     <div
-                      className='flex size-11 shrink-0 items-center justify-center rounded-xl bg-foreground/10 dark:bg-foreground/15'
+                      className='flex size-8 shrink-0 items-center justify-center rounded-lg bg-foreground/10 dark:bg-foreground/15'
                       aria-hidden>
                       <Icon
                         name={method.icon}
@@ -256,7 +256,7 @@ export const PaymentsSettings = () => {
                         ) : null}
                         <span
                           className={cn(
-                            'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em]',
+                            'rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.2em]',
                             method.status === 'active'
                               ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
                               : 'bg-foreground/5 text-foreground/50',
@@ -273,10 +273,10 @@ export const PaymentsSettings = () => {
                     </div>
                     <div className='shrink-0'>
                       <Button
-                        variant='secondary'
                         size='sm'
+                        variant='secondary'
                         onPress={() => openEditor(method.id)}
-                        className='bg-brand text-white px-4'>
+                        className='bg-brand text-white px-4 h-7 rounded-md'>
                         Edit
                       </Button>
                     </div>

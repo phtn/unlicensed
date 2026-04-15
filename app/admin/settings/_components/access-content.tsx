@@ -14,8 +14,8 @@ import {
   getMasterMonitorEntries,
   getMasterRosterChangeAuthorization,
   getMasterTypeForEmail,
-  MASTER_TYPES,
   MASTER_MONITOR_IDENTIFIER,
+  MASTER_TYPES,
   serializeMasterMonitorEntries,
   type MasterEntry,
   type MasterType,
@@ -40,7 +40,10 @@ type EditableMasterEntry = MasterEntry & {
 }
 
 function allocateRowId() {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
     return crypto.randomUUID()
   }
 
@@ -91,9 +94,10 @@ async function saveMasterEntriesRequest({
     body: JSON.stringify({masters}),
   })
 
-  const payload = (await response.json().catch(() => null)) as
-    | {error?: string; masters?: MasterEntry[]}
-    | null
+  const payload = (await response.json().catch(() => null)) as {
+    error?: string
+    masters?: MasterEntry[]
+  } | null
 
   if (!response.ok) {
     throw new Error(payload?.error || 'Failed to save master monitor access.')
@@ -125,9 +129,9 @@ export const AccessContent = () => {
   const gateSaveStatusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
-  const masterSaveStatusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  )
+  const masterSaveStatusTimeoutRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null)
   const lastSyncedRef = useRef<string>('')
   const lastMasterSyncRef = useRef<string>('')
 
@@ -352,17 +356,42 @@ export const AccessContent = () => {
   return (
     <div className='flex flex-col gap-4'>
       <ContentHeader
-        title='Access'
-        description='Manage the store gate and the master-monitor roster. The account phtn458@gmail.com is always the default OG.' />
+        title='Access Code'
+        description='Manage the store gate and the master-monitor roster.'
+      />
 
       <div className='grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]'>
         <section className='flex flex-col gap-4'>
-          <div className='rounded-2xl bg-default-100/50 px-4 py-3 dark:bg-default-100/30'>
+          <div className='flex items-center justify-between px-2'>
             <Toggle
+              label='Require access code'
               title='Require access code'
               checked={isEnabled}
               onChange={() => setIsEnabled(!isEnabled)}
             />
+            <div className='flex flex-wrap items-center gap-3'>
+              <Button
+                size='sm'
+                variant='primary'
+                onPress={handleAddPass}
+                className='bg-light-brand h-7 rounded-md'>
+                <Icon name='plus' className='size-4 m-auto' />
+                Add
+              </Button>
+              <PrimaryButton
+                isMobile={isMobile}
+                onPress={handleSaveGate}
+                label='Save Gate'
+                disabled={isSavingGate}
+                icon={isSavingGate ? 'spinners-ring' : 'save'}
+              />
+              {gateSaveStatus === 'success' && (
+                <span className='text-sm text-success'>Gate saved</span>
+              )}
+              {gateSaveStatus === 'error' && (
+                <span className='text-sm text-danger'>Failed to save gate</span>
+              )}
+            </div>
           </div>
 
           <ul className='flex flex-col gap-2 max-w-lg' role='list'>
@@ -385,61 +414,36 @@ export const AccessContent = () => {
                     autoComplete='false'
                     autoCorrect='false'
                     aria-label={`Pass ${index + 1}`}
-                  />
-                  <Button
-                    isIconOnly
-                    size='sm'
-                    variant='danger'
-                    onPress={() => handleDeletePass(index)}
-                    className='size-8 aspect-square rounded-md'
-                    aria-label={`Delete pass ${index + 1}`}>
-                    <Icon name='trash' className='size-4 dark:text-white' />
-                  </Button>
+                    withAction>
+                    <Icon
+                      name='trash'
+                      aria-label={`Delete pass ${index + 1}`}
+                      onClick={() => handleDeletePass(index)}
+                      className='size-4 dark:text-white'
+                    />
+                  </Input>
                 </li>
               </ViewTransition>
             ))}
           </ul>
-
-          <div className='flex flex-wrap items-center gap-3'>
-            <Button
-              size='sm'
-              variant='primary'
-              onPress={handleAddPass}
-              className='bg-light-brand'>
-              <Icon name='plus' className='size-4 m-auto' />
-              Add Passcode
-            </Button>
-            <PrimaryButton
-              isMobile={isMobile}
-              onPress={handleSaveGate}
-              label='Save Gate'
-              disabled={isSavingGate}
-              icon={isSavingGate ? 'spinners-ring' : 'save'}
-            />
-            {gateSaveStatus === 'success' && (
-              <span className='text-sm text-success'>Gate saved</span>
-            )}
-            {gateSaveStatus === 'error' && (
-              <span className='text-sm text-danger'>Failed to save gate</span>
-            )}
-          </div>
         </section>
 
-        <section className='flex flex-col gap-4'>
+        <section className='hidden _flex flex-col gap-4'>
           <div className='rounded-2xl bg-default-100/50 px-4 py-4 dark:bg-default-100/30'>
             <div className='space-y-1'>
               <h3 className='text-sm font-medium uppercase tracking-wider text-foreground/70'>
                 Master Monitor Access
               </h3>
               <p className='text-sm text-muted-foreground'>
-                Only <span className='font-medium'>{DEFAULT_OG_MASTER_EMAIL}</span>{' '}
+                Only{' '}
+                <span className='font-medium'>{DEFAULT_OG_MASTER_EMAIL}</span>{' '}
                 can add or retag masters. {masterPermissionDescription} Access
                 still requires the account to be an active staff member.
               </p>
             </div>
 
             <div className='mt-4 flex flex-col gap-2'>
-              {masterRows.map((row) => (
+              {masterRows.map((row) =>
                 (() => {
                   const canDisableRow = canDisableMasterMonitorEntry({
                     actorEmail: user?.email,
@@ -500,7 +504,10 @@ export const AccessContent = () => {
                             isDisabled={!canSaveMasterChanges}
                             className='mt-auto size-10 rounded-md'
                             aria-label={`Disable ${row.email || 'master'}`}>
-                            <Icon name='trash' className='size-4 dark:text-white' />
+                            <Icon
+                              name='trash'
+                              className='size-4 dark:text-white'
+                            />
                           </Button>
                         ) : (
                           <span className='inline-flex h-10 items-center rounded-md border border-border/60 bg-muted/50 px-3 text-xs font-medium text-muted-foreground'>
@@ -510,8 +517,8 @@ export const AccessContent = () => {
                       </div>
                     </div>
                   )
-                })()
-              ))}
+                })(),
+              )}
             </div>
 
             <div className='mt-4 flex flex-wrap items-center gap-3'>

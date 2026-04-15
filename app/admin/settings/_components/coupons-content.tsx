@@ -294,7 +294,9 @@ function CouponDetailItem({label, value}: {label: string; value: ReactNode}) {
       <div className='text-xs uppercase tracking-[0.18em] text-foreground/45'>
         {label}
       </div>
-      <div className='mt-1 break-words text-sm text-foreground/80'>{value}</div>
+      <div className='mt-1 wrap-break-word text-sm text-foreground/80'>
+        {value}
+      </div>
     </div>
   )
 }
@@ -328,10 +330,10 @@ function CouponDetailsPanel({
               <Chip variant='tertiary'>{getCouponDiscountLabel(coupon)}</Chip>
             </div>
             <div>
-              <h3 className='break-words text-xl font-semibold text-foreground'>
+              <h3 className='wrap-break-word text-xl font-semibold text-foreground'>
                 {coupon.name}
               </h3>
-              <div className='mt-1 break-words font-mono text-sm uppercase tracking-[0.16em] text-foreground/55'>
+              <div className='mt-1 wrap-break-word font-mono text-sm uppercase tracking-[0.16em] text-foreground/55'>
                 {coupon.code}
               </div>
             </div>
@@ -662,7 +664,7 @@ export const CouponsContent = () => {
           </Card.Content>
         </Card>
       ) : (
-        <div className='grid min-h-[32rem] gap-4 lg:grid-cols-[minmax(14rem,19rem)_minmax(0,1fr)]'>
+        <div className='grid min-h-128 gap-4 lg:grid-cols-[minmax(14rem,19rem)_minmax(0,1fr)]'>
           <Card className='min-w-0 overflow-hidden rounded-sm border border-border/50 bg-default-100/40 shadow-none'>
             <Card.Content className='p-0'>
               <div className='border-b border-default-200/70 px-4 py-3'>

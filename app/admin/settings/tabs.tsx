@@ -45,14 +45,14 @@ export const SettingsTabs = () => {
       onValueChange={(nextTab) => {
         void setTabParam(nextTab)
       }}
-      className='flex min-w-0 w-full max-w-full flex-col gap-3 sm:gap-0'>
-      <div className='w-full overflow-x-auto md:px-3 sm:mx-0 sm:px-0'>
-        <Tabs.List className='relative z-0 flex w-max min-w-full flex-nowrap gap-1 overflow-visible px-2 md:gap-2 md:px-0'>
+      className='flex min-w-0 md:w-full max-w-full flex-col gap-2'>
+      <div className='w-[96lvw] md:w-full overflow-x-scroll px-0 lg:px-3 sm:mx-0 pr-3'>
+        <Tabs.List className='relative z-0 flex w-max min-w-full flex-nowrap gap-1 overflow-visible px-0 md:px-0'>
           {tabs.map((tab) => (
             <Tabs.Tab
               key={tab.id}
               className={cn(
-                'flex h-9 shrink-0 items-center justify-center rounded-md border-0 px-2 md:px-3 break-keep whitespace-nowrap',
+                'flex h-9 shrink-0 items-center justify-center rounded-md border-0 px-2 md:px-4 break-keep whitespace-nowrap',
                 'text-sm font-medium data-active:text-white font-okxs',
                 'outline-none select-none before:inset-x-0 before:inset-y-1 before:rounded-md',
                 'transition-colors duration-100 delay-100',
@@ -68,7 +68,7 @@ export const SettingsTabs = () => {
       {tabs.map((tab) => (
         <Tabs.Panel
           key={tab.id}
-          className='relative flex w-full min-w-0 max-w-full flex-1 flex-col overflow-y-auto px-0 sm:px-2 sm:py-4'
+          className='relative flex w-full md:max-w-full flex-col overflow-y-auto px-0! sm:py-4'
           value={tab.id}>
           {tab.panel}
         </Tabs.Panel>

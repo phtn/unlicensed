@@ -20,6 +20,7 @@ import {useQuery} from 'convex/react'
 import Link from 'next/link'
 import {usePathname, useRouter} from 'next/navigation'
 import {memo, startTransition, useCallback, useEffect, useMemo} from 'react'
+import {useSidebar} from './ui/sidebar'
 import type {NavGroup, NavItem} from './ui/types'
 
 // Global Set to track prefetched routes across all instances
@@ -68,7 +69,10 @@ export function AdminSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   }, [allRoutes, router])
 
   return (
-    <Sidebar {...props} className='border-none!' suppressHydrationWarning>
+    <Sidebar
+      {...props}
+      className='border-none! z-9999'
+      suppressHydrationWarning>
       <SidebarHeader className=''>
         <Logo />
       </SidebarHeader>
@@ -202,6 +206,7 @@ const PendingOrdersBadge = memo(function PendingOrdersBadge() {
 
 const MenuContent = memo(function MenuContent(item: NavItem) {
   const router = useRouter()
+  const {isMobile, setOpenMobile} = useSidebar()
 
   const handleMouseEnter = useCallback(() => {
     if (!prefetchedRoutes.has(item.url)) {
@@ -213,11 +218,14 @@ const MenuContent = memo(function MenuContent(item: NavItem) {
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault()
+      if (isMobile) {
+        setOpenMobile(false)
+      }
       startTransition(() => {
         router.push(item.url)
       })
     },
-    [item.url, router],
+    [item.url, router, isMobile, setOpenMobile],
   )
 
   return (

@@ -1,6 +1,7 @@
 import {Typewrite} from '@/components/expermtl/typewrite'
 import {SectionHeader} from '@/components/ui/section-header'
 import {Icon, type IconName} from '@/lib/icons'
+import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import {type ReactNode} from 'react'
 
@@ -17,17 +18,18 @@ export const PrimaryButton = ({
   icon,
   label,
   disabled,
-  isMobile,
 }: PrimaryButtonProps) => {
   return (
     <Button
-      size='md'
+      size='sm'
       onPress={onPress}
       isDisabled={disabled}
-      isIconOnly={isMobile}
-      className='bg-dark-table dark:bg-white dark:text-dark-table rounded-md'>
-      <Icon name={icon} className='size-5 opacity-80' />
-      <span className='hidden md:flex'>{label}</span>
+      className='bg-dark-table dark:bg-white dark:text-dark-table rounded-md h-7'>
+      <span className='md:flex'>{label}</span>
+      <Icon
+        name={icon}
+        className={cn('size-4 opacity-80', {hidden: disabled})}
+      />
     </Button>
   )
 }
@@ -48,8 +50,8 @@ export const LoadingHeader = ({title}: LoadingHeaderProps) => {
           />
         }
         className='sm:ps-1'>
-        <Button size='md' isDisabled variant='tertiary'>
-          <Icon name='spinner-dots' className='mr-1 size-5 opacity-80' />
+        <Button size='md' isDisabled variant='tertiary' className='h-7'>
+          <Icon name='spinner-dots' className='mr-1 size-4 opacity-80' />
         </Button>
       </SectionHeader>
     </div>
@@ -69,10 +71,7 @@ export const ContentHeader = ({
 }: ContentHeaderProps) => {
   return (
     <div className='flex items-start w-full min-h-20'>
-      <SectionHeader
-        title={title}
-        className='sm:ps-1'
-        description={description}>
+      <SectionHeader title={title} className='ps-2' description={description}>
         {children}
       </SectionHeader>
     </div>
