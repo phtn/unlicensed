@@ -43,7 +43,7 @@ export const Content = () => {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <MainWrapper className='md:px-4 space-y-4 w-full border-t-transparent'>
+      <MainWrapper className='px-0 md:px-0 space-y-4 w-full border-t-transparent'>
         <Stats
           stats={adminStats ?? defaultStats}
           salesData={chartData?.salesData}

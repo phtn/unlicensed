@@ -16,6 +16,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import {useOrderDetailsSafe} from '../../(routes)/ops/orders/order-details-context'
@@ -89,9 +90,15 @@ const SettingsPanelProvider = ({
     document.cookie = `${SETTINGS_COOKIE_NAME}=${openState}; path=/; max-age=${SETTINGS_COOKIE_MAX_AGE}`
   }, [])
 
+  const openRef = useRef(open)
+  openRef.current = open
+  const openMobileRef = useRef(openMobile)
+  openMobileRef.current = openMobile
+
   const setOpen = useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
-      const openState = typeof value === 'function' ? value(open) : value
+      const openState =
+        typeof value === 'function' ? value(openRef.current) : value
       if (setOpenProp) {
         setOpenProp(openState)
       } else {
@@ -100,12 +107,13 @@ const SettingsPanelProvider = ({
       setOpenMobileState(openState)
       persistOpenState(openState)
     },
-    [setOpenProp, open, persistOpenState],
+    [setOpenProp, persistOpenState],
   )
 
   const setOpenMobile = useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
-      const openState = typeof value === 'function' ? value(openMobile) : value
+      const openState =
+        typeof value === 'function' ? value(openMobileRef.current) : value
       setOpenMobileState(openState)
       if (setOpenProp) {
         setOpenProp(openState)
@@ -114,7 +122,7 @@ const SettingsPanelProvider = ({
       }
       persistOpenState(openState)
     },
-    [openMobile, persistOpenState, setOpenProp],
+    [persistOpenState, setOpenProp],
   )
 
   const togglePanel = useCallback(() => {
@@ -182,9 +190,17 @@ const SettingsPanel = ({
 }: SettingsPanelProps) => {
   const {isMobile, open, openMobile, setOpenMobile, collapsible, state} =
     useSettingsPanel()
+
+  const setOpenMobileRef = useRef(setOpenMobile)
+  setOpenMobileRef.current = setOpenMobile
+  const stableSetOpenMobile = useCallback(
+    (v: boolean) => setOpenMobileRef.current(v),
+    [],
+  )
+
   const drawerState = useOverlayState({
     isOpen: openMobile,
-    onOpenChange: setOpenMobile,
+    onOpenChange: stableSetOpenMobile,
   })
 
   if (collapsible === 'none') {

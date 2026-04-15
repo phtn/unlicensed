@@ -30,6 +30,12 @@ const SETTINGS_FEATURES: Array<SettingItem> = [
     icon: 'credit-card',
   },
   {
+    id: 'coupons',
+    title: 'Coupons',
+    description: 'Configure store coupons and promo codes.',
+    icon: 'tag',
+  },
+  {
     id: 'crypto',
     title: 'Crypto Wallets',
     description: 'Manage crypto wallets.',

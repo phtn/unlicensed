@@ -114,7 +114,10 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
           : 0
       return (
         <div className='h-0.5 md:h-1 rounded-full overflow-hidden'>
-          <div className='h-full rounded-full bg-primary' style={{width: `${deliveryProgress}%`}} />
+          <div
+            className='h-full rounded-full bg-primary'
+            style={{width: `${deliveryProgress}%`}}
+          />
         </div>
       )
     }
@@ -126,8 +129,7 @@ const StatCard = ({config, stats, chartData, color}: StatCardProps) => {
   const extraContent = getExtraContent(config.id)
 
   return (
-    <Card
-                  className='border border-foreground/20 dark:border-foreground/10 p-2 sm:p-3 md:p-4 lg:p-5 min-w-0 dark:bg-dark-table/20 bg-sidebar/20'>
+    <Card className='rounded-md border border-foreground/20 dark:border-foreground/10 p-2 sm:p-3 md:p-4 lg:p-5 min-w-0 dark:bg-dark-table/20 bg-sidebar/20'>
       {/* Mobile: Label left, Value right */}
       <div className='flex items-center justify-between md:hidden'>
         <div className='flex items-center space-x-1.5 p-0.5 md:rounded-lg'>

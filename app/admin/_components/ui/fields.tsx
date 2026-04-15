@@ -449,46 +449,12 @@ export function SelectField<T>(props?: SelectFieldProps<T> & SelectUiProps) {
         key={option.value}
         id={option.value}
         textValue={option.label}
-        className={cn(selectClass.listboxItem, extraClass)}
-      >
+        className={cn(selectClass.listboxItem, extraClass)}>
         {option.label}
         <ListBox.ItemIndicator />
       </ListBox.Item>
     )
   })
-
-  // const renderMultiValue = isMultiple
-  //   ? (items: {key: React.Key; textValue: string}[]) => (
-  //       <div className='flex items-center space-x-2 overflow-x-auto whitespace-nowrap pr-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
-  //         {items.map((item) => {
-  //           const optionValue = item.key ? String(item.key) : ''
-  //           const chipProps =
-  //             isCategoryField && optionValue
-  //               ? getCategoryChipProps(optionValue)
-  //               : {color: 'accent' as const, className: 'dark:text-white'}
-  //           const chipColor =
-  //             chipProps.color === 'primary'
-  //               ? ('accent' as const)
-  //               : (chipProps.color as
-  //                   | 'accent'
-  //                   | 'danger'
-  //                   | 'default'
-  //                   | 'success'
-  //                   | 'warning')
-  //           return (
-  //             <Chip
-  //               variant='soft'
-  //               color={chipColor}
-  //               key={String(item.key)}
-  //               size='md'
-  //               className={cn(chipProps.className, 'shrink-0 border')}>
-  //               <span className='text-foreground'>{item.textValue}</span>
-  //             </Chip>
-  //           )
-  //         })}
-  //       </div>
-  //     )
-  //   : undefined
 
   return (
     <div className={cn('flex flex-col w-full', props?.className)}>
@@ -508,9 +474,7 @@ export function SelectField<T>(props?: SelectFieldProps<T> & SelectUiProps) {
         onBlur={field.handleBlur}
         isDisabled={props?.disabled}
         isRequired={props?.required}
-        // renderValue={renderMultiValue}
-        className={selectClass.mainWrapper}
-      >
+        className={selectClass.mainWrapper}>
         {props?.label && (
           <Label className={selectClass.label}>{props.label}</Label>
         )}
@@ -616,8 +580,7 @@ export function SelectWithCustomField<T>(
           onBlur={field.handleBlur}
           isDisabled={props?.disabled}
           isRequired={props?.required}
-          className={selectClass.mainWrapper}
-        >
+          className={selectClass.mainWrapper}>
           {props?.label && (
             <Label className={selectClass.label}>{props.label}</Label>
           )}
@@ -632,8 +595,7 @@ export function SelectWithCustomField<T>(
                   key={option.value}
                   id={option.value}
                   textValue={option.label}
-                  className={selectClass.listboxItem}
-                >
+                  className={selectClass.listboxItem}>
                   {option.label}
                   <ListBox.ItemIndicator />
                 </ListBox.Item>

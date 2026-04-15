@@ -38,7 +38,7 @@ const columnClassNameMap: Record<ActivityColumnKey, string> = {
 const getActivityIcon = (type: Activity['type']): IconName => {
   switch (type) {
     case 'user_signup':
-      return 'user'
+      return 'user-fill'
     case 'order_created':
       return 'arrow-right-down-circle-fill'
     case 'order_confirmed':
@@ -59,10 +59,10 @@ const getActivityIcon = (type: Activity['type']): IconName => {
       return 'x'
     case 'product_created':
     case 'product_updated':
-      return 'bag-solid'
+      return 't'
     case 'category_created':
     case 'category_updated':
-      return 'eye'
+      return 'notebook'
     default:
       return 'eye'
   }
@@ -78,11 +78,13 @@ const getActivityIconColor = (type: Activity['type']) => {
   if (type.startsWith('payment_')) {
     if (type.includes('completed')) return 'text-deal'
     if (type.includes('failed')) return 'text-red-500'
+    if (type.includes('pending')) return 'text-orange-500'
     return 'text-yellow-500'
   }
-  if (type.startsWith('user_')) return 'text-brand'
-  if (type.startsWith('product_')) return 'text-cyan-500'
-  if (type.startsWith('category_')) return 'text-orange-500'
+  if (type.startsWith('user_')) return 'text-light-brand'
+  if (type.startsWith('product_')) return 'text-emerald-600'
+  if (type.startsWith('category_'))
+    return 'text-emerald-600 dark:text-indigo-500'
   return 'text-gray-500'
 }
 
@@ -90,6 +92,7 @@ const getActivityChipColor = (type: Activity['type']): ChipProps['color'] => {
   if (type.startsWith('order_')) {
     if (type.includes('delivered')) return 'success'
     if (type.includes('cancelled') || type.includes('refunded')) return 'danger'
+    if (type.includes('created')) return 'warning'
     return 'danger'
   }
   if (type.startsWith('payment_')) {
@@ -98,7 +101,7 @@ const getActivityChipColor = (type: Activity['type']): ChipProps['color'] => {
     return 'warning'
   }
   if (type.startsWith('user_')) return 'default'
-  if (type.startsWith('product_')) return 'default'
+  if (type.startsWith('product_')) return 'success'
   if (type.startsWith('category_')) return 'default'
   return 'default'
 }
@@ -251,10 +254,10 @@ export const RecentActivities = ({
         case 'type':
           return (
             <Chip
-              className='border-none gap-1 opacity-70 font-brk uppercase'
-              color={getActivityChipColor(activity.type)}
               size='sm'
-              variant='soft'>
+              variant='tertiary'
+              className='rounded-sm border-none gap-1 font-ios font-medium uppercase'
+              color={getActivityChipColor(activity.type)}>
               {getActivityTypeLabel(activity.type)}
             </Chip>
           )
@@ -297,29 +300,31 @@ export const RecentActivities = ({
           }
           return (
             <div className='flex items-center'>
-              {viewers.slice(0, 5).map((viewer, i) => (
+              <AvatarGroup avatars={viewers} />
+              {/*{viewers.slice(0, 5).map((viewer, i) => (
+
                 <div
                   key={viewer.userId}
-                  className={cn('shrink-0', {'-ml-2.5': i !== 0})}
+                  className={cn('shrink-0', {'-ml-1.5': i !== 0})}
                   title={`${viewer.name} (${viewer.email})`}>
-                  <Avatar className='size-7 border-2 border-background bg-default-100 text-default-600 shadow-sm dark:border-dark-table'>
+                  <Avatar className='size-7 border-[1.5px] border-alum bg-alum dark:border-dark-table shadow-xs'>
                     <Avatar.Image
                       alt={viewer.name}
                       src={viewer.photoUrl ?? undefined}
                     />
-                    <Avatar.Fallback>
+                    <Avatar.Fallback className='bg-alum font-clash font-medium text-dark-table'>
                       {getInitials(viewer.name)}
                     </Avatar.Fallback>
                   </Avatar>
                 </div>
-              ))}
-              {totalViewers > viewers.length && (
+              ))}*/}
+              {/*{totalViewers > viewers.length && (
                 <div className='ml-1 flex h-7 min-w-7 items-center justify-center rounded-full bg-default-100 px-1.5 ring-2 ring-background dark:bg-white/10'>
                   <span className='text-xs font-medium text-default-600'>
                     +{totalViewers - viewers.length}
                   </span>
                 </div>
-              )}
+              )}*/}
             </div>
           )
         case 'time':
@@ -378,7 +383,7 @@ export const RecentActivities = ({
     <Card
       style={fullTable ? translateStyle : undefined}
       className={cn(
-        'relative z-300 w-full overflow-hidden rounded-t-2xl border border-zinc-300 bg-light-table/30 transition-transform duration-300 mask-[linear-gradient(white,white)] dark:border-dark-table dark:bg-dark-table/40',
+        'relative p-0 z-300 w-full overflow-hidden rounded-t-md border border-zinc-300 bg-light-table/30 transition-transform duration-300 mask-[linear-gradient(white,white)] dark:border-dark-table dark:bg-dark-table/40',
         {
           'h-full bg-sidebar/40': fullTable,
           'transform-[translateY(var(--translate-y))]': fullTable,
@@ -422,17 +427,19 @@ export const RecentActivities = ({
           </div>
         </div>
         <Table variant='secondary' className='min-h-0 flex-1 bg-transparent'>
-          <Table.ScrollContainer className='min-h-0 flex-1 overflow-auto'>
+          <Table.ScrollContainer className='min-h-0 flex-1 overflow-auto scrollbar-container:'>
             <Table.Content
               aria-label='Recent activities table'
               className='min-w-245'>
-              <Table.Header className='rounded-none'>
+              <Table.Header className='rounded-none!'>
                 {columns.map((column) => (
                   <Table.Column
                     key={column.uid}
                     isRowHeader={column.uid === 'user'}
                     className={cn(
-                      'sticky top-0 z-20 h-10 border-b border-sidebar bg-slate-200/90 text-xs font-medium tracking-[0.18em] text-slate-500 backdrop-blur-3xl dark:border-dark-table dark:bg-dark-table/95 dark:text-foreground/75 rounded-xs',
+                      'sticky top-0 z-20 h-10 rounded-none border-b border-sidebar',
+                      'bg-slate-200 dark:bg-dark-table dark:border-dark-table',
+                      'font-medium text-xs text-slate-500 tracking-[0.18em] dark:text-foreground/75',
                       columnClassNameMap[column.uid],
                     )}>
                     <div className='drop-shadow-xs'>{column.name}</div>
@@ -472,5 +479,39 @@ export const RecentActivities = ({
         </Table>
       </div>
     </Card>
+  )
+}
+
+const AvatarGroup = ({
+  avatars,
+}: {
+  avatars: {
+    userId: string
+    name: string
+    email: string
+    photoUrl?: string
+  }[]
+}) => {
+  return (
+    <div className='flex -space-x-1.5'>
+      {avatars.slice(0, 3).map((avatar) => (
+        <Avatar
+          size='sm'
+          key={avatar.userId}
+          className='ring-2 bg-alum ring-background dark:ring-sidebar! shadow-sm'>
+          <Avatar.Image alt={avatar.name} src={avatar.photoUrl} />
+          <Avatar.Fallback className=' dark:bg-alum! font-clash font-medium text-xs dark:text-slate-800'>
+            {getInitials(avatar.name)}
+          </Avatar.Fallback>
+        </Avatar>
+      ))}
+      <Avatar
+        size='sm'
+        className='ring-2 dark:bg-alum! ring-background dark:ring-sidebar! shadow-xs'>
+        <Avatar.Fallback className='font-clash font-medium dark:text-dark-table text-sm dark:bg-alum!'>
+          +{avatars.length - 3}
+        </Avatar.Fallback>
+      </Avatar>
+    </div>
   )
 }

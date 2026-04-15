@@ -1,15 +1,25 @@
 'use client'
 
-import {Input} from '@/components/hero-v3/input'
+import {Input, TextArea} from '@/components/hero-v3/input'
 import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
+import type {Doc, Id} from '@/convex/_generated/dataModel'
 import type {Coupon, CouponDiscountType} from '@/convex/coupons/d'
 import {useAuthCtx} from '@/ctx/auth'
-import {Button, Card, Chip, Label, Modal, TextArea} from '@heroui/react'
+import {cn} from '@/lib/utils'
+import {Button, Card, Chip, Label, Modal} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import {startTransition, useEffect, useMemo, useState} from 'react'
+import {
+  startTransition,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 import {Toggle} from '../../_components/ui/toggle'
 import {ContentHeader, PrimaryButton} from './components'
+
+type CouponDoc = Doc<'coupons'>
 
 type CouponFormState = {
   code: string
@@ -112,6 +122,11 @@ function getCouponDiscountLabel(coupon: Coupon) {
     : `${formatCurrency(coupon.discountValue)} off`
 }
 
+function formatDateTime(value: number | undefined, fallback: string) {
+  if (value === undefined) return fallback
+  return new Date(value).toLocaleString()
+}
+
 function getCouponStatus(coupon: Coupon, now: number) {
   if (!coupon.enabled) {
     return {label: 'Disabled', color: 'default' as const}
@@ -127,7 +142,7 @@ function getCouponStatus(coupon: Coupon, now: number) {
 
 function closeCouponModal(
   setModalOpen: (value: boolean) => void,
-  setEditingCouponId: (value: string | null) => void,
+  setEditingCouponId: (value: Id<'coupons'> | null) => void,
   setForm: (value: CouponFormState) => void,
   setFormError: (value: string | null) => void,
 ) {
@@ -216,6 +231,237 @@ function buildCouponPayload(form: CouponFormState) {
   } as const
 }
 
+function CouponTitleButton({
+  coupon,
+  isSelected,
+  now,
+  onSelect,
+}: {
+  coupon: CouponDoc
+  isSelected: boolean
+  now: number
+  onSelect: (id: Id<'coupons'>) => void
+}) {
+  const status = getCouponStatus(coupon, now)
+
+  return (
+    <button
+      type='button'
+      role='option'
+      aria-selected={isSelected}
+      onClick={() => onSelect(coupon._id)}
+      className={cn(
+        'flex w-full min-w-0 flex-col gap-2 rounded-sm border px-3 py-3 text-left transition-colors',
+        isSelected
+          ? 'border-foreground/40 bg-foreground text-background shadow-sm'
+          : 'border-transparent bg-transparent hover:border-default-300 hover:bg-default-100/70',
+      )}>
+      <span className='flex min-w-0 items-start justify-between gap-3'>
+        <span className='min-w-0'>
+          <span className='block truncate text-sm font-semibold'>
+            {coupon.name}
+          </span>
+          <span
+            className={cn(
+              'mt-1 block truncate font-mono text-[11px] uppercase tracking-[0.14em]',
+              isSelected ? 'text-background/70' : 'text-foreground/50',
+            )}>
+            {coupon.code}
+          </span>
+        </span>
+        <Chip
+          size='sm'
+          color={status.color}
+          variant={isSelected ? 'secondary' : 'tertiary'}
+          className='shrink-0'>
+          {status.label}
+        </Chip>
+      </span>
+      <span
+        className={cn(
+          'text-xs',
+          isSelected ? 'text-background/70' : 'text-foreground/55',
+        )}>
+        {getCouponDiscountLabel(coupon)}
+      </span>
+    </button>
+  )
+}
+
+function CouponDetailItem({label, value}: {label: string; value: ReactNode}) {
+  return (
+    <div className='min-w-0 border-b border-default-200/70 pb-3'>
+      <div className='text-xs uppercase tracking-[0.18em] text-foreground/45'>
+        {label}
+      </div>
+      <div className='mt-1 break-words text-sm text-foreground/80'>{value}</div>
+    </div>
+  )
+}
+
+function CouponDetailsPanel({
+  coupon,
+  isBusy,
+  now,
+  onDelete,
+  onEdit,
+  onToggleEnabled,
+}: {
+  coupon: CouponDoc
+  isBusy: boolean
+  now: number
+  onDelete: (coupon: CouponDoc) => void
+  onEdit: (coupon: CouponDoc) => void
+  onToggleEnabled: (coupon: CouponDoc) => void
+}) {
+  const status = getCouponStatus(coupon, now)
+
+  return (
+    <Card className='min-w-0 overflow-hidden rounded-sm border border-border/50 bg-default-100/40 shadow-none'>
+      <Card.Content className='p-0'>
+        <div className='flex flex-col gap-4 border-b border-default-200/70 p-5 lg:flex-row lg:items-start lg:justify-between'>
+          <div className='min-w-0 space-y-2'>
+            <div className='flex flex-wrap items-center gap-2'>
+              <Chip color={status.color} variant='secondary'>
+                {status.label}
+              </Chip>
+              <Chip variant='tertiary'>{getCouponDiscountLabel(coupon)}</Chip>
+            </div>
+            <div>
+              <h3 className='break-words text-xl font-semibold text-foreground'>
+                {coupon.name}
+              </h3>
+              <div className='mt-1 break-words font-mono text-sm uppercase tracking-[0.16em] text-foreground/55'>
+                {coupon.code}
+              </div>
+            </div>
+          </div>
+
+          <div className='flex flex-wrap gap-2'>
+            <Button
+              size='sm'
+              variant='tertiary'
+              className='rounded-sm'
+              isDisabled={isBusy}
+              onPress={() => onEdit(coupon)}>
+              Edit
+            </Button>
+            <Button
+              size='sm'
+              variant={coupon.enabled ? 'tertiary' : 'ghost'}
+              className='rounded-sm'
+              isDisabled={isBusy}
+              onPress={() => onToggleEnabled(coupon)}>
+              {isBusy ? 'Working...' : coupon.enabled ? 'Disable' : 'Enable'}
+            </Button>
+            <Button
+              size='sm'
+              variant='danger'
+              className='rounded-sm'
+              isDisabled={isBusy}
+              onPress={() => onDelete(coupon)}>
+              {isBusy ? 'Working...' : 'Delete'}
+            </Button>
+          </div>
+        </div>
+
+        <div className='flex flex-col gap-5 p-5'>
+          {coupon.description && (
+            <div className='border-l-2 border-default-300 pl-3 text-sm text-foreground/70'>
+              <div className='mb-1 text-xs uppercase tracking-[0.18em] text-foreground/45'>
+                Description
+              </div>
+              {coupon.description}
+            </div>
+          )}
+
+          <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
+            <CouponDetailItem
+              label='Discount type'
+              value={
+                coupon.discountType === 'percentage'
+                  ? 'Percentage'
+                  : 'USD amount'
+              }
+            />
+            <CouponDetailItem
+              label='Discount value'
+              value={getCouponDiscountLabel(coupon)}
+            />
+            <CouponDetailItem
+              label='Minimum subtotal'
+              value={
+                coupon.minimumSubtotalCents !== undefined
+                  ? formatCurrency(coupon.minimumSubtotalCents)
+                  : 'None'
+              }
+            />
+            <CouponDetailItem
+              label='Maximum discount'
+              value={
+                coupon.maximumDiscountCents !== undefined
+                  ? formatCurrency(coupon.maximumDiscountCents)
+                  : coupon.discountType === 'percentage'
+                    ? 'Unlimited'
+                    : 'N/A'
+              }
+            />
+            <CouponDetailItem
+              label='Times redeemed'
+              value={coupon.timesRedeemed}
+            />
+            <CouponDetailItem
+              label='Usage limit'
+              value={coupon.usageLimit ?? 'Unlimited'}
+            />
+            <CouponDetailItem
+              label='Per-user limit'
+              value={coupon.perUserLimit ?? 'Unlimited'}
+            />
+            <CouponDetailItem
+              label='Starts'
+              value={formatDateTime(coupon.startsAt, 'Immediately')}
+            />
+            <CouponDetailItem
+              label='Expires'
+              value={formatDateTime(coupon.expiresAt, 'Never')}
+            />
+            <CouponDetailItem
+              label='Enabled'
+              value={coupon.enabled ? 'Yes' : 'No'}
+            />
+            <CouponDetailItem
+              label='Stackable'
+              value={coupon.stackable ? 'Yes' : 'No'}
+            />
+            <CouponDetailItem
+              label='Created'
+              value={formatDateTime(coupon.createdAt, 'Unknown')}
+            />
+            <CouponDetailItem
+              label='Updated'
+              value={formatDateTime(coupon.updatedAt, 'Unknown')}
+            />
+            <CouponDetailItem
+              label='Updated by'
+              value={coupon.updatedBy ?? 'Not recorded'}
+            />
+          </div>
+
+          {coupon.notes && (
+            <div className='border-l-2 border-default-300 pl-3 text-sm text-foreground/70'>
+              <div className='mb-1 text-xs uppercase tracking-[0.18em] text-foreground/45'>
+                Internal notes
+              </div>
+              {coupon.notes}
+            </div>
+          )}
+        </div>
+      </Card.Content>
+    </Card>
+  )
+}
+
 export const CouponsContent = () => {
   const {user} = useAuthCtx()
   const coupons = useQuery(api.coupons.q.listCoupons)
@@ -225,11 +471,15 @@ export const CouponsContent = () => {
   const setCouponEnabled = useMutation(api.coupons.m.setCouponEnabled)
 
   const [modalOpen, setModalOpen] = useState(false)
-  const [editingCouponId, setEditingCouponId] = useState<string | null>(null)
+  const [editingCouponId, setEditingCouponId] = useState<Id<'coupons'> | null>(
+    null,
+  )
+  const [selectedCouponId, setSelectedCouponId] =
+    useState<Id<'coupons'> | null>(null)
   const [form, setForm] = useState<CouponFormState>(emptyCouponForm())
   const [formError, setFormError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const [busyCouponId, setBusyCouponId] = useState<string | null>(null)
+  const [busyCouponId, setBusyCouponId] = useState<Id<'coupons'> | null>(null)
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
@@ -259,6 +509,13 @@ export const CouponsContent = () => {
     }
   }, [coupons, now])
 
+  const selectedCoupon = useMemo(() => {
+    if (coupons === undefined || coupons.length === 0) return null
+    return (
+      coupons.find((coupon) => coupon._id === selectedCouponId) ?? coupons[0]
+    )
+  }, [coupons, selectedCouponId])
+
   const openCreateModal = () => {
     setEditingCouponId(null)
     setForm(emptyCouponForm())
@@ -266,7 +523,7 @@ export const CouponsContent = () => {
     setModalOpen(true)
   }
 
-  const openEditModal = (coupon: Coupon & {_id: string}) => {
+  const openEditModal = (coupon: CouponDoc) => {
     setEditingCouponId(coupon._id)
     setForm(couponToForm(coupon))
     setFormError(null)
@@ -285,20 +542,36 @@ export const CouponsContent = () => {
 
     setIsSaving(true)
     setFormError(null)
-    startTransition(() => {
-      const action = editingCouponId
-        ? updateCoupon({
-            id: editingCouponId as never,
-            coupon: payload.coupon,
-            updatedBy: user?.uid,
+    if (editingCouponId) {
+      const id = editingCouponId
+      startTransition(() => {
+        updateCoupon({
+          id,
+          coupon: payload.coupon,
+          updatedBy: user?.uid,
+        })
+          .then(() => {
+            setSelectedCouponId(id)
+            setIsSaving(false)
+            closeModal()
           })
-        : createCoupon({
-            coupon: payload.coupon,
-            updatedBy: user?.uid,
+          .catch((error: unknown) => {
+            setIsSaving(false)
+            setFormError(
+              error instanceof Error ? error.message : 'Failed to save coupon',
+            )
           })
+      })
+      return
+    }
 
-      action
-        .then(() => {
+    startTransition(() => {
+      createCoupon({
+        coupon: payload.coupon,
+        updatedBy: user?.uid,
+      })
+        .then((createdId) => {
+          setSelectedCouponId(createdId)
           setIsSaving(false)
           closeModal()
         })
@@ -311,11 +584,11 @@ export const CouponsContent = () => {
     })
   }
 
-  const handleToggleEnabled = (coupon: Coupon & {_id: string}) => {
+  const handleToggleEnabled = (coupon: CouponDoc) => {
     setBusyCouponId(coupon._id)
     startTransition(() => {
       setCouponEnabled({
-        id: coupon._id as never,
+        id: coupon._id,
         enabled: !coupon.enabled,
         updatedBy: user?.uid,
       })
@@ -324,13 +597,18 @@ export const CouponsContent = () => {
     })
   }
 
-  const handleDelete = (coupon: Coupon & {_id: string}) => {
+  const handleDelete = (coupon: CouponDoc) => {
     const confirmed = window.confirm(`Delete coupon "${coupon.code}"?`)
     if (!confirmed) return
 
     setBusyCouponId(coupon._id)
     startTransition(() => {
-      deleteCoupon({id: coupon._id as never})
+      deleteCoupon({id: coupon._id})
+        .then(() => {
+          setSelectedCouponId((current) =>
+            current === coupon._id ? null : current,
+          )
+        })
         .catch(() => {})
         .finally(() => setBusyCouponId(null))
     })
@@ -366,7 +644,7 @@ export const CouponsContent = () => {
       {coupons === undefined ? (
         <div className='text-sm text-foreground/60'>Loading coupons...</div>
       ) : coupons.length === 0 ? (
-        <Card className='border border-border/50 bg-default-100/40 shadow-none'>
+        <Card className='rounded-sm border border-border/50 bg-default-100/40 shadow-none'>
           <Card.Content className='flex flex-col gap-3 p-6'>
             <div className='text-lg font-clash'>No coupon codes yet</div>
             <p className='text-sm text-foreground/60'>
@@ -384,154 +662,44 @@ export const CouponsContent = () => {
           </Card.Content>
         </Card>
       ) : (
-        <div className='grid gap-4 xl:grid-cols-2'>
-          {coupons.map((coupon) => {
-            const status = getCouponStatus(coupon, now)
-            const isBusy = busyCouponId === coupon._id
-            return (
-              <Card
-                key={coupon._id}
-                className='border border-border/50 bg-default-100/40 shadow-none'>
-                <Card.Content className='flex flex-col gap-4 p-5'>
-                  <div className='flex flex-wrap items-start justify-between gap-3'>
-                    <div className='space-y-1'>
-                      <div className='font-mono text-lg font-semibold tracking-[0.18em]'>
-                        {coupon.code}
-                      </div>
-                      <div className='text-base font-medium'>{coupon.name}</div>
-                      {coupon.description && (
-                        <p className='text-sm text-foreground/60'>
-                          {coupon.description}
-                        </p>
-                      )}
-                    </div>
-                    <div className='flex flex-wrap gap-2'>
-                      <Chip color={status.color} variant='secondary'>
-                        {status.label}
-                      </Chip>
-                    </div>
-                  </div>
+        <div className='grid min-h-[32rem] gap-4 lg:grid-cols-[minmax(14rem,19rem)_minmax(0,1fr)]'>
+          <Card className='min-w-0 overflow-hidden rounded-sm border border-border/50 bg-default-100/40 shadow-none'>
+            <Card.Content className='p-0'>
+              <div className='border-b border-default-200/70 px-4 py-3'>
+                <div className='text-sm font-semibold text-foreground'>
+                  Coupons
+                </div>
+                <div className='mt-1 text-xs text-foreground/50'>
+                  Select a coupon to view its settings.
+                </div>
+              </div>
+              <div
+                role='listbox'
+                aria-label='Coupon titles'
+                className='flex max-h-[min(68vh,44rem)] flex-col gap-2 overflow-y-auto p-2'>
+                {coupons.map((coupon) => (
+                  <CouponTitleButton
+                    key={coupon._id}
+                    coupon={coupon}
+                    isSelected={coupon._id === selectedCoupon?._id}
+                    now={now}
+                    onSelect={setSelectedCouponId}
+                  />
+                ))}
+              </div>
+            </Card.Content>
+          </Card>
 
-                  <div className='grid gap-3 text-sm text-foreground/75 sm:grid-cols-2'>
-                    <div>
-                      <div className='text-xs uppercase tracking-[0.18em] text-foreground/45'>
-                        Discount
-                      </div>
-                      <div>{getCouponDiscountLabel(coupon)}</div>
-                    </div>
-                    <div>
-                      <div className='text-xs uppercase tracking-[0.18em] text-foreground/45'>
-                        Min subtotal
-                      </div>
-                      <div>
-                        {coupon.minimumSubtotalCents !== undefined
-                          ? formatCurrency(coupon.minimumSubtotalCents)
-                          : 'None'}
-                      </div>
-                    </div>
-                    <div>
-                      <div className='text-xs uppercase tracking-[0.18em] text-foreground/45'>
-                        Max discount
-                      </div>
-                      <div>
-                        {coupon.maximumDiscountCents !== undefined
-                          ? formatCurrency(coupon.maximumDiscountCents)
-                          : coupon.discountType === 'percentage'
-                            ? 'Unlimited'
-                            : 'N/A'}
-                      </div>
-                    </div>
-                    <div>
-                      <div className='text-xs uppercase tracking-[0.18em] text-foreground/45'>
-                        Usage
-                      </div>
-                      <div>
-                        {coupon.timesRedeemed}
-                        {coupon.usageLimit !== undefined
-                          ? ` / ${coupon.usageLimit}`
-                          : ' / unlimited'}
-                      </div>
-                    </div>
-                    <div>
-                      <div className='text-xs uppercase tracking-[0.18em] text-foreground/45'>
-                        Starts
-                      </div>
-                      <div>
-                        {coupon.startsAt !== undefined
-                          ? new Date(coupon.startsAt).toLocaleString()
-                          : 'Immediately'}
-                      </div>
-                    </div>
-                    <div>
-                      <div className='text-xs uppercase tracking-[0.18em] text-foreground/45'>
-                        Expires
-                      </div>
-                      <div>
-                        {coupon.expiresAt !== undefined
-                          ? new Date(coupon.expiresAt).toLocaleString()
-                          : 'Never'}
-                      </div>
-                    </div>
-                    <div>
-                      <div className='text-xs uppercase tracking-[0.18em] text-foreground/45'>
-                        Per user limit
-                      </div>
-                      <div>{coupon.perUserLimit ?? 'Unlimited'}</div>
-                    </div>
-                    <div>
-                      <div className='text-xs uppercase tracking-[0.18em] text-foreground/45'>
-                        Stackable
-                      </div>
-                      <div>{coupon.stackable ? 'Yes' : 'No'}</div>
-                    </div>
-                  </div>
-
-                  {coupon.notes && (
-                    <div className='rounded-xl bg-background/50 px-3 py-2 text-sm text-foreground/65'>
-                      {coupon.notes}
-                    </div>
-                  )}
-
-                  <div className='flex flex-wrap gap-2'>
-                    <Button
-                      size='sm'
-                      variant='tertiary'
-                      className='rounded-sm'
-                      isDisabled={isBusy}
-                      onPress={() =>
-                        openEditModal(coupon as Coupon & {_id: string})
-                      }>
-                      Edit
-                    </Button>
-                    <Button
-                      size='sm'
-                      variant={coupon.enabled ? 'tertiary' : 'ghost'}
-                      className='rounded-sm'
-                      isDisabled={isBusy}
-                      onPress={() =>
-                        handleToggleEnabled(coupon as Coupon & {_id: string})
-                      }>
-                      {isBusy
-                        ? 'Working...'
-                        : coupon.enabled
-                          ? 'Disable'
-                          : 'Enable'}
-                    </Button>
-                    <Button
-                      size='sm'
-                      variant='danger'
-                      className='rounded-sm'
-                      isDisabled={isBusy}
-                      onPress={() =>
-                        handleDelete(coupon as Coupon & {_id: string})
-                      }>
-                      {isBusy ? 'Working...' : 'Delete'}
-                    </Button>
-                  </div>
-                </Card.Content>
-              </Card>
-            )
-          })}
+          {selectedCoupon && (
+            <CouponDetailsPanel
+              coupon={selectedCoupon}
+              isBusy={busyCouponId === selectedCoupon._id}
+              now={now}
+              onDelete={handleDelete}
+              onEdit={openEditModal}
+              onToggleEnabled={handleToggleEnabled}
+            />
+          )}
         </div>
       )}
 
@@ -548,10 +716,10 @@ export const CouponsContent = () => {
         <Modal.Backdrop>
           <Modal.Container size='lg' scroll='inside'>
             <Modal.Dialog className='max-w-4xl overflow-hidden rounded-2xl'>
-              <Modal.Header className='border-b border-default-200 pb-4'>
+              <Modal.Header>
                 {editingCouponId ? 'Edit coupon' : 'Create coupon'}
               </Modal.Header>
-              <Modal.Body className='gap-4 py-6'>
+              <Modal.Body className='gap-4 py-4'>
                 <div className='grid gap-4 md:grid-cols-2'>
                   <Input
                     label='Coupon code'
@@ -678,9 +846,9 @@ export const CouponsContent = () => {
 
                 <div className='flex items-center justify-start space-x-4 py-4'>
                   <div className='flex flex-col space-y-2 text-left'>
-                    <Label htmlFor='description'>Description (optional)</Label>
                     <TextArea
                       id='description'
+                      label='Description (optional)'
                       value={form.description}
                       onChange={(e) =>
                         setForm((current) => ({
@@ -690,13 +858,12 @@ export const CouponsContent = () => {
                       }
                       rows={2}
                       placeholder='Description (optional)'
-                      className='bg-dark-table/50 rounded-md'
                     />
                   </div>
                   <div className='flex flex-col space-y-2'>
-                    <Label htmlFor='notes'>Internal notes (optional)</Label>
                     <TextArea
                       id='notes'
+                      label='Internal notes (optional)'
                       value={form.notes}
                       onChange={(e) =>
                         setForm((current) => ({
@@ -706,7 +873,6 @@ export const CouponsContent = () => {
                       }
                       rows={2}
                       placeholder='Internal notes (optional)'
-                      className='bg-dark-table/50 rounded-md'
                     />
                   </div>
                 </div>
@@ -739,14 +905,14 @@ export const CouponsContent = () => {
                 )}
               </Modal.Body>
               <Modal.Footer className='border-t border-default-200 pt-4'>
-                <Button variant='tertiary' onPress={closeModal}>
+                <Button variant='ghost' onPress={closeModal}>
                   Cancel
                 </Button>
                 <Button
                   variant='primary'
                   onPress={handleSave}
                   isDisabled={isSaving}
-                  className='bg-light-brand'>
+                  className='bg-dark-table dark:bg-white text-background rounded-md'>
                   {isSaving
                     ? 'Saving...'
                     : editingCouponId
