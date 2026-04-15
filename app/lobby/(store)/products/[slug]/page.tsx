@@ -1,5 +1,6 @@
 import {fetchProductDetail} from '@/lib/convexClient'
 import {Metadata} from 'next'
+import {notFound} from 'next/navigation'
 import {ProductDetailContent} from './content'
 export async function generateMetadata({
   params,
@@ -45,6 +46,9 @@ type PageProps = {
 const Page = async ({params}: PageProps) => {
   const slug = (await params).slug
   const initialDetail = await fetchProductDetail(slug)
+  if (!initialDetail) {
+    notFound()
+  }
   return <ProductDetailContent initialDetail={initialDetail} slug={slug} />
 }
 export default Page

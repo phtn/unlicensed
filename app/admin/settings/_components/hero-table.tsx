@@ -45,7 +45,7 @@ export function SelectionDemo() {
         <Table.ScrollContainer>
           <Table.Content
             aria-label='Table with selection'
-            className='min-w-[600px]'
+            className='min-w-150'
             selectedKeys={selectedKeys}
             selectionMode='multiple'
             onSelectionChange={setSelectedKeys}>

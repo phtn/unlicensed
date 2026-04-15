@@ -1,5 +1,7 @@
+import {api} from '../_generated/api'
 import {v} from 'convex/values'
 import {query} from '../_generated/server'
+import type {Doc} from '../_generated/dataModel'
 import type {AdminSettings} from './d'
 import {normalizeFireCollectionsValue} from './fireCollections'
 import {
@@ -7,6 +9,10 @@ import {
   distributeFlatTiers,
   tiersObjectToArray,
 } from './productTiersDefaults'
+
+type StorefrontFireCollectionProduct = Doc<'products'> & {
+  tierLabel?: string
+}
 
 /**
  * Get admin settings
@@ -356,6 +362,82 @@ export const getFireCollectionsConfig = query({
           ? await countProductsByCategory(collection.sourceCategorySlug)
           : undefined,
       })),
+    )
+  },
+})
+
+export const getStorefrontFireCollections = query({
+  args: {},
+  handler: async (
+    ctx,
+  ): Promise<
+    Array<{
+      id: string
+      title: string
+      enabled: boolean
+      order: number
+      productIds: string[]
+      sourceCategorySlug?: string
+      sourceCategoryProductCount?: number
+      products: StorefrontFireCollectionProduct[]
+    }>
+  > => {
+    const setting = await ctx.db
+      .query('adminSettings')
+      .withIndex('by_identifier', (q) => q.eq('identifier', 'fireCollection'))
+      .unique()
+
+    const collections = normalizeFireCollectionsValue(setting?.value)
+    type FireCollectionConfig = (typeof collections)[number]
+
+    const storefrontCollections: Array<{
+      id: string
+      title: string
+      enabled: boolean
+      order: number
+      productIds: string[]
+      sourceCategorySlug?: string
+      sourceCategoryProductCount?: number
+      products: StorefrontFireCollectionProduct[]
+    } | null> = await Promise.all(
+      collections.map(async (collection: FireCollectionConfig) => {
+        if (!collection.enabled || collection.productIds.length === 0) {
+          return null
+        }
+
+        const products: StorefrontFireCollectionProduct[] = await ctx.runQuery(
+          api.products.q.getProductsByIds,
+          {
+            availableOnly: true,
+            productIds: collection.productIds,
+          },
+        )
+
+        if (products.length === 0) {
+          return null
+        }
+
+        const sourceCategoryProductCount: number | undefined =
+          collection.sourceCategorySlug
+            ? await ctx.runQuery(api.products.q.countCategoryProducts, {
+                availableOnly: true,
+                categorySlug: collection.sourceCategorySlug,
+              })
+            : undefined
+
+        return {
+          ...collection,
+          products,
+          sourceCategoryProductCount,
+        }
+      }),
+    )
+
+    return storefrontCollections.filter(
+      (
+        collection,
+      ): collection is NonNullable<(typeof storefrontCollections)[number]> =>
+        collection !== null,
     )
   },
 })

@@ -232,14 +232,13 @@ export const markRecipientFailed = internalMutation({
 
     const now = Date.now()
     const nextRecipientIndex = args.recipientIndex + 1
-    const shouldContinue =
-      !blast.stopOnError && nextRecipientIndex < blast.totalRecipients
-    const isComplete = !shouldContinue && nextRecipientIndex >= blast.totalRecipients
+    const isLastRecipient = nextRecipientIndex >= blast.totalRecipients
+    const shouldContinue = !blast.stopOnError && !isLastRecipient
     const nextStatus = shouldContinue
       ? 'queued'
-      : isComplete
-        ? 'completed'
-        : 'failed'
+      : blast.stopOnError
+        ? 'failed'
+        : 'completed'
 
     await ctx.db.patch(args.blastId, {
       status: nextStatus,

@@ -23,7 +23,7 @@ export const MailingListTable = ({
   return (
     <div className={cn('flex w-full flex-col', className)}>
       <Table>
-        <TableHeader>
+        <TableHeader className='tracking-widest font-ios text-xs'>
           <TableRow className='uppercase opacity-60'>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
@@ -31,13 +31,15 @@ export const MailingListTable = ({
         </TableHeader>
         <TableBody>
           {recipients.map((recipient, index) => (
-            <TableRow key={index}>
+            <TableRow key={index} className='even:bg-foreground/3'>
               <TableCell>
                 <div className='flex items-center gap-3'>
                   <span className='text-sm'>{recipient.name}</span>
                 </div>
               </TableCell>
-              <TableCell className='tracking-wide'>{recipient.email}</TableCell>
+              <TableCell className='tracking-wider font-mono'>
+                {recipient.email}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

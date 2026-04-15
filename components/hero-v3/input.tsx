@@ -1,8 +1,13 @@
-import {Input as I, Label} from '@heroui/react'
+import {cn, Input as I, Label, TextArea as T} from '@heroui/react'
 import {InputHTMLAttributes} from 'react'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
+  readonly value?: string
+}
+interface TextAreaProps extends InputHTMLAttributes<HTMLTextAreaElement> {
+  label?: string
+  rows?: number
   readonly value?: string
 }
 export const inputClass = {
@@ -33,6 +38,36 @@ export const Input = ({
         defaultValue={value}
         placeholder={placeholder}
         className={inputClass.input}
+      />
+    </div>
+  )
+}
+
+export const TextArea = ({
+  label,
+  value,
+  onChange,
+  onBlur,
+  placeholder,
+  name,
+  rows,
+}: TextAreaProps) => {
+  return (
+    <div className={cn(inputClass.mainWrapper, 'min-h-18')}>
+      <Label htmlFor={name} className={cn(inputClass.label, 'overflow-hidden')}>
+        {label}
+      </Label>
+      <T
+        rows={rows}
+        id={name}
+        onBlur={onBlur}
+        onChange={onChange}
+        defaultValue={value}
+        placeholder={placeholder}
+        className={cn(
+          inputClass.input,
+          'overflow-hidden placeholder:font-normal!',
+        )}
       />
     </div>
   )

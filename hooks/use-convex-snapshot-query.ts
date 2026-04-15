@@ -1,6 +1,6 @@
 'use client'
 
-import {useConvex} from 'convex/react'
+import {useConvex, useQuery} from 'convex/react'
 import type {
   FunctionArgs,
   FunctionReference,
@@ -22,6 +22,7 @@ export const useConvexSnapshotQuery = <
   options?: SnapshotQueryOptions<Query>,
 ) => {
   const convex = useConvex()
+  const liveData = useQuery(query, args)
   const queryName = getFunctionName(query)
   const argsKey = args === 'skip' ? 'skip' : JSON.stringify(args)
   const requestKey = `${queryName}:${argsKey}`
@@ -38,32 +39,30 @@ export const useConvexSnapshotQuery = <
     options?.initialData !== undefined &&
     requestKey === initialRequestKeyRef.current
 
-  const [data, setData] = useState<FunctionReturnType<Query> | undefined>(
-    canUseInitialData ? options?.initialData : undefined,
-  )
-  const [isLoading, setIsLoading] = useState(
-    argsKey !== 'skip' && !canUseInitialData,
-  )
+  const [fallbackData, setFallbackData] = useState<
+    FunctionReturnType<Query> | undefined
+  >(canUseInitialData ? options?.initialData : undefined)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
   const refresh = useCallback(async () => {
     const nextArgs = argsRef.current
     if (nextArgs === 'skip') {
       requestIdRef.current += 1
-      setData(undefined)
+      setFallbackData(undefined)
       setError(null)
-      setIsLoading(false)
+      setIsRefreshing(false)
       return undefined
     }
 
     const requestId = ++requestIdRef.current
-    setIsLoading(true)
+    setIsRefreshing(true)
     setError(null)
 
     try {
       const result = await convex.query(queryRef.current, nextArgs)
       if (requestId === requestIdRef.current) {
-        setData(result)
+        setFallbackData(result)
       }
       return result
     } catch (error) {
@@ -79,7 +78,7 @@ export const useConvexSnapshotQuery = <
       return undefined
     } finally {
       if (requestId === requestIdRef.current) {
-        setIsLoading(false)
+        setIsRefreshing(false)
       }
     }
   }, [convex])
@@ -87,21 +86,27 @@ export const useConvexSnapshotQuery = <
   useEffect(() => {
     if (argsKey === 'skip') {
       requestIdRef.current += 1
-      setData(undefined)
+      setFallbackData(undefined)
       setError(null)
-      setIsLoading(false)
+      setIsRefreshing(false)
       return
     }
 
-    const shouldFetch = options?.refetchOnMount ?? !canUseInitialData
-    if (!shouldFetch) {
-      setIsLoading(false)
+    setFallbackData(canUseInitialData ? options?.initialData : undefined)
+  }, [argsKey, canUseInitialData, options?.initialData, requestKey])
+
+  useEffect(() => {
+    if (liveData === undefined) {
       return
     }
 
-    setData(undefined)
-    void refresh()
-  }, [argsKey, requestKey, canUseInitialData, options?.refetchOnMount, refresh])
+    setFallbackData(undefined)
+    setError(null)
+    setIsRefreshing(false)
+  }, [liveData])
+
+  const data = fallbackData !== undefined ? fallbackData : liveData
+  const isLoading = argsKey !== 'skip' && data === undefined && !isRefreshing
 
   return {
     data,

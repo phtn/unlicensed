@@ -2,6 +2,8 @@ import {type ReactNode} from 'react'
 import {MainPage} from './main'
 import {StoreSearchParamsAdapter} from './store-search-params-adapter'
 
+export const dynamic = 'force-dynamic'
+
 type StoreLayoutProps = {
   navbar?: ReactNode
   children?: ReactNode

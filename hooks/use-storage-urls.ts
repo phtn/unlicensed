@@ -2,6 +2,7 @@
 
 import {api} from '@/convex/_generated/api'
 import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
+import type {FunctionReturnType} from 'convex/server'
 import {useMemo} from 'react'
 
 /**
@@ -19,6 +20,8 @@ import {useMemo} from 'react'
 export const useStorageUrls = (
   values: (string | undefined | null)[],
 ): ((value: string) => string | null) => {
+  type StorageUrlsResult = FunctionReturnType<typeof api.uploads.getStorageUrls>
+
   // Extract unique storageIds (filter out null/undefined and duplicates)
   const storageIdsToResolve = useMemo(() => {
     return values
@@ -30,14 +33,16 @@ export const useStorageUrls = (
   const {data: storageUrls} = useConvexSnapshotQuery(
     api.uploads.getStorageUrls,
     storageIdsToResolve.length > 0 ? {storageIds: storageIdsToResolve} : 'skip',
-  )
+  ) as {data: StorageUrlsResult | undefined}
 
   // Create a map of storageId -> URL for quick lookup
   const urlMap = useMemo(() => {
     if (!storageUrls || storageIdsToResolve.length === 0) {
       return new Map<string, string | null>()
     }
-    return new Map(storageUrls.map(({storageId, url}) => [storageId, url]))
+    return new Map(
+      storageUrls.map(({storageId, url}) => [storageId, url] as const),
+    )
   }, [storageUrls, storageIdsToResolve.length])
 
   // Return a resolver function

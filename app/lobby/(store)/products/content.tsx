@@ -7,9 +7,11 @@ import {api} from '@/convex/_generated/api'
 import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Icon} from '@/lib/icons'
+import {adaptProduct, type RawProduct} from '@/lib/convexClient'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {Button} from '@heroui/react'
 import {useQuery} from 'convex/react'
+import type {FunctionReturnType} from 'convex/server'
 import {
   parseAsString,
   parseAsStringEnum,
@@ -27,6 +29,13 @@ type SortField = 'name' | 'price' | 'thc' | 'rating'
 type SortOrder = 'asc' | 'desc'
 
 export const Content = ({initialProducts}: ContentProps) => {
+  type CategoriesQueryResult = FunctionReturnType<
+    typeof api.categories.q.listCategories
+  >
+  type ProductsQueryResult = FunctionReturnType<
+    typeof api.products.q.listProducts
+  >
+
   // Query states for filters
   const [brand, setBrand] = useQueryState(
     'brand',
@@ -74,9 +83,20 @@ export const Content = ({initialProducts}: ContentProps) => {
     order: parseAsStringEnum<SortOrder>(['asc', 'desc']).withDefault('asc'),
   })
 
-  const categoriesQuery = useQuery(api.categories.q.listCategories)
+  const categoriesQuery = useQuery(api.categories.q.listCategories) as
+    | CategoriesQueryResult
+    | undefined
+  const productsQuery = useQuery(api.products.q.listProducts, {
+    limit: 100,
+  }) as ProductsQueryResult | undefined
 
-  const allProducts = initialProducts
+  const allProducts = useMemo<StoreProduct[]>(
+    () =>
+      productsQuery
+        ? productsQuery.map((product: RawProduct) => adaptProduct(product))
+        : initialProducts,
+    [initialProducts, productsQuery],
+  )
 
   const getProductBrands = (brands?: string | string[]) =>
     Array.isArray(brands) ? brands : brands ? [brands] : []
@@ -84,7 +104,7 @@ export const Content = ({initialProducts}: ContentProps) => {
   // Get unique values for filters
   const uniqueBrands = useMemo(() => {
     const brands = new Set<string>()
-    allProducts.forEach((p) => {
+    allProducts.forEach((p: StoreProduct) => {
       getProductBrands(p.brand).forEach((productBrand) => {
         brands.add(productBrand.toLowerCase())
       })
@@ -94,7 +114,7 @@ export const Content = ({initialProducts}: ContentProps) => {
 
   const uniqueCategories = useMemo(() => {
     if (!categoriesQuery) return []
-    return categoriesQuery.map((c) => ({
+    return categoriesQuery.map((c: CategoriesQueryResult[number]) => ({
       slug: c.slug ?? '',
       name: c.name ?? '',
     }))
@@ -139,20 +159,24 @@ export const Content = ({initialProducts}: ContentProps) => {
 
     // Filter by effects
     if (effects) {
-      const effectList = effects.split(',').map((e) => e.trim().toLowerCase())
+      const effectList = effects
+        .split(',')
+        .map((e: string) => e.trim().toLowerCase())
       filtered = filtered.filter((p) =>
         effectList.some((effect) =>
-          p.effects.some((e) => e.toLowerCase().includes(effect)),
+          p.effects.some((e: string) => e.toLowerCase().includes(effect)),
         ),
       )
     }
 
     // Filter by terpenes
     if (terpenes) {
-      const terpeneList = terpenes.split(',').map((t) => t.trim().toLowerCase())
+      const terpeneList = terpenes
+        .split(',')
+        .map((t: string) => t.trim().toLowerCase())
       filtered = filtered.filter((p) =>
         terpeneList.some((terpene) =>
-          p.terpenes.some((t) => t.toLowerCase().includes(terpene)),
+          p.terpenes.some((t: string) => t.toLowerCase().includes(terpene)),
         ),
       )
     }
@@ -161,7 +185,7 @@ export const Content = ({initialProducts}: ContentProps) => {
     if (flavorNotes) {
       const flavorList = flavorNotes
         .split(',')
-        .map((f) => f.trim().toLowerCase())
+        .map((f: string) => f.trim().toLowerCase())
       filtered = filtered.filter((p) =>
         flavorList.some((flavor) =>
           p.flavorNotes.some((f) => f.toLowerCase().includes(flavor)),
@@ -394,7 +418,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                       Brand: {brand}
                       <button
                         onClick={() => setBrand(null)}
-                        className='hover:opacity-70'>
+                        className='hover:opacity-70'
+                      >
                         <Icon name='x' className='size-3' />
                       </button>
                     </span>
@@ -405,7 +430,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                       <span className='font-semibold'>{category}</span>
                       <button
                         onClick={() => setCategory(null)}
-                        className='hover:opacity-70'>
+                        className='hover:opacity-70'
+                      >
                         <Icon name='x' className='size-3' />
                       </button>
                     </span>
@@ -415,7 +441,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                       Potency: <span className='font-semibold'>{potency}</span>
                       <button
                         onClick={() => setPotency(null)}
-                        className='hover:opacity-70'>
+                        className='hover:opacity-70'
+                      >
                         <Icon name='x' className='size-3' />
                       </button>
                     </span>
@@ -425,7 +452,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                   size='sm'
                   variant='tertiary'
                   onPress={clearFilters}
-                  className='text-xs'>
+                  className='text-xs'
+                >
                   Clear All
                 </Button>
               </div>
@@ -465,7 +493,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                     size='lg'
                     variant='tertiary'
                     onPress={clearFilters}
-                    className='mt-4'>
+                    className='mt-4'
+                  >
                     Clear Filters
                   </Button>
                 )}
@@ -513,12 +542,14 @@ const FilterSelector = ({
         <select
           value={value}
           onChange={onSelect}
-          className='w-full appearance-none rounded-lg border border-foreground/10 bg-background px-4 py-3 pr-10 text-sm font-okxs capitalize transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-brand/50 dark:bg-dark-table dark:border-background dark:text-white'>
+          className='w-full appearance-none rounded-lg border border-foreground/10 bg-background px-4 py-3 pr-10 text-sm font-okxs capitalize transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-brand/50 dark:bg-dark-table dark:border-background dark:text-white'
+        >
           <option value=''>{innerLabel}</option>
           {data.map((b) => (
             <option
               key={typeof b === 'string' ? b : b.slug}
-              value={typeof b === 'string' ? b : b.slug}>
+              value={typeof b === 'string' ? b : b.slug}
+            >
               {typeof b === 'string' ? b : b.name}
             </option>
           ))}

@@ -89,10 +89,29 @@ export type RawProductDetail = {
   related: RawProduct[]
 }
 
+export type RawFireCollectionSection = {
+  id: string
+  title: string
+  enabled: boolean
+  order: number
+  productIds: string[]
+  sourceCategorySlug?: string
+  sourceCategoryProductCount?: number
+  products: RawProduct[]
+}
+
 type RawPaginatedProducts = {
   page: RawProduct[]
   isDone: boolean
   continueCursor: string
+}
+
+export interface StoreCollectionSection {
+  id: string
+  title: string
+  products: StoreProduct[]
+  sourceCategorySlug?: string
+  sourceCategoryProductCount?: number
 }
 
 let cachedClient: ConvexHttpClient | null = null
@@ -452,24 +471,6 @@ export const fetchStorageUrlMap = async (
   }
 }
 
-interface RawFireCollectionConfig {
-  id: string
-  title: string
-  enabled: boolean
-  order: number
-  productIds: string[]
-  sourceCategorySlug?: string
-  sourceCategoryProductCount?: number
-}
-
-interface StoreCollectionSection {
-  id: string
-  title: string
-  products: StoreProduct[]
-  sourceCategorySlug?: string
-  sourceCategoryProductCount?: number
-}
-
 type RawDeal = Parameters<typeof dealDocToBundleConfig>[0]
 
 const resolveStoredImage = (
@@ -501,55 +502,36 @@ const _fetchFireCollections = async (): Promise<StoreCollectionSection[]> => {
 
   try {
     const collections = (await client.query(
-      api.admin.q.getFireCollectionsConfig,
+      api.admin.q.getStorefrontFireCollections,
       {},
-    )) as RawFireCollectionConfig[] | null
-    const enabledCollections = (collections ?? []).filter(
-      (collection) => collection.enabled && collection.productIds.length > 0,
-    )
+    )) as RawFireCollectionSection[] | null
+    const enabledCollections = collections ?? []
 
     if (enabledCollections.length === 0) {
       return []
     }
 
-    const collectionsWithProducts = await Promise.all(
-      enabledCollections.map(async (collection) => {
-        const rawProducts = (await client.query(
-          api.products.q.getProductsByIds,
-          {
-            productIds: collection.productIds,
-          },
-        )) as RawProduct[]
-        const storageUrlMap = await fetchStorageUrlMap(
-          rawProducts.map((product) => product.image ?? null),
-        )
-
-        const products = rawProducts
-          .filter(
-            (product) =>
-              product.archived !== true && product.available === true,
-          )
-          .map((product) =>
-            adaptProduct({
-              ...product,
-              image: resolveStoredImage(product.image, storageUrlMap),
-            }),
-          )
-
-        return {
-          id: collection.id,
-          title: collection.title,
-          sourceCategorySlug: collection.sourceCategorySlug,
-          sourceCategoryProductCount:
-            collection.sourceCategoryProductCount ?? undefined,
-          products,
-        }
-      }),
+    const storageUrlMap = await fetchStorageUrlMap(
+      enabledCollections.flatMap((collection) =>
+        collection.products.map((product) => product.image ?? null),
+      ),
     )
 
-    return collectionsWithProducts.filter(
-      (collection) => collection.products.length > 0,
-    )
+    return enabledCollections
+      .map((collection) => ({
+        id: collection.id,
+        title: collection.title,
+        sourceCategorySlug: collection.sourceCategorySlug,
+        sourceCategoryProductCount:
+          collection.sourceCategoryProductCount ?? undefined,
+        products: collection.products.map((product) =>
+          adaptProduct({
+            ...product,
+            image: resolveStoredImage(product.image, storageUrlMap),
+          }),
+        ),
+      }))
+      .filter((collection) => collection.products.length > 0)
   } catch (error) {
     console.warn('Falling back to empty fire collections', error)
     return []

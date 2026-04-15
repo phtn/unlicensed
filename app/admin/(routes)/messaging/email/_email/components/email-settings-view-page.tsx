@@ -20,13 +20,7 @@ import {
 import {useMutation, useQuery} from 'convex/react'
 import {motion} from 'motion/react'
 import {useRouter} from 'next/navigation'
-import {
-  startTransition,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import {startTransition, useCallback, useMemo, useRef, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import type {EmailSettingsConvexArgs} from '../email-settings-form-schema'
 import {toFormValues, withViewTransition} from '../utils'
@@ -170,12 +164,10 @@ async function startEmailBlastRequest({
     }),
   })
 
-  const payload = (await response.json().catch(() => null)) as
-    | {
-        blastId?: string
-        error?: string
-      }
-    | null
+  const payload = (await response.json().catch(() => null)) as {
+    blastId?: string
+    error?: string
+  } | null
 
   if (!response.ok) {
     throw new Error(payload?.error || 'Failed to start email blast.')
@@ -373,11 +365,22 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
         `Background blast started for ${valid.length} recipients. You can leave this page.`,
       )
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to start blast')
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to start blast',
+      )
     } finally {
       setIsStartingBlast(false)
     }
   }, [emailSetting, id, mailingLists, selectedListId, user])
+
+  const cantSendBlast = useMemo(() => {
+    return (
+      !selectedListId ||
+      isStartingBlast ||
+      !!activeBlast ||
+      !mailingLists?.some((l: MailingListDoc) => l._id === selectedListId)
+    )
+  }, [selectedListId, isStartingBlast, activeBlast, mailingLists])
 
   if (emailSetting === undefined) {
     return (
@@ -434,7 +437,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
         <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl' />
       </div>
 
-      <main className='relative overflow-y-auto px-4 sm:px-6 lg:px-8 py-4 border-t-[0.33px] bg-linear-to-b from-zinc-200/20 dark:from-zinc-300/10 to-5% to-zinc-200/10 dark:to-zinc-300/10 zinc-200'>
+      <main className='relative overflow-y-auto px-4 sm:px-6 lg:px-8 py-4 border-t-[0.33px] bg-linear-to-b from-zinc-200/20 dark:from-zinc-300/10 to-5% to-zinc-200/10 dark:to-zinc-300/10 zinc-200 rounded-sm'>
         <div className='mb-4 flex items-center justify-between'>
           <Button
             type='button'
@@ -444,27 +447,19 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
             <Icon name='chevron-left' className='size-4' />
             <span className='hidden md:flex'>Back to Templates</span>
           </Button>
-          <div className='flex items-center gap-3 px-1'>
+          <div className='flex items-center gap-3 md:gap-5 px-1'>
             <Button
               type='button'
-              variant='tertiary'
-              onPress={toggleMailingList}
-              className='gap-1'>
-              <span className='md:hidden'>+ List</span>
-              <span className='hidden md:flex'>Create Mailing List</span>
-            </Button>
-            <Button
-              type='button'
-              variant='tertiary'
+              variant='ghost'
               onPress={toggleEmailBlast}
-              className='gap-1'>
+              className='gap-1 rounded-md'>
               <span className='hidden md:flex'>Send Email </span>Blast
             </Button>
             <Button
               type='button'
               variant='tertiary'
               onPress={() => setIsEditing(true)}
-              className='gap-1'>
+              className='gap-1 rounded-md'>
               <span className='hidden md:flex'>Edit</span>
               <Icon name='pen' className='size-4 md:hidden' />
             </Button>
@@ -472,7 +467,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
               type='button'
               variant='danger'
               onPress={handleDelete}
-              className='text-mac-red hover:text-mac-red w-4 md:w-fit'>
+              className='text-mac-red hover:text-mac-red w-4 md:w-fit rounded-md'>
               <span className='hidden md:flex'>Delete</span>
               <Icon name='trash-fill' className='size-4 md:hidden' />
             </Button>
@@ -634,7 +629,7 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
               initial={{opacity: 0, height: 0}}
               animate={{opacity: 1, height: 'auto'}}
               className='mt-4'>
-              <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
+              <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-md overflow-hidden font-figtree'>
                 <CardHeader>
                   <SectionHeader
                     title='Send Email Blast'
@@ -665,7 +660,9 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                             : 0
                         }
                         color={
-                          displayBlast.status === 'failed' ? 'danger' : 'success'
+                          displayBlast.status === 'failed'
+                            ? 'danger'
+                            : 'success'
                         }
                         valueLabel={`${displayBlast.processedRecipients} / ${displayBlast.totalRecipients}`}
                         className='max-w-full'>
@@ -695,23 +692,24 @@ export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
                       )}
                     </div>
                   )}
-                  <div className='flex justify-end gap-2'>
-                    <Button variant='tertiary' onPress={toggleEmailBlast}>
+                  <div className='flex justify-end gap-2 font-clash'>
+                    <Button variant='ghost' onPress={toggleEmailBlast}>
                       Cancel
                     </Button>
                     <Button
                       variant='primary'
                       onPress={handleEmailBlastSend}
-                      isDisabled={
-                        !selectedListId ||
-                        isStartingBlast ||
-                        !!activeBlast ||
-                        !mailingLists?.some(
-                          (l: MailingListDoc) => l._id === selectedListId,
-                        )
-                      }
-                      className='rounded-lg bg-dark-gray dark:bg-white dark:text-dark-table'>
-                      {isStartingBlast ? 'Starting...' : 'Send Blast'}
+                      isDisabled={cantSendBlast}
+                      className='rounded-md bg-dark-gray dark:bg-white dark:text-dark-table flex items-center gap-2'>
+                      <span>
+                        {isStartingBlast ? 'Starting...' : 'Send Blast'}
+                      </span>
+                      {!cantSendBlast && (
+                        <Icon
+                          name={isStartingBlast ? 'spinners-ring' : 'send'}
+                          className='size-4'
+                        />
+                      )}
                     </Button>
                   </div>
                 </CardContent>

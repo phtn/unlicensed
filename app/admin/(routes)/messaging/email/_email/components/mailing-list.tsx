@@ -1,5 +1,6 @@
 'use client'
 
+import {StatCard} from '@/app/admin/_components/stat-card'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {type Doc} from '@/convex/_generated/dataModel'
@@ -93,22 +94,8 @@ const MailingListCard = ({
         </div>
 
         <div className='grid gap-2 sm:grid-cols-2'>
-          <div className='rounded-md bg-background dark:bg-background/40 p-2'>
-            <p className='text-[8px] font-ios uppercase tracking-[0.22em] text-foreground/45'>
-              Saved Contacts
-            </p>
-            <p className='font-clash text-lg font-semibold text-foreground/80'>
-              {list.recipients.length}
-            </p>
-          </div>
-          <div className='rounded-md bg-background dark:bg-background/40 p-2'>
-            <p className='text-[8px] font-ios uppercase tracking-[0.22em] text-foreground/45'>
-              Named Contacts
-            </p>
-            <p className='font-clash text-lg font-semibold text-foreground/80'>
-              {namedRecipients}
-            </p>
-          </div>
+          <StatCard title='Saved Contacts' value={list.recipients.length} />
+          <StatCard title='Named Contacts' value={namedRecipients} />
         </div>
 
         <div className='space-y-2 rounded-xl bg-background dark:bg-background/40 p-3'>
@@ -247,7 +234,7 @@ export const MailingListContent = () => {
         <div className='absolute bottom-0 right-1/4 h-120 w-120 rounded-full bg-brand/5 blur-3xl' />
       </div>
 
-      <main className='relative space-y-4 px-2 sm:px-3 lg:px-4'>
+      <main className='relative space-y-4 px-2 lg:px-0'>
         <section className='grid gap-4 lg:grid-cols-[minmax(0,1fr)_480px]'>
           <Card className='border border-greyed/15 rounded-md bg-sidebar/70 shadow-none backdrop-blur-xl'>
             <CardContent className='gap-3 p-6'>
@@ -269,11 +256,11 @@ export const MailingListContent = () => {
                     description='Browse saved recipient groups, scan a few contacts, and open any list for the full roster.'
                   />
                   <div className='flex flex-wrap gap-3 font-ios font-normal text-sm text-foreground/50'>
-                    <span className='rounded-full border border-greyed/15 bg-background/40 px-3 py-1.5'>
+                    <span className='rounded-md border border-greyed/15 bg-background/40 px-3 py-1.5'>
                       {mailingLists.length} lists
                       {mailingLists.length === 1 ? '' : 's'}
                     </span>
-                    <span className='rounded-full border border-greyed/15 bg-background/40 px-3 py-1.5'>
+                    <span className='rounded-md border border-greyed/15 bg-background/40 px-3 py-1.5'>
                       {totalRecipients} total recipient
                       {totalRecipients === 1 ? '' : 's'}
                     </span>
@@ -297,7 +284,7 @@ export const MailingListContent = () => {
                 size='lg'
                 onPress={() => setShowCreateForm((current) => !current)}
                 variant={showCreateForm ? 'secondary' : 'primary'}
-                className='bg-brand font-clash text-white data-[hover=true]:bg-brand/90'>
+                className='bg-brand font-clash text-white data-[hover=true]:bg-brand/90 rounded-md'>
                 <span>
                   {showCreateForm ? 'Close Creator' : 'Create Mailing List'}
                 </span>

@@ -1,9 +1,10 @@
 'use client'
 
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
-import {Input} from '@/components/hero-v3/input'
+import {Input, TextArea} from '@/components/hero-v3/input'
 import {Icon} from '@/lib/icons'
-import {Button, Card, CardContent, CardHeader, TextArea} from '@heroui/react'
+import {cn} from '@/lib/utils'
+import {Button, Card, CardContent, CardHeader} from '@heroui/react'
 import {
   type ChangeEvent,
   type ClipboardEvent,
@@ -164,6 +165,9 @@ export const MailingListEditor = ({
   const [recipients, setRecipients] = useState<EditorRecipientRow[]>(() =>
     initialRecipients.map((recipient) => withRowId(recipient, allocateRowId())),
   )
+  const [hoveredDeleteRowId, setHoveredDeleteRowId] = useState<number | null>(
+    null,
+  )
 
   const setRecipient = useCallback(
     (rowId: number, field: keyof MailingListRecipientRow, value: string) => {
@@ -264,8 +268,8 @@ export const MailingListEditor = ({
   }, [name, onSubmit, recipients])
 
   return (
-    <Card className='bg-sidebar/60 shadow-none backdrop-blur-xl'>
-      <CardHeader className='flex flex-col items-start gap-4 p-5 lg:flex-row lg:items-start lg:justify-between'>
+    <Card className='rounded-none p-0 shadow-none bg-transparent'>
+      <CardHeader className='flex flex-col items-start gap-4 p-0 lg:flex-row lg:items-start lg:justify-between lg:h-auto'>
         <SectionHeader
           title={title}
           description={
@@ -285,8 +289,15 @@ export const MailingListEditor = ({
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
+        <TextArea
+          label='Recipients'
+          name='recipients'
+          rows={1}
+          placeholder='Paste Name and Email: Alice=alice@example.com | Bob: bob@example.com'
+          onPaste={handlePasteRecipients}
+        />
       </CardHeader>
-      <CardContent className='space-y-4 p-5 pt-0'>
+      <CardContent className='space-y-4 py-5 pt-0'>
         <input
           ref={csvInputRef}
           type='file'
@@ -296,18 +307,13 @@ export const MailingListEditor = ({
         />
 
         <div className='flex flex-col gap-3 md:gap-6 lg:flex-row lg:items-start'>
-          <TextArea
-            rows={2}
-            placeholder='Paste Name and Email in any of these formats: Alice=alice@example.com | Bob: bob@example.com | Carol, carol@example.com'
-            onPaste={handlePasteRecipients}
-          />
           <div className='flex portrait:flex-wrap items-center gap-4'>
             <Button
               size='sm'
               type='button'
               variant='primary'
               onPress={addRecipientRow}
-              className='gap-1 rounded-md'>
+              className='gap-1 rounded-md bg-brand dark:bg-light-brand'>
               <Icon name='plus' className='size-4' />
               Add row
             </Button>
@@ -324,7 +330,7 @@ export const MailingListEditor = ({
         </div>
 
         <div
-          className='h-64 overflow-y-scroll rounded-lg border border-foreground/10 bg-default-50 dark:bg-sidebar'
+          className='h-64 overflow-y-scroll rounded-lg border border-foreground/10 bg-sidebar/50 dark:bg-dark-table'
           style={{contentVisibility: 'auto'}}>
           <div className='min-w-0 divide-y divide-greyed/10'>
             {recipients.length === 0 ? (
@@ -335,7 +341,11 @@ export const MailingListEditor = ({
               recipients.map((recipient, index) => (
                 <div
                   key={recipient.rowId}
-                  className='flex min-h-0 items-center gap-2 px-3 py-2 transition-colors hover:bg-default-100/50 dark:hover:bg-default-50/30'>
+                  className={cn(
+                    'flex min-h-0 items-center gap-2 px-3 py-2 transition-colors hover:bg-default-100/50 dark:hover:bg-default-50/30',
+                    hoveredDeleteRowId === recipient.rowId &&
+                      'bg-rose-500/10 hover:bg-rose-500/10 dark:bg-rose-500/15 dark:hover:bg-rose-500/15',
+                  )}>
                   <input
                     type='text'
                     placeholder='Name'
@@ -357,19 +367,26 @@ export const MailingListEditor = ({
                     className='flex-1 min-w-0 border-none bg-transparent py-1 text-sm font-mono outline-none placeholder:text-default-400'
                     aria-label={`Recipient ${index + 1} email`}
                   />
-                  <Button
-                    type='button'
-                    size='sm'
-                    variant='tertiary'
-                    isIconOnly
-                    onPress={() => removeRecipientRow(recipient.rowId)}
-                    aria-label={`Remove recipient ${index + 1}`}
-                    className='shrink-0 group'>
-                    <Icon
-                      name='trash-fill'
-                      className='size-4 opacity-80 group-hover:text-rose-400 group-hover:opacity-100'
-                    />
-                  </Button>
+                  <span
+                    className='shrink-0'
+                    onMouseEnter={() => setHoveredDeleteRowId(recipient.rowId)}
+                    onMouseLeave={() => setHoveredDeleteRowId(null)}
+                    onFocus={() => setHoveredDeleteRowId(recipient.rowId)}
+                    onBlur={() => setHoveredDeleteRowId(null)}>
+                    <Button
+                      size='sm'
+                      isIconOnly
+                      type='button'
+                      variant='ghost'
+                      onPress={() => removeRecipientRow(recipient.rowId)}
+                      aria-label={`Remove recipient ${index + 1}`}
+                      className='group'>
+                      <Icon
+                        name='trash-fill'
+                        className='size-4 opacity-80 rounded-sm group-hover:text-rose-400 group-hover:opacity-100'
+                      />
+                    </Button>
+                  </span>
                 </div>
               ))
             )}
@@ -377,14 +394,15 @@ export const MailingListEditor = ({
         </div>
 
         <div className='flex justify-end gap-2'>
-          <Button variant='tertiary' onPress={onCancel}>
+          <Button variant='ghost' onPress={onCancel} className='rounded-md'>
             Cancel
           </Button>
           <Button
+            size='sm'
             variant='primary'
             onPress={handleSubmit}
             isDisabled={isSubmitting}
-            className='rounded-lg bg-dark-table text-white dark:bg-white dark:text-dark-table'>
+            className='rounded-md bg-dark-table text-white dark:bg-white dark:text-dark-table'>
             {submitLabel}
           </Button>
         </div>

@@ -18,7 +18,6 @@ import {
   useState,
   ViewTransition,
 } from 'react'
-import {getSingleSelectedKey} from '../../_components/ui/fields'
 import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
 
 type VariationForm = {
@@ -1188,23 +1187,18 @@ export const DealsContent = () => {
                                   ? 'Select unit'
                                   : 'Select categories first'
                               }
-                              value={String(
-                                hasCategoryUnits
-                                  ? new Set([v.unitLabel])
-                                  : new Set(),
-                              )}
-                              onChange={(keys) => {
-                                const nextValue = getSingleSelectedKey(
-                                  String(keys),
-                                )
+                              value={
+                                hasCategoryUnits ? v.unitLabel || null : null
+                              }
+                              onChange={(nextValue) => {
                                 if (!nextValue) return
 
                                 updateVariation(idx, (variation) => ({
                                   ...variation,
-                                  unitLabel: String(nextValue),
+                                  unitLabel: nextValue,
                                   denominationLabel: getDenominationLabel(
                                     variation.denominationPerUnit,
-                                    String(nextValue),
+                                    nextValue,
                                   ),
                                 }))
                               }}

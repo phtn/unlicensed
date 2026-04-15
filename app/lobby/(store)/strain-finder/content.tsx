@@ -4,11 +4,15 @@ import type {ClassName, StoreProduct} from '@/app/types'
 import {HyperList} from '@/components/expermtl/hyper-list'
 import {PrimaryCard} from '@/components/store/primary-card'
 import {ScrollArea} from '@/components/ui/scroll-area'
+import {api} from '@/convex/_generated/api'
 import {PotencyLevel} from '@/convex/products/d'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
+import {adaptProduct, type RawProduct} from '@/lib/convexClient'
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
+import {useQuery} from 'convex/react'
+import type {FunctionReturnType} from 'convex/server'
 import {parseAsString, parseAsStringEnum, useQueryState} from 'nuqs'
 import {
   Activity,
@@ -89,6 +93,10 @@ const POTENCY_OPTIONS: Array<{
 ]
 
 export const Content = ({initialProducts}: ContentProps) => {
+  type ProductsQueryResult = FunctionReturnType<
+    typeof api.products.q.listProducts
+  >
+
   // URL query state
   const [step, setStep] = useQueryState(
     'step',
@@ -134,14 +142,26 @@ export const Content = ({initialProducts}: ContentProps) => {
     [moods, flavors, potency],
   )
 
-  const products = useMemo(
-    () => initialProducts.filter((p) => p.available && p.stock > 0),
-    [initialProducts],
+  const liveProducts = useQuery(api.products.q.listProducts, {}) as
+    | ProductsQueryResult
+    | undefined
+  const products = useMemo<StoreProduct[]>(
+    () =>
+      (liveProducts
+        ? liveProducts.map((product: RawProduct) => adaptProduct(product))
+        : initialProducts
+      ).filter(
+        (product: StoreProduct) => product.available && product.stock > 0,
+      ),
+    [initialProducts, liveProducts],
   )
 
   // Get product image IDs for URL resolution
   const productImageIds = useMemo(
-    () => products.map((p) => p.image).filter((id): id is string => !!id),
+    () =>
+      products
+        .map((p: StoreProduct) => p.image)
+        .filter((id): id is string => !!id),
     [products],
   )
   const resolveUrl = useStorageUrls(productImageIds)
@@ -218,12 +238,12 @@ export const Content = ({initialProducts}: ContentProps) => {
   const matchedProducts = useMemo(() => {
     if (step !== 'results') return []
 
-    const scored = products.map((product) => {
+    const scored = products.map((product: StoreProduct) => {
       let score = 0
 
       // Match moods (effects)
       if (preferences.moods.length > 0) {
-        const matchingEffects = product.effects.filter((effect) =>
+        const matchingEffects = product.effects.filter((effect: string) =>
           preferences.moods.some((mood) =>
             effect.toLowerCase().includes(mood.toLowerCase()),
           ),
@@ -234,10 +254,10 @@ export const Content = ({initialProducts}: ContentProps) => {
       // Match flavors (flavorNotes and terpenes)
       if (preferences.flavors.length > 0) {
         const allFlavors = [...product.flavorNotes, ...product.terpenes].map(
-          (f) => f.toLowerCase(),
+          (f: string) => f.toLowerCase(),
         )
         const matchingFlavors = preferences.flavors.filter((flavor) =>
-          allFlavors.some((f) => f.includes(flavor.toLowerCase())),
+          allFlavors.some((f: string) => f.includes(flavor.toLowerCase())),
         )
         score += matchingFlavors.length * 8
       }
@@ -260,9 +280,14 @@ export const Content = ({initialProducts}: ContentProps) => {
 
     // Sort by score and return top 3
     return scored
-      .sort((a, b) => b.score - a.score)
+      .sort(
+        (
+          a: {product: StoreProduct; score: number},
+          b: {product: StoreProduct; score: number},
+        ) => b.score - a.score,
+      )
       .slice(0, 3)
-      .map((item) => item.product)
+      .map((item: {product: StoreProduct; score: number}) => item.product)
   }, [products, preferences, step])
 
   const canProceed = useMemo(() => {
@@ -273,7 +298,7 @@ export const Content = ({initialProducts}: ContentProps) => {
 
   const data = useMemo(
     () =>
-      matchedProducts.slice().map((p) => ({
+      matchedProducts.slice().map((p: StoreProduct) => ({
         ...p,
         image: p.image ? (resolveUrl(p.image) as string) : null,
       })) satisfies Array<StoreProduct | null>,
@@ -287,7 +312,8 @@ export const Content = ({initialProducts}: ContentProps) => {
           <div
             className={cn('text-center mb-4 sm:mb-0', {
               hidden: step === 'intro',
-            })}>
+            })}
+          >
             <div className='flex md:flex-col w-full items-center justify-between'>
               <div className='md:hidden font-polysans whitespace-nowrap font-medium mb-3 ml-4 bg-sidebar dark:bg-dark-gray/40 dark:text-white text-dark-gray md:text-base text-sm px-4 py-1.5 md:py-1 rounded-full w-fit'>
                 Strain Finder
@@ -383,7 +409,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                       isSelected
                         ? 'border-effects bg-effects/10 scale-105'
                         : 'border-sidebar bg-sidebar/60 dark:bg-dark-table/60 md:hover:border-slate-300/50 hover:scale-102'
-                    }`}>
+                    }`}
+                  >
                     <div className='text-center space-y-2'>
                       <div className='text-4xl'>{mood.emoji}</div>
                       <div className='font-semibold text-foreground'>
@@ -422,7 +449,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                       isSelected
                         ? 'border-terpenes bg-terpenes/10 scale-105'
                         : 'border-foreground/20 bg-background hover:border-foreground/40 hover:scale-102'
-                    }`}>
+                    }`}
+                  >
                     <div className='text-center space-y-2'>
                       <div className='text-3xl'>{flavor.emoji}</div>
                       <div className='font-medium text-sm text-foreground'>
@@ -466,7 +494,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                         'border-featured bg-featured/5':
                           option.id === 'mild' && isSelected,
                       },
-                    )}>
+                    )}
+                  >
                     <div className='flex items-start justify-center'>
                       <div className='text-left md:text-center'>
                         <div className='flex items-center space-x-2'>
@@ -529,7 +558,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                 size='lg'
                 onPress={resetFinder}
                 variant='primary'
-                className='bg-foreground font-polysans dark:text-background'>
+                className='bg-foreground font-polysans dark:text-background'
+              >
                 Start Over
               </Button>
             </div>
@@ -544,7 +574,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                 onPress={prevStep}
                 variant='tertiary'
                 isDisabled={isPending}
-                className='px-6 ml-2 font-polysans font-semibold bg-sidebar'>
+                className='px-6 ml-2 font-polysans font-semibold bg-sidebar'
+              >
                 Back
               </Button>
             )}
@@ -556,7 +587,8 @@ export const Content = ({initialProducts}: ContentProps) => {
                 isDisabled={!canProceed || isPending}
                 className={cn(
                   'px-8 bg-brand disabled:bg-zinc-500 text-white font-polysans font-semibold tracking-wide mr-2',
-                )}>
+                )}
+              >
                 <span className='drop-shadow-xs drop-shadow-zinc-600/30'>
                   {step === 'potency' ? 'Find My Strains' : 'Continue'}
                   {step === 'potency' && <span className='ml-2'>&rarr;</span>}
@@ -598,7 +630,8 @@ const LeftSideContent = ({
       variant='primary'
       onPress={nextStep}
       className='relative z-200 cta-button w-fit px-8 py-6 mr-4 text-sm font-semibold uppercase tracking-[0.30em] flex items-center bg-dark-gray dark:bg-effects text-white md:place-self-start place-self-end'
-      isDisabled={loading}>
+      isDisabled={loading}
+    >
       <span>Start</span>
     </Button>
   </div>

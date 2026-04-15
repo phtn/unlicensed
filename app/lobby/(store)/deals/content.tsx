@@ -7,9 +7,13 @@ import type {
   BundleType,
 } from '@/app/lobby/(store)/deals/lib/deal-types'
 import type {StoreProduct} from '@/app/types'
+import {api} from '@/convex/_generated/api'
 import type {Id} from '@/convex/_generated/dataModel'
 import {useStorageUrls} from '@/hooks/use-storage-urls'
+import {adaptProduct, type RawProduct} from '@/lib/convexClient'
 import {Icon} from '@/lib/icons'
+import {useQuery} from 'convex/react'
+import type {FunctionReturnType} from 'convex/server'
 import {useSearchParams} from 'next/navigation'
 import {useCallback, useEffect, useMemo, useSyncExternalStore} from 'react'
 import {BundleBuilder} from './components/bundle-builder'
@@ -105,6 +109,10 @@ function ControlledBundleBuilder({
 }
 
 export function DealsContent({initialProductsByCategory}: DealsContentProps) {
+  type ProductsQueryResult = FunctionReturnType<
+    typeof api.products.q.listProducts
+  >
+
   const searchParams = useSearchParams()
   const isLocalhost = useSyncExternalStore(
     subscribeToClientMount,
@@ -114,6 +122,26 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
   const debug = searchParams.get('debug') === '1' || isLocalhost
   const {configs, configsList, isLoading: dealsLoading} = useDealConfigs()
   const dealIds = useMemo(() => configsList.map((c) => c.id), [configsList])
+  const flowerProductsQuery = useQuery(api.products.q.listProducts, {
+    categorySlug: 'flower',
+    eligibleForDeals: true,
+    limit: 50,
+  }) as ProductsQueryResult | undefined
+  const extractProductsQuery = useQuery(api.products.q.listProducts, {
+    categorySlug: 'concentrates',
+    eligibleForDeals: true,
+    limit: 50,
+  }) as ProductsQueryResult | undefined
+  const edibleProductsQuery = useQuery(api.products.q.listProducts, {
+    categorySlug: 'edibles',
+    eligibleForDeals: true,
+    limit: 50,
+  }) as ProductsQueryResult | undefined
+  const prerollProductsQuery = useQuery(api.products.q.listProducts, {
+    categorySlug: 'pre-rolls',
+    eligibleForDeals: true,
+    limit: 50,
+  }) as ProductsQueryResult | undefined
   const defaultVariationByBundle = useMemo(
     () => getDefaultVariationByBundle(configs),
     [configs],
@@ -123,14 +151,41 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
     dealIds,
   )
 
-  const {flower, extracts, edibles, prerolls} = useMemo(
+  const {flower, extracts, edibles, prerolls} = useMemo<{
+    flower: StoreProduct[]
+    extracts: StoreProduct[]
+    edibles: StoreProduct[]
+    prerolls: StoreProduct[]
+  }>(
     () => ({
-      flower: initialProductsByCategory['flower'] ?? [],
-      extracts: initialProductsByCategory['extracts'] ?? [],
-      edibles: initialProductsByCategory['edibles'] ?? [],
-      prerolls: initialProductsByCategory['pre-rolls'] ?? [],
+      flower: flowerProductsQuery
+        ? flowerProductsQuery.map((product: RawProduct) =>
+            adaptProduct(product),
+          )
+        : (initialProductsByCategory['flower'] ?? []),
+      extracts: extractProductsQuery
+        ? extractProductsQuery.map((product: RawProduct) =>
+            adaptProduct(product),
+          )
+        : (initialProductsByCategory['extracts'] ?? []),
+      edibles: edibleProductsQuery
+        ? edibleProductsQuery.map((product: RawProduct) =>
+            adaptProduct(product),
+          )
+        : (initialProductsByCategory['edibles'] ?? []),
+      prerolls: prerollProductsQuery
+        ? prerollProductsQuery.map((product: RawProduct) =>
+            adaptProduct(product),
+          )
+        : (initialProductsByCategory['pre-rolls'] ?? []),
     }),
-    [initialProductsByCategory],
+    [
+      edibleProductsQuery,
+      extractProductsQuery,
+      flowerProductsQuery,
+      initialProductsByCategory,
+      prerollProductsQuery,
+    ],
   )
 
   // const productsByCategory = useMemo(

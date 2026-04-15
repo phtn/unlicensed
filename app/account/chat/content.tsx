@@ -10,6 +10,7 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Avatar} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
+import type {FunctionReturnType} from 'convex/server'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {
@@ -43,6 +44,11 @@ import {useAssistantChat} from './_components/use-assistant-chat'
 interface ChatContentProps {
   initialConversationId?: string
 }
+
+type ConversationMessage = FunctionReturnType<
+  typeof api.messages.q.getMessages
+>[number]
+type ConversationMessageLike = NonNullable<ConversationMessage['likes']>[number]
 
 const getInitials = (value: string) =>
   value
@@ -306,17 +312,12 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
 
   const [optimisticMessages, addOptimisticUpdate] = useOptimistic(
     messagesQuery ?? [],
-    (
-      state: typeof messagesQuery,
-      action: OptimisticAction,
-    ): typeof messagesQuery => {
-      if (!state) return state
-
+    (state: ConversationMessage[], action: OptimisticAction) => {
       switch (action.type) {
         case 'add-message': {
           if (!convexUserId || !otherUser) return state
 
-          const optimisticMessage: (typeof state)[number] = {
+          const optimisticMessage: ConversationMessage = {
             _id: `optimistic-${Date.now()}` as Id<'messages'>,
             _creationTime: Date.now(),
             senderId: convexUserId,
@@ -338,7 +339,7 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
 
             const existingLikes = msg.likes ?? []
             const alreadyLiked = existingLikes.some(
-              (like) => like.userId === action.userId,
+              (like: ConversationMessageLike) => like.userId === action.userId,
             )
 
             if (alreadyLiked) return msg
@@ -364,7 +365,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
             return {
               ...msg,
               likes: existingLikes.filter(
-                (like) => like.userId !== action.userId,
+                (like: ConversationMessageLike) =>
+                  like.userId !== action.userId,
               ),
             }
           })
@@ -610,7 +612,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
               ? 'w-full'
               : 'hidden'
             : 'w-88 shrink-0 lg:w-[24rem]',
-        )}>
+        )}
+      >
         <div className='z-10 shrink-0 bg-background/95 supports-backdrop-filter:backdrop-blur-xl'>
           <ConversationSearch
             onSearch={setSearchQuery}
@@ -642,7 +645,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                     'touch-manipulation hover:bg-sidebar/70',
                     isAssistant &&
                       'border-l-2 border-l-brand bg-sidebar/80 md:border-l-4',
-                  )}>
+                  )}
+                >
                   <div className='flex items-start gap-2 md:gap-3'>
                     <div className='relative shrink-0'>
                       <ChatAvatar
@@ -696,7 +700,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
         className={cn(
           'flex min-h-0 flex-1 flex-col bg-background transition-all duration-300',
           isMobile && !showChatArea && 'hidden',
-        )}>
+        )}
+      >
         {isAssistant ? (
           <>
             {/* Assistant Chat Header */}
@@ -705,7 +710,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 {isMobile && (
                   <button
                     onClick={handleBackToConversations}
-                    className='p-2 -ml-2 rounded-full hover:bg-sidebar transition-colors shrink-0 active:scale-95'>
+                    className='p-2 -ml-2 rounded-full hover:bg-sidebar transition-colors shrink-0 active:scale-95'
+                  >
                     <Icon
                       name='chevron-left'
                       className='size-4 text-foreground'
@@ -739,7 +745,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                   <button
                     onClick={assistantChat.clearMessages}
                     className='p-2 rounded-full hover:bg-accent transition-colors active:scale-95'
-                    title='Clear conversation'>
+                    title='Clear conversation'
+                  >
                     <Icon name='x' className='size-5 text-muted-foreground' />
                   </button>
                 )}
@@ -772,7 +779,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
               className='sticky bottom-0 z-20 shrink-0 border-t border-border/40 bg-background/95 px-3 py-3 shadow-[0_-12px_32px_rgba(15,23,42,0.04)] supports-backdrop-filter:backdrop-blur-xl md:px-5 md:py-4'
               style={{
                 paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
-              }}>
+              }}
+            >
               <AssistantMessageInput
                 onSendMessage={assistantChat.sendMessage}
                 isLoading={assistantChat.isLoading}
@@ -796,7 +804,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
                 {isMobile && (
                   <button
                     onClick={handleBackToConversations}
-                    className='p-2 -ml-2 rounded-full hover:bg-accent transition-colors shrink-0 active:scale-95'>
+                    className='p-2 -ml-2 rounded-full hover:bg-accent transition-colors shrink-0 active:scale-95'
+                  >
                     <Icon
                       name='chevron-left'
                       className='size-4 text-foreground'
@@ -895,7 +904,8 @@ export function ChatContent({initialConversationId}: ChatContentProps) {
               className='sticky bottom-0 z-20 shrink-0 border-t border-border/40 bg-background/95 px-3 py-3 shadow-[0_-12px_32px_rgba(15,23,42,0.04)] supports-backdrop-filter:backdrop-blur-xl md:px-5 md:py-4'
               style={{
                 paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
-              }}>
+              }}
+            >
               <MessageInput
                 receiverProId={selectedConversationFid ?? ''}
                 senderProId={user?.uid ?? ''}

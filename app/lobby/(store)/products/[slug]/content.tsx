@@ -1,9 +1,14 @@
+'use client'
+
 import type {StoreProductDetail} from '@/app/types'
 import {QuickScroll} from '@/components/base44/quick-scroll'
+import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
-import {fetchStorageUrlMap} from '@/lib/convexClient'
+import {adaptProductDetail, type RawProductDetail} from '@/lib/convexClient'
 import {resolveProductImage} from '@/lib/resolve-product-image'
-import {notFound} from 'next/navigation'
+import {useQuery} from 'convex/react'
+import {useMemo} from 'react'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Crumbs} from './crumbs'
 import {Gallery} from './gallery'
 import {ProductDetails} from './product-details'
@@ -11,41 +16,67 @@ import {ProductInteraction} from './product-interaction'
 import {RelatedProducts} from './related-products'
 
 interface ProductDetailContentProps {
-  initialDetail: StoreProductDetail | null
+  initialDetail: StoreProductDetail
   slug: string
 }
 
-export const ProductDetailContent = async ({
+export const ProductDetailContent = ({
   initialDetail,
   slug,
 }: ProductDetailContentProps) => {
-  if (!initialDetail) {
-    notFound()
-  }
+  const liveDetail = useQuery(api.products.q.getProductBySlug, {slug}) as
+    | RawProductDetail
+    | null
+    | undefined
 
-  const detail = initialDetail
+  const detail = useMemo(
+    () =>
+      liveDetail && liveDetail.product
+        ? adaptProductDetail(liveDetail)
+        : initialDetail,
+    [initialDetail, liveDetail],
+  )
+
   const resolvedProduct = detail.product
-  const resolvedRelated = detail.related.filter(
-    (product) => !product.archived && product.slug !== slug,
+  const resolvedRelated = useMemo(
+    () =>
+      detail.related.filter(
+        (product) => !product.archived && product.slug !== slug,
+      ),
+    [detail.related, slug],
   )
   const productId = resolvedProduct._id as Id<'products'> | undefined
-  const storageUrlMap = await fetchStorageUrlMap([
-    resolvedProduct.image,
-    ...resolvedProduct.gallery,
-    ...resolvedRelated.map((product) => product.image),
-  ])
-  const resolveStorageUrl = (value: string) => storageUrlMap.get(value) ?? null
-  const primaryImageUrl = resolveProductImage(
-    resolvedProduct.image,
-    resolveStorageUrl,
+
+  const imageIds = useMemo(
+    () =>
+      [
+        resolvedProduct.image,
+        ...resolvedProduct.gallery,
+        ...resolvedRelated.map((product) => product.image),
+      ].filter((value): value is string => Boolean(value)),
+    [resolvedProduct.gallery, resolvedProduct.image, resolvedRelated],
   )
-  const galleryImages = resolvedProduct.gallery
-    .map((image) => resolveProductImage(image, resolveStorageUrl))
-    .filter((image): image is string => Boolean(image))
-  const relatedProducts = resolvedRelated.map((product) => ({
-    product,
-    imageUrl: resolveProductImage(product.image, resolveStorageUrl),
-  }))
+  const resolveStorageUrl = useStorageUrls(imageIds)
+
+  const primaryImageUrl = useMemo(
+    () => resolveProductImage(resolvedProduct.image, resolveStorageUrl),
+    [resolveStorageUrl, resolvedProduct.image],
+  )
+  const galleryImages = useMemo(
+    () =>
+      resolvedProduct.gallery
+        .map((image) => resolveProductImage(image, resolveStorageUrl))
+        .filter((image): image is string => Boolean(image)),
+    [resolveStorageUrl, resolvedProduct.gallery],
+  )
+  const relatedProducts = useMemo(
+    () =>
+      resolvedRelated.map((product) => ({
+        product,
+        imageUrl: resolveProductImage(product.image, resolveStorageUrl),
+      })),
+    [resolveStorageUrl, resolvedRelated],
+  )
 
   return (
     <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-12 sm:py-16 lg:py-20 overflow-x-hidden w-full'>

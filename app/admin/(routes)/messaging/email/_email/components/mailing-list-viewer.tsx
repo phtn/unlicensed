@@ -1,5 +1,6 @@
 'use client'
 
+import {StatCard} from '@/app/admin/_components/stat-card'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
@@ -118,11 +119,11 @@ export const MailingListViewer = ({id}: {id: string}) => {
         <div className='absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-brand/10 blur-3xl' />
       </div>
 
-      <main className='relative space-y-4 px-4 py-4 sm:px-6 lg:px-8'>
+      <main className='relative px-4 py-4 sm:px-6 lg:px-8'>
         <div className='flex items-center justify-between gap-4'>
           <Button
             type='button'
-            variant='tertiary'
+            variant='ghost'
             onPress={navigateBack}
             className='gap-2 dark:bg-transparent'>
             <Icon name='chevron-left' className='size-4' />
@@ -130,9 +131,9 @@ export const MailingListViewer = ({id}: {id: string}) => {
           </Button>
         </div>
 
-        <Card className='bg-sidebar/80 shadow-none backdrop-blur-xl'>
-          <CardHeader className='flex flex-col items-start gap-4 p-5 lg:flex-row lg:items-end lg:justify-between'>
-            <div className='space-y-3'>
+        <Card className='bg-sidebar/80 mt-2 rounded-t-md rounded-b-none shadow-none backdrop-blur-lg border-x border-t border-light-gray dark:border-dark-table'>
+          <CardHeader className='flex flex-col items-start gap-4 px-2 lg:flex-row lg:items-end lg:justify-between'>
+            <div className='space-y-2'>
               <div className='flex flex-wrap items-center gap-4'>
                 <h1 className='font-clash text-2xl font-semibold'>
                   {mailingList.name || 'Untitled mailing list'}
@@ -146,44 +147,27 @@ export const MailingListViewer = ({id}: {id: string}) => {
               </p>
             </div>
             <div className='grid w-full gap-3 sm:grid-cols-3 lg:w-auto lg:min-w-105'>
-              <div className='rounded-lg bg-background/35 px-3 py-2'>
-                <p className='text-xs font-ios uppercase tracking-[0.22em] text-foreground/45'>
-                  Total
-                </p>
-                <p className='mt-2 font-okxs text-xl font-medium'>
-                  {mailingList.recipients.length}
-                </p>
-              </div>
-              <div className='rounded-lg bg-background/35 px-3 py-2'>
-                <p className='text-xs font-ios uppercase tracking-[0.22em] text-foreground/45'>
-                  Named
-                </p>
-                <p className='mt-2 font-okxs text-xl font-medium'>
-                  {namedRecipients}
-                </p>
-              </div>
-              <div className='rounded-lg bg-background/35 px-3 py-2'>
-                <p className='text-xs font-ios uppercase tracking-[0.22em] text-foreground/45'>
-                  Email Only
-                </p>
-                <p className='mt-2 font-okxs text-xl font-medium'>
-                  {mailingList.recipients.length - namedRecipients}
-                </p>
-              </div>
+              <StatCard title='Total' value={mailingList.recipients.length} />
+              <StatCard title='Named' value={namedRecipients} />
+              <StatCard
+                title='Email Only'
+                value={mailingList.recipients.length - namedRecipients}
+              />
             </div>
           </CardHeader>
         </Card>
 
-        <Card className='bg-sidebar/70 shadow-none backdrop-blur-xl'>
-          <CardContent className='gap-4 p-6'>
+        <Card className='bg-sidebar/70 rounded-b-md rounded-t-none shadow-none backdrop-blur-xl border border-light-gray dark:border-dark-table'>
+          <CardContent className='gap-4 p-3'>
             <SectionHeader title='Recipients'>
               <div className='flex items-center space-x-2'>
                 <Button
                   size='sm'
                   variant={isEditing ? 'secondary' : 'primary'}
                   onPress={() => setIsEditing((current) => !current)}
-                  className='rounded-md bg-dark-table text-sm text-white dark:bg-white dark:text-dark-table'>
-                  {isEditing ? 'Close Editor' : 'Edit List'}
+                  className='flex items-center gap-2 rounded-md bg-dark-table text-sm text-white dark:bg-white dark:text-dark-table'>
+                  <span>{isEditing ? 'Close Editor' : 'Edit List'}</span>
+                  <Icon name={isEditing ? 'x' : 'cf-pen'} className='size-4' />
                 </Button>
                 <Button size='sm' variant='tertiary' isIconOnly>
                   <Icon name='more-v' className='size-4' />

@@ -8,6 +8,8 @@ import type {Doc, Id} from '../_generated/dataModel'
 import {internalAction, type ActionCtx} from '../_generated/server'
 
 const MAILING_LIST_BLAST_FROM = 'hello@rapidfirenow.com'
+const DEFAULT_APP_BASE_URL = 'https://rapidfirenow.com'
+const FALLBACK_RETRY_DELAYS_MS = [500, 1500] as const
 
 type EmailBlastDoc = Doc<'emailBlasts'>
 
@@ -34,6 +36,84 @@ const extractResendErrorDetails = (err: unknown): string => {
   const parts = [code].filter(Boolean).join(' ')
 
   return `${message ?? 'Resend error'}${parts ? ` (${parts})` : ''}`
+}
+
+const getAppBaseUrl = (): string =>
+  process.env.EMAIL_API_BASE_URL?.trim() ||
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+  process.env.SITE_URL?.trim() ||
+  DEFAULT_APP_BASE_URL
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+async function sendRawBlastViaAppApi(args: {
+  to: string
+  subject: string
+  html: string
+  cc?: string[]
+  bcc?: string[]
+  headers?: Record<string, string>
+}): Promise<{id: string | null}> {
+  const response = await fetch(`${getAppBaseUrl()}/api/resend`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      intent: 'marketing',
+      type: 'products',
+      group: 'auto',
+      from: MAILING_LIST_BLAST_FROM,
+      to: [args.to],
+      subject: args.subject,
+      html: args.html,
+      cc: args.cc,
+      bcc: args.bcc,
+      headers: args.headers,
+    }),
+  })
+
+  const payload = (await response.json().catch(() => null)) as {
+    ok?: boolean
+    id?: string | null
+    error?: string
+  } | null
+
+  if (!response.ok || !payload?.ok) {
+    throw new Error(payload?.error ?? 'Failed to send via /api/resend')
+  }
+
+  return {
+    id: payload.id ?? null,
+  }
+}
+
+async function sendRawBlastViaAppApiWithRetry(args: {
+  to: string
+  subject: string
+  html: string
+  cc?: string[]
+  bcc?: string[]
+  headers?: Record<string, string>
+}): Promise<{id: string | null}> {
+  let lastError: unknown = null
+
+  for (let attempt = 0; attempt <= FALLBACK_RETRY_DELAYS_MS.length; attempt++) {
+    try {
+      return await sendRawBlastViaAppApi(args)
+    } catch (error) {
+      lastError = error
+
+      const retryDelay = FALLBACK_RETRY_DELAYS_MS[attempt]
+      if (retryDelay === undefined) {
+        break
+      }
+
+      await delay(retryDelay)
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('Failed to send via /api/resend after retries')
 }
 
 async function sendBlastRecipient({
@@ -69,9 +149,29 @@ async function sendBlastRecipient({
     }
   }
 
-  const resend = createClient()
   const fallbackHtml =
     blast.html ?? (blast.body ? `<p>${blast.body}</p>` : '<p></p>')
+
+  let resend: ReturnType<typeof createClient> | null = null
+  try {
+    resend = createClient()
+  } catch (error) {
+    const message = toErrorMessage(error)
+    if (!message.includes('Resend API key is not configured')) {
+      throw error
+    }
+  }
+
+  if (!resend) {
+    return await sendRawBlastViaAppApiWithRetry({
+      to: recipient.email,
+      subject: blast.subject,
+      html: fallbackHtml,
+      cc: blast.cc,
+      bcc: blast.bcc,
+      headers,
+    })
+  }
 
   const result = await queueResendSend(() =>
     resend.emails.send({

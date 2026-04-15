@@ -3,6 +3,7 @@
 import {api} from '@/convex/_generated/api'
 import {useAuthCtx} from '@/ctx/auth'
 import {useMutation, useQuery} from 'convex/react'
+import type {FunctionReturnType} from 'convex/server'
 import {useCallback, useEffect, useRef, useState} from 'react'
 import type {AssistantMessage} from './assistant'
 
@@ -17,6 +18,10 @@ interface UseAssistantChatReturn {
 interface UseAssistantChatOptions {
   enabled?: boolean
 }
+
+type ConvexAssistantMessage = FunctionReturnType<
+  typeof api.assistant.q.getAssistantMessages
+>[number]
 
 export function useAssistantChat({
   enabled = true,
@@ -53,7 +58,7 @@ export function useAssistantChat({
 
   // Transform Convex messages to AssistantMessage format
   const messages: AssistantMessage[] = [
-    ...(convexMessages?.map((msg) => ({
+    ...(convexMessages?.map((msg: ConvexAssistantMessage) => ({
       id: msg.id,
       role: msg.role,
       content: msg.content,
@@ -77,7 +82,8 @@ export function useAssistantChat({
     if (convexMessages && streamingIdRef.current) {
       // Check if the streaming message has been saved to Convex
       const savedMessage = convexMessages.find(
-        (msg) => msg.role === 'assistant' && msg.content === streamingContent,
+        (msg: ConvexAssistantMessage) =>
+          msg.role === 'assistant' && msg.content === streamingContent,
       )
       if (savedMessage) {
         setStreamingContent(null)
@@ -120,7 +126,7 @@ export function useAssistantChat({
 
         // Build conversation history for context (from Convex messages)
         const conversationHistory =
-          convexMessages?.map((msg) => ({
+          convexMessages?.map((msg: ConvexAssistantMessage) => ({
             role: msg.role as 'user' | 'assistant',
             content: msg.content,
           })) ?? []

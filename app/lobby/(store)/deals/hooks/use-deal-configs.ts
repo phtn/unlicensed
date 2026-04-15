@@ -6,6 +6,7 @@ import {
 } from '@/app/lobby/(store)/deals/lib/deal-types'
 import {api} from '@/convex/_generated/api'
 import {useConvexSnapshotQuery} from '@/hooks/use-convex-snapshot-query'
+import type {FunctionReturnType} from 'convex/server'
 import {useMemo} from 'react'
 
 /** Returns deal configs keyed by id for the store (enabled only). Use in deals page, cart, pending deals. */
@@ -14,7 +15,15 @@ export function useDealConfigs(): {
   configsList: BundleConfig[]
   isLoading: boolean
 } {
-  const {data: deals} = useConvexSnapshotQuery(api.deals.q.listForStore, {})
+  type StoreDeals = FunctionReturnType<typeof api.deals.q.listForStore>
+  type StoreDeal = StoreDeals[number]
+
+  const {data: deals} = useConvexSnapshotQuery(
+    api.deals.q.listForStore,
+    {},
+  ) as {
+    data: StoreDeals | undefined
+  }
 
   return useMemo(() => {
     if (deals === undefined) {
@@ -24,7 +33,7 @@ export function useDealConfigs(): {
         isLoading: true,
       }
     }
-    const list = deals.map((d) => dealDocToBundleConfig(d))
+    const list = deals.map((d: StoreDeal) => dealDocToBundleConfig(d))
     const configs: Record<string, BundleConfig> = {}
     for (const c of list) configs[c.id] = c
     return {
