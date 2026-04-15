@@ -223,6 +223,50 @@ export type FormInput<T> =
   | SelectFieldProps<T>
   | CheckboxFieldProps<T>
 
+export const formatFieldErrors = (
+  errors: Array<unknown> | undefined,
+): string | undefined => {
+  if (!errors?.length) return undefined
+
+  const messages = errors
+    .flatMap((error) => {
+      if (!error) return []
+      if (typeof error === 'string') return [error]
+      if (error instanceof Error) return [error.message]
+
+      if (typeof error === 'object') {
+        const candidate = error as {
+          message?: unknown
+          error?: unknown
+          errors?: unknown
+          issues?: unknown
+        }
+
+        if (typeof candidate.message === 'string') {
+          return [candidate.message]
+        }
+        if (typeof candidate.error === 'string') {
+          return [candidate.error]
+        }
+        if (Array.isArray(candidate.errors)) {
+          return candidate.errors
+            .map((entry) => formatFieldErrors([entry]))
+            .filter(Boolean)
+        }
+        if (Array.isArray(candidate.issues)) {
+          return candidate.issues
+            .map((entry) => formatFieldErrors([entry]))
+            .filter(Boolean)
+        }
+      }
+
+      return [String(error)]
+    })
+    .filter((message) => message && message !== '[object Object]')
+
+  return messages.length ? messages.join(', ') : undefined
+}
+
 export function TextField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const field = useFieldContext<string>()
   const inputType =
@@ -232,6 +276,20 @@ export function TextField<T>(props?: PartialFormInput<T> | FormInput<T>) {
     props?.type === 'checkbox'
       ? 'text'
       : (props?.type ?? 'text')
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (props?.onChange) {
+      props.onChange(event)
+      return
+    }
+
+    field.handleChange(event.target.value)
+  }
+  const error =
+    props?.error ??
+    (field.state.meta.isTouched
+      ? formatFieldErrors(field.state.meta.errors)
+      : undefined)
+
   return (
     <div>
       <Input
@@ -243,7 +301,7 @@ export function TextField<T>(props?: PartialFormInput<T> | FormInput<T>) {
         inputMode={props?.inputMode}
         disabled={props?.disabled}
         value={String(field.state.value ?? props?.value ?? '')}
-        onChange={props?.onChange}
+        onChange={handleChange}
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
         className={inputClass.input}
@@ -261,11 +319,7 @@ export function TextField<T>(props?: PartialFormInput<T> | FormInput<T>) {
           {props.description}
         </p>
       )}
-      {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-        <p className='px-2 text-xs text-rose-400'>
-          {field.state.meta.errors.join(', ')}
-        </p>
-      )}
+      {error && <p className='px-2 text-xs text-rose-400'>{error}</p>}
     </div>
   )
 }
@@ -277,6 +331,20 @@ export function NumberField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const controlled = props?.value !== undefined
   const raw = controlled ? props!.value : field.state.value
   const numValue = isNaN(Number(raw)) ? 0 : Number(raw ?? 0)
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (controlled) {
+      props?.onChange?.(event)
+      return
+    }
+
+    field.handleChange(Number(event.target.value))
+  }
+  const error =
+    props?.error ??
+    (field.state.meta.isTouched
+      ? formatFieldErrors(field.state.meta.errors)
+      : undefined)
+
   return (
     <div>
       <Input
@@ -290,7 +358,7 @@ export function NumberField<T>(props?: PartialFormInput<T> | FormInput<T>) {
         min={props?.min}
         max={props?.max}
         value={String(numValue)}
-        onChange={controlled ? props?.onChange : undefined}
+        onChange={handleChange}
         onBlur={field.handleBlur}
         placeholder={props?.placeholder}
       />
@@ -299,17 +367,19 @@ export function NumberField<T>(props?: PartialFormInput<T> | FormInput<T>) {
           {props.description}
         </p>
       )}
-      {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-        <p className='px-2 text-xs text-rose-400'>
-          {field.state.meta.errors.join(', ')}
-        </p>
-      )}
+      {error && <p className='px-2 text-xs text-rose-400'>{error}</p>}
     </div>
   )
 }
 
 export function TextAreaField<T>(props?: PartialFormInput<T> | FormInput<T>) {
   const field = useFieldContext<string>()
+  const error =
+    props?.error ??
+    (field.state.meta.isTouched
+      ? formatFieldErrors(field.state.meta.errors)
+      : undefined)
+
   return (
     <div className={cn('flex flex-col gap-1 w-full', props?.className)}>
       <div className={cn(inputClass.mainWrapper, 'h-auto min-h-18 pb-0.5')}>
@@ -343,11 +413,7 @@ export function TextAreaField<T>(props?: PartialFormInput<T> | FormInput<T>) {
           {props.description}
         </p>
       )}
-      {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-        <p className='px-2 text-xs text-rose-400'>
-          {field.state.meta.errors.join(', ')}
-        </p>
-      )}
+      {error && <p className='px-2 text-xs text-rose-400'>{error}</p>}
     </div>
   )
 }
@@ -358,6 +424,11 @@ export function SelectField<T>(props?: SelectFieldProps<T> & SelectUiProps) {
   const field = useFieldContext<string | string[]>()
   const options = props?.options ?? []
   const isCategoryField = props?.isCategory ?? false
+  const error =
+    props?.error ??
+    (field.state.meta.isTouched
+      ? formatFieldErrors(field.state.meta.errors)
+      : undefined)
 
   const multiValue = Array.isArray(field.state.value)
     ? field.state.value
@@ -378,7 +449,8 @@ export function SelectField<T>(props?: SelectFieldProps<T> & SelectUiProps) {
         key={option.value}
         id={option.value}
         textValue={option.label}
-        className={cn(selectClass.listboxItem, extraClass)}>
+        className={cn(selectClass.listboxItem, extraClass)}
+      >
         {option.label}
         <ListBox.ItemIndicator />
       </ListBox.Item>
@@ -437,7 +509,8 @@ export function SelectField<T>(props?: SelectFieldProps<T> & SelectUiProps) {
         isDisabled={props?.disabled}
         isRequired={props?.required}
         // renderValue={renderMultiValue}
-        className={selectClass.mainWrapper}>
+        className={selectClass.mainWrapper}
+      >
         {props?.label && (
           <Label className={selectClass.label}>{props.label}</Label>
         )}
@@ -454,11 +527,7 @@ export function SelectField<T>(props?: SelectFieldProps<T> & SelectUiProps) {
           {props.description}
         </p>
       )}
-      {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-        <p className='text-xs text-rose-400'>
-          {field.state.meta.errors.join(', ')}
-        </p>
-      )}
+      {error && <p className='text-xs text-rose-400'>{error}</p>}
     </div>
   )
 }
@@ -468,6 +537,11 @@ export function SelectWithCustomField<T>(
 ) {
   const field = useFieldContext<string>()
   const options = props?.options ?? []
+  const error =
+    props?.error ??
+    (field.state.meta.isTouched
+      ? formatFieldErrors(field.state.meta.errors)
+      : undefined)
   const allowCustom = props?.allowCustom ?? true
   const customLabel = props?.customOptionLabel ?? 'Other'
   const customPlaceholder = props?.customPlaceholder ?? 'Enter custom value'
@@ -542,7 +616,8 @@ export function SelectWithCustomField<T>(
           onBlur={field.handleBlur}
           isDisabled={props?.disabled}
           isRequired={props?.required}
-          className={selectClass.mainWrapper}>
+          className={selectClass.mainWrapper}
+        >
           {props?.label && (
             <Label className={selectClass.label}>{props.label}</Label>
           )}
@@ -557,7 +632,8 @@ export function SelectWithCustomField<T>(
                   key={option.value}
                   id={option.value}
                   textValue={option.label}
-                  className={selectClass.listboxItem}>
+                  className={selectClass.listboxItem}
+                >
                   {option.label}
                   <ListBox.ItemIndicator />
                 </ListBox.Item>
@@ -566,11 +642,7 @@ export function SelectWithCustomField<T>(
           </S.Popover>
         </S>
       )}
-      {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-        <p className='text-xs text-rose-400'>
-          {field.state.meta.errors.join(', ')}
-        </p>
-      )}
+      {error && <p className='text-xs text-rose-400'>{error}</p>}
     </div>
   )
 }
@@ -580,23 +652,26 @@ export function SwitchField<T>(
 ) {
   const field = useFieldContext<boolean>()
   const value = field.state.value ?? false
+  const error =
+    props?.error ??
+    (field.state.meta.isTouched
+      ? formatFieldErrors(field.state.meta.errors)
+      : undefined)
+
   return (
     <div className={cn('flex flex-col gap-2 w-full', props?.className)}>
-      <div className='flex flex-col gap-px'>
+      <div className='flex items-center gap-3'>
         <span className='text-base font-medium'>{props?.label}</span>
-        <span className='text-xs opacity-70'>{props?.description}</span>
+        <Toggle
+          title={String(field.name)}
+          checked={value}
+          onChange={(nextValue) => field.handleChange(nextValue)}
+        />
       </div>
-      <Toggle
-        title={String(field.name)}
-        checked={value}
-        onChange={(nextValue) => field.handleChange(nextValue)}
-      />
 
-      {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-        <p className='text-xs text-rose-400'>
-          {field.state.meta.errors.join(', ')}
-        </p>
-      )}
+      <span className='text-xs opacity-70'>{props?.description}</span>
+
+      {error && <p className='text-xs text-rose-400'>{error}</p>}
     </div>
   )
 }

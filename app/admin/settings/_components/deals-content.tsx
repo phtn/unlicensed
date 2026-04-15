@@ -9,7 +9,7 @@ import type {Deal} from '@/convex/deals/d'
 import {useAuthCtx} from '@/ctx/auth'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
-import {Button, Card, Checkbox, Modal, Switch} from '@heroui/react'
+import {Button, Card, Checkbox, Modal} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
 import {
   startTransition,
@@ -18,6 +18,7 @@ import {
   useState,
   ViewTransition,
 } from 'react'
+import {Toggle} from '../../_components/ui/toggle'
 import {ContentHeader, LoadingHeader, PrimaryButton} from './components'
 
 type VariationForm = {
@@ -806,14 +807,14 @@ export const DealsContent = () => {
                 key={deal.id}
                 className='border border-alum/30 rounded-xs overflow-hidden transition-colors hover:border-default-300/80'>
                 <Card.Content className='p-0'>
-                  <div className='flex items-start justify-between gap-3 p-4 pb-3'>
+                  <div className='flex items-start justify-between gap-3 p-0 pb-3'>
                     <div className='flex min-w-0 flex-1 items-start gap-3'>
                       <div className='min-w-0 flex-1'>
-                        <div className='flex items-center space-x-2'>
-                          <h4 className='font-semibold text-foreground truncate'>
-                            {deal.title}
-                          </h4>
-                          <div className='flex items-center space-x-1 ml-3 mt-0.5 text-xs md:text-sm text-foreground/50 line-clamp-2'>
+                        <h4 className='font-semibold text-foreground truncate'>
+                          {deal.title}
+                        </h4>
+                        <div className='flex items-start'>
+                          <div className='flex items-start space-x-2 mt-0.5 text-xs md:text-sm text-foreground/50 line-clamp-2'>
                             <Icon name='book-open' className='size-4.5' />
                             <span className='text-foreground/80'>
                               {deal.description}
@@ -822,7 +823,7 @@ export const DealsContent = () => {
                         </div>
                         <div className='mt-2 flex flex-wrap items-center gap-1.5'>
                           <div className='flex items-center space-x-1'>
-                            <span className='font-ios text-xs uppercase opacity-40'>
+                            <span className='font-ios text-xs font-bold uppercase opacity-40'>
                               ID:
                             </span>
                             <span className='rounded py-1 font-mono text-[10px] text-terpenes'>
@@ -834,17 +835,11 @@ export const DealsContent = () => {
                           </span>
                         </div>
                       </div>
-                      <Switch
-                        size='sm'
-                        isSelected={deal.enabled}
+                      <Toggle
+                        title={`${deal.enabled ? 'Disable' : 'Enable'} ${deal.title}`}
+                        checked={deal.enabled}
                         onChange={handleToggleEnabled(deal)}
-                        aria-label={`${deal.enabled ? 'Disable' : 'Enable'} ${deal.title}`}
-                        className='mt-0.5'>
-                        <Switch.Control
-                          className={cn(deal.enabled && 'bg-terpenes')}>
-                          <Switch.Thumb />
-                        </Switch.Control>
-                      </Switch>
+                      />
                     </div>
                   </div>
                   <div className='flex items-center justify-between border-t border-default-200/60 bg-alum/15'>

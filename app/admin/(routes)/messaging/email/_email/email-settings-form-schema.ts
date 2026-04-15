@@ -106,7 +106,7 @@ export const toEmailSettingsConvexArgs = (
     type: values.type.trim(),
     group: emptyToUndefined(values.group),
     from: fromList.length ? fromList : undefined,
-    to: toList.length ? toList : undefined,
+    to: toList,
     cc: ccList.length ? ccList : undefined,
     bcc: bccList.length ? bccList : undefined,
     subject: values.subject.trim(),

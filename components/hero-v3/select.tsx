@@ -15,6 +15,22 @@ interface SelectProps extends Omit<
   placeholder?: string
 }
 
+const getSingleValue = (value: string | string[] | null | undefined) => {
+  if (Array.isArray(value)) {
+    return value[0] ?? null
+  }
+
+  return value ?? null
+}
+
+const getMultipleValue = (value: string | string[] | null | undefined) => {
+  if (Array.isArray(value)) {
+    return value
+  }
+
+  return value ? [value] : []
+}
+
 export const selectClass = {
   label:
     'uppercase font-ios text-[8px] tracking-[0.35em] pl-2.5 pt-2 pb-1 opacity-80',
@@ -43,16 +59,25 @@ export const Select = ({
 }: SelectProps) => {
   const handleChange = (raw: string | number | null | Key | Key[]) => {
     if (!onChange) return
-    onChange(raw == null || raw === '' ? null : String(raw))
+
+    const nextValue = Array.isArray(raw) ? (raw[0] ?? null) : raw
+    onChange(nextValue == null || nextValue === '' ? null : String(nextValue))
   }
+  const selectionMode = mode ?? 'single'
+  const selectedValue =
+    selectionMode === 'multiple'
+      ? getMultipleValue(value)
+      : getSingleValue(value)
+
   return (
     <S
-      value={value ?? []}
+      value={selectedValue}
       onChange={handleChange}
-      selectionMode={mode}
+      selectionMode={selectionMode}
       placeholder={placeholder}
       className={selectClass.mainWrapper}
-      {...rest}>
+      {...rest}
+    >
       {label && <Label className={selectClass.label}>{label}</Label>}
       <S.Trigger className={selectClass.trigger}>
         <S.Value className={selectClass.value} />
@@ -65,7 +90,8 @@ export const Select = ({
               key={item.value}
               id={item.value}
               textValue={item.label}
-              className={selectClass.listboxItem}>
+              className={selectClass.listboxItem}
+            >
               {item.label}
               <ListBox.ItemIndicator />
             </ListBox.Item>

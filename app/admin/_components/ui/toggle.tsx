@@ -1,3 +1,4 @@
+import {ClassName} from '@/app/types'
 import {cn} from '@/lib/utils'
 import {Switch} from '@heroui/react'
 
@@ -7,6 +8,7 @@ interface ToggleProps {
   onChange?: (checked: boolean) => void
   disabled?: boolean
   id?: string
+  className?: ClassName
 }
 export const Toggle = ({
   title,
@@ -14,6 +16,7 @@ export const Toggle = ({
   onChange,
   disabled,
   id,
+  className,
 }: ToggleProps) => {
   return (
     <Switch
@@ -23,15 +26,15 @@ export const Toggle = ({
       isSelected={checked}
       isDisabled={disabled}
       onChange={onChange ? onChange : (v) => !v}
-      className='scale-80'>
+      className={cn('scale-80', className)}>
       {({isSelected}) => (
         <Switch.Control
           className={cn('dark:bg-slate-300/50 bg-slate-400 shadow-inner', {
             'dark:bg-emerald-400 bg-emerald-500': isSelected,
           })}>
           <Switch.Thumb
-            className={cn('dark:bg-dark-table bg-slate-300 drop-shadow-2xs', {
-              'dark:bg-dark-table bg-slate-200': isSelected,
+            className={cn('dark:bg-dark-table bg-slate-200 drop-shadow-2xs', {
+              'dark:bg-dark-table bg-slate-100': isSelected,
             })}
           />
         </Switch.Control>

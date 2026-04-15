@@ -181,7 +181,8 @@
 
   --effects: oklch(0.673 0.182 276.935);
   --terpenes: oklch(0.6143 0.123 166.24);
-  --mac-blue: oklch(60.61% 0.242 264.8);
+  --mac-blue: oklch(0.67 0.181 251.94);
+  /*oklch(60.61% 0.242 264.8)*/
 
   --hero-gradient: linear-gradient(
     140deg,

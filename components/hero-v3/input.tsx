@@ -26,6 +26,8 @@ export const Input = ({
   placeholder,
   name,
 }: InputProps) => {
+  const valueProps = onChange ? {value: value ?? ''} : {defaultValue: value}
+
   return (
     <div className={inputClass.mainWrapper}>
       <Label htmlFor={name} className={inputClass.label}>
@@ -35,7 +37,7 @@ export const Input = ({
         name={name}
         onBlur={onBlur}
         onChange={onChange}
-        defaultValue={value}
+        {...valueProps}
         placeholder={placeholder}
         className={inputClass.input}
       />
@@ -52,6 +54,8 @@ export const TextArea = ({
   name,
   rows,
 }: TextAreaProps) => {
+  const valueProps = onChange ? {value: value ?? ''} : {defaultValue: value}
+
   return (
     <div className={cn(inputClass.mainWrapper, 'min-h-18')}>
       <Label htmlFor={name} className={cn(inputClass.label, 'overflow-hidden')}>
@@ -62,7 +66,7 @@ export const TextArea = ({
         id={name}
         onBlur={onBlur}
         onChange={onChange}
-        defaultValue={value}
+        {...valueProps}
         placeholder={placeholder}
         className={cn(
           inputClass.input,

@@ -1,9 +1,13 @@
 'use client'
 
-import {SelectOption} from '@/app/admin/_components/ui/fields'
+import {
+  formatFieldErrors,
+  type SelectOption,
+} from '@/app/admin/_components/ui/fields'
 import {useAppForm} from '@/app/admin/_components/ui/form-context'
 import {JunctionBox} from '@/app/admin/_components/ui/junction-box'
 import {SectionHeader} from '@/app/admin/_components/ui/section-header'
+import {Toggle} from '@/app/admin/_components/ui/toggle'
 import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
@@ -151,6 +155,9 @@ export const EmailTemplateEditor = ({
   const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>(
     () => initialValues.template ?? TEMPLATE_NONE,
   )
+  const [toRecipientMode, setToRecipientMode] = useState<'dynamic' | 'static'>(
+    () => (initialValues.to.trim() ? 'static' : 'dynamic'),
+  )
   const [couponSnapshotNow] = useState(() => Date.now())
   const [isLoadingTemplate, startLoadingTemplate] = useTransition()
 
@@ -245,10 +252,10 @@ export const EmailTemplateEditor = ({
     })
   }, [couponSnapshotNow, coupons])
 
-  const couponSelectOptions = useMemo(
+  const couponSelectOptions = useMemo<SelectOption[]>(
     () =>
       activeCoupons.map((coupon) => ({
-        id: String(coupon._id),
+        value: String(coupon._id),
         label:
           coupon.name && coupon.name !== coupon.code
             ? `${coupon.code} · ${coupon.name}`
@@ -264,11 +271,14 @@ export const EmailTemplateEditor = ({
 
   const selectedCoupon = useMemo(() => {
     if (selectedCouponId) {
-      return (
+      const couponById =
         activeCoupons.find(
           (coupon) => String(coupon._id) === selectedCouponId,
         ) ?? null
-      )
+
+      if (couponById) {
+        return couponById
+      }
     }
 
     if (!initialCouponAttachment.couponCode) {
@@ -282,7 +292,19 @@ export const EmailTemplateEditor = ({
     )
   }, [activeCoupons, initialCouponAttachment.couponCode, selectedCouponId])
   const resolvedSelectedCouponId =
-    selectedCouponId || (selectedCoupon ? String(selectedCoupon._id) : '')
+    couponAttachmentEnabled && selectedCoupon ? String(selectedCoupon._id) : ''
+  const isDynamicRecipient = toRecipientMode === 'dynamic'
+
+  const handleToRecipientModeChange = useCallback(
+    (nextIsDynamic: boolean) => {
+      setToRecipientMode(nextIsDynamic ? 'dynamic' : 'static')
+
+      if (nextIsDynamic) {
+        form.setFieldValue('to', '')
+      }
+    },
+    [form],
+  )
 
   const loadTemplatePreview = useCallback(
     (
@@ -397,6 +419,7 @@ export const EmailTemplateEditor = ({
       )
 
       setCouponAttachmentEnabled(false)
+      setSelectedCouponId('')
       form.setFieldValue('templateProps', nextTemplateProps)
       loadTemplatePreview(selectedTemplateKey, nextTemplateProps)
     },
@@ -416,6 +439,15 @@ export const EmailTemplateEditor = ({
       setSelectedCouponId(nextId)
 
       if (!nextId || !selectedTemplateKey || !templateCouponPropKey) {
+        if (selectedTemplateKey && templateCouponPropKey) {
+          const nextTemplateProps = stripCouponAttachmentProps(
+            form.getFieldValue('templateProps') as string | undefined,
+          )
+
+          setCouponAttachmentEnabled(false)
+          form.setFieldValue('templateProps', nextTemplateProps)
+          loadTemplatePreview(selectedTemplateKey, nextTemplateProps)
+        }
         return
       }
 
@@ -431,6 +463,7 @@ export const EmailTemplateEditor = ({
         coupon,
       )
 
+      setCouponAttachmentEnabled(true)
       form.setFieldValue('templateProps', nextTemplateProps)
       loadTemplatePreview(selectedTemplateKey, nextTemplateProps)
     },
@@ -449,14 +482,16 @@ export const EmailTemplateEditor = ({
         e.preventDefault()
         form.handleSubmit()
       }}
-      className='flex min-h-0 flex-1 w-full flex-col overflow-hidden'>
+      className='flex min-h-0 flex-1 w-full flex-col overflow-hidden'
+    >
       <div className='shrink-0 bg-background/95 px-4 supports-backdrop-filter:bg-background/80 sm:px-6'>
         <div className='mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-3'>
           <Button
             type='button'
             variant='tertiary'
             onPress={onCancel}
-            className='gap-2 -ml-2 dark:bg-transparent'>
+            className='gap-2 -ml-2 dark:bg-transparent'
+          >
             <Icon name='chevron-left' className='size-4' />
             Back
           </Button>
@@ -464,7 +499,8 @@ export const EmailTemplateEditor = ({
       </div>
       <div
         className='flex-1 overflow-y-auto overscroll-y-contain'
-        style={{WebkitOverflowScrolling: 'touch'}}>
+        style={{WebkitOverflowScrolling: 'touch'}}
+      >
         <div className='grid w-full min-w-0 grid-cols-1 xl:grid-cols-2 xl:items-start xl:divide-x xl:divide-foreground/10'>
           <div className={cn(editorPaneClassName, 'space-y-8 sm:space-y-10')}>
             <section>
@@ -473,11 +509,9 @@ export const EmailTemplateEditor = ({
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                   <form.AppField name='title'>
                     {(fieldApi) => {
-                      const errors = fieldApi.state.meta.errors
-                      const error =
-                        fieldApi.state.meta.isTouched && errors.length
-                          ? errors.join(', ')
-                          : undefined
+                      const error = fieldApi.state.meta.isTouched
+                        ? formatFieldErrors(fieldApi.state.meta.errors)
+                        : undefined
 
                       return (
                         <fieldApi.TextField
@@ -498,11 +532,9 @@ export const EmailTemplateEditor = ({
                   </form.AppField>
                   <form.AppField name='group'>
                     {(fieldApi) => {
-                      const errors = fieldApi.state.meta.errors
-                      const error =
-                        fieldApi.state.meta.isTouched && errors.length
-                          ? errors.join(', ')
-                          : undefined
+                      const error = fieldApi.state.meta.isTouched
+                        ? formatFieldErrors(fieldApi.state.meta.errors)
+                        : undefined
 
                       return (
                         <fieldApi.TextField
@@ -512,11 +544,7 @@ export const EmailTemplateEditor = ({
                           label='Group'
                           placeholder='users, admins, marketing...'
                           type='text'
-                          error={
-                            typeof error === 'object'
-                              ? JSON.stringify(error)
-                              : error
-                          }
+                          error={error}
                           // onChange={(event) => {
                           //   fieldApi.handleChange(event.target.value)
                           // }}
@@ -528,11 +556,9 @@ export const EmailTemplateEditor = ({
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                   <form.AppField name='intent'>
                     {(fieldApi) => {
-                      const errors = fieldApi.state.meta.errors
-                      const error =
-                        fieldApi.state.meta.isTouched && errors.length
-                          ? errors.join(', ')
-                          : undefined
+                      const error = fieldApi.state.meta.isTouched
+                        ? formatFieldErrors(fieldApi.state.meta.errors)
+                        : undefined
 
                       return (
                         <fieldApi.TextField
@@ -550,11 +576,9 @@ export const EmailTemplateEditor = ({
 
                   <form.AppField name='type'>
                     {(fieldApi) => {
-                      const errors = fieldApi.state.meta.errors
-                      const error =
-                        fieldApi.state.meta.isTouched && errors.length
-                          ? errors.join(', ')
-                          : undefined
+                      const error = fieldApi.state.meta.isTouched
+                        ? formatFieldErrors(fieldApi.state.meta.errors)
+                        : undefined
 
                       return (
                         <fieldApi.SelectField
@@ -581,11 +605,9 @@ export const EmailTemplateEditor = ({
               <div className='space-y-4 pt-2'>
                 <form.AppField name='from'>
                   {(fieldApi) => {
-                    const errors = fieldApi.state.meta.errors
-                    const error =
-                      fieldApi.state.meta.isTouched && errors.length
-                        ? errors.join(', ')
-                        : undefined
+                    const error = fieldApi.state.meta.isTouched
+                      ? formatFieldErrors(fieldApi.state.meta.errors)
+                      : undefined
 
                     return (
                       <fieldApi.TextField
@@ -607,37 +629,49 @@ export const EmailTemplateEditor = ({
 
                 <form.AppField name='to'>
                   {(fieldApi) => {
-                    const errors = fieldApi.state.meta.errors
-                    const error =
-                      fieldApi.state.meta.isTouched && errors.length
-                        ? errors.join(', ')
-                        : undefined
+                    const error = fieldApi.state.meta.isTouched
+                      ? formatFieldErrors(fieldApi.state.meta.errors)
+                      : undefined
 
                     return (
-                      <fieldApi.TextField
-                        {...fieldApi}
-                        name='to'
-                        label='To Recipients'
-                        defaultValue={fieldApi.state.value}
-                        placeholder='Comma-separated emails...'
-                        type='email'
-                        helperText='Comma-separated emails (or {{placeholders}})'
-                        error={error}
-                        // onChange={(event) => {
-                        //   fieldApi.handleChange(event.target.value)
-                        // }}
-                      />
+                      <div className='relative'>
+                        <fieldApi.TextField
+                          {...fieldApi}
+                          name='to'
+                          label='To Recipients'
+                          defaultValue={fieldApi.state.value}
+                          placeholder={
+                            isDynamicRecipient
+                              ? 'Resolved when the email is sent'
+                              : 'Comma-separated emails...'
+                          }
+                          required={false}
+                          type='email'
+                          disabled={isDynamicRecipient}
+                          helperText='Comma-separated emails (or {{placeholders}})'
+                          error={error}
+                        />
+                        <div className='absolute top-1.5 right-1.5 flex items-center justify-between gap-3 rounded-md px-0 py-1'>
+                          <p className='text-xs font-medium'>
+                            Dynamic recipient
+                          </p>
+
+                          <Toggle
+                            title='Dynamic recipient'
+                            checked={isDynamicRecipient ?? true}
+                            onChange={handleToRecipientModeChange}
+                          />
+                        </div>
+                      </div>
                     )
                   }}
                 </form.AppField>
 
                 <form.AppField name='cc'>
                   {(fieldApi) => {
-                    const errors = fieldApi.state.meta.errors
-                    const error =
-                      fieldApi.state.meta.isTouched && errors.length
-                        ? errors.join(', ')
-                        : undefined
+                    const error = fieldApi.state.meta.isTouched
+                      ? formatFieldErrors(fieldApi.state.meta.errors)
+                      : undefined
 
                     return (
                       <fieldApi.TextField
@@ -648,9 +682,6 @@ export const EmailTemplateEditor = ({
                         placeholder='Optional...'
                         type='text'
                         error={error}
-                        // onChange={(event) => {
-                        //   fieldApi.handleChange(event.target.value)
-                        // }}
                       />
                     )
                   }}
@@ -658,11 +689,9 @@ export const EmailTemplateEditor = ({
 
                 <form.AppField name='bcc'>
                   {(fieldApi) => {
-                    const errors = fieldApi.state.meta.errors
-                    const error =
-                      fieldApi.state.meta.isTouched && errors.length
-                        ? errors.join(', ')
-                        : undefined
+                    const error = fieldApi.state.meta.isTouched
+                      ? formatFieldErrors(fieldApi.state.meta.errors)
+                      : undefined
 
                     return (
                       <fieldApi.TextField
@@ -673,20 +702,15 @@ export const EmailTemplateEditor = ({
                         placeholder='Optional...'
                         type='text'
                         error={error}
-                        // onChange={(event) => {
-                        //   fieldApi.handleChange(event.target.value)
-                        // }}
                       />
                     )
                   }}
                 </form.AppField>
                 <form.AppField name='subject'>
                   {(fieldApi) => {
-                    const errors = fieldApi.state.meta.errors
-                    const error =
-                      fieldApi.state.meta.isTouched && errors.length
-                        ? errors.join(', ')
-                        : undefined
+                    const error = fieldApi.state.meta.isTouched
+                      ? formatFieldErrors(fieldApi.state.meta.errors)
+                      : undefined
 
                     return (
                       <fieldApi.TextField
@@ -698,9 +722,6 @@ export const EmailTemplateEditor = ({
                         type='text'
                         required
                         error={error}
-                        // onChange={(event) => {
-                        //   fieldApi.handleChange(event.target.value)
-                        // }}
                       />
                     )
                   }}
@@ -713,7 +734,8 @@ export const EmailTemplateEditor = ({
             className={cn(
               editorPaneClassName,
               'space-y-8 border-t border-foreground/10 sm:space-y-10 xl:border-t-0',
-            )}>
+            )}
+          >
             <section>
               <SectionHeader title='Content' />
 
@@ -721,9 +743,8 @@ export const EmailTemplateEditor = ({
                 <Select
                   label='Template'
                   placeholder='Choose a template (optional)'
-                  value={String(
-                    selectedTemplateKey ? [selectedTemplateKey] : [],
-                  )}
+                  value={selectedTemplateKey || null}
+                  onChange={(value) => handleTemplateSelect(value)}
                   isDisabled={isLoadingTemplate}
                   options={templateSelectOptions.map((item) => ({
                     value: item.id,
@@ -747,23 +768,14 @@ export const EmailTemplateEditor = ({
                           ? 'Choose a coupon'
                           : 'No active coupons available'
                       }
-                      value={String(
-                        resolvedSelectedCouponId
-                          ? [resolvedSelectedCouponId]
-                          : [],
-                      )}
-                      // onChange={(keys) => {
-                      //   handleCouponSelect(getSingleSelectedKey(keys))
-                      // }}
+                      value={resolvedSelectedCouponId || null}
+                      onChange={(value) => handleCouponSelect(value)}
                       isDisabled={
                         !couponAttachmentEnabled ||
                         isLoadingTemplate ||
                         activeCoupons.length === 0
                       }
-                      options={couponSelectOptions.map((item) => ({
-                        value: item.id,
-                        label: item.label,
-                      }))}
+                      options={couponSelectOptions}
                     />
                   </div>
                 )}
@@ -794,39 +806,11 @@ export const EmailTemplateEditor = ({
                   </form.AppField>
                 )}
 
-                {/*<form.AppField name='text'>
-              {(fieldApi) => {
-                const errors = fieldApi.state.meta.errors
-                const error =
-                  fieldApi.state.meta.isTouched && errors.length
-                    ? errors.join(', ')
-                    : undefined
-
-                return (
-                  <fieldApi.TextAreaField
-                    {...fieldApi}
-                    name='text'
-                    label='Plain Text'
-                    defaultValue={fieldApi.state.value}
-                    placeholder='Plain text fallback for email clients...'
-                    type='textarea'
-                    minRows={2}
-                    error={error}
-                    // onChange={(event) => {
-                    //   fieldApi.handleChange(event.target.value)
-                    // }}
-                  />
-                )
-              }}
-            </form.AppField>*/}
-
                 <form.AppField name='body'>
                   {(fieldApi) => {
-                    const errors = fieldApi.state.meta.errors
-                    const error =
-                      fieldApi.state.meta.isTouched && errors.length
-                        ? errors.join(', ')
-                        : undefined
+                    const error = fieldApi.state.meta.isTouched
+                      ? formatFieldErrors(fieldApi.state.meta.errors)
+                      : undefined
 
                     return (
                       <fieldApi.TextAreaField
@@ -838,9 +822,6 @@ export const EmailTemplateEditor = ({
                         type='textarea'
                         minRows={4}
                         error={error}
-                        // onChange={(event) => {
-                        //   fieldApi.handleChange(event.target.value)
-                        // }}
                       />
                     )
                   }}
@@ -848,11 +829,9 @@ export const EmailTemplateEditor = ({
 
                 <form.AppField name='html'>
                   {(fieldApi) => {
-                    const errors = fieldApi.state.meta.errors
-                    const error =
-                      fieldApi.state.meta.isTouched && errors.length
-                        ? errors.join(', ')
-                        : undefined
+                    const error = fieldApi.state.meta.isTouched
+                      ? formatFieldErrors(fieldApi.state.meta.errors)
+                      : undefined
 
                     return (
                       <fieldApi.TextAreaField
@@ -864,9 +843,6 @@ export const EmailTemplateEditor = ({
                         type='textarea'
                         minRows={6}
                         error={error}
-                        // onChange={(event) => {
-                        //   fieldApi.handleChange(event.target.value)
-                        // }}
                       />
                     )
                   }}
@@ -882,13 +858,12 @@ export const EmailTemplateEditor = ({
             name='visible'
             validators={{
               onChange: emailSettingsFormSchema.shape.visible,
-            }}>
+            }}
+          >
             {(fieldApi) => {
-              const errors = fieldApi.state.meta.errors
-              const error =
-                fieldApi.state.meta.isTouched && errors.length
-                  ? errors.join(', ')
-                  : undefined
+              const error = fieldApi.state.meta.isTouched
+                ? formatFieldErrors(fieldApi.state.meta.errors)
+                : undefined
 
               const fieldValue = fieldApi.state.value
               const checked =
@@ -898,7 +873,7 @@ export const EmailTemplateEditor = ({
                 <fieldApi.SwitchField
                   {...fieldApi}
                   name='visible'
-                  label='Toggle Active Status'
+                  label='Template Active'
                   placeholder='Active status'
                   defaultValue={checked}
                   type='checkbox'
@@ -913,9 +888,10 @@ export const EmailTemplateEditor = ({
           <div className='flex w-full flex-col gap-2 sm:flex-row sm:justify-end lg:w-auto lg:items-center lg:gap-3'>
             <Button
               type='button'
-              variant='tertiary'
+              variant='ghost'
               onPress={onCancel}
-              className='w-full hover:bg-sidebar border-background sm:w-auto'>
+              className='w-full rounded-md hover:bg-sidebar border-background sm:w-auto'
+            >
               Cancel
             </Button>
 
@@ -923,9 +899,10 @@ export const EmailTemplateEditor = ({
               type='submit'
               isDisabled={isSaving}
               className={cn(
-                'w-full gap-2 text-white border-0 shadow-lg sm:w-auto',
-                'bg-linear-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 shadow-cyan-500/25 hover:shadow-cyan-500/40',
-              )}>
+                'w-full gap-2 text-white border-0 rounded-md shadow-lg sm:w-auto',
+                'bg-mac-blue dark:bg-mac-blue/70 hover:bg-mac-blue/80',
+              )}
+            >
               {isSaving ? 'Saving…' : submitLabel}
               <Icon
                 name={isSaving ? 'spinners-ring' : 'check'}
