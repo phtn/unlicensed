@@ -210,7 +210,7 @@ function BundleAndThresholdsSection({
             variant='primary'
             onPress={handleSaveGlobal}
             isDisabled={!hasGlobalChange || !isGlobalFormValid || isSaving}
-            className='bg-dark-table dark:bg-white dark:text-dark-table'>
+            className='bg-dark-table dark:bg-white dark:text-dark-table h-7 rounded-md'>
             {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
           {saveMessage === 'saved' && (
@@ -446,13 +446,13 @@ export const RewardsContent = () => {
         }}>
         <Modal.Backdrop>
           <Modal.Container scroll='inside' size='lg'>
-            <Modal.Dialog>
+            <Modal.Dialog className='rounded-md'>
               <Modal.Header className='font-okxs font-semibold'>
                 <Modal.Heading>
                   {editingTierIndex !== null ? 'Edit Tier' : 'Add Tier'}
                 </Modal.Heading>
               </Modal.Header>
-              <Modal.Body className='space-y-4'>
+              <Modal.Body className='space-y-5'>
                 <Input
                   id='tier'
                   label='Label'
@@ -520,14 +520,17 @@ export const RewardsContent = () => {
                 </ViewTransition>
               </Modal.Body>
               <Modal.Footer className='gap-2'>
-                <Button variant='tertiary' onPress={closeTierModal}>
+                <Button
+                  variant='ghost'
+                  onPress={closeTierModal}
+                  className='h-7'>
                   Cancel
                 </Button>
                 <Button
                   variant='primary'
                   onPress={handleSaveTier}
                   isDisabled={!formToTier(tierForm) || isTierSaving}
-                  className='bg-dark-table dark:bg-white dark:text-dark-table'>
+                  className='font-clash font-medium bg-dark-table dark:bg-white dark:text-dark-table rounded-md h-7'>
                   {isTierSaving
                     ? 'Saving...'
                     : editingTierIndex !== null
@@ -550,7 +553,7 @@ export const RewardsContent = () => {
         }}>
         <Modal.Backdrop>
           <Modal.Container size='sm'>
-            <Modal.Dialog>
+            <Modal.Dialog className='rounded-md'>
               <Modal.Header className='font-okxs font-semibold'>
                 <Modal.Heading>Delete Tier</Modal.Heading>
               </Modal.Header>

@@ -339,7 +339,7 @@ export const StaffForm = ({
           </Button>
         </nav>
 
-        <div className='px-0 xl:px-4'>
+        <div className='px-0 xl:px-0'>
           <Button
             size='lg'
             type='submit'

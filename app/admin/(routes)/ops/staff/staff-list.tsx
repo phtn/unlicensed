@@ -1,11 +1,13 @@
 'use client'
 
+import {User} from '@/components/hero-v3/user'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError, onSuccess} from '@/ctx/toast'
 import {Icon} from '@/lib/icons'
-import {Avatar, Button, Card, Chip} from '@heroui/react'
+import {getInitials} from '@/utils/initials'
+import {Button, Card, Chip} from '@heroui/react'
 import {useMutation} from 'convex/react'
 import {formatDistanceToNow} from 'date-fns'
 import {useRouter} from 'next/navigation'
@@ -48,14 +50,15 @@ const StaffItem = ({member}: {member: Doc<'staff'>}) => {
   }, [connectStaffForChat, member._id, router, user?.uid])
 
   return (
-    <Card className='p-2 md:p-4 hover:bg-neutral-50 transition-colors dark:hover:bg-dark-table/30 dark:bg-dark-table/40'>
+    <Card className='rounded-md p-2 md:p-4 hover:bg-neutral-50 transition-colors dark:hover:bg-dark-table/30 dark:bg-dark-table/40'>
       <div className='flex items-start justify-between'>
-        <div className='flex'>
-          <div className='flex-1 w-64'>
-            <Avatar>
-              <Avatar.Image alt={member.name} src={member.avatarUrl} />
-              <Avatar.Fallback>{member.name?.substring(0, 2)}</Avatar.Fallback>
-            </Avatar>
+        <div className='flex space-x-4'>
+          <div className='flex-1'>
+            <User avatar={member.avatarUrl} name={getInitials(member.name)} />
+          </div>
+          <div className='w-72'>
+            <p className='font-medium'>{member.name}</p>
+            <p className='opacity-60'>{member.email}</p>
           </div>
           <div className='portrait:hidden space-y-1'>
             <div className='flex items-center gap-2'>

@@ -46,7 +46,7 @@ export const SettingsTabs = () => {
         void setTabParam(nextTab)
       }}
       className='flex min-w-0 md:w-full max-w-full flex-col gap-2'>
-      <div className='w-[96lvw] md:w-full overflow-x-scroll px-0 lg:px-3 sm:mx-0 pr-3'>
+      <div className='w-[96lvw] md:w-full overflow-x-scroll px-0 lg:px-1 sm:mx-0 pr-3'>
         <Tabs.List className='relative z-0 flex w-max min-w-full flex-nowrap gap-1 overflow-visible px-0 md:px-0'>
           {tabs.map((tab) => (
             <Tabs.Tab

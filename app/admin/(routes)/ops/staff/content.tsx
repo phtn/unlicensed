@@ -40,7 +40,7 @@ const StaffContentInner = () => {
 export const Content = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <MainWrapper>
+      <MainWrapper className='px-0! border-t-0'>
         <div className='space-y-6'>
           <header className='hidden space-y-3'>
             <h1 className='text-2xl font-semibold'>Personnel</h1>

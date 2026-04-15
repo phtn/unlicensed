@@ -1,13 +1,16 @@
 'use client'
 
+import {TextArea} from '@/components/hero-v3/input'
 import {Select} from '@/components/hero-v3/select'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
+import {Icon} from '@/lib/icons'
 import {getInitials} from '@/utils/initials'
-import {Avatar, TextArea} from '@heroui/react'
+import {Avatar} from '@heroui/react'
 import {useMutation, useQuery} from 'convex/react'
-import React, {
+import Link from 'next/link'
+import {
   startTransition,
   useCallback,
   useMemo,
@@ -106,7 +109,7 @@ export const RepContent = () => {
   return (
     <div className='flex min-w-0 w-full max-w-full flex-col space-y-2'>
       <ContentHeader
-        title='Default Sales Rep'
+        title='Customer Sales Representatives (CSR)'
         description='Assign default Sales Rep used across the platform. Only staff with Rep position are listed.'>
         <PrimaryButton
           onPress={handleSave}
@@ -133,18 +136,15 @@ export const RepContent = () => {
             aria-label='Default Sales Rep'></Select>
 
           <TextArea
-            // label='Initial message seed for Cash App payments'
+            label='Initial message seed for Cash App payments'
             placeholder='e.g. Cash App checkout request for order {orderNumber}. I selected Cash App and need a representative to continue payment in this chat.'
             value={displayInitialMessage}
-            onChange={(event) => setPendingInitialMessageSeed(event.target.value)}
+            onChange={(event) =>
+              setPendingInitialMessageSeed(event.target.value)
+            }
             className='w-full max-w-3xl'
             rows={3}
           />
-
-          <div className='w-fit flex flex-wrap'>
-            Template for the first customer message when starting Cash App
-            checkout chat.
-          </div>
 
           <ViewTransition>
             <div className='flex items-center gap-3'>
@@ -186,11 +186,17 @@ export const RepContent = () => {
 function RepUserItem({member}: {member: Doc<'staff'>}) {
   const name = member.name || member.email || 'Unnamed Rep'
   return (
-    <li className='rounded-lg border border-default-200/50 bg-default-50/30 p-3 dark:bg-default-100/10'>
-      <Avatar>
-        <Avatar.Image alt={name} src={member.avatarUrl} />
-        <Avatar.Fallback>{getInitials(name)}</Avatar.Fallback>
-      </Avatar>
+    <li className='flex items-center justify-between rounded-lg border border-default-200/50 bg-default-50/30 p-3 dark:bg-default-100/10'>
+      <div className='flex items-center space-x-2'>
+        <Avatar>
+          <Avatar.Image alt={name} src={member.avatarUrl} />
+          <Avatar.Fallback>{getInitials(name)}</Avatar.Fallback>
+        </Avatar>
+        <p className='font-clash'>{name}</p>
+      </div>
+      <Link href={`/admin/ops/staff?tabId=edit&id=${member._id}`}>
+        <Icon name='cf-pen-2' className='size-4' />
+      </Link>
     </li>
   )
 }

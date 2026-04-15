@@ -21,33 +21,33 @@ const CRYPTO_WALLET_IDENTIFIER = 'crypto_wallet_addresses'
 
 const NETWORKS = [
   {
-    key: 'bitcoin',
+    key: 'btc',
     label: 'Bitcoin',
-    shortLabel: 'BTC',
+    shortLabel: 'SegWit',
     placeholder: 'bc1...',
   },
   {
-    key: 'ethereum',
+    key: 'eth',
     label: 'Ethereum',
-    shortLabel: 'ETH',
+    shortLabel: 'EVM',
     placeholder: '0x...',
   },
   {
-    key: 'polygon',
+    key: 'pol',
     label: 'Polygon',
-    shortLabel: 'POL',
+    shortLabel: 'EVM',
     placeholder: '0x...',
   },
   {
     key: 'sepolia',
     label: 'Sepolia',
-    shortLabel: 'Sepolia',
+    shortLabel: 'EVM',
     placeholder: '0x...',
   },
   {
     key: 'amoy',
     label: 'Amoy',
-    shortLabel: 'Amoy',
+    shortLabel: 'EVM Polygon',
     placeholder: '0x...',
   },
 ] as const
@@ -62,9 +62,9 @@ type CryptoNetworkConfig = {
 type CryptoWalletAddresses = Record<NetworkKey, CryptoNetworkConfig>
 
 const EMPTY_WALLETS: CryptoWalletAddresses = {
-  bitcoin: {address: '', active: true},
-  ethereum: {address: '', active: true},
-  polygon: {address: '', active: true},
+  btc: {address: '', active: true},
+  eth: {address: '', active: true},
+  pol: {address: '', active: true},
   sepolia: {address: '', active: false},
   amoy: {address: '', active: false},
 }
@@ -129,9 +129,9 @@ function parseCryptoWallets(value: unknown): CryptoWalletAddresses {
   const wallets = value as Record<string, unknown>
 
   return {
-    bitcoin: getNetworkConfig(wallets, 'bitcoin'),
-    ethereum: getNetworkConfig(wallets, 'ethereum'),
-    polygon: getNetworkConfig(wallets, 'polygon'),
+    btc: getNetworkConfig(wallets, 'btc'),
+    eth: getNetworkConfig(wallets, 'eth'),
+    pol: getNetworkConfig(wallets, 'pol'),
     sepolia: getNetworkConfig(wallets, 'sepolia'),
     amoy: getNetworkConfig(wallets, 'amoy'),
   }
@@ -237,9 +237,9 @@ function CryptoWalletFormInner({
         {NETWORKS.map((network) => (
           <div
             key={network.key}
-            className='rounded-lg border border-default-200 dark:bg-dark-tabled p-4'>
+            className='rounded-lg border border-default-200 dark:bg-dark-tabled p-4 space-y-2'>
             <div className='flex items-start justify-between gap-4'>
-              <div className='w-fit space-x-2'>
+              <div className='w-fit space-y-2'>
                 <div className='text-sm font-clash font-semibold tracking-wider text-foreground space-y-2'>
                   {network.label}{' '}
                   {(network.label === 'Sepolia' ||
@@ -249,8 +249,8 @@ function CryptoWalletFormInner({
                     </span>
                   )}
                 </div>
-                <div className='text-xs text-default-500'>
-                  {network.shortLabel} network address
+                <div className='text-xs opacity-50'>
+                  {network.shortLabel} Network
                 </div>
               </div>
               <Toggle

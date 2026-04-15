@@ -67,7 +67,7 @@ export const TextArea = ({
   const valueProps = onChange ? {value: value ?? ''} : {defaultValue: value}
 
   return (
-    <div className={cn(inputClass.mainWrapper, 'min-h-18')}>
+    <div className={cn(inputClass.mainWrapper, 'min-h-24 h-auto')}>
       <Label htmlFor={name} className={cn(inputClass.label, 'overflow-hidden')}>
         {label}
       </Label>
@@ -81,6 +81,7 @@ export const TextArea = ({
         className={cn(
           inputClass.input,
           'overflow-hidden placeholder:font-normal!',
+          '',
         )}
       />
     </div>
