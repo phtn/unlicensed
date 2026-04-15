@@ -136,7 +136,7 @@ export const ProductCarousel = ({
       </div>
 
       {products.length > 1 && (
-        <div className='mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+        <div className='mt-5 flex flex-col gap-1 sm:gap-2 sm:flex-row sm:items-center sm:justify-between'>
           <div className='flex items-center gap-0' role='tablist'>
             {products.map((product, index) => (
               <button

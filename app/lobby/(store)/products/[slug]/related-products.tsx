@@ -35,10 +35,10 @@ export const RelatedProducts = ({products}: RelatedProductsProps) => {
           <Link
             href={`/lobby/category/${categorySlug}`}
             className='group flex items-center space-x-0.5 bg-background/30 text-sm capitalize'>
-            <span>View {categorySlug}</span>
+            <span>All {categorySlug}</span>
             <Icon
               name='chevron-right'
-              className='size-3.5 text-foreground/80 group-hover:text-light-brand'
+              className='size-3.5 text-foreground/60 group-hover:text-light-brand'
             />
           </Link>
         ) : null}

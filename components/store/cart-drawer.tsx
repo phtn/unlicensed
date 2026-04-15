@@ -419,8 +419,11 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
               <div className=' pb-24'></div>
             </div>
             <DrawerFooter className='p-0'>
-              <div className='h-10 p-0 w-full text-light-brand flex items-center justify-center'>
-                <Icon name='rapid-fire-latest' className='mr-2 w-20' />
+              <div className='h-10 p-0 w-full flex items-center justify-center'>
+                <Icon
+                  name='rapid-fire-latest'
+                  className='mr-2 w-20 text-light-brand'
+                />
                 <span className='text-sm'>
                   <span className='font-clash tracking-tight'>
                     &copy;{new Date().getFullYear()}

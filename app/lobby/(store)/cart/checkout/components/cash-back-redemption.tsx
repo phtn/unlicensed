@@ -43,7 +43,7 @@ export function CashBackRedemption({
   return (
     <div
       className={cn(
-        'rounded-md border border-brand/80 bg-brand/5 p-3',
+        'rounded-md border border-brand/80 bg-brand/5 dark:bg-dark-table/50 p-3',
         className,
       )}>
       <div className='flex items-start justify-between'>
@@ -181,7 +181,7 @@ function PointsInput({
                 setIsEditing(false)
               }
             }}
-            className='w-16 h-7 ps-5 rounded-sm bg-brand/10 border border-light-gray dark:border-dark-table focus:border-brand focus:outline-none text-left text-sm font-okxs font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+            className='w-16 h-7 ps-5 rounded-sm border border-light-gray dark:border-dark-table focus:border-brand focus:outline-none text-left text-sm font-okxs font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
           />
 
           <span className='absolute left-2 top-1 text-sm font-okxs font-medium'>
@@ -194,15 +194,18 @@ function PointsInput({
             setInputValue(formatDollars(maxDollars))
             onCustomCentsChange(null)
           }}
-          className='text-[11px] text-foreground font-clash whitespace-nowrap'>
-          MAX ${formatPrice(availableCents)}
+          className='text-foreground font-clash whitespace-nowrap cursor-pointer group'>
+          <strong className='text-[10px]'>MAX</strong>{' '}
+          <span className='font-clash font-medium text-brand dark:text-pink-400 dark:group-hover:text-pink-300'>
+            ${formatPrice(availableCents)}
+          </span>
         </button>
       </div>
       <Button
         size='sm'
         isIconOnly
         variant='ghost'
-        className='shrink-0 size-7 min-w-0 rounded-xs text-light-brand'
+        className='shrink-0 size-7 min-w-0 rounded-sm opacity-60 hover:opacity-100 dark:hover:bg-dark-table'
         aria-label='Remove rewards'
         onPress={onDisable}>
         <Icon name='x' className='size-3.5' />
@@ -242,7 +245,13 @@ const UseRewardsPoints = ({
           />
         </div>
       ) : (
-        `Use rewards ($${formatPrice(available)})`
+        <span>
+          Use rewards <span className='font-ios font-light opacity-50'>(</span>
+          <span className='font-clash font-medium text-brand dark:text-light-brand'>
+            ${formatPrice(available)}
+          </span>
+          <span className='font-ios font-light opacity-50'>)</span>
+        </span>
       )}
     </Button>
   )

@@ -97,7 +97,7 @@ const DenominationPicker = memo(
             onClick={() => onSelect(index)}
             aria-pressed={isSelected}
             className={cn(
-              'relative inline-flex min-h-9.5 w-16 items-center justify-center border border-foreground/20 bg-sidebar text-base font-medium whitespace-nowrap transition-colors rounded-none font-okxs',
+              'relative inline-flex h-8 w-16 items-center justify-center border border-foreground/20 bg-sidebar text-base font-medium whitespace-nowrap transition-colors rounded-none font-okxs',
               isSelected
                 ? 'bg-dark-gray text-white md:hover:bg-black dark:bg-white dark:text-dark-gray dark:md:hover:bg-brand dark:md:hover:text-white'
                 : 'text-foreground/85 hover:border-foreground/35',
@@ -231,11 +231,11 @@ export const ProductInteraction = ({
         denomination={denominationForQuery}
         availableQuantity={availableQuantity}
       />
-      <div className='flex flex-col gap-4 p-4 sm:p-5 lg:p-6 border-t border-foreground/20'>
+      <div className='flex flex-col gap-4 p-2 sm:p-5 lg:p-6 md:border-t border-foreground/20'>
         <ProductSummary product={product} />
 
         <div className='flex items-start justify-between gap-4 py-3 sm:py-4'>
-          <div className='flex min-w-36 flex-col font-okxs text-foreground md:min-w-28'>
+          <div className='flex min-w-20 flex-col font-okxs text-foreground md:min-w-28'>
             <div className='flex items-center text-3xl font-semibold sm:text-4xl'>
               <div className='font-light opacity-80 scale-95'>$</div>
               {priceByDenomination}
@@ -252,7 +252,7 @@ export const ProductInteraction = ({
             ) : null}
           </div>
 
-          <div className='flex items-center justify-end md:w-95'>
+          <div className='flex items-center justify-end w-80 md:w-96'>
             <DenominationPicker
               options={denominationOptions}
               selectedIndex={selectedDenominationIndex}
@@ -267,7 +267,7 @@ export const ProductInteraction = ({
           </p>
         )}
 
-        <div className='flex gap-3'>
+        <div className='flex gap-2 sm:gap-4'>
           <Button
             size='lg'
             variant='primary'
