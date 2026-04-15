@@ -32,9 +32,9 @@ export const FireCollection = ({
   return (
     <section
       id={id ?? 'fire-collection'}
-      className='mx-auto w-full pt-0 md:max-w-7xl px-2 sm:px-4 md:px-6 xl:px-0 bg-background'>
-      <div className='flex flex-col gap-8 rounded-3xl transition-colors'>
-        <div className='flex items-center justify-between gap-4'>
+      className='mx-auto w-full pt-0 md:max-w-7xl px-1 sm:px-4 md:px-6 xl:px-0 bg-background'>
+      <div className='flex flex-col gap-6 md:gap-8 rounded-3xl transition-colors'>
+        <div className='flex items-center justify-between gap-2 md:gap-4'>
           <div className='space-y-2'>
             <h2 className='text-3xl font-clash font-semibold tracking-normal sm:text-5xl'>
               <span className='text-foreground'>{accentWord}</span>
@@ -44,9 +44,9 @@ export const FireCollection = ({
           <Activity mode={products.length === 0 ? 'hidden' : 'visible'}>
             <Link
               href={viewAllHref}
-              className='flex items-center gap-3 text-xs uppercase tracking-[0.35em] text-color-muted transition-opacity hover:opacity-70'>
+              className='flex items-center gap-1 sm:gap-2 md:gap-3 text-xs uppercase tracking-[0.35em] text-color-muted transition-opacity hover:opacity-70'>
               <span>View all</span>
-              <span className='h-px w-10 bg-foreground/30' />
+              <span className='h-px w-6 sm:w-8 md:w-10 bg-foreground/30' />
               <span>{totalProducts}</span>
             </Link>
           </Activity>
