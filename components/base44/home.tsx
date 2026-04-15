@@ -13,8 +13,8 @@ export const NewHome = () => {
           quality={75}
           sizes={'100vw'}
           fetchPriority='high'
-          // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1772603013/hero-mobile-v2_vaiesj.webp'
-          src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775501423/banner-mobile_uycmyn.webp'
+          src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1776263247/b-mobile-all_89eccf.webp'
+          // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775501423/banner-mobile_uycmyn.webp'
           alt='Rapid Fire featured cannabis products'
           className='object-cover h-full sm:hidden w-full'
         />
@@ -24,10 +24,10 @@ export const NewHome = () => {
           height={1536}
           quality={75}
           fetchPriority='high'
-          // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775670911/no-color-banner_ludy6f.webp'
-          src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775501618/banner-desktop_gs5xzr.png'
-          // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775501420/banner-desktop_tf555y.webp'
-          // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1772552114/hero-image_ivcsbu.webp'
+          // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1776262556/b-desktop-e-2_be2f00.png'
+          // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1776262934/b-desktop-r_8bd131.png'
+          src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1776262865/b-desktop-all-e_a17c8e.png'
+          // src='https://res.cloudinary.com/dx0heqhhe/image/upload/q_auto/f_auto/v1775501618/banner-desktop_gs5xzr.png'
           alt='Rapid Fire featured cannabis products'
           className='hidden object-cover sm:block h-full w-full'
         />
