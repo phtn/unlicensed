@@ -18,13 +18,18 @@ const DynamicGlobalAuthModal = dynamic(
   {ssr: false},
 )
 
-const DynamicCookieUsageConfirmation = dynamic(
-  () =>
-    import('./cookie-usage-confirmation').then(
-      (module) => module.CookieUsageConfirmation,
-    ),
-  {ssr: false},
-)
+// const DynamicCookieUsageConfirmation = dynamic(
+//   () =>
+//     import('./cookie-usage-confirmation').then(
+//       (module) => module.CookieUsageConfirmation,
+//     ),
+//   {ssr: false},
+// )
+
+// const DynamicAgeConfirmationModal = dynamic(
+//   () => import('./age-confirmation-modal').then((m) => m.AgeConfirmationModal),
+//   {ssr: false},
+// )
 
 const DynamicScreenDimensionsTracker = dynamic(
   () =>
@@ -39,11 +44,6 @@ const DynamicUserLocationTracker = dynamic(
     import('./user-location-tracker').then(
       (module) => module.UserLocationTracker,
     ),
-  {ssr: false},
-)
-
-const DynamicAgeConfirmationModal = dynamic(
-  () => import('./age-confirmation-modal').then((m) => m.AgeConfirmationModal),
   {ssr: false},
 )
 
@@ -76,7 +76,7 @@ export function DeferredRootClient() {
     <>
       {/*<DynamicAgeConfirmationModal />*/}
       <AdminMasterMonitor />
-      <DynamicCookieUsageConfirmation />
+      {/*<DynamicCookieUsageConfirmation />*/}
       {mountDeferredClients ? (
         <>
           <DynamicEmailLinkHandler />

@@ -103,7 +103,12 @@ export function Checkout({
   const [showDevModal, setShowDevModal] = useState(false)
   const hasShownDevModalRef = useRef(false)
   const isDevMode = isCheckoutDevMode()
-  const {isCashBackEnabled, setCashBackEnabled} = useCashBackRedemption()
+  const {
+    isCashBackEnabled,
+    setCashBackEnabled,
+    customRedemptionCents,
+    setCashBackCustomCents,
+  } = useCashBackRedemption()
   const [couponCode, setCouponCode] = useState('')
   const [couponError, setCouponError] = useState<string | null>(null)
   const [couponHelpText, setCouponHelpText] = useState<string | null>(null)
@@ -171,9 +176,15 @@ export function Checkout({
   )
   const couponDiscountCents = appliedCoupon?.discountCents ?? 0
   const totalBeforeProcessingFee = Math.max(0, total - couponDiscountCents)
+  const maxRedeemableCents = Math.min(
+    availableCashBackCents,
+    totalBeforeProcessingFee,
+  )
   const appliedCashBackCents =
     isCashBackEnabled && subtotal >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
-      ? Math.min(availableCashBackCents, totalBeforeProcessingFee)
+      ? customRedemptionCents !== null
+        ? Math.min(customRedemptionCents, maxRedeemableCents)
+        : maxRedeemableCents
       : 0
   const discountedSubtotalCents = Math.max(
     0,
@@ -603,6 +614,8 @@ export function Checkout({
         appliedCashBackCents={appliedCashBackCents}
         isUsingCashBack={isCashBackEnabled}
         onCashBackToggle={setCashBackEnabled}
+        customRedemptionCents={customRedemptionCents}
+        onCustomRedemptionCentsChange={setCashBackCustomCents}
         cashAppProcessingFeePercent={getCashAppProcessingFeePercent(
           paymentMethodsSetting?.value,
         )}

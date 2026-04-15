@@ -91,7 +91,12 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
   } = useDisclosure()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const {isCashBackEnabled, setCashBackEnabled} = useCashBackRedemption()
+  const {
+    isCashBackEnabled,
+    setCashBackEnabled,
+    customRedemptionCents,
+    setCashBackCustomCents,
+  } = useCashBackRedemption()
   const pointsBalance = useQuery(
     api.rewards.q.getUserPointsBalance,
     convexUserId ? {userId: convexUserId} : 'skip',
@@ -219,9 +224,12 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
     0,
     Math.round((pointsBalance?.availablePoints ?? 0) * 100),
   )
+  const maxRedeemableCents = Math.min(availableCashBackCents, subtotal)
   const appliedCashBackCents =
     isCashBackEnabled && subtotal >= CASH_BACK_REDEMPTION_MINIMUM_ORDER_CENTS
-      ? Math.min(availableCashBackCents, subtotal)
+      ? customRedemptionCents !== null
+        ? Math.min(customRedemptionCents, maxRedeemableCents)
+        : maxRedeemableCents
       : 0
   const discountedSubtotal = Math.max(0, subtotal - appliedCashBackCents)
   const userAvatarLabel =
@@ -348,6 +356,8 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                         subtotalCents={subtotal}
                         isEnabled={isCashBackEnabled}
                         onToggle={handleCashBackToggle}
+                        customRedemptionCents={customRedemptionCents}
+                        onCustomCentsChange={setCashBackCustomCents}
                       />
                     )}
                     <CashBackAppliedRow amountCents={appliedCashBackCents} />

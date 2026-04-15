@@ -4,6 +4,7 @@ import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {formatPrice} from '@/utils/formatPrice'
 import {Button} from '@heroui/react'
+import {useCallback, useState} from 'react'
 
 interface CashBackRedemptionProps {
   availableBalanceCents: number
@@ -11,6 +12,8 @@ interface CashBackRedemptionProps {
   subtotalCents: number
   isEnabled: boolean
   onToggle: (nextValue: boolean) => void
+  customRedemptionCents: number | null
+  onCustomCentsChange: (cents: number | null) => void
   minimumOrderCents?: number
   className?: string
 }
@@ -19,16 +22,23 @@ const DEFAULT_MINIMUM_REDEMPTION_ORDER_CENTS = 5000
 
 export function CashBackRedemption({
   availableBalanceCents,
-  // appliedBalanceCents,
   subtotalCents,
   isEnabled,
   onToggle,
+  customRedemptionCents,
+  onCustomCentsChange,
   minimumOrderCents = DEFAULT_MINIMUM_REDEMPTION_ORDER_CENTS,
   className,
 }: CashBackRedemptionProps) {
   const hasBalance = availableBalanceCents > 0
   const isEligibleOrder = subtotalCents >= minimumOrderCents
   const canRedeem = hasBalance && isEligibleOrder
+
+  const maxRedeemable = Math.min(availableBalanceCents, subtotalCents)
+  const effectiveCents =
+    customRedemptionCents !== null
+      ? Math.min(customRedemptionCents, maxRedeemable)
+      : maxRedeemable
 
   return (
     <div
@@ -58,11 +68,23 @@ export function CashBackRedemption({
           </div>
         </div>
         {canRedeem ? (
-          <UseRewardsPoints
-            isEnabled={isEnabled}
-            canRedeem={canRedeem}
-            available={availableBalanceCents}
-            toggleFn={() => onToggle(!isEnabled)}></UseRewardsPoints>
+          isEnabled ? (
+            <PointsInput
+              effectiveCents={effectiveCents}
+              availableCents={availableBalanceCents}
+              maxRedeemable={maxRedeemable}
+              customCents={customRedemptionCents}
+              onCustomCentsChange={onCustomCentsChange}
+              onDisable={() => onToggle(false)}
+            />
+          ) : (
+            <UseRewardsPoints
+              isEnabled={false}
+              canRedeem={canRedeem}
+              available={availableBalanceCents}
+              toggleFn={() => onToggle(true)}
+            />
+          )
         ) : (
           <span className='text-base font-semibold font-okxs'>
             $
@@ -75,19 +97,116 @@ export function CashBackRedemption({
       </div>
 
       <div className='mt-2 flex items-end justify-between gap-3'>
-        <div className='min-w-0'>
-          {/*<p className='text-xs text-foreground/80 font-okxs font-normal tracking-wide'>
-            {appliedBalanceCents > 0 &&
-              `Applied: -$${formatPrice(appliedBalanceCents)}`}
-          </p>*/}
-          {/*'Complete orders to build up cash back.'*/}
-          {/* {!canRedeem ? ( */}
-          {/*   <p className='text-xs text-muted-foreground'> */}
-          {/*     {hasBalance ? '' : 'Complete orders to build up cash back.'} */}
-          {/*   </p> */}
-          {/* ) : null} */}
-        </div>
+        <div className='min-w-0' />
       </div>
+    </div>
+  )
+}
+
+interface PointsInputProps {
+  effectiveCents: number
+  availableCents: number
+  maxRedeemable: number
+  customCents: number | null
+  onCustomCentsChange: (cents: number | null) => void
+  onDisable: () => void
+}
+
+function PointsInput({
+  availableCents,
+  maxRedeemable,
+  customCents,
+  onCustomCentsChange,
+  onDisable,
+}: PointsInputProps) {
+  // Display values in dollars — input accepts whole dollars only
+  const maxDollars = maxRedeemable / 100
+
+  // At max → show exact decimal (e.g. "1.25"); below max → integer only (e.g. "1")
+  const formatDollars = (d: number) =>
+    Number.isInteger(d) ? String(d) : d.toFixed(2)
+  const derivedDisplay =
+    customCents !== null
+      ? String(Math.floor(customCents / 100))
+      : formatDollars(maxDollars)
+  const [inputValue, setInputValue] = useState(derivedDisplay)
+  const [isEditing, setIsEditing] = useState(false)
+
+  if (!isEditing && inputValue !== derivedDisplay) {
+    setInputValue(derivedDisplay)
+  }
+
+  const commitValue = useCallback(
+    (raw: string, clampDisplay = false) => {
+      const parsed = parseInt(raw, 10)
+      if (isNaN(parsed) || parsed <= 0) {
+        if (clampDisplay) setInputValue(formatDollars(maxDollars))
+        onCustomCentsChange(null)
+        return
+      }
+      const enteredCents = parsed * 100
+      if (enteredCents >= maxRedeemable) {
+        if (clampDisplay) setInputValue(formatDollars(maxDollars))
+        onCustomCentsChange(null)
+      } else {
+        if (clampDisplay) setInputValue(String(parsed))
+        onCustomCentsChange(enteredCents)
+      }
+    },
+    [maxDollars, maxRedeemable, onCustomCentsChange],
+  )
+
+  return (
+    <div className='flex items-center gap-3 shrink-0'>
+      <div className='flex flex-row items-center gap-1.5'>
+        <div className='relative'>
+          <input
+            type='text'
+            inputMode='numeric'
+            aria-label='Reward dollars to redeem'
+            value={inputValue}
+            onFocus={() => setIsEditing(true)}
+            onChange={(e) => {
+              const v = e.target.value.replace(/[^0-9]/g, '')
+              setInputValue(v)
+              commitValue(v)
+            }}
+            onBlur={() => {
+              commitValue(inputValue, true)
+              setIsEditing(false)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                commitValue(inputValue, true)
+                setIsEditing(false)
+              }
+            }}
+            className='w-16 h-7 ps-5 rounded-sm bg-brand/10 border border-light-gray dark:border-dark-table focus:border-brand focus:outline-none text-left text-sm font-okxs font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+          />
+
+          <span className='absolute left-2 top-1 text-sm font-okxs font-medium'>
+            $
+          </span>
+        </div>
+        <button
+          id='max-redeemable'
+          onClick={() => {
+            setInputValue(formatDollars(maxDollars))
+            onCustomCentsChange(null)
+          }}
+          className='text-[11px] text-foreground font-clash whitespace-nowrap'>
+          MAX ${formatPrice(availableCents)}
+        </button>
+      </div>
+      <Button
+        size='sm'
+        isIconOnly
+        variant='ghost'
+        className='shrink-0 size-7 min-w-0 rounded-xs text-light-brand'
+        aria-label='Remove rewards'
+        onPress={onDisable}>
+        <Icon name='x' className='size-3.5' />
+      </Button>
     </div>
   )
 }

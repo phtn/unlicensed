@@ -64,6 +64,8 @@ interface OrderSummaryCardProps {
   appliedCashBackCents?: number
   isUsingCashBack?: boolean
   onCashBackToggle?: (nextValue: boolean) => void
+  customRedemptionCents?: number | null
+  onCustomRedemptionCentsChange?: (cents: number | null) => void
   cashAppProcessingFeePercent?: number
   couponCode: string
   couponDiscountCents?: number
@@ -102,6 +104,8 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   appliedCashBackCents = 0,
   isUsingCashBack = false,
   onCashBackToggle,
+  customRedemptionCents = null,
+  onCustomRedemptionCentsChange,
   cashAppProcessingFeePercent,
   couponCode,
   couponDiscountCents = 0,
@@ -304,11 +308,15 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
 
             {isAuthenticated && onCashBackToggle && (
               <CashBackRedemption
-                availableBalanceCents={cashBackBalanceCents} //cashBackBalanceCents
+                availableBalanceCents={cashBackBalanceCents}
                 appliedBalanceCents={appliedCashBackCents}
                 subtotalCents={subtotal}
                 isEnabled={isUsingCashBack}
                 onToggle={onCashBackToggle}
+                customRedemptionCents={customRedemptionCents}
+                onCustomCentsChange={
+                  onCustomRedemptionCentsChange ?? (() => {})
+                }
               />
             )}
 
