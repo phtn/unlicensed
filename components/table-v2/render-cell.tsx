@@ -26,7 +26,7 @@ export const RenderCell = <TData, TValue>({
         'transition-colors duration-300',
         {
           // Apply editing cell styles - same as hover but persistent
-          'dark:bg-chalk-100/0': isEditing,
+          'dark:bg-background/10': isEditing,
         },
       )}>
       {flexRender(cell.column.columnDef.cell, cell.getContext())}

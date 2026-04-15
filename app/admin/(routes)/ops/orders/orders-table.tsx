@@ -7,6 +7,8 @@ import {ActionConfig, ColumnConfig} from '@/components/table-v2/create-column'
 import {DateRangeFilter} from '@/components/table-v2/date-range'
 import {ColHeader} from '@/components/table-v2/headers'
 import {api} from '@/convex/_generated/api'
+import {Doc} from '@/convex/_generated/dataModel'
+import {OrderType} from '@/convex/orders/d'
 import {useAuthCtx} from '@/ctx/auth'
 import {onError} from '@/ctx/toast'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
@@ -54,6 +56,17 @@ const matchesDateRange = (
     : Number.POSITIVE_INFINITY
 
   return timestamp >= fromTimestamp && timestamp <= toTimestamp
+}
+
+const toBulkEditableOrderFields = (
+  updates: Partial<Doc<'orders'>>,
+): OrderType => {
+  const fields = {} as OrderType
+
+  if (updates.orderStatus !== undefined) {
+    fields.orderStatus = updates.orderStatus
+  }
+  return fields
 }
 
 export const OrdersTable = () => {
@@ -183,6 +196,8 @@ export const OrdersTable = () => {
     },
     [connectCustomerForChat, isOpeningChat, user?.uid],
   )
+
+  const updateOrders = useMutation(api.orders.m.updateOrders)
 
   const columns = useMemo<ColumnConfig<Order>[]>(
     () => [
@@ -363,6 +378,32 @@ export const OrdersTable = () => {
     ],
   )
 
+  const handleBulkUpdateSelected = useCallback(
+    async ({
+      rows,
+      updates,
+    }: {
+      ids: string[]
+      rows: Doc<'orders'>[]
+      updates: Partial<Doc<'orders'>>
+    }) => {
+      const fields = toBulkEditableOrderFields(updates)
+      if (Object.keys(fields).length === 0) {
+        return
+      }
+
+      await Promise.all(
+        rows.map((row) =>
+          updateOrders({
+            id: row._id,
+            fields,
+          }),
+        ),
+      )
+    },
+    [updateOrders],
+  )
+
   return (
     <div className='relative w-full max-w-full overflow-hidden'>
       {chatConversationFid && (
@@ -382,6 +423,7 @@ export const OrdersTable = () => {
         editingRowId={null}
         defaultPageSize={50}
         centerToolbarDateRange={dateRangeControl}
+        onBulkUpdateSelected={handleBulkUpdateSelected}
       />
     </div>
   )

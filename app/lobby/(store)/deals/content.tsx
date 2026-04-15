@@ -128,7 +128,7 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
     limit: 50,
   }) as ProductsQueryResult | undefined
   const extractProductsQuery = useQuery(api.products.q.listProducts, {
-    categorySlug: 'concentrates',
+    categorySlug: 'extracts',
     eligibleForDeals: true,
     limit: 50,
   }) as ProductsQueryResult | undefined
@@ -142,6 +142,11 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
     eligibleForDeals: true,
     limit: 50,
   }) as ProductsQueryResult | undefined
+  const vapeProductsQuery = useQuery(api.products.q.listProducts, {
+    categorySlug: 'vapes',
+    eligibleForDeals: true,
+    limit: 50,
+  }) as ProductsQueryResult | undefined
   const defaultVariationByBundle = useMemo(
     () => getDefaultVariationByBundle(configs),
     [configs],
@@ -151,11 +156,12 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
     dealIds,
   )
 
-  const {flower, extracts, edibles, prerolls} = useMemo<{
+  const {flower, extracts, edibles, prerolls, vapes} = useMemo<{
     flower: StoreProduct[]
     extracts: StoreProduct[]
     edibles: StoreProduct[]
     prerolls: StoreProduct[]
+    vapes: StoreProduct[]
   }>(
     () => ({
       flower: flowerProductsQuery
@@ -178,36 +184,30 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
             adaptProduct(product),
           )
         : (initialProductsByCategory['pre-rolls'] ?? []),
+      vapes: vapeProductsQuery
+        ? vapeProductsQuery.map((product: RawProduct) => adaptProduct(product))
+        : (initialProductsByCategory['vapes'] ?? []),
     }),
     [
-      edibleProductsQuery,
       extractProductsQuery,
+      edibleProductsQuery,
       flowerProductsQuery,
       initialProductsByCategory,
       prerollProductsQuery,
+      vapeProductsQuery,
     ],
   )
 
-  // const productsByCategory = useMemo(
-  //   () => ({
-  //     flower,
-  //     extracts,
-  //     edibles: [...edibles, ...prerolls],
-  //     'pre-rolls': prerolls,
-  //   }),
-  //   [flower, extracts, edibles, prerolls],
-  // )
-
   const imageIds = useMemo(
     () =>
-      [...flower, ...extracts, ...edibles, ...prerolls]
+      [...flower, ...extracts, ...edibles, ...prerolls, ...vapes]
         .map((p) => p.image)
         .filter((id): id is NonNullable<typeof id> => id != null),
-    [flower, extracts, edibles, prerolls],
+    [flower, extracts, edibles, prerolls, vapes],
   )
   const resolveUrl = useStorageUrls(imageIds)
 
-  const productsWithImages = useMemo(() => {
+  const productsBySlug = useMemo(() => {
     const resolve = (list: StoreProduct[]) =>
       list.map((p) => {
         if (!p.image) return p
@@ -217,29 +217,40 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
     return {
       flower: resolve(flower),
       extracts: resolve(extracts),
-      edibles: resolve([...edibles, ...prerolls]),
-      prerolls: resolve(prerolls),
-    }
-  }, [flower, extracts, edibles, prerolls, resolveUrl])
+      edibles: resolve(edibles),
+      'pre-rolls': resolve(prerolls),
+      vapes: resolve(vapes),
+    } satisfies Record<string, StoreProduct[]>
+  }, [flower, extracts, edibles, prerolls, vapes, resolveUrl])
 
   const buildProps = useMemo(() => {
     const byType: Record<
       string,
       {config: BundleConfig; products: StoreProduct[]}
     > = {}
+    const bucketMap = productsBySlug as Record<string, StoreProduct[]>
+    // Alias legacy/alternate slugs to the real category slug so deals created
+    // under a different name still resolve to the right product bucket.
+    const slugAliases: Record<string, string> = {
+      extracts: 'concentrates',
+    }
     for (const config of configsList) {
-      const slugs = config.categorySlugs
-      const products = slugs.includes('flower')
-        ? productsWithImages.flower
-        : slugs.includes('extracts')
-          ? productsWithImages.extracts
-          : slugs.includes('edibles') || slugs.includes('pre-rolls')
-            ? productsWithImages.edibles
-            : []
+      const seen = new Set<string>()
+      const products: StoreProduct[] = []
+      for (const rawSlug of config.categorySlugs) {
+        const slug = slugAliases[rawSlug] ?? rawSlug
+        const bucket = bucketMap[slug] ?? []
+        for (const p of bucket) {
+          const id = String(p._id)
+          if (seen.has(id)) continue
+          seen.add(id)
+          products.push(p)
+        }
+      }
       byType[config.id] = {config, products}
     }
     return byType
-  }, [configsList, productsWithImages])
+  }, [configsList, productsBySlug])
 
   useEffect(() => {
     if (dealsLoading || configsList.length === 0) return

@@ -9,24 +9,29 @@ export const metadata: Metadata = {
 }
 
 export default async function DealsPage() {
-  const [flower, extracts, edibles, prerolls] = await Promise.all([
+  const [flower, extracts, edibles, prerolls, vapes] = await Promise.all([
     fetchProducts({
       categorySlug: 'flower',
-      limit: 50,
+      limit: 100,
       eligibleForDeals: true,
     }),
     fetchProducts({
-      categorySlug: 'concentrates',
-      limit: 50,
+      categorySlug: 'extracts',
+      limit: 100,
       eligibleForDeals: true,
     }),
     fetchProducts({
       categorySlug: 'edibles',
-      limit: 50,
+      limit: 100,
       eligibleForDeals: true,
     }),
     fetchProducts({
       categorySlug: 'pre-rolls',
+      limit: 100,
+      eligibleForDeals: true,
+    }),
+    fetchProducts({
+      categorySlug: 'vapes',
       limit: 50,
       eligibleForDeals: true,
     }),
@@ -37,9 +42,8 @@ export default async function DealsPage() {
     extracts,
     edibles,
     'pre-rolls': prerolls,
+    vapes,
   }
 
-  return (
-    <DealsContent initialProductsByCategory={initialProductsByCategory} />
-  )
+  return <DealsContent initialProductsByCategory={initialProductsByCategory} />
 }

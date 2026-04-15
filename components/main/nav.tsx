@@ -187,7 +187,7 @@ export const Nav = ({children}: NavProps) => {
                 <Badge
                   key={`cart-badge-${cartItemCount}`}
                   content={`${cartItemCount}`}
-                  className='-translate-x-2.5 bg-brand w-5.5 rounded-lg border flex items-center justify-center border-white font-okxs font-semibold text-sm text-white leading-none h-2!'>
+                  className='-translate-x-2.5 bg-brand w-5.5 rounded-lg border flex items-center justify-center border-white font-clash font-medium text-base text-white leading-none h-2!'>
                   {cartItemCount}
                 </Badge>
               )}

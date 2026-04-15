@@ -67,15 +67,15 @@ export const RenderRow = <T,>({
   return (
     <TableRow
       key={row.id}
-      data-state={row.getIsSelected() && 'selected'}
+      // data-state={row.getIsSelected() && 'selected'}
       className={cn(
-        'group/row h-10 text-foreground border-y border-y-dotted dark:border-greyed dark:hover:bg-background/80 active:bg-alum/20',
+        'group/row h-10 text-foreground border-y border-y-dotted dark:border-greyed dark:hover:bg-background/80 active:bg-background/20',
         'bg-sidebar/5 hover:bg-sidebar border-y-dark-table/10 dark:border-y-dark-table/40 hover:border-y-dark-table/30 transition-colors duration-75',
         {
           // Apply editing styles - same as hover but persistent
-          ' dark:bg-sky-600/40 last:rounded-tr-2xl': isEditing,
+          'dark:bg-blue-200/50 last:rounded-tr-2xl': isEditing,
           // Apply selected styles when viewer is open - same as hover but persistent
-          'dark:bg-mac-blue border-y-dark-table/30 bg-sidebar hover:bg-sidebar last:rounded-tr-2xl':
+          ' border-y-dark-table/30 bg-sidebar hover:bg-sidebar dark:bg-mac-blue/20 last:rounded-tr-2xl':
             isSelected && !isEditing,
           // Add cursor pointer when select mode is on
           'cursor-pointer': showSelectColumn && row.getCanSelect(),

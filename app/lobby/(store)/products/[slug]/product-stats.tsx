@@ -54,32 +54,21 @@ export const ProductDetailStats = ({
       </div>
 
       {quantityInCart > 0 ? (
-        <div title='In The Bag'>
-          <Badge
-            size='lg'
-            variant='soft'
-            className='flex items-center justify-center rounded-xs py-0.5 px-1 md:mx-0 size-4 aspect-square'
-            // classNames={{
-            //   badge:
-            //     'aspect-square size-5 md:size-6 text-sm md:text-base translate-x-0 -translate-y-1 rounded-xs flex items-center justify-center rounded-md border-1.5 dark:border-background/85 shadow-md backdrop-blur-2xl bg-brand/90',
-            // }}
-            content={`${quantityInCart}`}
-            // content={
-            //   <div
-            //     className=>
-            //     <span className='font-okxs font-medium text-xs md:text-sm text-white leading-none drop-shadow-xs'>
-            //       {}
-            //     </span>
-            //   </div>
-            // }
-          >
+        <div title='In The Bag' className='pr-2'>
+          <Badge.Anchor>
             <div className='w-16 md:w-20 flex items-center justify-end pr-1'>
               <Icon
-                name='shopping-bag-fill'
-                className='size-4 md:size-5 drop-shadow-xs mt-0.5 md:mt-1 mr-4.5'
+                name='bag-solid'
+                className='size-4 md:size-5 drop-shadow-xs mt-0.5 md:mt-1 mr-4'
               />
             </div>
-          </Badge>
+            <Badge
+              variant='soft'
+              className='flex items-center justify-center rounded-lg md:mx-0 h-3! aspect-square bg-brand dark:bg-light-brand font-clash font-medium border border-white text-white text-base'
+              content={`$`}>
+              {/*{quantityInCart}*/} 3
+            </Badge>
+          </Badge.Anchor>
         </div>
       ) : (
         <span className='opacity-0 text-[9px] w-16 md:w-20 text-sm whitespace-nowrap capitalize'>

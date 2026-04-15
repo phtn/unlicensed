@@ -28,6 +28,7 @@ import {insertInventoryMovement} from '../inventoryMovements/lib'
 import {getOrCreateGuestUser} from '../messages/guest'
 import {addressSchema} from '../users/d'
 import {
+  orderSchema,
   orderStatusSchema,
   paymentMethodSchema,
   paymentSchema,
@@ -171,9 +172,7 @@ function getProductUnitPriceCents(
     const matched = Object.entries(priceMap).find(
       ([key]) => Number(key) === denom,
     )
-    return typeof matched?.[1] === 'number'
-      ? Math.round(matched[1])
-      : undefined
+    return typeof matched?.[1] === 'number' ? Math.round(matched[1]) : undefined
   }
 
   const denominationCents = getDenominationPriceCents(
@@ -317,7 +316,8 @@ async function buildOrderItems(
         const productImage = product.image
           ? String(product.image).startsWith('http')
             ? (product.image as string)
-            : ((await ctx.storage.getUrl(product.image as Id<'_storage'>)) ?? '')
+            : ((await ctx.storage.getUrl(product.image as Id<'_storage'>)) ??
+              '')
           : ''
         const lineUnitQtyCents =
           getProductUnitPriceCents(product, bundleItem.denomination) *
@@ -1763,5 +1763,36 @@ export const deductStockForOrder = internalMutation({
         },
       )
     }
+  },
+})
+
+export const updateOrders = mutation({
+  args: {
+    fields: orderSchema,
+    id: v.id('orders'),
+  },
+  handler: async (ctx, {id, fields}) => {
+    const order = await ctx.db.get(id)
+    if (!order) {
+      throw new Error(`Order with id "${id}" not found.`)
+    }
+
+    // const sanitizeArray = (values?: string[]) =>
+    //   values
+    //     ? values
+    //         .map((value) => value.trim())
+    //         .filter((value) => value.length > 0)
+    //     : undefined
+
+    // const numericArray = (values?: number[]) =>
+    //   values?.filter((value) => Number.isFinite(value)) ?? undefined
+
+    const updates: Partial<typeof order> = {}
+    if (fields.orderStatus !== undefined) {
+      updates.orderStatus = fields.orderStatus
+    }
+    await ctx.db.patch(id, updates)
+
+    return {success: true}
   },
 })

@@ -362,7 +362,7 @@ export const AccessContent = () => {
 
       <div className='grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]'>
         <section className='flex flex-col gap-4'>
-          <div className='flex items-center justify-between px-2'>
+          <div className='flex items-center space-x-32 px-2'>
             <Toggle
               label='Require access code'
               title='Require access code'

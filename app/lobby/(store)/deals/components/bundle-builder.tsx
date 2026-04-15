@@ -631,7 +631,11 @@ export function BundleBuilder({
                       </span>
                     </Button>
                     {variationCartCount > 0 && (
-                      <Badge color='accent' placement='top-right' size='sm'>
+                      <Badge
+                        color='accent'
+                        placement='top-right'
+                        size='sm'
+                        className='aspect-square p-1 rounded-md translate-x-px -translate-y-1.25'>
                         {variationCartCount}
                       </Badge>
                     )}
