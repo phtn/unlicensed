@@ -38,12 +38,10 @@ export const Overview = ({
     )
   }
 
-  const firstName = user.name?.split(' ')[0] ?? user.name
-
   return (
     <div className='pb-12 pt-1'>
       {/* Greeting */}
-      <div className='mb-2 px-4 xl:px-6 2xl:px-2 flex items-center justify-between'>
+      <div className='mb-2 px-2 md:px-4 xl:px-6 2xl:px-2 flex items-center justify-between'>
         <p className='font-clash text-2xl tracking-tight text-foreground/90'>
           {getGreeting()}
         </p>
