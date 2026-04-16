@@ -208,25 +208,26 @@ export const Content = () => {
     <main className='px-2 sm:px-4 lg:px-6 space-y-5 pb-8'>
       <Card className='border border-foreground/15 rounded-xs p-0'>
         <Card.Content className='p-3 md:p-5 space-y-4 bg-sidebar/40 dark:bg-sidebar'>
-          <div className='grid grid-cols-2 lg:grid-cols-3 gap-3 w-full xl:h-15'>
+          <div className='flex flex-col sm:flex-row gap-3 w-full'>
             <Input
-              size={10}
               type='search'
               value={searchQuery}
               onChange={handleSearchQueryChange}
               placeholder='Search order #, date, or amount'
-              className='placeholder:text-foreground/50 rounded-xs h-12'
+              className='placeholder:text-foreground/50 rounded-xs h-12 flex-1'
             />
-            <DateRangePickerComponent
-              startDate={fromDate}
-              endDate={toDate}
-              onStartDateChange={handleFromDateChange}
-              onEndDateChange={handleToDateChange}
-            />
+            <div className='w-full sm:w-72 lg:w-80'>
+              <DateRangePickerComponent
+                startDate={fromDate}
+                endDate={toDate}
+                onStartDateChange={handleFromDateChange}
+                onEndDateChange={handleToDateChange}
+              />
+            </div>
           </div>
 
-          <div className='flex flex-wrap items-center justify-between gap-3'>
-            <div className='flex flex-wrap gap-2'>
+          <div className='flex flex-wrap items-center justify-between gap-2'>
+            <div className='flex flex-wrap gap-1.5'>
               {searchModes.map((mode) => (
                 <Button
                   key={mode.id}
@@ -243,22 +244,26 @@ export const Content = () => {
               variant='tertiary'
               onPress={clearFilters}
               isDisabled={!hasFilters}>
-              Clear filters
+              Clear
             </Button>
           </div>
 
-          <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-            <div className='rounded-xs dark:bg-background/20 p-3 space-y-1'>
-              <p className='text-xs text-foreground/70'>Total Orders</p>
-              <p className='text-xl font-semibold'>{orders?.length ?? 0}</p>
+          <div className='grid grid-cols-3 gap-2 sm:gap-3'>
+            <div className='rounded-xs bg-default-100/60 dark:bg-background/20 p-2.5 sm:p-3 space-y-0.5'>
+              <p className='text-xs text-foreground/60'>Total Orders</p>
+              <p className='text-lg sm:text-xl font-semibold tabular-nums'>
+                {orders?.length ?? 0}
+              </p>
             </div>
-            <div className='rounded-xs dark:bg-background/20 p-3 space-y-1'>
-              <p className='text-xs text-foreground/70'>Filtered Results</p>
-              <p className='text-xl font-semibold'>{filteredOrders.length}</p>
+            <div className='rounded-xs bg-default-100/60 dark:bg-background/20 p-2.5 sm:p-3 space-y-0.5'>
+              <p className='text-xs text-foreground/60'>Results</p>
+              <p className='text-lg sm:text-xl font-semibold tabular-nums'>
+                {filteredOrders.length}
+              </p>
             </div>
-            <div className='rounded-xs dark:bg-background/20 p-3 space-y-1'>
-              <p className='text-xs text-foreground/70'>Filtered Amount</p>
-              <p className='text-xl font-semibold'>
+            <div className='rounded-xs bg-default-100/60 dark:bg-background/20 p-2.5 sm:p-3 space-y-0.5'>
+              <p className='text-xs text-foreground/60'>Amount</p>
+              <p className='text-lg sm:text-xl font-semibold tabular-nums'>
                 ${formatPrice(filteredTotalSpend)}
               </p>
             </div>
@@ -298,12 +303,12 @@ export const Content = () => {
         </Card>
       ) : (
         <div className='space-y-3'>
-          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1'>
+          <div className='flex items-center justify-between gap-2 px-1'>
             <p className='text-sm text-default-500'>
-              Showing {showingFrom}-{showingTo} of {filteredOrders.length}
+              {showingFrom}–{showingTo} of {filteredOrders.length}
             </p>
             <p className='text-sm text-default-500'>
-              Page {currentPage} of {totalPages}
+              {currentPage} / {totalPages}
             </p>
           </div>
 
@@ -312,28 +317,30 @@ export const Content = () => {
           ))}
 
           <Card className='border border-foreground/15 rounded-xs'>
-            <Card.Content className='p-3 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between'>
+            <Card.Content className='p-2 sm:p-3 flex flex-row items-center justify-between gap-2'>
               <Button
+                size='sm'
                 variant='tertiary'
                 onPress={() => setPage(Math.max(1, currentPage - 1))}
                 isDisabled={currentPage <= 1}
-                className='rounded-md'>
-                Previous
+                className='rounded-md shrink-0'>
+                <span className='hidden sm:inline'>Previous</span>
+                <span className='sm:hidden'>←</span>
               </Button>
 
-              <div className='flex flex-wrap justify-center items-center gap-1.5'>
+              <div className='flex flex-wrap justify-center items-center gap-1 min-w-0'>
                 {pageItems.map((item, index) =>
                   item === 'ellipsis' ? (
                     <span
                       key={`ellipsis-${index}`}
-                      className='px-2 text-default-400'>
-                      ...
+                      className='px-1 text-default-400 text-sm'>
+                      …
                     </span>
                   ) : (
                     <Button
                       key={item}
                       size='sm'
-                      className='rounded-full'
+                      className='rounded-full min-w-8 h-8'
                       variant={item === currentPage ? 'primary' : 'tertiary'}
                       onPress={() => setPage(item)}>
                       {item}
@@ -343,11 +350,13 @@ export const Content = () => {
               </div>
 
               <Button
+                size='sm'
                 variant='tertiary'
                 onPress={() => setPage(Math.min(totalPages, currentPage + 1))}
                 isDisabled={currentPage >= totalPages}
-                className='rounded-md'>
-                Next
+                className='rounded-md shrink-0'>
+                <span className='hidden sm:inline'>Next</span>
+                <span className='sm:hidden'>→</span>
               </Button>
             </Card.Content>
           </Card>
