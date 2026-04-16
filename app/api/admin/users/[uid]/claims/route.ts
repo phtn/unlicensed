@@ -1,4 +1,5 @@
 import {getAdminAuth} from '@/lib/firebase/admin'
+import {PROTECTED_CLAIM_KEYS} from '@/lib/firebase/claims'
 import {requireStaffAdminRequest} from '@/lib/firebase/server-auth'
 import {NextRequest, NextResponse} from 'next/server'
 
@@ -6,10 +7,13 @@ import {NextRequest, NextResponse} from 'next/server'
  * API Route to set custom claims for a Firebase user
  *
  * POST /api/admin/users/[uid]/claims
- * Body: { claims: { role?: string, admin?: boolean, ... } }
+ * Body: { claims: { role?: string, bulk?: boolean, ... } }
  *
  * Requires a verified Firebase server session or bearer token for an active
- * staff member.
+ * staff member with admin access.
+ *
+ * NOTE: Protected claim keys (e.g. `admin`) cannot be set via this endpoint.
+ * Use the dedicated Master Monitor endpoint for those.
  */
 export async function POST(
   request: NextRequest,
@@ -34,18 +38,45 @@ export async function POST(
       )
     }
 
+    // Reject any attempt to set protected claims via this generic endpoint
+    const protectedKeys = [...PROTECTED_CLAIM_KEYS].filter((key) => key in claims)
+    if (protectedKeys.length > 0) {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: `Protected claims [${protectedKeys.join(', ')}] can only be managed via the Master Monitor settings.`,
+          protectedKeys,
+        },
+        {status: 403},
+      )
+    }
+
     const adminAuth = getAdminAuth()
 
-    // Set custom claims
-    await adminAuth.setCustomUserClaims(uid, claims)
+    // Read-modify-write: preserve existing claims (including protected ones)
+    const existingUser = await adminAuth.getUser(uid)
+    const existingClaims = (existingUser.customClaims ?? {}) as Record<string, unknown>
 
-    // Get updated user to verify
-    const user = await adminAuth.getUser(uid)
+    // Merge patch into existing, never overwriting protected keys from existing
+    const protectedExisting: Record<string, unknown> = {}
+    for (const key of PROTECTED_CLAIM_KEYS) {
+      if (key in existingClaims) {
+        protectedExisting[key] = existingClaims[key]
+      }
+    }
+
+    await adminAuth.setCustomUserClaims(uid, {
+      ...existingClaims,
+      ...claims,
+      ...protectedExisting, // protected keys always win
+    })
+
+    const updated = await adminAuth.getUser(uid)
 
     return NextResponse.json({
       success: true,
       uid,
-      customClaims: user.customClaims,
+      customClaims: updated.customClaims,
     })
   } catch (error) {
     console.error('Error setting custom claims:', error)
@@ -98,7 +129,10 @@ export async function GET(
 
 /**
  * DELETE /api/admin/users/[uid]/claims
- * Remove all custom claims from a user
+ * Remove all non-protected custom claims from a user.
+ *
+ * NOTE: Cannot be used on users who have `admin: true` — revoke admin first
+ * via the Master Monitor before clearing other claims.
  */
 export async function DELETE(
   request: NextRequest,
@@ -116,7 +150,27 @@ export async function DELETE(
 
     const adminAuth = getAdminAuth()
 
-    // Remove all custom claims by setting an empty object
+    // Read existing claims before wiping
+    const existingUser = await adminAuth.getUser(uid)
+    const existingClaims = (existingUser.customClaims ?? {}) as Record<string, unknown>
+
+    // Refuse to wipe claims only when the protected claim is actively set to true.
+    // A stale `admin: false` (from a previous API contract) is not a live privilege
+    // and should not block regular staff admins from clearing unrelated claims.
+    const presentProtectedKeys = [...PROTECTED_CLAIM_KEYS].filter(
+      (key) => existingClaims[key] === true,
+    )
+    if (presentProtectedKeys.length > 0) {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: `Cannot bulk-clear claims while protected claims [${presentProtectedKeys.join(', ')}] are set. Revoke those via the Master Monitor first.`,
+          protectedKeys: presentProtectedKeys,
+        },
+        {status: 403},
+      )
+    }
+
     await adminAuth.setCustomUserClaims(uid, {})
 
     return NextResponse.json({

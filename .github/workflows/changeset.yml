@@ -23,5 +23,8 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
+      - name: Fetch main branch
+        run: git fetch origin main:main
+
       - name: Validate Changeset
         run: bunx changeset status

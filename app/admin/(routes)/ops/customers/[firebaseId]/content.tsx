@@ -44,11 +44,13 @@ export const Content = ({firebaseId}: ContentProps) => {
   const [isSavingRemarks, setIsSavingRemarks] = useState(false)
   const [rewardPointsInput, setRewardPointsInput] = useState('')
   const [isSavingRewardPoints, setIsSavingRewardPoints] = useState(false)
+  const [isSavingWholesale, setIsSavingWholesale] = useState(false)
   const followForChat = useMutation(api.follows.m.follow)
   const updateCustomerNotes = useMutation(api.users.m.updateNotes)
   const setUserAvailablePoints = useMutation(
     api.rewards.m.setUserAvailablePoints,
   )
+  const setWholesale = useMutation(api.users.m.setWholesale)
   const customer = useQuery(api.users.q.getByFid, {fid: firebaseId})
   const customerAddresses = useQuery(api.users.q.getUserAddresses, {
     fid: firebaseId,
@@ -215,6 +217,37 @@ export const Content = ({firebaseId}: ContentProps) => {
     normalizedRewardPointsInput,
     setUserAvailablePoints,
   ])
+
+  const handleToggleWholesale = useCallback(
+    async (next: boolean) => {
+      if (!customerId) return
+      setIsSavingWholesale(true)
+      try {
+        await setWholesale({userId: customerId, wholesale: next})
+
+        // Sync the bulk claim to Firebase
+        const fid = customer?.fid ?? customer?.firebaseId
+        if (fid) {
+          const idToken = await user?.getIdToken()
+          await fetch(`/api/admin/users/${fid}/claims`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({claims: {bulk: next || null}}),
+          })
+        }
+
+        onSuccess(next ? 'Bulk pricing enabled' : 'Bulk pricing disabled')
+      } catch {
+        onError('Failed to update wholesale status')
+      } finally {
+        setIsSavingWholesale(false)
+      }
+    },
+    [customerId, customer, user, setWholesale],
+  )
 
   if (customer === undefined) {
     return (
@@ -395,6 +428,35 @@ export const Content = ({firebaseId}: ContentProps) => {
                     </p>
                   )}
                 </div>
+              </div>
+            </Card>
+
+            <Card className='px-2 py-4'>
+              <div className='flex items-center justify-between gap-4'>
+                <div className='space-y-0.5'>
+                  <p className='text-xs font-brk uppercase tracking-wide text-muted-foreground'>
+                    Bulk / Wholesale
+                  </p>
+                  <p className='text-sm text-muted-foreground'>
+                    {customer.wholesale
+                      ? 'Wholesale pricing active'
+                      : 'Standard pricing'}
+                  </p>
+                </div>
+                <Button
+                  size='sm'
+                  variant={customer.wholesale ? 'secondary' : 'primary'}
+                  className='rounded-sm shrink-0'
+                  isDisabled={isSavingWholesale}
+                  onPress={() =>
+                    void handleToggleWholesale(!customer.wholesale)
+                  }>
+                  {isSavingWholesale
+                    ? 'Saving…'
+                    : customer.wholesale
+                      ? 'Revoke Bulk'
+                      : 'Grant Bulk'}
+                </Button>
               </div>
             </Card>
 
