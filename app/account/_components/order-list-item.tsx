@@ -24,21 +24,24 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
       href={`/account/orders/${orderNumber}`}
       className='group block'
       onMouseEnter={() => router.prefetch(`/account/orders/${orderNumber}`)}>
-      <div className='grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-2.5 rounded-xs border border-foreground/8 bg-background px-5 py-4 transition-colors duration-150 hover:bg-default-50/80 dark:border-foreground/10 dark:bg-dark-table/50 dark:hover:bg-dark-table/80'>
+      <div className='grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-2.5 rounded-xs border border-foreground/8 bg-background px-2 md:px-5 py-4 transition-colors duration-150 hover:bg-default-50/80 dark:border-foreground/10 dark:bg-dark-table/50 dark:hover:bg-dark-table/80'>
         {/* Row 1 left — date */}
         <span className='font-okxs text-sm font-medium'>
           {formatTimestamp(createdAt)}
         </span>
 
         {/* Row 1 right — price + chevron */}
-        <div className='flex items-center gap-3 justify-self-end'>
+        <div className='relative flex items-center justify-end gap-0.5 md:gap-3'>
+          <Icon
+            name='chevron-right'
+            className={cn(
+              'size-4 opacity-0 transition-all duration-250 group-hover:opacity-100',
+              'absolute -top-2 md:-top-1.75 -right-1.75 md:-right-3.25 -rotate-23 translate-y-2 group-hover:translate-y-0 -translate-x-2 group-hover:translate-x-0',
+            )}
+          />
           <span className='font-okxs text-base font-semibold tabular-nums'>
             ${formatPrice(payableTotalCents)}
           </span>
-          <Icon
-            name='chevron-right'
-            className='size-3.5 text-default-300 transition-transform duration-150 group-hover:translate-x-0.5'
-          />
         </div>
 
         {/* Row 2 left — order # · items · payment */}
@@ -51,7 +54,7 @@ export const OrderListItem = ({order}: {order: OrderType}) => {
             {items.length} item{items.length !== 1 ? 's' : ''}
           </span>
           <span className='opacity-30'>·</span>
-          <span className='flex items-center gap-1.5 font-okxs'>
+          <span className='flex items-center gap-1 md:gap-1.5 font-okxs'>
             <Icon
               name={paymentMethodIconMap[payment.method].icon}
               className={`size-3 ${paymentMethodIconMap[payment.method].style}`}
@@ -115,7 +118,7 @@ const StatusIndicator = ({status}: {status: OrderStatus}) => {
   return (
     <span
       className={cn(
-        'flex shrink-0 items-center gap-1.5 font-okxs text-xs justify-self-end',
+        'flex shrink-0 items-center gap-1 font-okxs text-xs justify-self-end',
         textClass,
       )}>
       <span className={cn('size-1.5 shrink-0 rounded-full', dotClass)} />

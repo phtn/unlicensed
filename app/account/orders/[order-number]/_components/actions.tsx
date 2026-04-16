@@ -31,18 +31,18 @@ export const Actions = ({status, href, isMobile}: Props) => {
         )
       case 'cancelled':
         return (
-          <div className='flex flex-col items-center justify-center'>
-            <Icon name='check' className='size-12 text-green-500' />
-            <p className='text-center text-sm font-semibold text-gray-500'>
+          <div className='flex items-center justify-center space-x-1'>
+            <Icon name='cancel-circle' className='size-3 text-rose-500' />
+            <p className='text-center text-sm font-semibold text-gray-400'>
               Order Cancelled
             </p>
           </div>
         )
       case 'delivered':
         return (
-          <div className='flex flex-col items-center justify-center'>
-            <Icon name='check' className='size-12 text-green-500' />
-            <p className='text-center text-sm font-semibold text-gray-500'>
+          <div className='flex items-center justify-center space-x-1'>
+            <Icon name='check' className='size-3 text-green-500' />
+            <p className='text-center text-sm font-semibold text-gray-400'>
               Order Delivered
             </p>
           </div>

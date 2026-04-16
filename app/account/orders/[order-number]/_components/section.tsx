@@ -5,7 +5,7 @@ import {ReactNode} from 'react'
 
 export const SectionTitle = ({title}: {title: ReactNode}) => {
   return (
-    <h2 className='text-lg tracking-wide font-clash font-semibold mb-2 opacity-70'>
+    <h2 className='font-polysans font-medium text-lg tracking-wide mb-2 opacity-70'>
       {title}
     </h2>
   )
@@ -13,7 +13,7 @@ export const SectionTitle = ({title}: {title: ReactNode}) => {
 
 export const Section = ({children}: {children: ReactNode}) => {
   return (
-    <h2 className='text-lg tracking-wide font-polysans font-semibold mb-4'>
+    <h2 className='text-lg tracking-wide font-polysans font-semibold mb-2 md:mb-4'>
       {children}
     </h2>
   )
@@ -32,7 +32,7 @@ export const TxnId = ({id}: TxnIdProps) => {
   const {copy, copied} = useCopy({timeout: 2000})
   const handleCopy = () => copy('Txn ID', id)
   return (
-    <div className=' flex items-center space-x-4'>
+    <div className='flex items-center space-x-4'>
       <Tooltip delay={0}>
         <Tooltip.Trigger>
           <Icon
@@ -48,7 +48,7 @@ export const TxnId = ({id}: TxnIdProps) => {
         target='_blank'
         rel='noopener noreferrer'
         className='flex items-center'>
-        <p className='max-w-[18ch] truncate font-brk text-sm tracking-wide'>
+        <p className='max-w-[18ch] truncate font-ios text-sm tracking-wide'>
           {id}
         </p>
         <Icon name='external-link-line' className='size-4' />

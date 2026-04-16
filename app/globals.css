@@ -65,9 +65,10 @@
   --color-secondary: var(--foreground);
   --color-secondary-foreground: var(--foreground);
   --color-tertiary: var(--tertiary);
-  --color-tertiary-foreground: var(--tertiary-foreground);
+  --color-tertiary-foreground: var(--sidebar);
   --color-panel: var(--panel);
   --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--sidebar);
   --color-hue: var(--hue);
   --color-alum: oklch(0.773 0.011 212.53);
@@ -285,7 +286,7 @@
   --sidebar-accent-foreground: oklch(0.196 0.021 271.47);
   --panel: oklch(0.785 0.133 181.91);
   --border: rgba(255, 255, 255, 0.22);
-  --hue: oklch(0.96 0.007 67.74);
+  --hue: oklch(0.6 0.007 67.74);
   --pill-bg: rgba(255, 255, 255, 0.16);
   --pill-border: rgba(255, 255, 255, 0.32);
   --effects: oklch(0.584 0.233 280.76);

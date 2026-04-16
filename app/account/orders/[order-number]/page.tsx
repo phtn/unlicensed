@@ -164,10 +164,11 @@ export default function OrderDetailPage() {
           />
         </div>
 
-        <div className='grid gap-6'>
+        <div className='grid gap-3 sm:gap-4 md:gap-6'>
           {/* Order Items */}
-          <Card className='dark:bg-dark-table rounded-xs'>
-            <Card.Content className='p-4 md:p-6'>
+          <Card className='relative dark:bg-dark-table/50 rounded-xs border border-light-gray dark:border-dark-table shadow-none overflow-hidden'>
+            <div className="absolute w-full h-full inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-60 scale-100 pointer-events-none" />
+            <Card.Content className='p-2 sm:p-4 md:p-6'>
               <SectionTitle title='Items' />
               <div className='grid md:grid-cols-2 md:gap-2 gap-3'>
                 {order.items.map((item, index) => (
@@ -185,7 +186,7 @@ export default function OrderDetailPage() {
                         className='w-20 h-20 aspect-square object-cover rounded-xs shrink-0'
                         loading='lazy'
                       />
-                      <div className='font-okxs flex-1 w-full space-y-1.5'>
+                      <div className='font-okxs flex-1 w-full space-y-1'>
                         <h3 className=''>{item.productName}</h3>
                         <div className='flex items-center text-sm opacity-80'>
                           <span className='hidden md:flex mr-1'>Quantity:</span>
@@ -197,7 +198,7 @@ export default function OrderDetailPage() {
                               : ''}
                           </span>
                         </div>
-                        <p className='text-sm opacity-80 mt-1'>
+                        <p className='text-sm opacity-80 mt-2'>
                           ${formatPrice(item.unitPriceCents)} each
                         </p>
                       </div>
@@ -214,9 +215,9 @@ export default function OrderDetailPage() {
           </Card>
 
           {/* Order Summary */}
-          <div className='grid gap-6 md:grid-cols-2'>
-            <Card className='rounded-xs'>
-              <Card.Content className='p-4 md:p-6'>
+          <div className='grid gap-3 sm:gap-4 md:gap-6 md:grid-cols-2 '>
+            <Card className='rounded-xs dark:bg-dark-table/30'>
+              <Card.Content className='p-3 sm:p-4 md:p-6'>
                 <SectionTitle title='Order Summary' />
                 <div className='space-y-2 font-okxs'>
                   <div className='flex justify-between text-sm'>
@@ -263,7 +264,7 @@ export default function OrderDetailPage() {
             </Card>
 
             {/* Payment Information */}
-            <Card className='rounded-xs'>
+            <Card className='rounded-xs dark:bg-dark-table/30'>
               <Card.Content className='p-4 md:p-6'>
                 <div className='flex items-center justify-between'>
                   <SectionTitle title='Payment' />
@@ -328,8 +329,8 @@ export default function OrderDetailPage() {
           </div>
 
           {/* Shipping Information */}
-          <div className='grid gap-6 md:grid-cols-2'>
-            <Card className='rounded-xs'>
+          <div className='grid gap-3 sm:gap-4 md:gap-6 md:grid-cols-2'>
+            <Card className='rounded-xs dark:bg-dark-table/30'>
               <Card.Content className='p-4 md:p-6'>
                 <SectionTitle title='Shipping Address' />
                 <div className='space-y-1 font-okxs text-sm'>
@@ -394,13 +395,15 @@ export default function OrderDetailPage() {
             </Card>
 
             {/* Order Details */}
-            <Card className='rounded-xs'>
-              <Card.Content className='p-4 md:p-6'>
+            <Card className='rounded-xs border-light-gray shadow-none dark:bg-dark-table/30'>
+              <Card.Content className='p-2 md:p-6'>
                 <SectionTitle title='Order Details' />
                 <div className='space-y-2 font-okxs text-sm'>
                   <div className='flex justify-between'>
                     <span className='text-color-muted'>Order Number</span>
-                    <span className='font-mono'>{order.orderNumber}</span>
+                    <span className='font-mono tracking-widest'>
+                      {order.orderNumber}
+                    </span>
                   </div>
                   <div className='flex justify-between'>
                     <span className='text-color-muted'>Placed On</span>

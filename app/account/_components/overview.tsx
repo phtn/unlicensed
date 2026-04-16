@@ -42,10 +42,14 @@ export const Overview = ({
     <div className='pb-12 pt-1'>
       {/* Greeting */}
       <div className='mb-2 px-2 md:px-4 xl:px-6 2xl:px-2 flex items-center justify-between'>
-        <p className='font-clash text-2xl tracking-tight text-foreground/90'>
-          {getGreeting()}
+        <p className='font-polysans font-medium text-2xl tracking-tight text-foreground/90 flex items-center space-x-2'>
+          <span>{getGreeting()}</span>
+          <Icon
+            name='chevron-double-left'
+            className='rotate-90 text-light-brand/80 size-8 mt-0.5'
+          />
         </p>
-        <p className='mt-0.5 font-ios text-xs text-default-400'>
+        <p className='mt-0.5 font-okxs text-xs tracking-wider opacity-80'>
           {new Date().toLocaleDateString('en-US', {
             weekday: 'long',
             month: 'long',
@@ -56,7 +60,7 @@ export const Overview = ({
 
       {/* Stats Row */}
       {orderStats && (
-        <div className='mb-5 grid grid-cols-3 gap-4 px-4 xl:px-6 2xl:px-0'>
+        <div className='mb-2 md:mb-4 grid grid-cols-3 gap-2 md:gap-4 px-2 md:px-4 xl:px-6 2xl:px-0'>
           <StatPill label='Orders' value={orderStats.totalOrders} icon='box' />
           <StatPill
             label='Spent'
@@ -76,9 +80,9 @@ export const Overview = ({
       )}
 
       {/* Main Grid */}
-      <div className='grid grid-cols-1 gap-5 px-4 lg:grid-cols-3 xl:px-6 2xl:px-0'>
+      <div className='grid grid-cols-1 gap-2 md:gap-4 px-2 md:px-4 lg:grid-cols-3 xl:px-6 2xl:px-0'>
         {/* Left: Profile + Rewards */}
-        <div className='space-y-5 lg:col-span-1'>
+        <div className='space-y-2 md:space-y-4 lg:col-span-1'>
           <ProfileCard user={user} />
           {pointsBalance && <RewardPoints pointsBalance={pointsBalance} />}
         </div>
@@ -102,14 +106,17 @@ function StatPill({
   icon: IconName
 }) {
   return (
-    <div className='flex flex-col gap-2 rounded-xs border border-foreground/8 bg-background/60 px-3 py-3 backdrop-blur-sm dark:border-foreground/10 dark:bg-dark-table/30'>
-      <div className='flex items-center justify-between'>
-        <span className='font-okxs text-[9px] uppercase tracking-widest text-default-400'>
+    <div className='flex flex-col gap-2 rounded-xs bg-background/40 p-3 backdrop-blur-sm dark:border-foreground/10 dark:bg-dark-table/30'>
+      <div className='flex items-center justify-between relative'>
+        <span className='font-okxs text-[8px] md:text-[9px] uppercase tracking-widest opacity-70'>
           {label}
         </span>
-        <Icon name={icon} className='size-3.5 text-default-300' />
+        <Icon
+          name={icon}
+          className='size-8 opacity-20 absolute -top-1 -right-1'
+        />
       </div>
-      <span className='font-okxs font-medium text-lg leading-none tracking-tight text-foreground'>
+      <span className='font-clash font-medium text-base md:text-lg leading-none'>
         {value}
       </span>
     </div>

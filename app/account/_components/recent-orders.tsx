@@ -9,7 +9,7 @@ import {OrderListItem} from './order-list-item'
 
 export const RecentOrders = ({orders}: {orders?: Array<Doc<'orders'>>}) => {
   return (
-    <div className='flex flex-col gap-3'>
+    <div className='flex flex-col gap-2 md:gap-3'>
       {/* Header */}
       <div className='flex items-center justify-between px-1'>
         <div className='flex items-center gap-2'>
