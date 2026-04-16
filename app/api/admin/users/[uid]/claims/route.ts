@@ -154,9 +154,11 @@ export async function DELETE(
     const existingUser = await adminAuth.getUser(uid)
     const existingClaims = (existingUser.customClaims ?? {}) as Record<string, unknown>
 
-    // Refuse to wipe claims if protected keys are present
+    // Refuse to wipe claims only when the protected claim is actively set to true.
+    // A stale `admin: false` (from a previous API contract) is not a live privilege
+    // and should not block regular staff admins from clearing unrelated claims.
     const presentProtectedKeys = [...PROTECTED_CLAIM_KEYS].filter(
-      (key) => existingClaims[key] !== undefined,
+      (key) => existingClaims[key] === true,
     )
     if (presentProtectedKeys.length > 0) {
       return NextResponse.json(

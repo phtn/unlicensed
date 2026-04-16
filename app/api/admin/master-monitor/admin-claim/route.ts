@@ -85,14 +85,30 @@ async function requireAdminClaimEditor(
 
 /**
  * Resolve a Firebase user by UID or email.
- * If the input contains '@' it is treated as an email; otherwise as a UID.
+ * Always tries UID lookup first (Firebase UIDs are arbitrary strings and can
+ * contain '@'). Falls back to email lookup only when the UID attempt returns
+ * a "user-not-found" error AND the input contains '@'.
  */
 async function resolveFirebaseUser(uidOrEmail: string) {
   const adminAuth = getAdminAuth()
-  if (uidOrEmail.includes('@')) {
-    return adminAuth.getUserByEmail(uidOrEmail.trim().toLowerCase())
+  const input = uidOrEmail.trim()
+
+  try {
+    return await adminAuth.getUser(input)
+  } catch (err: unknown) {
+    const code =
+      err && typeof err === 'object' && 'code' in err
+        ? (err as {code: string}).code
+        : null
+
+    // Only fall back to email if the UID was genuinely not found and the
+    // input looks like an email address
+    if (code === 'auth/user-not-found' && input.includes('@')) {
+      return adminAuth.getUserByEmail(input.toLowerCase())
+    }
+
+    throw err
   }
-  return adminAuth.getUser(uidOrEmail.trim())
 }
 
 export async function GET(request: NextRequest) {
