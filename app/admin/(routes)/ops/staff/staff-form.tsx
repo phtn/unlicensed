@@ -5,6 +5,10 @@ import {Id} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
 import {Icon} from '@/lib/icons'
 import {canAccessAdminPanel} from '@/lib/staff-access'
+import {
+  DIVISION_OPTIONS,
+  getPositionsForDivision,
+} from '@/lib/staff-roles'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
 import {useStore} from '@tanstack/react-store'
@@ -68,6 +72,10 @@ export const StaffForm = ({
   const [activeSection, setActiveSection] = useState<string>('basic-info')
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [syncClaimsStatus, setSyncClaimsStatus] = useState<
+    'idle' | 'loading' | 'success' | 'error'
+  >('idle')
+  const [syncClaimsError, setSyncClaimsError] = useState<string | null>(null)
   const mainScrollRef = useRef<HTMLElement>(null)
 
   // Get current user's staff record for authorization check
@@ -237,6 +245,22 @@ export const StaffForm = ({
     form.store,
     (state) => state.values.name as string | undefined,
   )
+  const divisionValue = useStore(
+    form.store,
+    (state) => state.values.division as string | undefined,
+  )
+  const positionOptions = useMemo<SelectOption[]>(
+    () =>
+      getPositionsForDivision(divisionValue).map((p) => ({
+        value: p.value,
+        label: p.label,
+      })),
+    [divisionValue],
+  )
+  const divisionSelectOptions = useMemo<SelectOption[]>(
+    () => DIVISION_OPTIONS.map((d) => ({value: d.value, label: d.label})),
+    [],
+  )
 
   // Handle email selection change to auto-populate name and avatarUrl
   useEffect(() => {
@@ -287,6 +311,30 @@ export const StaffForm = ({
   }, [initialValues, isEditMode, form])
 
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
+
+  const handleSyncClaims = useCallback(async () => {
+    if (!staffId) return
+    setSyncClaimsStatus('loading')
+    setSyncClaimsError(null)
+    try {
+      const idToken = await firebaseUser?.getIdToken()
+      const res = await fetch(`/api/admin/staff/${staffId}/sync-claims`, {
+        method: 'POST',
+        headers: {Authorization: `Bearer ${idToken}`},
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setSyncClaimsStatus('success')
+        setTimeout(() => setSyncClaimsStatus('idle'), 3000)
+      } else {
+        setSyncClaimsError(data.message ?? data.error ?? 'Sync failed')
+        setSyncClaimsStatus('error')
+      }
+    } catch {
+      setSyncClaimsError('Sync failed')
+      setSyncClaimsStatus('error')
+    }
+  }, [staffId, firebaseUser])
 
   const scrollToSection = useCallback(
     (sectionId: string) => () => {
@@ -372,6 +420,32 @@ export const StaffForm = ({
               {errorMessage}
             </p>
           )}
+
+          {isEditMode && (
+            <div className='mt-3'>
+              <Button
+                size='md'
+                fullWidth
+                variant='outline'
+                className='w-full rounded-xl font-medium tracking-tight'
+                isDisabled={syncClaimsStatus === 'loading'}
+                onPress={() => void handleSyncClaims()}>
+                {syncClaimsStatus === 'loading'
+                  ? 'Syncing…'
+                  : 'Sync Firebase Claims'}
+              </Button>
+              {syncClaimsStatus === 'success' && (
+                <p className='mt-2 text-sm text-center text-emerald-500'>
+                  Claims synced successfully
+                </p>
+              )}
+              {syncClaimsStatus === 'error' && syncClaimsError && (
+                <p className='mt-2 text-sm text-center text-rose-500'>
+                  {syncClaimsError}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </aside>
 
@@ -426,27 +500,30 @@ export const StaffForm = ({
                   }}
                 </form.AppField>
 
-                <div className='w-full flex items-cenzer space-x-4'>
-                  {/* Sector */}
+                <div className='w-full flex items-center space-x-4'>
+                  {/* Division */}
                   <form.AppField name='division'>
                     {(field) => (
-                      <field.TextField
+                      <field.SelectField
                         {...field}
-                        type='text'
+                        type='select'
                         name='division'
-                        label='division'
-                        placeholder='e.g., Sales, Marketing, Fulfillment, Shipping'
+                        label='Division'
+                        placeholder='Select division…'
+                        options={divisionSelectOptions}
                       />
                     )}
                   </form.AppField>
+                  {/* Position — filtered by selected division */}
                   <form.AppField name='position'>
                     {(field) => (
-                      <TextField
+                      <SelectField
                         {...field}
-                        type='text'
+                        type='select'
                         name='position'
                         label='Position'
-                        placeholder='e.g., Store Manager, Sales Associate'
+                        placeholder='Select position…'
+                        options={positionOptions}
                       />
                     )}
                   </form.AppField>

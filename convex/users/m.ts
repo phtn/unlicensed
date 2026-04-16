@@ -667,6 +667,26 @@ export const updateNotes = mutation({
   },
 })
 
+export const setWholesale = mutation({
+  args: {
+    userId: v.id('users'),
+    wholesale: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId)
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    await ctx.db.patch(args.userId, {
+      wholesale: args.wholesale,
+      updatedAt: Date.now(),
+    })
+
+    return args.userId
+  },
+})
+
 export const migrateLegacyAddressesToTable = mutation({
   args: {
     limit: v.optional(v.number()),
