@@ -1,5 +1,6 @@
 'use client'
 
+import type {Id} from '@/convex/_generated/dataModel'
 import {
   type CartItemWithProduct,
   isProductCartItemWithProduct,
@@ -8,7 +9,6 @@ import {Icon} from '@/lib/icons'
 import {getUnitPriceBreakdown} from '@/utils/cartPrice'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
 import {formatPrice} from '@/utils/formatPrice'
-import type {Id} from '@/convex/_generated/dataModel'
 import {Button} from '@heroui/react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -30,9 +30,7 @@ interface CartDrawerItemsProps {
   resolveUrl: (url: string) => string | null
   isPending: boolean
   startTransition: TransitionStartFunction
-  applyOptimisticCartAction: (
-    action: CartDrawerItemsOptimisticAction,
-  ) => void
+  applyOptimisticCartAction: (action: CartDrawerItemsOptimisticAction) => void
   updateItem: (
     productId: Id<'products'>,
     quantity: number,
@@ -64,7 +62,7 @@ export const CartDrawerItems = ({
   }
 
   return (
-    <div className='px-4 mb-6'>
+    <div className='px-3 md:px-4 mb-6'>
       {cartItems.map((item, index) => {
         if (isProductCartItemWithProduct(item)) {
           const product = item.product
@@ -72,15 +70,14 @@ export const CartDrawerItems = ({
           const priceBreakdown = getUnitPriceBreakdown(product, denomination)
           const itemPrice = priceBreakdown.unitCents
           const totalPrice = itemPrice * item.quantity
-          const regularTotalPrice =
-            priceBreakdown.regularCents * item.quantity
+          const regularTotalPrice = priceBreakdown.regularCents * item.quantity
           const productImageUrl = resolveUrl(product.image ?? '')
           const hasImage = Boolean(product.image && productImageUrl)
 
           return (
             <div
               key={`${product._id}-${item.denomination ?? 'default'}`}
-              className='flex gap-3 p-1 md:p-3 first:rounded-t-lg last:rounded-b-lg border border-b-0 last:border-b border-foreground/15 bg-card/50'>
+              className='flex gap-3 p-1 md:p-3 first:rounded-t-md md:first:rounded-t-lg last:rounded-b-md md:last:rounded-b-lg border border-b-0 last:border-b border-foreground/15 bg-card/50'>
               <div className='relative w-21 h-21 shrink-0 rounded-xs overflow-hidden bg-muted'>
                 {hasImage ? (
                   <Image

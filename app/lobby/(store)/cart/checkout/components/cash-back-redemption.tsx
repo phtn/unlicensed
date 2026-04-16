@@ -43,12 +43,13 @@ export function CashBackRedemption({
   return (
     <div
       className={cn(
-        'rounded-md border border-brand/80 bg-brand/5 dark:bg-dark-table/50 p-3',
+        'relative rounded-sm border border-foreground/40 bg-foreground/5 dark:bg-sidebar/50 p-1 md:p-2 md:h-18 overflow-hidden',
         className,
       )}>
+      <div className="absolute w-full h-full inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-60 scale-100 pointer-events-none" />
       <div className='flex items-start justify-between'>
-        <div className='space-y-1'>
-          <p className='font-clash text-base md:text-[13px] leading-none'>
+        <div className='space-y-1.5 px-1 py-2 md:p-2'>
+          <p className='font-polysans text-base md:tracking-wide leading-none'>
             {availableBalanceCents ? 'Available Rewards' : 'Rewards'}
           </p>
           <div className='flex items-center space-x-1.5 text-sm font-normal text-foreground/80 tracking-wide'>
@@ -58,9 +59,9 @@ export function CashBackRedemption({
                 className='text-emerald-600 inline-block size-3'
               />
             )}
-            <span className='h-3'>
+            <span className='h-3 whitespace-nowrap'>
               {canRedeem
-                ? 'Eligible for redemption'
+                ? 'Redeemable'
                 : availableBalanceCents
                   ? `$${formatPrice(5000 - subtotalCents)} away to redeem points.`
                   : `Complete orders to build up cash back.`}
@@ -96,9 +97,9 @@ export function CashBackRedemption({
         )}
       </div>
 
-      <div className='mt-2 flex items-end justify-between gap-3'>
+      {/*<div className='mt-2 flex items-end justify-between gap-3'>
         <div className='min-w-0' />
-      </div>
+      </div>*/}
     </div>
   )
 }
@@ -157,59 +158,67 @@ function PointsInput({
   )
 
   return (
-    <div className='flex items-center gap-3 shrink-0'>
-      <div className='flex flex-row items-center gap-1.5'>
-        <div className='relative'>
-          <input
-            type='text'
-            inputMode='numeric'
-            aria-label='Reward dollars to redeem'
-            value={inputValue}
-            onFocus={() => setIsEditing(true)}
-            onChange={(e) => {
-              const v = e.target.value.replace(/[^0-9]/g, '')
-              setInputValue(v)
-              commitValue(v)
-            }}
-            onBlur={() => {
-              commitValue(inputValue, true)
-              setIsEditing(false)
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+    <div className='space-y-0.5 _md:space-y-1'>
+      <div className='flex items-center gap-1 shrink-0'>
+        <div className='flex flex-row items-center gap-1 md:gap-1.5'>
+          <div className='relative'>
+            <input
+              type='text'
+              inputMode='numeric'
+              aria-label='Reward dollars to redeem'
+              value={inputValue}
+              onFocus={() => setIsEditing(true)}
+              onChange={(e) => {
+                const v = e.target.value.replace(/[^0-9]/g, '')
+                setInputValue(v)
+                commitValue(v)
+              }}
+              onBlur={() => {
                 commitValue(inputValue, true)
                 setIsEditing(false)
-              }
-            }}
-            className='w-16 h-7 ps-5 rounded-sm border border-light-gray dark:border-dark-table focus:border-brand focus:outline-none text-left text-sm font-okxs font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-          />
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  commitValue(inputValue, true)
+                  setIsEditing(false)
+                }
+              }}
+              className={cn(
+                'w-20 h-7 ps-5 pe-1 rounded-xs border border-light-gray dark:border-dark-table focus:border-brand focus:outline-none text-right text-sm font-okxs font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
+                {'w-20': availableCents >= 1000},
+              )}
+            />
 
-          <span className='absolute left-2 top-1 text-sm font-okxs font-medium'>
-            $
-          </span>
+            <span className='absolute left-2 top-1 text-sm font-okxs font-medium opacity-60'>
+              $
+            </span>
+          </div>
         </div>
-        <button
-          id='max-redeemable'
-          onClick={() => {
-            setInputValue(formatDollars(maxDollars))
-            onCustomCentsChange(null)
-          }}
-          className='text-foreground font-clash whitespace-nowrap cursor-pointer group'>
-          <strong className='text-[10px]'>MAX</strong>{' '}
-          <span className='font-clash font-medium text-brand dark:text-pink-400 dark:group-hover:text-pink-300'>
-            ${formatPrice(availableCents)}
-          </span>
-        </button>
+        <Button
+          size='sm'
+          isIconOnly
+          variant='ghost'
+          className='shrink-0 size-7 md:size-7 min-w-0 rounded-xs dark:hover:bg-transparent md:dark:hover:bg-dark-table ring-offset-0 focus-visible:ring-1'
+          aria-label='Remove rewards'
+          onPress={onDisable}>
+          <Icon name='x' className='size-3.5' />
+        </Button>
       </div>
-      <Button
-        size='sm'
-        isIconOnly
-        variant='ghost'
-        className='shrink-0 size-7 min-w-0 rounded-sm opacity-60 hover:opacity-100 dark:hover:bg-dark-table'
-        aria-label='Remove rewards'
-        onPress={onDisable}>
-        <Icon name='x' className='size-3.5' />
-      </Button>
+
+      <button
+        id='max-redeemable'
+        onClick={() => {
+          setInputValue(formatDollars(maxDollars))
+          onCustomCentsChange(null)
+        }}
+        className='text-foreground font-clash whitespace-nowrap cursor-pointer group space-x-1.5 min-w-20'>
+        <strong className='font-clash font-black text-xs tracking-widest md:tracking-normal opacity-80'>
+          MAX
+        </strong>
+        <span className='font-clash font-normal text-sm text-brand dark:text-pink-200 dark:group-hover:text-pink-200'>
+          ${formatPrice(availableCents)}
+        </span>
+      </button>
     </div>
   )
 }
@@ -230,7 +239,7 @@ const UseRewardsPoints = ({
     <Button
       size='sm'
       variant={isEnabled && canRedeem ? 'primary' : 'secondary'}
-      className={cn('shrink-0 rounded-xs font-okxs h-9 hidden', {
+      className={cn('shrink-0 rounded-xs font-okxs h-13 hidden', {
         'flex bg-brand text-background dark:bg-white dark:text-dark-table':
           available > 0 && canRedeem,
       })}
@@ -246,8 +255,8 @@ const UseRewardsPoints = ({
         </div>
       ) : (
         <span>
-          Use rewards <span className='font-ios font-light opacity-50'>(</span>
-          <span className='font-clash font-medium text-brand dark:text-light-brand'>
+          Use Rewards <span className='font-ios font-light opacity-50'>(</span>
+          <span className='font-clash font-medium text-white dark:text-light-brand opacity-100'>
             ${formatPrice(available)}
           </span>
           <span className='font-ios font-light opacity-50'>)</span>

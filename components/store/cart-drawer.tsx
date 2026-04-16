@@ -325,7 +325,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                     removeBundle={removeBundle}
                   />
 
-                  <div className='font-clash space-y-3 px-4 mb-6'>
+                  <div className='font-clash space-y-3 px-3 md:px-4 mb-6'>
                     <div className='flex justify-between px-2'>
                       <span className='text-lg font-medium'>Subtotal</span>
                       <span className='flex flex-col items-end'>

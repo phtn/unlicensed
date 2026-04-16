@@ -180,13 +180,23 @@ export const UserDropdown = ({
 
           <Dropdown.Section aria-label='Quick actions'>
             <Dropdown.Item
+              id='orders'
+              textValue='Orders'
+              className='rounded-xs'>
+              <MenuItemContent
+                icon='box'
+                label='Orders'
+                description='Track and view purchases'
+              />
+            </Dropdown.Item>
+
+            <Dropdown.Item
               id='messages'
               textValue='Messages'
               className='rounded-xs'>
               <MenuItemContent
                 icon='message-filled'
                 label='Messages'
-                description='Open your inbox'
                 endContent={
                   unreadTotal > 0 && (
                     <MenuPill tone='brand'>{unreadLabel}</MenuPill>
@@ -195,21 +205,10 @@ export const UserDropdown = ({
               />
             </Dropdown.Item>
 
-            <Dropdown.Item
-              id='orders'
-              textValue='Orders'
-              className='rounded-xs'>
-              <MenuItemContent
-                icon='box'
-                label='Orders'
-                description='Track and review recent purchases'
-              />
-            </Dropdown.Item>
-
             <Dropdown.Item id='theme' textValue='Theme' className='rounded-xs'>
               <MenuItemContent
                 icon='toggle-theme'
-                label={isDarkMode ? 'Light mode' : 'Dark mode'}
+                label={isDarkMode ? 'Dark mode' : 'Light mode'}
               />
             </Dropdown.Item>
 

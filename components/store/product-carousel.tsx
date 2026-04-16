@@ -124,7 +124,7 @@ export const ProductCarousel = ({
           {products.map((product) => (
             <div
               key={product._id ?? product.slug}
-              className='mr-1 sm:mr-2 md:mr-3! min-w-0 h-full flex-[0_0_calc((100%-2.5rem)/2.25)] sm:flex-[0_0_calc((100%-1.5rem)/2.5)] md:flex-[0_0_calc((100%-2.25rem)/3.25)] lg:flex-[0_0_calc((100%-3rem)/4)] xl:flex-[0_0_calc((100%-3rem)/5)]'>
+              className='mr-1 sm:mr-2 md:mr-3! min-w-0 h-full flex-[0_0_calc((100%-2rem)/2.05)] sm:flex-[0_0_calc((100%-1.5rem)/2.5)] md:flex-[0_0_calc((100%-2.25rem)/3.25)] lg:flex-[0_0_calc((100%-3rem)/4)] xl:flex-[0_0_calc((100%-3rem)/5)]'>
               <ProductCard
                 product={product}
                 imageUrl={resolveProductImage(product.image, resolveUrl)}

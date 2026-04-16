@@ -281,9 +281,8 @@ export default function CartPage() {
   }
 
   return (
-    <div className='min-h-screen w-full min-w-0 overflow-x-hidden pt-16 sm:pt-16 md:pt-16 lg:pt-20 xl:pt-24 2xl:pt-28 pb-10 px-4 sm:px-6 md:px-6 lg:px-8'>
+    <div className='min-h-screen w-full min-w-0 overflow-x-hidden pt-16 sm:pt-16 md:pt-16 lg:pt-20 xl:pt-24 2xl:pt-28 pb-10 px-2 sm:px-4 md:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto w-full min-w-0'>
-
         <div className='grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]'>
           <div className='min-w-0 rounded-xs'>
             {cartItems.length > 0 ? (

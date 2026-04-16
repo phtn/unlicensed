@@ -163,10 +163,12 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
       <motion.div
         layout
         transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}>
-        <Card className='min-w-0 overflow-hidden dark:bg-dark-table/40 border border-foreground/20 border-t-0 rounded-none'>
+        <Card className='min-w-0 overflow-hidden dark:bg-dark-table/40 border border-foreground/20 dark:border-sidebar/50 border-t-0 rounded-none p-0 md:p-2'>
           <Card.Content className='relative space-y-2 px-2 md:px-4 lg:px-5 pb-1'>
             <div className="absolute w-500 h-full scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
-            <h2 className='text-lg font-normal font-bone'>Order Summary</h2>
+            <h2 className='font-polysans font-semibold text-lg'>
+              Order Summary
+            </h2>
             <ViewTransition>
               <div className='space-y-2'>
                 <div className='flex justify-between font-okxs text-sm md:text-base'>
@@ -229,10 +231,10 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
             </div>
 
             {isAuthenticated && (
-              <div className='space-y-1 mt-2 rounded-md border border-foreground/30 dark:bg-foreground/5 bg-foreground/2 overflow-hidden'>
-                <div className='flex items-center justify-between gap-3'>
-                  <div className='flex items-center justify-between w-full p-2'>
-                    <p className='font-clash text-base md:text-[12px] leading-none'>
+              <div className='space-y-0 mt-2 rounded-sm border border-foreground/40 dark:bg-foreground/5 bg-foreground/2 overflow-hidden'>
+                <div className='flex items-center justify-between'>
+                  <div className='flex items-center justify-between w-full p-3 md:px-4'>
+                    <p className='font-polysans text-base md:tracking-wide leading-none'>
                       Coupon Code
                     </p>
                     {couponHelpText ? (
@@ -289,7 +291,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                       (!hasAppliedCoupon && couponCode.trim().length === 0)
                     }
                     className={cn(
-                      'rounded-none rounded-br-sm min-w-32 h-9 bg-foreground/70 dark:bg-background text-white font-clash',
+                      'rounded-none rounded-br-xs min-w-32 h-9 bg-foreground/70 dark:bg-background text-white font-clash',
                       {
                         'text-brand': hasAppliedCoupon,
                         'text-cyan-100': isCouponApplying,

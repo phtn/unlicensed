@@ -69,16 +69,16 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
   method: IPaymentMethod
 }) {
   return (
-    <div className='h-16 flex gap-2 md:gap-3 px-2 md:p-2 pb-3'>
-      <Icon name={method.icon} className={cn('shrink-0 size-4 mt-1')} />
+    <div className='h-16 flex items-center gap-3 px-2 md:p-2'>
+      <Icon name={method.icon} className={cn('shrink-0 size-6')} />
       <div className='flex flex-col w-full md:space-y-0.5'>
-        <div className='flex items-center justify-between w-full h-8 md:h-7'>
-          <div className='flex items-center space-x-2 whitespace-nowrap text-base md:text-lg tracking-tight font-medium'>
+        <div className='flex items-center justify-between w-full h-7 md:h-7'>
+          <div className='flex items-center space-x-2 md:space-x-4 whitespace-nowrap text-base md:text-lg tracking-tight font-medium'>
             <span className='dark:text-white text-foreground'>
               {method.label}
             </span>
             {method.id === 'cards' ? (
-              <div className='flex items-center space-x-1 text-foreground'>
+              <div className='flex items-center space-x-2 md:space-x-4 text-foreground'>
                 <Icon name='applepay' className='size-10' />
                 <Icon name='googlepay' className='size-10' />
               </div>
@@ -87,7 +87,7 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
           </div>
           <div
             className={cn(
-              'text-[8px] uppercase font-brk w-fit px-1 py-0 md:px-1 leading-3 md:leading-normal dark:text-white text-right',
+              'text-[8px] uppercase font-ios w-fit px-1 py-0 leading-3 md:leading-normal dark:text-white text-right',
             )}>
             {method.tag}
           </div>
@@ -112,14 +112,14 @@ const SelectedMethodRow = memo(function SelectedMethodRow({
           name={method.icon}
           className={cn('shrink-0 size-5', method.iconStyle)}
         />
-        <div className='flex items-center space-x-2'>
+        <div className='flex items-center space-x-2 md:space-x-4'>
           <span className='text-lg whitespace-nowrap tracking-tight'>
             {method.label}
           </span>
           {method.id === 'cards' ? (
-            <div className='flex items-center space-x-2'>
-              <Icon name='applepay' className='size-10' />
-              <Icon name='googlepay' className='size-10' />
+            <div className='flex items-center space-x-2 md:space-x-4'>
+              <Icon name='applepay' className='md:size-10 size-8' />
+              <Icon name='googlepay' className='md:size-10 size-8' />
             </div>
           ) : null}
           <TxnSpeed method={method.id} selected />
@@ -177,7 +177,7 @@ export const PaymentMethods = memo(function PaymentMethods({
   return (
     <div className='space-y-2'>
       <Label
-        className='text-lg font-normal font-bone mb-2 select-none'
+        className='font-polysans font-semibold text-lg select-none mb-2'
         htmlFor='payment-method'>
         Payment Methods
       </Label>
