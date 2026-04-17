@@ -4,6 +4,7 @@ import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {AddressType} from '@/convex/users/d'
 import {
+  computePaymentMethodDiscountCents,
   computeProcessingFeeCents,
   getCashAppProcessingFeePercent,
 } from '@/lib/checkout/processing-fee'
@@ -175,7 +176,14 @@ export function Checkout({
     Math.round((pointsBalance?.availablePoints ?? 0) * 100),
   )
   const couponDiscountCents = appliedCoupon?.discountCents ?? 0
-  const totalBeforeProcessingFee = Math.max(0, total - couponDiscountCents)
+  const paymentMethodDiscountCents = computePaymentMethodDiscountCents({
+    paymentMethod: formData.paymentMethod,
+    subtotalCents: subtotal,
+  })
+  const totalBeforeProcessingFee = Math.max(
+    0,
+    total - couponDiscountCents - paymentMethodDiscountCents,
+  )
   const maxRedeemableCents = Math.min(
     availableCashBackCents,
     totalBeforeProcessingFee,
@@ -188,7 +196,10 @@ export function Checkout({
       : 0
   const discountedSubtotalCents = Math.max(
     0,
-    subtotal - couponDiscountCents - appliedCashBackCents,
+    subtotal -
+      couponDiscountCents -
+      paymentMethodDiscountCents -
+      appliedCashBackCents,
   )
   const processingFeeCents = computeProcessingFeeCents({
     discountedSubtotalCents,
@@ -590,6 +601,7 @@ export function Checkout({
         shipping={shipping}
         total={totalWithProcessingFee}
         processingFeeCents={processingFeeCents}
+        paymentMethodDiscountCents={paymentMethodDiscountCents}
         showTaxRow={showTaxRow}
         isAuthenticated={isAuthenticated}
         isLoading={isLoading}

@@ -1,6 +1,7 @@
 import {v} from 'convex/values'
 import {
   computeOrderTotalCents,
+  computePaymentMethodDiscountCents,
   computePersistedOrderPaymentAmounts,
   getCashAppProcessingFeePercent,
 } from '../../lib/checkout/processing-fee'
@@ -752,9 +753,13 @@ export const createOrder = mutation({
     }
 
     let redeemedStoreCreditCents = 0
+    const paymentMethodDiscountCents = computePaymentMethodDiscountCents({
+      paymentMethod: args.paymentMethod,
+      subtotalCents,
+    })
     const subtotalAfterCouponCents = Math.max(
       0,
-      subtotalCents - couponDiscountCents,
+      subtotalCents - couponDiscountCents - paymentMethodDiscountCents,
     )
     if (
       orderUserId &&
@@ -811,7 +816,8 @@ export const createOrder = mutation({
         ? cryptoProcessingFeeConfig.acc
         : 1
     const cashAppPercent = getCashAppProcessingFeePercent(paymentMethodsConfig)
-    const totalDiscountCents = couponDiscountCents + redeemedStoreCreditCents
+    const totalDiscountCents =
+      couponDiscountCents + paymentMethodDiscountCents + redeemedStoreCreditCents
     const discountedSubtotalCents = Math.max(
       0,
       subtotalCents - totalDiscountCents,
@@ -861,6 +867,10 @@ export const createOrder = mutation({
       couponCode: appliedCoupon?.code,
       couponDiscountCents:
         couponDiscountCents > 0 ? couponDiscountCents : undefined,
+      paymentMethodDiscountCents:
+        paymentMethodDiscountCents > 0
+          ? paymentMethodDiscountCents
+          : undefined,
       totalCents,
       ...(cryptoFeeCents !== undefined ? {cryptoFeeCents} : {}),
       ...(totalWithCryptoFeeCents !== undefined

@@ -65,6 +65,7 @@ type ComputePersistedOrderPaymentAmountsArgs = {
 }
 
 export const CASH_APP_PROCESSING_FEE_PERCENT = 5
+export const CRYPTO_PAYMENT_DISCOUNT_PERCENT = 3
 
 const normalizePercent = (value: unknown) =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0
@@ -102,8 +103,31 @@ export const getCashAppProcessingFeePercent = (paymentMethodsSetting: unknown) =
 const normalizeMoneyCents = (value?: number) =>
   Number.isFinite(value) ? Math.max(0, value ?? 0) : 0
 
-const isCryptoPaymentMethod = (paymentMethod?: string) =>
+export const isCryptoPaymentMethod = (paymentMethod?: string) =>
   paymentMethod === 'crypto_transfer' || paymentMethod === 'crypto_commerce'
+
+export const computePaymentMethodDiscountCents = ({
+  paymentMethod,
+  subtotalCents,
+  percent = CRYPTO_PAYMENT_DISCOUNT_PERCENT,
+}: {
+  paymentMethod?: string
+  subtotalCents: number
+  percent?: number
+}) => {
+  if (!isCryptoPaymentMethod(paymentMethod)) {
+    return 0
+  }
+
+  const normalizedPercent = normalizePercent(percent) ?? 0
+  if (normalizedPercent === 0) {
+    return 0
+  }
+
+  return Math.round(
+    normalizeMoneyCents(subtotalCents) * (normalizedPercent / 100),
+  )
+}
 
 export const computeOrderSummarySubtotalCents = ({
   itemsTotalCents,

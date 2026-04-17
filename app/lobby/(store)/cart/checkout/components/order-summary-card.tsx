@@ -3,6 +3,7 @@
 import {Id} from '@/convex/_generated/dataModel'
 import {
   CASH_APP_PROCESSING_FEE_PERCENT,
+  CRYPTO_PAYMENT_DISCOUNT_PERCENT,
   formatProcessingFeePercent,
 } from '@/lib/checkout/processing-fee'
 import {Icon} from '@/lib/icons'
@@ -31,6 +32,7 @@ interface OrderSummaryCardProps {
   shipping: number
   total: number
   processingFeeCents?: number
+  paymentMethodDiscountCents?: number
   showTaxRow?: boolean
   isAuthenticated: boolean
   isLoading: boolean
@@ -83,6 +85,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   shipping,
   total,
   processingFeeCents = 0,
+  paymentMethodDiscountCents = 0,
   showTaxRow = true,
   isAuthenticated,
   isLoading,
@@ -123,6 +126,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
   const isFreeShipping = shipping === 0
   const hasAppliedCoupon = couponDiscountCents > 0
   const hasProcessingFee = processingFeeCents > 0
+  const hasPaymentMethodDiscount = paymentMethodDiscountCents > 0
   const effectiveVariant: RewardsVariant =
     rewardsVariant ?? (computedRewards != null ? 'tier' : 'off')
   const displayTotal = Math.max(0, total - appliedCashBackCents)
@@ -132,6 +136,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
     paymentMethod === 'cash_app'
       ? `Cash App Transaction Fee (${formatProcessingFeePercent(cashAppFeePercent)})`
       : 'Processing Fee'
+  const paymentMethodDiscountLabel = `Crypto Discount (${formatProcessingFeePercent(CRYPTO_PAYMENT_DISCOUNT_PERCENT)})`
 
   const rewardsPanel =
     effectiveVariant === 'tier' && computedRewards != null ? (
@@ -208,6 +213,12 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   <div className='flex justify-between font-okxs text-sm md:text-base text-emerald-600 dark:text-emerald-400'>
                     <span>Coupon ({couponCode.trim().toUpperCase()})</span>
                     <span>- ${formatPrice(couponDiscountCents)}</span>
+                  </div>
+                )}
+                {hasPaymentMethodDiscount && (
+                  <div className='flex justify-between font-okxs text-sm md:text-base text-emerald-600 dark:text-emerald-400'>
+                    <span>{paymentMethodDiscountLabel}</span>
+                    <span>- ${formatPrice(paymentMethodDiscountCents)}</span>
                   </div>
                 )}
                 {appliedCashBackCents > 0 && (

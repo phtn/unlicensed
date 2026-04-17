@@ -1,8 +1,9 @@
 import {describe, expect, test} from 'bun:test'
 import {
-  computePersistedOrderPaymentAmounts,
   computeCryptoFeeCents,
   computeOrderTotalCents,
+  computePaymentMethodDiscountCents,
+  computePersistedOrderPaymentAmounts,
   computeProcessingFeeCents,
   resolveOrderPayableTotalCents,
 } from '../lib/checkout/processing-fee'
@@ -46,6 +47,29 @@ describe('checkout pricing helpers', () => {
         shippingCents: 500,
       }),
     ).toBe(525)
+  })
+
+  test('applies the 3% subtotal discount to crypto payment methods only', () => {
+    expect(
+      computePaymentMethodDiscountCents({
+        paymentMethod: 'crypto_commerce',
+        subtotalCents: 10_000,
+      }),
+    ).toBe(300)
+
+    expect(
+      computePaymentMethodDiscountCents({
+        paymentMethod: 'crypto_transfer',
+        subtotalCents: 12_345,
+      }),
+    ).toBe(370)
+
+    expect(
+      computePaymentMethodDiscountCents({
+        paymentMethod: 'cards',
+        subtotalCents: 10_000,
+      }),
+    ).toBe(0)
   })
 
   test('uses the configured cash app fee when provided', () => {

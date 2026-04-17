@@ -154,6 +154,7 @@ export const orderSchema = v.object({
   couponId: v.optional(v.id('coupons')),
   couponCode: v.optional(v.string()),
   couponDiscountCents: v.optional(v.number()),
+  paymentMethodDiscountCents: v.optional(v.number()),
   totalCents: v.number(), // Final total
   cryptoFeeCents: v.optional(v.number()), // crypto fee applied to crypto payment methods
   totalWithCryptoFeeCents: v.optional(v.number()),
