@@ -1,6 +1,6 @@
 'use client'
 
-import {AdminMasterMonitor} from '@/components/main/admin-master-monitor'
+import {AdminMasterMonitor} from '@/components/main/master/admin-master-monitor'
 import dynamic from 'next/dynamic'
 import {useEffect, useState} from 'react'
 

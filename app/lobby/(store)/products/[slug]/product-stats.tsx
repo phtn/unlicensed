@@ -37,7 +37,7 @@ export const ProductDetailStats = ({
         {product.categorySlug === 'flower' || !product.thcPercentage ? null : (
           <span className='px-1 md:px-2 text-sm font-thin opacity-30'>|</span>
         )}
-        <span className='font-clash font-medium text-xs md:text-sm'>
+        <span className='font-clash font-medium text-xs md:text-sm px-2'>
           {product.strainType}
         </span>{' '}
       </div>

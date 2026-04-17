@@ -76,16 +76,14 @@ const ProductSummary = memo(({product}: {product: StoreProduct}) => (
 
 ProductSummary.displayName = 'ProductSummary'
 
+type DenominationPickerProps = {
+  options: DenominationOption[]
+  selectedIndex: number
+  onSelect: (index: number) => void
+}
+
 const DenominationPicker = memo(
-  ({
-    options,
-    selectedIndex,
-    onSelect,
-  }: {
-    options: DenominationOption[]
-    selectedIndex: number
-    onSelect: (index: number) => void
-  }) => (
+  ({options, selectedIndex, onSelect}: DenominationPickerProps) => (
     <div className='flex items-start gap-2 md:gap-3'>
       {options.map((option, index) => {
         const isSelected = selectedIndex === index
@@ -97,7 +95,8 @@ const DenominationPicker = memo(
             onClick={() => onSelect(index)}
             aria-pressed={isSelected}
             className={cn(
-              'relative inline-flex h-8 w-16 items-center justify-center border border-foreground/20 bg-sidebar text-base font-medium whitespace-nowrap transition-colors rounded-none font-okxs',
+              'relative inline-flex h-9 w-16 items-center justify-center border border-foreground/20 bg-sidebar text-base font-medium whitespace-nowrap transition-colors rounded-none font-okxs',
+              {'w-20': options.length < 4},
               isSelected
                 ? 'bg-dark-gray text-white md:hover:bg-black dark:bg-white dark:text-dark-gray dark:md:hover:bg-brand dark:md:hover:text-white'
                 : 'text-foreground/85 hover:border-foreground/35',
@@ -267,7 +266,7 @@ export const ProductInteraction = ({
           </p>
         )}
 
-        <div className='flex gap-2 sm:gap-4'>
+        <div className='flex gap-2 sm:gap-4 md:gap-5'>
           <Button
             size='lg'
             variant='primary'

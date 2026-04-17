@@ -67,17 +67,22 @@ export const ProductShareButton = ({product}: ProductShareButtonProps) => {
         onError('Unable to share this product')
       }
     }
-  }, [product.description, product.name, product.shortDescription, product.slug])
+  }, [
+    product.description,
+    product.name,
+    product.shortDescription,
+    product.slug,
+  ])
 
   return (
     <Button
       aria-label={`Share ${product.name}`}
       size='sm'
-      variant='ghost'
+      variant='primary'
       onPress={handleShare}
-      className='flex h-7 items-center md:-mb-1'>
-      <span>share</span>
-      <Icon name='share-fill' className='size-4' />
+      className='h-7 shrink-0 items-center md:-mb-1'>
+      <span className='font-polysans font-medium'>share</span>
+      <Icon name='share-fill' className='size-3.5' />
     </Button>
   )
 }

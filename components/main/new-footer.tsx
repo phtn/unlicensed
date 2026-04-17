@@ -7,9 +7,10 @@ export function NewFooter() {
       <div className='mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row'>
         <div className='flex items-center space-x-2 font-clash'>
           <Icon name='rapid-fire-logo' className='size-5 text-foreground/80' />
-          <span className='text-sm font-cv text-foreground'>
-            RapidFire ©{new Date().getFullYear()}
-          </span>
+          <div className='flex items-center text-sm font-cv text-foreground space-x-1.5'>
+            <span className='text-[13px]'>©</span>{' '}
+            <span>{new Date().getFullYear()}</span> <span>RapidFire</span>
+          </div>
         </div>
         <nav
           className='flex flex-wrap font-clash font-normal items-center justify-center gap-6'
