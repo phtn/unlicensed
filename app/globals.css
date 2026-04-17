@@ -264,7 +264,7 @@
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   /*--foreground: oklch(0.243 0.027 220.39);*/
-  --muted: rgba(255, 242, 233, 0.78);
+  --muted: oklch(0.129 0.042 264.695 / 60%);
   --muted-foreground: oklch(0.129 0.042 264.695 / 60%);
   --accent: oklch(0.6627 0.189 347.09);
   --brand: oklch(0.6146 0.189 347.09);
@@ -372,7 +372,11 @@
     ),
     radial-gradient(circle at 10% 44%, rgba(225, 89, 169, 0.2), transparent 62%);
 }
-
+@layer components {
+  .breadcrumbs__separator {
+    @apply text-foreground;
+  }
+}
 @layer base {
   *,
   *::before,

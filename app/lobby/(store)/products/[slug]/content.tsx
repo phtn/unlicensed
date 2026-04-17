@@ -4,15 +4,16 @@ import type {StoreProductDetail} from '@/app/types'
 import {QuickScroll} from '@/components/base44/quick-scroll'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
+import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {adaptProductDetail, type RawProductDetail} from '@/lib/convexClient'
 import {resolveProductImage} from '@/lib/resolve-product-image'
 import {useQuery} from 'convex/react'
 import {useMemo} from 'react'
-import {useStorageUrls} from '@/hooks/use-storage-urls'
 import {Crumbs} from './crumbs'
 import {Gallery} from './gallery'
 import {ProductDetails} from './product-details'
 import {ProductInteraction} from './product-interaction'
+import {ProductShareButton} from './product-share-button'
 import {RelatedProducts} from './related-products'
 
 interface ProductDetailContentProps {
@@ -81,7 +82,10 @@ export const ProductDetailContent = ({
   return (
     <div className='space-y-12 sm:space-y-16 lg:space-y-20 py-12 sm:py-16 lg:py-20 overflow-x-hidden w-full'>
       <div className='md:mx-auto lg:max-w-7xl max-w-screen p-2 sm:pt-4 md:pt-6 2xl:pt-8 sm:px-6 lg:px-0'>
-        <Crumbs product={resolvedProduct} />
+        <div className='flex items-center justify-between'>
+          <Crumbs product={resolvedProduct} />
+          <ProductShareButton product={resolvedProduct} />
+        </div>
         <div className='mt-2 sm:mt-8 lg:mt-6 grid gap-1 sm:gap-8 lg:gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start'>
           <Gallery
             product={resolvedProduct}

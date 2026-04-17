@@ -1,7 +1,49 @@
-import {fetchProductDetail} from '@/lib/convexClient'
+import {fetchProductDetail, fetchStorageUrlMap} from '@/lib/convexClient'
 import {Metadata} from 'next'
 import {notFound} from 'next/navigation'
 import {ProductDetailContent} from './content'
+
+const DEFAULT_SITE_URL = 'https://rapidfirenow.com'
+
+const getSiteUrl = () =>
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+  process.env.SITE_URL?.trim() ||
+  DEFAULT_SITE_URL
+
+const normalizeMetadataDescription = (value: string) => {
+  const normalized = value.replace(/\s+/g, ' ').trim()
+  return normalized.length > 200
+    ? `${normalized.slice(0, 197).trimEnd()}...`
+    : normalized
+}
+
+const resolveProductMetadataImage = async (
+  imageValues: Array<string | null | undefined>,
+) => {
+  const storageUrlMap = await fetchStorageUrlMap(imageValues)
+
+  for (const value of imageValues) {
+    if (!value) {
+      continue
+    }
+
+    if (
+      value.startsWith('http://') ||
+      value.startsWith('https://') ||
+      value.startsWith('/')
+    ) {
+      return value
+    }
+
+    const resolvedUrl = storageUrlMap.get(value)
+    if (resolvedUrl?.startsWith('http')) {
+      return resolvedUrl
+    }
+  }
+
+  return undefined
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -17,25 +59,57 @@ export async function generateMetadata({
   }
 
   const {product} = detail
-
-  // For metadata, we can't resolve storage IDs server-side
-  // Use empty array if images are storage IDs (they start with storage ID format)
-  const imageUrl =
-    product.image && product.image.startsWith('http')
-      ? product.image
-      : product.gallery &&
-          product.gallery.length > 0 &&
-          product.gallery[0]?.startsWith('http')
-        ? product.gallery[0]
-        : undefined
+  const productUrl = new URL(
+    `/lobby/products/${encodeURIComponent(product.slug || slug)}`,
+    getSiteUrl(),
+  )
+  const title = `${product.name} ・ Rapid Fire`
+  const productHighlights = [
+    product.strainType,
+    product.productTierLabel,
+    product.thcPercentage > 0 ? `${product.thcPercentage}% THC` : null,
+    product.cbdPercentage ? `${product.cbdPercentage}% CBD` : null,
+  ].filter((value): value is string => Boolean(value))
+  const description = normalizeMetadataDescription(
+    [
+      product.shortDescription || product.description || 'Shop this product.',
+      productHighlights.join(' · '),
+    ]
+      .filter(Boolean)
+      .join(' · '),
+  )
+  const imageUrl = await resolveProductMetadataImage([
+    product.image,
+    ...product.gallery,
+  ])
+  const images = imageUrl
+    ? [
+        {
+          url: imageUrl,
+          alt: product.name,
+        },
+      ]
+    : []
 
   return {
-    title: `${product.name} ・ Rapid Fire`,
-    description: product.shortDescription,
+    title,
+    description,
+    alternates: {
+      canonical: productUrl,
+    },
     openGraph: {
-      title: `${product.name} ・ Rapid Fire`,
-      description: product.description,
-      images: imageUrl ? [imageUrl] : [],
+      title,
+      description,
+      type: 'website',
+      url: productUrl,
+      siteName: 'Rapid Fire',
+      images,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images,
     },
   }
 }
