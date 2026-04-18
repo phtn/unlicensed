@@ -77,7 +77,8 @@ export const TopProviders = ({
               <div
                 className={cn(
                   'h-12 w-12 md:h-16 md:w-16 flex items-center justify-center aspect-square rounded-lg',
-                  cmap[provider.id],
+                  cmap[provider.id] ??
+                    'bg-white border border-gray-200 dark:border-gray-800',
                 )}>
                 <Icon
                   name={provider.id as IconName}
@@ -85,6 +86,8 @@ export const TopProviders = ({
                     'text-white dark:text-white':
                       provider.id === 'moonpay' ||
                       provider.id === 'rampnetwork',
+                    'size-10':
+                      provider.id === 'cryptocom' || provider.id === 'paypal',
                   })}
                 />
               </div>
