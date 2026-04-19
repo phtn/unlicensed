@@ -229,16 +229,11 @@ export function DealsContent({initialProductsByCategory}: DealsContentProps) {
       {config: BundleConfig; products: StoreProduct[]}
     > = {}
     const bucketMap = productsBySlug as Record<string, StoreProduct[]>
-    // Alias legacy/alternate slugs to the real category slug so deals created
-    // under a different name still resolve to the right product bucket.
-    const slugAliases: Record<string, string> = {
-      extracts: 'concentrates',
-    }
     for (const config of configsList) {
       const seen = new Set<string>()
       const products: StoreProduct[] = []
       for (const rawSlug of config.categorySlugs) {
-        const slug = slugAliases[rawSlug] ?? rawSlug
+        const slug = rawSlug
         const bucket = bucketMap[slug] ?? []
         for (const p of bucket) {
           const id = String(p._id)

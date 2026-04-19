@@ -116,7 +116,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Rapid Fire',
     description:
-      'Discover elevated THC flower, edibles, concentrates, and drinks curated for modern rituals.',
+      'Discover elevated THC flower, edibles, extracts, and drinks curated for modern rituals.',
     images: [
       {
         url: '/rf-x.webp',

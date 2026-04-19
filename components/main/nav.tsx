@@ -31,7 +31,7 @@ export const Nav = ({children}: NavProps) => {
   const isMobile = useMobile()
   const pathname = usePathname()
   const inStoreLobby = pathname.split('/').pop() === 'lobby'
-  const {setTheme, theme} = useTheme()
+  const {resolvedTheme, setTheme, theme} = useTheme()
   const {cartItemCount} = useCart()
   const {isOpen, onOpen, onClose} = useDisclosure()
   const {
@@ -60,8 +60,10 @@ export const Nav = ({children}: NavProps) => {
   )
 
   const handleToggleTheme = useCallback(() => {
-    setTheme(theme === 'light' ? 'dark' : 'light')
-  }, [setTheme, theme])
+    const activeTheme = resolvedTheme ?? theme
+
+    setTheme(activeTheme === 'dark' ? 'light' : 'dark')
+  }, [resolvedTheme, setTheme, theme])
 
   const [hovered, setHovered] = useState(false)
   const handleHomeMouseEnter = useCallback(() => {

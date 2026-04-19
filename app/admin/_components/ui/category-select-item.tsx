@@ -6,7 +6,6 @@ export type CategoryColor =
   | 'flower'
   | 'extracts'
   | 'edibles'
-  | 'concentrates'
   | 'vapes'
   | 'accessories'
 
@@ -39,12 +38,6 @@ export const categoryColors = {
     chipClassName:
       'bg-orange-100 text-orange-700 dark:bg-orange-950/20 dark:text-orange-300 border border-light-gray dark:border-light-gray/50',
   },
-  concentrates: {
-    textColor: 'text-purple-600 dark:text-purple-400',
-    chipColor: 'default' as const,
-    chipClassName:
-      'bg-purple-100 text-purple-700 dark:bg-purple-950/20 dark:text-purple-300 border border-light-gray dark:border-light-gray/50',
-  },
   vapes: {
     textColor: 'text-blue-600 dark:text-blue-400',
     chipColor: 'primary' as const,
@@ -71,14 +64,11 @@ export function getCategoryColor(categoryValue: string): CategoryColor {
   if (normalized.includes('flower') || normalized.includes('bud')) {
     return 'flower'
   }
-  if (normalized.includes('extract')) {
+  if (normalized.includes('extract') || normalized.includes('concentrate')) {
     return 'extracts'
   }
   if (normalized.includes('edible')) {
     return 'edibles'
-  }
-  if (normalized.includes('concentrate')) {
-    return 'concentrates'
   }
   if (normalized.includes('vape') || normalized.includes('cartridge')) {
     return 'vapes'

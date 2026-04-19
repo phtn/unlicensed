@@ -13,7 +13,7 @@ import {getInitials} from '@/utils/initials'
 import {Avatar, Badge, Dropdown} from '@heroui/react'
 import {useQuery} from 'convex/react'
 import {User} from 'firebase/auth'
-import {useTheme} from 'next-themes'
+import {useTheme} from '@/components/ui/theme-provider'
 import {useRouter} from 'next/navigation'
 import {useMemo, type Key, type ReactNode} from 'react'
 
@@ -72,8 +72,9 @@ export const UserDropdown = ({
     identifier: MASTER_MONITOR_IDENTIFIER,
   })
 
-  const {theme} = useTheme()
-  const isDarkMode = useMemo(() => theme === 'dark', [theme])
+  const {resolvedTheme, theme} = useTheme()
+  const activeTheme = resolvedTheme ?? theme
+  const themeToggleLabel = activeTheme === 'dark' ? 'Light mode' : 'Dark mode'
   const masterEmails = useMemo(
     () => getMasterMonitorEmails(masterMonitorSetting),
     [masterMonitorSetting],
@@ -205,10 +206,13 @@ export const UserDropdown = ({
               />
             </Dropdown.Item>
 
-            <Dropdown.Item id='theme' textValue='Theme' className='rounded-xs'>
+            <Dropdown.Item
+              id='theme'
+              textValue={themeToggleLabel}
+              className='rounded-xs'>
               <MenuItemContent
                 icon='toggle-theme'
-                label={isDarkMode ? 'Dark mode' : 'Light mode'}
+                label={themeToggleLabel}
               />
             </Dropdown.Item>
 

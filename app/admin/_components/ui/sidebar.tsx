@@ -24,7 +24,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react'
 
@@ -74,22 +73,16 @@ function SidebarProvider({
   const [_open, _setOpen] = useState(defaultOpen)
   const open = openProp ?? _open
 
-  // Use a ref to access current `open` value inside callbacks
-  // so `setOpen` doesn't need `open` in its dependency array
-  const openRef = useRef(open)
-  openRef.current = open
-
   const setOpen = useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
-      const openState =
-        typeof value === 'function' ? value(openRef.current) : value
+      const openState = typeof value === 'function' ? value(open) : value
       if (setOpenProp) {
         setOpenProp(openState)
       } else {
         _setOpen(openState)
       }
     },
-    [setOpenProp],
+    [open, setOpenProp],
   )
 
   const toggleSidebar = useCallback(() => {
@@ -162,18 +155,9 @@ function Sidebar({
 }) {
   const {isMobile, state, openMobile, setOpenMobile} = useSidebar()
 
-  // Stabilize the onOpenChange callback to prevent useOverlayState
-  // from triggering rerender storms during drawer transitions
-  const setOpenMobileRef = useRef(setOpenMobile)
-  setOpenMobileRef.current = setOpenMobile
-  const stableSetOpenMobile = useCallback(
-    (v: boolean) => setOpenMobileRef.current(v),
-    [],
-  )
-
   const sidebarDrawerState = useOverlayState({
     isOpen: openMobile,
-    onOpenChange: stableSetOpenMobile,
+    onOpenChange: setOpenMobile,
   })
   if (collapsible === 'none') {
     return (

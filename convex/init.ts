@@ -61,8 +61,8 @@ export const categoriesSeed: CategorySeed[] = [
       'https://cdn.shopify.com/s/files/1/0693/8119/3966/files/Chillout_25mg_d8.png?v=1723894235&width=600',
   },
   {
-    name: 'Concentrates',
-    slug: 'concentrates',
+    name: 'Extracts',
+    slug: 'extracts',
     description:
       'High-potency extracts showcasing the pure essence of each cultivar.',
     highlight: 'Cold-cured and single-source for maximum expression.',
@@ -217,7 +217,7 @@ export const productsSeed: ProductSeed[] = [
   {
     name: 'Glasshouse Live Resin',
     slug: 'glasshouse-live-resin',
-    categorySlug: 'concentrates',
+    categorySlug: 'extracts',
     shortDescription: 'Fresh frozen live resin diamonds in terpene-rich sauce.',
     description:
       'Fresh frozen whole flower processed within hours of harvest to capture peak terpene fidelity. Expect a euphoric, immersive ride.',
@@ -247,7 +247,7 @@ export const productsSeed: ProductSeed[] = [
   {
     name: 'Glacier Cold Cure Rosin',
     slug: 'glacier-cold-cure-rosin',
-    categorySlug: 'concentrates',
+    categorySlug: 'extracts',
     shortDescription:
       'Cold cure hash rosin with silky texture and vivid terpene expression.',
     description:
