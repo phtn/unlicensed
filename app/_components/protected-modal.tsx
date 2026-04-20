@@ -18,6 +18,7 @@ import {useState} from 'react'
 
 interface ProtectedModalProps {
   accessCode: string
+  legacyStorageKeys?: readonly string[]
   storageKey: string
   access: ReturnType<typeof useToggle>
 }
@@ -38,15 +39,19 @@ const ModalContent = ({
 
 export function ProtectedModal({
   accessCode,
+  legacyStorageKeys = [],
   storageKey,
   access,
 }: ProtectedModalProps) {
   // Initialize state based on localStorage check
   const [isOpen, setIsOpen] = useState(() => {
     if (typeof window === 'undefined') return false
-    const confirmed =
-      localStorage.getItem(storageKey) &&
-      localStorage.getItem(storageKey) === accessCode
+    const storedCode =
+      localStorage.getItem(storageKey) ??
+      legacyStorageKeys
+        .map((legacyStorageKey) => localStorage.getItem(legacyStorageKey))
+        .find((value) => value != null)
+    const confirmed = storedCode != null && storedCode === accessCode
     return !confirmed
   })
   const [isMounted] = useState(() => typeof window !== 'undefined')
@@ -55,6 +60,9 @@ export function ProtectedModal({
 
   const handleConfirm = (code: string) => {
     localStorage.setItem(storageKey, code)
+    for (const legacyStorageKey of legacyStorageKeys) {
+      localStorage.removeItem(legacyStorageKey)
+    }
   }
 
   const handleDecline = () => {

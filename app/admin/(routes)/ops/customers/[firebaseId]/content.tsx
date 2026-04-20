@@ -1,5 +1,6 @@
 'use client'
 
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -291,7 +292,7 @@ export const Content = ({firebaseId}: ContentProps) => {
           <div className='flex-1'>
             <div className='flex items-center space-x-4 md:space-x-6'>
               <Avatar className='size-9 shrink-0 border border-foreground/10 bg-background text-foreground shadow-sm dark:border-white/10 dark:bg-dark-table'>
-                <Avatar.Image
+                <HeroAvatarImage
                   alt={customer.photoUrl ?? 'photo'}
                   src={customer.photoUrl}
                 />

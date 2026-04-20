@@ -1,5 +1,6 @@
 'use client'
 
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -170,7 +171,7 @@ export function OrderDetailsForm({
               <Avatar
                 size='md'
                 className='shrink-0 border border-foreground/10 bg-background text-foreground dark:border-white/10 dark:bg-dark-table'>
-                <Avatar.Image alt={customerName} src={customerAvatarUrl} />
+                <HeroAvatarImage alt={customerName} src={customerAvatarUrl} />
                 <Avatar.Fallback>{getInitials(customerName)}</Avatar.Fallback>
               </Avatar>
               <div className='min-w-0'>

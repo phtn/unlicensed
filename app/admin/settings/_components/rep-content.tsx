@@ -2,6 +2,7 @@
 
 import {TextArea} from '@/components/hero-v3/input'
 import {Select} from '@/components/hero-v3/select'
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuthCtx} from '@/ctx/auth'
@@ -189,7 +190,7 @@ function RepUserItem({member}: {member: Doc<'staff'>}) {
     <li className='flex items-center justify-between rounded-lg border border-default-200/50 bg-default-50/30 p-3 dark:bg-default-100/10'>
       <div className='flex items-center space-x-2'>
         <Avatar>
-          <Avatar.Image alt={name} src={member.avatarUrl} />
+          <HeroAvatarImage alt={name} src={member.avatarUrl} />
           <Avatar.Fallback>{getInitials(name)}</Avatar.Fallback>
         </Avatar>
         <p className='font-clash'>{name}</p>

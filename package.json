@@ -17,6 +17,7 @@
     "release": "changeset publish",
     "paygate": "bun run server/paygate-proxy/index.ts",
     "prerender:emails": "bun run scripts/prerender-email-templates.ts",
+    "audit:react-best-practices": "bun run scripts/audit-react-best-practices.ts",
     "fb:u": "firebase use rapidfirenow-web",
     "fb:dr": "firebase deploy --only firestore:rules"
   },

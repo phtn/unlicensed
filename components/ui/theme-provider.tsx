@@ -5,6 +5,7 @@ import {
   THEME_DEFAULT_THEME,
   THEME_ENABLE_COLOR_SCHEME,
   THEME_ENABLE_SYSTEM,
+  THEME_LEGACY_STORAGE_KEYS,
   THEME_STORAGE_KEY,
   THEME_THEMES,
 } from '@/lib/theme'
@@ -27,11 +28,25 @@ const ThemeContext = createContext<UseThemeProps>({
   themes: [...THEME_THEMES],
 })
 
-function getStoredTheme(storageKey: string, defaultTheme: string) {
+type HyfeThemeProviderProps = ThemeProviderProps & {
+  legacyStorageKeys?: readonly string[]
+}
+
+function getStoredTheme(
+  storageKey: string,
+  defaultTheme: string,
+  legacyStorageKeys: readonly string[],
+) {
   if (typeof window === 'undefined') return undefined
 
   try {
-    return localStorage.getItem(storageKey) ?? defaultTheme
+    const storedTheme =
+      localStorage.getItem(storageKey) ??
+      legacyStorageKeys
+        .map((legacyStorageKey) => localStorage.getItem(legacyStorageKey))
+        .find((value) => value != null)
+
+    return storedTheme ?? defaultTheme
   } catch {
     return defaultTheme
   }
@@ -63,7 +78,7 @@ function withoutTransitions(nonce?: string) {
   }
 }
 
-export function ThemeProvider(props: ThemeProviderProps) {
+export function ThemeProvider(props: HyfeThemeProviderProps) {
   const {
     attribute = THEME_ATTRIBUTE,
     children,
@@ -72,6 +87,7 @@ export function ThemeProvider(props: ThemeProviderProps) {
     enableColorScheme = THEME_ENABLE_COLOR_SCHEME,
     enableSystem = THEME_ENABLE_SYSTEM,
     forcedTheme,
+    legacyStorageKeys = THEME_LEGACY_STORAGE_KEYS,
     nonce,
     storageKey = THEME_STORAGE_KEY,
     themes = [...THEME_THEMES],
@@ -79,7 +95,7 @@ export function ThemeProvider(props: ThemeProviderProps) {
   } = props
 
   const [theme, setThemeState] = useState<string | undefined>(() =>
-    getStoredTheme(storageKey, defaultTheme),
+    getStoredTheme(storageKey, defaultTheme, legacyStorageKeys),
   )
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark' | undefined>(
     () => getSystemTheme(),
@@ -156,12 +172,15 @@ export function ThemeProvider(props: ThemeProviderProps) {
 
         try {
           localStorage.setItem(storageKey, updatedTheme)
+          for (const legacyStorageKey of legacyStorageKeys) {
+            localStorage.removeItem(legacyStorageKey)
+          }
         } catch {}
 
         return updatedTheme
       })
     },
-    [defaultTheme, storageKey],
+    [defaultTheme, legacyStorageKeys, storageKey],
   )
 
   useEffect(() => {

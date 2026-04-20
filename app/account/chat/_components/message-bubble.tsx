@@ -1,5 +1,6 @@
 'use client'
 
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import type {Id} from '@/convex/_generated/dataModel'
 import {cn} from '@/lib/utils'
 import {Avatar} from '@heroui/react'
@@ -111,7 +112,7 @@ export function MessageBubble({
           {showAvatar && otherUser ? (
             <Avatar>
               {otherUser.avatarUrl ? (
-                <Avatar.Image
+                <HeroAvatarImage
                   alt={otherUser.displayName ?? otherUser.email}
                   src={otherUser.avatarUrl}
                 />

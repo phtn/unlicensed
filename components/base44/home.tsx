@@ -1,5 +1,5 @@
 import {cn} from '@/lib/utils'
-import Image from 'next/image'
+import Image from '@/components/ui/app-image'
 import Link from 'next/link'
 
 export const NewHome = () => {

@@ -1,5 +1,6 @@
 'use client'
 
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {ScrollArea} from '@/components/ui/scroll-area'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
@@ -71,7 +72,7 @@ const ChatAvatar = ({
   fallback?: string
 }) => (
   <Avatar className={className}>
-    {src ? <Avatar.Image alt={label} src={src} /> : null}
+    {src ? <HeroAvatarImage alt={label} src={src} /> : null}
     <Avatar.Fallback>{fallback ?? getInitials(label)}</Avatar.Fallback>
   </Avatar>
 )

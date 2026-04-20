@@ -1,7 +1,7 @@
 'use client'
 
 import {useCartAnimation} from '@/ctx/cart-animation'
-import Image from 'next/image'
+import Image from '@/components/ui/app-image'
 import {useEffect, useRef} from 'react'
 
 const CART_ICON_SELECTOR = '[data-cart-icon]'

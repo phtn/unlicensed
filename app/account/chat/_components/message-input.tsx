@@ -1,5 +1,6 @@
 'use client'
 
+import {LegacyImage} from '@/components/ui/legacy-image'
 import {api} from '@/convex/_generated/api'
 import {Id} from '@/convex/_generated/dataModel'
 import {useImageConverter} from '@/hooks/use-image-converter'
@@ -601,8 +602,7 @@ export function MessageInput({
               key={index}
               className='group relative shrink-0 overflow-hidden rounded-xl border border-border/40 bg-muted/20'>
               {attachment.fileType.startsWith('image/') && attachment.url ? (
-                // eslint-disable-next-line @next/next/no-img-element -- chat attachment URLs may be external
-                <img
+                <LegacyImage
                   src={attachment.url}
                   alt={attachment.fileName}
                   className='h-18 w-18 object-cover sm:h-20 sm:w-20'

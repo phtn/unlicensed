@@ -1,5 +1,5 @@
 import {Icon} from '@/lib/icons'
-import Image from 'next/image'
+import Image from '@/components/ui/app-image'
 
 /**
  * Email link callback route.

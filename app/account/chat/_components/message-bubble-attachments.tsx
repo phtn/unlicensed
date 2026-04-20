@@ -1,5 +1,6 @@
 'use client'
 
+import {LegacyImage} from '@/components/ui/legacy-image'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import type {Attachment} from './message-list-types'
@@ -43,8 +44,7 @@ export function MessageBubbleAttachments({
                 bgClass,
               )}>
               {attachment.url ? (
-                // eslint-disable-next-line @next/next/no-img-element -- chat attachment URLs may be external
-                <img
+                <LegacyImage
                   src={attachment.url}
                   alt={attachment.fileName}
                   className='h-24 w-24 object-cover sm:h-28 sm:w-28'

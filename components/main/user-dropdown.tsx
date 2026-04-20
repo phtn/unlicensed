@@ -1,6 +1,7 @@
 'use client'
 
 import {api} from '@/convex/_generated/api'
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {openAdminMasterMonitor} from '@/lib/admin-master-monitor'
 import {Icon, IconName} from '@/lib/icons'
 import {
@@ -140,7 +141,7 @@ export const UserDropdown = ({
         ) : (
           <Badge.Anchor>
             <Avatar className='relative size-9 border border-white/50 bg-background/90 text-foreground dark:border-white/10 dark:bg-dark-table'>
-              <Avatar.Image
+              <HeroAvatarImage
                 alt={displayName}
                 src={user.photoURL ?? undefined}
               />

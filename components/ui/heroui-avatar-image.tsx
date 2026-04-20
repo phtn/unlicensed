@@ -1,46 +1,36 @@
 'use client'
 
-/* eslint-disable @next/next/no-img-element */
-
 import {
   getImageLoadingClasses,
   getImageSourceKey,
   resolveImageLoadStatus,
 } from '@/components/ui/image-loading'
-import {useState, type ImgHTMLAttributes} from 'react'
+import {Avatar} from '@heroui/react'
+import {type ComponentProps, useState} from 'react'
 
-export type LegacyImageProps = ImgHTMLAttributes<HTMLImageElement> & {
-  radius?: string
-  shadow?: string
-  removeWrapper?: boolean
+export type HeroAvatarImageProps = ComponentProps<typeof Avatar.Image> & {
   skeletonClassName?: string
 }
 
-export const LegacyImage = ({
-  radius: _radius,
-  shadow: _shadow,
-  removeWrapper: _removeWrapper,
+export const HeroAvatarImage = ({
   className,
   onError,
   onLoad,
   skeletonClassName,
   src,
-  style,
   ...props
-}: LegacyImageProps) => {
+}: HeroAvatarImageProps) => {
   const srcKey = getImageSourceKey(src)
   const [loadedSrcKey, setLoadedSrcKey] = useState<string | null>(null)
   const [errorSrcKey, setErrorSrcKey] = useState<string | null>(null)
   const status = resolveImageLoadStatus(srcKey, loadedSrcKey, errorSrcKey)
 
   return (
-    <img
+    <Avatar.Image
       {...props}
       src={src}
-      alt={props.alt ?? ''}
       data-loading-status={status}
       className={getImageLoadingClasses(status, className, skeletonClassName)}
-      style={style}
       onLoad={(event) => {
         setLoadedSrcKey(srcKey)
         setErrorSrcKey((current) => (current === srcKey ? null : current))

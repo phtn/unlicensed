@@ -2,6 +2,7 @@
 
 import {useDealConfigs} from '@/app/lobby/(store)/deals/hooks/use-deal-configs'
 import {AuthModal} from '@/components/auth/auth-modal'
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {useAuthCtx} from '@/ctx/auth'
 import {
   type CartItemWithProduct,
@@ -232,7 +233,7 @@ export const CartDrawer = ({open, onOpenChange}: CartDrawerProps) => {
                 <div className='flex items-center mb-4 mr-4 space-x-4 md:space-x-6'>
                   {user && (
                     <Avatar className='relative size-9 border border-white/50 bg-background/90 text-foreground shadow-[0_10px_30px_rgba(15,23,42,0.18)] dark:border-white/10 dark:bg-dark-table'>
-                      <Avatar.Image
+                      <HeroAvatarImage
                         alt={userAvatarLabel}
                         src={user.photoURL ?? undefined}
                       />

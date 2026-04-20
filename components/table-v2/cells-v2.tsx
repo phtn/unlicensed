@@ -1,4 +1,5 @@
 import {ClassName} from '@/app/types'
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {api} from '@/convex/_generated/api'
 import {Doc, Id} from '@/convex/_generated/dataModel'
 import {OrderStatus} from '@/convex/orders/d'
@@ -782,7 +783,7 @@ export const createUserCell = <T,>(options: UserCellOptions<T>) => {
     return (
       <div className='flex items-center gap-3'>
         <Avatar className='size-9 shrink-0 border border-foreground/10 bg-background text-foreground shadow-sm dark:border-white/10 dark:bg-dark-table'>
-          <Avatar.Image alt={name} src={photoUrl ?? undefined} />
+          <HeroAvatarImage alt={name} src={photoUrl ?? undefined} />
           <Avatar.Fallback>{getInitials(name)}</Avatar.Fallback>
         </Avatar>
         <div className='flex flex-col min-w-0'>

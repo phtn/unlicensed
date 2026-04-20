@@ -1,5 +1,6 @@
 'use client'
 
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import type {ConversationFolderSummary} from '@/convex/messages/d'
 import {
   type LastMessage,
@@ -248,7 +249,7 @@ export function ConversationList({
                 <div className='relative shrink-0'>
                   <Avatar>
                     {conversation.otherUser?.avatarUrl ? (
-                      <Avatar.Image
+                      <HeroAvatarImage
                         alt={displayName}
                         src={conversation.otherUser.avatarUrl}
                       />

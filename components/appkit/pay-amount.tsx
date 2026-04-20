@@ -1,5 +1,6 @@
 'use client'
 
+import {LegacyImage} from '@/components/ui/legacy-image'
 import {Icon} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {AnimatePresence, motion} from 'motion/react'
@@ -108,8 +109,7 @@ function PayQrModal({
                 <div className='flex flex-col items-center gap-4 p-0'>
                   {qrDataUrl ? (
                     <div className='rounded-xl overflow-hidden bg-white p-3'>
-                      {/* eslint-disable-next-line @next/next/no-img-element -- QR data URL; next/image not applicable */}
-                      <img
+                      <LegacyImage
                         src={qrDataUrl}
                         alt='Payment QR code'
                         className='w-64 h-64 block'

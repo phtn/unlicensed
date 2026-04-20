@@ -1,7 +1,7 @@
 import {Icon, IconName} from '@/lib/icons'
 import {cn} from '@/lib/utils'
 import {Button} from '@heroui/react'
-import Image from 'next/image'
+import Image from '@/components/ui/app-image'
 import {ReactNode} from 'react'
 
 export interface Slide {

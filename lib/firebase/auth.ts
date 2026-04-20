@@ -16,7 +16,37 @@ import {
 } from 'firebase/auth'
 import {auth, firestore} from './config'
 import {clearFirebaseSession, createFirebaseSession} from './session'
+import {createHyfeStorageKey} from '../storage-keys'
 import {createOrUpdateUserInFirestore} from './users'
+
+export const EMAIL_FOR_SIGN_IN_STORAGE_KEY =
+  createHyfeStorageKey('email-for-sign-in')
+export const EMAIL_FOR_SIGN_IN_LEGACY_STORAGE_KEYS = ['emailForSignIn'] as const
+
+export const getStoredEmailForSignIn = () => {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  return (
+    window.localStorage.getItem(EMAIL_FOR_SIGN_IN_STORAGE_KEY) ??
+    EMAIL_FOR_SIGN_IN_LEGACY_STORAGE_KEYS.map((key) =>
+      window.localStorage.getItem(key),
+    ).find((value) => value != null) ??
+    null
+  )
+}
+
+export const clearStoredEmailForSignIn = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.localStorage.removeItem(EMAIL_FOR_SIGN_IN_STORAGE_KEY)
+  for (const legacyKey of EMAIL_FOR_SIGN_IN_LEGACY_STORAGE_KEYS) {
+    window.localStorage.removeItem(legacyKey)
+  }
+}
 
 export const getPostEmailLinkRedirectUrl = () => {
   if (typeof window === 'undefined') {
@@ -119,7 +149,10 @@ export const sendEmailLink = async (
 
   // Store email in localStorage for later use when user clicks the link
   if (typeof window !== 'undefined') {
-    window.localStorage.setItem('emailForSignIn', email)
+    window.localStorage.setItem(EMAIL_FOR_SIGN_IN_STORAGE_KEY, email)
+    for (const legacyKey of EMAIL_FOR_SIGN_IN_LEGACY_STORAGE_KEYS) {
+      window.localStorage.removeItem(legacyKey)
+    }
   }
 }
 
@@ -179,9 +212,7 @@ export const loginWithEmailLink = async (email: string, emailLink?: string) => {
   await syncServerSessionAfterSignIn(userCredential.user)
 
   // Clear email from localStorage after successful sign-in
-  if (typeof window !== 'undefined') {
-    window.localStorage.removeItem('emailForSignIn')
-  }
+  clearStoredEmailForSignIn()
 
   // Do not block email-link auth on Firestore profile sync.
   await syncUserProfileAfterSignIn(userCredential.user, {

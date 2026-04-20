@@ -11,6 +11,9 @@ import {motion} from 'motion/react'
 import {usePathname} from 'next/navigation'
 import {Activity} from 'react'
 import {ProtectedModal} from '../_components/protected-modal'
+import {createHyfeStorageKey} from '@/lib/storage-keys'
+
+const PROJECT_STATUS_STORAGE_KEY = createHyfeStorageKey('project-status')
 
 interface TaskItemProps {
   title: string
@@ -261,7 +264,8 @@ export function Content() {
   return (
     <div className='relative w-full bg-white dark:bg-neutral-950'>
       <ProtectedModal
-        storageKey='project-status'
+        legacyStorageKeys={['project-status']}
+        storageKey={PROJECT_STATUS_STORAGE_KEY}
         accessCode={settings?.value?.code}
         access={access}
       />

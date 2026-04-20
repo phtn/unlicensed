@@ -1,5 +1,6 @@
 'use client'
 
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {api} from '@/convex/_generated/api'
 import {
   createAssistantCatalogLinkIndex,
@@ -15,7 +16,7 @@ import {ScrollToBottomButton} from './scroll-to-bottom-button'
 
 const AssistantAvatar = ({className}: {className?: string}) => (
   <Avatar className={className}>
-    <Avatar.Image
+    <HeroAvatarImage
       alt={ASSISTANT_NAME}
       src='/svg/rf-logo-round-204-latest.svg'
     />

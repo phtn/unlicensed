@@ -1,5 +1,6 @@
 'use client'
 
+import {LegacyImage} from '@/components/ui/legacy-image'
 import {Icon} from '@/lib/icons'
 import {downloadViaBlob} from './message-list-utils'
 
@@ -50,8 +51,7 @@ export function ImageModal({
         </button>
       </div>
       <div className='h-full w-full flex items-center justify-center p-4'>
-        {/* eslint-disable-next-line @next/next/no-img-element -- modal full-size image */}
-        <img
+        <LegacyImage
           src={url}
           alt={fileName}
           className='max-h-[92vh] max-w-[92vw] object-contain rounded-lg'

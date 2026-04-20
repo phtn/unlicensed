@@ -1,5 +1,6 @@
 'use client'
 
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {useAuth} from '@/hooks/use-auth'
@@ -202,7 +203,7 @@ export const RecentActivities = ({
             return (
               <div className='flex min-w-0 items-center gap-3'>
                 <Avatar className='size-9 shrink-0 border border-foreground/10 bg-background text-foreground shadow-sm dark:border-white/10 dark:bg-dark-table'>
-                  <Avatar.Image
+                  <HeroAvatarImage
                     alt={activityUserName}
                     src={activity.user.photoUrl ?? undefined}
                   />
@@ -292,7 +293,7 @@ export const RecentActivities = ({
           )
         case 'seenBy':
           const viewers = activity.viewers || []
-          const totalViewers = activity.viewerCount ?? viewers.length
+          // const totalViewers = activity.viewerCount ?? viewers.length
           if (viewers.length === 0) {
             return (
               <p className='text-bold text-tiny text-default-400'>Not viewed</p>
@@ -308,7 +309,7 @@ export const RecentActivities = ({
                   className={cn('shrink-0', {'-ml-1.5': i !== 0})}
                   title={`${viewer.name} (${viewer.email})`}>
                   <Avatar className='size-7 border-[1.5px] border-alum bg-alum dark:border-dark-table shadow-xs'>
-                    <Avatar.Image
+                    <HeroAvatarImage
                       alt={viewer.name}
                       src={viewer.photoUrl ?? undefined}
                     />
@@ -499,7 +500,7 @@ const AvatarGroup = ({
           size='sm'
           key={avatar.userId}
           className='ring-2 bg-alum ring-background dark:ring-sidebar! shadow-sm'>
-          <Avatar.Image alt={avatar.name} src={avatar.photoUrl} />
+          <HeroAvatarImage alt={avatar.name} src={avatar.photoUrl} />
           <Avatar.Fallback className=' dark:bg-alum! font-clash font-medium text-xs dark:text-slate-800'>
             {getInitials(avatar.name)}
           </Avatar.Fallback>

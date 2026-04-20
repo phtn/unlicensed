@@ -21,7 +21,7 @@ import {
   Separator,
 } from '@heroui/react'
 import type {ActionCodeSettings} from 'firebase/auth'
-import Image from 'next/image'
+import Image from '@/components/ui/app-image'
 import type {ReactNode} from 'react'
 import {useEffect, useMemo, useState} from 'react'
 

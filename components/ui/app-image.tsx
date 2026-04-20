@@ -1,46 +1,38 @@
 'use client'
 
-/* eslint-disable @next/next/no-img-element */
-
 import {
   getImageLoadingClasses,
   getImageSourceKey,
   resolveImageLoadStatus,
 } from '@/components/ui/image-loading'
-import {useState, type ImgHTMLAttributes} from 'react'
+import NextImage, {type ImageProps} from 'next/image'
+import {useState} from 'react'
 
-export type LegacyImageProps = ImgHTMLAttributes<HTMLImageElement> & {
-  radius?: string
-  shadow?: string
-  removeWrapper?: boolean
+export type AppImageProps = ImageProps & {
   skeletonClassName?: string
 }
 
-export const LegacyImage = ({
-  radius: _radius,
-  shadow: _shadow,
-  removeWrapper: _removeWrapper,
+export default function AppImage({
   className,
   onError,
   onLoad,
   skeletonClassName,
   src,
-  style,
+  alt,
   ...props
-}: LegacyImageProps) => {
+}: AppImageProps) {
   const srcKey = getImageSourceKey(src)
   const [loadedSrcKey, setLoadedSrcKey] = useState<string | null>(null)
   const [errorSrcKey, setErrorSrcKey] = useState<string | null>(null)
   const status = resolveImageLoadStatus(srcKey, loadedSrcKey, errorSrcKey)
 
   return (
-    <img
+    <NextImage
       {...props}
+      alt={alt}
       src={src}
-      alt={props.alt ?? ''}
       data-loading-status={status}
       className={getImageLoadingClasses(status, className, skeletonClassName)}
-      style={style}
       onLoad={(event) => {
         setLoadedSrcKey(srcKey)
         setErrorSrcKey((current) => (current === srcKey ? null : current))
@@ -54,3 +46,5 @@ export const LegacyImage = ({
     />
   )
 }
+
+export {AppImage}

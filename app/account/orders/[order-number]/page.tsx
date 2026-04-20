@@ -1,6 +1,7 @@
 'use client'
 
 import {Button as LinkButton} from '@/components/ui/button'
+import {LegacyImage} from '@/components/ui/legacy-image'
 import {api} from '@/convex/_generated/api'
 import {useMobile} from '@/hooks/use-mobile'
 import {resolveOrderPayableTotalCents} from '@/lib/checkout/processing-fee'
@@ -179,8 +180,7 @@ export default function OrderDetailPage() {
                         index % 2 === 0,
                     })}>
                     <div className='flex gap-4'>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <LegacyImage
                         src={item.productImage}
                         alt={item.productName}
                         className='w-20 h-20 aspect-square object-cover rounded-xs shrink-0'

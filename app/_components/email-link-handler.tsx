@@ -3,6 +3,8 @@
 import {useAuthCtx} from '@/ctx/auth'
 import {
   checkIsEmailLink,
+  clearStoredEmailForSignIn,
+  getStoredEmailForSignIn,
   getPostEmailLinkRedirectUrl,
   hasEmailLinkParams,
   loginWithEmailLink,
@@ -39,7 +41,7 @@ export function EmailLinkHandler() {
       if (!isEmailLink) return
 
       handledRef.current = true
-      const email = window.localStorage.getItem('emailForSignIn')
+      const email = getStoredEmailForSignIn()
 
       if (!email) {
         setCompleteEmailLink({href})
@@ -59,7 +61,7 @@ export function EmailLinkHandler() {
         .catch((err: unknown) => {
           setErrorMessage(parseFirebaseAuthError(err))
           setStatus('error')
-          window.localStorage.removeItem('emailForSignIn')
+          clearStoredEmailForSignIn()
         })
     }
 

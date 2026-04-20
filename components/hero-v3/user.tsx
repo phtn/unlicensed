@@ -1,3 +1,4 @@
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {Avatar} from '@heroui/react'
 
 export const User = ({
@@ -11,7 +12,7 @@ export const User = ({
 }) => {
   return (
     <Avatar className={className}>
-      <Avatar.Image src={avatar} alt={name} />
+      <HeroAvatarImage src={avatar} alt={name} />
       <Avatar.Fallback>{name}</Avatar.Fallback>
     </Avatar>
   )

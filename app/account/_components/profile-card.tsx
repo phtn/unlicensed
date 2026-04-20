@@ -1,4 +1,5 @@
 import {Ascend} from '@/components/expermtl/ascend'
+import {LegacyImage} from '@/components/ui/legacy-image'
 import {UserType} from '@/convex/users/d'
 import {cn} from '@/lib/utils'
 import {Card} from '@heroui/react'
@@ -22,8 +23,7 @@ export const ProfileCard = ({user}: ProfileCardProps) => {
           {/* Avatar */}
           <div className='size-20 overflow-hidden rounded-full ring-2 ring-foreground/10 ring-offset-2 ring-offset-background'>
             {user?.photoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <LegacyImage
                 src={user.photoUrl}
                 alt='Profile'
                 className='size-full object-cover'

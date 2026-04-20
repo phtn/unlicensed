@@ -3,13 +3,13 @@
 import {DataTable} from '@/components/table-v2'
 import {ColumnConfig} from '@/components/table-v2/create-column'
 import {ColHeader} from '@/components/table-v2/headers'
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {api} from '@/convex/_generated/api'
 import type {Doc} from '@/convex/_generated/dataModel'
 import {formatPrice} from '@/utils/formatPrice'
 import {getInitials} from '@/utils/initials'
 import {Avatar} from '@heroui/react'
 import {useQuery} from 'convex/react'
-import Link from 'next/link'
 import {useMemo} from 'react'
 import {idLink} from './id-link'
 
@@ -75,19 +75,11 @@ export const CustomersTable = () => {
           accessorKey: 'name',
           size: 200,
           cell: ({row}) => {
-            const profileId = row.original.firebaseId ?? row.original.fid
             const displayName = row.original.name || 'Unnamed customer'
-            const nameNode = profileId ? (
-              <Link href={`/admin/ops/customers/${profileId}`} prefetch>
-                {displayName}
-              </Link>
-            ) : (
-              displayName
-            )
 
             return (
               <Avatar className='size-9 shrink-0 border border-foreground/10 bg-background text-foreground shadow-sm dark:border-white/10 dark:bg-dark-table'>
-                <Avatar.Image
+                <HeroAvatarImage
                   alt={displayName}
                   src={row.original.photoUrl ?? undefined}
                 />

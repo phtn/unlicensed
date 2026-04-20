@@ -9,11 +9,7 @@ interface MainWrapperProps extends PropsWithChildren {
 
 export const MainWrapper = ({children, className}: MainWrapperProps) => {
   return (
-    <div
-      className={cn(
-        'md:px-4 bg-orange-300 border-t-[0.33px] border-sidebar',
-        className,
-      )}>
+    <div className={cn('md:px-4 border-t-[0.33px] border-sidebar', className)}>
       {children}
     </div>
   )

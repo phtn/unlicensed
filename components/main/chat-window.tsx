@@ -9,6 +9,7 @@ import {AssistantMessageList} from '@/app/account/chat/_components/assistant-mes
 import {MessageInput} from '@/app/account/chat/_components/message-input'
 import {MessageList} from '@/app/account/chat/_components/message-list'
 import {useAssistantChat} from '@/app/account/chat/_components/use-assistant-chat'
+import {HeroAvatarImage} from '@/components/ui/heroui-avatar-image'
 import {ScrollArea} from '@/components/ui/scroll-area'
 import {DialogWindow} from '@/components/ui/window'
 import {api} from '@/convex/_generated/api'
@@ -505,7 +506,7 @@ const ChatParticipantAvatar = ({
 }) => {
   return (
     <Avatar className='shrink-0 bg-sidebar dark:bg-dark-table' size='sm'>
-      {avatarUrl ? <Avatar.Image alt={label} src={avatarUrl} /> : null}
+      {avatarUrl ? <HeroAvatarImage alt={label} src={avatarUrl} /> : null}
       <Avatar.Fallback className='font-polysans font-semibold text-sm text-brand'>
         {getInitials(label)}
       </Avatar.Fallback>

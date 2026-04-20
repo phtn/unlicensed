@@ -1,10 +1,10 @@
 'use client'
 
 import {StoreProduct} from '@/app/types'
+import NextImage from '@/components/ui/app-image'
 import {useMobile} from '@/hooks/use-mobile'
 import {cn} from '@/lib/utils'
 import dynamic from 'next/dynamic'
-import NextImage from 'next/image'
 import {memo, useMemo, useState} from 'react'
 
 const Lens = dynamic(
