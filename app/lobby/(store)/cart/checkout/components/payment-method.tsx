@@ -69,8 +69,8 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
   method: IPaymentMethod
 }) {
   return (
-    <div className='h-16 flex items-center gap-3 px-2 md:p-2'>
-      <Icon name={method.icon} className={cn('shrink-0 size-6')} />
+    <div className='h-18 flex items-center gap-4 px-2 md:p-6'>
+      <Icon name={method.icon} className={cn('shrink-0 size-5')} />
       <div className='flex flex-col w-full md:space-y-0.5'>
         <div className='flex items-center justify-between w-full h-7 md:h-7'>
           <div className='flex items-center space-x-2 md:space-x-4 whitespace-nowrap text-base md:text-lg tracking-tight font-medium'>
