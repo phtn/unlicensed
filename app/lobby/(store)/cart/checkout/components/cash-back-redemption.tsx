@@ -43,7 +43,7 @@ export function CashBackRedemption({
   return (
     <div
       className={cn(
-        'relative rounded-sm border border-foreground/40 bg-foreground/5 dark:bg-sidebar/50 p-1 md:p-2 md:h-18 overflow-hidden',
+        'relative rounded-sm border border-foreground/40 dark:border-foreground/15 bg-foreground/5 dark:bg-sidebar/50 p-1 md:p-2 md:h-18 overflow-hidden',
         className,
       )}>
       <div className="absolute w-full h-full inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-60 scale-100 pointer-events-none" />

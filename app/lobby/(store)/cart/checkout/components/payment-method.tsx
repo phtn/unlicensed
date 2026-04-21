@@ -83,7 +83,7 @@ const PaymentMethodOptionRow = memo(function PaymentMethodOptionRow({
                 <Icon name='googlepay' className='size-10' />
               </div>
             ) : null}
-            <TxnSpeed method={method.id} />
+            <PctFee method={method.id} />
           </div>
           <div
             className={cn(
@@ -122,7 +122,7 @@ const SelectedMethodRow = memo(function SelectedMethodRow({
               <Icon name='googlepay' className='md:size-10 size-8' />
             </div>
           ) : null}
-          <TxnSpeed method={method.id} selected />
+          <PctFee method={method.id} />
         </div>
       </div>
       {method.tag ? (
@@ -179,7 +179,7 @@ export const PaymentMethods = memo(function PaymentMethods({
       <Label
         className='font-polysans font-semibold text-lg select-none mb-2'
         htmlFor='payment-method'>
-        Payment Methods
+        Payment Method
       </Label>
       <Select.Root<PaymentMethod>
         id='payment-method'
@@ -229,7 +229,7 @@ interface TxnSpeedProps {
   selected?: boolean
 }
 
-const TxnSpeed = ({method, selected = false}: TxnSpeedProps) => {
+const TxnSpeed_ = ({method, selected = false}: TxnSpeedProps) => {
   return method === 'crypto_commerce' ? (
     <span
       className={cn(
@@ -239,4 +239,22 @@ const TxnSpeed = ({method, selected = false}: TxnSpeedProps) => {
       Fastest
     </span>
   ) : null
+}
+
+const PctFee = ({method}: {method: PaymentMethod}) => {
+  const fmap: Record<PaymentMethod, string | null> = {
+    crypto_commerce: '3% OFF',
+    crypto_transfer: '3% OFF',
+    cash_app: '5% FEE',
+    cards: null,
+  }
+  return (
+    <span
+      className={cn(
+        'text-brand dark:text-white text-sm italic uppercase font-semibold tracking-normal opacity-100',
+        {'text-foreground': method === 'cash_app'},
+      )}>
+      {fmap[method] && <span>{fmap[method]}</span>}
+    </span>
+  )
 }

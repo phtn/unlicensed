@@ -169,11 +169,9 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
         layout
         transition={{layout: {duration: 0.35, ease: 'easeInOut'}}}>
         <Card className='min-w-0 overflow-hidden dark:bg-dark-table/40 border border-foreground/20 dark:border-sidebar/50 border-t-0 rounded-none p-0 md:p-2'>
-          <Card.Content className='relative space-y-2 px-2 md:px-4 lg:px-5 pb-1'>
+          <Card.Content className='relative space-y-2 px-2 pt-3 md:px-4 lg:px-5 pb-1'>
             <div className="absolute w-500 h-full scale-x-50 top-0 -left-150 inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 scale-100 pointer-events-none" />
-            <h2 className='font-polysans font-semibold text-lg'>
-              Order Summary
-            </h2>
+
             <ViewTransition>
               <div className='space-y-2'>
                 <div className='flex justify-between font-okxs text-sm md:text-base'>
@@ -210,19 +208,19 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
                   </span>
                 </div>
                 {hasAppliedCoupon && (
-                  <div className='flex justify-between font-okxs text-sm md:text-base text-emerald-600 dark:text-emerald-400'>
+                  <div className='flex justify-between font-okxs text-sm md:text-base text-emerald-700 dark:text-emerald-400'>
                     <span>Coupon ({couponCode.trim().toUpperCase()})</span>
                     <span>- ${formatPrice(couponDiscountCents)}</span>
                   </div>
                 )}
                 {hasPaymentMethodDiscount && (
-                  <div className='flex justify-between font-okxs text-sm md:text-base text-emerald-600 dark:text-emerald-400'>
+                  <div className='flex justify-between font-okxs text-sm md:text-base text-emerald-700 dark:text-emerald-400'>
                     <span>{paymentMethodDiscountLabel}</span>
                     <span>- ${formatPrice(paymentMethodDiscountCents)}</span>
                   </div>
                 )}
                 {appliedCashBackCents > 0 && (
-                  <div className='flex justify-between font-okxs text-sm md:text-base text-emerald-600 dark:text-emerald-400'>
+                  <div className='flex justify-between font-okxs text-sm md:text-base text-emerald-700 dark:text-emerald-400'>
                     <span>Rewards</span>
                     <span>- ${formatPrice(appliedCashBackCents)}</span>
                   </div>
@@ -242,7 +240,7 @@ export const OrderSummaryCard = memo(function OrderSummaryCard({
             </div>
 
             {isAuthenticated && (
-              <div className='space-y-0 mt-2 rounded-sm border border-foreground/40 dark:bg-foreground/5 bg-foreground/2 overflow-hidden'>
+              <div className='space-y-0 mt-2 rounded-sm border border-foreground/10 dark:bg-foreground/5 bg-foreground/2 overflow-hidden'>
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center justify-between w-full p-3 md:px-4'>
                     <p className='font-polysans text-base md:tracking-wide leading-none'>
