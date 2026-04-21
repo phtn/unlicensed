@@ -258,7 +258,7 @@ const ProductCardComponent = ({
   const {
     packSizeLabel,
     brandLabel,
-    firstThreeOptions,
+    firstFourOptions,
     netWeightLabel,
     productHref,
     subcategoryLabel,
@@ -267,7 +267,7 @@ const ProductCardComponent = ({
     const brandLabel = product.brand
       ? product.brand.map((brand) => brand.split('-').join(' ')).join(', ')
       : ''
-    const firstThreeOptions =
+    const firstFourOptions =
       priceOptionsFromDenomination(
         product.priceByDenomination,
         product.salePriceByDenomination,
@@ -275,11 +275,11 @@ const ProductCardComponent = ({
         product.priceCents,
         product.unit,
         product.onSale,
-      )?.slice(0, 3) ?? EMPTY_PRICE_OPTIONS
+      )?.slice(0, 4) ?? EMPTY_PRICE_OPTIONS
 
     return {
       brandLabel,
-      firstThreeOptions,
+      firstFourOptions,
       netWeightLabel:
         product.netWeight != null || product.netWeightUnit
           ? [product.netWeight, product.netWeightUnit]
@@ -309,10 +309,10 @@ const ProductCardComponent = ({
   ])
 
   const selectedOption =
-    firstThreeOptions[Math.min(selectedIndex, firstThreeOptions.length - 1)] ??
-    firstThreeOptions[0] ??
+    firstFourOptions[Math.min(selectedIndex, firstFourOptions.length - 1)] ??
+    firstFourOptions[0] ??
     null
-  const hasSaleOption = firstThreeOptions.some((option) => option.isOnSale)
+  const hasSaleOption = firstFourOptions.some((option) => option.isOnSale)
   const imageSrc = isRenderableImageSrc(imageUrlProp)
     ? imageUrlProp
     : isRenderableImageSrc(product.image)
@@ -478,7 +478,7 @@ const ProductCardComponent = ({
                 role='group'
                 className='flex h-10 gap-x-1'
                 aria-label='Select denomination'>
-                {firstThreeOptions.map((option, index) => (
+                {firstFourOptions.map((option, index) => (
                   <button
                     key={option.denominationValue}
                     type='button'
@@ -649,7 +649,7 @@ const ProductCardComponent = ({
               role='group'
               className='mt-1.5 flex h-10 gap-x-1 md:gap-x-1.25'
               aria-label='Select denomination'>
-              {firstThreeOptions.map((option, index) => (
+              {firstFourOptions.map((option, index) => (
                 <button
                   key={option.denominationValue}
                   type='button'
