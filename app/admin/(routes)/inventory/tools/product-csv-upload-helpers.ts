@@ -4,6 +4,7 @@ import {CSV_DENOM_KEYS} from '../product/csv-import/constants'
 import {
   applySlugConflicts,
   OMIT_FROM_IMPORT_HEADERS,
+  parseNumericRecord,
   type ParsedRow,
   type ParseResult,
 } from '../product/csv-import/lib'
@@ -41,34 +42,7 @@ export function getPreviewColumns(
 export function parseDenominationMapCell(
   value: string | undefined,
 ): Record<string, number> {
-  if (!value?.trim()) return {}
-
-  try {
-    const parsed = JSON.parse(value) as unknown
-    if (parsed == null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return {}
-    }
-
-    return Object.fromEntries(
-      Object.entries(parsed).flatMap(([key, rawValue]) => {
-        const normalizedKey = key.trim()
-        const numericValue =
-          typeof rawValue === 'number'
-            ? rawValue
-            : typeof rawValue === 'string'
-              ? Number(rawValue)
-              : Number.NaN
-
-        if (!normalizedKey || !Number.isFinite(numericValue)) {
-          return []
-        }
-
-        return [[normalizedKey, numericValue]]
-      }),
-    )
-  } catch {
-    return {}
-  }
+  return parseNumericRecord(value)
 }
 
 export function sortDenominationKeys(keys: Iterable<string>): string[] {

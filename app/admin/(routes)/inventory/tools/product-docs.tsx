@@ -85,6 +85,13 @@ const PRODUCT_FIELDS = [
     '{"0.5": 1200, "1": 2200, "3.5": 6500}',
     'Price per denomination key.',
   ],
+  [
+    'salePriceByDenomination',
+    'Yes',
+    'Record<string, number>',
+    '{"0.5": 1000, "1": 2000, "3.5": 6000}',
+    'Sale price per denomination key.',
+  ],
   ['rating', 'Yes', 'number', '4.8', 'Product rating.'],
   ['image', 'Yes', "Id<'_storage'>", 'k17abc...', 'Primary image storage ID.'],
   [

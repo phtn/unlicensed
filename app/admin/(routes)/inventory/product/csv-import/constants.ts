@@ -40,6 +40,7 @@ export const PRODUCT_CSV_FIELDS = [
   'masterStockUnit',
   'stockByDenomination',
   'priceByDenomination',
+  'salePriceByDenomination',
   'rating',
   'image',
   'gallery',

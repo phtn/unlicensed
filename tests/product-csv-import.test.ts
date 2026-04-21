@@ -27,6 +27,7 @@ describe('product CSV import', () => {
     expect(EXPECTED_CSV_HEADERS).toContain('inventoryMode')
     expect(EXPECTED_CSV_HEADERS).toContain('masterStockQuantity')
     expect(EXPECTED_CSV_HEADERS).toContain('masterStockUnit')
+    expect(EXPECTED_CSV_HEADERS).toContain('salePriceByDenomination')
     expect(EXPECTED_CSV_HEADERS).toContain('packagingMode')
     expect(EXPECTED_CSV_HEADERS).toContain('stockUnit')
     expect(EXPECTED_CSV_HEADERS).toContain('startingWeight')
@@ -118,6 +119,26 @@ describe('product CSV import', () => {
     expect(result.rows[0].product.stockUnit).toBe('oz')
     expect(result.rows[0].product.startingWeight).toBe(160)
     expect(result.rows[0].product.remainingWeight).toBe(124.5)
+  })
+
+  test('parses sale price maps from CSV rows', () => {
+    const result = parseProductsCsv(
+      buildCsv({
+        name: 'Sale Flower',
+        slug: 'sale-flower',
+        categorySlug: 'flower',
+        priceCents: '4500',
+        salePriceByDenomination: '{"0.25":4000,"1":"15000"}',
+      }),
+    )
+
+    expect(result.ok).toBe(true)
+    expect(result.rows).toHaveLength(1)
+    expect(result.rows[0].errors).toEqual([])
+    expect(result.rows[0].product.salePriceByDenomination).toEqual({
+      0.25: 4000,
+      1: 15000,
+    })
   })
 
   test('preserves _id values so matching rows can replace existing products', () => {

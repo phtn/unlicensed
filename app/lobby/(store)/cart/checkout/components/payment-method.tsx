@@ -233,7 +233,7 @@ const TxnSpeed = ({method, selected = false}: TxnSpeedProps) => {
   return method === 'crypto_commerce' ? (
     <span
       className={cn(
-        'text-brand dark:text-white text-[9px] italic uppercase font-semibold tracking-normal opacity-100 mt-1',
+        'text-brand dark:text-white text-[8px] italic uppercase font-semibold tracking-normal opacity-100 mt-1',
         {'text-brand dark:text-brand': selected},
       )}>
       Fastest

@@ -1,13 +1,13 @@
 'use client'
 
 import type {StoreProduct} from '@/app/types'
+import NextImage from '@/components/ui/app-image'
 import type {Id} from '@/convex/_generated/dataModel'
 import {useAddCartItem} from '@/hooks/use-add-cart-item'
 import {Icon} from '@/lib/icons'
 import {getAvailableCartQuantityForDenomination} from '@/lib/productStock'
 import {cn} from '@/lib/utils'
 import {formatDenominationDisplay} from '@/utils/formatDenomination'
-import NextImage from '@/components/ui/app-image'
 import NextLink from 'next/link'
 import {memo, type MouseEvent, useMemo, useState} from 'react'
 import {CrossOut} from './cross-out'
@@ -287,7 +287,7 @@ const ProductCardComponent = ({
               .join(' ')
           : '',
       productHref: `/lobby/products/${product.slug.toLowerCase()}`,
-      subcategoryLabel: product.subcategory?.trim() ?? '',
+      subcategoryLabel: product.subcategory?.split('-').join(' ').trim() ?? '',
       tierLabel: product.productTierLabel ?? product.productTier ?? '',
       packSizeLabel: product.packSize?.toString() ?? '',
     }

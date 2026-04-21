@@ -198,18 +198,19 @@ export const Content = () => {
   const staffParticipants = (staff ?? [])
     .map((member) => {
       const normalizedEmail = getNormalizedEmail(member.email)
-      const linkedUser =
-        (member.userId
-          ? (usersById.get(String(member.userId)) ?? null)
-          : null) ??
-        (normalizedEmail ? (usersByEmail.get(normalizedEmail) ?? null) : null)
+      let linkedUser = member.userId
+        ? usersById.get(String(member.userId))
+        : undefined
+      if (!linkedUser && normalizedEmail) {
+        linkedUser = usersByEmail.get(normalizedEmail)
+      }
       const conversationFid = linkedUser
         ? getUserConversationFid(linkedUser)
         : null
 
       return {
         staff: member,
-        linkedUser,
+        linkedUser: linkedUser ?? null,
         conversationFid,
         normalizedEmail,
       }

@@ -63,6 +63,7 @@ describe('product CSV upload helpers', () => {
         inventoryMode: 'by_denomination',
         priceByDenomination: '{"0.25":4500,"1":"16000"}',
         stockByDenomination: '{"0.25":5,"1":"8"}',
+        salePriceByDenomination: '{"0.25":"4000","1":15000}',
       }),
     )
 
@@ -77,6 +78,7 @@ describe('product CSV upload helpers', () => {
     expect(row.raw.stock_1).toBe('8')
     expect(row.product.priceByDenomination).toEqual({0.25: 4500, 1: 16000})
     expect(row.product.stockByDenomination).toEqual({0.25: 5, 1: 8})
+    expect(row.product.salePriceByDenomination).toEqual({0.25: 4000, 1: 15000})
   })
 
   test('seedDefaultImage adds the default image when the CSV row is missing one', () => {

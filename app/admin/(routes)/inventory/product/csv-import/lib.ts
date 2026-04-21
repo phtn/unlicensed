@@ -142,27 +142,71 @@ function parseJsonArrayOrRecord(value: string): unknown {
   }
 }
 
+export function parseNumericRecord(
+  value: string | undefined,
+): Record<string, number> {
+  if (!value?.trim()) return {}
+
+  try {
+    const parsed = JSON.parse(value) as unknown
+    if (parsed == null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return {}
+    }
+
+    return Object.fromEntries(
+      Object.entries(parsed).flatMap(([key, rawValue]) => {
+        const normalizedKey = key.trim()
+        const numericValue =
+          typeof rawValue === 'number'
+            ? rawValue
+            : typeof rawValue === 'string'
+              ? Number(rawValue)
+              : Number.NaN
+
+        if (!normalizedKey || !Number.isFinite(numericValue)) {
+          return []
+        }
+
+        return [[normalizedKey, numericValue]]
+      }),
+    )
+  } catch {
+    return {}
+  }
+}
+
 /** Map a raw CSV row (record of string values) to a product-like object for Convex. */
 function rawRowToProduct(
   raw: Record<string, string>,
   denomHeaders: string[],
 ): Record<string, unknown> {
-  const priceByDenomination: Record<string, number> = {}
-  const stockByDenomination: Record<string, number> = {}
+  const priceByDenominationFromHeaders: Record<string, number> = {}
+  const stockByDenominationFromHeaders: Record<string, number> = {}
   for (const k of CSV_DENOM_KEYS) {
     const priceKey = `price_${k}`
     const stockKey = `stock_${k}`
     if (denomHeaders.includes(priceKey)) {
       const p = parseNum(raw[priceKey])
-      if (p !== undefined) priceByDenomination[k] = p
+      if (p !== undefined) priceByDenominationFromHeaders[k] = p
     }
     if (denomHeaders.includes(stockKey)) {
       const s = parseNum(raw[stockKey])
-      if (s !== undefined) stockByDenomination[k] = s
+      if (s !== undefined) stockByDenominationFromHeaders[k] = s
     }
   }
 
   const get = (key: string): string => raw[key] ?? ''
+  const priceByDenomination = {
+    ...parseNumericRecord(get('priceByDenomination')),
+    ...priceByDenominationFromHeaders,
+  }
+  const stockByDenomination = {
+    ...parseNumericRecord(get('stockByDenomination')),
+    ...stockByDenominationFromHeaders,
+  }
+  const salePriceByDenomination = parseNumericRecord(
+    get('salePriceByDenomination'),
+  )
   const inventoryMode = (() => {
     const rawValue = get('inventoryMode').trim()
     if (!VALID_INVENTORY_MODES.has(rawValue)) {
@@ -242,6 +286,10 @@ function rawRowToProduct(
     priceByDenomination:
       Object.keys(priceByDenomination).length > 0
         ? priceByDenomination
+        : undefined,
+    salePriceByDenomination:
+      Object.keys(salePriceByDenomination).length > 0
+        ? salePriceByDenomination
         : undefined,
     rating: parseNum(get('rating')),
     image: get('image') || undefined,
